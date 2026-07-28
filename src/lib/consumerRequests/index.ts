@@ -50,6 +50,7 @@ export {
   createConsumerRepairDraftFromGlobalEstimate,
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
+export { buildCanonicalElectricalConsumerRepairAiDraft } from "./buildCanonicalElectricalConsumerRepairAiDraft";
 export {
   replayApprovedEstimateHistoryRecords,
   type ApprovedEstimateHistoryReplayResult,

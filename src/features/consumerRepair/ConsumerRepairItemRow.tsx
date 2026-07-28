@@ -217,7 +217,17 @@ function ConsumerRepairItemRowComponent({
               >
                 <Ionicons name="add" size={15} color="#0F172A" />
               </Pressable>
-              <Text style={styles.unit} testID={`consumer-repair-item-unit-${item.id}`}>{unitLabel}</Text>
+              <Text
+                accessibilityLabel={
+                  unitLabel === "\u043c\u00b2"
+                    ? "\u0415\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f: \u043c\u00b2 (m2, \u043c2)"
+                    : `\u0415\u0434\u0438\u043d\u0438\u0446\u0430 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f: ${unitLabel}`
+                }
+                style={styles.unit}
+                testID={`consumer-repair-item-unit-${item.id}`}
+              >
+                {unitLabel}
+              </Text>
             </View>
           </View>
           <View style={styles.field}>

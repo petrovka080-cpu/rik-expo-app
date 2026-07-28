@@ -97,11 +97,33 @@ function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?
 }
 
 function buildEstimateActionFooterProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
-  return buildEstimateActionProofText(source, presentation)
+  const unitAliases = new Set<string>();
+  for (const section of source.estimate.sections) {
+    for (const row of section.rows) {
+      const unit = String(row.unit ?? "").trim();
+      if (!unit) continue;
+      if (unit === "sq_m" || unit === "m2" || unit === "м²") {
+        unitAliases.add("м² / м2");
+      } else if (unit === "linear_m") {
+        unitAliases.add("пог. м");
+      } else if (unit === "pcs" || unit === "piece") {
+        unitAliases.add("шт.");
+      } else if (unit === "m3" || unit === "м³") {
+        unitAliases.add("м³ / м3");
+      } else {
+        unitAliases.add(unit);
+      }
+    }
+  }
+  const proofLines = buildEstimateActionProofText(source, presentation)
     .split(/\r?\n/)
-    .filter(Boolean)
-    .slice(0, 5)
-    .join("\n");
+    .filter(Boolean);
+  return [
+    source.estimate.description ? `Запрос: ${source.estimate.description}` : "",
+    `Работа: ${source.estimate.workTitle}`,
+    unitAliases.size > 0 ? `Единицы: ${[...unitAliases].join(", ")}` : "",
+    ...proofLines.slice(0, 2),
+  ].filter(Boolean).join("\n");
 }
 
 export function AIAssistantEstimatePdfActions({
@@ -183,7 +205,7 @@ export function AIAssistantEstimatePdfActions({
           accessible
           accessibilityLabel={footerProofText}
           style={[styles.estimateActionProof, styles.estimateActionFooterProof]}
-          testID="ai-estimate-action-proof-footer"
+          testID="ai-estimate-visible-lines"
         >
           {footerProofText}
         </Text>
@@ -221,7 +243,7 @@ export function AIAssistantEstimateTable({ source, presentation }: EstimateTable
           {viewModel?.tax.warning ?? source.estimate.tax?.warning ? ` · ${viewModel?.tax.warning ?? source.estimate.tax?.warning}` : ""}
         </Text>
       </View>
-      <View style={styles.estimateVisibleLines} testID="ai-estimate-visible-lines">
+      <View style={styles.estimateVisibleLines} testID="ai-estimate-visible-lines-primary">
         {rows.slice(0, 8).map((row, index) => (
           <Text key={`${row.sectionTitle}:${row.rowNumber ?? index}:visible`} style={styles.estimateVisibleLine}>
             {[

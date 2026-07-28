@@ -8,6 +8,7 @@ import type {
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
 import type { EstimateDraftSession } from "../estimate/draftSession/estimateDraftSession";
+import type { CanonicalParameterSession } from "../estimate/canonicalParameters/canonicalParameterCore";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
@@ -276,6 +277,7 @@ export type ConsumerRepairDraftBundle = {
   estimateRevisionState?: EstimateRevisionState | null;
   estimateDraftRevisionState?: EstimateDraftRevisionState | null;
   estimateDraftSession?: EstimateDraftSession | null;
+  canonicalParameterSession?: CanonicalParameterSession | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;

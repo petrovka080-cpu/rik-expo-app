@@ -1,4 +1,4 @@
-import { repairGlobalWorkMojibakeRu } from "./globalEstimate";
+import { repairGlobalWorkMojibakeRu } from "./globalEstimate/globalWorkSmartSearch";
 
 export type InlineWorkPromptExtractedParam = {
   value: number | string | boolean;

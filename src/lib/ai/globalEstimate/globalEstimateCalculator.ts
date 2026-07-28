@@ -25,7 +25,6 @@ import { parseUniversalConstructionQuantities } from "../constructionFormulas";
 import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
 import { resolveEstimatorOutcome } from "../estimatorKernel";
 import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../estimatorKernel";
-import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
   buildProfessionalExpandedGlobalEstimate,
@@ -1462,14 +1461,23 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
     .filter((item): item is DynamicProfessionalBoqRow => Boolean(item));
 }
 
-function buildGlobalEstimateFromEstimatorKernel(
+export function buildGlobalEstimateFromEstimatorKernel(
   plan: EstimatorReasoningPlan,
   boq: DynamicProfessionalBoq,
   input: GlobalEstimateInput,
   canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] },
 ): GlobalEstimateResult {
+  const kernelBuildStartedAt = Date.now();
+  const recordKernelBuildTiming = (stage: string): void => {
+    if (!__DEV__ || plan.workKey !== "electrical_area_installation") return;
+    console.info("[RikGlobalEstimateKernelBuild]", JSON.stringify({
+      stage,
+      elapsedMs: Date.now() - kernelBuildStartedAt,
+    }));
+  };
   const inputQuantity = estimatorKernelInputQuantity(plan, input);
   const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru", currency: input.currency ?? plan.pricingPolicy.currency });
+  recordKernelBuildTiming("LOCALE_READY");
   const resultWorkKey = canonicalWork?.workKey ?? plan.workKey;
   const resultWorkTitle = canonicalWork?.title ?? plan.titleRu.replace(/^Профессиональная предварительная смета на /, "");
   const resultWorkCategory = canonicalWork?.category ?? plan.category;
@@ -1480,6 +1488,7 @@ function buildGlobalEstimateFromEstimatorKernel(
     ...boq.rows,
     ...canonicalTemplateRowsForEstimatorKernel({ canonicalWork, plan, input, locale, existingRows: boq.rows }),
   ].filter((row) => !isPaidControlEstimateRow(row));
+  recordKernelBuildTiming("DYNAMIC_ROWS_READY");
   const sections = sectionTypes
     .map((sectionType, sectionIndex) => {
       const rows = dynamicRows.filter((row) => row.sectionType === sectionType);
@@ -1519,6 +1528,10 @@ function buildGlobalEstimateFromEstimatorKernel(
         const normSourceTitle = row.normSourceTitle ?? RATE_SOURCE.label;
         const normVersion = row.normVersion ?? "dynamic-professional-boq-quantity-rules-v1";
         const normReviewStatus = row.normReviewStatus ?? "configured_quantity_rule_not_external_norm";
+        const includedInEstimate = row.includedInEstimate !== false;
+        const includedInProcurement =
+          row.includedInProcurement ??
+          (includedInEstimate && sectionType !== "labor");
         return {
           rowNumber: rowNumber(sectionIndex + 1, rowIndex + 1),
           code: row.code,
@@ -1533,7 +1546,11 @@ function buildGlobalEstimateFromEstimatorKernel(
           total,
           displayTotal: formatGlobalCurrency(total, locale),
           currency: locale.currency,
-          priceStatus: row.sourcePolicy === "manual_review" ? "manual_fallback" : "priced",
+          priceStatus: includedInEstimate
+            ? row.sourcePolicy === "manual_review"
+              ? "manual_fallback"
+              : "priced"
+            : "unavailable",
           sourceId: evidence.sourceId,
           sourceEvidence: [evidence],
           formulaId,
@@ -1544,13 +1561,16 @@ function buildGlobalEstimateFromEstimatorKernel(
             rowCode: row.code,
             semanticObject: plan.semanticFrame.object,
             semanticOperation: plan.semanticFrame.operation,
+            canonicalParameters: plan.canonicalParameters ?? null,
+            calculationVersion: plan.calculationVersion ?? null,
             normId,
             normSourceId,
             normSourceType: "configured_reference",
             normVersion,
             normReviewStatus,
             sourceApplicabilityStatus: "preliminary_configured_rule_requires_project_scope_review",
-            includedInProcurement: sectionType !== "labor",
+            includedInProcurement,
+            parameterBlockerIds: row.parameterBlockerIds ?? [],
           },
           templateId,
           templateVersion,
@@ -1565,10 +1585,10 @@ function buildGlobalEstimateFromEstimatorKernel(
           scopeDriver: `${plan.workKey}:${row.code}`,
           semanticSignature: `${plan.workKey}|${sectionType}|${row.code}|${row.unit}`,
           confidence: rowConfidence,
-          includedInEstimate: true,
-          includedInProcurement: sectionType !== "labor",
-          optional: false,
-          editable: true,
+          includedInEstimate,
+          includedInProcurement,
+          optional: row.optional === true,
+          editable: row.editable !== false,
           deletedByUser: false,
         };
       });
@@ -1580,6 +1600,7 @@ function buildGlobalEstimateFromEstimatorKernel(
       };
     })
     .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
+  recordKernelBuildTiming("SECTIONS_READY");
 
   const preliminaryInput = {
     volume: inputQuantity.value,
@@ -1603,7 +1624,14 @@ function buildGlobalEstimateFromEstimatorKernel(
     input: preliminaryInput,
     requiresReview: false,
   });
-  if (complexityProfile.level !== "local_operation") {
+  recordKernelBuildTiming("COMPLEXITY_PROFILE_READY");
+  // A pre-expanded owned-domain BOQ already carries explicit WBS depth.
+  // Appending the universal supplement would duplicate scope and prices.
+  if (
+    plan.workKey !== "electrical_area_installation" &&
+    complexityProfile.level !== "local_operation" &&
+    dynamicRows.length < 100
+  ) {
     appendProfessionalWbsRows({
       sections,
       rows: buildProfessionalWbsSupplementRows({
@@ -1627,6 +1655,7 @@ function buildGlobalEstimateFromEstimatorKernel(
   const taxResolution = input.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
     : resolveGlobalTaxRule(locale, input);
+  recordKernelBuildTiming("TAX_RULE_READY");
   if (taxResolution.source) sourceMap.set(taxResolution.source.id, taxResolution.source);
   confidences.push(taxResolution.confidence);
   const tax = calculateGlobalTax({ sections, taxResolution });
@@ -1699,7 +1728,9 @@ function buildGlobalEstimateFromEstimatorKernel(
     confidence: confidenceMin(confidences),
     requiresReview: true,
   };
+  recordKernelBuildTiming("RESULT_READY");
   const unitSemantics = validateConstructionUnitSemantics(result);
+  recordKernelBuildTiming("UNIT_SEMANTICS_READY");
   if (!unitSemantics.passed) {
     throw new Error(`UNIVERSAL_ESTIMATOR_UNIT_SEMANTICS_FAILED:${unitSemantics.failures.join(",")}`);
   }
@@ -1998,6 +2029,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
     ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
     : null;
   const estimatorPlan = estimatorOutcome?.plan;
+  const estimatorBoq = estimatorOutcome?.boq ?? null;
   const professionalExpandedWorkKey = detailLevel === "professional_expanded" && !blockProfessionalExpandedForGovernedFormula
     ? resolveProfessionalExpandedWorkKey({
       estimateInput: input,
@@ -2059,6 +2091,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
     detailLevel === "professional_expanded" &&
     !preferGovernedTemplate &&
     estimatorPlan &&
+    estimatorBoq &&
     dynamicEstimatorRespectsSelectedWork &&
     estimatorOutcome.parsableWorkDetected &&
     estimatorOutcome.dynamicBoqUsed &&
@@ -2071,10 +2104,10 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
       estimatorPlan.workKey.startsWith("dynamic_")
     );
 
-  if (shouldUseDynamicEstimatorBeforeExpanded) {
+  if (shouldUseDynamicEstimatorBeforeExpanded && estimatorBoq) {
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorPlan,
-      compileDynamicProfessionalBoq(estimatorPlan),
+      estimatorBoq,
       input,
       canonicalEstimatorWork,
     );
@@ -2096,6 +2129,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
+    estimatorBoq &&
     dynamicEstimatorRespectsSelectedWork &&
     estimatorOutcome.parsableWorkDetected &&
     estimatorOutcome.dynamicBoqUsed &&
@@ -2103,7 +2137,7 @@ function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInp
   ) {
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
-      compileDynamicProfessionalBoq(estimatorOutcome.plan),
+      estimatorBoq,
       input,
       canonicalEstimatorWork,
     );

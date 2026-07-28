@@ -189,6 +189,7 @@ export function ConsumerRepairRequestScreenView({
         hasSnapshot={Boolean(
           renderModel.bundle?.editableEstimateSnapshot &&
           (
+            renderModel.bundle.structuredEstimatePayload != null ||
             renderModel.bundle.estimateDraftSession == null ||
             renderModel.bundle.estimateDraftSession.status === "REVIEW"
           )

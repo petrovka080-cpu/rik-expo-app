@@ -1,4 +1,3 @@
-import { buildProfessionalWorkPassport } from "./buildProfessionalWorkPassport";
 import { buildEstimateFromInlineWorkPrompt, type InlineWorkPromptEstimateBuildResult } from "./buildEstimateFromInlineWorkPrompt";
 import type {
   EstimateDraftRevision,
@@ -12,7 +11,7 @@ import type {
   ProfessionalBoqRow,
   ProfessionalBoqSection,
 } from "./estimateDraftRevisionContract";
-import type { ConsumerRepairAiDraft } from "../consumerRequests";
+import type { ConsumerRepairAiDraft } from "../consumerRequests/consumerRequestTypes";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 import {
@@ -30,11 +29,22 @@ import { rawInputFactStringValue } from "./rawInputFactExtraction";
 import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
-  ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
-  ROAD_SCOPE_RESOLVER_VERSION_V4,
-} from "./v4/asphalt";
+} from "./v4/asphalt/asphaltV4Constants";
+import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
+import { ROAD_SCOPE_RESOLVER_VERSION_V4 } from "./v4/asphalt/roadScopeTruthV4";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
+
+function loadProfessionalWorkPassportBuilder() {
+  return require(
+    "./buildProfessionalWorkPassport"
+  ) as typeof import("./buildProfessionalWorkPassport");
+}
+
+function buildProfessionalWorkPassportIfApplicable(templateId: string) {
+  if (templateId.endsWith("_dynamic_professional_boq_runtime_v1")) return null;
+  return loadProfessionalWorkPassportBuilder().buildProfessionalWorkPassport(templateId);
+}
 
 export type CreateEstimateDraftRevisionInput = {
   estimateDraftId?: string;
@@ -762,7 +772,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const requestedReferencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
     (item) => item.professionalEstimatePassportId === requestedTemplateId,
   );
-  const requestedPassport = requestedTemplateId ? buildProfessionalWorkPassport(requestedTemplateId) : null;
+  const requestedPassport = requestedTemplateId
+    ? buildProfessionalWorkPassportIfApplicable(requestedTemplateId)
+    : null;
   const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
@@ -772,7 +784,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
         : (
           draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
         );
-  const passport = selectedTemplateId ? buildProfessionalWorkPassport(selectedTemplateId) : null;
+  const passport = selectedTemplateId
+    ? buildProfessionalWorkPassportIfApplicable(selectedTemplateId)
+    : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
   const revisionId = createStableRevisionId({
     estimateDraftId,

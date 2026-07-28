@@ -1,5 +1,8 @@
-import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
-import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../../lib/consumerRequests";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import type {
+  ConsumerRepairDraftBundle,
+  ConsumerRepairRequestItem,
+} from "../../lib/consumerRequests/consumerRequestTypes";
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../../lib/ai/globalEstimate/formatEstimateUserTextRu";
@@ -12,7 +15,7 @@ import {
   isProfessionalEstimateHelperRow,
   professionalEstimateRowChildTitle,
   professionalEstimateRowVisibleName,
-} from "../../lib/estimateStructuredPipeline";
+} from "../../lib/estimateStructuredPipeline/professionalEstimateRowDisplay";
 import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
 import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePilotMode";
 import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";

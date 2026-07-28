@@ -1,8 +1,13 @@
 import React from "react";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { buildApprovalPersistenceBlockedViewModel } from "../../src/features/ai/approvalInbox/approvalInboxPersistenceBlockedViewModel";
+import {
+  REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
+  RequestEstimateLaunchPayloadError,
+  decodeRequestEstimateLaunchPayloadV1,
+} from "../../src/lib/navigation/requestEstimateLaunchPayload";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
@@ -43,10 +48,42 @@ function AITabScreen() {
   const params = useLocalSearchParams<{
     approvalInbox?: string | string[];
     mode?: string | string[];
+    launchError?: string | string[];
+    launchId?: string | string[];
+    launchPayloadV1?: string | string[];
     procurementCopilot?: string | string[];
     procurementExternalIntel?: string | string[];
     procurementRequestId?: string | string[];
   }>();
+  const firstParam = (value: string | string[] | undefined) =>
+    Array.isArray(value) ? value[0] : value;
+  const encodedPayload = firstParam(
+    params[REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM],
+  );
+  let launchPayload = null;
+  let launchError = String(firstParam(params.launchError) ?? "").trim();
+  if (encodedPayload && !launchError) {
+    try {
+      launchPayload = decodeRequestEstimateLaunchPayloadV1(encodedPayload);
+      if (launchPayload.route !== "/ai") {
+        launchError = "REQUEST_ESTIMATE_LAUNCH_ROUTE_MISMATCH";
+        launchPayload = null;
+      }
+    } catch (error) {
+      launchError =
+        error instanceof RequestEstimateLaunchPayloadError
+          ? error.code
+          : "REQUEST_ESTIMATE_LAUNCH_PAYLOAD_CORRUPT";
+    }
+  }
+  if (launchError) {
+    return (
+      <View style={styles.launchError} testID="request-estimate-launch-error">
+        <Text style={styles.launchErrorTitle}>Не удалось открыть параметры сметы.</Text>
+        <Text style={styles.launchErrorCode}>{launchError}</Text>
+      </View>
+    );
+  }
   const approvalInbox = Array.isArray(params.approvalInbox)
     ? params.approvalInbox[0]
     : params.approvalInbox;
@@ -95,7 +132,9 @@ function AITabScreen() {
     <>
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
       <AiRouteSuspense>
-        <AIAssistantScreen />
+        <AIAssistantScreen
+          launchPayload={launchPayload}
+        />
       </AiRouteSuspense>
     </>
   );
@@ -112,5 +151,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#0B1220",
+  },
+  launchError: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 24,
+    backgroundColor: "#FFF7ED",
+  },
+  launchErrorTitle: {
+    color: "#9A3412",
+    fontSize: 16,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  launchErrorCode: {
+    color: "#7C2D12",
+    fontSize: 12,
+    textAlign: "center",
   },
 });

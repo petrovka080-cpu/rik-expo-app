@@ -55,7 +55,62 @@ import {
   createBuiltInAiAssistantMessage,
   createExternalKnowledgeAssistantMessage,
 } from "./assistantAnswerPipeline";
-export default function AIAssistantScreen() {
+import type { RequestEstimateLaunchPayloadV1 } from "../../lib/navigation/requestEstimateLaunchPayload";
+import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
+import {
+  markRequestEstimateIntentStage,
+  requestEstimateIntentLifecycle,
+} from "../../lib/navigation/requestEstimateLaunchLifecycle";
+
+function markAiDraftSessionReady(
+  payload: RequestEstimateLaunchPayloadV1,
+): boolean {
+  if (
+    !markRequestEstimateIntentStage(payload.launchId, "DRAFT_SESSION_READY")
+  ) {
+    return false;
+  }
+  recordRequestEstimateLaunchStage({
+    stage: "DRAFT_SESSION_READY",
+    payload,
+    detail: { adapter: "ai_assistant_estimate_pipeline" },
+  });
+  return true;
+}
+
+function acknowledgeAiUiLaunch(
+  payload: RequestEstimateLaunchPayloadV1,
+  projection: "ai_launch_projection" | "ai_estimate_projection",
+): void {
+  if (!markRequestEstimateIntentStage(payload.launchId, "UI_READY")) return;
+  recordRequestEstimateLaunchStage({
+    stage: "UI_READY",
+    payload,
+    detail: { projection },
+  });
+  if (
+    !markRequestEstimateIntentStage(payload.launchId, "INTENT_ACKNOWLEDGED")
+  ) {
+    return;
+  }
+  recordRequestEstimateLaunchStage({
+    stage: "INTENT_ACKNOWLEDGED",
+    payload,
+  });
+}
+
+function acknowledgeAiPromptLaunch(
+  payload: RequestEstimateLaunchPayloadV1,
+): void {
+  if (!markAiDraftSessionReady(payload)) return;
+  acknowledgeAiUiLaunch(payload, "ai_launch_projection");
+}
+
+export default function AIAssistantScreen({
+  launchPayload = null,
+}: {
+  launchPayload?: RequestEstimateLaunchPayloadV1 | null;
+}) {
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<AssistantRole>("unknown");
@@ -66,7 +121,12 @@ export default function AIAssistantScreen() {
   const [scopedFacts, setScopedFacts] = useState<AssistantScopedFacts | null>(null);
   const [scopedFactsLoading, setScopedFactsLoading] = useState(false);
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
+  const [runtimeLaunchPayload, setRuntimeLaunchPayload] =
+    useState<RequestEstimateLaunchPayloadV1 | null>(launchPayload);
   const handledPromptRef = useRef<string>("");
+  const acknowledgedPromptLaunchRef = useRef<string>("");
+  const autoEstimateLaunchPayloadRef =
+    useRef<RequestEstimateLaunchPayloadV1 | null>(null);
   const messagesScrollRef = useRef<ScrollView | null>(null);
   const {
     params,
@@ -124,12 +184,74 @@ export default function AIAssistantScreen() {
       setBooting(false);
     }
   }, [assistantContext, assistantPresentationRole]);
-  const hasAutoSendPrompt = routeAutoSend === "1" && Boolean(String(routePrompt || "").trim());
+  useEffect(() => {
+    if (!launchPayload) return;
+    setRuntimeLaunchPayload((current) => {
+      if (current?.launchId === launchPayload.launchId) return current;
+      if (
+        current &&
+        Date.parse(current.issuedAt) > Date.parse(launchPayload.issuedAt)
+      ) {
+        return current;
+      }
+      return launchPayload;
+    });
+  }, [launchPayload]);
+  useEffect(() => {
+    const syncPendingAiLaunch = () => {
+      const pending = requestEstimateIntentLifecycle.getPending();
+      if (
+        pending?.target.payload.route !== "/ai" ||
+        pending.stage === "INTENT_RECEIVED" ||
+        pending.stage === "URL_PARSED" ||
+        pending.stage === "AUTH_PENDING" ||
+        pending.stage === "AUTH_RESOLVED"
+      ) {
+        return;
+      }
+      if (Platform.OS === "android") {
+        console.info(
+          `[RikWarmDeepLink] AI_RUNTIME_LAUNCH_SYNC ${JSON.stringify({
+            launchId: pending.target.payload.launchId,
+            autoSend: pending.target.payload.parameters.autoSend ?? null,
+            stage: pending.stage,
+          })}`,
+        );
+      }
+      setRuntimeLaunchPayload((current) =>
+        current?.launchId === pending.target.payload.launchId
+          ? current
+          : pending.target.payload,
+      );
+    };
+    syncPendingAiLaunch();
+    return requestEstimateIntentLifecycle.subscribe(syncPendingAiLaunch);
+  }, []);
+  const effectiveLaunchPayload = runtimeLaunchPayload ?? launchPayload;
+  const launchPrompt = String(
+    effectiveLaunchPayload?.workIntent || routePrompt || "",
+  ).trim();
+  const launchAutoSend =
+    effectiveLaunchPayload?.parameters.autoSend ?? routeAutoSend;
+  const hasInteractiveLaunchPrompt = Boolean(launchPrompt);
+  const hasRouteAutoSendPrompt =
+    routeAutoSend === "1" && hasInteractiveLaunchPrompt;
+  const hasAutoSendPrompt =
+    (launchAutoSend === "1" && hasInteractiveLaunchPrompt) ||
+    hasRouteAutoSendPrompt;
   useFocusEffect(
     useCallback(() => {
-      if (hasAutoSendPrompt) setBooting(false);
-      void initialize(hasAutoSendPrompt);
-    }, [hasAutoSendPrompt, initialize]),
+      // The composer and canonical launch prompt do not depend on profile or
+      // stored-message hydration. Keep the route interactive immediately and
+      // hydrate identity/history in the background; auto-send still
+      // acknowledges only after `send` resolves below.
+      if (hasInteractiveLaunchPrompt) setBooting(false);
+      if (hasAutoSendPrompt) {
+        void initialize(hasAutoSendPrompt);
+      } else {
+        void initialize(hasInteractiveLaunchPrompt);
+      }
+    }, [hasAutoSendPrompt, hasInteractiveLaunchPrompt, initialize]),
   );
   useEffect(() => {
     if (assistantContext !== "unknown") return;
@@ -185,6 +307,17 @@ export default function AIAssistantScreen() {
           userId,
         });
         if (builtInAiMessage) {
+          const autoEstimatePayload =
+            effectiveLaunchPayload &&
+            launchAutoSend === "1" &&
+            text === launchPrompt &&
+            builtInAiMessage.estimatePdfSource
+              ? effectiveLaunchPayload
+              : null;
+          if (autoEstimatePayload) {
+            autoEstimateLaunchPayloadRef.current = autoEstimatePayload;
+            markAiDraftSessionReady(autoEstimatePayload);
+          }
           setMessages((prev) => [...prev, builtInAiMessage]);
           return;
         }
@@ -284,7 +417,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, assistantPresentationRole, input, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, assistantPresentationRole, effectiveLaunchPayload, input, launchAutoSend, launchPrompt, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -296,20 +429,55 @@ export default function AIAssistantScreen() {
 
   useEffect(() => {
     if (booting) return;
-    const prompt = String(routePrompt || "").trim();
+    const prompt = launchPrompt;
     if (!prompt) return;
 
-    const key = `${prompt}::${routeAutoSend === "1" ? "1" : "0"}`;
+    const autoSend = launchAutoSend;
+    const key = `${effectiveLaunchPayload?.launchId ?? "route"}::${prompt}::${autoSend === "1" ? "1" : "0"}`;
     if (handledPromptRef.current === key) return;
     handledPromptRef.current = key;
 
-    if (routeAutoSend === "1") {
-      void send(prompt);
+    if (autoSend === "1") {
+      const autoSendPayload = effectiveLaunchPayload;
+      if (Platform.OS === "android" && autoSendPayload) {
+        console.info(
+          `[RikWarmDeepLink] AI_AUTO_SEND_STARTED ${JSON.stringify({
+            launchId: autoSendPayload.launchId,
+          })}`,
+        );
+      }
+      void send(prompt).then(() => {
+        if (Platform.OS === "android" && autoSendPayload) {
+          console.info(
+            `[RikWarmDeepLink] AI_AUTO_SEND_RESOLVED ${JSON.stringify({
+              launchId: autoSendPayload.launchId,
+            })}`,
+          );
+        }
+      });
       return;
     }
 
     setInput(prompt);
-  }, [booting, routeAutoSend, routePrompt, send]);
+    return undefined;
+  }, [booting, effectiveLaunchPayload, launchAutoSend, launchPrompt, send]);
+
+  useEffect(() => {
+    if (
+      booting ||
+      !effectiveLaunchPayload ||
+      launchAutoSend === "1" ||
+      input.trim() !== launchPrompt ||
+      acknowledgedPromptLaunchRef.current === effectiveLaunchPayload.launchId
+    ) {
+      return undefined;
+    }
+    const frame = requestAnimationFrame(() => {
+      acknowledgeAiPromptLaunch(effectiveLaunchPayload);
+      acknowledgedPromptLaunchRef.current = effectiveLaunchPayload.launchId;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [booting, effectiveLaunchPayload, input, launchAutoSend, launchPrompt]);
 
   useEffect(() => {
     if (messages.length === 0) return undefined;
@@ -413,12 +581,28 @@ export default function AIAssistantScreen() {
                 {message.role === "assistant" && message.estimatePdfSource ? (
                   <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
                 ) : null}
-                <AIAssistantEstimatePdfActions
-                  message={message}
-                  onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
-                  onFallback={recordAssistantScreenFallback}
-                />
-              </React.Fragment>
+                    <AIAssistantEstimatePdfActions
+                      message={message}
+                      onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
+                      onFallback={recordAssistantScreenFallback}
+                    />
+                    {message.role === "assistant" &&
+                    message.estimatePdfSource &&
+                    isLatestAssistantReply ? (
+                      <View
+                        collapsable={false}
+                        style={styles.runtimeInlineMarker}
+                        onLayout={() => {
+                          const payload = autoEstimateLaunchPayloadRef.current;
+                          if (!payload) return;
+                          acknowledgeAiUiLaunch(
+                            payload,
+                            "ai_estimate_projection",
+                          );
+                        }}
+                      />
+                    ) : null}
+                  </React.Fragment>
             );
           })}
           {loading ? (

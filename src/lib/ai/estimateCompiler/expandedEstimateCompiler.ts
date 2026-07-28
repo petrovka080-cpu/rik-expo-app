@@ -562,10 +562,11 @@ const LINOLEUM_ROWS: ExpandedTemplateRow[] = [
 ];
 
 const PAVING_STONE_ROWS: ExpandedTemplateRow[] = [
-  ...semanticRowsFromTitles("paving_stone_material", "landscaping", "materials", ["Геотекстиль", "Песок", "Щебень", "Брусчатка", "Бордюр", "Пескоцементная смесь", "Смесь для заполнения швов", "Водоотводные элементы"], "sq_m", "q", 720),
+  ...semanticRowsFromTitles("paving_stone_material", "landscaping", "materials", ["Геотекстиль", "Песок", "Щебень", "Отсев / пескоцементная смесь", "Брусчатка / тротуарная плитка", "Бордюр", "Смесь для заполнения швов", "Водоотводные элементы"], "sq_m", "q", 720),
+  r({ section: "materials", code: "paving_stone_curb_concrete", title: "Бетон под бордюр", quantityFormula: "q * 0.05", unit: "m3", unitPrice: 8200 }),
   ...semanticRowsFromTitles("paving_stone_component", "landscaping", "components", ["Крепеж бордюра", "Разделители", "Лотки водоотвода", "Маркировочные колышки"], "set", "max(1, ceil(q / 100))", 650),
-  ...semanticRowsFromTitles("paving_stone_prep", "landscaping", "preparation", ["Геодезическая разбивка", "Разметка дорожек", "Выемка грунта", "Подготовка основания"], "sq_m", "q", 130),
-  ...semanticRowsFromTitles("paving_stone_labor", "landscaping", "labor", ["Укладка геотекстиля", "Устройство песчаного слоя", "Устройство щебеночного основания", "Монтаж бордюра", "Укладка брусчатки", "Подрезка брусчатки", "Заполнение швов", "Финишное уплотнение"], "sq_m", "q", 460),
+  ...semanticRowsFromTitles("paving_stone_prep", "landscaping", "preparation", ["Геодезическая разбивка", "Разметка дорожек", "Выемка грунта", "Планировка и подготовка основания"], "sq_m", "q", 130),
+  ...semanticRowsFromTitles("paving_stone_labor", "landscaping", "labor", ["Укладка геотекстиля", "Устройство песчаного слоя", "Устройство щебеночного основания", "Монтаж бордюра", "Укладка брусчатки / тротуарной плитки", "Подрезка брусчатки", "Заполнение швов", "Виброуплотнение основания и покрытия"], "sq_m", "q", 460),
   ...semanticRowsFromTitles("paving_stone_equipment", "landscaping", "equipment", ["Виброплита", "Резчик брусчатки", "Мини-погрузчик"], "shift", "max(1, ceil(q / 300))", 2600),
   ...semanticRowsFromTitles("paving_stone_logistics", "landscaping", "logistics", ["Доставка брусчатки", "Доставка инертных", "Вывоз грунта"], "trip", "max(1, ceil(q / 250))", 4200),
   ...semanticRowsFromTitles("paving_stone_waste", "landscaping", "waste", ["Запас брусчатки на подрезку", "Потери песка и щебня"], "sq_m", "q * 0.05", 720),
@@ -1455,14 +1456,7 @@ const TEMPLATES: ExpandedWorkTemplate[] = [
   },
 ];
 
-const GENERATED_CATEGORY_TEMPLATES = GLOBAL_WORK_TYPE_DEFINITIONS
-  .filter((definition) => definition.workKey !== "other_construction_work")
-  .map(buildCategoryTemplate);
-
 const TEMPLATE_BY_KEY = new Map<string, ExpandedWorkTemplate>();
-for (const template of GENERATED_CATEGORY_TEMPLATES) {
-  TEMPLATE_BY_KEY.set(template.workKey, template);
-}
 for (const template of TEMPLATES) {
   TEMPLATE_BY_KEY.set(template.workKey, template);
   for (const alias of template.aliases) {
@@ -1470,11 +1464,32 @@ for (const template of TEMPLATES) {
   }
 }
 
+const GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY = new Map(
+  GLOBAL_WORK_TYPE_DEFINITIONS
+    .filter((definition) => definition.workKey !== "other_construction_work")
+    .map((definition) => [definition.workKey, definition] as const),
+);
+
+function getExpandedTemplateByWorkKey(workKey: string): ExpandedWorkTemplate | undefined {
+  const existing = TEMPLATE_BY_KEY.get(workKey);
+  if (existing) return existing;
+
+  const definition = GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.get(workKey);
+  if (!definition) return undefined;
+
+  const template = buildCategoryTemplate(definition);
+  TEMPLATE_BY_KEY.set(template.workKey, template);
+  return template;
+}
+
 export const PROFESSIONAL_EXPANDED_TEMPLATE_COVERAGE = Object.freeze({
-  generatedKnownWorkTemplates: GENERATED_CATEGORY_TEMPLATES.length,
+  generatedKnownWorkTemplates: GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.size,
   workSpecificOverlayTemplates: TEMPLATES.length,
   manualOverlayTemplates: TEMPLATES.length,
-  totalSupportedTemplateKeys: new Set([...TEMPLATE_BY_KEY.values()].map((template) => template.workKey)).size,
+  totalSupportedTemplateKeys: new Set([
+    ...GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.keys(),
+    ...TEMPLATES.map((template) => template.workKey),
+  ]).size,
   minimumProductionKnownWorkTemplates: 100,
 });
 
@@ -1522,12 +1537,12 @@ export function resolveProfessionalExpandedWorkKey(input: {
   semanticWorkKey?: string | null;
 }): string | null {
   if (input.estimateInput.explicitWorkKey && input.estimateInput.explicitWorkKeyFromRoute !== true) {
-    const explicitTemplate = TEMPLATE_BY_KEY.get(input.estimateInput.explicitWorkKey);
+    const explicitTemplate = getExpandedTemplateByWorkKey(input.estimateInput.explicitWorkKey);
     if (explicitTemplate) return explicitTemplate.workKey;
   }
 
   const explicitTextKey = resolveTextTemplateKey(input.estimateInput.text);
-  if (explicitTextKey && TEMPLATE_BY_KEY.has(explicitTextKey)) return explicitTextKey;
+  if (explicitTextKey && getExpandedTemplateByWorkKey(explicitTextKey)) return explicitTextKey;
 
   const candidates = [
     input.semanticWorkKey,
@@ -1535,14 +1550,17 @@ export function resolveProfessionalExpandedWorkKey(input: {
   ].filter((value): value is string => Boolean(value));
 
   for (const candidate of candidates) {
-    const template = TEMPLATE_BY_KEY.get(candidate);
+    const template = getExpandedTemplateByWorkKey(candidate);
     if (template) return template.workKey;
   }
   return null;
 }
 
 export function isProfessionalExpandedWorkSupported(workKey: string): boolean {
-  return TEMPLATE_BY_KEY.has(workKey);
+  return Boolean(
+    TEMPLATE_BY_KEY.has(workKey) ||
+    GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.has(workKey),
+  );
 }
 
 function parsedQuantity(input: GlobalEstimateInput, template: ExpandedWorkTemplate): { value: number; unit: string } {
@@ -1850,10 +1868,11 @@ export function validateProfessionalExpandedEstimate(result: GlobalEstimateResul
   blockers: string[];
 } {
   const rows = result.sections.flatMap((section) => section.rows);
+  const resultTemplate = getExpandedTemplateByWorkKey(result.work.workKey);
   const minimumRows =
-    TEMPLATE_BY_KEY.get(result.work.workKey)?.minimumRows ??
+    resultTemplate?.minimumRows ??
     MIN_EXPANDED_ROWS_BY_WORK_TYPE[result.work.workKey] ??
-    MIN_EXPANDED_ROWS_BY_WORK_TYPE[TEMPLATE_BY_KEY.get(result.work.workKey)?.workKey ?? ""] ??
+    MIN_EXPANDED_ROWS_BY_WORK_TYPE[resultTemplate?.workKey ?? ""] ??
     0;
   const blockers: string[] = [];
   if (minimumRows > 0 && rows.length < minimumRows) {
@@ -2140,24 +2159,46 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
   estimateInput: GlobalEstimateInput;
   workKey: string;
 }): GlobalEstimateResult {
+  const startedAt = Date.now();
+  const recordNativeStage = (stage: string) => {
+    if (
+      typeof navigator === "undefined" ||
+      navigator.product !== "ReactNative"
+    ) {
+      return;
+    }
+    console.info(
+      `[RikWarmDeepLink] PROFESSIONAL_ESTIMATE_BUILD_STAGE ${JSON.stringify({
+        stage,
+        elapsedMs: Date.now() - startedAt,
+      })}`,
+    );
+  };
+  recordNativeStage("entry");
   const projectGroupEstimate = buildProductionProjectGroupGlobalEstimate(input);
+  recordNativeStage("project_group_checked");
   if (projectGroupEstimate) return projectGroupEstimate;
 
-  const template = TEMPLATE_BY_KEY.get(input.workKey);
+  const template = getExpandedTemplateByWorkKey(input.workKey);
   if (!template) throw new Error(`PROFESSIONAL_EXPANDED_TEMPLATE_NOT_FOUND:${input.workKey}`);
+  recordNativeStage("template_resolved");
 
   const locale = resolveGlobalLocalization(input.estimateInput);
+  recordNativeStage("locale_resolved");
   const quantity = parsedQuantity(input.estimateInput, template);
+  recordNativeStage("quantity_resolved");
   const sections = compileSections({
     template,
     baseQuantity: quantity.value,
     locale,
     estimateInput: input.estimateInput,
   });
+  recordNativeStage("sections_compiled");
   const taxResolution = input.estimateInput.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
     : resolveGlobalTaxRule(locale, input.estimateInput);
   const tax = calculateGlobalTax({ sections, taxResolution });
+  recordNativeStage("tax_calculated");
   const sources = taxResolution.source
     ? [EXPANDED_REFERENCE_SOURCE, taxResolution.source]
     : [EXPANDED_REFERENCE_SOURCE];
@@ -2232,5 +2273,6 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
   };
 
   assertProfessionalExpandedEstimate(result);
+  recordNativeStage("validated");
   return result;
 }

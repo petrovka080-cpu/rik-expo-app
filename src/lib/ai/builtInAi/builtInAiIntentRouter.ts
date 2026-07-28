@@ -63,6 +63,40 @@ function resolveEstimateIntentBeforeRoleContext(
   };
 }
 
+function resolveExactGovernedEstimateBeforeKernel(
+  input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext },
+): BuiltInAiIntentRoute | null {
+  const priority = resolveEstimateIntentPriority({
+    text: input.text,
+    screenContext: input.resolvedScreenContext,
+  });
+  if (!priority.estimateIntentWins) return null;
+
+  const route = routeUniversalEstimateIntent(input.text);
+  if (
+    !route.shouldCallEstimateTool ||
+    route.confidence !== "high" ||
+    route.resolvedWorkKey === "other_construction_work"
+  ) {
+    return null;
+  }
+
+  return {
+    originalText: input.text,
+    screenContext: input.resolvedScreenContext,
+    intent: "estimate",
+    confidence: "high",
+    mustUseBackendTool: true,
+    allowedTools: [],
+    forbiddenFallbacks: ["role_qa", "foreman_status", "request_status", "generic_chat", "template_gap_for_known_work"],
+    traceId: createBuiltInAiTraceId(input.text, input.resolvedScreenContext),
+    workKey: route.resolvedWorkKey,
+    category: route.resolvedCategory,
+    volume: route.volume,
+    unit: route.unit,
+  };
+}
+
 export function resolveEstimateIntentBeforeScreenRole(
   input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext },
 ): BuiltInAiIntentRoute | null {
@@ -71,12 +105,13 @@ export function resolveEstimateIntentBeforeScreenRole(
   if (input.resolvedScreenContext !== "request" && input.resolvedScreenContext !== "foreman") return null;
 
   const route = routeUniversalEstimateIntent(input.text);
-  const plan = buildEstimatorReasoningPlan({ text: input.text });
   const exactGovernedRoute =
     route.shouldCallEstimateTool &&
     route.confidence === "high" &&
     route.resolvedWorkKey !== "other_construction_work";
-  const activePlan = exactGovernedRoute ? null : plan;
+  const activePlan = exactGovernedRoute
+    ? null
+    : buildEstimatorReasoningPlan({ text: input.text });
   const quantity =
     activePlan?.quantities.areaM2 ??
     activePlan?.quantities.lengthM ??
@@ -327,6 +362,9 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
 }
 
 export function routeBuiltInAiIntent(input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext }): BuiltInAiIntentRoute {
+  const exactGovernedRoute = resolveExactGovernedEstimateBeforeKernel(input);
+  if (exactGovernedRoute) return exactGovernedRoute;
+
   const estimatorKernelPriorityRoute = resolveEstimateIntentBeforeScreenRole(input);
   if (estimatorKernelPriorityRoute) return estimatorKernelPriorityRoute;
 

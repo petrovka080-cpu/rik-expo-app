@@ -615,8 +615,43 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
     showStructuredText(page, LEFT + 8, y, viewModel.tax.warning, SMALL_FONT);
     y -= 12;
   }
+
+  const visibleAssumptions = viewModel.assumptions.length
+    ? viewModel.assumptions
+    : ["Нет допущений"];
+  if (y < BOTTOM + 90) {
+    page = startStructuredPage(pages);
+    y = TOP;
+  }
+  y = addStructuredSectionTitle(page, y, "Параметры и допущения");
+  for (const assumption of visibleAssumptions) {
+    if (y < BOTTOM + 24) {
+      page = startStructuredPage(pages);
+      y = TOP;
+      y = addStructuredSectionTitle(page, y, "Параметры и допущения — продолжение");
+    }
+    showStructuredText(page, LEFT + 8, y, `- ${assumption}`, SMALL_FONT);
+    y -= 11;
+  }
+
+  if (y < BOTTOM + 90) {
+    page = startStructuredPage(pages);
+    y = TOP;
+  }
   y = addStructuredSectionTitle(page, y, "Что уточнить");
-  y = addStructuredParagraphList(page, y, viewModel.clarifyingQuestions.length ? viewModel.clarifyingQuestions : ["Нет вопросов"], 4) - 8;
+  const visibleQuestions = viewModel.clarifyingQuestions.length
+    ? viewModel.clarifyingQuestions
+    : ["Нет вопросов"];
+  for (const question of visibleQuestions) {
+    if (y < BOTTOM + 24) {
+      page = startStructuredPage(pages);
+      y = TOP;
+      y = addStructuredSectionTitle(page, y, "Что уточнить — продолжение");
+    }
+    showStructuredText(page, LEFT + 8, y, `- ${question}`, SMALL_FONT);
+    y -= 11;
+  }
+  y -= 8;
 
   if (y < BOTTOM + 130) {
     page = startStructuredPage(pages);

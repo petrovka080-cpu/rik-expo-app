@@ -1,11 +1,20 @@
 import {
+  buildCanonicalElectricalConsumerRepairAiDraft,
   buildConsumerRepairAiDraftFromGlobalEstimate,
   type ConsumerRepairAiDraft,
   type ConsumerRepairSelectedWork,
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
+import { resolveFormulaForEstimatorPlan } from "../../lib/ai/constructionFormulas";
+import {
+  buildOwnedDomainEstimatorReasoningPlan,
+  buildRegulatedSafeEstimatePlan,
+} from "../../lib/ai/estimatorKernel";
+import { compileDynamicProfessionalBoq } from "../../lib/ai/professionalBoq/compileDynamicProfessionalBoq";
+import { expandOwnedDomainProfessionalBoq } from "../../lib/ai/professionalBoq/expandOwnedDomainBoqRows";
+import { buildGlobalEstimateFromEstimatorKernel } from "../../lib/ai/globalEstimate/globalEstimateCalculator";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
-import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import {
   calculateExpandedComplexEstimate,
   isExpandedComplexWorkFamilyId,
@@ -13,6 +22,7 @@ import {
 } from "../../lib/ai/expandedComplexWorks";
 import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRuntimePolicy";
 import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
+import { resolveDirectConsumerRepairOpenWorldOwner } from "./consumerRepairDirectOpenWorldRouting";
 import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
@@ -26,6 +36,7 @@ import {
   capitalRenovationQuantitySummary,
 } from "../estimates/calculator/families/capitalRenovationCalculator";
 import type { CapitalRenovationEstimateRow } from "../estimates/calculator/families/capitalRenovationRecipes";
+export { composeConsumerRepairDraftAnswerRu } from "./consumerRepairDraftAnswer";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -50,6 +61,14 @@ export type ConsumerRepairAiDraftOptions = {
   selectedWorkKey?: string | null;
   selectedWork?: ConsumerRepairSelectedWork | null;
 };
+
+function recordDirectOpenWorldBuildTiming(stage: string, startedAt: number): void {
+  if (!__DEV__) return;
+  console.info("[RikDirectOpenWorldBuild]", JSON.stringify({
+    stage,
+    elapsedMs: Date.now() - startedAt,
+  }));
+}
 
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
   return DANGEROUS_PATTERNS.some((pattern) => pattern.test(problemText));
@@ -664,21 +683,171 @@ export function buildConsumerRepairAiDraft(
   return finalizeDraft(genericDraft());
 }
 
-export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft): string {
-  return [
-    "Коротко:",
-    formatEstimateUserTextRu(draft.summaryRu),
-    "",
-    "Позиции:",
-    ...draft.items.map((item, index) => `${index + 1}. ${item.titleRu} - ${item.quantity} ${formatEstimateUnitLabel(item.unit)}`),
-    "",
-    "Что уточнить:",
-    ...draft.missingData.map((item) => `- ${item}`),
-    "",
-    "Следующий шаг:",
-    "Проверьте количество и нажмите «Утвердить заявку».",
-    "",
-    "Статус:",
-    "Черновик. Не отправлен.",
-  ].join("\n");
+/**
+ * Request-screen fast path for a prompt whose owner was already resolved as a
+ * supported open-world construction domain. The normal adapter deliberately
+ * probes catalog, passport and legacy expanded-complex owners before compiling
+ * a dynamic professional BOQ. Repeating those probes after the request router
+ * has made the ownership decision is both redundant and prohibitively slow on
+ * Hermes.
+ *
+ * This function does not introduce a second estimator. It invokes the same
+ * source-backed dynamic BOQ compiler and applies the same runtime policy,
+ * localization and telemetry contract as buildConsumerRepairAiDraft.
+ */
+export function buildDirectConsumerRepairOpenWorldAiDraft(
+  problemText: string,
+  options?: ConsumerRepairAiDraftOptions,
+): ConsumerRepairAiDraft {
+  const buildStartedAt = Date.now();
+  const text = problemText.trim();
+  const localContext = resolveRequestLocalContext(text, options);
+  const runtimePolicy = evaluateEstimateRuntimePolicy({
+    prompt: text,
+    selectedWorkKey: options?.selectedWorkKey,
+  });
+  recordDirectOpenWorldBuildTiming("POLICY_READY", buildStartedAt);
+  if (!runtimePolicy.estimate_generation_allowed) {
+    recordEstimateTelemetryEvent({
+      event_name: "kill_switch_triggered",
+      route: "/request",
+      platform: "unknown",
+      payload: {
+        blocked_reason: runtimePolicy.blocked_reason,
+        active_switches: runtimePolicy.active_switches,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+      },
+    });
+    return applyLocalContextWarnings(
+      safeTriageDraft(text, runtimePolicy.safe_message_ru ?? undefined),
+      localContext,
+    );
+  }
+  if (isExplicitDangerousDiyAttempt(text)) {
+    return applyLocalContextWarnings({
+      ...safeTriageDraft(text, CONSUMER_REPAIR_DANGEROUS_UI_COPY),
+      dangerousDiyBlocked: true,
+      safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
+    }, localContext);
+  }
+
+  const aiCountryCode = localContext
+    ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? "XX" : localContext.countryCode ?? "XX"
+    : "KG";
+  const aiCity = localContext
+    ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
+    : "Bishkek";
+  const directOwner = resolveDirectConsumerRepairOpenWorldOwner(text);
+  if (directOwner === "electrical") {
+    const compiled = buildCanonicalElectricalConsumerRepairAiDraft({
+      text,
+      countryCode: aiCountryCode,
+      city: aiCity,
+      currency: options?.currency ?? "KGS",
+      selectedWork: options?.selectedWork,
+    });
+    recordDirectOpenWorldBuildTiming("ELECTRICAL_CANONICAL_DRAFT_READY", buildStartedAt);
+    const contractDraft = draftHasProfessionalBoqSourceTrace(compiled)
+      ? applyProfessionalBoqRuntimeContract(compiled, { prompt: text })
+      : compiled;
+    const policyDraft = runtimePolicy.force_quantity_only_mode
+      ? forceQuantityOnlyDraft(contractDraft)
+      : contractDraft;
+    const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
+    recordEstimateTelemetryEvent({
+      event_name: "estimate_generated",
+      route: "/request",
+      platform: "unknown",
+      estimate_id: localizedDraft.repairType,
+      payload: {
+        item_count: localizedDraft.items.length,
+        repair_type: localizedDraft.repairType,
+        selected_work_key: localizedDraft.selectedWork?.selectedWorkKey ?? options?.selectedWorkKey ?? null,
+        force_quantity_only_mode: runtimePolicy.force_quantity_only_mode,
+        complex_engineering_request: runtimePolicy.complex_engineering_request,
+        direct_open_world_owner: true,
+        canonical_parameter_core: true,
+      },
+    });
+    return localizedDraft;
+  }
+  const initialPlan = directOwner
+    ? buildOwnedDomainEstimatorReasoningPlan({
+      text,
+      owner: directOwner,
+      currency: options?.currency ?? "KGS",
+    })
+    : null;
+  recordDirectOpenWorldBuildTiming("PLAN_READY", buildStartedAt);
+  const plan = initialPlan
+    ? buildRegulatedSafeEstimatePlan({
+      ...initialPlan,
+      formulas: resolveFormulaForEstimatorPlan(initialPlan),
+    })
+    : null;
+  recordDirectOpenWorldBuildTiming("FORMULAS_READY", buildStartedAt);
+  const boq = plan
+    ? expandOwnedDomainProfessionalBoq(compileDynamicProfessionalBoq(plan))
+    : null;
+  recordDirectOpenWorldBuildTiming("BOQ_READY", buildStartedAt);
+  const sourceBackedEstimate = plan
+    ? buildGlobalEstimateFromEstimatorKernel(
+      plan,
+      boq!,
+      {
+        text,
+        volume: plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? 1,
+        unit: plan.quantities.areaM2 != null
+          ? "sq_m"
+          : plan.quantities.lengthM != null
+            ? "linear_m"
+            : plan.quantities.count != null
+              ? "pcs"
+              : "set",
+        countryCode: aiCountryCode,
+        city: aiCity,
+        currency: options?.currency ?? "KGS",
+        language: "ru",
+        estimateDetailLevel: "professional_expanded",
+      },
+    )
+    : null;
+  recordDirectOpenWorldBuildTiming("GLOBAL_ESTIMATE_READY", buildStartedAt);
+  const compiled = sourceBackedEstimate
+    ? buildConsumerRepairAiDraftFromGlobalEstimate(
+      sourceBackedEstimate,
+      undefined,
+      options?.selectedWork ?? undefined,
+    )
+    : buildDynamicProfessionalBoqDraftFromPrompt({
+      prompt: text,
+      currency: options?.currency,
+    });
+  recordDirectOpenWorldBuildTiming("REQUEST_DRAFT_READY", buildStartedAt);
+  if (!compiled) return buildConsumerRepairAiDraft(problemText, options);
+
+  const contractDraft = draftHasProfessionalBoqSourceTrace(compiled)
+    ? applyProfessionalBoqRuntimeContract(compiled, { prompt: text })
+    : compiled;
+  recordDirectOpenWorldBuildTiming("RUNTIME_CONTRACT_READY", buildStartedAt);
+  const policyDraft = runtimePolicy.force_quantity_only_mode
+    ? forceQuantityOnlyDraft(contractDraft)
+    : contractDraft;
+  const localizedDraft = applyLocalContextWarnings(policyDraft, localContext);
+  recordDirectOpenWorldBuildTiming("LOCALIZED_READY", buildStartedAt);
+  recordEstimateTelemetryEvent({
+    event_name: "estimate_generated",
+    route: "/request",
+    platform: "unknown",
+    estimate_id: localizedDraft.repairType,
+    payload: {
+      item_count: localizedDraft.items.length,
+      repair_type: localizedDraft.repairType,
+      selected_work_key: localizedDraft.selectedWork?.selectedWorkKey ?? options?.selectedWorkKey ?? null,
+      force_quantity_only_mode: runtimePolicy.force_quantity_only_mode,
+      complex_engineering_request: runtimePolicy.complex_engineering_request,
+      direct_open_world_owner: true,
+    },
+  });
+  return localizedDraft;
 }

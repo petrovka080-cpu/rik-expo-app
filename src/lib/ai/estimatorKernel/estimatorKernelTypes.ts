@@ -41,6 +41,8 @@ export type EstimatorReasoningPlan = {
     volumeM3?: number;
     rawDimensions?: string[];
   };
+  canonicalParameters?: Record<string, number | string | boolean>;
+  calculationVersion?: string;
   formulas: {
     formulaId: string;
     inputs: Record<string, number>;
@@ -81,6 +83,7 @@ export type EstimatorOutcomeClassification =
 export type EstimatorOutcome = {
   classification: EstimatorOutcomeClassification;
   plan: EstimatorReasoningPlan | null;
+  boq: DynamicProfessionalBoq | null;
   parsableWorkDetected: boolean;
   regulatedWorkDetected: boolean;
   templateExactMatch: boolean;
@@ -110,6 +113,11 @@ export type DynamicProfessionalBoqRow = {
   normSourceTitle?: string;
   normVersion?: string;
   normReviewStatus?: string;
+  includedInEstimate?: boolean;
+  includedInProcurement?: boolean;
+  optional?: boolean;
+  editable?: boolean;
+  parameterBlockerIds?: readonly string[];
 };
 
 export type DynamicProfessionalBoq = {

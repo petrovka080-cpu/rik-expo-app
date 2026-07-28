@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { initializeConsumerRepairTransactionalDurableStorage } from "../../lib/consumerRequests";
+import { hydrateTransactionalConsumerRepairRequestStore } from "../../lib/consumerRequests/consumerRequestRepository";
 import {
   ConsumerRepairRequestScreenController,
   type ConsumerRepairRequestScreenProps,
@@ -16,7 +16,7 @@ async function runBoundedDurableHydration(): Promise<void> {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
     await Promise.race([
-      initializeConsumerRepairTransactionalDurableStorage(),
+      hydrateTransactionalConsumerRepairRequestStore(),
       new Promise<never>((_, reject) => {
         timeout = setTimeout(() => {
           reject(new Error("CONSUMER_REPAIR_DURABLE_HYDRATION_TIMEOUT"));

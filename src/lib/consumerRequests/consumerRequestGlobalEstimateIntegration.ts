@@ -7,7 +7,6 @@ import {
   buildStructuredEstimatePayload,
   buildStructuredEstimateRequestDraft,
 } from "../estimateStructuredPipeline";
-import { createConsumerRepairRequestDraft } from "./consumerRequestService";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairSelectedWork } from "./consumerRequestTypes";
 
 type ConsumerRepairAiDraftItem = ConsumerRepairAiDraft["items"][number];
@@ -148,6 +147,11 @@ export function createConsumerRepairDraftFromGlobalEstimate(input: {
   selectedWork?: ConsumerRepairSelectedWork | null;
 }): ConsumerRepairDraftBundle {
   const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(input.estimate, undefined, input.selectedWork ?? undefined);
+  // Keep the deterministic estimate-to-draft projection usable by headless
+  // compilers. Durable request persistence is an application boundary and may
+  // load React Native adapters, so resolve it only for this mutation entry point.
+  const { createConsumerRepairRequestDraft } =
+    require("./consumerRequestService") as typeof import("./consumerRequestService");
   return createConsumerRepairRequestDraft({
     consumerUserId: input.consumerUserId,
     problemText: input.originalText,

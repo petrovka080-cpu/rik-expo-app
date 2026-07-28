@@ -1,11 +1,8 @@
 import React from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import {
-  searchCatalogItemsForPicker,
-  type CatalogItemPickerItem,
-} from "../../lib/catalog/catalog.facade";
-import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 
 type Props = {
   visible: boolean;
@@ -82,6 +79,9 @@ export class CatalogItemPicker extends React.Component<Props, State> {
     const sequence = ++this.searchSequence;
     this.setState({ loading: true, error: null, lastSearchedQuery: query });
     try {
+      const { searchCatalogItemsForPicker } = await import(
+        "../../lib/catalog/catalogItemsService"
+      );
       const rows = await searchCatalogItemsForPicker(query, 40);
       if (sequence !== this.searchSequence) return;
       this.setState({ rows, loading: false });

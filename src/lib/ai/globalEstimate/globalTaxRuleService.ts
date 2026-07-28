@@ -1,4 +1,4 @@
-import { GLOBAL_TAX_RULES } from "./globalEstimateSeedData";
+import { GLOBAL_TAX_RULES } from "./globalTaxRules";
 import type { GlobalEstimateInput, GlobalLocaleContext, GlobalTaxResolution } from "./globalEstimateTypes";
 
 function taxScore(rule: (typeof GLOBAL_TAX_RULES)[number], locale: GlobalLocaleContext): number {

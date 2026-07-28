@@ -467,48 +467,236 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
 }
 
 function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
-  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
-  const points = Math.max(plan.quantities.count ?? 0, Math.ceil(area / 6), 10);
-  const outlets = Math.max(plan.quantities.count ?? 0, Math.ceil(points * 0.55), 10);
-  const switches = Math.max(2, Math.ceil(points * 0.45));
-  const cableLength = Math.round(area * 2.4 * 100) / 100;
-  const lightingCableLength = Math.round(area * 0.85 * 100) / 100;
-  const trunkLength = Math.round(area * 0.45 * 100) / 100;
-  const groups = Math.max(4, Math.ceil(points / 8));
-  return [
-    mepRow("labor", "electrical_survey", "обследование объекта и схема электрики", "set", 1, 7200),
-    mepRow("labor", "electrical_load_groups", "разбивка розеточных и осветительных групп", "set", 1, 6800),
-    mepRow("labor", "electrical_route_marking", "разметка электрических трасс кабеля, розеток и выключателей", "sq_m", area, 62),
-    mepRow("labor", "electrical_wall_scanning", "проверка скрытых коммуникаций перед штроблением", "sq_m", area, 34),
-    mepRow("labor", "electrical_dust_protection", "защита помещений от пыли перед электромонтажом", "sq_m", area, 28),
-    mepRow("materials", "electrical_power_cable", "кабельные линии ВВГнг-LS / аналог для розеточных линий", "linear_m", cableLength, 118, "electrical_cable_power"),
-    mepRow("materials", "electrical_lighting_cable", "кабель для осветительных и выключательных линий", "linear_m", lightingCableLength, 82, "electrical_cable_lighting"),
-    mepRow("materials", "electrical_corrugation_channel", "гофра / кабель-канал для прокладки кабеля", "linear_m", Math.round((cableLength + lightingCableLength) * 0.65 * 100) / 100, 46, "electrical_corrugation"),
-    mepRow("materials", "electrical_socket_boxes", "подрозетники", "pcs", outlets + switches, 72, "socket_boxes"),
-    mepRow("materials", "electrical_outlets", "розетки", "pcs", outlets, 420, "electrical_outlets"),
-    mepRow("materials", "electrical_switches", "выключатели", "pcs", switches, 360, "electrical_switches"),
-    mepRow("materials", "electrical_junction_boxes", "распределительные коробки", "pcs", Math.max(3, groups), 260, "junction_boxes"),
-    mepRow("materials", "electrical_panel", "щит и автоматика / квартирный щит", "set", 1, 42000, "electrical_panel"),
-    mepRow("materials", "electrical_breakers", "автоматы, УЗО / дифзащита по группам", "pcs", groups + 2, 1850, "electrical_breakers"),
-    mepRow("materials", "electrical_ground_bus", "шина PE/N и маркировка групп", "set", 1, 3800, "electrical_panel_accessories"),
-    mepRow("materials", "electrical_fasteners", "крепеж кабеля, клипсы и расходники электромонтажа", "set", 1, Math.round(area * 85), "electrical_fasteners"),
-    mepRow("labor", "electrical_chasing_or_channel", "штробление или монтаж кабель-канала по трассам", "linear_m", trunkLength, 260),
-    mepRow("labor", "electrical_cable_laying", "прокладка кабеля и кабельных линий", "linear_m", cableLength + lightingCableLength, 145),
-    mepRow("labor", "electrical_socket_box_install", "монтаж подрозетников", "pcs", outlets + switches, 320),
-    mepRow("labor", "electrical_junction_box_install", "монтаж распределительных коробок", "pcs", Math.max(3, groups), 520),
-    mepRow("labor", "electrical_panel_mount", "монтаж и расключение электрического щита", "set", 1, 28000),
-    mepRow("labor", "electrical_outlet_install", "монтаж розеток", "pcs", outlets, 620),
-    mepRow("labor", "electrical_switch_install", "монтаж выключателей", "pcs", switches, 580),
-    mepRow("labor", "electrical_line_continuity", "прозвонка линий и проверка цепей", "set", 1, 6800),
-    mepRow("labor", "electrical_insulation_test", "проверка сопротивления изоляции", "set", 1, 9200),
-    mepRow("labor", "electrical_group_labeling", "маркировка групп в щите и на линиях", "set", 1, 4200),
-    mepRow("labor", "electrical_chase_repair_warning", "заделка штроб warning: объем зависит от отделки", "linear_m", trunkLength, 190),
-    mepRow("equipment", "electrical_chaser", "штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(area / 90)), 6800),
-    mepRow("equipment", "electrical_testing_tools", "тестер, мегаомметр и измерительный инструмент", "set", 1, 5200),
-    mepRow("delivery", "electrical_material_delivery", "доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(area / 140)), 5200),
-    mepRow("delivery", "electrical_waste_removal", "вынос и вывоз мусора после штробления", "trip", Math.max(1, Math.ceil(area / 160)), 3800),
-    mepRow("materials", "electrical_reserve", "резерв кабеля и электроустановочных изделий", "set", 1, Math.round((cableLength + lightingCableLength) * 12), "electrical_reserve"),
-  ];
+  const parameters = plan.canonicalParameters ?? {};
+  const numberParameter = (key: string, fallback = 0): number => {
+    const value = parameters[key];
+    return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+  };
+  const booleanParameter = (key: string, fallback: boolean): boolean => {
+    const value = parameters[key];
+    return typeof value === "boolean" ? value : fallback;
+  };
+  const stringParameter = (key: string, fallback: string): string => {
+    const value = parameters[key];
+    return typeof value === "string" && value.trim() ? value : fallback;
+  };
+  const roundQuantity = (value: number): number => Math.round(value * 1000) / 1000;
+  const area = numberParameter("area_m2");
+  const routeLength = numberParameter("route_length_m");
+  const outlets = Math.max(0, Math.round(numberParameter("outlet_count")));
+  const switches = Math.max(0, Math.round(numberParameter("switch_count")));
+  const lightingPoints = Math.max(0, Math.round(numberParameter("lighting_point_count")));
+  const totalPoints = outlets + switches + lightingPoints;
+  const lines = Math.max(1, Math.round(numberParameter("line_count", 1)));
+  const groups = Math.max(1, Math.round(numberParameter("group_count", 1)));
+  const reserveFactor = Math.max(1, numberParameter("cable_reserve_factor", 1));
+  const totalCableLength = roundQuantity(routeLength * lines * reserveFactor);
+  const powerShare = totalPoints > 0 ? outlets / totalPoints : 1;
+  const powerCableLength = roundQuantity(totalCableLength * powerShare);
+  const lightingCableLength = roundQuantity(totalCableLength - powerCableLength);
+  const workScopeType = stringParameter("work_scope_type", "unspecified");
+  const estimatedLoadKw = numberParameter("estimated_load_kw");
+  const wiringMethod = stringParameter("wiring_method", "unspecified");
+  const containmentType = stringParameter("containment_type", "unspecified");
+  const wallMaterial = stringParameter("wall_material", "unspecified");
+  const cableType = stringParameter("cable_type", "тип по проекту");
+  const cableSection = numberParameter("cable_section_mm2");
+  const phaseCount = Math.max(1, Math.round(numberParameter("phase_count", 1)));
+  const panelIncluded = booleanParameter("panel_included", true);
+  const protectiveDevicesIncluded = booleanParameter("protective_devices_included", true);
+  const groundingIncluded = booleanParameter("grounding_included", true);
+  const demolitionIncluded = booleanParameter("demolition_included", false);
+  const installationHeightM = numberParameter("installation_height_m");
+  const accessCondition = stringParameter("access_condition", "unspecified");
+  const containmentUnitPrice = containmentType === "tray"
+    ? 290
+    : containmentType === "cable_channel"
+      ? 185
+      : containmentType === "conduit"
+        ? 220
+        : 46;
+  const containmentLabel = containmentType === "tray"
+    ? "Кабельный лоток по трассе"
+    : containmentType === "cable_channel"
+      ? "Кабель-канал по трассе"
+      : containmentType === "conduit"
+        ? "Жёсткая труба по трассе"
+        : containmentType === "corrugation"
+          ? "Гофрированная труба по трассе"
+          : "Система прокладки кабеля: тип требует уточнения";
+  const chasingUnitPrice = wiringMethod === "open"
+    ? 145
+    : wallMaterial === "concrete"
+      ? 340
+      : wallMaterial === "drywall"
+        ? 175
+        : 260;
+  const cableLabel = cableSection > 0
+    ? `${cableType}, сечение ${cableSection} мм²`
+    : `${cableType}, сечение требует уточнения`;
+  const rows: DynamicProfessionalBoqRow[] = [];
+  const push = (
+    item: DynamicProfessionalBoqRow,
+    quantityFormula: string,
+    sourceParameterIds: readonly string[],
+  ) => {
+    rows.push({
+      ...item,
+      formulaId: `electrical-canonical:${item.code}:v1`,
+      quantityFormula,
+      calculationTrace: [
+        `calculationVersion=${plan.calculationVersion ?? "electrical-canonical:v1"}`,
+        `parameters=${sourceParameterIds.join(",")}`,
+        `formula=${quantityFormula}`,
+        `result=${item.quantity}`,
+        `unit=${item.unit}`,
+      ].join("; "),
+    });
+  };
+  const scopeLabel = workScopeType === "new_installation"
+    ? "новая электропроводка"
+    : workScopeType === "partial_replacement"
+      ? "частичная замена электропроводки"
+      : workScopeType === "extension"
+        ? "расширение существующей электросети"
+        : "вид работ требует уточнения";
+  push(
+    mepRow(
+      "labor",
+      "electrical_survey",
+      `обследование объекта и схема электрики: ${scopeLabel}`,
+      "set",
+      1,
+      7200,
+    ),
+    "1 объект",
+    ["work_scope_type"],
+  );
+  push(mepRow("labor", "electrical_load_groups", "разбивка розеточных и осветительных групп", "set", 1, 6800), "1 схема групп", ["group_count"]);
+  if (area > 0) {
+    push(mepRow("labor", "electrical_route_marking", "разметка электрических трасс, розеток, выключателей и освещения", "sq_m", area, 62), "area_m2", ["area_m2"]);
+    push(mepRow("labor", "electrical_wall_scanning", "проверка скрытых коммуникаций перед прокладкой", "sq_m", area, 34), "area_m2", ["area_m2", "wall_material"]);
+    push(mepRow("labor", "electrical_dust_protection", "защита помещений перед электромонтажом", "sq_m", area, 28), "area_m2", ["area_m2"]);
+  }
+  if (routeLength > 0) {
+    if (powerCableLength > 0) {
+      push(mepRow("materials", "electrical_power_cable", `Кабель розеточных линий: ${cableLabel}`, "linear_m", powerCableLength, 118, "electrical_cable_power"), "route_length_m × line_count × cable_reserve_factor × outlet_count / electrical_points_total", ["route_length_m", "line_count", "cable_reserve_factor", "outlet_count", "electrical_points_total", "cable_type", "cable_section_mm2"]);
+    }
+    if (lightingCableLength > 0) {
+      push(mepRow("materials", "electrical_lighting_cable", `Кабель линий освещения и выключателей: ${cableLabel}`, "linear_m", lightingCableLength, 82, "electrical_cable_lighting"), "route_length_m × line_count × cable_reserve_factor × (switch_count + lighting_point_count) / electrical_points_total", ["route_length_m", "line_count", "cable_reserve_factor", "switch_count", "lighting_point_count", "electrical_points_total", "cable_type", "cable_section_mm2"]);
+    }
+    push(mepRow("materials", "electrical_corrugation_channel", containmentLabel, "linear_m", routeLength, containmentUnitPrice, "electrical_containment"), "route_length_m", ["route_length_m", "wiring_method", "containment_type"]);
+    push(mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice), "route_length_m", ["route_length_m", "wiring_method", "containment_type", "wall_material"]);
+    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабельных линий", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
+  } else {
+    push(
+      {
+        ...mepRow(
+          "materials",
+          "electrical_cable_parameters_required",
+          "Кабель: длина трассы, тип и сечение требуют уточнения",
+          "linear_m",
+          0,
+          0,
+          "electrical_cable_pending_parameters",
+        ),
+        sourcePolicy: "manual_review",
+        includedInEstimate: false,
+        includedInProcurement: false,
+        optional: true,
+        editable: true,
+        parameterBlockerIds: [
+          "route_length_m",
+          "cable_type",
+          "cable_section_mm2",
+          "line_count",
+          "cable_reserve_factor",
+        ],
+      },
+      "not_calculated_until(route_length_m, cable_type, cable_section_mm2)",
+      [
+        "route_length_m",
+        "cable_type",
+        "cable_section_mm2",
+        "line_count",
+        "cable_reserve_factor",
+      ],
+    );
+  }
+  if (outlets + switches > 0) {
+    push(mepRow("materials", "electrical_socket_boxes", "Подрозетники", "pcs", outlets + switches, 72, "socket_boxes"), "outlet_count + switch_count", ["outlet_count", "switch_count"]);
+    push(mepRow("labor", "electrical_socket_box_install", "Монтаж подрозетников", "pcs", outlets + switches, 320), "outlet_count + switch_count", ["outlet_count", "switch_count"]);
+  }
+  if (outlets > 0) {
+    push(mepRow("materials", "electrical_outlets", "Розетки", "pcs", outlets, 420, "electrical_outlets"), "outlet_count", ["outlet_count"]);
+    push(mepRow("labor", "electrical_outlet_install", "Монтаж розеток", "pcs", outlets, 620), "outlet_count", ["outlet_count"]);
+  }
+  if (switches > 0) {
+    push(mepRow("materials", "electrical_switches", "Выключатели", "pcs", switches, 360, "electrical_switches"), "switch_count", ["switch_count"]);
+    push(mepRow("labor", "electrical_switch_install", "Монтаж выключателей", "pcs", switches, 580), "switch_count", ["switch_count"]);
+  }
+  if (lightingPoints > 0) {
+    push(mepRow("materials", "electrical_lighting_points", "Комплектующие точек освещения и выводов", "pcs", lightingPoints, 350, "electrical_lighting_points"), "lighting_point_count", ["lighting_point_count"]);
+    push(mepRow("labor", "electrical_lighting_point_install", "Монтаж точек освещения и выводов", "pcs", lightingPoints, 640), "lighting_point_count", ["lighting_point_count"]);
+  }
+  push(mepRow("materials", "electrical_junction_boxes", "Распределительные коробки", "pcs", groups, 260, "junction_boxes"), "group_count", ["group_count"]);
+  if (panelIncluded) {
+    const loadLabel = estimatedLoadKw > 0
+      ? `, расчётная нагрузка ${estimatedLoadKw} кВт`
+      : ", нагрузка требует уточнения";
+    push(mepRow("materials", "electrical_panel", `${phaseCount === 3 ? "Трёхфазный электрический щит" : "Однофазный электрический щит"}${loadLabel}`, "set", 1, phaseCount === 3 ? 62000 : 42000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw"]);
+    push(mepRow("labor", "electrical_panel_mount", "Монтаж и расключение электрического щита", "set", 1, phaseCount === 3 ? 36000 : 28000), "panel_included ? 1 : 0", ["panel_included", "phase_count"]);
+  }
+  if (protectiveDevicesIncluded) {
+    const protectiveDeviceCount = estimatedLoadKw > 0
+      ? Math.max(groups + 2, Math.ceil(estimatedLoadKw / 3.5) + 1)
+      : groups + 2;
+    push(mepRow("materials", "electrical_breakers", "Автоматы, УЗО / дифзащита по группам и нагрузке", "pcs", protectiveDeviceCount, 1850, "electrical_breakers"), "max(group_count + 2, ceil(estimated_load_kw / 3.5) + 1)", ["group_count", "protective_devices_included", "phase_count", "estimated_load_kw"]);
+  }
+  if (groundingIncluded) {
+    push(mepRow("materials", "electrical_ground_bus", "Шина PE/N и комплект заземления", "set", 1, 3800, "electrical_panel_accessories"), "grounding_included ? 1 : 0", ["grounding_included"]);
+    push(mepRow("labor", "electrical_grounding_test", "Проверка заземления и непрерывности защитного проводника", "set", 1, 6200), "grounding_included ? 1 : 0", ["grounding_included"]);
+  }
+  if (demolitionIncluded && routeLength > 0) {
+    push(mepRow("labor", "electrical_demolition", "Демонтаж существующей проводки", "linear_m", routeLength, 125), "demolition_included ? route_length_m : 0", ["demolition_included", "route_length_m"]);
+    push(mepRow("delivery", "electrical_demolition_waste", "Вывоз демонтированной проводки и мусора", "trip", Math.max(1, Math.ceil(routeLength / 200)), 3800), "ceil(route_length_m / 200)", ["demolition_included", "route_length_m"]);
+  }
+  push(mepRow("labor", "electrical_junction_box_install", "Монтаж распределительных коробок", "pcs", groups, 520), "group_count", ["group_count"]);
+  push(mepRow("labor", "electrical_line_continuity", "Прозвонка линий и проверка цепей", "set", 1, 6800), "1 комплекс", ["line_count"]);
+  push(mepRow("labor", "electrical_insulation_test", "Проверка сопротивления изоляции", "set", 1, 9200), "1 комплекс", ["line_count"]);
+  push(mepRow("labor", "electrical_group_labeling", "Маркировка групп в щите и на линиях", "set", 1, 4200), "1 комплект", ["group_count"]);
+  if (wiringMethod !== "open") {
+    push(mepRow("equipment", "electrical_chaser", "Штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(Math.max(area, routeLength) / 90)), 6800), "max(1, ceil(max(area_m2, route_length_m) / 90))", ["area_m2", "route_length_m", "wiring_method", "wall_material"]);
+  }
+  if (
+    installationHeightM > 2.5 ||
+    accessCondition === "restricted" ||
+    accessCondition === "height_equipment"
+  ) {
+    const accessShifts = Math.max(
+      1,
+      Math.ceil(Math.max(area, routeLength, 1) / (
+        accessCondition === "restricted" ? 60 : 120
+      )),
+    );
+    push(
+      mepRow(
+        "equipment",
+        "electrical_access_equipment",
+        accessCondition === "height_equipment" || installationHeightM > 2.5
+          ? `Вышка / подмости для монтажа на высоте ${installationHeightM || "по месту"} м`
+          : "Оборудование для работ в стеснённых условиях",
+        "shift",
+        accessShifts,
+        accessCondition === "restricted" ? 12500 : 18000,
+      ),
+      "max(1, ceil(max(area_m2, route_length_m) / access_productivity))",
+      ["installation_height_m", "access_condition", "area_m2", "route_length_m"],
+    );
+  }
+  push(mepRow("equipment", "electrical_testing_tools", "Тестер и измеритель сопротивления изоляции (мегаомметр)", "set", 1, 5200), "1 комплект", []);
+  push(mepRow("delivery", "electrical_material_delivery", "Доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(Math.max(area, routeLength) / 140)), 5200), "max(1, ceil(max(area_m2, route_length_m) / 140))", ["area_m2", "route_length_m"]);
+  return rows;
 }
 
 function buildLowVoltageCablingRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
@@ -1205,6 +1393,9 @@ function ensureRequiredPlanRows(
 }
 
 function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
+  if (plan.workKey === "electrical_area_installation") {
+    return rows;
+  }
   const result = [...rows];
   const genericRowContext = visibleGenericRowContext(plan);
   let index = 0;
@@ -1230,17 +1421,21 @@ function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]
 
 export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): DynamicBoqValidation {
   const failures: string[] = [];
-  const minimum = minimumRows(boq.plan.boqPlan.complexity);
+  const minimum = boq.plan.workKey === "electrical_area_installation"
+    ? 1
+    : minimumRows(boq.plan.boqPlan.complexity);
   if (boq.rows.length < minimum) failures.push(`row_depth:${boq.rows.length}/${minimum}`);
   const requiredRows: {
     sectionType: DynamicProfessionalBoqRow["sectionType"];
     names: string[];
-  }[] = [
-    { sectionType: "materials", names: boq.plan.boqPlan.requiredMaterials },
-    { sectionType: "labor", names: boq.plan.boqPlan.requiredLabor },
-    { sectionType: "equipment", names: boq.plan.boqPlan.requiredEquipmentOrWarnings },
-    { sectionType: "delivery", names: boq.plan.boqPlan.requiredLogisticsOrWarnings },
-  ];
+  }[] = boq.plan.workKey === "electrical_area_installation"
+    ? []
+    : [
+        { sectionType: "materials", names: boq.plan.boqPlan.requiredMaterials },
+        { sectionType: "labor", names: boq.plan.boqPlan.requiredLabor },
+        { sectionType: "equipment", names: boq.plan.boqPlan.requiredEquipmentOrWarnings },
+        { sectionType: "delivery", names: boq.plan.boqPlan.requiredLogisticsOrWarnings },
+      ];
   for (const requirement of requiredRows) {
     requirement.names.forEach((requiredName, index) => {
       const found = boq.rows.some((item) =>
@@ -1254,11 +1449,15 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
   }
   for (const rowItem of boq.rows) {
     const normalized = rowItem.name.trim().toLocaleLowerCase("ru-RU");
+    const isBlockedConditionalRow =
+      rowItem.includedInEstimate === false &&
+      rowItem.sourcePolicy === "manual_review" &&
+      Boolean(rowItem.parameterBlockerIds?.length);
     if (forbiddenStandalone.has(normalized)) failures.push(`weak_generic:${rowItem.code}`);
     const visibleFailures = visibleEstimateLabelViolations(rowItem.name);
     if (visibleFailures.length > 0) failures.push(`visible_label_policy:${rowItem.code}:${visibleFailures.join("|")}`);
-    if (!Number.isFinite(rowItem.quantity) || rowItem.quantity <= 0) failures.push(`quantity_invalid:${rowItem.code}`);
-    if (!Number.isFinite(rowItem.unitPrice) || rowItem.unitPrice <= 0) failures.push(`unit_price_invalid:${rowItem.code}`);
+    if (!Number.isFinite(rowItem.quantity) || (rowItem.quantity <= 0 && !isBlockedConditionalRow)) failures.push(`quantity_invalid:${rowItem.code}`);
+    if (!Number.isFinite(rowItem.unitPrice) || (rowItem.unitPrice <= 0 && !isBlockedConditionalRow)) failures.push(`unit_price_invalid:${rowItem.code}`);
     if (rowItem.sectionType === "materials" && !rowItem.materialKey) failures.push(`material_key_missing:${rowItem.code}`);
   }
   return { passed: failures.length === 0, failures, rowCount: boq.rows.length, minimumRows: minimum };
@@ -1284,7 +1483,12 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const rows = ensureRequiredPlanRows(plan, expandInfrastructureBoqRows(plan, baseRows));
+  const expandedRows = plan.workKey === "electrical_area_installation"
+    ? baseRows
+    : expandInfrastructureBoqRows(plan, baseRows);
+  const rows = plan.workKey === "electrical_area_installation"
+    ? expandedRows
+    : ensureRequiredPlanRows(plan, expandedRows);
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",
     plan,

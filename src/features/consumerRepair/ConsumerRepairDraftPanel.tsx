@@ -91,6 +91,13 @@ export function ConsumerRepairDraftPanel({
   ) ?? null;
   const blocksActiveEstimate =
     estimateDraftSession != null &&
+    registeredWorkProfile != null &&
+    bundle?.canonicalParameterSession == null &&
+    // A source-backed structured payload already owns a compiled BOQ. The
+    // legacy DraftSession created for compatibility has no bound scope and can
+    // therefore remain PARAMETERS_REQUIRED; it must not hide those compiled
+    // rows, units, or PDF actions. Real uncompiled sessions still block below.
+    bundle?.structuredEstimatePayload == null &&
     estimateDraftSession.status !== "REVIEW" &&
     (
       estimateDraftSession.workIntent != null ||
@@ -164,6 +171,7 @@ export function ConsumerRepairDraftPanel({
           revisionState={revisionState}
           currentRevision={currentRevision}
           latestDiff={latestDiff}
+          canonicalParameterSession={bundle.canonicalParameterSession}
           showPdfAction={showPdfAction}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}

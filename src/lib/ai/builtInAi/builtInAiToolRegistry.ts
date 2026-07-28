@@ -9,6 +9,7 @@ import {
   buildProfessionalExpandedGlobalEstimate,
   isProfessionalExpandedWorkSupported,
 } from "../estimateCompiler/expandedEstimateCompiler";
+import { isRouteFastPathProfessionalExpandedWorkSupported } from "../estimateCompiler/professionalEstimateRouteCapabilities";
 import {
   calculateGlobalConstructionEstimateSync,
   formatGlobalEstimateAnswer,
@@ -136,12 +137,29 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   safeMessageRu?: string;
   worldClassification?: string;
 } {
+  const startedAt = Date.now();
+  const recordStage = (stage: string) => {
+    if (
+      typeof navigator === "undefined" ||
+      navigator.product !== "ReactNative"
+    ) {
+      return;
+    }
+    console.info(
+      `[RikWarmDeepLink] AI_ESTIMATE_TOOL_STAGE ${JSON.stringify({
+        stage,
+        elapsedMs: Date.now() - startedAt,
+      })}`,
+    );
+  };
   const estimateRoute = routeUniversalEstimateIntent(input.text);
+  recordStage("route_resolved");
   const baseInput = buildGlobalEstimateInputFromRoute(estimateRoute, {
     countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
     city: estimateRoute.location?.city ?? input.cityOrRegion ?? "Bishkek",
     explicitWorkKey: input.explicitWorkKey,
   });
+  recordStage("input_built");
   if (input.explicitWorkKey && isProfessionalExpandedWorkSupported(input.explicitWorkKey)) {
     return {
       estimate: buildProfessionalExpandedGlobalEstimate({
@@ -155,12 +173,6 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
       worldClassification: "EXPLICIT_WORK_KEY_PROFESSIONAL_EXPANDED",
     };
   }
-  const world = runWorldConstructionEstimateEngine({
-    ...baseInput,
-    text: input.text,
-    countryCode: baseInput.countryCode,
-    city: baseInput.city,
-  });
   if (!input.explicitWorkKey && isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
@@ -171,19 +183,33 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
       worldClassification: "AMBIGUOUS_WATERPROOFING_SURFACE",
     };
   }
-  if (shouldPreferWorldPrimitiveEstimate(input.text, world) && world.estimate) {
+  const mayPreferWorldPrimitive =
+    /\b(?:canopies?|low[_\s-]?voltage)\b/i.test(input.text);
+  const routedProfessionalWorkKey =
+    estimateRoute.confidence === "high" &&
+    estimateRoute.resolvedWorkKey &&
+    estimateRoute.resolvedWorkKey !== "other_construction_work" &&
+    isRouteFastPathProfessionalExpandedWorkSupported(estimateRoute.resolvedWorkKey)
+      ? estimateRoute.resolvedWorkKey
+      : null;
+  if (routedProfessionalWorkKey && !mayPreferWorldPrimitive) {
+    recordStage("routed_professional_fast_path_started");
+    const estimate = buildProfessionalExpandedGlobalEstimate({
+      workKey: routedProfessionalWorkKey,
+      estimateInput: {
+        ...baseInput,
+        text: input.text,
+        estimateDetailLevel: "professional_expanded",
+      },
+    });
+    recordStage("routed_professional_fast_path");
     return {
-      estimate: world.estimate,
-      worldClassification: world.interpretation.classification,
+      estimate,
+      worldClassification: "ROUTED_PROFESSIONAL_EXPANDED",
     };
   }
   const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
-  if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
-    return {
-      estimate: legacyEstimate,
-      worldClassification: "UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ",
-    };
-  }
+  recordStage("global_estimate_complete");
   const socketInstallIsExplicit = /(?:\u0440\u043e\u0437\u0435\u0442|socket|outlet)/i.test(input.text);
   const genericLegacyWorkKey =
     legacyEstimate.work.workKey === "electrical_basic" ||
@@ -195,6 +221,32 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   const routeKnownWork =
     Boolean(estimateRoute.resolvedWorkKey) &&
     estimateRoute.resolvedWorkKey !== "other_construction_work";
+  if (legacyKnownWork && routeKnownWork && !mayPreferWorldPrimitive) {
+    recordStage("known_route_fast_path");
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "LEGACY_KNOWN_GLOBAL_ESTIMATE_FALLBACK",
+    };
+  }
+  const world = runWorldConstructionEstimateEngine({
+    ...baseInput,
+    text: input.text,
+    countryCode: baseInput.countryCode,
+    city: baseInput.city,
+  });
+  recordStage("world_engine_complete");
+  if (shouldPreferWorldPrimitiveEstimate(input.text, world) && world.estimate) {
+    return {
+      estimate: world.estimate,
+      worldClassification: world.interpretation.classification,
+    };
+  }
+  if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ",
+    };
+  }
   if (legacyKnownWork && routeKnownWork) {
     return {
       estimate: legacyEstimate,

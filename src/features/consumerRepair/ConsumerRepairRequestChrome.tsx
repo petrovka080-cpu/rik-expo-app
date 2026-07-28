@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, type TextInput } from "react-native";
+import { Pressable, Text, View, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
@@ -278,7 +278,8 @@ export function ConsumerRepairRequestContent({
   const prioritizeDraftDecision =
     draftDecisionStatus === "SCOPE_REQUIRED" ||
     draftDecisionStatus === "PARAMETERS_REQUIRED" ||
-    draftDecisionStatus === "LEGACY_REVIEW_REQUIRED";
+    draftDecisionStatus === "LEGACY_REVIEW_REQUIRED" ||
+    Boolean(bundle?.structuredEstimatePayload);
   const statusNode = statusMessage
     ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text>
     : null;
@@ -315,6 +316,21 @@ export function ConsumerRepairRequestContent({
 
   return (
     <>
+      {bundle?.draft.problemText?.trim() ? (
+        <View
+          accessibilityLabel={`Текущий запрос: ${bundle.draft.problemText.trim()}`}
+          style={styles.launchPrompt}
+          testID="request-estimate-current-launch-prompt"
+        >
+          <Text style={styles.launchPromptLabel}>Текущий запрос</Text>
+          <Text
+            style={styles.launchPromptText}
+            testID="request-estimate-current-launch-prompt-text"
+          >
+            {bundle.draft.problemText.trim()}
+          </Text>
+        </View>
+      ) : null}
       {prioritizeDraftDecision ? statusNode : null}
       {prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairRequestFormCard

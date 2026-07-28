@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import {
   aiEstimateCanonicalUnitForParameter,
@@ -11,12 +11,13 @@ import {
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
+import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import { buildCanonicalParameterCards } from "../../lib/estimate/runtime/buildCanonicalParameterCards";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
-import { buildAiEstimateRuntimeViewModel } from "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
@@ -24,7 +25,7 @@ import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 import { pickFileAny } from "../../lib/filePick";
-import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt";
+import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 
 type ItemEditorHandlers = {
   onDecrease: (itemId: string) => void;
@@ -55,6 +56,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   revisionState: EstimateDraftRevisionState | null;
   currentRevision: EstimateDraftRevision | null;
   latestDiff: EstimateDraftRevisionDiff | null;
+  canonicalParameterSession?: CanonicalParameterSession | null;
   showPdfAction?: boolean;
   onMakePdf?: () => void;
   onOpenProcurement?: () => void;
@@ -75,9 +77,25 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
   return many;
 }
 
+function buildRuntimeViewModel(
+  input: Parameters<
+    typeof import("../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel")
+      .buildAiEstimateRuntimeViewModel
+  >[0],
+) {
+  const { buildAiEstimateRuntimeViewModel } = require(
+    "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel"
+  ) as typeof import("../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel");
+  return buildAiEstimateRuntimeViewModel(input);
+}
+
 function missingParameterCount(revision: EstimateDraftRevision | null, fallback: number): number {
   if (!revision) return fallback;
-  const runtime = buildAiEstimateRuntimeViewModel({ revision, includeMissing: true, maxTraceRows: 0 });
+  const runtime = buildRuntimeViewModel({
+    revision,
+    includeMissing: true,
+    maxTraceRows: 0,
+  });
   return runtime.completeness?.missingRequirements.length ?? revision.missingInputs.length;
 }
 
@@ -157,8 +175,14 @@ function artifactStatus(revision: EstimateDraftRevision | null): string | null {
 export function buildConsumerRepairProgressiveParameterCards(input: {
   revision: EstimateDraftRevision | null;
   viewModel: RequestEstimateViewModel;
+  canonicalParameterSession?: CanonicalParameterSession | null;
 }): AiEstimateParameterCard[] {
-  const runtime = buildAiEstimateRuntimeViewModel({
+  const canonicalCards = buildCanonicalParameterCards({
+    session: input.canonicalParameterSession ?? null,
+    revision: input.revision,
+  });
+  if (canonicalCards.length > 0) return canonicalCards;
+  const runtime = buildRuntimeViewModel({
     revision: input.revision,
     includeMissing: true,
     maxTraceRows: 0,
@@ -189,6 +213,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       viewModel,
       currentRevision,
       latestDiff,
+      canonicalParameterSession,
       showPdfAction,
       onMakePdf,
       onOpenProcurement,
@@ -212,13 +237,33 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onApplyParamBatch,
     } = this.props;
     const { parametersOpen, positionsOpen } = this.state;
-    const count = missingParameterCount(currentRevision, viewModel.assumptionRows.length);
+    const count = canonicalParameterSession
+      ? canonicalParameterSession.blockingMissingParameterIds.length +
+        canonicalParameterSession.contractMissingParameterIds.length
+      : missingParameterCount(currentRevision, viewModel.assumptionRows.length);
+    const visibleMissingParameterSummary = canonicalParameterSession?.parameters
+      .filter((parameter) => parameter.source === "MISSING")
+      .slice(0, 5)
+      .map((parameter) =>
+        parameter.unit
+          ? `${parameter.label}, ${parameter.unit}`
+          : parameter.label
+      )
+      .join(" · ") ?? "";
     const paramEditorEnabled = Boolean(onApplyParamBatch || (onApplyParamPatch && onOpenParamEditor && onSaveParamEdit && onCancelParamEdit));
     const artifactLabel = artifactStatus(currentRevision);
 
     return (
     <View style={styles.wrap}>
       <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
+      {visibleMissingParameterSummary ? (
+        <Text
+          style={styles.parameterMeta}
+          testID="request-estimate-missing-parameter-summary"
+        >
+          Уточнить: {visibleMissingParameterSummary}
+        </Text>
+      ) : null}
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable
           accessibilityRole="button"
@@ -233,10 +278,16 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           accessibilityRole="button"
           onPress={this.togglePositions}
           style={styles.actionButton}
-          testID="request-estimate-positions-toggle"
+          testID={
+            Platform.OS === "android"
+              ? "request-estimate-items-editor"
+              : "request-estimate-positions-toggle"
+          }
         >
           <Ionicons name={positionsOpen ? "chevron-up" : "list-outline"} size={16} color="#334155" />
-          <Text style={styles.actionButtonText}>{positionsOpen ? "Скрыть позиции" : "Показать позиции"}</Text>
+          <Text style={styles.actionButtonText}>
+            {positionsOpen ? "Скрыть позиции" : "Показать позиции"}
+          </Text>
         </Pressable>
         {showPdfAction && onMakePdf ? (
           <Pressable
@@ -268,6 +319,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         <ParameterDisclosurePanel
           viewModel={viewModel}
           revision={currentRevision}
+          canonicalParameterSession={canonicalParameterSession}
           latestDiff={latestDiff}
           artifactLabel={artifactLabel}
           paramEditorEnabled={paramEditorEnabled}
@@ -304,6 +356,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 type ParameterDisclosurePanelProps = {
   viewModel: RequestEstimateViewModel;
   revision: EstimateDraftRevision | null;
+  canonicalParameterSession?: CanonicalParameterSession | null;
   latestDiff: EstimateDraftRevisionDiff | null;
   artifactLabel: string | null;
   paramEditorEnabled: boolean;
@@ -424,6 +477,8 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
     if (
       prevProps.revision?.revisionId !== this.props.revision?.revisionId ||
+      prevProps.canonicalParameterSession?.fingerprint !==
+        this.props.canonicalParameterSession?.fingerprint ||
       prevProps.viewModel !== this.props.viewModel
     ) {
       this.syncDraftFromProps();
@@ -446,6 +501,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     return buildConsumerRepairProgressiveParameterCards({
       revision: this.props.revision,
       viewModel: this.props.viewModel,
+      canonicalParameterSession: this.props.canonicalParameterSession,
     });
   }
 
@@ -595,22 +651,39 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const { showAllMissing, filledOpen, derivedOpen } = this.state;
     const cards = this.buildCards();
     const missingCards = cards.filter((card) => card.missing);
-    const filledCards = cards.filter((card) => !card.missing && card.source !== "formula_derived");
+    const assumptionCards = this.props.canonicalParameterSession
+      ? cards.filter((card) => !card.missing && card.source === "catalog_default")
+      : [];
+    const filledCards = cards.filter((card) =>
+      !card.missing &&
+      card.source !== "formula_derived" &&
+      !assumptionCards.includes(card)
+    );
     const derivedCards = cards.filter((card) => card.source === "formula_derived");
     const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
     const clarification = this.props.revision?.professionalClarification;
+    const canonicalSession = this.props.canonicalParameterSession;
+    const blockingMissingCount = canonicalSession?.blockingMissingParameterIds.length ?? 0;
+    const contractMissingCount = canonicalSession?.contractMissingParameterIds.length ?? missingCards.length;
 
     return (
     <View style={styles.parameterPanel} testID="request-estimate-parameter-panel">
       <View style={styles.panelHeader}>
         <Text style={styles.panelTitle}>Уточнить параметры расчёта</Text>
         <Text style={styles.panelMeta}>
-          {missingCards.length > 0
-            ? `${missingCards.length} ${pluralizeRu(missingCards.length, "параметр", "параметра", "параметров")} для точности`
-            : "Основные параметры заполнены"}
+          {blockingMissingCount > 0
+            ? `Нужно уточнить: ${blockingMissingCount} обязательных ${pluralizeRu(blockingMissingCount, "параметр", "параметра", "параметров")}`
+            : contractMissingCount > 0
+              ? `Обязательных уточнений: 0. До договорной версии: ${contractMissingCount}.`
+              : "Все обязательные параметры заполнены"}
         </Text>
+        {canonicalSession && assumptionCards.length > 0 ? (
+          <Text style={styles.panelMeta}>
+            Допущений, которые можно уточнить: {assumptionCards.length}
+          </Text>
+        ) : null}
       </View>
       {clarification ? (
         <View style={styles.parameterGroup} testID="request-estimate-asphalt-v4-understood">
@@ -705,6 +778,12 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           ) : null}
         </View>
       ) : null}
+      {assumptionCards.length > 0 ? (
+        <View style={styles.parameterGroup} testID="request-estimate-assumed-parameters">
+          <Text style={styles.groupTitle}>Явные предварительные допущения</Text>
+          {assumptionCards.map((card) => this.renderEditableParameterRow(card, "Допущение"))}
+        </View>
+      ) : null}
       {derivedCards.length > 0 ? (
         <View style={styles.parameterGroup}>
           <Pressable
@@ -747,7 +826,17 @@ function EstimatePositionsPanel({
   viewModel: RequestEstimateViewModel;
 }): React.ReactElement {
   return (
-    <View style={styles.positionsPanel} testID="request-estimate-positions-panel">
+    <View
+      accessibilityLabel="Редактор позиций сметы"
+      collapsable={false}
+      style={styles.positionsPanel}
+      testID={
+        Platform.OS === "android"
+          ? undefined
+          : "request-estimate-items-editor"
+      }
+    >
+      <View collapsable={false} testID="request-estimate-positions-panel">
       <ConsumerRepairDraftQuickActions
         onAddManual={onAddManual}
         onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
@@ -775,6 +864,7 @@ function EstimatePositionsPanel({
           <Text style={styles.manualText}>Вернуть позицию</Text>
         </Pressable>
       ) : null}
+      </View>
     </View>
   );
 }

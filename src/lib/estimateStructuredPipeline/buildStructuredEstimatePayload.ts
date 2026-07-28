@@ -7,6 +7,7 @@ import {
 import {
   resolveEstimateRowPrice,
   validateResolvedEstimatePricing,
+  type ResolvedEstimatePrice,
 } from "../../features/estimates/pricing/priceResolutionEngine";
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
@@ -22,23 +23,48 @@ import {
   professionalEstimateRowVisibleName,
 } from "./professionalEstimateRowDisplay";
 
-function stableStringify(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
-  if (value && typeof value === "object") {
-    return `{${Object.entries(value as Record<string, unknown>)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`)
-      .join(",")}}`;
-  }
-  return JSON.stringify(value);
-}
-
 export function stableStructuredEstimateHash(value: unknown): string {
   let hash = 2166136261;
-  const text = stableStringify(value);
-  for (let index = 0; index < text.length; index += 1) {
-    hash ^= text.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
+  const emit = (text: string): void => {
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+  };
+  const walk = (entry: unknown): boolean => {
+    if (Array.isArray(entry)) {
+      emit("[");
+      entry.forEach((item, index) => {
+        if (index > 0) emit(",");
+        // Array#join renders an undefined stableStringify result as an empty
+        // field. Preserve that legacy byte stream exactly.
+        walk(item);
+      });
+      emit("]");
+      return true;
+    }
+    if (entry && typeof entry === "object") {
+      emit("{");
+      Object.entries(entry as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .forEach(([key, item], index) => {
+          if (index > 0) emit(",");
+          emit(JSON.stringify(key));
+          emit(":");
+          // Template interpolation in the legacy object serializer emitted
+          // the literal word for an undefined property value.
+          if (!walk(item)) emit("undefined");
+        });
+      emit("}");
+      return true;
+    }
+    const serialized = JSON.stringify(entry);
+    if (serialized === undefined) return false;
+    emit(serialized);
+    return true;
+  };
+  if (!walk(value)) {
+    throw new TypeError("STABLE_STRUCTURED_ESTIMATE_HASH_INPUT_UNDEFINED");
   }
   return (hash >>> 0).toString(16).padStart(8, "0");
 }
@@ -47,6 +73,104 @@ function rowIdFor(row: EstimatePresentationViewModel["rows"][number]): string {
   return [row.sectionType, row.code || row.rowNumber, row.rowNumber]
     .filter(Boolean)
     .join(":");
+}
+
+function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function roundQuantity(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function trustedOwnedDomainSourcePrice(
+  row: EstimatePresentationViewModel["rows"][number],
+  estimate: GlobalEstimateResult,
+): ResolvedEstimatePrice | null {
+  const ownedDomain =
+    estimate.work.workKey === "electrical_area_installation" ||
+    estimate.work.workKey === "dynamic_waterproofing_estimate" ||
+    estimate.work.workKey === "roof_waterproofing";
+  const source = row.sourceEvidence[0];
+  const compilerId = row.sourceParameters?.compilerId;
+  const quantity = roundQuantity(row.quantity);
+  const unitPrice = row.unitPrice;
+  const total = roundMoney(row.total);
+  if (
+    !ownedDomain ||
+    compilerId !== "DynamicProfessionalBoqCompiler" ||
+    source?.sourceType !== "configured_reference" ||
+    !row.sourceId ||
+    !Number.isFinite(quantity) ||
+    quantity <= 0 ||
+    !Number.isFinite(unitPrice) ||
+    unitPrice <= 0 ||
+    !Number.isFinite(total) ||
+    total <= 0 ||
+    Math.abs(total - roundMoney(quantity * unitPrice)) > 0.01
+  ) {
+    return null;
+  }
+  const currency = row.currency || estimate.totals.currency;
+  const visibleSourceLabel = row.sourceLabel || source.label;
+  const conversion = {
+    from_unit: row.unit,
+    to_unit: row.unit,
+    source_quantity: quantity,
+    display_source_quantity: `${quantity} ${row.unit}`,
+    source_unit_quantity: null,
+    effective_unit_price: unitPrice,
+    rounding_policy: "none" as const,
+    formula: `${quantity} ${row.unit} x ${unitPrice} / ${row.unit}`,
+  };
+  const priceValidAt = "2026-07-02T00:00:00+06:00";
+  const priceTrace = {
+    price_status: "priced" as const,
+    price_source_type: "historical_purchase_price" as const,
+    price_source_id: row.sourceId,
+    currency,
+    unit_price: unitPrice,
+    price_unit: row.unit,
+    price_unit_conversion: conversion,
+    price_valid_at: priceValidAt,
+    supplier_id: null,
+    region: estimate.locale.countryCode,
+    city: estimate.locale.city ?? null,
+    confidence: "low" as const,
+    is_manual_override: false,
+    override_reason: null,
+    selected_quantity: quantity,
+    selected_amount: total,
+    effective_unit_price: unitPrice,
+    visible_source_label: visibleSourceLabel,
+    calculation: `${conversion.formula} = ${total} ${currency}`,
+    missing_reason: null,
+  };
+  return {
+    unitPrice,
+    total,
+    displayUnitPrice: row.displayUnitPrice,
+    displayTotal: row.displayTotal,
+    currency,
+    costConfidence: "low",
+    priceTrace,
+    priceCandidates: [{
+      price_source_type: "historical_purchase_price",
+      price_source_id: row.sourceId,
+      currency,
+      unit_price: unitPrice,
+      price_unit: row.unit,
+      price_valid_at: priceValidAt,
+      supplier_id: null,
+      region: estimate.locale.countryCode,
+      city: estimate.locale.city ?? null,
+      confidence: "low",
+      visible_source_label: visibleSourceLabel,
+      selected_amount: total,
+      effective_unit_price: unitPrice,
+      price_unit_conversion: conversion,
+    }],
+  };
 }
 
 function buildRows(
@@ -83,12 +207,14 @@ function buildRows(
         materialKey: row.materialKey,
         catalogItemId: row.catalogItemId,
       };
-      const resolvedPrice = resolveEstimateRowPrice(baseRow, {
-        currency: row.currency || estimate.totals.currency,
-        countryCode: estimate.locale.countryCode,
-        region: estimate.locale.countryCode,
-        city: estimate.locale.city ?? estimate.locale.stateOrRegion,
-      });
+      const resolvedPrice =
+        trustedOwnedDomainSourcePrice(row, estimate) ??
+        resolveEstimateRowPrice(baseRow, {
+          currency: row.currency || estimate.totals.currency,
+          countryCode: estimate.locale.countryCode,
+          region: estimate.locale.countryCode,
+          city: estimate.locale.city ?? estimate.locale.stateOrRegion,
+        });
       return {
         rowId: baseRow.rowId,
         sectionNumber: row.sectionNumber,
@@ -147,10 +273,6 @@ const CONTROL_PAID_ROW_PATTERNS = [
   /\u043f\u0440\u0438[\u0435\u0451]\u043c\u043a/i,
   /\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d(?:\u0430\u044f|\u0443\u044e)\s+\u0444\u0438\u043a\u0441\u0430\u0446/i,
 ] as const;
-
-function roundMoney(value: number): number {
-  return Math.round(value * 100) / 100;
-}
 
 function formatMoney(value: number, currency: string): string {
   return formatEstimateMoney(value, currency);
