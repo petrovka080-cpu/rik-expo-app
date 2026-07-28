@@ -3,6 +3,7 @@ import {
   ANDROID_AUTH_PASSWORD_FIELD_ID,
   ANDROID_AUTH_SUBMIT_ID,
   ANDROID_AUTHENTICATED_PROFILE_MARKER_ID,
+  ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID,
   ANDROID_BUILD_IDENTITY_MARKER_ID,
   ANDROID_CANONICAL_REQUEST_ROUTE_URI,
   ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID,
@@ -267,13 +268,30 @@ describe("Android post-login route proof", () => {
   it("loadingProfileIsAuthenticatedPending", () => {
     expect(classifyAndroidAuthenticatedReadinessXml(loadingProfileXml)).toBe("AUTHENTICATED_PENDING");
     expect(isAndroidAuthLoginScreenXml(loadingProfileXml)).toBe(false);
-    expect(isAndroidAuthenticatedSessionSurfaceXml(loadingProfileXml)).toBe(true);
+    expect(isAndroidAuthenticatedSessionSurfaceXml(loadingProfileXml)).toBe(false);
   });
 
   it("pendingAuthenticatedShellCanOpenCanonicalRoute", () => {
     expect(canOpenAndroidCanonicalRouteFromReadiness("AUTHENTICATED_PENDING")).toBe(true);
     expect(canOpenAndroidCanonicalRouteFromReadiness("AUTHENTICATED_READY")).toBe(true);
     expect(canOpenAndroidCanonicalRouteFromReadiness("UNAUTHENTICATED")).toBe(false);
+  });
+
+  it("requires a real session marker instead of a public shell", () => {
+    const publicShellXml = `<hierarchy>
+      <node resource-id="app-bottom-nav" text="" />
+      <node resource-id="bottom-tab-request" text="" />
+    </hierarchy>`;
+    const authenticatedXml = `<hierarchy>
+      <node resource-id="${ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID}" text="" />
+      <node resource-id="app-bottom-nav" text="" />
+    </hierarchy>`;
+
+    expect(isAndroidAuthenticatedSessionSurfaceXml(publicShellXml)).toBe(false);
+    expect(isAndroidAuthenticatedSessionSurfaceXml(authenticatedXml)).toBe(true);
+    expect(classifyAndroidAuthenticatedReadinessXml(authenticatedXml)).toBe(
+      "AUTHENTICATED_READY",
+    );
   });
 
   it("routeFailureBeatsAuthReadiness", () => {

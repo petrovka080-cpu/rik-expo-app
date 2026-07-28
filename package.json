@@ -19,7 +19,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "ci:office-market": "tsx scripts/ci/runOfficeMarketRegression.ts",
-    "verify:typecheck": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+    "verify:typecheck": "node scripts/typecheck/runTypecheckShards.mjs",
     "verify:db-types:imports": "node scripts/verify-database-types-imports.js",
     "verify:coverage:governance": "node node_modules/jest/bin/jest.js src/lib/offline/mutationQueue.contract.test.ts src/lib/offline/mutationWorker.contract.test.ts src/lib/appAccessModel.test.ts src/screens/profile/profile.helpers.test.ts src/screens/profile/ProfileContent.composition.test.tsx src/screens/profile/components/ProfileComposition.test.tsx src/screens/profile/components/ProfilePrimitives.test.tsx src/screens/profile/hooks/useProfileForms.test.tsx --runInBand --coverage --json --outputFile artifacts/wave21-governance-coverage-jest.json",
     "verify:wave3-offline-core": "node node_modules/jest/bin/jest.js src/lib/offline/mutationQueue.contract.test.ts src/lib/offline/mutationWorker.contract.test.ts --runInBand --json --outputFile artifacts/wave3-offline-core-jest.json",

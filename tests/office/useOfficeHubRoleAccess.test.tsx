@@ -107,6 +107,9 @@ const developerOverrideNoCompanyData: OfficeAccessScreenData = {
   ...bootstrapData,
   developerOverride: {
     actorUserId: "user-dev",
+    actorRole: "platform_developer",
+    entitlement: "platform_developer",
+    authorizationSource: "server_entitlement",
     isEnabled: true,
     isActive: true,
     allowedRoles: [

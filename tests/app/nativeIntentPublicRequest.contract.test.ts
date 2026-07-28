@@ -5,47 +5,31 @@ import {
   isPublicRequestRoutePathname,
   resolvePublicRequestDeepLinkTarget,
 } from "../../src/lib/navigation/coreRoutes";
+import { resolveRequestEstimateLaunchTargetV1 } from "../../src/lib/navigation/requestEstimateLaunchPayload";
 
 describe("native intent public request route", () => {
   it("keeps canonical Android request deep links on the public request route", () => {
     const promptQuery = "?prompt=roof";
 
-    expect(
-      redirectSystemPath({
-        path: `/request${promptQuery}`,
-        initial: true,
-      }),
-    ).toBe(`/(tabs)/request${promptQuery}`);
-
-    expect(
-      redirectSystemPath({
-        path: `rik:///request${promptQuery}`,
-        initial: true,
-      }),
-    ).toBe(`/(tabs)/request${promptQuery}`);
-
-    expect(
-      redirectSystemPath({
-        path: `rik://request${promptQuery}`,
-        initial: true,
-      }),
-    ).toBe(`/(tabs)/request${promptQuery}`);
-
-    expect(
-      redirectSystemPath({
-        path: `rik:///%28tabs%29/request${promptQuery}`,
-        initial: true,
-      }),
-    ).toBe(`/(tabs)/request${promptQuery}`);
-
-    expect(
-      redirectSystemPath({
-        path: `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(
-          `http://127.0.0.1:8099/--/request${promptQuery}`,
-        )}`,
-        initial: true,
-      }),
-    ).toBe(`/(tabs)/request${promptQuery}`);
+    const variants = [
+      `/request${promptQuery}`,
+      `rik:///request${promptQuery}`,
+      `rik://request${promptQuery}`,
+      `rik:///%28tabs%29/request${promptQuery}`,
+      `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(
+        `http://127.0.0.1:8099/--/request${promptQuery}`,
+      )}`,
+    ];
+    for (const path of variants) {
+      const redirected = redirectSystemPath({ path, initial: true });
+      expect(redirected).toMatch(/^\/\(tabs\)\/request\?/);
+      expect(resolveRequestEstimateLaunchTargetV1(redirected)?.payload).toMatchObject({
+        version: 1,
+        route: "/request",
+        workIntent: "roof",
+        parameters: { prompt: "roof" },
+      });
+    }
   });
 
   it("does not remap unrelated custom scheme routes to request", () => {
@@ -110,12 +94,16 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("staleAfterMs: NATIVE_VIEW_URL_DRAIN_STALE_MS");
     expect(rootLayoutSource).toContain('AppState.addEventListener("change"');
     expect(rootLayoutSource).toContain('nextState === "active"');
-    expect(rootLayoutSource).toContain("setInterval(drainLatestNativeViewUrl, 1_000)");
-    expect(rootLayoutSource).toContain("clearInterval(nativeDrainInterval)");
+    expect(rootLayoutSource).not.toContain("setInterval(drainLatestNativeViewUrl");
+    expect(rootLayoutSource).not.toContain("nativeDrainInterval");
     expect(rootLayoutSource).toContain("native_view_intent");
     expect(rootLayoutSource).toContain('RNLinking.addEventListener("url"');
     expect(rootLayoutSource).toContain("RNLinking.getInitialURL()");
     expect(rootLayoutSource).toContain("expo_linking_url");
+    expect(rootLayoutSource).toContain(
+      "request_estimate_linking_url_native_confirmation_failed",
+    );
+    expect(rootLayoutSource).toContain("nativeUrl ?? expoLinkingUrl");
     expect(rootLayoutSource).toContain("public_request_native_intent_read_failed");
     expect(rootLayoutSource).toContain("public_request_deep_link_resolved");
     expect(rootLayoutSource).toContain("isPublicRequestRoutePathname(pathname)");
@@ -123,14 +111,39 @@ describe("native intent public request route", () => {
     expect(rootLayoutSource).toContain("!normalizeWarmupPathname(pathname).startsWith(\"/auth\")");
     expect(rootLayoutSource).toContain("allowTabNavigation && navigatePublicRequestTab(target)");
     expect(tabsLayoutSource).toContain("CommonActions.setParams(params)");
-    expect(tabsLayoutSource).toContain("source: requestRoute.key");
+    expect(tabsLayoutSource).toContain("source: targetRoute.key");
     expect(tabsLayoutSource).toContain("tab_handler_params_updated");
     expect(rootLayoutSource).toContain("navigatePublicRequestTab(target)");
     expect(rootLayoutSource).toContain("hasPublicRequestTabNavigationHandler()");
     expect(rootLayoutSource).toContain("logAndroidPublicRequestDeepLink");
     expect(rootLayoutSource).toContain('"open_attempt"');
     expect(rootLayoutSource).toContain('"tab_navigation"');
-    expect(rootLayoutSource).toContain("const pendingKey = target.href");
+    expect(rootLayoutSource).toContain(
+      "scheduledRequestEstimateLaunchIdsRef",
+    );
+    expect(rootLayoutSource).toContain('"route_scheduled"');
+    expect(rootLayoutSource).toContain("setImmediate(() => {");
+    expect(rootLayoutSource).toContain(
+      "requestEstimateIntentLifecycle.shouldApply(launchId)",
+    );
+    expect(rootLayoutSource).toContain("applyNavigation(true)");
+    expect(rootLayoutSource).toContain(
+      "const pendingKey = requestEstimateTarget?.payload.launchId ?? target.href",
+    );
+    expect(rootLayoutSource).not.toContain("drainExpoLinkingSnapshot");
+    expect(rootLayoutSource).not.toContain("ANDROID_LINKING_SNAPSHOT_POLL_MS");
+    expect(rootLayoutSource).not.toContain('"expo_linking_snapshot"');
+    expect(rootLayoutSource).not.toContain(
+      '"expo_linking_initial_url_snapshot"',
+    );
+    expect(rootLayoutSource).toContain(
+      "requestEstimateIntentLifecycle.receive(",
+    );
+    expect(rootLayoutSource).toContain(
+      "requestEstimateIntentLifecycle.shouldApply(",
+    );
+    expect(rootLayoutSource).toContain('"AUTH_PENDING"');
+    expect(rootLayoutSource).toContain('"INTENT_APPLIED"');
     expect(rootLayoutSource).toContain("routedSources.includes(source)");
     expect(rootLayoutSource).not.toContain(
       `if (isPublicRequestRoutePathname(pathname)) {
@@ -139,11 +152,9 @@ describe("native intent public request route", () => {
       return true;
     }`,
     );
+    expect(rootLayoutSource).toContain("if (requestRouteAlreadyMounted) {");
     expect(rootLayoutSource).toContain(
-      `if (requestRouteAlreadyMounted) {
-        pendingPublicRequestDeepLinkRef.current = null;
-        clearLatestNativeViewUrl(resolvedUrl);
-      }`,
+      "clearLatestNativeViewUrl(resolvedUrl)",
     );
     expect(rootLayoutSource).toContain("router.replace(href)");
     expect(rootLayoutSource).toContain("router.replace(routeTarget)");
@@ -176,10 +187,13 @@ describe("native intent public request route", () => {
     expect(tabsLayoutSource).toContain("tab_handler_registered");
     expect(tabsLayoutSource).toContain("tab_handler_navigate");
     expect(tabsLayoutSource).toContain("navigation.getState()");
-    expect(tabsLayoutSource).toContain("target: requestRoute.key");
+    expect(tabsLayoutSource).toContain("target: targetRoute.key");
     expect(tabsLayoutSource).toContain("canPreventDefault: true");
     expect(tabsLayoutSource).toContain("tab_handler_prevented");
-    expect(tabsLayoutSource).toContain("TabActions.jumpTo(requestRoute.name, params)");
+    expect(tabsLayoutSource).toContain(
+      "navigation.navigate(targetRoute.name, params)",
+    );
+    expect(tabsLayoutSource).not.toContain("TabActions.jumpTo");
     expect(tabsLayoutSource).toContain("tab_handler_dispatched");
     expect(tabNavigatorSource).toContain("registerPublicRequestTabNavigationHandler");
     expect(tabNavigatorSource).toContain("navigatePublicRequestTab");

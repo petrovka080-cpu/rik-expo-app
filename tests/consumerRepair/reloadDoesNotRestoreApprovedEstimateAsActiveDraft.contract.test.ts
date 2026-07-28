@@ -75,6 +75,15 @@ describe("reload does not restore approved estimate as active draft", () => {
       initialProblemText: "new road prompt",
       autoPrepare: true,
     })).toBe(true);
+    expect(shouldAutoPrepareInitialConsumerRepairRequest({
+      initialProblemText: "new prompt-only launch",
+      launchId: "prompt-only-launch-0001",
+    })).toBe(false);
+    expect(shouldAutoPrepareInitialConsumerRepairRequest({
+      initialProblemText: "new automatic launch",
+      launchId: "automatic-launch-0001",
+      autoPrepare: true,
+    })).toBe(true);
   });
 
   it("projects the user status from the canonical DraftSession state", () => {

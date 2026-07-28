@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/typecheck/product.tsbuildinfo"
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "supabase/**/*.ts",
+    "supabase/**/*.tsx",
+    "types/**/*.ts",
+    "types/**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "App.tsx",
+    "playwright.config.ts"
+  ]
+}

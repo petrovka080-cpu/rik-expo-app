@@ -6,13 +6,13 @@ import {
   DEVELOPER_OVERRIDE_ROLES,
   LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
   isLocalDeveloperFullAccessAllowed,
+  isServerAuthorizedPlatformDeveloper,
   resolveLocalDeveloperOverrideContext,
 } from "./developerOverride";
 
 describe("developerOverride", () => {
-  it("normalizes active override context from server payload", () => {
-    expect(
-      normalizeDeveloperOverrideContext({
+  it("rejects legacy override payloads without an explicit server entitlement", () => {
+    const legacy = normalizeDeveloperOverrideContext({
         actorUserId: "user-1",
         isEnabled: true,
         isActive: true,
@@ -22,9 +22,12 @@ describe("developerOverride", () => {
         canImpersonateForMutations: true,
         expiresAt: "2026-05-16T00:00:00Z",
         reason: "runtime verification",
-      }),
-    ).toEqual({
+      });
+    expect(legacy).toEqual({
       actorUserId: "user-1",
+      actorRole: null,
+      entitlement: null,
+      authorizationSource: "none",
       isEnabled: true,
       isActive: true,
       allowedRoles: ["buyer", "director"],
@@ -34,6 +37,7 @@ describe("developerOverride", () => {
       expiresAt: "2026-05-16T00:00:00Z",
       reason: "runtime verification",
     });
+    expect(isServerAuthorizedPlatformDeveloper(legacy)).toBe(false);
   });
 
   it("keeps the break-glass role list explicit and narrow", () => {
@@ -252,7 +256,10 @@ describe("developerOverride", () => {
         webdriver: false,
       }),
     ).toEqual({
-      actorUserId: "00000000-0000-4000-8000-000000000001",
+      actorUserId: null,
+      actorRole: null,
+      entitlement: null,
+      authorizationSource: "local_ui_only",
       isEnabled: true,
       isActive: true,
       allowedRoles: DEVELOPER_OVERRIDE_ROLES,
@@ -262,6 +269,36 @@ describe("developerOverride", () => {
       expiresAt: null,
       reason: "local_dev_full_access",
     });
+  });
+
+  it("never treats the local UI flag as a server platform_developer entitlement", () => {
+    const local = resolveLocalDeveloperOverrideContext({
+      envValue: "1",
+      host: "localhost",
+      isDev: true,
+      platformOS: "web",
+      storageValue: null,
+      webdriver: false,
+    });
+    expect(local?.authorizationSource).toBe("local_ui_only");
+    expect(local?.entitlement).toBeNull();
+    expect(isServerAuthorizedPlatformDeveloper(local)).toBe(false);
+
+    const server = normalizeDeveloperOverrideContext({
+      actorUserId: "server-user",
+      actorRole: "platform_developer",
+      entitlement: "platform_developer",
+      authorizationSource: "server_entitlement",
+      isEnabled: true,
+      isActive: true,
+      allowedRoles: ["director"],
+      activeEffectiveRole: "director",
+      canAccessAllOfficeRoutes: true,
+      canImpersonateForMutations: true,
+      expiresAt: null,
+      reason: "server grant",
+    });
+    expect(isServerAuthorizedPlatformDeveloper(server)).toBe(true);
   });
 
   it("keeps deployed developer RPC calls inside the contained boundary", () => {

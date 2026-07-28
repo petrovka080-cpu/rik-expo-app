@@ -4,8 +4,8 @@ import TestRenderer, { act } from "react-test-renderer";
 const mockInitializeDurableStorage = jest.fn<Promise<void>, []>();
 const mockRefreshAfterDurableHydration = jest.fn();
 
-jest.mock("../../src/lib/consumerRequests", () => ({
-  initializeConsumerRepairTransactionalDurableStorage: () =>
+jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
+  hydrateTransactionalConsumerRepairRequestStore: () =>
     mockInitializeDurableStorage(),
 }));
 

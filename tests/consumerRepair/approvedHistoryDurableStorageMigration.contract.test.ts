@@ -227,20 +227,16 @@ describe("approved history durable storage migration", () => {
     const decodedCurrentRevision = decoded?.estimateRevisionState?.revisions.find((revision) =>
       revision.revision_id === decoded.estimateRevisionState?.current_revision_id
     );
-    const createdDraftRevision = created.estimateDraftRevisionState?.revisions.find((revision) =>
-      revision.revisionId === created.estimateDraftRevisionState?.currentRevisionId
-    );
-    const draftRevision = decoded?.estimateDraftRevisionState?.revisions.find((revision) =>
-      revision.revisionId === decoded.estimateDraftRevisionState?.currentRevisionId
-    );
-
     expect(stored.items).toBeUndefined();
     expect(stored.itemsCompactV1).toBeTruthy();
     expect(stored.editableEstimateSnapshot).toBeNull();
     expect(storedCurrentRevision?.editable_estimate_snapshot?.hash).toBe(created.editableEstimateSnapshot?.hash);
     expect(decoded?.editableEstimateSnapshot?.hash).toBe(decodedCurrentRevision?.editable_estimate_snapshot.hash);
-    expect(draftRevision?.boq.rows).toHaveLength(createdDraftRevision?.boq.rows.length ?? 0);
-    expect(draftRevision?.trace.rows).toEqual([]);
+    expect(decoded?.editableEstimateSnapshot?.rows).toHaveLength(
+      created.editableEstimateSnapshot?.rows.length ?? 0,
+    );
+    expect(decoded?.estimateDraftRevisionState).toBeNull();
+    expect(decoded?.estimateDraftSession).not.toBeNull();
   });
 
   it("migrates a legacy 13-record store and persists newly approved estimates after reload", () => {
