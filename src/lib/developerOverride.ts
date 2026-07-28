@@ -11,7 +11,6 @@ import {
 } from "./api/queryBoundary";
 import { OFFICE_DEVELOPER_FULL_ACCESS_ROLES } from "./officeRuntime/officeRuntimePolicy";
 import {
-  LOCAL_DEVELOPER_ACTOR_USER_ID,
   LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
 } from "./developerOverride.constants";
 import {
@@ -20,12 +19,19 @@ import {
 } from "./developerOverridePolicy";
 
 export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
+export const PLATFORM_DEVELOPER_ENTITLEMENT = "platform_developer" as const;
 export { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY };
 
 export type DeveloperOverrideRole = (typeof DEVELOPER_OVERRIDE_ROLES)[number];
 
 export type DeveloperOverrideContext = {
   actorUserId: string | null;
+  actorRole: typeof PLATFORM_DEVELOPER_ENTITLEMENT | null;
+  entitlement: typeof PLATFORM_DEVELOPER_ENTITLEMENT | null;
+  authorizationSource:
+    | "server_entitlement"
+    | "local_ui_only"
+    | "none";
   isEnabled: boolean;
   isActive: boolean;
   allowedRoles: string[];
@@ -38,6 +44,9 @@ export type DeveloperOverrideContext = {
 
 const EMPTY_CONTEXT: DeveloperOverrideContext = {
   actorUserId: null,
+  actorRole: null,
+  entitlement: null,
+  authorizationSource: "none",
   isEnabled: false,
   isActive: false,
   allowedRoles: [],
@@ -120,7 +129,10 @@ export function resolveLocalDeveloperOverrideContext(
   if (!isLocalDeveloperFullAccessAllowed(probe)) return null;
 
   return {
-    actorUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
+    actorUserId: null,
+    actorRole: null,
+    entitlement: null,
+    authorizationSource: "local_ui_only",
     isEnabled: true,
     isActive: true,
     allowedRoles: [...DEVELOPER_OVERRIDE_ROLES],
@@ -137,6 +149,9 @@ export const isDeveloperOverrideContextRpcResponse = (
 ): value is Record<string, unknown> =>
   isRpcRecord(value) &&
   (value.actorUserId == null || isRpcString(value.actorUserId)) &&
+  (value.actorRole == null || isRpcString(value.actorRole)) &&
+  (value.entitlement == null || isRpcString(value.entitlement)) &&
+  (value.authorizationSource == null || isRpcString(value.authorizationSource)) &&
   isRpcBoolean(value.isEnabled) &&
   isRpcBoolean(value.isActive) &&
   Array.isArray(value.allowedRoles) &&
@@ -158,9 +173,28 @@ export function normalizeDeveloperOverrideContext(
     ? row.allowedRoles.map(normalizeRole).filter((role): role is string => Boolean(role))
     : [];
   const activeEffectiveRole = normalizeRole(row.activeEffectiveRole);
+  const actorUserId = String(row.actorUserId ?? "").trim() || null;
+  const explicitEntitlement =
+    normalizeRole(row.entitlement) === PLATFORM_DEVELOPER_ENTITLEMENT;
+  const explicitActorRole =
+    normalizeRole(row.actorRole) === PLATFORM_DEVELOPER_ENTITLEMENT;
+  const serverAuthorized =
+    Boolean(actorUserId) &&
+    explicitEntitlement &&
+    explicitActorRole &&
+    normalizeRole(row.authorizationSource) === "server_entitlement";
+  const authorizationSource =
+    serverAuthorized
+      ? "server_entitlement"
+      : normalizeRole(row.authorizationSource) === "local_ui_only"
+        ? "local_ui_only"
+        : "none";
 
   return {
-    actorUserId: String(row.actorUserId ?? "").trim() || null,
+    actorUserId,
+    actorRole: serverAuthorized ? PLATFORM_DEVELOPER_ENTITLEMENT : null,
+    entitlement: serverAuthorized ? PLATFORM_DEVELOPER_ENTITLEMENT : null,
+    authorizationSource,
     isEnabled: normalizeBool(row.isEnabled),
     isActive: normalizeBool(row.isActive),
     allowedRoles,
@@ -174,7 +208,6 @@ export function normalizeDeveloperOverrideContext(
 
 export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideContext> {
   const localOverride = resolveLocalDeveloperOverrideContext();
-  if (localOverride) return localOverride;
 
   const { data, error } = await runContainedRpc<unknown>(
     supabase,
@@ -182,7 +215,7 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
   );
   if (error) {
     if (__DEV__) console.warn("[developer_override_context_v1]", error.message);
-    return EMPTY_CONTEXT;
+    return localOverride ?? EMPTY_CONTEXT;
   }
   try {
     const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
@@ -190,7 +223,10 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
       caller: "src/lib/developerOverride.loadDeveloperOverrideContext",
       domain: "unknown",
     });
-    return normalizeDeveloperOverrideContext(validated);
+    const serverContext = normalizeDeveloperOverrideContext(validated);
+    return isServerAuthorizedPlatformDeveloper(serverContext)
+      ? serverContext
+      : localOverride ?? serverContext;
   } catch (validationError) {
     if (__DEV__) {
       console.warn(
@@ -198,8 +234,21 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
         validationError instanceof Error ? validationError.message : String(validationError),
       );
     }
-    return EMPTY_CONTEXT;
+    return localOverride ?? EMPTY_CONTEXT;
   }
+}
+
+export function isServerAuthorizedPlatformDeveloper(
+  context: DeveloperOverrideContext | null | undefined,
+): boolean {
+  return (
+    Boolean(context?.actorUserId) &&
+    context?.actorRole === PLATFORM_DEVELOPER_ENTITLEMENT &&
+    context.entitlement === PLATFORM_DEVELOPER_ENTITLEMENT &&
+    context.authorizationSource === "server_entitlement" &&
+    context.isEnabled === true &&
+    context.canAccessAllOfficeRoutes === true
+  );
 }
 
 export async function setDeveloperEffectiveRole(

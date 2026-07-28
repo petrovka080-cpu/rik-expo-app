@@ -1,5 +1,6 @@
 import type { OfficeAccessScreenData } from "./officeAccess.types";
 import type { OfficeHubRoleAccessState } from "./useOfficeHubRoleAccess";
+import { isServerAuthorizedPlatformDeveloper } from "../../lib/developerOverride";
 
 export type OfficeShellContentModel =
   {
@@ -34,6 +35,8 @@ export function buildOfficeShellContentModel(params: {
           params.access.officeCards.length > 0,
       ),
     showCompanyFeedback: Boolean(params.companyFeedback),
-    showDeveloperOverride: false,
+    showDeveloperOverride:
+      isServerAuthorizedPlatformDeveloper(params.data.developerOverride) ||
+      params.data.developerOverride?.authorizationSource === "local_ui_only",
   };
 }

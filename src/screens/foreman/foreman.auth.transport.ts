@@ -1,5 +1,3 @@
-import { isLocalDeveloperFullAccessAllowed } from "../../lib/developerOverride";
-import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 import { getSessionSafe } from "../../lib/supabaseClient";
 
 type ForemanAuthUserResponse = {
@@ -59,13 +57,6 @@ async function loadDefaultForemanAuthIdentity(): Promise<ForemanAuthIdentity> {
   });
   const sessionIdentity = buildForemanAuthIdentityFromUser(session?.user ?? null);
   if (sessionIdentity.id) return sessionIdentity;
-
-  if (isLocalDeveloperFullAccessAllowed()) {
-    return {
-      ...EMPTY_FOREMAN_AUTH_IDENTITY,
-      id: LOCAL_DEVELOPER_ACTOR_USER_ID,
-    };
-  }
 
   return EMPTY_FOREMAN_AUTH_IDENTITY;
 }

@@ -2,10 +2,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { normalizePage } from "../../lib/api/_core";
 import {
   loadDeveloperOverrideContext,
-  resolveLocalDeveloperOverrideContext,
-  type DeveloperOverrideContext,
 } from "../../lib/developerOverride";
-import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 import type { Company, UserProfile } from "../profile/profile.types";
 import {
   loadCurrentAuthUser,
@@ -109,64 +106,6 @@ const buildDefaultOfficeMembersPage = (): OfficeMembersPageResult => ({
     loadedCount: 0,
   }),
 });
-
-const buildLocalDeveloperOfficeProfile = (userId: string): UserProfile => ({
-  id: "",
-  user_id: userId,
-  full_name: "Local developer",
-  phone: null,
-  city: null,
-  usage_market: true,
-  usage_build: true,
-  bio: null,
-  telegram: null,
-  whatsapp: null,
-  position: null,
-});
-
-function buildLocalDeveloperOfficeAccessData(
-  developerOverride: DeveloperOverrideContext,
-): OfficeAccessScreenData {
-  const currentUserId =
-    normalizeText(developerOverride.actorUserId) || LOCAL_DEVELOPER_ACTOR_USER_ID;
-  const activeRole =
-    normalizeText(developerOverride.activeEffectiveRole) ||
-    OFFICE_BOOTSTRAP_ROLE;
-  const profile = buildLocalDeveloperOfficeProfile(currentUserId);
-  const membersPage = buildDefaultOfficeMembersPage();
-
-  return {
-    currentUserId,
-    profile,
-    profileEmail: null,
-    profileRole: activeRole,
-    company: null,
-    companyAccessRole: null,
-    developerOverride,
-    accessSourceSnapshot: {
-      userId: currentUserId,
-      authRole: null,
-      resolvedRole: activeRole,
-      usageMarket: profile.usage_market,
-      usageBuild: profile.usage_build,
-      ownedCompanyId: null,
-      companyMemberships: [],
-      listingsCount: 0,
-      marketAccessGranted: true,
-      requestedActiveContext: "office",
-      developerOverride: {
-        isEnabled: developerOverride.isEnabled,
-        isActive: developerOverride.isActive,
-        allowedRoles: developerOverride.allowedRoles,
-        activeEffectiveRole: developerOverride.activeEffectiveRole,
-        canAccessAllOfficeRoutes: developerOverride.canAccessAllOfficeRoutes,
-      },
-    },
-    members: membersPage.members,
-    membersPagination: membersPage.membersPagination,
-    invites: [],
-  };
-}
 
 const buildCompanyProfileInsertPayload = (params: {
   companyId: string;
@@ -301,11 +240,6 @@ async function loadCompanyInvites(
 }
 
 export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenData> {
-  const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
-  if (localDeveloperOverride?.canAccessAllOfficeRoutes) {
-    return buildLocalDeveloperOfficeAccessData(localDeveloperOverride);
-  }
-
   const [authUser, baseProfile] = await Promise.all([
     loadCurrentAuthUser(),
     loadProfileScreenData(),

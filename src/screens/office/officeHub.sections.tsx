@@ -157,12 +157,16 @@ function renderOfficeDirectionSection(props: OfficeDirectionSectionProps) {
 
 export function OfficeDeveloperOverrideSection({
   activeEffectiveRole,
+  actorRole,
+  authorizationSource,
   developerRoleSaving,
   roles,
   onClear,
   onSelectRole,
 }: {
   activeEffectiveRole?: string | null;
+  actorRole?: string | null;
+  authorizationSource?: string | null;
   developerRoleSaving: string | null;
   roles: readonly DeveloperOverrideRole[];
   onClear: () => void;
@@ -174,7 +178,9 @@ export function OfficeDeveloperOverrideSection({
         <View style={styles.grow}>
           <Text style={styles.eyebrow}>Dev override</Text>
           <Text style={styles.helper}>
-            Active role: {activeEffectiveRole ?? "normal"}
+            Actor: {actorRole ?? "local UI"} · Effective role:{" "}
+            {activeEffectiveRole ?? "normal"} · Source:{" "}
+            {authorizationSource ?? "none"}
           </Text>
         </View>
         <Pressable

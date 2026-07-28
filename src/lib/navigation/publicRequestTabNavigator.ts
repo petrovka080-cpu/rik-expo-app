@@ -1,9 +1,8 @@
-import type { PublicRequestDeepLinkTarget } from "./coreRoutes";
-
-type PublicRequestTabNavigationTarget = Pick<
-  PublicRequestDeepLinkTarget,
-  "href" | "params"
->;
+type PublicRequestTabNavigationTarget = {
+  href: string;
+  navigationPathname: "/(tabs)/request" | "/(tabs)/ai";
+  params: Record<string, string>;
+};
 
 type PublicRequestTabNavigationHandler = (
   target: PublicRequestTabNavigationTarget,

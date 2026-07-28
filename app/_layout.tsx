@@ -24,6 +24,7 @@ import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWeb
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
+import { getSessionSafe } from "../src/lib/supabaseClient";
 import {
   addNativeViewUrlListener,
   clearLatestNativeViewUrl,
@@ -34,6 +35,15 @@ import {
   resolvePublicRequestDeepLinkTarget,
   type PublicRequestDeepLinkTarget,
 } from "../src/lib/navigation/coreRoutes";
+import {
+  RequestEstimateLaunchPayloadError,
+  resolveRequestEstimateLaunchTargetV1,
+  type RequestEstimateLaunchTargetV1,
+} from "../src/lib/navigation/requestEstimateLaunchPayload";
+import { recordRequestEstimateLaunchStage } from "../src/lib/navigation/requestEstimateLaunchObservability";
+import {
+  requestEstimateIntentLifecycle,
+} from "../src/lib/navigation/requestEstimateLaunchLifecycle";
 import {
   hasPublicRequestTabNavigationHandler,
   navigatePublicRequestTab,
@@ -69,7 +79,7 @@ function logAndroidPublicRequestDeepLink(
 }
 
 function routePublicRequestDeepLink(
-  target: PublicRequestDeepLinkTarget,
+  target: PublicRequestDeepLinkTarget | RequestEstimateLaunchTargetV1,
   allowTabNavigation = true,
 ):
   | "tab_navigation"
@@ -81,6 +91,19 @@ function routePublicRequestDeepLink(
     params: target.params,
   } as Href;
   const href = target.href as Href;
+
+  if (!allowTabNavigation) {
+    try {
+      router.replace(routeTarget);
+      logAndroidPublicRequestDeepLink("route", {
+        method: "replace_object_fallback",
+        normalizedPath: target.normalizedPath,
+      });
+      return "replace_object_fallback";
+    } catch {
+      // Continue through the href and navigate fallbacks below.
+    }
+  }
 
   if (allowTabNavigation && navigatePublicRequestTab(target)) {
     logAndroidPublicRequestDeepLink("route", {
@@ -195,6 +218,12 @@ function RootLayout() {
   const rootNavigationState = useRootNavigationState();
   const rootNavigationReady = Boolean(rootNavigationState?.key);
   const pendingPublicRequestDeepLinkRef = useRef<PendingPublicRequestDeepLink | null>(null);
+  const previousAuthenticatedUserIdRef = useRef<string | null>(null);
+  const requestEstimateTargetCacheRef = useRef(
+    new Map<string, RequestEstimateLaunchTargetV1>(),
+  );
+  const scheduledRequestEstimateLaunchIdsRef = useRef(new Set<string>());
+  const pendingIntentAuthRecoveryLaunchIdRef = useRef<string | null>(null);
   const isPdfViewerRoute = pathname === "/pdf-viewer";
   const expoLinkingUrl = ExpoLinking.useLinkingURL();
 
@@ -212,14 +241,188 @@ function RootLayout() {
     pathname,
   });
 
+  const recoverReadableSessionForPendingIntent = useCallback(
+    (target: RequestEstimateLaunchTargetV1) => {
+      const launchId = target.payload.launchId;
+      if (
+        authState.authSessionState.status === "authenticated" ||
+        pendingIntentAuthRecoveryLaunchIdRef.current === launchId
+      ) {
+        return;
+      }
+      pendingIntentAuthRecoveryLaunchIdRef.current = launchId;
+      void getSessionSafe({
+        caller: "request_estimate_pending_intent",
+      })
+        .then(({ session, degraded }) => {
+          const pending = requestEstimateIntentLifecycle.getPending();
+          if (
+            degraded ||
+            !session?.user ||
+            pending?.target.payload.launchId !== launchId
+          ) {
+            return;
+          }
+          authState.setAuthSessionState({
+            status: "authenticated",
+            reason: "auth_event_authenticated",
+          });
+          void authState.loadRoleForCurrentSession(session.user);
+        })
+        .catch((error: unknown) => {
+          recordPlatformObservability({
+            screen: "request",
+            surface: "auth_session_gate",
+            category: "fetch",
+            event: "pending_intent_session_recovery_failed",
+            result: "error",
+            errorStage: "get_session_safe",
+            errorClass: error instanceof Error ? error.name : "Unknown",
+            errorMessage:
+              error instanceof Error ? error.message : String(error),
+            fallbackUsed: true,
+            extra: {
+              owner: "root_layout",
+              launchId,
+            },
+          });
+        })
+        .finally(() => {
+          if (pendingIntentAuthRecoveryLaunchIdRef.current === launchId) {
+            pendingIntentAuthRecoveryLaunchIdRef.current = null;
+          }
+        });
+    },
+    [
+      authState.authSessionState.status,
+      authState.loadRoleForCurrentSession,
+      authState.setAuthSessionState,
+    ],
+  );
+
   const openPublicRequestDeepLink = useCallback((
     url: string | null | undefined,
     source: PublicRequestDeepLinkSource,
   ) => {
-    const target = resolvePublicRequestDeepLinkTarget(url);
+    const resolvedUrl = String(url ?? "");
+    let requestEstimateTarget: RequestEstimateLaunchTargetV1 | null = null;
+    if (resolvedUrl) {
+      requestEstimateTarget =
+        requestEstimateTargetCacheRef.current.get(resolvedUrl) ?? null;
+      if (!requestEstimateTarget) {
+        try {
+          const candidate = resolveRequestEstimateLaunchTargetV1(resolvedUrl);
+          if (candidate?.payload.route === "/request") {
+            requestEstimateTarget = candidate;
+            requestEstimateTargetCacheRef.current.set(resolvedUrl, candidate);
+          }
+        } catch (error) {
+          if (
+            !(
+              error instanceof RequestEstimateLaunchPayloadError &&
+              error.code === "REQUEST_ESTIMATE_LAUNCH_WORK_INTENT_REQUIRED"
+            )
+          ) {
+            const errorCode =
+              error instanceof RequestEstimateLaunchPayloadError
+                ? error.code
+                : "REQUEST_ESTIMATE_LAUNCH_PAYLOAD_CORRUPT";
+            if (rootNavigationReady) {
+              router.replace({
+                pathname: "/(tabs)/request",
+                params: { launchError: errorCode },
+              });
+            }
+            return true;
+          }
+        }
+      }
+    }
+    const target =
+      requestEstimateTarget ?? resolvePublicRequestDeepLinkTarget(url);
     if (!target) return false;
-    const resolvedUrl = String(url);
-    const pendingKey = target.href;
+    const pendingKey = requestEstimateTarget?.payload.launchId ?? target.href;
+    if (requestEstimateTarget) {
+      const received = requestEstimateIntentLifecycle.receive(
+        requestEstimateTarget,
+        source,
+      );
+      if (
+        received.kind === "duplicate_acknowledged" ||
+        received.kind === "duplicate_superseded" ||
+        received.kind === "ignored_stale_snapshot"
+      ) {
+        return true;
+      }
+      if (received.kind === "accepted") {
+        if (
+          pendingPublicRequestDeepLinkRef.current?.key !== pendingKey
+        ) {
+          pendingPublicRequestDeepLinkRef.current = null;
+        }
+        recordRequestEstimateLaunchStage({
+          stage: "INTENT_RECEIVED",
+          payload: requestEstimateTarget.payload,
+          source,
+          detail: {
+            replacedLaunchId: received.replacedLaunchId,
+          },
+        });
+        recordRequestEstimateLaunchStage({
+          stage: "URL_PARSED",
+          payload: requestEstimateTarget.payload,
+          source,
+        });
+        requestEstimateIntentLifecycle.markStage(
+          requestEstimateTarget.payload.launchId,
+          "URL_PARSED",
+        );
+      }
+      if (
+        !authState.sessionLoaded ||
+        authState.authSessionState.status !== "authenticated"
+      ) {
+        if (
+          requestEstimateIntentLifecycle.markStage(
+            requestEstimateTarget.payload.launchId,
+            "AUTH_PENDING",
+          )
+        ) {
+          recordRequestEstimateLaunchStage({
+            stage: "AUTH_PENDING",
+            payload: requestEstimateTarget.payload,
+            source,
+          });
+        }
+        pendingPublicRequestDeepLinkRef.current = {
+          key: pendingKey,
+          source,
+          url: requestEstimateTarget.href,
+          routedSources: [],
+        };
+        recoverReadableSessionForPendingIntent(requestEstimateTarget);
+        return true;
+      }
+      const lifecyclePending = requestEstimateIntentLifecycle.getPending();
+      if (
+        lifecyclePending?.stage === "AUTH_PENDING" ||
+        lifecyclePending?.stage === "URL_PARSED"
+      ) {
+        requestEstimateIntentLifecycle.markStage(
+          requestEstimateTarget.payload.launchId,
+          "AUTH_RESOLVED",
+        );
+        recordRequestEstimateLaunchStage({
+          stage: "AUTH_RESOLVED",
+          payload: requestEstimateTarget.payload,
+          source,
+          detail: {
+            authenticated: true,
+            publicRoute: true,
+          },
+        });
+      }
+    }
     logAndroidPublicRequestDeepLink("open_attempt", {
       source,
       rootNavigationReady,
@@ -232,7 +435,7 @@ function RootLayout() {
         pendingPublicRequestDeepLinkRef.current = {
           key: pendingKey,
           source,
-          url: resolvedUrl,
+          url: requestEstimateTarget?.href ?? resolvedUrl,
           routedSources: [],
         };
         recordPlatformObservability({
@@ -253,6 +456,16 @@ function RootLayout() {
       return true;
     }
 
+    if (requestEstimateTarget) {
+      if (
+        !requestEstimateIntentLifecycle.shouldApply(
+          requestEstimateTarget.payload.launchId,
+        )
+      ) {
+        return true;
+      }
+    }
+
     const previousPending = pendingPublicRequestDeepLinkRef.current;
     const routedSources =
       previousPending?.key === pendingKey ? previousPending.routedSources : [];
@@ -261,7 +474,7 @@ function RootLayout() {
     pendingPublicRequestDeepLinkRef.current = {
       key: pendingKey,
       source,
-      url: resolvedUrl,
+      url: requestEstimateTarget?.href ?? resolvedUrl,
       routedSources: [...routedSources, source],
     };
 
@@ -279,63 +492,285 @@ function RootLayout() {
         queryParamNames: Object.keys(target.params).sort(),
       },
     });
-    try {
-      const requestRouteAlreadyMounted = isPublicRequestRoutePathname(pathname);
-      const method = routePublicRequestDeepLink(
-        target,
-        !normalizeWarmupPathname(pathname).startsWith("/auth"),
-      );
-      if (requestRouteAlreadyMounted) {
-        pendingPublicRequestDeepLinkRef.current = null;
-        clearLatestNativeViewUrl(resolvedUrl);
+    const requestRouteAlreadyMounted = isPublicRequestRoutePathname(pathname);
+    const applyNavigation = (allowTabNavigation: boolean): boolean => {
+      try {
+        const method = routePublicRequestDeepLink(target, allowTabNavigation);
+        if (requestEstimateTarget) {
+          if (
+            requestEstimateIntentLifecycle.markStage(
+              requestEstimateTarget.payload.launchId,
+              "INTENT_APPLIED",
+            )
+          ) {
+            recordRequestEstimateLaunchStage({
+              stage: "INTENT_APPLIED",
+              payload: requestEstimateTarget.payload,
+              source,
+            });
+          }
+        }
+        if (requestRouteAlreadyMounted) {
+          pendingPublicRequestDeepLinkRef.current = null;
+          clearLatestNativeViewUrl(resolvedUrl);
+        }
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "public_request_deep_link_navigation",
+          result: "success",
+          extra: {
+            owner: "root_layout",
+            source,
+            target: target.href,
+            normalizedPath: target.normalizedPath,
+            method,
+            routedSourceCount: routedSources.length + 1,
+            observedPathname: pathname,
+          },
+        });
+        return true;
+      } catch (error: unknown) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "public_request_deep_link_navigation_failed",
+          result: "error",
+          errorStage: "router_replace",
+          errorClass: error instanceof Error ? error.name : undefined,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : String(error ?? "public_request_deep_link_navigation_failed"),
+          fallbackUsed: true,
+          extra: {
+            owner: "root_layout",
+            source,
+            target: target.href,
+            normalizedPath: target.normalizedPath,
+          },
+        });
+        pendingPublicRequestDeepLinkRef.current = {
+          key: pendingKey,
+          source,
+          url: resolvedUrl,
+          routedSources,
+        };
+        return false;
       }
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "public_request_deep_link_navigation",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          source,
-          target: target.href,
+    };
+
+    if (requestEstimateTarget) {
+      const launchId = requestEstimateTarget.payload.launchId;
+      if (!scheduledRequestEstimateLaunchIdsRef.current.has(launchId)) {
+        scheduledRequestEstimateLaunchIdsRef.current.add(launchId);
+        logAndroidPublicRequestDeepLink("route_scheduled", {
+          launchId,
           normalizedPath: target.normalizedPath,
-          method,
-          routedSourceCount: routedSources.length + 1,
-          observedPathname: pathname,
-        },
-      });
-    } catch (error: unknown) {
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "public_request_deep_link_navigation_failed",
-        result: "error",
-        errorStage: "router_replace",
-        errorClass: error instanceof Error ? error.name : undefined,
-        errorMessage:
-          error instanceof Error
-            ? error.message
-            : String(error ?? "public_request_deep_link_navigation_failed"),
-        fallbackUsed: true,
-        extra: {
-          owner: "root_layout",
-          source,
-          target: target.href,
-          normalizedPath: target.normalizedPath,
-        },
-      });
-      pendingPublicRequestDeepLinkRef.current = {
-        key: pendingKey,
-        source,
-        url: resolvedUrl,
-        routedSources,
-      };
-      return false;
+        });
+        setImmediate(() => {
+          scheduledRequestEstimateLaunchIdsRef.current.delete(launchId);
+          if (!requestEstimateIntentLifecycle.shouldApply(launchId)) return;
+          applyNavigation(true);
+        });
+      }
+      return true;
     }
+
+    return applyNavigation(
+      !normalizeWarmupPathname(pathname).startsWith("/auth"),
+    );
+  }, [
+    authState.authSessionState.status,
+    authState.sessionLoaded,
+    pathname,
+    recoverReadableSessionForPendingIntent,
+    rootNavigationReady,
+  ]);
+
+  const openRequestEstimateDeepLink = useCallback((
+    url: string | null | undefined,
+    source: PublicRequestDeepLinkSource,
+  ) => {
+    const resolvedUrl = String(url ?? "");
+    if (!resolvedUrl) return false;
+    let target =
+      requestEstimateTargetCacheRef.current.get(resolvedUrl) ?? null;
+    try {
+      target ??= resolveRequestEstimateLaunchTargetV1(resolvedUrl);
+    } catch (error) {
+      if (
+        error instanceof RequestEstimateLaunchPayloadError &&
+        error.code === "REQUEST_ESTIMATE_LAUNCH_WORK_INTENT_REQUIRED"
+      ) {
+        return openPublicRequestDeepLink(url, source);
+      }
+      const errorCode =
+        error instanceof RequestEstimateLaunchPayloadError
+          ? error.code
+          : "REQUEST_ESTIMATE_LAUNCH_PAYLOAD_CORRUPT";
+      if (rootNavigationReady) {
+        const route = resolvedUrl.includes("/ai")
+          ? "/(tabs)/ai"
+          : "/(tabs)/request";
+        router.replace({ pathname: route, params: { launchError: errorCode } });
+      }
+      return true;
+    }
+    if (!target) return false;
+    requestEstimateTargetCacheRef.current.set(resolvedUrl, target);
+    if (target.payload.route === "/request") {
+      return openPublicRequestDeepLink(target.href, source);
+    }
+
+    const received = requestEstimateIntentLifecycle.receive(target, source);
+    if (
+      received.kind === "duplicate_acknowledged" ||
+      received.kind === "duplicate_superseded" ||
+      received.kind === "ignored_stale_snapshot"
+    ) {
+      return true;
+    }
+    if (received.kind === "accepted") {
+      pendingPublicRequestDeepLinkRef.current = null;
+      recordRequestEstimateLaunchStage({
+        stage: "INTENT_RECEIVED",
+        payload: target.payload,
+        source,
+        detail: { replacedLaunchId: received.replacedLaunchId },
+      });
+      recordRequestEstimateLaunchStage({
+        stage: "URL_PARSED",
+        payload: target.payload,
+        source,
+      });
+      requestEstimateIntentLifecycle.markStage(
+        target.payload.launchId,
+        "URL_PARSED",
+      );
+    }
+    if (
+      !authState.sessionLoaded ||
+      authState.authSessionState.status !== "authenticated"
+    ) {
+      if (
+        requestEstimateIntentLifecycle.markStage(
+          target.payload.launchId,
+          "AUTH_PENDING",
+        )
+      ) {
+        recordRequestEstimateLaunchStage({
+          stage: "AUTH_PENDING",
+          payload: target.payload,
+          source,
+        });
+      }
+      recoverReadableSessionForPendingIntent(target);
+      return true;
+    }
+    const lifecyclePending = requestEstimateIntentLifecycle.getPending();
+    if (
+      lifecyclePending?.stage === "AUTH_PENDING" ||
+      lifecyclePending?.stage === "URL_PARSED"
+    ) {
+      requestEstimateIntentLifecycle.markStage(
+        target.payload.launchId,
+        "AUTH_RESOLVED",
+      );
+      recordRequestEstimateLaunchStage({
+        stage: "AUTH_RESOLVED",
+        payload: target.payload,
+        source,
+        detail: { authenticated: true, publicRoute: false },
+      });
+    }
+    if (
+      !rootNavigationReady ||
+      !requestEstimateIntentLifecycle.shouldApply(target.payload.launchId)
+    ) {
+      return true;
+    }
+    if (
+      requestEstimateIntentLifecycle.markStage(
+        target.payload.launchId,
+        "INTENT_APPLIED",
+      )
+    ) {
+      recordRequestEstimateLaunchStage({
+        stage: "INTENT_APPLIED",
+        payload: target.payload,
+        source,
+      });
+    }
+    const aiTabNavigationApplied = navigatePublicRequestTab(target);
+    if (!aiTabNavigationApplied) {
+      router.replace(target.href as Href);
+    }
+    logAndroidPublicRequestDeepLink("ai_route_applied", {
+      launchId: target.payload.launchId,
+      method: aiTabNavigationApplied ? "tab_navigation" : "replace_href",
+      normalizedPath: target.normalizedPath,
+    });
     return true;
-  }, [pathname, rootNavigationReady]);
+  }, [
+    authState.authSessionState.status,
+    authState.sessionLoaded,
+    openPublicRequestDeepLink,
+    recoverReadableSessionForPendingIntent,
+    rootNavigationReady,
+  ]);
+
+  useEffect(() => {
+    const pending = requestEstimateIntentLifecycle.getPending();
+    if (
+      !pending ||
+      !rootNavigationReady ||
+      !authState.sessionLoaded ||
+      authState.authSessionState.status !== "authenticated"
+    ) {
+      return;
+    }
+    openRequestEstimateDeepLink(
+      pending.target.href,
+      pending.source as PublicRequestDeepLinkSource,
+    );
+  }, [
+    authState.authSessionState.status,
+    authState.sessionLoaded,
+    openRequestEstimateDeepLink,
+    rootNavigationReady,
+  ]);
+
+  useEffect(() => {
+    if (
+      authState.authSessionState.status !== "unauthenticated" ||
+      authState.authSessionState.reason !== "terminal_sign_out"
+    ) {
+      return;
+    }
+    requestEstimateIntentLifecycle.clearSessionBoundary();
+    pendingPublicRequestDeepLinkRef.current = null;
+    requestEstimateTargetCacheRef.current.clear();
+    scheduledRequestEstimateLaunchIdsRef.current.clear();
+  }, [
+    authState.authSessionState.reason,
+    authState.authSessionState.status,
+  ]);
+
+  useEffect(() => {
+    const currentUserId = authState.authenticatedUserId;
+    const previousUserId = previousAuthenticatedUserIdRef.current;
+    previousAuthenticatedUserIdRef.current = currentUserId;
+    if (!currentUserId || !previousUserId || currentUserId === previousUserId) {
+      return;
+    }
+    requestEstimateIntentLifecycle.clearSessionBoundary();
+    pendingPublicRequestDeepLinkRef.current = null;
+    requestEstimateTargetCacheRef.current.clear();
+    scheduledRequestEstimateLaunchIdsRef.current.clear();
+  }, [authState.authenticatedUserId]);
 
   useEffect(() => {
     if (!rootNavigationReady) return;
@@ -366,8 +801,39 @@ function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
-    openPublicRequestDeepLink(expoLinkingUrl, "expo_linking_url");
-  }, [expoLinkingUrl, openPublicRequestDeepLink]);
+    if (Platform.OS !== "android") {
+      openRequestEstimateDeepLink(expoLinkingUrl, "expo_linking_url");
+      return;
+    }
+    let active = true;
+    void getLatestNativeViewUrl()
+      .then((nativeUrl) => {
+        if (!active) return;
+        openRequestEstimateDeepLink(
+          nativeUrl ?? expoLinkingUrl,
+          nativeUrl ? "native_view_intent" : "expo_linking_url",
+        );
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        recordPlatformObservability({
+          screen: "request",
+          surface: "startup_bootstrap",
+          category: "ui",
+          event: "request_estimate_linking_url_native_confirmation_failed",
+          result: "error",
+          errorStage: "native_latest_view_url",
+          errorClass: error instanceof Error ? error.name : "Unknown",
+          errorMessage:
+            error instanceof Error ? error.message : String(error),
+          fallbackUsed: true,
+        });
+        openRequestEstimateDeepLink(expoLinkingUrl, "expo_linking_url");
+      });
+    return () => {
+      active = false;
+    };
+  }, [expoLinkingUrl, openRequestEstimateDeepLink]);
 
   // --- Native: public request deep links must not be trapped on auth screens ---
   // --- WEB: нормальный контейнер/скролл ---
@@ -405,7 +871,7 @@ function RootLayout() {
       nativeReadInFlightStartedAt = readStartedAt;
       void getLatestNativeViewUrl()
         .then((url) => {
-          if (active) openPublicRequestDeepLink(url, "native_view_intent");
+          if (active) openRequestEstimateDeepLink(url, "native_view_intent");
         })
         .catch((error: unknown) => {
           if (nativeReadFailureRecorded) return;
@@ -436,24 +902,19 @@ function RootLayout() {
     };
 
     const subscription = RNLinking.addEventListener("url", ({ url }) => {
-      if (active) openPublicRequestDeepLink(url, "url_event");
+      if (active) openRequestEstimateDeepLink(url, "url_event");
     });
     const nativeSubscription = addNativeViewUrlListener((url) => {
-      if (active) openPublicRequestDeepLink(url, "native_view_intent");
+      if (active) openRequestEstimateDeepLink(url, "native_view_intent");
     });
     const appStateSubscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") drainLatestNativeViewUrl();
     });
-    const nativeDrainInterval =
-      Platform.OS === "android"
-        ? setInterval(drainLatestNativeViewUrl, 1_000)
-        : null;
-
     drainLatestNativeViewUrl();
 
     void RNLinking.getInitialURL()
       .then((url) => {
-        if (active) openPublicRequestDeepLink(url, "initial_url");
+        if (active) openRequestEstimateDeepLink(url, "initial_url");
       })
       .catch((error: unknown) => {
         recordPlatformObservability({
@@ -480,9 +941,8 @@ function RootLayout() {
       subscription.remove();
       nativeSubscription.remove();
       appStateSubscription.remove();
-      if (nativeDrainInterval) clearInterval(nativeDrainInterval);
     };
-  }, [openPublicRequestDeepLink]);
+  }, [openRequestEstimateDeepLink]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -591,6 +1051,13 @@ function RootLayout() {
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
               <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.appRoot} />
+              {authState.sessionLoaded &&
+              authState.authSessionState.status === "authenticated" &&
+              authState.authenticatedUserId ? (
+                <RouteReadyMarker
+                  marker={ROUTE_PROOF_MARKERS.authenticatedSession}
+                />
+              ) : null}
               <BuildIdentityMarker />
               <DeferredPlatformOfflineStatusHost
                 enabled={

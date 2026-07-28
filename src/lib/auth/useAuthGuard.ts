@@ -16,7 +16,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { router } from "expo-router";
 
 import { createCancellableDelay, type CancellableDelay } from "../async/mapWithConcurrencyLimit";
-import { isLocalDeveloperFullAccessAllowed } from "../developerOverride";
 import { getSessionSafe } from "../supabaseClient";
 import {
   ensureQueueWorker,
@@ -29,7 +28,6 @@ import {
   type AuthRouteDecision,
   isProtectedAppRoute,
   isPublicRequestEstimatePath,
-  shouldApplyLocalDeveloperFullAccess,
   type AuthLifecycleState,
 } from "./useAuthLifecycle";
 
@@ -264,17 +262,6 @@ export function useAuthGuard(
     const inAuthStack = segments?.[0] === "auth";
     const authExitAgeMs =
       authExitAtRef.current == null ? null : Date.now() - authExitAtRef.current;
-    const localDeveloperFullAccessAllowed = shouldApplyLocalDeveloperFullAccess({
-      isAllowed: isLocalDeveloperFullAccessAllowed(),
-      pathname,
-      segments,
-    });
-    if (localDeveloperFullAccessAllowed && authSessionState.status !== "authenticated") {
-      recordAuthGateEvent("auth_local_developer_full_access_waiting_for_lifecycle", "skipped", {
-        caller: "root_layout",
-        pathname,
-      });
-    }
     const decision = resolveRouteFromAuth({
       sessionLoaded,
       sessionState: authSessionState,

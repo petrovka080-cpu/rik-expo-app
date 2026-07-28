@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 export const ROUTE_PROOF_MARKERS = {
   appRoot: "ROUTE_PROOF_APP_ROOT_READY",
+  authenticatedSession: "ROUTE_PROOF_AUTHENTICATED_SESSION_READY",
   request: "ROUTE_PROOF_REQUEST_ROUTE_READY",
   embeddedAi: "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY",
 } as const;
