@@ -28,6 +28,7 @@ export type AsyncKeyValueStorage = {
 };
 
 const STORAGE_PREFIX = "rik.estimate_revision_durable.v1:";
+const DEFAULT_KEY_DISCOVERY_TIMEOUT_MS = 3_000;
 
 function storageKey(recordKey: string): string {
   return `${STORAGE_PREFIX}${recordKey}`;
@@ -55,12 +56,20 @@ export class AsyncStorageEstimateRevisionDurableStore
 implements EstimateRevisionDurableStore {
   private readonly queues = new Map<string, Promise<void>>();
   private failureInjector: DurableFailureInjector | null;
+  private readonly keyDiscoveryTimeoutMs: number;
 
   constructor(
     private readonly storage: AsyncKeyValueStorage,
-    input: { failureInjector?: DurableFailureInjector | null } = {},
+    input: {
+      failureInjector?: DurableFailureInjector | null;
+      keyDiscoveryTimeoutMs?: number;
+    } = {},
   ) {
     this.failureInjector = input.failureInjector ?? null;
+    this.keyDiscoveryTimeoutMs = Math.max(
+      1,
+      input.keyDiscoveryTimeoutMs ?? DEFAULT_KEY_DISCOVERY_TIMEOUT_MS,
+    );
   }
 
   setFailureInjector(injector: DurableFailureInjector | null): void {
@@ -106,6 +115,29 @@ implements EstimateRevisionDurableStore {
         storageKey(durableRevisionRecordKey(key, version)),
       ),
     );
+  }
+
+  /**
+   * Key discovery is a read-only maintenance operation, not a commit
+   * prerequisite. Some older native AsyncStorage binaries expose getAllKeys
+   * but never settle its Promise. Bound only this side-effect-free operation
+   * so startup and post-commit orphan cleanup remain live without weakening
+   * revision/pointer atomicity.
+   */
+  private async discoverStorageKeys(): Promise<readonly string[]> {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    try {
+      return await Promise.race([
+        this.storage.getAllKeys(),
+        new Promise<readonly string[]>((resolve) => {
+          timeout = setTimeout(() => resolve([]), this.keyDiscoveryTimeoutMs);
+        }),
+      ]);
+    } catch {
+      return [];
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   async readBundle(key: string): Promise<RevisionBundle | null> {
@@ -301,7 +333,7 @@ implements EstimateRevisionDurableStore {
     );
     const prefix = durableRevisionRecordPrefix(key);
     const storedPrefix = storageKey(prefix);
-    const allKeys = await this.storage.getAllKeys();
+    const allKeys = await this.discoverStorageKeys();
     await Promise.all(
       allKeys
         .filter((candidate) => {
@@ -318,16 +350,12 @@ implements EstimateRevisionDurableStore {
   }
 
   async listKeys(): Promise<string[]> {
-    try {
-      const pointerPrefix = storageKey(durablePointerRecordKey(""));
-      return (await this.storage.getAllKeys())
-        .filter((key) => key.startsWith(pointerPrefix))
-        .map((key) => key.slice(STORAGE_PREFIX.length))
-        .map(decodeDurablePointerKey)
-        .filter((key): key is string => key != null)
-        .sort();
-    } catch {
-      return [];
-    }
+    const pointerPrefix = storageKey(durablePointerRecordKey(""));
+    return (await this.discoverStorageKeys())
+      .filter((key) => key.startsWith(pointerPrefix))
+      .map((key) => key.slice(STORAGE_PREFIX.length))
+      .map(decodeDurablePointerKey)
+      .filter((key): key is string => key != null)
+      .sort();
   }
 }

@@ -75,6 +75,28 @@ describe("native AsyncStorage durable fallback", () => {
     expect(store).toBeInstanceOf(AsyncStorageEstimateRevisionDurableStore);
   });
 
+  test("bounds unsupported key discovery without blocking native estimate startup", async () => {
+    const storage = new AsyncStorageDouble();
+    storage.getAllKeys = () => new Promise<string[]>(() => undefined);
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
+      keyDiscoveryTimeoutMs: 20,
+    });
+
+    const startedAt = Date.now();
+    await expect(store.listKeys()).resolves.toEqual([]);
+    expect(Date.now() - startedAt).toBeLessThan(500);
+
+    const written = await store.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    );
+    expect(written).toMatchObject({ status: "WRITTEN" });
+    await expect(store.readBundle("async-storage-estimate")).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+  });
+
   test("keeps R1 visible when a crash happens before the R2 pointer commit", async () => {
     const storage = new AsyncStorageDouble();
     let failurePoint: DurableFailurePoint | null = null;
