@@ -338,6 +338,37 @@ describe("supabaseClient runtime contract", () => {
     expect(JSON.stringify(mockRecordPlatformObservability.mock.calls)).not.toContain("refresh");
   });
 
+  it("bounds a stalled native auth-storage hint read and fails safe", async () => {
+    jest.useFakeTimers();
+    const getItemSpy = jest
+      .spyOn(asyncStorageMock, "getItem")
+      .mockImplementation(() => new Promise(() => undefined));
+    const { module } = loadSupabaseModule({ web: false });
+
+    const result = module.hasPersistedAuthSessionHint({
+      caller: "stalled_native_storage_regression",
+    });
+    await jest.advanceTimersByTimeAsync(8_000);
+
+    await expect(result).resolves.toEqual({
+      hasStoredSession: false,
+      degraded: true,
+    });
+    expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "auth_persisted_session_hint_failed",
+        result: "error",
+        fallbackUsed: true,
+        errorClass: "RequestTimeoutError",
+        extra: expect.objectContaining({
+          timeoutMs: 8_000,
+          caller: "stalled_native_storage_regression",
+        }),
+      }),
+    );
+    getItemSpy.mockRestore();
+  });
+
   it("single-flights concurrent safe session reads", async () => {
     let resolveSession!: (value: unknown) => void;
     const sessionPromise = new Promise((resolve) => {

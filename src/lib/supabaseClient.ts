@@ -570,6 +570,49 @@ function hasAuthTokenPayload(rawValue: string | null): boolean {
   );
 }
 
+const AUTH_STORAGE_HINT_READ_TIMEOUT_MS =
+  REQUEST_TIMEOUT_POLICY_MS.lightweight_lookup;
+
+function readPersistedAuthSessionHintValue(): Promise<string | null> {
+  if (!authStorage) return Promise.resolve(null);
+
+  const startedAt = nowMs();
+  return new Promise<string | null>((resolve, reject) => {
+    let settled = false;
+    const timeoutHandle = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(
+        new RequestTimeoutError({
+          requestClass: "lightweight_lookup",
+          timeoutMs: AUTH_STORAGE_HINT_READ_TIMEOUT_MS,
+          owner: "supabase_client",
+          operation: "authStorage.getItem",
+          elapsedMs: Math.max(0, Math.round(nowMs() - startedAt)),
+          urlPath: "supabase.auth.storage_hint",
+        }),
+      );
+    }, AUTH_STORAGE_HINT_READ_TIMEOUT_MS);
+
+    Promise.resolve()
+      .then(() => authStorage.getItem(SUPABASE_AUTH_STORAGE_KEY))
+      .then(
+        (stored) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeoutHandle);
+          resolve(stored);
+        },
+        (error: unknown) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeoutHandle);
+          reject(error instanceof Error ? error : new Error(String(error)));
+        },
+      );
+  });
+}
+
 export async function hasPersistedAuthSessionHint(
   extra?: Record<string, unknown>,
 ): Promise<PersistedAuthSessionHint> {
@@ -578,7 +621,7 @@ export async function hasPersistedAuthSessionHint(
   }
 
   try {
-    const stored = await authStorage.getItem(SUPABASE_AUTH_STORAGE_KEY);
+    const stored = await readPersistedAuthSessionHintValue();
     const hasStoredSession = hasAuthTokenPayload(stored);
     recordPlatformObservability({
       screen: "request",
@@ -610,6 +653,7 @@ export async function hasPersistedAuthSessionHint(
       sourceKind: "supabase_auth:storage_hint",
       extra: {
         owner: "supabase_client",
+        timeoutMs: AUTH_STORAGE_HINT_READ_TIMEOUT_MS,
         ...(extra ?? {}),
       },
     });
