@@ -1339,7 +1339,7 @@ const TEMPLATES: ExpandedWorkTemplate[] = [
   },
   {
     workKey: "foundation_rebar_reinforcement",
-    aliases: ["foundation_rebar", "rebar_installation"],
+    aliases: ["foundation_rebar"],
     title: "Армирование фундамента",
     category: "concrete",
     defaultQuantity: 2,
