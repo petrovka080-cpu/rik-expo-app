@@ -83,6 +83,7 @@ export const ESTIMATE_REVISION_DB_NAME = "rik-estimate-revision-durable-v1";
 export const ESTIMATE_REVISION_IDB_STORE_NAME = "revision-records";
 export const ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES = {
   memory: 16 * 1024 * 1024,
+  asyncStorage: 16 * 1024 * 1024,
   indexedDb: 24 * 1024 * 1024,
   sqlite: 32 * 1024 * 1024,
 } as const;
