@@ -1,11 +1,8 @@
 import {
   ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   createDurableEnvelope,
-  decodeDurablePointerKey,
-  decodeDurableRecordVersion,
   durablePointerRecordKey,
   durableRevisionRecordKey,
-  durableRevisionRecordPrefix,
   durableWriteFailure,
   durableWriteErrorCode,
   messageFromDurableError,
@@ -28,10 +25,26 @@ export type AsyncKeyValueStorage = {
 };
 
 const STORAGE_PREFIX = "rik.estimate_revision_durable.v1:";
-const DEFAULT_KEY_DISCOVERY_TIMEOUT_MS = 3_000;
 
 function storageKey(recordKey: string): string {
   return `${STORAGE_PREFIX}${recordKey}`;
+}
+
+const LOGICAL_KEY_INDEX_STORAGE_KEY = storageKey("__logical_key_index__");
+const REVISION_INDEX_STORAGE_KEY_PREFIX = storageKey("__revision_index__:");
+
+type DurableLogicalKeyIndex = {
+  schemaVersion: "estimate_revision_durable_logical_key_index_v1";
+  keys: string[];
+};
+
+type DurableRevisionIndex = {
+  schemaVersion: "estimate_revision_durable_revision_index_v1";
+  versions: string[];
+};
+
+function revisionIndexStorageKey(key: string): string {
+  return `${REVISION_INDEX_STORAGE_KEY_PREFIX}${encodeURIComponent(key)}`;
 }
 
 function parseRecord<T>(value: string | null): T | null {
@@ -55,21 +68,16 @@ function parseRecord<T>(value: string | null): T | null {
 export class AsyncStorageEstimateRevisionDurableStore
 implements EstimateRevisionDurableStore {
   private readonly queues = new Map<string, Promise<void>>();
+  private logicalKeyIndexQueue: Promise<void> = Promise.resolve();
   private failureInjector: DurableFailureInjector | null;
-  private readonly keyDiscoveryTimeoutMs: number;
 
   constructor(
     private readonly storage: AsyncKeyValueStorage,
     input: {
       failureInjector?: DurableFailureInjector | null;
-      keyDiscoveryTimeoutMs?: number;
     } = {},
   ) {
     this.failureInjector = input.failureInjector ?? null;
-    this.keyDiscoveryTimeoutMs = Math.max(
-      1,
-      input.keyDiscoveryTimeoutMs ?? DEFAULT_KEY_DISCOVERY_TIMEOUT_MS,
-    );
   }
 
   setFailureInjector(injector: DurableFailureInjector | null): void {
@@ -97,6 +105,84 @@ implements EstimateRevisionDurableStore {
     }
   }
 
+  private async withLogicalKeyIndexQueue<T>(task: () => Promise<T>): Promise<T> {
+    const previous = this.logicalKeyIndexQueue;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    this.logicalKeyIndexQueue = previous.then(() => gate);
+    await previous;
+    try {
+      return await task();
+    } finally {
+      release();
+    }
+  }
+
+  private async readLogicalKeyIndex(): Promise<string[]> {
+    const index = parseRecord<DurableLogicalKeyIndex>(
+      await this.storage.getItem(LOGICAL_KEY_INDEX_STORAGE_KEY),
+    );
+    if (
+      index?.schemaVersion !== "estimate_revision_durable_logical_key_index_v1" ||
+      !Array.isArray(index.keys)
+    ) {
+      return [];
+    }
+    return [...new Set(index.keys.filter((key): key is string =>
+      typeof key === "string" && key.length > 0
+    ))].sort();
+  }
+
+  private async ensureLogicalKeyIndexed(key: string): Promise<void> {
+    await this.withLogicalKeyIndexQueue(async () => {
+      const keys = await this.readLogicalKeyIndex();
+      if (keys.includes(key)) return;
+      await this.storage.setItem(
+        LOGICAL_KEY_INDEX_STORAGE_KEY,
+        JSON.stringify({
+          schemaVersion: "estimate_revision_durable_logical_key_index_v1",
+          keys: [...keys, key].sort(),
+        } satisfies DurableLogicalKeyIndex),
+      );
+    });
+  }
+
+  private async readRevisionIndex(key: string): Promise<string[]> {
+    const index = parseRecord<DurableRevisionIndex>(
+      await this.storage.getItem(revisionIndexStorageKey(key)),
+    );
+    if (
+      index?.schemaVersion !== "estimate_revision_durable_revision_index_v1" ||
+      !Array.isArray(index.versions)
+    ) {
+      return [];
+    }
+    return [...new Set(index.versions.filter((version): version is string =>
+      typeof version === "string" && version.length > 0
+    ))];
+  }
+
+  private async writeRevisionIndex(
+    key: string,
+    versions: readonly string[],
+  ): Promise<void> {
+    await this.storage.setItem(
+      revisionIndexStorageKey(key),
+      JSON.stringify({
+        schemaVersion: "estimate_revision_durable_revision_index_v1",
+        versions: [...new Set(versions)],
+      } satisfies DurableRevisionIndex),
+    );
+  }
+
+  private async stageRevisionIndex(key: string, version: string): Promise<void> {
+    const versions = await this.readRevisionIndex(key);
+    if (versions.includes(version)) return;
+    await this.writeRevisionIndex(key, [...versions, version]);
+  }
+
   private async readPointer(key: string): Promise<DurablePointer | null> {
     const pointer = parseRecord<DurablePointer>(
       await this.storage.getItem(storageKey(durablePointerRecordKey(key))),
@@ -115,29 +201,6 @@ implements EstimateRevisionDurableStore {
         storageKey(durableRevisionRecordKey(key, version)),
       ),
     );
-  }
-
-  /**
-   * Key discovery is a read-only maintenance operation, not a commit
-   * prerequisite. Some older native AsyncStorage binaries expose getAllKeys
-   * but never settle its Promise. Bound only this side-effect-free operation
-   * so startup and post-commit orphan cleanup remain live without weakening
-   * revision/pointer atomicity.
-   */
-  private async discoverStorageKeys(): Promise<readonly string[]> {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    try {
-      return await Promise.race([
-        this.storage.getAllKeys(),
-        new Promise<readonly string[]>((resolve) => {
-          timeout = setTimeout(() => resolve([]), this.keyDiscoveryTimeoutMs);
-        }),
-      ]);
-    } catch {
-      return [];
-    } finally {
-      if (timeout) clearTimeout(timeout);
-    }
   }
 
   async readBundle(key: string): Promise<RevisionBundle | null> {
@@ -221,6 +284,12 @@ implements EstimateRevisionDurableStore {
         ) {
           throw new Error("ASYNC_STORAGE_STAGED_REVISION_CHECKSUM_MISMATCH");
         }
+
+        // Both indexes are staged before the pointer commit. An interruption
+        // here can expose only an inert index entry; a committed pointer can
+        // therefore never become undiscoverable after process restart.
+        await this.stageRevisionIndex(key, serialized.version);
+        await this.ensureLogicalKeyIndexed(key);
 
         this.inject("before_pointer_switch");
         const pointerBeforeCommit = await this.readPointer(key);
@@ -331,18 +400,17 @@ implements EstimateRevisionDurableStore {
       [pointer?.currentVersion, pointer?.previousVersion]
         .filter((value): value is string => Boolean(value)),
     );
-    const prefix = durableRevisionRecordPrefix(key);
-    const storedPrefix = storageKey(prefix);
-    const allKeys = await this.discoverStorageKeys();
+    const versions = await this.readRevisionIndex(key);
     await Promise.all(
-      allKeys
-        .filter((candidate) => {
-          if (!candidate.startsWith(storedPrefix)) return false;
-          const recordKey = candidate.slice(STORAGE_PREFIX.length);
-          return !retained.has(decodeDurableRecordVersion(recordKey, prefix));
-        })
-        .map((candidate) => this.storage.removeItem(candidate)),
+      versions
+        .filter((version) => !retained.has(version))
+        .map((version) =>
+          this.storage.removeItem(
+            storageKey(durableRevisionRecordKey(key, version)),
+          )
+        ),
     );
+    await this.writeRevisionIndex(key, [...retained]);
   }
 
   async deleteOrphans(key: string): Promise<void> {
@@ -350,12 +418,10 @@ implements EstimateRevisionDurableStore {
   }
 
   async listKeys(): Promise<string[]> {
-    const pointerPrefix = storageKey(durablePointerRecordKey(""));
-    return (await this.discoverStorageKeys())
-      .filter((key) => key.startsWith(pointerPrefix))
-      .map((key) => key.slice(STORAGE_PREFIX.length))
-      .map(decodeDurablePointerKey)
-      .filter((key): key is string => key != null)
-      .sort();
+    try {
+      return await this.readLogicalKeyIndex();
+    } catch {
+      return [];
+    }
   }
 }

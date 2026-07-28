@@ -75,16 +75,16 @@ describe("native AsyncStorage durable fallback", () => {
     expect(store).toBeInstanceOf(AsyncStorageEstimateRevisionDurableStore);
   });
 
-  test("bounds unsupported key discovery without blocking native estimate startup", async () => {
+  test("never calls unsupported global key discovery on startup or commit", async () => {
     const storage = new AsyncStorageDouble();
-    storage.getAllKeys = () => new Promise<string[]>(() => undefined);
-    const store = new AsyncStorageEstimateRevisionDurableStore(storage, {
-      keyDiscoveryTimeoutMs: 20,
-    });
+    let globalDiscoveryCalls = 0;
+    storage.getAllKeys = () => {
+      globalDiscoveryCalls += 1;
+      throw new Error("OLD_NATIVE_GET_ALL_KEYS_SYNCHRONOUSLY_BLOCKS_OR_THROWS");
+    };
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
 
-    const startedAt = Date.now();
     await expect(store.listKeys()).resolves.toEqual([]);
-    expect(Date.now() - startedAt).toBeLessThan(500);
 
     const written = await store.writeBundleAtomically(
       "async-storage-estimate",
@@ -95,6 +95,18 @@ describe("native AsyncStorage durable fallback", () => {
     await expect(store.readBundle("async-storage-estimate")).resolves.toMatchObject({
       estimateDraftRevisionState: { currentRevisionId: "r1" },
     });
+    expect(globalDiscoveryCalls).toBe(0);
+
+    const restartedStore = new AsyncStorageEstimateRevisionDurableStore(storage);
+    await expect(restartedStore.listKeys()).resolves.toEqual([
+      "async-storage-estimate",
+    ]);
+    await expect(
+      restartedStore.recoverLastValid("async-storage-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+    });
+    expect(globalDiscoveryCalls).toBe(0);
   });
 
   test("keeps R1 visible when a crash happens before the R2 pointer commit", async () => {
