@@ -68,7 +68,6 @@ describe("native AsyncStorage durable fallback", () => {
   test("factory selects the crash-safe fallback when the installed binary lacks ExpoSQLite", () => {
     const storage = new AsyncStorageDouble();
     const store = createEstimateRevisionDurableStore({
-      nativeModuleAvailable: () => false,
       asyncStorage: storage,
     });
 
@@ -78,7 +77,6 @@ describe("native AsyncStorage durable fallback", () => {
   test("falls back when an advertised ExpoSQLite capability never becomes operational", async () => {
     const storage = new AsyncStorageDouble();
     const store = createEstimateRevisionDurableStore({
-      nativeModuleAvailable: () => true,
       sqliteModule: {
         openDatabaseAsync: () =>
           new Promise(() => {
