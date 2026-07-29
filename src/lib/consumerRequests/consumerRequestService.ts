@@ -391,6 +391,7 @@ function createConsumerRepairItemsFromDraftRevision(
       calculationTrace: row.calculationTrace,
       sourceParameters: {
         ...(row.sourceParameters ?? {}),
+        includedInProcurement: row.includedInProcurement,
         estimateDraftRevisionId: revision.revisionId,
         estimateDraftPreviousRevisionId: revision.previousRevisionId,
         estimateDraftSource: revision.source,
@@ -609,6 +610,28 @@ export function createConsumerRepairRequestDraft(input: {
   const initialRevision = estimateDraftRevisionState?.revisions.find(
     (revision) => revision.revisionId === estimateDraftRevisionState.currentRevisionId,
   ) ?? null;
+  const initialRevisionRowByCode = new Map(
+    initialRevision?.boq.rows.map((row) => [row.rowId, row]) ?? [],
+  );
+  const revisionBoundItems = canonicalElectricalState && initialRevision
+    ? items.map((item) => {
+        const rowCode = String(item.sourceParameters?.rowCode ?? "");
+        const revisionRow = initialRevisionRowByCode.get(rowCode);
+        if (!revisionRow) return item;
+        return {
+          ...item,
+          sourceParameters: {
+            ...(item.sourceParameters ?? {}),
+            includedInProcurement: revisionRow.includedInProcurement,
+            estimateDraftRevisionId: initialRevision.revisionId,
+            estimateDraftPreviousRevisionId: initialRevision.previousRevisionId,
+            estimateDraftSource: initialRevision.source,
+            estimateDraftSelectedTemplateId:
+              initialRevision.selectedTemplateId,
+          },
+        };
+      })
+    : items;
   const projectedCanonicalParameterSession = initialRevision
     ? projectEstimateDraftRevisionToCanonicalSession({
         revision: initialRevision,
@@ -644,7 +667,7 @@ export function createConsumerRepairRequestDraft(input: {
     : null;
   const bundle: ConsumerRepairDraftBundle = {
     draft,
-    items,
+    items: revisionBoundItems,
     media: [],
     pdfs: [],
     estimateDraftRevisionState,
