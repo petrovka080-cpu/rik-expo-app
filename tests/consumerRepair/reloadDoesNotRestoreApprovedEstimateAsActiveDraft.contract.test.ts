@@ -50,6 +50,10 @@ describe("reload does not restore approved estimate as active draft", () => {
       consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
       problemText: prompt,
       repairType: "repair",
+      city: "Bishkek",
+      addressText: "Test address 17",
+      preferredTimeText: "weekday morning",
+      contactPhone: "+996 700 000 001",
       aiDraft: buildConsumerRepairAiDraft(prompt),
     });
 
@@ -62,6 +66,10 @@ describe("reload does not restore approved estimate as active draft", () => {
     expect(state.bundle?.draft.id).toBe(draft.draft.id);
     expect(state.problemText).toBe("");
     expect(state.selectedWork).toBeNull();
+    expect(state.city).toBe("Bishkek");
+    expect(state.addressText).toBe("Test address 17");
+    expect(state.preferredTimeText).toBe("weekday morning");
+    expect(state.contactPhone).toBe("+996 700 000 001");
     expect(state.history.map((bundle) => bundle.draft.id)).toEqual([draft.draft.id]);
   });
 

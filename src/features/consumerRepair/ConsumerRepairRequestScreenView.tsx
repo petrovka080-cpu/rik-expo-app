@@ -5,6 +5,7 @@ import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import type {
+  ConsumerRepairDraftBundle,
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
@@ -23,6 +24,17 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
+
+export function consumerRepairLegacyEstimateRequiresRebuild(
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  return Boolean(
+    bundle &&
+    bundle.canonicalParameterSession == null &&
+    bundle.structuredEstimatePayload == null &&
+    bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
+  );
+}
 
 type ConsumerRepairRequestScreenViewProps = {
   state: ConsumerRepairRequestScreenState;
@@ -121,11 +133,8 @@ export function ConsumerRepairRequestScreenView({
         revision.revisionId ===
         renderModel.bundle?.estimateDraftRevisionState?.currentRevisionId,
     ) ?? null;
-  const legacyEstimateRequiresRebuild = Boolean(
-    renderModel.bundle &&
-    renderModel.bundle.canonicalParameterSession == null &&
-    renderModel.bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
-  );
+  const legacyEstimateRequiresRebuild =
+    consumerRepairLegacyEstimateRequiresRebuild(renderModel.bundle);
   const approvalBlockedByEstimate = Boolean(
     renderModel.bundle?.canonicalParameterSession?.status ===
       "BLOCKING_REQUIRED" ||

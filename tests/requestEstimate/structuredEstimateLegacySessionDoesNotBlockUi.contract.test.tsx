@@ -2,6 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
+import { consumerRepairLegacyEstimateRequiresRebuild } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenView";
 import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 
@@ -31,6 +32,7 @@ describe("structured estimate legacy session UI ownership", () => {
     });
     expect(bundle.structuredEstimatePayload?.workKey).toMatch(/waterproofing/);
     expect(bundle.estimateDraftSession?.status).toBe("PARAMETERS_REQUIRED");
+    expect(consumerRepairLegacyEstimateRequiresRebuild(bundle)).toBe(false);
     expect(bundle.items.length).toBeGreaterThan(0);
     const requestViewSource = require("node:fs").readFileSync(
       "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx",
