@@ -110,6 +110,12 @@ function normalizeEstimateDraftSessionCompatibilityView(
 
 function getWebDurableStorage(): Storage | null {
   try {
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.product === "ReactNative"
+    ) {
+      return null;
+    }
     if (typeof localStorage !== "undefined") return localStorage;
   } catch {
     return null;

@@ -42,6 +42,10 @@ function nativeBundle(id: string): RevisionBundle {
 
 describe("consumer repair native durable storage platform boundary", () => {
   const originalPlatformOs = Platform.OS;
+  const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "navigator",
+  );
 
   afterEach(() => {
     jest.useRealTimers();
@@ -49,6 +53,15 @@ describe("consumer repair native durable storage platform boundary", () => {
       configurable: true,
       get: () => originalPlatformOs,
     });
+    if (originalNavigatorDescriptor) {
+      Object.defineProperty(
+        globalThis,
+        "navigator",
+        originalNavigatorDescriptor,
+      );
+    } else {
+      Reflect.deleteProperty(globalThis, "navigator");
+    }
     delete (globalThis as { localStorage?: Storage }).localStorage;
     __resetConsumerRepairRequestStoreForTests();
   });
@@ -57,6 +70,10 @@ describe("consumer repair native durable storage platform boundary", () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
       get: () => "android",
+    });
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { product: "ReactNative" },
     });
     let webStorageAccesses = 0;
     Object.defineProperty(globalThis, "localStorage", {
