@@ -58,7 +58,7 @@ function recordConsumerRepairEstimateBuildTiming(
   stage: string,
   startedAt: number,
 ): void {
-  if (!__DEV__) return;
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
   console.info("[RikEstimateBuild]", JSON.stringify({
     stage,
     elapsedMs: Date.now() - startedAt,

@@ -1469,7 +1469,13 @@ export function buildGlobalEstimateFromEstimatorKernel(
 ): GlobalEstimateResult {
   const kernelBuildStartedAt = Date.now();
   const recordKernelBuildTiming = (stage: string): void => {
-    if (!__DEV__ || plan.workKey !== "electrical_area_installation") return;
+    if (
+      typeof __DEV__ === "undefined" ||
+      !__DEV__ ||
+      plan.workKey !== "electrical_area_installation"
+    ) {
+      return;
+    }
     console.info("[RikGlobalEstimateKernelBuild]", JSON.stringify({
       stage,
       elapsedMs: Date.now() - kernelBuildStartedAt,

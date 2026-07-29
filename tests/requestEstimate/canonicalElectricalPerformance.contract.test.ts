@@ -34,7 +34,7 @@ describe("canonical electrical production performance budgets", () => {
       rowCounts.add(draft.items.length);
     }
 
-    expect(rowCounts).toEqual(new Set([33]));
+    expect(rowCounts).toEqual(new Set([132]));
     expect(Math.max(...durations)).toBeLessThan(1_000);
     expect(percentile95(durations)).toBeLessThan(5_000);
   });

@@ -13,6 +13,10 @@ import {
   visibleEstimateLabelViolations,
   visibleObjectLabelForKey,
 } from "../../estimatePresentation/visibleEstimateLabelPolicy";
+import {
+  ELECTRICAL_PROFESSIONAL_BOQ_NORM_METADATA,
+  buildElectricalProfessionalBoqV1Rows,
+} from "../../estimate/v4/electrical/electricalProfessionalBoqV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -510,6 +514,9 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   const demolitionIncluded = booleanParameter("demolition_included", false);
   const installationHeightM = numberParameter("installation_height_m");
   const accessCondition = stringParameter("access_condition", "unspecified");
+  const estimatedLoadKnown =
+    hasParameter("estimated_load_kw") &&
+    estimatedLoadKw > 0;
   const cableSpecificationKnown =
     hasParameter("cable_type") &&
     hasParameter("cable_section_mm2") &&
@@ -631,15 +638,17 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
       "route_length_m",
       ["route_length_m", "wiring_method", "containment_type"],
     );
-    const chasingRow = mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice);
-    push(
-      chasingBasisKnown
-        ? chasingRow
-        : blocked(chasingRow, wiringMethodKnown ? ["wall_material"] : ["wiring_method"]),
-      "route_length_m",
-      ["route_length_m", "wiring_method", "containment_type", "wall_material"],
-    );
-    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабеля и кабельных линий", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
+    if (!(wiringMethod === "open" && containmentType === "cable_channel")) {
+      const chasingRow = mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice);
+      push(
+        chasingBasisKnown
+          ? chasingRow
+          : blocked(chasingRow, wiringMethodKnown ? ["wall_material"] : ["wiring_method"]),
+        "route_length_m",
+        ["route_length_m", "wiring_method", "containment_type", "wall_material"],
+      );
+    }
+    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабельных линий — прокладка кабеля", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
     push(mepRow("labor", "electrical_cable_termination", "Оконцевание и подключение кабельных линий", "pcs", Math.max(2, lines * 2), 540), "line_count × 2", ["line_count"]);
   } else {
     push(
@@ -704,7 +713,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     );
     push(
       blocked(
-        mepRow("labor", "electrical_cable_laying_parameters_required", "Прокладка кабеля: длина трассы и количество линий требуют уточнения", "linear_m", 0, 0),
+        mepRow("labor", "electrical_cable_laying_parameters_required", "Прокладка кабельных линий — прокладка кабеля: длина трассы и количество линий требуют уточнения", "linear_m", 0, 0),
         ["route_length_m", "line_count", "cable_reserve_factor"],
       ),
       "not_calculated_until(route_length_m, line_count)",
@@ -741,18 +750,19 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     const loadLabel = estimatedLoadKw > 0
       ? `, расчётная нагрузка ${estimatedLoadKw} кВт`
       : ", нагрузка требует уточнения";
-    push(mepRow("materials", "electrical_panel", `Щит и автоматика: ${phaseCount === 3 ? "трёхфазное исполнение" : "однофазное исполнение"}${loadLabel}`, "set", 1, phaseCount === 3 ? 62000 : 42000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw"]);
-    push(mepRow("labor", "electrical_panel_mount", "Монтаж и расключение электрического щита", "set", 1, phaseCount === 3 ? 36000 : 28000), "panel_included ? 1 : 0", ["panel_included", "phase_count"]);
+    const panelModules = Math.max(12, (groups + 2) * 2);
+    push(mepRow("materials", "electrical_panel", `Корпус распределительного щита на ${panelModules} модулей: ${phaseCount === 3 ? "трёхфазное исполнение" : "однофазное исполнение"}${loadLabel}`, "pcs", 1, phaseCount === 3 ? 22000 : 14000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw", "group_count"]);
+    push(mepRow("labor", "electrical_panel_mount", "Установка и крепление корпуса распределительного щита", "pcs", 1, phaseCount === 3 ? 12500 : 9800), "panel_included ? 1 : 0", ["panel_included", "phase_count", "group_count"]);
   }
   if (protectiveDevicesIncluded) {
     const protectiveDeviceCount = estimatedLoadKw > 0
       ? Math.max(groups + 2, Math.ceil(estimatedLoadKw / 3.5) + 1)
       : groups + 2;
-    push(mepRow("materials", "electrical_breakers", "Автоматы, УЗО / дифзащита по группам и нагрузке", "pcs", protectiveDeviceCount, 1850, "electrical_breakers"), "max(group_count + 2, ceil(estimated_load_kw / 3.5) + 1)", ["group_count", "protective_devices_included", "phase_count", "estimated_load_kw"]);
+    push(mepRow("materials", "electrical_breakers", "Автоматические выключатели групповых цепей: номиналы и характеристики по расчёту", "pcs", protectiveDeviceCount, 1200, "electrical_breakers"), "max(group_count + 2, ceil(estimated_load_kw / 3.5) + 1)", ["group_count", "protective_devices_included", "phase_count", "estimated_load_kw"]);
   }
   if (groundingIncluded) {
-    push(mepRow("materials", "electrical_ground_bus", "Шина PE/N и комплект заземления", "set", 1, 3800, "electrical_panel_accessories"), "grounding_included ? 1 : 0", ["grounding_included"]);
-    push(mepRow("labor", "electrical_grounding_test", "Проверка заземления и непрерывности защитного проводника", "set", 1, 6200), "grounding_included ? 1 : 0", ["grounding_included"]);
+    push(mepRow("materials", "electrical_ground_bus", "Раздельные шины PE и N распределительного щита", "set", 1, 3800, "electrical_panel_accessories"), "grounding_included ? 1 : 0", ["grounding_included"]);
+    push(mepRow("labor", "electrical_grounding_test", "Проверка присоединения вводного PE-проводника к главной защитной шине", "set", 1, 6200), "grounding_included ? 1 : 0", ["grounding_included"]);
   }
   if (demolitionIncluded && routeLength > 0) {
     push(mepRow("labor", "electrical_demolition", "Демонтаж существующей проводки", "linear_m", routeLength, 125), "demolition_included ? route_length_m : 0", ["demolition_included", "route_length_m"]);
@@ -761,8 +771,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   push(mepRow("labor", "electrical_junction_box_install", "Монтаж распределительных коробок", "pcs", groups, 520), "group_count", ["group_count"]);
   push(mepRow("labor", "electrical_line_continuity", "Прозвонка линий и проверка цепей", "set", 1, 6800), "1 комплекс", ["line_count"]);
   push(mepRow("labor", "electrical_insulation_test", "Проверка сопротивления изоляции", "set", 1, 9200), "1 комплекс", ["line_count"]);
-  push(mepRow("labor", "electrical_group_labeling", "Маркировка групп в щите и на линиях", "set", 1, 4200), "1 комплект", ["group_count"]);
-  push(mepRow("labor", "electrical_as_built_circuit_schedule", "Исполнительная однолинейная схема и ведомость групп", "set", 1, 6800), "1 комплект исполнительной схемы", ["group_count", "phase_count", "panel_included"]);
+  push(mepRow("labor", "electrical_group_labeling", "Изготовление и размещение кабельных маркеров отходящих линий", "set", 1, 4200), "1 комплект", ["group_count"]);
+  push(mepRow("labor", "electrical_as_built_circuit_schedule", "Исполнительная однолинейная схема электроснабжения", "set", 1, 6800), "1 комплект исполнительной схемы", ["group_count", "phase_count", "panel_included"]);
   if (wiringMethod !== "open") {
     push(mepRow("equipment", "electrical_chaser", "Штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(Math.max(area, routeLength) / 90)), 6800), "max(1, ceil(max(area_m2, route_length_m) / 90))", ["area_m2", "route_length_m", "wiring_method", "wall_material"]);
   }
@@ -792,7 +802,51 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
       ["installation_height_m", "access_condition", "area_m2", "route_length_m"],
     );
   }
-  push(mepRow("equipment", "electrical_testing_tools", "Тестер и измеритель сопротивления изоляции (мегаомметр)", "set", 1, 5200), "1 комплект", []);
+  for (const specification of buildElectricalProfessionalBoqV1Rows({
+    areaM2: area,
+    routeLengthM: routeLength,
+    totalCableLengthM: totalCableLength,
+    outletCount: outlets,
+    switchCount: switches,
+    lightingPointCount: lightingPoints,
+    lineCount: lines,
+    groupCount: groups,
+    phaseCount,
+    panelIncluded,
+    protectiveDevicesIncluded,
+    groundingIncluded,
+    wiringMethod,
+    containmentType,
+    containmentKnown,
+    cableSpecificationKnown,
+    estimatedLoadKnown,
+  })) {
+    const norm = ELECTRICAL_PROFESSIONAL_BOQ_NORM_METADATA[
+      specification.normKey
+    ];
+    const detailedRow: DynamicProfessionalBoqRow = {
+      ...mepRow(
+        specification.sectionType,
+        specification.code,
+        specification.name,
+        specification.unit,
+        specification.quantity,
+        specification.unitPrice,
+        specification.materialKey,
+      ),
+      ...norm,
+      comment:
+        "Electrical professional BOQ scope row; exact norm table, device rating and current rate remain subject to the stated review status.",
+    };
+    push(
+      specification.blockerIds?.length
+        ? blocked(detailedRow, specification.blockerIds)
+        : detailedRow,
+      specification.quantityFormula,
+      specification.sourceParameterIds,
+    );
+  }
+  push(mepRow("equipment", "electrical_testing_tools", "Измеритель сопротивления изоляции (мегаомметр)", "set", 1, 5200), "1 комплект", []);
   push(mepRow("delivery", "electrical_material_delivery", "Доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(Math.max(area, routeLength) / 140)), 5200), "max(1, ceil(max(area_m2, route_length_m) / 140))", ["area_m2", "route_length_m"]);
   return rows;
 }

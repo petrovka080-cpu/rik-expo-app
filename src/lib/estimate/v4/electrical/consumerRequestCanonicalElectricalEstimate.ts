@@ -120,11 +120,18 @@ function affectedRowIds(
   );
   if (!definition) return [];
   return rows
-    .filter((row) =>
-      definition.affectsRowCodePrefixes.some((prefix) =>
+    .filter((row) => {
+      const declaredByPrefix = definition.affectsRowCodePrefixes.some((prefix) =>
         row.rowId === prefix || row.rowId.startsWith(`${prefix}__`)
-      )
-    )
+      );
+      const traceParameters = /(?:^|;\s*)parameters=([^;]*)/.exec(
+        row.calculationTrace ?? "",
+      )?.[1]
+        ?.split(",")
+        .map((key) => key.trim())
+        .filter(Boolean) ?? [];
+      return declaredByPrefix || traceParameters.includes(parameterId);
+    })
     .map((row) => row.rowId);
 }
 

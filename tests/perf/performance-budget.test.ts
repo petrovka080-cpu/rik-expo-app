@@ -212,7 +212,7 @@ describe("performance budget вЂ” bundle module count", () => {
       "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts",
       "src/lib/estimate/v4/electrical/consumerRequestCanonicalElectricalEstimate.ts",
       "src/lib/estimate/v4/electrical/electricalCanonicalV1.ts",
-      "src/lib/estimate/v4/electrical/index.ts",
+      "src/lib/estimate/v4/electrical/electricalProfessionalBoqV1.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
     const sRequestEstimateLaunchLifecycleOwnerFiles = [
       "src/lib/navigation/requestEstimateLaunchLifecycle.test.ts",
