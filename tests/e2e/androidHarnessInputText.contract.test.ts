@@ -86,16 +86,29 @@ describe("Android harness text input contracts", () => {
     expect(routeBootstrapHarness).not.toContain('execFileSync("adb", args');
   });
 
-  it("keeps the canonical API34 replay on working warm links and scrollable output gutters", () => {
+  it("keeps canonical API34 replay fail-closed on auth, prompt submission and bounded output scrolling", () => {
     const canonicalReplay = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
 
     expect(canonicalReplay).toContain('return `rik://ai?${query.toString()}`');
     expect(canonicalReplay).toContain("? [buildAndroidHostUri(testCase), buildUri(testCase)]");
+    expect(canonicalReplay).toContain("ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID");
+    expect(canonicalReplay).toContain("authenticatedAppRootOrAuthReady");
+    expect(canonicalReplay).toContain("requiresAuthenticatedSession");
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
     expect(canonicalReplay).toContain("const REQUEST_SCROLL_X_RATIO = 0.065");
+    expect(canonicalReplay).toContain("const requestStartedAtTop");
+    expect(canonicalReplay).toContain('captures.push(await captureReplayScreen(`${captureId}_settle_${index}`))');
+    expect(canonicalReplay).toContain("!captures.some(latestAssistantResponseVisible)");
+    expect(canonicalReplay).toContain('testCase.route === "/ai?context=foreman" ? "down" : "up"');
     expect(canonicalReplay).toContain("scrollableOutputBounds(captures[captures.length - 1], testCase)");
     expect(canonicalReplay).toContain('if (testCase.route !== "/request") focusAndroidBounds(bounds)');
     expect(canonicalReplay).toContain("источник|уверенн|довер|confidence");
     expect(canonicalReplay).toContain("protectedRoute: buildUriCandidates(testCase)[0]");
+    expect(canonicalReplay).toMatch(
+      /const promptSubmitted\s*=\s*requestOutputProofSubmitted\(/,
+    );
+    expect(canonicalReplay).not.toMatch(
+      /const promptSubmitted\s*=\s*routeMarkerProven\s*\|\|/,
+    );
   });
 });

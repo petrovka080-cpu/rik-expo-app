@@ -26,7 +26,11 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).toContain("function appRootProofReady");
     expect(runner).toContain("function requestRouteProofReady");
     expect(runner).toContain("function appRootOrAuthReady");
-    expect(runner).toContain("ready: appRootOrAuthReady");
+    expect(runner).toContain("function authenticatedAppRootOrAuthReady");
+    expect(runner).toContain("const ready = requireAuthenticatedSession");
+    expect(runner).toContain("? authenticatedAppRootOrAuthReady");
+    expect(runner).toContain(": appRootOrAuthReady");
+    expect(runner).toContain("ready,");
     expect(runner).toContain("if (isAuthLoginCapture(root)) break");
     expect(runner).toContain("const rootMarkerProven = appRootProofReady(root)");
     expect(runner).toContain("appRootMarkerProven = appRootProofReady(root)");

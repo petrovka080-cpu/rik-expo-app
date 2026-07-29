@@ -33,6 +33,7 @@ import { currentGitHead, resolveCanonicalApi34Evidence } from "./canonicalApi34E
 import { replaceMarkdownSection } from "./proofMarkdownSection";
 import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
 import {
+  ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID,
   createAndroidHarness,
   isAndroidEmbeddedAiRouteSurfaceXml,
   isAndroidAppRootSurfaceXml,
@@ -833,6 +834,31 @@ function outputEvidenceComplete(text: string, testCase: Api34ReplayCase): boolea
   );
 }
 
+function latestAssistantResponseVisible(
+  screen: ReturnType<typeof captureScreenInDir>,
+): boolean {
+  return (
+    screen.xml.includes('resource-id="ai.assistant.response"') &&
+    !screen.xml.includes('resource-id="ai.assistant.loading"')
+  );
+}
+
+function authenticatedSessionVisible(
+  screen: ReturnType<typeof captureScreenInDir>,
+): boolean {
+  return screen.xml.includes(ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID);
+}
+
+function requestOutputStartsAtTop(
+  captures: ReturnType<typeof captureScreenInDir>[],
+): boolean {
+  const text = mergeVisibleText(captures);
+  return (
+    /ПРЕДВАРИТЕЛЬНАЯ ПРОФЕССИОНАЛЬНАЯ СМЕТА/i.test(text) &&
+    /\b1\.1\s/u.test(text)
+  );
+}
+
 async function recoverBlankCapture(
   captures: ReturnType<typeof captureScreenInDir>[],
   captureId: string,
@@ -868,13 +894,34 @@ async function captureScrollableOutput(
     return { captures, outputText, best: bestCaptureForResult(captures, testCase) };
   }
 
+  const requestStartedAtTop =
+    testCase.route === "/request" && requestOutputStartsAtTop(captures);
   for (let index = 1; index <= 6; index += 1) {
     if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
+    if (testCase.route === "/ai?context=foreman") {
+      await sleep(1500);
+      captures.push(await captureReplayScreen(`${captureId}_settle_${index}`));
+      await recoverBlankCapture(captures, `${captureId}_settle_${index}_recovered`);
+      if (isRuntimeLoadError(captures[captures.length - 1])) break;
+      continue;
+    }
     const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
-    const xRatio = testCase.route === "/request" ? REQUEST_SCROLL_X_RATIO : 0.5;
-    if (testCase.route !== "/request") focusAndroidBounds(bounds);
+    const direction = requestStartedAtTop ? "up" : "down";
     try {
-      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "down", 850, xRatio)], 8000);
+      runAdb(
+        [
+          "shell",
+          "input",
+          "swipe",
+          ...swipeWithinBoundsArgs(
+            bounds,
+            direction,
+            850,
+            REQUEST_SCROLL_X_RATIO,
+          ),
+        ],
+        8000,
+      );
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -887,11 +934,25 @@ async function captureScrollableOutput(
   for (let index = 1; index <= 8; index += 1) {
     if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
+    if (
+      testCase.route === "/ai?context=foreman" &&
+      !captures.some(latestAssistantResponseVisible)
+    ) {
+      await sleep(1400);
+      captures.push(await captureReplayScreen(`${captureId}_settle_${index + 6}`));
+      await recoverBlankCapture(
+        captures,
+        `${captureId}_settle_${index + 6}_recovered`,
+      );
+      continue;
+    }
     const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
     const xRatio = testCase.route === "/request" ? REQUEST_SCROLL_X_RATIO : 0.5;
+    const direction =
+      testCase.route === "/ai?context=foreman" ? "down" : "up";
     if (testCase.route !== "/request") focusAndroidBounds(bounds);
     try {
-      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "up", 650, xRatio)], 8000);
+      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, direction, 650, xRatio)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -949,6 +1010,13 @@ function appRootOrAuthReady(screen: ReplayScreen): boolean {
   return appRootProofReady(screen) || isAuthLoginCapture(screen);
 }
 
+function authenticatedAppRootOrAuthReady(screen: ReplayScreen): boolean {
+  return (
+    isAuthLoginCapture(screen) ||
+    (appRootProofReady(screen) && authenticatedSessionVisible(screen))
+  );
+}
+
 function requestRouteProofReady(screen: ReplayScreen): boolean {
   return (
     requestRouteReady(screen) &&
@@ -998,15 +1066,21 @@ function requestOutputProofSubmitted(params: {
   );
 }
 
-async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
+async function openAppRootForReplay(
+  captureId: string,
+  requireAuthenticatedSession = false,
+): Promise<ReturnType<typeof captureScreenInDir>> {
   setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
   const openError = tryOpenDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
+  const ready = requireAuthenticatedSession
+    ? authenticatedAppRootOrAuthReady
+    : appRootOrAuthReady;
   const screen = await waitForAndroidScreen({
     captureId,
     timeoutMs: 90_000,
-    ready: appRootOrAuthReady,
+    ready,
   });
-  if (openError && !appRootOrAuthReady(screen)) {
+  if (openError && !ready(screen)) {
     return { ...screen, error: screen.error ?? openError };
   }
   return screen;
@@ -1025,7 +1099,7 @@ async function recoverAuthForCaseRoute(params: {
 }): Promise<ReturnType<typeof captureScreenInDir> | null> {
   const loggedIn = await ensureReplayAuthSession({
     auth: params.auth,
-    protectedRoute: buildUri(params.testCase),
+    protectedRoute: buildUriCandidates(params.testCase)[0],
     successPredicate: (xml) => routeReadyXmlForCase(params.testCase, xml),
     artifactBase: params.artifactBase,
   });
@@ -1042,7 +1116,12 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
   let last: ReturnType<typeof captureScreenInDir> | null = null;
   const routeBase = testCase.afterPromptCaptureId.replace("_after_prompt", "");
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const root = await openAppRootForReplay(`${routeBase}_root_attempt_${attempt}`);
+    const requiresAuthenticatedSession =
+      testCase.route === "/ai?context=foreman";
+    const root = await openAppRootForReplay(
+      `${routeBase}_root_attempt_${attempt}`,
+      requiresAuthenticatedSession,
+    );
     const rootMarkerProven = appRootProofReady(root);
     if (!rootMarkerProven) {
       last = root;
@@ -1067,6 +1146,13 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
         dismissBlockingAndroidSurface(root);
         await resetAndroidAppForReplay();
       }
+      continue;
+    }
+    if (
+      requiresAuthenticatedSession &&
+      !authenticatedSessionVisible(root)
+    ) {
+      last = root;
       continue;
     }
     const uris = buildUriCandidates(testCase);
@@ -1441,10 +1527,14 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         const visibleRows = visibleRowsFromText(outputText);
         keywordHits = countKeywordHits(outputText, testCase.workSpecificKeywords);
         const forbiddenContextHit = countKeywordHits(outputText, testCase.forbiddenKeywords ?? []) > 0;
-        const responseProven = afterPromptCapture.captures.some(responseVisible) || keywordHits >= 4;
+        const responseProven =
+          testCase.route === "/ai?context=foreman"
+            ? afterPromptCapture.captures.some(latestAssistantResponseVisible) ||
+              keywordHits >= 4
+            : afterPromptCapture.captures.some(responseVisible) ||
+              keywordHits >= 4;
         const workSpecificRowsFound = keywordHits >= 4;
         const promptSubmitted =
-          routeMarkerProven ||
           requestOutputProofSubmitted({
             testCase,
             outputText,
