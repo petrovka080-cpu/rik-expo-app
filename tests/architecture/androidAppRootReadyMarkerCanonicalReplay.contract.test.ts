@@ -72,10 +72,13 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).not.toContain("prompt_submitted: routeMarkerProven");
   });
 
-  it("uses only registered canonical route URIs during canonical replay", () => {
+  it("uses only the device-proven AI URI and its registered historical fallback during canonical replay", () => {
     const runner = source();
 
-    expect(runner).toContain("return [buildUri(testCase)]");
+    expect(runner).toContain('return `rik://ai?${query.toString()}`');
+    expect(runner).toContain('return `rik:///ai?${query.toString()}`');
+    expect(runner).toContain("? [buildAndroidHostUri(testCase), buildUri(testCase)]");
+    expect(runner).toContain(": [buildUri(testCase)]");
     expect(runner).not.toContain('buildUri(testCase, "scheme")');
     expect(runner).not.toContain('buildUri(testCase, "tabs")');
     expect(runner).not.toContain('rik:///%28tabs%29/ai?${query.toString()}');

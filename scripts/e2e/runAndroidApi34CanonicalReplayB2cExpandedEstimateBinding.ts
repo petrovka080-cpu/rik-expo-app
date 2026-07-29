@@ -67,6 +67,8 @@ const API34_CANONICAL_REPLAY_PROOF_HEADING = "## Android API34 Canonical Replay"
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const MAX_CASE_ATTEMPTS = 4;
+const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen";
+const REQUEST_SCROLL_X_RATIO = 0.065;
 const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
   relative(__filename),
   "scripts/e2e/proofMarkdownSection.ts",
@@ -419,8 +421,22 @@ function buildUri(testCase: Api34ReplayCase): string {
   return `rik:///ai?${query.toString()}`;
 }
 
+function buildAndroidHostUri(testCase: Api34ReplayCase): string {
+  const query = new URLSearchParams();
+  query.set("prompt", promptForApp(testCase));
+  if (testCase.route === "/request") {
+    query.set("autoPrepare", "1");
+    return `rik://request?${query.toString()}`;
+  }
+  query.set("context", "foreman");
+  query.set("autoSend", "1");
+  return `rik://ai?${query.toString()}`;
+}
+
 function buildUriCandidates(testCase: Api34ReplayCase): string[] {
-  return [buildUri(testCase)];
+  return testCase.route === "/ai?context=foreman"
+    ? [buildAndroidHostUri(testCase), buildUri(testCase)]
+    : [buildUri(testCase)];
 }
 
 function errorMessage(error: unknown): string {
@@ -467,7 +483,7 @@ function sourceConfidenceVisible(text: string): boolean {
   if (/catalog_items|catalogItemId|sourceId|reference|backend|\u0441\u043f\u0440\u0430\u0432\u043e\u0447\u043d/i.test(text)) {
     return true;
   }
-  return /источник|уверенн|confidence|source|каталог|rate|ставк|\u0446\u0435\u043d\u0430\s+\u0438\u0437\s+\u0440\u0430\u0441\u0447[\u0435\u0451]\u0442\u0430?/i.test(text);
+  return /источник|уверенн|довер|confidence|source|каталог|rate|ставк|\u0446\u0435\u043d\u0430\s+\u0438\u0437\s+\u0440\u0430\u0441\u0447[\u0435\u0451]\u0442\u0430?/i.test(text);
 }
 
 function taxOrWarningVisible(text: string): boolean {
@@ -702,15 +718,26 @@ function scrollableMessageBounds(screen: ReturnType<typeof captureScreenInDir>):
   return nodeBoundsByResourceId(screen.xml, "ai.assistant.messages");
 }
 
+function scrollableOutputBounds(
+  screen: ReturnType<typeof captureScreenInDir>,
+  testCase: Api34ReplayCase,
+): AndroidBounds | null {
+  return testCase.route === "/request"
+    ? nodeBoundsByResourceId(screen.xml, REQUEST_SCROLL_RESOURCE_ID)
+    : scrollableMessageBounds(screen);
+}
+
 function swipeWithinBoundsArgs(
   bounds: AndroidBounds | null,
   direction: "up" | "down",
   durationMs: number,
+  xRatio = 0.5,
 ): string[] {
   if (!bounds) return viewportSwipeArgs(direction, durationMs);
   const viewport = resolveAndroidViewport();
   const height = bounds.bottom - bounds.top;
-  const x = clamp(Math.round((bounds.left + bounds.right) / 2), 1, viewport.width - 1);
+  const width = bounds.right - bounds.left;
+  const x = clamp(Math.round(bounds.left + width * xRatio), 1, viewport.width - 1);
   const top = clamp(Math.round(bounds.top + height * 0.28), 1, viewport.height - 1);
   const bottom = clamp(Math.round(bounds.top + height * 0.78), 1, viewport.height - 1);
   const [startY, endY] = direction === "up" ? [bottom, top] : [top, bottom];
@@ -843,10 +870,11 @@ async function captureScrollableOutput(
 
   for (let index = 1; index <= 6; index += 1) {
     if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
-    const bounds = scrollableMessageBounds(captures[captures.length - 1]);
-    focusAndroidBounds(bounds);
+    const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
+    const xRatio = testCase.route === "/request" ? REQUEST_SCROLL_X_RATIO : 0.5;
+    if (testCase.route !== "/request") focusAndroidBounds(bounds);
     try {
-      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "down", 850)], 8000);
+      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "down", 850, xRatio)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -859,10 +887,11 @@ async function captureScrollableOutput(
   for (let index = 1; index <= 8; index += 1) {
     if (outputEvidenceComplete(mergeVisibleText(captures), testCase)) break;
     if (isRuntimeLoadError(captures[captures.length - 1])) break;
-    const bounds = scrollableMessageBounds(captures[captures.length - 1]);
-    focusAndroidBounds(bounds);
+    const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
+    const xRatio = testCase.route === "/request" ? REQUEST_SCROLL_X_RATIO : 0.5;
+    if (testCase.route !== "/request") focusAndroidBounds(bounds);
     try {
-      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "up", 650)], 8000);
+      runAdb(["shell", "input", "swipe", ...swipeWithinBoundsArgs(bounds, "up", 650, xRatio)], 8000);
     } catch {
       // The next capture records the actual Android state and dump errors.
     }
@@ -1486,7 +1515,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         if (authLoginVisible && !resultPassed(result)) {
           const loggedIn = await ensureReplayAuthSession({
             auth,
-            protectedRoute: buildUri(testCase),
+            protectedRoute: buildUriCandidates(testCase)[0],
             successPredicate: (xml) => routeReadyXmlForCase(testCase, xml),
             artifactBase: `${testCase.id}_attempt_${attempt}`,
           });

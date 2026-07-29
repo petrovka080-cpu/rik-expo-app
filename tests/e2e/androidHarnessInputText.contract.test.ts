@@ -15,15 +15,16 @@ describe("Android harness text input contracts", () => {
     expect(source).not.toContain('.replace(/@/g, "\\\\@")');
   });
 
-  it("opens protected route before login fill when the first surface is not the login screen", () => {
+  it("opens the canonical login route before field fill when the first surface is not authenticated", () => {
     const source = read("scripts/_shared/androidHarness.ts");
-    const initialProtectedRouteIndex = source.indexOf('artifactBase: `${params.artifactBase}-initial-protected-route`');
-    const firstEmailFillIndex = source.indexOf('await setLoginFieldText("email-fill"');
+    const initialAuthRouteIndex = source.indexOf('routes: ["rik:///auth/login"]');
+    const firstEmailFillIndex = source.indexOf("const confirmedEmail = await setLoginFieldText(");
 
     expect(source).toContain('artifactBase: `${params.artifactBase}-initial-protected-route`');
-    expect(source).toContain("predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml)");
-    expect(initialProtectedRouteIndex).toBeGreaterThanOrEqual(0);
-    expect(firstEmailFillIndex).toBeGreaterThan(initialProtectedRouteIndex);
+    expect(source).toContain('routes: ["rik:///auth/login"]');
+    expect(source).toContain("isAuthenticatedSessionReady(xml) || isLoginScreen(xml)");
+    expect(initialAuthRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(firstEmailFillIndex).toBeGreaterThan(initialAuthRouteIndex);
   });
 
   it("opens route bootstrap deep links with adb arguments instead of a shell-quoted command string", () => {
@@ -83,5 +84,18 @@ describe("Android harness text input contracts", () => {
     expect(routeBootstrapHarness).toContain('spawnSync("adb", args');
     expect(routeBootstrapHarness).toContain("timeout: timeoutMs");
     expect(routeBootstrapHarness).not.toContain('execFileSync("adb", args');
+  });
+
+  it("keeps the canonical API34 replay on working warm links and scrollable output gutters", () => {
+    const canonicalReplay = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+
+    expect(canonicalReplay).toContain('return `rik://ai?${query.toString()}`');
+    expect(canonicalReplay).toContain("? [buildAndroidHostUri(testCase), buildUri(testCase)]");
+    expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
+    expect(canonicalReplay).toContain("const REQUEST_SCROLL_X_RATIO = 0.065");
+    expect(canonicalReplay).toContain("scrollableOutputBounds(captures[captures.length - 1], testCase)");
+    expect(canonicalReplay).toContain('if (testCase.route !== "/request") focusAndroidBounds(bounds)');
+    expect(canonicalReplay).toContain("источник|уверенн|довер|confidence");
+    expect(canonicalReplay).toContain("protectedRoute: buildUriCandidates(testCase)[0]");
   });
 });
