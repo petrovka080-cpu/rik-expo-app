@@ -1,3 +1,4 @@
+/** Estimate-domain owner selected before the consumer-repair presentation adapter runs. */
 export type DirectConsumerRepairOpenWorldOwner =
   | "electrical"
   | "roof_waterproofing";

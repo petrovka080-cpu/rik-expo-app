@@ -1,5 +1,5 @@
 import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
-import { buildCanonicalElectricalConsumerRepairAiDraft } from "../../src/lib/consumerRequests/buildCanonicalElectricalConsumerRepairAiDraft";
+import { buildCanonicalElectricalConsumerRepairAiDraft } from "../../src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 import {
   __resetConsumerRepairRequestStoreForTests,
   applyConsumerRepairDraftRevisionParamPatch,
@@ -34,7 +34,7 @@ describe("canonical electrical production performance budgets", () => {
       rowCounts.add(draft.items.length);
     }
 
-    expect(rowCounts).toEqual(new Set([31]));
+    expect(rowCounts).toEqual(new Set([33]));
     expect(Math.max(...durations)).toBeLessThan(1_000);
     expect(percentile95(durations)).toBeLessThan(5_000);
   });

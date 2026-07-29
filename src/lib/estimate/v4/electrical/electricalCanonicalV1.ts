@@ -476,8 +476,8 @@ function extractedMatches(text: string): Partial<Record<ElectricalCanonicalParam
   const normalized = text.normalize("NFKC");
   const result: Partial<Record<ElectricalCanonicalParameterKey, MatchResult>> = {};
   result.area_m2 = numberMatch(normalized, [
-    /(?:площад(?:ь|и)|объект)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м)/iu,
-    /(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м)/iu,
+    /(?:площад(?:ь|и)|объект|area)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м|sq(?:uare)?[_\s-]*m|sqm)/iu,
+    /(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м|sq(?:uare)?[_\s-]*m|sqm)/iu,
   ]) ?? undefined;
   result.route_length_m = numberMatch(normalized, [
     /(?:длин[а-яё]*\s+)?(?:кабельн[а-яё]*\s+)?трасс[а-яё]*\D{0,16}(\d+(?:[,.]\d+)?)\s*(?:пог\.?\s*)?(?:м|метр(?:а|ов)?)(?=\s|$|[.,;])/iu,
@@ -729,23 +729,6 @@ export function buildElectricalCanonicalParameterSession(input: {
     previousSession: input.previousSession,
   });
 }
-
-const CORE_KEYS: readonly ElectricalCanonicalParameterKey[] = [
-  "area_m2",
-  "route_length_m",
-  "outlet_count",
-  "switch_count",
-  "lighting_point_count",
-];
-
-const CONDITIONAL_KEYS: readonly ElectricalCanonicalParameterKey[] =
-  ELECTRICAL_CANONICAL_PARAMETER_DEFINITIONS
-    .map((item) => item.key)
-    .filter((key) =>
-      !CORE_KEYS.includes(key) &&
-      key !== "cable_reserve_factor" &&
-      key !== "electrical_points_total"
-    );
 
 function missingInput(key: ElectricalCanonicalParameterKey): EstimateDraftRevisionMissingInput {
   const definition = ELECTRICAL_CANONICAL_PARAMETER_DEFINITIONS.find((item) => item.key === key)!;

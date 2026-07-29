@@ -1,10 +1,10 @@
-import type { DirectConsumerRepairOpenWorldOwner } from "../../../features/consumerRepair/consumerRepairDirectOpenWorldRouting";
+import type { DirectConsumerRepairOpenWorldOwner } from "./directConsumerRepairOpenWorldRouting";
 import {
   ELECTRICAL_CANONICAL_CALCULATION_VERSION,
   resolveElectricalCanonicalParameters,
   type ElectricalCanonicalParameterValues,
-} from "../../estimate/v4/electrical/electricalCanonicalV1";
-import type { EstimatorReasoningPlan } from "./estimatorKernelTypes";
+} from "../v4/electrical/electricalCanonicalV1";
+import type { EstimatorReasoningPlan } from "../../ai/estimatorKernel/estimatorKernelTypes";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -17,12 +17,6 @@ function areaFromPrompt(text: string): number | undefined {
     text.match(
       /(\d+(?:[,.]\d+)?)\s*(?:кв\.?\s*м|м2|м²|sq(?:uare)?[_\s-]*m|sqm)/iu,
     )?.[1],
-  );
-}
-
-function countFromPrompt(text: string): number | undefined {
-  return positiveNumber(
-    text.match(/(\d+(?:[,.]\d+)?)\s*(?:шт(?:ук[аи]?)?|pcs?|pieces?)/iu)?.[1],
   );
 }
 

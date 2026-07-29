@@ -1,6 +1,10 @@
 import type { GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
 import { GLOBAL_WORK_CATEGORIES } from "../globalEstimate/globalWorkTypeResolver";
 import { normalizeDimensionText, resolveQuantityInputsFromPrompt } from "../constructionFormulas";
+import {
+  ELECTRICAL_CANONICAL_CALCULATION_VERSION,
+  resolveElectricalCanonicalParameters,
+} from "../../estimate/v4/electrical/electricalCanonicalV1";
 import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";
 import type { EstimatorKernelComplexity, EstimatorReasoningPlan } from "./estimatorKernelTypes";
@@ -697,6 +701,12 @@ export function buildEstimatorReasoningPlan(input: {
   const signature = specializeWaterproofingSignature(specializeFlooringSignature(baseSignature, input.text), input.text);
   const quantities = resolveQuantityInputsFromPrompt(input.text);
   const regulated = detectRegulatedConstructionWork(input.text);
+  const canonicalElectrical = signature.workKey === "electrical_area_installation"
+    ? resolveElectricalCanonicalParameters({
+        text: input.text,
+        changedAt: "estimator-reasoning-plan",
+      })
+    : null;
   const sections = ["materials", "labor", "equipment", "delivery"];
   const plan: EstimatorReasoningPlan = {
     intent: "estimate",
@@ -717,6 +727,12 @@ export function buildEstimatorReasoningPlan(input: {
       confidence: 0.86,
     },
     quantities,
+    ...(canonicalElectrical
+      ? {
+          canonicalParameters: canonicalElectrical.values,
+          calculationVersion: ELECTRICAL_CANONICAL_CALCULATION_VERSION,
+        }
+      : {}),
     formulas: [],
     boqPlan: {
       complexity: resolveBoqComplexity(signature, quantities, regulated.regulated),

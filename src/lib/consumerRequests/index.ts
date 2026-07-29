@@ -47,10 +47,9 @@ export {
 export {
   assertConsumerRepairGlobalEstimateDraftSafe,
   buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
-export { buildCanonicalElectricalConsumerRepairAiDraft } from "./buildCanonicalElectricalConsumerRepairAiDraft";
+export { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 export {
   replayApprovedEstimateHistoryRecords,
   type ApprovedEstimateHistoryReplayResult,
@@ -69,6 +68,7 @@ export {
   commitPreparedConsumerRepairRequestBundle,
   CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   createConsumerRepairDraftFromHistorySnapshot,
+  createConsumerRepairDraftFromGlobalEstimate,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
   ensureConsumerRepairRequestPdfAvailable,

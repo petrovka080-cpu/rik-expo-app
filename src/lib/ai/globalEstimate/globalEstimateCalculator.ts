@@ -1569,6 +1569,7 @@ export function buildGlobalEstimateFromEstimatorKernel(
             normVersion,
             normReviewStatus,
             sourceApplicabilityStatus: "preliminary_configured_rule_requires_project_scope_review",
+            includedInEstimate,
             includedInProcurement,
             parameterBlockerIds: row.parameterBlockerIds ?? [],
           },

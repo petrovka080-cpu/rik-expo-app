@@ -665,7 +665,11 @@ export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
         dynamicProfessionalBoqCompilerId: boq.compilerId,
         dynamicProfessionalBoqWorkKey: plan.workKey,
         dynamicProfessionalBoqRowIndex: rowIndex,
-        includedInProcurement: row.sectionType !== "labor",
+        includedInEstimate: row.includedInEstimate !== false,
+        includedInProcurement:
+          row.includedInProcurement ??
+          (row.includedInEstimate !== false && row.sectionType !== "labor"),
+        parameterBlockerIds: row.parameterBlockerIds ?? [],
       },
       templateId: `${plan.workKey}_dynamic_professional_boq_runtime_v1`,
       templateVersion: "2026.07.05",

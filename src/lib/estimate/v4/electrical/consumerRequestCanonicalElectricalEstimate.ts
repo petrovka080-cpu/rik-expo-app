@@ -1,11 +1,11 @@
-import { estimateDeterministicHash } from "../estimate/estimateDeterministicHash";
+import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
   ProfessionalBoqSection,
-} from "../estimate/estimateDraftRevisionContract";
+} from "../../estimateDraftRevisionContract";
 import {
   bindEstimateDraftScope,
   commitEstimateCompileResult,
@@ -14,14 +14,12 @@ import {
   selectEstimateDraftWork,
   type EstimateDraftSession,
   type EstimateDraftSessionParameterValue,
-} from "../estimate/draftSession/estimateDraftSession";
+} from "../../draftSession/estimateDraftSession";
 import type {
   RawInputFactExtraction,
-} from "../estimate/rawInputFactExtraction";
+} from "../../rawInputFactExtraction";
 import {
   ELECTRICAL_CANONICAL_CALCULATION_VERSION,
-  ELECTRICAL_CANONICAL_ENGINE_VERSION,
-  ELECTRICAL_CANONICAL_FORMULA_GRAPH_VERSION,
   ELECTRICAL_CANONICAL_PARAMETER_DEFINITIONS,
   ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
   ELECTRICAL_CANONICAL_PROFILE,
@@ -29,12 +27,12 @@ import {
   ELECTRICAL_CANONICAL_WORK_KEY,
   buildElectricalCanonicalParameterSession,
   type ElectricalCanonicalParameterValues,
-} from "../estimate/v4/electrical/electricalCanonicalV1";
-import type { CanonicalParameterSession } from "../estimate/canonicalParameters/canonicalParameterCore";
+} from "./electricalCanonicalV1";
+import type { CanonicalParameterSession } from "../../canonicalParameters/canonicalParameterCore";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
-} from "./consumerRequestTypes";
+} from "../../../consumerRequests/consumerRequestTypes";
 
 function itemRowId(item: ConsumerRepairRequestItem, index: number): string {
   const rowCode = item.sourceParameters?.rowCode;

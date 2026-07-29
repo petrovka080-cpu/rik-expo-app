@@ -1,27 +1,27 @@
-import { resolveFormulaForEstimatorPlan } from "../ai/constructionFormulas";
+import { resolveFormulaForEstimatorPlan } from "../../../ai/constructionFormulas";
 import {
-  buildOwnedDomainEstimatorReasoningPlan,
   buildRegulatedSafeEstimatePlan,
-} from "../ai/estimatorKernel";
-import { buildGlobalEstimateFromEstimatorKernel } from "../ai/globalEstimate/globalEstimateCalculator";
-import { compileDynamicProfessionalBoq } from "../ai/professionalBoq/compileDynamicProfessionalBoq";
-import { expandOwnedDomainProfessionalBoq } from "../ai/professionalBoq/expandOwnedDomainBoqRows";
+} from "../../../ai/estimatorKernel";
+import { buildOwnedDomainEstimatorReasoningPlan } from "../../ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
+import { buildGlobalEstimateFromEstimatorKernel } from "../../../ai/globalEstimate/globalEstimateCalculator";
+import { compileDynamicProfessionalBoq } from "../../../ai/professionalBoq/compileDynamicProfessionalBoq";
+import { expandOwnedDomainProfessionalBoq } from "../../ownedDomain/expandOwnedDomainBoqRows";
 import {
   ELECTRICAL_CANONICAL_WORK_KEY,
   buildElectricalCanonicalParameterSession,
   type ElectricalCanonicalParameterValues,
-} from "../estimate/v4/electrical/electricalCanonicalV1";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "./consumerRequestGlobalEstimateIntegration";
+} from "./electricalCanonicalV1";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../../consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type {
   ConsumerRepairAiDraft,
   ConsumerRepairSelectedWork,
-} from "./consumerRequestTypes";
+} from "../../../consumerRequests/consumerRequestTypes";
 
 function recordCanonicalElectricalBuildTiming(
   stage: string,
   startedAt: number,
 ): void {
-  if (!__DEV__) return;
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
   console.info("[RikCanonicalElectricalBuild]", JSON.stringify({
     stage,
     elapsedMs: Date.now() - startedAt,

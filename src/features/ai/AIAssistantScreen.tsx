@@ -106,6 +106,85 @@ function acknowledgeAiPromptLaunch(
   acknowledgeAiUiLaunch(payload, "ai_launch_projection");
 }
 
+function AIAssistantBootView() {
+  return (
+    <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
+      <ActivityIndicator size="large" color="#2563EB" />
+      <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
+    </SafeAreaView>
+  );
+}
+
+function AIAssistantMessageList({
+  messages,
+  hasAnyUserPrompt,
+  autoEstimateLaunchPayloadRef,
+  onAppendMessage,
+}: {
+  messages: AssistantMessage[];
+  hasAnyUserPrompt: boolean;
+  autoEstimateLaunchPayloadRef: React.MutableRefObject<RequestEstimateLaunchPayloadV1 | null>;
+  onAppendMessage: (message: AssistantMessage) => void;
+}) {
+  return messages.map((message, index) => {
+    const hasPriorUserPrompt = messages
+      .slice(0, index)
+      .some((historyMessage) => historyMessage.role === "user");
+    const isLatestAssistantReply =
+      message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
+    const shouldCompactAssistantHistory =
+      message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
+    const responseTestId = isLatestAssistantReply
+      ? "ai.assistant.response"
+      : message.role === "assistant"
+        ? "ai.assistant.response.history"
+        : undefined;
+
+    return (
+      <React.Fragment key={message.id}>
+        <View
+          testID={responseTestId}
+          style={[
+            styles.messageBubble,
+            message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              message.role === "assistant" ? styles.assistantText : styles.userText,
+            ]}
+            numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
+            ellipsizeMode="tail"
+          >
+            {message.content}
+          </Text>
+        </View>
+        {message.role === "assistant" && message.estimatePdfSource ? (
+          <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
+        ) : null}
+        <AIAssistantEstimatePdfActions
+          message={message}
+          onAppendMessage={onAppendMessage}
+          onFallback={recordAssistantScreenFallback}
+        />
+        {message.role === "assistant" &&
+        message.estimatePdfSource &&
+        isLatestAssistantReply ? (
+          <View
+            collapsable={false}
+            style={styles.runtimeInlineMarker}
+            onLayout={() => {
+              const payload = autoEstimateLaunchPayloadRef.current;
+              if (payload) acknowledgeAiUiLaunch(payload, "ai_estimate_projection");
+            }}
+          />
+        ) : null}
+      </React.Fragment>
+    );
+  });
+}
+
 export default function AIAssistantScreen({
   launchPayload = null,
 }: {
@@ -488,12 +567,7 @@ export default function AIAssistantScreen({
   }, [messages.length, loading]);
 
   if (booting) {
-    return (
-      <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
-      </SafeAreaView>
-    );
+    return <AIAssistantBootView />;
   }
 
   const hasAnyUserPrompt = messages.some((candidate) => candidate.role === "user");
@@ -544,67 +618,12 @@ export default function AIAssistantScreen({
             onPromptPress={(prompt) => void send(prompt)}
           />
 
-          {messages.map((message, index) => {
-            const hasPriorUserPrompt = messages
-              .slice(0, index)
-              .some((historyMessage) => historyMessage.role === "user");
-            const isLatestAssistantReply =
-              message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
-            const shouldCompactAssistantHistory =
-              message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
-            const responseTestId = isLatestAssistantReply
-              ? "ai.assistant.response"
-              : message.role === "assistant"
-                ? "ai.assistant.response.history"
-                : undefined;
-
-            return (
-              <React.Fragment key={message.id}>
-                <View
-                  testID={responseTestId}
-                  style={[
-                    styles.messageBubble,
-                    message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.messageText,
-                      message.role === "assistant" ? styles.assistantText : styles.userText,
-                    ]}
-                    numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
-                    ellipsizeMode="tail"
-                  >
-                    {message.content}
-                  </Text>
-                </View>
-                {message.role === "assistant" && message.estimatePdfSource ? (
-                  <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
-                ) : null}
-                    <AIAssistantEstimatePdfActions
-                      message={message}
-                      onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
-                      onFallback={recordAssistantScreenFallback}
-                    />
-                    {message.role === "assistant" &&
-                    message.estimatePdfSource &&
-                    isLatestAssistantReply ? (
-                      <View
-                        collapsable={false}
-                        style={styles.runtimeInlineMarker}
-                        onLayout={() => {
-                          const payload = autoEstimateLaunchPayloadRef.current;
-                          if (!payload) return;
-                          acknowledgeAiUiLaunch(
-                            payload,
-                            "ai_estimate_projection",
-                          );
-                        }}
-                      />
-                    ) : null}
-                  </React.Fragment>
-            );
-          })}
+          <AIAssistantMessageList
+            messages={messages}
+            hasAnyUserPrompt={hasAnyUserPrompt}
+            autoEstimateLaunchPayloadRef={autoEstimateLaunchPayloadRef}
+            onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
+          />
           {loading ? (
             <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]} testID="ai.assistant.loading" accessibilityLabel="AI assistant loading">
               <ActivityIndicator size="small" color="#2563EB" />

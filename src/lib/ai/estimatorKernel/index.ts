@@ -1,6 +1,5 @@
 export * from "./estimatorKernelTypes";
 export * from "./buildEstimatorReasoningPlan";
-export * from "./buildOwnedDomainEstimatorReasoningPlan";
 export * from "./validateEstimatorReasoningPlan";
 export * from "./isParsableConstructionWork";
 export * from "./resolveEstimatorOutcome";

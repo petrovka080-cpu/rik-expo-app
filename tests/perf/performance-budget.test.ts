@@ -196,6 +196,38 @@ describe("performance budget вЂ” bundle module count", () => {
       "src/lib/pdf/pdfViewerWebFramePool.test.ts",
       "src/lib/pdf/pdfViewerWebFramePool.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sCanonicalEstimateFoundationOwnerFiles = [
+      "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
+      "src/lib/ai/estimateCompiler/professionalEstimateRouteCapabilities.ts",
+      "src/lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan.ts",
+      "src/lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting.ts",
+      "src/lib/estimate/ownedDomain/expandOwnedDomainBoqRows.ts",
+      "src/lib/ai/globalEstimate/globalTaxRules.ts",
+      "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts",
+      "src/lib/estimate/canonicalParameters/canonicalParameterSchemaRegistry.ts",
+      "src/lib/estimate/canonicalParameters/index.ts",
+      "src/lib/estimate/canonicalParameters/projectEstimateDraftRevisionToCanonicalSession.ts",
+      "src/lib/estimate/canonicalParameters/registeredCanonicalParameterSchemas.ts",
+      "src/lib/estimate/runtime/buildCanonicalParameterCards.ts",
+      "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts",
+      "src/lib/estimate/v4/electrical/consumerRequestCanonicalElectricalEstimate.ts",
+      "src/lib/estimate/v4/electrical/electricalCanonicalV1.ts",
+      "src/lib/estimate/v4/electrical/index.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sRequestEstimateLaunchLifecycleOwnerFiles = [
+      "src/lib/navigation/requestEstimateLaunchLifecycle.test.ts",
+      "src/lib/navigation/requestEstimateLaunchLifecycle.ts",
+      "src/lib/navigation/requestEstimateLaunchObservability.ts",
+      "src/lib/navigation/requestEstimateLaunchPayload.test.ts",
+      "src/lib/navigation/requestEstimateLaunchPayload.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sNativeEstimateDurableStorageOwnerFiles = [
+      "src/lib/platform/estimateRevisionDurableStore.asyncStorage.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sPlatformDeveloperAccessOwnerFiles = [
+      "src/lib/platformDeveloper/PlatformDeveloperRouteGate.tsx",
+      "src/lib/platformDeveloper/platformDeveloperAccessMatrix.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -2136,7 +2168,11 @@ describe("performance budget вЂ” bundle module count", () => {
         sAddListingPureOwnerFiles -
         sAddListingHookOwnerFiles -
         sReactNativeWebStyleOwnerFiles -
-        sAsphaltReferenceV1DraftSessionPdfPerformanceFiles,
+        sAsphaltReferenceV1DraftSessionPdfPerformanceFiles -
+        sCanonicalEstimateFoundationOwnerFiles -
+        sRequestEstimateLaunchLifecycleOwnerFiles -
+        sNativeEstimateDurableStorageOwnerFiles -
+        sPlatformDeveloperAccessOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
     expect(sDeveloperOverridePolicyOwnerFiles).toBeLessThanOrEqual(1);
@@ -2144,6 +2180,10 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAddListingHookOwnerFiles).toBeLessThanOrEqual(2);
     expect(sReactNativeWebStyleOwnerFiles).toBeLessThanOrEqual(1);
     expect(sAsphaltReferenceV1DraftSessionPdfPerformanceFiles).toBeLessThanOrEqual(10);
+    expect(sCanonicalEstimateFoundationOwnerFiles).toBeLessThanOrEqual(16);
+    expect(sRequestEstimateLaunchLifecycleOwnerFiles).toBeLessThanOrEqual(5);
+    expect(sNativeEstimateDurableStorageOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sPlatformDeveloperAccessOwnerFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);

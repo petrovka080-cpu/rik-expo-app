@@ -1,7 +1,7 @@
 import type {
   DynamicProfessionalBoq,
   DynamicProfessionalBoqRow,
-} from "../estimatorKernel/estimatorKernelTypes";
+} from "../../ai/estimatorKernel/estimatorKernelTypes";
 
 const OWNED_DOMAIN_MINIMUM_ROWS = 101;
 
@@ -35,32 +35,6 @@ const PHASES_BY_SECTION: Record<DynamicProfessionalBoqRow["sectionType"], readon
     { code: "loading", titleRu: "погрузка и крепление", priceShare: 0.15 },
     { code: "transport", titleRu: "транспортирование", priceShare: 0.65 },
     { code: "unloading", titleRu: "разгрузка и внутриплощадочная передача", priceShare: 0.1 },
-  ],
-};
-
-const ELECTRICAL_PHASES_BY_SECTION: Record<
-  DynamicProfessionalBoqRow["sectionType"],
-  readonly OwnedPhase[]
-> = {
-  materials: [
-    { code: "specification_control", titleRu: "спецификация и входной контроль", priceShare: 0.15 },
-    { code: "main_supply", titleRu: "основной объём поставки", priceShare: 0.7 },
-    { code: "accessories", titleRu: "комплектующие и монтажный резерв", priceShare: 0.15 },
-  ],
-  labor: [
-    { code: "preparation", titleRu: "подготовительный этап", priceShare: 0.15 },
-    { code: "main_scope", titleRu: "основной этап выполнения", priceShare: 0.7 },
-    { code: "quality_handover", titleRu: "контроль качества и сдача", priceShare: 0.15 },
-  ],
-  equipment: [
-    { code: "mobilization_setup", titleRu: "мобилизация и настройка", priceShare: 0.15 },
-    { code: "operation", titleRu: "эксплуатация на основном этапе", priceShare: 0.7 },
-    { code: "control_demobilization", titleRu: "контроль и демобилизация", priceShare: 0.15 },
-  ],
-  delivery: [
-    { code: "planning_loading", titleRu: "планирование, комплектование и погрузка", priceShare: 0.15 },
-    { code: "transport", titleRu: "транспортирование", priceShare: 0.7 },
-    { code: "unloading_handover", titleRu: "разгрузка и внутриплощадочная передача", priceShare: 0.15 },
   ],
 };
 

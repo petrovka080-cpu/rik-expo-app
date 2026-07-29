@@ -562,6 +562,15 @@ const LINOLEUM_ROWS: ExpandedTemplateRow[] = [
 ];
 
 const PAVING_STONE_ROWS: ExpandedTemplateRow[] = [
+  r({ section: "materials", code: "paving_stone_geotextile_overlap_tape", title: "Лента для фиксации нахлёстов геотекстиля", quantityFormula: "q * 0.05", unit: "sq_m", unitPrice: 95 }),
+  r({ section: "preparation", code: "paving_stone_profile_level_control", title: "Высотный контроль основания по проектным отметкам", quantityFormula: "q", unit: "sq_m", unitPrice: 45 }),
+  r({ section: "labor", code: "paving_stone_layer_compaction", title: "Послойное уплотнение щебёночного основания", quantityFormula: "q", unit: "sq_m", unitPrice: 115 }),
+  r({ section: "labor", code: "paving_stone_bedding_screeding", title: "Выравнивание постели под мощение по маякам", quantityFormula: "q", unit: "sq_m", unitPrice: 90 }),
+  r({ section: "labor", code: "paving_stone_drainage_slope_formation", title: "Формирование уклонов и водоотводного профиля", quantityFormula: "q", unit: "sq_m", unitPrice: 75 }),
+  r({ section: "labor", code: "paving_stone_drainage_tray_installation", title: "Монтаж лотков водоотвода", quantityFormula: "q * 0.05", unit: "lm", unitPrice: 480 }),
+  r({ section: "equipment", code: "paving_stone_laser_level", title: "Лазерный нивелир для контроля отметок", quantityFormula: "max(1, ceil(q / 500))", unit: "shift", unitPrice: 900 }),
+  r({ section: "equipment", code: "paving_stone_water_tanker", title: "Поливомоечная машина для увлажнения при уплотнении", quantityFormula: "max(1, ceil(q / 500))", unit: "shift", unitPrice: 3200 }),
+  r({ section: "logistics", code: "paving_stone_staged_unloading", title: "Поэтапная разгрузка и внутриплощадочное перемещение материалов", quantityFormula: "max(1, ceil(q / 250))", unit: "trip", unitPrice: 2600 }),
   ...semanticRowsFromTitles("paving_stone_material", "landscaping", "materials", ["Геотекстиль", "Песок", "Щебень", "Отсев / пескоцементная смесь", "Брусчатка / тротуарная плитка", "Бордюр", "Смесь для заполнения швов", "Водоотводные элементы"], "sq_m", "q", 720),
   r({ section: "materials", code: "paving_stone_curb_concrete", title: "Бетон под бордюр", quantityFormula: "q * 0.05", unit: "m3", unitPrice: 8200 }),
   ...semanticRowsFromTitles("paving_stone_component", "landscaping", "components", ["Крепеж бордюра", "Разделители", "Лотки водоотвода", "Маркировочные колышки"], "set", "max(1, ceil(q / 100))", 650),
@@ -1472,10 +1481,10 @@ const GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY = new Map(
 
 function getExpandedTemplateByWorkKey(workKey: string): ExpandedWorkTemplate | undefined {
   const existing = TEMPLATE_BY_KEY.get(workKey);
-  if (existing) return existing;
+  if (existing?.workKey === workKey) return existing;
 
   const definition = GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.get(workKey);
-  if (!definition) return undefined;
+  if (!definition) return existing;
 
   const template = buildCategoryTemplate(definition);
   TEMPLATE_BY_KEY.set(template.workKey, template);

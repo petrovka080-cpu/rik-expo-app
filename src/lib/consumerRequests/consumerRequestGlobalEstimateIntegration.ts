@@ -137,33 +137,6 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   };
 }
 
-export function createConsumerRepairDraftFromGlobalEstimate(input: {
-  consumerUserId: string;
-  estimate: GlobalEstimateResult;
-  originalText: string;
-  city?: string | null;
-  addressText?: string | null;
-  contactPhone?: string | null;
-  selectedWork?: ConsumerRepairSelectedWork | null;
-}): ConsumerRepairDraftBundle {
-  const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(input.estimate, undefined, input.selectedWork ?? undefined);
-  // Keep the deterministic estimate-to-draft projection usable by headless
-  // compilers. Durable request persistence is an application boundary and may
-  // load React Native adapters, so resolve it only for this mutation entry point.
-  const { createConsumerRepairRequestDraft } =
-    require("./consumerRequestService") as typeof import("./consumerRequestService");
-  return createConsumerRepairRequestDraft({
-    consumerUserId: input.consumerUserId,
-    problemText: input.originalText,
-    repairType: input.estimate.work.category,
-    city: input.city ?? input.estimate.locale.city ?? null,
-    addressText: input.addressText ?? null,
-    contactPhone: input.contactPhone ?? null,
-    selectedWork: input.selectedWork ?? null,
-    aiDraft,
-  });
-}
-
 export function assertConsumerRepairGlobalEstimateDraftSafe(bundle: ConsumerRepairDraftBundle): void {
   if (bundle.draft.orgId != null) {
     throw new Error("GLOBAL_ESTIMATE_B2C_DRAFT_MUST_NOT_LINK_OFFICE_OR_COMPANY");

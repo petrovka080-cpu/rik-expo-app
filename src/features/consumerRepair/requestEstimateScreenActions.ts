@@ -48,7 +48,7 @@ import type {
   buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft,
   buildDirectConsumerRepairOpenWorldAiDraft as BuildDirectConsumerRepairOpenWorldAiDraft,
 } from "./consumerRepairAiAdapter";
-import { shouldUseDirectConsumerRepairOpenWorldDraft } from "./consumerRepairDirectOpenWorldRouting";
+import { shouldUseDirectConsumerRepairOpenWorldDraft } from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
 
 type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
 type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRepairOpenWorldAiDraft;

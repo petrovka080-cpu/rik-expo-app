@@ -1,17 +1,17 @@
-import {
-  buildCanonicalElectricalConsumerRepairAiDraft,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  type ConsumerRepairAiDraft,
-  type ConsumerRepairSelectedWork,
-} from "../../lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import type {
+  ConsumerRepairAiDraft,
+  ConsumerRepairSelectedWork,
+} from "../../lib/consumerRequests/consumerRequestTypes";
+import { buildCanonicalElectricalConsumerRepairAiDraft } from "../../lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { resolveFormulaForEstimatorPlan } from "../../lib/ai/constructionFormulas";
 import {
-  buildOwnedDomainEstimatorReasoningPlan,
   buildRegulatedSafeEstimatePlan,
 } from "../../lib/ai/estimatorKernel";
+import { buildOwnedDomainEstimatorReasoningPlan } from "../../lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
 import { compileDynamicProfessionalBoq } from "../../lib/ai/professionalBoq/compileDynamicProfessionalBoq";
-import { expandOwnedDomainProfessionalBoq } from "../../lib/ai/professionalBoq/expandOwnedDomainBoqRows";
+import { expandOwnedDomainProfessionalBoq } from "../../lib/estimate/ownedDomain/expandOwnedDomainBoqRows";
 import { buildGlobalEstimateFromEstimatorKernel } from "../../lib/ai/globalEstimate/globalEstimateCalculator";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -22,7 +22,7 @@ import {
 } from "../../lib/ai/expandedComplexWorks";
 import { evaluateEstimateRuntimePolicy } from "../estimates/runtime/estimateRuntimePolicy";
 import { recordEstimateTelemetryEvent } from "../estimates/telemetry/estimateTelemetryRecorder";
-import { resolveDirectConsumerRepairOpenWorldOwner } from "./consumerRepairDirectOpenWorldRouting";
+import { resolveDirectConsumerRepairOpenWorldOwner } from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
 import {
   applyProfessionalBoqRuntimeContract,
   buildDynamicProfessionalBoqDraftFromPrompt,
@@ -63,7 +63,7 @@ export type ConsumerRepairAiDraftOptions = {
 };
 
 function recordDirectOpenWorldBuildTiming(stage: string, startedAt: number): void {
-  if (!__DEV__) return;
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
   console.info("[RikDirectOpenWorldBuild]", JSON.stringify({
     stage,
     elapsedMs: Date.now() - startedAt,

@@ -468,6 +468,8 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
 
 function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const parameters = plan.canonicalParameters ?? {};
+  const hasParameter = (key: string): boolean =>
+    Object.prototype.hasOwnProperty.call(parameters, key);
   const numberParameter = (key: string, fallback = 0): number => {
     const value = parameters[key];
     return typeof value === "number" && Number.isFinite(value) ? value : fallback;
@@ -481,8 +483,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     return typeof value === "string" && value.trim() ? value : fallback;
   };
   const roundQuantity = (value: number): number => Math.round(value * 1000) / 1000;
-  const area = numberParameter("area_m2");
-  const routeLength = numberParameter("route_length_m");
+  const area = numberParameter("area_m2", plan.quantities.areaM2 ?? 0);
+  const routeLength = numberParameter("route_length_m", plan.quantities.lengthM ?? 0);
   const outlets = Math.max(0, Math.round(numberParameter("outlet_count")));
   const switches = Math.max(0, Math.round(numberParameter("switch_count")));
   const lightingPoints = Math.max(0, Math.round(numberParameter("lighting_point_count")));
@@ -508,6 +510,15 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   const demolitionIncluded = booleanParameter("demolition_included", false);
   const installationHeightM = numberParameter("installation_height_m");
   const accessCondition = stringParameter("access_condition", "unspecified");
+  const cableSpecificationKnown =
+    hasParameter("cable_type") &&
+    hasParameter("cable_section_mm2") &&
+    cableSection > 0;
+  const containmentKnown = hasParameter("containment_type");
+  const wiringMethodKnown = hasParameter("wiring_method");
+  const chasingBasisKnown =
+    wiringMethodKnown &&
+    (wiringMethod === "open" || hasParameter("wall_material"));
   const containmentUnitPrice = containmentType === "tray"
     ? 290
     : containmentType === "cable_channel"
@@ -553,6 +564,19 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
       ].join("; "),
     });
   };
+  const blocked = (
+    item: DynamicProfessionalBoqRow,
+    blockerIds: readonly string[],
+  ): DynamicProfessionalBoqRow => ({
+    ...item,
+    unitPrice: 0,
+    sourcePolicy: "manual_review",
+    includedInEstimate: false,
+    includedInProcurement: false,
+    optional: true,
+    editable: true,
+    parameterBlockerIds: [...blockerIds],
+  });
   const scopeLabel = workScopeType === "new_installation"
     ? "новая электропроводка"
     : workScopeType === "partial_replacement"
@@ -580,39 +604,63 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   }
   if (routeLength > 0) {
     if (powerCableLength > 0) {
-      push(mepRow("materials", "electrical_power_cable", `Кабель розеточных линий: ${cableLabel}`, "linear_m", powerCableLength, 118, "electrical_cable_power"), "route_length_m × line_count × cable_reserve_factor × outlet_count / electrical_points_total", ["route_length_m", "line_count", "cable_reserve_factor", "outlet_count", "electrical_points_total", "cable_type", "cable_section_mm2"]);
+      const cableRow = mepRow("materials", "electrical_power_cable", `Кабельные линии розеток: ${cableLabel}`, "linear_m", powerCableLength, 118, "electrical_cable_power");
+      push(
+        cableSpecificationKnown
+          ? cableRow
+          : blocked(cableRow, ["cable_type", "cable_section_mm2"]),
+        "route_length_m × line_count × cable_reserve_factor × outlet_count / electrical_points_total",
+        ["route_length_m", "line_count", "cable_reserve_factor", "outlet_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
+      );
     }
     if (lightingCableLength > 0) {
-      push(mepRow("materials", "electrical_lighting_cable", `Кабель линий освещения и выключателей: ${cableLabel}`, "linear_m", lightingCableLength, 82, "electrical_cable_lighting"), "route_length_m × line_count × cable_reserve_factor × (switch_count + lighting_point_count) / electrical_points_total", ["route_length_m", "line_count", "cable_reserve_factor", "switch_count", "lighting_point_count", "electrical_points_total", "cable_type", "cable_section_mm2"]);
+      const cableRow = mepRow("materials", "electrical_lighting_cable", `Кабельные линии освещения и выключателей: ${cableLabel}`, "linear_m", lightingCableLength, 82, "electrical_cable_lighting");
+      push(
+        cableSpecificationKnown
+          ? cableRow
+          : blocked(cableRow, ["cable_type", "cable_section_mm2"]),
+        "route_length_m × line_count × cable_reserve_factor × (switch_count + lighting_point_count) / electrical_points_total",
+        ["route_length_m", "line_count", "cable_reserve_factor", "switch_count", "lighting_point_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
+      );
     }
-    push(mepRow("materials", "electrical_corrugation_channel", containmentLabel, "linear_m", routeLength, containmentUnitPrice, "electrical_containment"), "route_length_m", ["route_length_m", "wiring_method", "containment_type"]);
-    push(mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice), "route_length_m", ["route_length_m", "wiring_method", "containment_type", "wall_material"]);
-    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабельных линий", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
+    const containmentRow = mepRow("materials", "electrical_corrugation_channel", containmentLabel, "linear_m", routeLength, containmentUnitPrice, "electrical_containment");
+    push(
+      containmentKnown
+        ? containmentRow
+        : blocked(containmentRow, ["containment_type"]),
+      "route_length_m",
+      ["route_length_m", "wiring_method", "containment_type"],
+    );
+    const chasingRow = mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice);
+    push(
+      chasingBasisKnown
+        ? chasingRow
+        : blocked(chasingRow, wiringMethodKnown ? ["wall_material"] : ["wiring_method"]),
+      "route_length_m",
+      ["route_length_m", "wiring_method", "containment_type", "wall_material"],
+    );
+    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабеля и кабельных линий", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
+    push(mepRow("labor", "electrical_cable_termination", "Оконцевание и подключение кабельных линий", "pcs", Math.max(2, lines * 2), 540), "line_count × 2", ["line_count"]);
   } else {
     push(
-      {
-        ...mepRow(
+      blocked(
+        mepRow(
           "materials",
           "electrical_cable_parameters_required",
-          "Кабель: длина трассы, тип и сечение требуют уточнения",
+          "Кабельные линии розеток: длина трассы, тип и сечение требуют уточнения",
           "linear_m",
           0,
           0,
           "electrical_cable_pending_parameters",
         ),
-        sourcePolicy: "manual_review",
-        includedInEstimate: false,
-        includedInProcurement: false,
-        optional: true,
-        editable: true,
-        parameterBlockerIds: [
+        [
           "route_length_m",
           "cable_type",
           "cable_section_mm2",
           "line_count",
           "cable_reserve_factor",
         ],
-      },
+      ),
       "not_calculated_until(route_length_m, cable_type, cable_section_mm2)",
       [
         "route_length_m",
@@ -622,6 +670,46 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
         "cable_reserve_factor",
       ],
     );
+    push(
+      blocked(
+        mepRow(
+          "materials",
+          "electrical_lighting_cable_parameters_required",
+          "Кабельные линии освещения и выключателей: длина трассы, тип и сечение требуют уточнения",
+          "linear_m",
+          0,
+          0,
+          "electrical_lighting_cable_pending_parameters",
+        ),
+        ["route_length_m", "cable_type", "cable_section_mm2", "line_count", "cable_reserve_factor"],
+      ),
+      "not_calculated_until(route_length_m, cable_type, cable_section_mm2)",
+      ["route_length_m", "cable_type", "cable_section_mm2", "line_count", "cable_reserve_factor"],
+    );
+    push(
+      blocked(
+        mepRow("materials", "electrical_containment_parameters_required", "Гофра и короб для кабельной трассы: длина и тип системы требуют уточнения", "linear_m", 0, 0, "electrical_containment_pending_parameters"),
+        ["route_length_m", "containment_type"],
+      ),
+      "not_calculated_until(route_length_m, containment_type)",
+      ["route_length_m", "containment_type"],
+    );
+    push(
+      blocked(
+        mepRow("labor", "electrical_chasing_parameters_required", "Штробление или монтаж открытой трассы: способ прокладки и материал стен требуют уточнения", "linear_m", 0, 0),
+        ["route_length_m", "wiring_method", "wall_material"],
+      ),
+      "not_calculated_until(route_length_m, wiring_method, wall_material)",
+      ["route_length_m", "wiring_method", "wall_material"],
+    );
+    push(
+      blocked(
+        mepRow("labor", "electrical_cable_laying_parameters_required", "Прокладка кабеля: длина трассы и количество линий требуют уточнения", "linear_m", 0, 0),
+        ["route_length_m", "line_count", "cable_reserve_factor"],
+      ),
+      "not_calculated_until(route_length_m, line_count)",
+      ["route_length_m", "line_count", "cable_reserve_factor"],
+    );
   }
   if (outlets + switches > 0) {
     push(mepRow("materials", "electrical_socket_boxes", "Подрозетники", "pcs", outlets + switches, 72, "socket_boxes"), "outlet_count + switch_count", ["outlet_count", "switch_count"]);
@@ -630,21 +718,30 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   if (outlets > 0) {
     push(mepRow("materials", "electrical_outlets", "Розетки", "pcs", outlets, 420, "electrical_outlets"), "outlet_count", ["outlet_count"]);
     push(mepRow("labor", "electrical_outlet_install", "Монтаж розеток", "pcs", outlets, 620), "outlet_count", ["outlet_count"]);
+  } else if (!hasParameter("outlet_count")) {
+    push(blocked(mepRow("materials", "electrical_outlets_parameters_required", "Розеточные точки: количество розеток требует уточнения", "pcs", 0, 0, "electrical_outlets_pending_count"), ["outlet_count"]), "not_calculated_until(outlet_count)", ["outlet_count"]);
+    push(blocked(mepRow("labor", "electrical_outlet_install_parameters_required", "Монтаж розеток: количество требует уточнения", "pcs", 0, 0), ["outlet_count"]), "not_calculated_until(outlet_count)", ["outlet_count"]);
   }
   if (switches > 0) {
     push(mepRow("materials", "electrical_switches", "Выключатели", "pcs", switches, 360, "electrical_switches"), "switch_count", ["switch_count"]);
     push(mepRow("labor", "electrical_switch_install", "Монтаж выключателей", "pcs", switches, 580), "switch_count", ["switch_count"]);
+  } else if (!hasParameter("switch_count")) {
+    push(blocked(mepRow("materials", "electrical_switches_parameters_required", "Выключатели: количество требует уточнения", "pcs", 0, 0, "electrical_switches_pending_count"), ["switch_count"]), "not_calculated_until(switch_count)", ["switch_count"]);
+    push(blocked(mepRow("labor", "electrical_switch_install_parameters_required", "Монтаж выключателей: количество требует уточнения", "pcs", 0, 0), ["switch_count"]), "not_calculated_until(switch_count)", ["switch_count"]);
   }
   if (lightingPoints > 0) {
     push(mepRow("materials", "electrical_lighting_points", "Комплектующие точек освещения и выводов", "pcs", lightingPoints, 350, "electrical_lighting_points"), "lighting_point_count", ["lighting_point_count"]);
     push(mepRow("labor", "electrical_lighting_point_install", "Монтаж точек освещения и выводов", "pcs", lightingPoints, 640), "lighting_point_count", ["lighting_point_count"]);
+  } else if (!hasParameter("lighting_point_count")) {
+    push(blocked(mepRow("materials", "electrical_lighting_points_parameters_required", "Точки освещения и выводы: количество требует уточнения", "pcs", 0, 0, "electrical_lighting_points_pending_count"), ["lighting_point_count"]), "not_calculated_until(lighting_point_count)", ["lighting_point_count"]);
+    push(blocked(mepRow("labor", "electrical_lighting_point_install_parameters_required", "Монтаж точек освещения: количество требует уточнения", "pcs", 0, 0), ["lighting_point_count"]), "not_calculated_until(lighting_point_count)", ["lighting_point_count"]);
   }
   push(mepRow("materials", "electrical_junction_boxes", "Распределительные коробки", "pcs", groups, 260, "junction_boxes"), "group_count", ["group_count"]);
   if (panelIncluded) {
     const loadLabel = estimatedLoadKw > 0
       ? `, расчётная нагрузка ${estimatedLoadKw} кВт`
       : ", нагрузка требует уточнения";
-    push(mepRow("materials", "electrical_panel", `${phaseCount === 3 ? "Трёхфазный электрический щит" : "Однофазный электрический щит"}${loadLabel}`, "set", 1, phaseCount === 3 ? 62000 : 42000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw"]);
+    push(mepRow("materials", "electrical_panel", `Щит и автоматика: ${phaseCount === 3 ? "трёхфазное исполнение" : "однофазное исполнение"}${loadLabel}`, "set", 1, phaseCount === 3 ? 62000 : 42000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw"]);
     push(mepRow("labor", "electrical_panel_mount", "Монтаж и расключение электрического щита", "set", 1, phaseCount === 3 ? 36000 : 28000), "panel_included ? 1 : 0", ["panel_included", "phase_count"]);
   }
   if (protectiveDevicesIncluded) {
@@ -665,6 +762,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   push(mepRow("labor", "electrical_line_continuity", "Прозвонка линий и проверка цепей", "set", 1, 6800), "1 комплекс", ["line_count"]);
   push(mepRow("labor", "electrical_insulation_test", "Проверка сопротивления изоляции", "set", 1, 9200), "1 комплекс", ["line_count"]);
   push(mepRow("labor", "electrical_group_labeling", "Маркировка групп в щите и на линиях", "set", 1, 4200), "1 комплект", ["group_count"]);
+  push(mepRow("labor", "electrical_as_built_circuit_schedule", "Исполнительная однолинейная схема и ведомость групп", "set", 1, 6800), "1 комплект исполнительной схемы", ["group_count", "phase_count", "panel_included"]);
   if (wiringMethod !== "open") {
     push(mepRow("equipment", "electrical_chaser", "Штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(Math.max(area, routeLength) / 90)), 6800), "max(1, ceil(max(area_m2, route_length_m) / 90))", ["area_m2", "route_length_m", "wiring_method", "wall_material"]);
   }

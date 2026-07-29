@@ -191,6 +191,7 @@ export function compactConsumerRepairSourceParameters(
     "expandedComplexCalculator",
     "expandedComplexWorkFamilyId",
     "expandedComplexLineType",
+    "includedInEstimate",
     "includedInProcurement",
     "roadworksWaveA",
     "selectedWorkId",

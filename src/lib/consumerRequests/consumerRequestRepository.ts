@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-
 import type { ConsumerRepairDraftBundle, ConsumerRepairStatus } from "./consumerRequestTypes";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import {
@@ -111,7 +109,6 @@ function normalizeEstimateDraftSessionCompatibilityView(
 }
 
 function getWebDurableStorage(): Storage | null {
-  if (Platform.OS !== "web") return null;
   try {
     if (typeof localStorage !== "undefined") return localStorage;
   } catch {
