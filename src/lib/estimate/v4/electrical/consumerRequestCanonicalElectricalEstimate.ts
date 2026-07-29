@@ -329,6 +329,30 @@ export function createCanonicalElectricalEstimateState(input: {
       replacedByUserInput: false,
       visibleToUser: true as const,
     }));
+  const resolvedIdentityWithoutChecksum = {
+    requestedCatalogWorkId: ELECTRICAL_CANONICAL_WORK_KEY,
+    passportId: ELECTRICAL_CANONICAL_PROFILE.workPassportId,
+    passportVersion: ELECTRICAL_CANONICAL_PROFILE.registrationVersion,
+    parameterSchemaId: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
+    parameterSchemaVersion: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
+    calculationStrategyId: ELECTRICAL_CANONICAL_CALCULATION_VERSION,
+    canonicalModelId: ELECTRICAL_CANONICAL_WORK_KEY,
+    canonicalModelVersion: ELECTRICAL_CANONICAL_PROFILE.registrationVersion,
+    selectedScope: ELECTRICAL_CANONICAL_SCOPE_PRESET_ID,
+    scopePresetId: ELECTRICAL_CANONICAL_SCOPE_PRESET_ID,
+    resolvedParameters: params,
+    formulaGraphVersion: ELECTRICAL_CANONICAL_PROFILE.formulaGraphVersion,
+    compilerVersion: ELECTRICAL_CANONICAL_PROFILE.scopePresets[0].engineVersion,
+    sourceBindingVersions: [{
+      sourceId: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
+      version: ELECTRICAL_CANONICAL_PROFILE.registrationVersion,
+    }],
+    semanticOwner: ELECTRICAL_CANONICAL_PROFILE.workPassportId,
+    originalPrompt: input.rawInput,
+    legacyFallbackUsed: false,
+    fallbackReason: null,
+    projectionOwner: "estimate_draft_revision" as const,
+  };
   const revision: EstimateDraftRevision = {
     estimateDraftId: input.draftId,
     revisionId,
@@ -339,6 +363,10 @@ export function createCanonicalElectricalEstimateState(input: {
     matchedFamily: ELECTRICAL_CANONICAL_WORK_KEY,
     professionalWorkId: ELECTRICAL_CANONICAL_WORK_KEY,
     workAssemblyId: ELECTRICAL_CANONICAL_SCOPE_PRESET_ID,
+    resolvedIdentity: {
+      ...resolvedIdentityWithoutChecksum,
+      checksum: estimateDeterministicHash(resolvedIdentityWithoutChecksum),
+    },
     quantityBasis: null,
     workSpecificParameterSchemaId: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
     workSpecificParameterSignature: canonicalParameterSession.parameters.map(

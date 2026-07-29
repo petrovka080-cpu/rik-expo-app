@@ -19,6 +19,11 @@ export {
   type ConsumerRepairPayloadParityResult,
   type ConsumerRepairPayloadSourceGovernanceResult,
 } from "./consumerRequestPayloadParity";
+export {
+  buildConsumerRequestEstimateRuntimeTrace,
+  CONSUMER_REQUEST_ESTIMATE_RUNTIME_TRACE_SCHEMA_VERSION,
+  type ConsumerRequestEstimateRuntimeTrace,
+} from "./buildConsumerRequestEstimateRuntimeTrace";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
   APPROVED_HISTORY_SCALE_MATRIX,

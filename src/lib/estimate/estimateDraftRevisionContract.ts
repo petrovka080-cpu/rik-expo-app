@@ -144,6 +144,9 @@ export type EstimateDraftRevisionQuantityBasis = {
 export type EstimateResolvedIdentity = {
   requestedCatalogWorkId: string | null;
   passportId: string;
+  passportVersion?: string;
+  parameterSchemaId?: string;
+  parameterSchemaVersion?: string;
   calculationStrategyId: string;
   canonicalModelId: string;
   canonicalModelVersion: string;
@@ -158,6 +161,9 @@ export type EstimateResolvedIdentity = {
   }>;
   semanticOwner: string;
   originalPrompt: string;
+  legacyFallbackUsed?: boolean;
+  fallbackReason?: string | null;
+  projectionOwner?: "estimate_draft_revision";
   checksum: string;
 };
 

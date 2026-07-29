@@ -2,6 +2,7 @@ import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/c
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
   __resetConsumerRepairRequestStoreForTests,
+  buildConsumerRequestEstimateRuntimeTrace,
   createConsumerRepairRequestDraft,
   listConsumerRepairRequestHistory,
 } from "../../src/lib/consumerRequests";
@@ -63,6 +64,54 @@ describe("production /request electrical runtime truth", () => {
     expect(aiDraft.items).toHaveLength(0);
     expect(aiDraft.structuredEstimatePayload).toBeUndefined();
     expect(currentRevision?.legacyRowsCount).toBe(0);
+    expect(currentRevision?.resolvedIdentity).toEqual(
+      expect.objectContaining({
+        passportId: "ELECTRICAL_CANONICAL_V1",
+        passportVersion: "1.0.0",
+        parameterSchemaId:
+          "electrical-area-installation-parameters:2026-07-28.v1",
+        parameterSchemaVersion:
+          "electrical-area-installation-parameters:2026-07-28.v1",
+        calculationStrategyId:
+          "electrical-area-installation:2026-07-28.v1",
+        compilerVersion:
+          "electrical-canonical-compiler:2026-07-28.v1",
+        formulaGraphVersion:
+          "electrical-canonical-formula-graph:2026-07-28.v1",
+        semanticOwner: "ELECTRICAL_CANONICAL_V1",
+        legacyFallbackUsed: false,
+        fallbackReason: null,
+        projectionOwner: "estimate_draft_revision",
+        checksum: expect.any(String),
+      }),
+    );
+    const exactSha = "0123456789abcdef0123456789abcdef01234567";
+    expect(buildConsumerRequestEstimateRuntimeTrace({
+      bundle,
+      fullSha: exactSha,
+      buildSha: exactSha,
+    })).toEqual(expect.objectContaining({
+      fullSha: exactSha,
+      buildSha: exactSha,
+      selectedCatalogWorkId: ELECTRICAL_CANONICAL_WORK_KEY,
+      selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+      workIntentId: expect.stringMatching(/^estimate_work_intent_eh_/),
+      scopeSessionId: bundle.canonicalParameterSession?.sessionId,
+      passportId: "ELECTRICAL_CANONICAL_V1",
+      parameterSchemaId:
+        "electrical-area-installation-parameters:2026-07-28.v1",
+      calculationStrategyId:
+        "electrical-area-installation:2026-07-28.v1",
+      formulaGraphVersion:
+        "electrical-canonical-formula-graph:2026-07-28.v1",
+      compilerVersion:
+        "electrical-canonical-compiler:2026-07-28.v1",
+      revisionId: currentRevision?.revisionId,
+      legacyFallbackUsed: false,
+      fallbackReason: null,
+      projectionOwner: "estimate_draft_revision",
+      checksum: expect.any(String),
+    }));
     expect(currentRevision?.boq.rows).toHaveLength(0);
     expect(viewModel?.rawItemCount).toBe(0);
     expect(viewModel?.totalLabel).toMatch(/не рассчитан|уточнить/i);

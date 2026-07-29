@@ -9,6 +9,10 @@ import {
   decodeConsumerRepairBundleFromDurableStorage,
   encodeConsumerRepairBundleForDurableStorage,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
+import {
+  assertElectricalDimensionSources,
+  type ElectricalDimensionTarget,
+} from "../../src/lib/estimate/v4/electrical/electricalDimensionalContractV1";
 
 function parameterMap(
   bundle: ReturnType<typeof buildConsumerRepairSelectedWorkDraftBundle>["bundle"],
@@ -25,6 +29,27 @@ describe("canonical electrical parameter core", () => {
   beforeEach(() => {
     __resetConsumerRepairRequestStoreForTests();
   });
+
+  it.each([
+    "ROUTE_LENGTH",
+    "CABLE_LENGTH",
+    "POINT_COUNT",
+    "PANEL_COUNT",
+    "BREAKER_COUNT",
+    "SET_COUNT",
+  ] satisfies ElectricalDimensionTarget[])(
+    "rejects area_m2 as the only source for %s",
+    (target) => {
+      expect(() =>
+        assertElectricalDimensionSources({
+          target,
+          sourceParameterIds: ["area_m2"],
+        })
+      ).toThrow(
+        `DIMENSION_SOURCE_INVALID:${target}:area_m2:electrical-dimensional-contract:2026-07-29.v1`,
+      );
+    },
+  );
 
   it("blocks partial quantities and exposes every missing parameter without generated engineering assumptions", () => {
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
@@ -288,6 +313,11 @@ describe("canonical electrical parameter core", () => {
       bundle.estimateDraftRevisionState?.currentRevisionId,
     );
     expect(
+      decoded?.estimateDraftRevisionState?.revisions.at(-1)?.resolvedIdentity,
+    ).toEqual(
+      bundle.estimateDraftRevisionState?.revisions.at(-1)?.resolvedIdentity,
+    );
+    expect(
       decoded?.canonicalParameterSession?.parameters.find(
         (parameter) => parameter.parameterId === "lighting_point_count",
       ),
@@ -295,6 +325,100 @@ describe("canonical electrical parameter core", () => {
       value: 9,
       source: "USER_EXPLICIT",
     }));
+  });
+
+  it("recalculates the complete route dependency ledger from 500 to 650 metres", () => {
+    let { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "electrical-route-dependency-ledger",
+      problemText: [
+        "электромонтаж 30 розеток и 20 выключателей, 25 точек освещения",
+        "длина трассы 500 м, площадь 300 м²",
+        "открытая прокладка в кабель-канале",
+      ].join("\n"),
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+    const beforeRevision =
+      bundle.estimateDraftRevisionState?.revisions.find(
+        (revision) =>
+          revision.revisionId ===
+          bundle.estimateDraftRevisionState?.currentRevisionId,
+      ) ?? null;
+
+    bundle = applyConsumerRepairDraftRevisionParamPatch({
+      requestDraftId: bundle.draft.id,
+      operation: "update_param",
+      paramKey: "route_length_m",
+      rawValue: "650",
+      createdAt: "2026-07-29T10:00:00.000Z",
+    });
+
+    const afterRevision =
+      bundle.estimateDraftRevisionState?.revisions.find(
+        (revision) =>
+          revision.revisionId ===
+          bundle.estimateDraftRevisionState?.currentRevisionId,
+      ) ?? null;
+    const diff = bundle.estimateDraftRevisionState?.diffs.at(-1);
+    const changedRowIds = new Set(
+      diff?.changedRows.map((row) => row.rowId) ?? [],
+    );
+    const requiredRouteRows = [
+      "electrical_power_cable",
+      "electrical_lighting_cable",
+      "electrical_corrugation_channel",
+      "electrical_cable_laying",
+      "electrical_reference_route_fixings",
+      "electrical_reference_containment_couplings",
+      "electrical_reference_cable_pull_wire",
+      "electrical_reference_cable_ties",
+      "electrical_reference_cable_measure_cut",
+      "electrical_reference_cable_dressing",
+      "electrical_reference_circuit_separation",
+      "electrical_reference_channel_cover",
+      "electrical_reference_channel_body_install",
+      "electrical_reference_channel_cover_close",
+    ];
+
+    expect(beforeRevision).not.toBeNull();
+    expect(afterRevision).not.toBeNull();
+    expect(diff?.changedParams).toContainEqual(
+      expect.objectContaining({
+        key: "route_length_m",
+        before: 500,
+        after: 650,
+      }),
+    );
+    expect(diff?.changedRowsCount).toBeGreaterThan(14);
+    requiredRouteRows.forEach((rowId) => {
+      expect(changedRowIds).toContain(rowId);
+      const rowTrace = afterRevision?.trace.rows.find(
+        (row) => row.rowId === rowId,
+      );
+      expect(rowTrace?.sourceParamKeys).toContain("route_length_m");
+      expect(rowTrace?.quantityFormula).toMatch(
+        /route_length_m|total_cable_length_m|route_accessory_count/,
+      );
+    });
+    const beforeRows = new Map(
+      beforeRevision?.boq.rows.map((row) => [row.rowId, row]) ?? [],
+    );
+    const afterRows = new Map(
+      afterRevision?.boq.rows.map((row) => [row.rowId, row]) ?? [],
+    );
+    expect(afterRows.get("electrical_corrugation_channel")?.quantity).toBe(650);
+    expect(afterRows.get("electrical_reference_route_fixings")?.quantity).toBe(
+      Math.ceil(650 / 0.6),
+    );
+    expect(afterRows.get("electrical_reference_cable_measure_cut")?.quantity)
+      .toBeGreaterThan(
+        beforeRows.get("electrical_reference_cable_measure_cut")?.quantity ??
+          0,
+      );
   });
 
   it("binds engineering scope, load, containment, height and access to BOQ rows", () => {
