@@ -16,7 +16,10 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
-import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
+import {
+  ConsumerRepairDeliveryFieldsCard,
+  ConsumerRepairRequestFormCard,
+} from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
@@ -384,6 +387,18 @@ export function ConsumerRepairRequestContent({
           onSelectWorkSuggestion={onSelectWorkSuggestion}
           onSelectTemplateCandidate={onSelectTemplateCandidate}
           onPrepareDraft={onPrepareDraft}
+        />
+      ) : null}
+      {bundle ? (
+        <ConsumerRepairDeliveryFieldsCard
+          city={city}
+          addressText={addressText}
+          preferredTimeText={preferredTimeText}
+          contactPhone={contactPhone}
+          onCityChange={onCityChange}
+          onAddressTextChange={onAddressTextChange}
+          onPreferredTimeTextChange={onPreferredTimeTextChange}
+          onContactPhoneChange={onContactPhoneChange}
         />
       ) : null}
       {!prioritizeDraftDecision ? statusNode : null}

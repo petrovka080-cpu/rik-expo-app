@@ -216,8 +216,8 @@ export function ConsumerRepairRequestScreenView({
         approvalMissingRequiredContact={Boolean(
           renderModel.bundle &&
           (
-            (renderModel.bundle.draft.addressText ?? "").trim().length < 3 ||
-            (renderModel.bundle.draft.contactPhone ?? "").replace(/\D/g, "").length < 7
+            state.addressText.trim().length < 3 ||
+            state.contactPhone.replace(/\D/g, "").length < 7
           )
         )}
         approvalBlockedByEstimate={approvalBlockedByEstimate}

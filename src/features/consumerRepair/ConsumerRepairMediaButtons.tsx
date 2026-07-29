@@ -164,6 +164,20 @@ class DeliveryFields extends React.PureComponent<DeliveryFieldsProps, DeliveryFi
   }
 }
 
+export function ConsumerRepairDeliveryFieldsCard(
+  props: DeliveryFieldsProps,
+): React.ReactElement {
+  return (
+    <View
+      pointerEvents="box-none"
+      style={screenStyles.card}
+      testID="consumer-repair-delivery-card"
+    >
+      <DeliveryFields {...props} />
+    </View>
+  );
+}
+
 function MediaButton({
   icon,
   label,

@@ -3,6 +3,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { ConsumerRepairRequestStickyActions } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
+import { ConsumerRepairDeliveryFieldsCard } from "../../src/features/consumerRepair/ConsumerRepairMediaButtons";
 import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
@@ -143,5 +144,44 @@ describe("unified canonical estimate UI", () => {
     expect(prepare.props.disabled).not.toBe(true);
     act(() => prepare.props.onPress());
     expect(noop).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps contact fields reachable beside an estimate without restoring the duplicate prompt composer", () => {
+    const noop = jest.fn();
+    let delivery!: TestRenderer.ReactTestRenderer;
+
+    act(() => {
+      delivery = TestRenderer.create(
+        <ConsumerRepairDeliveryFieldsCard
+          city=""
+          addressText=""
+          preferredTimeText=""
+          contactPhone=""
+          onCityChange={noop}
+          onAddressTextChange={noop}
+          onPreferredTimeTextChange={noop}
+          onContactPhoneChange={noop}
+        />,
+      );
+    });
+
+    expect(
+      delivery.root.findAllByProps({
+        testID: "consumer-repair-delivery-card",
+      }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      delivery.root.findAllByProps({
+        testID: "consumer-repair-address-input",
+      }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      delivery.root.findAllByProps({
+        testID: "consumer-repair-phone-input",
+      }).length,
+    ).toBeGreaterThan(0);
+    expect(visibleText(delivery.toJSON())).not.toContain(
+      "Р§С‚Рѕ РїРѕСЃС‡РёС‚Р°С‚СЊ",
+    );
   });
 });
