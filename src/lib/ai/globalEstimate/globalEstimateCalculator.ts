@@ -1574,6 +1574,25 @@ export function buildGlobalEstimateFromEstimatorKernel(
             normSourceType: "configured_reference",
             normVersion,
             normReviewStatus,
+            normSourceProfile: row.normSourceProfile ?? "PROJECT_SPECIFIC",
+            normSourceJurisdiction:
+              row.normSourceJurisdiction ?? "KG_PROJECT_CONTEXT",
+            normSourcePublisher:
+              row.normSourcePublisher ?? "Rik configured reference",
+            normSourceEffectiveDate:
+              row.normSourceEffectiveDate ?? "UNCONFIRMED",
+            normSourceCheckedAt:
+              row.normSourceCheckedAt ?? evidence.checkedAt,
+            normSourceReference:
+              row.normSourceReference ?? normSourceId,
+            normSourceSnapshotSha256:
+              row.normSourceSnapshotSha256 ?? null,
+            normSourceLicenseStatus:
+              row.normSourceLicenseStatus ?? "EXPERT_REVIEW_REQUIRED",
+            normSourceLifecycleStatus:
+              row.normSourceLifecycleStatus ?? "EXPERT_REVIEW_REQUIRED",
+            applicabilityRule:
+              `estimator_semantic_frame_object:${plan.semanticFrame.object}`,
             sourceApplicabilityStatus: "preliminary_configured_rule_requires_project_scope_review",
             includedInEstimate,
             includedInProcurement,

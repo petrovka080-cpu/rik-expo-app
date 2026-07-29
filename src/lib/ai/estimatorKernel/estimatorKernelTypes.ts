@@ -113,6 +113,15 @@ export type DynamicProfessionalBoqRow = {
   normSourceTitle?: string;
   normVersion?: string;
   normReviewStatus?: string;
+  normSourceProfile?: "KG_PRIMARY" | "INTL_REFERENCE" | "PROJECT_SPECIFIC" | "MANUFACTURER_TECHNICAL";
+  normSourceJurisdiction?: string;
+  normSourcePublisher?: string;
+  normSourceEffectiveDate?: string;
+  normSourceCheckedAt?: string;
+  normSourceReference?: string;
+  normSourceSnapshotSha256?: string;
+  normSourceLicenseStatus?: string;
+  normSourceLifecycleStatus?: "ACTIVE" | "SUPERSEDED" | "EXPERT_REVIEW_REQUIRED";
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;
   optional?: boolean;

@@ -553,12 +553,32 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     ? `${cableType}, сечение ${cableSection} мм²`
     : `${cableType}, сечение требует уточнения`;
   const rows: DynamicProfessionalBoqRow[] = [];
+  const projectSourceMetadata = {
+    normId: "PROJECT-ELECTRICAL-CALCULATION-RULE-V1",
+    normFamilyId: "PROJECT_SPECIFIC_ELECTRICAL_QUANTITY_RULES",
+    normSourceId: "RIK_ELECTRICAL_PROJECT_RULES_V1",
+    normSourceTitle:
+      "Electrical Reference Profile V1: проектные правила количества",
+    normVersion: "2026-07-29.v1",
+    normReviewStatus: "EXPERT_REVIEW_REQUIRED",
+    normSourceProfile: "PROJECT_SPECIFIC" as const,
+    normSourceJurisdiction: "KG_PROJECT_CONTEXT",
+    normSourcePublisher: "Rik internal estimate configuration",
+    normSourceEffectiveDate: "2026-07-29",
+    normSourceCheckedAt: "2026-07-29",
+    normSourceReference: "internal://estimate/electrical-reference-v1",
+    normSourceSnapshotSha256:
+      "ae6abbf16de45e7ac5db1b8b506ea87f705da6cb104afded72c14746f23d39b0",
+    normSourceLicenseStatus: "INTERNAL_USE_ONLY",
+    normSourceLifecycleStatus: "EXPERT_REVIEW_REQUIRED" as const,
+  };
   const push = (
     item: DynamicProfessionalBoqRow,
     quantityFormula: string,
     sourceParameterIds: readonly string[],
   ) => {
     rows.push({
+      ...projectSourceMetadata,
       ...item,
       formulaId: `electrical-canonical:${item.code}:v1`,
       quantityFormula,
@@ -728,7 +748,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     push(mepRow("materials", "electrical_outlets", "Розетки", "pcs", outlets, 420, "electrical_outlets"), "outlet_count", ["outlet_count"]);
     push(mepRow("labor", "electrical_outlet_install", "Монтаж розеток", "pcs", outlets, 620), "outlet_count", ["outlet_count"]);
   } else if (!hasParameter("outlet_count")) {
-    push(blocked(mepRow("materials", "electrical_outlets_parameters_required", "Розеточные точки: количество розеток требует уточнения", "pcs", 0, 0, "electrical_outlets_pending_count"), ["outlet_count"]), "not_calculated_until(outlet_count)", ["outlet_count"]);
+    push(blocked(mepRow("materials", "electrical_outlets_parameters_required", "Розетки: количество розеточных точек требует уточнения", "pcs", 0, 0, "electrical_outlets_pending_count"), ["outlet_count"]), "not_calculated_until(outlet_count)", ["outlet_count"]);
     push(blocked(mepRow("labor", "electrical_outlet_install_parameters_required", "Монтаж розеток: количество требует уточнения", "pcs", 0, 0), ["outlet_count"]), "not_calculated_until(outlet_count)", ["outlet_count"]);
   }
   if (switches > 0) {
@@ -760,7 +780,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
       : groups + 2;
     push(mepRow("materials", "electrical_breakers", "Автоматические выключатели групповых цепей: номиналы и характеристики по расчёту", "pcs", protectiveDeviceCount, 1200, "electrical_breakers"), "max(group_count + 2, ceil(estimated_load_kw / 3.5) + 1)", ["group_count", "protective_devices_included", "phase_count", "estimated_load_kw"]);
   }
-  if (groundingIncluded) {
+  if (groundingIncluded && panelIncluded) {
     push(mepRow("materials", "electrical_ground_bus", "Раздельные шины PE и N распределительного щита", "set", 1, 3800, "electrical_panel_accessories"), "grounding_included ? 1 : 0", ["grounding_included"]);
     push(mepRow("labor", "electrical_grounding_test", "Проверка присоединения вводного PE-проводника к главной защитной шине", "set", 1, 6200), "grounding_included ? 1 : 0", ["grounding_included"]);
   }
