@@ -638,6 +638,20 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     push(mepRow("labor", "electrical_dust_protection", "защита помещений перед электромонтажом", "sq_m", area, 28), "area_m2", ["area_m2"]);
   }
   if (routeLength > 0) {
+    if (area <= 0) {
+      push(
+        mepRow(
+          "labor",
+          "electrical_route_marking_linear",
+          "Разметка электрических трасс по подтверждённой длине линейного объекта",
+          "linear_m",
+          routeLength,
+          62,
+        ),
+        "route_length_m",
+        ["route_length_m"],
+      );
+    }
     if (powerCableLength > 0) {
       const cableRow = mepRow("materials", "electrical_power_cable", `Кабельные линии розеток: ${cableLabel}`, "linear_m", powerCableLength, 118, "electrical_cable_power");
       push(
@@ -667,7 +681,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
       ["route_length_m", "wiring_method", "containment_type"],
     );
     if (!(wiringMethod === "open" && containmentType === "cable_channel")) {
-      const chasingRow = mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice);
+      const chasingRow = mepRow("labor", "electrical_chasing_or_channel", wiringMethod === "open" ? `Монтаж открытой системы по трассе: ${containmentLabel}` : wiringMethod === "concealed" ? "Штробление и скрытая прокладка по трассе" : "Прокладка трассы и применение штробореза: способ требует уточнения", "linear_m", routeLength, chasingUnitPrice);
       push(
         chasingBasisKnown
           ? chasingRow
@@ -733,7 +747,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     );
     push(
       blocked(
-        mepRow("labor", "electrical_chasing_parameters_required", "Штробление или монтаж открытой трассы: способ прокладки и материал стен требуют уточнения", "linear_m", 0, 0),
+        mepRow("labor", "electrical_chasing_parameters_required", "Штробление штроборезом или монтаж открытой трассы: способ прокладки и материал стен требуют уточнения", "linear_m", 0, 0),
         ["route_length_m", "wiring_method", "wall_material"],
       ),
       "not_calculated_until(route_length_m, wiring_method, wall_material)",
@@ -781,6 +795,33 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     const panelModules = Math.max(12, (groups + 2) * 2);
     push(mepRow("materials", "electrical_panel", `Корпус распределительного щита на ${panelModules} модулей: ${phaseCount === 3 ? "трёхфазное исполнение" : "однофазное исполнение"}${loadLabel}`, "pcs", 1, phaseCount === 3 ? 22000 : 14000, "electrical_panel"), "panel_included ? 1 : 0", ["panel_included", "phase_count", "estimated_load_kw", "group_count"]);
     push(mepRow("labor", "electrical_panel_mount", "Установка и крепление корпуса распределительного щита", "pcs", 1, phaseCount === 3 ? 12500 : 9800), "panel_included ? 1 : 0", ["panel_included", "phase_count", "group_count"]);
+  } else {
+    push(
+      blocked(
+        mepRow(
+          "materials",
+          "electrical_panel_parameters_required",
+          "Щит и автоматика: состав, фазность, нагрузка и включение в объём требуют подтверждения",
+          "set",
+          0,
+          0,
+          "electrical_panel_pending_parameters",
+        ),
+        [
+          "panel_included",
+          "protective_devices_included",
+          "phase_count",
+          "estimated_load_kw",
+        ],
+      ),
+      "not_calculated_until(panel_included, protective_devices_included, phase_count, estimated_load_kw)",
+      [
+        "panel_included",
+        "protective_devices_included",
+        "phase_count",
+        "estimated_load_kw",
+      ],
+    );
   }
   if (protectiveDevicesIncluded) {
     const protectiveDeviceCount = estimatedLoadKw > 0
