@@ -49,6 +49,7 @@ import {
   createAssistantScreenMessage as createMessage,
   normalizeGroundedRouteParams,
   recordAssistantScreenFallback,
+  resolveAssistantMessagesAfterHydration,
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 import {
@@ -247,18 +248,44 @@ export default function AIAssistantScreen({
       const shouldRestoreStoredMessages = assistantContext === "unknown";
       const stored = shouldRestoreStoredMessages ? await loadAssistantMessages(nextUserId) : [];
       if (shouldRestoreStoredMessages && stored.length > 0) {
-        setMessages(stored);
+        setMessages((current) =>
+          resolveAssistantMessagesAfterHydration(
+            current,
+            stored,
+            keepInteractive,
+          ),
+        );
         setBooting(false);
         return;
       }
       const greetingRole = assistantContext === "unknown" ? nextRole : assistantPresentationRole;
-      setMessages([createMessage("assistant", getAssistantGreeting(greetingRole, nextFullName, assistantContext))]);
+      const greeting = createMessage(
+        "assistant",
+        getAssistantGreeting(greetingRole, nextFullName, assistantContext),
+      );
+      setMessages((current) =>
+        resolveAssistantMessagesAfterHydration(
+          current,
+          [greeting],
+          keepInteractive,
+        ),
+      );
     } catch (error) {
       recordAssistantScreenFallback("initialize_assistant_failed", error, {
         action: "initialize",
         assistantContext,
       });
-      setMessages([createMessage("assistant", getAssistantGreeting("unknown", null, assistantContext))]);
+      const greeting = createMessage(
+        "assistant",
+        getAssistantGreeting("unknown", null, assistantContext),
+      );
+      setMessages((current) =>
+        resolveAssistantMessagesAfterHydration(
+          current,
+          [greeting],
+          keepInteractive,
+        ),
+      );
     } finally {
       setBooting(false);
     }

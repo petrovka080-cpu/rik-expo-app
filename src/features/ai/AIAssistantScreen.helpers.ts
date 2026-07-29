@@ -39,6 +39,14 @@ export function createAssistantScreenMessage(
   };
 }
 
+export function resolveAssistantMessagesAfterHydration(
+  current: AssistantMessage[],
+  hydrated: AssistantMessage[],
+  keepInteractive: boolean,
+): AssistantMessage[] {
+  return keepInteractive && current.length > 0 ? current : hydrated;
+}
+
 export function normalizeGroundedRouteParams(
   params: Record<string, string | string[] | undefined>,
 ): Record<string, string | number | boolean | null | undefined> {
