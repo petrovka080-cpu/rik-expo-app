@@ -88,4 +88,27 @@ describe("structured estimate legacy session UI ownership", () => {
 
     act(() => renderer.unmount());
   });
+
+  it("keeps a compiled inline BOQ confirmable and rebuilds only a truly empty legacy draft", () => {
+    const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "inline-diamond-core-ui-owner",
+      problemText: "алмазное бурение бетона 120 отверстий диаметр 132 мм глубина 220 мм",
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "Test address 17",
+      preferredTimeText: "weekday morning",
+      contactPhone: "+996 700 000 001",
+      selectedWork: null,
+    });
+
+    expect(bundle.structuredEstimatePayload).toBeNull();
+    expect(bundle.estimateDraftSession?.status).toBe("PARAMETERS_REQUIRED");
+    expect(bundle.items.length).toBeGreaterThan(0);
+    expect(consumerRepairLegacyEstimateRequiresRebuild(bundle)).toBe(false);
+    expect(consumerRepairLegacyEstimateRequiresRebuild({
+      ...bundle,
+      items: [],
+      editableEstimateSnapshot: null,
+    })).toBe(true);
+  });
 });

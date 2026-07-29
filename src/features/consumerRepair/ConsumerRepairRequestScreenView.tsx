@@ -28,10 +28,15 @@ type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairReq
 export function consumerRepairLegacyEstimateRequiresRebuild(
   bundle: ConsumerRepairDraftBundle | null,
 ): boolean {
+  const hasCompiledEstimate = Boolean(
+    bundle?.structuredEstimatePayload ||
+    bundle?.items.length ||
+    bundle?.editableEstimateSnapshot?.rows.length,
+  );
   return Boolean(
     bundle &&
     bundle.canonicalParameterSession == null &&
-    bundle.structuredEstimatePayload == null &&
+    !hasCompiledEstimate &&
     bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
   );
 }
