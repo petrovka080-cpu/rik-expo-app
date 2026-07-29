@@ -3,7 +3,7 @@ import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFact
 import type { AsphaltClarificationExperienceV4, RoadScopeRevisionBindingV4 } from "./v4/asphalt";
 import type {
   ElectricalCircuitScheduleV1,
-} from "./v4/electrical/electricalCircuitScheduleV1";
+} from "./v4/electrical/electricalProfessionalBoqV1";
 
 export type EstimateDraftRevisionSource =
   | "initial_prompt"

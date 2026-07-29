@@ -1,11 +1,9 @@
 import {
-  buildCanonicalElectricalConsumerRepairAiDraft,
-} from "../../src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
-import {
   assertElectricalBoqIntegrityV1,
+  buildCanonicalElectricalConsumerRepairAiDraft,
   inspectElectricalBoqIntegrityV1,
   type ElectricalBoqIntegrityRow,
-} from "../../src/lib/estimate/v4/electrical/electricalBoqIntegrityV1";
+} from "../../src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 
 const FULL_PROMPT =
   "электромонтаж под ключ, площадь 87 м², трасса 154 м, " +

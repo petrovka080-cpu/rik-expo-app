@@ -2,12 +2,10 @@ import {
   buildElectricalCanonicalParameterSession,
 } from "../../src/lib/estimate/v4/electrical/electricalCanonicalV1";
 import {
+  assertElectricalDimensionSources,
   buildElectricalCircuitScheduleV1,
   ELECTRICAL_CIRCUIT_SCHEDULE_SCHEMA_ID,
-} from "../../src/lib/estimate/v4/electrical/electricalCircuitScheduleV1";
-import {
-  assertElectricalDimensionSources,
-} from "../../src/lib/estimate/v4/electrical/electricalDimensionalContractV1";
+} from "../../src/lib/estimate/v4/electrical/electricalProfessionalBoqV1";
 
 function session(text: string) {
   return buildElectricalCanonicalParameterSession({

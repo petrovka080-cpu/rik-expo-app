@@ -3,7 +3,13 @@ export {
   CONSUMER_REPAIR_FORBIDDEN_OFFICE_ROUTES,
   assertConsumerRepairScope,
 } from "./consumerRequestAccessPolicy";
-export { auditConsumerRepairRequestEvent, createConsumerRepairEvent } from "./consumerRequestAuditTrail";
+export {
+  auditConsumerRepairRequestEvent,
+  buildConsumerRequestEstimateRuntimeTrace,
+  CONSUMER_REQUEST_ESTIMATE_RUNTIME_TRACE_SCHEMA_VERSION,
+  createConsumerRepairEvent,
+  type ConsumerRequestEstimateRuntimeTrace,
+} from "./consumerRequestAuditTrail";
 export {
   assertConsumerRepairDraftActionAllowed,
   resolveConsumerRepairDraftTransition,
@@ -19,11 +25,6 @@ export {
   type ConsumerRepairPayloadParityResult,
   type ConsumerRepairPayloadSourceGovernanceResult,
 } from "./consumerRequestPayloadParity";
-export {
-  buildConsumerRequestEstimateRuntimeTrace,
-  CONSUMER_REQUEST_ESTIMATE_RUNTIME_TRACE_SCHEMA_VERSION,
-  type ConsumerRequestEstimateRuntimeTrace,
-} from "./buildConsumerRequestEstimateRuntimeTrace";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
   APPROVED_HISTORY_SCALE_MATRIX,

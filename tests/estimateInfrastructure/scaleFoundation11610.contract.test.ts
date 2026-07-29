@@ -2,7 +2,7 @@ import {
   buildEstimateScaleFoundationManifest,
   ESTIMATE_SCALE_FOUNDATION_REQUIRED_AUDITS,
   type EstimateScaleFoundationWorkProof,
-} from "../../src/lib/estimate/v4/scaleFoundation11610";
+} from "../../src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4";
 
 const SOURCE_SHA = "0123456789abcdef0123456789abcdef01234567";
 const GREEN_AUDIT_EVIDENCE =

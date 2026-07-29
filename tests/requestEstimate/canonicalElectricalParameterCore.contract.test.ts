@@ -12,7 +12,7 @@ import {
 import {
   assertElectricalDimensionSources,
   type ElectricalDimensionTarget,
-} from "../../src/lib/estimate/v4/electrical/electricalDimensionalContractV1";
+} from "../../src/lib/estimate/v4/electrical/electricalProfessionalBoqV1";
 
 function parameterMap(
   bundle: ReturnType<typeof buildConsumerRepairSelectedWorkDraftBundle>["bundle"],

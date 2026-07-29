@@ -36,7 +36,7 @@ import type {
 import {
   buildElectricalCircuitScheduleV1,
   type ElectricalCircuitScheduleV1,
-} from "./electricalCircuitScheduleV1";
+} from "./electricalProfessionalBoqV1";
 
 function itemRowId(item: ConsumerRepairRequestItem, index: number): string {
   const rowCode = item.sourceParameters?.rowCode;

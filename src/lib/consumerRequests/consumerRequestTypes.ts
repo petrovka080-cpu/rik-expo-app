@@ -18,7 +18,7 @@ import type {
 } from "../../features/estimates/pricing/priceResolutionEngine";
 import type {
   ElectricalCircuitScheduleV1,
-} from "../estimate/v4/electrical/electricalCircuitScheduleV1";
+} from "../estimate/v4/electrical/electricalProfessionalBoqV1";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";

@@ -16,14 +16,12 @@ import {
 } from "../../src/lib/estimate/buildProfessionalWorkPassport";
 import {
   buildCatalogProfessionalCoverageLedgerV4,
-} from "../../src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4";
-import {
   buildEstimateScaleFoundationManifest,
   ESTIMATE_SCALE_FOUNDATION_EXPECTED_WORKS,
   ESTIMATE_SCALE_FOUNDATION_REGISTRY_VERSIONS,
   type EstimateScaleFoundationAuditEvidence,
   type EstimateScaleFoundationWorkProof,
-} from "../../src/lib/estimate/v4/scaleFoundation11610";
+} from "../../src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4";
 import {
   gitOutput,
   timestampForPath,

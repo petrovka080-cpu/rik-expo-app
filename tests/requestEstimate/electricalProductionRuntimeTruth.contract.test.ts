@@ -87,12 +87,14 @@ describe("production /request electrical runtime truth", () => {
       }),
     );
     const exactSha = "0123456789abcdef0123456789abcdef01234567";
-    expect(buildConsumerRequestEstimateRuntimeTrace({
+    const runtimeTrace = buildConsumerRequestEstimateRuntimeTrace({
       bundle,
       fullSha: exactSha,
       buildSha: exactSha,
-    })).toEqual(expect.objectContaining({
+    });
+    expect(runtimeTrace).toEqual(expect.objectContaining({
       fullSha: exactSha,
+      sourceSha: exactSha,
       buildSha: exactSha,
       selectedCatalogWorkId: ELECTRICAL_CANONICAL_WORK_KEY,
       selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
@@ -112,7 +114,17 @@ describe("production /request electrical runtime truth", () => {
       fallbackReason: null,
       projectionOwner: "estimate_draft_revision",
       checksum: expect.any(String),
+      deterministicHash: expect.any(String),
     }));
+    expect(runtimeTrace.deterministicHash).toBe(runtimeTrace.checksum);
+    expect(buildConsumerRequestEstimateRuntimeTrace({
+      bundle,
+      fullSha: exactSha,
+      buildSha: exactSha,
+    })).toEqual(runtimeTrace);
+    expect(JSON.stringify(runtimeTrace)).not.toMatch(
+      /address|phone|consumerUserId|problemText|rawInput|summaryRu|items|token|secret/i,
+    );
     expect(currentRevision?.boq.rows).toHaveLength(0);
     expect(viewModel?.rawItemCount).toBe(0);
     expect(viewModel?.totalLabel).toMatch(/не рассчитан|уточнить/i);

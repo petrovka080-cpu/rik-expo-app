@@ -14,7 +14,7 @@ import {
 import type { EstimateWorkProfileRegistration } from "../../workProfiles/estimateWorkProfileRegistry";
 import {
   electricalCircuitCountFromConfirmedPoints,
-} from "./electricalDimensionalContractV1";
+} from "./electricalProfessionalBoqV1";
 
 export const ELECTRICAL_CANONICAL_WORK_KEY = "electrical_area_installation" as const;
 export const ELECTRICAL_CANONICAL_SCOPE_PRESET_ID = "AREA_AND_POINT_INSTALLATION" as const;
