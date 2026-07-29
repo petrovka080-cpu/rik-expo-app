@@ -7,4 +7,5 @@ export * from "./adaptProfessionalWorkPassportV2ToV4";
 export * from "./validateProfessionalEstimateV4";
 export * from "./truthLedgersV4";
 export * from "./catalogProfessionalCoverageLedgerV4";
+export * from "./scaleFoundation11610";
 export * from "./asphalt";
