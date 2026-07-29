@@ -48,7 +48,10 @@ import type {
   buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft,
   buildDirectConsumerRepairOpenWorldAiDraft as BuildDirectConsumerRepairOpenWorldAiDraft,
 } from "./consumerRepairAiAdapter";
-import { shouldUseDirectConsumerRepairOpenWorldDraft } from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
+import {
+  resolveDirectConsumerRepairOpenWorldOwner,
+  shouldUseDirectConsumerRepairOpenWorldDraft,
+} from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
 
 type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
 type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRepairOpenWorldAiDraft;
@@ -106,6 +109,12 @@ function loadDirectConsumerRepairOpenWorldAiDraftBuilder(): DirectConsumerRepair
     buildDirectConsumerRepairOpenWorldAiDraft: DirectConsumerRepairOpenWorldAiDraftBuilder;
   };
   return adapter.buildDirectConsumerRepairOpenWorldAiDraft;
+}
+
+function loadRegisteredEstimateWorkProfiles() {
+  return require(
+    "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles"
+  ) as typeof import("../../lib/estimate/workProfiles/registeredEstimateWorkProfiles");
 }
 
 function loadConsumerRepairRuntimeDraftBuilder(): ConsumerRepairRuntimeDraftBuilder {
@@ -490,6 +499,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
 
 export function toConsumerRepairSelectedWork(binding: GlobalSelectedWorkBinding): ConsumerRepairSelectedWork {
   return {
+    selectedCatalogWorkId: binding.selectedWorkKey,
     selectedWorkKey: binding.selectedWorkKey,
     selectedWorkTitleRu: binding.selectedTitleRu,
     selectedWorkCategoryKey: binding.selectedCategoryKey,
@@ -527,7 +537,8 @@ export function focusConsumerRepairProblemInputAtEnd(
 export function selectedWorkFromBundle(bundle: ConsumerRepairDraftBundle | null): GlobalSelectedWorkBinding | null {
   if (!bundle?.draft.selectedWorkKey || !bundle.draft.selectedWorkTitleRu) return null;
   return {
-    selectedWorkKey: bundle.draft.selectedWorkKey,
+    selectedWorkKey:
+      bundle.draft.selectedCatalogWorkId ?? bundle.draft.selectedWorkKey,
     selectedTitleRu: bundle.draft.selectedWorkTitleRu,
     selectedCategoryKey: (bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType) as GlobalSelectedWorkBinding["selectedCategoryKey"],
     selectedCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
@@ -817,9 +828,22 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         items: [],
       }
       : null;
+  const registeredSelectedProfile = selectedWork?.selectedWorkKey
+    ? loadRegisteredEstimateWorkProfiles().getRegisteredEstimateWorkProfile(
+        selectedWork.selectedWorkKey,
+      )
+    : null;
+  const selectedCanonicalElectrical =
+    registeredSelectedProfile?.canonicalWorkKey === "electrical_area_installation";
+  const directOpenWorldOwner =
+    resolveDirectConsumerRepairOpenWorldOwner(resolverInput);
   const directOpenWorldDraft = Boolean(
     !scopeSelectionDraft &&
-    !params.selectedWork &&
+    (
+      !params.selectedWork ||
+      selectedCanonicalElectrical ||
+      directOpenWorldOwner === "electrical"
+    ) &&
     roadScopeResolution.resolverStatus === "NOT_ROAD" &&
     shouldUseDirectConsumerRepairOpenWorldDraft(resolverInput) &&
     !loadMultiDomainReferenceV4().isExactMultiDomainReferencePromptV4(

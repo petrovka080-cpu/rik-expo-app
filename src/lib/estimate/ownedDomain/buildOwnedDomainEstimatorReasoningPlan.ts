@@ -26,7 +26,7 @@ function pricingPolicy(currency: string): EstimatorReasoningPlan["pricingPolicy"
     currency,
     sourcePolicy: "configured_reference_or_catalog_gap_warning",
     taxPolicy: "local_tax_warning_required",
-    allowIndicativePrices: true,
+    allowIndicativePrices: false,
   };
 }
 
@@ -46,9 +46,9 @@ function electricalPlan(
   const routeLengthM = typeof resolved.values.route_length_m === "number"
     ? resolved.values.route_length_m
     : undefined;
-  const panelIncluded = resolved.values.panel_included !== false;
-  const protectiveDevicesIncluded = resolved.values.protective_devices_included !== false;
-  const groundingIncluded = resolved.values.grounding_included !== false;
+  const panelIncluded = resolved.values.panel_included === true;
+  const protectiveDevicesIncluded = resolved.values.protective_devices_included === true;
+  const groundingIncluded = resolved.values.grounding_included === true;
   const demolitionIncluded = resolved.values.demolition_included === true;
   const outletCount = typeof resolved.values.outlet_count === "number"
     ? resolved.values.outlet_count

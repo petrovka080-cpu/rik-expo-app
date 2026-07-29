@@ -496,7 +496,10 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   const lines = Math.max(1, Math.round(numberParameter("line_count", 1)));
   const groups = Math.max(1, Math.round(numberParameter("group_count", 1)));
   const reserveFactor = Math.max(1, numberParameter("cable_reserve_factor", 1));
-  const totalCableLength = roundQuantity(routeLength * lines * reserveFactor);
+  // route_length_m is the confirmed aggregate route. CircuitSchedule
+  // distributes that length between lines; multiplying it by line_count would
+  // charge the same physical route repeatedly.
+  const totalCableLength = roundQuantity(routeLength * reserveFactor);
   const powerShare = totalPoints > 0 ? outlets / totalPoints : 1;
   const powerCableLength = roundQuantity(totalCableLength * powerShare);
   const lightingCableLength = roundQuantity(totalCableLength - powerCableLength);
@@ -508,10 +511,15 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   const cableType = stringParameter("cable_type", "тип по проекту");
   const cableSection = numberParameter("cable_section_mm2");
   const phaseCount = Math.max(1, Math.round(numberParameter("phase_count", 1)));
-  const panelIncluded = booleanParameter("panel_included", true);
-  const protectiveDevicesIncluded = booleanParameter("protective_devices_included", true);
-  const groundingIncluded = booleanParameter("grounding_included", true);
+  const panelIncluded = booleanParameter("panel_included", false);
+  const protectiveDevicesIncluded = booleanParameter("protective_devices_included", false);
+  const groundingIncluded = booleanParameter("grounding_included", false);
   const demolitionIncluded = booleanParameter("demolition_included", false);
+  const restorationIncluded = booleanParameter("restoration_included", false);
+  const penetrationCount = Math.max(
+    0,
+    Math.round(numberParameter("penetration_count", 0)),
+  );
   const installationHeightM = numberParameter("installation_height_m");
   const accessCondition = stringParameter("access_condition", "unspecified");
   const estimatedLoadKnown =
@@ -636,8 +644,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
         cableSpecificationKnown
           ? cableRow
           : blocked(cableRow, ["cable_type", "cable_section_mm2"]),
-        "route_length_m × line_count × cable_reserve_factor × outlet_count / electrical_points_total",
-        ["route_length_m", "line_count", "cable_reserve_factor", "outlet_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
+        "route_length_m × cable_reserve_factor × outlet_count / electrical_points_total",
+        ["route_length_m", "cable_reserve_factor", "outlet_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
       );
     }
     if (lightingCableLength > 0) {
@@ -646,8 +654,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
         cableSpecificationKnown
           ? cableRow
           : blocked(cableRow, ["cable_type", "cable_section_mm2"]),
-        "route_length_m × line_count × cable_reserve_factor × (switch_count + lighting_point_count) / electrical_points_total",
-        ["route_length_m", "line_count", "cable_reserve_factor", "switch_count", "lighting_point_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
+        "route_length_m × cable_reserve_factor × (switch_count + lighting_point_count) / electrical_points_total",
+        ["route_length_m", "cable_reserve_factor", "switch_count", "lighting_point_count", "electrical_points_total", "cable_type", "cable_section_mm2"],
       );
     }
     const containmentRow = mepRow("materials", "electrical_corrugation_channel", containmentLabel, "linear_m", routeLength, containmentUnitPrice, "electrical_containment");
@@ -668,7 +676,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
         ["route_length_m", "wiring_method", "containment_type", "wall_material"],
       );
     }
-    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабельных линий — прокладка кабеля", "linear_m", totalCableLength, 145), "route_length_m × line_count × cable_reserve_factor", ["route_length_m", "line_count", "cable_reserve_factor"]);
+    push(mepRow("labor", "electrical_cable_laying", "Прокладка кабельных линий — прокладка кабеля", "linear_m", totalCableLength, 145), "route_length_m × cable_reserve_factor", ["route_length_m", "cable_reserve_factor"]);
     push(mepRow("labor", "electrical_cable_termination", "Оконцевание и подключение кабельных линий", "pcs", Math.max(2, lines * 2), 540), "line_count × 2", ["line_count"]);
   } else {
     push(
@@ -793,8 +801,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   push(mepRow("labor", "electrical_insulation_test", "Проверка сопротивления изоляции", "set", 1, 9200), "1 комплекс", ["line_count"]);
   push(mepRow("labor", "electrical_group_labeling", "Изготовление и размещение кабельных маркеров отходящих линий", "set", 1, 4200), "1 комплект", ["group_count"]);
   push(mepRow("labor", "electrical_as_built_circuit_schedule", "Исполнительная однолинейная схема электроснабжения", "set", 1, 6800), "1 комплект исполнительной схемы", ["group_count", "phase_count", "panel_included"]);
-  if (wiringMethod !== "open") {
-    push(mepRow("equipment", "electrical_chaser", "Штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(Math.max(area, routeLength) / 90)), 6800), "max(1, ceil(max(area_m2, route_length_m) / 90))", ["area_m2", "route_length_m", "wiring_method", "wall_material"]);
+  if (wiringMethod === "concealed") {
+    push(mepRow("equipment", "electrical_chaser", "Штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(routeLength / 90)), 6800), "max(1, ceil(route_length_m / 90))", ["route_length_m", "wiring_method", "wall_material"]);
   }
   if (
     installationHeightM > 2.5 ||
@@ -803,7 +811,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
   ) {
     const accessShifts = Math.max(
       1,
-      Math.ceil(Math.max(area, routeLength, 1) / (
+      Math.ceil(Math.max(routeLength, 1) / (
         accessCondition === "restricted" ? 60 : 120
       )),
     );
@@ -818,8 +826,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
         accessShifts,
         accessCondition === "restricted" ? 12500 : 18000,
       ),
-      "max(1, ceil(max(area_m2, route_length_m) / access_productivity))",
-      ["installation_height_m", "access_condition", "area_m2", "route_length_m"],
+      "max(1, ceil(route_length_m / access_productivity))",
+      ["installation_height_m", "access_condition", "route_length_m"],
     );
   }
   for (const specification of buildElectricalProfessionalBoqV1Rows({
@@ -835,6 +843,8 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     panelIncluded,
     protectiveDevicesIncluded,
     groundingIncluded,
+    restorationIncluded,
+    penetrationCount,
     wiringMethod,
     containmentType,
     containmentKnown,
@@ -867,7 +877,7 @@ function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicP
     );
   }
   push(mepRow("equipment", "electrical_testing_tools", "Измеритель сопротивления изоляции (мегаомметр)", "set", 1, 5200), "1 комплект", []);
-  push(mepRow("delivery", "electrical_material_delivery", "Доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(Math.max(area, routeLength) / 140)), 5200), "max(1, ceil(max(area_m2, route_length_m) / 140))", ["area_m2", "route_length_m"]);
+  push(mepRow("delivery", "electrical_material_delivery", "Доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(routeLength / 140)), 5200), "max(1, ceil(route_length_m / 140))", ["route_length_m"]);
   return rows;
 }
 

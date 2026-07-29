@@ -33,6 +33,10 @@ import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
 } from "../../../consumerRequests/consumerRequestTypes";
+import {
+  buildElectricalCircuitScheduleV1,
+  type ElectricalCircuitScheduleV1,
+} from "./electricalCircuitScheduleV1";
 
 function itemRowId(item: ConsumerRepairRequestItem, index: number): string {
   const rowCode = item.sourceParameters?.rowCode;
@@ -248,6 +252,7 @@ export function createCanonicalElectricalEstimateState(input: {
   previousCanonicalSession?: CanonicalParameterSession | null;
 }): {
   canonicalParameterSession: CanonicalParameterSession;
+  electricalCircuitSchedule: ElectricalCircuitScheduleV1;
   estimateDraftRevisionState: EstimateDraftRevisionState;
   estimateDraftSession: EstimateDraftSession;
   revision: EstimateDraftRevision;
@@ -275,6 +280,8 @@ export function createCanonicalElectricalEstimateState(input: {
     changedAt: input.createdAt,
     previousSession: input.previousCanonicalSession,
   });
+  const electricalCircuitSchedule =
+    buildElectricalCircuitScheduleV1(canonicalParameterSession);
   // The canonical session has already extracted and source-bound every
   // electrical parameter. Re-running the universal prompt/schema extractor
   // here would both risk collapsing distinct point types and evaluate the
@@ -305,7 +312,8 @@ export function createCanonicalElectricalEstimateState(input: {
     .map((parameter) => ({
       key: parameter.parameterId,
       label: parameter.label,
-      blocksPreliminaryEstimate: false as const,
+      blocksPreliminaryEstimate:
+        parameter.requiredLevel === "BLOCKING_REQUIRED",
       requiredFor: parameter.requiredLevel === "CONDITIONAL"
         ? "safety_review" as const
         : parameter.requiredLevel === "CONTRACT_REQUIRED"
@@ -351,6 +359,7 @@ export function createCanonicalElectricalEstimateState(input: {
     assumptions,
     missingInputs,
     professionalClarification: null,
+    electricalCircuitSchedule,
     boq: {
       sections: sections(rows),
       rows,
@@ -383,7 +392,7 @@ export function createCanonicalElectricalEstimateState(input: {
       staleTraceAccepted: false,
     },
     status: canonicalParameterSession.status === "BLOCKING_REQUIRED"
-      ? "needs_more_params_but_preliminary_available"
+      ? "blocking_required"
       : "draft_ready",
     artifacts: {
       snapshotId: null,
@@ -394,6 +403,7 @@ export function createCanonicalElectricalEstimateState(input: {
   };
   return {
     canonicalParameterSession,
+    electricalCircuitSchedule,
     estimateDraftRevisionState: {
       estimateDraftId: input.draftId,
       currentRevisionId: revisionId,

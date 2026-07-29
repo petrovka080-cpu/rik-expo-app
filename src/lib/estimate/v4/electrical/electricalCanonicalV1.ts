@@ -12,6 +12,9 @@ import {
   type CanonicalParameterSession,
 } from "../../canonicalParameters/canonicalParameterCore";
 import type { EstimateWorkProfileRegistration } from "../../workProfiles/estimateWorkProfileRegistry";
+import {
+  electricalCircuitCountFromConfirmedPoints,
+} from "./electricalDimensionalContractV1";
 
 export const ELECTRICAL_CANONICAL_WORK_KEY = "electrical_area_installation" as const;
 export const ELECTRICAL_CANONICAL_SCOPE_PRESET_ID = "AREA_AND_POINT_INSTALLATION" as const;
@@ -26,6 +29,8 @@ export const ELECTRICAL_CANONICAL_CALCULATION_VERSION =
 
 export type ElectricalCanonicalParameterKey =
   | "area_m2"
+  | "package_mode"
+  | "object_type"
   | "route_length_m"
   | "outlet_count"
   | "switch_count"
@@ -36,6 +41,7 @@ export type ElectricalCanonicalParameterKey =
   | "wiring_method"
   | "containment_type"
   | "wall_material"
+  | "penetration_count"
   | "cable_type"
   | "cable_section_mm2"
   | "line_count"
@@ -45,6 +51,7 @@ export type ElectricalCanonicalParameterKey =
   | "protective_devices_included"
   | "grounding_included"
   | "demolition_included"
+  | "restoration_included"
   | "installation_height_m"
   | "access_condition"
   | "cable_reserve_factor";
@@ -75,6 +82,36 @@ readonly ElectricalCanonicalParameterDefinition[] = [
     requiredFor: "better_accuracy",
     affectsRowCodePrefixes: ["electrical_route_marking", "electrical_wall_scanning", "electrical_dust_protection"],
     priority: 1,
+  },
+  {
+    key: "package_mode",
+    labelRu: "Коммерческий пакет",
+    unit: null,
+    inputKind: "select",
+    requiredFor: "better_accuracy",
+    choices: [
+      { value: "turnkey", labelRu: "Под ключ" },
+      { value: "labor_only", labelRu: "Только работы" },
+      { value: "materials_only", labelRu: "Только материалы" },
+    ],
+    affectsRowCodePrefixes: [],
+    priority: 1.1,
+  },
+  {
+    key: "object_type",
+    labelRu: "Тип объекта",
+    unit: null,
+    inputKind: "select",
+    requiredFor: "contract_ready",
+    choices: [
+      { value: "apartment", labelRu: "Квартира" },
+      { value: "house", labelRu: "Дом" },
+      { value: "office", labelRu: "Офис" },
+      { value: "commercial_space", labelRu: "Коммерческое помещение" },
+      { value: "other", labelRu: "Другой объект" },
+    ],
+    affectsRowCodePrefixes: ["electrical_survey"],
+    priority: 1.2,
   },
   {
     key: "route_length_m",
@@ -198,6 +235,19 @@ readonly ElectricalCanonicalParameterDefinition[] = [
     priority: 11,
   },
   {
+    key: "penetration_count",
+    labelRu: "Количество кабельных проходок",
+    unit: "pcs",
+    inputKind: "number",
+    requiredFor: "better_accuracy",
+    affectsRowCodePrefixes: [
+      "electrical_reference_wall_sleeves",
+      "electrical_reference_firestop",
+      "electrical_reference_penetration_drilling",
+    ],
+    priority: 11.5,
+  },
+  {
     key: "cable_type",
     labelRu: "Тип кабеля",
     unit: null,
@@ -283,6 +333,15 @@ readonly ElectricalCanonicalParameterDefinition[] = [
     priority: 20,
   },
   {
+    key: "restoration_included",
+    labelRu: "Восстановление отделки входит в объём",
+    unit: null,
+    inputKind: "boolean",
+    requiredFor: "contract_ready",
+    affectsRowCodePrefixes: ["electrical_chase_repair"],
+    priority: 20.1,
+  },
+  {
     key: "installation_height_m",
     labelRu: "Высота монтажа",
     unit: "linear_m",
@@ -327,6 +386,11 @@ function canonicalRequiredLevel(
     "lighting_point_count",
   ].includes(key)) return "BLOCKING_REQUIRED";
   if (
+    key === "object_type" ||
+    key === "work_scope_type" ||
+    key === "wiring_method" ||
+    key === "demolition_included" ||
+    key === "restoration_included" ||
     key === "cable_type" ||
     key === "cable_section_mm2" ||
     key === "group_count" ||
@@ -369,11 +433,15 @@ export const ELECTRICAL_CANONICAL_PARAMETER_SCHEMA: CanonicalParameterSchema = {
   canonicalWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
   calculationVersion: ELECTRICAL_CANONICAL_CALCULATION_VERSION,
   requiredAlternatives: [
-    { alternativeId: "area", parameterIds: ["area_m2"] },
-    { alternativeId: "route", parameterIds: ["route_length_m"] },
     {
-      alternativeId: "explicit_points",
-      parameterIds: ["outlet_count", "switch_count", "lighting_point_count"],
+      alternativeId: "confirmed_quantitative_scope",
+      parameterIds: [
+        "area_m2",
+        "route_length_m",
+        "outlet_count",
+        "switch_count",
+        "lighting_point_count",
+      ],
     },
   ],
   definitions: ELECTRICAL_CANONICAL_PARAMETER_DEFINITIONS.map((definition) => ({
@@ -394,6 +462,7 @@ export const ELECTRICAL_CANONICAL_PARAMETER_SCHEMA: CanonicalParameterSchema = {
             "line_count",
             "group_count",
             "phase_count",
+            "penetration_count",
           ].includes(definition.key),
         }
       : definition.inputKind === "text"
@@ -429,11 +498,15 @@ export const ELECTRICAL_CANONICAL_PROFILE: EstimateWorkProfileRegistration = {
     parameterSchemaVersion: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA_ID,
     engineVersion: ELECTRICAL_CANONICAL_ENGINE_VERSION,
     requiredParameterAlternatives: [
-      { alternativeId: "area", parameterKeys: ["area_m2"] },
-      { alternativeId: "route", parameterKeys: ["route_length_m"] },
       {
-        alternativeId: "explicit_points",
-        parameterKeys: ["outlet_count", "switch_count", "lighting_point_count"],
+        alternativeId: "confirmed_quantitative_scope",
+        parameterKeys: [
+          "area_m2",
+          "route_length_m",
+          "outlet_count",
+          "switch_count",
+          "lighting_point_count",
+        ],
       },
     ],
   }],
@@ -479,6 +552,22 @@ function extractedMatches(text: string): Partial<Record<ElectricalCanonicalParam
     /(?:площад(?:ь|и)|объект|area)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м|sq(?:uare)?[_\s-]*m|sqm)/iu,
     /(\d+(?:[,.]\d+)?)\s*(?:м²|м2|кв\.?\s*м|sq(?:uare)?[_\s-]*m|sqm)/iu,
   ]) ?? undefined;
+  if (/под\s+ключ/iu.test(normalized)) {
+    result.package_mode = { value: "turnkey", sourceText: "под ключ" };
+  } else if (/только\s+работ/iu.test(normalized)) {
+    result.package_mode = { value: "labor_only", sourceText: "только работы" };
+  } else if (/только\s+материал/iu.test(normalized)) {
+    result.package_mode = { value: "materials_only", sourceText: "только материалы" };
+  }
+  if (/квартир[а-яё]*/iu.test(normalized)) {
+    result.object_type = { value: "apartment", sourceText: "квартира" };
+  } else if (/(?:частн[а-яё]*\s+)?дом(?:а|е|ом)?/iu.test(normalized)) {
+    result.object_type = { value: "house", sourceText: "дом" };
+  } else if (/офис[а-яё]*/iu.test(normalized)) {
+    result.object_type = { value: "office", sourceText: "офис" };
+  } else if (/коммерческ[а-яё]*\s+помещени[а-яё]*/iu.test(normalized)) {
+    result.object_type = { value: "commercial_space", sourceText: "коммерческое помещение" };
+  }
   result.route_length_m = numberMatch(normalized, [
     /(?:длин[а-яё]*\s+)?(?:кабельн[а-яё]*\s+)?трасс[а-яё]*\D{0,16}(\d+(?:[,.]\d+)?)\s*(?:пог\.?\s*)?(?:м|метр(?:а|ов)?)(?=\s|$|[.,;])/iu,
     /(?:кабел[а-яё]*|провод[а-яё]*)\D{0,16}(\d+(?:[,.]\d+)?)\s*(?:пог\.?\s*)?(?:м|метр(?:а|ов)?)(?=\s|$|[.,;])/iu,
@@ -503,6 +592,10 @@ function extractedMatches(text: string): Partial<Record<ElectricalCanonicalParam
   result.line_count = numberMatch(normalized, [
     /(\d+(?:[,.]\d+)?)\s*(?:шт\.?\s*)?(?:кабельн(?:ых|ые)\s+)?лини(?:й|и|я)(?=\s|$|[.,;])/iu,
     /(?:кабельн(?:ых|ые)\s+)?лини(?:й|и|я)\s*[:=-]?\s*(\d+(?:[,.]\d+)?)/iu,
+  ]) ?? undefined;
+  result.penetration_count = numberMatch(normalized, [
+    /(\d+(?:[,.]\d+)?)\s*(?:шт\.?\s*)?проход(?:ок|ки|ка)(?=\s|$|[.,;])/iu,
+    /проход(?:ок|ки|ка)\s*[:=-]?\s*(\d+(?:[,.]\d+)?)/iu,
   ]) ?? undefined;
   result.cable_section_mm2 = numberMatch(normalized, [
     /сечени[а-яё]*\D{0,12}(\d+(?:[,.]\d+)?)\s*(?:мм²|мм2)/iu,
@@ -597,6 +690,11 @@ function extractedMatches(text: string): Partial<Record<ElectricalCanonicalParam
     /(?:нуж(?:ен|ен)?|включ(?:ить|ён)|с)\D{0,12}демонтаж\w*/iu,
     /(?:без|не\s+нуж(?:ен|но)|не\s+включать)\D{0,12}демонтаж\w*/iu,
   ) ?? undefined;
+  result.restoration_included = booleanMatch(
+    normalized,
+    /(?:нужн\w*|включ(?:ить|ено)|с)\D{0,16}(?:восстановлени\w*|заделк\w*)\D{0,8}(?:отделк\w*|штроб\w*)/iu,
+    /(?:без|не\s+нужн\w*|не\s+включать)\D{0,16}(?:восстановлени\w*|заделк\w*)\D{0,8}(?:отделк\w*|штроб\w*)/iu,
+  ) ?? undefined;
   return result;
 }
 
@@ -663,62 +761,50 @@ export function buildElectricalCanonicalParameterSession(input: {
         : "Сумма учитывает только явно указанные типы точек.",
       sourceText: "outlet_count + switch_count + lighting_point_count",
     });
+  }
+  const confirmedQuantitativeScope = [
+    "area_m2",
+    "route_length_m",
+    "outlet_count",
+    "switch_count",
+    "lighting_point_count",
+  ].every((parameterId) => seedIds.has(parameterId));
+  // Engineering defaults are permitted only after a complete dimensional
+  // basis exists. They remain visible and editable ASSUMED parameters.
+  if (confirmedQuantitativeScope) {
+    const assumedCircuitCount = electricalCircuitCountFromConfirmedPoints({
+      outletCount: numericValue("outlet_count") ?? 0,
+      switchCount: numericValue("switch_count") ?? 0,
+      lightingPointCount: numericValue("lighting_point_count") ?? 0,
+    });
     if (!seedIds.has("group_count")) {
       seeds.push(assumedSeed(
         "group_count",
-        Math.max(1, Math.ceil(total / 8)),
-        "Предварительно принято до проектной разбивки: одна группа на каждые 8 указанных точек.",
+        Math.max(1, assumedCircuitCount),
+        "Предварительное число групп принято из явно указанных точек; требуется подтверждение расписанием цепей.",
       ));
     }
-  }
-  if (!seedIds.has("line_count")) {
-    seeds.push(assumedSeed(
-      "line_count",
-      1,
-      "Длина трассы трактуется как один агрегированный кабельный маршрут до уточнения отдельных линий.",
-    ));
-  }
-  if (!seedIds.has("cable_reserve_factor")) {
-    seeds.push(assumedSeed(
-      "cable_reserve_factor",
-      1,
-      "Запас кабеля не добавлен: коэффициент 1,00 до явного подтверждения.",
-    ));
-  }
-  if (!seedIds.has("phase_count")) {
-    seeds.push(assumedSeed(
-      "phase_count",
-      1,
-      "Для предварительной комплектации принято однофазное исполнение; требуется подтверждение.",
-    ));
-  }
-  if (!seedIds.has("panel_included")) {
-    seeds.push(assumedSeed(
-      "panel_included",
-      true,
-      "Щит предварительно включён в объём и остаётся редактируемым.",
-    ));
-  }
-  if (!seedIds.has("protective_devices_included")) {
-    seeds.push(assumedSeed(
-      "protective_devices_included",
-      true,
-      "Автоматы и УЗО предварительно включены в объём; состав требует проектного подтверждения.",
-    ));
-  }
-  if (!seedIds.has("grounding_included")) {
-    seeds.push(assumedSeed(
-      "grounding_included",
-      true,
-      "Заземление предварительно включено как проверяемый безопасностный объём.",
-    ));
-  }
-  if (!seedIds.has("demolition_included")) {
-    seeds.push(assumedSeed(
-      "demolition_included",
-      false,
-      "Демонтаж существующей проводки не включён до явного подтверждения.",
-    ));
+    if (!seedIds.has("line_count")) {
+      seeds.push(assumedSeed(
+        "line_count",
+        Math.max(1, assumedCircuitCount),
+        "Предварительное число линий принято равным числу видимых групп; требуется подтверждение расписанием цепей.",
+      ));
+    }
+    if (!seedIds.has("cable_reserve_factor")) {
+      seeds.push(assumedSeed(
+        "cable_reserve_factor",
+        1,
+        "Запас кабеля не добавлен: коэффициент 1,00 до явного подтверждения.",
+      ));
+    }
+    if (!seedIds.has("phase_count")) {
+      seeds.push(assumedSeed(
+        "phase_count",
+        1,
+        "Для предварительного расписания цепей принято однофазное исполнение; требуется подтверждение.",
+      ));
+    }
   }
   return createCanonicalParameterSession({
     schema: ELECTRICAL_CANONICAL_PARAMETER_SCHEMA,
@@ -735,7 +821,7 @@ function missingInput(key: ElectricalCanonicalParameterKey): EstimateDraftRevisi
   return {
     key,
     label: definition.labelRu,
-    blocksPreliminaryEstimate: false,
+    blocksPreliminaryEstimate: canonicalRequiredLevel(key) === "BLOCKING_REQUIRED",
     requiredFor: definition.requiredFor,
   };
 }

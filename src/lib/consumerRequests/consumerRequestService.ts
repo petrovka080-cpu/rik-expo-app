@@ -653,6 +653,10 @@ export function createConsumerRepairRequestDraft(input: {
       canonicalElectricalState?.canonicalParameterSession ??
       projectedCanonicalParameterSession ??
       projectedDraftSessionCanonicalParameters,
+    electricalCircuitSchedule:
+      canonicalElectricalState?.electricalCircuitSchedule ??
+      input.aiDraft?.electricalCircuitSchedule ??
+      null,
     structuredEstimatePayload: input.aiDraft?.structuredEstimatePayload ?? null,
     projectExecutionDrafts: [],
     marketplaceLink,
@@ -1072,9 +1076,6 @@ function applyCanonicalElectricalParameterPatches(input: {
     selectedWork,
     parameterOverrides: overrides,
   });
-  if (!compiledDraft.structuredEstimatePayload || compiledDraft.items.length === 0) {
-    throw new Error("CANONICAL_ELECTRICAL_RECALCULATION_REQUIRES_STRUCTURED_BOQ");
-  }
   const provisionalItems = compiledDraft.items.map((item) =>
     createConsumerRepairRequestItem({
       requestDraftId: input.bundle.draft.id,
@@ -1126,10 +1127,11 @@ function applyCanonicalElectricalParameterPatches(input: {
       input.bundle,
       recalculatedRevision.revisionId,
     ),
-    structuredEstimatePayload: compiledDraft.structuredEstimatePayload,
+    structuredEstimatePayload: compiledDraft.structuredEstimatePayload ?? null,
     estimateDraftRevisionState: nextState,
     estimateDraftSession: compiledState.estimateDraftSession,
     canonicalParameterSession: compiledState.canonicalParameterSession,
+    electricalCircuitSchedule: compiledState.electricalCircuitSchedule,
   };
   const nextBundleWithSnapshot = {
     ...nextBundleBase,
@@ -2137,7 +2139,130 @@ export function listConsumerRepairRequestHistory(
   consumerUserId: string,
   options: ConsumerRepairHistoryPageOptions = {},
 ): ConsumerRepairDraftBundle[] {
-  return listConsumerRepairBundlesForUser(consumerUserId, { ...options, limit: options.limit ?? 20 });
+  return listConsumerRepairBundlesForUser(consumerUserId, {
+    ...options,
+    limit: options.limit ?? 20,
+  }).map(migrateLegacyElectrical42RowDraft);
+}
+
+function isLegacyElectrical42RowDraft(
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  if (
+    bundle.draft.status !== "draft" ||
+    bundle.items.length !== 42
+  ) {
+    return false;
+  }
+  const electricalIdentity = [
+    bundle.draft.problemText,
+    bundle.draft.selectedWorkKey,
+    bundle.draft.selectedWorkTitleRu,
+    bundle.draft.repairType,
+  ].some((value) =>
+    /(?:электр|кабел|розет|выключ|electrical|wiring|cable)/iu.test(
+      String(value ?? ""),
+    )
+  );
+  if (!electricalIdentity) return false;
+  const normalizedTitles = new Set(
+    bundle.items.map((item) => item.titleRu.trim().toLocaleLowerCase("ru-RU")),
+  );
+  return (
+    normalizedTitles.has("кабель") &&
+    normalizedTitles.has("кабельные линии") &&
+    normalizedTitles.has("кабель силовой")
+  );
+}
+
+function migrateLegacyElectrical42RowDraft(
+  bundle: ConsumerRepairDraftBundle,
+): ConsumerRepairDraftBundle {
+  if (!isLegacyElectrical42RowDraft(bundle)) return bundle;
+  const rawInput = bundle.draft.problemText?.trim() ?? "";
+  const selectedWork: ConsumerRepairSelectedWork = {
+    selectedCatalogWorkId:
+      bundle.draft.selectedCatalogWorkId ??
+      bundle.draft.selectedWorkKey ??
+      ELECTRICAL_CANONICAL_WORK_KEY,
+    selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+    selectedWorkTitleRu: "Электромонтаж",
+    selectedWorkCategoryKey: "electrical",
+    selectedWorkCategoryTitleRu: "Электромонтажные работы",
+    selectedWorkRawInput: rawInput,
+    selectedWorkSource: bundle.draft.selectedWorkSource ?? "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+  const aiDraft = buildCanonicalElectricalConsumerRepairAiDraft({
+    text: rawInput,
+    countryCode: "KG",
+    city: bundle.draft.city ?? "Bishkek",
+    currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+    selectedWork,
+  });
+  const items = aiDraft.items.map((item) =>
+    createConsumerRepairRequestItem({
+      requestDraftId: bundle.draft.id,
+      ...item,
+    }),
+  );
+  const canonicalState = createCanonicalElectricalEstimateState({
+    draftId: bundle.draft.id,
+    rawInput,
+    items,
+    createdAt: new Date().toISOString(),
+  });
+  const migrated: ConsumerRepairDraftBundle = {
+    ...bundle,
+    draft: {
+      ...updateDraftRecord(bundle.draft, {
+        title: aiDraft.titleRu,
+        selectedCatalogWorkId: selectedWork.selectedCatalogWorkId,
+        selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+        selectedWorkTitleRu: selectedWork.selectedWorkTitleRu,
+        selectedWorkCategoryKey: selectedWork.selectedWorkCategoryKey,
+        selectedWorkCategoryTitleRu: selectedWork.selectedWorkCategoryTitleRu,
+        selectedWorkRawInput: rawInput,
+        selectedWorkSource: selectedWork.selectedWorkSource,
+        selectedWorkResolverReGuessed: false,
+        aiSummaryRu: aiDraft.summaryRu,
+        missingData: aiDraft.missingData,
+      }),
+      repairType: aiDraft.repairType,
+    },
+    items,
+    pdfs: bundle.pdfs.map((pdf) => ({
+      ...pdf,
+      pdfStatus: "archived" as const,
+    })),
+    durableHistorySummary: null,
+    editableEstimateSnapshot: null,
+    estimateRevisionState: null,
+    estimateDraftRevisionState:
+      canonicalState.estimateDraftRevisionState,
+    estimateDraftSession: canonicalState.estimateDraftSession,
+    canonicalParameterSession: canonicalState.canonicalParameterSession,
+    electricalCircuitSchedule: canonicalState.electricalCircuitSchedule,
+    structuredEstimatePayload: aiDraft.structuredEstimatePayload ?? null,
+    projectExecutionDrafts: [],
+    pendingRoadScopeSelection: null,
+    events: [
+      ...bundle.events,
+      createConsumerRepairEvent({
+        requestDraftId: bundle.draft.id,
+        eventType: "legacy_electrical_42_row_draft_invalidated",
+        actorType: "system",
+        payload: {
+          previousRowCount: 42,
+          canonicalWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+          reason: "legacy_hidden_quantities_and_unverified_prices",
+        },
+      }),
+    ],
+  };
+  return saveConsumerRepairBundle(
+    ensureConsumerRepairBundleEstimateRevisionState(migrated),
+  );
 }
 
 export function listConsumerRepairApprovedHistory(

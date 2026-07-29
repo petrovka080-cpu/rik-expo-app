@@ -23,6 +23,13 @@ export type CanonicalParameterSessionStatus =
   | "PRELIMINARY_WITH_ASSUMPTIONS"
   | "COMPLETE"
   | "INVALID";
+export type CanonicalParameterState =
+  | "PROVIDED"
+  | "DERIVED"
+  | "ASSUMED"
+  | "BLOCKING_REQUIRED"
+  | "INVALID"
+  | "NOT_APPLICABLE";
 
 export type CanonicalParameterVisibilityCondition =
   | { kind: "ALWAYS" }
@@ -83,6 +90,7 @@ export type CanonicalParameter = {
   validation: CanonicalParameterValidation;
   allowedValues: readonly CanonicalParameterAllowedValue[];
   source: CanonicalParameterSource;
+  state: CanonicalParameterState;
   confidence: number;
   assumption: string | null;
   affectsRows: readonly string[];
@@ -210,6 +218,27 @@ function validateSchema(schema: CanonicalParameterSchema): void {
   }
 }
 
+function parameterState(input: {
+  definition: CanonicalParameterDefinition;
+  seed: CanonicalParameterSeed | undefined;
+  valid: boolean;
+}): CanonicalParameterState {
+  if (!input.valid) return "INVALID";
+  if (!input.seed) {
+    return input.definition.requiredLevel === "OPTIONAL"
+      ? "NOT_APPLICABLE"
+      : "BLOCKING_REQUIRED";
+  }
+  if (input.seed.source === "ASSUMED") return "ASSUMED";
+  if (
+    input.seed.source === "CALCULATED" ||
+    input.seed.source === "NORMATIVE_DERIVED"
+  ) {
+    return "DERIVED";
+  }
+  return "PROVIDED";
+}
+
 function sessionStatus(input: {
   blockingMissingParameterIds: readonly string[];
   contractMissingParameterIds: readonly string[];
@@ -252,6 +281,7 @@ export function createCanonicalParameterSession(input: {
       const seed = seedById.get(definition.parameterId);
       const value = seed?.value ?? null;
       const validationIssues = validateValue(definition, value);
+      const valid = validationIssues.length === 0;
       return Object.freeze({
         ...definition,
         allowedValues: Object.freeze([...definition.allowedValues]),
@@ -259,10 +289,11 @@ export function createCanonicalParameterSession(input: {
         affectsFormula: Object.freeze([...definition.affectsFormula]),
         value,
         source: seed?.source ?? "MISSING",
+        state: parameterState({ definition, seed, valid }),
         confidence: seed?.confidence ?? 0,
         assumption: seed?.assumption ?? null,
         sourceText: seed?.sourceText ?? null,
-        valid: validationIssues.length === 0,
+        valid,
         validationIssues: Object.freeze(validationIssues),
       });
     });
@@ -316,6 +347,7 @@ export function createCanonicalParameterSession(input: {
       parameterId: parameter.parameterId,
       value: parameter.value,
       source: parameter.source,
+      state: parameter.state,
       assumption: parameter.assumption,
       valid: parameter.valid,
     })),

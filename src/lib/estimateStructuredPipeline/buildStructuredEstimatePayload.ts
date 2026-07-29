@@ -87,8 +87,9 @@ function trustedOwnedDomainSourcePrice(
   row: EstimatePresentationViewModel["rows"][number],
   estimate: GlobalEstimateResult,
 ): ResolvedEstimatePrice | null {
+  // Electrical compiler reference rates are quantity scaffolding, not a
+  // supplier/ratebook snapshot. Never promote them to trusted prices.
   const ownedDomain =
-    estimate.work.workKey === "electrical_area_installation" ||
     estimate.work.workKey === "dynamic_waterproofing_estimate" ||
     estimate.work.workKey === "roof_waterproofing";
   const source = row.sourceEvidence[0];
@@ -183,6 +184,14 @@ function buildRows(
     type: section.type,
     rows: section.rows.map((row): StructuredEstimateRow => {
       const visibleName = professionalEstimateRowVisibleName(row);
+      const electricalSourceParameters =
+        estimate.work.workKey === "electrical_area_installation"
+          ? {
+              ...(row.sourceParameters ?? {}),
+              rowCode: row.code,
+              semanticOwner: `electrical:${row.sectionType}:${row.code}`,
+            }
+          : row.sourceParameters ?? null;
       const helperRow = isProfessionalEstimateHelperRow({ ...row, visibleName });
       const normBackedMaterialRow = row.sectionType === "materials" &&
         Boolean(row.formulaId) &&
@@ -207,9 +216,23 @@ function buildRows(
         materialKey: row.materialKey,
         catalogItemId: row.catalogItemId,
       };
+      const priceResolutionRow =
+        estimate.work.workKey === "electrical_area_installation"
+          ? {
+              ...baseRow,
+              // Compiler reference rates are not purchase history. Preserve
+              // row/source provenance outside pricing, but require the pricing
+              // engine to find an independently accepted catalog source.
+              unitPrice: null,
+              total: null,
+              sourceId: null,
+              visibleSourceLabel: null,
+              sourceLabel: null,
+            }
+          : baseRow;
       const resolvedPrice =
         trustedOwnedDomainSourcePrice(row, estimate) ??
-        resolveEstimateRowPrice(baseRow, {
+        resolveEstimateRowPrice(priceResolutionRow, {
           currency: row.currency || estimate.totals.currency,
           countryCode: estimate.locale.countryCode,
           region: estimate.locale.countryCode,
@@ -240,7 +263,7 @@ function buildRows(
         formulaId: row.formulaId ?? null,
         quantityFormula: row.quantityFormula ?? null,
         calculationTrace: row.calculationTrace ?? null,
-        sourceParameters: row.sourceParameters ?? null,
+        sourceParameters: electricalSourceParameters,
         templateId: row.templateId ?? null,
         templateVersion: row.templateVersion ?? null,
         normId: row.normId ?? null,

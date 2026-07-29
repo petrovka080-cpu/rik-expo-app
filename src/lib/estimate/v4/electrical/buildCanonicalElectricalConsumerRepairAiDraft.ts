@@ -16,6 +16,12 @@ import type {
   ConsumerRepairAiDraft,
   ConsumerRepairSelectedWork,
 } from "../../../consumerRequests/consumerRequestTypes";
+import {
+  buildElectricalCircuitScheduleV1,
+} from "./electricalCircuitScheduleV1";
+import {
+  assertElectricalBoqIntegrityV1,
+} from "./electricalBoqIntegrityV1";
 
 function recordCanonicalElectricalBuildTiming(
   stage: string,
@@ -32,7 +38,15 @@ function selectedWork(
   text: string,
   explicit?: ConsumerRepairSelectedWork | null,
 ): ConsumerRepairSelectedWork {
-  return explicit ?? {
+  return explicit
+    ? {
+        ...explicit,
+        selectedCatalogWorkId:
+          explicit.selectedCatalogWorkId ?? explicit.selectedWorkKey,
+        selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+      }
+    : {
+    selectedCatalogWorkId: ELECTRICAL_CANONICAL_WORK_KEY,
     selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
     selectedWorkTitleRu: "Электромонтаж",
     selectedWorkCategoryKey: "electrical",
@@ -60,6 +74,8 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
     revisionId: "electrical-canonical-preview:1",
     changedAt,
   });
+  const electricalCircuitSchedule =
+    buildElectricalCircuitScheduleV1(parameterSession);
   recordCanonicalElectricalBuildTiming("PARAMETER_SESSION_READY", buildStartedAt);
   const boundWork = selectedWork(input.text, input.selectedWork);
   if (parameterSession.status === "BLOCKING_REQUIRED") {
@@ -70,19 +86,24 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
       .map((parameter) => parameter.label);
     return {
       titleRu: "Электромонтаж: нужны исходные данные",
-      summaryRu: "Работа распознана, но профессиональный итог не рассчитан: не указана ни одна достаточная количественная база.",
+      summaryRu: "Работа распознана, но профессиональная смета ещё не рассчитана: заполните обязательные параметры объекта, трассы и электрических точек.",
       repairType: ELECTRICAL_CANONICAL_WORK_KEY,
       selectedWork: boundWork,
       dangerousDiyBlocked: false,
       missingData: blockingLabels,
       items: [],
+      electricalCircuitSchedule,
     };
   }
   const initialPlan = buildOwnedDomainEstimatorReasoningPlan({
     text: input.text,
     owner: "electrical",
     currency: input.currency ?? "KGS",
-    canonicalParameters: input.parameterOverrides,
+    canonicalParameters: Object.fromEntries(
+      parameterSession.parameters
+        .filter((parameter) => parameter.value != null)
+        .map((parameter) => [parameter.parameterId, parameter.value!]),
+    ),
   });
   recordCanonicalElectricalBuildTiming("REASONING_PLAN_READY", buildStartedAt);
   const plan = buildRegulatedSafeEstimatePlan({
@@ -118,6 +139,14 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
     undefined,
     boundWork,
   );
+  assertElectricalBoqIntegrityV1(draft.items.map((item) => ({
+    rowCode: String(item.sourceParameters?.rowCode ?? ""),
+    semanticOwner: String(item.sourceParameters?.semanticOwner ?? ""),
+    titleRu: item.titleRu,
+    resourceType: item.itemType,
+    quantity: item.quantity,
+    unit: item.unit,
+  })));
   recordCanonicalElectricalBuildTiming("REQUEST_DRAFT_READY", buildStartedAt);
   const missingLabels = parameterSession.parameters
     .filter((parameter) => parameter.source === "MISSING")
@@ -127,6 +156,7 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
     .map((parameter) => `${parameter.label}: ${parameter.assumption ?? "предварительное допущение"}`);
   return {
     ...draft,
+    electricalCircuitSchedule,
     missingData: [...new Set([
       ...draft.missingData,
       ...missingLabels,

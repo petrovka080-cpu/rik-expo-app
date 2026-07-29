@@ -25,6 +25,7 @@ export type ConsumerRepairCanonicalDraftPayload = {
     | "addressText"
     | "preferredTimeText"
     | "contactPhone"
+    | "selectedCatalogWorkId"
     | "selectedWorkKey"
     | "selectedWorkTitleRu"
     | "selectedWorkCategoryKey"
@@ -210,6 +211,7 @@ export function buildConsumerRepairCanonicalDraftPayload(
       addressText: canonicalNullable(bundle.draft.addressText),
       preferredTimeText: canonicalNullable(bundle.draft.preferredTimeText),
       contactPhone: canonicalNullable(bundle.draft.contactPhone),
+      selectedCatalogWorkId: canonicalNullable(bundle.draft.selectedCatalogWorkId),
       selectedWorkKey: canonicalNullable(bundle.draft.selectedWorkKey),
       selectedWorkTitleRu: canonicalNullable(bundle.draft.selectedWorkTitleRu),
       selectedWorkCategoryKey: canonicalNullable(bundle.draft.selectedWorkCategoryKey),

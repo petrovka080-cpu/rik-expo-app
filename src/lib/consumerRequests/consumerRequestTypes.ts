@@ -16,6 +16,9 @@ import type {
   EstimatePriceCandidateSummary,
   EstimatePriceTrace,
 } from "../../features/estimates/pricing/priceResolutionEngine";
+import type {
+  ElectricalCircuitScheduleV1,
+} from "../estimate/v4/electrical/electricalCircuitScheduleV1";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
@@ -70,6 +73,7 @@ export type ConsumerRepairCatalogCandidate = {
 };
 
 export type ConsumerRepairSelectedWork = {
+  selectedCatalogWorkId?: string | null;
   selectedWorkKey: string;
   selectedWorkTitleRu: string;
   selectedWorkCategoryKey: string;
@@ -90,6 +94,7 @@ export type ConsumerRepairRequestDraft = {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedCatalogWorkId?: string | null;
   selectedWorkKey?: string | null;
   selectedWorkTitleRu?: string | null;
   selectedWorkCategoryKey?: string | null;
@@ -278,6 +283,7 @@ export type ConsumerRepairDraftBundle = {
   estimateDraftRevisionState?: EstimateDraftRevisionState | null;
   estimateDraftSession?: EstimateDraftSession | null;
   canonicalParameterSession?: CanonicalParameterSession | null;
+  electricalCircuitSchedule?: ElectricalCircuitScheduleV1 | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
@@ -342,6 +348,7 @@ export type ConsumerRepairAiDraft = {
   selectedWork?: ConsumerRepairSelectedWork;
   estimatePresentation?: EstimatePresentationViewModel;
   structuredEstimatePayload?: StructuredEstimatePayload;
+  electricalCircuitSchedule?: ElectricalCircuitScheduleV1;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;
@@ -398,6 +405,7 @@ export type ConsumerRequestValidationErrorCode =
   | "REQUEST_NOT_APPROVED"
   | "REPAIR_TYPE_REQUIRED"
   | "OWNER_MISMATCH"
+  | "ESTIMATE_PARAMETERS_REQUIRED"
   | "ESTIMATE_PARAM_BATCH_EMPTY"
   | "ESTIMATE_REVISION_BATCH_REJECTED";
 
