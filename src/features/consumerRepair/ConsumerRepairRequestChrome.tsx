@@ -68,7 +68,10 @@ type StickyActionsProps = {
   sent: boolean;
   hasBundle: boolean;
   hasSnapshot: boolean;
+  hasPendingPrompt?: boolean;
+  estimateRequiresRebuild?: boolean;
   approvalMissingRequiredContact?: boolean;
+  approvalBlockedByEstimate?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
@@ -83,7 +86,10 @@ export function ConsumerRepairRequestStickyActions({
   sent,
   hasBundle,
   hasSnapshot,
+  hasPendingPrompt = false,
+  estimateRequiresRebuild = false,
   approvalMissingRequiredContact = false,
+  approvalBlockedByEstimate = false,
   needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
@@ -93,6 +99,8 @@ export function ConsumerRepairRequestStickyActions({
   onPrepareDraft,
 }: StickyActionsProps) {
   const finalized = (sent || approved) && !needsFreshApproval;
+  const shouldPrepareEstimate =
+    hasPendingPrompt || (!finalized && estimateRequiresRebuild);
   return (
     <AppStickyActionBar
       visible
@@ -109,20 +117,45 @@ export function ConsumerRepairRequestStickyActions({
       }
       danger={
         hasBundle && !approved && !sent
-          ? { labelRu: "Удалить", onPress: onDeleteDraft, testID: "consumer-repair-delete-draft" }
+          ? {
+              labelRu: "Удалить",
+              onPress: onDeleteDraft,
+              showLabel: true,
+              testID: "consumer-repair-delete-draft",
+            }
           : undefined
       }
       primary={
-        finalized
+        shouldPrepareEstimate
+          ? {
+              labelRu: hasPendingPrompt
+                ? "Сформировать смету"
+                : "Пересчитать смету",
+              onPress: onPrepareDraft,
+              showLabel: true,
+              testID: "consumer-repair-prepare-draft",
+            }
+          : finalized
           ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
           : hasBundle
             ? {
-                labelRu: approvalMissingRequiredContact ? "Заполните адрес и телефон" : "Утвердить",
+                labelRu: approvalBlockedByEstimate
+                  ? "Сначала рассчитайте смету"
+                  : approvalMissingRequiredContact
+                    ? "Заполните адрес и телефон"
+                    : "Подтвердить смету",
                 onPress: onApproveDraft,
-                disabled: approvalMissingRequiredContact,
+                disabled:
+                  approvalMissingRequiredContact || approvalBlockedByEstimate,
+                showLabel: true,
                 testID: "consumer-repair-approve",
               }
-            : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
+            : {
+                labelRu: "Сформировать смету",
+                onPress: onPrepareDraft,
+                showLabel: true,
+                testID: "consumer-repair-prepare-draft",
+              }
       }
     />
   );
@@ -333,24 +366,26 @@ export function ConsumerRepairRequestContent({
       ) : null}
       {prioritizeDraftDecision ? statusNode : null}
       {prioritizeDraftDecision ? draftPanel : null}
-      <ConsumerRepairRequestFormCard
-        problemText={problemText}
-        city={city}
-        addressText={addressText}
-        preferredTimeText={preferredTimeText}
-        contactPhone={contactPhone}
-        selectedWork={selectedWork}
-        workSuggestions={workSuggestions}
-        problemInputRef={problemInputRef}
-        onProblemTextChange={onProblemTextChange}
-        onCityChange={onCityChange}
-        onAddressTextChange={onAddressTextChange}
-        onPreferredTimeTextChange={onPreferredTimeTextChange}
-        onContactPhoneChange={onContactPhoneChange}
-        onSelectWorkSuggestion={onSelectWorkSuggestion}
-        onSelectTemplateCandidate={onSelectTemplateCandidate}
-        onPrepareDraft={onPrepareDraft}
-      />
+      {!bundle ? (
+        <ConsumerRepairRequestFormCard
+          problemText={problemText}
+          city={city}
+          addressText={addressText}
+          preferredTimeText={preferredTimeText}
+          contactPhone={contactPhone}
+          selectedWork={selectedWork}
+          workSuggestions={workSuggestions}
+          problemInputRef={problemInputRef}
+          onProblemTextChange={onProblemTextChange}
+          onCityChange={onCityChange}
+          onAddressTextChange={onAddressTextChange}
+          onPreferredTimeTextChange={onPreferredTimeTextChange}
+          onContactPhoneChange={onContactPhoneChange}
+          onSelectWorkSuggestion={onSelectWorkSuggestion}
+          onSelectTemplateCandidate={onSelectTemplateCandidate}
+          onPrepareDraft={onPrepareDraft}
+        />
+      ) : null}
       {!prioritizeDraftDecision ? statusNode : null}
       {!prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />

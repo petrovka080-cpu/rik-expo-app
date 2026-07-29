@@ -115,6 +115,23 @@ export function ConsumerRepairRequestScreenView({
   onPrepareDraft,
   onSelectRoadScope,
 }: ConsumerRepairRequestScreenViewProps) {
+  const currentDraftRevision =
+    renderModel.bundle?.estimateDraftRevisionState?.revisions.find(
+      (revision) =>
+        revision.revisionId ===
+        renderModel.bundle?.estimateDraftRevisionState?.currentRevisionId,
+    ) ?? null;
+  const legacyEstimateRequiresRebuild = Boolean(
+    renderModel.bundle &&
+    renderModel.bundle.canonicalParameterSession == null &&
+    renderModel.bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
+  );
+  const approvalBlockedByEstimate = Boolean(
+    renderModel.bundle?.canonicalParameterSession?.status ===
+      "BLOCKING_REQUIRED" ||
+    currentDraftRevision?.status === "blocking_required" ||
+    legacyEstimateRequiresRebuild
+  );
   return (
     <AppScreen hasStickyAction style={styles.screen}>
       <AppScreenHeader
@@ -186,6 +203,8 @@ export function ConsumerRepairRequestScreenView({
         approved={renderModel.approved}
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
+        hasPendingPrompt={state.problemText.trim().length > 0}
+        estimateRequiresRebuild={legacyEstimateRequiresRebuild}
         hasSnapshot={Boolean(
           renderModel.bundle?.editableEstimateSnapshot &&
           (
@@ -201,6 +220,7 @@ export function ConsumerRepairRequestScreenView({
             (renderModel.bundle.draft.contactPhone ?? "").replace(/\D/g, "").length < 7
           )
         )}
+        approvalBlockedByEstimate={approvalBlockedByEstimate}
         needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}

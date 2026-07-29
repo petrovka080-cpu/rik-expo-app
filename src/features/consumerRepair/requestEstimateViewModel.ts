@@ -549,6 +549,11 @@ function normSourceLabel(item: ConsumerRepairRequestItem): string | null {
 }
 
 function bundlePriceStatusLabel(bundle: ConsumerRepairDraftBundle): string {
+  if (
+    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED"
+  ) {
+    return "Цены требуют исходных данных и проверки";
+  }
   const missing = bundle.items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   const manual = bundle.items.filter((item) =>
     item.priceStatus === "USER_PRICE_OVERRIDE" || item.priceStatus === "USER_ENTERED_PRICE"
@@ -823,6 +828,8 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     trustLevel: productionTrust.trust_level,
     fullTotalStatus: productionTrust.full_total_status,
   });
+  const canonicalBlocking =
+    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
 
   return {
     title: publicRequestEstimateTitle(
@@ -832,7 +839,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         || "",
     ),
     summary: cleanSummary(bundle),
-    totalLabel: missingPrices > 0
+    totalLabel: canonicalBlocking
+      ? "Итого: не рассчитано"
+      : missingPrices > 0
       ? "\u041f\u043e\u043b\u043d\u044b\u0439 \u0438\u0442\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d"
       : total > 0
         ? formatEstimateMoney(total, currency)
@@ -844,7 +853,9 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     sourceLabels,
     taxLabel: bundle.structuredEstimatePayload?.tax.taxLabel ?? "\u041d\u0430\u043b\u043e\u0433: \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f",
     taxWarning: bundle.structuredEstimatePayload?.tax.warning,
-    trustLevelLabel: `\u0414\u043e\u0432\u0435\u0440\u0438\u0435: ${trustLevelPublicLabel(productionTrust.trust_level)}`,
+    trustLevelLabel: canonicalBlocking
+      ? "Доверие: исходные данные не заполнены"
+      : `\u0414\u043e\u0432\u0435\u0440\u0438\u0435: ${trustLevelPublicLabel(productionTrust.trust_level)}`,
     commercialEstimateLevelLabel: `\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u0441\u043c\u0435\u0442\u044b: ${estimateLevelPublicLabel(productionTrust.estimate_level)}`,
     sourceQualityLabel: `\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430: ${sourceQualityPublicLabel(productionTrust.source_quality)}`,
     expertReviewStatusLabel: `\u042d\u043a\u0441\u043f\u0435\u0440\u0442\u043d\u0430\u044f \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430: ${expertReviewPublicLabel(productionTrust.expert_review_status)}`,

@@ -649,11 +649,33 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     throw error;
   }
   private prepareDraft = () => {
-    if (!this.state.problemText.trim()) {
+    const currentRevision =
+      this.state.bundle?.estimateDraftRevisionState?.revisions.find(
+        (revision) =>
+          revision.revisionId ===
+          this.state.bundle?.estimateDraftRevisionState?.currentRevisionId,
+      ) ?? null;
+    const legacyEstimateRequiresRebuild = Boolean(
+      this.state.bundle &&
+      this.state.bundle.canonicalParameterSession == null &&
+      (
+        this.state.bundle.estimateDraftSession?.status ===
+          "PARAMETERS_REQUIRED" ||
+        currentRevision?.status === "blocking_required"
+      ),
+    );
+    const problemText =
+      this.state.problemText.trim() ||
+      (
+        legacyEstimateRequiresRebuild
+          ? this.state.bundle?.draft.problemText?.trim() ?? ""
+          : ""
+      );
+    if (!problemText) {
       this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
       return;
     }
-    this.buildDraftBundle();
+    this.buildDraftBundle(problemText);
   };
   private selectRoadScope = (selectedScope: string) => {
     const current = this.state.bundle;

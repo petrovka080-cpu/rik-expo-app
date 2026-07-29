@@ -196,8 +196,10 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
 
 export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
   state: ProgressivePanelState = {
-    parametersOpen: false,
-    positionsOpen: true,
+    parametersOpen:
+      this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED",
+    positionsOpen:
+      this.props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED",
   };
 
   private toggleParameters = () => {
@@ -650,7 +652,18 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     } = this.props;
     const { showAllMissing, filledOpen, derivedOpen } = this.state;
     const cards = this.buildCards();
-    const missingCards = cards.filter((card) => card.missing);
+    const clarificationRank = {
+      critical: 0,
+      recommended: 1,
+      optional: 2,
+    } as const;
+    const missingCards = cards
+      .filter((card) => card.missing)
+      .sort(
+        (left, right) =>
+          clarificationRank[left.clarificationTier ?? "optional"] -
+          clarificationRank[right.clarificationTier ?? "optional"],
+      );
     const assumptionCards = this.props.canonicalParameterSession
       ? cards.filter((card) => !card.missing && card.source === "catalog_default")
       : [];
@@ -707,7 +720,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
               style={[styles.inlineParamButton, styles.inlineParamPrimaryButton]}
               testID="editable-param-batch-apply"
             >
-              <Text style={styles.inlineParamPrimaryText}>Применить все изменения</Text>
+              <Text style={styles.inlineParamPrimaryText}>Применить и сформировать смету</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
