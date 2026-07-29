@@ -12,6 +12,11 @@ describe("Android API34 canonical replay app-root evidence", () => {
       path.join(process.cwd(), "app/(tabs)/ai.tsx"),
       "utf8",
     );
+  const requestRouteSource = () =>
+    fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/request/index.tsx"),
+      "utf8",
+    );
 
   it("does not let a transient first dev-client load error override later proven root-marker evidence", () => {
     const runner = source();
@@ -84,6 +89,26 @@ describe("Android API34 canonical replay app-root evidence", () => {
     );
   });
 
+  it("binds request and AI readiness to the exact launch identity from each URI candidate", () => {
+    const runner = source();
+    const aiRoute = aiRouteSource();
+    const requestRoute = requestRouteSource();
+
+    expect(runner).toContain("function launchReadyMarkerForUri");
+    expect(runner).toContain("launchCandidateSequence += 1");
+    expect(runner).toContain('query.set("launchId", launchId)');
+    expect(runner).toContain(
+      '!screen.xml.includes(`resource-id="${expectedLaunchMarker}"`)',
+    );
+    expect(aiRoute).toContain(
+      "buildRequestEstimateLaunchReadyMarkerId(",
+    );
+    expect(aiRoute).toContain("launchPayload.launchId");
+    expect(requestRoute).toContain(
+      "buildRequestEstimateLaunchReadyMarkerId(launchId)",
+    );
+  });
+
   it("remounts the AI assistant when a new warm-launch payload arrives", () => {
     const route = aiRouteSource();
 
@@ -108,8 +133,12 @@ describe("Android API34 canonical replay app-root evidence", () => {
 
     expect(runner).toContain('return `rik://ai?${query.toString()}`');
     expect(runner).toContain('return `rik:///ai?${query.toString()}`');
-    expect(runner).toContain("? [buildAndroidHostUri(testCase), buildUri(testCase)]");
-    expect(runner).toContain(": [buildUri(testCase)]");
+    expect(runner).toContain(
+      'buildAndroidHostUri(testCase, `${launchIdBase}-host`)',
+    );
+    expect(runner).toContain(
+      'buildUri(testCase, `${launchIdBase}-path`)',
+    );
     expect(runner).not.toContain('buildUri(testCase, "scheme")');
     expect(runner).not.toContain('buildUri(testCase, "tabs")');
     expect(runner).not.toContain('rik:///%28tabs%29/ai?${query.toString()}');

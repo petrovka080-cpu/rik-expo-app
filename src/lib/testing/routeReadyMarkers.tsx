@@ -9,8 +9,14 @@ export const ROUTE_PROOF_MARKERS = {
 } as const;
 
 export type RouteProofMarker = (typeof ROUTE_PROOF_MARKERS)[keyof typeof ROUTE_PROOF_MARKERS];
+export type RequestEstimateLaunchProofMarker =
+  `REQUEST_ESTIMATE_LAUNCH_READY_${string}`;
 
-export function RouteReadyMarker({ marker }: { marker: RouteProofMarker }) {
+export function RouteReadyMarker({
+  marker,
+}: {
+  marker: RouteProofMarker | RequestEstimateLaunchProofMarker;
+}) {
   if (!__DEV__) return null;
 
   return (

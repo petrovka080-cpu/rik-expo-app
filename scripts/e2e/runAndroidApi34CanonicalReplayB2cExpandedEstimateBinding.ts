@@ -60,6 +60,7 @@ import {
   MARKET_PRICEBOOK_ANDROID_REUSE_REASON,
 } from "../release/marketPricebookReleaseReusePolicy";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
+import { buildRequestEstimateLaunchReadyMarkerId } from "../../src/lib/navigation/requestEstimateLaunchPayload";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const B2C_BINDING_GREEN = "GREEN_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_READY";
@@ -68,6 +69,7 @@ const API34_CANONICAL_REPLAY_PROOF_HEADING = "## Android API34 Canonical Replay"
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const MAX_CASE_ATTEMPTS = 4;
+let launchCandidateSequence = 0;
 const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen";
 const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more";
 const REQUEST_SCROLL_X_RATIO = 0.065;
@@ -411,9 +413,10 @@ function promptForApp(testCase: Api34ReplayCase): string {
   return promptsById[testCase.id] ?? testCase.prompt;
 }
 
-function buildUri(testCase: Api34ReplayCase): string {
+function buildUri(testCase: Api34ReplayCase, launchId: string): string {
   const query = new URLSearchParams();
   query.set("prompt", promptForApp(testCase));
+  query.set("launchId", launchId);
   if (testCase.route === "/request") {
     query.set("autoPrepare", "1");
     return `rik:///request?${query.toString()}`;
@@ -423,9 +426,13 @@ function buildUri(testCase: Api34ReplayCase): string {
   return `rik:///ai?${query.toString()}`;
 }
 
-function buildAndroidHostUri(testCase: Api34ReplayCase): string {
+function buildAndroidHostUri(
+  testCase: Api34ReplayCase,
+  launchId: string,
+): string {
   const query = new URLSearchParams();
   query.set("prompt", promptForApp(testCase));
+  query.set("launchId", launchId);
   if (testCase.route === "/request") {
     query.set("autoPrepare", "1");
     return `rik://request?${query.toString()}`;
@@ -436,9 +443,20 @@ function buildAndroidHostUri(testCase: Api34ReplayCase): string {
 }
 
 function buildUriCandidates(testCase: Api34ReplayCase): string[] {
+  launchCandidateSequence += 1;
+  const launchIdBase =
+    `android-api34-${testCase.id}-${launchCandidateSequence}`;
   return testCase.route === "/ai?context=foreman"
-    ? [buildAndroidHostUri(testCase), buildUri(testCase)]
-    : [buildUri(testCase)];
+    ? [
+        buildAndroidHostUri(testCase, `${launchIdBase}-host`),
+        buildUri(testCase, `${launchIdBase}-path`),
+      ]
+    : [buildUri(testCase, `${launchIdBase}-path`)];
+}
+
+function launchReadyMarkerForUri(uri: string): string {
+  const launchId = new URL(uri).searchParams.get("launchId") ?? "";
+  return buildRequestEstimateLaunchReadyMarkerId(launchId);
 }
 
 function errorMessage(error: unknown): string {
@@ -1069,8 +1087,15 @@ function aiLaunchPayloadApplied(xml: string): boolean {
 function caseLaunchReadyForCase(
   testCase: Api34ReplayCase,
   screen: ReplayScreen,
+  expectedLaunchMarker?: string,
 ): boolean {
   if (!routeReadyForCase(testCase, screen)) {
+    return false;
+  }
+  if (
+    expectedLaunchMarker &&
+    !screen.xml.includes(`resource-id="${expectedLaunchMarker}"`)
+  ) {
     return false;
   }
   return (
@@ -1142,9 +1167,11 @@ async function recoverAuthForCaseRoute(params: {
   artifactBase: string;
   captureId: string;
 }): Promise<ReturnType<typeof captureScreenInDir> | null> {
+  const protectedRoute = buildUriCandidates(params.testCase)[0];
+  const expectedLaunchMarker = launchReadyMarkerForUri(protectedRoute);
   const loggedIn = await ensureReplayAuthSession({
     auth: params.auth,
-    protectedRoute: buildUriCandidates(params.testCase)[0],
+    protectedRoute,
     successPredicate: (xml) => routeReadyXmlForCase(params.testCase, xml),
     artifactBase: params.artifactBase,
   });
@@ -1153,7 +1180,12 @@ async function recoverAuthForCaseRoute(params: {
   return waitForAndroidScreen({
     captureId: params.captureId,
     timeoutMs: 25_000,
-    ready: (screen) => caseLaunchReadyForCase(params.testCase, screen),
+    ready: (screen) =>
+      caseLaunchReadyForCase(
+        params.testCase,
+        screen,
+        expectedLaunchMarker,
+      ),
   });
 }
 
@@ -1202,17 +1234,36 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
     }
     const uris = buildUriCandidates(testCase);
     for (let uriIndex = 0; uriIndex < uris.length; uriIndex += 1) {
+      const expectedLaunchMarker = launchReadyMarkerForUri(uris[uriIndex]);
       bestEffortAdb(["shell", "cmd", "statusbar", "collapse"], 5000);
       const openError = tryOpenDeepLink(uris[uriIndex]);
       last = await waitForAndroidScreen({
         captureId: `${routeBase}_loaded_attempt_${attempt}_${uriIndex}`,
         timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
-        ready: (screen) => caseLaunchReadyForCase(testCase, screen),
+        ready: (screen) =>
+          caseLaunchReadyForCase(
+            testCase,
+            screen,
+            expectedLaunchMarker,
+          ),
       });
-      if (openError && !caseLaunchReadyForCase(testCase, last)) {
+      if (
+        openError &&
+        !caseLaunchReadyForCase(
+          testCase,
+          last,
+          expectedLaunchMarker,
+        )
+      ) {
         last = { ...last, error: last.error ?? openError };
       }
-      if (caseLaunchReadyForCase(testCase, last)) {
+      if (
+        caseLaunchReadyForCase(
+          testCase,
+          last,
+          expectedLaunchMarker,
+        )
+      ) {
         return { screen: last, appRootMarkerProven: rootMarkerProven };
       }
       if (isAuthLoginCapture(last)) {

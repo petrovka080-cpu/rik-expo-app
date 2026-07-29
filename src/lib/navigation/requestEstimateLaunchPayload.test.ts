@@ -1,6 +1,8 @@
 import {
   REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
+  REQUEST_ESTIMATE_LAUNCH_READY_MARKER_PREFIX,
   RequestEstimateLaunchPayloadError,
+  buildRequestEstimateLaunchReadyMarkerId,
   createRequestEstimateLaunchPayloadV1,
   decodeRequestEstimateLaunchPayloadV1,
   encodeRequestEstimateLaunchPayloadV1,
@@ -9,6 +11,17 @@ import {
 
 describe("RequestEstimateLaunchPayloadV1", () => {
   const issuedAt = "2026-07-28T12:00:00.000Z";
+
+  it("builds a bounded resource-safe marker for exact launch identity", () => {
+    const marker = buildRequestEstimateLaunchReadyMarkerId(
+      "android:launch/roof?attempt=2",
+    );
+
+    expect(marker).toBe(
+      `${REQUEST_ESTIMATE_LAUNCH_READY_MARKER_PREFIX}android_launch_roof_attempt_2`,
+    );
+    expect(marker).not.toMatch(/[:/?=]/);
+  });
 
   it("canonically round-trips Cyrillic and reserved URI characters", () => {
     const target = resolveRequestEstimateLaunchTargetV1(

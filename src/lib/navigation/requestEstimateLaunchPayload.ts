@@ -5,6 +5,8 @@ import {
 
 export const REQUEST_ESTIMATE_LAUNCH_PAYLOAD_VERSION = 1 as const;
 export const REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM = "launchPayloadV1" as const;
+export const REQUEST_ESTIMATE_LAUNCH_READY_MARKER_PREFIX =
+  "REQUEST_ESTIMATE_LAUNCH_READY_" as const;
 
 export type RequestEstimateLaunchRouteV1 = "/request" | "/ai";
 
@@ -68,6 +70,15 @@ const PAYLOAD_KEYS = new Set([
 const ACTOR_CONTEXT_KEYS = new Set(["role", "source"]);
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
+
+export function buildRequestEstimateLaunchReadyMarkerId(
+  launchId: string,
+): `${typeof REQUEST_ESTIMATE_LAUNCH_READY_MARKER_PREFIX}${string}` {
+  const safeLaunchId = normalizeText(launchId)
+    .replace(/[^A-Za-z0-9_.-]/g, "_")
+    .slice(0, 160);
+  return `${REQUEST_ESTIMATE_LAUNCH_READY_MARKER_PREFIX}${safeLaunchId}`;
+}
 
 function fail(
   code: RequestEstimateLaunchPayloadErrorCode,

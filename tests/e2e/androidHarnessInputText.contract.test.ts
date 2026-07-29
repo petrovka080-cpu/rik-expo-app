@@ -90,7 +90,12 @@ describe("Android harness text input contracts", () => {
     const canonicalReplay = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
 
     expect(canonicalReplay).toContain('return `rik://ai?${query.toString()}`');
-    expect(canonicalReplay).toContain("? [buildAndroidHostUri(testCase), buildUri(testCase)]");
+    expect(canonicalReplay).toContain(
+      'buildAndroidHostUri(testCase, `${launchIdBase}-host`)',
+    );
+    expect(canonicalReplay).toContain(
+      'buildUri(testCase, `${launchIdBase}-path`)',
+    );
     expect(canonicalReplay).toContain("ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID");
     expect(canonicalReplay).toContain("authenticatedAppRootOrAuthReady");
     expect(canonicalReplay).toContain("requiresAuthenticatedSession");
@@ -99,7 +104,16 @@ describe("Android harness text input contracts", () => {
     expect(canonicalReplay).toContain('resource-id="ai.assistant.response"');
     expect(canonicalReplay).toContain("function caseLaunchReadyForCase");
     expect(canonicalReplay).toContain(
-      "ready: (screen) => caseLaunchReadyForCase(testCase, screen)",
+      "launchReadyMarkerForUri(uris[uriIndex])",
+    );
+    expect(canonicalReplay).toContain(
+      "expectedLaunchMarker",
+    );
+    expect(canonicalReplay).toContain(
+      '!screen.xml.includes(`resource-id="${expectedLaunchMarker}"`)',
+    );
+    expect(canonicalReplay).toContain(
+      'query.set("launchId", launchId)',
     );
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
     expect(canonicalReplay).toContain(

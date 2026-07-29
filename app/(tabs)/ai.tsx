@@ -6,6 +6,7 @@ import { buildApprovalPersistenceBlockedViewModel } from "../../src/features/ai/
 import {
   REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
   RequestEstimateLaunchPayloadError,
+  buildRequestEstimateLaunchReadyMarkerId,
   decodeRequestEstimateLaunchPayloadV1,
 } from "../../src/lib/navigation/requestEstimateLaunchPayload";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../src/lib/testing/routeReadyMarkers";
@@ -131,6 +132,13 @@ function AITabScreen() {
   return (
     <>
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
+      {launchPayload ? (
+        <RouteReadyMarker
+          marker={buildRequestEstimateLaunchReadyMarkerId(
+            launchPayload.launchId,
+          )}
+        />
+      ) : null}
       <AiRouteSuspense>
         <AIAssistantScreen
           key={launchPayload?.launchId ?? "direct"}

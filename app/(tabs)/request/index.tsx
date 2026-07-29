@@ -5,6 +5,7 @@ import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepai
 import {
   REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
   RequestEstimateLaunchPayloadError,
+  buildRequestEstimateLaunchReadyMarkerId,
   decodeRequestEstimateLaunchPayloadV1,
 } from "../../../src/lib/navigation/requestEstimateLaunchPayload";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
@@ -65,6 +66,11 @@ function RequestRoute() {
   return (
     <>
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
+      {launchId ? (
+        <RouteReadyMarker
+          marker={buildRequestEstimateLaunchReadyMarkerId(launchId)}
+        />
+      ) : null}
       <ConsumerRepairRequestScreen
         key={`${launchId || "direct"}::${draftId || "new"}::${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}
         initialProblemText={prompt || undefined}
