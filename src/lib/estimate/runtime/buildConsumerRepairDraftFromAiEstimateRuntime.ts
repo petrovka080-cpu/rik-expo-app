@@ -12,6 +12,8 @@ import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
 } from "../v4/asphalt/asphaltV4Constants";
+import { buildCanonicalElectricalConsumerRepairAiDraft } from "../v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
+import { ELECTRICAL_CANONICAL_WORK_KEY } from "../v4/electrical/electricalCanonicalV1";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../v4/multiDomainReferencePassportsV4";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
@@ -189,6 +191,18 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
   const isAsphaltV4 = revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
     revision.professionalWorkId === ASPHALT_WORK_ID_V4;
+  if (
+    revision.matchedFamily === ELECTRICAL_CANONICAL_WORK_KEY ||
+    revision.professionalWorkId === ELECTRICAL_CANONICAL_WORK_KEY ||
+    input.selectedWorkKey === ELECTRICAL_CANONICAL_WORK_KEY
+  ) {
+    return buildCanonicalElectricalConsumerRepairAiDraft({
+      text: input.rawInput,
+      countryCode: input.countryCode ?? "KG",
+      city: input.city ?? "Bishkek",
+      currency: input.currency ?? "KGS",
+    });
+  }
   if (revision.boq.rows.length === 0 && !isAsphaltV4) return null;
   return buildConsumerRepairDraftFromAiEstimateRevision(revision);
 }

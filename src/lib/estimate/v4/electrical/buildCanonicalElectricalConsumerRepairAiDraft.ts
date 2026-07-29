@@ -6,6 +6,7 @@ import { buildOwnedDomainEstimatorReasoningPlan } from "../../ownedDomain/buildO
 import { buildGlobalEstimateFromEstimatorKernel } from "../../../ai/globalEstimate/globalEstimateCalculator";
 import { compileDynamicProfessionalBoq } from "../../../ai/professionalBoq/compileDynamicProfessionalBoq";
 import { expandOwnedDomainProfessionalBoq } from "../../ownedDomain/expandOwnedDomainBoqRows";
+import { applyProfessionalBoqRuntimeContract } from "../../buildProfessionalBoqDraft";
 import {
   ELECTRICAL_CANONICAL_WORK_KEY,
   buildElectricalCanonicalParameterSession,
@@ -154,11 +155,17 @@ export function buildCanonicalElectricalConsumerRepairAiDraft(input: {
   const assumptionLabels = parameterSession.parameters
     .filter((parameter) => parameter.source === "ASSUMED")
     .map((parameter) => `${parameter.label}: ${parameter.assumption ?? "предварительное допущение"}`);
-  return {
+  const contractedDraft = applyProfessionalBoqRuntimeContract({
     ...draft,
+    repairType: ELECTRICAL_CANONICAL_WORK_KEY,
     electricalCircuitSchedule,
+  }, {
+    prompt: input.text,
+  });
+  return {
+    ...contractedDraft,
     missingData: [...new Set([
-      ...draft.missingData,
+      ...contractedDraft.missingData,
       ...missingLabels,
       ...assumptionLabels,
     ])],

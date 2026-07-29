@@ -26,9 +26,9 @@ const REVIEWED_GUARDED_FIXTURE_CHANGES: Readonly<Record<string, {
   },
   "tests/fixtures/estimate/productionGradeWebAndroidCriticalCases.json": {
     base_blob: "72bfbeddc03b040e3310f6d1415eabecb148bac3",
-    reviewed_blob: "b321b041c6d3bf7db4f439511e9ad0623154532b",
-    production_reason: "replace every remaining broad category expectation with its exact canonical work identity and align unit contracts with the domain-specific BOQ",
-    proof_coverage_not_reduced: "the fixture remains exactly 100 cases across all ten coverage groups; the reviewed blob strengthens 55 family checks to exact identities, expands Asphalt V4 units, and removes linear_m only from slab and demolition cases whose compiled BOQ has no linear resource",
+    reviewed_blob: "f6465ef8908e4ee2bec9f17da265d317e17e0623",
+    production_reason: "keep the exact canonical work identities and require the electrical runtime case to provide an explicit object, route length and separate outlet, switch and lighting-point quantities",
+    proof_coverage_not_reduced: "the fixture remains exactly 100 cases across all ten coverage groups; the reviewed blob retains every prior exact family and unit assertion while strengthening the electrical case from area-only input to a complete dimensional basis that the canonical compiler can approve",
   },
 };
 

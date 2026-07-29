@@ -7,6 +7,7 @@ import {
   listConsumerRepairRequestHistory,
 } from "../../src/lib/consumerRequests";
 import { ELECTRICAL_CANONICAL_WORK_KEY } from "../../src/lib/estimate/v4/electrical/electricalCanonicalV1";
+import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 
 const AREA_ONLY_PROMPT = "электрика под ключ 100 кв метров площадь";
 
@@ -120,6 +121,43 @@ describe("production /request electrical runtime truth", () => {
       "Доверие: исходные данные не заполнены",
     );
     expect(bundle.projectExecutionDrafts).toHaveLength(0);
+  });
+
+  it("routes the shared runtime boundary through the same canonical electrical compiler", () => {
+    const blocked = buildConsumerRepairDraftFromAiEstimateRuntime({
+      rawInput: AREA_ONLY_PROMPT,
+      city: "Bishkek",
+      currency: "KGS",
+    });
+    const complete = buildConsumerRepairDraftFromAiEstimateRuntime({
+      rawInput:
+        "электрика под ключ квартира площадь 97 м2 трасса 300 м 40 розеток 20 выключателей 30 точек освещения",
+      city: "Bishkek",
+      currency: "KGS",
+    });
+
+    expect(blocked).toMatchObject({
+      repairType: ELECTRICAL_CANONICAL_WORK_KEY,
+      selectedWork: {
+        selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+      },
+      items: [],
+    });
+    expect(complete).toMatchObject({
+      repairType: ELECTRICAL_CANONICAL_WORK_KEY,
+      selectedWork: {
+        selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
+      },
+    });
+    expect(complete?.items.length).toBeGreaterThan(80);
+    expect(
+      complete?.items.every(
+        (item) =>
+          String(item.sourceParameters?.semanticOwner ?? "").startsWith(
+            "electrical:",
+          ),
+      ),
+    ).toBe(true);
   });
 
   it("cannot re-enable a legacy estimate through an explicit electrical catalog selection", () => {
