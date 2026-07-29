@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "./assistant.types";
-import { resolveAssistantMessagesAfterHydration } from "./AIAssistantScreen.helpers";
+import type { AssistantMessage } from "../../src/features/ai/assistant.types";
+import { resolveAssistantMessagesAfterHydration } from "../../src/features/ai/AIAssistantScreen.helpers";
 
 const message = (
   id: string,
