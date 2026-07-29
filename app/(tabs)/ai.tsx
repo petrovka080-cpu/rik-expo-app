@@ -133,6 +133,7 @@ function AITabScreen() {
       <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
       <AiRouteSuspense>
         <AIAssistantScreen
+          key={launchPayload?.launchId ?? "direct"}
           launchPayload={launchPayload}
         />
       </AiRouteSuspense>

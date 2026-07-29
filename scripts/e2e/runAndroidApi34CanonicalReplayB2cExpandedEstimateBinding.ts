@@ -69,6 +69,7 @@ const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const MAX_CASE_ATTEMPTS = 4;
 const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen";
+const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more";
 const REQUEST_SCROLL_X_RATIO = 0.065;
 const ANDROID_CANONICAL_REPLAY_VERIFY_HARNESS_PATHS = new Set([
   relative(__filename),
@@ -745,7 +746,7 @@ function swipeWithinBoundsArgs(
   return [String(x), String(startY), String(x), String(endY), String(durationMs)];
 }
 
-function focusAndroidBounds(bounds: AndroidBounds | null): void {
+function tapAndroidBounds(bounds: AndroidBounds | null): void {
   if (!bounds) {
     return;
   }
@@ -753,6 +754,28 @@ function focusAndroidBounds(bounds: AndroidBounds | null): void {
   const x = clamp(Math.round((bounds.left + bounds.right) / 2), 1, viewport.width - 1);
   const y = clamp(Math.round((bounds.top + bounds.bottom) / 2), 1, viewport.height - 1);
   bestEffortAdb(["shell", "input", "tap", String(x), String(y)], 5000);
+}
+
+function focusAndroidBounds(bounds: AndroidBounds | null): void {
+  tapAndroidBounds(bounds);
+}
+
+async function expandRequestRowsIfAvailable(
+  screen: ReturnType<typeof captureScreenInDir>,
+  testCase: Api34ReplayCase,
+): Promise<void> {
+  if (testCase.route !== "/request") {
+    return;
+  }
+  const loadMoreBounds = nodeBoundsByResourceId(
+    screen.xml,
+    REQUEST_LOAD_MORE_RESOURCE_ID,
+  );
+  if (!loadMoreBounds) {
+    return;
+  }
+  tapAndroidBounds(loadMoreBounds);
+  await sleep(600);
 }
 
 async function resetAndroidAppForReplay(): Promise<void> {
@@ -905,6 +928,7 @@ async function captureScrollableOutput(
       if (isRuntimeLoadError(captures[captures.length - 1])) break;
       continue;
     }
+    await expandRequestRowsIfAvailable(captures[captures.length - 1], testCase);
     const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
     const direction = requestStartedAtTop ? "up" : "down";
     try {
@@ -946,6 +970,7 @@ async function captureScrollableOutput(
       );
       continue;
     }
+    await expandRequestRowsIfAvailable(captures[captures.length - 1], testCase);
     const bounds = scrollableOutputBounds(captures[captures.length - 1], testCase);
     const xRatio = testCase.route === "/request" ? REQUEST_SCROLL_X_RATIO : 0.5;
     const direction =

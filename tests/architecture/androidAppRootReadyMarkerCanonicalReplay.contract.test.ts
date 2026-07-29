@@ -7,6 +7,11 @@ describe("Android API34 canonical replay app-root evidence", () => {
       path.join(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
       "utf8",
     );
+  const aiRouteSource = () =>
+    fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/ai.tsx"),
+      "utf8",
+    );
 
   it("does not let a transient first dev-client load error override later proven root-marker evidence", () => {
     const runner = source();
@@ -62,6 +67,13 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).not.toContain(
       "return embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);",
     );
+  });
+
+  it("remounts the AI assistant when a new warm-launch payload arrives", () => {
+    const route = aiRouteSource();
+
+    expect(route).toContain('key={launchPayload?.launchId ?? "direct"}');
+    expect(route).toContain("launchPayload={launchPayload}");
   });
 
   it("does not report completed Android AI output as an unsubmitted prompt", () => {

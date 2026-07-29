@@ -95,7 +95,15 @@ describe("Android harness text input contracts", () => {
     expect(canonicalReplay).toContain("authenticatedAppRootOrAuthReady");
     expect(canonicalReplay).toContain("requiresAuthenticatedSession");
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
+    expect(canonicalReplay).toContain(
+      'const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more"',
+    );
     expect(canonicalReplay).toContain("const REQUEST_SCROLL_X_RATIO = 0.065");
+    expect(canonicalReplay).toContain("async function expandRequestRowsIfAvailable");
+    expect(canonicalReplay).toContain("tapAndroidBounds(loadMoreBounds)");
+    expect(canonicalReplay).toContain(
+      "await expandRequestRowsIfAvailable(captures[captures.length - 1], testCase)",
+    );
     expect(canonicalReplay).toContain("const requestStartedAtTop");
     expect(canonicalReplay).toContain('captures.push(await captureReplayScreen(`${captureId}_settle_${index}`))');
     expect(canonicalReplay).toContain("!captures.some(latestAssistantResponseVisible)");
