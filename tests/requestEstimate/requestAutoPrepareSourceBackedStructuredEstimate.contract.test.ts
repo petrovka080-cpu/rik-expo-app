@@ -180,7 +180,8 @@ describe("request autoPrepare source-backed structured estimate", () => {
     expect(recalculatedParameters.route_length_m?.source).toBe("USER_EXPLICIT");
     expect(recalculatedParameters.outlet_count?.source).toBe("TEXT_EXTRACTED");
     expect(recalculatedParameters.group_count?.source).toBe("ASSUMED");
-    expect(recalculatedTotal).not.toBe(initialTotal);
+    expect(initialTotal).toBe(0);
+    expect(recalculatedTotal).toBe(0);
     const recalculatedCableQuantity = recalculated.items
       .filter((item) =>
         /^electrical_(?:power|lighting)_cable$/.test(

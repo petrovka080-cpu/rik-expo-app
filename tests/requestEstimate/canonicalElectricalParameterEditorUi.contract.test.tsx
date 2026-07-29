@@ -70,11 +70,17 @@ function renderElectricalPanel(prompt: string) {
       />,
     );
   });
-  const toggle = renderer.root
-    .findAllByProps({ testID: "request-estimate-parameters-toggle" })
-    .find((node) => typeof node.props.onPress === "function");
-  if (!toggle) throw new Error("ELECTRICAL_PARAMETER_TOGGLE_MISSING");
-  act(() => toggle.props.onPress());
+  if (
+    renderer.root.findAllByProps({
+      testID: "request-estimate-parameter-panel",
+    }).length === 0
+  ) {
+    const toggle = renderer.root
+      .findAllByProps({ testID: "request-estimate-parameters-toggle" })
+      .find((node) => typeof node.props.onPress === "function");
+    if (!toggle) throw new Error("ELECTRICAL_PARAMETER_TOGGLE_MISSING");
+    act(() => toggle.props.onPress());
+  }
   return { renderer, bundle };
 }
 
@@ -124,7 +130,7 @@ describe("canonical electrical parameter editor UI", () => {
     expect(countJsonTestId(tree, "estimate-draft-session-blocked")).toBe(0);
   });
 
-  it("keeps partial cable scope visible without inventing a route quantity", () => {
+  it("keeps partial cable inputs visible without inventing BOQ quantities", () => {
     const { renderer, bundle } = renderElectricalPanel(
       "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
     );
@@ -136,17 +142,11 @@ describe("canonical electrical parameter editor UI", () => {
     ).toBe(1);
     expect(text).toContain("Длина кабельной трассы");
     expect(
-      bundle.items.find(
-        (item) => item.sourceParameters?.rowCode === "electrical_outlets",
-      )?.quantity,
+      bundle.canonicalParameterSession?.parameters.find(
+        (parameter) => parameter.parameterId === "outlet_count",
+      )?.value,
     ).toBe(10);
-    expect(
-      bundle.items.some(
-        (item) =>
-          /^electrical_(?:power|lighting)_cable$/.test(
-            String(item.sourceParameters?.rowCode),
-          ) && Number(item.quantity) > 0,
-      ),
-    ).toBe(false);
+    expect(bundle.canonicalParameterSession?.status).toBe("BLOCKING_REQUIRED");
+    expect(bundle.items).toHaveLength(0);
   });
 });

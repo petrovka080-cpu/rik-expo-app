@@ -26,7 +26,7 @@ describe("canonical electrical parameter core", () => {
     __resetConsumerRepairRequestStoreForTests();
   });
 
-  it("keeps partial input preliminary and exposes every missing or assumed parameter", () => {
+  it("blocks partial quantities and exposes every missing parameter without generated engineering assumptions", () => {
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: "electrical-partial-parameters",
       problemText: "электромонтаж: 10 розеток, 10 выключателей, площадь 87 м²",
@@ -39,10 +39,9 @@ describe("canonical electrical parameter core", () => {
     });
 
     expect(aiDraft.selectedWork?.selectedWorkKey).toBe("electrical_area_installation");
-    expect(aiDraft.items.length).toBeGreaterThan(0);
-    expect(bundle.canonicalParameterSession?.status).toBe(
-      "PRELIMINARY_WITH_ASSUMPTIONS",
-    );
+    expect(aiDraft.items).toHaveLength(0);
+    expect(bundle.items).toHaveLength(0);
+    expect(bundle.canonicalParameterSession?.status).toBe("BLOCKING_REQUIRED");
     const parameters = parameterMap(bundle);
     expect(parameters.area_m2?.value).toBe(87);
     expect(parameters.outlet_count?.value).toBe(10);
@@ -51,7 +50,8 @@ describe("canonical electrical parameter core", () => {
     expect(parameters.lighting_point_count?.source).toBe("MISSING");
     expect(parameters.wiring_method?.source).toBe("MISSING");
     expect(parameters.cable_type?.source).toBe("MISSING");
-    expect(parameters.group_count?.source).toBe("ASSUMED");
+    expect(parameters.group_count?.source).toBe("MISSING");
+    expect(bundle.canonicalParameterSession?.assumptionParameterIds).toEqual([]);
 
     const revision = bundle.estimateDraftRevisionState?.revisions.find(
       (candidate) =>
@@ -75,7 +75,8 @@ describe("canonical electrical parameter core", () => {
     expect(cards.find((card) => card.key === "group_count")).toEqual(
       expect.objectContaining({
         editable: true,
-        source: "catalog_default",
+        missing: true,
+        source: "schema_missing",
       }),
     );
     expect(cards.find((card) => card.key === "panel_included")?.choices).toEqual([
@@ -113,6 +114,82 @@ describe("canonical electrical parameter core", () => {
     );
     expect(bundle.estimateDraftRevisionState).not.toBeNull();
     expect(bundle.canonicalParameterSession?.parameters.length).toBeGreaterThan(10);
+  });
+
+  it("keeps partial editor revisions blocked until the shared required scope is complete", () => {
+    let { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "electrical-progressive-parameters",
+      problemText: "электрика под ключ 100 кв метров площадь",
+      repairType: "estimate",
+      city: "Bishkek",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+    const initialRevision =
+      bundle.estimateDraftRevisionState?.revisions.find(
+        (revision) =>
+          revision.revisionId ===
+          bundle.estimateDraftRevisionState?.currentRevisionId,
+      ) ?? null;
+
+    bundle = applyConsumerRepairDraftRevisionParamPatch({
+      requestDraftId: bundle.draft.id,
+      operation: "update_param",
+      paramKey: "route_length_m",
+      rawValue: "154",
+      createdAt: "2026-07-29T09:00:00.000Z",
+    });
+
+    expect(bundle.canonicalParameterSession?.status).toBe("BLOCKING_REQUIRED");
+    expect(bundle.items).toHaveLength(0);
+    expect(bundle.structuredEstimatePayload).toBeNull();
+    expect(bundle.estimateDraftRevisionState?.revisions).toHaveLength(2);
+    expect(initialRevision?.boq.rows).toHaveLength(0);
+    expect(initialRevision?.missingInputs.map((item) => item.key)).toEqual(
+      expect.arrayContaining([
+        "route_length_m",
+        "outlet_count",
+        "switch_count",
+        "lighting_point_count",
+      ]),
+    );
+
+    const remainingInputs = [
+      ["outlet_count", "10"],
+      ["switch_count", "10"],
+      ["lighting_point_count", "8"],
+    ] as const;
+    remainingInputs.forEach(([paramKey, rawValue], index) => {
+      bundle = applyConsumerRepairDraftRevisionParamPatch({
+        requestDraftId: bundle.draft.id,
+        operation: "update_param",
+        paramKey,
+        rawValue,
+        createdAt: `2026-07-29T09:0${index + 1}:00.000Z`,
+      });
+    });
+
+    expect(bundle.canonicalParameterSession?.status).toBe(
+      "PRELIMINARY_WITH_ASSUMPTIONS",
+    );
+    expect(bundle.items.length).toBeGreaterThan(0);
+    expect(bundle.estimateDraftRevisionState?.revisions).toHaveLength(5);
+    expect(parameterMap(bundle)).toEqual(
+      expect.objectContaining({
+        area_m2: expect.objectContaining({ value: 100 }),
+        route_length_m: expect.objectContaining({ value: 154 }),
+        outlet_count: expect.objectContaining({ value: 10 }),
+        switch_count: expect.objectContaining({ value: 10 }),
+        lighting_point_count: expect.objectContaining({ value: 8 }),
+        electrical_points_total: expect.objectContaining({
+          value: 28,
+          source: "CALCULATED",
+        }),
+      }),
+    );
+    expect(initialRevision?.boq.rows).toHaveLength(0);
   });
 
   it("recalculates each point type through a new audited revision", () => {
@@ -249,11 +326,12 @@ describe("canonical electrical parameter core", () => {
           "electrical_corrugation_channel",
       )?.titleRu,
     ).toContain("Кабель-канал");
+    expect(parameters.protective_devices_included?.source).toBe("MISSING");
     expect(
       bundle.items.find(
         (item) => item.sourceParameters?.rowCode === "electrical_breakers",
-      )?.quantity,
-    ).toBe(7);
+      ),
+    ).toBeUndefined();
     expect(
       bundle.items.find(
         (item) =>

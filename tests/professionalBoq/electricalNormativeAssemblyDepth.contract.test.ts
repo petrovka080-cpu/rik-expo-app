@@ -24,6 +24,8 @@ const FULL_ELECTRICAL_PARAMETERS: ElectricalCanonicalParameterValues = {
   protective_devices_included: true,
   grounding_included: true,
   demolition_included: false,
+  restoration_included: false,
+  penetration_count: 12,
   installation_height_m: 2.5,
   access_condition: "normal",
   cable_reserve_factor: 1.1,
@@ -47,7 +49,7 @@ function buildElectricalDraft(routeLengthM = 154) {
 const FULL_ASSEMBLY_CONTEXT: ElectricalProfessionalBoqV1Context = {
   areaM2: 87,
   routeLengthM: 154,
-  totalCableLengthM: 1185.8,
+  totalCableLengthM: 169.4,
   outletCount: 10,
   switchCount: 10,
   lightingPointCount: 8,
@@ -62,6 +64,8 @@ const FULL_ASSEMBLY_CONTEXT: ElectricalProfessionalBoqV1Context = {
   containmentKnown: true,
   cableSpecificationKnown: true,
   estimatedLoadKnown: true,
+  restorationIncluded: true,
+  penetrationCount: 12,
 };
 
 describe("normative electrical professional BOQ assembly", () => {
@@ -283,9 +287,9 @@ describe("normative electrical professional BOQ assembly", () => {
     expect(quantity(before, "electrical_reference_channel_body_install")).toBe(154);
     expect(quantity(after, "electrical_reference_channel_body_install")).toBe(200);
     expect(quantity(before, "electrical_reference_cable_measure_cut")).toBe(
-      1185.8,
+      169.4,
     );
-    expect(quantity(after, "electrical_reference_cable_measure_cut")).toBe(1540);
+    expect(quantity(after, "electrical_reference_cable_measure_cut")).toBe(220);
   });
 
   it("applies explicit scope switches and rejects invalid dimensions", () => {

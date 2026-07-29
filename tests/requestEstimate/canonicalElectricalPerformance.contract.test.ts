@@ -24,17 +24,40 @@ describe("canonical electrical production performance budgets", () => {
 
   it("keeps deterministic prompt compilation below one second and warm p95 below five seconds", () => {
     const durations: number[] = [];
-    const rowCounts = new Set<number>();
+    const boqSignatures = new Set<string>();
     for (let index = 0; index < 12; index += 1) {
       const startedAt = performance.now();
       const draft = buildCanonicalElectricalConsumerRepairAiDraft({
         text: ELECTRICAL_PROMPT,
       });
       durations.push(performance.now() - startedAt);
-      rowCounts.add(draft.items.length);
+      const rowCodes = draft.items.map(
+        (item) => String(item.sourceParameters?.rowCode ?? ""),
+      );
+      expect(rowCodes.every(Boolean)).toBe(true);
+      expect(new Set(rowCodes).size).toBe(rowCodes.length);
+      expect(
+        draft.items
+          .filter((item) =>
+            item.priceSourceId === "src_configured_regional_reference_2026" ||
+            item.priceStatus === "REFERENCE_PRICE_ESTIMATE"
+          )
+          .map((item) => ({
+            rowCode: item.sourceParameters?.rowCode,
+            unitPrice: item.unitPrice,
+            priceStatus: item.priceStatus,
+            priceSourceId: item.priceSourceId,
+          })),
+      ).toEqual([]);
+      expect(draft.items.some((item) => item.unitPrice == null)).toBe(true);
+      boqSignatures.add(draft.items.map((item) => [
+        item.sourceParameters?.rowCode,
+        item.quantity,
+        item.unit,
+      ].join(":")).join("|"));
     }
 
-    expect(rowCounts).toEqual(new Set([132]));
+    expect(boqSignatures.size).toBe(1);
     expect(Math.max(...durations)).toBeLessThan(1_000);
     expect(percentile95(durations)).toBeLessThan(5_000);
   });
