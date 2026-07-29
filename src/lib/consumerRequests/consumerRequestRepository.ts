@@ -108,14 +108,20 @@ function normalizeEstimateDraftSessionCompatibilityView(
   };
 }
 
-function getWebDurableStorage(): Storage | null {
+function isReactNativeRuntime(): boolean {
   try {
-    if (
+    return (
       typeof navigator !== "undefined" &&
       navigator.product === "ReactNative"
-    ) {
-      return null;
-    }
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getWebDurableStorage(): Storage | null {
+  try {
+    if (isReactNativeRuntime()) return null;
     if (typeof localStorage !== "undefined") return localStorage;
   } catch {
     return null;
@@ -561,7 +567,10 @@ function migrateLegacyConsumerRepairDurableStore(storage: Storage): void {
 
 function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): boolean {
   const storage = getWebDurableStorage();
-  if (isLargeConsumerRepairRevisionBundle(bundle)) {
+  if (
+    isReactNativeRuntime() ||
+    isLargeConsumerRepairRevisionBundle(bundle)
+  ) {
     const preserveApprovedSummary =
       isConsumerRepairApprovedHistoryStatus(bundle.draft.status);
     if (storage && preserveApprovedSummary) {
