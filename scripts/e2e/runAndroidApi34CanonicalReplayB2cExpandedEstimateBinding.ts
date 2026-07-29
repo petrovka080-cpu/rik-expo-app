@@ -1059,6 +1059,26 @@ function routeReadyForCase(testCase: Api34ReplayCase, screen: ReplayScreen): boo
     : embeddedAiRouteProofReady(screen);
 }
 
+function aiLaunchPayloadApplied(xml: string): boolean {
+  return (
+    xml.includes('resource-id="ai.assistant.loading"') ||
+    xml.includes('resource-id="ai.assistant.response"')
+  );
+}
+
+function caseLaunchReadyForCase(
+  testCase: Api34ReplayCase,
+  screen: ReplayScreen,
+): boolean {
+  if (!routeReadyForCase(testCase, screen)) {
+    return false;
+  }
+  return (
+    testCase.route !== "/ai?context=foreman" ||
+    aiLaunchPayloadApplied(screen.xml)
+  );
+}
+
 function aiOutputProofSubmitted(params: {
   testCase: Api34ReplayCase;
   loaded: ReplayScreen;
@@ -1133,7 +1153,7 @@ async function recoverAuthForCaseRoute(params: {
   return waitForAndroidScreen({
     captureId: params.captureId,
     timeoutMs: 25_000,
-    ready: (screen) => routeReadyForCase(params.testCase, screen),
+    ready: (screen) => caseLaunchReadyForCase(params.testCase, screen),
   });
 }
 
@@ -1159,7 +1179,7 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
         });
         if (authenticated) {
           last = authenticated;
-          if (routeReadyForCase(testCase, authenticated)) {
+          if (caseLaunchReadyForCase(testCase, authenticated)) {
             return {
               screen: authenticated,
               appRootMarkerProven: appRootProofReady(authenticated),
@@ -1187,12 +1207,14 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
       last = await waitForAndroidScreen({
         captureId: `${routeBase}_loaded_attempt_${attempt}_${uriIndex}`,
         timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
-        ready: (screen) => routeReadyForCase(testCase, screen),
+        ready: (screen) => caseLaunchReadyForCase(testCase, screen),
       });
-      if (openError && !routeReadyForCase(testCase, last)) {
+      if (openError && !caseLaunchReadyForCase(testCase, last)) {
         last = { ...last, error: last.error ?? openError };
       }
-      if (routeReadyForCase(testCase, last)) return { screen: last, appRootMarkerProven: rootMarkerProven };
+      if (caseLaunchReadyForCase(testCase, last)) {
+        return { screen: last, appRootMarkerProven: rootMarkerProven };
+      }
       if (isAuthLoginCapture(last)) {
         const authenticated = await recoverAuthForCaseRoute({
           testCase,
@@ -1202,7 +1224,7 @@ async function openCaseRoute(testCase: Api34ReplayCase, auth: AndroidReplayAuthE
         });
         if (authenticated) {
           last = authenticated;
-          if (routeReadyForCase(testCase, authenticated)) {
+          if (caseLaunchReadyForCase(testCase, authenticated)) {
             return {
               screen: authenticated,
               appRootMarkerProven: rootMarkerProven || appRootProofReady(authenticated),

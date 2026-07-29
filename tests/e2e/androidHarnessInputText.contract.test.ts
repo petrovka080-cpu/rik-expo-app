@@ -94,6 +94,13 @@ describe("Android harness text input contracts", () => {
     expect(canonicalReplay).toContain("ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID");
     expect(canonicalReplay).toContain("authenticatedAppRootOrAuthReady");
     expect(canonicalReplay).toContain("requiresAuthenticatedSession");
+    expect(canonicalReplay).toContain("function aiLaunchPayloadApplied");
+    expect(canonicalReplay).toContain('resource-id="ai.assistant.loading"');
+    expect(canonicalReplay).toContain('resource-id="ai.assistant.response"');
+    expect(canonicalReplay).toContain("function caseLaunchReadyForCase");
+    expect(canonicalReplay).toContain(
+      "ready: (screen) => caseLaunchReadyForCase(testCase, screen)",
+    );
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
     expect(canonicalReplay).toContain(
       'const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more"',

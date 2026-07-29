@@ -69,6 +69,21 @@ describe("Android API34 canonical replay app-root evidence", () => {
     );
   });
 
+  it("does not accept a static AI history surface as proof that the current launch payload was applied", () => {
+    const runner = source();
+
+    expect(runner).toContain("function aiLaunchPayloadApplied");
+    expect(runner).toContain('xml.includes(\'resource-id="ai.assistant.loading"\')');
+    expect(runner).toContain('xml.includes(\'resource-id="ai.assistant.response"\')');
+    expect(runner).toContain("function caseLaunchReadyForCase");
+    expect(runner).toMatch(
+      /testCase\.route !== "\/ai\?context=foreman"\s*\|\|\s*aiLaunchPayloadApplied\(screen\.xml\)/s,
+    );
+    expect(runner).not.toContain(
+      'xml.includes(\'resource-id="ai.assistant.response.history"\')',
+    );
+  });
+
   it("remounts the AI assistant when a new warm-launch payload arrives", () => {
     const route = aiRouteSource();
 
