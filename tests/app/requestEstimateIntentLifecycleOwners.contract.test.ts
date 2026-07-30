@@ -9,7 +9,7 @@ describe("request estimate intent lifecycle owners", () => {
   it("acknowledges request and AI launches only after draft and UI readiness", () => {
     for (const relativePath of [
       "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "src/features/ai/AIAssistantLaunchRuntime.ts",
+      "src/features/ai/AIAssistantScreen.helpers.ts",
     ]) {
       const source = read(relativePath);
       const draft = source.indexOf('"DRAFT_SESSION_READY"');
@@ -42,7 +42,7 @@ describe("request estimate intent lifecycle owners", () => {
     );
     const aiScreen = read("src/features/ai/AIAssistantScreen.tsx");
     const aiLaunchOwner = read(
-      "src/features/ai/AIAssistantLaunchRuntime.ts",
+      "src/features/ai/AIAssistantScreen.helpers.ts",
     );
     expect(aiScreen).toContain("hasInteractiveLaunchPrompt");
     expect(aiScreen).toContain(

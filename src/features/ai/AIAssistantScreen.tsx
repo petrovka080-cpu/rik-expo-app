@@ -15,6 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppChatComposerBar } from "../../components/layout/AppChatComposerBar";
 import { AIAssistantLiveScreenCopilotPanel } from "./AIAssistantLiveScreenCopilotPanel";
 import {
+  AIAssistantBootView,
+  AIAssistantMessageList,
   AIAssistantProductHeader,
   AIAssistantReadyProductPanels,
   AIAssistantShortcutRows,
@@ -45,21 +47,15 @@ import { useAIAssistantScreenDerivedState } from "./useAIAssistantScreenDerivedS
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { safeBack } from "../../lib/navigation/safeBack";
 import {
+  markAiDraftSessionReady,
+  useAIAssistantLaunchRuntimeEffects,
+  useAIAssistantPendingLaunchSubscription,
   createAssistantScreenMessage as createMessage,
   normalizeGroundedRouteParams,
   recordAssistantScreenFallback,
   resolveAssistantMessagesAfterHydration,
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
-import {
-  markAiDraftSessionReady,
-  useAIAssistantLaunchRuntimeEffects,
-  useAIAssistantPendingLaunchSubscription,
-} from "./AIAssistantLaunchRuntime";
-import {
-  AIAssistantBootView,
-  AIAssistantMessageList,
-} from "./AIAssistantMessageViews";
 import {
   createBuiltInAiAssistantMessage,
   createExternalKnowledgeAssistantMessage,

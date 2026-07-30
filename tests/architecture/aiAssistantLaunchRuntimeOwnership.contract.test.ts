@@ -8,7 +8,7 @@ const read = (relativePath: string): string =>
 
 describe("AI assistant launch runtime ownership", () => {
   const screen = read("src/features/ai/AIAssistantScreen.tsx");
-  const runtime = read("src/features/ai/AIAssistantLaunchRuntime.ts");
+  const runtime = read("src/features/ai/AIAssistantScreen.helpers.ts");
   const scanner = read("scripts/architecture_anti_regression_suite.ts");
 
   it("keeps the screen shell below the unchanged callable and physical budgets", () => {

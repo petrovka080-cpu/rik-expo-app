@@ -17,7 +17,7 @@ const flowFiles = [
 describe("AI assistant stable e2e test IDs", () => {
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
   const assistantMessageViewsSource = read(
-    "src/features/ai/AIAssistantMessageViews.tsx",
+    "src/features/ai/AIAssistantReadyProductPanels.tsx",
   );
   const assistantProductPanelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
   const assistantShortcutRowsSource = read("src/features/ai/AIAssistantShortcutRows.tsx");
