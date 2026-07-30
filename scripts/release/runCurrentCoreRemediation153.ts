@@ -411,6 +411,10 @@ $rootProcessId=${child.pid}
 [int64]$peak=0
 while($true){
   $all=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
+  $root=@($all | Where-Object {
+    [int]$_.ProcessId -eq [int]$rootProcessId
+  })
+  if($root.Count -eq 0){break}
   $ids=New-Object 'System.Collections.Generic.HashSet[int]'
   [void]$ids.Add([int]$rootProcessId)
   do {

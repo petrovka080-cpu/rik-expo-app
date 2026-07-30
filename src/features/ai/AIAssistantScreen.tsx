@@ -186,6 +186,105 @@ function AIAssistantMessageList({
   });
 }
 
+function useAIAssistantLaunchRuntimeEffects({
+  booting,
+  effectiveLaunchPayload,
+  launchAutoSend,
+  launchPrompt,
+  input,
+  loading,
+  messagesLength,
+  send,
+  setInput,
+  handledPromptRef,
+  acknowledgedPromptLaunchRef,
+  messagesScrollRef,
+}: {
+  booting: boolean;
+  effectiveLaunchPayload: RequestEstimateLaunchPayloadV1 | null;
+  launchAutoSend: string | undefined;
+  launchPrompt: string;
+  input: string;
+  loading: boolean;
+  messagesLength: number;
+  send: (textParam?: string) => Promise<void>;
+  setInput: (value: string) => void;
+  handledPromptRef: React.MutableRefObject<string>;
+  acknowledgedPromptLaunchRef: React.MutableRefObject<string>;
+  messagesScrollRef: React.MutableRefObject<ScrollView | null>;
+}) {
+  useEffect(() => {
+    if (booting || !launchPrompt) return;
+
+    const key = `${effectiveLaunchPayload?.launchId ?? "route"}::${launchPrompt}::${launchAutoSend === "1" ? "1" : "0"}`;
+    if (handledPromptRef.current === key) return;
+    handledPromptRef.current = key;
+
+    if (launchAutoSend === "1") {
+      const autoSendPayload = effectiveLaunchPayload;
+      if (Platform.OS === "android" && autoSendPayload) {
+        console.info(
+          `[RikWarmDeepLink] AI_AUTO_SEND_STARTED ${JSON.stringify({
+            launchId: autoSendPayload.launchId,
+          })}`,
+        );
+      }
+      void send(launchPrompt).then(() => {
+        if (Platform.OS === "android" && autoSendPayload) {
+          console.info(
+            `[RikWarmDeepLink] AI_AUTO_SEND_RESOLVED ${JSON.stringify({
+              launchId: autoSendPayload.launchId,
+            })}`,
+          );
+        }
+      });
+      return;
+    }
+
+    setInput(launchPrompt);
+  }, [
+    booting,
+    effectiveLaunchPayload,
+    handledPromptRef,
+    launchAutoSend,
+    launchPrompt,
+    send,
+    setInput,
+  ]);
+
+  useEffect(() => {
+    if (
+      booting ||
+      !effectiveLaunchPayload ||
+      launchAutoSend === "1" ||
+      input.trim() !== launchPrompt ||
+      acknowledgedPromptLaunchRef.current === effectiveLaunchPayload.launchId
+    ) {
+      return undefined;
+    }
+    const frame = requestAnimationFrame(() => {
+      acknowledgeAiPromptLaunch(effectiveLaunchPayload);
+      acknowledgedPromptLaunchRef.current = effectiveLaunchPayload.launchId;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [
+    acknowledgedPromptLaunchRef,
+    booting,
+    effectiveLaunchPayload,
+    input,
+    launchAutoSend,
+    launchPrompt,
+  ]);
+
+  useEffect(() => {
+    if (messagesLength === 0) return undefined;
+    const timeout = setTimeout(() => {
+      messagesScrollRef.current?.scrollToEnd({ animated: false });
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [loading, messagesLength, messagesScrollRef]);
+}
+
 export default function AIAssistantScreen({
   launchPayload = null,
 }: {
@@ -533,65 +632,20 @@ export default function AIAssistantScreen({
     await clearAssistantMessages(userId);
   }, [assistantContext, assistantPresentationRole, fullName, role, userId]);
 
-  useEffect(() => {
-    if (booting) return;
-    const prompt = launchPrompt;
-    if (!prompt) return;
-
-    const autoSend = launchAutoSend;
-    const key = `${effectiveLaunchPayload?.launchId ?? "route"}::${prompt}::${autoSend === "1" ? "1" : "0"}`;
-    if (handledPromptRef.current === key) return;
-    handledPromptRef.current = key;
-
-    if (autoSend === "1") {
-      const autoSendPayload = effectiveLaunchPayload;
-      if (Platform.OS === "android" && autoSendPayload) {
-        console.info(
-          `[RikWarmDeepLink] AI_AUTO_SEND_STARTED ${JSON.stringify({
-            launchId: autoSendPayload.launchId,
-          })}`,
-        );
-      }
-      void send(prompt).then(() => {
-        if (Platform.OS === "android" && autoSendPayload) {
-          console.info(
-            `[RikWarmDeepLink] AI_AUTO_SEND_RESOLVED ${JSON.stringify({
-              launchId: autoSendPayload.launchId,
-            })}`,
-          );
-        }
-      });
-      return;
-    }
-
-    setInput(prompt);
-    return undefined;
-  }, [booting, effectiveLaunchPayload, launchAutoSend, launchPrompt, send]);
-
-  useEffect(() => {
-    if (
-      booting ||
-      !effectiveLaunchPayload ||
-      launchAutoSend === "1" ||
-      input.trim() !== launchPrompt ||
-      acknowledgedPromptLaunchRef.current === effectiveLaunchPayload.launchId
-    ) {
-      return undefined;
-    }
-    const frame = requestAnimationFrame(() => {
-      acknowledgeAiPromptLaunch(effectiveLaunchPayload);
-      acknowledgedPromptLaunchRef.current = effectiveLaunchPayload.launchId;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [booting, effectiveLaunchPayload, input, launchAutoSend, launchPrompt]);
-
-  useEffect(() => {
-    if (messages.length === 0) return undefined;
-    const timeout = setTimeout(() => {
-      messagesScrollRef.current?.scrollToEnd({ animated: false });
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [messages.length, loading]);
+  useAIAssistantLaunchRuntimeEffects({
+    booting,
+    effectiveLaunchPayload,
+    launchAutoSend,
+    launchPrompt,
+    input,
+    loading,
+    messagesLength: messages.length,
+    send,
+    setInput,
+    handledPromptRef,
+    acknowledgedPromptLaunchRef,
+    messagesScrollRef,
+  });
 
   if (booting) {
     return <AIAssistantBootView />;
