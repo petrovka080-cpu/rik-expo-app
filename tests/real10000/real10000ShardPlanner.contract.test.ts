@@ -6,7 +6,10 @@ import {
 import {
   buildReal10000ArtifactIdentity,
   REAL10000_ARTIFACT_SCHEMA_VERSION,
+  REAL10000_COMPILER_ID,
   REAL10000_COMPILER_VERSION,
+  REAL10000_CORPUS_ID,
+  REAL10000_FORMULA_GRAPH_ID,
   REAL10000_FORMULA_GRAPH_VERSION,
 } from "../../scripts/e2e/real10000AcceptanceCore";
 
@@ -20,8 +23,11 @@ test("real 10000 shard evidence binds corpus, compiler, formula graph, runtime a
   const identity = buildReal10000ArtifactIdentity();
   expect(identity).toMatchObject({
     artifact_schema_version: REAL10000_ARTIFACT_SCHEMA_VERSION,
+    corpus_id: REAL10000_CORPUS_ID,
     corpus_version: REAL_10000_CORPUS_VERSION,
+    compiler_id: REAL10000_COMPILER_ID,
     compiler_version: REAL10000_COMPILER_VERSION,
+    formula_graph_id: REAL10000_FORMULA_GRAPH_ID,
     formula_graph_version: REAL10000_FORMULA_GRAPH_VERSION,
     runtime_version: process.version,
   });

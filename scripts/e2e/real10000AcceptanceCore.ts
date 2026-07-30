@@ -20,7 +20,10 @@ import { createEstimatePdf, extractEstimatePdfTextForProof, validateNoPdfMojibak
 export const REAL10000_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS");
 export const REAL10000_SHARDS_DIR = path.join(REAL10000_ARTIFACT_DIR, "shards");
 export const REAL10000_SOURCE_FINGERPRINT_ALGORITHM = "sha256:v1";
-export const REAL10000_ARTIFACT_SCHEMA_VERSION = "real10000-shard-evidence:2026-07.v2";
+export const REAL10000_ARTIFACT_SCHEMA_VERSION = "real10000-shard-evidence:2026-07.v3";
+export const REAL10000_CORPUS_ID = "real-diverse-10000-construction-works";
+export const REAL10000_COMPILER_ID = "production-estimator-compiler";
+export const REAL10000_FORMULA_GRAPH_ID = "construction-formula-graph";
 export const REAL10000_COMPILER_VERSION = "production-estimator-compiler:v1";
 export const REAL10000_FORMULA_GRAPH_VERSION = "construction-formula-graph:v1";
 const PDF_DIR = path.join(process.cwd(), "artifacts", "pdf", "real-10000-diverse-construction-works");
@@ -114,11 +117,14 @@ export type Real10000SourceFingerprint = {
 export type Real10000ArtifactIdentity = {
   artifact_schema_version: typeof REAL10000_ARTIFACT_SCHEMA_VERSION;
   subject_sha: string;
+  corpus_id: typeof REAL10000_CORPUS_ID;
   corpus_version: typeof REAL_10000_CORPUS_VERSION;
   corpus_fingerprint_algorithm: typeof REAL10000_SOURCE_FINGERPRINT_ALGORITHM;
   corpus_fingerprint: string;
+  compiler_id: typeof REAL10000_COMPILER_ID;
   compiler_version: typeof REAL10000_COMPILER_VERSION;
   compiler_source_fingerprint: string;
+  formula_graph_id: typeof REAL10000_FORMULA_GRAPH_ID;
   formula_graph_version: typeof REAL10000_FORMULA_GRAPH_VERSION;
   formula_graph_fingerprint: string;
   runtime_version: string;
@@ -188,18 +194,76 @@ export function buildReal10000ArtifactIdentity(): Real10000ArtifactIdentity {
   return {
     artifact_schema_version: REAL10000_ARTIFACT_SCHEMA_VERSION,
     subject_sha: gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD"),
+    corpus_id: REAL10000_CORPUS_ID,
     corpus_version: REAL_10000_CORPUS_VERSION,
     corpus_fingerprint_algorithm: REAL10000_SOURCE_FINGERPRINT_ALGORITHM,
     corpus_fingerprint: crypto
       .createHash("sha256")
       .update(JSON.stringify(REAL_DIVERSE_10000_CONSTRUCTION_WORKS))
       .digest("hex"),
+    compiler_id: REAL10000_COMPILER_ID,
     compiler_version: REAL10000_COMPILER_VERSION,
     compiler_source_fingerprint: compiler.fingerprint,
+    formula_graph_id: REAL10000_FORMULA_GRAPH_ID,
     formula_graph_version: REAL10000_FORMULA_GRAPH_VERSION,
     formula_graph_fingerprint: fingerprintFiles(formulaGraphFiles),
     runtime_version: process.version,
   };
+}
+
+export function sha256Text(value: string): string {
+  return crypto.createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+export function sha256File(filePath: string): string {
+  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+export function hashReal10000WorkIds(workIds: readonly string[]): string {
+  return sha256Text(JSON.stringify(workIds));
+}
+
+export function summarizeReal10000RuntimeIntegrity(
+  cases: readonly Pick<Real10000CaseResult, "runtimeIntegrity" | "requiredRowsMissing" | "failures">[],
+) {
+  const integrity = {
+    runtime_exceptions: cases.filter((item) =>
+      item.failures.some((failure) => /exception|error|failed:/i.test(failure)),
+    ).length,
+    non_finite_values: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.nonFiniteValueCount,
+      0,
+    ),
+    negative_quantities: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.negativeQuantityCount,
+      0,
+    ),
+    negative_totals: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.negativeTotalCount,
+      0,
+    ),
+    unknown_units: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.unknownUnitCount,
+      0,
+    ),
+    lost_required_boq_positions: cases.reduce(
+      (total, item) => total + item.requiredRowsMissing.length,
+      0,
+    ),
+    silent_fallbacks: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.silentPriceFallbackCount,
+      0,
+    ),
+    unconfirmed_contract_total_claims: cases.reduce(
+      (total, item) => total + item.runtimeIntegrity.unconfirmedContractTotalClaimCount,
+      0,
+    ),
+    passed: false,
+  };
+  integrity.passed = Object.entries(integrity)
+    .filter(([key]) => key !== "passed")
+    .every(([, count]) => count === 0);
+  return integrity;
 }
 
 function normalize(value: string): string {
