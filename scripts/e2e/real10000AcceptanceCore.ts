@@ -9,15 +9,20 @@ import { buildEstimatePresentationViewModel, validateNoMojibakeInEstimateViewMod
 import { resolveEstimatorOutcome } from "../../src/lib/ai/estimatorKernel";
 import {
   REAL_10000_ACCEPTANCE_CONTRACT,
+  REAL_10000_CORPUS_VERSION,
   REAL_DIVERSE_10000_CONSTRUCTION_WORKS,
   type Real10000ConstructionWorkCase,
 } from "../../src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
+import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import { createEstimatePdf, extractEstimatePdfTextForProof, validateNoPdfMojibake } from "../../src/lib/estimatePdf";
 
 export const REAL10000_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS");
 export const REAL10000_SHARDS_DIR = path.join(REAL10000_ARTIFACT_DIR, "shards");
 export const REAL10000_SOURCE_FINGERPRINT_ALGORITHM = "sha256:v1";
+export const REAL10000_ARTIFACT_SCHEMA_VERSION = "real10000-shard-evidence:2026-07.v2";
+export const REAL10000_COMPILER_VERSION = "production-estimator-compiler:v1";
+export const REAL10000_FORMULA_GRAPH_VERSION = "construction-formula-graph:v1";
 const PDF_DIR = path.join(process.cwd(), "artifacts", "pdf", "real-10000-diverse-construction-works");
 
 const REAL10000_SOURCE_FINGERPRINT_ROOTS = [
@@ -39,7 +44,24 @@ const REAL10000_SOURCE_FINGERPRINT_FILES = [
   "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts",
 ] as const;
 
+const REAL10000_FORMULA_GRAPH_ROOTS = [
+  "src/lib/ai/constructionFormulas",
+  "src/lib/ai/estimateCompiler",
+  "src/lib/ai/globalEstimate",
+  "src/lib/ai/professionalBoq",
+] as const;
+
 export type Real10000Failure = { caseId?: string; classification: string; reason: string; artifact?: string };
+
+export type Real10000RuntimeIntegrity = {
+  nonFiniteValueCount: number;
+  negativeQuantityCount: number;
+  negativeTotalCount: number;
+  unknownUnitCount: number;
+  silentPriceFallbackCount: number;
+  unconfirmedContractTotalClaimCount: number;
+  passed: boolean;
+};
 
 export type Real10000CaseResult = {
   caseId: string;
@@ -71,6 +93,7 @@ export type Real10000CaseResult = {
   blockedBy?: string;
   fallbackUsed?: string;
   runtimeTraceId: string | null;
+  runtimeIntegrity: Real10000RuntimeIntegrity;
   failures: string[];
   estimate?: GlobalEstimateResult;
   visibleRows?: string[];
@@ -86,6 +109,19 @@ export type Real10000Evaluation = {
 export type Real10000SourceFingerprint = {
   fingerprint: string;
   files: string[];
+};
+
+export type Real10000ArtifactIdentity = {
+  artifact_schema_version: typeof REAL10000_ARTIFACT_SCHEMA_VERSION;
+  subject_sha: string;
+  corpus_version: typeof REAL_10000_CORPUS_VERSION;
+  corpus_fingerprint_algorithm: typeof REAL10000_SOURCE_FINGERPRINT_ALGORITHM;
+  corpus_fingerprint: string;
+  compiler_version: typeof REAL10000_COMPILER_VERSION;
+  compiler_source_fingerprint: string;
+  formula_graph_version: typeof REAL10000_FORMULA_GRAPH_VERSION;
+  formula_graph_fingerprint: string;
+  runtime_version: string;
 };
 
 function normalizePath(filePath: string): string {
@@ -131,6 +167,39 @@ export function buildReal10000SourceFingerprint(): Real10000SourceFingerprint {
     hash.update("\0");
   }
   return { fingerprint: hash.digest("hex"), files };
+}
+
+function fingerprintFiles(files: readonly string[]): string {
+  const hash = crypto.createHash("sha256");
+  for (const filePath of [...files].sort()) {
+    hash.update(filePath);
+    hash.update("\0");
+    hash.update(fs.readFileSync(path.join(process.cwd(), filePath)));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
+export function buildReal10000ArtifactIdentity(): Real10000ArtifactIdentity {
+  const compiler = buildReal10000SourceFingerprint();
+  const formulaGraphFiles = REAL10000_FORMULA_GRAPH_ROOTS
+    .flatMap(listSourceFiles)
+    .filter((filePath) => fs.existsSync(path.join(process.cwd(), filePath)));
+  return {
+    artifact_schema_version: REAL10000_ARTIFACT_SCHEMA_VERSION,
+    subject_sha: gitOutput(["rev-parse", "HEAD"], "UNKNOWN_HEAD"),
+    corpus_version: REAL_10000_CORPUS_VERSION,
+    corpus_fingerprint_algorithm: REAL10000_SOURCE_FINGERPRINT_ALGORITHM,
+    corpus_fingerprint: crypto
+      .createHash("sha256")
+      .update(JSON.stringify(REAL_DIVERSE_10000_CONSTRUCTION_WORKS))
+      .digest("hex"),
+    compiler_version: REAL10000_COMPILER_VERSION,
+    compiler_source_fingerprint: compiler.fingerprint,
+    formula_graph_version: REAL10000_FORMULA_GRAPH_VERSION,
+    formula_graph_fingerprint: fingerprintFiles(formulaGraphFiles),
+    runtime_version: process.version,
+  };
 }
 
 function normalize(value: string): string {
@@ -181,6 +250,61 @@ function materialRows(estimate: GlobalEstimateResult) {
 
 function allRows(estimate: GlobalEstimateResult) {
   return estimate.sections.flatMap((section) => section.rows);
+}
+
+function runtimeIntegrity(estimate: GlobalEstimateResult): Real10000RuntimeIntegrity {
+  const rows = allRows(estimate);
+  const totalValues = [
+    estimate.tax.taxableBase,
+    estimate.tax.taxAmount,
+    ...rows.flatMap((row) => [row.unitPrice, row.total]),
+    ...Object.values(estimate.totals).filter((value): value is number => typeof value === "number"),
+  ];
+  const numericValues = [
+    estimate.input.volume,
+    ...rows.map((row) => row.quantity),
+    ...totalValues,
+  ];
+  const fallbackRows = rows.filter(
+    (row) => row.priceStatus === "manual_fallback" || row.priceStatus === "stale_fallback",
+  );
+  const unconfirmedContractTotalClaimCount =
+    estimate.requiresReview &&
+    /\bcontract(?:ual)?\b|\u0434\u043e\u0433\u043e\u0432\u043e\u0440\u043d/ui.test(
+      [
+        estimate.work.title,
+        ...estimate.assumptions,
+        ...estimate.regionalRisks.map((risk) => `${risk.title} ${risk.text}`),
+      ].join("\n"),
+    )
+      ? 1
+      : 0;
+  const result: Real10000RuntimeIntegrity = {
+    nonFiniteValueCount: numericValues.filter((value) => !Number.isFinite(value)).length,
+    negativeQuantityCount: rows.filter((row) => row.quantity < 0).length,
+    negativeTotalCount: totalValues.filter(
+      (value) => Number.isFinite(value) && value < 0,
+    ).length,
+    unknownUnitCount: rows.filter(
+      (row) => normalizeCanonicalProfessionalBoqUnit(row.unit) === null,
+    ).length,
+    silentPriceFallbackCount: fallbackRows.filter(
+      (row) =>
+        row.sourceEvidence.length === 0 ||
+        !row.sourceId ||
+        !row.rateKey,
+    ).length,
+    unconfirmedContractTotalClaimCount,
+    passed: false,
+  };
+  result.passed =
+    result.nonFiniteValueCount === 0 &&
+    result.negativeQuantityCount === 0 &&
+    result.negativeTotalCount === 0 &&
+    result.unknownUnitCount === 0 &&
+    result.silentPriceFallbackCount === 0 &&
+    result.unconfirmedContractTotalClaimCount === 0;
+  return result;
 }
 
 function pdfName(caseId: string): string {
@@ -276,6 +400,15 @@ export function evaluateReal10000Case(
       blockedBy,
       fallbackUsed,
       runtimeTraceId,
+      runtimeIntegrity: {
+        nonFiniteValueCount: 0,
+        negativeQuantityCount: 0,
+        negativeTotalCount: 0,
+        unknownUnitCount: 0,
+        silentPriceFallbackCount: 0,
+        unconfirmedContractTotalClaimCount: 0,
+        passed: false,
+      },
       failures: [...new Set(failures)],
     };
   }
@@ -297,6 +430,7 @@ export function evaluateReal10000Case(
   const sourceEvidencePassed = !item.sourceEvidenceRequired || allRows(estimate).every((row) => row.sourceEvidence.length > 0 && Boolean(row.sourceId) && Boolean(row.rateKey));
   const taxWarningPassed = Boolean(estimate.tax.warning || estimate.tax.taxType || estimate.tax.taxLabel);
   const regulatedOk = regulatedSafetyPassed(item, estimate, outcome.plan?.semanticFrame ?? null);
+  const integrity = runtimeIntegrity(estimate);
   const uiMojibakePassed = validateNoMojibakeInEstimateViewModel(viewModel).passed;
   const uiTableVisible = viewModel.rows.length >= item.expectedMinimumRows;
 
@@ -309,6 +443,14 @@ export function evaluateReal10000Case(
   if (!taxWarningPassed) failures.push("TAX_LOCAL_WARNING_MISSING");
   if (!regulatedOk) failures.push("REGULATED_SAFETY_WARNING_MISSING");
   if (!uiMojibakePassed) failures.push("UI_MOJIBAKE_FOUND");
+  if (integrity.nonFiniteValueCount > 0) failures.push("NON_FINITE_ESTIMATE_VALUES");
+  if (integrity.negativeQuantityCount > 0) failures.push("NEGATIVE_ESTIMATE_QUANTITIES");
+  if (integrity.negativeTotalCount > 0) failures.push("NEGATIVE_ESTIMATE_TOTALS");
+  if (integrity.unknownUnitCount > 0) failures.push("UNKNOWN_ESTIMATE_UNITS");
+  if (integrity.silentPriceFallbackCount > 0) failures.push("SILENT_PRICE_FALLBACK");
+  if (integrity.unconfirmedContractTotalClaimCount > 0) {
+    failures.push("UNCONFIRMED_CONTRACT_TOTAL_CLAIMED");
+  }
 
   let pdfPassed = false;
   const pdfChecked = item.pdfRequired && includePdf;
@@ -369,6 +511,7 @@ export function evaluateReal10000Case(
     blockedBy,
     fallbackUsed,
     runtimeTraceId,
+    runtimeIntegrity: integrity,
     failures: [...new Set(failures)],
     estimate,
     visibleRows,

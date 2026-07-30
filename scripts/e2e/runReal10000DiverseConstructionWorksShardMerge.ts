@@ -6,6 +6,7 @@ import {
   REAL_DIVERSE_10000_CONSTRUCTION_WORKS,
 } from "../../src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks";
 import {
+  buildReal10000ArtifactIdentity,
   REAL10000_SHARDS_DIR,
   writeReal10000Json,
 } from "./real10000AcceptanceCore";
@@ -19,7 +20,7 @@ function shardDir(index: number): string {
 }
 
 export function runReal10000DiverseConstructionWorksShardMerge() {
-  const failures: Array<{ classification: string; reason: string; artifact?: string }> = [];
+  const failures: { classification: string; reason: string; artifact?: string }[] = [];
   const expectedIds = new Set(REAL_DIVERSE_10000_CONSTRUCTION_WORKS.map((item) => item.caseId));
   const matrices: any[] = [];
   const shardFailures: any[] = [];
@@ -34,6 +35,8 @@ export function runReal10000DiverseConstructionWorksShardMerge() {
   const pdfManifest: any[] = [];
   const pdfTextExtract: any[] = [];
   const pdfParity: any[] = [];
+  const expectedIdentity = buildReal10000ArtifactIdentity();
+  const shardWorkIds = new Set<string>();
 
   for (let index = 0; index < REAL_10000_ACCEPTANCE_CONTRACT.requiredShards; index += 1) {
     const dir = shardDir(index);
@@ -45,6 +48,69 @@ export function runReal10000DiverseConstructionWorksShardMerge() {
     }
     const matrix = readJson<any>(matrixFile);
     matrices.push(matrix);
+    const expectedShardCases = REAL_DIVERSE_10000_CONSTRUCTION_WORKS.slice(
+      index * REAL_10000_ACCEPTANCE_CONTRACT.requiredCasesPerShard,
+      (index + 1) * REAL_10000_ACCEPTANCE_CONTRACT.requiredCasesPerShard,
+    );
+    const expectedWorkIds = expectedShardCases.map((item) => item.caseId);
+    const actualWorkIds = Array.isArray(matrix.work_ids) ? matrix.work_ids : [];
+    const identityFields = [
+      "artifact_schema_version",
+      "subject_sha",
+      "corpus_version",
+      "corpus_fingerprint_algorithm",
+      "corpus_fingerprint",
+      "compiler_version",
+      "compiler_source_fingerprint",
+      "formula_graph_version",
+      "formula_graph_fingerprint",
+      "runtime_version",
+    ] as const;
+    for (const field of identityFields) {
+      if (matrix[field] !== expectedIdentity[field]) {
+        failures.push({
+          classification: "REAL_10000_SHARD_IDENTITY_MISMATCH",
+          reason: `${index}:${field}`,
+          artifact: matrixFile,
+        });
+      }
+    }
+    if (
+      actualWorkIds.length !== expectedWorkIds.length ||
+      actualWorkIds.some((workId: unknown, workIndex: number) => workId !== expectedWorkIds[workIndex])
+    ) {
+      failures.push({
+        classification: "REAL_10000_SHARD_WORK_IDS_MISMATCH",
+        reason: String(index),
+        artifact: matrixFile,
+      });
+    }
+    for (const workId of actualWorkIds) {
+      if (typeof workId !== "string") continue;
+      if (shardWorkIds.has(workId)) {
+        failures.push({
+          classification: "REAL_10000_SHARD_WORK_ID_INTERSECTION",
+          reason: `${index}:${workId}`,
+          artifact: matrixFile,
+        });
+      }
+      shardWorkIds.add(workId);
+    }
+    if (
+      !Number.isFinite(matrix.duration_ms) ||
+      matrix.duration_ms < 0 ||
+      matrix.exit_code !== 0 ||
+      !Array.isArray(matrix.errors) ||
+      matrix.errors.length > 0 ||
+      matrix.placeholder !== false ||
+      matrix.fake_green_claimed !== false
+    ) {
+      failures.push({
+        classification: "REAL_10000_SHARD_EXECUTION_METADATA_INVALID",
+        reason: String(index),
+        artifact: matrixFile,
+      });
+    }
     if (matrix.final_status !== "REAL_10000_SHARD_OK") {
       failures.push({ classification: "REAL_10000_SHARD_NOT_GREEN", reason: `${index}:${matrix.final_status}`, artifact: matrixFile });
     }
@@ -91,7 +157,55 @@ export function runReal10000DiverseConstructionWorksShardMerge() {
     ai_request: runtimeResults.filter((item) => item.route === "/ai?context=request").length,
   };
   const mergedFailures = [...failures, ...shardFailures];
+  const integrity = {
+    runtime_exceptions: runtimeResults.filter((item) =>
+      Array.isArray(item.failures) &&
+      item.failures.some((failure: unknown) =>
+        typeof failure === "string" &&
+        /exception|error|failed:/i.test(failure),
+      ),
+    ).length,
+    non_finite_values: runtimeResults.reduce(
+      (total, item) => total + Number(item.runtimeIntegrity?.nonFiniteValueCount ?? 0),
+      0,
+    ),
+    negative_quantities: runtimeResults.reduce(
+      (total, item) => total + Number(item.runtimeIntegrity?.negativeQuantityCount ?? 0),
+      0,
+    ),
+    negative_totals: runtimeResults.reduce(
+      (total, item) => total + Number(item.runtimeIntegrity?.negativeTotalCount ?? 0),
+      0,
+    ),
+    unknown_units: runtimeResults.reduce(
+      (total, item) => total + Number(item.runtimeIntegrity?.unknownUnitCount ?? 0),
+      0,
+    ),
+    lost_required_boq_positions: runtimeResults.reduce(
+      (total, item) => total + (Array.isArray(item.requiredRowsMissing) ? item.requiredRowsMissing.length : 0),
+      0,
+    ),
+    silent_fallbacks: runtimeResults.reduce(
+      (total, item) => total + Number(item.runtimeIntegrity?.silentPriceFallbackCount ?? 0),
+      0,
+    ),
+    legacy_fallbacks_without_explicit_marker: runtimeResults.filter(
+      (item) => item.fallbackUsed && typeof item.fallbackUsed !== "string",
+    ).length,
+    unconfirmed_contract_total_claims: runtimeResults.reduce(
+      (total, item) =>
+        total + Number(item.runtimeIntegrity?.unconfirmedContractTotalClaimCount ?? 0),
+      0,
+    ),
+  };
+  if (Object.values(integrity).some((count) => count !== 0)) {
+    mergedFailures.push({
+      classification: "REAL_10000_RUNTIME_INTEGRITY_FAILED",
+      reason: JSON.stringify(integrity),
+    });
+  }
   const matrix = {
+    ...expectedIdentity,
     wave: "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN",
     final_status: mergedFailures.length === 0 ? "REAL_10000_SHARD_MERGE_OK" : "BLOCKED_REAL_10000_SHARD_MERGE",
     cases_total: runtimeResults.length,
@@ -102,10 +216,19 @@ export function runReal10000DiverseConstructionWorksShardMerge() {
     shards_total: REAL_10000_ACCEPTANCE_CONTRACT.requiredShards,
     shards_present: matrices.length,
     shards_passed: matrices.filter((item) => item.final_status === "REAL_10000_SHARD_OK").length,
+    unique_work_ids: runtimeIdSet.size,
+    missing_work_ids: missingIds.length,
+    duplicate_work_ids: runtimeIds.length - runtimeIdSet.size,
+    unexpected_work_ids: unexpectedIds.length,
+    shard_work_id_intersections: failures.filter(
+      (item) => item.classification === "REAL_10000_SHARD_WORK_ID_INTERSECTION",
+    ).length,
+    integrity,
     single_shard_green_claimed: matrices.some((item) => item.single_shard_green_claimed === true || String(item.final_status).includes("GREEN_REAL_10000")),
     pdf_extraction_cases_total: pdfManifest.length,
     pdf_extraction_cases_passed: pdfManifest.filter((item) => item.passed).length,
     route_split: routeSplit,
+    placeholder: false,
     fake_green_claimed: false,
   };
 

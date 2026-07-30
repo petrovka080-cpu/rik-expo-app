@@ -7,6 +7,7 @@ import {
 } from "../../src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks";
 import {
   evaluateReal10000Cases,
+  buildReal10000ArtifactIdentity,
   REAL10000_SHARDS_DIR,
   slimResult,
   summarizeReal10000,
@@ -26,6 +27,8 @@ export function runReal10000DiverseConstructionWorksShardProof(index: number) {
   if (!Number.isInteger(index) || index < 0 || index >= REAL_10000_ACCEPTANCE_CONTRACT.requiredShards) {
     throw new Error(`REAL10000_INVALID_SHARD:${index}`);
   }
+  const startedAtMs = Date.now();
+  const startedAt = new Date(startedAtMs).toISOString();
   const cases = shardCases(index);
   const evaluation = evaluateReal10000Cases(cases, { includePdf: true });
   const summary = summarizeReal10000(evaluation);
@@ -53,8 +56,18 @@ export function runReal10000DiverseConstructionWorksShardProof(index: number) {
   writeJsonFile(path.join(dir, "pdf_parity.json"), evaluation.cases.filter((item) => item.pdfChecked).map((item) => ({ caseId: item.caseId, pdfRowsMatchUiRows: item.pdfPassed })));
   writeJsonFile(path.join(dir, "failures.json"), failures);
   const matrix = {
+    ...buildReal10000ArtifactIdentity(),
     wave: "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN",
     shard_index: index,
+    work_id_range: {
+      first: caseIds[0] ?? null,
+      last: caseIds.at(-1) ?? null,
+    },
+    work_ids: caseIds,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+    duration_ms: Date.now() - startedAtMs,
+    exit_code: failures.length === 0 ? 0 : 1,
     final_status: failures.length === 0 ? "REAL_10000_SHARD_OK" : "BLOCKED_REAL_10000_SHARD",
     cases_total: summary.cases_total,
     cases_passed: summary.cases_passed,
@@ -63,6 +76,8 @@ export function runReal10000DiverseConstructionWorksShardProof(index: number) {
     pdf_extraction_cases_passed: summary.pdf_extraction_cases_passed,
     domains_covered: summary.domains_covered,
     macro_domains_total: summary.macro_domains_total,
+    errors: failures,
+    placeholder: false,
     single_shard_green_claimed: false,
     fake_green_claimed: false,
   };
