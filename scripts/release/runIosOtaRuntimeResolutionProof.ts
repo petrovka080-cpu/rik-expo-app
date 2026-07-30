@@ -1,6 +1,11 @@
-import { writeReleasePipelineNoTimeoutMobileRuntimeArtifacts } from "./releasePipelineNoTimeoutMobileRuntime.shared";
+import {
+  writeReleasePipelineNoTimeoutMobileRuntimeArtifacts,
+  writeReleasePipelineNoTimeoutMobileRuntimeRunArtifacts,
+} from "./releasePipelineNoTimeoutMobileRuntime.shared";
 
-const report = writeReleasePipelineNoTimeoutMobileRuntimeArtifacts();
+const report = process.argv.includes("--write-canonical")
+  ? writeReleasePipelineNoTimeoutMobileRuntimeArtifacts()
+  : writeReleasePipelineNoTimeoutMobileRuntimeRunArtifacts().report;
 
 console.info(JSON.stringify(report.iosRuntime, null, 2));
 

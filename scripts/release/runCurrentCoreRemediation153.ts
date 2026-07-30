@@ -12,6 +12,7 @@ import {
 import path from "node:path";
 
 import { CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS } from "./currentCoreRemediationEvidencePrerequisites";
+import { startWindowsCurrentCoreMemoryMonitor } from "./currentCoreMemoryMonitor";
 
 const ENTRY_CHECKPOINT = "7cab8073";
 const SOURCE_ROOT = path.resolve(
@@ -34,6 +35,9 @@ const SOURCE_REPOSITORY_ROOT = execFileSync(
   },
 ).trim();
 const JEST_PATH = path.resolve("node_modules/jest/bin/jest.js");
+const JEST_BATCH_ROOT_PATH = path.resolve(
+  "scripts/release/currentCoreJestBatchRoot.mjs",
+);
 const EXPECTED_FILES = 153;
 const REGULAR_BATCH_SIZE = 10;
 const HYDRATE_ONLY = process.argv.includes("--hydrate-only");
@@ -105,6 +109,8 @@ type JestResult = {
 
 type BatchMetadata = {
   exitCode: number;
+  memoryEvidenceBlocker: string | null;
+  memoryEvidenceStatus: "COMPLETE" | "INFRASTRUCTURE_RED";
   memoryPeakBytes: number;
   memoryPeakMiB: number;
   memoryMeasurement: "process_tree_current_working_set_peak";
@@ -164,9 +170,21 @@ function assertEvidencePath(relativePath: string): void {
 
 function hydrateEvidencePrerequisites(): {
   sourceRoot: string;
+  sourceRepositorySha: string;
+  destinationSubjectSha: string;
   files: Array<{ path: string; sha256: string; bytes: number }>;
 } {
   const sourceRoot = resolvedEvidenceSourceRoot();
+  const sourceRepositorySha = execFileSync(
+    "git",
+    ["-C", sourceRoot, "rev-parse", "HEAD"],
+    { encoding: "utf8", windowsHide: true },
+  ).trim();
+  const destinationSubjectSha = execFileSync(
+    "git",
+    ["rev-parse", "HEAD"],
+    { cwd: process.cwd(), encoding: "utf8", windowsHide: true },
+  ).trim();
   const files = CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS.map((relativePath) => {
     assertEvidencePath(relativePath);
     const sourcePath = path.join(sourceRoot, relativePath);
@@ -179,9 +197,22 @@ function hydrateEvidencePrerequisites(): {
     if (path.resolve(sourcePath) !== destinationPath) {
       copyFileSync(sourcePath, destinationPath);
     }
+    const destinationContent = readFileSync(destinationPath);
+    const sourceSha256 = createHash("sha256").update(content).digest("hex");
+    const destinationSha256 = createHash("sha256")
+      .update(destinationContent)
+      .digest("hex");
+    if (
+      sourceSha256 !== destinationSha256 ||
+      content.byteLength !== destinationContent.byteLength
+    ) {
+      throw new Error(
+        `REMEDIATION_EVIDENCE_SUPERSESSION_HASH_MISMATCH:${relativePath}`,
+      );
+    }
     return {
       path: relativePath,
-      sha256: createHash("sha256").update(content).digest("hex"),
+      sha256: sourceSha256,
       bytes: content.byteLength,
     };
   });
@@ -189,11 +220,23 @@ function hydrateEvidencePrerequisites(): {
     path.join(OUTPUT_ROOT, "evidence-prerequisites.json"),
     `${JSON.stringify({
       sourceRoot,
+      sourceRepositorySha,
+      destinationSubjectSha,
+      supersessionMode:
+        sourceRepositorySha === destinationSubjectSha
+          ? "same_sha_verified_copy"
+          : "diagnostic_cross_sha_supersession",
+      canonicalFinalEvidence: false,
       files,
       protectedPathsExcluded: [...PROTECTED_EVIDENCE_PATHS],
     }, null, 2)}\n`,
   );
-  return { sourceRoot, files };
+  return {
+    sourceRoot,
+    sourceRepositorySha,
+    destinationSubjectSha,
+    files,
+  };
 }
 
 function nullDelimitedGitPaths(args: readonly string[]): string[] {
@@ -222,6 +265,9 @@ function currentSourceFingerprint(
   hash.update(`head\0${head}\0`);
   hash.update(
     `subject\0${process.env.CURRENT_CORE_SUBJECT_HEAD ?? "WORKTREE"}\0`,
+  );
+  hash.update(
+    `evidence-source\0${evidence.sourceRepositorySha}\0${evidence.destinationSubjectSha}\0`,
   );
   for (const file of evidence.files) {
     hash.update(
@@ -362,6 +408,8 @@ function readCompletedBatch(
   if (
     result.success &&
     metadata.exitCode === 0 &&
+    metadata.memoryEvidenceStatus === "COMPLETE" &&
+    metadata.memoryEvidenceBlocker === null &&
     metadata.memoryPeakBytes > 0 &&
     metadata.memoryMeasurement === "process_tree_current_working_set_peak" &&
     metadata.sourceFingerprint === sourceFingerprint &&
@@ -380,13 +428,23 @@ function runJestBatch(
   exitCode: number;
   stdout: string;
   stderr: string;
+  memoryEvidenceBlocker: string | null;
+  memoryEvidenceStatus: "COMPLETE" | "INFRASTRUCTURE_RED";
   memoryPeakBytes: number;
 }> {
   return new Promise((resolve, reject) => {
+    const monitorReadyPath = `${memoryPath}.ready.json`;
     if (existsSync(memoryPath)) rmSync(memoryPath);
+    if (existsSync(`${memoryPath}.tmp`)) rmSync(`${memoryPath}.tmp`);
+    if (existsSync(monitorReadyPath)) rmSync(monitorReadyPath);
+    if (existsSync(`${monitorReadyPath}.tmp`)) {
+      rmSync(`${monitorReadyPath}.tmp`);
+    }
     const child = spawn(
       process.execPath,
       [
+        JEST_BATCH_ROOT_PATH,
+        monitorReadyPath,
         JEST_PATH,
         ...files,
         "--runInBand",
@@ -400,52 +458,25 @@ function runJestBatch(
         stdio: ["ignore", "pipe", "pipe"],
       },
     );
-    const escapedMemoryPath = memoryPath.replace(/'/g, "''");
-    const monitor = spawn(
-      "powershell.exe",
-      [
-        "-NoProfile",
-        "-Command",
-        `
-$rootProcessId=${child.pid}
-[int64]$peak=0
-while($true){
-  $all=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
-  $root=@($all | Where-Object {
-    [int]$_.ProcessId -eq [int]$rootProcessId
-  })
-  if($root.Count -eq 0){break}
-  $ids=New-Object 'System.Collections.Generic.HashSet[int]'
-  [void]$ids.Add([int]$rootProcessId)
-  do {
-    $added=$false
-    foreach($candidate in $all){
-      if(
-        $ids.Contains([int]$candidate.ParentProcessId) -and
-        $ids.Add([int]$candidate.ProcessId)
-      ){
-        $added=$true
-      }
+    if (!child.pid) {
+      reject(new Error("REMEDIATION_JEST_ROOT_PID_MISSING"));
+      return;
     }
-  } while($added)
-  $tree=@($all | Where-Object { $ids.Contains([int]$_.ProcessId) })
-  if($tree.Count -eq 0){break}
-  [int64]$current=($tree | Measure-Object -Property WorkingSetSize -Sum).Sum
-  if($current -gt $peak){$peak=$current}
-  Start-Sleep -Milliseconds 250
-}
-[System.IO.File]::WriteAllText('${escapedMemoryPath}',[string]$peak)
-        `.trim(),
+    const monitor = startWindowsCurrentCoreMemoryMonitor({
+      cwd: process.cwd(),
+      evidencePath: memoryPath,
+      expectedCommandFragments: [
+        JEST_BATCH_ROOT_PATH,
+        JEST_PATH,
+        temporaryResultPath,
       ],
-      {
-        cwd: process.cwd(),
-        windowsHide: true,
-        stdio: "ignore",
-      },
-    );
-    const monitorClosed = new Promise<void>((monitorResolve) => {
-      monitor.once("close", () => monitorResolve());
-      monitor.once("error", () => monitorResolve());
+      readyPath: monitorReadyPath,
+      rootPid: child.pid,
+      runnerPid: process.pid,
+    });
+    const monitorClosed = new Promise<number | null>((monitorResolve) => {
+      monitor.once("close", (code) => monitorResolve(code));
+      monitor.once("error", () => monitorResolve(null));
     });
     let stdout = "";
     let stderr = "";
@@ -457,17 +488,54 @@ while($true){
     });
     child.once("error", reject);
     child.once("close", (code) => {
-      void monitorClosed.then(() => {
-        const memoryPeakBytes = existsSync(memoryPath)
-          ? Number(readFileSync(memoryPath, "utf8").trim())
-          : 0;
+      void (async () => {
+        const monitorExitCode = await monitorClosed;
+        let memoryEvidence: {
+          blocker?: string | null;
+          memory_peak_bytes?: number;
+          status?: "COMPLETE" | "INFRASTRUCTURE_RED";
+          writer_complete?: boolean;
+        } | null = null;
+        if (existsSync(memoryPath)) {
+          try {
+            memoryEvidence = JSON.parse(
+              readFileSync(memoryPath, "utf8"),
+            ) as typeof memoryEvidence;
+          } catch {
+            memoryEvidence = {
+              blocker: "MEMORY_EVIDENCE_INVALID_JSON",
+              status: "INFRASTRUCTURE_RED",
+              writer_complete: false,
+            };
+          }
+        }
+        const memoryEvidenceStatus =
+          monitorExitCode === 0 &&
+          memoryEvidence?.writer_complete === true &&
+          memoryEvidence.status === "COMPLETE"
+            ? "COMPLETE"
+            : "INFRASTRUCTURE_RED";
+        const memoryPeakBytes =
+          memoryEvidenceStatus === "COMPLETE"
+            ? Number(memoryEvidence?.memory_peak_bytes ?? 0)
+            : 0;
         resolve({
           exitCode: code ?? 1,
           stdout,
           stderr,
+          memoryEvidenceBlocker:
+            memoryEvidenceStatus === "COMPLETE"
+              ? null
+              : String(
+                  memoryEvidence?.blocker ??
+                    (monitorExitCode === 0
+                      ? "MEMORY_EVIDENCE_MISSING_OR_INCOMPLETE"
+                      : `MEMORY_MONITOR_EXIT_${String(monitorExitCode)}`),
+                ),
+          memoryEvidenceStatus,
           memoryPeakBytes,
         });
-      });
+      })();
     });
   });
 }
@@ -523,7 +591,7 @@ async function main(): Promise<void> {
     const metadataPath = path.join(OUTPUT_ROOT, `${batchId}.meta.json`);
     const stdoutPath = path.join(OUTPUT_ROOT, `${batchId}.stdout.log`);
     const stderrPath = path.join(OUTPUT_ROOT, `${batchId}.stderr.log`);
-    const memoryPath = path.join(OUTPUT_ROOT, `${batchId}.memory.tmp`);
+    const memoryPath = path.join(OUTPUT_ROOT, `${batchId}.memory.json`);
     assertSourceFingerprint(
       sourceFingerprint,
       `${batchId}:before`,
@@ -538,12 +606,17 @@ async function main(): Promise<void> {
     const startedAt = new Date().toISOString();
     let result: JestResult;
     let exitCode = 0;
+    let memoryEvidenceBlocker: string | null = null;
+    let memoryEvidenceStatus: "COMPLETE" | "INFRASTRUCTURE_RED" =
+      "INFRASTRUCTURE_RED";
     let memoryPeakBytes = 0;
     let resumed = false;
 
     if (completed) {
       result = completed.result;
       exitCode = completed.metadata.exitCode;
+      memoryEvidenceBlocker = completed.metadata.memoryEvidenceBlocker;
+      memoryEvidenceStatus = completed.metadata.memoryEvidenceStatus;
       memoryPeakBytes = completed.metadata.memoryPeakBytes;
       resumed = true;
     } else {
@@ -560,6 +633,8 @@ async function main(): Promise<void> {
         evidence,
       );
       exitCode = invocation.exitCode;
+      memoryEvidenceBlocker = invocation.memoryEvidenceBlocker;
+      memoryEvidenceStatus = invocation.memoryEvidenceStatus;
       memoryPeakBytes = invocation.memoryPeakBytes;
       atomicWrite(stdoutPath, invocation.stdout);
       atomicWrite(stderrPath, invocation.stderr);
@@ -578,6 +653,8 @@ async function main(): Promise<void> {
           batchId,
           exitCode,
           sourceFingerprint,
+          memoryEvidenceBlocker,
+          memoryEvidenceStatus,
           memoryPeakBytes,
           memoryPeakMiB: Number(
             (memoryPeakBytes / (1024 * 1024)).toFixed(2),
@@ -603,7 +680,8 @@ async function main(): Promise<void> {
       : "";
     const oomDetected =
       /heap out of memory|allocation failed|javascript heap/i.test(stderr);
-    const memoryEvidenceMissing = memoryPeakBytes <= 0;
+    const memoryEvidenceMissing =
+      memoryEvidenceStatus !== "COMPLETE" || memoryPeakBytes <= 0;
     const batchSummary = {
       batchId,
       startedAt,
@@ -617,6 +695,8 @@ async function main(): Promise<void> {
       testsFailed: result.numFailedTests,
       testsPending: result.numPendingTests,
       testsTodo: result.numTodoTests,
+      memoryEvidenceBlocker,
+      memoryEvidenceStatus,
       memoryPeakBytes,
       memoryPeakMiB: Number((memoryPeakBytes / (1024 * 1024)).toFixed(2)),
       memoryMeasurement: "process_tree_current_working_set_peak",

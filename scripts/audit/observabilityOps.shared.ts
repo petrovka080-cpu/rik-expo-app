@@ -17,6 +17,13 @@ import {
   type OpsMetricName,
   type OpsRateLimitId,
 } from "../../src/lib/ops/productionOpsTelemetry";
+import {
+  atomicWriteEvidence,
+  currentEvidenceSubjectSha,
+  withTerminalWriterMetadata,
+  writeRunScopedEvidence,
+  type RunScopedEvidenceResult,
+} from "./runScopedEvidence";
 
 export const OBSERVABILITY_OPS_WAVE = "S_OBSERVABILITY_OPS_RATE_LIMIT_PRODUCTION_CLOSEOUT";
 export const OBSERVABILITY_OPS_GREEN_STATUS = "GREEN_OBSERVABILITY_OPS_RATE_LIMIT_READY";
@@ -53,12 +60,15 @@ function artifactPath(name: string): string {
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  fs.writeFileSync(artifactPath(name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  atomicWriteEvidence(
+    artifactPath(name),
+    `${JSON.stringify(value, null, 2)}\n`,
+  );
 }
 
 function writeProof(value: string): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  fs.writeFileSync(artifactPath("proof.md"), value, "utf8");
+  atomicWriteEvidence(artifactPath("proof.md"), value);
 }
 
 function requiredMetricRows() {
@@ -291,13 +301,50 @@ export function writeObservabilityOpsArtifacts(report = buildObservabilityOpsRep
     releaseVerifyPassed: finalReport.matrix.release_verify_passed === true,
   });
   writeJson("pii_audit.json", refreshed.piiAudit);
-  writeJson("matrix.json", refreshed.matrix);
+  writeJson(
+    "matrix.json",
+    withTerminalWriterMetadata(
+      refreshed.matrix,
+      currentEvidenceSubjectSha(ROOT),
+    ),
+  );
   writeProof(refreshed.proof);
 }
 
-export function runObservabilityOpsAudit(kind: "metrics" | "rate_limits" | "pii"): void {
+export function writeObservabilityOpsRunArtifacts(
+  report = buildObservabilityOpsReport(),
+): RunScopedEvidenceResult {
+  const subjectSha = currentEvidenceSubjectSha(ROOT);
+  return writeRunScopedEvidence({
+    gateId: "observability-ops",
+    root: ROOT,
+    artifacts: {
+      "metrics_coverage.json": {
+        kind: "json",
+        value: report.metricsCoverage,
+      },
+      "rate_limits.json": { kind: "json", value: report.rateLimits },
+      "pii_audit.json": { kind: "json", value: report.piiAudit },
+      "alerts.json": { kind: "json", value: report.alerts },
+      "matrix.json": {
+        kind: "json",
+        value: withTerminalWriterMetadata(report.matrix, subjectSha),
+      },
+      "proof.md": { kind: "text", value: report.proof },
+    },
+  });
+}
+
+export function runObservabilityOpsAudit(
+  kind: "metrics" | "rate_limits" | "pii",
+  options: { writeCanonical?: boolean } = {},
+): RunScopedEvidenceResult | null {
   const report = buildObservabilityOpsReport();
-  writeObservabilityOpsArtifacts(report);
+  const writeCanonical =
+    options.writeCanonical ?? process.argv.includes("--write-canonical");
+  const runResult = writeCanonical
+    ? (writeObservabilityOpsArtifacts(report), null)
+    : writeObservabilityOpsRunArtifacts(report);
   const payload =
     kind === "metrics" ? report.metricsCoverage : kind === "rate_limits" ? report.rateLimits : report.piiAudit;
   console.log(JSON.stringify(payload, null, 2));
@@ -309,4 +356,5 @@ export function runObservabilityOpsAudit(kind: "metrics" | "rate_limits" | "pii"
   if (hardBlockers.length > 0) {
     process.exitCode = 1;
   }
+  return runResult;
 }

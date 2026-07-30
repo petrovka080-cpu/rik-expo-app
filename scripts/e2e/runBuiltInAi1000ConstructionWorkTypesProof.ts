@@ -17,6 +17,7 @@ import {
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS,
   type BuiltInAi1000Case,
 } from "../../src/lib/ai/builtInAi1000/builtInAi1000ConstructionCases";
+import { hasSafeBuiltInAiQuantitySemantics } from "./builtInAi1000QuantitySemantics";
 
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const WAVE = "S_BUILT_IN_AI_1000_CONSTRUCTION_WORK_TYPES_REAL_ESTIMATE_OUTPUT_PROOF_POINT_OF_NO_RETURN";
@@ -180,29 +181,6 @@ function expectedRowPresent(rowNames: string[], expected: string): boolean {
   });
 }
 
-function hasSafeQuantitySemantics(
-  row: NonNullable<BuiltInAiAnswer["toolResult"]["estimate"]>["sections"][number]["rows"][number],
-): boolean {
-  const quantityIsFiniteAndNonNegative =
-    Number.isFinite(row.quantity) && row.quantity >= 0;
-  const totalIsFiniteAndNonNegative =
-    Number.isFinite(row.total) && row.total >= 0;
-  const hasDisplayQuantity = row.displayQuantity.trim().length > 0;
-  const isExplicitConditionalExclusion =
-    row.quantity === 0 &&
-    row.total === 0 &&
-    row.includedInEstimate === false &&
-    row.includedInProcurement === false &&
-    row.optional === true &&
-    row.priceStatus === "unavailable";
-  return (
-    quantityIsFiniteAndNonNegative &&
-    totalIsFiniteAndNonNegative &&
-    hasDisplayQuantity &&
-    (row.quantity > 0 || isExplicitConditionalExclusion)
-  );
-}
-
 function traceEstimateCase(testCase: BuiltInAi1000Case) {
   const answer = runPrompt(testCase);
   const estimate = answer.toolResult.estimate;
@@ -246,7 +224,7 @@ function traceEstimateCase(testCase: BuiltInAi1000Case) {
     professionalBoqPresent &&
     materialRows.length > 0 &&
     laborRows.length > 0 &&
-    rows.every(hasSafeQuantitySemantics) &&
+    rows.every(hasSafeBuiltInAiQuantitySemantics) &&
     unitPricesOrSourceWarningPresent &&
     typeof estimate?.totals.grandTotal === "number" &&
     pricedRowsWithoutSourceEvidence.length === 0 &&
@@ -274,7 +252,7 @@ function traceEstimateCase(testCase: BuiltInAi1000Case) {
     professional_boq_present: professionalBoqPresent,
     materials_section_present: materialRows.length > 0,
     labor_or_equipment_section_present: laborRows.length > 0,
-    quantities_present: rows.every(hasSafeQuantitySemantics),
+    quantities_present: rows.every(hasSafeBuiltInAiQuantitySemantics),
     unit_prices_or_source_warning_present: unitPricesOrSourceWarningPresent,
     totals_present: typeof estimate?.totals.grandTotal === "number",
     source_evidence_present_for_priced_rows: pricedRowsWithoutSourceEvidence.length === 0,

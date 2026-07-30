@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -29,7 +29,6 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
-import { AIAssistantEstimatePdfActions, AIAssistantEstimateTable } from "./AIAssistantEstimatePdfActions";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
   answerAiLiveScreenButton,
@@ -53,237 +52,19 @@ import {
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 import {
+  markAiDraftSessionReady,
+  useAIAssistantLaunchRuntimeEffects,
+  useAIAssistantPendingLaunchSubscription,
+} from "./AIAssistantLaunchRuntime";
+import {
+  AIAssistantBootView,
+  AIAssistantMessageList,
+} from "./AIAssistantMessageViews";
+import {
   createBuiltInAiAssistantMessage,
   createExternalKnowledgeAssistantMessage,
 } from "./assistantAnswerPipeline";
 import type { RequestEstimateLaunchPayloadV1 } from "../../lib/navigation/requestEstimateLaunchPayload";
-import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
-import {
-  markRequestEstimateIntentStage,
-  requestEstimateIntentLifecycle,
-} from "../../lib/navigation/requestEstimateLaunchLifecycle";
-
-function markAiDraftSessionReady(
-  payload: RequestEstimateLaunchPayloadV1,
-): boolean {
-  if (
-    !markRequestEstimateIntentStage(payload.launchId, "DRAFT_SESSION_READY")
-  ) {
-    return false;
-  }
-  recordRequestEstimateLaunchStage({
-    stage: "DRAFT_SESSION_READY",
-    payload,
-    detail: { adapter: "ai_assistant_estimate_pipeline" },
-  });
-  return true;
-}
-
-function acknowledgeAiUiLaunch(
-  payload: RequestEstimateLaunchPayloadV1,
-  projection: "ai_launch_projection" | "ai_estimate_projection",
-): void {
-  if (!markRequestEstimateIntentStage(payload.launchId, "UI_READY")) return;
-  recordRequestEstimateLaunchStage({
-    stage: "UI_READY",
-    payload,
-    detail: { projection },
-  });
-  if (
-    !markRequestEstimateIntentStage(payload.launchId, "INTENT_ACKNOWLEDGED")
-  ) {
-    return;
-  }
-  recordRequestEstimateLaunchStage({
-    stage: "INTENT_ACKNOWLEDGED",
-    payload,
-  });
-}
-
-function acknowledgeAiPromptLaunch(
-  payload: RequestEstimateLaunchPayloadV1,
-): void {
-  if (!markAiDraftSessionReady(payload)) return;
-  acknowledgeAiUiLaunch(payload, "ai_launch_projection");
-}
-
-function AIAssistantBootView() {
-  return (
-    <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
-      <ActivityIndicator size="large" color="#2563EB" />
-      <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
-    </SafeAreaView>
-  );
-}
-
-function AIAssistantMessageList({
-  messages,
-  hasAnyUserPrompt,
-  autoEstimateLaunchPayloadRef,
-  onAppendMessage,
-}: {
-  messages: AssistantMessage[];
-  hasAnyUserPrompt: boolean;
-  autoEstimateLaunchPayloadRef: React.MutableRefObject<RequestEstimateLaunchPayloadV1 | null>;
-  onAppendMessage: (message: AssistantMessage) => void;
-}) {
-  return messages.map((message, index) => {
-    const hasPriorUserPrompt = messages
-      .slice(0, index)
-      .some((historyMessage) => historyMessage.role === "user");
-    const isLatestAssistantReply =
-      message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
-    const shouldCompactAssistantHistory =
-      message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
-    const responseTestId = isLatestAssistantReply
-      ? "ai.assistant.response"
-      : message.role === "assistant"
-        ? "ai.assistant.response.history"
-        : undefined;
-
-    return (
-      <React.Fragment key={message.id}>
-        <View
-          testID={responseTestId}
-          style={[
-            styles.messageBubble,
-            message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
-          ]}
-        >
-          <Text
-            style={[
-              styles.messageText,
-              message.role === "assistant" ? styles.assistantText : styles.userText,
-            ]}
-            numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
-            ellipsizeMode="tail"
-          >
-            {message.content}
-          </Text>
-        </View>
-        {message.role === "assistant" && message.estimatePdfSource ? (
-          <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
-        ) : null}
-        <AIAssistantEstimatePdfActions
-          message={message}
-          onAppendMessage={onAppendMessage}
-          onFallback={recordAssistantScreenFallback}
-        />
-        {message.role === "assistant" &&
-        message.estimatePdfSource &&
-        isLatestAssistantReply ? (
-          <View
-            collapsable={false}
-            style={styles.runtimeInlineMarker}
-            onLayout={() => {
-              const payload = autoEstimateLaunchPayloadRef.current;
-              if (payload) acknowledgeAiUiLaunch(payload, "ai_estimate_projection");
-            }}
-          />
-        ) : null}
-      </React.Fragment>
-    );
-  });
-}
-
-function useAIAssistantLaunchRuntimeEffects({
-  booting,
-  effectiveLaunchPayload,
-  launchAutoSend,
-  launchPrompt,
-  input,
-  loading,
-  messagesLength,
-  send,
-  setInput,
-  handledPromptRef,
-  acknowledgedPromptLaunchRef,
-  messagesScrollRef,
-}: {
-  booting: boolean;
-  effectiveLaunchPayload: RequestEstimateLaunchPayloadV1 | null;
-  launchAutoSend: string | undefined;
-  launchPrompt: string;
-  input: string;
-  loading: boolean;
-  messagesLength: number;
-  send: (textParam?: string) => Promise<void>;
-  setInput: (value: string) => void;
-  handledPromptRef: React.MutableRefObject<string>;
-  acknowledgedPromptLaunchRef: React.MutableRefObject<string>;
-  messagesScrollRef: React.MutableRefObject<ScrollView | null>;
-}) {
-  useEffect(() => {
-    if (booting || !launchPrompt) return;
-
-    const key = `${effectiveLaunchPayload?.launchId ?? "route"}::${launchPrompt}::${launchAutoSend === "1" ? "1" : "0"}`;
-    if (handledPromptRef.current === key) return;
-    handledPromptRef.current = key;
-
-    if (launchAutoSend === "1") {
-      const autoSendPayload = effectiveLaunchPayload;
-      if (Platform.OS === "android" && autoSendPayload) {
-        console.info(
-          `[RikWarmDeepLink] AI_AUTO_SEND_STARTED ${JSON.stringify({
-            launchId: autoSendPayload.launchId,
-          })}`,
-        );
-      }
-      void send(launchPrompt).then(() => {
-        if (Platform.OS === "android" && autoSendPayload) {
-          console.info(
-            `[RikWarmDeepLink] AI_AUTO_SEND_RESOLVED ${JSON.stringify({
-              launchId: autoSendPayload.launchId,
-            })}`,
-          );
-        }
-      });
-      return;
-    }
-
-    setInput(launchPrompt);
-  }, [
-    booting,
-    effectiveLaunchPayload,
-    handledPromptRef,
-    launchAutoSend,
-    launchPrompt,
-    send,
-    setInput,
-  ]);
-
-  useEffect(() => {
-    if (
-      booting ||
-      !effectiveLaunchPayload ||
-      launchAutoSend === "1" ||
-      input.trim() !== launchPrompt ||
-      acknowledgedPromptLaunchRef.current === effectiveLaunchPayload.launchId
-    ) {
-      return undefined;
-    }
-    const frame = requestAnimationFrame(() => {
-      acknowledgeAiPromptLaunch(effectiveLaunchPayload);
-      acknowledgedPromptLaunchRef.current = effectiveLaunchPayload.launchId;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [
-    acknowledgedPromptLaunchRef,
-    booting,
-    effectiveLaunchPayload,
-    input,
-    launchAutoSend,
-    launchPrompt,
-  ]);
-
-  useEffect(() => {
-    if (messagesLength === 0) return undefined;
-    const timeout = setTimeout(() => {
-      messagesScrollRef.current?.scrollToEnd({ animated: false });
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [loading, messagesLength, messagesScrollRef]);
-}
 
 export default function AIAssistantScreen({
   launchPayload = null,
@@ -389,49 +170,10 @@ export default function AIAssistantScreen({
       setBooting(false);
     }
   }, [assistantContext, assistantPresentationRole]);
-  useEffect(() => {
-    if (!launchPayload) return;
-    setRuntimeLaunchPayload((current) => {
-      if (current?.launchId === launchPayload.launchId) return current;
-      if (
-        current &&
-        Date.parse(current.issuedAt) > Date.parse(launchPayload.issuedAt)
-      ) {
-        return current;
-      }
-      return launchPayload;
-    });
-  }, [launchPayload]);
-  useEffect(() => {
-    const syncPendingAiLaunch = () => {
-      const pending = requestEstimateIntentLifecycle.getPending();
-      if (
-        pending?.target.payload.route !== "/ai" ||
-        pending.stage === "INTENT_RECEIVED" ||
-        pending.stage === "URL_PARSED" ||
-        pending.stage === "AUTH_PENDING" ||
-        pending.stage === "AUTH_RESOLVED"
-      ) {
-        return;
-      }
-      if (Platform.OS === "android") {
-        console.info(
-          `[RikWarmDeepLink] AI_RUNTIME_LAUNCH_SYNC ${JSON.stringify({
-            launchId: pending.target.payload.launchId,
-            autoSend: pending.target.payload.parameters.autoSend ?? null,
-            stage: pending.stage,
-          })}`,
-        );
-      }
-      setRuntimeLaunchPayload((current) =>
-        current?.launchId === pending.target.payload.launchId
-          ? current
-          : pending.target.payload,
-      );
-    };
-    syncPendingAiLaunch();
-    return requestEstimateIntentLifecycle.subscribe(syncPendingAiLaunch);
-  }, []);
+  useAIAssistantPendingLaunchSubscription({
+    launchPayload,
+    setRuntimeLaunchPayload,
+  });
   const effectiveLaunchPayload = runtimeLaunchPayload ?? launchPayload;
   const launchPrompt = String(
     effectiveLaunchPayload?.workIntent || routePrompt || "",

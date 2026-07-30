@@ -1,6 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  atomicWriteEvidence,
+  currentEvidenceSubjectSha,
+  withTerminalWriterMetadata,
+  writeRunScopedEvidence,
+} from "../audit/runScopedEvidence";
+
 const PROJECT_ROOT = process.cwd();
 const ARTIFACT_DIR = path.join(PROJECT_ROOT, "artifacts");
 const WAVE = "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT";
@@ -30,12 +37,12 @@ function readJson(name: string): JsonRecord {
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(artifact(name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  atomicWriteEvidence(artifact(name), `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function writeText(name: string, value: string): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(artifact(name), value, "utf8");
+  atomicWriteEvidence(artifact(name), value);
 }
 
 function asBool(value: unknown): boolean {
@@ -245,9 +252,38 @@ export function writeReleasePipelineNoTimeoutMobileRuntimeArtifacts() {
   writeJson("S_RELEASE_PIPELINE_android_runtime.json", report.androidRuntime);
   writeJson("S_RELEASE_PIPELINE_ios_runtime.json", report.iosRuntime);
   writeJson("S_RELEASE_PIPELINE_post_push.json", report.postPush);
-  writeJson("S_RELEASE_PIPELINE_matrix.json", report.matrix);
+  writeJson(
+    "S_RELEASE_PIPELINE_matrix.json",
+    withTerminalWriterMetadata(
+      report.matrix,
+      currentEvidenceSubjectSha(PROJECT_ROOT),
+    ),
+  );
   writeText("S_RELEASE_PIPELINE_proof.md", buildProof(report));
   return report;
+}
+
+export function writeReleasePipelineNoTimeoutMobileRuntimeRunArtifacts(
+  report = buildReleasePipelineNoTimeoutMobileRuntimeReport(),
+) {
+  const subjectSha = currentEvidenceSubjectSha(PROJECT_ROOT);
+  const run = writeRunScopedEvidence({
+    gateId: "release-pipeline",
+    root: PROJECT_ROOT,
+    artifacts: {
+      "step_timing.json": { kind: "json", value: report.stepTiming },
+      "jest_shards.json": { kind: "json", value: report.jestShards },
+      "android_runtime.json": { kind: "json", value: report.androidRuntime },
+      "ios_runtime.json": { kind: "json", value: report.iosRuntime },
+      "post_push.json": { kind: "json", value: report.postPush },
+      "matrix.json": {
+        kind: "json",
+        value: withTerminalWriterMetadata(report.matrix, subjectSha),
+      },
+      "proof.md": { kind: "text", value: buildProof(report) },
+    },
+  });
+  return { report, run };
 }
 
 export { GREEN_STATUS as RELEASE_PIPELINE_NO_TIMEOUT_GREEN_STATUS, WAVE as RELEASE_PIPELINE_NO_TIMEOUT_WAVE };

@@ -1597,6 +1597,14 @@ export function buildGlobalEstimateFromEstimatorKernel(
             includedInEstimate,
             includedInProcurement,
             parameterBlockerIds: row.parameterBlockerIds ?? [],
+            conditionalStatus:
+              !includedInEstimate && (row.parameterBlockerIds?.length ?? 0) > 0
+                ? "blocked_missing_parameters"
+                : null,
+            conditionalReason:
+              !includedInEstimate && (row.parameterBlockerIds?.length ?? 0) > 0
+                ? `Required parameters are not confirmed: ${row.parameterBlockerIds?.join(", ")}`
+                : null,
           },
           templateId,
           templateVersion,

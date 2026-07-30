@@ -9,7 +9,7 @@ describe("request estimate intent lifecycle owners", () => {
   it("acknowledges request and AI launches only after draft and UI readiness", () => {
     for (const relativePath of [
       "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "src/features/ai/AIAssistantScreen.tsx",
+      "src/features/ai/AIAssistantLaunchRuntime.ts",
     ]) {
       const source = read(relativePath);
       const draft = source.indexOf('"DRAFT_SESSION_READY"');
@@ -40,18 +40,23 @@ describe("request estimate intent lifecycle owners", () => {
     expect(requestOwner).toContain(
       "() => runAfterNextPaint(() => this.applyInitialLaunchFlow())",
     );
-    const aiOwner = read("src/features/ai/AIAssistantScreen.tsx");
-    expect(aiOwner).toContain("hasInteractiveLaunchPrompt");
-    expect(aiOwner).toContain(
+    const aiScreen = read("src/features/ai/AIAssistantScreen.tsx");
+    const aiLaunchOwner = read(
+      "src/features/ai/AIAssistantLaunchRuntime.ts",
+    );
+    expect(aiScreen).toContain("hasInteractiveLaunchPrompt");
+    expect(aiScreen).toContain(
       "effectiveLaunchPayload?.parameters.autoSend ?? routeAutoSend",
     );
-    expect(aiOwner).toContain(
+    expect(aiScreen).toContain(
       "void initialize(hasInteractiveLaunchPrompt)",
     );
-    expect(aiOwner).toContain("acknowledgedPromptLaunchRef");
-    expect(aiOwner).toContain("input.trim() !== launchPrompt");
-    expect(aiOwner).toContain("requestEstimateIntentLifecycle.subscribe");
-    expect(aiOwner).toContain("runtimeLaunchPayload");
+    expect(aiScreen).toContain("acknowledgedPromptLaunchRef");
+    expect(aiLaunchOwner).toContain("input.trim() !== launchPrompt");
+    expect(aiLaunchOwner).toContain(
+      "requestEstimateIntentLifecycle.subscribe",
+    );
+    expect(aiScreen).toContain("runtimeLaunchPayload");
 
     const requestRoute = read("app/(tabs)/request/index.tsx");
     expect(requestRoute).toContain(
