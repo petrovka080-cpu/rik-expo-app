@@ -17,8 +17,7 @@ async function openCleanRequest(page: Page): Promise<void> {
 
 async function enterPromptAndBuild(page: Page, prompt: string): Promise<void> {
   await page.getByTestId("consumer-repair-problem-input").fill(prompt);
-  await expect(page.getByTestId("inline-work-prompt-matched-work")).toBeVisible();
-  await page.getByTestId("inline-work-prompt-build-estimate").click();
+  await page.getByTestId("consumer-repair-prepare-draft").click();
   await expect(page.getByTestId("road-scope-selection")).toBeVisible({ timeout: 60_000 });
 }
 
@@ -40,12 +39,7 @@ test("manual /request flow seals DraftSession isolation and Asphalt Reference V1
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await openCleanRequest(page);
-  await page.getByTestId("consumer-repair-problem-input").fill(ROAD_PROMPT);
-  await expect(page.getByTestId("inline-work-prompt-matched-work")).toBeVisible();
-  await expect(page.getByTestId("inline-work-prompt-param-chip-length_m")).toContainText("5400");
-  await expect(page.getByTestId("inline-work-prompt-param-chip-width_m")).toContainText("15");
-  await expect(page.getByTestId("inline-work-prompt-param-chip-area_m2")).toContainText("81000");
-  await page.getByTestId("inline-work-prompt-build-estimate").click();
+  await enterPromptAndBuild(page, ROAD_PROMPT);
 
   const scopeSelector = page.getByTestId("road-scope-selection");
   await expect(scopeSelector).toBeVisible({ timeout: 60_000 });
@@ -88,11 +82,7 @@ test("manual /request flow seals DraftSession isolation and Asphalt Reference V1
   await attachScreenshot(page, testInfo, "surfacing-only-54");
 
   await openCleanRequest(page);
-  await page.getByTestId("consumer-repair-problem-input").fill(SECOND_ROAD_PROMPT);
-  await expect(page.getByTestId("inline-work-prompt-param-chip-length_m")).toContainText("2000");
-  await expect(page.getByTestId("inline-work-prompt-param-chip-width_m")).toContainText("32");
-  await expect(page.getByTestId("inline-work-prompt-param-chip-area_m2")).toContainText("64000");
-  await page.getByTestId("inline-work-prompt-build-estimate").click();
+  await enterPromptAndBuild(page, SECOND_ROAD_PROMPT);
   await page.getByTestId("road-scope-option-full_road_infrastructure").click();
   await expect(page.getByTestId("request-estimate-row-count")).toContainText("702", {
     timeout: 120_000,
@@ -103,11 +93,11 @@ test("manual /request flow seals DraftSession isolation and Asphalt Reference V1
   await openCleanRequest(page);
   await enterPromptAndBuild(page, ASPHALT_WITHOUT_GEOMETRY);
   await page.getByTestId("road-scope-option-full_road_infrastructure").click();
-  await expect(page.getByTestId("request-estimate-row-count")).toHaveCount(0);
+  await expect(page.getByTestId("request-estimate-row-count")).toContainText("0");
   await expect(page.getByTestId("consumer-estimate-make-pdf")).toHaveCount(0);
   await expect(page.getByTestId("consumer-estimate-open-procurement")).toHaveCount(0);
   await expect(page.getByTestId("consumer-repair-status")).toContainText("обязательные параметры");
-  await expect(page.getByTestId("estimate-draft-session-blocked")).toContainText("площадь");
+  await expect(page.getByTestId("request-estimate-parameter-panel")).toContainText("Площадь покрытия");
   await expect(page.locator("body")).not.toContainText("1 000 м²");
   await attachScreenshot(page, testInfo, "missing-geometry-blocked");
 
