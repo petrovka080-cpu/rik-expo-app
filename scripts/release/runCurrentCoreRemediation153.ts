@@ -45,6 +45,8 @@ const EVIDENCE_SOURCE_ROOT_ENV =
   "CURRENT_CORE_REMEDIATION_EVIDENCE_SOURCE_ROOT";
 const EVIDENCE_OVERRIDE_ROOTS_ENV =
   "CURRENT_CORE_REMEDIATION_EVIDENCE_OVERRIDE_ROOTS";
+const EVIDENCE_OVERRIDE_PATHS_ENV =
+  "CURRENT_CORE_REMEDIATION_EVIDENCE_OVERRIDE_PATHS";
 const PROTECTED_EVIDENCE_PATHS = new Set([
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
@@ -199,6 +201,25 @@ function resolvedEvidenceSources(): EvidenceSource[] {
   });
 }
 
+function resolvedEvidenceOverridePaths(): Set<string> {
+  const values = String(
+    process.env[EVIDENCE_OVERRIDE_PATHS_ENV] ?? "",
+  )
+    .split(path.delimiter)
+    .map((value) => value.trim().replace(/\\/g, "/"))
+    .filter(Boolean);
+  const allowedPaths = new Set(CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS);
+  for (const relativePath of values) {
+    assertEvidencePath(relativePath);
+    if (!allowedPaths.has(relativePath)) {
+      throw new Error(
+        `REMEDIATION_EVIDENCE_OVERRIDE_PATH_UNKNOWN:${relativePath}`,
+      );
+    }
+  }
+  return new Set(values);
+}
+
 function assertEvidencePath(relativePath: string): void {
   const normalized = relativePath.replace(/\\/g, "/");
   if (
@@ -227,6 +248,10 @@ function hydrateEvidencePrerequisites(): {
   }>;
 } {
   const sources = resolvedEvidenceSources();
+  const overridePaths = resolvedEvidenceOverridePaths();
+  if (overridePaths.size > 0 && sources.length === 1) {
+    throw new Error("REMEDIATION_EVIDENCE_OVERRIDE_ROOT_REQUIRED");
+  }
   const primarySource = sources[0];
   const sourceRoot = primarySource.root;
   const sourceRepositorySha = primarySource.repositorySha;
@@ -237,12 +262,15 @@ function hydrateEvidencePrerequisites(): {
   ).trim();
   const files = CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS.map((relativePath) => {
     assertEvidencePath(relativePath);
-    const selectedSource = [...sources]
-      .reverse()
+    const candidates = overridePaths.has(relativePath)
+      ? sources.slice(1).reverse()
+      : [primarySource];
+    const selectedSource = candidates
       .find((source) => existsSync(path.join(source.root, relativePath)));
     if (!selectedSource) {
       throw new Error(
         `REMEDIATION_EVIDENCE_SOURCE_MISSING:${relativePath}:checked=${sources
+          .filter((source) => candidates.includes(source))
           .map((source) => source.root)
           .join(",")}`,
       );
@@ -282,9 +310,10 @@ function hydrateEvidencePrerequisites(): {
       sourceRoot,
       sourceRepositorySha,
       sources,
+      overridePaths: [...overridePaths].sort(),
       destinationSubjectSha,
       supersessionMode:
-        sources.length > 1
+        overridePaths.size > 0
           ? "diagnostic_multi_source_supersession"
           : sourceRepositorySha === destinationSubjectSha
           ? "same_sha_verified_copy"
