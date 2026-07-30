@@ -121,6 +121,14 @@ describe("Android harness text input contracts", () => {
     expect(canonicalReplay).toContain(
       '`android-api34-${REPLAY_RUN_ID}-${testCase.id}-${launchCandidateSequence}`',
     );
+    expect(canonicalReplay).toContain("async function isolateAndroidRequestCaseState");
+    expect(canonicalReplay).toContain('if (testCase.route !== "/request") return');
+    expect(canonicalReplay).toContain(
+      'runAdb(["shell", "pm", "clear", APP_PACKAGE], 12_000)',
+    );
+    expect(canonicalReplay).toContain(
+      "await isolateAndroidRequestCaseState(testCase)",
+    );
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
     expect(canonicalReplay).toContain(
       'const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more"',

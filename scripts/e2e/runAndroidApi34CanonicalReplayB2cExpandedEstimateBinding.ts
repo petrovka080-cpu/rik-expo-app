@@ -814,6 +814,14 @@ async function resetAndroidAppForReplay(): Promise<void> {
   await sleep(2000);
 }
 
+async function isolateAndroidRequestCaseState(
+  testCase: Api34ReplayCase,
+): Promise<void> {
+  if (testCase.route !== "/request") return;
+  runAdb(["shell", "pm", "clear", APP_PACKAGE], 12_000);
+  await sleep(1000);
+}
+
 function isRuntimeLoadError(screen: ReturnType<typeof captureScreenInDir>): boolean {
   return /There was a problem loading the project|SocketTimeoutException|isn't responding|keeps stopping|has stopped/i.test(
     screen.visibleText,
@@ -1614,6 +1622,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       let bestObservedScore = -1;
       let keywordHits = 0;
       let routeMarkerProven = false;
+      await isolateAndroidRequestCaseState(testCase);
       await resetAndroidAppForReplay();
 
       for (let attempt = 1; attempt <= MAX_CASE_ATTEMPTS; attempt += 1) {
