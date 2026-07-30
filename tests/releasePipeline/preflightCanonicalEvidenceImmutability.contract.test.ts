@@ -95,6 +95,14 @@ describe("preflight canonical evidence immutability", () => {
     expect(runner).toContain("destinationSubjectSha");
     expect(runner).toContain("diagnostic_cross_sha_supersession");
     expect(runner).toContain(
+      "CURRENT_CORE_REMEDIATION_EVIDENCE_OVERRIDE_ROOTS",
+    );
+    expect(runner).toContain("diagnostic_multi_source_supersession");
+    expect(runner).toContain("sourceRoot: selectedSource.root");
+    expect(runner).toContain(
+      "sourceRepositorySha: selectedSource.repositorySha",
+    );
+    expect(runner).toContain(
       "REMEDIATION_EVIDENCE_SUPERSESSION_HASH_MISMATCH",
     );
     expect(runner).toContain("canonicalFinalEvidence: false");

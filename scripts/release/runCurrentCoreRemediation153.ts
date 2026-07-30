@@ -43,6 +43,8 @@ const REGULAR_BATCH_SIZE = 10;
 const HYDRATE_ONLY = process.argv.includes("--hydrate-only");
 const EVIDENCE_SOURCE_ROOT_ENV =
   "CURRENT_CORE_REMEDIATION_EVIDENCE_SOURCE_ROOT";
+const EVIDENCE_OVERRIDE_ROOTS_ENV =
+  "CURRENT_CORE_REMEDIATION_EVIDENCE_OVERRIDE_ROOTS";
 const PROTECTED_EVIDENCE_PATHS = new Set([
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
@@ -155,6 +157,48 @@ function resolvedEvidenceSourceRoot(): string {
   return path.resolve(configured);
 }
 
+type EvidenceSource = {
+  role: "primary" | "override";
+  root: string;
+  repositorySha: string;
+};
+
+function resolvedEvidenceSources(): EvidenceSource[] {
+  const primaryRoot = resolvedEvidenceSourceRoot();
+  const overrideRoots = String(
+    process.env[EVIDENCE_OVERRIDE_ROOTS_ENV] ?? "",
+  )
+    .split(path.delimiter)
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => path.resolve(value));
+  const roots = [
+    { role: "primary" as const, root: primaryRoot },
+    ...overrideRoots.map((root) => ({
+      role: "override" as const,
+      root,
+    })),
+  ];
+  const uniqueRoots = new Set<string>();
+  return roots.map((source) => {
+    const normalizedRoot = path.normalize(source.root).toLowerCase();
+    if (uniqueRoots.has(normalizedRoot)) {
+      throw new Error(
+        `REMEDIATION_EVIDENCE_SOURCE_DUPLICATE:${source.root}`,
+      );
+    }
+    uniqueRoots.add(normalizedRoot);
+    return {
+      ...source,
+      repositorySha: execFileSync(
+        "git",
+        ["-C", source.root, "rev-parse", "HEAD"],
+        { encoding: "utf8", windowsHide: true },
+      ).trim(),
+    };
+  });
+}
+
 function assertEvidencePath(relativePath: string): void {
   const normalized = relativePath.replace(/\\/g, "/");
   if (
@@ -172,14 +216,20 @@ function hydrateEvidencePrerequisites(): {
   sourceRoot: string;
   sourceRepositorySha: string;
   destinationSubjectSha: string;
-  files: Array<{ path: string; sha256: string; bytes: number }>;
+  sources: EvidenceSource[];
+  files: Array<{
+    path: string;
+    sha256: string;
+    bytes: number;
+    sourceRoot: string;
+    sourceRepositorySha: string;
+    sourceRole: EvidenceSource["role"];
+  }>;
 } {
-  const sourceRoot = resolvedEvidenceSourceRoot();
-  const sourceRepositorySha = execFileSync(
-    "git",
-    ["-C", sourceRoot, "rev-parse", "HEAD"],
-    { encoding: "utf8", windowsHide: true },
-  ).trim();
+  const sources = resolvedEvidenceSources();
+  const primarySource = sources[0];
+  const sourceRoot = primarySource.root;
+  const sourceRepositorySha = primarySource.repositorySha;
   const destinationSubjectSha = execFileSync(
     "git",
     ["rev-parse", "HEAD"],
@@ -187,10 +237,17 @@ function hydrateEvidencePrerequisites(): {
   ).trim();
   const files = CURRENT_CORE_REMEDIATION_EVIDENCE_PATHS.map((relativePath) => {
     assertEvidencePath(relativePath);
-    const sourcePath = path.join(sourceRoot, relativePath);
-    if (!existsSync(sourcePath)) {
-      throw new Error(`REMEDIATION_EVIDENCE_SOURCE_MISSING:${relativePath}`);
+    const selectedSource = [...sources]
+      .reverse()
+      .find((source) => existsSync(path.join(source.root, relativePath)));
+    if (!selectedSource) {
+      throw new Error(
+        `REMEDIATION_EVIDENCE_SOURCE_MISSING:${relativePath}:checked=${sources
+          .map((source) => source.root)
+          .join(",")}`,
+      );
     }
+    const sourcePath = path.join(selectedSource.root, relativePath);
     const content = readFileSync(sourcePath);
     const destinationPath = path.resolve(relativePath);
     mkdirSync(path.dirname(destinationPath), { recursive: true });
@@ -214,6 +271,9 @@ function hydrateEvidencePrerequisites(): {
       path: relativePath,
       sha256: sourceSha256,
       bytes: content.byteLength,
+      sourceRoot: selectedSource.root,
+      sourceRepositorySha: selectedSource.repositorySha,
+      sourceRole: selectedSource.role,
     };
   });
   atomicWrite(
@@ -221,9 +281,12 @@ function hydrateEvidencePrerequisites(): {
     `${JSON.stringify({
       sourceRoot,
       sourceRepositorySha,
+      sources,
       destinationSubjectSha,
       supersessionMode:
-        sourceRepositorySha === destinationSubjectSha
+        sources.length > 1
+          ? "diagnostic_multi_source_supersession"
+          : sourceRepositorySha === destinationSubjectSha
           ? "same_sha_verified_copy"
           : "diagnostic_cross_sha_supersession",
       canonicalFinalEvidence: false,
@@ -235,6 +298,7 @@ function hydrateEvidencePrerequisites(): {
     sourceRoot,
     sourceRepositorySha,
     destinationSubjectSha,
+    sources,
     files,
   };
 }
@@ -266,12 +330,10 @@ function currentSourceFingerprint(
   hash.update(
     `subject\0${process.env.CURRENT_CORE_SUBJECT_HEAD ?? "WORKTREE"}\0`,
   );
-  hash.update(
-    `evidence-source\0${evidence.sourceRepositorySha}\0${evidence.destinationSubjectSha}\0`,
-  );
+  hash.update(`evidence-subject\0${evidence.destinationSubjectSha}\0`);
   for (const file of evidence.files) {
     hash.update(
-      `evidence\0${file.path}\0${file.sha256}\0${String(file.bytes)}\0`,
+      `evidence\0${file.path}\0${file.sourceRepositorySha}\0${file.sourceRole}\0${file.sha256}\0${String(file.bytes)}\0`,
     );
   }
 
@@ -315,7 +377,7 @@ function assertEvidenceSourceUnchanged(
   checkpoint: string,
 ): void {
   for (const file of evidence.files) {
-    const content = readFileSync(path.join(evidence.sourceRoot, file.path));
+    const content = readFileSync(path.join(file.sourceRoot, file.path));
     const actualSha256 = createHash("sha256").update(content).digest("hex");
     if (
       actualSha256 !== file.sha256 ||
