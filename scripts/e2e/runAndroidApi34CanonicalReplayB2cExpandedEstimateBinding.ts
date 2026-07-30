@@ -70,6 +70,11 @@ const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 const MAX_CASE_ATTEMPTS = 4;
 let launchCandidateSequence = 0;
+const REPLAY_RUN_ID = [
+  (currentHead() ?? "unknown").slice(0, 12),
+  Date.now().toString(36),
+  process.pid.toString(36),
+].join("-");
 const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen";
 const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more";
 const REQUEST_SCROLL_X_RATIO = 0.065;
@@ -445,7 +450,7 @@ function buildAndroidHostUri(
 function buildUriCandidates(testCase: Api34ReplayCase): string[] {
   launchCandidateSequence += 1;
   const launchIdBase =
-    `android-api34-${testCase.id}-${launchCandidateSequence}`;
+    `android-api34-${REPLAY_RUN_ID}-${testCase.id}-${launchCandidateSequence}`;
   return testCase.route === "/ai?context=foreman"
     ? [
         buildAndroidHostUri(testCase, `${launchIdBase}-host`),

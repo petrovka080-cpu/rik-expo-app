@@ -115,6 +115,12 @@ describe("Android harness text input contracts", () => {
     expect(canonicalReplay).toContain(
       'query.set("launchId", launchId)',
     );
+    expect(canonicalReplay).toContain("const REPLAY_RUN_ID = [");
+    expect(canonicalReplay).toContain("Date.now().toString(36)");
+    expect(canonicalReplay).toContain("process.pid.toString(36)");
+    expect(canonicalReplay).toContain(
+      '`android-api34-${REPLAY_RUN_ID}-${testCase.id}-${launchCandidateSequence}`',
+    );
     expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
     expect(canonicalReplay).toContain(
       'const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more"',
