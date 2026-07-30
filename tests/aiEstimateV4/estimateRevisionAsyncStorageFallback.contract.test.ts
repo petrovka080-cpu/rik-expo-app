@@ -44,18 +44,61 @@ function bundle(
       title: "Async storage fallback",
       problemText: "Async storage fallback",
       repairType: "road_construction",
+      missingData: [],
       createdAt: "2026-07-28T00:00:00.000Z",
       updatedAt: version === "r1"
         ? "2026-07-28T00:00:00.000Z"
         : "2026-07-28T00:01:00.000Z",
     },
-    items: [{ id: "row-1", quantity: version === "r1" ? 1 : 2, unitPrice: 125 }],
+    items: [{
+      id: "row-1",
+      requestDraftId: id,
+      itemType: "work",
+      titleRu: "Async storage row",
+      quantity: version === "r1" ? 1 : 2,
+      unitPrice: 125,
+      currency: "KGS",
+      source: "custom",
+      editableByConsumer: true,
+      createdAt: "2026-07-28T00:00:00.000Z",
+    }],
     estimateDraftRevisionState: {
       estimateDraftId: id,
       currentRevisionId: version,
       revisions: [{
+        estimateDraftId: id,
         revisionId: version,
-        boq: { rows: [{ rowId: "row-1" }] },
+        previousRevisionId: null,
+        source: "initial_prompt",
+        rawInput: "Async storage fallback",
+        selectedTemplateId: "async-storage-test",
+        matchedFamily: "road_construction",
+        estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
+        rawInputFacts: [],
+        rawInputFactMetrics: {
+          explicit_input_facts_ignored: 0,
+          explicit_input_unit_mismatches: 0,
+          explicit_input_facts_overwritten_by_default: 0,
+        },
+        params: {},
+        assumptions: [],
+        missingInputs: [],
+        boq: { sections: [], rows: [] },
+        trace: {
+          traceId: `trace-${version}`,
+          revisionId: version,
+          selectedTemplateId: "async-storage-test",
+          params: [],
+          rows: [],
+          staleTraceAccepted: false,
+        },
+        status: "draft_ready",
+        artifacts: {
+          snapshotId: null,
+          pdfArtifactId: null,
+          buyerHandoffId: null,
+          artifactsValidForRevisionId: null,
+        },
       }],
       diffs: [],
     },
@@ -63,12 +106,13 @@ function bundle(
     pdfs: [],
     projectExecutionDrafts: [],
     marketplaceLink: {
+      id: `marketplace-${id}`,
       requestDraftId: id,
-      publishedRequestId: null,
-      linkedAt: null,
+      status: "not_sent",
+      createdAt: "2026-07-28T00:00:00.000Z",
     },
     events: [],
-  } as unknown as RevisionBundle;
+  };
 }
 
 describe("native AsyncStorage durable fallback", () => {

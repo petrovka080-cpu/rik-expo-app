@@ -24,6 +24,7 @@ function nativeBundle(id: string): RevisionBundle {
       title: id,
       problemText: id,
       repairType: "road_construction",
+      missingData: [],
       createdAt: "2026-07-28T00:00:00.000Z",
       updatedAt: "2026-07-28T00:00:00.000Z",
     },
@@ -32,12 +33,13 @@ function nativeBundle(id: string): RevisionBundle {
     pdfs: [],
     projectExecutionDrafts: [],
     marketplaceLink: {
+      id: `marketplace-${id}`,
       requestDraftId: id,
-      publishedRequestId: null,
-      linkedAt: null,
+      status: "not_sent",
+      createdAt: "2026-07-28T00:00:00.000Z",
     },
     events: [],
-  } as unknown as RevisionBundle;
+  };
 }
 
 describe("consumer repair native durable storage platform boundary", () => {

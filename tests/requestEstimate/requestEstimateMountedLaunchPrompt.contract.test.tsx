@@ -25,6 +25,7 @@ jest.mock("../../src/features/consumerRepair/ConsumerRepairMarketplaceSend", () 
 }));
 
 jest.mock("../../src/features/consumerRepair/ConsumerRepairMediaButtons", () => ({
+  ConsumerRepairDeliveryFieldsCard: () => null,
   ConsumerRepairRequestFormCard: () => null,
 }));
 
@@ -32,13 +33,25 @@ function bundle(prompt: string, id: string): ConsumerRepairDraftBundle {
   return {
     draft: {
       id,
+      consumerUserId: "mounted-launch-user",
       problemText: prompt,
+      repairType: "request_launch",
       status: "draft",
+      missingData: [],
+      createdAt: "2026-07-28T00:00:00.000Z",
     },
     items: [],
     media: [],
+    pdfs: [],
     projectExecutionDrafts: [],
-  } as unknown as ConsumerRepairDraftBundle;
+    marketplaceLink: {
+      id: `marketplace-${id}`,
+      requestDraftId: id,
+      status: "not_sent",
+      createdAt: "2026-07-28T00:00:00.000Z",
+    },
+    events: [],
+  };
 }
 
 const noop = () => undefined;
