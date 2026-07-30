@@ -16,6 +16,7 @@ describe("canonical professional BOQ units", () => {
       "pcs",
       "kg",
       "l",
+      "pack",
       "m_drilling_depth",
       "kg_rebar",
     ]));
@@ -24,6 +25,8 @@ describe("canonical professional BOQ units", () => {
     expect(normalizeCanonicalProfessionalBoqUnit("piece")).toBe("pcs");
     expect(normalizeCanonicalProfessionalBoqUnit("liter")).toBe("l");
     expect(normalizeCanonicalProfessionalBoqUnit("ton")).toBe("t");
+    expect(normalizeCanonicalProfessionalBoqUnit("package")).toBe("pack");
+    expect(normalizeCanonicalProfessionalBoqUnit("\u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430")).toBe("pack");
     expect(normalizeCanonicalProfessionalBoqUnit("m3/h")).toBe("m3_h");
     expect(normalizeCanonicalProfessionalBoqUnit("\u043c\u00b3/\u0447")).toBe("m3_h");
     expect(normalizeCanonicalProfessionalBoqUnit("m3/day")).toBe("m3_day");

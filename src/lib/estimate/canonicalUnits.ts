@@ -11,6 +11,7 @@ export type CanonicalProfessionalBoqUnit =
   | "m3_h"
   | "m3_day"
   | "roll"
+  | "pack"
   | "bag"
   | "bucket"
   | "day"
@@ -72,6 +73,9 @@ const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
   ["\u043b", "l"],
   ["roll", "roll"],
   ["\u0440\u0443\u043b\u043e\u043d", "roll"],
+  ["pack", "pack"],
+  ["package", "pack"],
+  ["\u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430", "pack"],
   ["bag", "bag"],
   ["\u043c\u0435\u0448\u043e\u043a", "bag"],
   ["bucket", "bucket"],
