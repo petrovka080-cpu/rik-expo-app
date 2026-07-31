@@ -2,16 +2,80 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 const mockSearchCatalogItemsForPicker = jest.fn();
+type MockScheduledTimer = {
+  owner: string;
+  callback: () => void;
+  delayMs: number;
+  active: boolean;
+  dispose: jest.Mock;
+};
+const mockScheduledTimers: MockScheduledTimer[] = [];
+const mockRegisterTimeout = jest.fn(
+  (owner: string, callback: () => void, delayMs: number) => {
+    const timer: MockScheduledTimer = {
+      owner,
+      callback,
+      delayMs,
+      active: true,
+      dispose: jest.fn(),
+    };
+    timer.dispose.mockImplementation(() => {
+      timer.active = false;
+    });
+    mockScheduledTimers.push(timer);
+    return {
+      id: mockScheduledTimers.length,
+      owner,
+      kind: "timeout",
+      dispose: timer.dispose,
+    };
+  },
+);
 
 jest.mock("../../src/lib/catalog/catalog.facade", () => ({
   searchCatalogItemsForPicker: (...args: unknown[]) => mockSearchCatalogItemsForPicker(...args),
 }));
+jest.mock("../../src/lib/lifecycle/timerRegistry", () => ({
+  registerTimeout: (...args: [string, () => void, number]) => mockRegisterTimeout(...args),
+}));
 
 import { CatalogItemPicker } from "../../src/features/catalog/CatalogItemPicker";
 
+function latestScheduledTimer(): MockScheduledTimer {
+  const timer = mockScheduledTimers[mockScheduledTimers.length - 1];
+  if (!timer) throw new Error("Expected a scheduled catalog debounce timer");
+  return timer;
+}
+
+async function fireScheduledTimer(timer: MockScheduledTimer): Promise<void> {
+  await act(async () => {
+    expect(timer.active).toBe(true);
+    timer.active = false;
+    timer.callback();
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+let rendererWarmup!: TestRenderer.ReactTestRenderer;
+act(() => {
+  rendererWarmup = TestRenderer.create(
+    <CatalogItemPicker
+      visible={false}
+      onClose={() => undefined}
+      onSelect={() => undefined}
+      initialQuery=""
+    />,
+  );
+});
+act(() => {
+  rendererWarmup.unmount();
+});
+
 describe("catalog picker live smart search", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    mockScheduledTimers.length = 0;
+    mockRegisterTimeout.mockClear();
     mockSearchCatalogItemsForPicker.mockReset();
     mockSearchCatalogItemsForPicker.mockResolvedValue([
       {
@@ -23,11 +87,6 @@ describe("catalog picker live smart search", () => {
         sourceLabel: "catalog_items",
       },
     ]);
-  });
-
-  afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
   });
 
   it("searches automatically after two typed characters and no longer requires a submit button", async () => {
@@ -55,11 +114,13 @@ describe("catalog picker live smart search", () => {
     });
     expect(mockSearchCatalogItemsForPicker).not.toHaveBeenCalled();
 
-    await act(async () => {
-      jest.advanceTimersByTime(250);
-      await Promise.resolve();
-      await Promise.resolve();
+    const debounce = latestScheduledTimer();
+    expect(debounce).toMatchObject({
+      owner: "catalog-item-picker:live-search",
+      delayMs: 250,
     });
+    expect(mockRegisterTimeout).toHaveBeenCalledTimes(1);
+    await fireScheduledTimer(debounce);
 
     expect(mockSearchCatalogItemsForPicker).toHaveBeenCalledWith("ар", 40);
     expect(renderer.root.findByProps({ testID: "request-catalog-picker-results-title" }).props.children).toContain("ар");
@@ -98,15 +159,19 @@ describe("catalog picker live smart search", () => {
     });
     await act(async () => {
       renderer.root.findByProps({ testID: "request-catalog-picker-search" }).props.onChangeText("ар");
-      jest.advanceTimersByTime(250);
-      await Promise.resolve();
     });
+    await fireScheduledTimer(latestScheduledTimer());
     await act(async () => {
       renderer.root.findByProps({ testID: "request-catalog-picker-search" }).props.onChangeText("арм");
-      jest.advanceTimersByTime(250);
-      await Promise.resolve();
-      await Promise.resolve();
     });
+    const cancelledDebounce = latestScheduledTimer();
+    await act(async () => {
+      renderer.root.findByProps({ testID: "request-catalog-picker-search" }).props.onChangeText(
+        `${renderer.root.findByProps({ testID: "request-catalog-picker-search" }).props.value}a`,
+      );
+    });
+    expect(cancelledDebounce.dispose).toHaveBeenCalledTimes(1);
+    await fireScheduledTimer(latestScheduledTimer());
     expect(JSON.stringify(renderer.toJSON())).toContain("Новый результат");
 
     await act(async () => {
