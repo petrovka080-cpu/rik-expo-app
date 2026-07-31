@@ -190,4 +190,72 @@ describe("catalog picker live smart search", () => {
       renderer.unmount();
     });
   });
+
+  it("disposes pending debounce and suppresses in-flight completion after unmount", async () => {
+    let pendingRenderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      pendingRenderer = TestRenderer.create(
+        <CatalogItemPicker
+          visible
+          onClose={() => undefined}
+          onSelect={() => undefined}
+          initialQuery=""
+        />,
+      );
+    });
+    await act(async () => {
+      pendingRenderer.root
+        .findByProps({ testID: "request-catalog-picker-search" })
+        .props.onChangeText("ab");
+    });
+    const pendingDebounce = latestScheduledTimer();
+    act(() => {
+      pendingRenderer.unmount();
+    });
+    expect(pendingDebounce.dispose).toHaveBeenCalledTimes(1);
+    expect(pendingDebounce.active).toBe(false);
+    expect(mockSearchCatalogItemsForPicker).not.toHaveBeenCalled();
+
+    let resolveInFlight!: (rows: unknown[]) => void;
+    mockSearchCatalogItemsForPicker.mockImplementationOnce(
+      () =>
+        new Promise<unknown[]>((resolve) => {
+          resolveInFlight = resolve;
+        }),
+    );
+    let inFlightRenderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      inFlightRenderer = TestRenderer.create(
+        <CatalogItemPicker
+          visible
+          onClose={() => undefined}
+          onSelect={() => undefined}
+          initialQuery=""
+        />,
+      );
+    });
+    await act(async () => {
+      inFlightRenderer.root
+        .findByProps({ testID: "request-catalog-picker-search" })
+        .props.onChangeText("cd");
+    });
+    await fireScheduledTimer(latestScheduledTimer());
+    expect(mockSearchCatalogItemsForPicker).toHaveBeenCalledWith("cd", 40);
+
+    const pickerInstance =
+      inFlightRenderer.getInstance() as unknown as CatalogItemPicker;
+    const setStateAfterUnmount = jest.spyOn(pickerInstance, "setState");
+    act(() => {
+      inFlightRenderer.unmount();
+    });
+    setStateAfterUnmount.mockClear();
+    await act(async () => {
+      resolveInFlight([]);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(setStateAfterUnmount).not.toHaveBeenCalled();
+    expect(mockScheduledTimers.every((timer) => !timer.active)).toBe(true);
+    setStateAfterUnmount.mockRestore();
+  });
 });

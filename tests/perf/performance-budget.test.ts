@@ -159,15 +159,24 @@ describe("performance budget вЂ” bundle module count", () => {
       "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
       "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
-    const sT8ConsumerRepairApplicationServiceOwnerFiles = [
-      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
-    ].filter((file) => currentSourceFiles.includes(file)).length;
-    const sT8ProfessionalUnitOntologyOwnerFiles = [
-      "src/lib/estimate/professionalUnitRegistry.ts",
-    ].filter((file) => currentSourceFiles.includes(file)).length;
-    const sT8OfficeDirectionFacadeOwnerFiles = [
-      "src/screens/office/officeHub.directionSections.tsx",
-    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const t8ConsumerRepairApplicationServiceOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/lib\/consumerRequests\/.*applicationService.*\.ts$/i.test(file),
+    );
+    const sT8ConsumerRepairApplicationServiceOwnerFiles =
+      t8ConsumerRepairApplicationServiceOwnerFiles.length;
+    const t8ProfessionalUnitOntologyOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/lib\/estimate\/.*professionalUnit(?:Registry|Ontology).*\.ts$/i.test(file),
+    );
+    const sT8ProfessionalUnitOntologyOwnerFiles =
+      t8ProfessionalUnitOntologyOwnerFiles.length;
+    const t8OfficeDirectionFacadeOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/screens\/office\/officeHub\.direction(?:Sections|Facade).*\.tsx?$/i.test(file),
+    );
+    const sT8OfficeDirectionFacadeOwnerFiles =
+      t8OfficeDirectionFacadeOwnerFiles.length;
     const sDeveloperOverridePolicyOwnerFiles = [
       "src/lib/developerOverridePolicy.ts",
     ].filter((file) => currentSourceFiles.includes(file)).length;
@@ -2186,6 +2195,24 @@ describe("performance budget вЂ” bundle module count", () => {
         sPlatformDeveloperAccessOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(t8ConsumerRepairApplicationServiceOwnerFiles).toEqual([
+      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+    ]);
+    expect(t8ProfessionalUnitOntologyOwnerFiles).toEqual([
+      "src/lib/estimate/professionalUnitRegistry.ts",
+    ]);
+    expect(t8OfficeDirectionFacadeOwnerFiles).toEqual([
+      "src/screens/office/officeHub.directionSections.tsx",
+    ]);
+    const t8ExactOwnerFiles = [
+      ...t8ConsumerRepairApplicationServiceOwnerFiles,
+      ...t8ProfessionalUnitOntologyOwnerFiles,
+      ...t8OfficeDirectionFacadeOwnerFiles,
+    ];
+    expect(new Set(t8ExactOwnerFiles).size).toBe(t8ExactOwnerFiles.length);
+    expect(
+      t8ExactOwnerFiles.every((file) => !sourceFilesAtGrowthBaseline.has(file)),
+    ).toBe(true);
     expect(sT8ConsumerRepairApplicationServiceOwnerFiles).toBeLessThanOrEqual(1);
     expect(sT8ProfessionalUnitOntologyOwnerFiles).toBeLessThanOrEqual(1);
     expect(sT8OfficeDirectionFacadeOwnerFiles).toBeLessThanOrEqual(1);
