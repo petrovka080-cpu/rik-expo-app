@@ -14,7 +14,7 @@ const sourceFiles = [
   "src/screens/contractor/components/ContractorModeHeader.tsx",
   "src/screens/contractor/components/ContractorModeHomeSwitcher.tsx",
   "src/screens/contractor/components/NormalizedText.tsx",
-  "src/screens/office/officeHub.sections.tsx",
+  "src/screens/office/officeHub.directionSections.tsx",
 ] as const;
 
 const memoizedComponents = [
@@ -43,39 +43,39 @@ const memoizedComponents = [
     exportLine: "export default React.memo(function NormalizedText",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const DirectorOfficeSection = React.memo(function DirectorOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const ForemanOfficeSection = React.memo(function ForemanOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const BuyerOfficeSection = React.memo(function BuyerOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const AccountantOfficeSection = React.memo(function AccountantOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const WarehouseOfficeSection = React.memo(function WarehouseOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const ContractorOfficeSection = React.memo(function ContractorOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const SecurityOfficeSection = React.memo(function SecurityOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const EngineerOfficeSection = React.memo(function EngineerOfficeSection",
   },
   {
-    relativePath: "src/screens/office/officeHub.sections.tsx",
+    relativePath: "src/screens/office/officeHub.directionSections.tsx",
     exportLine: "export const ReportsOfficeSection = React.memo(function ReportsOfficeSection",
   },
 ] as const;

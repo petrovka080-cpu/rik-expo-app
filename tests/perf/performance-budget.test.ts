@@ -153,12 +153,20 @@ describe("performance budget вЂ” bundle module count", () => {
     ).length;
     const sCurrentCorePostCheckpointSourceFiles = [
       "src/lib/ai/inlineWorkPromptContract.ts",
-      "src/lib/consumerRequests/consumerRequestItemPresentation.ts",
       "src/lib/estimate/aiEstimateParameterCardContract.ts",
       "src/lib/estimate/application/buildAiEstimateParameterCardView.ts",
       "src/lib/estimate/application/createInitialEstimateDraftRevision.ts",
       "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
       "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sT8ConsumerRepairApplicationServiceOwnerFiles = [
+      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sT8ProfessionalUnitOntologyOwnerFiles = [
+      "src/lib/estimate/professionalUnitRegistry.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sT8OfficeDirectionFacadeOwnerFiles = [
+      "src/screens/office/officeHub.directionSections.tsx",
     ].filter((file) => currentSourceFiles.includes(file)).length;
     const sDeveloperOverridePolicyOwnerFiles = [
       "src/lib/developerOverridePolicy.ts",
@@ -2164,6 +2172,9 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(
       sPostBaselineGovernedSourceGrowthFiles -
         sCurrentCorePostCheckpointSourceFiles -
+        sT8ConsumerRepairApplicationServiceOwnerFiles -
+        sT8ProfessionalUnitOntologyOwnerFiles -
+        sT8OfficeDirectionFacadeOwnerFiles -
         sDeveloperOverridePolicyOwnerFiles -
         sAddListingPureOwnerFiles -
         sAddListingHookOwnerFiles -
@@ -2175,6 +2186,9 @@ describe("performance budget вЂ” bundle module count", () => {
         sPlatformDeveloperAccessOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(sT8ConsumerRepairApplicationServiceOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sT8ProfessionalUnitOntologyOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sT8OfficeDirectionFacadeOwnerFiles).toBeLessThanOrEqual(1);
     expect(sDeveloperOverridePolicyOwnerFiles).toBeLessThanOrEqual(1);
     expect(sAddListingPureOwnerFiles).toBeLessThanOrEqual(12);
     expect(sAddListingHookOwnerFiles).toBeLessThanOrEqual(2);

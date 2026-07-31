@@ -79,7 +79,7 @@ function classify(relativePath: string): Domain {
     return "security";
   }
   if (
-    /estimate|boq|cost|xlsx|professional|procurement|roadScope|Wbs|workCatalog|inlineWorkPrompt|consumerRequestItemPresentation/i.test(
+    /estimate|boq|cost|xlsx|professional|procurement|roadScope|Wbs|workCatalog|inlineWorkPrompt/i.test(
       relativePath,
     )
   ) {
