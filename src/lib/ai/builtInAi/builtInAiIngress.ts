@@ -10,6 +10,7 @@ import {
 } from "./builtInAiRuntimeTrace";
 import { assertBuiltInAiAnswer } from "./builtInAiGuards";
 import type { BuiltInAiAnswer, BuiltInAiInput } from "./builtInAiTypes";
+import { logger } from "../../logger";
 
 function recordNativeBuiltInStage(
   stage: string,
@@ -21,8 +22,9 @@ function recordNativeBuiltInStage(
   ) {
     return;
   }
-  console.info(
-    `[RikWarmDeepLink] AI_ESTIMATE_PIPELINE_STAGE ${JSON.stringify({
+  logger.info(
+    "RikWarmDeepLink",
+    `AI_ESTIMATE_PIPELINE_STAGE ${JSON.stringify({
       stage,
       elapsedMs: Date.now() - startedAt,
     })}`,

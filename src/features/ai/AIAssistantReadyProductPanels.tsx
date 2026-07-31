@@ -56,7 +56,11 @@ export function AIAssistantMessageList({
   autoEstimateLaunchPayloadRef: MutableRefObject<RequestEstimateLaunchPayloadV1 | null>;
   onAppendMessage: (message: AssistantMessage) => void;
 }) {
-  return messages.map((message, index) => {
+  const maxVisibleMessages = 200;
+  const visibleOffset = Math.max(0, messages.length - maxVisibleMessages);
+  const visibleMessages = messages.slice(visibleOffset);
+  return visibleMessages.map((message, visibleIndex) => {
+    const index = visibleOffset + visibleIndex;
     const hasPriorUserPrompt = messages
       .slice(0, index)
       .some((historyMessage) => historyMessage.role === "user");

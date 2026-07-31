@@ -1,6 +1,7 @@
 import {
   createConsumerRepairDraftFromGlobalEstimate,
 } from "../../consumerRequests";
+import { logger } from "../../logger";
 import {
   buildGlobalEstimateInputFromRoute,
   routeUniversalEstimateIntent,
@@ -145,8 +146,9 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     ) {
       return;
     }
-    console.info(
-      `[RikWarmDeepLink] AI_ESTIMATE_TOOL_STAGE ${JSON.stringify({
+    logger.info(
+      "RikWarmDeepLink",
+      `AI_ESTIMATE_TOOL_STAGE ${JSON.stringify({
         stage,
         elapsedMs: Date.now() - startedAt,
       })}`,

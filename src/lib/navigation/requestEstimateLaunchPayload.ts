@@ -2,6 +2,7 @@ import {
   normalizeIntentRoutePath,
   splitIntentPathAndQuery,
 } from "./coreRoutes";
+import { safeJsonParse } from "../format";
 
 export const REQUEST_ESTIMATE_LAUNCH_PAYLOAD_VERSION = 1 as const;
 export const REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM = "launchPayloadV1" as const;
@@ -254,7 +255,9 @@ export function decodeRequestEstimateLaunchPayloadV1(
     );
   }
   try {
-    return validateRequestEstimateLaunchPayloadV1(JSON.parse(encoded));
+    const parsed = safeJsonParse<unknown>(encoded, null);
+    if (!parsed.ok) return fail("REQUEST_ESTIMATE_LAUNCH_PAYLOAD_CORRUPT");
+    return validateRequestEstimateLaunchPayloadV1(parsed.value);
   } catch (error) {
     if (error instanceof RequestEstimateLaunchPayloadError) throw error;
     return fail("REQUEST_ESTIMATE_LAUNCH_PAYLOAD_CORRUPT");

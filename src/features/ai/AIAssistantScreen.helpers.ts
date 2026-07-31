@@ -13,6 +13,7 @@ import {
 import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
 import type { RequestEstimateLaunchPayloadV1 } from "../../lib/navigation/requestEstimateLaunchPayload";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { logger } from "../../lib/logger";
 import type { AssistantMessage } from "./assistant.types";
 
 export const recordAssistantScreenFallback = (
@@ -152,8 +153,9 @@ export function useAIAssistantPendingLaunchSubscription({
         return;
       }
       if (Platform.OS === "android") {
-        console.info(
-          `[RikWarmDeepLink] AI_RUNTIME_LAUNCH_SYNC ${JSON.stringify({
+        logger.info(
+          "RikWarmDeepLink",
+          `AI_RUNTIME_LAUNCH_SYNC ${JSON.stringify({
             launchId: pending.target.payload.launchId,
             autoSend: pending.target.payload.parameters.autoSend ?? null,
             stage: pending.stage,
@@ -208,16 +210,18 @@ export function useAIAssistantLaunchRuntimeEffects({
     if (launchAutoSend === "1") {
       const autoSendPayload = effectiveLaunchPayload;
       if (Platform.OS === "android" && autoSendPayload) {
-        console.info(
-          `[RikWarmDeepLink] AI_AUTO_SEND_STARTED ${JSON.stringify({
+        logger.info(
+          "RikWarmDeepLink",
+          `AI_AUTO_SEND_STARTED ${JSON.stringify({
             launchId: autoSendPayload.launchId,
           })}`,
         );
       }
       void send(launchPrompt).then(() => {
         if (Platform.OS === "android" && autoSendPayload) {
-          console.info(
-            `[RikWarmDeepLink] AI_AUTO_SEND_RESOLVED ${JSON.stringify({
+          logger.info(
+            "RikWarmDeepLink",
+            `AI_AUTO_SEND_RESOLVED ${JSON.stringify({
               launchId: autoSendPayload.launchId,
             })}`,
           );

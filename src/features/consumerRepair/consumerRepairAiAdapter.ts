@@ -12,7 +12,7 @@ import {
 import { buildOwnedDomainEstimatorReasoningPlan } from "../../lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
 import { compileDynamicProfessionalBoq } from "../../lib/ai/professionalBoq/compileDynamicProfessionalBoq";
 import { expandOwnedDomainProfessionalBoq } from "../../lib/estimate/ownedDomain/expandOwnedDomainBoqRows";
-import { buildGlobalEstimateFromEstimatorKernel } from "../../lib/ai/globalEstimate/globalEstimateCalculator";
+import { buildConsumerRepairEstimateFromEstimatorKernel } from "../../lib/consumerRequests/consumerRequestEstimateApplicationService";
 import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import {
@@ -791,7 +791,7 @@ export function buildDirectConsumerRepairOpenWorldAiDraft(
     : null;
   recordDirectOpenWorldBuildTiming("BOQ_READY", buildStartedAt);
   const sourceBackedEstimate = plan
-    ? buildGlobalEstimateFromEstimatorKernel(
+    ? buildConsumerRepairEstimateFromEstimatorKernel(
       plan,
       boq!,
       {

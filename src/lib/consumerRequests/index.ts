@@ -74,7 +74,6 @@ export {
   commitPreparedConsumerRepairRequestBundle,
   CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   createConsumerRepairDraftFromHistorySnapshot,
-  createConsumerRepairDraftFromGlobalEstimate,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
   ensureConsumerRepairRequestPdfAvailable,
@@ -97,6 +96,9 @@ export {
   type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "./consumerRequestService";
+export {
+  createConsumerRepairDraftFromGlobalEstimate,
+} from "./consumerRequestEstimateApplicationService";
 export type {
   ApprovedEstimateHistoryRecord,
   ConsumerMarketplaceLink,

@@ -1,4 +1,5 @@
 import { CONSUMER_REPAIR_CONTEXT, assertConsumerRepairScope } from "./consumerRequestAccessPolicy";
+import { logger } from "../logger";
 import { createConsumerRepairEvent } from "./consumerRequestAuditTrail";
 import {
   approveConsumerRepairRequestDraft as approveDraftRecord,
@@ -45,8 +46,6 @@ import {
   listConsumerRepairApprovedHistoryRecordsFromLedger,
 } from "./consumerRequestLedgerBridge";
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
-import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "./consumerRequestGlobalEstimateIntegration";
 import {
   commitEstimateCompileResult,
   createEstimateDraftSession,
@@ -557,7 +556,7 @@ export function createConsumerRepairRequestDraft(input: {
     ) {
       return;
     }
-    console.info("[RikCanonicalElectricalBundleCreate]", JSON.stringify({
+    logger.info("RikCanonicalElectricalBundleCreate", JSON.stringify({
       stage,
       elapsedMs: Date.now() - createStartedAt,
     }));
@@ -707,32 +706,6 @@ export function createConsumerRepairRequestDraft(input: {
   const saved = saveConsumerRepairBundle(revisionReadyBundle);
   recordCanonicalElectricalCreateTiming("DURABLE_SAVE_READY");
   return saved;
-}
-
-export function createConsumerRepairDraftFromGlobalEstimate(input: {
-  consumerUserId: string;
-  estimate: GlobalEstimateResult;
-  originalText: string;
-  city?: string | null;
-  addressText?: string | null;
-  contactPhone?: string | null;
-  selectedWork?: ConsumerRepairSelectedWork | null;
-}): ConsumerRepairDraftBundle {
-  const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(
-    input.estimate,
-    undefined,
-    input.selectedWork ?? undefined,
-  );
-  return createConsumerRepairRequestDraft({
-    consumerUserId: input.consumerUserId,
-    problemText: input.originalText,
-    repairType: input.estimate.work.category,
-    city: input.city ?? input.estimate.locale.city ?? null,
-    addressText: input.addressText ?? null,
-    contactPhone: input.contactPhone ?? null,
-    selectedWork: input.selectedWork ?? null,
-    aiDraft,
-  });
 }
 
 export function selectConsumerRepairRoadScopeV4(input: {

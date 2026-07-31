@@ -754,7 +754,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           requestAnimationFrame(run);
           return;
         }
-        setTimeout(run, 0);
+        runAfterNextPaint(run);
       },
     );
   };

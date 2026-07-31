@@ -16,6 +16,7 @@ import {
   type EstimateRevisionDurableStore,
   type RevisionBundle,
 } from "./estimateRevisionDurableStore.contract";
+import { safeJsonParse } from "../format";
 
 export type AsyncKeyValueStorage = {
   getItem(key: string): Promise<string | null>;
@@ -48,12 +49,10 @@ function revisionIndexStorageKey(key: string): string {
 
 function parseRecord<T>(value: string | null): T | null {
   if (!value) return null;
-  try {
-    const parsed = JSON.parse(value) as T;
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch {
-    return null;
-  }
+  const parsed = safeJsonParse<unknown>(value, null);
+  return parsed.ok && parsed.value && typeof parsed.value === "object"
+    ? parsed.value as T
+    : null;
 }
 
 /**

@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { logger } from "../logger";
 import type {
   RequestEstimateLaunchPayloadV1,
   RequestEstimateLaunchRouteV1,
@@ -45,8 +46,9 @@ export function recordRequestEstimateLaunchStage(input: {
     extra: safeDetail,
   });
   if (Platform.OS === "android") {
-    console.info(
-      `[RikWarmDeepLink] ${input.stage} ${JSON.stringify(safeDetail)}`,
+    logger.info(
+      "RikWarmDeepLink",
+      `${input.stage} ${JSON.stringify(safeDetail)}`,
     );
   }
 }

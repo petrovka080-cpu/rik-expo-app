@@ -779,7 +779,24 @@ export function buildConsumerRepairSelectedWorkEditableField(params: {
     params.selectedWork?.selectedWorkKey === fallback.selectedWorkKey &&
     nextProblemText === (params.currentBundle.draft.problemText || "")
   ) {
-    return toConsumerRepairSelectedWork(fallback);
+    const draft = params.currentBundle.draft;
+    if (
+      draft.selectedWorkKey &&
+      draft.selectedWorkTitleRu &&
+      draft.selectedWorkCategoryKey &&
+      draft.selectedWorkCategoryTitleRu
+    ) {
+      return {
+        selectedCatalogWorkId: draft.selectedCatalogWorkId ?? null,
+        selectedWorkKey: draft.selectedWorkKey,
+        selectedWorkTitleRu: draft.selectedWorkTitleRu,
+        selectedWorkCategoryKey: draft.selectedWorkCategoryKey,
+        selectedWorkCategoryTitleRu: draft.selectedWorkCategoryTitleRu,
+        selectedWorkRawInput: draft.selectedWorkRawInput ?? draft.problemText ?? "",
+        selectedWorkSource: "user_selected",
+        selectedWorkResolverReGuessed: false,
+      };
+    }
   }
   const refreshed = params.selectedWork
     ? refreshSelectedWorkBinding(
