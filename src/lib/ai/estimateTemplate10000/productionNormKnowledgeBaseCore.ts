@@ -409,7 +409,10 @@ function reviewedSourceTitle(input: {
   section: string;
   unit: string;
 }): string {
-  const scope = `${input.workGroup}/${input.section}/${input.unit}`;
+  const publicSection = input.section === "quality_control"
+    ? "операционная проверка"
+    : input.section.replace(/_/g, " ");
+  const scope = `${input.workGroup.replace(/_/g, " ")}/${publicSection}/${input.unit}`;
   if (input.recipeType === "material") return `Manufacturer technical sheet mapped to ${scope}`;
   if (input.recipeType === "labor") return `Estimator-reviewed productivity sheet mapped to ${scope}`;
   if (input.recipeType === "equipment") return `Estimator-reviewed equipment shift worksheet mapped to ${scope}`;

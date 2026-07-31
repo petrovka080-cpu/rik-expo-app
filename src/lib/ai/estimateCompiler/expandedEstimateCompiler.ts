@@ -12,6 +12,7 @@ import {
   formatGlobalNumber,
   resolveGlobalLocalization,
 } from "../globalEstimate/globalLocalizationCore";
+import { logger } from "../../logger";
 import { normalizeGlobalUnit } from "../globalEstimate/globalUnitNormalizer";
 import {
   compileProductionExpandedEstimate10000,
@@ -2176,8 +2177,9 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
     ) {
       return;
     }
-    console.info(
-      `[RikWarmDeepLink] PROFESSIONAL_ESTIMATE_BUILD_STAGE ${JSON.stringify({
+    logger.info(
+      "RikWarmDeepLink",
+      `PROFESSIONAL_ESTIMATE_BUILD_STAGE ${JSON.stringify({
         stage,
         elapsedMs: Date.now() - startedAt,
       })}`,

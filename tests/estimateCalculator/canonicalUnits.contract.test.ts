@@ -14,6 +14,8 @@ describe("canonical professional BOQ units", () => {
       "m3_h",
       "m3_day",
       "pcs",
+      "circuit",
+      "zone",
       "kg",
       "l",
       "pack",
@@ -23,6 +25,8 @@ describe("canonical professional BOQ units", () => {
     expect(normalizeCanonicalProfessionalBoqUnit("linear_meter")).toBe("lm");
     expect(normalizeCanonicalProfessionalBoqUnit("linear_m")).toBe("lm");
     expect(normalizeCanonicalProfessionalBoqUnit("piece")).toBe("pcs");
+    expect(normalizeCanonicalProfessionalBoqUnit("circuit")).toBe("circuit");
+    expect(normalizeCanonicalProfessionalBoqUnit("zone")).toBe("zone");
     expect(normalizeCanonicalProfessionalBoqUnit("liter")).toBe("l");
     expect(normalizeCanonicalProfessionalBoqUnit("ton")).toBe("t");
     expect(normalizeCanonicalProfessionalBoqUnit("package")).toBe("pack");
@@ -35,6 +39,8 @@ describe("canonical professional BOQ units", () => {
 
   it("rejects unknown and semantically wrong units", () => {
     expect(validateProfessionalBoqUnit({ unit: "mystery_unit" }).blocking_reasons).toContain("UNKNOWN_UNIT");
+    expect(validateProfessionalBoqUnit({ unit: "lbs" }).blocking_reasons).toContain("UNKNOWN_UNIT");
+    expect(validateProfessionalBoqUnit({ unit: "sq_ft" }).blocking_reasons).toContain("UNKNOWN_UNIT");
     expect(validateProfessionalBoqUnit({
       unit: "m2",
       rowLabel: "diamond drilling concrete holes",

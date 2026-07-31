@@ -45,7 +45,9 @@ export function extractEstimateLocation(text: string): EstimateIntentExtraction[
   }
   if (/(бишкек|кыргыз|kg|kgs)/.test(normalized)) return { countryCode: "KG", city: "Bishkek" };
   if (/(дубай|dubai|uae|оаэ)/.test(normalized)) return { countryCode: "AE", city: "Dubai" };
-  if (/(dallas|texas|tx|сша|usa|us)/.test(normalized)) return { countryCode: "US", stateOrRegion: "TX", city: "Dallas" };
+  if (/(dallas|texas|\btx\b|сша|\busa\b|\bus\b)/.test(normalized)) {
+    return { countryCode: "US", stateOrRegion: "TX", city: "Dallas" };
+  }
   if (/(germany|deutschland|герман|берлин|berlin)/.test(normalized)) return { countryCode: "DE" };
   return undefined;
 }

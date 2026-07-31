@@ -1,6 +1,16 @@
-import { GLOBAL_UNIT_CONVERSIONS } from "./globalEstimateSeedData";
 import type { GlobalUnitInput } from "./globalEstimateTypes";
 import { displayUnitFor, makeGlobalUnitInput, normalizeGlobalUnit } from "./globalUnitNormalizer";
+import {
+  convertProfessionalUnitQuantity,
+  professionalUnitConversionFactor,
+} from "../../estimate/professionalUnitRegistry";
+
+function registryCode(unit: GlobalUnitInput["normalizedUnit"]): string {
+  if (unit === "sq_m") return "m2";
+  if (unit === "linear_m") return "lm";
+  if (unit === "ton") return "t";
+  return unit;
+}
 
 export function convertGlobalUnit(
   value: number,
@@ -12,17 +22,42 @@ export function convertGlobalUnit(
 } {
   const normalizedFrom = normalizeGlobalUnit(fromUnit);
   if (normalizedFrom === toUnit) return { value };
-  const conversion = GLOBAL_UNIT_CONVERSIONS.find((item) => item.fromUnit === normalizedFrom && item.toUnit === toUnit);
-  if (!conversion) return { value };
+  const convertedValue = convertProfessionalUnitQuantity(
+    value,
+    registryCode(normalizedFrom),
+    registryCode(toUnit),
+  );
+  if (convertedValue === null) return { value };
+  const factor = professionalUnitConversionFactor(registryCode(normalizedFrom), registryCode(toUnit));
+  if (factor === null) return { value };
   return {
-    value: value * conversion.multiplier,
+    value: convertedValue,
     conversion: {
       from: normalizedFrom,
       to: toUnit,
-      factor: conversion.multiplier,
-      formula: `${value} * ${conversion.multiplier}`,
+      factor,
+      formula: `${value} * ${factor}`,
     },
   };
+}
+
+function localeTargetUnit(
+  unit: GlobalUnitInput["normalizedUnit"],
+  unitSystem: GlobalUnitInput["unitSystem"],
+): GlobalUnitInput["normalizedUnit"] {
+  if (unitSystem === "metric") {
+    if (unit === "sq_ft") return "sq_m";
+    if (unit === "linear_ft") return "linear_m";
+    if (unit === "cu_ft") return "m3";
+    if (unit === "lbs") return "kg";
+  }
+  if (unitSystem === "imperial") {
+    if (unit === "sq_m") return "sq_ft";
+    if (unit === "linear_m") return "linear_ft";
+    if (unit === "m3") return "cu_ft";
+    if (unit === "kg") return "lbs";
+  }
+  return unit;
 }
 
 export function normalizeGlobalUnitForLocale(params: {
@@ -32,14 +67,15 @@ export function normalizeGlobalUnitForLocale(params: {
   unitSystem: GlobalUnitInput["unitSystem"];
 }): GlobalUnitInput {
   const base = makeGlobalUnitInput({ value: params.value, unit: params.unit, unitSystem: params.unitSystem });
-  if (!params.targetUnit || base.normalizedUnit === params.targetUnit) return base;
-  const converted = convertGlobalUnit(base.normalizedValue, base.normalizedUnit, params.targetUnit);
+  const targetUnit = params.targetUnit ?? localeTargetUnit(base.normalizedUnit, params.unitSystem);
+  if (base.normalizedUnit === targetUnit) return base;
+  const converted = convertGlobalUnit(base.normalizedValue, base.normalizedUnit, targetUnit);
   return {
     ...base,
     normalizedValue: converted.value,
-    normalizedUnit: params.targetUnit,
+    normalizedUnit: targetUnit,
     displayValue: converted.value,
-    displayUnit: displayUnitFor(params.targetUnit, params.unitSystem),
+    displayUnit: displayUnitFor(targetUnit, params.unitSystem),
     conversion: converted.conversion,
   };
 }

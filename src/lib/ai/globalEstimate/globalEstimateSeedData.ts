@@ -11,6 +11,7 @@ import type {
   GlobalUnitInput,
   GlobalWorkTypeDefinition,
 } from "./globalEstimateTypes";
+import { professionalUnitConversionFactor } from "../../estimate/professionalUnitRegistry";
 
 const CHECKED_AT = "2026-05-22T00:00:00+06:00";
 const EFFECTIVE_FROM = "2026-01-01";
@@ -2465,13 +2466,21 @@ export const GLOBAL_RATE_WORKS: readonly GlobalRateRecord[] = buildRegionalRates
 
 export { GLOBAL_TAX_RULES } from "./globalTaxRules";
 
+function requiredUnitConversionFactor(fromUnit: string, toUnit: string): number {
+  const factor = professionalUnitConversionFactor(fromUnit, toUnit);
+  if (factor === null) {
+    throw new Error(`GLOBAL_UNIT_CONVERSION_NOT_REGISTERED:${fromUnit}->${toUnit}`);
+  }
+  return factor;
+}
+
 export const GLOBAL_UNIT_CONVERSIONS = [
-  { fromUnit: "sq_m", toUnit: "sq_ft", multiplier: 10.76391041671, dimension: "area" },
-  { fromUnit: "sq_ft", toUnit: "sq_m", multiplier: 0.09290304, dimension: "area" },
-  { fromUnit: "linear_m", toUnit: "linear_ft", multiplier: 3.280839895, dimension: "length" },
-  { fromUnit: "linear_ft", toUnit: "linear_m", multiplier: 0.3048, dimension: "length" },
-  { fromUnit: "m3", toUnit: "cu_ft", multiplier: 35.314666721, dimension: "volume" },
-  { fromUnit: "cu_ft", toUnit: "m3", multiplier: 0.0283168466, dimension: "volume" },
-  { fromUnit: "kg", toUnit: "lbs", multiplier: 2.2046226218, dimension: "mass" },
-  { fromUnit: "lbs", toUnit: "kg", multiplier: 0.45359237, dimension: "mass" },
+  { fromUnit: "sq_m", toUnit: "sq_ft", multiplier: requiredUnitConversionFactor("sq_m", "sq_ft"), dimension: "area" },
+  { fromUnit: "sq_ft", toUnit: "sq_m", multiplier: requiredUnitConversionFactor("sq_ft", "sq_m"), dimension: "area" },
+  { fromUnit: "linear_m", toUnit: "linear_ft", multiplier: requiredUnitConversionFactor("linear_m", "linear_ft"), dimension: "length" },
+  { fromUnit: "linear_ft", toUnit: "linear_m", multiplier: requiredUnitConversionFactor("linear_ft", "linear_m"), dimension: "length" },
+  { fromUnit: "m3", toUnit: "cu_ft", multiplier: requiredUnitConversionFactor("m3", "cu_ft"), dimension: "volume" },
+  { fromUnit: "cu_ft", toUnit: "m3", multiplier: requiredUnitConversionFactor("cu_ft", "m3"), dimension: "volume" },
+  { fromUnit: "kg", toUnit: "lbs", multiplier: requiredUnitConversionFactor("kg", "lbs"), dimension: "mass" },
+  { fromUnit: "lbs", toUnit: "kg", multiplier: requiredUnitConversionFactor("lbs", "kg"), dimension: "mass" },
 ] as const;

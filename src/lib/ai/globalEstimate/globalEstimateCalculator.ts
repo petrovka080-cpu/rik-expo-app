@@ -1,4 +1,5 @@
 import { formatGlobalCurrency, formatGlobalNumber, localizedText, resolveGlobalLocalization } from "./globalLocalizationCore";
+import { logger } from "../../logger";
 import { getGlobalEstimateTemplate } from "./globalEstimateTemplateService";
 import { resolveGlobalPriceSourceFreshness } from "./dataOps/globalPriceSourceFreshnessService";
 import type {
@@ -1476,7 +1477,7 @@ export function buildGlobalEstimateFromEstimatorKernel(
     ) {
       return;
     }
-    console.info("[RikGlobalEstimateKernelBuild]", JSON.stringify({
+    logger.info("RikGlobalEstimateKernelBuild", JSON.stringify({
       stage,
       elapsedMs: Date.now() - kernelBuildStartedAt,
     }));

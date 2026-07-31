@@ -1,147 +1,19 @@
-export type CanonicalProfessionalBoqUnit =
-  | "m"
-  | "lm"
-  | "m2"
-  | "m3"
-  | "pcs"
-  | "set"
-  | "kg"
-  | "t"
-  | "l"
-  | "m3_h"
-  | "m3_day"
-  | "roll"
-  | "pack"
-  | "bag"
-  | "bucket"
-  | "day"
-  | "trip"
-  | "man_hour"
-  | "machine_hour"
-  | "service"
-  | "document"
-  | "test"
-  | "t_km"
-  | "point"
-  | "shift"
-  | "m_drilling_depth"
-  | "m2_glazing"
-  | "m2_roof"
-  | "m2_formwork"
-  | "m3_concrete"
-  | "kg_rebar"
-  | "W"
-  | "kW"
-  | "MW";
+import {
+  CANONICAL_PROFESSIONAL_BOQ_UNIT_CODES,
+  resolveProfessionalUnitDefinition,
+  type CanonicalProfessionalBoqUnit,
+} from "./professionalUnitRegistry";
 
-const UNIT_SYNONYMS = new Map<string, CanonicalProfessionalBoqUnit>([
-  ["m", "m"],
-  ["meter", "m"],
-  ["metre", "m"],
-  ["lm", "lm"],
-  ["linear_m", "lm"],
-  ["linear_meter", "lm"],
-  ["linear_metre", "lm"],
-  ["m.p.", "lm"],
-  ["m2", "m2"],
-  ["sq_m", "m2"],
-  ["sqm", "m2"],
-  ["m3", "m3"],
-  ["m3_h", "m3_h"],
-  ["m3h", "m3_h"],
-  ["m3_hour", "m3_h"],
-  ["m3_per_hour", "m3_h"],
-  ["m3_day", "m3_day"],
-  ["m3d", "m3_day"],
-  ["m3_per_day", "m3_day"],
-  ["pcs", "pcs"],
-  ["pc", "pcs"],
-  ["piece", "pcs"],
-  ["pieces", "pcs"],
-  ["set", "set"],
-  ["kg", "kg"],
-  ["\u043a\u0433", "kg"],
-  ["t", "t"],
-  ["ton", "t"],
-  ["tonne", "t"],
-  ["\u0442\u043e\u043d\u043d\u0430", "t"],
-  ["\u0442\u043e\u043d\u043d", "t"],
-  ["l", "l"],
-  ["liter", "l"],
-  ["litre", "l"],
-  ["\u043b\u0438\u0442\u0440", "l"],
-  ["\u043b", "l"],
-  ["roll", "roll"],
-  ["\u0440\u0443\u043b\u043e\u043d", "roll"],
-  ["pack", "pack"],
-  ["package", "pack"],
-  ["\u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430", "pack"],
-  ["bag", "bag"],
-  ["\u043c\u0435\u0448\u043e\u043a", "bag"],
-  ["bucket", "bucket"],
-  ["pail", "bucket"],
-  ["\u0432\u0435\u0434\u0440\u043e", "bucket"],
-  ["day", "day"],
-  ["\u0434\u0435\u043d\u044c", "day"],
-  ["trip", "trip"],
-  ["\u0440\u0435\u0439\u0441", "trip"],
-  ["man_hour", "man_hour"],
-  ["labor_hour", "man_hour"],
-  ["\u0447\u0435\u043b_\u0447\u0430\u0441", "man_hour"],
-  ["machine_hour", "machine_hour"],
-  ["equipment_hour", "machine_hour"],
-  ["\u043c\u0430\u0448_\u0447\u0430\u0441", "machine_hour"],
-  ["service", "service"],
-  ["document", "document"],
-  ["test", "test"],
-  ["t_km", "t_km"],
-  ["hour", "man_hour"],
-  ["point", "point"],
-  ["shift", "machine_hour"],
-  ["m_drilling_depth", "m_drilling_depth"],
-  ["m2_glazing", "m2_glazing"],
-  ["m2_roof", "m2_roof"],
-  ["m2_formwork", "m2_formwork"],
-  ["m3_concrete", "m3_concrete"],
-  ["kg_rebar", "kg_rebar"],
-  ["w", "W"],
-  ["kw", "kW"],
-  ["mw", "MW"],
-  ["\u0432\u0442", "W"],
-  ["\u043a\u0432\u0442", "kW"],
-  ["\u043c\u0432\u0442", "MW"],
-]);
+export type { CanonicalProfessionalBoqUnit } from "./professionalUnitRegistry";
 
 export const CANONICAL_PROFESSIONAL_BOQ_UNITS: readonly CanonicalProfessionalBoqUnit[] =
-  Object.freeze([...new Set(UNIT_SYNONYMS.values())]);
-
-function normalizeToken(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_")
-    .replace(/[\u00b2]/g, "2")
-    .replace(/[\u00b3]/g, "3")
-    .replace(/^(?:m3|\u043c3)(?:_|\/)?(?:h|hr|hour|\u0447|\u0447\u0430\u0441)$/u, "m3_h")
-    .replace(/^(?:m3|\u043c3)_per_(?:h|hr|hour|\u0447|\u0447\u0430\u0441)$/u, "m3_h")
-    .replace(/^(?:m3|\u043c3)(?:_|\/)?(?:d|day|\u0441\u0443\u0442|\u0441\u0443\u0442\u043a\u0438)$/u, "m3_day")
-    .replace(/^(?:m3|\u043c3)_per_(?:d|day|\u0441\u0443\u0442|\u0441\u0443\u0442\u043a\u0438)$/u, "m3_day")
-    .replace(/^\u043c\.?\u043f\.?$/u, "lm")
-    .replace(/^\u043f\u043e\u0433\.?_\u043c$/u, "lm")
-    .replace(/^\u043f\u043e\u0433\.?\u043c$/u, "lm")
-    .replace(/^\u043c2$/u, "m2")
-    .replace(/^\u043c3$/u, "m3")
-    .replace(/^\u0448\u0442\.?$/u, "pcs")
-    .replace(/^\u043a\u043e\u043c\u043f\u043b\u0435\u043a\u0442$/u, "set")
-    .replace(/^\u043b\u0438\u0442\u0440$/u, "l")
-    .replace(/^\u043b$/u, "l");
-}
+  CANONICAL_PROFESSIONAL_BOQ_UNIT_CODES;
 
 export function normalizeCanonicalProfessionalBoqUnit(
   unit: string | null | undefined,
 ): CanonicalProfessionalBoqUnit | null {
-  if (!unit) return null;
-  return UNIT_SYNONYMS.get(normalizeToken(unit)) ?? null;
+  const definition = resolveProfessionalUnitDefinition(unit);
+  return definition?.boqCanonical ? definition.code as CanonicalProfessionalBoqUnit : null;
 }
 
 export type ProfessionalBoqUnitValidationInput = {

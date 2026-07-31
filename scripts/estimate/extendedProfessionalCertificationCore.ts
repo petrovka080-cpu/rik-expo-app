@@ -21,6 +21,7 @@ import {
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
+import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
 import { buildStructuredEstimatePayload, type StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline";
 import type { StructuredEstimateRow } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
@@ -388,6 +389,11 @@ export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCa
   const missingPriceRows = rows.filter((row) => row.unitPrice == null || row.total == null);
   const uniqueQuantities = new Set(rows.map((row) => Math.round(row.quantity * 10000) / 10000));
   const uniqueUnits = new Set(rows.map((row) => row.unit));
+  const expectedCanonicalUnits = new Set(
+    testCase.expected_units
+      .map((unit) => normalizeCanonicalProfessionalBoqUnit(unit))
+      .filter((unit): unit is NonNullable<typeof unit> => unit !== null),
+  );
   const detectorPromptArea = isAreaLikeUnit(testCase.input_parameters.unit) ? testCase.input_parameters.quantity : null;
   const detector = detectEstimateFakeRows({
     rows: structuredRowsForDetector(rows),
@@ -456,7 +462,12 @@ export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCa
       typeof row.editable === "boolean"
     ),
     quantity_invariants_passed: rows.every((row) => Number.isFinite(row.quantity) && row.quantity > 0) && !areaRowsSameAsInput,
-    unit_invariants_passed: uniqueUnits.size >= 3 && !allUnitsArea && [...uniqueUnits].every((unit) => testCase.expected_units.includes(unit)),
+    unit_invariants_passed: uniqueUnits.size >= 3 &&
+      !allUnitsArea &&
+      [...uniqueUnits].every((unit) => {
+        const canonicalUnit = normalizeCanonicalProfessionalBoqUnit(unit);
+        return canonicalUnit !== null && expectedCanonicalUnits.has(canonicalUnit);
+      }),
     summary_totals_present: payload.totals.grandTotal > 0 && payload.boq.totals.pricedSubtotal > 0,
     no_fake_area_multiplier: !areaRowsSameAsInput && !allUnitsArea && !detector.failure_ids.includes("all_rows_quantity_equal_input_area"),
     no_repeated_fake_totals: !repeatedFakeTotals && !detector.failure_ids.includes("same_total_repeated_for_unrelated_rows"),
