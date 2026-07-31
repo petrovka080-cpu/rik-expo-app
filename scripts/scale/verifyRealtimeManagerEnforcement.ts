@@ -302,6 +302,26 @@ function classifyRealtimeFile(repoRoot: string, file: string): RealtimeManagerIn
     };
   }
 
+  if (file === "src/features/ai/AIAssistantScreen.helpers.ts") {
+    const safe =
+      source.includes("requestEstimateIntentLifecycle.getPending()") &&
+      source.includes("return requestEstimateIntentLifecycle.subscribe(syncPendingAiLaunch)") &&
+      source.includes("launchId: pending.target.payload.launchId") &&
+      source.includes("autoSend: pending.target.payload.parameters.autoSend") &&
+      !source.includes("JSON.stringify(pending.target.payload)");
+    return {
+      ...base,
+      status: safe && !secretsPrinted && !broadExceptionUsed ? "safe" : "finding",
+      owner: "request_estimate_intent_lifecycle",
+      classification: "local_intent_listener_cleanup",
+      cleanupPresent: safe,
+      stableOwnerPresent: safe,
+      rawPayloadPrinted: false,
+      unmanagedSubscribe: !safe,
+      reason: "local request-intent lifecycle subscription returns its exact cleanup and logs only selected non-secret launch metadata",
+    };
+  }
+
   if (
     source.includes("listener?.subscription?.unsubscribe()") ||
     source.includes("listener.subscription.unsubscribe()") ||

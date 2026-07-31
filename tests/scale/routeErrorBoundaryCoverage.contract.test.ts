@@ -5,6 +5,10 @@ import {
   GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY,
   verifyRouteErrorBoundaryCoverage,
 } from "../../scripts/scale/verifyRouteErrorBoundaryCoverage";
+import {
+  CANONICAL_APP_TSX_ROUTE_COUNT,
+  CANONICAL_APP_TSX_ROUTE_FILES,
+} from "../../scripts/scale/canonicalAppRouteInventory";
 
 describe("S_SCALE_02 route error boundary closeout", () => {
   it("produces the Wave 2 green matrix with zero unprotected routes", () => {
@@ -13,8 +17,11 @@ describe("S_SCALE_02 route error boundary closeout", () => {
     });
 
     expect(verification.final_status).toBe(GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY);
-    expect(verification.metrics.routes_total).toBe(54);
-    expect(verification.metrics.routes_with_boundary_or_exception).toBe(54);
+    expect(verification.inventory.map((entry) => entry.route).sort()).toEqual(
+      [...CANONICAL_APP_TSX_ROUTE_FILES].sort(),
+    );
+    expect(verification.metrics.routes_total).toBe(CANONICAL_APP_TSX_ROUTE_COUNT);
+    expect(verification.metrics.routes_with_boundary_or_exception).toBe(CANONICAL_APP_TSX_ROUTE_COUNT);
     expect(verification.metrics.routes_missing_boundary).toBe(0);
     expect(verification.metrics.real_screen_routes_without_boundary).toBe(0);
     expect(verification.metrics.exception_routes_documented).toBe(true);

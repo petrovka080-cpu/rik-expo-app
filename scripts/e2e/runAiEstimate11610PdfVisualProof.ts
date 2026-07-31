@@ -140,6 +140,52 @@ function countMatches(value: string, pattern: RegExp): number {
   return value.match(pattern)?.length ?? 0;
 }
 
+type RenderedPdfVisualEvidence = {
+  accepted: boolean;
+  document_page_count?: number;
+  png_bytes?: number;
+  png_sha256?: string;
+  text_item_count?: number;
+  path_operator_count?: number;
+  non_white_ratio?: number;
+  horizontal_line_rows?: number;
+  vertical_line_columns?: number;
+  screenshot_path?: string;
+  error?: string;
+};
+
+function renderPdfVisualEvidence(bytes: Uint8Array, evidenceId: string): RenderedPdfVisualEvidence {
+  const evidenceDir = path.join(ROOT, "rendered", hashText(evidenceId).slice(0, 16));
+  const pdfPath = path.resolve(evidenceDir, "source.pdf");
+  const pngPath = path.resolve(evidenceDir, "page-1.png");
+  const manifestPath = path.resolve(evidenceDir, "visual-evidence.json");
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  fs.writeFileSync(pdfPath, bytes);
+  try {
+    execFileSync(process.execPath, [
+      path.resolve("scripts/e2e/renderPdfVisualEvidence.cjs"),
+      pdfPath,
+      pngPath,
+      manifestPath,
+    ], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 60_000,
+    });
+  } catch {
+    // The helper writes a fail-closed manifest before returning a non-zero exit.
+  }
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, "utf8")) as RenderedPdfVisualEvidence;
+  } catch (error) {
+    return {
+      accepted: false,
+      error: `visual_manifest_unreadable:${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
 function selectIds(input: {
   allIds: string[];
   all?: boolean;
@@ -167,17 +213,22 @@ function selectIds(input: {
 function visualEvidence(input: {
   pdfBody: string;
   pdfText: string;
+  evidenceId: string;
   expectedRowCount: number;
   pdfViewModelRowCount: number;
   pdfViewModelSectionCount: number;
   requestMetaFieldCount: number;
 }) {
   const bytes = estimatePdfInputToBytes(input.pdfBody);
-  const rectStrokeCount = countMatches(input.pdfBody, /\sre\s+S/g);
-  const textOperatorCount = countMatches(input.pdfBody, />\s*Tj/g);
-  const pageCount = countMatches(input.pdfBody, /\/Type\s*\/Page\b/g);
+  const rendered = renderPdfVisualEvidence(bytes, input.evidenceId);
+  const rectStrokeCount = rendered.path_operator_count ?? countMatches(input.pdfBody, /\sre\s+S/g);
+  const textOperatorCount = rendered.text_item_count ?? countMatches(input.pdfBody, />\s*Tj/g);
+  const pageCount = rendered.document_page_count ?? countMatches(input.pdfBody, /\/Type\s*\/Page\b/g);
   const tableHeaderColumnsPresent = PDF_COLUMN_HEADERS.filter((header) => input.pdfText.includes(header)).length;
-  const minimumCellRectCount = Math.max(12, Math.min(input.expectedRowCount, 20) * PDF_COLUMN_HEADERS.length);
+  const renderedGrid =
+    rendered.accepted === true &&
+    (rendered.horizontal_line_rows ?? 0) >= 2 &&
+    (rendered.vertical_line_columns ?? 0) >= 2;
   return {
     pdfBytesLength: bytes.length,
     pageCount,
@@ -185,9 +236,9 @@ function visualEvidence(input: {
     textOperatorCount,
     tableHeaderColumnsPresent,
     tableHeaderColumnsTotal: PDF_COLUMN_HEADERS.length,
-    visualBorderedTable: rectStrokeCount >= minimumCellRectCount,
+    visualBorderedTable: renderedGrid,
     visualRowGrid:
-      rectStrokeCount >= minimumCellRectCount &&
+      renderedGrid &&
       input.pdfViewModelRowCount === input.expectedRowCount &&
       input.pdfViewModelSectionCount > 0,
     visualMetadataBlock: input.requestMetaFieldCount >= 4 && input.pdfText.includes("\u0412\u0438\u0434 \u0440\u0430\u0431\u043e\u0442"),
@@ -200,6 +251,7 @@ function visualEvidence(input: {
     visualSignatureBlock:
       input.pdfText.includes("\u0417\u0430\u043a\u0430\u0437\u0447\u0438\u043a") &&
       input.pdfText.includes("\u041f\u043e\u0434\u0440\u044f\u0434\u0447\u0438\u043a"),
+    rendered,
   };
 }
 
@@ -262,6 +314,7 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
     const visual = visualEvidence({
       pdfBody: storage.body,
       pdfText: text,
+      evidenceId: `${passport.templateId}:${pdf.revisionId ?? "draft"}`,
       expectedRowCount: passport.boqRecipe.rowCount,
       pdfViewModelRowCount: pdfRowCount,
       pdfViewModelSectionCount: pdfViewModel.sections.length,
@@ -292,6 +345,7 @@ function runPdfVisualCase(passport: ProfessionalWorkPassport): PdfVisualLedgerRo
       visual.visualTotalsBlock ? "" : "pdf_totals_block_missing",
       visual.visualTaxSourceBlock ? "" : "pdf_tax_source_block_missing",
       visual.visualSignatureBlock ? "" : "pdf_signature_block_missing",
+      visual.rendered.accepted ? "" : `pdf_rendered_screenshot_not_accepted:${visual.rendered.error ?? "visual_thresholds"}`,
     ].filter(Boolean);
     return {
       schema: AI_ESTIMATE_11610_PDF_VISUAL_PROOF_SCHEMA,

@@ -3,6 +3,8 @@
 Status: locked baseline
 Generated from: `npx tsx scripts/architecture_anti_regression_suite.ts --json`
 Baseline date: 2026-05-09
+Scanner source SHA-256: `77ab0a339aa56e4b6dc8aee88ab9f1e1301c4150e62b1e202add99c31f322bba`
+Scanner inventory SHA-256: `093c6a9e8a2a88cf411e712f7429d618054071fe0b28b83d65e35e46b326ef51`
 Production feature enablement: NO
 Production traffic migrated: NO
 Deploy or OTA implied: NO
@@ -20,8 +22,8 @@ Realtime capacity changed: NO
 
 ## Scanner Baseline
 
-- Total direct Supabase findings: 184
-- Transport-controlled findings: 140
+- Total direct Supabase findings: 185
+- Transport-controlled findings: 141
 - Transport-owned files with provider findings: 69
 - Service bypass findings: 0
 - Service bypass files: 0
@@ -30,7 +32,7 @@ Realtime capacity changed: NO
 
 ## Provider Surface Summary
 
-- auth: 48 findings across 31 files
+- auth: 49 findings across 31 files
 - read: 18 findings across 10 files
 - realtime: 7 findings across 2 files
 - rpc: 36 findings across 21 files

@@ -194,13 +194,6 @@ export const SCROLLVIEW_MAP_BOUNDS = [
     maxItemsProof: "Panel contract keeps proposal cards small and action-focused.",
   },
   {
-    file: "src/features/ai/AIAssistantScreen.tsx",
-    expression: "messages.map",
-    owner: "ai assistant owner",
-    boundProof: "AI assistant chat history is local persisted assistant state; production chat thread uses FlashList separately.",
-    maxItemsProof: "Assistant storage and response-smoke contracts keep this screen scoped to assistant context.",
-  },
-  {
     file: "src/features/ai/AIAssistantShortcutRows.tsx",
     expression: "quickPrompts.map",
     owner: "ai assistant owner",

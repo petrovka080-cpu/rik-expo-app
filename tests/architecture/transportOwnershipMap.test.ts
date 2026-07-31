@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { createHash } from "crypto";
 
 import {
   type DirectSupabaseOperation,
@@ -7,6 +8,7 @@ import {
 } from "../../scripts/architecture_anti_regression_suite";
 
 const docPath = path.join(process.cwd(), "docs/architecture/transport_ownership_map.md");
+const scannerPath = path.join(process.cwd(), "scripts/architecture_anti_regression_suite.ts");
 const providerSurfaces: readonly DirectSupabaseOperation[] = [
   "auth",
   "read",
@@ -56,6 +58,8 @@ describe("transport ownership map", () => {
       (finding) => finding.classification === "generated_or_ignored",
     );
     const surfaceSummary = emptySurfaceSummary();
+    const scannerHash = createHash("sha256").update(fs.readFileSync(scannerPath)).digest("hex");
+    const inventoryHash = createHash("sha256").update(JSON.stringify(findings)).digest("hex");
 
     for (const finding of transportFindings) {
       surfaceSummary[finding.operation].findings += 1;
@@ -69,6 +73,8 @@ describe("transport ownership map", () => {
     expect(doc).toContain(`- Service bypass files: ${serviceBypassFiles.size}`);
     expect(doc).toContain(`- Test-only findings: ${testOnlyFindings.length}`);
     expect(doc).toContain(`- Generated or ignored findings: ${generatedOrIgnoredFindings.length}`);
+    expect(doc).toContain(`Scanner source SHA-256: \`${scannerHash}\``);
+    expect(doc).toContain(`Scanner inventory SHA-256: \`${inventoryHash}\``);
 
     for (const surface of providerSurfaces) {
       const summary = surfaceSummary[surface];

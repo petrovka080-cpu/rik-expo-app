@@ -324,6 +324,7 @@ function buildScreenReadiness() {
     read("src/features/consumerRepair/ConsumerRepairDraftPanel.tsx") +
     read("src/features/consumerRepair/requestEstimateScreenActions.ts");
   const ai = read("src/features/ai/AIAssistantScreen.tsx");
+  const aiReadyPanels = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
   const aiAnswerPipeline = read("src/features/ai/assistantAnswerPipeline.ts");
   const aiActions = read("src/features/ai/AIAssistantEstimatePdfActions.tsx");
   const add = read("src/screens/profile/AddListingScreen.tsx") +
@@ -350,10 +351,15 @@ function buildScreenReadiness() {
       "phoneLabel",
       "submitAddListing",
     ]),
-    chat_screen_ready: ai.includes("AIAssistantEstimatePdfActions") && aiActions.includes("make_estimate_pdf"),
+    chat_screen_ready:
+      ai.includes("AIAssistantMessageList") &&
+      aiReadyPanels.includes("AIAssistantEstimatePdfActions") &&
+      aiActions.includes("make_estimate_pdf"),
     profile_screen_ready: profile.includes("profile") || profile.includes("Profile"),
     pdf_viewer_ready: pdfViewer.includes("pdf-viewer") || pdfViewer.includes("PdfViewer"),
-    ai_estimate_to_pdf_ready: (ai + aiAnswerPipeline).includes("estimatePdfSource") && aiActions.includes("generateAiEstimatePdf"),
+    ai_estimate_to_pdf_ready:
+      (ai + aiReadyPanels + aiAnswerPipeline).includes("estimatePdfSource") &&
+      aiActions.includes("generateAiEstimatePdf"),
     consumer_estimate_to_pdf_ready:
       consumer.includes("buildConsumerRepairRequestPdfViewerNavigation") &&
       consumer.includes('pathname: "/pdf-viewer"'),
