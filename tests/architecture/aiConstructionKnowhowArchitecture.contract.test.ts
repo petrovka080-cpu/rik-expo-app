@@ -30,6 +30,9 @@ describe("AI construction know-how architecture", () => {
     }
 
     const commandCenter = read("src/features/ai/commandCenter/AiCommandCenterScreen.tsx");
+    const emulatorRunner = read("scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts");
+    expect(emulatorRunner).toContain('openLink: "rik:///ai-command-center"');
+    expect(emulatorRunner).toContain('openLink: "rik://ai-command-center"');
     for (const testId of [
       "ai.construction.knowhow.preview",
       "ai.construction.knowhow.role",
