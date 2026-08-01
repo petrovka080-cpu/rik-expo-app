@@ -98,4 +98,14 @@ describe("AI construction know-how architecture", () => {
     expect(report.summary.noMobileExternalFetch).toBe(true);
     expect(report.summary.noProviderChange).toBe(true);
   });
+
+  it("rejects stale API 34 APK cache entries before runtime proof", () => {
+    const buildRunner = read("scripts/e2e/androidApi34BuildIfNeeded.ts");
+
+    expect(buildRunner).toContain('const CACHE_MANIFEST_NAME = "cache-manifest.json"');
+    expect(buildRunner).toContain("cacheManifest?.js_bundle_fingerprint === fingerprints.jsBundleFingerprint");
+    expect(buildRunner).toContain("cacheManifest?.source_tree_hash === fingerprints.sourceTreeHash");
+    expect(buildRunner).toContain("buildDebugApk()");
+    expect(buildRunner).toContain("if (!explicitSourceApk)");
+  });
 });

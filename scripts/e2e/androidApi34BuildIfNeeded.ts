@@ -1,4 +1,4 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -6,6 +6,14 @@ import path from "node:path";
 import { RELEASE_PIPELINE_ARTIFACT_DIR, computeReleaseFingerprints } from "../release/computeReleaseFingerprints";
 
 const DEFAULT_APK = path.join(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
+const CACHE_MANIFEST_NAME = "cache-manifest.json";
+
+type CacheManifest = {
+  native_build_fingerprint: string;
+  js_bundle_fingerprint: string;
+  source_tree_hash: string;
+  apk_sha256: string;
+};
 
 function sha256(filePath: string): string {
   return createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
@@ -23,6 +31,15 @@ function buildDebugApk(): void {
   }
 }
 
+function readCacheManifest(manifestPath: string): CacheManifest | null {
+  if (!fs.existsSync(manifestPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(manifestPath, "utf8")) as CacheManifest;
+  } catch {
+    return null;
+  }
+}
+
 function main(): void {
   fs.mkdirSync(RELEASE_PIPELINE_ARTIFACT_DIR, { recursive: true });
   const fingerprints = computeReleaseFingerprints();
@@ -34,17 +51,34 @@ function main(): void {
     `${fingerprints.nativeBuildFingerprint}-${fingerprints.jsBundleFingerprint}`,
   );
   const cachedApk = path.join(cacheDir, "app-release.apk");
+  const cacheManifestPath = path.join(cacheDir, CACHE_MANIFEST_NAME);
+  const cacheManifest = readCacheManifest(cacheManifestPath);
   let built = false;
-  let cacheHit = fs.existsSync(cachedApk);
-  const sourceApk = process.env.ANDROID_API34_APK_PATH ?? DEFAULT_APK;
+  let cacheHit =
+    fs.existsSync(cachedApk) &&
+    cacheManifest?.native_build_fingerprint === fingerprints.nativeBuildFingerprint &&
+    cacheManifest?.js_bundle_fingerprint === fingerprints.jsBundleFingerprint &&
+    cacheManifest?.source_tree_hash === fingerprints.sourceTreeHash &&
+    cacheManifest?.apk_sha256 === sha256(cachedApk);
+  const explicitSourceApk = process.env.ANDROID_API34_APK_PATH;
+  const sourceApk = explicitSourceApk ?? DEFAULT_APK;
 
   if (!cacheHit) {
-    if (!fs.existsSync(sourceApk)) {
+    if (!explicitSourceApk) {
       buildDebugApk();
       built = true;
+    } else if (!fs.existsSync(sourceApk)) {
+      throw new Error(`BLOCKED_ANDROID_API34_EXPLICIT_APK_MISSING:${sourceApk}`);
     }
     fs.mkdirSync(cacheDir, { recursive: true });
     fs.copyFileSync(sourceApk, cachedApk);
+    const manifest: CacheManifest = {
+      native_build_fingerprint: fingerprints.nativeBuildFingerprint,
+      js_bundle_fingerprint: fingerprints.jsBundleFingerprint,
+      source_tree_hash: fingerprints.sourceTreeHash,
+      apk_sha256: sha256(cachedApk),
+    };
+    fs.writeFileSync(cacheManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
     cacheHit = false;
   }
 
