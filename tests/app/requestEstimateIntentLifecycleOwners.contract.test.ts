@@ -30,13 +30,16 @@ describe("request estimate intent lifecycle owners", () => {
     expect(requestOwner).toContain("acknowledgePromptComposerLaunch");
     expect(requestOwner).toContain('draftSessionStatus: "PROMPT_COMPOSER_READY"');
     expect(requestOwner).toContain('projection: "request_prompt_composer"');
-    expect(requestOwner).toContain("hasExactPendingLaunchProjection");
-    expect(requestOwner).toContain("pendingLaunchPrompt");
+    expect(requestOwner).toContain("isRequestEstimatePromptComposerRendered");
+    expect(requestOwner).toContain("input.bundle == null");
+    expect(requestOwner).toContain(
+      "current.bundle?.draft.problemText?.trim() === expectedPrompt",
+    );
+    expect(requestOwner).not.toContain("hasExactPendingLaunchProjection");
+    expect(requestOwner).not.toContain("pendingLaunchPrompt");
     expect(requestOwner).toContain("this.renderScreenView(this.state)");
     expect(requestOwner).toContain("this.cachedScreenViewState === state");
-    expect(requestOwner).not.toContain(
-      "this.renderedLaunchId = this.props.launchId?.trim() || null;\n    }\n    if (launchChanged",
-    );
+    expect(requestOwner).not.toContain("renderedLaunchId");
     expect(requestOwner).toContain(
       "() => runAfterNextPaint(() => this.applyInitialLaunchFlow())",
     );

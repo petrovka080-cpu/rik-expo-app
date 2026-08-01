@@ -12,7 +12,11 @@ import {
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
 } from "./consumerRepairTestHelpers";
-import { shouldAutoPrepareInitialConsumerRepairRequest } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
+import {
+  isFreshRequestEstimateLaunchWorkspace,
+  isRequestEstimatePromptComposerRendered,
+  shouldAutoPrepareInitialConsumerRepairRequest,
+} from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 
 describe("reload does not restore approved estimate as active draft", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
@@ -91,6 +95,36 @@ describe("reload does not restore approved estimate as active draft", () => {
       initialProblemText: "new automatic launch",
       launchId: "automatic-launch-0001",
       autoPrepare: true,
+    })).toBe(true);
+  });
+
+  it("does not acknowledge a fresh warm launch until the exact prompt composer replaced the old bundle", () => {
+    const expectedPrompt = "roof waterproofing 220 sqm";
+    const staleBundle = createConsumerRepairRequestDraft({
+      consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
+      problemText: "electrical installation 180 sqm",
+      repairType: "electrical",
+      aiDraft: buildConsumerRepairAiDraft("electrical installation 180 sqm"),
+    });
+
+    expect(isFreshRequestEstimateLaunchWorkspace({
+      initialProblemText: expectedPrompt,
+      launchId: "roof-launch-0001",
+    })).toBe(true);
+    expect(isFreshRequestEstimateLaunchWorkspace({
+      initialProblemText: expectedPrompt,
+      initialDraftId: staleBundle.draft.id,
+      launchId: "roof-launch-0001",
+    })).toBe(false);
+    expect(isRequestEstimatePromptComposerRendered({
+      bundle: staleBundle,
+      problemText: expectedPrompt,
+      expectedPrompt,
+    })).toBe(false);
+    expect(isRequestEstimatePromptComposerRendered({
+      bundle: null,
+      problemText: expectedPrompt,
+      expectedPrompt,
     })).toBe(true);
   });
 

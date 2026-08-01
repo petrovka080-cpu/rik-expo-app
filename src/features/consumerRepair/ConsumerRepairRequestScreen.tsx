@@ -1,6 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
-import { Text, View, type TextInput } from "react-native";
+import { type TextInput } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
@@ -29,7 +29,6 @@ import {
   type ConsumerRepairQuantityChangeMeta,
 } from "./consumerRepairQuantityEditTrace";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
-import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
@@ -106,14 +105,20 @@ export type ConsumerRepairRequestScreenProps = {
 };
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
 
+export function isFreshRequestEstimateLaunchWorkspace(
+  props: ConsumerRepairRequestScreenProps,
+): boolean {
+  return Boolean(
+    props.launchId?.trim() &&
+    props.initialProblemText?.trim() &&
+    !props.initialDraftId?.trim()
+  );
+}
+
 function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenControllerProps): boolean {
   return Boolean(
     shouldAutoPrepareInitialConsumerRepairRequest(props) ||
-    (
-      props.launchId?.trim() &&
-      props.initialProblemText?.trim() &&
-      !props.initialDraftId?.trim()
-    )
+    isFreshRequestEstimateLaunchWorkspace(props)
   );
 }
 
@@ -163,10 +168,22 @@ export function isRequestEstimateLaunchBundleRendered(input: {
   );
 }
 
+export function isRequestEstimatePromptComposerRendered(input: {
+  bundle: ConsumerRepairDraftBundle | null;
+  problemText: string;
+  expectedPrompt: string | null | undefined;
+}): boolean {
+  const expectedPrompt = input.expectedPrompt?.trim() ?? "";
+  return Boolean(
+    expectedPrompt &&
+    input.bundle == null &&
+    input.problemText.trim() === expectedPrompt,
+  );
+}
+
 export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
   private launchIntentAcknowledged = false;
-  private renderedLaunchId = this.props.launchId?.trim() || null;
   private cachedScreenViewState: State | null = null;
   private cachedScreenView: React.ReactElement | null = null;
   private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
@@ -184,15 +201,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (launchChanged || prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;
       const nextProblemText = this.props.initialProblemText?.trim();
-      const hasExactPendingLaunchProjection = Boolean(
-        launchChanged &&
-        this.props.launchId?.trim() &&
-        nextProblemText,
-      );
       if (
-        !hasExactPendingLaunchProjection &&
         nextProblemText &&
         (
+          (launchChanged && isFreshRequestEstimateLaunchWorkspace(this.props)) ||
           nextProblemText !== this.state.problemText ||
           (launchChanged && this.state.bundle != null)
         )
@@ -215,17 +227,56 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
   }
   refreshAfterDurableHydration(): void {
-    const hydrated = buildInitialControllerState(this.props);
+    const hydrated = buildInitialConsumerRepairRequestState({
+      initialProblemText: this.props.initialProblemText,
+      initialDraftId: this.props.initialDraftId,
+      history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
+      approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
+    });
+    const freshLaunchWorkspace =
+      isFreshRequestEstimateLaunchWorkspace(this.props);
+    const expectedPrompt = this.props.initialProblemText?.trim() ?? "";
     this.historyLoaded = true;
-    this.setState((current) => ({
-      history: hydrated.history,
-      approvedHistoryPage: hydrated.approvedHistoryPage,
-      bundle: current.bundle ?? hydrated.bundle,
-      problemText: current.bundle || !hydrated.bundle ? current.problemText : "",
-      statusMessage: current.bundle || !hydrated.bundle
-        ? current.statusMessage
-        : hydrated.statusMessage,
-    }));
+    this.setState((current) => {
+      const currentBundleOwnsFreshLaunch = Boolean(
+        freshLaunchWorkspace &&
+        current.bundle?.draft.problemText?.trim() === expectedPrompt,
+      );
+      if (freshLaunchWorkspace) {
+        return {
+          ...current,
+          history: hydrated.history,
+          approvedHistoryPage: hydrated.approvedHistoryPage,
+          bundle: currentBundleOwnsFreshLaunch ? current.bundle : null,
+          problemText: currentBundleOwnsFreshLaunch
+            ? current.problemText
+            : expectedPrompt,
+          aiAnswerRu: currentBundleOwnsFreshLaunch ? current.aiAnswerRu : null,
+          selectedWork: currentBundleOwnsFreshLaunch
+            ? current.selectedWork
+            : null,
+          selectedHistoryId: null,
+          validationErrors: currentBundleOwnsFreshLaunch
+            ? current.validationErrors
+            : [],
+          statusMessage: currentBundleOwnsFreshLaunch
+            ? current.statusMessage
+            : null,
+        };
+      }
+      return {
+        ...current,
+        history: hydrated.history,
+        approvedHistoryPage: hydrated.approvedHistoryPage,
+        bundle: current.bundle ?? hydrated.bundle,
+        problemText: current.bundle || !hydrated.bundle
+          ? current.problemText
+          : "",
+        statusMessage: current.bundle || !hydrated.bundle
+          ? current.statusMessage
+          : hydrated.statusMessage,
+      };
+    });
   }
   private applyInitialLaunchFlow(): void {
     if (shouldAutoPrepareInitialConsumerRepairRequest(this.props)) {
@@ -239,10 +290,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const launchId = this.props.launchId?.trim();
     const expectedPrompt = this.props.initialProblemText?.trim();
     if (!launchId || !expectedPrompt || this.props.initialDraftId?.trim()) return;
-    const pendingProjectionVisible =
-      launchId !== this.renderedLaunchId &&
-      this.props.initialProblemText?.trim() === expectedPrompt;
-    if (!pendingProjectionVisible && this.state.problemText.trim() !== expectedPrompt) {
+    if (!isRequestEstimatePromptComposerRendered({
+      bundle: this.state.bundle,
+      problemText: this.state.problemText,
+      expectedPrompt,
+    })) {
       return;
     }
     this.initialDeepLinkApplied = true;
@@ -341,11 +393,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
     this.historyLoaded = true;
-    if (isLaunchBuild) {
-      // The next render contains the new bundle itself, so the lightweight
-      // launch projection may disappear during that same committed render.
-      this.renderedLaunchId = this.props.launchId?.trim() || null;
-    }
     this.setState({
       problemText: "",
       // The created bundle owns its explicit work selection. The composer is a
@@ -1084,13 +1131,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ approvedHistoryPage });
     }
   };
-  private pendingLaunchPrompt(): string | null {
-    const launchId = this.props.launchId?.trim() || null;
-    const incomingPrompt = this.props.initialProblemText?.trim() || "";
-    return launchId && launchId !== this.renderedLaunchId && incomingPrompt
-      ? incomingPrompt
-      : null;
-  }
   private renderScreenView(state: State): React.ReactElement {
     if (this.cachedScreenView && this.cachedScreenViewState === state) {
       return this.cachedScreenView;
@@ -1133,26 +1173,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return this.cachedScreenView;
   }
   render(): React.ReactNode {
-    const pendingLaunchPrompt = this.pendingLaunchPrompt();
     return (
       <>
         {this.renderScreenView(this.state)}
-        {pendingLaunchPrompt ? (
-          <View
-            accessibilityLabel={`Текущий запрос: ${pendingLaunchPrompt}`}
-            pointerEvents="none"
-            style={styles.pendingLaunchPrompt}
-            testID="request-estimate-current-launch-prompt"
-          >
-            <Text style={styles.launchPromptLabel}>Текущий запрос</Text>
-            <Text
-              style={styles.launchPromptText}
-              testID="request-estimate-current-launch-prompt-text"
-            >
-              {pendingLaunchPrompt}
-            </Text>
-          </View>
-        ) : null}
         {this.props.MobilePhotoCaptureFlowNode ?? null}
       </>
     );

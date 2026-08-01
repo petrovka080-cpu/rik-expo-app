@@ -54,6 +54,16 @@ type AndroidCaseResult = {
   backendPassed: boolean;
   launchPassed: boolean;
   promptProbeVisible: boolean;
+  promptProbeDiagnostics: {
+    ok: boolean;
+    elapsedMs: number;
+    textLength: number;
+    exactPromptVisible: boolean;
+    inputTestIdVisible: boolean;
+    routeReadyVisible: boolean;
+  }[];
+  promptProbeScreenshotPath: string | null;
+  promptProbeUiDumpPath: string | null;
   dumpsysIntentReceived: boolean;
   dumpsysIntentSample: string;
   uiRowsVisible: boolean;
@@ -664,15 +674,60 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   probeUrl.searchParams.delete(testCase.route === "/request" ? "autoPrepare" : "autoSend");
   const probeLaunch = launchDeepLink(adbPath, deviceId, probeUrl.toString());
   let promptProbeVisible = false;
+  const promptProbeDiagnostics: AndroidCaseResult["promptProbeDiagnostics"] = [];
+  const promptProbeStartedAt = Date.now();
   // A preceding 80+ row request can still be yielding the JS thread when the
   // next deep link arrives. The prompt probe is an ingress assertion, so wait
   // for that exact visible value instead of racing the prior render.
+  if (testCase.route === "/request") {
+    await wait(3_000);
+    for (let scroll = 0; scroll < 3; scroll += 1) {
+      runText(
+        adbPath,
+        ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 400)],
+        10_000,
+      );
+      await wait(250);
+    }
+  }
   const promptProbeDeadline = Date.now() + 30_000;
   while (Date.now() < promptProbeDeadline && !promptProbeVisible) {
     const probeDump = dumpUiText(adbPath, deviceId);
     promptProbeVisible = probeDump.ok && probeDump.text.includes(testCase.prompt);
-    if (!promptProbeVisible) await wait(1_000);
+    promptProbeDiagnostics.push({
+      ok: probeDump.ok,
+      elapsedMs: Date.now() - promptProbeStartedAt,
+      textLength: probeDump.text.length,
+      exactPromptVisible: promptProbeVisible,
+      inputTestIdVisible: probeDump.text.includes(
+        testCase.route === "/request"
+          ? "consumer-repair-problem-input"
+          : "ai-assistant-input",
+      ),
+      routeReadyVisible: probeDump.text.includes(
+        testCase.route === "/request"
+          ? "ROUTE_PROOF_REQUEST_ROUTE_READY"
+          : "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY",
+      ),
+    });
+    if (!promptProbeVisible) {
+      if (testCase.route === "/request") {
+        runText(
+          adbPath,
+          ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 400)],
+          10_000,
+        );
+      }
+      await wait(1_000);
+    }
   }
+  const failedPromptProbeArtifactId = `${testCase.caseId}_prompt_probe`;
+  const promptProbeScreenshotPath = promptProbeVisible
+    ? null
+    : captureScreenshot(adbPath, deviceId, failedPromptProbeArtifactId);
+  const promptProbeUiDumpPath = promptProbeVisible
+    ? null
+    : captureUiDump(adbPath, deviceId, failedPromptProbeArtifactId).path;
   const launch = launchDeepLink(adbPath, deviceId, uri);
   const dumpsys = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity"], 20_000);
   const dumpsysIntentReceived =
@@ -718,6 +773,9 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     backendPassed: backend.failures.length === 0,
     launchPassed: launch.ok,
     promptProbeVisible,
+    promptProbeDiagnostics,
+    promptProbeScreenshotPath,
+    promptProbeUiDumpPath,
     dumpsysIntentReceived,
     dumpsysIntentSample: dumpsys.output
       .split(/\r?\n/)

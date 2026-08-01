@@ -82,6 +82,10 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain("CASE_UI_POLL_MS = 8_000");
     expect(liveSmoke).toContain("CASE_UI_MAX_POLLS = 3");
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
+    expect(liveSmoke).toContain('if (testCase.route === "/request")');
+    expect(liveSmoke).toContain(
+      'viewportSwipeArgs(adbPath, deviceId, "down", 400)',
+    );
   });
 
   it("keeps the primary AI route behind a bounded Suspense fallback and readiness marker", () => {
