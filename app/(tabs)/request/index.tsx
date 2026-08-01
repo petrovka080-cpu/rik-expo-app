@@ -72,7 +72,6 @@ function RequestRoute() {
         />
       ) : null}
       <ConsumerRepairRequestScreen
-        key={`${launchId || "direct"}::${draftId || "new"}::${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}
         initialProblemText={prompt || undefined}
         initialDraftId={draftId || undefined}
         launchFingerprint={launchPayload?.fingerprint}

@@ -195,8 +195,23 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
     const launchChanged = prevProps.launchId !== this.props.launchId;
+    const draftChanged =
+      prevProps.initialDraftId !== this.props.initialDraftId;
     if (launchChanged) {
       this.launchIntentAcknowledged = false;
+    }
+    if (draftChanged) {
+      const nextDraftId = this.props.initialDraftId?.trim();
+      const currentDraftAlreadyRendered =
+        nextDraftId && this.state.bundle?.draft.id === nextDraftId;
+      if (!currentDraftAlreadyRendered) {
+        this.initialDeepLinkApplied = false;
+        this.setState(
+          buildInitialControllerState(this.props),
+          () => runAfterNextPaint(() => this.applyInitialLaunchFlow()),
+        );
+        return;
+      }
     }
     if (launchChanged || prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;

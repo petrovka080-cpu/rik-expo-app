@@ -62,8 +62,12 @@ describe("request estimate intent lifecycle owners", () => {
     expect(aiScreen).toContain("runtimeLaunchPayload");
 
     const requestRoute = read("app/(tabs)/request/index.tsx");
-    expect(requestRoute).toContain(
-      'key={`${launchId || "direct"}::${draftId || "new"}::${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
+    expect(requestRoute).not.toContain("key={`${launchId");
+    expect(requestOwner).toContain(
+      "prevProps.initialDraftId !== this.props.initialDraftId",
+    );
+    expect(requestOwner).toContain(
+      "this.state.bundle?.draft.id === nextDraftId",
     );
     const aiRoute = read("app/(tabs)/ai.tsx");
     expect(aiRoute).not.toContain(
