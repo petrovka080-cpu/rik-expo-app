@@ -84,8 +84,17 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
     expect(liveSmoke).toContain('if (testCase.route === "/request")');
     expect(liveSmoke).toContain(
+      "REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = 12_000",
+    );
+    expect(liveSmoke).toContain("PROMPT_PROBE_POLL_MS = 4_000");
+    expect(liveSmoke).toContain(
       'viewportSwipeArgs(adbPath, deviceId, "down", 400)',
     );
+    const promptProbeLoop = liveSmoke.slice(
+      liveSmoke.indexOf("while (Date.now() < promptProbeDeadline"),
+      liveSmoke.indexOf("const failedPromptProbeArtifactId"),
+    );
+    expect(promptProbeLoop).not.toContain("shell\", \"input\", \"swipe");
   });
 
   it("keeps the primary AI route behind a bounded Suspense fallback and readiness marker", () => {

@@ -25,6 +25,8 @@ const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEO
 const CASE_UI_SETTLE_MS = 40_000;
 const CASE_UI_POLL_MS = 8_000;
 const CASE_UI_MAX_POLLS = 3;
+const REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = 12_000;
+const PROMPT_PROBE_POLL_MS = 4_000;
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
@@ -677,10 +679,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const promptProbeDiagnostics: AndroidCaseResult["promptProbeDiagnostics"] = [];
   const promptProbeStartedAt = Date.now();
   // A preceding 80+ row request can still be yielding the JS thread when the
-  // next deep link arrives. The prompt probe is an ingress assertion, so wait
-  // for that exact visible value instead of racing the prior render.
+  // next deep link arrives. UIAutomator accessibility dumps synchronously walk
+  // that same native tree, so first leave a bounded quiet window for React
+  // Native to commit the new launch instead of starving it with proof reads.
   if (testCase.route === "/request") {
-    await wait(3_000);
+    await wait(REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS);
     for (let scroll = 0; scroll < 3; scroll += 1) {
       runText(
         adbPath,
@@ -710,16 +713,7 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
           : "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY",
       ),
     });
-    if (!promptProbeVisible) {
-      if (testCase.route === "/request") {
-        runText(
-          adbPath,
-          ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 400)],
-          10_000,
-        );
-      }
-      await wait(1_000);
-    }
+    if (!promptProbeVisible) await wait(PROMPT_PROBE_POLL_MS);
   }
   const failedPromptProbeArtifactId = `${testCase.caseId}_prompt_probe`;
   const promptProbeScreenshotPath = promptProbeVisible
