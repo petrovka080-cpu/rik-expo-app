@@ -341,6 +341,7 @@ function promptFlowLines(): string[] {
     "name: AI Construction Knowhow Prompt Pipeline Probe",
     "---",
     '- openLink: "rik://ai?context=director"',
+    '- openLink: "rik:///ai?context=director"',
     "- extendedWaitUntil:",
     "    visible:",
     '      id: "ai.assistant.screen"',
@@ -474,6 +475,7 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
 
   const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
+  let maestroCommandCenterFlowCompleted = true;
   try {
     runCommand(
       maestroBinary,
@@ -485,22 +487,35 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
       secrets,
     );
   } catch {
-    return writeArtifacts(
-      baseArtifact(
-        "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "Construction knowhow preview was not targetable in Android hierarchy.",
-        { android_runtime_smoke: "PASS" },
-      ),
-    );
+    maestroCommandCenterFlowCompleted = false;
   } finally {
     fs.rmSync(flowPath, { force: true });
   }
+
+  adb(
+    emulator.deviceId,
+    [
+      "shell",
+      "am",
+      "start",
+      "-W",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      "rik://ai-command-center",
+      appId,
+    ],
+    secrets,
+  );
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_500);
 
   if (!targetConstructionKnowhowIds(emulator.deviceId, secrets)) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "Construction knowhow preview was not targetable in Android hierarchy.",
+        maestroCommandCenterFlowCompleted
+          ? "Construction knowhow preview was not targetable in Android hierarchy."
+          : "Construction knowhow preview was not targetable after Maestro and Android intent fallback.",
         { android_runtime_smoke: "PASS" },
       ),
     );
