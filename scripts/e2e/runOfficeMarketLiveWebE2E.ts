@@ -901,10 +901,13 @@ async function newRolePage(browser, roleKey) {
 }
 
 async function closeRolePage(rolePage) {
-  await rolePage.page.waitForTimeout(500).catch(() => undefined);
+  // Every functional assertion has completed before this teardown boundary.
+  // Detach first so requests aborted by context disposal cannot masquerade as
+  // product console or transport failures, then give the page a bounded grace.
   rolePage.page.removeAllListeners("console");
   rolePage.page.removeAllListeners("response");
   rolePage.page.removeAllListeners("requestfailed");
+  await rolePage.page.waitForTimeout(500).catch(() => undefined);
   await rolePage.context.close().catch(() => undefined);
 }
 

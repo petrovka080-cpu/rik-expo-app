@@ -85,6 +85,16 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("async function closeRolePage(rolePage)");
     expect(runnerSource).toContain('removeAllListeners("console")');
     expect(runnerSource).toContain("await rolePage.page.waitForTimeout(500)");
+    const teardown = runnerSource.slice(
+      runnerSource.indexOf("async function closeRolePage(rolePage)"),
+      runnerSource.indexOf("async function openForemanMaterials"),
+    );
+    expect(teardown.indexOf('removeAllListeners("console")')).toBeLessThan(
+      teardown.indexOf("waitForTimeout(500)"),
+    );
+    expect(teardown.indexOf("waitForTimeout(500)")).toBeLessThan(
+      teardown.indexOf("context.close()"),
+    );
     expect(runnerSource).toContain("runBackOfficeRoleSurfaces");
     expect(runnerSource).toContain("warehouse-tab-stock");
     expect(runnerSource).toContain("contractor-work-card-");
