@@ -34,7 +34,8 @@ describe("AI construction know-how architecture", () => {
     expect(emulatorRunner).toContain('openLink: "rik:///ai-command-center"');
     expect(emulatorRunner).toContain('openLink: "rik://ai-command-center"');
     expect(emulatorRunner).toContain('"android.intent.action.VIEW"');
-    expect(emulatorRunner).toContain('openLink: "rik:///ai?context=director"');
+    expect(emulatorRunner).toContain('id: "ai.assistant.open"');
+    expect(emulatorRunner).toContain("targetAssistantInputViaGlobalUi");
     for (const testId of [
       "ai.construction.knowhow.preview",
       "ai.construction.knowhow.role",

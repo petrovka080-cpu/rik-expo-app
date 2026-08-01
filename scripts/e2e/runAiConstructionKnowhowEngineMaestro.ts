@@ -340,12 +340,15 @@ function promptFlowLines(): string[] {
     `appId: ${appId}`,
     "name: AI Construction Knowhow Prompt Pipeline Probe",
     "---",
-    '- openLink: "rik://ai?context=director"',
-    '- openLink: "rik:///ai?context=director"',
+    "- launchApp:",
+    "    clearState: false",
+    "- back",
     "- extendedWaitUntil:",
     "    visible:",
-    '      id: "ai.assistant.screen"',
+    '      id: "ai.assistant.open"',
     "    timeout: 30000",
+    "- tapOn:",
+    '    id: "ai.assistant.open"',
     "- extendedWaitUntil:",
     "    visible:",
     '      id: "ai.assistant.input"',
@@ -399,6 +402,23 @@ function observePromptPipeline(deviceId: string, secrets: readonly string[]): bo
     }
     adb(deviceId, ["shell", "input", "swipe", "540", "1820", "540", "1520", "250"], secrets);
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 750);
+  }
+  return false;
+}
+
+function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly string[]): boolean {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const hierarchy = dumpAndroidHierarchy(deviceId, secrets);
+    if (hierarchy.includes('resource-id="ai.assistant.input"')) {
+      return true;
+    }
+    const openBounds = boundsCenterForResourceId(hierarchy, "ai.assistant.open");
+    if (openBounds) {
+      adb(deviceId, ["shell", "input", "tap", String(openBounds.x), String(openBounds.y)], secrets);
+    } else {
+      adb(deviceId, ["shell", "input", "keyevent", "4"], secrets);
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
   }
   return false;
 }
@@ -522,6 +542,7 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
   }
 
   const promptFlowPath = createPromptFlowFile();
+  let maestroPromptFlowCompleted = true;
   try {
     runCommand(
       maestroBinary,
@@ -530,18 +551,24 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
       secrets,
     );
   } catch {
+    maestroPromptFlowCompleted = false;
+  } finally {
+    fs.rmSync(promptFlowPath, { force: true });
+  }
+
+  if (!targetAssistantInputViaGlobalUi(emulator.deviceId, secrets)) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "AI assistant prompt pipeline probe could not send through deterministic UI.",
+        maestroPromptFlowCompleted
+          ? "AI assistant input was not targetable through the global UI entrypoint."
+          : "AI assistant input was not targetable after Maestro and global UI fallback.",
         {
           android_runtime_smoke: "PASS",
           deterministic_testids_targetable: true,
         },
       ),
     );
-  } finally {
-    fs.rmSync(promptFlowPath, { force: true });
   }
 
   try {
