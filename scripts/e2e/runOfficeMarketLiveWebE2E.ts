@@ -1028,11 +1028,22 @@ async function createForemanEstimate(page, marker, mode) {
     await byTestId(page, "foreman-ai-estimate-catalog-search").fill("MAT-BOLT");
     const addCatalog = byTestId(page, "foreman-ai-estimate-catalog-add").first();
     await addCatalog.waitFor({ state: "visible", timeout: 30_000 });
-    const beforeRows = await byTestId(page, "foreman-ai-estimate-row").count();
+    const beforeRowSummary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
+    const beforeRows = Number(beforeRowSummary.match(/(\d+)\s*$/)?.[1] || "0");
+    if (!Number.isInteger(beforeRows) || beforeRows < 1) {
+      throw new Error(`manual estimate row count is invalid before catalog add: ${beforeRowSummary}`);
+    }
     await activate(addCatalog);
-    await poll("catalog item added to manual estimate", async () =>
-      (await byTestId(page, "foreman-ai-estimate-row").count()) > beforeRows ? true : null,
-    20_000);
+    await poll("catalog item added to manual estimate", async () => {
+      const summary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
+      return Number(summary.match(/(\d+)\s*$/)?.[1] || "0") === beforeRows + 1 ? true : null;
+    }, 20_000);
+    const estimateList = byTestId(page, "foreman-ai-estimate-list");
+    await estimateList.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      element.dispatchEvent(new Event("scroll", { bubbles: true }));
+    });
+    await page.getByLabel(/^estimate-row-catalog:/).last().waitFor({ state: "visible", timeout: 20_000 });
     result.office.manual_estimate_catalog_add_exercised = true;
   }
 

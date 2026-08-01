@@ -264,6 +264,7 @@ export default function ProfessionalEstimateComposer({
       <View
         style={[styles.row, !row.includedInEstimate && styles.rowDisabled]}
         testID="foreman-ai-estimate-row"
+        accessibilityLabel={`estimate-row-${row.rowId}`}
       >
         <View style={styles.rowHeader}>
           <TextInput
@@ -355,6 +356,7 @@ export default function ProfessionalEstimateComposer({
         </View>
 
         <FlatList
+          testID="foreman-ai-estimate-list"
           style={styles.body}
           contentContainerStyle={styles.bodyContent}
           data={mapping?.rows ?? []}
@@ -410,7 +412,7 @@ export default function ProfessionalEstimateComposer({
 
           {mapping ? (
             <View style={styles.summary}>
-              <Text style={styles.summaryText}>
+              <Text style={styles.summaryText} testID="foreman-ai-estimate-row-count">
                 {TEXT.rows}: {mapping.requestDraftLines.length}
               </Text>
               <Text style={styles.summaryText}>

@@ -28,6 +28,9 @@ describe("foreman AI estimate screen embedding", () => {
     expect(navigation).not.toContain("openWorkTypePicker");
     expect(composer).toContain('testID="foreman-ai-estimate-row-qty"');
     expect(composer).toContain('testID="foreman-ai-estimate-row-price"');
+    expect(composer).toContain('testID="foreman-ai-estimate-list"');
+    expect(composer).toContain('testID="foreman-ai-estimate-row-count"');
+    expect(composer).toContain('accessibilityLabel={`estimate-row-${row.rowId}`}');
     expect(composer).toContain('testID="foreman-ai-estimate-catalog-search"');
     expect(composer).toContain('testID="foreman-ai-estimate-open-draft"');
     expect(composer).toContain('testID="foreman-ai-estimate-work-suggestions"');
