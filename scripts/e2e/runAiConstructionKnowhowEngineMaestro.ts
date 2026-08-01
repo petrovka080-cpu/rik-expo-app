@@ -412,6 +412,21 @@ function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly str
   return false;
 }
 
+function observePersistentAssistantResponse(deviceId: string, secrets: readonly string[]): boolean {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    if (
+      dumpAndroidHierarchy(deviceId, secrets).includes(
+        'resource-id="ai.assistant.response"',
+      )
+    ) {
+      return true;
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
+  }
+  return false;
+}
+
 function openCommandCenterViaAndroidIntent(deviceId: string, secrets: readonly string[]): boolean {
   for (let attempt = 0; attempt < 4; attempt += 1) {
     adb(
@@ -557,6 +572,7 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
   }
 
   const promptSubmissionFlowPath = createPromptSubmissionFlowFile();
+  let maestroObservedPersistentResponse = true;
   try {
     runCommand(
       maestroBinary,
@@ -565,6 +581,14 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
       secrets,
     );
   } catch {
+    maestroObservedPersistentResponse = false;
+  } finally {
+    fs.rmSync(promptSubmissionFlowPath, { force: true });
+  }
+  const persistentResponseObserved =
+    maestroObservedPersistentResponse ||
+    observePersistentAssistantResponse(emulator.deviceId, secrets);
+  if (!persistentResponseObserved) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
@@ -575,8 +599,6 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
         },
       ),
     );
-  } finally {
-    fs.rmSync(promptSubmissionFlowPath, { force: true });
   }
 
   return writeArtifacts(
