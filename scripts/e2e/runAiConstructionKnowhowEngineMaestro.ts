@@ -314,12 +314,6 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    '- openLink: "rik:///ai-command-center"',
-    '- openLink: "rik://ai-command-center"',
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.command_center.screen"',
-    "    timeout: 30000",
   ];
 
   lines.push("");
@@ -495,7 +489,6 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
 
   const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
-  let maestroCommandCenterFlowCompleted = true;
   try {
     runCommand(
       maestroBinary,
@@ -507,7 +500,13 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
       secrets,
     );
   } catch {
-    maestroCommandCenterFlowCompleted = false;
+    return writeArtifacts(
+      baseArtifact(
+        "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
+        "Android launch or explicit developer/control authentication failed.",
+        { android_runtime_smoke: "PASS" },
+      ),
+    );
   } finally {
     fs.rmSync(flowPath, { force: true });
   }
@@ -533,9 +532,7 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        maestroCommandCenterFlowCompleted
-          ? "Construction knowhow preview was not targetable in Android hierarchy."
-          : "Construction knowhow preview was not targetable after Maestro and Android intent fallback.",
+        "Construction knowhow preview was not targetable after the Android command-center intent.",
         { android_runtime_smoke: "PASS" },
       ),
     );

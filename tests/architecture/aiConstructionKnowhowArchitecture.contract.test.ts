@@ -31,9 +31,8 @@ describe("AI construction know-how architecture", () => {
 
     const commandCenter = read("src/features/ai/commandCenter/AiCommandCenterScreen.tsx");
     const emulatorRunner = read("scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts");
-    expect(emulatorRunner).toContain('openLink: "rik:///ai-command-center"');
-    expect(emulatorRunner).toContain('openLink: "rik://ai-command-center"');
     expect(emulatorRunner).toContain('"android.intent.action.VIEW"');
+    expect(emulatorRunner).toContain('"rik://ai-command-center"');
     expect(emulatorRunner).toContain('id: "ai.assistant.open"');
     expect(emulatorRunner).toContain("targetAssistantInputViaGlobalUi");
     for (const testId of [
