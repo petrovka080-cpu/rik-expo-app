@@ -135,7 +135,12 @@ export function AIAssistantProductHeader({
 
   return (
     <View style={styles.header}>
-      <Pressable style={styles.headerIconButton} onPress={onBack}>
+      <Pressable
+        style={styles.headerIconButton}
+        onPress={onBack}
+        accessibilityLabel="ai.assistant.back"
+        testID="ai.assistant.back"
+      >
         <Ionicons name="arrow-back" size={20} color="#0F172A" />
       </Pressable>
 
@@ -146,7 +151,12 @@ export function AIAssistantProductHeader({
         </Text>
       </View>
 
-      <Pressable style={styles.headerIconButton} onPress={onClear}>
+      <Pressable
+        style={styles.headerIconButton}
+        onPress={onClear}
+        accessibilityLabel="ai.assistant.clear"
+        testID="ai.assistant.clear"
+      >
         <Ionicons name="refresh" size={18} color="#0F172A" />
       </Pressable>
     </View>

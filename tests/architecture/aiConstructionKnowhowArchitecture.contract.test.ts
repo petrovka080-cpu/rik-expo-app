@@ -39,8 +39,12 @@ describe("AI construction know-how architecture", () => {
     expect(emulatorRunner).toContain("targetAssistantInputViaGlobalUi");
     expect(emulatorRunner).toContain('"android.intent.category.LAUNCHER"');
     expect(emulatorRunner).toContain("- eraseText: 200");
+    expect(emulatorRunner).toContain('id: "ai.assistant.clear"');
     expect(emulatorRunner).toContain('id: "ai.assistant.response"');
     expect(emulatorRunner).toContain("observePersistentAssistantResponse");
+    expect(read("src/features/ai/AIAssistantReadyProductPanels.tsx")).toContain(
+      'testID="ai.assistant.clear"',
+    );
     for (const testId of [
       "ai.construction.knowhow.preview",
       "ai.construction.knowhow.role",
