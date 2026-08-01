@@ -118,18 +118,6 @@ function AppBottomNav({
         if (Platform.OS === "android") {
           console.info("[RikWarmDeepLink] tab_handler_navigate");
         }
-        const event = navigation.emit({
-          type: "tabPress",
-          target: targetRoute.key,
-          canPreventDefault: true,
-        });
-        if (event.defaultPrevented) {
-          if (Platform.OS === "android") {
-            console.info("[RikWarmDeepLink] tab_handler_prevented");
-          }
-          return false;
-        }
-
         const routeParams =
           targetRoute.params && typeof targetRoute.params === "object"
             ? targetRoute.params
@@ -153,6 +141,11 @@ function AppBottomNav({
         };
         const activeRoute = currentState.routes[currentState.index];
         if (activeRoute?.key === targetRoute.key) {
+          // Re-emitting tabPress on the already active request tab invokes the
+          // navigator's scroll-to-top path. A large estimate can keep that
+          // synchronous native/JS round trip busy long enough for the new
+          // launch envelope to miss its visible prompt deadline. The warm
+          // intent owns this same route, so replace its params immediately.
           navigation.dispatch({
             ...CommonActions.setParams(params),
             source: targetRoute.key,
@@ -161,6 +154,17 @@ function AppBottomNav({
             console.info("[RikWarmDeepLink] tab_handler_params_updated");
           }
           return true;
+        }
+        const event = navigation.emit({
+          type: "tabPress",
+          target: targetRoute.key,
+          canPreventDefault: true,
+        });
+        if (event.defaultPrevented) {
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_prevented");
+          }
+          return false;
         }
         navigation.navigate(targetRoute.name, params);
         if (Platform.OS === "android") {

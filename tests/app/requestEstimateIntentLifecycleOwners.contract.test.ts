@@ -79,6 +79,15 @@ describe("request estimate intent lifecycle owners", () => {
     );
     expect(tabsOwner).toContain('const aiTabAvailable');
     expect(tabsOwner).toContain("route.name === targetRouteName");
+    const activeRouteParamReplacement = tabsOwner.indexOf(
+      "if (activeRoute?.key === targetRoute.key)",
+    );
+    const inactiveRouteTabPress = tabsOwner.indexOf(
+      "const event = navigation.emit",
+      activeRouteParamReplacement,
+    );
+    expect(activeRouteParamReplacement).toBeGreaterThan(-1);
+    expect(inactiveRouteTabPress).toBeGreaterThan(activeRouteParamReplacement);
 
     const rootOwner = read("app/_layout.tsx");
     expect(rootOwner).toContain("aiTabNavigationApplied");
