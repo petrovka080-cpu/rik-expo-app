@@ -1040,9 +1040,20 @@ async function createForemanEstimate(page, marker, mode) {
     }, 20_000);
     const estimateList = byTestId(page, "foreman-ai-estimate-list");
     await estimateList.evaluate((element) => {
-      element.scrollTop = element.scrollHeight;
-      element.dispatchEvent(new Event("scroll", { bubbles: true }));
+      const candidates = [element, ...Array.from(element.querySelectorAll("*"))];
+      let ancestor = element.parentElement;
+      while (ancestor) {
+        candidates.push(ancestor);
+        ancestor = ancestor.parentElement;
+      }
+      for (const candidate of candidates) {
+        if (candidate.scrollHeight <= candidate.clientHeight) continue;
+        candidate.scrollTo({ top: candidate.scrollHeight, behavior: "auto" });
+        candidate.dispatchEvent(new Event("scroll", { bubbles: true }));
+      }
     });
+    await estimateList.focus();
+    await page.keyboard.press("End");
     await page.getByLabel(/^estimate-row-catalog:/).last().waitFor({ state: "visible", timeout: 20_000 });
     result.office.manual_estimate_catalog_add_exercised = true;
   }
