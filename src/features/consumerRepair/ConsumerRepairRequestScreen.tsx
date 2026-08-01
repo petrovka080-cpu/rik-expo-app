@@ -187,6 +187,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private cachedScreenViewState: State | null = null;
   private cachedScreenView: React.ReactElement | null = null;
   private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
+  private workSuggestionsEnabled =
+    !isFreshRequestEstimateLaunchWorkspace(this.props);
   private pendingDurableQuantityCommitId = 0;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
@@ -197,6 +199,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const launchChanged = prevProps.launchId !== this.props.launchId;
     const draftChanged =
       prevProps.initialDraftId !== this.props.initialDraftId;
+    if (
+      launchChanged &&
+      isFreshRequestEstimateLaunchWorkspace(this.props)
+    ) {
+      this.workSuggestionsEnabled = false;
+    }
     if (launchChanged) {
       this.launchIntentAcknowledged = false;
     }
@@ -1073,6 +1081,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
+    this.workSuggestionsEnabled = true;
     router.setParams({ draftId: "" });
     this.setState(buildNewConsumerRepairRequestState(
       "Новая заявка готова к заполнению.",
@@ -1124,6 +1133,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private changeProblemText = (problemText: string) => {
+    this.workSuggestionsEnabled = true;
     this.setState({
       problemText,
       selectedWork: shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
@@ -1153,7 +1163,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.cachedScreenViewState = state;
     this.cachedScreenView = (
       <ConsumerRepairRequestScreenView
-        state={state} renderModel={buildConsumerRepairRequestRenderModel(state)}
+        state={state}
+        renderModel={buildConsumerRepairRequestRenderModel(state, {
+          includeWorkSuggestions: this.workSuggestionsEnabled,
+        })}
         problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
         onProblemTextChange={this.changeProblemText}
         onCityChange={(city) => this.setState({ city, validationErrors: [] })}

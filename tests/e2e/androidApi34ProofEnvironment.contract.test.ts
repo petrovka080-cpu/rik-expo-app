@@ -125,6 +125,9 @@ describe("Android API34 proof environment", () => {
     expect(requestOwner).toContain(
       "(launchChanged && isFreshRequestEstimateLaunchWorkspace(this.props))",
     );
+    expect(requestOwner).toContain(
+      "includeWorkSuggestions: this.workSuggestionsEnabled",
+    );
   });
 
   it("bounds editable request rows without truncating the professional BOQ", () => {

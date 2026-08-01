@@ -69,6 +69,19 @@ describe("request estimate intent lifecycle owners", () => {
     expect(requestOwner).toContain(
       "this.state.bundle?.draft.id === nextDraftId",
     );
+    expect(requestOwner).toContain(
+      "!isFreshRequestEstimateLaunchWorkspace(this.props)",
+    );
+    expect(requestOwner).toContain(
+      "includeWorkSuggestions: this.workSuggestionsEnabled",
+    );
+    expect(requestOwner).toContain("this.workSuggestionsEnabled = true");
+    const requestRenderModel = read(
+      "src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel.ts",
+    );
+    expect(requestRenderModel).toContain(
+      "options.includeWorkSuggestions === false",
+    );
     const aiRoute = read("app/(tabs)/ai.tsx");
     expect(aiRoute).not.toContain(
       'key={launchPayload?.launchId ?? "direct-ai"}',

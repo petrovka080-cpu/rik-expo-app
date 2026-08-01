@@ -4,7 +4,10 @@ import {
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 
-export function buildConsumerRepairRequestRenderModel(state: ConsumerRepairRequestScreenState) {
+export function buildConsumerRepairRequestRenderModel(
+  state: ConsumerRepairRequestScreenState,
+  options: { includeWorkSuggestions?: boolean } = {},
+) {
   const { bundle } = state;
   const photoCount = bundle?.media.filter((item) => item.mediaKind === "photo").length ?? 0;
   const videoCount = bundle?.media.filter((item) => item.mediaKind === "video").length ?? 0;
@@ -27,6 +30,8 @@ export function buildConsumerRepairRequestRenderModel(state: ConsumerRepairReque
     approved,
     sent,
     marketplaceSendErrors,
-    workSuggestions: searchConsumerRepairWorkSuggestions(state.problemText, state.selectedWork),
+    workSuggestions: options.includeWorkSuggestions === false
+      ? []
+      : searchConsumerRepairWorkSuggestions(state.problemText, state.selectedWork),
   };
 }

@@ -8,6 +8,7 @@ import {
   buildEstimateDraftSessionTransitionStatusMessage,
   buildInitialConsumerRepairRequestState,
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairRequestRenderModel } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
@@ -126,6 +127,13 @@ describe("reload does not restore approved estimate as active draft", () => {
       problemText: expectedPrompt,
       expectedPrompt,
     })).toBe(true);
+    const launchState = buildInitialConsumerRepairRequestState({
+      initialProblemText: expectedPrompt,
+      history: [],
+    });
+    expect(buildConsumerRepairRequestRenderModel(launchState, {
+      includeWorkSuggestions: false,
+    }).workSuggestions).toEqual([]);
   });
 
   it("projects the user status from the canonical DraftSession state", () => {
