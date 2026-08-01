@@ -76,12 +76,32 @@ describe("request estimate intent lifecycle owners", () => {
       "includeWorkSuggestions: this.workSuggestionsEnabled",
     );
     expect(requestOwner).toContain("this.workSuggestionsEnabled = true");
+    expect(requestOwner).toContain(
+      "requestEstimateIntentLifecycle.subscribe",
+    );
+    expect(requestOwner).toContain("syncRuntimeIngressProjection");
+    expect(requestOwner).toContain(
+      'testID="request-estimate-runtime-ingress-composer"',
+    );
+    expect(requestOwner).toContain('testID="consumer-repair-problem-input"');
+    expect(requestOwner).toContain("editable={false}");
+    expect(requestOwner).toContain(
+      "pending.target.payload.launchId !== this.props.launchId",
+    );
     const requestRenderModel = read(
       "src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel.ts",
     );
     expect(requestRenderModel).toContain(
       "options.includeWorkSuggestions === false",
     );
+    const promptAckGuard = requestOwner.slice(
+      requestOwner.indexOf("private acknowledgePromptComposerLaunch"),
+      requestOwner.indexOf("private applyInitialDeepLinkFlow"),
+    );
+    expect(promptAckGuard).toContain(
+      "isRequestEstimatePromptComposerRendered",
+    );
+    expect(promptAckGuard).not.toContain("runtimeIngressProjection");
     const aiRoute = read("app/(tabs)/ai.tsx");
     expect(aiRoute).not.toContain(
       'key={launchPayload?.launchId ?? "direct-ai"}',

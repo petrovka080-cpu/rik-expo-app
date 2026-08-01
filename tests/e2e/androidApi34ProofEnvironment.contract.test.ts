@@ -128,6 +128,11 @@ describe("Android API34 proof environment", () => {
     expect(requestOwner).toContain(
       "includeWorkSuggestions: this.workSuggestionsEnabled",
     );
+    expect(requestOwner).toContain(
+      'testID="request-estimate-runtime-ingress-composer"',
+    );
+    expect(requestOwner).toContain('testID="consumer-repair-problem-input"');
+    expect(requestOwner).toContain("editable={false}");
   });
 
   it("bounds editable request rows without truncating the professional BOQ", () => {

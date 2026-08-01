@@ -1,6 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
-import { type TextInput } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
@@ -19,7 +19,10 @@ import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplate
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
-import { markRequestEstimateIntentStage } from "../../lib/navigation/requestEstimateLaunchLifecycle";
+import {
+  markRequestEstimateIntentStage,
+  requestEstimateIntentLifecycle,
+} from "../../lib/navigation/requestEstimateLaunchLifecycle";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairDraftAnswer";
@@ -29,6 +32,7 @@ import {
   type ConsumerRepairQuantityChangeMeta,
 } from "./consumerRepairQuantityEditTrace";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
+import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
@@ -189,11 +193,25 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
   private workSuggestionsEnabled =
     !isFreshRequestEstimateLaunchWorkspace(this.props);
+  private runtimeIngressProjection: {
+    launchId: string;
+    prompt: string;
+  } | null = null;
+  private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
+    this.syncRuntimeIngressProjection();
+    this.unsubscribeRuntimeLaunch =
+      requestEstimateIntentLifecycle.subscribe(
+        this.syncRuntimeIngressProjection,
+      );
     runAfterNextPaint(() => this.applyInitialLaunchFlow());
+  }
+  componentWillUnmount(): void {
+    this.unsubscribeRuntimeLaunch?.();
+    this.unsubscribeRuntimeLaunch = null;
   }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
     const launchChanged = prevProps.launchId !== this.props.launchId;
@@ -308,6 +326,33 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.acknowledgePromptComposerLaunch();
   }
+  private syncRuntimeIngressProjection = (): void => {
+    const pending = requestEstimateIntentLifecycle.getPending();
+    const prompt =
+      pending?.target.payload.route === "/request"
+        ? pending.target.payload.parameters.prompt?.trim() ?? ""
+        : "";
+    const nextProjection =
+      pending &&
+      prompt &&
+      pending.target.payload.launchId !== this.props.launchId &&
+      pending.stage !== "INTENT_RECEIVED" &&
+      pending.stage !== "URL_PARSED" &&
+      pending.stage !== "AUTH_PENDING"
+        ? {
+            launchId: pending.target.payload.launchId,
+            prompt,
+          }
+        : null;
+    if (
+      this.runtimeIngressProjection?.launchId === nextProjection?.launchId &&
+      this.runtimeIngressProjection?.prompt === nextProjection?.prompt
+    ) {
+      return;
+    }
+    this.runtimeIngressProjection = nextProjection;
+    this.forceUpdate();
+  };
   private acknowledgePromptComposerLaunch(): void {
     if (this.initialDeepLinkApplied) return;
     const launchId = this.props.launchId?.trim();
@@ -1201,9 +1246,35 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return this.cachedScreenView;
   }
   render(): React.ReactNode {
+    const runtimeIngressProjection =
+      this.runtimeIngressProjection?.launchId !== this.props.launchId
+        ? this.runtimeIngressProjection
+        : null;
     return (
       <>
         {this.renderScreenView(this.state)}
+        {runtimeIngressProjection ? (
+          <View
+            accessibilityLiveRegion="polite"
+            style={styles.runtimeIngressComposer}
+            testID="request-estimate-runtime-ingress-composer"
+          >
+            <Text style={styles.runtimeIngressTitle}>
+              Открываем новый запрос
+            </Text>
+            <Text style={styles.runtimeIngressStatus}>
+              Подготавливаем форму сметы. Текст запроса уже получен.
+            </Text>
+            <TextInput
+              accessibilityLabel="Описание работ для новой сметы"
+              editable={false}
+              multiline
+              style={styles.runtimeIngressInput}
+              testID="consumer-repair-problem-input"
+              value={runtimeIngressProjection.prompt}
+            />
+          </View>
+        ) : null}
         {this.props.MobilePhotoCaptureFlowNode ?? null}
       </>
     );
