@@ -105,7 +105,9 @@ describe("AI construction know-how architecture", () => {
     expect(buildRunner).toContain('const CACHE_MANIFEST_NAME = "cache-manifest.json"');
     expect(buildRunner).toContain("cacheManifest?.js_bundle_fingerprint === fingerprints.jsBundleFingerprint");
     expect(buildRunner).toContain("cacheManifest?.source_tree_hash === fingerprints.sourceTreeHash");
-    expect(buildRunner).toContain("buildDebugApk()");
+    expect(buildRunner).toContain("buildReleaseApk()");
     expect(buildRunner).toContain("if (!explicitSourceApk)");
+    expect(buildRunner).toContain("spawnGradleAssembleRelease(candidate)");
+    expect(buildRunner).toContain('"release", "app-release.apk"');
   });
 });

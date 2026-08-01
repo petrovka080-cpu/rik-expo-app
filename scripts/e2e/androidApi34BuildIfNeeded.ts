@@ -1,11 +1,14 @@
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import { RELEASE_PIPELINE_ARTIFACT_DIR, computeReleaseFingerprints } from "../release/computeReleaseFingerprints";
+import {
+  getCandidate,
+  spawnGradleAssembleRelease,
+} from "../release/android/shared";
 
-const DEFAULT_APK = path.join(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
+const DEFAULT_APK = path.join(process.cwd(), "android", "app", "build", "outputs", "apk", "release", "app-release.apk");
 const CACHE_MANIFEST_NAME = "cache-manifest.json";
 
 type CacheManifest = {
@@ -19,14 +22,9 @@ function sha256(filePath: string): string {
   return createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
 }
 
-function buildDebugApk(): void {
-  const gradlew = process.platform === "win32" ? "gradlew.bat" : "./gradlew";
-  const result = spawnSync(gradlew, ["assembleDebug"], {
-    cwd: path.join(process.cwd(), "android"),
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  });
-  if (result.status !== 0) {
+function buildReleaseApk(): void {
+  const candidate = getCandidate();
+  if (spawnGradleAssembleRelease(candidate) !== 0) {
     throw new Error("BLOCKED_ANDROID_API34_APK_BUILD_FAILED");
   }
 }
@@ -65,7 +63,7 @@ function main(): void {
 
   if (!cacheHit) {
     if (!explicitSourceApk) {
-      buildDebugApk();
+      buildReleaseApk();
       built = true;
     } else if (!fs.existsSync(sourceApk)) {
       throw new Error(`BLOCKED_ANDROID_API34_EXPLICIT_APK_MISSING:${sourceApk}`);
@@ -92,11 +90,12 @@ function main(): void {
     cache_hit: cacheHit,
     built,
     android_build_cache_enabled: true,
+    build_profile: explicitSourceApk ? "explicit" : "release",
     gradle_invoked: built,
     fake_green_claimed: false,
   };
   fs.writeFileSync(path.join(RELEASE_PIPELINE_ARTIFACT_DIR, "android_build_cache.json"), `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
-  console.log(JSON.stringify(artifact, null, 2));
+  console.info(JSON.stringify(artifact, null, 2));
 }
 
 main();
