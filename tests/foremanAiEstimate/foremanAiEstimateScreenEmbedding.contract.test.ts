@@ -35,7 +35,9 @@ describe("foreman AI estimate screen embedding", () => {
     expect(composer).toContain("searchGlobalWorkSmartSuggestions");
     expect(composer).toContain("explicitWorkKey");
     expect(composer).toContain("transparent={false}");
-    expect(composer).toContain("mapping?.rows.map((row)");
+    expect(composer).toContain("data={mapping?.rows ?? []}");
+    expect(composer).toContain("renderItem={({ item }) => renderEstimateRow(item)}");
+    expect(composer).toContain("keyExtractor={estimateRowKeyExtractor}");
     expect(composer).not.toMatch(/mapping\?\.rows\.slice\(\s*0\s*,\s*\d+\s*\)/);
   });
 

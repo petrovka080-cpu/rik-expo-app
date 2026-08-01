@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Modal,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
@@ -39,6 +39,11 @@ import {
   type ProfessionalEstimateComposerProps,
   type RowInputState,
 } from "./ProfessionalEstimateComposer.support";
+import { DEFAULT_FLATLIST_PERF } from "../../lib/performance/listPerformancePolicy";
+
+function estimateRowKeyExtractor(row: ForemanDraftEstimateRow): string {
+  return row.rowId;
+}
 
 export default function ProfessionalEstimateComposer({
   visible,
@@ -249,6 +254,88 @@ export default function ProfessionalEstimateComposer({
     onOpenDraft?.();
   };
 
+  const renderEstimateRow = (row: ForemanDraftEstimateRow) => {
+    const inputs = rowInputs[row.rowId] ?? {
+      visibleName: row.visibleName,
+      quantity: String(row.quantity),
+      unitPrice: String(row.unitPrice),
+    };
+    return (
+      <View
+        style={[styles.row, !row.includedInEstimate && styles.rowDisabled]}
+        testID="foreman-ai-estimate-row"
+      >
+        <View style={styles.rowHeader}>
+          <TextInput
+            testID="foreman-ai-estimate-row-name"
+            value={inputs.visibleName}
+            onChangeText={(value) => handleNameChange(row, value)}
+            style={styles.rowNameInput}
+          />
+          <Text style={styles.rowSection}>{formatEstimateSection(row.section)}</Text>
+        </View>
+
+        <View style={styles.editGrid}>
+          <View style={styles.editCell}>
+            <Text style={styles.fieldLabel}>{TEXT.qty}</Text>
+            <TextInput
+              testID="foreman-ai-estimate-row-qty"
+              value={inputs.quantity}
+              onChangeText={(value) => handleQuantityChange(row, value)}
+              keyboardType="decimal-pad"
+              style={styles.fieldInput}
+            />
+          </View>
+          <View style={styles.editCell}>
+            <Text style={styles.fieldLabel}>{formatEstimateUnit(row.unit)}</Text>
+            <Text style={styles.readonlyValue}>{formatEstimateUnit(row.unit)}</Text>
+          </View>
+          <View style={styles.editCell}>
+            <Text style={styles.fieldLabel}>{TEXT.price}</Text>
+            <TextInput
+              testID="foreman-ai-estimate-row-price"
+              value={inputs.unitPrice}
+              onChangeText={(value) => handlePriceChange(row, value)}
+              keyboardType="decimal-pad"
+              style={styles.fieldInput}
+            />
+          </View>
+          <View style={styles.editCell}>
+            <Text style={styles.fieldLabel}>{TEXT.total}</Text>
+            <Text style={styles.totalValue}>
+              {row.total == null ? "PRICE_MISSING" : formatMoney(row.total, row.currency)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.rowActions}>
+          <Pressable
+            onPress={() => toggleIncludedInEstimate(row)}
+            style={[styles.toggleButton, row.includedInEstimate && styles.toggleButtonActive]}
+          >
+            <Text style={[styles.toggleButtonText, row.includedInEstimate && styles.toggleButtonActiveText]}>
+              {TEXT.estimateFlag}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => toggleIncludedInProcurement(row)}
+            style={[styles.toggleButton, row.includedInProcurement && styles.toggleButtonActive]}
+          >
+            <Text style={[styles.toggleButtonText, row.includedInProcurement && styles.toggleButtonActiveText]}>
+              {TEXT.procurementFlag}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => toggleIncludedInEstimate(row)}
+            style={styles.removeButton}
+          >
+            <Text style={styles.removeButtonText}>{row.includedInEstimate ? TEXT.remove : TEXT.restore}</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
       <View style={styles.screen} testID="professional-estimate-composer">
@@ -267,8 +354,19 @@ export default function ProfessionalEstimateComposer({
           </Pressable>
         </View>
 
-        <ScrollView style={styles.body} contentContainerStyle={styles.bodyContent}>
-          <View style={styles.composePanel}>
+        <FlatList
+          style={styles.body}
+          contentContainerStyle={styles.bodyContent}
+          data={mapping?.rows ?? []}
+          keyExtractor={estimateRowKeyExtractor}
+          renderItem={({ item }) => renderEstimateRow(item)}
+          initialNumToRender={DEFAULT_FLATLIST_PERF.initialNumToRender}
+          maxToRenderPerBatch={DEFAULT_FLATLIST_PERF.maxToRenderPerBatch}
+          windowSize={DEFAULT_FLATLIST_PERF.windowSize}
+          onEndReachedThreshold={DEFAULT_FLATLIST_PERF.onEndReachedThreshold}
+          ListHeaderComponent={(
+            <>
+              <View style={styles.composePanel}>
             <TextInput
               testID="foreman-ai-estimate-input"
               value={text}
@@ -360,89 +458,9 @@ export default function ProfessionalEstimateComposer({
             ) : null}
           </View>
 
-          <View style={styles.rowsPanel}>
-            {mapping?.rows.map((row) => {
-              const inputs = rowInputs[row.rowId] ?? {
-                visibleName: row.visibleName,
-                quantity: String(row.quantity),
-                unitPrice: String(row.unitPrice),
-              };
-              return (
-                <View
-                  key={row.rowId}
-                  style={[styles.row, !row.includedInEstimate && styles.rowDisabled]}
-                  testID="foreman-ai-estimate-row"
-                >
-                  <View style={styles.rowHeader}>
-                    <TextInput
-                      testID="foreman-ai-estimate-row-name"
-                      value={inputs.visibleName}
-                      onChangeText={(value) => handleNameChange(row, value)}
-                      style={styles.rowNameInput}
-                    />
-                    <Text style={styles.rowSection}>{formatEstimateSection(row.section)}</Text>
-                  </View>
-
-                  <View style={styles.editGrid}>
-                    <View style={styles.editCell}>
-                      <Text style={styles.fieldLabel}>{TEXT.qty}</Text>
-                      <TextInput
-                        testID="foreman-ai-estimate-row-qty"
-                        value={inputs.quantity}
-                        onChangeText={(value) => handleQuantityChange(row, value)}
-                        keyboardType="decimal-pad"
-                        style={styles.fieldInput}
-                      />
-                    </View>
-                    <View style={styles.editCell}>
-                      <Text style={styles.fieldLabel}>{formatEstimateUnit(row.unit)}</Text>
-                      <Text style={styles.readonlyValue}>{formatEstimateUnit(row.unit)}</Text>
-                    </View>
-                    <View style={styles.editCell}>
-                      <Text style={styles.fieldLabel}>{TEXT.price}</Text>
-                      <TextInput
-                        testID="foreman-ai-estimate-row-price"
-                        value={inputs.unitPrice}
-                        onChangeText={(value) => handlePriceChange(row, value)}
-                        keyboardType="decimal-pad"
-                        style={styles.fieldInput}
-                      />
-                    </View>
-                    <View style={styles.editCell}>
-                      <Text style={styles.fieldLabel}>{TEXT.total}</Text>
-                      <Text style={styles.totalValue}>{row.total == null ? "PRICE_MISSING" : formatMoney(row.total, row.currency)}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.rowActions}>
-                    <Pressable
-                      onPress={() => toggleIncludedInEstimate(row)}
-                      style={[styles.toggleButton, row.includedInEstimate && styles.toggleButtonActive]}
-                    >
-                      <Text style={[styles.toggleButtonText, row.includedInEstimate && styles.toggleButtonActiveText]}>
-                        {TEXT.estimateFlag}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => toggleIncludedInProcurement(row)}
-                      style={[styles.toggleButton, row.includedInProcurement && styles.toggleButtonActive]}
-                    >
-                      <Text style={[styles.toggleButtonText, row.includedInProcurement && styles.toggleButtonActiveText]}>
-                        {TEXT.procurementFlag}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={() => toggleIncludedInEstimate(row)}
-                      style={styles.removeButton}
-                    >
-                      <Text style={styles.removeButtonText}>{row.includedInEstimate ? TEXT.remove : TEXT.restore}</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        </ScrollView>
+            </>
+          )}
+        />
 
         <View style={styles.footer}>
           <Pressable onPress={onClose} style={[styles.button, styles.secondaryButton]}>

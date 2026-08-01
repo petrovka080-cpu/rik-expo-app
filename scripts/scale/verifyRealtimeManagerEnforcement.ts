@@ -322,6 +322,26 @@ function classifyRealtimeFile(repoRoot: string, file: string): RealtimeManagerIn
     };
   }
 
+  if (file === "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx") {
+    const safe =
+      source.includes("requestEstimateIntentLifecycle.subscribe(") &&
+      source.includes("this.unsubscribeRuntimeLaunch =") &&
+      source.includes("this.unsubscribeRuntimeLaunch?.()") &&
+      source.includes("this.unsubscribeRuntimeLaunch = null") &&
+      !source.includes("supabase.channel(") &&
+      !source.includes("subscribeChannel({");
+    return {
+      ...base,
+      status: safe && !rawPayloadPrinted && !secretsPrinted && !broadExceptionUsed ? "safe" : "finding",
+      owner: "request_estimate_intent_lifecycle",
+      classification: "local_intent_listener_cleanup",
+      cleanupPresent: safe,
+      stableOwnerPresent: safe,
+      unmanagedSubscribe: !safe,
+      reason: "consumer request ingress observes the local request-intent lifecycle and releases the exact listener during screen unmount",
+    };
+  }
+
   if (
     source.includes("listener?.subscription?.unsubscribe()") ||
     source.includes("listener.subscription.unsubscribe()") ||
