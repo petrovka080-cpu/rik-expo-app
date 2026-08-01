@@ -417,6 +417,31 @@ function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly str
   return false;
 }
 
+function openCommandCenterViaAndroidIntent(deviceId: string, secrets: readonly string[]): boolean {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    adb(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://ai-command-center",
+        appId,
+      ],
+      secrets,
+    );
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2_500);
+    if (dumpAndroidHierarchy(deviceId, secrets).includes('resource-id="ai.command_center.screen"')) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function targetConstructionKnowhowIds(deviceId: string, secrets: readonly string[]): boolean {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const hierarchy = dumpAndroidHierarchy(deviceId, secrets);
@@ -511,24 +536,9 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
     fs.rmSync(flowPath, { force: true });
   }
 
-  adb(
-    emulator.deviceId,
-    [
-      "shell",
-      "am",
-      "start",
-      "-W",
-      "-a",
-      "android.intent.action.VIEW",
-      "-d",
-      "rik://ai-command-center",
-      appId,
-    ],
-    secrets,
-  );
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_500);
+  const commandCenterTargeted = openCommandCenterViaAndroidIntent(emulator.deviceId, secrets);
 
-  if (!targetConstructionKnowhowIds(emulator.deviceId, secrets)) {
+  if (!commandCenterTargeted || !targetConstructionKnowhowIds(emulator.deviceId, secrets)) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
