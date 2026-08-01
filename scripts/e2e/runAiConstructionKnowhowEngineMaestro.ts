@@ -329,39 +329,6 @@ function createFlowFile(): string {
   return flowPath;
 }
 
-function promptFlowLines(): string[] {
-  return [
-    `appId: ${appId}`,
-    "name: AI Construction Knowhow Prompt Pipeline Probe",
-    "---",
-    "- launchApp:",
-    "    clearState: false",
-    "- back",
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.assistant.open"',
-    "    timeout: 30000",
-    "- tapOn:",
-    '    id: "ai.assistant.open"',
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.assistant.input"',
-    "    timeout: 30000",
-    "- tapOn:",
-    '    id: "ai.assistant.input"',
-    "",
-  ];
-}
-
-function createPromptFlowFile(): string {
-  const flowPath = path.join(
-    os.tmpdir(),
-    `rik-ai-construction-knowhow-prompt-${process.pid}-${Date.now()}.yaml`,
-  );
-  fs.writeFileSync(flowPath, promptFlowLines().join("\n"), "utf8");
-  return flowPath;
-}
-
 function dumpAndroidHierarchy(deviceId: string, secrets: readonly string[]): string {
   const dumpPath = "/sdcard/rik_ai_construction_knowhow_window.xml";
   adb(deviceId, ["shell", "uiautomator", "dump", dumpPath], secrets);
@@ -401,6 +368,13 @@ function observePromptPipeline(deviceId: string, secrets: readonly string[]): bo
 }
 
 function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly string[]): boolean {
+  adb(
+    deviceId,
+    ["shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1"],
+    secrets,
+  );
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 8_000);
+  let returnedFromCommandCenter = false;
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const hierarchy = dumpAndroidHierarchy(deviceId, secrets);
     if (hierarchy.includes('resource-id="ai.assistant.input"')) {
@@ -409,8 +383,17 @@ function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly str
     const openBounds = boundsCenterForResourceId(hierarchy, "ai.assistant.open");
     if (openBounds) {
       adb(deviceId, ["shell", "input", "tap", String(openBounds.x), String(openBounds.y)], secrets);
-    } else {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2_500);
+      continue;
+    }
+    if (
+      !returnedFromCommandCenter &&
+      hierarchy.includes('resource-id="ai.command_center.screen"')
+    ) {
       adb(deviceId, ["shell", "input", "keyevent", "4"], secrets);
+      returnedFromCommandCenter = true;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5_000);
+      continue;
     }
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
   }
@@ -548,28 +531,11 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
     );
   }
 
-  const promptFlowPath = createPromptFlowFile();
-  let maestroPromptFlowCompleted = true;
-  try {
-    runCommand(
-      maestroBinary,
-      ["--device", emulator.deviceId, "test", promptFlowPath],
-      {},
-      secrets,
-    );
-  } catch {
-    maestroPromptFlowCompleted = false;
-  } finally {
-    fs.rmSync(promptFlowPath, { force: true });
-  }
-
   if (!targetAssistantInputViaGlobalUi(emulator.deviceId, secrets)) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        maestroPromptFlowCompleted
-          ? "AI assistant input was not targetable through the global UI entrypoint."
-          : "AI assistant input was not targetable after Maestro and global UI fallback.",
+        "AI assistant input was not targetable through the global UI entrypoint.",
         {
           android_runtime_smoke: "PASS",
           deterministic_testids_targetable: true,
