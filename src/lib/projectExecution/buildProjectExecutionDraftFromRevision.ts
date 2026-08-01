@@ -118,7 +118,7 @@ export function buildProjectExecutionDraftFromRevision(
       kind: "quality_gate" as const,
     }],
   }];
-  return {
+  const result: ProjectExecutionDraft = {
     projectId: options.projectId ?? stableId("project_execution", { sourcePayloadHash, source: options.source }),
     sourceEstimateId: revision.estimateDraftId,
     sourceRequestId: options.sourceRequestId,
@@ -147,4 +147,25 @@ export function buildProjectExecutionDraftFromRevision(
       cityOrRegion: options.cityOrRegion,
     },
   };
+  if (revision.matchedFamily !== "asphalt_concrete_pavement") {
+    const visibleTitle =
+      revision.boq.sections.find((section) => section.rowIds.length > 0)?.title?.trim()
+      || revision.boq.rows[0]?.titleRu?.trim()
+      || "Профессиональная смета";
+    result.projectTitle = `Проект: ${visibleTitle}`;
+    result.customerVisibleTitle = visibleTitle;
+    result.workPackages[0].title = visibleTitle;
+    result.workPackages[0].customerVisibleTitle = visibleTitle;
+    result.workPackages[0].description =
+      "Выполнение подтверждённого состава работ из текущей ревизии сметы.";
+    result.workPackages[0].checklist[0].title =
+      "Проверка объёма, цен и готовности к производству ответственным специалистом";
+    result.workPackages[0].checklist[0].visibleSourceLabel =
+      "Текущая ревизия сметы";
+    result.handoffSummary.sourceEstimateTitle = visibleTitle;
+    result.handoffSummary.visibleWarnings = [
+      "Цены и поставщики уточняются перед закупкой; требуется профессиональная проверка.",
+    ];
+  }
+  return result;
 }

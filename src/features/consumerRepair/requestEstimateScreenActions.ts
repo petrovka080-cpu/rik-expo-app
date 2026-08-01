@@ -966,19 +966,23 @@ export function saveProjectExecutionDraftForRequest(input: {
   const payload = input.bundle.structuredEstimatePayload;
   const revisionState = input.bundle.estimateDraftRevisionState;
   const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId) ?? null;
-  const projectExecutionDraft = payload
-    ? buildProjectExecutionDraftFromEstimate(payload, {
-        source: "request_estimate",
-        countryCode: payload.locale.countryCode,
-        cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
-        generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
-        sourceRequestId: input.bundle.draft.id,
-      })
-    : revision?.matchedFamily === ASPHALT_WORK_ID_V4 && revision.boq.rows.length > 0
-      ? buildProjectExecutionDraftFromRevision(revision, {
+  const projectExecutionDraft = revision && revision.boq.rows.length > 0
+    ? buildProjectExecutionDraftFromRevision(revision, {
           source: "request_estimate",
-          countryCode: "KG",
-          cityOrRegion: input.bundle.draft.city ?? undefined,
+          countryCode: payload?.locale.countryCode ?? "KG",
+          cityOrRegion:
+            payload?.locale.city ??
+            payload?.locale.stateOrRegion ??
+            input.bundle.draft.city ??
+            undefined,
+          generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
+          sourceRequestId: input.bundle.draft.id,
+        })
+    : payload
+      ? buildProjectExecutionDraftFromEstimate(payload, {
+          source: "request_estimate",
+          countryCode: payload.locale.countryCode,
+          cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
           generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
           sourceRequestId: input.bundle.draft.id,
         })

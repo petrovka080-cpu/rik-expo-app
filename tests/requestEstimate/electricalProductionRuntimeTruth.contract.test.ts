@@ -1,4 +1,7 @@
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import {
+  buildConsumerRepairSelectedWorkDraftBundle,
+  saveProjectExecutionDraftForRequest,
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
   __resetConsumerRepairRequestStoreForTests,
@@ -170,6 +173,56 @@ describe("production /request electrical runtime truth", () => {
           ),
       ),
     ).toBe(true);
+  });
+
+  it("binds the electrical procurement handoff to the exact current professional revision", () => {
+    const prompt =
+      "электрика под ключ 100 кв метров площадь длина трассы 500 метров 40 розеток 20 выключателей 30 точек освещения";
+    const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "electrical-procurement-revision-truth",
+      problemText: prompt,
+      repairType: "estimate",
+      city: "Бишкек",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+    const revision = bundle.estimateDraftRevisionState?.revisions.find(
+      (candidate) =>
+        candidate.revisionId ===
+        bundle.estimateDraftRevisionState?.currentRevisionId,
+    );
+    expect(revision?.matchedFamily).toBe(ELECTRICAL_CANONICAL_WORK_KEY);
+    expect(revision?.boq.rows.length).toBeGreaterThan(42);
+
+    const opened = saveProjectExecutionDraftForRequest({
+      action: "open_material_list",
+      bundle,
+      userId: bundle.draft.consumerUserId,
+    });
+    const project = opened.bundle.projectExecutionDrafts[0];
+    const expectedRows =
+      revision?.boq.rows.filter((row) => row.includedInProcurement) ?? [];
+
+    expect(project).toBeDefined();
+    expect(project.customerVisibleTitle).not.toMatch(/асфальт|дорог/i);
+    expect(project.procurementItems).toHaveLength(expectedRows.length);
+    expect(
+      project.procurementItems.map((item) => ({
+        rowId: item.sourceEstimateRowId,
+        quantity: item.quantity,
+        unit: item.unit,
+        calculationTrace: item.calculationTrace,
+      })),
+    ).toEqual(
+      expectedRows.map((row) => ({
+        rowId: row.rowId,
+        quantity: row.quantity,
+        unit: row.unitLabel ?? row.unit,
+        calculationTrace: row.calculationTrace,
+      })),
+    );
   });
 
   it("cannot re-enable a legacy estimate through an explicit electrical catalog selection", () => {

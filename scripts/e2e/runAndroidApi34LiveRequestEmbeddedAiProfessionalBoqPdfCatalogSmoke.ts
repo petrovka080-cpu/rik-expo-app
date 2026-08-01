@@ -71,7 +71,7 @@ const CASES: AndroidCase[] = [
     caseId: "android_request_electrical_cable_outlets_switches",
     route: "/request",
     context: "request",
-    prompt: "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
+    prompt: "электрика под ключ 100 кв метров площадь длина трассы 500 метров 10 розеток 10 выключателей 10 точек освещения",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "розет", "выключател", "провер"],
     uiContract: {
@@ -664,7 +664,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   probeUrl.searchParams.delete(testCase.route === "/request" ? "autoPrepare" : "autoSend");
   const probeLaunch = launchDeepLink(adbPath, deviceId, probeUrl.toString());
   let promptProbeVisible = false;
-  for (let attempt = 0; attempt < 10 && !promptProbeVisible; attempt += 1) {
+  // A preceding 80+ row request can still be yielding the JS thread when the
+  // next deep link arrives. The prompt probe is an ingress assertion, so wait
+  // for that exact visible value instead of racing the prior render.
+  const promptProbeDeadline = Date.now() + 30_000;
+  while (Date.now() < promptProbeDeadline && !promptProbeVisible) {
     const probeDump = dumpUiText(adbPath, deviceId);
     promptProbeVisible = probeDump.ok && probeDump.text.includes(testCase.prompt);
     if (!promptProbeVisible) await wait(1_000);

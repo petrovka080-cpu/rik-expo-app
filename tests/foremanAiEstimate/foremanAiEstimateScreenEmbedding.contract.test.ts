@@ -35,6 +35,8 @@ describe("foreman AI estimate screen embedding", () => {
     expect(composer).toContain("searchGlobalWorkSmartSuggestions");
     expect(composer).toContain("explicitWorkKey");
     expect(composer).toContain("transparent={false}");
+    expect(composer).toContain("mapping?.rows.map((row)");
+    expect(composer).not.toMatch(/mapping\?\.rows\.slice\(\s*0\s*,\s*\d+\s*\)/);
   });
 
   it("keeps consumer repair request flow separate from foreman AI estimate composer", () => {

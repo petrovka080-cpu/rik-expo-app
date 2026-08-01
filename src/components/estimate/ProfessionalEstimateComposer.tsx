@@ -361,7 +361,7 @@ export default function ProfessionalEstimateComposer({
           </View>
 
           <View style={styles.rowsPanel}>
-            {mapping?.rows.slice(0, 80).map((row) => {
+            {mapping?.rows.map((row) => {
               const inputs = rowInputs[row.rowId] ?? {
                 visibleName: row.visibleName,
                 quantity: String(row.quantity),
