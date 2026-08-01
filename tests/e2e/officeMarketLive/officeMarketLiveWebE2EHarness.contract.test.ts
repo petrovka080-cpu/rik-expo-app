@@ -85,6 +85,9 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("async function closeRolePage(rolePage)");
     expect(runnerSource).toContain('removeAllListeners("console")');
     expect(runnerSource).toContain("await rolePage.page.waitForTimeout(500)");
+    expect(runnerSource).toContain(
+      'await page.waitForLoadState("networkidle", { timeout: 30_000 })',
+    );
     const teardown = runnerSource.slice(
       runnerSource.indexOf("async function closeRolePage(rolePage)"),
       runnerSource.indexOf("async function openForemanMaterials"),

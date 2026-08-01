@@ -896,6 +896,10 @@ async function newRolePage(browser, roleKey) {
   await byTestId(page, "auth.login.password").fill(credentials.password);
   await byTestId(page, "auth.login.submit").click();
   await page.waitForURL((url) => !url.pathname.includes("/auth/login"), { timeout: 60_000 });
+  // The post-login profile route starts the authoritative auth.getUser read.
+  // Do not navigate to a role surface while that request is still in flight:
+  // Chromium would abort it and GoTrue would emit a false product console RED.
+  await page.waitForLoadState("networkidle", { timeout: 30_000 });
   mark("browser_login_done", { role: roleKey.toLowerCase(), path: new URL(page.url()).pathname });
   return { context, page };
 }
