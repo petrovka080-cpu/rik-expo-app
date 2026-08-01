@@ -4,11 +4,10 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
-import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 import {
-  asphaltProfessionalCategoryFromSourceParametersV4,
-  asphaltProfessionalCategoryPresentationV4,
-} from "../../lib/estimate/v4/asphalt/asphaltProfessionalPresentationV4";
+  consumerRepairRequestItemTypeLabel,
+  type ConsumerRepairRequestItem,
+} from "../../lib/consumerRequests";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -35,15 +34,6 @@ function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.catalogBindingStatus === "matched") return "\u041a\u0430\u0442\u0430\u043b\u043e\u0433: \u043d\u0430\u0439\u0434\u0435\u043d";
   if (item.catalogBindingStatus === "no_catalog_match") return "\u041a\u0430\u0442\u0430\u043b\u043e\u0433: \u043f\u043e\u0434\u043e\u0431\u0440\u0430\u0442\u044c";
   return "\u041a\u0430\u0442\u0430\u043b\u043e\u0433";
-}
-
-function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
-  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
-  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).itemLabelRu;
-  if (item.itemType === "work") return "Р Р°Р±РѕС‚Р°";
-  if (item.itemType === "material") return "РњР°С‚РµСЂРёР°Р»";
-  if (item.itemType === "service") return "РћР±РѕСЂСѓРґРѕРІР°РЅРёРµ / РґРѕСЃС‚Р°РІРєР°";
-  return "РџРѕР·РёС†РёСЏ";
 }
 
 function formatInputNumber(value: number | null | undefined): string {

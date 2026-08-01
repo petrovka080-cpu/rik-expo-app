@@ -243,7 +243,7 @@ describe("catalog picker live smart search", () => {
     expect(mockSearchCatalogItemsForPicker).toHaveBeenCalledWith("cd", 40);
 
     const pickerInstance =
-      inFlightRenderer.getInstance() as unknown as CatalogItemPicker;
+      inFlightRenderer.root.findByType(CatalogItemPicker).instance;
     const setStateAfterUnmount = jest.spyOn(pickerInstance, "setState");
     act(() => {
       inFlightRenderer.unmount();

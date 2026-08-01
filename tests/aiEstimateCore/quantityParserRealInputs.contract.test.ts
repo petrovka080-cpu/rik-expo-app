@@ -13,7 +13,7 @@ describe("AI estimate core real quantity parser", () => {
       m3: "\u043c\u00b3",
       linear_m: "\u043f\u043e\u0433. \u043c",
       set: "\u043a\u043e\u043c\u043f\u043b.",
-      pcs: "\u0448\u0442",
+      pcs: "\u0448\u0442.",
       ton: "\u0442",
     };
 

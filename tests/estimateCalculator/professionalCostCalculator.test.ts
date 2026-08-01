@@ -16,5 +16,15 @@ describe("professional cost calculator", () => {
     expect(first.lineSubtotal).toBeCloseTo(Number((first.quantity * (first.unitPrice ?? 0)).toFixed(2)));
     expect(first.priceSourceId).toBeTruthy();
     expect(first.trustedForContractTotal).toBe(false);
+
+    const shiftLine = result.lines.find((line) => line.unit === "shift");
+    const shiftSource = result.sources.find((source) => source.rowId === shiftLine?.rowId);
+    expect(shiftLine).toMatchObject({
+      unit: "shift",
+      priceState: expect.not.stringMatching(/^missing_price$/),
+    });
+    expect(shiftSource?.priceRecord).toMatchObject({
+      unit: "machine_hour",
+    });
   });
 });
