@@ -386,14 +386,23 @@ function boundsCenterForResourceId(hierarchy: string, resourceId: string): { x: 
 }
 
 function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly string[]): boolean {
-  adb(
-    deviceId,
-    ["shell", "monkey", "-p", appId, "-c", "android.intent.category.LAUNCHER", "1"],
-    secrets,
-  );
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 8_000);
-  let returnedFromCommandCenter = false;
-  for (let attempt = 0; attempt < 12; attempt += 1) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    adb(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://profile",
+        appId,
+      ],
+      secrets,
+    );
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3_000);
     const hierarchy = dumpAndroidHierarchy(deviceId, secrets);
     if (hierarchy.includes('resource-id="ai.assistant.input"')) {
       return true;
@@ -401,19 +410,15 @@ function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly str
     const openBounds = boundsCenterForResourceId(hierarchy, "ai.assistant.open");
     if (openBounds) {
       adb(deviceId, ["shell", "input", "tap", String(openBounds.x), String(openBounds.y)], secrets);
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2_500);
-      continue;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4_000);
+      if (
+        dumpAndroidHierarchy(deviceId, secrets).includes(
+          'resource-id="ai.assistant.input"',
+        )
+      ) {
+        return true;
+      }
     }
-    if (
-      !returnedFromCommandCenter &&
-      hierarchy.includes('resource-id="ai.command_center.screen"')
-    ) {
-      adb(deviceId, ["shell", "input", "keyevent", "4"], secrets);
-      returnedFromCommandCenter = true;
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5_000);
-      continue;
-    }
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
   }
   return false;
 }
