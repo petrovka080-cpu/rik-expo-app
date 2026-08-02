@@ -4,10 +4,10 @@
   "android_api34_tested": true,
   "android_api34_smoke_passed": true,
   "api36_rejected": true,
-  "head": "5713c5bedb599c9873fd5f89f9ffa082031d4aef",
-  "source_code_head": "5713c5bedb599c9873fd5f89f9ffa082031d4aef",
+  "head": "48fece69993197530e69647ff5f3f63ec69bdee2",
+  "source_code_head": "48fece69993197530e69647ff5f3f63ec69bdee2",
   "artifact_commit_head": null,
-  "current_head_at_write_time": "5713c5bedb599c9873fd5f89f9ffa082031d4aef",
+  "current_head_at_write_time": "48fece69993197530e69647ff5f3f63ec69bdee2",
   "proof_mode": "refresh",
   "install_skipped_by_release_pipeline": true,
   "proof_valid_for_source_code_head": true,
@@ -24,8 +24,8 @@
   "dev_client_ready": {
     "ok": true,
     "launch_ok": true,
-    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 2002\r\nWaitTime: 2004\r\nComplete\r\n",
-    "text_sample": "com.azisbek_dzhantaev.rikexpoapp:id/action_bar_root\nandroid:id/content\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY_HOST\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_APP_ROOT_READY\nROUTE_PROOF_AUTHENTICATED_SESSION_READY_HOST\nROUTE_PROOF_AUTHENTICATED_SESSION_READY_HOST\nROUTE_PROOF_AUTHENTICATED_SESSION_READY\nROUTE_PROOF_AUTHENTICATED_SESSION_READY\nROUTE_PROOF_AUTHENTICATED_SESSION_READY\nbuild-identity-host\nBUILD_IDENTITY_HOST\nbuild-identity\nBUILD_IDENTITY\nЗагружаем профиль...\napp-bottom-nav\nbottom-tab-office\ntabs.office\nОфис\n\nОфис\nbottom-tab-request\ntabs.request\nСмета\n\nСмета\nbottom-tab-market\ntabs.market\nМаркет\n\nМаркет\nbottom-nav-marketplace-add-slot\nbottom-nav-marketplace-add\nДобавить товар в маркет\n＋\nbottom-tab-chat\ntabs.chat\nЧат\n\nЧат\nbottom-tab-profile\ntabs.profile\nПрофиль\n\nПрофиль\nai.assistant.open\nОткрыть AI ассистента\n\nAI"
+    "launch_output": "Starting: Intent { act=android.intent.action.VIEW dat=exp+rik-expo-app://expo-development-client/... pkg=com.azisbek_dzhantaev.rikexpoapp }\r\nStatus: ok\r\nLaunchState: COLD\r\nActivity: com.azisbek_dzhantaev.rikexpoapp/.MainActivity\r\nTotalTime: 731\r\nWaitTime: 736\r\nComplete\r\n",
+    "text_sample": "com.azisbek_dzhantaev.rikexpoapp:id/action_bar_root\nandroid:id/content\nbuild-identity-host\nBUILD_IDENTITY_HOST\nbuild-identity\nBUILD_IDENTITY\nprofile-edit-open\nРедактировать\nP\n\npetrovka080\nДиректор\nPetrovka080@gmail.com / petrovka080@gmail.com\nПрофиль\nЛичные данные, доступы, активный контекст и текущая сессия GOX.\nРедактировать\nРедактировать\n\nIdentity\nИмя\npetrovka080\nТелефон\nНе указан\nEmail\npetrovka080@gmail.com\nГород\nНе указан\n\nAccess Summary\nMarket\nЕсть\nOffice\napp-bottom-nav\nbottom-tab-office\ntabs.office\nОфис\n\nОфис\nbottom-tab-request\ntabs.request\nСмета\n\nСмета\nbottom-tab-market\ntabs.market\nМаркет\n\nМаркет\nbottom-nav-marketplace-add-slot\nbottom-nav-marketplace-add\nДобавить товар в маркет\n＋\nbottom-tab-chat\ntabs.chat\nЧат\n\nЧат\nbottom-tab-profile\ntabs.profile\nПрофиль\n\nПрофиль\nai.assistant.open\nОткрыть AI ассистента\n\nAI"
   },
   "metro": {
     "reachable": true,
@@ -131,11 +131,11 @@
       "promptProbeDiagnostics": [
         {
           "ok": true,
-          "elapsedMs": 44419,
-          "textLength": 2338,
+          "elapsedMs": 44722,
+          "textLength": 1478,
           "exactPromptVisible": true,
           "inputTestIdVisible": true,
-          "routeReadyVisible": true
+          "routeReadyVisible": false
         }
       ],
       "promptProbeScreenshotPath": null,
@@ -279,35 +279,11 @@
       "promptProbeDiagnostics": [
         {
           "ok": true,
-          "elapsedMs": 45219,
-          "textLength": 3466,
-          "exactPromptVisible": false,
-          "inputTestIdVisible": false,
-          "routeReadyVisible": true
-        },
-        {
-          "ok": true,
-          "elapsedMs": 51546,
-          "textLength": 3466,
-          "exactPromptVisible": false,
-          "inputTestIdVisible": false,
-          "routeReadyVisible": true
-        },
-        {
-          "ok": true,
-          "elapsedMs": 57842,
-          "textLength": 3466,
-          "exactPromptVisible": false,
-          "inputTestIdVisible": false,
-          "routeReadyVisible": true
-        },
-        {
-          "ok": true,
-          "elapsedMs": 64075,
-          "textLength": 2834,
+          "elapsedMs": 44470,
+          "textLength": 1482,
           "exactPromptVisible": true,
           "inputTestIdVisible": true,
-          "routeReadyVisible": true
+          "routeReadyVisible": false
         }
       ],
       "promptProbeScreenshotPath": null,
@@ -392,19 +368,11 @@
       "promptProbeDiagnostics": [
         {
           "ok": true,
-          "elapsedMs": 2394,
-          "textLength": 1340,
-          "exactPromptVisible": false,
-          "inputTestIdVisible": false,
-          "routeReadyVisible": true
-        },
-        {
-          "ok": true,
-          "elapsedMs": 10395,
-          "textLength": 2662,
+          "elapsedMs": 3507,
+          "textLength": 1852,
           "exactPromptVisible": true,
           "inputTestIdVisible": false,
-          "routeReadyVisible": true
+          "routeReadyVisible": false
         }
       ],
       "promptProbeScreenshotPath": null,
@@ -516,19 +484,19 @@
       "promptProbeDiagnostics": [
         {
           "ok": true,
-          "elapsedMs": 2300,
-          "textLength": 5268,
+          "elapsedMs": 2414,
+          "textLength": 4569,
           "exactPromptVisible": false,
           "inputTestIdVisible": false,
-          "routeReadyVisible": true
+          "routeReadyVisible": false
         },
         {
           "ok": true,
-          "elapsedMs": 8813,
-          "textLength": 2660,
+          "elapsedMs": 8690,
+          "textLength": 1850,
           "exactPromptVisible": true,
           "inputTestIdVisible": false,
-          "routeReadyVisible": true
+          "routeReadyVisible": false
         }
       ],
       "promptProbeScreenshotPath": null,
