@@ -1,0 +1,68 @@
+name: Platform Core Verification V1
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "repair/t8-final-r5-*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-and-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19.6, cache: npm }
+      - run: npm ci
+      - run: npm run verify:typecheck
+      - run: npm run lint
+      - run: git diff --check
+      - run: npm run verify:no-test-weakening
+      - run: npm run verify:v1:plan -- --base=${{ github.event.pull_request.base.sha || github.event.before || github.sha }} --head=${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification-v1-plan
+          path: .release-runtime/verification-v1/**/affected/plan.json
+
+  critical-shard:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: { shard: [0, 1, 2, 3] }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19.6, cache: npm }
+      - run: npm ci
+      - run: npx tsx scripts/verification/runVerificationCiShard.ts --shard-id=${{ matrix.shard }} --shard-count=4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-v1-shard-${{ matrix.shard }}
+          path: .release-runtime/verification-v1/ci-shards/${{ matrix.shard }}
+
+  critical-fanin:
+    if: always()
+    needs: critical-shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.19.6, cache: npm }
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: verification-v1-shard-*
+          path: .release-runtime/verification-v1/downloaded-shards
+      - run: npx tsx scripts/verification/mergeVerificationCiShards.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-v1-fanin-summary
+          path: .release-runtime/verification-v1/ci-merge-summary.json

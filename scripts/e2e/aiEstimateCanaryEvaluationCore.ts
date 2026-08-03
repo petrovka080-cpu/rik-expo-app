@@ -20,10 +20,28 @@ import {
 import { validateAiEstimateRollbackPlan } from "../../src/lib/ai/rollback/aiEstimateRollbackPlan";
 import { isCurrentReleaseWaveScopeActive } from "../release/currentReleaseWaveScope";
 
-export const CANARY_EVALUATION_ARTIFACT_DIR = path.join(
+const CANARY_EVALUATION_CANONICAL_ARTIFACT_DIR = path.join(
   process.cwd(),
   AI_ESTIMATE_CANARY_EVALUATION_ARTIFACT_DIR,
 );
+
+/**
+ * Jest consumers must never repaint canonical evidence. They still read the
+ * immutable prerequisite set through readCanaryEvaluationJson(), while all
+ * diagnostics produced by the test process are isolated under ignored
+ * run-scoped storage. Canonical CLI producers opt in explicitly during the
+ * release preflight.
+ */
+export const CANARY_EVALUATION_ARTIFACT_DIR =
+  process.env.JEST_WORKER_ID && process.env.VERIFICATION_CANONICAL_WRITE !== "1"
+    ? path.join(
+        process.cwd(),
+        ".release-runtime",
+        "test-evidence",
+        `jest-${process.env.JEST_WORKER_ID}-pid-${String(process.pid)}`,
+        AI_ESTIMATE_CANARY_EVALUATION_ARTIFACT_DIR.replace(/^artifacts[\\/]/, ""),
+      )
+    : CANARY_EVALUATION_CANONICAL_ARTIFACT_DIR;
 const IOS_TESTFLIGHT_SCOPED_OUT_STATUS =
   "SCOPED_NOT_REQUIRED_FOR_IOS_INTERNAL_TESTFLIGHT";
 

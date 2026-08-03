@@ -14,6 +14,18 @@ export const REAL10000_AUDIT_SOURCE_DIR = path.join(
 );
 export const REAL10000_AUDIT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_AUDIT");
 
+function real10000AuditOutputDir(): string {
+  const workerId = process.env.JEST_WORKER_ID;
+  if (!workerId || process.env.VERIFICATION_CANONICAL_WRITE === "1") return REAL10000_AUDIT_DIR;
+  return path.join(
+    process.cwd(),
+    ".release-runtime",
+    "test-evidence",
+    `jest-${workerId}-pid-${process.pid}`,
+    "S_REAL_10000_AUDIT",
+  );
+}
+
 export type Real10000AuditSeverity = "P0" | "P1" | "P2";
 
 export type Real10000AuditHole = {
@@ -64,12 +76,12 @@ function sourceArtifact(name: string): string {
 }
 
 export function ensureReal10000AuditDir(): void {
-  fs.mkdirSync(REAL10000_AUDIT_DIR, { recursive: true });
+  fs.mkdirSync(real10000AuditOutputDir(), { recursive: true });
 }
 
 export function writeReal10000AuditJson(name: string, value: unknown): void {
   ensureReal10000AuditDir();
-  fs.writeFileSync(path.join(REAL10000_AUDIT_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  fs.writeFileSync(path.join(real10000AuditOutputDir(), name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 export function readJsonFile<T = unknown>(filePath: string, fallback: T): T {
@@ -448,8 +460,9 @@ export function runReal10000OutputQualitySampleAudit(
   }, holes);
 }
 
-export function runReal10000P0RegressionAudit(): Real10000AuditResult {
-  const runtime = readSourceJson<Array<Record<string, unknown>>>("runtime_results.json", []);
+export function runReal10000P0RegressionAudit(
+  runtime = readSourceJson<Array<Record<string, unknown>>>("runtime_results.json", []),
+): Real10000AuditResult {
   const pdfExtract = readSourceJson<Array<Record<string, unknown>>>("pdf_text_extract.json", []);
   const runtimeByDomain = new Map<string, Record<string, unknown>>();
   runtime.forEach((item) => {
@@ -731,13 +744,15 @@ export function runReal10000AntiFakeGreenAudit(): Real10000AuditResult {
   }, holes);
 }
 
-export function runAllReal10000EstimateAuditPhases(): Real10000AuditResult[] {
+export function runAllReal10000EstimateAuditPhases(params: {
+  runtimeResults?: Array<Record<string, unknown>>;
+} = {}): Real10000AuditResult[] {
   return [
     runReal10000ProvenanceAudit(),
     runReal10000DiversityAudit(),
-    runReal10000ShardRuntimeEvidenceAudit(),
-    runReal10000OutputQualitySampleAudit(),
-    runReal10000P0RegressionAudit(),
+    runReal10000ShardRuntimeEvidenceAudit({ runtimeResults: params.runtimeResults }),
+    runReal10000OutputQualitySampleAudit(params.runtimeResults),
+    runReal10000P0RegressionAudit(params.runtimeResults),
     runReal10000UiPdfParityAudit(),
     runReal10000LiveEvidenceAudit(),
     runReal10000AntiFakeGreenAudit(),

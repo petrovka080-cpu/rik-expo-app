@@ -1,0 +1,141 @@
+{
+  "schema": "verification-impact-ownership/v1",
+  "version": 1,
+  "alwaysRunGates": [
+    {
+      "name": "verification-critical-contracts",
+      "level": ["local", "affected", "pr"],
+      "reason": "The selector, prerequisite verifier, immutable evidence contract, and shard merger are fail-closed critical controls.",
+      "suites": [
+        "tests/releasePipeline/requiredArtifactPreflight.contract.test.ts",
+        "tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts",
+        "tests/releasePipeline/deterministicShardedFullJestRunner.contract.test.ts",
+        "tests/releasePipeline/verificationImpactAnalyzer.contract.test.ts",
+        "tests/releasePipeline/verificationShardMerger.contract.test.ts"
+      ]
+    }
+  ],
+  "domains": [
+    {
+      "id": "local-ui",
+      "patterns": ["src/components/**", "src/screens/**", "app/**"],
+      "gate": "ui-contracts",
+      "levels": ["local", "affected", "pr"],
+      "suites": ["tests/perf/flatListTuningRegressionScanner.contract.test.ts"],
+      "producers": []
+    },
+    {
+      "id": "estimate-formula-engine",
+      "patterns": ["src/lib/ai/**", "scripts/estimate/**"],
+      "gate": "estimate-engine-contracts",
+      "levels": ["affected", "pr"],
+      "suites": [
+        "tests/real10000Audit/remediationClosesInfrastructureBoqDepth.contract.test.ts",
+        "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts",
+        "tests/estimateStructuredPipeline/previousBoqVisibleLabels.contract.test.ts",
+        "tests/estimateStructuredPipeline/uiBindingContract.contract.test.ts",
+        "tests/estimateStructuredPipeline/uiPdfBindingRuntimeProof.contract.test.ts"
+      ],
+      "producers": ["scripts/audit/real10000AuditP0RemediationCore.ts"]
+    },
+    {
+      "id": "evidence-producer",
+      "patterns": ["scripts/audit/**", "scripts/e2e/**", "scripts/verification/**", "scripts/release/runFrozenFullJest.ts"],
+      "gate": "evidence-producer-consumers",
+      "levels": ["affected", "pr"],
+      "suites": [
+        "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts",
+        "tests/api/sRpc7MutationResultEnvelopes.contract.test.ts",
+        "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts",
+        "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+        "tests/architecture/finalReadinessRequiresRollbackAndKillSwitch.contract.test.ts",
+        "tests/architecture/maxArchitectureScaleRiskAuditCurrentEvidence.contract.test.ts",
+        "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts",
+        "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts",
+        "tests/audit/final50kReadiness.contract.test.ts",
+        "tests/audit/finalScorecardEvidence.contract.test.ts",
+        "tests/audit/greenClaimArtifactConsistency.contract.test.ts",
+        "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts",
+        "tests/audit/replayVerifiedMatrices.contract.test.ts",
+        "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts",
+        "tests/canaryEvaluation/evidenceLedgerRequiresAllArtifacts.contract.test.ts",
+        "tests/canaryEvaluation/manualEstimatorReviewThreshold.contract.test.ts",
+        "tests/constructionWorkOntology/catalogItemsUntouched.contract.test.ts",
+        "tests/constructionWorkOntology/catalogLinksNoFakeReferences.contract.test.ts",
+        "tests/constructionWorkOntology/noPromptLookup.contract.test.ts",
+        "tests/constructionWorkOntology/noSecondCatalog.contract.test.ts",
+        "tests/constructionWorkOntology/productNoRegression.contract.test.ts",
+        "tests/constructionWorkOntology/repositoryReadContracts.contract.test.ts",
+        "tests/constructionWorkOntology/rlsPolicies.contract.test.ts",
+        "tests/constructionWorkOntology/standardsLicenseGuard.contract.test.ts",
+        "tests/constructionWorkOntology/workAliasesNormalization.contract.test.ts",
+        "tests/constructionWorkOntology/workDefinitionsUniqueKeys.contract.test.ts",
+        "tests/estimateStructuredPipeline/finalMatrix.contract.test.ts",
+        "tests/estimateStructuredPipeline/previousBoqExactMaterialsGreenRequired.contract.test.ts",
+        "tests/finalReadiness/aiEstimateGoNoGoMatrix.contract.test.ts",
+        "tests/finalReadiness/canaryDisabledByDefault.contract.test.ts",
+        "tests/finalReadiness/killSwitchRequired.contract.test.ts",
+        "tests/finalReadiness/liveWebJourneyRequired.contract.test.ts",
+        "tests/finalReadiness/matrixLedgerRequiresAllPrerequisitesGreen.contract.test.ts",
+        "tests/finalReadiness/observabilityRequired.contract.test.ts",
+        "tests/finalReadiness/pdfFinalProofRequired.contract.test.ts",
+        "tests/finalReadiness/rollbackRequired.contract.test.ts",
+        "tests/realtime/realtimeFanoutBudgetProof.contract.test.ts",
+        "tests/release/closeoutReadOnly.contract.test.ts",
+        "tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts",
+        "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts",
+        "tests/selectedWorkEnterprise1000/selectedWorkEnterprise1000.contract.test.ts",
+        "tests/perf/flatListTuningRegressionScanner.contract.test.ts",
+        "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts"
+      ],
+      "producers": [
+        "scripts/verification/runRequiredArtifactPreflight.ts",
+        "scripts/audit/real10000AuditP0RemediationCore.ts",
+        "scripts/e2e/aiEstimateCanaryEvaluationCore.ts"
+      ]
+    },
+    {
+      "id": "schema-config-lockfile",
+      "patterns": ["package.json", "package-lock.json", "tsconfig*.json", "jest.config.*", "verification/v1/**"],
+      "gate": "configuration-and-manifest-contracts",
+      "levels": ["local", "affected", "pr"],
+      "suites": [
+        "tests/releasePipeline/requiredArtifactPreflight.contract.test.ts",
+        "tests/perf/flatListTuningRegressionScanner.contract.test.ts"
+      ],
+      "producers": ["scripts/verification/generateRequiredArtifactManifest.ts", "scripts/perf/generateFlatListRuntimeInventory.ts"]
+    },
+    {
+      "id": "immutable-revision-storage-replay",
+      "patterns": ["src/**/*revision*", "src/**/*storage*", "src/**/*replay*", "scripts/**/*revision*", "scripts/**/*replay*"],
+      "gate": "revision-storage-replay-contracts",
+      "levels": ["affected", "pr"],
+      "suites": [
+        "tests/estimateImmutableRevision/auditArtifacts.contract.test.ts",
+        "tests/estimateImmutableRevision/currentReleaseReadiness.contract.test.ts",
+        "tests/estimateImmutableRevision/storageContract.contract.test.ts",
+        "tests/estimateImmutableRevision/storagePersistenceRuntimeProof.contract.test.ts",
+        "tests/estimateReplayAudit/currentReleaseReadiness.contract.test.ts",
+        "tests/estimateReplayAudit/replayAuditArtifact.contract.test.ts",
+        "tests/estimateReplayAudit/replayRuntimeProof.contract.test.ts"
+      ],
+      "producers": []
+    },
+    {
+      "id": "test-only",
+      "patterns": ["tests/**", "**/*.test.ts", "**/*.test.tsx"],
+      "gate": "changed-test-contracts",
+      "levels": ["local", "affected", "pr"],
+      "suites": ["$CHANGED_TESTS"],
+      "producers": []
+    },
+    {
+      "id": "docs-only",
+      "patterns": ["docs/**", "**/*.md"],
+      "gate": "documentation-static-contract",
+      "levels": ["local", "affected", "pr"],
+      "suites": [],
+      "producers": []
+    }
+  ]
+}

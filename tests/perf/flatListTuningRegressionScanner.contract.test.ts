@@ -3,6 +3,7 @@ import {
   scanFlatListTuningRegressionSource,
   type FlatListTuningAllowlistEntry,
 } from "../../scripts/perf/flatListTuningRegression";
+import flatListRuntimeInventory from "../../verification/v1/flatlist-runtime-inventory.json";
 
 const tunedFlashListSource = `
 const ROW_TUNING = {
@@ -39,14 +40,55 @@ describe("S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER", () => {
     const result = scanFlatListTuningRegression(process.cwd());
 
     expect(result.errors).toEqual([]);
-    expect(result.summary.runtimeInstances).toBe(61);
-    expect(result.summary.flatListInstances).toBe(7);
+    expect(result.summary.runtimeInstances).toBe(62);
+    expect(result.summary.flatListInstances).toBe(8);
     expect(result.summary.flashListInstances).toBe(54);
     expect(result.summary.violations).toBe(0);
     expect(result.summary.allowlistEntries).toBeGreaterThan(0);
     expect(result.summary.matchedAllowlistEntries).toBe(result.summary.allowlistEntries);
     expect(result.summary.editableHeavyExceptions).toBe(1);
     expect(result.summary.nestedInventoryRequired).toBe(true);
+    expect({
+      runtime_instances: result.summary.runtimeInstances,
+      flat_list_instances: result.summary.flatListInstances,
+      flash_list_instances: result.summary.flashListInstances,
+      tuned_instances: result.summary.tunedInstances,
+      allowlisted_instances: result.summary.allowlistedInstances,
+      violations: result.summary.violations,
+    }).toEqual(flatListRuntimeInventory.summary);
+    expect(
+      result.instances
+        .map((instance) => ({
+          file: instance.file,
+          ordinal: instance.ordinal,
+          kind: instance.kind,
+          status: instance.status,
+          has_initial_num_to_render: instance.hasInitialNumToRender,
+          has_max_to_render_per_batch: instance.hasMaxToRenderPerBatch,
+          has_window_size: instance.hasWindowSize,
+          has_key_extractor: instance.hasKeyExtractor,
+        }))
+        .sort(
+          (left, right) =>
+            left.file.localeCompare(right.file) ||
+            left.ordinal - right.ordinal ||
+            left.kind.localeCompare(right.kind),
+        ),
+    ).toEqual(flatListRuntimeInventory.instances);
+    expect(flatListRuntimeInventory.instances).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: "src/components/estimate/ProfessionalEstimateComposer.tsx",
+          ordinal: 1,
+          kind: "FlatList",
+          status: "tuned",
+          has_initial_num_to_render: true,
+          has_max_to_render_per_batch: true,
+          has_window_size: true,
+          has_key_extractor: true,
+        }),
+      ]),
+    );
   });
 
   it("detects a heavy runtime list missing windowSize", () => {
