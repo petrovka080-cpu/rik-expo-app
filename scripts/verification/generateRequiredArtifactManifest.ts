@@ -108,8 +108,8 @@ function sha256(value: Buffer | string): string {
 }
 
 function producerFor(artifactPath: string): Producer {
-  if (/^artifacts\/S_RPC_[1-7]_/.test(artifactPath)) return PRODUCERS.rpc;
-  if (/^artifacts\/S_RT_[56]_/.test(artifactPath)) return PRODUCERS.realtime;
+  if (/^artifacts\/S_RPC_[67]_/.test(artifactPath)) return PRODUCERS.rpc;
+  if (/^artifacts\/S_RT_6_/.test(artifactPath)) return PRODUCERS.realtime;
   if (artifactPath.startsWith("artifacts/S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION/")) {
     return PRODUCERS.ontology;
   }

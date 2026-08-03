@@ -49,13 +49,13 @@
         },
         {
           "owner": "verification/v1/required-artifacts.manifest.json",
-          "sha256": "b647762bf7de76bcf4b95175e9132d6d915d33dacb2f6190c3b3e46544a5e6a3"
+          "sha256": "2f49e1f87cbc41c393a6a4c532176289ce8c4ee8b4db1c36c486739ccd55b201"
         }
       ],
       "schema_config_hashes": [
         {
           "path": "package.json",
-          "sha256": "b68929b202e9de4284bc108ecaa377a85fff350c9ab2c51e2444a4b3f1edb08e"
+          "sha256": "2a61d6863354ec374cbbb5bb71dfcc97fa9eeef16cceaea20844e96030df02e7"
         },
         {
           "path": "package-lock.json",
@@ -85,7 +85,7 @@
       "platform_runtime_contract": "win32-x64-node20",
       "input_manifest_sha256": "0aa110366d93c5d5e352fe67fc33f28326984770ee2a7a1a0f8b2154b70dacc4"
     },
-    "cache_key_sha256": "33ca4121b1ba4e9b14964fd37207b0c4120bf65a73ff806d58ab2ad61d9ded07"
+    "cache_key_sha256": "3af1636b931ca2312c0d9a24ceead2cc94c874f64cde7aa92be48b3754027fcd"
   },
   "generated_at_excluded_from_content_hash": true,
   "entries": [
@@ -6039,16 +6039,16 @@
     {
       "path": "artifacts/S_RPC_1_runtime_validation_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "984e24aa2e06eac6c7cbfd7b1c0fb604b6f06a6085f665a4e29078f87af2a255",
       "bytes": 2389,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "rpc-contract-evidence-v1",
-        "owner": "scripts/verification/producers/generateRpcContractEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRpcContractEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6058,16 +6058,16 @@
     {
       "path": "artifacts/S_RPC_2_runtime_validation_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "98dfe1bfe14a99cfdbecaf7cb81838f92eabdbee8043fd49b8c95aac2203c633",
       "bytes": 9090,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "rpc-contract-evidence-v1",
-        "owner": "scripts/verification/producers/generateRpcContractEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRpcContractEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6077,16 +6077,16 @@
     {
       "path": "artifacts/S_RPC_3_runtime_validation_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "568d068c844be59c7bbe322fc73fd389d52d5e4bbf7815e3f9a044d346495b58",
       "bytes": 14636,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "rpc-contract-evidence-v1",
-        "owner": "scripts/verification/producers/generateRpcContractEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRpcContractEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6096,16 +6096,16 @@
     {
       "path": "artifacts/S_RPC_4_runtime_validation_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "02a2482fc2545b8bf7cc2cc5c7663adc68953220a6baa32c1f6e02e58870b9da",
       "bytes": 6237,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "rpc-contract-evidence-v1",
-        "owner": "scripts/verification/producers/generateRpcContractEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRpcContractEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6115,16 +6115,16 @@
     {
       "path": "artifacts/S_RPC_5_runtime_validation_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "b70da8d322717146784239a8b9050f4fa24b81765d75f0bb566b5fe84cd26ecf",
       "bytes": 10351,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "rpc-contract-evidence-v1",
-        "owner": "scripts/verification/producers/generateRpcContractEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRpcContractEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6210,16 +6210,16 @@
     {
       "path": "artifacts/S_RT_5_realtime_fanout_reduction_matrix.json",
       "content_type": "application/json",
-      "schema_version": "verification-generated-json:v2",
+      "schema_version": "legacy-json-contract:v1",
       "content_sha256": "3a37b5b08847fa0909cdbf842ab1b539feab011702699e9061f6f880deaa60b5",
       "bytes": 3965,
-      "input_fingerprint": "0fc90693841bf46428640391ca52b002a1760ce32aa6a4083137730255af09bd",
+      "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "realtime-fanout-evidence-v1",
-        "owner": "scripts/verification/producers/generateRealtimeFanoutEvidence.ts",
-        "command": "node node_modules/tsx/dist/cli.mjs scripts/verification/producers/generateRealtimeFanoutEvidence.ts",
-        "version": "2",
-        "deterministic": true
+        "producer_id": "immutable-attested-evidence-cache-v1",
+        "owner": "verification/v1/required-artifacts.manifest.json",
+        "command": null,
+        "version": "1",
+        "deterministic": false
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
@@ -6607,6 +6607,6 @@
       ]
     }
   ],
-  "generated_at": "2026-08-03T14:55:41.944Z",
-  "content_sha256": "fb2b6f8f1fca59792b263337be75ba312a0dbaec93b2fc4e81e2b1bc89cf15e5"
+  "generated_at": "2026-08-03T15:08:14.863Z",
+  "content_sha256": "a65dddd7dd1830252d3e8ab99ec00d6ae8e91c263e693321a1f497bf94b96762"
 }

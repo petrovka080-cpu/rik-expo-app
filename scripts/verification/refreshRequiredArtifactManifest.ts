@@ -14,7 +14,22 @@ const producerVersions: Record<string, string> = {
   "realtime-fanout-evidence-v1": "2",
 };
 for (const entry of manifest.entries) {
-  if (!(entry.producer.producer_id in producerVersions)) continue;
+  const generatedRpc = /^artifacts\/S_RPC_[67]_/.test(entry.path);
+  const generatedRealtime = /^artifacts\/S_RT_6_/.test(entry.path);
+  if (!generatedRpc && !generatedRealtime) {
+    if (/^artifacts\/S_RPC_[1-5]_/.test(entry.path) || /^artifacts\/S_RT_5_/.test(entry.path)) {
+      entry.producer = {
+        producer_id: "immutable-attested-evidence-cache-v1",
+        owner: "verification/v1/required-artifacts.manifest.json",
+        command: null,
+        version: "1",
+        deterministic: false,
+      };
+      entry.schema_version = entry.path.endsWith(".json") ? "legacy-json-contract:v1" : "legacy-markdown-proof:v1";
+      entry.input_fingerprint = String(manifest.source_attestation.remediation_source_fingerprint ?? "unknown");
+    }
+    continue;
+  }
   const artifactPath = path.join(root, entry.path);
   if (!fs.existsSync(artifactPath)) throw new Error(`producer_output_missing:${entry.path}`);
   entry.content_sha256 = fileHash(entry.path);
