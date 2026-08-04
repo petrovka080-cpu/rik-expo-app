@@ -32,9 +32,9 @@
       "suites": [
         "tests/real10000Audit/remediationClosesInfrastructureBoqDepth.contract.test.ts",
         "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts",
-        "tests/estimateStructuredPipeline/previousBoqVisibleLabels.contract.test.ts",
-        "tests/estimateStructuredPipeline/uiBindingContract.contract.test.ts",
-        "tests/estimateStructuredPipeline/uiPdfBindingRuntimeProof.contract.test.ts"
+        "tests/estimateStructuredPipeline/previousBoqExactMaterialsGreenRequired.contract.test.ts",
+        "tests/estimateStructuredPipeline/noInternalKeysVisibleInUi.contract.test.ts",
+        "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts"
       ],
       "producers": ["scripts/audit/real10000AuditP0RemediationCore.ts"]
     },

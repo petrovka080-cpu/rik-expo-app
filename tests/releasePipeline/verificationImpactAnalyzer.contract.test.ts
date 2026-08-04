@@ -1,4 +1,6 @@
 import { buildVerificationPlan, type ImpactOwnershipMap } from "../../scripts/verification/impactAnalyzer";
+import fs from "node:fs";
+import path from "node:path";
 
 const base = "a".repeat(40);
 const head = "b".repeat(40);
@@ -39,5 +41,16 @@ describe("Verification Architecture V1 impact analyzer", () => {
       domains: [{ id: "x", gate: "same", levels: ["local"], patterns: ["**"], suites: [] }],
     };
     expect(() => buildVerificationPlan({ baseSha: base, headSha: head, changedFiles: [], level: "local", map: invalid })).toThrow("duplicate_gate");
+  });
+
+  it("keeps every selected suite in the governed ownership map executable", () => {
+    const result = buildVerificationPlan({
+      baseSha: base,
+      headSha: head,
+      changedFiles: ["scripts/estimate/auditAiEstimatePilotTelemetryDryRun.ts"],
+      level: "affected",
+    });
+
+    expect(result.selected_suites.filter((suite) => !fs.existsSync(path.resolve(suite)))).toEqual([]);
   });
 });

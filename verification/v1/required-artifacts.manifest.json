@@ -49,7 +49,7 @@
         },
         {
           "owner": "verification/v1/required-artifacts.manifest.json",
-          "sha256": "2f49e1f87cbc41c393a6a4c532176289ce8c4ee8b4db1c36c486739ccd55b201"
+          "sha256": "67489b9fd3ea9d13be213153fbcef69b55a49baa69a9651358e94a30ac7590ff"
         }
       ],
       "schema_config_hashes": [
@@ -67,7 +67,7 @@
         },
         {
           "path": "verification/v1/impact-domain-ownership.map.json",
-          "sha256": "a0f7b56d2b4ebef8818a3aa7e24e69a0ef7e2892a0e3ea237155de91777e99eb"
+          "sha256": "a4f75f67dde0ee30fc0d1f63a092473167babe4aed3e4b60e2d1dbedb7aa19f6"
         }
       ],
       "producer_versions": [
@@ -85,7 +85,7 @@
       "platform_runtime_contract": "win32-x64-node20",
       "input_manifest_sha256": "0aa110366d93c5d5e352fe67fc33f28326984770ee2a7a1a0f8b2154b70dacc4"
     },
-    "cache_key_sha256": "3af1636b931ca2312c0d9a24ceead2cc94c874f64cde7aa92be48b3754027fcd"
+    "cache_key_sha256": "73b64c18d97ea818565bd3f3f33ed9b22660af6f41296d024ab7e15fcfa2cd99"
   },
   "generated_at_excluded_from_content_hash": true,
   "entries": [
@@ -6607,6 +6607,6 @@
       ]
     }
   ],
-  "generated_at": "2026-08-03T15:08:14.863Z",
-  "content_sha256": "a65dddd7dd1830252d3e8ab99ec00d6ae8e91c263e693321a1f497bf94b96762"
+  "generated_at": "2026-08-04T12:06:39.795Z",
+  "content_sha256": "c5ae067de1acf984108ff0f22c9667a7ed3f70a1157fa55d56b2d778a7f6536e"
 }
