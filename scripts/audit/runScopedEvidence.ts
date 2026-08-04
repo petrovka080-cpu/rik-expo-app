@@ -15,6 +15,28 @@ export type RunScopedEvidenceResult = {
   subjectSha: string;
 };
 
+export function resolveCanonicalOrJestEvidencePath(
+  canonicalPath: string,
+  root = process.cwd(),
+): string {
+  const workerId = process.env.JEST_WORKER_ID;
+  if (!workerId || process.env.VERIFICATION_CANONICAL_WRITE === "1") {
+    return canonicalPath;
+  }
+  const artifactsRoot = path.join(root, "artifacts");
+  const relativePath = path.relative(artifactsRoot, canonicalPath);
+  if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+    throw new Error(`JEST_EVIDENCE_PATH_OUTSIDE_ARTIFACTS:${canonicalPath}`);
+  }
+  return path.join(
+    root,
+    ".release-runtime",
+    "test-evidence",
+    `jest-${workerId}-pid-${process.pid}`,
+    relativePath,
+  );
+}
+
 export function currentEvidenceSubjectSha(root = process.cwd()): string {
   return execFileSync("git", ["rev-parse", "HEAD"], {
     cwd: root,

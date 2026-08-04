@@ -19,6 +19,7 @@ import { buildStorageBucketPolicies } from "./rlsDynamicCrossTenant.shared";
 import {
   atomicWriteEvidence,
   currentEvidenceSubjectSha,
+  resolveCanonicalOrJestEvidencePath,
   withTerminalWriterMetadata,
   writeRunScopedEvidence,
   type RunScopedEvidenceResult,
@@ -49,21 +50,24 @@ export type SecurityPrivacyReport = {
   proof: string;
 };
 
-function artifactPath(name: string): string {
-  return path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`);
+export function securityPrivacyArtifactPath(name: string): string {
+  return resolveCanonicalOrJestEvidencePath(
+    path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`),
+    ROOT,
+  );
 }
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
   atomicWriteEvidence(
-    artifactPath(name),
+    securityPrivacyArtifactPath(name),
     `${JSON.stringify(sanitizeSecurityPrivacyArtifact(value), null, 2)}\n`,
   );
 }
 
 function writeProof(value: string): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  atomicWriteEvidence(artifactPath("proof.md"), value);
+  atomicWriteEvidence(securityPrivacyArtifactPath("proof.md"), value);
 }
 
 function normalizePath(file: string): string {

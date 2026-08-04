@@ -20,6 +20,7 @@ import {
 import {
   atomicWriteEvidence,
   currentEvidenceSubjectSha,
+  resolveCanonicalOrJestEvidencePath,
   withTerminalWriterMetadata,
   writeRunScopedEvidence,
   type RunScopedEvidenceResult,
@@ -54,21 +55,24 @@ const REQUIRED_ARTIFACTS = [
 const metricNames = new Set<OpsMetricName>(OPS_METRIC_REGISTRY.map((metric) => metric.name));
 const rateLimitIds = new Set<OpsRateLimitId>(OPS_RATE_LIMIT_REGISTRY.map((limit) => limit.id));
 
-function artifactPath(name: string): string {
-  return path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`);
+export function observabilityOpsArtifactPath(name: string): string {
+  return resolveCanonicalOrJestEvidencePath(
+    path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`),
+    ROOT,
+  );
 }
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
   atomicWriteEvidence(
-    artifactPath(name),
+    observabilityOpsArtifactPath(name),
     `${JSON.stringify(value, null, 2)}\n`,
   );
 }
 
 function writeProof(value: string): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  atomicWriteEvidence(artifactPath("proof.md"), value);
+  atomicWriteEvidence(observabilityOpsArtifactPath("proof.md"), value);
 }
 
 function requiredMetricRows() {
