@@ -3,7 +3,6 @@ import "../global.css";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { CommonActions } from "@react-navigation/native";
-import { TabActions } from "@react-navigation/routers";
 import { Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -92,19 +91,24 @@ function AppBottomNav({
   const requestTabAvailable = state.routes.some(
     (route) => route.name === "request/index",
   );
+  const aiTabAvailable = state.routes.some((route) => route.name === "ai");
 
   useEffect(() => {
-    if (!requestTabAvailable) return undefined;
+    if (!requestTabAvailable || !aiTabAvailable) return undefined;
     if (Platform.OS === "android") {
       console.info("[RikWarmDeepLink] tab_handler_registered");
     }
     return registerPublicRequestTabNavigationHandler((target) => {
       try {
         const currentState = navigation.getState();
-        const requestRoute = currentState.routes.find(
-          (route) => route.name === "request/index",
+        const targetRouteName =
+          target.navigationPathname === "/(tabs)/ai"
+            ? "ai"
+            : "request/index";
+        const targetRoute = currentState.routes.find(
+          (route) => route.name === targetRouteName,
         );
-        if (!requestRoute) {
+        if (!targetRoute) {
           if (Platform.OS === "android") {
             console.info("[RikWarmDeepLink] tab_handler_missing_route");
           }
@@ -114,9 +118,46 @@ function AppBottomNav({
         if (Platform.OS === "android") {
           console.info("[RikWarmDeepLink] tab_handler_navigate");
         }
+        const routeParams =
+          targetRoute.params && typeof targetRoute.params === "object"
+            ? targetRoute.params
+            : {};
+        const params = {
+          ...routeParams,
+          // A warm canonical launch replaces the previous launch envelope.
+          // React Navigation merges setParams, so explicitly clear values that
+          // would otherwise bind a new prompt to the previous draft/automation.
+          prompt: undefined,
+          description: undefined,
+          draftId: undefined,
+          launchError: undefined,
+          launchId: undefined,
+          launchPayloadV1: undefined,
+          autoPrepare: undefined,
+          autoPdf: undefined,
+          autoSend: undefined,
+          context: undefined,
+          ...target.params,
+        };
+        const activeRoute = currentState.routes[currentState.index];
+        if (activeRoute?.key === targetRoute.key) {
+          // Re-emitting tabPress on the already active request tab invokes the
+          // navigator's scroll-to-top path. A large estimate can keep that
+          // synchronous native/JS round trip busy long enough for the new
+          // launch envelope to miss its visible prompt deadline. The warm
+          // intent owns this same route, so replace its params immediately.
+          navigation.dispatch({
+            ...CommonActions.setParams(params),
+            source: targetRoute.key,
+          });
+          if (Platform.OS === "android") {
+            console.info("[RikWarmDeepLink] tab_handler_params_updated");
+          }
+          return true;
+        }
         const event = navigation.emit({
           type: "tabPress",
-          target: requestRoute.key,
+          target: targetRoute.key,
           canPreventDefault: true,
         });
         if (event.defaultPrevented) {
@@ -125,27 +166,7 @@ function AppBottomNav({
           }
           return false;
         }
-
-        const routeParams =
-          requestRoute.params && typeof requestRoute.params === "object"
-            ? requestRoute.params
-            : {};
-        const params = { ...routeParams, ...target.params };
-        const activeRoute = currentState.routes[currentState.index];
-        if (activeRoute?.key === requestRoute.key) {
-          navigation.dispatch({
-            ...CommonActions.setParams(params),
-            source: requestRoute.key,
-          });
-          if (Platform.OS === "android") {
-            console.info("[RikWarmDeepLink] tab_handler_params_updated");
-          }
-          return true;
-        }
-        navigation.dispatch({
-          ...TabActions.jumpTo(requestRoute.name, params),
-          target: currentState.key,
-        });
+        navigation.navigate(targetRoute.name, params);
         if (Platform.OS === "android") {
           console.info("[RikWarmDeepLink] tab_handler_dispatched");
         }
@@ -161,7 +182,7 @@ function AppBottomNav({
         return false;
       }
     });
-  }, [navigation, requestTabAvailable]);
+  }, [aiTabAvailable, navigation, requestTabAvailable]);
 
   const navigateToAddListing = () => {
     router.push(ADD_LISTING_ROUTE);

@@ -18,7 +18,6 @@ import {
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import { recordPlatformGuardSkip } from "../../../lib/observability/platformGuardDiscipline";
-import { isLocalDeveloperFullAccessAllowed } from "../../../lib/developerOverride";
 import {
   buildCompatibilityInboxRows,
   resolveContractorScreenContract,
@@ -75,23 +74,6 @@ export type ContractorVisibleScope = "works_bundle" | "inbox_scope";
 
 const loadEmptyInboxRows = (): ContractorInboxRow[] => [];
 
-const LOCAL_DEVELOPER_CONTRACTOR_PROFILE: ContractorUserProfile = {
-  id: "local-developer",
-  full_name: "Local Developer",
-  phone: null,
-  inn: null,
-  company: "RIK Expo Dev",
-  is_contractor: true,
-};
-
-const LOCAL_DEVELOPER_CONTRACTOR_CARD: ContractorProfileCard = {
-  id: "local-developer-contractor",
-  company_name: "RIK Expo Dev",
-  full_name: "Local Developer",
-  phone: null,
-  inn: null,
-};
-
 export function useContractorScreenData(params: Params) {
   const {
     supabaseClient,
@@ -118,58 +100,6 @@ export function useContractorScreenData(params: Params) {
   const loadWorksSeqRef = useRef(0);
   const screenReloadInFlightRef = useRef<Promise<void> | null>(null);
   const visibleScopeReloadInFlightRef = useRef<Promise<void> | null>(null);
-
-  const applyLocalDeveloperContractorFallback = useCallback(
-    (trigger: ContractorReloadTrigger) => {
-      profileRef.current = LOCAL_DEVELOPER_CONTRACTOR_PROFILE;
-      contractorRef.current = LOCAL_DEVELOPER_CONTRACTOR_CARD;
-      setProfile(LOCAL_DEVELOPER_CONTRACTOR_PROFILE);
-      setContractor(LOCAL_DEVELOPER_CONTRACTOR_CARD);
-      setRows([]);
-      setSubcontractCards([]);
-      setInboxRows(loadEmptyInboxRows());
-      setScreenContract(
-        resolveContractorScreenContract({
-          canonicalRows: [],
-          canonicalMeta: null,
-          compatibilityRows: [],
-          hasContractorIdentity: true,
-          loadError: null,
-        }),
-      );
-      setLoadingProfile(false);
-      setLoadingWorks(false);
-      setRowsReady(true);
-      setSubcontractsReady(true);
-      recordPlatformObservability({
-        screen: "contractor",
-        surface: "screen_reload",
-        category: "ui",
-        event: "local_developer_contractors_fallback",
-        result: "success",
-        fallbackUsed: true,
-        extra: {
-          owner: "useContractorScreenData",
-          trigger,
-          reason: "local_dev_full_access_without_auth_session",
-        },
-      });
-    },
-    [
-      contractorRef,
-      profileRef,
-      setContractor,
-      setInboxRows,
-      setLoadingProfile,
-      setLoadingWorks,
-      setProfile,
-      setRows,
-      setRowsReady,
-      setScreenContract,
-      setSubcontractCards,
-      setSubcontractsReady,
-    ],
-  );
 
   const loadProfile = useCallback(async () => {
     if (!focusedRef.current) return;
@@ -381,10 +311,6 @@ export function useContractorScreenData(params: Params) {
     }
 
     if (!(await hasCurrentContractorSessionUser({ supabaseClient }))) {
-      if (isLocalDeveloperFullAccessAllowed()) {
-        applyLocalDeveloperContractorFallback(trigger);
-        return;
-      }
       recordPlatformGuardSkip("auth_not_ready", {
         screen: "contractor",
         surface: "screen_reload",
@@ -409,7 +335,6 @@ export function useContractorScreenData(params: Params) {
     screenReloadInFlightRef.current = currentPromise;
     return currentPromise;
   }, [
-    applyLocalDeveloperContractorFallback,
     focusedRef,
     loadProfile,
     loadContractor,
@@ -493,9 +418,6 @@ export function useContractorScreenData(params: Params) {
       }
 
       if (!(await hasCurrentContractorSessionUser({ supabaseClient }))) {
-        if (isLocalDeveloperFullAccessAllowed()) {
-          return reloadContractorScreenData(trigger);
-        }
         recordPlatformGuardSkip("auth_not_ready", {
           screen: "contractor",
           surface: "visible_scope_reload",

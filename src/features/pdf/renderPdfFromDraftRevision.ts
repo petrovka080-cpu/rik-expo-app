@@ -1,7 +1,7 @@
 import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../estimates/createSnapshotFromDraftRevision";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { getExpandedComplexWorkFamily } from "../../lib/ai/expandedComplexWorks";
-import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
+import { buildAiEstimateParameterCardView } from "../../lib/estimate/application/buildAiEstimateParameterCardView";
 import {
   aiEstimateRuAssumptionLabel,
   aiEstimateRuAssumptionReason,
@@ -52,7 +52,7 @@ function unique(values: readonly string[]): string[] {
 }
 
 function renderHumanPdfCover(revision: EstimateDraftRevision, costCalculated: boolean): string {
-  const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
+  const cards = buildAiEstimateParameterCardView({ revision, includeMissing: true });
   const understoodCards = cards.filter((card) => !card.missing && card.source === "user_prompt");
   const confirmedCards = cards.filter((card) => !card.missing);
   const assumptions = revision.assumptions

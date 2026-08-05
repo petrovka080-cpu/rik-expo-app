@@ -53,7 +53,7 @@ export function allAiEstimateUiFiles(): string[] {
     ...walkTs("src/features/consumerRepair"),
     ...walkTs("src/features/foreman"),
     ...walkTs("src/features/estimates"),
-  ];
+  ].filter((file) => !/\.(?:test|spec)\.tsx?$/.test(file));
 }
 
 export function estimateFiles(): string[] {

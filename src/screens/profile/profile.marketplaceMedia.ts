@@ -1,4 +1,4 @@
-import { Alert, Platform } from "react-native";
+import { Alert, Image, Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import { pickFilesAny } from "../../lib/filePick";
@@ -33,6 +33,14 @@ type NativeVideoPickerResult = {
   cancelled?: boolean;
   assets?: NativeVideoPickerAsset[] | null;
 };
+
+export function prefetchStableMarketplaceImages(urls: readonly string[]) {
+  urls
+    .filter((url) => /^https?:\/\//i.test(url))
+    .forEach((url) => {
+      void Image.prefetch(url).catch(() => undefined);
+    });
+}
 
 type NativeVideoPickerModule = {
   launchCameraAsync: (options?: Record<string, unknown>) => Promise<NativeVideoPickerResult>;

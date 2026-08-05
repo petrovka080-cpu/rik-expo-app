@@ -131,7 +131,8 @@ describe("pdfDocumentViewerEntry", () => {
     );
 
     expect(infoSpy).toHaveBeenCalledWith(
-      "[pdf-document-actions] viewer_patch_v3_navigation_call",
+      "[pdf-document-actions]",
+      "viewer_patch_v3_navigation_call",
       expect.objectContaining({
         href: "/pdf-viewer?sessionId=session-debug&openToken=",
         platform: "web",

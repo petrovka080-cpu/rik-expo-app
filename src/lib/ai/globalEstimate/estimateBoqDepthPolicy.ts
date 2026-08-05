@@ -22,7 +22,23 @@ export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = 
   mega_project: 500,
 };
 
-function estimateText(result: Pick<GlobalEstimateResult, "work" | "input">): string {
+type EstimateComplexityInput = {
+  work: Pick<GlobalEstimateResult["work"], "workKey" | "title" | "category">;
+  input: Pick<
+    GlobalEstimateResult["input"],
+    "originalText" | "unit" | "volume"
+  >;
+  requiresReview: boolean;
+};
+
+const FULL_PROFESSIONAL_CATEGORIES = new Set<string>([
+  "foundation",
+  "roofing",
+  "masonry",
+  "tile",
+]);
+
+function estimateText(result: Pick<EstimateComplexityInput, "work" | "input">): string {
   return [
     result.work.workKey,
     result.work.title,
@@ -33,13 +49,19 @@ function estimateText(result: Pick<GlobalEstimateResult, "work" | "input">): str
   ].join(" ").toLocaleLowerCase("ru-RU");
 }
 
-function isAtomicLocalOperation(result: Pick<GlobalEstimateResult, "work" | "input">): boolean {
+function isEnergyInfrastructure(text: string): boolean {
+  return /(?:energy_infrastructure|solar|солнеч|сэс|battery|micro_hydro|mini_chp|substation|подстанц|power_line|лэп|grid|mw|мвт)/i.test(text);
+}
+
+function isAtomicLocalOperation(
+  result: Pick<EstimateComplexityInput, "work" | "input">,
+): boolean {
   const text = estimateText(result);
   return /(?:алмазн|core\s*drill|бурени[ея]\s+отверст|отдельн\w*\s+операц|локальн\w*\s+расч[её]т)/i.test(text);
 }
 
 export function buildProfessionalEstimateComplexityProfile(
-  result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">,
+  result: EstimateComplexityInput,
 ): ProfessionalEstimateComplexityProfile {
   const text = estimateText(result);
   if (isAtomicLocalOperation(result)) {
@@ -59,7 +81,8 @@ export function buildProfessionalEstimateComplexityProfile(
     };
   }
   if (
-    /(?:solar|солнеч|сэс|mw|мвт|substation|подстанц|power_line|лэп|grid|industrial|промышлен|infrastructure|инфраструкт|road|дорог|bridge|tunnel|hydro)/i.test(text) ||
+    isEnergyInfrastructure(text) ||
+    /(?:industrial|промышлен|infrastructure|инфраструкт|road|дорог|bridge|tunnel|hydro)/i.test(text) ||
     result.work.category === "roadworks" ||
     result.work.category === "delivery_equipment"
   ) {
@@ -87,16 +110,18 @@ export function buildProfessionalEstimateComplexityProfile(
     level: "full_professional",
     minimumMeaningfulRows: ESTIMATE_BOQ_MINIMUM_ROWS.full_professional,
     fullProfessionalClaimAllowed: true,
-    reason: "full_professional_scope",
+    reason: FULL_PROFESSIONAL_CATEGORIES.has(result.work.category)
+      ? `full_professional_category:${result.work.category}`
+      : "full_professional_scope",
   };
 }
 
 export function classifyEstimateBoqDepth(
-  result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">,
+  result: EstimateComplexityInput,
 ): EstimateBoqDepthClass {
   return buildProfessionalEstimateComplexityProfile(result).level;
 }
 
-export function minimumRowsForEstimate(result: Pick<GlobalEstimateResult, "work" | "input" | "requiresReview">): number {
+export function minimumRowsForEstimate(result: EstimateComplexityInput): number {
   return buildProfessionalEstimateComplexityProfile(result).minimumMeaningfulRows;
 }

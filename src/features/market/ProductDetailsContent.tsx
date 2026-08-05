@@ -36,6 +36,9 @@ type ProductGalleryItem =
   | { kind: "video"; uri: string }
   | { kind: "placeholder"; source: ImageSourcePropType };
 
+const PRODUCT_GALLERY_MAX_ITEMS = 24;
+const RELATED_LISTINGS_MAX_ITEMS = 6;
+
 export type ProductDetailsContentProps = {
   row: MarketHomeListingCard;
 };
@@ -209,9 +212,11 @@ export default function ProductDetailsContent({ row }: ProductDetailsContentProp
     ...galleryImageUrls.map((uri) => ({ kind: "photo" as const, uri })),
     ...row.videoUrls.map((uri) => ({ kind: "video" as const, uri })),
   ];
-  const galleryMediaItems: ProductGalleryItem[] = galleryItems.length
-    ? galleryItems
-    : [{ kind: "placeholder", source: row.imageSource }];
+  const galleryMediaItems: ProductGalleryItem[] = (
+    galleryItems.length
+      ? galleryItems
+      : [{ kind: "placeholder" as const, source: row.imageSource }]
+  ).slice(0, PRODUCT_GALLERY_MAX_ITEMS);
   const selectedGalleryIndex = Math.min(selectedImageIndex, galleryMediaItems.length - 1);
   const heroMediaItem = galleryMediaItems[selectedGalleryIndex] ?? galleryMediaItems[0];
   const viewerPhotoIndexes = galleryMediaItems
@@ -278,7 +283,7 @@ export default function ProductDetailsContent({ row }: ProductDetailsContentProp
                   contentContainerStyle={styles.galleryStrip}
                   testID="market_product_gallery_strip"
                 >
-                  {galleryMediaItems.map((item, index) => (
+                  {galleryMediaItems.slice(0, PRODUCT_GALLERY_MAX_ITEMS).map((item, index) => (
                     <Pressable
                       key={`${row.id}:gallery:${index}`}
                       style={[
@@ -395,7 +400,7 @@ export default function ProductDetailsContent({ row }: ProductDetailsContentProp
                   </View>
                 ) : (
                   <View style={styles.relatedList}>
-                    {relatedListings.map((listing) => (
+                    {relatedListings.slice(0, RELATED_LISTINGS_MAX_ITEMS).map((listing) => (
                       <MarketFeedCard
                         key={listing.id}
                         variant="market-primary"

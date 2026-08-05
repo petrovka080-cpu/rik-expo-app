@@ -3,7 +3,7 @@ import type {
   EstimateReplayDriftType,
   EstimateReplayHashSet,
   EstimateReplayMismatch,
-  EstimateReplayRecord,
+  AnyEstimateReplayRecord,
 } from "./replayableEstimateCoreContract";
 
 const HASH_DRIFT_TYPES: Record<keyof EstimateReplayHashSet, EstimateReplayDriftType> = {
@@ -42,8 +42,8 @@ function strongestDriftType(mismatches: readonly EstimateReplayMismatch[]): Esti
 }
 
 export function compareEstimateReplayRecords(
-  expected: EstimateReplayRecord,
-  actual: EstimateReplayRecord,
+  expected: AnyEstimateReplayRecord,
+  actual: AnyEstimateReplayRecord,
 ): EstimateReplayComparison {
   const mismatches = HASH_NAMES
     .filter((name) => expected.hashes[name] !== actual.hashes[name])

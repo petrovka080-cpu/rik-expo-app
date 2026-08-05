@@ -26,6 +26,7 @@ export function createConsumerRepairRequestDraft(input: {
     addressText: input.addressText ?? null,
     preferredTimeText: input.preferredTimeText ?? null,
     contactPhone: input.contactPhone ?? null,
+    selectedCatalogWorkId: selectedWork?.selectedCatalogWorkId ?? selectedWork?.selectedWorkKey ?? null,
     selectedWorkKey: selectedWork?.selectedWorkKey ?? null,
     selectedWorkTitleRu: selectedWork?.selectedWorkTitleRu ?? null,
     selectedWorkCategoryKey: selectedWork?.selectedWorkCategoryKey ?? null,
@@ -57,6 +58,7 @@ export function updateConsumerRepairRequestDraft(
     | "addressText"
     | "preferredTimeText"
     | "contactPhone"
+    | "selectedCatalogWorkId"
     | "selectedWorkKey"
     | "selectedWorkTitleRu"
     | "selectedWorkCategoryKey"

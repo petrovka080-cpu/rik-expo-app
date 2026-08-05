@@ -4,8 +4,8 @@ import {
 } from "../../scripts/estimate/auditApprovedHistoryGrowthAfterParameterCards";
 
 describe("approved history growth after parameter cards", () => {
-  it("does not cap approved estimates at 13 and survives compaction", () => {
-    const { summary } = auditApprovedHistoryGrowthAfterParameterCards();
+  it("does not cap approved estimates at 13 and survives compaction", async () => {
+    const { summary } = await auditApprovedHistoryGrowthAfterParameterCards();
 
     expect(summary.final_status).toBe(GREEN_APPROVED_HISTORY_GROWTH_AFTER_PARAMETER_CARDS_READY);
     expect(summary.history_count_reaches_14).toBe(true);

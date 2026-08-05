@@ -6,6 +6,11 @@ import { releasePipelineRuntimeDir } from "./computeReleaseFingerprints";
 import { assertSourceFrozen } from "./assertSourceFrozen";
 import { loadReleaseCandidate } from "./releaseCandidateState";
 import { acquireRuntimeLock, releaseRuntimeLock } from "./runtimeLock";
+import {
+  prepareRequiredArtifacts,
+  verifyPreparedArtifactsImmutable,
+  type RequiredArtifactPreflightReport,
+} from "../verification/requiredArtifactPreflight";
 
 type ProcessListRow = {
   ProcessId?: number;
@@ -78,6 +83,31 @@ function main(): void {
   const candidate = loadReleaseCandidate();
   const outDir = releasePipelineRuntimeDir(candidate.candidateHash, "full-jest");
   assertNoExistingFullJestResult(outDir);
+  fs.mkdirSync(outDir, { recursive: true });
+
+  const requiredArtifactManifestPath = path.resolve(
+    "verification/v1/required-artifacts.manifest.json",
+  );
+  const evidenceCacheRoot = path.resolve(
+    process.env.VERIFICATION_EVIDENCE_CACHE_ROOT ??
+      path.join(process.cwd(), "..", "rik-expo-t8-r5-evidence", "content-cache"),
+  );
+  const artifactPreflightPath = path.join(outDir, "artifact-preflight.json");
+  let artifactPreflight: RequiredArtifactPreflightReport;
+  try {
+    artifactPreflight = prepareRequiredArtifacts({
+      root: process.cwd(),
+      manifestPath: requiredArtifactManifestPath,
+      cacheRoot: evidenceCacheRoot,
+      reportPath: artifactPreflightPath,
+      subjectSha: candidate.source_commit,
+      generateOnMiss: true,
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(`Required-artifact preflight report: ${artifactPreflightPath}`);
+    process.exit(1);
+  }
 
   const lock = acquireRuntimeLock("full-jest", {
     pid: process.pid,
@@ -98,7 +128,6 @@ function main(): void {
   const startedAt = Date.now();
   try {
     assertNoExistingFullJestResult(outDir);
-    fs.mkdirSync(outDir, { recursive: true });
     jsonPath = path.join(outDir, "result.json");
     summaryPath = path.join(outDir, "summary.json");
     exitCodePath = path.join(outDir, "exit_code.txt");
@@ -109,7 +138,7 @@ function main(): void {
     try {
       result = spawnSync(
         "npm",
-        ["test", "--", "--runInBand", "--forceExit", "--json", "--outputFile", jsonPath],
+        ["test", "--", "--runInBand", "--detectOpenHandles", "--json", "--outputFile", jsonPath],
         {
           cwd: process.cwd(),
           stdio: ["ignore", stdoutFd, stderrFd],
@@ -129,7 +158,22 @@ function main(): void {
     throw new Error("BLOCKED_FULL_JEST_PROCESS_NOT_STARTED");
   }
 
-  const passed = result.status === 0 && fs.existsSync(jsonPath);
+  const stderr = fs.existsSync(stderrPath) ? fs.readFileSync(stderrPath, "utf8") : "";
+  const immutability = verifyPreparedArtifactsImmutable({
+    root: process.cwd(),
+    manifestPath: requiredArtifactManifestPath,
+    preflight: artifactPreflight,
+  });
+  const oomDetected = /heap out of memory|allocation failed|javascript heap/i.test(stderr);
+  const openHandlesWarning = /did not exit.*after the test run|open handles|force exiting jest/i.test(stderr);
+  const forcedTermination = result.signal !== null;
+  const passed =
+    result.status === 0 &&
+    fs.existsSync(jsonPath) &&
+    immutability.immutable &&
+    !oomDetected &&
+    !openHandlesWarning &&
+    !forcedTermination;
   const evidence = fs.existsSync(jsonPath) ? JSON.parse(fs.readFileSync(jsonPath, "utf8")) : {};
   const wrappedEvidence = {
     ...evidence,
@@ -145,6 +189,19 @@ function main(): void {
     proof_harness_fingerprint: candidate.proofHarnessFingerprint,
     proof_harness_hash: candidate.proofHarnessHash,
     candidate_hash: candidate.candidateHash,
+    required_artifact_preflight: {
+      path: artifactPreflightPath,
+      status: artifactPreflight.final_status,
+      manifest_content_sha256: artifactPreflight.manifest_content_sha256,
+      artifact_set_sha256: artifactPreflight.artifact_set_sha256,
+      prepared_artifacts: artifactPreflight.prepared_artifacts,
+    },
+    canonical_evidence_immutability: immutability,
+    oom_detected: oomDetected,
+    open_handles_warning: openHandlesWarning,
+    forced_termination: forcedTermination,
+    process_signal: result.signal,
+    force_exit_requested: false,
     stdout_log: stdoutPath,
     stderr_log: stderrPath,
     duration_ms: Date.now() - startedAt,
@@ -161,7 +218,17 @@ function main(): void {
       exit_code: result.status ?? 1,
       numFailedTestSuites: wrappedEvidence.numFailedTestSuites ?? null,
       numFailedTests: wrappedEvidence.numFailedTests ?? null,
+      numPendingTestSuites: wrappedEvidence.numPendingTestSuites ?? null,
+      numPendingTests: wrappedEvidence.numPendingTests ?? null,
+      numTodoTests: wrappedEvidence.numTodoTests ?? null,
       candidate_hash: candidate.candidateHash,
+      required_artifact_preflight: artifactPreflight.final_status,
+      canonical_evidence_immutable: immutability.immutable,
+      canonical_evidence_changed: immutability.changed,
+      oom_detected: oomDetected,
+      open_handles_warning: openHandlesWarning,
+      forced_termination: forcedTermination,
+      force_exit_requested: false,
       fake_green_claimed: false,
     }, null, 2)}\n`,
     "utf8",

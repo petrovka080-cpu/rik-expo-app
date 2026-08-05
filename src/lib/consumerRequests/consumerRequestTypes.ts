@@ -7,7 +7,8 @@ import type {
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
 import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
-import type { RoadScopeIdV4 } from "../estimate/v4/asphalt";
+import type { EstimateDraftSession } from "../estimate/draftSession/estimateDraftSession";
+import type { CanonicalParameterSession } from "../estimate/canonicalParameters/canonicalParameterCore";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import type {
@@ -15,6 +16,9 @@ import type {
   EstimatePriceCandidateSummary,
   EstimatePriceTrace,
 } from "../../features/estimates/pricing/priceResolutionEngine";
+import type {
+  ElectricalCircuitScheduleV1,
+} from "../estimate/v4/electrical/electricalProfessionalBoqV1";
 
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
@@ -69,6 +73,7 @@ export type ConsumerRepairCatalogCandidate = {
 };
 
 export type ConsumerRepairSelectedWork = {
+  selectedCatalogWorkId?: string | null;
   selectedWorkKey: string;
   selectedWorkTitleRu: string;
   selectedWorkCategoryKey: string;
@@ -89,6 +94,7 @@ export type ConsumerRepairRequestDraft = {
   addressText?: string | null;
   preferredTimeText?: string | null;
   contactPhone?: string | null;
+  selectedCatalogWorkId?: string | null;
   selectedWorkKey?: string | null;
   selectedWorkTitleRu?: string | null;
   selectedWorkCategoryKey?: string | null;
@@ -235,6 +241,15 @@ export type ConsumerRepairPdfOpenResult = {
   signedUrl: string;
   expiresAt: string;
   contentType: "application/pdf";
+  tenantId: string;
+  companyId: string;
+  ownerUserId: string;
+  sessionBoundaryId: string;
+  revisionId: string;
+  snapshotHash: string;
+  rendererVersion: string;
+  locale: string;
+  currency: string;
 };
 
 export type ConsumerRepairRequestEvent = {
@@ -266,6 +281,9 @@ export type ConsumerRepairDraftBundle = {
   editableEstimateSnapshot?: EditableEstimateSnapshot | null;
   estimateRevisionState?: EstimateRevisionState | null;
   estimateDraftRevisionState?: EstimateDraftRevisionState | null;
+  estimateDraftSession?: EstimateDraftSession | null;
+  canonicalParameterSession?: CanonicalParameterSession | null;
+  electricalCircuitSchedule?: ElectricalCircuitScheduleV1 | null;
   structuredEstimatePayload?: StructuredEstimatePayload | null;
   projectExecutionDrafts: ProjectExecutionDraft[];
   marketplaceLink: ConsumerMarketplaceLink;
@@ -280,7 +298,7 @@ export type PendingRoadScopeSelectionV4 = {
   requestId: string;
   originalUserText: string;
   requestedCatalogWorkId: string;
-  offeredScopes: RoadScopeIdV4[];
+  offeredScopes: string[];
   resolverEvidence: string[];
   resolverVersion: string;
   createdAt: string;
@@ -330,6 +348,7 @@ export type ConsumerRepairAiDraft = {
   selectedWork?: ConsumerRepairSelectedWork;
   estimatePresentation?: EstimatePresentationViewModel;
   structuredEstimatePayload?: StructuredEstimatePayload;
+  electricalCircuitSchedule?: ElectricalCircuitScheduleV1;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;
@@ -386,6 +405,7 @@ export type ConsumerRequestValidationErrorCode =
   | "REQUEST_NOT_APPROVED"
   | "REPAIR_TYPE_REQUIRED"
   | "OWNER_MISMATCH"
+  | "ESTIMATE_PARAMETERS_REQUIRED"
   | "ESTIMATE_PARAM_BATCH_EMPTY"
   | "ESTIMATE_REVISION_BATCH_REJECTED";
 

@@ -1,11 +1,13 @@
 import React from "react";
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { searchCatalogItemsForPicker } from "../../lib/catalog/catalog.facade";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import {
-  searchCatalogItemsForPicker,
-  type CatalogItemPickerItem,
-} from "../../lib/catalog/catalog.facade";
-import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
+  registerTimeout,
+  type TimerRegistryHandle,
+} from "../../lib/lifecycle/timerRegistry";
 
 type Props = {
   visible: boolean;
@@ -25,6 +27,7 @@ type State = {
 export class CatalogItemPicker extends React.Component<Props, State> {
   private previousWebBodyOverflow: string | null = null;
   private searchSequence = 0;
+  private searchTimer: TimerRegistryHandle | null = null;
 
   state: State = {
     query: this.props.initialQuery ?? "бетон",
@@ -53,7 +56,14 @@ export class CatalogItemPicker extends React.Component<Props, State> {
   }
 
   componentWillUnmount(): void {
+    this.cancelScheduledSearch();
+    this.searchSequence += 1;
     this.syncWebBodyScrollLock(false);
+  }
+
+  private cancelScheduledSearch(): void {
+    this.searchTimer?.dispose();
+    this.searchTimer = null;
   }
 
   private syncWebBodyScrollLock(visible: boolean): void {
@@ -72,14 +82,16 @@ export class CatalogItemPicker extends React.Component<Props, State> {
     }
   }
 
-  private search = async (queryValue = this.state.query) => {
+  private search = async (
+    queryValue = this.state.query,
+    sequence = ++this.searchSequence,
+  ) => {
     const query = queryValue.trim();
     if (query.length < 2) {
       this.searchSequence += 1;
       this.setState({ rows: [], loading: false, error: null, lastSearchedQuery: null });
       return;
     }
-    const sequence = ++this.searchSequence;
     this.setState({ loading: true, error: null, lastSearchedQuery: query });
     try {
       const rows = await searchCatalogItemsForPicker(query, 40);
@@ -92,9 +104,28 @@ export class CatalogItemPicker extends React.Component<Props, State> {
   };
 
   private setQuery = (query: string) => {
-    this.setState({ query }, () => {
-      void this.search(query);
-    });
+    this.cancelScheduledSearch();
+    const sequence = ++this.searchSequence;
+    const normalized = query.trim();
+    if (normalized.length < 2) {
+      this.setState({
+        query,
+        rows: [],
+        loading: false,
+        error: null,
+        lastSearchedQuery: null,
+      });
+      return;
+    }
+    this.setState({ query });
+    this.searchTimer = registerTimeout(
+      "catalog-item-picker:live-search",
+      () => {
+        this.searchTimer = null;
+        void this.search(query, sequence);
+      },
+      250,
+    );
   };
 
   render(): React.ReactNode {

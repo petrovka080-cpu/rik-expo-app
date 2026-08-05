@@ -220,13 +220,22 @@ describe("architecture anti-regression suite", () => {
       sourceFiles: [
         "src/features/ai/assistantClient.ts",
         "src/features/ai/model/AiModelGateway.ts",
+        "src/lib/aiPlatform/providers/ServerAiModelProvider.ts",
         "src/features/ai/model/AiModelTypes.ts",
         "src/features/ai/model/DisabledModelProvider.ts",
         "src/features/ai/model/LegacyGeminiModelProvider.ts",
         "src/lib/ai_reports.ts",
       ],
       readFile: (relativePath) => {
-        if (relativePath === "src/features/ai/assistantClient.ts") return "AiModelGateway";
+        if (relativePath === "src/features/ai/assistantClient.ts") {
+          return "ServerAiModelProvider";
+        }
+        if (
+          relativePath ===
+          "src/lib/aiPlatform/providers/ServerAiModelProvider.ts"
+        ) {
+          return "AiModelGateway";
+        }
         if (relativePath === "src/lib/ai_reports.ts") {
           return "redactAiReportForStorage redactAiReportStorageText(input.content) rawprompt";
         }
@@ -244,6 +253,7 @@ describe("architecture anti-regression suite", () => {
       sourceFiles: [
         "src/features/ai/assistantClient.ts",
         "src/features/ai/model/AiModelGateway.ts",
+        "src/lib/aiPlatform/providers/ServerAiModelProvider.ts",
         "src/features/ai/model/AiModelTypes.ts",
         "src/features/ai/model/DisabledModelProvider.ts",
         "src/features/ai/model/LegacyGeminiModelProvider.ts",
@@ -3101,6 +3111,11 @@ describe("architecture anti-regression suite", () => {
       file: "src/screens/example/LargeScreen.tsx",
       lineCount: 5,
       hookCount: 2,
+      importCount: 0,
+      maxCallableMeaningfulLineCount: 5,
+      meaningfulModuleLineCount: 5,
+      physicalLineCount: 5,
+      responsibilityOwnerCount: 1,
     });
   });
 });

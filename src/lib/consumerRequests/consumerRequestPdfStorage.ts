@@ -6,12 +6,39 @@ type ConsumerRepairPdfStorageObject = {
   body: string;
   contentType: "application/pdf";
   uploadedAt: string;
+  webObjectUrl?: string;
 };
 
 const pdfStorage = new Map<string, ConsumerRepairPdfStorageObject>();
 
 function storageId(storageBucket: string, storageKey: string): string {
   return `${storageBucket}/${storageKey}`;
+}
+
+function releaseWebObjectUrl(object: ConsumerRepairPdfStorageObject | undefined): void {
+  if (
+    object?.webObjectUrl
+    && typeof URL !== "undefined"
+    && typeof URL.revokeObjectURL === "function"
+  ) {
+    URL.revokeObjectURL(object.webObjectUrl);
+  }
+}
+
+function createWebPdfObjectUrl(body: string): string | undefined {
+  if (
+    typeof document === "undefined"
+    || typeof Blob === "undefined"
+    || typeof URL === "undefined"
+    || typeof URL.createObjectURL !== "function"
+  ) {
+    return undefined;
+  }
+  const bytes = new Uint8Array(body.length);
+  for (let index = 0; index < body.length; index += 1) {
+    bytes[index] = body.charCodeAt(index) & 255;
+  }
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
 }
 
 export function uploadConsumerRepairPdfObject(input: {
@@ -27,14 +54,17 @@ export function uploadConsumerRepairPdfObject(input: {
     throw new Error("Consumer repair PDF upload failed: invalid PDF bytes.");
   }
 
+  const key = storageId(input.storageBucket, input.storageKey);
+  releaseWebObjectUrl(pdfStorage.get(key));
   const object: ConsumerRepairPdfStorageObject = {
     storageBucket: input.storageBucket,
     storageKey: input.storageKey,
     body: input.body,
     contentType: input.contentType,
     uploadedAt: new Date().toISOString(),
+    webObjectUrl: createWebPdfObjectUrl(input.body),
   };
-  pdfStorage.set(storageId(input.storageBucket, input.storageKey), object);
+  pdfStorage.set(key, object);
   return { ...object };
 }
 
@@ -53,11 +83,27 @@ export function createConsumerRepairPdfSignedUrl(input: {
   const expiresAt = new Date(
     Date.now() + (input.expiresInSeconds ?? PRIVATE_PDF_SIGNED_URL_DEFAULT_TTL_SECONDS) * 1000,
   ).toISOString();
+  if (!object.webObjectUrl) {
+    object.webObjectUrl = createWebPdfObjectUrl(object.body);
+    pdfStorage.set(storageId(input.storageBucket, input.storageKey), object);
+  }
   return {
-    signedUrl: `data:application/pdf;base64,${stringToBase64(object.body)}`,
+    signedUrl:
+      object.webObjectUrl
+      ?? `data:application/pdf;base64,${stringToBase64(object.body)}`,
     expiresAt,
     contentType: object.contentType,
   };
+}
+
+export function clearConsumerRepairPdfWebObjectUrls(): void {
+  for (const [key, object] of pdfStorage.entries()) {
+    releaseWebObjectUrl(object);
+    pdfStorage.set(key, {
+      ...object,
+      webObjectUrl: undefined,
+    });
+  }
 }
 
 function stringToBase64(value: string): string {
@@ -96,9 +142,12 @@ export function __deleteConsumerRepairPdfStorageObjectForTests(input: {
   storageBucket: string;
   storageKey: string;
 }): void {
-  pdfStorage.delete(storageId(input.storageBucket, input.storageKey));
+  const key = storageId(input.storageBucket, input.storageKey);
+  releaseWebObjectUrl(pdfStorage.get(key));
+  pdfStorage.delete(key);
 }
 
 export function __resetConsumerRepairPdfStorageForTests(): void {
+  for (const object of pdfStorage.values()) releaseWebObjectUrl(object);
   pdfStorage.clear();
 }

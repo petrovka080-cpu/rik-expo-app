@@ -14,16 +14,23 @@ describe("canonical professional BOQ units", () => {
       "m3_h",
       "m3_day",
       "pcs",
+      "circuit",
+      "zone",
       "kg",
       "l",
+      "pack",
       "m_drilling_depth",
       "kg_rebar",
     ]));
     expect(normalizeCanonicalProfessionalBoqUnit("linear_meter")).toBe("lm");
     expect(normalizeCanonicalProfessionalBoqUnit("linear_m")).toBe("lm");
     expect(normalizeCanonicalProfessionalBoqUnit("piece")).toBe("pcs");
+    expect(normalizeCanonicalProfessionalBoqUnit("circuit")).toBe("circuit");
+    expect(normalizeCanonicalProfessionalBoqUnit("zone")).toBe("zone");
     expect(normalizeCanonicalProfessionalBoqUnit("liter")).toBe("l");
     expect(normalizeCanonicalProfessionalBoqUnit("ton")).toBe("t");
+    expect(normalizeCanonicalProfessionalBoqUnit("package")).toBe("pack");
+    expect(normalizeCanonicalProfessionalBoqUnit("\u0443\u043f\u0430\u043a\u043e\u0432\u043a\u0430")).toBe("pack");
     expect(normalizeCanonicalProfessionalBoqUnit("m3/h")).toBe("m3_h");
     expect(normalizeCanonicalProfessionalBoqUnit("\u043c\u00b3/\u0447")).toBe("m3_h");
     expect(normalizeCanonicalProfessionalBoqUnit("m3/day")).toBe("m3_day");
@@ -32,6 +39,8 @@ describe("canonical professional BOQ units", () => {
 
   it("rejects unknown and semantically wrong units", () => {
     expect(validateProfessionalBoqUnit({ unit: "mystery_unit" }).blocking_reasons).toContain("UNKNOWN_UNIT");
+    expect(validateProfessionalBoqUnit({ unit: "lbs" }).blocking_reasons).toContain("UNKNOWN_UNIT");
+    expect(validateProfessionalBoqUnit({ unit: "sq_ft" }).blocking_reasons).toContain("UNKNOWN_UNIT");
     expect(validateProfessionalBoqUnit({
       unit: "m2",
       rowLabel: "diamond drilling concrete holes",

@@ -133,6 +133,8 @@ export default function OfficeShellContent(props: OfficeShellContentProps) {
         {model.showDeveloperOverride ? (
           <OfficeDeveloperOverrideSection
             activeEffectiveRole={data.developerOverride?.activeEffectiveRole}
+            actorRole={data.developerOverride?.actorRole}
+            authorizationSource={data.developerOverride?.authorizationSource}
             developerRoleSaving={developerRoleSaving}
             roles={developerOverrideRoles}
             onClear={onDeveloperRoleClear}

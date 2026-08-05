@@ -1,4 +1,5 @@
 import { deterministicNormalizedSourceHash } from "./professionalOntologyContracts";
+import { safeJsonParse } from "../../format";
 import {
   compileMultiDomainReferencePassportV4,
   MULTI_DOMAIN_REFERENCE_PASSPORTS_V4,
@@ -132,7 +133,10 @@ export function projectMultiDomainReferenceEstimateV4(input: {
 }
 
 export function restoreMultiDomainReferenceProjectionV4(serialized: string): MultiDomainReferenceProjectionV4 {
-  const parsed = JSON.parse(serialized) as MultiDomainReferenceProjectionV4;
+  const result = safeJsonParse<MultiDomainReferenceProjectionV4 | null>(serialized, null);
+  if (!result.ok) throw result.error;
+  const parsed = result.value;
+  if (!parsed) throw new Error("REFERENCE_PROJECTION_INVALID");
   const { checksum, ...payload } = parsed;
   if (deterministicNormalizedSourceHash([payload]) !== checksum) throw new Error("REFERENCE_PROJECTION_CHECKSUM_MISMATCH");
   return parsed;

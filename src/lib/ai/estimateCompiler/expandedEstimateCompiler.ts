@@ -12,6 +12,7 @@ import {
   formatGlobalNumber,
   resolveGlobalLocalization,
 } from "../globalEstimate/globalLocalizationCore";
+import { logger } from "../../logger";
 import { normalizeGlobalUnit } from "../globalEstimate/globalUnitNormalizer";
 import {
   compileProductionExpandedEstimate10000,
@@ -33,6 +34,7 @@ import type {
   SourceBackedEstimateRow,
 } from "../globalEstimate/globalEstimateTypes";
 import { buildEstimateNormItemForGenericRow } from "../estimateTemplate10000/productionNormKnowledgeBaseCore";
+import { isRegisteredProfessionalNormPackSourceId } from "../estimateTemplate10000/productionProfessionalNormPackRegistry";
 
 type ExpandedSectionKind =
   | "materials"
@@ -334,7 +336,7 @@ function semanticUnitForTitle(params: {
   if (/кран\s*\/\s*автовыш|автовыш|подъ[её]мник|виброплит|сварочный аппарат|болгарк|перфоратор|пылесос|малая механизация/.test(name)) {
     return "shift";
   }
-  if (/краск|эмульс|праймер|грунтовк|пропитк|лак/.test(name) && (params.section === "materials" || params.section === "consumables")) {
+  if (/краск|эмульс|праймер|грунт|пропитк|лак/.test(name) && (params.section === "materials" || params.section === "consumables")) {
     return "l";
   }
   if (/клей|шпаклев|шпатлев|сух.*смес|смес|топпинг|мастик|пластификатор/.test(name) && (params.section === "materials" || params.section === "consumables")) {
@@ -400,7 +402,7 @@ function semanticQuantityFormulaForTitle(params: {
     return "q * 18";
   }
   if (params.resolvedUnit === "l") {
-    if (/грунтовк|праймер|пропитк/.test(name)) return "q * 0.18";
+    if (/грунт|праймер|пропитк/.test(name)) return "q * 0.18";
     if (/лак|краск|эмульс/.test(name)) return "q * 0.28";
     return "q * 0.25";
   }
@@ -529,10 +531,10 @@ const ROOF_WATERPROOFING_ROWS: ExpandedTemplateRow[] = [
 ];
 
 const GABLE_ROOF_ROWS: ExpandedTemplateRow[] = [
-  ...semanticRowsFromTitles("gable_material", "roofing", "materials", ["Мауэрлат", "Стропила", "Коньковый прогон", "Стойки и подкосы", "Мембрана подкровельная", "Контробрешетка", "Обрешетка", "Кровельное покрытие", "Конек и доборные элементы", "Ветровые планки", "Карнизные планки", "Водосточная система", "Крепеж кровельный", "Антисептик древесины"], "sq_m", "q", 580),
+  ...semanticRowsFromTitles("gable_material", "roofing", "materials", ["Мауэрлат", "Стропила", "Коньковый прогон", "Стойки и подкосы", "Гидроизоляционная подкровельная мембрана", "Контробрешетка", "Обрешетка", "Кровельное покрытие", "Конек и доборные элементы", "Ветровые планки", "Карнизные планки", "Водосточная система", "Крепеж кровельный", "Антисептик древесины"], "sq_m", "q", 580),
   ...rowsFromTitles("gable_consumable", "consumables", ["Диски / пилы", "Биты и расход крепежа", "СИЗ для высотных работ"], "set", "max(1, ceil(q / 120))", 1200),
   ...rowsFromTitles("gable_prep", "preparation", ["Замер основания", "Разметка стропильной системы", "Проверка опорного пояса"], "sq_m", "q", 75),
-  ...semanticRowsFromTitles("gable_labor", "roofing", "labor", ["Монтаж мауэрлата", "Сборка стропил", "Монтаж конькового прогона", "Монтаж мембраны", "Монтаж контробрешетки", "Монтаж обрешетки", "Монтаж кровельного покрытия", "Монтаж доборов", "Монтаж водостока"], "sq_m", "q", 720),
+  ...semanticRowsFromTitles("gable_labor", "roofing", "labor", ["Монтаж мауэрлата", "Монтаж стропильной системы", "Монтаж конькового прогона", "Монтаж мембраны", "Монтаж контробрешетки", "Монтаж обрешетки", "Монтаж кровли и кровельного покрытия", "Монтаж доборов", "Монтаж водостока"], "sq_m", "q", 720),
   ...rowsFromTitles("gable_equipment", "equipment", ["Леса / страховочная система", "Подъемник материалов", "Пила / шуруповерты"], "shift", "max(1, ceil(q / 160))", 2800),
   ...rowsFromTitles("gable_logistics", "logistics", ["Доставка древесины", "Доставка кровельного покрытия", "Подъем материалов на крышу"], "trip", "max(1, ceil(q / 220))", 5200),
   ...rowsFromTitles("gable_waste", "waste", ["Запас кровельного покрытия", "Запас древесины и доборов"], "sq_m", "q * 0.08", 580),
@@ -561,10 +563,20 @@ const LINOLEUM_ROWS: ExpandedTemplateRow[] = [
 ];
 
 const PAVING_STONE_ROWS: ExpandedTemplateRow[] = [
-  ...semanticRowsFromTitles("paving_stone_material", "landscaping", "materials", ["Геотекстиль", "Песок", "Щебень", "Брусчатка", "Бордюр", "Пескоцементная смесь", "Смесь для заполнения швов", "Водоотводные элементы"], "sq_m", "q", 720),
+  r({ section: "materials", code: "paving_stone_geotextile_overlap_tape", title: "Лента для фиксации нахлёстов геотекстиля", quantityFormula: "q * 0.05", unit: "sq_m", unitPrice: 95 }),
+  r({ section: "preparation", code: "paving_stone_profile_level_control", title: "Высотный контроль основания по проектным отметкам", quantityFormula: "q", unit: "sq_m", unitPrice: 45 }),
+  r({ section: "labor", code: "paving_stone_layer_compaction", title: "Послойное уплотнение щебёночного основания", quantityFormula: "q", unit: "sq_m", unitPrice: 115 }),
+  r({ section: "labor", code: "paving_stone_bedding_screeding", title: "Выравнивание постели под мощение по маякам", quantityFormula: "q", unit: "sq_m", unitPrice: 90 }),
+  r({ section: "labor", code: "paving_stone_drainage_slope_formation", title: "Формирование уклонов и водоотводного профиля", quantityFormula: "q", unit: "sq_m", unitPrice: 75 }),
+  r({ section: "labor", code: "paving_stone_drainage_tray_installation", title: "Монтаж лотков водоотвода", quantityFormula: "q * 0.05", unit: "lm", unitPrice: 480 }),
+  r({ section: "equipment", code: "paving_stone_laser_level", title: "Лазерный нивелир для контроля отметок", quantityFormula: "max(1, ceil(q / 500))", unit: "shift", unitPrice: 900 }),
+  r({ section: "equipment", code: "paving_stone_water_tanker", title: "Поливомоечная машина для увлажнения при уплотнении", quantityFormula: "max(1, ceil(q / 500))", unit: "shift", unitPrice: 3200 }),
+  r({ section: "logistics", code: "paving_stone_staged_unloading", title: "Поэтапная разгрузка и внутриплощадочное перемещение материалов", quantityFormula: "max(1, ceil(q / 250))", unit: "trip", unitPrice: 2600 }),
+  ...semanticRowsFromTitles("paving_stone_material", "landscaping", "materials", ["Геотекстиль", "Песок", "Щебень", "Отсев / пескоцементная смесь", "Брусчатка / тротуарная плитка", "Бордюр", "Смесь для заполнения швов", "Водоотводные элементы"], "sq_m", "q", 720),
+  r({ section: "materials", code: "paving_stone_curb_concrete", title: "Бетон под бордюр", quantityFormula: "q * 0.05", unit: "m3", unitPrice: 8200 }),
   ...semanticRowsFromTitles("paving_stone_component", "landscaping", "components", ["Крепеж бордюра", "Разделители", "Лотки водоотвода", "Маркировочные колышки"], "set", "max(1, ceil(q / 100))", 650),
-  ...semanticRowsFromTitles("paving_stone_prep", "landscaping", "preparation", ["Геодезическая разбивка", "Разметка дорожек", "Выемка грунта", "Подготовка основания"], "sq_m", "q", 130),
-  ...semanticRowsFromTitles("paving_stone_labor", "landscaping", "labor", ["Укладка геотекстиля", "Устройство песчаного слоя", "Устройство щебеночного основания", "Монтаж бордюра", "Укладка брусчатки", "Подрезка брусчатки", "Заполнение швов", "Финишное уплотнение"], "sq_m", "q", 460),
+  ...semanticRowsFromTitles("paving_stone_prep", "landscaping", "preparation", ["Геодезическая разбивка", "Разметка дорожек", "Выемка грунта", "Планировка и подготовка основания"], "sq_m", "q", 130),
+  ...semanticRowsFromTitles("paving_stone_labor", "landscaping", "labor", ["Укладка геотекстиля", "Устройство песчаного слоя", "Устройство щебеночного основания", "Монтаж бордюра", "Укладка брусчатки / тротуарной плитки", "Подрезка брусчатки", "Заполнение швов", "Виброуплотнение основания и покрытия"], "sq_m", "q", 460),
   ...semanticRowsFromTitles("paving_stone_equipment", "landscaping", "equipment", ["Виброплита", "Резчик брусчатки", "Мини-погрузчик"], "shift", "max(1, ceil(q / 300))", 2600),
   ...semanticRowsFromTitles("paving_stone_logistics", "landscaping", "logistics", ["Доставка брусчатки", "Доставка инертных", "Вывоз грунта"], "trip", "max(1, ceil(q / 250))", 4200),
   ...semanticRowsFromTitles("paving_stone_waste", "landscaping", "waste", ["Запас брусчатки на подрезку", "Потери песка и щебня"], "sq_m", "q * 0.05", 720),
@@ -1337,7 +1349,7 @@ const TEMPLATES: ExpandedWorkTemplate[] = [
   },
   {
     workKey: "foundation_rebar_reinforcement",
-    aliases: ["foundation_rebar", "rebar_installation"],
+    aliases: ["foundation_rebar"],
     title: "Армирование фундамента",
     category: "concrete",
     defaultQuantity: 2,
@@ -1454,14 +1466,7 @@ const TEMPLATES: ExpandedWorkTemplate[] = [
   },
 ];
 
-const GENERATED_CATEGORY_TEMPLATES = GLOBAL_WORK_TYPE_DEFINITIONS
-  .filter((definition) => definition.workKey !== "other_construction_work")
-  .map(buildCategoryTemplate);
-
 const TEMPLATE_BY_KEY = new Map<string, ExpandedWorkTemplate>();
-for (const template of GENERATED_CATEGORY_TEMPLATES) {
-  TEMPLATE_BY_KEY.set(template.workKey, template);
-}
 for (const template of TEMPLATES) {
   TEMPLATE_BY_KEY.set(template.workKey, template);
   for (const alias of template.aliases) {
@@ -1469,11 +1474,32 @@ for (const template of TEMPLATES) {
   }
 }
 
+const GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY = new Map(
+  GLOBAL_WORK_TYPE_DEFINITIONS
+    .filter((definition) => definition.workKey !== "other_construction_work")
+    .map((definition) => [definition.workKey, definition] as const),
+);
+
+function getExpandedTemplateByWorkKey(workKey: string): ExpandedWorkTemplate | undefined {
+  const existing = TEMPLATE_BY_KEY.get(workKey);
+  if (existing?.workKey === workKey) return existing;
+
+  const definition = GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.get(workKey);
+  if (!definition) return existing;
+
+  const template = buildCategoryTemplate(definition);
+  TEMPLATE_BY_KEY.set(template.workKey, template);
+  return template;
+}
+
 export const PROFESSIONAL_EXPANDED_TEMPLATE_COVERAGE = Object.freeze({
-  generatedKnownWorkTemplates: GENERATED_CATEGORY_TEMPLATES.length,
+  generatedKnownWorkTemplates: GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.size,
   workSpecificOverlayTemplates: TEMPLATES.length,
   manualOverlayTemplates: TEMPLATES.length,
-  totalSupportedTemplateKeys: new Set([...TEMPLATE_BY_KEY.values()].map((template) => template.workKey)).size,
+  totalSupportedTemplateKeys: new Set([
+    ...GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.keys(),
+    ...TEMPLATES.map((template) => template.workKey),
+  ]).size,
   minimumProductionKnownWorkTemplates: 100,
 });
 
@@ -1508,7 +1534,7 @@ function resolveTextTemplateKey(text: string | undefined): string | null {
   const normalized = normalizeText(text ?? "");
   if (!normalized) return null;
   if (/(substation|transformer\s+substation|switchgear|power\s+line|grounding\s+electrical|electrical\s+cable\s+protection)/i.test(normalized)) return "transformer_substation";
-  if (/пожарн|апс|соуэ|fire\s*alarm|fire\s*safety/i.test(normalized)) return "fire_alarm_installation";
+  if (/(?:\u043f\u043e\u0436\u0430\u0440\u043d|\u0430\u043f\u0441|\u0441\u043e\u0443\u044d|fire\s*alarm|fire\s*safety)/i.test(normalized)) return "fire_alarm_installation";
   if (shouldUseFoundationRebarTemplate(normalized)) return "foundation_rebar_reinforcement";
   if (/гидроизоляц/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "roof_waterproofing";
   if (/двускат|скатн|pitched|gable/i.test(normalized) && /крыш|кровл|roof/i.test(normalized)) return "gable_roof_installation";
@@ -1521,12 +1547,12 @@ export function resolveProfessionalExpandedWorkKey(input: {
   semanticWorkKey?: string | null;
 }): string | null {
   if (input.estimateInput.explicitWorkKey && input.estimateInput.explicitWorkKeyFromRoute !== true) {
-    const explicitTemplate = TEMPLATE_BY_KEY.get(input.estimateInput.explicitWorkKey);
+    const explicitTemplate = getExpandedTemplateByWorkKey(input.estimateInput.explicitWorkKey);
     if (explicitTemplate) return explicitTemplate.workKey;
   }
 
   const explicitTextKey = resolveTextTemplateKey(input.estimateInput.text);
-  if (explicitTextKey && TEMPLATE_BY_KEY.has(explicitTextKey)) return explicitTextKey;
+  if (explicitTextKey && getExpandedTemplateByWorkKey(explicitTextKey)) return explicitTextKey;
 
   const candidates = [
     input.semanticWorkKey,
@@ -1534,14 +1560,17 @@ export function resolveProfessionalExpandedWorkKey(input: {
   ].filter((value): value is string => Boolean(value));
 
   for (const candidate of candidates) {
-    const template = TEMPLATE_BY_KEY.get(candidate);
+    const template = getExpandedTemplateByWorkKey(candidate);
     if (template) return template.workKey;
   }
   return null;
 }
 
 export function isProfessionalExpandedWorkSupported(workKey: string): boolean {
-  return TEMPLATE_BY_KEY.has(workKey);
+  return Boolean(
+    TEMPLATE_BY_KEY.has(workKey) ||
+    GENERATED_CATEGORY_DEFINITION_BY_WORK_KEY.has(workKey),
+  );
 }
 
 function parsedQuantity(input: GlobalEstimateInput, template: ExpandedWorkTemplate): { value: number; unit: string } {
@@ -1592,6 +1621,13 @@ function evaluateFormula(formula: ExpandedFormula, quantity: number): number {
   throw new Error(`UNSUPPORTED_PROFESSIONAL_EXPANDED_FORMULA:${formula}`);
 }
 
+function normRateFormula(consumptionRate: number): ExpandedFormula {
+  if (!Number.isFinite(consumptionRate) || consumptionRate <= 0) {
+    throw new Error(`INVALID_PROFESSIONAL_NORM_CONSUMPTION_RATE:${consumptionRate}`);
+  }
+  return `q * ${consumptionRate}`;
+}
+
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -1617,6 +1653,12 @@ function unitLabel(unit: string): string {
     pack: "упак.",
   };
   return labels[unit] ?? unit;
+}
+
+function publicExpandedRowUnit(unit: string): string {
+  if (unit === "m2" || unit === "sqm") return "sq_m";
+  if (unit === "piece" || unit === "pc") return "pcs";
+  return unit;
 }
 
 function localExpandedUnit(unit: string, locale: GlobalLocaleContext): string {
@@ -1659,15 +1701,10 @@ function compileRow(input: {
   baseQuantity: number;
   locale: GlobalLocaleContext;
 }): SourceBackedEstimateRow {
-  const unit = localExpandedUnit(input.row.unit, input.locale);
-  const quantity = Math.max(0.01, round2(evaluateFormula(input.row.quantityFormula, input.baseQuantity)));
-  const total = round2(quantity * input.row.unitPrice);
-  const confidence = rowConfidence(input.row);
-  const label = unitLabel(unit);
   const templateId = input.row.templateId ?? `${input.template.workKey}_professional_expanded_real_boq`;
   const templateVersion = input.row.templateVersion ?? PROFESSIONAL_EXPANDED_TEMPLATE_VERSION;
   const formulaId = input.row.formulaId ?? `${input.template.workKey}_${input.row.code}_quantity_v1`;
-  const norm = buildEstimateNormItemForGenericRow({
+  const normInput = {
     workKey: input.template.workKey,
     templateKey: templateId,
     templateFamily: input.template.category,
@@ -1679,9 +1716,28 @@ function compileRow(input: {
       lineType: normLineTypeForExpandedSection(input.row.section),
       recipeId: `${templateId}_${input.row.code}_norm_recipe_v1`,
       quantityFormula: input.row.quantityFormula,
-      unit,
+      unit: input.row.unit,
+      titleRu: input.row.title,
     },
-  });
+  };
+  const resolvedNorm = buildEstimateNormItemForGenericRow(normInput);
+  const quantityFormula = isRegisteredProfessionalNormPackSourceId(resolvedNorm.source_id)
+    ? normRateFormula(resolvedNorm.consumption_rate)
+    : input.row.quantityFormula;
+  const norm = quantityFormula === input.row.quantityFormula
+    ? resolvedNorm
+    : buildEstimateNormItemForGenericRow({
+      ...normInput,
+      row: {
+        ...normInput.row,
+        quantityFormula,
+      },
+    });
+  const unit = localExpandedUnit(publicExpandedRowUnit(norm.unit), input.locale);
+  const quantity = Math.max(0.01, round2(evaluateFormula(quantityFormula, input.baseQuantity)));
+  const total = round2(quantity * input.row.unitPrice);
+  const confidence = rowConfidence(input.row);
+  const label = unitLabel(unit);
   return {
     rowNumber: `${input.sectionNumber}.${input.rowIndex}`,
     code: input.row.code,
@@ -1700,12 +1756,12 @@ function compileRow(input: {
     sourceId: EXPANDED_REFERENCE_SOURCE.id,
     sourceEvidence: sourceEvidence(confidence),
     formulaId,
-    quantityFormula: input.row.quantityFormula,
+    quantityFormula,
     calculationTrace: [
       `template=${templateId}`,
       `templateVersion=${templateVersion}`,
       `baseQuantity=${input.baseQuantity} ${input.template.defaultUnit}`,
-      `formula=${input.row.quantityFormula}`,
+      `formula=${quantityFormula}`,
       `normId=${norm.norm_id}`,
       `normVersion=${norm.norm_version}`,
       `normSource=${norm.source_id}`,
@@ -1822,10 +1878,11 @@ export function validateProfessionalExpandedEstimate(result: GlobalEstimateResul
   blockers: string[];
 } {
   const rows = result.sections.flatMap((section) => section.rows);
+  const resultTemplate = getExpandedTemplateByWorkKey(result.work.workKey);
   const minimumRows =
-    TEMPLATE_BY_KEY.get(result.work.workKey)?.minimumRows ??
+    resultTemplate?.minimumRows ??
     MIN_EXPANDED_ROWS_BY_WORK_TYPE[result.work.workKey] ??
-    MIN_EXPANDED_ROWS_BY_WORK_TYPE[TEMPLATE_BY_KEY.get(result.work.workKey)?.workKey ?? ""] ??
+    MIN_EXPANDED_ROWS_BY_WORK_TYPE[resultTemplate?.workKey ?? ""] ??
     0;
   const blockers: string[] = [];
   if (minimumRows > 0 && rows.length < minimumRows) {
@@ -1889,19 +1946,13 @@ function productionRowSourceEvidence(
   }];
 }
 
-function publicProductionRowUnit(row: ProductionCompiledExpandedRow): string {
-  if (row.unit === "m2") return "sq_m";
-  if (row.unit === "piece") return "pcs";
-  return row.unit;
-}
-
 function productionCompiledRowToGlobalRow(input: {
   row: ProductionCompiledExpandedRow;
   rowNumber: string;
   locale: GlobalLocaleContext;
 }): SourceBackedEstimateRow {
   const displayQuantity = `${formatGlobalNumber(input.row.quantity, input.locale)} ${input.row.displayUnit}`;
-  const rowUnit = publicProductionRowUnit(input.row);
+  const rowUnit = publicExpandedRowUnit(input.row.unit);
   return {
     rowNumber: input.rowNumber,
     code: input.row.rowCode,
@@ -2009,6 +2060,7 @@ function buildProductionProjectGroupGlobalEstimate(input: {
   const deliveryTotal = sumByType(sections, "delivery");
   const taxTotal = tax.included ? 0 : tax.taxAmount;
   const grandTotal = round2(materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal);
+  const isApartmentCapitalRenovation = group.workKey === "apartment_capital_renovation";
   const result: GlobalEstimateResult = {
     estimateId: estimateIdFor(input.estimateInput, group.workKey),
     outputContract: {
@@ -2035,10 +2087,16 @@ function buildProductionProjectGroupGlobalEstimate(input: {
       originalText: input.estimateInput.text,
       photoBased: input.estimateInput.photoAnalysis !== undefined,
     },
-    assumptions: [
-      "Project BOQ is assembled as a production template group from 10000-catalog child templates.",
-      "Norm trace is inherited from child production templates; real source-backed norm pack coverage is audited separately.",
-    ],
+    assumptions: isApartmentCapitalRenovation
+      ? [
+        "Ведомость капремонта раскрывает черновые смеси и финишные покрытия отдельными позициями.",
+        "Обмер квартиры включён; демонтаж требуется уточнение по объёму после обследования существующей отделки.",
+        "Нормативная трассировка наследуется от дочерних производственных шаблонов.",
+      ]
+      : [
+        "Project BOQ is assembled as a production template group from 10000-catalog child templates.",
+        "Norm trace is inherited from child production templates; real source-backed norm pack coverage is audited separately.",
+      ],
     sections,
     tax,
     totals: {
@@ -2054,25 +2112,47 @@ function buildProductionProjectGroupGlobalEstimate(input: {
       displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
       displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
     },
-    regionalRisks: [
-      {
-        title: "Production template group",
-        text: "Apartment scope is routed through the same production formula compiler as child work templates.",
-      },
-      {
-        title: "Norm source coverage",
-        text: "Real standard/textbook/manufacturer norm packs remain a separate blocker before green certification.",
-      },
-    ],
-    costIncreaseFactors: [
-      "Apartment condition",
-      "Engineering systems scope",
-      "Access and logistics constraints",
-    ],
-    clarifyingQuestions: [
-      "Confirm apartment area, wet zones, wall height, electrical points and plumbing points.",
-      "Confirm selected finish materials and demolition scope.",
-    ],
+    regionalRisks: isApartmentCapitalRenovation
+      ? [
+        {
+          title: "Состояние существующей отделки",
+          text: "Демонтаж и восстановление скрытых дефектов уточняются после обмера квартиры и вскрытия оснований.",
+        },
+        {
+          title: "Инженерные системы",
+          text: "Число электрических и сантехнических точек должно быть подтверждено до закупки.",
+        },
+      ]
+      : [
+        {
+          title: "Production template group",
+          text: "Scope is routed through the same production formula compiler as child work templates.",
+        },
+        {
+          title: "Norm source coverage",
+          text: "Real standard/textbook/manufacturer norm packs remain a separate blocker before green certification.",
+        },
+      ],
+    costIncreaseFactors: isApartmentCapitalRenovation
+      ? [
+        "Состояние квартиры и оснований",
+        "Объём инженерных систем",
+        "Ограничения доступа и поэтапная логистика",
+      ]
+      : [
+        "Existing substrate condition",
+        "Confirmed finish specification",
+        "Access and logistics constraints",
+      ],
+    clarifyingQuestions: isApartmentCapitalRenovation
+      ? [
+        "Подтвердите площадь квартиры, мокрые зоны, высоту стен, электрические и сантехнические точки.",
+        "Подтвердите выбранные финишные материалы и фактический объём демонтажа.",
+      ]
+      : [
+        "Confirm measured scope and existing substrate condition.",
+        "Confirm selected finish specification and access constraints.",
+      ],
     sources,
     confidence: minConfidence([
       locale.confidence,
@@ -2089,24 +2169,47 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
   estimateInput: GlobalEstimateInput;
   workKey: string;
 }): GlobalEstimateResult {
+  const startedAt = Date.now();
+  const recordNativeStage = (stage: string) => {
+    if (
+      typeof navigator === "undefined" ||
+      navigator.product !== "ReactNative"
+    ) {
+      return;
+    }
+    logger.info(
+      "RikWarmDeepLink",
+      `PROFESSIONAL_ESTIMATE_BUILD_STAGE ${JSON.stringify({
+        stage,
+        elapsedMs: Date.now() - startedAt,
+      })}`,
+    );
+  };
+  recordNativeStage("entry");
   const projectGroupEstimate = buildProductionProjectGroupGlobalEstimate(input);
+  recordNativeStage("project_group_checked");
   if (projectGroupEstimate) return projectGroupEstimate;
 
-  const template = TEMPLATE_BY_KEY.get(input.workKey);
+  const template = getExpandedTemplateByWorkKey(input.workKey);
   if (!template) throw new Error(`PROFESSIONAL_EXPANDED_TEMPLATE_NOT_FOUND:${input.workKey}`);
+  recordNativeStage("template_resolved");
 
   const locale = resolveGlobalLocalization(input.estimateInput);
+  recordNativeStage("locale_resolved");
   const quantity = parsedQuantity(input.estimateInput, template);
+  recordNativeStage("quantity_resolved");
   const sections = compileSections({
     template,
     baseQuantity: quantity.value,
     locale,
     estimateInput: input.estimateInput,
   });
+  recordNativeStage("sections_compiled");
   const taxResolution = input.estimateInput.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
     : resolveGlobalTaxRule(locale, input.estimateInput);
   const tax = calculateGlobalTax({ sections, taxResolution });
+  recordNativeStage("tax_calculated");
   const sources = taxResolution.source
     ? [EXPANDED_REFERENCE_SOURCE, taxResolution.source]
     : [EXPANDED_REFERENCE_SOURCE];
@@ -2181,5 +2284,6 @@ export function buildProfessionalExpandedGlobalEstimate(input: {
   };
 
   assertProfessionalExpandedEstimate(result);
+  recordNativeStage("validated");
   return result;
 }

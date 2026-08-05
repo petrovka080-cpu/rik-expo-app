@@ -8,7 +8,7 @@ describe("marketplace add does not bypass backend service architecture contract"
   it("keeps database writes out of the add screen", () => {
     const screen = read("src/screens/profile/AddListingScreen.tsx");
 
-    expect(screen).toContain("createMarketListing({");
+    expect(screen).toContain("submitAddListing({");
     expect(screen).not.toContain('from("market_listings")');
     expect(screen).not.toContain("status: \"published\"");
     expect(screen).not.toContain("status = published");

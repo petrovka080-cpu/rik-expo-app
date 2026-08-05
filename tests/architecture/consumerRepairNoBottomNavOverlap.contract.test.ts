@@ -14,7 +14,7 @@ describe("consumer repair no bottom nav overlap architecture contract", () => {
     expect(screen).toContain("ConsumerRepairRequestStickyActions");
     expect(chrome).toContain("AppStickyActionBar");
     expect(chrome).toContain("placement=\"above_bottom_nav\"");
-    expect(chrome).toContain('testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"');
+    expect(chrome).toContain('testID: finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"');
     expect(chrome).toContain('testID: "consumer-repair-delete-draft"');
     expect(screen).not.toMatch(/marginBottom:\s*(72|80|100|120|160)/);
     expect(route).toContain("route: \"/request\"");

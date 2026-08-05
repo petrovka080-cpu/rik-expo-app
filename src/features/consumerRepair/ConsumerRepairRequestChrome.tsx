@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, type TextInput } from "react-native";
+import { Pressable, Text, View, type TextInput } from "react-native";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
@@ -16,12 +16,17 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
-import { ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
+import {
+  ConsumerRepairDeliveryFieldsCard,
+  ConsumerRepairRequestFormCard,
+} from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
-import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
+import {
+  sanitizeRequestEstimatePublicText,
+  type RequestEstimateViewModel,
+} from "./requestEstimateViewModel";
 
 type HeaderMarketButtonProps = {
   onPress: () => void;
@@ -41,7 +46,8 @@ export function buildRequestEstimateTopProofText(viewModel: RequestEstimateViewM
     `Источник: уверенность ${viewModel.sourceConfidenceLabel}`,
     ...viewModel.visibleLines.slice(0, 5).map((line) => line.text),
   ]
-    .filter((line): line is string => Boolean(line?.trim()))
+    .map((line) => sanitizeRequestEstimatePublicText(line))
+    .filter((line): line is string => Boolean(line.trim()))
     .join(" · ");
 }
 
@@ -65,7 +71,10 @@ type StickyActionsProps = {
   sent: boolean;
   hasBundle: boolean;
   hasSnapshot: boolean;
+  hasPendingPrompt?: boolean;
+  estimateRequiresRebuild?: boolean;
   approvalMissingRequiredContact?: boolean;
+  approvalBlockedByEstimate?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
   onMakePdf: () => void;
@@ -80,7 +89,10 @@ export function ConsumerRepairRequestStickyActions({
   sent,
   hasBundle,
   hasSnapshot,
+  hasPendingPrompt = false,
+  estimateRequiresRebuild = false,
   approvalMissingRequiredContact = false,
+  approvalBlockedByEstimate = false,
   needsFreshApproval = false,
   onOpenPdf,
   onMakePdf,
@@ -90,6 +102,8 @@ export function ConsumerRepairRequestStickyActions({
   onPrepareDraft,
 }: StickyActionsProps) {
   const finalized = (sent || approved) && !needsFreshApproval;
+  const shouldPrepareEstimate =
+    hasPendingPrompt || (!finalized && estimateRequiresRebuild);
   return (
     <AppStickyActionBar
       visible
@@ -106,20 +120,45 @@ export function ConsumerRepairRequestStickyActions({
       }
       danger={
         hasBundle && !approved && !sent
-          ? { labelRu: "Удалить", onPress: onDeleteDraft, testID: "consumer-repair-delete-draft" }
+          ? {
+              labelRu: "Удалить",
+              onPress: onDeleteDraft,
+              showLabel: true,
+              testID: "consumer-repair-delete-draft",
+            }
           : undefined
       }
       primary={
-        finalized
+        shouldPrepareEstimate
+          ? {
+              labelRu: hasPendingPrompt
+                ? "Сформировать смету"
+                : "Пересчитать смету",
+              onPress: onPrepareDraft,
+              showLabel: true,
+              testID: "consumer-repair-prepare-draft",
+            }
+          : finalized
           ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
           : hasBundle
             ? {
-                labelRu: approvalMissingRequiredContact ? "Заполните адрес и телефон" : "Утвердить",
+                labelRu: approvalBlockedByEstimate
+                  ? "Сначала рассчитайте смету"
+                  : approvalMissingRequiredContact
+                    ? "Заполните адрес и телефон"
+                    : "Подтвердить смету",
                 onPress: onApproveDraft,
-                disabled: approvalMissingRequiredContact,
+                disabled:
+                  approvalMissingRequiredContact || approvalBlockedByEstimate,
+                showLabel: true,
                 testID: "consumer-repair-approve",
               }
-            : { labelRu: "Черновик", onPress: onPrepareDraft, testID: "consumer-repair-prepare-draft" }
+            : {
+                labelRu: "Сформировать смету",
+                onPress: onPrepareDraft,
+                showLabel: true,
+                testID: "consumer-repair-prepare-draft",
+              }
       }
     />
   );
@@ -206,7 +245,7 @@ type ContentProps = {
   onLoadMoreHistory: () => void;
   onCloseCatalogPicker: () => void;
   onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
-  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
+  onSelectRoadScope: (scopePresetId: string) => void;
   roadScopeSelectionBusy?: boolean;
 };
 
@@ -271,56 +310,99 @@ export function ConsumerRepairRequestContent({
   const hasSelectedApprovedHistory = Boolean(
     selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
   );
+  const draftDecisionStatus = bundle?.estimateDraftSession?.status;
+  const prioritizeDraftDecision =
+    draftDecisionStatus === "SCOPE_REQUIRED" ||
+    draftDecisionStatus === "PARAMETERS_REQUIRED" ||
+    draftDecisionStatus === "LEGACY_REVIEW_REQUIRED" ||
+    Boolean(bundle?.structuredEstimatePayload);
+  const statusNode = statusMessage
+    ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text>
+    : null;
+  const draftPanel = (
+    <ConsumerRepairDraftPanel
+      bundle={bundle}
+      aiAnswerRu={aiAnswerRu}
+      hasSelectedApprovedHistory={hasSelectedApprovedHistory}
+      showPdfAction={showPdfAction}
+      onMakePdf={onMakePdf}
+      onOpenProcurement={onOpenProcurement}
+      onDecrease={onDecrease}
+      onIncrease={onIncrease}
+      onQuantityChange={onQuantityChange}
+      onUnitPriceChange={onUnitPriceChange}
+      onRemove={onRemove}
+      onAddManual={onAddManual}
+      onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+      onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
+      onAddCustom={onAddCustom}
+      onRestoreLastRemoved={onRestoreLastRemoved}
+      canRestoreLastRemoved={canRestoreLastRemoved}
+      onOpenCatalog={onOpenCatalog}
+      editingParam={editingParam}
+      onOpenParamEditor={onOpenParamEditor}
+      onSaveParamEdit={onSaveParamEdit}
+      onCancelParamEdit={onCancelParamEdit}
+      onApplyParamPatch={onApplyParamPatch}
+      onApplyParamBatch={onApplyParamBatch}
+      onSelectRoadScope={onSelectRoadScope}
+      roadScopeSelectionBusy={roadScopeSelectionBusy}
+    />
+  );
 
   return (
     <>
-      <ConsumerRepairRequestFormCard
-        problemText={problemText}
-        city={city}
-        addressText={addressText}
-        preferredTimeText={preferredTimeText}
-        contactPhone={contactPhone}
-        selectedWork={selectedWork}
-        workSuggestions={workSuggestions}
-        problemInputRef={problemInputRef}
-        onProblemTextChange={onProblemTextChange}
-        onCityChange={onCityChange}
-        onAddressTextChange={onAddressTextChange}
-        onPreferredTimeTextChange={onPreferredTimeTextChange}
-        onContactPhoneChange={onContactPhoneChange}
-        onSelectWorkSuggestion={onSelectWorkSuggestion}
-        onSelectTemplateCandidate={onSelectTemplateCandidate}
-        onPrepareDraft={onPrepareDraft}
-      />
-      {statusMessage ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text> : null}
-      <ConsumerRepairDraftPanel
-        bundle={bundle}
-        aiAnswerRu={aiAnswerRu}
-        hasSelectedApprovedHistory={hasSelectedApprovedHistory}
-        showPdfAction={showPdfAction}
-        onMakePdf={onMakePdf}
-        onOpenProcurement={onOpenProcurement}
-        onDecrease={onDecrease}
-        onIncrease={onIncrease}
-        onQuantityChange={onQuantityChange}
-        onUnitPriceChange={onUnitPriceChange}
-        onRemove={onRemove}
-        onAddManual={onAddManual}
-        onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
-        onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
-        onAddCustom={onAddCustom}
-        onRestoreLastRemoved={onRestoreLastRemoved}
-        canRestoreLastRemoved={canRestoreLastRemoved}
-        onOpenCatalog={onOpenCatalog}
-        editingParam={editingParam}
-        onOpenParamEditor={onOpenParamEditor}
-        onSaveParamEdit={onSaveParamEdit}
-        onCancelParamEdit={onCancelParamEdit}
-        onApplyParamPatch={onApplyParamPatch}
-        onApplyParamBatch={onApplyParamBatch}
-        onSelectRoadScope={onSelectRoadScope}
-        roadScopeSelectionBusy={roadScopeSelectionBusy}
-      />
+      {bundle?.draft.problemText?.trim() ? (
+        <View
+          accessibilityLabel={`Текущий запрос: ${bundle.draft.problemText.trim()}`}
+          style={styles.launchPrompt}
+          testID="request-estimate-current-launch-prompt"
+        >
+          <Text style={styles.launchPromptLabel}>Текущий запрос</Text>
+          <Text
+            style={styles.launchPromptText}
+            testID="request-estimate-current-launch-prompt-text"
+          >
+            {bundle.draft.problemText.trim()}
+          </Text>
+        </View>
+      ) : null}
+      {prioritizeDraftDecision ? statusNode : null}
+      {prioritizeDraftDecision ? draftPanel : null}
+      {!bundle ? (
+        <ConsumerRepairRequestFormCard
+          problemText={problemText}
+          city={city}
+          addressText={addressText}
+          preferredTimeText={preferredTimeText}
+          contactPhone={contactPhone}
+          selectedWork={selectedWork}
+          workSuggestions={workSuggestions}
+          problemInputRef={problemInputRef}
+          onProblemTextChange={onProblemTextChange}
+          onCityChange={onCityChange}
+          onAddressTextChange={onAddressTextChange}
+          onPreferredTimeTextChange={onPreferredTimeTextChange}
+          onContactPhoneChange={onContactPhoneChange}
+          onSelectWorkSuggestion={onSelectWorkSuggestion}
+          onSelectTemplateCandidate={onSelectTemplateCandidate}
+          onPrepareDraft={onPrepareDraft}
+        />
+      ) : null}
+      {bundle ? (
+        <ConsumerRepairDeliveryFieldsCard
+          city={city}
+          addressText={addressText}
+          preferredTimeText={preferredTimeText}
+          contactPhone={contactPhone}
+          onCityChange={onCityChange}
+          onAddressTextChange={onAddressTextChange}
+          onPreferredTimeTextChange={onPreferredTimeTextChange}
+          onContactPhoneChange={onContactPhoneChange}
+        />
+      ) : null}
+      {!prioritizeDraftDecision ? statusNode : null}
+      {!prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
         approvedHistoryPage={approvedHistoryPage}

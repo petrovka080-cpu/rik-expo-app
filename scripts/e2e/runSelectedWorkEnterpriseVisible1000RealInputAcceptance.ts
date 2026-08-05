@@ -158,18 +158,29 @@ function previousGreenValidation(failures: Failure[]) {
 }
 
 function evaluateCase(testCase: SelectedWorkEnterprise1000Case, failures: Failure[]) {
-  const suggestions = searchGlobalWorkSmartSuggestions({ query: testCase.smartSearchInput, limit: 8 });
-  const selectedSuggestion = suggestions.find((suggestion) => suggestion.workKey === testCase.selectedWorkKey) ?? null;
-  const suggestionsVisible = suggestions.map((suggestion) => suggestion.visibleText).join("\n");
-  addFailure(failures, suggestions.length >= 3 && suggestions.length <= 8, "smart_search", "SUGGESTIONS_COUNT_OUT_OF_RANGE", testCase.id, suggestions.length);
-  addFailure(failures, selectedSuggestion !== null, "smart_search", "SELECTED_WORK_NOT_IN_SUGGESTIONS", testCase.id, suggestions.map((item) => item.workKey));
-  addFailure(failures, hasReadableCyrillic(suggestionsVisible), "smart_search", "SUGGESTIONS_NOT_VISIBLE_RU", testCase.id);
-  addFailure(failures, !INTERNAL_OR_DEBUG_PATTERN.test(suggestionsVisible), "smart_search", "SUGGESTIONS_INTERNAL_KEYS_VISIBLE", testCase.id);
-
   const binding = buildGlobalSelectedWorkBinding({
     selectedWorkKey: testCase.selectedWorkKey,
     rawInput: testCase.rawEstimateInput,
   });
+  const suggestions = searchGlobalWorkSmartSuggestions({ query: testCase.smartSearchInput, limit: 8 });
+  const selectedSuggestion = suggestions.find((suggestion) => suggestion.workKey === testCase.selectedWorkKey) ?? null;
+  const suggestionsVisible = suggestions.map((suggestion) => suggestion.visibleText).join("\n");
+  addFailure(failures, suggestions.length >= 3 && suggestions.length <= 8, "smart_search", "SUGGESTIONS_COUNT_OUT_OF_RANGE", testCase.id, suggestions.length);
+  addFailure(
+    failures,
+    testCase.scenario === "broad_suggestion"
+      ? suggestions.some((suggestion) => suggestion.categoryKey === binding.selectedCategoryKey)
+      : selectedSuggestion !== null,
+    "smart_search",
+    testCase.scenario === "broad_suggestion"
+      ? "BROAD_SUGGESTION_CATEGORY_NOT_COVERED"
+      : "SELECTED_WORK_NOT_IN_SUGGESTIONS",
+    testCase.id,
+    suggestions.map((item) => item.workKey),
+  );
+  addFailure(failures, hasReadableCyrillic(suggestionsVisible), "smart_search", "SUGGESTIONS_NOT_VISIBLE_RU", testCase.id);
+  addFailure(failures, !INTERNAL_OR_DEBUG_PATTERN.test(suggestionsVisible), "smart_search", "SUGGESTIONS_INTERNAL_KEYS_VISIBLE", testCase.id);
+
   const selectedWork = toConsumerSelectedWork(binding);
   const estimate = calculateGlobalConstructionEstimateSync(
     buildGlobalEstimateInputWithSelectedWork(

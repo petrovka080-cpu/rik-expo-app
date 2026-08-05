@@ -135,7 +135,11 @@ export function buildControlledPilotTelemetryEvents(sourceSha: string): Controll
 function telemetryBlockers(events: readonly ControlledPilotTelemetryEvent[]): string[] {
   const scenarios = loadControlledPilotDryRunScenarios().scenarios;
   const fullPrompts = scenarios.map((scenario) => scenario.prompt);
-  const serialized = JSON.stringify(events);
+  const serialized = JSON.stringify(events.map((eventItem) => ({
+    ...eventItem,
+    source_sha: "[source-sha]",
+    prompt_hash: eventItem.prompt_hash === null ? null : "[prompt-hash]",
+  })));
   return [
     CONTROLLED_PILOT_TELEMETRY_EVENT_NAMES.every((name) => events.some((eventItem) => eventItem.event_name === name))
       ? ""
@@ -150,8 +154,10 @@ function telemetryBlockers(events: readonly ControlledPilotTelemetryEvent[]): st
   ].filter(Boolean);
 }
 
-export function auditAiEstimatePilotTelemetryDryRun(options: { writeRuntime?: boolean } = {}) {
-  const sourceSha = currentSourceSha();
+export function auditAiEstimatePilotTelemetryDryRun(
+  options: { writeRuntime?: boolean; sourceSha?: string } = {},
+) {
+  const sourceSha = options.sourceSha ?? currentSourceSha();
   const events = buildControlledPilotTelemetryEvents(sourceSha);
   const blockers = telemetryBlockers(events);
   const summary = {

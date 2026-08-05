@@ -7,7 +7,15 @@ import {
   type PdfDocumentType,
   type PdfOriginModule,
 } from "../documents/pdfDocument";
-import { createInMemoryDocumentPreviewSession } from "../documents/pdfDocumentSessions";
+import {
+  createInMemoryDocumentPreviewSession,
+  getDocumentSessionSnapshot,
+} from "../documents/pdfDocumentSessions";
+import { persistWebPdfPreviewSession } from "../documents/pdfWebPreviewCache";
+import {
+  buildWebPdfPreviewCacheKey,
+  type WebPdfPreviewCacheIdentity,
+} from "../documents/pdfWebPreviewIdentity";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri } from "../pdfFileContract";
 
@@ -22,6 +30,8 @@ export type GeneratedPdfViewerRouteInput = {
   originModule: PdfOriginModule;
   source: string;
   entityId: string;
+  cacheKey?: string;
+  cacheIdentity?: WebPdfPreviewCacheIdentity;
 };
 
 export type GeneratedPdfViewerDirectRouteParams = {
@@ -43,6 +53,11 @@ export type GeneratedPdfViewerRouteParams =
     };
 
 const PDF_DATA_URI_PREFIX = "data:application/pdf;base64,";
+const activeWebPreviewSessionByCacheKey = new Map<string, string>();
+const inFlightWebPreviewByCacheKey = new Map<
+  string,
+  Promise<GeneratedPdfViewerRouteParams>
+>();
 
 function extractPdfBase64Data(uri: string): string | null {
   const value = String(uri || "").trim();
@@ -102,22 +117,69 @@ export async function buildGeneratedPdfViewerRouteParams(
   const originalUri = String(input.uri || "").trim();
   if (!originalUri) throw new Error("Generated PDF URI is empty.");
   const fileName = normalizePdfFileName(input.fileName, "generated-pdf");
-  if (Platform.OS === "web" && extractPdfBase64Data(originalUri)) {
-    const { session } = createInMemoryDocumentPreviewSession(
-      createPdfDocumentDescriptor({
-        uri: originalUri,
-        title: input.title,
-        fileName,
-        documentType: input.documentType,
-        originModule: input.originModule,
-        source: "generated",
-        entityId: input.entityId,
-      }),
-    );
-    return {
-      sessionId: session.sessionId,
-      openToken: "",
-    };
+  if (
+    Platform.OS === "web"
+    && (extractPdfBase64Data(originalUri) || getUriScheme(originalUri) === "blob")
+  ) {
+    if (!input.cacheIdentity) {
+      throw new Error("Generated web PDF cache identity is required.");
+    }
+    const namespace =
+      input.cacheKey
+      ?? `generated-pdf:${input.documentType}:${input.originModule}:${input.entityId}:${fileName}`;
+    const cacheKey = buildWebPdfPreviewCacheKey({
+      namespace,
+      identity: input.cacheIdentity,
+    });
+    const activeSessionId = activeWebPreviewSessionByCacheKey.get(cacheKey);
+    if (activeSessionId) {
+      const activeSnapshot = getDocumentSessionSnapshot(activeSessionId);
+      if (activeSnapshot.session?.status === "ready" && activeSnapshot.asset) {
+        return {
+          sessionId: activeSessionId,
+          openToken: "",
+        };
+      }
+      activeWebPreviewSessionByCacheKey.delete(cacheKey);
+    }
+
+    const inFlight = inFlightWebPreviewByCacheKey.get(cacheKey);
+    if (inFlight) return inFlight;
+    const creation = (async (): Promise<GeneratedPdfViewerRouteParams> => {
+      const webUri = materializePdfDataUriToWebBlob(originalUri);
+      const { session, asset } = createInMemoryDocumentPreviewSession(
+        createPdfDocumentDescriptor({
+          uri: webUri,
+          objectUrlOwnership:
+            webUri !== originalUri && getUriScheme(webUri) === "blob"
+              ? "document-session"
+              : undefined,
+          title: input.title,
+          fileName,
+          documentType: input.documentType,
+          originModule: input.originModule,
+          source: "generated",
+          entityId: input.entityId,
+        }),
+      );
+      await persistWebPdfPreviewSession({
+        session,
+        asset,
+        namespace,
+        identity: input.cacheIdentity!,
+      }).catch(() => false);
+      activeWebPreviewSessionByCacheKey.set(cacheKey, session.sessionId);
+      return {
+        sessionId: session.sessionId,
+        openToken: "",
+      };
+    })();
+    inFlightWebPreviewByCacheKey.set(cacheKey, creation);
+    try {
+      return await creation;
+    } finally {
+      inFlightWebPreviewByCacheKey.delete(cacheKey);
+    }
   }
   const uri =
     Platform.OS === "web"
@@ -137,4 +199,9 @@ export async function buildGeneratedPdfViewerRouteParams(
     source: input.source,
     entityId: input.entityId,
   };
+}
+
+export function clearGeneratedPdfViewerSessionCache(): void {
+  activeWebPreviewSessionByCacheKey.clear();
+  inFlightWebPreviewByCacheKey.clear();
 }

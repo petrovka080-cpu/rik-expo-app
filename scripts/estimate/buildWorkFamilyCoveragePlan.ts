@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
+  clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
@@ -177,8 +178,11 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
   let serviceCatalogRowsCount = 0;
   let equipmentCatalogRowsCount = 0;
   let buyerMaterialHandoffRowsCount = 0;
+  let workCatalogItemsCount = 0;
 
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
+  try {
+  for (let definitionIndex = 0; definitionIndex < PRODUCTION_WORK_DEFINITIONS_10000.length; definitionIndex += 1) {
+    const definition = PRODUCTION_WORK_DEFINITIONS_10000[definitionIndex];
     const estimate = compileProductionExpandedEstimate10000({
       workKey: definition.workKey,
       quantity: 100,
@@ -290,25 +294,34 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
     pushSample(familyCoverage.sample_work_catalog_item_ids, templateBinding.work_catalog_item_id);
     pushSample(familyCoverage.sample_professional_names_ru, definition.visibleNameRu);
 
-    workCatalogItems.push({
-      template_id: templateBinding.template_id,
-      work_key: templateBinding.work_key,
-      work_family_id: templateBinding.work_family_id,
-      work_catalog_item_id: templateBinding.work_catalog_item_id,
-      calculator_family_id: templateBinding.calculator_family_id,
-      parameter_schema_id: templateBinding.parameter_schema_id,
-      norm_pack_id: templateBinding.norm_pack_id,
-      material_recipe_id: templateBinding.material_recipe_id,
-      labor_recipe_id: templateBinding.labor_recipe_id,
-      service_recipe_id: templateBinding.service_recipe_id,
-      equipment_recipe_id: templateBinding.equipment_recipe_id,
-      unit_policy_id: templateBinding.unit_policy_id,
-      price_policy_id: templateBinding.price_policy_id,
-      pdf_policy_id: templateBinding.pdf_policy_id,
-      buyer_handoff_policy_id: templateBinding.buyer_handoff_policy_id,
-      professional_name_ru: definition.visibleNameRu,
-      category: definition.category,
-    });
+    workCatalogItemsCount += 1;
+    if (options.writeFiles) {
+      workCatalogItems.push({
+        template_id: templateBinding.template_id,
+        work_key: templateBinding.work_key,
+        work_family_id: templateBinding.work_family_id,
+        work_catalog_item_id: templateBinding.work_catalog_item_id,
+        calculator_family_id: templateBinding.calculator_family_id,
+        parameter_schema_id: templateBinding.parameter_schema_id,
+        norm_pack_id: templateBinding.norm_pack_id,
+        material_recipe_id: templateBinding.material_recipe_id,
+        labor_recipe_id: templateBinding.labor_recipe_id,
+        service_recipe_id: templateBinding.service_recipe_id,
+        equipment_recipe_id: templateBinding.equipment_recipe_id,
+        unit_policy_id: templateBinding.unit_policy_id,
+        price_policy_id: templateBinding.price_policy_id,
+        pdf_policy_id: templateBinding.pdf_policy_id,
+        buyer_handoff_policy_id: templateBinding.buyer_handoff_policy_id,
+        professional_name_ru: definition.visibleNameRu,
+        category: definition.category,
+      });
+    }
+    if ((definitionIndex + 1) % 100 === 0) {
+      clearProductionExpandedEstimate10000Caches();
+    }
+  }
+  } finally {
+    clearProductionExpandedEstimate10000Caches();
   }
 
   const workFamilies = [...familyMap.values()].sort((left, right) =>
@@ -326,7 +339,7 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
     templatesWithRealNormSourcesCount !== 10000
       ? `templates_with_real_norm_sources_count:${templatesWithRealNormSourcesCount}`
       : "",
-    workCatalogItems.length !== 10000 ? `work_catalog_items_count:${workCatalogItems.length}` : "",
+    workCatalogItemsCount !== 10000 ? `work_catalog_items_count:${workCatalogItemsCount}` : "",
     rowCatalogBindingsCount !== rowCatalogIds.size ? "row_catalog_item_ids_not_unique" : "",
     workFamilies.some((family) => !family.all_template_bindings_complete) ? "family_template_binding_incomplete" : "",
     workFamilies.some((family) => !family.all_row_catalog_bindings_complete) ? "family_row_catalog_binding_incomplete" : "",
@@ -353,7 +366,7 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
     synthetic_family_default_count: syntheticFamilyDefaultCount,
     templates_only_generic_norms_count: templatesOnlyGenericNormsCount,
     templates_with_real_norm_sources_count: templatesWithRealNormSourcesCount,
-    work_catalog_items_count: workCatalogItems.length,
+    work_catalog_items_count: workCatalogItemsCount,
     row_catalog_bindings_count: rowCatalogBindingsCount,
     material_catalog_rows_count: materialCatalogRowsCount,
     service_catalog_rows_count: serviceCatalogRowsCount,

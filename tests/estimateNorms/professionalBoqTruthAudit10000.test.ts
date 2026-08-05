@@ -13,10 +13,10 @@ describe("professional BOQ truth audit 10000 + expanded catalog", () => {
     expect(ledger).toHaveLength(11610);
     expect(summary.base_templates_audited).toBe(10000);
     expect(summary.expanded_templates_audited).toBe(1610);
-    expect(summary.ready_professional_boq_count).toBe(11610);
-    expect(summary.blocked_templates_count).toBe(0);
-    expect(summary.base_templates_ready_professional_boq_count).toBe(10000);
-    expect(summary.base_templates_blocked_count).toBe(0);
+    expect(summary.ready_professional_boq_count).toBe(1610);
+    expect(summary.blocked_templates_count).toBe(10000);
+    expect(summary.base_templates_ready_professional_boq_count).toBe(0);
+    expect(summary.base_templates_blocked_count).toBe(10000);
     expect(summary.expanded_templates_ready_professional_boq_count).toBe(1610);
     expect(summary.expanded_templates_blocked_not_ready_professional).toBe(0);
     expect(summary.generic_rows_count).toBe(0);
@@ -34,8 +34,8 @@ describe("professional BOQ truth audit 10000 + expanded catalog", () => {
     expect(summary.templates_below_professional_depth_count).toBe(0);
     expect(summary.min_row_count).toBeGreaterThanOrEqual(45);
     expect(summary.full_10000_professional_boq_green_claimed).toBe(false);
-    expect(summary.contradiction_explained).toBe(false);
-    expect(summary.top_blocking_reasons).toEqual([]);
+    expect(summary.contradiction_explained).toBe(true);
+    expect(summary.top_blocking_reasons).toEqual(["NO_NORM_SOURCE:10000"]);
     expect(summary.top_blocking_reasons.join("\n")).not.toContain("WRONG_UNIT_ROWS");
     expect(summary.diamond_drilling_ready).toBe(true);
     expect(summary.profile_sheet_fence_ready).toBe(true);

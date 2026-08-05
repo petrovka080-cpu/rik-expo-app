@@ -1,7 +1,7 @@
 import type { GlobalUnitInput, GlobalWorkCategory, GlobalWorkTypeDefinition } from "../globalEstimate/globalEstimateTypes";
 import {
   GLOBAL_WORK_ALIASES,
-  GLOBAL_WORK_TYPE_DEFINITIONS,
+  GLOBAL_WORK_ONTOLOGY_V1_DEFINITIONS,
 } from "../globalEstimate/globalWorkTypeResolver";
 import { normalizeRuText } from "../../text/encoding";
 import type {
@@ -591,7 +591,7 @@ const SYNTHETIC_REPLACEMENT_ENTRIES: readonly GlobalWorkTypeDefinition[] = [
 function buildEntries(): ConstructionWorkOntologyEntry[] {
   const aliases = aliasesByWorkKey();
   const uniqueDefinitions = new Map<string, GlobalWorkTypeDefinition>();
-  for (const definition of GLOBAL_WORK_TYPE_DEFINITIONS) {
+  for (const definition of GLOBAL_WORK_ONTOLOGY_V1_DEFINITIONS) {
     if (GENERIC_WORK_KEYS.has(definition.workKey)) continue;
     uniqueDefinitions.set(definition.workKey, definition);
   }

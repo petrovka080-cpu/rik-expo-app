@@ -36,4 +36,14 @@ describe("controlled pilot telemetry dry-run", () => {
     expect(summary.telemetry_flow_id_present).toBe(true);
     expect(summary.owner_approved).toBe(false);
   });
+
+  it("does not classify phone-like digits in source sha as pii", () => {
+    const summary = auditAiEstimatePilotTelemetryDryRun({
+      writeRuntime: false,
+      sourceSha: "c01a5c4cae42845382cf3b672940657802ab65c9",
+    }).artifact;
+
+    expect(summary.blockers).not.toContain("telemetry_contains_phone");
+    expect(summary.telemetry_pii_redaction_passed).toBe(true);
+  });
 });

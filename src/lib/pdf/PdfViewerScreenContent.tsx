@@ -176,6 +176,7 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
             width={width}
             renderInstanceKey={renderInstanceKey}
             webEmbeddedUri={webEmbeddedUri}
+            isReady={!contentModel.showLoadingOverlay}
             onLoad={onWebLoad}
             onError={onWebError}
           />

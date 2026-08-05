@@ -8,6 +8,7 @@ const crypto = require("node:crypto");
 const { chromium } = require("playwright");
 const { createClient } = require("@supabase/supabase-js");
 const dotenv = require("dotenv");
+const { MARKET_ADD_MEDIA_LIMITS } = require("../../src/lib/media/mediaLimits");
 const {
   buildRequestContextLines,
   buildRequestContextView,
@@ -212,10 +213,19 @@ const KNOWN_FRAMEWORK_WARNING_POLICIES = [
     message: "props.pointerEvents is deprecated. Use style.pointerEvents",
     owner: "upstream:@react-navigation/react-native-web",
   },
+  {
+    id: "supabase_realtime_socket_closed_during_role_context_teardown",
+    message: "Supabase Realtime WebSocket closed before connection establishment during browser context teardown",
+    owner: "test-lifecycle:@supabase/realtime-js",
+    pattern:
+      /^WebSocket connection to 'wss:\/\/[^/]+[.]supabase[.]co\/realtime\/v1\/websocket[?][^']*' failed: WebSocket is closed before the connection is established[.]$/,
+  },
 ];
 
 function classifyConsoleWarning(text) {
-  const policy = KNOWN_FRAMEWORK_WARNING_POLICIES.find((entry) => entry.message === text);
+  const policy = KNOWN_FRAMEWORK_WARNING_POLICIES.find(
+    (entry) => entry.message === text || entry.pattern?.test(text),
+  );
   if (!policy) return { actionable: true, text };
   return {
     actionable: false,
@@ -886,8 +896,23 @@ async function newRolePage(browser, roleKey) {
   await byTestId(page, "auth.login.password").fill(credentials.password);
   await byTestId(page, "auth.login.submit").click();
   await page.waitForURL((url) => !url.pathname.includes("/auth/login"), { timeout: 60_000 });
+  // The post-login profile route starts the authoritative auth.getUser read.
+  // Do not navigate to a role surface while that request is still in flight:
+  // Chromium would abort it and GoTrue would emit a false product console RED.
+  await page.waitForLoadState("networkidle", { timeout: 30_000 });
   mark("browser_login_done", { role: roleKey.toLowerCase(), path: new URL(page.url()).pathname });
   return { context, page };
+}
+
+async function closeRolePage(rolePage) {
+  // Every functional assertion has completed before this teardown boundary.
+  // Detach first so requests aborted by context disposal cannot masquerade as
+  // product console or transport failures, then give the page a bounded grace.
+  rolePage.page.removeAllListeners("console");
+  rolePage.page.removeAllListeners("response");
+  rolePage.page.removeAllListeners("requestfailed");
+  await rolePage.page.waitForTimeout(500).catch(() => undefined);
+  await rolePage.context.close().catch(() => undefined);
 }
 
 async function openForemanMaterials(page) {
@@ -1003,11 +1028,16 @@ async function createForemanEstimate(page, marker, mode) {
     await byTestId(page, "foreman-ai-estimate-catalog-search").fill("MAT-BOLT");
     const addCatalog = byTestId(page, "foreman-ai-estimate-catalog-add").first();
     await addCatalog.waitFor({ state: "visible", timeout: 30_000 });
-    const beforeRows = await byTestId(page, "foreman-ai-estimate-row").count();
+    const beforeRowSummary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
+    const beforeRows = Number(beforeRowSummary.match(/(\d+)\s*$/)?.[1] || "0");
+    if (!Number.isInteger(beforeRows) || beforeRows < 1) {
+      throw new Error(`manual estimate row count is invalid before catalog add: ${beforeRowSummary}`);
+    }
     await activate(addCatalog);
-    await poll("catalog item added to manual estimate", async () =>
-      (await byTestId(page, "foreman-ai-estimate-row").count()) > beforeRows ? true : null,
-    20_000);
+    await poll("catalog item added to manual estimate", async () => {
+      const summary = clean(await byTestId(page, "foreman-ai-estimate-row-count").innerText());
+      return Number(summary.match(/(\d+)\s*$/)?.[1] || "0") === beforeRows + 1 ? true : null;
+    }, 20_000);
     result.office.manual_estimate_catalog_add_exercised = true;
   }
 
@@ -1395,7 +1425,9 @@ async function runMarketFlow(browser, foremanClient) {
     await poll("market readded preview", async () => visibleStableImage(previewLocator), 90_000);
     result.market.photo_readded_after_delete = true;
     const panelText = await byTestId(page, "marketplace.media.entrypoints").first().innerText().catch(() => "");
-    result.market.counter_real_assets_length = /1\s*\/\s*5/.test(panelText);
+    result.market.counter_real_assets_length = new RegExp(
+      `1\\s*\\/\\s*${MARKET_ADD_MEDIA_LIMITS.maxPhotos}`,
+    ).test(panelText);
     mark("market_photo_readded");
 
     const publish = byTestId(page, "add-listing-flow-publish").first();
@@ -1427,16 +1459,34 @@ async function runMarketFlow(browser, foremanClient) {
     const detailRpc = await poll("market detail rpc image", async () => {
       const detail = await foremanClient.rpc("marketplace_item_scope_detail_v1", { p_listing_id: listing.id }).maybeSingle();
       if (detail.error) throw detail.error;
-      const erpItems = Array.isArray(detail.data?.erp_items)
+      const explicitErpItems = Array.isArray(detail.data?.erp_items)
         ? detail.data.erp_items
         : Array.isArray(detail.data?.erp_items_json)
           ? detail.data.erp_items_json
           : [];
+      const sourceItems = Array.isArray(detail.data?.items_json)
+        ? detail.data.items_json
+        : [];
+      const erpItems = explicitErpItems.length > 0 ? explicitErpItems : sourceItems;
       const imageUrl = detail.data?.image_url || null;
       return isStablePublicImageUrl(imageUrl) ? { imageUrl, erpItems, row: detail.data } : null;
     }, 90_000, 1000);
     result.market.erp_item_count = detailRpc.erpItems.length;
     if (result.market.erp_item_count < 1) throw new Error("published market listing has no ERP items");
+    const catalogCodes = [...new Set(detailRpc.erpItems
+      .map((item) => clean(item?.rik_code ?? item?.rikCode))
+      .filter(Boolean))];
+    const verifiedCatalog = await foremanClient
+      .from("catalog_items")
+      .select("rik_code")
+      .in("rik_code", catalogCodes);
+    if (
+      verifiedCatalog.error ||
+      catalogCodes.length !== detailRpc.erpItems.length ||
+      (verifiedCatalog.data || []).length !== catalogCodes.length
+    ) {
+      throw new Error("published market listing contains an unverified catalog identity");
+    }
 
     const publicFetch = await fetch(toAbsolutePublicImageUrl(detailRpc.imageUrl));
     result.market.public_image_fetch_ok = publicFetch.ok && String(publicFetch.headers.get("content-type") || "").startsWith("image/");
@@ -1444,11 +1494,11 @@ async function runMarketFlow(browser, foremanClient) {
 
     await page.goto(`${baseUrl}/market`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     result.market.card_photo_visible = Boolean(await poll("market card image", async () =>
-      visibleStableImage(byTestId(page, `market_feed_card_image_${listing.id}`)),
+      visibleStableImage(byTestId(page, `market_feed_card_image_${listing.id}_0`)),
     90_000));
     await page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
     result.market.card_photo_visible_after_refresh = Boolean(await poll("market card image after refresh", async () =>
-      visibleStableImage(byTestId(page, `market_feed_card_image_${listing.id}`)),
+      visibleStableImage(byTestId(page, `market_feed_card_image_${listing.id}_0`)),
     90_000));
     await page.goto(`${baseUrl}/product/${listing.id}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     const detailSrc = await poll("market detail image", async () =>
@@ -1470,7 +1520,7 @@ async function runMarketFlow(browser, foremanClient) {
     }
     mark("market_product_card_done", { listingId: listing.id });
 
-    await context.close();
+    await closeRolePage({ context, page });
     const reloginMyListings = await newRolePage(browser, "FOREMAN");
     try {
       await reloginMyListings.page.goto(`${baseUrl}/market/my-listings`, { waitUntil: "domcontentloaded", timeout: 60_000 });
@@ -1481,7 +1531,7 @@ async function runMarketFlow(browser, foremanClient) {
       90_000));
       mark("market_my_listings_relogin_done", { listingId: listing.id });
     } finally {
-      await reloginMyListings.context.close().catch(() => undefined);
+      await closeRolePage(reloginMyListings);
     }
     const relogin = await newRolePage(browser, "FOREMAN");
     try {
@@ -1491,7 +1541,7 @@ async function runMarketFlow(browser, foremanClient) {
       90_000));
       mark("market_relogin_detail_done", { listingId: listing.id });
     } finally {
-      await relogin.context.close().catch(() => undefined);
+      await closeRolePage(relogin);
     }
 
     const allUrls = [firstPreviewSrc, replacedPreviewSrc, detailSrc, detailRpc.imageUrl].filter(Boolean);
@@ -1499,7 +1549,7 @@ async function runMarketFlow(browser, foremanClient) {
     result.market.image_url_not_data = allUrls.every((url) => !String(url).startsWith("data:"));
     result.market.image_url_not_local = allUrls.every((url) => !String(url).startsWith("file:") && !isTransientLocalMediaUrl(url));
   } finally {
-    await context.close().catch(() => undefined);
+    await closeRolePage({ context, page });
   }
 }
 
@@ -1515,7 +1565,7 @@ async function runOfficeFlow(browser) {
     result.office.foreman_ai_estimate_sent_to_director = true;
     mark("office_ai_foreman_done");
   } finally {
-    await foreman.context.close().catch(() => undefined);
+    await closeRolePage(foreman);
   }
 
   const directorAi = await newRolePage(browser, "DIRECTOR");
@@ -1534,7 +1584,7 @@ async function runOfficeFlow(browser) {
     result.office.director_approved_ai_request = true;
     mark("office_ai_director_done", { requestId: result.office.ai_request_id });
   } finally {
-    await directorAi.context.close().catch(() => undefined);
+    await closeRolePage(directorAi);
   }
 
   const buyerAi = await newRolePage(browser, "BUYER");
@@ -1555,7 +1605,7 @@ async function runOfficeFlow(browser) {
     result.office.buyer_ai_no_item_truncation = buyerProof.noItemTruncation;
     mark("office_ai_buyer_done", { requestId: result.office.ai_request_id });
   } finally {
-    await buyerAi.context.close().catch(() => undefined);
+    await closeRolePage(buyerAi);
   }
 
   const foremanManual = await newRolePage(browser, "FOREMAN");
@@ -1565,7 +1615,7 @@ async function runOfficeFlow(browser) {
     result.office.manual_estimate_sent_to_director = true;
     mark("office_manual_foreman_done");
   } finally {
-    await foremanManual.context.close().catch(() => undefined);
+    await closeRolePage(foremanManual);
   }
 
   const directorManual = await newRolePage(browser, "DIRECTOR");
@@ -1584,7 +1634,7 @@ async function runOfficeFlow(browser) {
     result.office.director_approved_manual_request = true;
     mark("office_manual_director_done", { requestId: result.office.manual_request_id });
   } finally {
-    await directorManual.context.close().catch(() => undefined);
+    await closeRolePage(directorManual);
   }
 
   const buyerManual = await newRolePage(browser, "BUYER");
@@ -1605,7 +1655,7 @@ async function runOfficeFlow(browser) {
     result.office.buyer_manual_no_item_truncation = buyerProof.noItemTruncation;
     mark("office_manual_buyer_done", { requestId: result.office.manual_request_id });
   } finally {
-    await buyerManual.context.close().catch(() => undefined);
+    await closeRolePage(buyerManual);
   }
 
   result.office.director_pdf_units_localized =
@@ -1652,7 +1702,7 @@ async function verifyWarehouseSurface(browser) {
     result.office.warehouse_procurement_items_visible = true;
     mark("warehouse_surface_done");
   } finally {
-    await warehouse.context.close().catch(() => undefined);
+    await closeRolePage(warehouse);
   }
 }
 
@@ -1690,7 +1740,7 @@ async function verifyContractorSurface(browser) {
       skipReason: result.office.contractor_skip_reason,
     });
   } finally {
-    await contractor.context.close().catch(() => undefined);
+    await closeRolePage(contractor);
   }
 }
 
@@ -1738,7 +1788,7 @@ async function verifyAccountantSurface(browser) {
       skipReason: result.office.accountant_skip_reason,
     });
   } finally {
-    await accountant.context.close().catch(() => undefined);
+    await closeRolePage(accountant);
   }
 }
 

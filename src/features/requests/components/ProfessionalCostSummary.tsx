@@ -29,10 +29,19 @@ export function ProfessionalCostSummary({
         </Text>
       </View>
       <Text style={styles.total} testID="professional-preliminary-total">
-        Preliminary total: {summary.preliminaryTotalAllowed ? money(summary.preliminaryTotal, summary.currency) : "not available"}
+        {summary.resolution === "PARTIAL_PRELIMINARY_COST_PRICE_INPUT_REQUIRED"
+          ? "Preliminary priced subtotal"
+          : "Preliminary total"}: {summary.preliminaryTotalAllowed ? money(summary.preliminaryTotal, summary.currency) : "not available"}
       </Text>
       <Text style={styles.meta} testID="professional-missing-price-count">
         Missing prices: {summary.missingPriceRowsCount}
+      </Text>
+      <Text style={styles.meta} testID="professional-cost-resolution">
+        Cost resolution: {summary.resolution === "PRELIMINARY_COST_AVAILABLE"
+          ? "preliminary cost available"
+          : summary.resolution === "PARTIAL_PRELIMINARY_COST_PRICE_INPUT_REQUIRED"
+            ? `partial preliminary cost; price input required for ${summary.requiredPriceInputRowIds.length} rows`
+            : `price input required for ${summary.requiredPriceInputRowIds.length} rows`}
       </Text>
       <Text style={styles.meta} testID="professional-contract-total-status">
         Contract total: {summary.contractTotalAllowed ? "available" : "not available"}

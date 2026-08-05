@@ -8,6 +8,6 @@ describe("consumer estimate no Office leak contract", () => {
     expect(screen).not.toContain("warehouse");
     expect(screen).not.toContain("finance");
     expect(screen).not.toContain("company");
-    expect(screen).toContain("generateConsumerRepairRequestPdfForDraft");
+    expect(screen).toContain("ensureConsumerRepairRequestPdfAvailable");
   });
 });

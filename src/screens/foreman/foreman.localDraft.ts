@@ -222,7 +222,9 @@ const normalizeLocalItem = (value: unknown): ForemanLocalDraftItem | null => {
     rik_code: trim(row.rik_code) || null,
     name_human: nameHuman,
     qty,
-    price: normalizeDraftPrice(row.price),
+    ...(Object.prototype.hasOwnProperty.call(row, "price")
+      ? { price: normalizeDraftPrice(row.price) }
+      : {}),
     uom: trim(row.uom) || null,
     status: trim(row.status) || "Черновик",
     note: trim(row.note) || null,

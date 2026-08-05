@@ -45,4 +45,15 @@ describe("professional assumption engine", () => {
     expect(assumptions.pricePolicyRu).toContain("подтвердить");
     expect(assumptions.finalContractStatusBlockedUntilReview).toBe(true);
   });
+
+  it("classifies a Cyrillic full-road request as elevated risk", () => {
+    const riskPolicy = buildProfessionalBoqRiskPolicy({
+      prompt:
+        "\u041f\u043e\u043b\u043d\u043e\u0435 \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u043e \u0434\u043e\u0440\u043e\u0436\u043d\u043e\u0439 \u043e\u0434\u0435\u0436\u0434\u044b, \u0434\u043b\u0438\u043d\u0430 1 \u043a\u043c, \u0448\u0438\u0440\u0438\u043d\u0430 6 \u043c",
+    });
+
+    expect(riskPolicy.riskLevel).toBe("elevated");
+    expect(riskPolicy.riskCodes).toContain("road_traffic");
+    expect(riskPolicy.requiresSpecialist).toBe(true);
+  });
 });

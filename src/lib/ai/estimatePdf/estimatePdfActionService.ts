@@ -82,7 +82,13 @@ export function generateAiEstimatePdf(input: {
   }
   const model = mapAiEstimatePdfSourceToExistingConsumerPdfModel(input.source);
   const pdf = generateConsumerRepairRequestPdf(model);
-  const open = openConsumerRepairRequestPdf({ requestId: model.draft.id, pdf });
+  const open = openConsumerRepairRequestPdf({
+    requestId: model.draft.id,
+    pdf,
+    ownerUserId: model.draft.consumerUserId,
+    companyId: model.draft.orgId,
+    currency: model.items.find((item) => item.currency)?.currency ?? input.source.currency ?? "KGS",
+  });
   const result: AiEstimatePdfResult = {
     pdfId: pdf.id,
     estimateId: input.source.sourceId,

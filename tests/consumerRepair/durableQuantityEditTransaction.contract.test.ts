@@ -39,8 +39,9 @@ describe("consumer repair durable quantity edit transaction", () => {
     expect(row).toContain("QUANTITY_ACTION_RECEIVED");
     expect(row).toContain("VISIBLE_INPUT_UPDATED");
     expect(row).toContain("stepQuantity(1)");
-    expect(row).toContain("traceOpen && hasCalculationTrace");
-    expect(row).toContain("itemPriceTraceText");
+    expect(row).not.toContain("traceOpen && hasCalculationTrace");
+    expect(row).not.toContain("itemPriceTraceText");
+    expect(row).not.toContain("consumer-repair-item-calculation-toggle");
     expect(row).not.toContain("onPress={() => onIncrease(item.id)}");
   });
 

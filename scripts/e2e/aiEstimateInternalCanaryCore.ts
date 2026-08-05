@@ -30,10 +30,10 @@ import {
   slimResult,
   type Real10000CaseResult,
 } from "./real10000AcceptanceCore";
+import { resolveCanonicalOrJestEvidencePath } from "../audit/runScopedEvidence";
 
-export const INTERNAL_CANARY_ARTIFACT_DIR = path.join(
-  process.cwd(),
-  AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_ARTIFACT_DIR,
+export const INTERNAL_CANARY_ARTIFACT_DIR = resolveCanonicalOrJestEvidencePath(
+  path.join(process.cwd(), AI_ESTIMATE_INTERNAL_CANARY_EXECUTION_ARTIFACT_DIR),
 );
 
 export type InternalCanaryFailure = {

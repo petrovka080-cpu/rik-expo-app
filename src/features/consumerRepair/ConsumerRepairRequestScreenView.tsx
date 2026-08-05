@@ -5,6 +5,7 @@ import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import type {
+  ConsumerRepairDraftBundle,
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
@@ -21,9 +22,24 @@ import {
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
+
+export function consumerRepairLegacyEstimateRequiresRebuild(
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  const hasCompiledEstimate = Boolean(
+    bundle?.structuredEstimatePayload ||
+    bundle?.items.length ||
+    bundle?.editableEstimateSnapshot?.rows.length,
+  );
+  return Boolean(
+    bundle &&
+    bundle.canonicalParameterSession == null &&
+    !hasCompiledEstimate &&
+    bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
+  );
+}
 
 type ConsumerRepairRequestScreenViewProps = {
   state: ConsumerRepairRequestScreenState;
@@ -68,7 +84,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
-  onSelectRoadScope: (scope: RoadScopeIdV4) => void;
+  onSelectRoadScope: (scopePresetId: string) => void;
 };
 
 export function ConsumerRepairRequestScreenView({
@@ -116,6 +132,20 @@ export function ConsumerRepairRequestScreenView({
   onPrepareDraft,
   onSelectRoadScope,
 }: ConsumerRepairRequestScreenViewProps) {
+  const currentDraftRevision =
+    renderModel.bundle?.estimateDraftRevisionState?.revisions.find(
+      (revision) =>
+        revision.revisionId ===
+        renderModel.bundle?.estimateDraftRevisionState?.currentRevisionId,
+    ) ?? null;
+  const legacyEstimateRequiresRebuild =
+    consumerRepairLegacyEstimateRequiresRebuild(renderModel.bundle);
+  const approvalBlockedByEstimate = Boolean(
+    renderModel.bundle?.canonicalParameterSession?.status ===
+      "BLOCKING_REQUIRED" ||
+    currentDraftRevision?.status === "blocking_required" ||
+    legacyEstimateRequiresRebuild
+  );
   return (
     <AppScreen hasStickyAction style={styles.screen}>
       <AppScreenHeader
@@ -187,14 +217,24 @@ export function ConsumerRepairRequestScreenView({
         approved={renderModel.approved}
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
-        hasSnapshot={Boolean(renderModel.bundle?.editableEstimateSnapshot)}
+        hasPendingPrompt={state.problemText.trim().length > 0}
+        estimateRequiresRebuild={legacyEstimateRequiresRebuild}
+        hasSnapshot={Boolean(
+          renderModel.bundle?.editableEstimateSnapshot &&
+          (
+            renderModel.bundle.structuredEstimatePayload != null ||
+            renderModel.bundle.estimateDraftSession == null ||
+            renderModel.bundle.estimateDraftSession.status === "REVIEW"
+          )
+        )}
         approvalMissingRequiredContact={Boolean(
           renderModel.bundle &&
           (
-            (renderModel.bundle.draft.addressText ?? "").trim().length < 3 ||
-            (renderModel.bundle.draft.contactPhone ?? "").replace(/\D/g, "").length < 7
+            state.addressText.trim().length < 3 ||
+            state.contactPhone.replace(/\D/g, "").length < 7
           )
         )}
+        approvalBlockedByEstimate={approvalBlockedByEstimate}
         needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
         onOpenPdf={() => onOpenPdf()}
         onMakePdf={onMakePdf}

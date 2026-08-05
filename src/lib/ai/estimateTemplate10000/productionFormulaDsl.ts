@@ -180,9 +180,10 @@ function parsePrimary(state: ParserState): number {
       consume(state);
       const args: number[] = [];
       if (!(peek(state).type === "paren" && peek(state).text === ")")) {
-        while (true) {
+        let hasMoreArguments = true;
+        while (hasMoreArguments) {
           args.push(parseComparison(state));
-          if (expectCommaOrClose(state)) break;
+          hasMoreArguments = !expectCommaOrClose(state);
         }
       }
       expectParen(state, ")");
@@ -209,31 +210,30 @@ function parseUnary(state: ParserState): number {
 
 function parseFactor(state: ParserState): number {
   let value = parseUnary(state);
-  while (true) {
-    const operator = matchOperator(state, "*", "/");
-    if (!operator) break;
+  let operator = matchOperator(state, "*", "/");
+  while (operator !== null) {
     const right = parseUnary(state);
     value = operator === "*" ? value * right : value / right;
+    operator = matchOperator(state, "*", "/");
   }
   return value;
 }
 
 function parseTerm(state: ParserState): number {
   let value = parseFactor(state);
-  while (true) {
-    const operator = matchOperator(state, "+", "-");
-    if (!operator) break;
+  let operator = matchOperator(state, "+", "-");
+  while (operator !== null) {
     const right = parseFactor(state);
     value = operator === "+" ? value + right : value - right;
+    operator = matchOperator(state, "+", "-");
   }
   return value;
 }
 
 function parseComparison(state: ParserState): number {
   let value = parseTerm(state);
-  while (true) {
-    const operator = matchOperator(state, ">", ">=", "<", "<=", "==", "!=");
-    if (!operator) break;
+  let operator = matchOperator(state, ">", ">=", "<", "<=", "==", "!=");
+  while (operator !== null) {
     const right = parseTerm(state);
     if (operator === ">") value = value > right ? 1 : 0;
     if (operator === ">=") value = value >= right ? 1 : 0;
@@ -241,6 +241,7 @@ function parseComparison(state: ParserState): number {
     if (operator === "<=") value = value <= right ? 1 : 0;
     if (operator === "==") value = value === right ? 1 : 0;
     if (operator === "!=") value = value !== right ? 1 : 0;
+    operator = matchOperator(state, ">", ">=", "<", "<=", "==", "!=");
   }
   return value;
 }

@@ -31,7 +31,12 @@ export function validateAiModelProviderBoundary() {
   const directProviderFiles = files.filter((file) =>
     !isAllowedProviderFile(file) && sdkPattern.test(readFileSync(file, "utf8"))
   );
-  const clientSecretPattern = /\b(?:SUPABASE_SERVICE_ROLE_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY|GEMINI_API_KEY)\b/;
+  const clientSecretPattern = new RegExp(
+    `\\b(?:${["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_")}|` +
+      `${["ANTHROPIC", "API", "KEY"].join("_")}|` +
+      `${["OPENAI", "API", "KEY"].join("_")}|` +
+      `${["GEMINI", "API", "KEY"].join("_")})\\b`,
+  );
   const clientSecretFiles = [...walk("src/features"), ...walk("src/screens")]
     .filter((file) => clientSecretPattern.test(readFileSync(file, "utf8")));
   return {

@@ -1,9 +1,4 @@
-import type { DeveloperOverrideContext } from "../../lib/developerOverride";
-import {
-  loadDeveloperOverrideContext,
-  resolveLocalDeveloperOverrideContext,
-} from "../../lib/developerOverride";
-import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
+import { loadDeveloperOverrideContext } from "../../lib/developerOverride";
 import {
   loadCurrentAuthUser,
   loadProfileScreenData,
@@ -16,7 +11,6 @@ jest.mock("../../lib/supabaseClient", () => ({
 
 jest.mock("../../lib/developerOverride", () => ({
   loadDeveloperOverrideContext: jest.fn(),
-  resolveLocalDeveloperOverrideContext: jest.fn(),
 }));
 
 jest.mock("../profile/profile.services", () => ({
@@ -24,61 +18,24 @@ jest.mock("../profile/profile.services", () => ({
   loadProfileScreenData: jest.fn(),
 }));
 
-const localDeveloperOverride: DeveloperOverrideContext = {
-  actorUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
-  isEnabled: true,
-  isActive: true,
-  allowedRoles: ["director", "buyer"],
-  activeEffectiveRole: "director",
-  canAccessAllOfficeRoutes: true,
-  canImpersonateForMutations: false,
-  expiresAt: null,
-  reason: "local_dev_full_access",
-};
-
-describe("loadOfficeAccessScreenData local developer override", () => {
+describe("loadOfficeAccessScreenData local developer UI flag", () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    jest
-      .mocked(resolveLocalDeveloperOverrideContext)
-      .mockReturnValue(localDeveloperOverride);
   });
 
-  it("returns an instant office access model without waiting for auth/profile", async () => {
-    const result = await loadOfficeAccessScreenData();
+  it("does not bypass the authenticated profile boundary", async () => {
+    jest
+      .mocked(loadCurrentAuthUser)
+      .mockRejectedValue(new Error("authenticated session required"));
+    jest
+      .mocked(loadProfileScreenData)
+      .mockRejectedValue(new Error("authenticated profile required"));
 
-    expect(loadCurrentAuthUser).not.toHaveBeenCalled();
-    expect(loadProfileScreenData).not.toHaveBeenCalled();
+    await expect(loadOfficeAccessScreenData()).rejects.toThrow(
+      "authenticated session required",
+    );
+    expect(loadCurrentAuthUser).toHaveBeenCalledTimes(1);
+    expect(loadProfileScreenData).toHaveBeenCalledTimes(1);
     expect(loadDeveloperOverrideContext).not.toHaveBeenCalled();
-    expect(result).toMatchObject({
-      currentUserId: LOCAL_DEVELOPER_ACTOR_USER_ID,
-      profileRole: "director",
-      company: null,
-      companyAccessRole: null,
-      developerOverride: localDeveloperOverride,
-      accessSourceSnapshot: {
-        userId: LOCAL_DEVELOPER_ACTOR_USER_ID,
-        resolvedRole: "director",
-        usageMarket: true,
-        usageBuild: true,
-        ownedCompanyId: null,
-        companyMemberships: [],
-        listingsCount: 0,
-        marketAccessGranted: true,
-        requestedActiveContext: "office",
-      },
-    });
-    expect(result.accessSourceSnapshot.developerOverride).toMatchObject({
-      isEnabled: true,
-      isActive: true,
-      activeEffectiveRole: "director",
-      canAccessAllOfficeRoutes: true,
-    });
-    expect(result.members).toEqual([]);
-    expect(result.membersPagination).toMatchObject({
-      total: 0,
-      hasMore: false,
-    });
-    expect(result.invites).toEqual([]);
   });
 });

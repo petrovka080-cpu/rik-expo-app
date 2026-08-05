@@ -216,8 +216,9 @@ export function professionalBoqRowsFromPassport(passport: ProfessionalWorkPasspo
 
 export function validateProfessionalBoqMaterialCompletenessForPassport(
   passport: ProfessionalWorkPassport,
+  precomputedRows?: readonly ProfessionalBoqRow[],
 ): ProfessionalBoqMaterialCompletenessValidation {
-  const rows = professionalBoqRowsFromPassport(passport);
+  const rows = precomputedRows ?? professionalBoqRowsFromPassport(passport);
   const buyerHandoffRowIds = rows
     .filter((row) => row.includedInProcurement)
     .filter((row) => row.rowType !== "work" && row.rowType !== "labor")

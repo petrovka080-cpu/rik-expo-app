@@ -314,11 +314,6 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    '- openLink: "rik:///ai-command-center"',
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.command_center.screen"',
-    "    timeout: 30000",
   ];
 
   lines.push("");
@@ -334,32 +329,38 @@ function createFlowFile(): string {
   return flowPath;
 }
 
-function promptFlowLines(): string[] {
-  return [
-    `appId: ${appId}`,
-    "name: AI Construction Knowhow Prompt Pipeline Probe",
-    "---",
-    '- openLink: "rik://ai?context=director"',
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.assistant.screen"',
-    "    timeout: 30000",
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "ai.assistant.input"',
-    "    timeout: 30000",
-    "- tapOn:",
-    '    id: "ai.assistant.input"',
-    "",
-  ];
-}
-
-function createPromptFlowFile(): string {
+function createPromptSubmissionFlowFile(): string {
   const flowPath = path.join(
     os.tmpdir(),
-    `rik-ai-construction-knowhow-prompt-${process.pid}-${Date.now()}.yaml`,
+    `rik-ai-construction-knowhow-prompt-submit-${process.pid}-${Date.now()}.yaml`,
   );
-  fs.writeFileSync(flowPath, promptFlowLines().join("\n"), "utf8");
+  fs.writeFileSync(
+    flowPath,
+    [
+      `appId: ${appId}`,
+      "name: AI Construction Knowhow Prompt Submission",
+      "---",
+      "- tapOn:",
+      '    id: "ai.assistant.clear"',
+      "- extendedWaitUntil:",
+      "    notVisible:",
+      '      id: "ai.assistant.response"',
+      "    timeout: 10000",
+      "- tapOn:",
+      '    id: "ai.assistant.input"',
+      "- eraseText: 200",
+      '- inputText: "construction knowhow runtime proof"',
+      "- hideKeyboard",
+      "- tapOn:",
+      '    id: "ai.assistant.send"',
+      "- extendedWaitUntil:",
+      "    visible:",
+      '      id: "ai.assistant.response"',
+      "    timeout: 60000",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
   return flowPath;
 }
 
@@ -384,19 +385,80 @@ function boundsCenterForResourceId(hierarchy: string, resourceId: string): { x: 
   };
 }
 
-function observePromptPipeline(deviceId: string, secrets: readonly string[]): boolean {
-  const deadline = Date.now() + 45_000;
-  while (Date.now() < deadline) {
+function targetAssistantInputViaGlobalUi(deviceId: string, secrets: readonly string[]): boolean {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    adb(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://profile",
+        appId,
+      ],
+      secrets,
+    );
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3_000);
     const hierarchy = dumpAndroidHierarchy(deviceId, secrets);
+    if (hierarchy.includes('resource-id="ai.assistant.input"')) {
+      return true;
+    }
+    const openBounds = boundsCenterForResourceId(hierarchy, "ai.assistant.open");
+    if (openBounds) {
+      adb(deviceId, ["shell", "input", "tap", String(openBounds.x), String(openBounds.y)], secrets);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 4_000);
+      if (
+        dumpAndroidHierarchy(deviceId, secrets).includes(
+          'resource-id="ai.assistant.input"',
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function observePersistentAssistantResponse(deviceId: string, secrets: readonly string[]): boolean {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
     if (
-      hierarchy.includes('resource-id="ai.assistant.loading"') ||
-      hierarchy.includes('content-desc="AI assistant loading"') ||
-      hierarchy.includes('resource-id="ai.assistant.response"')
+      dumpAndroidHierarchy(deviceId, secrets).includes(
+        'resource-id="ai.assistant.response"',
+      )
     ) {
       return true;
     }
-    adb(deviceId, ["shell", "input", "swipe", "540", "1820", "540", "1520", "250"], secrets);
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 750);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
+  }
+  return false;
+}
+
+function openCommandCenterViaAndroidIntent(deviceId: string, secrets: readonly string[]): boolean {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    adb(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://ai-command-center",
+        appId,
+      ],
+      secrets,
+    );
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2_500);
+    if (dumpAndroidHierarchy(deviceId, secrets).includes('resource-id="ai.command_center.screen"')) {
+      return true;
+    }
   }
   return false;
 }
@@ -487,7 +549,7 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "Construction knowhow preview was not targetable in Android hierarchy.",
+        "Android launch or explicit developer/control authentication failed.",
         { android_runtime_smoke: "PASS" },
       ),
     );
@@ -495,81 +557,53 @@ export async function runAiConstructionKnowhowEngineMaestro(): Promise<AiConstru
     fs.rmSync(flowPath, { force: true });
   }
 
-  if (!targetConstructionKnowhowIds(emulator.deviceId, secrets)) {
+  const commandCenterTargeted = openCommandCenterViaAndroidIntent(emulator.deviceId, secrets);
+
+  if (!commandCenterTargeted || !targetConstructionKnowhowIds(emulator.deviceId, secrets)) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "Construction knowhow preview was not targetable in Android hierarchy.",
+        "Construction knowhow preview was not targetable after the Android command-center intent.",
         { android_runtime_smoke: "PASS" },
       ),
     );
   }
 
-  const promptFlowPath = createPromptFlowFile();
+  if (!targetAssistantInputViaGlobalUi(emulator.deviceId, secrets)) {
+    return writeArtifacts(
+      baseArtifact(
+        "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
+        "AI assistant input was not targetable through the global UI entrypoint.",
+        {
+          android_runtime_smoke: "PASS",
+          deterministic_testids_targetable: true,
+        },
+      ),
+    );
+  }
+
+  const promptSubmissionFlowPath = createPromptSubmissionFlowFile();
+  let maestroObservedPersistentResponse = true;
   try {
     runCommand(
       maestroBinary,
-      ["--device", emulator.deviceId, "test", promptFlowPath],
+      ["--device", emulator.deviceId, "test", promptSubmissionFlowPath],
       {},
       secrets,
     );
   } catch {
-    return writeArtifacts(
-      baseArtifact(
-        "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "AI assistant prompt pipeline probe could not send through deterministic UI.",
-        {
-          android_runtime_smoke: "PASS",
-          deterministic_testids_targetable: true,
-        },
-      ),
-    );
+    maestroObservedPersistentResponse = false;
   } finally {
-    fs.rmSync(promptFlowPath, { force: true });
+    fs.rmSync(promptSubmissionFlowPath, { force: true });
   }
-
-  try {
-    const inputBounds = boundsCenterForResourceId(
-      dumpAndroidHierarchy(emulator.deviceId, secrets),
-      "ai.assistant.input",
-    );
-    if (!inputBounds) {
-      throw new Error("ai.assistant.input bounds were not found for prompt input.");
-    }
-    adb(emulator.deviceId, ["shell", "input", "tap", String(inputBounds.x), String(inputBounds.y)], secrets);
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 750);
-    for (let index = 0; index < 40; index += 1) {
-      adb(emulator.deviceId, ["shell", "input", "keyevent", "67"], secrets);
-    }
-    adb(emulator.deviceId, ["shell", "input", "text", "construction_knowhow_runtime_proof"], secrets);
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1200);
-    const sendBounds = boundsCenterForResourceId(
-      dumpAndroidHierarchy(emulator.deviceId, secrets),
-      "ai.assistant.send",
-    );
-    if (!sendBounds) {
-      throw new Error("ai.assistant.send bounds were not found after prompt input.");
-    }
-    adb(emulator.deviceId, ["shell", "input", "tap", String(sendBounds.x), String(sendBounds.y)], secrets);
-  } catch {
+  const persistentResponseObserved =
+    maestroObservedPersistentResponse ||
+    observePersistentAssistantResponse(emulator.deviceId, secrets);
+  if (!persistentResponseObserved) {
     return writeArtifacts(
       baseArtifact(
         "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "AI assistant prompt pipeline probe could not enter and send deterministic UI input.",
-        {
-          android_runtime_smoke: "PASS",
-          deterministic_testids_targetable: true,
-        },
-      ),
-    );
-  }
-
-  const promptProof = observePromptPipeline(emulator.deviceId, secrets);
-  if (!promptProof) {
-    return writeArtifacts(
-      baseArtifact(
-        "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY",
-        "AI assistant prompt pipeline did not expose loading or response runtime proof.",
+        "AI assistant prompt submission did not expose a persistent response through deterministic UI.",
         {
           android_runtime_smoke: "PASS",
           deterministic_testids_targetable: true,

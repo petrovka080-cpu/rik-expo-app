@@ -41,6 +41,8 @@ export type EstimatorReasoningPlan = {
     volumeM3?: number;
     rawDimensions?: string[];
   };
+  canonicalParameters?: Record<string, number | string | boolean>;
+  calculationVersion?: string;
   formulas: {
     formulaId: string;
     inputs: Record<string, number>;
@@ -81,6 +83,7 @@ export type EstimatorOutcomeClassification =
 export type EstimatorOutcome = {
   classification: EstimatorOutcomeClassification;
   plan: EstimatorReasoningPlan | null;
+  boq: DynamicProfessionalBoq | null;
   parsableWorkDetected: boolean;
   regulatedWorkDetected: boolean;
   templateExactMatch: boolean;
@@ -99,6 +102,31 @@ export type DynamicProfessionalBoqRow = {
   materialKey?: string;
   rateKey?: string;
   sourcePolicy: "configured_reference" | "manual_review";
+  formulaId?: string;
+  quantityFormula?: string;
+  calculationTrace?: string;
+  templateId?: string;
+  templateVersion?: string;
+  normId?: string;
+  normFamilyId?: string;
+  normSourceId?: string;
+  normSourceTitle?: string;
+  normVersion?: string;
+  normReviewStatus?: string;
+  normSourceProfile?: "KG_PRIMARY" | "INTL_REFERENCE" | "PROJECT_SPECIFIC" | "MANUFACTURER_TECHNICAL";
+  normSourceJurisdiction?: string;
+  normSourcePublisher?: string;
+  normSourceEffectiveDate?: string;
+  normSourceCheckedAt?: string;
+  normSourceReference?: string;
+  normSourceSnapshotSha256?: string;
+  normSourceLicenseStatus?: string;
+  normSourceLifecycleStatus?: "ACTIVE" | "SUPERSEDED" | "EXPERT_REVIEW_REQUIRED";
+  includedInEstimate?: boolean;
+  includedInProcurement?: boolean;
+  optional?: boolean;
+  editable?: boolean;
+  parameterBlockerIds?: readonly string[];
 };
 
 export type DynamicProfessionalBoq = {

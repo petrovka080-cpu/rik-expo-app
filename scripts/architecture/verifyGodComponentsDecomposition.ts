@@ -35,16 +35,18 @@ export type GodComponentsDecompositionReport = {
   ai_panels_extracted: boolean;
   public_imports_preserved: boolean;
   user_visible_behavior_changed: false;
-  new_hooks_added: false;
+  new_hooks_added: boolean;
   web_runtime_checked: boolean;
   android_runtime_checked: boolean;
   ios_testflight_delivery_checked: boolean;
   ios_testflight_delivery_not_required: boolean;
-  app_source_changed: false;
+  app_source_changed: boolean;
   broad_exception_used: false;
   fake_green_claimed: false;
   decomposition_not_required_current_head: boolean;
   top_by_lines: ReturnType<typeof scanComponentDebt>["topByLines"];
+  top_by_physical_lines: ReturnType<typeof scanComponentDebt>["topByPhysicalLines"];
+  top_by_dependencies: ReturnType<typeof scanComponentDebt>["topByDependencies"];
   top_by_hooks: ReturnType<typeof scanComponentDebt>["topByHooks"];
   findings: Finding[];
   blockers: string[];
@@ -102,16 +104,18 @@ export function runGodComponentsDecompositionVerifier(
     ai_panels_extracted: green,
     public_imports_preserved: true,
     user_visible_behavior_changed: false,
-    new_hooks_added: false,
-    web_runtime_checked: true,
-    android_runtime_checked: true,
-    ios_testflight_delivery_checked: true,
+    new_hooks_added: true,
+    web_runtime_checked: false,
+    android_runtime_checked: false,
+    ios_testflight_delivery_checked: false,
     ios_testflight_delivery_not_required: true,
-    app_source_changed: false,
+    app_source_changed: true,
     broad_exception_used: false,
     fake_green_claimed: false,
-    decomposition_not_required_current_head: green,
+    decomposition_not_required_current_head: false,
     top_by_lines: componentDebt.topByLines,
+    top_by_physical_lines: componentDebt.topByPhysicalLines,
+    top_by_dependencies: componentDebt.topByDependencies,
     top_by_hooks: componentDebt.topByHooks,
     findings,
     blockers: green ? [] : findings.map((finding) => `${finding.code}:${finding.file}`),
@@ -131,6 +135,8 @@ export function writeGodComponentsDecompositionArtifacts(
         component_line_threshold: report.component_line_threshold,
         hook_pressure_threshold: report.hook_pressure_threshold,
         top_by_lines: report.top_by_lines,
+        top_by_physical_lines: report.top_by_physical_lines,
+        top_by_dependencies: report.top_by_dependencies,
         top_by_hooks: report.top_by_hooks,
         findings: report.findings,
         blockers: report.blockers,
@@ -155,12 +161,12 @@ export function writeGodComponentsDecompositionArtifacts(
       `- Line threshold: ${report.component_line_threshold}.`,
       `- Hook threshold: ${report.hook_pressure_threshold}.`,
       "",
-      "Current HEAD is already below the decomposition thresholds after earlier owner-split and component-debt waves. No app/source/runtime code was changed for this closeout.",
+      "The scanner records raw module LOC and maximum callable meaningful LOC independently. Add Listing owners were split into separate validation, coordinates, catalog construction, owner-context, projection, and submission modules.",
       "",
       "## Safety",
       "",
       "- User-visible behavior changed: false.",
-      "- New hooks added: false.",
+      `- New hooks added: ${report.new_hooks_added ? "true" : "false"}.`,
       "- Public imports preserved: true.",
       "- Broad exceptions used: false.",
       "- Fake green claimed: false.",
@@ -169,7 +175,15 @@ export function writeGodComponentsDecompositionArtifacts(
       "## Top Files By Lines",
       "",
       ...report.top_by_lines.map(
-        (entry) => `- ${entry.file}: ${entry.lineCount} lines, ${entry.hookCount} hooks`,
+        (entry) =>
+          `- ${entry.file}: callable=${entry.maxCallableMeaningfulLineCount}, physical=${entry.physicalLineCount}, meaningful_module=${entry.meaningfulModuleLineCount}, hooks=${entry.hookCount}, imports=${entry.importCount}, responsibility_owners=${entry.responsibilityOwnerCount}`,
+      ),
+      "",
+      "## Top Files By Physical Module LOC",
+      "",
+      ...report.top_by_physical_lines.map(
+        (entry) =>
+          `- ${entry.file}: physical=${entry.physicalLineCount}, callable=${entry.maxCallableMeaningfulLineCount}`,
       ),
       "",
     ].join("\n"),

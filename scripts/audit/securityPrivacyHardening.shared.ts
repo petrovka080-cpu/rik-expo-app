@@ -16,6 +16,14 @@ import {
   scanSecuritySensitiveText,
 } from "../../src/lib/security/securityPrivacyHardening";
 import { buildStorageBucketPolicies } from "./rlsDynamicCrossTenant.shared";
+import {
+  atomicWriteEvidence,
+  currentEvidenceSubjectSha,
+  resolveCanonicalOrJestEvidencePath,
+  withTerminalWriterMetadata,
+  writeRunScopedEvidence,
+  type RunScopedEvidenceResult,
+} from "./runScopedEvidence";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -42,18 +50,24 @@ export type SecurityPrivacyReport = {
   proof: string;
 };
 
-function artifactPath(name: string): string {
-  return path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`);
+export function securityPrivacyArtifactPath(name: string): string {
+  return resolveCanonicalOrJestEvidencePath(
+    path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`),
+    ROOT,
+  );
 }
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  fs.writeFileSync(artifactPath(name), `${JSON.stringify(sanitizeSecurityPrivacyArtifact(value), null, 2)}\n`, "utf8");
+  atomicWriteEvidence(
+    securityPrivacyArtifactPath(name),
+    `${JSON.stringify(sanitizeSecurityPrivacyArtifact(value), null, 2)}\n`,
+  );
 }
 
 function writeProof(value: string): void {
   fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
-  fs.writeFileSync(artifactPath("proof.md"), value, "utf8");
+  atomicWriteEvidence(securityPrivacyArtifactPath("proof.md"), value);
 }
 
 function normalizePath(file: string): string {
@@ -304,31 +318,74 @@ export function writeSecurityPrivacyArtifacts(report = buildSecurityPrivacyRepor
   writeJson("signed_urls.json", report.signedUrls);
   writeJson("ai_sanitizer.json", report.aiSanitizer);
   writeJson("secrets_scan.json", report.secretsScan);
-  writeJson("matrix.json", report.matrix);
-  writeProof(report.proof);
 
   const gates = {
     fullJestPassed: report.matrix.full_jest_passed === true,
     releaseVerifyPassed: report.matrix.release_verify_passed === true,
   };
   const refreshedPii = buildPiiArtifactsAudit();
-  const refreshed = buildSecurityPrivacyReport({ ...gates, piiArtifacts: refreshedPii });
-  writeJson("pii_artifacts.json", refreshed.piiArtifacts);
-  writeJson("matrix.json", refreshed.matrix);
-  writeProof(refreshed.proof);
-
-  const finalPii = buildPiiArtifactsAudit();
-  const finalReport = buildSecurityPrivacyReport({ ...gates, piiArtifacts: finalPii });
-  writeJson("pii_artifacts.json", finalReport.piiArtifacts);
-  writeJson("matrix.json", finalReport.matrix);
+  writeJson("pii_artifacts.json", refreshedPii);
+  const finalReport = buildSecurityPrivacyReport({
+    ...gates,
+    piiArtifacts: buildPiiArtifactsAudit(),
+  });
+  writeJson(
+    "matrix.json",
+    withTerminalWriterMetadata(
+      finalReport.matrix,
+      currentEvidenceSubjectSha(ROOT),
+    ),
+  );
   writeProof(finalReport.proof);
+}
+
+export function writeSecurityPrivacyRunArtifacts(
+  report = buildSecurityPrivacyReport(),
+): RunScopedEvidenceResult {
+  const subjectSha = currentEvidenceSubjectSha(ROOT);
+  return writeRunScopedEvidence({
+    gateId: "security-privacy",
+    root: ROOT,
+    artifacts: {
+      "pii_artifacts.json": {
+        kind: "json",
+        value: sanitizeSecurityPrivacyArtifact(report.piiArtifacts),
+      },
+      "public_fields.json": {
+        kind: "json",
+        value: sanitizeSecurityPrivacyArtifact(report.publicFields),
+      },
+      "signed_urls.json": {
+        kind: "json",
+        value: sanitizeSecurityPrivacyArtifact(report.signedUrls),
+      },
+      "ai_sanitizer.json": {
+        kind: "json",
+        value: sanitizeSecurityPrivacyArtifact(report.aiSanitizer),
+      },
+      "secrets_scan.json": {
+        kind: "json",
+        value: sanitizeSecurityPrivacyArtifact(report.secretsScan),
+      },
+      "matrix.json": {
+        kind: "json",
+        value: withTerminalWriterMetadata(report.matrix, subjectSha),
+      },
+      "proof.md": { kind: "text", value: report.proof },
+    },
+  });
 }
 
 export function runSecurityPrivacyAudit(
   kind: "full" | "pii" | "public_fields" | "signed_urls" | "secrets",
-): void {
+  options: { writeCanonical?: boolean } = {},
+): RunScopedEvidenceResult | null {
   const report = buildSecurityPrivacyReport();
-  writeSecurityPrivacyArtifacts(report);
+  const writeCanonical =
+    options.writeCanonical ?? process.argv.includes("--write-canonical");
+  const runResult = writeCanonical
+    ? (writeSecurityPrivacyArtifacts(report), null)
+    : writeSecurityPrivacyRunArtifacts(report);
   const payload =
     kind === "pii"
       ? buildPiiArtifactsAudit()
@@ -346,4 +403,5 @@ export function runSecurityPrivacyAudit(
     (blocker) => blocker !== "full_jest_passed" && blocker !== "release_verify_passed",
   );
   if (hardBlockers.length > 0) process.exitCode = 1;
+  return runResult;
 }

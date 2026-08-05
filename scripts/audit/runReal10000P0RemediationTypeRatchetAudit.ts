@@ -7,8 +7,13 @@ import {
   scanUnsafeCastRatchetFindings,
   type UnsafeCastFinding,
 } from "../architecture_anti_regression_suite";
+import { resolveCanonicalOrJestEvidencePath } from "./runScopedEvidence";
 
-const ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_AUDIT_P0_REMEDIATION");
+const CANONICAL_ARTIFACT_DIR = path.join(process.cwd(), "artifacts", "S_REAL_10000_AUDIT_P0_REMEDIATION");
+
+function artifactDir(): string {
+  return resolveCanonicalOrJestEvidencePath(CANONICAL_ARTIFACT_DIR);
+}
 
 type TypeRatchetFileFinding = {
   path: string;
@@ -29,8 +34,9 @@ type RemovedUnsafeCast = {
 };
 
 function writeJson(name: string, value: unknown): void {
-  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(ARTIFACT_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  const outputDir = artifactDir();
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(path.join(outputDir, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 function findingsByFile(findings: readonly UnsafeCastFinding[]): TypeRatchetFileFinding[] {

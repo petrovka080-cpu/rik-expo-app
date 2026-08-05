@@ -3,11 +3,10 @@ import path from "path";
 
 import {
   buildObservabilityOpsReport,
+  observabilityOpsArtifactPath,
   writeObservabilityOpsArtifacts,
 } from "../../scripts/audit/observabilityOps.shared";
 import { containsSensitiveOpsText } from "../../src/lib/ops/productionOpsTelemetry";
-
-const repoRoot = path.resolve(__dirname, "../..");
 
 const REQUIRED_ARTIFACTS = [
   "artifacts/S_OBSERVABILITY_metrics_coverage.json",
@@ -28,7 +27,7 @@ describe("observability artifacts PII boundary", () => {
     );
 
     for (const artifact of REQUIRED_ARTIFACTS) {
-      const fullPath = path.join(repoRoot, artifact);
+      const fullPath = observabilityOpsArtifactPath(path.basename(artifact).replace("S_OBSERVABILITY_", ""));
       expect(fs.existsSync(fullPath)).toBe(true);
       const text = fs.readFileSync(fullPath, "utf8");
       expect(text).not.toContain("person@example.test");
@@ -42,7 +41,7 @@ describe("observability artifacts PII boundary", () => {
     }
 
     const matrix = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, "artifacts/S_OBSERVABILITY_matrix.json"), "utf8"),
+      fs.readFileSync(observabilityOpsArtifactPath("matrix.json"), "utf8"),
     ) as Record<string, unknown>;
     expect(matrix.final_status).toBe("GREEN_OBSERVABILITY_OPS_RATE_LIMIT_READY");
     expect(matrix.pii_in_logs_found).toBe(false);

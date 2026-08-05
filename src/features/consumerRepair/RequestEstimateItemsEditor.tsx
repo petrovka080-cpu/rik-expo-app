@@ -80,7 +80,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     const visibleRows = Math.min(this.state.visibleLimit, totalRows);
 
     return (
-      <View style={styles.wrap} testID="request-estimate-items-editor">
+      <View style={styles.wrap} testID="request-estimate-items-editor-content">
         <Text style={styles.heading}>{"\u041f\u043e\u0437\u0438\u0446\u0438\u0438"}</Text>
         {visibleSections.map((section) => (
           <View key={section.id} style={styles.section} testID={`request-estimate-section-${section.id}`}>

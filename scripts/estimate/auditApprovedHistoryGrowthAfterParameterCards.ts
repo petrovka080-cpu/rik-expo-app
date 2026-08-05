@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { Platform } from "react-native";
 
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import {
@@ -10,8 +11,10 @@ import {
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
   getConsumerRepairRequestPdf,
+  initializeConsumerRepairTransactionalDurableStorage,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
+import { flushTransactionalConsumerRepairWrites } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 
 export const GREEN_APPROVED_HISTORY_GROWTH_AFTER_PARAMETER_CARDS_READY =
   "GREEN_APPROVED_HISTORY_GROWTH_AFTER_PARAMETER_CARDS_READY" as const;
@@ -39,6 +42,11 @@ function writeJson(filePath: string, value: unknown): void {
 }
 
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
+  const originalPlatformOs = Platform.OS;
+  Object.defineProperty(Platform, "OS", {
+    configurable: true,
+    get: () => "web",
+  });
   const values = new Map<string, string>();
   let quotaBytes = Number.POSITIVE_INFINITY;
   const totalBytesWith = (key: string, value: string) => {
@@ -72,6 +80,10 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
     totalBytes,
     cleanup: () => {
       delete (globalThis as { localStorage?: Storage }).localStorage;
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        get: () => originalPlatformOs,
+      });
     },
   };
 }
@@ -127,7 +139,7 @@ function loadAllApprovedIds(userId: string): string[] {
   return ids;
 }
 
-export function auditApprovedHistoryGrowthAfterParameterCards(input: { writeSummary?: boolean } = {}) {
+export async function auditApprovedHistoryGrowthAfterParameterCards(input: { writeSummary?: boolean } = {}) {
   const storage = installQuotaLocalStorageMock();
   const userId = "approved-history-growth-runtime-user";
   try {
@@ -146,13 +158,17 @@ export function auditApprovedHistoryGrowthAfterParameterCards(input: { writeSumm
     const latestPdf = getConsumerRepairRequestPdf({ requestDraftId: latestId });
     const oldestPdf = getConsumerRepairRequestPdf({ requestDraftId: oldestId });
 
+    await flushTransactionalConsumerRepairWrites();
     __simulateConsumerRepairRequestStoreReloadForTests();
+    await initializeConsumerRepairTransactionalDurableStorage();
     const afterReload = listConsumerRepairApprovedHistory(userId, { limit: 20 });
     const allIdsAfterReload = loadAllApprovedIds(userId);
 
     storage.setQuota(storage.totalBytes() + 900_000);
     createHeavyStoragePressureDraft(userId);
+    await flushTransactionalConsumerRepairWrites();
     __simulateConsumerRepairRequestStoreReloadForTests();
+    await initializeConsumerRepairTransactionalDurableStorage();
     const afterCompaction = listConsumerRepairApprovedHistory(userId, { limit: 20 });
     const allIdsAfterCompaction = loadAllApprovedIds(userId);
     const records = afterCompaction.records;
@@ -214,7 +230,15 @@ export function auditApprovedHistoryGrowthAfterParameterCards(input: { writeSumm
 }
 
 if (require.main === module) {
-  const result = auditApprovedHistoryGrowthAfterParameterCards({ writeSummary: true });
-  console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
-  if (result.summary.final_status !== GREEN_APPROVED_HISTORY_GROWTH_AFTER_PARAMETER_CARDS_READY) process.exitCode = 1;
+  void auditApprovedHistoryGrowthAfterParameterCards({ writeSummary: true })
+    .then((result) => {
+      console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
+      if (result.summary.final_status !== GREEN_APPROVED_HISTORY_GROWTH_AFTER_PARAMETER_CARDS_READY) {
+        process.exitCode = 1;
+      }
+    })
+    .catch((error: unknown) => {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    });
 }

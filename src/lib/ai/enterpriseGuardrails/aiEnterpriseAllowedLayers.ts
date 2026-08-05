@@ -57,9 +57,21 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimateContinuousDetection",
+    root: "src/lib/ai/estimateContinuousDetection",
+    purpose: "Continuous estimate detection and governed draft projection across request, history, PDF, and buyer entrypoints.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimateEngine",
     root: "src/lib/ai/estimateEngine",
     purpose: "Construction estimate intent, quantity, and price composition with answer-first guards.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimatePricing",
+    root: "src/lib/ai/estimatePricing",
+    purpose: "Governed professional costing, verified rate binding, and explicit missing-price handling.",
     screenMayImportDirectly: false,
   },
   {
@@ -78,6 +90,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "estimateRouting",
     root: "src/lib/ai/estimateRouting",
     purpose: "Universal estimate intent routing, priority guard, prompt extraction, and backend estimate tool dispatch.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "expandedComplexWorks",
+    root: "src/lib/ai/expandedComplexWorks",
+    purpose: "Canonical complex-work families, parameter requirements, and professional WBS expansion metadata.",
     screenMayImportDirectly: false,
   },
   {
@@ -204,6 +222,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "professionalEstimateTemplates",
     root: "src/lib/ai/professionalEstimateTemplates",
     purpose: "Backend professional estimate template engine with group templates, work-specific recipes, governed pricebook binding, regional currency, and immutable snapshot parity.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "professionalEstimateCalculator",
+    root: "src/lib/ai/professionalEstimateCalculator",
+    purpose: "Canonical professional estimate quantity and WBS calculation shared by governed runtime entrypoints.",
     screenMayImportDirectly: false,
   },
   {

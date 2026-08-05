@@ -22,16 +22,12 @@ import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGene
 import { useOfficeRuntimeContextOptional } from "../../lib/officeRuntime/officeRuntimeContext";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportDirectorSubcontractReportPdf } from "../../lib/api/pdf_director";
-import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../../lib/developerOverride.constants";
 
 export function DirectorScreen() {
   const officeRuntimeContext = useOfficeRuntimeContextOptional();
-  const localDeveloperRuntimeReady =
-    officeRuntimeContext?.userId === LOCAL_DEVELOPER_ACTOR_USER_ID &&
-    officeRuntimeContext.role === "director";
   const vm = useDirectorScreenController({
     officeRuntimeReady: !!officeRuntimeContext,
-    localDeveloperRuntimeReady,
+    localDeveloperRuntimeReady: false,
     runtimeUserId: officeRuntimeContext?.userId ?? null,
   });
   const busy = useGlobalBusy();

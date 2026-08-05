@@ -45,7 +45,7 @@ describe("Android API34 proof environment", () => {
     expect(liveSmoke).toContain('execFileSync("git", ["rev-parse", "HEAD"]');
   });
 
-  it("accepts UI evidence only after the work-specific BOQ tokens are visible", () => {
+  it("accepts UI evidence only after semantic anchors and representative BOQ rows are visible", () => {
     const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
     const waitForCaseUi = liveSmoke.slice(
       liveSmoke.indexOf("async function waitForCaseUi"),
@@ -60,31 +60,79 @@ describe("Android API34 proof environment", () => {
     expect(waitForCaseUi).not.toContain('includes("request-estimate-top-proof")');
     expect(waitForCaseUi).not.toContain('includes("ai-estimate-action-proof")');
     expect(runAndroidCase).toContain(
-      "const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);",
+      "const missingTestIds = testCase.uiContract.requiredTestIds.filter",
     );
-    expect(liveSmoke).toContain('uiTokens: ["кабель", "розет", "pdf"]');
-    expect(liveSmoke).toContain('uiTokens: ["кров", "гидроизоля", "pdf"]');
-    expect(liveSmoke).toContain('uiTokens: ["кабель", "щит", "pdf"]');
+    expect(runAndroidCase).toContain(
+      "const missingRepresentativeTokens = testCase.uiContract.representativeTokens.filter",
+    );
+    expect(runAndroidCase).toContain(
+      "const uiRowsVisible = missingTestIds.length === 0 && missingRepresentativeTokens.length === 0;",
+    );
+    expect(liveSmoke).toContain(
+      'requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"]',
+    );
+    expect(liveSmoke).toContain('representativeTokens: ["кабель", "розет"]');
+    expect(liveSmoke).toContain('representativeTokens: ["кров", "гидроизоля"]');
+    expect(liveSmoke).toContain(
+      'requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"]',
+    );
+    expect(liveSmoke).toContain('representativeTokens: ["кабель", "щит"]');
     expect(liveSmoke).toContain("if (capture()) return snapshots.join");
     expect(liveSmoke).toContain("CASE_UI_SETTLE_MS = 40_000");
     expect(liveSmoke).toContain("CASE_UI_POLL_MS = 8_000");
     expect(liveSmoke).toContain("CASE_UI_MAX_POLLS = 3");
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
+    expect(liveSmoke).toContain('if (testCase.route === "/request")');
+    expect(liveSmoke).toContain(
+      "REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = CASE_UI_SETTLE_MS",
+    );
+    expect(liveSmoke).toContain("PROMPT_PROBE_POLL_MS = 4_000");
+    expect(liveSmoke).toContain(
+      'viewportSwipeArgs(adbPath, deviceId, "down", 400)',
+    );
+    const promptProbeLoop = liveSmoke.slice(
+      liveSmoke.indexOf("while (Date.now() < promptProbeDeadline"),
+      liveSmoke.indexOf("const failedPromptProbeArtifactId"),
+    );
+    expect(promptProbeLoop).not.toContain("shell\", \"input\", \"swipe");
   });
 
-  it("keeps the primary AI route in the native bundle instead of suspending forever on a route chunk", () => {
+  it("keeps the primary AI route behind a bounded Suspense fallback and readiness marker", () => {
     const aiRoute = read("app/(tabs)/ai.tsx");
 
-    expect(aiRoute).toContain('import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen"');
-    expect(aiRoute).not.toContain('React.lazy(() => import("../../src/features/ai/AIAssistantScreen"))');
+    expect(aiRoute).toContain('() => import("../../src/features/ai/AIAssistantScreen")');
+    expect(aiRoute).toContain("<React.Suspense fallback={<AiRouteLoadingFallback />}>");
+    expect(aiRoute).toContain("<RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />");
+    expect(aiRoute).toContain("<AIAssistantScreen");
+    expect(aiRoute).toContain("launchPayload={launchPayload}");
   });
 
-  it("creates a fresh request workspace when a warm deep link changes the estimate prompt", () => {
+  it("keeps the mounted request owner responsive while separating exact draft identities", () => {
     const requestRoute = read("app/(tabs)/request/index.tsx");
-
-    expect(requestRoute).toContain(
-      'key={`${prompt}::${autoPrepare ? "prepare" : "manual"}::${autoPdf ? "pdf" : "screen"}`}',
+    const requestOwner = read(
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
     );
+
+    expect(requestRoute).not.toContain("key={`${launchId");
+    expect(requestRoute).toContain("initialDraftId={draftId || undefined}");
+    expect(requestRoute).toContain("launchId={launchId}");
+    expect(requestOwner).toContain(
+      "prevProps.initialDraftId !== this.props.initialDraftId",
+    );
+    expect(requestOwner).toContain(
+      "this.state.bundle?.draft.id === nextDraftId",
+    );
+    expect(requestOwner).toContain(
+      "(launchChanged && isFreshRequestEstimateLaunchWorkspace(this.props))",
+    );
+    expect(requestOwner).toContain(
+      "includeWorkSuggestions: this.workSuggestionsEnabled",
+    );
+    expect(requestOwner).toContain(
+      'testID="request-estimate-runtime-ingress-composer"',
+    );
+    expect(requestOwner).toContain('testID="consumer-repair-problem-input"');
+    expect(requestOwner).toContain("editable={false}");
   });
 
   it("bounds editable request rows without truncating the professional BOQ", () => {

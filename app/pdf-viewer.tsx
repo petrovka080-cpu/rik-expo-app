@@ -12,6 +12,7 @@ import {
   touchDocumentSession,
   type DocumentAsset,
 } from "../src/lib/documents/pdfDocumentSessions";
+import { restoreWebPdfPreviewSession } from "../src/lib/documents/pdfWebPreviewCache";
 import { FALLBACK_ROUTE } from "../src/lib/pdf/pdfViewer.constants";
 import { getReadAccessParentUri } from "../src/lib/pdf/pdfViewerContract";
 import { normalizePdfViewerError } from "../src/lib/pdf/pdfViewer.error";
@@ -233,6 +234,12 @@ function PdfViewerScreen() {
 
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [chromeVisible, setChromeVisible] = React.useState(true);
+  const [webSessionRecoveryPending, setWebSessionRecoveryPending] =
+    React.useState(
+      viewerPlatform === "web"
+      && route.receivedSessionId
+      && !snapshot.session,
+    );
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -390,6 +397,7 @@ function PdfViewerScreen() {
       const cleanup = resolvePdfViewerWebRenderUriCleanup({
         platform: Platform.OS,
         uri: current,
+        ownedByViewer: false,
         commitState: options?.commitState,
       });
       if (
@@ -1059,27 +1067,47 @@ function PdfViewerScreen() {
     clearWebRenderUri();
     setChromeVisible(true);
     setMenuOpen(false);
-    const next = syncSnapshot();
-
-    if (!next.session) {
-      commitEmptyState();
-      return;
-    }
-
-    const activeSession = next.session;
-
-    touchDocumentSession(activeSession.sessionId);
-    setErrorText(activeSession.errorMessage || "");
-    setState(
-      resolvePdfViewerReadinessModel({
-        session: activeSession,
-        asset: next.asset,
-        platform: viewerPlatform,
-      }).initialState,
-    );
     let cancelled = false;
+    let activeSnapshot = syncSnapshot();
 
     const prepareViewer = async () => {
+      if (
+        !activeSnapshot.session
+        && viewerPlatform === "web"
+        && route.receivedSessionId
+        && sessionId
+      ) {
+        setWebSessionRecoveryPending(true);
+        try {
+          await restoreWebPdfPreviewSession(sessionId);
+        } catch (error) {
+          logPdfViewerError("[pdf-viewer] viewer_session_restore_failed", {
+            platform: Platform.OS,
+            sessionId,
+            error: redactSensitiveText(
+              error instanceof Error ? error.message : String(error),
+            ),
+          });
+        }
+        if (cancelled) return;
+        activeSnapshot = syncSnapshot();
+        setWebSessionRecoveryPending(false);
+      }
+      const activeSession = activeSnapshot.session;
+      if (!activeSession) {
+        commitEmptyState();
+        return;
+      }
+      const next = activeSnapshot;
+      touchDocumentSession(activeSession.sessionId);
+      setErrorText(activeSession.errorMessage || "");
+      setState(
+        resolvePdfViewerReadinessModel({
+          session: activeSession,
+          asset: next.asset,
+          platform: viewerPlatform,
+        }).initialState,
+      );
       const nextReadinessModel = resolvePdfViewerReadinessModel({
         session: activeSession,
         asset: next.asset,
@@ -1277,9 +1305,9 @@ function PdfViewerScreen() {
       cancelled = true;
       logPdfViewerInfo("[pdf-viewer] unmount", {
         sessionId,
-        documentType: next.asset?.documentType ?? null,
-        originModule: next.asset?.originModule ?? null,
-        scheme: getUriScheme(next.asset?.uri),
+        documentType: activeSnapshot.asset?.documentType ?? null,
+        originModule: activeSnapshot.asset?.originModule ?? null,
+        scheme: getUriScheme(activeSnapshot.asset?.uri),
       });
       clearLoadingTimeout();
       clearWebIframeReadyFallback();
@@ -1294,11 +1322,13 @@ function PdfViewerScreen() {
     handoffPdfPreview,
     markError,
     recordViewerBreadcrumb,
+    route.receivedSessionId,
     scheduleWebIframeReadyFallback,
     sessionId,
     setErrorText,
     setIsReadyToRender,
     setState,
+    setWebSessionRecoveryPending,
     setWebRenderUri,
     syncSnapshot,
     viewerPlatform,
@@ -1365,14 +1395,16 @@ function PdfViewerScreen() {
   );
   const contentModel = React.useMemo(
     () =>
-      resolvePdfViewerContentModel({
-        state,
-        errorText,
-        asset,
-        resolvedSource,
-        isReadyToRender,
-        hasRenderableSource,
-      }),
+      webSessionRecoveryPending
+        ? { kind: "loading" as const }
+        : resolvePdfViewerContentModel({
+            state,
+            errorText,
+            asset,
+            resolvedSource,
+            isReadyToRender,
+            hasRenderableSource,
+          }),
     [
       asset,
       errorText,
@@ -1380,6 +1412,7 @@ function PdfViewerScreen() {
       isReadyToRender,
       resolvedSource,
       state,
+      webSessionRecoveryPending,
     ],
   );
   const chromeModel = React.useMemo(

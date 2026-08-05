@@ -31,8 +31,6 @@ import {
 import { asphaltPublicSelectionLabelV4 } from "./asphaltProfessionalPresentationV4";
 import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./asphaltWorkSpecificParameterSchemaV4";
 import {
-  ASPHALT_PASSPORT_VERSION_V4,
-  ASPHALT_PROFESSIONAL_NAME_RU_V4,
   ASPHALT_WORK_ID_V4,
   asphaltParameterIdV4,
 } from "./asphaltV4Constants";
@@ -1166,7 +1164,3 @@ export function compileAsphaltProfessionalEstimateV4(
     quantity_basis: quantityBasis,
   };
 }
-
-export const ASPHALT_V4_RUNTIME_TEMPLATE_ID = `${ASPHALT_WORK_ID_V4}_professional_truth_v4_phase1` as const;
-export const ASPHALT_V4_RUNTIME_TEMPLATE_VERSION = ASPHALT_PASSPORT_VERSION_V4;
-export const ASPHALT_V4_RUNTIME_TITLE_RU = ASPHALT_PROFESSIONAL_NAME_RU_V4;

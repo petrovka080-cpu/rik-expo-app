@@ -58,6 +58,8 @@ describe("filePick", () => {
     const input = {
       type: "",
       accept: "",
+      multiple: false,
+      style: { display: "" },
       files: [{ name: "doc.pdf" }] as File[] | null,
       onchange: null as null | (() => void),
       click: jest.fn(() => {
@@ -69,6 +71,9 @@ describe("filePick", () => {
     };
     runtime.document = {
       createElement: jest.fn(() => input),
+      body: {
+        appendChild: jest.fn(),
+      },
     } as unknown as Document;
 
     const picked = await pickFileAny({ accept: ".pdf" });

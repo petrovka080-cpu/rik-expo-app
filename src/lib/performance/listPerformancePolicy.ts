@@ -138,13 +138,6 @@ export type ScrollViewMapBound = {
 
 export const SCROLLVIEW_MAP_BOUNDS = [
   {
-    file: "app/product/[id].tsx",
-    expression: "row.items.map",
-    owner: "market product owner",
-    boundProof: "Product detail renders item groups returned for one listing only.",
-    maxItemsProof: "Single product payload, not an unbounded feed.",
-  },
-  {
     file: "src/components/foreman/CalcModalContent.tsx",
     expression: "props.coreFields.map",
     owner: "foreman calc owner",
@@ -199,13 +192,6 @@ export const SCROLLVIEW_MAP_BOUNDS = [
     owner: "ai assistant owner",
     boundProof: "Ready proposal cards are controlled by the AI ready-products panel contract.",
     maxItemsProof: "Panel contract keeps proposal cards small and action-focused.",
-  },
-  {
-    file: "src/features/ai/AIAssistantScreen.tsx",
-    expression: "messages.map",
-    owner: "ai assistant owner",
-    boundProof: "AI assistant chat history is local persisted assistant state; production chat thread uses FlashList separately.",
-    maxItemsProof: "Assistant storage and response-smoke contracts keep this screen scoped to assistant context.",
   },
   {
     file: "src/features/ai/AIAssistantShortcutRows.tsx",

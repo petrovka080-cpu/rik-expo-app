@@ -134,6 +134,7 @@ export function isCorruptedText(value: unknown): boolean {
 
   return Boolean(
     decoded &&
+      !decoded.includes("\uFFFD") &&
       decoded !== src &&
       decoded !== collapsed &&
       scoreMojibake(decoded) < Math.max(rawScore, collapsedScore),

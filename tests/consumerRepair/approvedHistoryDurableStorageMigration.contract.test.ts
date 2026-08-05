@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   type ConsumerRepairDraftBundle,
   approveConsumerRepairRequestDraft,
@@ -31,6 +33,10 @@ import {
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../../src/lib/platform/consumerRepairDurableSavePolicy";
 import {
+  CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD,
+  isLargeConsumerRepairRevisionBundle,
+} from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import {
   CONSUMER_REPAIR_VALID_ADDRESS,
   CONSUMER_REPAIR_VALID_CITY,
   CONSUMER_REPAIR_VALID_PHONE,
@@ -45,7 +51,16 @@ type InstalledQuotaStorage = {
   cleanup: () => void;
 };
 
+const LOCAL_STORAGE_HISTORY_ROW_COUNT =
+  CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD - 1;
+const LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT = 200;
+
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
+  const originalPlatformOs = Platform.OS;
+  Object.defineProperty(Platform, "OS", {
+    configurable: true,
+    get: () => "web",
+  });
   const values = new Map<string, string>();
   let quotaBytes = Number.POSITIVE_INFINITY;
   const totalBytesWith = (key: string, value: string) => {
@@ -84,6 +99,10 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
       Array.from(values).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0),
     cleanup: () => {
       delete (globalThis as { localStorage?: Storage }).localStorage;
+      Object.defineProperty(Platform, "OS", {
+        configurable: true,
+        get: () => originalPlatformOs,
+      });
     },
   };
 }
@@ -208,20 +227,16 @@ describe("approved history durable storage migration", () => {
     const decodedCurrentRevision = decoded?.estimateRevisionState?.revisions.find((revision) =>
       revision.revision_id === decoded.estimateRevisionState?.current_revision_id
     );
-    const createdDraftRevision = created.estimateDraftRevisionState?.revisions.find((revision) =>
-      revision.revisionId === created.estimateDraftRevisionState?.currentRevisionId
-    );
-    const draftRevision = decoded?.estimateDraftRevisionState?.revisions.find((revision) =>
-      revision.revisionId === decoded.estimateDraftRevisionState?.currentRevisionId
-    );
-
     expect(stored.items).toBeUndefined();
     expect(stored.itemsCompactV1).toBeTruthy();
     expect(stored.editableEstimateSnapshot).toBeNull();
     expect(storedCurrentRevision?.editable_estimate_snapshot?.hash).toBe(created.editableEstimateSnapshot?.hash);
     expect(decoded?.editableEstimateSnapshot?.hash).toBe(decodedCurrentRevision?.editable_estimate_snapshot.hash);
-    expect(draftRevision?.boq.rows).toHaveLength(createdDraftRevision?.boq.rows.length ?? 0);
-    expect(draftRevision?.trace.rows).toEqual([]);
+    expect(decoded?.editableEstimateSnapshot?.rows).toHaveLength(
+      created.editableEstimateSnapshot?.rows.length ?? 0,
+    );
+    expect(decoded?.estimateDraftRevisionState).toBeNull();
+    expect(decoded?.estimateDraftSession).not.toBeNull();
   });
 
   it("migrates a legacy 13-record store and persists newly approved estimates after reload", () => {
@@ -278,7 +293,7 @@ describe("approved history durable storage migration", () => {
     expect(sampleDurableRecord.itemsCompactV1?.fields).not.toContain("priceSourceId");
   });
 
-  it("prunes old durable draft cache records before surfacing a localStorage quota failure", () => {
+  it("surfaces a localStorage quota failure without crashing when pruning cannot make the new record fit", () => {
     const userId = "durable-quota-prunes-drafts";
     for (let index = 0; index < 6; index += 1) {
       createConsumerRepairRequestDraft({
@@ -298,16 +313,16 @@ describe("approved history durable storage migration", () => {
       .filter((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX));
 
     expect(created.draft.id).toBeTruthy();
-    expect(storage?.values.has(`${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`)).toBe(true);
+    expect(storage?.values.has(`${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`)).toBe(false);
     expect(durableRecordKeys.length).toBeLessThan(7);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("uses an emergency compact current draft record instead of crashing when browser storage is fragmented", () => {
+  it("preserves the last valid current draft record when browser storage is fragmented", () => {
     const userId = "durable-quota-emergency-compact";
     storage?.seedBypassQuota("external.browser.cache", "x".repeat(12_000));
     const aiDraft = buildConsumerRepairAiDraft(
-      "вентфасад под ключ 1500 кв метров высота 40 м утепление 100 мм",
+      "Нужно уложить ламинат на 100 кв м в комнате",
     );
     const inflatedAiDraft = {
       ...aiDraft,
@@ -323,11 +338,12 @@ describe("approved history durable storage migration", () => {
 
     const created = createConsumerRepairRequestDraft({
       consumerUserId: userId,
-      problemText: "вентфасад под ключ 1500 кв метров",
+      problemText: "Нужно уложить ламинат на 100 кв м в комнате",
       aiDraft: inflatedAiDraft,
     });
     const recordKey = `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(created.draft.id)}`;
     const pressureBundle = getConsumerRepairRequest(created.draft.id);
+    expect(isLargeConsumerRepairRevisionBundle(pressureBundle)).toBe(false);
     const normalCompactRaw = safeJsonStringify(
       encodeConsumerRepairBundleForDurableStorage(compactConsumerRepairBundleForDurableStorage(pressureBundle)),
       "",
@@ -360,11 +376,11 @@ describe("approved history durable storage migration", () => {
     expect(created.draft.id).toBeTruthy();
     expect(storage?.values.has(recordKey)).toBe(true);
     expect(diagnostics.some((event) => event.eventType === CONSUMER_REPAIR_DURABLE_SAVE_DIAGNOSTIC_EVENT)).toBe(true);
-    expect(stored).not.toContain("oversizedRuntimeTrace");
+    expect(stored).toBe(currentRaw);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
   });
 
-  it("keeps the edited revision chain durable when quota pressure forces emergency compaction", () => {
+  it("keeps the last valid revision durable when quota pressure rejects the edited revision", () => {
     const userId = "durable-quota-edit-revision-chain";
     const aiDraft = buildConsumerRepairAiDraft(
       "РІРµРЅС‚С„Р°СЃР°Рґ РїРѕРґ РєР»СЋС‡ 1500 РєРІ РјРµС‚СЂРѕРІ РІС‹СЃРѕС‚Р° 40 Рј СѓС‚РµРїР»РµРЅРёРµ 100 РјРј",
@@ -406,6 +422,7 @@ describe("approved history durable storage migration", () => {
     );
     resetConsumerRepairDurableSaveDiagnosticsForTests();
     const currentRaw = storage?.values.get(recordKey) ?? "";
+    const lastValid = decodeConsumerRepairBundleFromDurableStorage(JSON.parse(currentRaw));
     const currentTotalBytes = storage?.totalBytes() ?? 0;
     const normalProjectedBytes =
       currentTotalBytes - recordKey.length - currentRaw.length + recordKey.length + normalCompactRaw.length;
@@ -426,20 +443,20 @@ describe("approved history durable storage migration", () => {
       revision.revision_id === decoded.estimateRevisionState?.current_revision_id
     );
 
-    expect(decoded?.items[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(decoded?.estimateRevisionState?.current_revision_id).toBe(edited.estimateRevisionState?.current_revision_id);
-    expect(decoded?.estimateRevisionState?.revisions.length).toBe(edited.estimateRevisionState?.revisions.length);
-    expect(decodedCurrentRevision?.rows_hash).toBe(edited.estimateRevisionState?.revisions.at(-1)?.rows_hash);
-    expect(decodedCurrentRevision?.editable_estimate_snapshot.rows[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(stored).not.toContain("oversizedRuntimeTrace");
+    expect(stored).toBe(currentRaw);
+    expect(decoded?.items[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
+    expect(decoded?.estimateRevisionState?.current_revision_id).toBe(lastValid?.estimateRevisionState?.current_revision_id);
+    expect(decoded?.estimateRevisionState?.revisions.length).toBe(lastValid?.estimateRevisionState?.revisions.length);
+    expect(decodedCurrentRevision?.rows_hash).toBe(lastValid?.estimateRevisionState?.revisions.at(-1)?.rows_hash);
+    expect(decodedCurrentRevision?.editable_estimate_snapshot.rows[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const rehydrated = getConsumerRepairRequest(created.draft.id);
 
-    expect(rehydrated.items[0]?.quantity).toBe(edited.items[0]?.quantity);
-    expect(rehydrated.estimateRevisionState?.current_revision_id).toBe(edited.estimateRevisionState?.current_revision_id);
+    expect(rehydrated.items[0]?.quantity).toBe(lastValid?.items[0]?.quantity);
+    expect(rehydrated.estimateRevisionState?.current_revision_id).toBe(lastValid?.estimateRevisionState?.current_revision_id);
     expect(rehydrated.estimateRevisionState?.revisions.at(-1)?.rows_hash).toBe(
-      edited.estimateRevisionState?.revisions.at(-1)?.rows_hash,
+      lastValid?.estimateRevisionState?.revisions.at(-1)?.rows_hash,
     );
   });
 
@@ -453,7 +470,7 @@ describe("approved history durable storage migration", () => {
       const approved = createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `Нужно уложить ламинат на ${100 + index} кв м в комнате`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
       approvedBundles.push(approved);
     }
@@ -464,7 +481,9 @@ describe("approved history durable storage migration", () => {
       problemText: "Нужно уложить ламинат на 220 кв м в комнате",
       aiDraft: buildConsumerRepairAiDraft("Нужно уложить ламинат на 220 кв м в комнате"),
     });
-    const activeHeavy = saveConsumerRepairBundle(inflateBundleItems(active, 500));
+    const activeHeavy = saveConsumerRepairBundle(
+      inflateBundleItems(active, LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT),
+    );
     const preparedEdit = prepareConsumerRepairRequestItemQuantityUpdate({
       requestDraftId: activeHeavy.draft.id,
       itemId: activeHeavy.items[0]!.id,
@@ -472,6 +491,7 @@ describe("approved history durable storage migration", () => {
       operationId: "quota-pressure-edit-op",
       source: "stepper",
     });
+    expect(isLargeConsumerRepairRevisionBundle(preparedEdit)).toBe(false);
     const activeRecordKey =
       `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(activeHeavy.draft.id)}`;
     const oldestApproved = approvedBundles[0]!;
@@ -491,15 +511,21 @@ describe("approved history durable storage migration", () => {
       JSON.parse(storage?.values.get(oldestRecordKey) ?? "{}"),
     );
     const diagnostics = getConsumerRepairDurableSaveDiagnosticsForTests();
+    const preparedEditedItem = preparedEdit.items[0];
+    const decodedEditedItem = decodedActive?.items.find(
+      (item) => item.id === preparedEditedItem?.id,
+    );
 
     expect(edited.events.some((event) =>
       String(event.payload?.reason ?? "").includes("memory_only")
     )).toBe(false);
-    expect(decodedActive?.items[0]?.quantity).toBe(preparedEdit.items[0]?.quantity);
+    expect(decodedEditedItem?.quantity).toBe(preparedEditedItem?.quantity);
     expect(decodedActive?.estimateRevisionState?.current_revision_id)
       .toBe(preparedEdit.estimateRevisionState?.current_revision_id);
     expect(decodedOldest?.items).toHaveLength(0);
-    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(500);
+    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(decodedOldest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
     expect(diagnostics.some((event) =>
       String(event.reason).includes("memory_only")
@@ -509,8 +535,10 @@ describe("approved history durable storage migration", () => {
     const history = listConsumerRepairApprovedHistory(userId, { limit: 20 });
 
     expect(history.totalApprovedCount).toBe(30);
-    expect(history.records[0]?.rowCount).toBe(500);
-    expect(history.records.at(-1)?.rowCount).toBe(500);
+    expect(history.records[0]?.rowCount).toBe(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    expect(history.records.at(-1)?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(history.totalCountSource).toBe("durable_store");
   });
 
@@ -524,7 +552,7 @@ describe("approved history durable storage migration", () => {
       latestApproved = createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `РќСѓР¶РЅР° СЃРјРµС‚Р° РґР»СЏ С‚СЏР¶РµР»РѕР№ РёСЃС‚РѕСЂРёРё ${index}`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
     }
 
@@ -565,7 +593,7 @@ describe("approved history durable storage migration", () => {
       approvedBundles.push(createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `РќСѓР¶РЅРѕ СЃРѕС…СЂР°РЅРёС‚СЊ Android history snapshot ${index}`,
-        rowCount: 500,
+        rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       }));
     }
 
@@ -581,15 +609,19 @@ describe("approved history durable storage migration", () => {
     );
 
     expect(decodedOldest?.items).toHaveLength(0);
-    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(500);
+    expect(decodedOldest?.durableHistorySummary?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
     expect(decodedOldest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
-    expect(decodedNewest?.items).toHaveLength(500);
+    expect(decodedNewest?.items).toHaveLength(LOCAL_STORAGE_HISTORY_ROW_COUNT);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const history = listConsumerRepairApprovedHistory(userId, { limit: 10 });
 
     expect(history.totalApprovedCount).toBe(10);
-    expect(history.records[0]?.rowCount).toBe(500);
-    expect(history.records.at(-1)?.rowCount).toBe(500);
+    expect(history.records[0]?.rowCount).toBe(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    expect(history.records.at(-1)?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
   });
 });

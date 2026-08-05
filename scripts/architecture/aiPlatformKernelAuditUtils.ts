@@ -88,10 +88,22 @@ export function newestSummary<T>(dir: string, predicate: (summary: T) => boolean
 }
 
 export function currentGitState() {
+  const branch = gitOutput(["branch", "--show-current"]);
+  let upstreamSync: string;
+  try {
+    upstreamSync = gitOutput([
+      "rev-list",
+      "--left-right",
+      "--count",
+      "@{u}...HEAD",
+    ]).replace(/\s+/g, " ");
+  } catch {
+    upstreamSync = branch ? "NO_UPSTREAM_BRANCH" : "NO_UPSTREAM_DETACHED";
+  }
   return {
     source_sha: gitOutput(["rev-parse", "HEAD"]),
-    branch: gitOutput(["branch", "--show-current"]),
-    upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]).replace(/\s+/g, " "),
+    branch: branch || "DETACHED",
+    upstream_sync: upstreamSync,
   };
 }
 

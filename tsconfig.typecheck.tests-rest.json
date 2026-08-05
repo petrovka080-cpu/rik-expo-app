@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/typecheck/tests-rest.tsbuildinfo"
+  },
+  "include": [
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    ".release-runtime/**/*",
+    ".tmp/**/*",
+    "artifacts/**/*",
+    "diagnostics/**/*",
+    "diagnostics/archive/migrated/**/*",
+    "migrated/**/*",
+    "scripts/diagnostics/root-legacy/**/*",
+    "tmp/**/*",
+    "tests/ai/**/*",
+    "tests/api/**/*",
+    "tests/architecture/**/*",
+    "tests/e2e/**/*"
+  ]
+}

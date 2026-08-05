@@ -1,0 +1,637 @@
+{
+  "schema": "verification-flatlist-runtime-inventory:v1",
+  "scanner_sha256": "2987fb0a47ec43510256f4d4d6831458472e64cc1df56ecf7d47f62efb812ade",
+  "generated_at_excluded_from_content_hash": true,
+  "summary": {
+    "runtime_instances": 62,
+    "flat_list_instances": 8,
+    "flash_list_instances": 54,
+    "tuned_instances": 34,
+    "allowlisted_instances": 28,
+    "violations": 0
+  },
+  "instances": [
+    {
+      "file": "src/components/AppCombo.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/components/foreman/CalcModalContent.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": false
+    },
+    {
+      "file": "src/components/foreman/CatalogModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/components/WorkMaterialsEditor.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/auctions/AuctionsScreen.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/chat/ChatScreen.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairHistory.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/accountant/components/AccountantListSection.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerItemEditor.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerItemEditor.tsx",
+      "ordinal": 2,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMainList.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "ordinal": 2,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/contractor/components/ActBuilderModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/contractor/components/ContractorOtherWorksList.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/contractor/components/EstimateMaterialsModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/contractor/components/WorkStagePickerModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "ordinal": 2,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "ordinal": 3,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorDashboardHeader.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceDebtModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceKindSuppliersModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceSpendModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceSupplierModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorProposalSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "ordinal": 2,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "ordinal": 3,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "ordinal": 4,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "ordinal": 5,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorRequestSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/director/DirectorSubcontractTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanDraftModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanDropdown.tsx",
+      "ordinal": 1,
+      "kind": "FlatList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanHistoryModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractDraftSections.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractHistoryModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractTab.sections.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/IncomingDetailsSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/IncomingItemsSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/IssueDetailsSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/PickOptionSheet.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/ReqIssueModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseIncomingTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseIssueTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseRecipientModal.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+      "ordinal": 2,
+      "kind": "FlashList",
+      "status": "allowlisted",
+      "has_initial_num_to_render": false,
+      "has_max_to_render_per_batch": false,
+      "has_window_size": false,
+      "has_key_extractor": true
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseStockTab.tsx",
+      "ordinal": 1,
+      "kind": "FlashList",
+      "status": "tuned",
+      "has_initial_num_to_render": true,
+      "has_max_to_render_per_batch": true,
+      "has_window_size": true,
+      "has_key_extractor": true
+    }
+  ],
+  "generated_at": "2026-08-03T14:35:47.238Z",
+  "content_sha256": "ca7bf1049168a352d8d10b1a6a156084bb2b0e92cce3be5ac68c2b3e7ee9c22e"
+}

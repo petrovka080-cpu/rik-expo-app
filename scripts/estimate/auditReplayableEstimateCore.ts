@@ -32,6 +32,8 @@ export type ReplayableCoreCaseResult = {
   costing_hash: string;
   pdf_package_hash: string;
   buyer_handoff_hash: string;
+  replay_mode: "CANONICAL_RESOLVED_IDENTITY" | "LEGACY_REPLAY_MIGRATION";
+  new_revision_prompt_fallback_used: false;
   passed: boolean;
   drift_detected: boolean;
   blockers: string[];
@@ -94,6 +96,8 @@ export function runReplayableEstimateCoreAudit(options: {
       costing_hash: record.hashes.costing_hash,
       pdf_package_hash: record.hashes.pdf_package_hash,
       buyer_handoff_hash: record.hashes.buyer_handoff_hash,
+      replay_mode: replay.replayMode,
+      new_revision_prompt_fallback_used: replay.newRevisionPromptFallbackUsed,
       passed: blockers.length === 0,
       drift_detected: replay.comparison.drift_detected,
       blockers,
@@ -101,12 +105,22 @@ export function runReplayableEstimateCoreAudit(options: {
   });
   const passedCases = caseResults.filter((item) => item.passed).length;
   const driftCount = caseResults.filter((item) => item.drift_detected).length;
+  const legacyFallbackCount = caseResults.filter((item) =>
+    item.replay_mode === "LEGACY_REPLAY_MIGRATION"
+  ).length;
+  const newRevisionPromptFallbackCount = caseResults.filter((item) =>
+    item.new_revision_prompt_fallback_used
+  ).length;
   const categoryCoverage = Array.from(new Set(caseResults.map((item) => item.category))).sort();
   const blockers = [
     corpus.valid ? "" : `corpus:${corpus.failures.join("|")}`,
     selectedCases.length >= corpus.replay_cases_required ? "" : `replay_cases_total_below_required:${selectedCases.length}/${corpus.replay_cases_required}`,
     passedCases === selectedCases.length ? "" : "replay_case_failure",
     driftCount === 0 ? "" : "unexpected_drift_detected",
+    legacyFallbackCount === 0 ? "" : `new_record_legacy_fallback_used:${legacyFallbackCount}`,
+    newRevisionPromptFallbackCount === 0
+      ? ""
+      : `new_revision_prompt_fallback_used:${newRevisionPromptFallbackCount}`,
     categoryCoverage.includes("approved_history") ? "" : "approved_history_coverage_missing",
     categoryCoverage.includes("foreman") ? "" : "foreman_coverage_missing",
     categoryCoverage.includes("pdf_buyer") ? "" : "pdf_buyer_coverage_missing",
@@ -133,6 +147,11 @@ export function runReplayableEstimateCoreAudit(options: {
     replay_cases_passed_label: `${passedCases}/${selectedCases.length}`,
     all_replay_records_have_snapshot: true,
     all_replay_records_have_version_lineage: true,
+    all_new_replay_records_have_resolved_identity: caseResults.every((item) =>
+      item.replay_mode === "CANONICAL_RESOLVED_IDENTITY"
+    ),
+    legacy_fallback_usage_count: legacyFallbackCount,
+    new_revision_prompt_fallback_count: newRevisionPromptFallbackCount,
     all_hashes_match: driftCount === 0,
     silent_drift_count: driftCount,
     silent_drift_rejected: true,

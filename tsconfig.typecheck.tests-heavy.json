@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".cache/typecheck/tests-heavy.tsbuildinfo"
+  },
+  "include": [
+    "tests/ai/**/*.ts",
+    "tests/ai/**/*.tsx",
+    "tests/api/**/*.ts",
+    "tests/api/**/*.tsx",
+    "tests/architecture/**/*.ts",
+    "tests/architecture/**/*.tsx",
+    "tests/e2e/**/*.ts",
+    "tests/e2e/**/*.tsx"
+  ]
+}

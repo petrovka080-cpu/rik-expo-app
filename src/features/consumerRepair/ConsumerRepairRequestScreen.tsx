@@ -1,10 +1,10 @@
 import React from "react";
 import { router } from "expo-router";
-import type { TextInput } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
-  deleteConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf,
+  deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
   selectConsumerRepairRoadScopeV4,
@@ -17,23 +17,28 @@ import type {
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
-import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
-import { recognizeConsumerRepairPhotoMaterial } from "../../lib/ai/photoMaterialDraftRecognition";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
+import {
+  markRequestEstimateIntentStage,
+  requestEstimateIntentLifecycle,
+} from "../../lib/navigation/requestEstimateLaunchLifecycle";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
-import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
+import { composeConsumerRepairDraftAnswerRu } from "./consumerRepairDraftAnswer";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
   type ConsumerRepairQuantityChangeMeta,
 } from "./consumerRepairQuantityEditTrace";
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
+import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
+  buildEstimateDraftSessionTransitionStatusMessage,
   buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
@@ -42,7 +47,7 @@ import {
   saveProjectExecutionDraftForRequest,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
-  selectedWorkFromBundle, shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
+  shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 
@@ -78,7 +83,11 @@ function applyVisibleQuantityDraft(
 }
 
 function runAfterNextPaint(task: () => void): void {
-  setTimeout(task, 0);
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(task);
+    return;
+  }
+  void Promise.resolve().then(task);
 }
 
 function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boolean {
@@ -90,61 +99,317 @@ function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boo
 }
 
 type State = ConsumerRepairRequestScreenState;
-export type ConsumerRepairRequestScreenProps = { initialProblemText?: string; autoPrepare?: boolean; autoPdf?: boolean; };
+export type ConsumerRepairRequestScreenProps = {
+  initialProblemText?: string;
+  initialDraftId?: string;
+  launchFingerprint?: string;
+  launchId?: string;
+  autoPrepare?: boolean;
+  autoPdf?: boolean;
+};
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
 
+export function isFreshRequestEstimateLaunchWorkspace(
+  props: ConsumerRepairRequestScreenProps,
+): boolean {
+  return Boolean(
+    props.launchId?.trim() &&
+    props.initialProblemText?.trim() &&
+    !props.initialDraftId?.trim()
+  );
+}
+
 function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenControllerProps): boolean {
-  return shouldAutoPrepareInitialConsumerRepairRequest(props);
+  return Boolean(
+    shouldAutoPrepareInitialConsumerRepairRequest(props) ||
+    isFreshRequestEstimateLaunchWorkspace(props)
+  );
 }
 
 function buildInitialControllerState(props: ConsumerRepairRequestScreenControllerProps): State {
   if (shouldDeferInitialHistoryLoad(props)) {
     return buildInitialConsumerRepairRequestState({
       initialProblemText: props.initialProblemText,
+      initialDraftId: props.initialDraftId,
       history: [],
       approvedHistoryPage: buildEmptyConsumerRepairApprovedHistoryPage(),
     });
   }
   return buildInitialConsumerRepairRequestState({
     initialProblemText: props.initialProblemText,
+    initialDraftId: props.initialDraftId,
     history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
     approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
   });
 }
 
 export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRepairRequestScreenProps): boolean {
+  // Once a route is bound to an exact draft, that identity is authoritative.
+  // The prompt may remain in the URL as provenance, but it must never create a
+  // second draft during the route remount caused by binding `draftId`.
+  if (props.initialDraftId?.trim()) return false;
+  if (
+    props.launchId?.trim() &&
+    props.initialProblemText?.trim() &&
+    !props.autoPrepare &&
+    !props.autoPdf
+  ) {
+    return false;
+  }
   return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
+}
+
+export function isRequestEstimateLaunchBundleRendered(input: {
+  bundle: ConsumerRepairDraftBundle;
+  expectedPrompt: string | null | undefined;
+  renderedBundleId: string | null | undefined;
+}): boolean {
+  const expectedPrompt = input.expectedPrompt?.trim() ?? "";
+  return Boolean(
+    expectedPrompt &&
+    input.renderedBundleId === input.bundle.draft.id &&
+    input.bundle.draft.problemText?.trim() === expectedPrompt,
+  );
+}
+
+export function isRequestEstimatePromptComposerRendered(input: {
+  bundle: ConsumerRepairDraftBundle | null;
+  problemText: string;
+  expectedPrompt: string | null | undefined;
+}): boolean {
+  const expectedPrompt = input.expectedPrompt?.trim() ?? "";
+  return Boolean(
+    expectedPrompt &&
+    input.bundle == null &&
+    input.problemText.trim() === expectedPrompt,
+  );
 }
 
 export class ConsumerRepairRequestScreenController extends React.Component<ConsumerRepairRequestScreenControllerProps, State> {
   private initialDeepLinkApplied = false;
+  private launchIntentAcknowledged = false;
+  private cachedScreenViewState: State | null = null;
+  private cachedScreenView: React.ReactElement | null = null;
   private historyLoaded = !shouldDeferInitialHistoryLoad(this.props);
+  private workSuggestionsEnabled =
+    !isFreshRequestEstimateLaunchWorkspace(this.props);
+  private runtimeIngressProjection: {
+    launchId: string;
+    prompt: string;
+  } | null = null;
+  private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
-    runAfterNextPaint(() => this.applyInitialDeepLinkFlow());
+    this.syncRuntimeIngressProjection();
+    this.unsubscribeRuntimeLaunch =
+      requestEstimateIntentLifecycle.subscribe(
+        this.syncRuntimeIngressProjection,
+      );
+    runAfterNextPaint(() => this.applyInitialLaunchFlow());
+  }
+  componentWillUnmount(): void {
+    this.unsubscribeRuntimeLaunch?.();
+    this.unsubscribeRuntimeLaunch = null;
   }
   componentDidUpdate(prevProps: ConsumerRepairRequestScreenControllerProps): void {
-    if (prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
-      this.initialDeepLinkApplied = false;
-      const nextProblemText = this.props.initialProblemText?.trim();
-      if (nextProblemText && nextProblemText !== this.state.problemText) {
-        this.setState({ problemText: nextProblemText, validationErrors: [] }, () => this.applyInitialDeepLinkFlow());
+    const launchChanged = prevProps.launchId !== this.props.launchId;
+    const draftChanged =
+      prevProps.initialDraftId !== this.props.initialDraftId;
+    if (
+      launchChanged &&
+      isFreshRequestEstimateLaunchWorkspace(this.props)
+    ) {
+      this.workSuggestionsEnabled = false;
+    }
+    if (launchChanged) {
+      this.launchIntentAcknowledged = false;
+    }
+    if (draftChanged) {
+      const nextDraftId = this.props.initialDraftId?.trim();
+      const currentDraftAlreadyRendered =
+        nextDraftId && this.state.bundle?.draft.id === nextDraftId;
+      if (!currentDraftAlreadyRendered) {
+        this.initialDeepLinkApplied = false;
+        this.setState(
+          buildInitialControllerState(this.props),
+          () => runAfterNextPaint(() => this.applyInitialLaunchFlow()),
+        );
         return;
       }
-      this.applyInitialDeepLinkFlow();
+    }
+    if (launchChanged || prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
+      this.initialDeepLinkApplied = false;
+      const nextProblemText = this.props.initialProblemText?.trim();
+      if (
+        nextProblemText &&
+        (
+          (launchChanged && isFreshRequestEstimateLaunchWorkspace(this.props)) ||
+          nextProblemText !== this.state.problemText ||
+          (launchChanged && this.state.bundle != null)
+        )
+      ) {
+        this.setState(
+          {
+            problemText: nextProblemText,
+            bundle: null,
+            aiAnswerRu: null,
+            selectedWork: null,
+            selectedHistoryId: null,
+            validationErrors: [],
+            statusMessage: null,
+          },
+          () => runAfterNextPaint(() => this.applyInitialLaunchFlow()),
+        );
+        return;
+      }
+      runAfterNextPaint(() => this.applyInitialLaunchFlow());
     }
   }
-  private applyInitialDeepLinkFlow() {
+  refreshAfterDurableHydration(): void {
+    const hydrated = buildInitialConsumerRepairRequestState({
+      initialProblemText: this.props.initialProblemText,
+      initialDraftId: this.props.initialDraftId,
+      history: listConsumerRepairRequestHistory(CONSUMER_USER_ID),
+      approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID),
+    });
+    const freshLaunchWorkspace =
+      isFreshRequestEstimateLaunchWorkspace(this.props);
+    const expectedPrompt = this.props.initialProblemText?.trim() ?? "";
+    this.historyLoaded = true;
+    this.setState((current) => {
+      const currentBundleOwnsFreshLaunch = Boolean(
+        freshLaunchWorkspace &&
+        current.bundle?.draft.problemText?.trim() === expectedPrompt,
+      );
+      if (freshLaunchWorkspace) {
+        return {
+          ...current,
+          history: hydrated.history,
+          approvedHistoryPage: hydrated.approvedHistoryPage,
+          bundle: currentBundleOwnsFreshLaunch ? current.bundle : null,
+          problemText: currentBundleOwnsFreshLaunch
+            ? current.problemText
+            : expectedPrompt,
+          aiAnswerRu: currentBundleOwnsFreshLaunch ? current.aiAnswerRu : null,
+          selectedWork: currentBundleOwnsFreshLaunch
+            ? current.selectedWork
+            : null,
+          selectedHistoryId: null,
+          validationErrors: currentBundleOwnsFreshLaunch
+            ? current.validationErrors
+            : [],
+          statusMessage: currentBundleOwnsFreshLaunch
+            ? current.statusMessage
+            : null,
+        };
+      }
+      return {
+        ...current,
+        history: hydrated.history,
+        approvedHistoryPage: hydrated.approvedHistoryPage,
+        bundle: current.bundle ?? hydrated.bundle,
+        problemText: current.bundle || !hydrated.bundle
+          ? current.problemText
+          : "",
+        statusMessage: current.bundle || !hydrated.bundle
+          ? current.statusMessage
+          : hydrated.statusMessage,
+      };
+    });
+  }
+  private applyInitialLaunchFlow(): void {
+    if (shouldAutoPrepareInitialConsumerRepairRequest(this.props)) {
+      this.applyInitialDeepLinkFlow();
+      return;
+    }
+    this.acknowledgePromptComposerLaunch();
+  }
+  private syncRuntimeIngressProjection = (): void => {
+    const pending = requestEstimateIntentLifecycle.getPending();
+    const prompt =
+      pending?.target.payload.route === "/request"
+        ? pending.target.payload.parameters.prompt?.trim() ?? ""
+        : "";
+    const nextProjection =
+      pending &&
+      prompt &&
+      pending.target.payload.launchId !== this.props.launchId &&
+      pending.stage !== "INTENT_RECEIVED" &&
+      pending.stage !== "URL_PARSED" &&
+      pending.stage !== "AUTH_PENDING"
+        ? {
+            launchId: pending.target.payload.launchId,
+            prompt,
+          }
+        : null;
+    if (
+      this.runtimeIngressProjection?.launchId === nextProjection?.launchId &&
+      this.runtimeIngressProjection?.prompt === nextProjection?.prompt
+    ) {
+      return;
+    }
+    this.runtimeIngressProjection = nextProjection;
+    this.forceUpdate();
+  };
+  private acknowledgePromptComposerLaunch(): void {
+    if (this.initialDeepLinkApplied) return;
+    const launchId = this.props.launchId?.trim();
+    const expectedPrompt = this.props.initialProblemText?.trim();
+    if (!launchId || !expectedPrompt || this.props.initialDraftId?.trim()) return;
+    if (!isRequestEstimatePromptComposerRendered({
+      bundle: this.state.bundle,
+      problemText: this.state.problemText,
+      expectedPrompt,
+    })) {
+      return;
+    }
+    this.initialDeepLinkApplied = true;
+    const payload = {
+      launchId,
+      route: "/request" as const,
+      fingerprint: this.props.launchFingerprint,
+    };
+    if (!markRequestEstimateIntentStage(launchId, "DRAFT_SESSION_READY")) {
+      return;
+    }
+    recordRequestEstimateLaunchStage({
+      stage: "DRAFT_SESSION_READY",
+      payload,
+      detail: {
+        draftSessionStatus: "PROMPT_COMPOSER_READY",
+      },
+    });
+    if (!markRequestEstimateIntentStage(launchId, "UI_READY")) return;
+    recordRequestEstimateLaunchStage({
+      stage: "UI_READY",
+      payload,
+      detail: {
+        projection: "request_prompt_composer",
+        promptVisible: true,
+      },
+    });
+    if (!markRequestEstimateIntentStage(launchId, "INTENT_ACKNOWLEDGED")) {
+      return;
+    }
+    recordRequestEstimateLaunchStage({
+      stage: "INTENT_ACKNOWLEDGED",
+      payload,
+    });
+    this.launchIntentAcknowledged = true;
+  }
+  private applyInitialDeepLinkFlow(): void {
     if (this.initialDeepLinkApplied) return;
     if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
-    if (!this.state.problemText.trim()) return;
+    const launchProblemText =
+      this.props.initialProblemText?.trim() || this.state.problemText.trim();
+    if (!launchProblemText) return;
     this.initialDeepLinkApplied = true;
-    const bundle = this.buildDraftBundle();
+    const bundle = this.buildDraftBundle(launchProblemText);
     if (!this.props.autoPdf) return;
     try {
-      const pdfBundle = generateConsumerRepairRequestPdfForDraft({
+      const pdfBundle = ensureConsumerRepairRequestPdfAvailable({
         requestDraftId: bundle.draft.id,
         userId: CONSUMER_USER_ID,
       });
@@ -178,30 +443,98 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
       ?? null;
   }
-  private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const { bundle, selectedWork, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+  private buildDraftBundle(problemTextOverride?: string): ConsumerRepairDraftBundle {
+    const isLaunchBuild = Boolean(problemTextOverride?.trim());
+    const sourceProblemText = problemTextOverride?.trim() || this.state.problemText;
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
-      problemText: this.state.problemText,
+      problemText: sourceProblemText,
       repairType: this.state.repairType,
       city: this.state.city,
       addressText: this.state.addressText,
       preferredTimeText: this.state.preferredTimeText,
       contactPhone: this.state.contactPhone,
-      selectedWork: this.state.selectedWork,
+      // A launch payload is a complete new WorkIntent. It must never inherit a
+      // catalog binding left in the already-mounted composer.
+      selectedWork: isLaunchBuild ? null : this.state.selectedWork,
     });
+    const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+    const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+    this.historyLoaded = true;
     this.setState({
       problemText: "",
-      selectedWork: selectedWork ?? selectedWorkFromBundle(bundle),
+      // The created bundle owns its explicit work selection. The composer is a
+      // separate future draft session and must not inherit that WorkIntent.
+      selectedWork: null,
       bundle,
+      history,
+      approvedHistoryPage,
       aiAnswerRu: composeConsumerRepairDraftAnswerRu(aiDraft),
       validationErrors: [],
       selectedHistoryId: null,
       statusMessage: aiDraft.dangerousDiyBlocked
         ? "Опасный ремонт не описан как DIY. Подготовлена заявка специалисту."
-        : "Черновик подготовлен. Можно набрать следующую смету.",
+        : bundle.pendingRoadScopeSelection
+          ? "Выберите состав дорожных работ, затем смета будет рассчитана."
+          : "Черновик подготовлен. Можно набрать следующую смету.",
+    }, () => {
+      this.acknowledgeLaunchIntent(bundle);
+      if (isLaunchBuild) {
+        // Binding the durable draft back to the route is intentionally after
+        // the UI commit/ACK. A same-route setParams must not sit on the
+        // critical path between the visible estimate and its lifecycle proof.
+        runAfterNextPaint(() => router.setParams({ draftId: bundle.draft.id }));
+      }
     });
-    this.refreshHistory(bundle);
+    if (!isLaunchBuild) {
+      router.setParams({ draftId: bundle.draft.id });
+    }
     return bundle;
+  }
+  private acknowledgeLaunchIntent(bundle: ConsumerRepairDraftBundle): void {
+    const launchId = this.props.launchId?.trim();
+    if (!launchId || this.launchIntentAcknowledged) return;
+    const payload = {
+      launchId,
+      route: "/request" as const,
+      fingerprint: this.props.launchFingerprint,
+    };
+    if (!markRequestEstimateIntentStage(launchId, "DRAFT_SESSION_READY")) {
+      return;
+    }
+    recordRequestEstimateLaunchStage({
+      stage: "DRAFT_SESSION_READY",
+      payload,
+      detail: {
+        draftSessionStatus: bundle.estimateDraftSession?.status ?? "missing",
+      },
+    });
+    if (
+      !isRequestEstimateLaunchBundleRendered({
+        bundle,
+        expectedPrompt: this.props.initialProblemText,
+        renderedBundleId: this.state.bundle?.draft.id,
+      })
+    ) {
+      return;
+    }
+    if (!markRequestEstimateIntentStage(launchId, "UI_READY")) return;
+    recordRequestEstimateLaunchStage({
+      stage: "UI_READY",
+      payload,
+      detail: {
+        projection: "request_estimate_bundle",
+        promptVisible: true,
+      },
+    });
+    if (!markRequestEstimateIntentStage(launchId, "INTENT_ACKNOWLEDGED")) {
+      return;
+    }
+    recordRequestEstimateLaunchStage({
+      stage: "INTENT_ACKNOWLEDGED",
+      payload,
+    });
+    this.launchIntentAcknowledged = true;
   }
   private ensureDraftBundle(): ConsumerRepairDraftBundle {
     return this.state.bundle ?? this.buildDraftBundle();
@@ -225,6 +558,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       validationErrors: [],
     });
 
+    const { recognizeConsumerRepairPhotoMaterial } = await import(
+      "../../lib/ai/photoMaterialDraftRecognition"
+    );
     const recognition = await recognizeConsumerRepairPhotoMaterial({
       scanId: result.scanId,
       asset: result.asset,
@@ -428,13 +764,35 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     throw error;
   }
   private prepareDraft = () => {
-    if (!this.state.problemText.trim()) {
+    const currentRevision =
+      this.state.bundle?.estimateDraftRevisionState?.revisions.find(
+        (revision) =>
+          revision.revisionId ===
+          this.state.bundle?.estimateDraftRevisionState?.currentRevisionId,
+      ) ?? null;
+    const legacyEstimateRequiresRebuild = Boolean(
+      this.state.bundle &&
+      this.state.bundle.canonicalParameterSession == null &&
+      (
+        this.state.bundle.estimateDraftSession?.status ===
+          "PARAMETERS_REQUIRED" ||
+        currentRevision?.status === "blocking_required"
+      ),
+    );
+    const problemText =
+      this.state.problemText.trim() ||
+      (
+        legacyEstimateRequiresRebuild
+          ? this.state.bundle?.draft.problemText?.trim() ?? ""
+          : ""
+      );
+    if (!problemText) {
       this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
       return;
     }
-    this.buildDraftBundle();
+    this.buildDraftBundle(problemText);
   };
-  private selectRoadScope = (selectedScope: RoadScopeIdV4) => {
+  private selectRoadScope = (selectedScope: string) => {
     const current = this.state.bundle;
     if (!current || this.state.roadScopeSelectionBusy) return;
     this.setState({ roadScopeSelectionBusy: true, statusMessage: "Выполняется расчёт…" }, () => {
@@ -444,7 +802,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           userId: CONSUMER_USER_ID,
           selectedScope,
         });
-        this.updateCurrentBundle(bundle, "Состав дорожных работ выбран. Смета рассчитана.");
+        this.updateCurrentBundle(
+          bundle,
+          buildEstimateDraftSessionTransitionStatusMessage(bundle),
+        );
       } catch {
         this.setState({ statusMessage: "Не удалось выполнить расчёт. Выберите состав ещё раз." });
       } finally {
@@ -479,11 +840,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleValidationError(error);
     }
   };
-  private makePdf = async () => {
+  private completePdfOpen = async () => {
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
-      const bundle = generateConsumerRepairRequestPdfForDraft({
+      const bundle = ensureConsumerRepairRequestPdfAvailable({
         requestDraftId: synced.draft.id,
         userId: CONSUMER_USER_ID,
       });
@@ -491,7 +852,26 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       await this.openPdf(bundle.draft.id);
     } catch (error) {
       this.handleValidationError(error);
+    } finally {
+      this.setState({ pdfOpenBusy: false });
     }
+  };
+  private makePdf = () => {
+    if (this.state.pdfOpenBusy) return;
+    this.setState(
+      {
+        pdfOpenBusy: true,
+        statusMessage: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c PDF\u2026",
+      },
+      () => {
+        const run = () => void this.completePdfOpen();
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(run);
+          return;
+        }
+        runAfterNextPaint(run);
+      },
+    );
   };
   private openPdf = async (requestDraftId?: string) => {
     await openConsumerRepairRequestPdfFromScreen({
@@ -510,10 +890,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.setState({
       bundle,
-      selectedWork: selectedWorkFromBundle(bundle),
+      selectedWork: null,
       selectedHistoryId: null,
       statusMessage: bundle ? "Заявка открыта из истории." : null,
     });
+    if (bundle) router.setParams({ draftId: bundle.draft.id });
   };
   private toggleHistorySnapshot = (requestDraftId: string) => {
     const bundle = this.findKnownHistoryBundle(requestDraftId);
@@ -535,12 +916,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       this.setState({
         bundle,
-        selectedWork: selectedWorkFromBundle(bundle),
+        selectedWork: null,
         selectedHistoryId: null,
         aiAnswerRu: null,
         validationErrors: [],
         statusMessage: "Создан новый черновик из истории. Можно редактировать смету.",
       });
+      router.setParams({ draftId: bundle.draft.id });
       this.refreshHistory(bundle);
     } catch (error) {
       this.handleValidationError(error);
@@ -744,6 +1126,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
+    this.workSuggestionsEnabled = true;
+    router.setParams({ draftId: "" });
     this.setState(buildNewConsumerRepairRequestState(
       "Новая заявка готова к заполнению.",
       this.state.history,
@@ -794,6 +1178,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private changeProblemText = (problemText: string) => {
+    this.workSuggestionsEnabled = true;
     this.setState({
       problemText,
       selectedWork: shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
@@ -816,41 +1201,80 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ approvedHistoryPage });
     }
   };
+  private renderScreenView(state: State): React.ReactElement {
+    if (this.cachedScreenView && this.cachedScreenViewState === state) {
+      return this.cachedScreenView;
+    }
+    this.cachedScreenViewState = state;
+    this.cachedScreenView = (
+      <ConsumerRepairRequestScreenView
+        state={state}
+        renderModel={buildConsumerRepairRequestRenderModel(state, {
+          includeWorkSuggestions: this.workSuggestionsEnabled,
+        })}
+        problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
+        onProblemTextChange={this.changeProblemText}
+        onCityChange={(city) => this.setState({ city, validationErrors: [] })}
+        onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
+        onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
+        onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
+        onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
+        onOpenProcurement={this.openProcurement}
+        onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
+        onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
+        onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
+        onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}
+        onOpenPhotoForEstimateItem={this.openPhotoForEstimateItem}
+        onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
+        onOpenParamEditor={this.openParamEditor}
+        onSaveParamEdit={this.saveParamEdit}
+        onCancelParamEdit={this.cancelParamEdit}
+        onApplyParamPatch={this.applyParamPatch}
+        onApplyParamBatch={this.applyParamBatch}
+        onOpenPdf={this.openPdf}
+        onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
+        onEditHistoryDraft={this.editHistoryDraft}
+        onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
+        onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
+        onDeleteDraft={this.deleteDraft}
+        onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
+        onSelectRoadScope={this.selectRoadScope}
+        onOpenHistory={this.ensureHistoryLoaded}
+        onLoadMoreHistory={this.loadMoreApprovedHistory}
+      />
+    );
+    return this.cachedScreenView;
+  }
   render(): React.ReactNode {
+    const runtimeIngressProjection =
+      this.runtimeIngressProjection?.launchId !== this.props.launchId
+        ? this.runtimeIngressProjection
+        : null;
     return (
       <>
-        <ConsumerRepairRequestScreenView
-          state={this.state} renderModel={buildConsumerRepairRequestRenderModel(this.state)}
-          problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}
-          onProblemTextChange={this.changeProblemText}
-          onCityChange={(city) => this.setState({ city, validationErrors: [] })}
-          onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
-          onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
-          onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-          onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
-          onOpenProcurement={this.openProcurement}
-          onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
-          onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
-          onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}
-          onAddPhotoMaterialRecognition={this.addPhotoMaterialRecognition}
-          onOpenPhotoForEstimateItem={this.openPhotoForEstimateItem}
-          onRestoreLastRemoved={this.restoreLastRemovedItem} onOpenCatalog={this.openCatalogForEstimateItem}
-          onOpenParamEditor={this.openParamEditor}
-          onSaveParamEdit={this.saveParamEdit}
-          onCancelParamEdit={this.cancelParamEdit}
-          onApplyParamPatch={this.applyParamPatch}
-          onApplyParamBatch={this.applyParamBatch}
-          onOpenPdf={this.openPdf}
-          onOpenDraft={this.openDraftFromHistory} onToggleHistorySnapshot={this.toggleHistorySnapshot}
-          onEditHistoryDraft={this.editHistoryDraft}
-          onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
-          onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
-          onDeleteDraft={this.deleteDraft}
-          onApproveDraft={this.approveDraft} onPrepareDraft={this.prepareDraft}
-          onSelectRoadScope={this.selectRoadScope}
-          onOpenHistory={this.ensureHistoryLoaded}
-          onLoadMoreHistory={this.loadMoreApprovedHistory}
-        />
+        {this.renderScreenView(this.state)}
+        {runtimeIngressProjection ? (
+          <View
+            accessibilityLiveRegion="polite"
+            style={styles.runtimeIngressComposer}
+            testID="request-estimate-runtime-ingress-composer"
+          >
+            <Text style={styles.runtimeIngressTitle}>
+              Открываем новый запрос
+            </Text>
+            <Text style={styles.runtimeIngressStatus}>
+              Подготавливаем форму сметы. Текст запроса уже получен.
+            </Text>
+            <TextInput
+              accessibilityLabel="Описание работ для новой сметы"
+              editable={false}
+              multiline
+              style={styles.runtimeIngressInput}
+              testID="consumer-repair-problem-input"
+              value={runtimeIngressProjection.prompt}
+            />
+          </View>
+        ) : null}
         {this.props.MobilePhotoCaptureFlowNode ?? null}
       </>
     );

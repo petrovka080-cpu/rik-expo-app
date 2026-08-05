@@ -17,6 +17,9 @@ export type BuyerHandoffCostPackage = {
   buyer_handoff_missing_price_visible: boolean;
   buyer_handoff_fake_price_count: number;
   buyer_handoff_work_rows_count: number;
+  cost_resolution: ProfessionalCostSummary["resolution"];
+  required_price_input_row_ids: string[];
+  buyer_handoff_required_price_inputs_complete: boolean;
 };
 
 export function createBuyerHandoffCostPackage(input: {
@@ -38,5 +41,10 @@ export function createBuyerHandoffCostPackage(input: {
     buyer_handoff_missing_price_visible: input.summary.missingPriceRowsVisible && procurementMissingPricesVisible,
     buyer_handoff_fake_price_count: fakePriceCount,
     buyer_handoff_work_rows_count: rows.filter((row) => row.rowType === "work" || row.rowType === "labor").length,
+    cost_resolution: input.summary.resolution,
+    required_price_input_row_ids: [...input.summary.requiredPriceInputRowIds],
+    buyer_handoff_required_price_inputs_complete:
+      input.summary.resolution !== "PRICE_INPUT_REQUIRED" ||
+      input.summary.requiredPriceInputRowIds.length > 0,
   };
 }

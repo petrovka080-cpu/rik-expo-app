@@ -560,6 +560,9 @@ const allCases = REAL_10000_ACCEPTANCE_DOMAINS.flatMap((definition, domainIndex)
 
 export const REAL_DIVERSE_10000_CONSTRUCTION_WORKS: readonly Real10000ConstructionWorkCase[] = allCases;
 
+export const REAL_10000_CORPUS_VERSION =
+  "real-diverse-10000-construction-works:2026-07.v1" as const;
+
 export const REAL_10000_ACCEPTANCE_CONTRACT = {
   wave: "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN",
   requiredCases: 10_000,

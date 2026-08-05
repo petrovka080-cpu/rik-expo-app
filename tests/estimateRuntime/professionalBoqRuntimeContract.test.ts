@@ -4,6 +4,7 @@ import {
   runProfessionalBoqRuntimeContractCases,
   type ProfessionalBoqRuntimeContractCaseProof,
 } from "../../scripts/estimate/professionalBoqRuntimeContractCases";
+import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import type { ConsumerRepairAiDraft } from "../../src/lib/consumerRequests";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { applyProfessionalBoqRuntimeContract } from "../../src/lib/estimate/buildProfessionalBoqDraft";
@@ -180,17 +181,37 @@ describe("professional BOQ runtime contract", () => {
     const templateIds = [...new Set(draft?.items.map((item) => item.templateId) ?? [])];
     const units = [...new Set(draft?.items.map((item) => item.unit) ?? [])];
     const titles = (draft?.items.map((item) => item.titleRu).join("\n") ?? "").toLocaleLowerCase("ru-RU");
+    const rowCodes = draft?.items.map((item) => String(item.sourceParameters?.rowCode ?? "")) ?? [];
 
     expect(inlineResult.draft?.selectedWork?.selectedWorkKey).toBe("dynamic_fencing_estimate");
     expect(runtimeDraft?.repairType).toBe("profile_sheet_fence");
     expect(templateIds).toEqual(["dynamic_fencing_estimate_dynamic_professional_boq_runtime_v1"]);
     expect(templateIds).not.toContain("carpentry_metal_interior_fence_install_standard_professional_expanded_v1");
+    expect(rowCodes).not.toContain("required_plan_equipment_1");
+    expect(rowCodes).not.toContain("required_plan_equipment_2");
     expect(units).toEqual(expect.arrayContaining(["linear_m", "m3", "pcs", "set", "shift", "sq_m", "trip"]));
-    expect(titles).toContain("профлист");
+    expect(titles).toContain("панели / профнастил");
+    expect(titles).toContain("бур / мотобур");
     expect(titles).toContain("металлические столбы");
     expect(titles).toContain("бетон");
     expect(titles).toContain("крепеж");
     expect(titles).toContain("антикоррозион");
     expect(titles).toContain("линии забора");
+  });
+
+  it("keeps tile primer as a consumable quantity instead of an area row", () => {
+    const tileCase = PROFESSIONAL_BOQ_RUNTIME_CONTRACT_CASES.find(
+      (testCase) => testCase.case_id === "runtime-tile-001",
+    );
+    if (!tileCase) throw new Error("runtime_tile_case_missing");
+    const draft = buildConsumerRepairAiDraft(tileCase.prompt, {
+      city: "Bishkek",
+      currency: "KGS",
+    });
+    const primer = draft.items.find((item) =>
+      String(item.sourceParameters?.rowCode ?? "").endsWith("_primer"),
+    );
+
+    expect(primer?.unit).toBe("kg");
   });
 });

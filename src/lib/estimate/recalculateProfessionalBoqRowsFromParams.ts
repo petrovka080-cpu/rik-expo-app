@@ -39,16 +39,59 @@ function seedEnvironment(
   params: Record<string, EstimateDraftRevisionParam>,
 ): AiEstimateFormulaEnvironment {
   const env: AiEstimateFormulaEnvironment = {};
+  const familyIds = new Set<string>();
   for (const row of rows) {
     const source = row.sourceParameters ?? {};
-    for (const [key, value] of Object.entries(source)) putEnvironmentValue(env, key, value);
-    const formulaContext = source.formulaContext;
-    if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
-      for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
+    for (const familyId of [source.familyId, source.inlineWorkPromptFamilyId]) {
+      if (typeof familyId === "string" && familyId.trim()) familyIds.add(familyId.trim());
     }
+    for (const [key, value] of Object.entries(source)) putEnvironmentValue(env, key, value);
+  }
+  for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
+  if (familyIds.has("gabion_wall")) env.is_gabion = true;
+  else if (familyIds.has("retaining_wall")) env.is_gabion = false;
+  if (
+    env.wall_face_area_m2 == null &&
+    typeof env.length_m === "number" &&
+    typeof env.height_m === "number"
+  ) {
+    env.wall_face_area_m2 = env.length_m * env.height_m;
+  }
+  return env;
+}
+
+function rowFormulaEnvironment(
+  baseEnvironment: AiEstimateFormulaEnvironment,
+  row: ProfessionalBoqRow,
+  params: Record<string, EstimateDraftRevisionParam>,
+  naturalLanguageBaseQuantity: number | null,
+): AiEstimateFormulaEnvironment {
+  const env: AiEstimateFormulaEnvironment = { ...baseEnvironment };
+  const formulaContext = row.sourceParameters?.formulaContext;
+  if (formulaContext && typeof formulaContext === "object" && !Array.isArray(formulaContext)) {
+    for (const [key, value] of Object.entries(formulaContext)) putEnvironmentValue(env, key, value);
+  }
+  if (naturalLanguageBaseQuantity != null) {
+    env.q = naturalLanguageBaseQuantity;
+    env.baseQuantity = naturalLanguageBaseQuantity;
   }
   for (const [key, param] of Object.entries(params)) putEnvironmentValue(env, key, param.value);
   return env;
+}
+
+function naturalLanguageBaseQuantity(input: {
+  rows: readonly ProfessionalBoqRow[];
+  params: Record<string, EstimateDraftRevisionParam>;
+}): number | null {
+  const usesNaturalLanguagePassport = input.rows.some((candidate) =>
+    candidate.sourceParameters?.passportBackedNaturalLanguageIngress === true
+  );
+  if (!usesNaturalLanguagePassport) return null;
+  for (const key of ["area_m2", "length_m", "volume_m3", "count"]) {
+    const value = numericValue(input.params[key]?.value);
+    if (value != null && value > 0) return value;
+  }
+  return null;
 }
 
 function setRowQuantityInEnvironment(
@@ -57,6 +100,9 @@ function setRowQuantityInEnvironment(
   quantity: number,
 ): void {
   env[rowId] = quantity as AiEstimateFormulaEnvironmentValue;
+  if (rowId.startsWith("passport_")) {
+    env[rowId.slice("passport_".length)] = quantity as AiEstimateFormulaEnvironmentValue;
+  }
 }
 
 function stringSourceValue(source: Record<string, unknown>, key: string): string | null {
@@ -94,13 +140,17 @@ export function recalculateProfessionalBoqRowsFromParams(input: {
 }): ProfessionalBoqRow[] {
   const env = seedEnvironment(input.rows, input.params);
   const changedParamValue = input.changedParamKey ? numericValue(input.params[input.changedParamKey]?.value) : null;
+  const naturalLanguageQuantity = naturalLanguageBaseQuantity(input);
 
   return input.rows.map((row) => {
     let quantity = row.quantity;
     if (input.changedParamKey && row.rowId === input.changedParamKey && changedParamValue != null) {
       quantity = changedParamValue;
     } else {
-      const recalculated = evaluateAiEstimateQuantityFormula({ formula: row.quantityFormula, env });
+      const recalculated = evaluateAiEstimateQuantityFormula({
+        formula: row.quantityFormula,
+        env: rowFormulaEnvironment(env, row, input.params, naturalLanguageQuantity),
+      });
       if (recalculated.ok && recalculated.value != null && recalculated.value >= 0) quantity = recalculated.value;
       else {
         const scaled = legacyS2BScaledQuantity({ row, params: input.params, changedParamKey: input.changedParamKey });

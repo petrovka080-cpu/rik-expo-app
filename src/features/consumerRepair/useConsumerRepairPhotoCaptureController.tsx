@@ -8,10 +8,8 @@ import {
   type PhotoMaterialExistingRowFeaturePolicy,
   type PhotoMaterialStoredImage,
 } from "../../lib/ai/photoMaterialExistingRow";
-import {
-  ensureConsumerRepairBundleEstimateRevisionState,
-  type ConsumerRepairDraftBundle,
-} from "../../lib/consumerRequests";
+import { ensureConsumerRepairBundleEstimateRevisionState } from "../../lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
+import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
 
 export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {

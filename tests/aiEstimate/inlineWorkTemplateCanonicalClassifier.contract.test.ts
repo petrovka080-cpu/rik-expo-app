@@ -34,6 +34,18 @@ describe("canonical inline work template classifier", () => {
       reasonPrefix: "expanded_complex_resolver",
     },
     {
+      prompt: "estimate cost for roadworks site grading base compaction industrial earthworks and site preparation package alpha 40 sqm",
+      family: "road_subgrade",
+      templateId: "road_subgrade_preliminary_boq_expanded_complex_v1",
+      reasonPrefix: "contextual_explicit_road_subgrade_alias",
+    },
+    {
+      prompt: "estimate cost for concrete bridge culvert installation residential small bridges and culverts package alpha 84 sqm",
+      family: "bridge_construction",
+      templateId: "bridge_construction_preliminary_boq_expanded_complex_v1",
+      reasonPrefix: "contextual_explicit_bridge_culvert_alias",
+    },
+    {
       prompt: "РєР°Р±РµР»СЊРЅР°СЏ Р»РёРЅРёСЏ 0.4 РєР’ 800 Рј С‚СЂР°РЅС€РµСЏ РєР°Р±РµР»СЊ 4С…50",
       family: "underground_cable_line",
       templateId: "underground_cable_line_preliminary_boq_expanded_complex_v1",

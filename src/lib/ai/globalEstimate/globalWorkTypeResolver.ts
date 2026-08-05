@@ -97,6 +97,13 @@ const BASE_GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
 
 const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   {
+    workKey: "trench_excavation",
+    category: "other",
+    names: { ru: "Разработка грунта траншеи", en: "Trench excavation" },
+    defaultMeasureUnit: "m3",
+    safetyReviewRequired: true,
+  },
+  {
     workKey: "linoleum_laying",
     category: "flooring",
     names: { ru: "Укладка линолеума", en: "Linoleum installation" },
@@ -207,6 +214,22 @@ function merge1000Safety(definition: GlobalWorkTypeDefinition): GlobalWorkTypeDe
   };
 }
 
+export const GLOBAL_WORK_ONTOLOGY_V1_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS.filter(
+    (definition) => definition.workKey !== "trench_excavation",
+  ),
+  ...GLOBAL_150_WORK_TYPE_DEFINITIONS.map(merge1000Safety),
+  ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) =>
+    !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)
+  ),
+  ...BASE_GLOBAL_WORK_TYPE_DEFINITIONS
+    .filter((definition) =>
+      !GLOBAL_1000_WORK_TYPE_KEYS.has(definition.workKey) &&
+      !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)
+    )
+    .map(merge1000Safety),
+];
+
 export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   ...EXPANDED_COMPLEX_NEW_WORK_TYPE_DEFINITIONS,
   ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS,
@@ -224,8 +247,15 @@ export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] =
     )
     .map(merge1000Safety),
 ];
+const GLOBAL_WORK_TYPE_DEFINITION_BY_KEY = new Map(
+  GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) => [definition.workKey, definition] as const),
+);
 
 const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
+  { workKey: "trench_excavation", language: "ru", alias: "выкопать траншею" },
+  { workKey: "trench_excavation", language: "ru", alias: "разработка грунта траншеи" },
+  { workKey: "trench_excavation", language: "ru", alias: "рыть траншею" },
+  { workKey: "trench_excavation", language: "en", alias: "trench excavation" },
   { workKey: "solar_panel_installation", language: "ru", alias: "солнечные панели" },
   { workKey: "solar_panel_installation", language: "ru", alias: "solar_panel_installation" },
   { workKey: "solar_panel_installation", language: "en", alias: "solar panel installation" },
@@ -419,7 +449,13 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
     return "\u041e\u0442\u0434\u0435\u043b\u043a\u0430 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f \u043f\u043e\u0434 \u0430\u0440\u0435\u043d\u0434\u0430\u0442\u043e\u0440\u0430";
   }
   const rawTitle = definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
-  const title = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  const normalizedTitle = language === "ru" ? normalizeRuText(rawTitle) : rawTitle;
+  const title = language === "ru"
+    ? normalizedTitle
+      .replace(/\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim()
+    : normalizedTitle;
   if (language === "ru" && !/[\u0400-\u04ff]/u.test(title)) {
     return "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b";
   }
@@ -429,12 +465,40 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
   const normalized = normalizeGlobalWorkAlias(String(normalizeRuText(text ?? "")));
   if (!normalized) return null;
+  if (/\bbridge\b/i.test(normalized) && /\bculvert\b/i.test(normalized)) {
+    return { workKey: "bridge_construction", confidence: "high" };
+  }
+  const canonicalWorkKey = normalized
+    .match(/[\p{L}\p{N}_:-]+/gu)
+    ?.map((token) => token.replace(/^work(?:_key)?[:=-]?/i, ""))
+    .find((token) => GLOBAL_WORK_TYPE_DEFINITION_BY_KEY.has(token));
+  if (canonicalWorkKey) {
+    return { workKey: canonicalWorkKey, confidence: "high" };
+  }
+  if (
+    /(?:demolition|демонтаж)/iu.test(normalized) &&
+    /(?:reinforced\s+concrete|concrete|железобетон|бетон)/iu.test(normalized)
+  ) {
+    return { workKey: "concrete_demolition", confidence: "high" };
+  }
+  if (
+    /(?:demolition|демонтаж)/iu.test(normalized) &&
+    /(?:load[-\s]?bearing\s+wall|несущ[а-яё]*\s+стен)/iu.test(normalized)
+  ) {
+    return { workKey: "wall_demolition_load_warning", confidence: "high" };
+  }
 
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
     return { workKey: "floor_leveling_under_tile", confidence: "high" };
   }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготовку|основан|выравнив|маяк/i.test(normalized)) {
     return { workKey: "tile_floor_leveling", confidence: "high" };
+  }
+  if (
+    /\u043c\u043e\u0449\u0435\u043d|\u0443\u043b\u043e\u0436|\u0443\u043a\u043b\u0430\u0434/i.test(normalized) &&
+    /\u0442\u0440\u043e\u0442\u0443\u0430\u0440\u043d[\u0430-\u044f\u0451]*\s+\u043f\u043b\u0438\u0442/i.test(normalized)
+  ) {
+    return { workKey: "paving_stone_laying", confidence: "high" };
   }
   if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
     return { workKey: "bathroom_tile_full", confidence: "high" };
@@ -464,6 +528,12 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   }
   if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
     return { workKey: "metal_canopy_installation", confidence: "high" };
+  }
+  if (
+    /\b(?:road|roadworks)\b/i.test(normalized) &&
+    /\b(?:site\s+grading|base\s+compaction)\b/i.test(normalized)
+  ) {
+    return { workKey: "road_subgrade", confidence: "high" };
   }
   const exact = [...GLOBAL_WORK_ALIASES]
     .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)

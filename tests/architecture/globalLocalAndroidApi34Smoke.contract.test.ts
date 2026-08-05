@@ -42,9 +42,17 @@ describe("global local Android API34 smoke", () => {
     expect(canonicalReplay).toContain("водоприемные узлы");
   });
 
-  it("keeps Android-readable visible estimate row summaries on request and embedded AI screens", () => {
+  it("keeps Android-readable estimate summaries and editable row proof on request and embedded AI screens", () => {
     const requestSummary = fs.readFileSync(
       path.resolve(process.cwd(), "src/features/consumerRepair/RequestEstimateSummaryCard.tsx"),
+      "utf8",
+    );
+    const requestPositions = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx"),
+      "utf8",
+    );
+    const requestItem = fs.readFileSync(
+      path.resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairItemRow.tsx"),
       "utf8",
     );
     const requestChrome = fs.readFileSync(
@@ -56,11 +64,12 @@ describe("global local Android API34 smoke", () => {
       "utf8",
     );
 
-    expect(requestSummary).toContain("request-estimate-visible-lines");
+    expect(requestSummary).toContain("request-estimate-row-count");
     expect(requestSummary).toContain("request-estimate-price-status");
-    expect(requestSummary).toContain("request-estimate-details-toggle");
-    expect(requestChrome).toContain("buildRequestEstimateViewModel");
-    expect(requestChrome).toContain("request-estimate-top-proof");
+    expect(requestPositions).toContain("request-estimate-positions-panel");
+    expect(requestItem).toContain("consumer-repair-item-price-status-");
+    expect(requestChrome).toContain("buildRequestEstimateTopProofText");
+    expect(requestChrome).toContain("viewModel.visibleLines.slice(0, 5)");
     expect(aiEstimateTable).toContain("ai-estimate-visible-lines");
     expect(aiEstimateTable).toContain("buildEstimateActionProofText");
     expect(aiEstimateTable).toContain("ai-estimate-action-proof");

@@ -15,5 +15,9 @@ if (typeof globalScope.WeakRef === "undefined") {
     }
   }
 
-  globalScope.WeakRef = WeakRefPolyfill as unknown as typeof WeakRef;
+  Object.defineProperty(globalScope, "WeakRef", {
+    configurable: true,
+    value: WeakRefPolyfill,
+    writable: true,
+  });
 }

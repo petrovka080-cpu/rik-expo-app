@@ -1,6 +1,7 @@
 import React from "react";
-import { ActivityIndicator, Animated, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { ActivityIndicator, Animated, StyleSheet, Text, View } from "react-native";
 
+import { createReactNativeWebViewStyle } from "../../ui/reactNativeWebStyle";
 import WarehouseHeader from "./components/WarehouseHeader";
 import WarehouseModalsManager from "./components/WarehouseModalsManager";
 import WarehouseTabContent from "./components/WarehouseTabContent";
@@ -20,12 +21,12 @@ const LOADER_STYLE = {
   alignItems: "center",
   justifyContent: "center",
 } as const;
-const WEB_STICKY_HEADER_STYLE = {
+const WEB_STICKY_HEADER_STYLE = createReactNativeWebViewStyle({
   position: "sticky",
   top: 0,
   zIndex: 50,
   overflow: "hidden",
-} as unknown as ViewStyle;
+});
 
 type WarehouseScreenContentProps = {
   entryKind?: "office" | "tab";

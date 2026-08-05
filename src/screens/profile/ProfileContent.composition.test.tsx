@@ -184,7 +184,10 @@ describe("ProfileContent composition shell", () => {
     act(() => {
       (capturedMainProps?.onOpenAddListing as (() => void) | undefined)?.();
     });
-    expect(mockPush).toHaveBeenCalledWith("/add");
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/add",
+      params: { returnTo: "market-my-listings" },
+    });
 
     act(() => {
       (capturedMainProps?.onOpenSellerArea as (() => void) | undefined)?.();

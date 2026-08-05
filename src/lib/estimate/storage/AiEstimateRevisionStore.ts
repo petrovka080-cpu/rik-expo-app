@@ -1,4 +1,5 @@
 import type { EstimateDraftRevision, EstimateDraftRevisionState } from "../estimateDraftRevisionContract";
+import { safeJsonParseValue } from "../../format";
 
 export type AiEstimateRevisionStore = {
   saveCurrentRevisionState(state: EstimateDraftRevisionState): void;
@@ -7,7 +8,7 @@ export type AiEstimateRevisionStore = {
 };
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return safeJsonParseValue<T>(JSON.stringify(value), value);
 }
 
 export function createInMemoryAiEstimateRevisionStore(): AiEstimateRevisionStore {

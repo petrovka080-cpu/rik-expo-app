@@ -24,7 +24,7 @@ describe("AI estimate engine routing architecture", () => {
     expect(summary.single_formula_engine_used).toBe(true);
     expect(summary.templates_with_separate_manual_path).toBe(0);
     expect(summary.cases_using_norm_packs_count).toBeGreaterThanOrEqual(5);
-    expect(summary.cases_using_synthetic_family_default_count).toBeGreaterThan(0);
+    expect(summary.cases_using_synthetic_family_default_count).toBe(0);
     expect(summary.real_standard_or_textbook_norms_required).toBe(true);
     expect(summary.generic_template_skeleton_not_accepted_as_real_estimate).toBe(true);
     expect(summary.every_work_type_requires_own_norm_pack).toBe(true);

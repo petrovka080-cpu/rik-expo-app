@@ -181,6 +181,159 @@ const OPERATION_LABELS_RU: Record<string, string> = {
   design_survey: "\u043e\u0431\u043c\u0435\u0440 \u0438 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430",
 };
 
+const PROFESSIONAL_WBS_LABELS_RU: Record<string, string> = {
+  acoustic_attenuation: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0448\u0443\u043c\u043e\u0433\u043b\u0443\u0448\u0435\u043d\u0438\u044f",
+  auxiliary_power: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0441\u043e\u0431\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445 \u043d\u0443\u0436\u0434",
+  black_start_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0447\u0451\u0440\u043d\u043e\u0433\u043e \u043f\u0443\u0441\u043a\u0430",
+  circulation_pumps: "\u0446\u0438\u0440\u043a\u0443\u043b\u044f\u0446\u0438\u043e\u043d\u043d\u044b\u0435 \u043d\u0430\u0441\u043e\u0441\u044b",
+  combustion_air: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u043f\u043e\u0434\u0430\u0447\u0438 \u0432\u043e\u0437\u0434\u0443\u0445\u0430 \u0434\u043b\u044f \u0433\u043e\u0440\u0435\u043d\u0438\u044f",
+  cooling_circuit: "\u043a\u043e\u043d\u0442\u0443\u0440 \u043e\u0445\u043b\u0430\u0436\u0434\u0435\u043d\u0438\u044f",
+  district_heating_interface: "\u0443\u0437\u0435\u043b \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f \u043a \u0442\u0435\u043f\u043b\u043e\u0432\u043e\u0439 \u0441\u0435\u0442\u0438",
+  emissions_monitoring: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u043c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u0430 \u0432\u044b\u0431\u0440\u043e\u0441\u043e\u0432",
+  engine_generator_package: "\u0433\u0430\u0437\u043e\u043f\u043e\u0440\u0448\u043d\u0435\u0432\u0430\u044f \u0433\u0435\u043d\u0435\u0440\u0430\u0442\u043e\u0440\u043d\u0430\u044f \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430",
+  exhaust_stack: "\u0433\u0430\u0437\u043e\u0432\u044b\u0445\u043b\u043e\u043f\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0438 \u0434\u044b\u043c\u043e\u0432\u0430\u044f \u0442\u0440\u0443\u0431\u0430",
+  fuel_gas_detection: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044f \u0437\u0430\u0433\u0430\u0437\u043e\u0432\u0430\u043d\u043d\u043e\u0441\u0442\u0438",
+  fuel_supply_interface: "\u0443\u0437\u0435\u043b \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f \u0442\u043e\u043f\u043b\u0438\u0432\u043e\u0441\u043d\u0430\u0431\u0436\u0435\u043d\u0438\u044f",
+  gas_pressure_reduction: "\u0433\u0430\u0437\u043e\u0440\u0435\u0433\u0443\u043b\u044f\u0442\u043e\u0440\u043d\u044b\u0439 \u0443\u0437\u0435\u043b",
+  generator_synchronization: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0430\u0446\u0438\u0438 \u0433\u0435\u043d\u0435\u0440\u0430\u0442\u043e\u0440\u0430",
+  heat_balance_testing: "\u0438\u0441\u043f\u044b\u0442\u0430\u043d\u0438\u0435 \u0442\u0435\u043f\u043b\u043e\u0432\u043e\u0433\u043e \u0431\u0430\u043b\u0430\u043d\u0441\u0430",
+  heat_exchangers: "\u0442\u0435\u043f\u043b\u043e\u043e\u0431\u043c\u0435\u043d\u043d\u043e\u0435 \u043e\u0431\u043e\u0440\u0443\u0434\u043e\u0432\u0430\u043d\u0438\u0435",
+  heat_recovery_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0443\u0442\u0438\u043b\u0438\u0437\u0430\u0446\u0438\u0438 \u0442\u0435\u043f\u043b\u0430",
+  lubrication_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0441\u043c\u0430\u0437\u043a\u0438",
+  thermal_buffer: "\u0431\u0443\u0444\u0435\u0440\u043d\u0430\u044f \u0442\u0435\u043f\u043b\u043e\u0432\u0430\u044f \u0451\u043c\u043a\u043e\u0441\u0442\u044c",
+  water_treatment: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0432\u043e\u0434\u043e\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0438",
+  ac_cabling: "кабельные линии переменного тока",
+  access_roads: "подъездные и технологические дороги",
+  as_built: "исполнительная документация",
+  as_built_docs: "комплект исполнительной документации",
+  asset_register: "реестр передаваемых активов",
+  automation: "автоматизация технологических процессов",
+  availability_testing: "испытания эксплуатационной готовности",
+  batching_controls: "контроль приготовления строительных смесей",
+  cable_routes: "кабельные трассы и проходки",
+  cable_testing: "испытания кабельных линий",
+  change_control: "управление изменениями",
+  claims_controls: "управление договорными требованиями",
+  closeout_audit: "заключительный аудит проекта",
+  collector_switchgear: "распределительное оборудование коллекторной сети",
+  combiner_boxes: "соединительные шкафы постоянного тока",
+  commissioning: "пусконаладочные работы",
+  commissioning_management: "управление пусконаладочными работами",
+  commissioning_pack: "комплект документов для пусконаладки",
+  commissioning_spares: "пусконаладочный запас комплектующих",
+  concrete: "бетонные конструкции",
+  control_cables: "контрольные кабельные линии",
+  control_room: "помещение оперативного управления",
+  coordination: "междисциплинарная координация",
+  crane_operations: "грузоподъёмные операции",
+  customs_clearance: "таможенное оформление оборудования",
+  cybersecurity_controls: "меры кибербезопасности",
+  dc_string_cabling: "строковые кабельные линии постоянного тока",
+  dc_trenches: "траншеи для линий постоянного тока",
+  defect_liability: "сопровождение гарантийных дефектов",
+  design_management: "управление проектированием",
+  drainage: "водоотвод и дренаж",
+  earthing: "заземление и уравнивание потенциалов",
+  earthworks: "земляные работы",
+  emergency_response: "аварийное реагирование",
+  energization_plan: "план подачи напряжения",
+  environmental_controls: "природоохранные мероприятия",
+  environmental_monitoring: "экологический мониторинг",
+  equipment_mobilization: "мобилизация оборудования и техники",
+  factory_acceptance: "заводские приёмочные испытания",
+  fencing: "ограждение территории",
+  final_account: "окончательный взаиморасчёт",
+  fire_safety: "противопожарные мероприятия",
+  fire_strategy: "план противопожарной защиты",
+  foundations: "фундаменты оборудования и сооружений",
+  geotechnical_survey: "инженерно-геологические изыскания",
+  grading: "вертикальная планировка площадки",
+  grid_code_compliance: "проверка соответствия сетевым требованиям",
+  grid_interface: "узел присоединения к электрической сети",
+  grid_studies: "расчёты режимов электрической сети",
+  grid_synchronization: "синхронизация с электрической сетью",
+  handover: "приёмка и передача результата",
+  handover_training: "обучение при передаче объекта",
+  heavy_lifting_plan: "план тяжёлых подъёмов",
+  inspection_test_plan: "план инспекций и испытаний",
+  insulation_testing: "измерение сопротивления изоляции",
+  interface_control: "контроль межсистемных сопряжений",
+  interface_register: "реестр межсистемных сопряжений",
+  inverter_delivery: "поставка инверторного оборудования",
+  inverter_stations: "инверторные станции",
+  iv_curve_testing: "проверка характеристик фотоэлектрических цепей",
+  land_acquisition: "оформление земельных прав",
+  lifting: "подъём и такелаж оборудования",
+  lightning_protection: "молниезащита",
+  logistics: "внутриплощадочная логистика",
+  long_lead_procurement: "закупка оборудования длительного изготовления",
+  maintenance_access: "доступ для технического обслуживания",
+  maintenance_program: "программа технического обслуживания",
+  material_yard: "площадка хранения материалов",
+  metering: "коммерческий и технический учёт",
+  module_delivery: "поставка фотоэлектрических модулей",
+  mounting_piles: "свайные основания монтажных конструкций",
+  mounting_tables: "монтажные столы фотоэлектрических модулей",
+  pile_pullout_testing: "испытания свайных оснований на выдёргивание",
+  mounting_torque_inspection: "контроль момента затяжки монтажных соединений",
+  module_quality_inspection: "входной контроль фотоэлектрических модулей",
+  string_mapping: "проверка и маркировка строк фотоэлектрических модулей",
+  inverter_functional_testing: "функциональные испытания инверторов",
+  transformer_oil_testing: "испытания трансформаторного масла",
+  plant_controller: "центральный контроллер электростанции",
+  weather_station: "метеорологическая станция объекта",
+  harmonic_studies: "измерение гармонических искажений",
+  reactive_power_testing: "испытания регулирования реактивной мощности",
+  revenue_metering_verification: "поверка коммерческого учёта электроэнергии",
+  grid_model_validation: "валидация расчётной модели присоединения к сети",
+  operations_manual: "руководство по эксплуатации",
+  operations_readiness: "подготовка к эксплуатации",
+  operator_training: "обучение эксплуатационного персонала",
+  performance_guarantee: "подтверждение гарантированных показателей",
+  performance_ratio_test: "испытание коэффициента эффективности станции",
+  performance_tests: "испытания производительности",
+  permitting: "разрешительная документация",
+  power_cables: "силовые кабельные линии",
+  primary_equipment: "основное технологическое оборудование",
+  program_management: "управление программой работ",
+  protection: "релейная и технологическая защита",
+  pv_module_layout: "размещение фотоэлектрических модулей",
+  quality_plan: "план обеспечения качества",
+  relay_protection: "релейная защита",
+  relay_testing: "испытания релейной защиты",
+  risk_register: "реестр проектных рисков",
+  safety_case: "обоснование промышленной безопасности",
+  scada: "диспетчеризация и сбор данных",
+  scada_commissioning: "наладка диспетчеризации",
+  scada_network: "сеть диспетчеризации",
+  secondary_equipment: "вторичное оборудование",
+  security: "физическая защита объекта",
+  security_operations: "организация охраны объекта",
+  site_acceptance: "приёмочные испытания на площадке",
+  site_survey: "обследование строительной площадки",
+  spares: "эксплуатационный запас комплектующих",
+  spares_strategy: "стратегия запасных частей",
+  steelwork: "металлоконструкции",
+  substation_civil: "строительная часть подстанции",
+  substation_primary: "первичное оборудование подстанции",
+  telecom_integration: "интеграция систем связи",
+  telemetry: "телеметрия",
+  temporary_facilities: "временные здания и сооружения",
+  temporary_power: "временное электроснабжение",
+  temporary_works: "временные строительные конструкции",
+  testing: "комплексные испытания",
+  testing_matrix: "матрица комплексных испытаний",
+  topography: "инженерно-геодезическая съёмка",
+  traffic_management: "организация движения транспорта",
+  transformer_kiosks: "трансформаторные пункты",
+  utility_interconnection: "технологическое присоединение к сетям",
+  vendor_documentation: "документация изготовителей оборудования",
+  warehouse_controls: "учёт и контроль складских операций",
+  warranty_checks: "гарантийные проверки",
+  warranty_management: "управление гарантийными обязательствами",
+  worker_camps: "временный бытовой городок",
+};
+
 const WEAK_GENERIC_EXACT = new Set([
   "material",
   "materials",
@@ -205,6 +358,7 @@ const FORBIDDEN_VISIBLE_PATTERNS: readonly { code: string; pattern: RegExp }[] =
   { code: "TEXT_REPLACEMENT_CHAR", pattern: /\uFFFD/u },
   { code: "SNAKE_CASE_INTERNAL_KEY", pattern: /\b[a-z][a-z0-9]+(?:_[a-z0-9]+)+\b/ },
   { code: "ENGLISH_SYSTEM_KEY", pattern: /\b(?:foundation|roofing|electrical|plumbing|ventilation|waterproofing|industrial|general)\s+system\b/i },
+  { code: "ENGLISH_FALLBACK_TOKEN", pattern: /\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/i },
   { code: "VISIBLE_WARNING_TOKEN", pattern: /\bwarning\b/i },
   {
     code: "ESTIMATE_VOLUME_CONTROL_ROW",
@@ -264,9 +418,34 @@ function normalizeKey(key: string | undefined): string | undefined {
   return normalized ? normalized : undefined;
 }
 
-function stripVisibleDebugWords(label: string): string {
+function stripTypedInternalKeyPrefix(
+  label: string,
+  keys: readonly (string | undefined)[],
+): string {
+  const normalizedKeys = keys
+    .map((key) => normalizeKey(key)?.toLocaleLowerCase("en-US"))
+    .filter((key): key is string => Boolean(key));
+  if (normalizedKeys.length === 0) return label;
+  return label.replace(
+    /^([a-z][a-z0-9]+(?:_[a-z0-9]+)+)\s*:\s*/i,
+    (matched, prefix: string) => {
+      const normalizedPrefix = prefix.toLocaleLowerCase("en-US");
+      return normalizedKeys.some((key) =>
+        key === normalizedPrefix || key.startsWith(`${normalizedPrefix}_`)
+      )
+        ? ""
+        : matched;
+    },
+  );
+}
+
+function stripVisibleDebugWords(
+  label: string,
+  materialKey?: string,
+  internalKey?: string,
+): string {
   return normalize(
-    normalizeRuText(label)
+    stripTypedInternalKeyPrefix(normalizeRuText(label), [materialKey, internalKey])
       .replace(/\bwarning\b/gi, "\u0442\u0440\u0435\u0431\u0443\u0435\u0442\u0441\u044f \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u0435")
       .replace(/\bprofessional\s+assurance\b/gi, "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u043a\u0430\u0447\u0435\u0441\u0442\u0432\u0430")
   );
@@ -315,7 +494,9 @@ export function visibleDomainLabelForKey(key: string | undefined): string {
 export function visibleOperationLabelForKey(key: string | undefined): string {
   const normalized = normalizeKey(key);
   if (!normalized) return "\u0440\u0430\u0431\u043e\u0442\u044b";
-  return OPERATION_LABELS_RU[normalized] ?? "\u0440\u0430\u0431\u043e\u0442\u044b";
+  return OPERATION_LABELS_RU[normalized] ??
+    PROFESSIONAL_WBS_LABELS_RU[normalized] ??
+    "\u0440\u0430\u0431\u043e\u0442\u044b";
 }
 
 export function toVisibleEstimateLabel(input: {
@@ -325,8 +506,11 @@ export function toVisibleEstimateLabel(input: {
   domainKey?: string;
   operationKey?: string;
   sectionType?: VisibleEstimateSectionType;
+  internalKey?: string;
 }): string {
-  const candidate = input.label ? stripVisibleDebugWords(input.label) : "";
+  const candidate = input.label
+    ? stripVisibleDebugWords(input.label, input.materialKey, input.internalKey)
+    : "";
   if (candidate && visibleEstimateLabelViolations(candidate).length === 0) return candidate;
 
   if (input.sectionType === "materials") {

@@ -51,6 +51,21 @@ export function validateConsumerRepairRequestForApprove(
   const ownerMismatch = ownerError(bundle, userId);
   if (ownerMismatch) errors.push(ownerMismatch);
 
+  if (
+    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED" ||
+    bundle.estimateDraftRevisionState?.revisions.find(
+      (revision) =>
+        revision.revisionId ===
+        bundle.estimateDraftRevisionState?.currentRevisionId,
+    )?.status === "blocking_required"
+  ) {
+    errors.push({
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu: "Заполните обязательные параметры и рассчитайте смету перед подтверждением.",
+      field: "canonicalParameters",
+    });
+  }
+
   if (bundle.items.length < 1) {
     errors.push({
       code: "ITEMS_REQUIRED",

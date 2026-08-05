@@ -132,6 +132,8 @@ export type GoldenBenchmarkReferenceRow = {
 
 export type GoldenBenchmarkReferenceBoq = {
   schema: "ai-estimate-golden-reference-boq-v1";
+  reference_version?: string;
+  correction_evidence_id?: string;
   case_id: string;
   prompt: string;
   generated_from: GoldenBenchmarkEngine;
@@ -1240,15 +1242,11 @@ function listTopDeviationTypes(comparisons: readonly GoldenBenchmarkComparison[]
 }
 
 export function runGoldenBenchmarkAcceptance(options: GoldenBenchmarkRunOptions = {}): GoldenBenchmarkAcceptanceSummary {
+  const trustLayerBlockers: string[] = [];
   try {
     assertGoldenBenchmarkPreconditionsReady();
   } catch (error) {
-    const summary = baseSummary({
-      final_status: STOP_GOLDEN_BENCHMARK_BLOCKED_BY_NPLUS_OR_TRUST_LAYER_NOT_READY,
-      blockers: [error instanceof Error ? error.message : String(error)],
-      options,
-    });
-    return writeRuntimeIfNeeded(summary, options);
+    trustLayerBlockers.push(error instanceof Error ? error.message : String(error));
   }
 
   const cases = loadGoldenBenchmarkCases().filter((item) => options.cases === "critical" ? item.critical : true);
@@ -1265,6 +1263,7 @@ export function runGoldenBenchmarkAcceptance(options: GoldenBenchmarkRunOptions 
   const negative = runNegativeBenchmarkGates();
   const sourceGate = options.sourceGate ?? {};
   const blockers = [
+    ...trustLayerBlockers,
     cases.length >= (options.cases === "critical" ? 1 : 250) ? "" : `golden_cases_count_too_low:${cases.length}`,
     comparisons.every((item) => item.passed) ? "" : "golden_benchmark_comparisons_failed",
     Object.values(negative).every(Boolean) ? "" : "negative_benchmark_gates_failed",
@@ -1282,9 +1281,11 @@ export function runGoldenBenchmarkAcceptance(options: GoldenBenchmarkRunOptions 
 
   const summary: GoldenBenchmarkAcceptanceSummary = {
     ...baseSummary({
-      final_status: blockers.length === 0
-        ? GREEN_AI_ESTIMATE_GOLDEN_BENCHMARK_EXPERT_ACCEPTANCE_COMMITTED_NO_BUILDS
-        : STOP_AI_ESTIMATE_GOLDEN_BENCHMARK_ACCEPTANCE_FAILED_NO_GREEN,
+      final_status: trustLayerBlockers.length > 0
+        ? STOP_GOLDEN_BENCHMARK_BLOCKED_BY_NPLUS_OR_TRUST_LAYER_NOT_READY
+        : blockers.length === 0
+          ? GREEN_AI_ESTIMATE_GOLDEN_BENCHMARK_EXPERT_ACCEPTANCE_COMMITTED_NO_BUILDS
+          : STOP_AI_ESTIMATE_GOLDEN_BENCHMARK_ACCEPTANCE_FAILED_NO_GREEN,
       blockers,
       options,
     }),

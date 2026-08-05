@@ -1,0 +1,73 @@
+{
+  "schema": "t8-final-r5-full-jest-failure-ledger-v1",
+  "source_commit": "c91e49e8cae430c14a76ea516c6327eb672d6a69",
+  "candidate_hash": "5e90e4133c14b6b8a4dd9e6ea38ca78f74883a9fc19411b9f8ca5f537dd30824",
+  "process_started_at": "2026-08-03T21:12:51.2931455+06:00",
+  "jest_started_at": "2026-08-03T21:12:52.5240000+06:00",
+  "terminal_completed_at": "2026-08-04T07:24:16.7240990+06:00",
+  "duration_ms": 36685683,
+  "exit_code": 1,
+  "was_interrupted": false,
+  "forced_termination": false,
+  "force_exit_requested": false,
+  "oom_detected": false,
+  "open_handles_warning": false,
+  "canonical_evidence_immutable": true,
+  "canonical_evidence_changed": [],
+  "counts": {
+    "suites_total": 5168,
+    "suites_passed": 5159,
+    "suites_failed": 9,
+    "suites_skipped": 0,
+    "tests_total": 11124,
+    "tests_passed": 11115,
+    "tests_failed": 9,
+    "tests_skipped": 0,
+    "tests_todo": 0
+  },
+  "root_causes": [
+    {
+      "id": "JEST_CANONICAL_WRITE_ROUTING_GAP",
+      "failed_suites": 9,
+      "failed_assertions": 9,
+      "cause": "Four evidence producer families bypassed the existing PID/worker-scoped Jest output boundary and attempted to write canonical artifacts while the certification preflight correctly held those files read-only.",
+      "producer_groups": [
+        {
+          "producer": "scripts/audit/observabilityOps.shared.ts and scripts/audit/securityPrivacyHardening.shared.ts",
+          "failure_mode": "EPERM rename of atomic temporary files into two read-only canonical matrix files",
+          "failed_suites": 2
+        },
+        {
+          "producer": "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts",
+          "failure_mode": "EPERM write of type_ratchet_before.json from five independent contract consumers",
+          "failed_suites": 5
+        },
+        {
+          "producer": "scripts/e2e/aiEstimateInternalCanaryCore.ts",
+          "failure_mode": "EPERM write of rollback_drill.json and kill_switch_drill.json",
+          "failed_suites": 2
+        }
+      ],
+      "failed_assertions": [
+        "observability artifacts PII boundary writes the Wave 09 artifacts without PII, tokens, service role, or raw provider payloads",
+        "security privacy artifacts writes Wave 10 artifacts without PII, signed URL tokens, secrets, or raw provider payloads",
+        "Real10000 P0 remediation keeps unsafe cast ratchet within threshold",
+        "Real10000 P0 remediation does not introduce test any-cast regression",
+        "Real10000 P0 remediation does not introduce any-cast regression",
+        "Real10000 P0 remediation does not add unsafe cast scanner exclusions",
+        "Real10000 P0 remediation does not raise the unsafe cast ratchet threshold",
+        "internal canary rollback drill preserves manual request and catalog flows",
+        "internal canary kill switch drill covers estimate pdf catalog and fallback switches"
+      ],
+      "repair": "Route every Jest producer through one canonical-or-PID-scoped resolver; keep explicit VERIFICATION_CANONICAL_WRITE=1 as the only canonical producer authorization; make file-content tests inspect the freshly generated isolated output.",
+      "focused_proof": {
+        "suites_passed": 10,
+        "tests_passed": 11,
+        "failed": 0,
+        "canonical_artifact_diff": false
+      }
+    }
+  ],
+  "terminal_evidence": "C:/dev/rik-expo-t8-r5-evidence/c91e49e8cae430c14a76ea516c6327eb672d6a69/final-full-jest",
+  "fake_green_claimed": false
+}

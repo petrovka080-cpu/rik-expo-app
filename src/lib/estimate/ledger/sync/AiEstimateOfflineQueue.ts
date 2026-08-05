@@ -5,6 +5,7 @@ import type {
   AiEstimateLedgerSetStatusInput,
   AiEstimateLedgerUpsertDraftInput,
 } from "../AiEstimateLedgerTypes";
+import { safeJsonParseValue } from "../../../format";
 
 export type AiEstimateOfflineLedgerOperation =
   | { operationType: "upsert_draft"; input: AiEstimateLedgerUpsertDraftInput }
@@ -20,6 +21,10 @@ export type AiEstimateOfflineQueueEntry = {
   operation: AiEstimateOfflineLedgerOperation;
 };
 
+function cloneOfflineQueueEntry(entry: AiEstimateOfflineQueueEntry): AiEstimateOfflineQueueEntry {
+  return safeJsonParseValue<AiEstimateOfflineQueueEntry>(JSON.stringify(entry), entry);
+}
+
 export type AiEstimateOfflineLedgerQueue = {
   enqueue(entry: AiEstimateOfflineQueueEntry): void;
   list(): AiEstimateOfflineQueueEntry[];
@@ -32,13 +37,13 @@ export function createInMemoryAiEstimateOfflineQueue(): AiEstimateOfflineLedgerQ
   return {
     enqueue(entry) {
       if (entries.some((candidate) => candidate.queueId === entry.queueId)) return;
-      entries.push(JSON.parse(JSON.stringify(entry)) as AiEstimateOfflineQueueEntry);
+      entries.push(cloneOfflineQueueEntry(entry));
     },
     list() {
       return entries
         .slice()
         .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
-        .map((entry) => JSON.parse(JSON.stringify(entry)) as AiEstimateOfflineQueueEntry);
+        .map(cloneOfflineQueueEntry);
     },
     remove(queueId) {
       const index = entries.findIndex((entry) => entry.queueId === queueId);

@@ -10,6 +10,7 @@ import type {
   AiEstimateLedgerSetStatusInput,
   AiEstimateLedgerUpsertDraftInput,
 } from "./AiEstimateLedgerTypes";
+import { safeJsonParseValue } from "../../format";
 
 export type AiEstimateLedgerStore = {
   readonly adapterKind: "in_memory" | "browser_cached";
@@ -25,7 +26,7 @@ export type AiEstimateLedgerStore = {
 };
 
 export function cloneAiEstimateLedgerValue<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return safeJsonParseValue<T>(JSON.stringify(value), value);
 }
 
 export function normalizeAiEstimateLedgerText(value: string | null | undefined, fallback: string): string {

@@ -18,8 +18,27 @@ function isGreenFullJest(value: Record<string, unknown> | null): boolean {
   return value?.passed === true || value?.success === true || value?.final_status === "GREEN_FULL_JEST_FROZEN_PASSED";
 }
 
-function isGreenAndroid(value: Record<string, unknown> | null): boolean {
-  return value?.final_status === "GREEN_ANDROID_API34_PIPELINE_READY";
+function isGreenAndroid(
+  value: Record<string, unknown> | null,
+  fingerprints: ReturnType<typeof computeReleaseFingerprints>,
+): boolean {
+  if (value?.final_status === "GREEN_ANDROID_API34_PIPELINE_READY") {
+    return value.candidate_hash === fingerprints.candidateHash;
+  }
+
+  return (
+    value?.final_status === "GREEN_ANDROID_API34_VERIFY_READY" &&
+    value.source_tree_hash === fingerprints.sourceTreeHash &&
+    value.native_build_fingerprint === fingerprints.nativeBuildFingerprint &&
+    value.js_bundle_fingerprint === fingerprints.jsBundleFingerprint &&
+    value.proof_harness_fingerprint === fingerprints.proofHarnessFingerprint &&
+    value.android_actual_api === 34 &&
+    value.api36_used_as_substitute === false &&
+    value.android_verify_read_only === true &&
+    value.fake_green_claimed === false &&
+    Array.isArray(value.failures) &&
+    value.failures.length === 0
+  );
 }
 
 function main(): void {
@@ -62,11 +81,16 @@ function main(): void {
   const runtimeAndroid = runtimeDir ? readJsonObjectIfExists(`${runtimeDir}/android/verify.json`) : null;
   const promotedFullJest = readJsonObjectIfExists(releaseRecoveryArtifactPath("full_jest_summary.json"));
   const promotedAndroid = readJsonObjectIfExists(releaseRecoveryArtifactPath("android_api34_pipeline.json"));
+  const canonicalApi34Android = readJsonObjectIfExists(releaseRecoveryArtifactPath("android_verify.json"));
   const fullJest = runtimeFullJest ?? promotedFullJest;
-  const android = runtimeAndroid ?? promotedAndroid;
+  const androidCandidates = [runtimeAndroid, promotedAndroid, canonicalApi34Android];
+  const android =
+    androidCandidates.find((value) => isGreenAndroid(value, fingerprints)) ??
+    androidCandidates.find((value) => value !== null) ??
+    null;
 
   if (!isGreenFullJest(fullJest)) failures.push("FULL_JEST_PROOF_MISSING_OR_NOT_GREEN");
-  if (!isGreenAndroid(android)) failures.push("ANDROID_PIPELINE_PROOF_MISSING_OR_NOT_GREEN");
+  if (!isGreenAndroid(android, fingerprints)) failures.push("ANDROID_PIPELINE_PROOF_MISSING_OR_NOT_GREEN");
 
   const statusAfterChecks = gitStatusSnapshot();
   const hashesAfterChecks = trackedFileHashes();

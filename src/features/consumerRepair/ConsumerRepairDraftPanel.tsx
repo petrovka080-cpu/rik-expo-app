@@ -6,7 +6,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import type { RoadScopeIdV4 } from "../../lib/estimate/v4/asphalt";
+import { getRegisteredEstimateWorkProfile } from "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles";
 import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
@@ -40,7 +40,7 @@ type Props = {
   onCancelParamEdit?: () => void;
   onApplyParamPatch?: (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => void;
   onApplyParamBatch?: (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => void;
-  onSelectRoadScope?: (scope: RoadScopeIdV4) => void;
+  onSelectRoadScope?: (scopePresetId: string) => void;
   roadScopeSelectionBusy?: boolean;
 };
 
@@ -72,6 +72,39 @@ export function ConsumerRepairDraftPanel({
   roadScopeSelectionBusy = false,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
+  const estimateDraftSession = bundle?.estimateDraftSession ?? null;
+  const registeredWorkProfile = getRegisteredEstimateWorkProfile(
+    estimateDraftSession?.workIntent?.canonicalWorkKey ??
+    bundle?.pendingRoadScopeSelection?.requestedCatalogWorkId ??
+    "",
+  );
+  const offeredScopeIds = new Set(
+    estimateDraftSession?.scopeRequirement?.offeredScopePresetIds ??
+    bundle?.pendingRoadScopeSelection?.offeredScopes ??
+    [],
+  );
+  const offeredScopeOptions = registeredWorkProfile?.scopePresets.filter((scope) =>
+    offeredScopeIds.has(scope.scopePresetId)
+  ) ?? [];
+  const selectedScopeOption = registeredWorkProfile?.scopePresets.find(
+    (scope) => scope.scopePresetId === estimateDraftSession?.scopePresetId,
+  ) ?? null;
+  const blocksActiveEstimate =
+    estimateDraftSession != null &&
+    registeredWorkProfile != null &&
+    bundle?.canonicalParameterSession == null &&
+    // A source-backed structured payload already owns a compiled BOQ. The
+    // legacy DraftSession created for compatibility has no bound scope and can
+    // therefore remain PARAMETERS_REQUIRED; it must not hide those compiled
+    // rows, units, or PDF actions. Real uncompiled sessions still block below.
+    bundle?.structuredEstimatePayload == null &&
+    estimateDraftSession.status !== "REVIEW" &&
+    (
+      estimateDraftSession.workIntent != null ||
+      estimateDraftSession.status === "LEGACY_REVIEW_REQUIRED" ||
+      estimateDraftSession.status === "STALE_RESULT_REJECTED" ||
+      estimateDraftSession.status === "COMPILE_FAILED"
+    );
   const revisionState = bundle?.estimateDraftRevisionState ?? null;
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
@@ -88,13 +121,57 @@ export function ConsumerRepairDraftPanel({
         </Text>
       </View>
 
-      {bundle && viewModel ? (
+      {bundle?.pendingRoadScopeSelection && onSelectRoadScope ? (
+        <View style={styles.scopeSelection} testID="road-scope-selection">
+          <Text style={styles.scopeSelectionTitle}>Что требуется рассчитать?</Text>
+          <Text style={styles.status}>{bundle.pendingRoadScopeSelection.originalUserText}</Text>
+          {offeredScopeOptions
+            .map(({ scopePresetId, labelRu }) => (
+              <Pressable
+                key={scopePresetId}
+                accessibilityRole="button"
+                accessibilityLabel={labelRu}
+                disabled={roadScopeSelectionBusy}
+                onPress={() => onSelectRoadScope(scopePresetId)}
+                style={[styles.scopeButton, roadScopeSelectionBusy && styles.scopeButtonDisabled]}
+                testID={`road-scope-option-${scopePresetId.toLowerCase()}`}
+              >
+                <Text style={styles.scopeButtonText}>{labelRu}</Text>
+              </Pressable>
+            ))}
+          {roadScopeSelectionBusy ? <Text testID="road-scope-selection-progress">Выполняется расчёт…</Text> : null}
+        </View>
+      ) : blocksActiveEstimate ? (
+        <View style={styles.scopeSelection} testID="estimate-draft-session-blocked">
+          <Text style={styles.scopeSelectionTitle}>
+            {estimateDraftSession?.status === "PARAMETERS_REQUIRED"
+              ? "Нужно уточнить параметры"
+              : estimateDraftSession?.status === "LEGACY_REVIEW_REQUIRED"
+                ? "Старая смета требует проверки"
+                : "Расчёт не может быть показан"}
+          </Text>
+          <Text style={styles.status}>
+            {estimateDraftSession?.status === "PARAMETERS_REQUIRED"
+              ? "Заполните обязательные параметры расчёта. До этого позиции, PDF, закупка и подтверждение сметы недоступны."
+              : estimateDraftSession?.status === "LEGACY_REVIEW_REQUIRED"
+                ? "Откройте историческую версию для просмотра или создайте явную копию без автоматического переноса параметров."
+                : "Контекст расчёта изменился или компиляция завершилась ошибкой. Создайте расчёт из текущих подтверждённых данных."}
+          </Text>
+        </View>
+      ) : bundle && viewModel ? (
         <>
+        {selectedScopeOption ? (
+          <View style={styles.selectedScope} testID="request-estimate-selected-scope">
+            <Text style={styles.selectedScopeLabel}>Состав работ</Text>
+            <Text style={styles.selectedScopeValue}>{selectedScopeOption.labelRu}</Text>
+          </View>
+        ) : null}
         <ConsumerRepairProgressiveEstimatePanel
           viewModel={viewModel}
           revisionState={revisionState}
           currentRevision={currentRevision}
           latestDiff={latestDiff}
+          canonicalParameterSession={bundle.canonicalParameterSession}
           showPdfAction={showPdfAction}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
@@ -119,7 +196,7 @@ export function ConsumerRepairDraftPanel({
         />
         {bundle.projectExecutionDrafts[0]?.procurementItems.length ? (
           <View style={styles.card} testID="consumer-estimate-procurement-list">
-            <Text style={styles.title}>Список закупки</Text>
+            <Text style={styles.sectionTitle}>Список закупки</Text>
             {bundle.projectExecutionDrafts[0].procurementItems.slice(0, 12).map((item) => (
               <Text key={item.id} style={styles.status} testID={`consumer-estimate-procurement-row-${item.sourceEstimateRowId}`}>
                 {item.materialVisibleName}: {item.quantity} {item.unit} · цена не заполнена
@@ -135,30 +212,6 @@ export function ConsumerRepairDraftPanel({
         </>
       ) : (
         <>
-          {bundle?.pendingRoadScopeSelection && onSelectRoadScope ? (
-            <View style={styles.scopeSelection} testID="road-scope-selection">
-              <Text style={styles.scopeSelectionTitle}>Уточните состав дорожных работ</Text>
-              {([
-                ["ROAD_SURFACING_ONLY", "Только асфальт по готовому основанию"],
-                ["FULL_PAVEMENT_STRUCTURE", "Полная дорожная одежда с основанием"],
-                ["FULL_ROAD_INFRASTRUCTURE", "Полная дорога и инфраструктура"],
-                ["ROAD_REPAIR_REHABILITATION", "Ремонт существующей дороги"],
-              ] as const).map(([scope, label]) => (
-                <Pressable
-                  key={scope}
-                  accessibilityRole="button"
-                  accessibilityLabel={label}
-                  disabled={roadScopeSelectionBusy}
-                  onPress={() => onSelectRoadScope(scope)}
-                  style={[styles.scopeButton, roadScopeSelectionBusy && styles.scopeButtonDisabled]}
-                  testID={`road-scope-option-${scope.toLowerCase()}`}
-                >
-                  <Text style={styles.scopeButtonText}>{label}</Text>
-                </Pressable>
-              ))}
-              {roadScopeSelectionBusy ? <Text testID="road-scope-selection-progress">Выполняется расчёт…</Text> : null}
-            </View>
-          ) : null}
           <ConsumerRepairDraftQuickActions
             onAddManual={onAddManual}
             onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
@@ -221,6 +274,17 @@ const styles = StyleSheet.create({
   scopeButton: { borderColor: "#CBD5E1", borderRadius: 10, borderWidth: 1, padding: 12 },
   scopeButtonDisabled: { opacity: 0.55 },
   scopeButtonText: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
+  selectedScope: {
+    gap: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  selectedScopeLabel: { color: "#1D4ED8", fontSize: 12, fontWeight: "800" },
+  selectedScopeValue: { color: "#1E3A8A", fontSize: 14, fontWeight: "900" },
   card: {
     borderRadius: 12,
     borderWidth: 1,
@@ -235,6 +299,11 @@ const styles = StyleSheet.create({
   title: {
     color: "#0F172A",
     fontSize: 17,
+    fontWeight: "900",
+  },
+  sectionTitle: {
+    color: "#0F172A",
+    fontSize: 16,
     fontWeight: "900",
   },
   status: {

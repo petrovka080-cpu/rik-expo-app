@@ -47,6 +47,16 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
           city: input.city,
           currency: input.currency,
           countryCode: input.countryCode,
+          paramOverrides: input.selectedRoadScope
+            ? {
+              selectedRoadScope: {
+                value: input.selectedRoadScope,
+                source: "user_input",
+                sourceText: "Explicit road scope selection",
+                lastChangedAt: input.createdAt ?? new Date().toISOString(),
+              },
+            }
+            : undefined,
           createdAt: input.createdAt,
           source: "initial_prompt",
           revisionIndex: 1,

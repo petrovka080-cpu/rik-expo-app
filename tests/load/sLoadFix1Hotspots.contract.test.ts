@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
-import { isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import {
+  isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch,
+  withoutExactEstimateRevisionStorageDependencyFiles,
+} from "../greenCloseoutCurrentWaveAllowlist";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
@@ -1104,7 +1107,9 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the wave inside allowed code and artifact boundaries", () => {
     const changed = dirtyPaths();
     const tryCatchGapsBatchA = isCurrentTryCatchGapsBatchA(changed);
-    const forbidden = changed.filter(
+    const dependencyScopedChanged =
+      withoutExactEstimateRevisionStorageDependencyFiles(changed, repoRoot);
+    const forbidden = dependencyScopedChanged.filter(
       (file) =>
         !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&

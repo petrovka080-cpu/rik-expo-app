@@ -1,4 +1,9 @@
-import type { EstimateSemanticKind, RoadScopeIdV4, RoadScopeResolutionV4 } from "./roadScopeTruthV4";
+import {
+  ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4,
+  type EstimateSemanticKind,
+  type RoadScopeIdV4,
+  type RoadScopeResolutionV4,
+} from "./roadScopeTruthV4";
 import { compileAsphaltProfessionalEstimateV4, type AsphaltProfessionalEstimateCompilationV4 } from "./compileAsphaltProfessionalEstimateV4";
 
 export type RoadResolutionOriginV4 =
@@ -20,13 +25,6 @@ export type ResolvedRoadEstimateIntentV4 = {
   exclusions: string[];
   resolverVersion: string;
   idempotencyKey: string;
-};
-
-const PROFILE_BY_SCOPE: Record<RoadScopeIdV4, string> = {
-  ROAD_SURFACING_ONLY: "surfacing_on_prepared_base",
-  FULL_PAVEMENT_STRUCTURE: "new_full_road_pavement",
-  FULL_ROAD_INFRASTRUCTURE: "new_full_road_infrastructure",
-  ROAD_REPAIR_REHABILITATION: "rehabilitation_with_milling",
 };
 
 function stableToken(value: string): string {
@@ -77,7 +75,7 @@ export function compileEstimateFromResolvedRoadIntentV4(input: {
   resolvedIntent: ResolvedRoadEstimateIntentV4;
   parameterOverrides?: Record<string, { value: unknown; source?: string | null }>;
 }): AsphaltProfessionalEstimateCompilationV4 {
-  const profile = PROFILE_BY_SCOPE[input.resolvedIntent.selectedScope];
+  const profile = ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4[input.resolvedIntent.selectedScope];
   return compileAsphaltProfessionalEstimateV4({
     raw_text: input.resolvedIntent.originalUserText,
     parameter_overrides: {

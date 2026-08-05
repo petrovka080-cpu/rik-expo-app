@@ -4,6 +4,10 @@ import path from "node:path";
 
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildEstimatePresentationViewModel } from "../../src/lib/ai/estimatePresentation";
+import {
+  buildAndroidDeepLinkLaunchArgs,
+  buildAndroidRouteDeepLink,
+} from "./androidDeepLinkLaunchContract";
 import { ensureAndroidApi34DeviceReady } from "./ensureAndroidApi34DeviceReady";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
 
@@ -21,6 +25,8 @@ const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEO
 const CASE_UI_SETTLE_MS = 40_000;
 const CASE_UI_POLL_MS = 8_000;
 const CASE_UI_MAX_POLLS = 3;
+const REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = CASE_UI_SETTLE_MS;
+const PROMPT_PROBE_POLL_MS = 4_000;
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
@@ -33,7 +39,10 @@ type AndroidCase = {
   prompt: string;
   expectedWorkKeys: string[];
   requiredTokens: string[];
-  uiTokens?: string[];
+  uiContract: {
+    requiredTestIds: string[];
+    representativeTokens: string[];
+  };
   forbiddenTokens: string[];
 };
 
@@ -46,8 +55,24 @@ type AndroidCaseResult = {
   backendRows: string[];
   backendPassed: boolean;
   launchPassed: boolean;
+  promptProbeVisible: boolean;
+  promptProbeDiagnostics: {
+    ok: boolean;
+    elapsedMs: number;
+    textLength: number;
+    exactPromptVisible: boolean;
+    inputTestIdVisible: boolean;
+    routeReadyVisible: boolean;
+  }[];
+  promptProbeScreenshotPath: string | null;
+  promptProbeUiDumpPath: string | null;
+  dumpsysIntentReceived: boolean;
+  dumpsysIntentSample: string;
   uiRowsVisible: boolean;
   pdfActionVisible: boolean;
+  uiContract: AndroidCase["uiContract"];
+  missingTestIds: string[];
+  missingRepresentativeTokens: string[];
   screenshotPath: string | null;
   uiDumpPath: string | null;
   failures: string[];
@@ -58,10 +83,13 @@ const CASES: AndroidCase[] = [
     caseId: "android_request_electrical_cable_outlets_switches",
     route: "/request",
     context: "request",
-    prompt: "смета на прокладку электрокабеля с розетками 10 шт и выключателями 10 шт площадь квартиры 100 кв м",
+    prompt: "электрика под ключ 100 кв метров площадь длина трассы 500 метров 10 розеток 10 выключателей 10 точек освещения",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "розет", "выключател", "провер"],
-    uiTokens: ["кабель", "розет", "pdf"],
+    uiContract: {
+      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+      representativeTokens: ["кабель", "розет"],
+    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
   {
@@ -71,7 +99,10 @@ const CASES: AndroidCase[] = [
     prompt: "гидроизоляция крыши 100 кв м",
     expectedWorkKeys: ["roof_waterproofing"],
     requiredTokens: ["кров", "праймер", "гидроизоля", "примыкан"],
-    uiTokens: ["кров", "гидроизоля", "pdf"],
+    uiContract: {
+      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+      representativeTokens: ["кров", "гидроизоля"],
+    },
     forbiddenTokens: ["ванн", "сануз", "душев"],
   },
   {
@@ -81,7 +112,10 @@ const CASES: AndroidCase[] = [
     prompt: "смета на укладку брусчатки на 587 кв м",
     expectedWorkKeys: ["dynamic_paving_landscaping_estimate", "paving_stone_laying"],
     requiredTokens: ["брусчат", "геотекст", "щеб", "уклад"],
-    uiTokens: ["брусчат", "сделать pdf"],
+    uiContract: {
+      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
+      representativeTokens: ["брусчат"],
+    },
     forbiddenTokens: ["кирпич", "кладоч"],
   },
   {
@@ -91,7 +125,10 @@ const CASES: AndroidCase[] = [
     prompt: "смета на электромонтаж дома 180 кв м",
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "щит", "розет", "провер"],
-    uiTokens: ["кабель", "щит", "pdf"],
+    uiContract: {
+      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
+      representativeTokens: ["кабель", "щит"],
+    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
 ];
@@ -346,29 +383,16 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
 }
 
 function deepLinkFor(testCase: AndroidCase): string {
-  const url = new URL(`rik://${testCase.route.replace(/^\//, "")}`);
-  url.searchParams.set("prompt", testCase.prompt);
-  if (testCase.context === "foreman") url.searchParams.set("context", "foreman");
-  url.searchParams.set(testCase.route === "/request" ? "autoPrepare" : "autoSend", "1");
-  return url.toString();
-}
-
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
+  return buildAndroidRouteDeepLink({
+    route: testCase.route,
+    prompt: testCase.prompt,
+    context: testCase.context === "foreman" ? "foreman" : undefined,
+    automaticParam: testCase.route === "/request" ? "autoPrepare" : "autoSend",
+  });
 }
 
 function launchDeepLink(adbPath: string, deviceId: string, uri: string): { ok: boolean; output: string } {
-  const command = [
-    "am",
-    "start",
-    "-W",
-    "-a",
-    "android.intent.action.VIEW",
-    "-d",
-    shellQuote(uri),
-    PACKAGE_NAME,
-  ].join(" ");
-  return runText(adbPath, ["-s", deviceId, "shell", command], 20_000);
+  return runText(adbPath, buildAndroidDeepLinkLaunchArgs(deviceId, uri, PACKAGE_NAME), 20_000);
 }
 
 function launchDevClientBundle(adbPath: string, deviceId: string): { ok: boolean; output: string } {
@@ -537,7 +561,10 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
 
 async function waitForCaseUi(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<string> {
   let lastText = "";
-  const visibleTokens = testCase.uiTokens ?? testCase.requiredTokens;
+  const visibleTokens = [
+    ...testCase.uiContract.requiredTestIds,
+    ...testCase.uiContract.representativeTokens,
+  ];
   // uiautomator dump temporarily owns Android's UI thread. Let navigation and
   // estimate rendering settle first, then probe sparsely so the proof itself
   // cannot starve the route transition it is observing.
@@ -645,22 +672,87 @@ function validateBackend(testCase: AndroidCase): {
 async function runAndroidCase(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<AndroidCaseResult> {
   const backend = validateBackend(testCase);
   const uri = deepLinkFor(testCase);
+  const probeUrl = new URL(uri);
+  probeUrl.searchParams.delete(testCase.route === "/request" ? "autoPrepare" : "autoSend");
+  const probeLaunch = launchDeepLink(adbPath, deviceId, probeUrl.toString());
+  let promptProbeVisible = false;
+  const promptProbeDiagnostics: AndroidCaseResult["promptProbeDiagnostics"] = [];
+  const promptProbeStartedAt = Date.now();
+  // A preceding 80+ row request can still be yielding the JS thread when the
+  // next deep link arrives. UIAutomator accessibility dumps synchronously walk
+  // that same native tree, so first leave a bounded quiet window for React
+  // Native to commit the new launch instead of starving it with proof reads.
+  if (testCase.route === "/request") {
+    await wait(REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS);
+    for (let scroll = 0; scroll < 3; scroll += 1) {
+      runText(
+        adbPath,
+        ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 400)],
+        10_000,
+      );
+      await wait(250);
+    }
+  }
+  const promptProbeDeadline = Date.now() + 30_000;
+  while (Date.now() < promptProbeDeadline && !promptProbeVisible) {
+    const probeDump = dumpUiText(adbPath, deviceId);
+    promptProbeVisible = probeDump.ok && probeDump.text.includes(testCase.prompt);
+    promptProbeDiagnostics.push({
+      ok: probeDump.ok,
+      elapsedMs: Date.now() - promptProbeStartedAt,
+      textLength: probeDump.text.length,
+      exactPromptVisible: promptProbeVisible,
+      inputTestIdVisible: probeDump.text.includes(
+        testCase.route === "/request"
+          ? "consumer-repair-problem-input"
+          : "ai-assistant-input",
+      ),
+      routeReadyVisible: probeDump.text.includes(
+        testCase.route === "/request"
+          ? "ROUTE_PROOF_REQUEST_ROUTE_READY"
+          : "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY",
+      ),
+    });
+    if (!promptProbeVisible) await wait(PROMPT_PROBE_POLL_MS);
+  }
+  const failedPromptProbeArtifactId = `${testCase.caseId}_prompt_probe`;
+  const promptProbeScreenshotPath = promptProbeVisible
+    ? null
+    : captureScreenshot(adbPath, deviceId, failedPromptProbeArtifactId);
+  const promptProbeUiDumpPath = promptProbeVisible
+    ? null
+    : captureUiDump(adbPath, deviceId, failedPromptProbeArtifactId).path;
   const launch = launchDeepLink(adbPath, deviceId, uri);
+  const dumpsys = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity"], 20_000);
+  const dumpsysIntentReceived =
+    dumpsys.ok &&
+    dumpsys.output.includes(uri);
   const initialUiText = await waitForCaseUi(adbPath, deviceId, testCase);
   const scrolledUiText = await collectUiTextAcrossScrolls(
     adbPath,
     deviceId,
-    testCase.uiTokens ?? testCase.requiredTokens,
+    [
+      ...testCase.uiContract.requiredTestIds,
+      ...testCase.uiContract.representativeTokens,
+    ],
   );
   const screenshotPath = captureScreenshot(adbPath, deviceId, testCase.caseId);
   const uiDump = captureUiDump(adbPath, deviceId, testCase.caseId);
   const uiEvidenceText = [initialUiText, scrolledUiText, uiDump.text].join("\n");
-  const uiRowsVisible = textContainsAll(uiEvidenceText, testCase.uiTokens ?? testCase.requiredTokens);
+  const missingTestIds = testCase.uiContract.requiredTestIds.filter((testId) => !uiEvidenceText.includes(testId));
+  const missingRepresentativeTokens = testCase.uiContract.representativeTokens.filter((token) =>
+    !uiEvidenceText.toLocaleLowerCase("ru-RU").includes(token.toLocaleLowerCase("ru-RU"))
+  );
+  const uiRowsVisible = missingTestIds.length === 0 && missingRepresentativeTokens.length === 0;
   const uiForbiddenFound = textContainsAny(uiEvidenceText, testCase.forbiddenTokens);
   const failures = [
     ...backend.failures,
+    ...(probeLaunch.ok ? [] : [`prompt_probe_launch_failed:${probeLaunch.output.slice(0, 300)}`]),
+    ...(promptProbeVisible ? [] : ["app_visible_prompt_probe_missing"]),
     ...(launch.ok ? [] : [`launch_failed:${launch.output.slice(0, 300)}`]),
-    ...(uiRowsVisible ? [] : ["ui_required_rows_missing"]),
+    ...(dumpsysIntentReceived ? [] : ["dumpsys_full_intent_missing"]),
+    ...(missingTestIds.length === 0 ? [] : [`ui_semantic_contract_missing:${missingTestIds.join(",")}`]),
+    ...(missingRepresentativeTokens.length === 0 ? [] : [`ui_representative_rows_missing:${missingRepresentativeTokens.join(",")}`]),
     ...(uiForbiddenFound ? ["ui_forbidden_rows_found"] : []),
     ...(screenshotPath ? [] : ["screenshot_missing"]),
     ...(uiDump.path ? [] : ["ui_dump_missing"]),
@@ -674,8 +766,22 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     backendRows: backend.rows,
     backendPassed: backend.failures.length === 0,
     launchPassed: launch.ok,
+    promptProbeVisible,
+    promptProbeDiagnostics,
+    promptProbeScreenshotPath,
+    promptProbeUiDumpPath,
+    dumpsysIntentReceived,
+    dumpsysIntentSample: dumpsys.output
+      .split(/\r?\n/)
+      .filter((line) => line.includes("rik:///"))
+      .slice(0, 3)
+      .join("\n")
+      .slice(0, 3000),
     uiRowsVisible,
     pdfActionVisible: backend.pdfActionVisible,
+    uiContract: testCase.uiContract,
+    missingTestIds,
+    missingRepresentativeTokens,
     screenshotPath,
     uiDumpPath: uiDump.path,
     failures,
@@ -726,7 +832,8 @@ async function main(): Promise<void> {
 
   const cases: AndroidCaseResult[] = [];
   if (failures.length === 0 && device.adb_path && device.device_id) {
-    for (const testCase of CASES) {
+    const selectedCases = process.argv.includes("--legacy-only") ? CASES.slice(0, 3) : CASES;
+    for (const testCase of selectedCases) {
       const result = await runAndroidCase(device.adb_path, device.device_id, testCase);
       cases.push(result);
       failures.push(...result.failures.map((failure) => `${testCase.caseId}:${failure}`));

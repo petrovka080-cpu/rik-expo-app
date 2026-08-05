@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,6 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AppChatComposerBar } from "../../components/layout/AppChatComposerBar";
 import { AIAssistantLiveScreenCopilotPanel } from "./AIAssistantLiveScreenCopilotPanel";
 import {
+  AIAssistantBootView,
+  AIAssistantMessageList,
   AIAssistantProductHeader,
   AIAssistantReadyProductPanels,
   AIAssistantShortcutRows,
@@ -29,7 +31,6 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
-import { AIAssistantEstimatePdfActions, AIAssistantEstimateTable } from "./AIAssistantEstimatePdfActions";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
   answerAiLiveScreenButton,
@@ -46,16 +47,26 @@ import { useAIAssistantScreenDerivedState } from "./useAIAssistantScreenDerivedS
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { safeBack } from "../../lib/navigation/safeBack";
 import {
+  markAiDraftSessionReady,
+  useAIAssistantLaunchRuntimeEffects,
+  useAIAssistantPendingLaunchSubscription,
   createAssistantScreenMessage as createMessage,
   normalizeGroundedRouteParams,
   recordAssistantScreenFallback,
+  resolveAssistantMessagesAfterHydration,
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 import {
   createBuiltInAiAssistantMessage,
   createExternalKnowledgeAssistantMessage,
 } from "./assistantAnswerPipeline";
-export default function AIAssistantScreen() {
+import type { RequestEstimateLaunchPayloadV1 } from "../../lib/navigation/requestEstimateLaunchPayload";
+
+export default function AIAssistantScreen({
+  launchPayload = null,
+}: {
+  launchPayload?: RequestEstimateLaunchPayloadV1 | null;
+}) {
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<AssistantRole>("unknown");
@@ -66,7 +77,12 @@ export default function AIAssistantScreen() {
   const [scopedFacts, setScopedFacts] = useState<AssistantScopedFacts | null>(null);
   const [scopedFactsLoading, setScopedFactsLoading] = useState(false);
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
+  const [runtimeLaunchPayload, setRuntimeLaunchPayload] =
+    useState<RequestEstimateLaunchPayloadV1 | null>(launchPayload);
   const handledPromptRef = useRef<string>("");
+  const acknowledgedPromptLaunchRef = useRef<string>("");
+  const autoEstimateLaunchPayloadRef =
+    useRef<RequestEstimateLaunchPayloadV1 | null>(null);
   const messagesScrollRef = useRef<ScrollView | null>(null);
   const {
     params,
@@ -108,28 +124,77 @@ export default function AIAssistantScreen() {
       const shouldRestoreStoredMessages = assistantContext === "unknown";
       const stored = shouldRestoreStoredMessages ? await loadAssistantMessages(nextUserId) : [];
       if (shouldRestoreStoredMessages && stored.length > 0) {
-        setMessages(stored);
+        setMessages((current) =>
+          resolveAssistantMessagesAfterHydration(
+            current,
+            stored,
+            keepInteractive,
+          ),
+        );
         setBooting(false);
         return;
       }
       const greetingRole = assistantContext === "unknown" ? nextRole : assistantPresentationRole;
-      setMessages([createMessage("assistant", getAssistantGreeting(greetingRole, nextFullName, assistantContext))]);
+      const greeting = createMessage(
+        "assistant",
+        getAssistantGreeting(greetingRole, nextFullName, assistantContext),
+      );
+      setMessages((current) =>
+        resolveAssistantMessagesAfterHydration(
+          current,
+          [greeting],
+          keepInteractive,
+        ),
+      );
     } catch (error) {
       recordAssistantScreenFallback("initialize_assistant_failed", error, {
         action: "initialize",
         assistantContext,
       });
-      setMessages([createMessage("assistant", getAssistantGreeting("unknown", null, assistantContext))]);
+      const greeting = createMessage(
+        "assistant",
+        getAssistantGreeting("unknown", null, assistantContext),
+      );
+      setMessages((current) =>
+        resolveAssistantMessagesAfterHydration(
+          current,
+          [greeting],
+          keepInteractive,
+        ),
+      );
     } finally {
       setBooting(false);
     }
   }, [assistantContext, assistantPresentationRole]);
-  const hasAutoSendPrompt = routeAutoSend === "1" && Boolean(String(routePrompt || "").trim());
+  useAIAssistantPendingLaunchSubscription({
+    launchPayload,
+    setRuntimeLaunchPayload,
+  });
+  const effectiveLaunchPayload = runtimeLaunchPayload ?? launchPayload;
+  const launchPrompt = String(
+    effectiveLaunchPayload?.workIntent || routePrompt || "",
+  ).trim();
+  const launchAutoSend =
+    effectiveLaunchPayload?.parameters.autoSend ?? routeAutoSend;
+  const hasInteractiveLaunchPrompt = Boolean(launchPrompt);
+  const hasRouteAutoSendPrompt =
+    routeAutoSend === "1" && hasInteractiveLaunchPrompt;
+  const hasAutoSendPrompt =
+    (launchAutoSend === "1" && hasInteractiveLaunchPrompt) ||
+    hasRouteAutoSendPrompt;
   useFocusEffect(
     useCallback(() => {
-      if (hasAutoSendPrompt) setBooting(false);
-      void initialize(hasAutoSendPrompt);
-    }, [hasAutoSendPrompt, initialize]),
+      // The composer and canonical launch prompt do not depend on profile or
+      // stored-message hydration. Keep the route interactive immediately and
+      // hydrate identity/history in the background; auto-send still
+      // acknowledges only after `send` resolves below.
+      if (hasInteractiveLaunchPrompt) setBooting(false);
+      if (hasAutoSendPrompt) {
+        void initialize(hasAutoSendPrompt);
+      } else {
+        void initialize(hasInteractiveLaunchPrompt);
+      }
+    }, [hasAutoSendPrompt, hasInteractiveLaunchPrompt, initialize]),
   );
   useEffect(() => {
     if (assistantContext !== "unknown") return;
@@ -185,6 +250,17 @@ export default function AIAssistantScreen() {
           userId,
         });
         if (builtInAiMessage) {
+          const autoEstimatePayload =
+            effectiveLaunchPayload &&
+            launchAutoSend === "1" &&
+            text === launchPrompt &&
+            builtInAiMessage.estimatePdfSource
+              ? effectiveLaunchPayload
+              : null;
+          if (autoEstimatePayload) {
+            autoEstimateLaunchPayloadRef.current = autoEstimatePayload;
+            markAiDraftSessionReady(autoEstimatePayload);
+          }
           setMessages((prev) => [...prev, builtInAiMessage]);
           return;
         }
@@ -284,7 +360,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, assistantPresentationRole, input, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, assistantPresentationRole, effectiveLaunchPayload, input, launchAutoSend, launchPrompt, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -294,38 +370,23 @@ export default function AIAssistantScreen() {
     await clearAssistantMessages(userId);
   }, [assistantContext, assistantPresentationRole, fullName, role, userId]);
 
-  useEffect(() => {
-    if (booting) return;
-    const prompt = String(routePrompt || "").trim();
-    if (!prompt) return;
-
-    const key = `${prompt}::${routeAutoSend === "1" ? "1" : "0"}`;
-    if (handledPromptRef.current === key) return;
-    handledPromptRef.current = key;
-
-    if (routeAutoSend === "1") {
-      void send(prompt);
-      return;
-    }
-
-    setInput(prompt);
-  }, [booting, routeAutoSend, routePrompt, send]);
-
-  useEffect(() => {
-    if (messages.length === 0) return undefined;
-    const timeout = setTimeout(() => {
-      messagesScrollRef.current?.scrollToEnd({ animated: false });
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [messages.length, loading]);
+  useAIAssistantLaunchRuntimeEffects({
+    booting,
+    effectiveLaunchPayload,
+    launchAutoSend,
+    launchPrompt,
+    input,
+    loading,
+    messagesLength: messages.length,
+    send,
+    setInput,
+    handledPromptRef,
+    acknowledgedPromptLaunchRef,
+    messagesScrollRef,
+  });
 
   if (booting) {
-    return (
-      <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
-      </SafeAreaView>
-    );
+    return <AIAssistantBootView />;
   }
 
   const hasAnyUserPrompt = messages.some((candidate) => candidate.role === "user");
@@ -376,51 +437,12 @@ export default function AIAssistantScreen() {
             onPromptPress={(prompt) => void send(prompt)}
           />
 
-          {messages.map((message, index) => {
-            const hasPriorUserPrompt = messages
-              .slice(0, index)
-              .some((historyMessage) => historyMessage.role === "user");
-            const isLatestAssistantReply =
-              message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
-            const shouldCompactAssistantHistory =
-              message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
-            const responseTestId = isLatestAssistantReply
-              ? "ai.assistant.response"
-              : message.role === "assistant"
-                ? "ai.assistant.response.history"
-                : undefined;
-
-            return (
-              <React.Fragment key={message.id}>
-                <View
-                  testID={responseTestId}
-                  style={[
-                    styles.messageBubble,
-                    message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.messageText,
-                      message.role === "assistant" ? styles.assistantText : styles.userText,
-                    ]}
-                    numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
-                    ellipsizeMode="tail"
-                  >
-                    {message.content}
-                  </Text>
-                </View>
-                {message.role === "assistant" && message.estimatePdfSource ? (
-                  <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
-                ) : null}
-                <AIAssistantEstimatePdfActions
-                  message={message}
-                  onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
-                  onFallback={recordAssistantScreenFallback}
-                />
-              </React.Fragment>
-            );
-          })}
+          <AIAssistantMessageList
+            messages={messages}
+            hasAnyUserPrompt={hasAnyUserPrompt}
+            autoEstimateLaunchPayloadRef={autoEstimateLaunchPayloadRef}
+            onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
+          />
           {loading ? (
             <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]} testID="ai.assistant.loading" accessibilityLabel="AI assistant loading">
               <ActivityIndicator size="small" color="#2563EB" />

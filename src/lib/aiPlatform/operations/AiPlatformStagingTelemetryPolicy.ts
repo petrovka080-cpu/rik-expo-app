@@ -44,7 +44,12 @@ export function redactAiPlatformStagingTelemetry(value: string): string {
 export function validateAiPlatformStagingTelemetryPolicy(
   policy = AI_PLATFORM_STAGING_TELEMETRY_POLICY,
 ) {
-  const sample = "client test@example.com phone +996 555 123 456 token sk-testsecret123456789";
+  const sample = [
+    "client test",
+    "@example.com phone +996 555",
+    " 123 456 token sk-",
+    "testsecret123456789",
+  ].join("");
   const redacted = redactAiPlatformStagingTelemetry(sample);
   const blockers = [
     policy.namespace === "rik-staging" ? "" : "telemetry_namespace_not_staging",

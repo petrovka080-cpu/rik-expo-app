@@ -1,4 +1,5 @@
 import type { EstimateDraftRevision } from "../estimateDraftRevisionContract";
+import { safeJsonParseValue } from "../../format";
 
 export type AiEstimateApprovedHistoryRecord = {
   id: string;
@@ -19,7 +20,7 @@ export type AiEstimateHistoryStore = {
 };
 
 function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return safeJsonParseValue<T>(JSON.stringify(value), value);
 }
 
 export function createInMemoryAiEstimateHistoryStore(): AiEstimateHistoryStore {

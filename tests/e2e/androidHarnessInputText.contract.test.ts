@@ -15,15 +15,16 @@ describe("Android harness text input contracts", () => {
     expect(source).not.toContain('.replace(/@/g, "\\\\@")');
   });
 
-  it("opens protected route before login fill when the first surface is not the login screen", () => {
+  it("opens the canonical login route before field fill when the first surface is not authenticated", () => {
     const source = read("scripts/_shared/androidHarness.ts");
-    const initialProtectedRouteIndex = source.indexOf('artifactBase: `${params.artifactBase}-initial-protected-route`');
-    const firstEmailFillIndex = source.indexOf('await setLoginFieldText("email-fill"');
+    const initialAuthRouteIndex = source.indexOf('routes: ["rik:///auth/login"]');
+    const firstEmailFillIndex = source.indexOf("const confirmedEmail = await setLoginFieldText(");
 
     expect(source).toContain('artifactBase: `${params.artifactBase}-initial-protected-route`');
-    expect(source).toContain("predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml)");
-    expect(initialProtectedRouteIndex).toBeGreaterThanOrEqual(0);
-    expect(firstEmailFillIndex).toBeGreaterThan(initialProtectedRouteIndex);
+    expect(source).toContain('routes: ["rik:///auth/login"]');
+    expect(source).toContain("isAuthenticatedSessionReady(xml) || isLoginScreen(xml)");
+    expect(initialAuthRouteIndex).toBeGreaterThanOrEqual(0);
+    expect(firstEmailFillIndex).toBeGreaterThan(initialAuthRouteIndex);
   });
 
   it("opens route bootstrap deep links with adb arguments instead of a shell-quoted command string", () => {
@@ -83,5 +84,74 @@ describe("Android harness text input contracts", () => {
     expect(routeBootstrapHarness).toContain('spawnSync("adb", args');
     expect(routeBootstrapHarness).toContain("timeout: timeoutMs");
     expect(routeBootstrapHarness).not.toContain('execFileSync("adb", args');
+  });
+
+  it("keeps canonical API34 replay fail-closed on auth, prompt submission and bounded output scrolling", () => {
+    const canonicalReplay = read("scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
+
+    expect(canonicalReplay).toContain('return `rik://ai?${query.toString()}`');
+    expect(canonicalReplay).toContain(
+      'buildAndroidHostUri(testCase, `${launchIdBase}-host`)',
+    );
+    expect(canonicalReplay).toContain(
+      'buildUri(testCase, `${launchIdBase}-path`)',
+    );
+    expect(canonicalReplay).toContain("ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID");
+    expect(canonicalReplay).toContain("authenticatedAppRootOrAuthReady");
+    expect(canonicalReplay).toContain("requiresAuthenticatedSession");
+    expect(canonicalReplay).toContain("function aiLaunchPayloadApplied");
+    expect(canonicalReplay).toContain('resource-id="ai.assistant.loading"');
+    expect(canonicalReplay).toContain('resource-id="ai.assistant.response"');
+    expect(canonicalReplay).toContain("function caseLaunchReadyForCase");
+    expect(canonicalReplay).toContain(
+      "launchReadyMarkerForUri(uris[uriIndex])",
+    );
+    expect(canonicalReplay).toContain(
+      "expectedLaunchMarker",
+    );
+    expect(canonicalReplay).toContain(
+      '!screen.xml.includes(`resource-id="${expectedLaunchMarker}"`)',
+    );
+    expect(canonicalReplay).toContain(
+      'query.set("launchId", launchId)',
+    );
+    expect(canonicalReplay).toContain("const REPLAY_RUN_ID = [");
+    expect(canonicalReplay).toContain("Date.now().toString(36)");
+    expect(canonicalReplay).toContain("process.pid.toString(36)");
+    expect(canonicalReplay).toContain(
+      '`android-api34-${REPLAY_RUN_ID}-${testCase.id}-${launchCandidateSequence}`',
+    );
+    expect(canonicalReplay).toContain("async function isolateAndroidRequestCaseState");
+    expect(canonicalReplay).toContain('if (testCase.route !== "/request") return');
+    expect(canonicalReplay).toContain(
+      'runAdb(["shell", "pm", "clear", APP_PACKAGE], 12_000)',
+    );
+    expect(canonicalReplay).toContain(
+      "await isolateAndroidRequestCaseState(testCase)",
+    );
+    expect(canonicalReplay).toContain('const REQUEST_SCROLL_RESOURCE_ID = "consumer-repair-screen"');
+    expect(canonicalReplay).toContain(
+      'const REQUEST_LOAD_MORE_RESOURCE_ID = "request-estimate-items-load-more"',
+    );
+    expect(canonicalReplay).toContain("const REQUEST_SCROLL_X_RATIO = 0.065");
+    expect(canonicalReplay).toContain("async function expandRequestRowsIfAvailable");
+    expect(canonicalReplay).toContain("tapAndroidBounds(loadMoreBounds)");
+    expect(canonicalReplay).toContain(
+      "await expandRequestRowsIfAvailable(captures[captures.length - 1], testCase)",
+    );
+    expect(canonicalReplay).toContain("const requestStartedAtTop");
+    expect(canonicalReplay).toContain('captures.push(await captureReplayScreen(`${captureId}_settle_${index}`))');
+    expect(canonicalReplay).toContain("!captures.some(latestAssistantResponseVisible)");
+    expect(canonicalReplay).toContain('testCase.route === "/ai?context=foreman" ? "down" : "up"');
+    expect(canonicalReplay).toContain("scrollableOutputBounds(captures[captures.length - 1], testCase)");
+    expect(canonicalReplay).toContain('if (testCase.route !== "/request") focusAndroidBounds(bounds)');
+    expect(canonicalReplay).toContain("источник|уверенн|довер|confidence");
+    expect(canonicalReplay).toContain("protectedRoute: buildUriCandidates(testCase)[0]");
+    expect(canonicalReplay).toMatch(
+      /const promptSubmitted\s*=\s*requestOutputProofSubmitted\(/,
+    );
+    expect(canonicalReplay).not.toMatch(
+      /const promptSubmitted\s*=\s*routeMarkerProven\s*\|\|/,
+    );
   });
 });

@@ -69,11 +69,11 @@ export function professionalEstimateRowChildTitle(input: ProfessionalRowDisplayI
 function looksLikeGenericEstimateName(value: string): boolean {
   return /^\d+(?:\.\d+)*\s+/.test(value)
     ? looksLikeGenericEstimateName(value.replace(/^\d+(?:\.\d+)*\s+/, ""))
-    : /^Комплект расходных изделий(?::|\b)/i.test(value)
-      || /^Подготовка основания(?::|\b)/i.test(value)
-      || /^Малая механизация(?::|\b)/i.test(value)
-      || /^Доставка и разгрузка(?::|\b)/i.test(value)
-      || /работы на объекте/i.test(value);
+    : /^\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0438\u0437\u0434\u0435\u043b\u0438\u0439$/i.test(value)
+      || /^\u041f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f$/i.test(value)
+      || /^\u041c\u0430\u043b\u0430\u044f \u043c\u0435\u0445\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u044f$/i.test(value)
+      || /^\u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0438 \u0440\u0430\u0437\u0433\u0440\u0443\u0437\u043a\u0430$/i.test(value)
+      || /^\u0440\u0430\u0431\u043e\u0442\u044b \u043d\u0430 \u043e\u0431\u044a\u0435\u043a\u0442\u0435$/i.test(value);
 }
 
 export function isProfessionalEstimateHelperRow(input: ProfessionalRowDisplayInput): boolean {
@@ -95,14 +95,14 @@ function helperKind(rowCode: string, sectionType: string | null | undefined): st
 }
 
 export function professionalEstimateRowVisibleName(input: ProfessionalRowDisplayInput): string {
+  const visibleName = text(input.visibleName ?? input.name);
+  if (visibleName) {
+    return visibleName.replace(/^\d+(?:\.\d+)*\s+/, "").trim();
+  }
+
   const rowCode = estimateRowCode(input);
   const explicit = ROW_CODE_TITLES[rowCode];
   if (explicit) return explicit;
-
-  const visibleName = text(input.visibleName ?? input.name);
-  if (visibleName && !looksLikeGenericEstimateName(visibleName)) {
-    return visibleName.replace(/^\d+(?:\.\d+)*\s+/, "").trim();
-  }
 
   const childTitle = CHILD_TITLES[estimateRowChildTemplateId(input)] ?? "Работы по смете";
   return `${childTitle}: ${helperKind(rowCode, input.sectionType)}`;

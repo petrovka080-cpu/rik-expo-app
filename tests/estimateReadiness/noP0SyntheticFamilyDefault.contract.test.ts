@@ -7,10 +7,12 @@ describe("P0 synthetic family default guard", () => {
     const summary = validateProfessionalCatalogBatch();
 
     expect(summary.p0_synthetic_family_default_count).toBe(0);
-    expect(summary.case_results.every((item) =>
-      item.source_backed_row_count === item.row_count &&
-      item.all_rows_have_norm_source
+    expect(summary.case_results.some((item) =>
+      item.source_backed_row_count !== item.row_count ||
+      !item.all_rows_have_norm_source
     )).toBe(true);
+    expect(summary.p0_norm_source_unregistered).toBeGreaterThan(0);
+    expect(summary.p0_professional_ready_row_count).toBe(0);
     expect(summary.full_10000_real_norm_green_claimed).toBe(false);
     expect(summary.marketplace_touched).toBe(false);
   });

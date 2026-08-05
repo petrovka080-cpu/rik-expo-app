@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "AndroidLegacyUiTokenMigrationV1",
+  "status": "PROOF_MIGRATION_REQUIRED",
+  "sourceEvidence": "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
+  "cases": [
+    {
+      "caseId": "android_request_electrical_cable_outlets_switches",
+      "classification": "PROOF_RUNNER_DEFECT",
+      "legacyExpectedTokens": ["кабель", "розет", "pdf"],
+      "absenceReason": "The deep link used rik://request, where request was parsed as the URL host. The request route opened, but prompt and autoPrepare were not applied, so the UI dump contained an empty draft.",
+      "expectedUserVisibleEvidence": ["estimate title", "real BOQ material rows for cable and sockets", "PDF action"],
+      "semanticContract": {
+        "requiredTestIds": ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+        "representativeTokens": ["кабель", "розет"]
+      },
+      "boqEvidence": "Backend work key electrical_area_installation and canonical presentation rows must agree with the visible estimate title and representative material rows.",
+      "changeScope": "PROOF_ONLY"
+    },
+    {
+      "caseId": "android_request_roof_waterproofing",
+      "classification": "PROOF_RUNNER_DEFECT",
+      "legacyExpectedTokens": ["кров", "гидроизоля", "pdf"],
+      "absenceReason": "The deep link used rik://request, where request was parsed as the URL host. The request route opened, but prompt and autoPrepare were not applied, so the UI dump contained an empty draft.",
+      "expectedUserVisibleEvidence": ["estimate title", "real roof waterproofing BOQ rows", "PDF action"],
+      "semanticContract": {
+        "requiredTestIds": ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
+        "representativeTokens": ["кров", "гидроизоля"]
+      },
+      "boqEvidence": "Backend work key roof_waterproofing and canonical presentation rows must agree with the visible estimate title and representative waterproofing rows.",
+      "changeScope": "PROOF_ONLY"
+    },
+    {
+      "caseId": "android_foreman_paving_stone",
+      "classification": "PROOF_RUNNER_DEFECT",
+      "legacyExpectedTokens": ["брусчат", "сделать pdf"],
+      "absenceReason": "The deep link used rik://ai, where ai was parsed as the URL host. The AI route opened, but prompt and autoSend were not applied, so the UI dump contained only the initial assistant screen.",
+      "expectedUserVisibleEvidence": ["AI estimate table", "real paving-stone BOQ row", "PDF action"],
+      "semanticContract": {
+        "requiredTestIds": ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
+        "representativeTokens": ["брусчат"]
+      },
+      "boqEvidence": "Backend work key paving_stone_laying and canonical presentation rows must agree with the visible AI estimate table and representative paving row.",
+      "changeScope": "PROOF_ONLY"
+    }
+  ],
+  "forbiddenTechniquesUsed": [],
+  "productChangeRequired": false,
+  "proofChangeRequired": true
+}

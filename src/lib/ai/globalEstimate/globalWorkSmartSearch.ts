@@ -367,7 +367,12 @@ function fallbackTitleRu(definition: GlobalWorkTypeDefinition): string {
 export function visibleGlobalWorkTitleRu(definition: GlobalWorkTypeDefinition): string {
   const repaired = repairGlobalWorkMojibakeRu(definition.names.ru ?? "").replace(/\s+/g, " ").trim();
   const visible = repaired || repairGlobalWorkMojibakeRu(definition.names.en ?? "").replace(/\s+/g, " ").trim();
-  if (!visible || /[_]/.test(visible) || !/[\u0400-\u04ff]/.test(visible)) {
+  if (
+    !visible ||
+    /[_]/.test(visible) ||
+    !/[\u0400-\u04ff]/.test(visible) ||
+    /\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/i.test(visible)
+  ) {
     return fallbackTitleRu(definition);
   }
   return visible.replace(/^\u0421\u043c\u0435\u0442\u0430\s+\u043d\u0430\s+/i, "").trim();

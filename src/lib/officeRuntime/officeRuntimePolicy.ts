@@ -26,7 +26,9 @@ export type OfficeAccessRuntimeRole = OfficeAccessRole | "admin";
 export type OfficeAccessRouteManifestEntry = {
   role: OfficeAccessRouteRole;
   route: `/office/${string}`;
+  routeModule: `app/(tabs)/office/${string}.tsx`;
   screenId: string;
+  expectedShellTestId: `office-role-auth-context-${OfficeAccessRouteRole}`;
 };
 
 export const OFFICE_ACCESS_ROUTE_MANIFEST: Record<
@@ -36,37 +38,51 @@ export const OFFICE_ACCESS_ROUTE_MANIFEST: Record<
   foreman: Object.freeze({
     role: "foreman",
     route: "/office/foreman",
+    routeModule: "app/(tabs)/office/foreman.tsx",
     screenId: "office.foreman",
+    expectedShellTestId: "office-role-auth-context-foreman",
   }),
   director: Object.freeze({
     role: "director",
     route: "/office/director",
+    routeModule: "app/(tabs)/office/director.tsx",
     screenId: "office.director",
+    expectedShellTestId: "office-role-auth-context-director",
   }),
   buyer: Object.freeze({
     role: "buyer",
     route: "/office/buyer",
+    routeModule: "app/(tabs)/office/buyer.tsx",
     screenId: "office.buyer",
+    expectedShellTestId: "office-role-auth-context-buyer",
   }),
   warehouse: Object.freeze({
     role: "warehouse",
     route: "/office/warehouse",
+    routeModule: "app/(tabs)/office/warehouse.tsx",
     screenId: "office.warehouse",
+    expectedShellTestId: "office-role-auth-context-warehouse",
   }),
   accountant: Object.freeze({
     role: "accountant",
     route: "/office/accountant",
+    routeModule: "app/(tabs)/office/accountant.tsx",
     screenId: "office.accountant",
+    expectedShellTestId: "office-role-auth-context-accountant",
   }),
   contractor: Object.freeze({
     role: "contractor",
     route: "/office/contractor",
+    routeModule: "app/(tabs)/office/contractor.tsx",
     screenId: "office.contractor",
+    expectedShellTestId: "office-role-auth-context-contractor",
   }),
   security: Object.freeze({
     role: "security",
     route: "/office/security",
+    routeModule: "app/(tabs)/office/security.tsx",
     screenId: "office.security",
+    expectedShellTestId: "office-role-auth-context-security",
   }),
 });
 

@@ -51,6 +51,8 @@ function taxText(result: GlobalEstimateResult): string {
   return `${result.tax.taxLabel}${rate ? ` (${rate})` : ""}: ${mode}.`;
 }
 
+const MAX_SOURCE_EVIDENCE_PREVIEW_ROWS = 16;
+
 function sourceEvidenceLines(result: GlobalEstimateResult, ru: boolean): string[] {
   const lines = result.sections
     .flatMap((section) => section.rows)
@@ -61,12 +63,20 @@ function sourceEvidenceLines(result: GlobalEstimateResult, ru: boolean): string[
         : `- ${row.rowNumber} ${row.name}: ${evidence.label}, checked ${checkedDate}, freshness ${evidence.freshness}, confidence ${evidence.confidence}.`;
     }));
 
-  return lines.length > 0
-    ? lines
-    : [ru
+  if (lines.length === 0) {
+    return [ru
       ? "- \u041d\u0435\u0442 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043d\u044b\u0445 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u043e\u0432 \u0434\u043b\u044f \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d\u043d\u044b\u0445 \u0441\u0442\u0440\u043e\u043a; \u0443\u0432\u0435\u0440\u0435\u043d\u043d\u0430\u044f \u0446\u0435\u043d\u0430 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430."
       : "- No approved source evidence is attached to priced rows; confident pricing is unavailable."
     ];
+  }
+  const preview = lines.slice(0, MAX_SOURCE_EVIDENCE_PREVIEW_ROWS);
+  const omitted = lines.length - preview.length;
+  if (omitted > 0) {
+    preview.push(ru
+      ? `- \u0415\u0449\u0435 ${omitted} \u0437\u0430\u043f\u0438\u0441\u0435\u0439 \u043e\u0431 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430\u0445 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b \u0432 \u043f\u043e\u043b\u043d\u043e\u0439 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 UI/PDF.`
+      : `- ${omitted} more source-evidence records are available in the full UI/PDF table.`);
+  }
+  return preview;
 }
 
 function inputQuantityText(result: GlobalEstimateResult): string {
@@ -140,12 +150,30 @@ function localContextLines(result: GlobalEstimateResult): string[] {
 const MAX_MARKDOWN_PREVIEW_ROWS = 54;
 
 function estimateMarkdownTableRows(result: GlobalEstimateResult): string[] {
-  let emittedRows = 0;
   let omittedRows = 0;
   const lines: string[] = [];
+  const nonEmptySections = result.sections.filter((section) => section.rows.length > 0);
+  const previewCounts = new Map<string, number>();
+  const baseRowsPerSection = nonEmptySections.length > 0
+    ? Math.floor(MAX_MARKDOWN_PREVIEW_ROWS / nonEmptySections.length)
+    : 0;
+  let remainingRows = MAX_MARKDOWN_PREVIEW_ROWS;
 
-  for (const section of result.sections) {
-    const visibleRows = section.rows.slice(0, Math.max(0, MAX_MARKDOWN_PREVIEW_ROWS - emittedRows));
+  for (const section of nonEmptySections) {
+    const count = Math.min(section.rows.length, baseRowsPerSection);
+    previewCounts.set(section.sectionNumber, count);
+    remainingRows -= count;
+  }
+  for (const section of nonEmptySections) {
+    if (remainingRows <= 0) break;
+    const current = previewCounts.get(section.sectionNumber) ?? 0;
+    const additional = Math.min(section.rows.length - current, remainingRows);
+    previewCounts.set(section.sectionNumber, current + additional);
+    remainingRows -= additional;
+  }
+
+  for (const section of nonEmptySections) {
+    const visibleRows = section.rows.slice(0, previewCounts.get(section.sectionNumber) ?? 0);
     if (visibleRows.length === 0) {
       omittedRows += section.rows.length;
       continue;
@@ -154,7 +182,6 @@ function estimateMarkdownTableRows(result: GlobalEstimateResult): string[] {
     lines.push(...visibleRows.map((row) =>
       `| ${row.rowNumber} | ${row.name} | ${localizeUnitText(row.displayQuantity)} | ${localizeUnitText(row.displayUnitPrice)} | ${localizeUnitText(row.displayTotal)} |`,
     ));
-    emittedRows += visibleRows.length;
     omittedRows += Math.max(0, section.rows.length - visibleRows.length);
   }
 

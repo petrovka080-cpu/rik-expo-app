@@ -57,6 +57,22 @@ function hasProfessionalCalculationTrace(item: ProfessionalBoqRuntimeContractInp
   return Boolean(item.formulaId && item.quantityFormula && item.calculationTrace);
 }
 
+function hasValidProfessionalQuantityShape(
+  item: ProfessionalBoqRuntimeContractInput["draft"]["items"][number],
+): boolean {
+  if (!Number.isFinite(item.quantity)) return false;
+  if ((item.quantity ?? 0) > 0) return true;
+  const blockers = item.sourceParameters?.parameterBlockerIds;
+  return item.quantity === 0 &&
+    item.unitPrice == null &&
+    item.priceStatus === "PRICE_MISSING" &&
+    item.sourceParameters?.includedInEstimate === false &&
+    item.sourceParameters?.includedInProcurement === false &&
+    Array.isArray(blockers) &&
+    blockers.length > 0 &&
+    blockers.every((blocker) => typeof blocker === "string" && blocker.length > 0);
+}
+
 export function validateProfessionalBoqRuntimeContract(
   input: ProfessionalBoqRuntimeContractInput,
 ): ProfessionalBoqRuntimeContractValidation {
@@ -69,12 +85,20 @@ export function validateProfessionalBoqRuntimeContract(
   if (DRAWINGS_STOP_RE.test(text)) failures.push("drawings_required_stop_visible");
   if (RAW_PUBLIC_TEXT_RE.test(text)) failures.push("raw_internal_marker_visible");
   if (items.some(hasUnsupportedPrice)) failures.push("priced_row_without_accepted_source");
-  if (!items.every((item) => item.itemType && item.titleRu && Number.isFinite(item.quantity) && item.quantity > 0 && item.unit)) {
+  if (!items.every((item) =>
+    item.itemType &&
+    item.titleRu &&
+    item.unit &&
+    hasValidProfessionalQuantityShape(item)
+  )) {
     failures.push("invalid_boq_row_shape");
   }
   if (!items.every(hasProfessionalNormSource)) failures.push("professional_draft_rows_without_norm_source");
   if (!items.every(hasProfessionalCalculationTrace)) failures.push("professional_draft_rows_without_trace");
-  if (!items.every((item) => item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1")) {
+  if (!items.every((item) =>
+    item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1" ||
+    item.sourceParameters?.asphaltV4 === true
+  )) {
     failures.push("runtime_contract_marker_missing");
   }
   const unitValidation = validateProfessionalBoqUnitRows(items.map((item, index) => ({

@@ -4,7 +4,10 @@ import equipmentRatesJson from "../../../data/estimate/pricebook/equipment-rates
 import serviceRatesJson from "../../../data/estimate/pricebook/service-rates.json";
 import transportRatesJson from "../../../data/estimate/pricebook/transport-rates.json";
 import priceSourcesJson from "../../../data/estimate/pricebook/price-sources.json";
-import { normalizeCanonicalProfessionalBoqUnit } from "./canonicalUnits";
+import {
+  normalizeCanonicalProfessionalBoqUnit,
+  type CanonicalProfessionalBoqUnit,
+} from "./canonicalUnits";
 import type { ProfessionalCostRowType } from "./professionalCostingContract";
 import type {
   ProfessionalPriceItemType,
@@ -23,6 +26,12 @@ type PricebookIndex = {
 };
 
 let cachedIndex: PricebookIndex | null = null;
+
+const GOVERNED_PRICEBOOK_UNIT_FALLBACKS: Readonly<
+  Partial<Record<CanonicalProfessionalBoqUnit, readonly CanonicalProfessionalBoqUnit[]>>
+> = Object.freeze({
+  shift: Object.freeze<CanonicalProfessionalBoqUnit[]>(["machine_hour"]),
+});
 
 export function professionalPricebookItemTypeForCostRowType(
   rowType: ProfessionalCostRowType | string,
@@ -106,5 +115,18 @@ export function resolveProfessionalPriceRecord(input: {
     itemType,
     unit: input.unit,
   });
-  return index.byNomenclatureId.get(nomenclatureId) ?? null;
+  const exact = index.byNomenclatureId.get(nomenclatureId);
+  if (exact) return exact;
+  const canonicalUnit = normalizeCanonicalProfessionalBoqUnit(input.unit);
+  if (!canonicalUnit) return null;
+  for (const governedFallbackUnit of GOVERNED_PRICEBOOK_UNIT_FALLBACKS[canonicalUnit] ?? []) {
+    const governedFallbackId = professionalPricebookNomenclatureId({
+      normFamilyId: input.normFamilyId,
+      itemType,
+      unit: governedFallbackUnit,
+    });
+    const governedFallback = index.byNomenclatureId.get(governedFallbackId);
+    if (governedFallback) return governedFallback;
+  }
+  return null;
 }

@@ -25,7 +25,7 @@
     {
       "family": "roadworks",
       "selectedTemplateId": "road_base_asphalt",
-      "prompt": "roadworks 2500 square meters with crushed stone base, asphalt, curbs and compaction"
+      "prompt": "full pavement structure roadworks 2500 square meters with crushed stone base, asphalt, curbs and compaction"
     },
     {
       "family": "hydraulic_dam",

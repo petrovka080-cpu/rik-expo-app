@@ -7,7 +7,6 @@ import {
   buildStructuredEstimatePayload,
   buildStructuredEstimateRequestDraft,
 } from "../estimateStructuredPipeline";
-import { createConsumerRepairRequestDraft } from "./consumerRequestService";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairSelectedWork } from "./consumerRequestTypes";
 
 type ConsumerRepairAiDraftItem = ConsumerRepairAiDraft["items"][number];
@@ -120,7 +119,7 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
   const missingPriceRows = payload.boq.totals.missingPriceRowsCount;
   const exactPublicLine = missingPriceRows > 0
     ? `Материалы без подтвержденной цены: ${missingPriceRows}. Финальный итог уточняется после выбора источника цены.`
-    : "Материалы сопоставлены со справочником цен; перед отправкой проверьте регион и поставщика.";
+    : "Материалы сопоставлены со справочником цен; перед отправкой проверьте регион и источник цены.";
   const exactSummary = [
     draft.summaryRu,
     exactPublicLine,
@@ -136,28 +135,6 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
     summaryRu: exactSummary,
     structuredEstimatePayload: payload,
   };
-}
-
-export function createConsumerRepairDraftFromGlobalEstimate(input: {
-  consumerUserId: string;
-  estimate: GlobalEstimateResult;
-  originalText: string;
-  city?: string | null;
-  addressText?: string | null;
-  contactPhone?: string | null;
-  selectedWork?: ConsumerRepairSelectedWork | null;
-}): ConsumerRepairDraftBundle {
-  const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(input.estimate, undefined, input.selectedWork ?? undefined);
-  return createConsumerRepairRequestDraft({
-    consumerUserId: input.consumerUserId,
-    problemText: input.originalText,
-    repairType: input.estimate.work.category,
-    city: input.city ?? input.estimate.locale.city ?? null,
-    addressText: input.addressText ?? null,
-    contactPhone: input.contactPhone ?? null,
-    selectedWork: input.selectedWork ?? null,
-    aiDraft,
-  });
 }
 
 export function assertConsumerRepairGlobalEstimateDraftSafe(bundle: ConsumerRepairDraftBundle): void {

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-24T00:00:00+06:00",
+  "status": "STOP_PREEXISTING_MODULE_OWNER_DEBT_NO_THRESHOLD_WEAKENING",
+  "gates": {
+    "weakenedTests": 0,
+    "broadAllowlistPatternsAdded": 0,
+    "unexplainedThresholdIncreases": 0
+  },
+  "performanceBudget": {
+    "baselineSha": "43c16245be9df5be23c9d1dbadccf18b8cc57154",
+    "sourceTsTsxAtBaseline": 3018,
+    "currentTrackedAndUntrackedSourceTsTsx": 3524,
+    "postBaselineAddedSourceFiles": 508,
+    "exactCap": 508,
+    "hiddenReserve": 0,
+    "nextSourceFileObservedCount": 509,
+    "nextSourceFileWouldFail": true,
+    "implementation": "git ls-files --cached --others --exclude-standard plus existence filtering, compared with git ls-tree at the exact baseline SHA",
+    "historicalResidualCap": 1313,
+    "proof": ".release-runtime/no-test-weakening-performance-final.json",
+    "result": "13/14",
+    "remainingFailure": {
+      "gate": "consumer repair module-owner residual",
+      "actual": 32,
+      "cap": 24,
+      "policy": "Do not raise the cap and do not merge unrelated production modules merely to obtain GREEN."
+    }
+  },
+  "allowlistDiff": {
+    "dataStructure": "Set<string>",
+    "additionsAreExactLiterals": true,
+    "wildcardAdditions": 0,
+    "prefixPatternAdditions": 0,
+    "exactAdditions": [
+      "artifacts/estimate-revision-storage/current-55-file-scope-ledger.json",
+      "artifacts/estimate-revision-storage/full-jest-diagnostic-ledger.json",
+      "artifacts/estimate-revision-storage/no-test-weakening.json"
+    ],
+    "note": "Only the three exact checkpoint evidence files are added. Android runtime artifacts, the Android runner, and unrelated test paths remain outside the allowlist; user-owned changes are preserved and visible."
+  },
+  "moduleConsolidationReview": {
+    "productionCharacteristicDegraded": false,
+    "exportsAndContractTestsRequired": true,
+    "note": "Unrelated production modules were restored as separate owners. Storage remains split by contract, migration, memory, IndexedDB, SQLite, and platform factory boundaries; no module was merged merely to reduce the module count."
+  },
+  "packageSurfaceContract": {
+    "broadPackageAllowlistAdded": false,
+    "exactRuntimeDependency": "expo-sqlite ~16.0.10",
+    "exactTestDependency": "fake-indexeddb ^6.2.4",
+    "lockVersionsRequired": [
+      "expo-sqlite 16.0.10",
+      "fake-indexeddb 6.2.4"
+    ],
+    "anyOtherPackageJsonChangeFails": true,
+    "proofSuites": [
+      "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+      "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts"
+    ]
+  }
+}

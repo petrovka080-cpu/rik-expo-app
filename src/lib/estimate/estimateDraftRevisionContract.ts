@@ -1,6 +1,9 @@
 import type { ProfessionalMaterialQuantityLine } from "./professionalMaterialQuantityContract";
 import type { RawInputFact, RawInputFactExtractionMetrics } from "./rawInputFactExtraction";
 import type { AsphaltClarificationExperienceV4, RoadScopeRevisionBindingV4 } from "./v4/asphalt";
+import type {
+  ElectricalCircuitScheduleV1,
+} from "./v4/electrical/electricalProfessionalBoqV1";
 
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
@@ -37,7 +40,7 @@ export type EstimateDraftRevisionAssumption = {
 export type EstimateDraftRevisionMissingInput = {
   key: string;
   label: string;
-  blocksPreliminaryEstimate: false;
+  blocksPreliminaryEstimate: boolean;
   requiredFor: "better_accuracy" | "contract_ready" | "safety_review";
 };
 
@@ -110,6 +113,7 @@ export type ParamToCalculationTrace = {
 export type EstimateDraftRevisionStatus =
   | "draft_ready"
   | "needs_template_selection"
+  | "blocking_required"
   | "needs_more_params_but_preliminary_available"
   | "failed";
 
@@ -137,6 +141,32 @@ export type EstimateDraftRevisionQuantityBasis = {
   assumptionIds: string[];
 };
 
+export type EstimateResolvedIdentity = {
+  requestedCatalogWorkId: string | null;
+  passportId: string;
+  passportVersion?: string;
+  parameterSchemaId?: string;
+  parameterSchemaVersion?: string;
+  calculationStrategyId: string;
+  canonicalModelId: string;
+  canonicalModelVersion: string;
+  selectedScope: string | null;
+  scopePresetId: string | null;
+  resolvedParameters: Record<string, EstimateDraftRevisionParam>;
+  formulaGraphVersion: string;
+  compilerVersion: string;
+  sourceBindingVersions: Array<{
+    sourceId: string;
+    version: string;
+  }>;
+  semanticOwner: string;
+  originalPrompt: string;
+  legacyFallbackUsed?: boolean;
+  fallbackReason?: string | null;
+  projectionOwner?: "estimate_draft_revision";
+  checksum: string;
+};
+
 export type EstimateDraftRevision = {
   estimateDraftId: string;
   revisionId: string;
@@ -147,6 +177,7 @@ export type EstimateDraftRevision = {
   matchedFamily: string;
   professionalWorkId?: string | null;
   workAssemblyId?: string | null;
+  resolvedIdentity?: EstimateResolvedIdentity;
   roadScopeBinding?: RoadScopeRevisionBindingV4 | null;
   quantityBasis?: EstimateDraftRevisionQuantityBasis | null;
   workSpecificParameterSchemaId?: string | null;
@@ -160,6 +191,7 @@ export type EstimateDraftRevision = {
   assumptions: EstimateDraftRevisionAssumption[];
   missingInputs: EstimateDraftRevisionMissingInput[];
   professionalClarification?: AsphaltClarificationExperienceV4 | null;
+  electricalCircuitSchedule?: ElectricalCircuitScheduleV1 | null;
   boq: {
     sections: ProfessionalBoqSection[];
     rows: ProfessionalBoqRow[];

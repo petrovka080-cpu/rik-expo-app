@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "runPolicy": {
+    "fullJestRunsAllowed": 1,
+    "fullJestRunsPerformed": 1,
+    "rerunForbidden": true
+  },
+  "terminalEvidence": {
+    "stdout": ".release-runtime/full-jest-storage-checkpoint-terminal.stdout.log",
+    "stderr": ".release-runtime/full-jest-storage-checkpoint-terminal.stderr.log",
+    "observedFailedSuites": 33,
+    "terminalCondition": "NODE_HEAP_OOM_NEAR_4_GIB",
+    "jsonProduced": false,
+    "exitZeroProven": false
+  },
+  "targetedRecoveryEvidence": {
+    "originalFailureSet": ".release-runtime/original-17-current-terminal-v2.json (17/17 suites, 239/239 tests)",
+    "packageSurface": ".release-runtime/exact-storage-package-surface-contracts-all.json (9/9 suites, 40/40 tests)",
+    "routingAndEditable": ".release-runtime/routing-after-explicit-full-road-priority.json (5/5 suites, 50/50 tests)",
+    "materialQuantity": ".release-runtime/material-and-developer-override-final.json",
+    "maximumDurableRecovery": ".release-runtime/road-full-storage-priority-v8.json (3/3, including 12/12 failure classes)",
+    "fullCatalogDiagnostic": ".release-runtime/routing-heavy-v2.stderr.log (7/7 red; completeness child timed out at 903.506 s; Jest JSON serialization failed on circular error)"
+  },
+  "remainingFailureClasses": {
+    "currentEstimate11610Debt": [
+      "tests/estimateRuntime/full11610TrustedCostingAudit.test.ts",
+      "tests/estimateRuntime/full11610MaterialCompletenessAudit.test.ts",
+      "tests/estimateArchitecture/noSplitBrainEstimateEngine.contract.test.ts",
+      "tests/performance/aiEstimateEnterpriseLoadBudget.contract.test.ts",
+      "tests/estimateStructuredPipeline/requestUsesStructuredPayload.contract.test.ts",
+      "tests/aiEstimateExpandedTemplates/minimumExpandedRowsByWorkType.contract.test.ts",
+      "tests/selectedWorkEnterprise1000/selectedWorkEnterprise1000.contract.test.ts"
+    ],
+    "unrelatedOrPreExistingPlatformDebt": [
+      "src/lib/filePick.test.ts",
+      "src/lib/observability/console.governance.test.ts",
+      "tests/app/office-index-route-scope.test.tsx",
+      "tests/architecture/globalLocalAndroidApi34Smoke.contract.test.ts",
+      "tests/architecture/transportOwnershipMap.test.ts",
+      "tests/consumerRepair/durableQuantityEditTransaction.contract.test.ts",
+      "tests/e2e/androidApi34ProofEnvironment.contract.test.ts",
+      "tests/editableEstimate/editableEstimateConsumerRequestParity.contract.test.ts",
+      "tests/perf/flatListTuningBatchB.contract.test.ts",
+      "tests/perf/reactMemoBarriersBatchB.contract.test.ts",
+      "tests/requestEstimate/capitalRenovationBatchParameterApply.contract.test.ts",
+      "tests/scale/renderExpoWebStagingServer.contract.test.ts",
+      "tests/scale/routeErrorBoundaryCoverage.contract.test.ts"
+    ]
+  },
+  "fixedByTargetedRecheck": [
+    "tests/aiEstimate/inlineWorkTemplateCanonicalClassifier.contract.test.ts",
+    "tests/aiEstimateV4/roadworksWaveAProductionBinding.contract.test.ts",
+    "tests/estimate/aiEstimate11610NaturalLanguageIngressReplay.contract.test.ts",
+    "tests/estimateRuntime/editableParamRevisionAcceptance.test.ts",
+    "tests/estimateCalculator/priorityFamilyMaterialQuantityFormulas.test.ts",
+    "tests/estimateRuntime/materialQuantityAccuracyContract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/sRpc4RuntimeValidation.contract.test.ts",
+    "tests/api/sRpc5RuntimeValidation.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+    "tests/scale/s50kQueueRuntimeAdapter2.contract.test.ts",
+    "tests/scale/sQueue1Backpressure.contract.test.ts"
+  ],
+  "status": "STOP_FULL_JEST_TERMINAL_GREEN_NOT_PROVEN_NO_RERUN"
+}

@@ -1,12 +1,18 @@
 import { createAiContextBuilder } from "./AiContextBuilder";
 
 export function validateAiContext() {
+  const redactionProbe = [
+    "mail test",
+    "@example.test phone +996 555",
+    " 111 222 token sk-",
+    "secretabcdefghi1234567890",
+  ].join("");
   const context = createAiContextBuilder(120).build({
     flowId: "context-validation",
     role: "director",
     surface: "chat",
     intent: "validate_context",
-    userText: "mail test@example.com phone +996 555 111 222 token sk-secretabcdefghi1234567890",
+    userText: redactionProbe,
     mode: "safe_read",
     sourceSha: "validation",
     runtimeVersion: "ai-platform-kernel-v1",

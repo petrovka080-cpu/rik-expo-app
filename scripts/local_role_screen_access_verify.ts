@@ -8,15 +8,23 @@ import { createClient } from "@supabase/supabase-js";
 import { baseUrl, poll } from "./_shared/webRuntimeHarness";
 import { cleanupTempUser, createTempUser, createVerifierAdmin } from "./_shared/testUserDiscipline";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
+import { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY } from "../src/lib/developerOverride.constants";
+import { isLocalDeveloperFullAccessAllowed } from "../src/lib/developerOverridePolicy";
+import { OFFICE_ACCESS_ROUTE_MANIFEST } from "../src/lib/officeRuntime/officeRuntimePolicy";
 
 const projectRoot = process.cwd();
 const admin = createVerifierAdmin("local-role-screen-access-verify");
-const smokePath = path.join(projectRoot, "artifacts/local-role-screen-access-proof.json");
-const proofPath = path.join(projectRoot, "artifacts/local-role-screen-access-proof.md");
+const artifactDir = path.join(projectRoot, "artifacts", "current-core-closeout");
+const smokePath = path.join(artifactDir, "developer-route-smoke-results.json");
+const inventoryPath = path.join(artifactDir, "developer-route-inventory.json");
+const dispositionPath = path.join(artifactDir, "developer-route-disposition-ledger.json");
+const productionNegativePath = path.join(artifactDir, "production-rbac-negative-proof.json");
+const proofPath = path.join(artifactDir, "developer-route-smoke-results.md");
 const webServerStdoutPath = path.join(projectRoot, "artifacts/local-role-screen-access-web.stdout.log");
 const webServerStderrPath = path.join(projectRoot, "artifacts/local-role-screen-access-web.stderr.log");
 
-const routes = ["/director", "/buyer", "/accountant", "/warehouse", "/contractor", "/profile"] as const;
+const routeInventory = Object.values(OFFICE_ACCESS_ROUTE_MANIFEST);
+const invalidRoute = "/__developer_route_probe_invalid__";
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
@@ -82,11 +90,15 @@ async function ensureLocalWebServer(): Promise<WebServerHandle> {
 
   const child = spawn(
     "cmd.exe",
-    ["/c", "npx", "expo", "start", "--web", "-c"],
+    ["/c", "npx", "expo", "start", "--web"],
     {
       cwd: projectRoot,
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
+      env: {
+        ...process.env,
+        EXPO_PUBLIC_OFFICE_LOCAL_DEVELOPER_FULL_ACCESS: "1",
+      },
     },
   );
 
@@ -149,19 +161,39 @@ function pathFromUrl(url: string) {
   }
 }
 
-async function verifyRoute(page: Page, route: typeof routes[number]) {
-  await page.goto(`${baseUrl}${route}`, { waitUntil: "networkidle", timeout: 60_000 });
+async function verifyRoute(
+  page: Page,
+  entry: (typeof routeInventory)[number],
+) {
+  await page.goto(`${baseUrl}${entry.route}`, {
+    waitUntil: "domcontentloaded",
+    timeout: 60_000,
+  });
   const settled = await poll(
-    `local-role-screen-route:${route}`,
+    `local-role-screen-route:${entry.route}`,
     async () => {
       const currentUrl = page.url();
-      if (currentUrl.includes("/auth/login")) return null;
+      const currentPath = pathFromUrl(currentUrl);
       const text = await bodyText(page);
-      return text.length > 0
+      const hasNotFoundSurface = /Страница не найдена|page not found|not found/i.test(text);
+      const authRedirected = currentPath.includes("/auth/login");
+      const shellVisible = await page
+        .locator(`[data-testid="${entry.expectedShellTestId}"]`)
+        .isVisible()
+        .catch(() => false);
+      const loadingFallbackVisible = await page
+        .locator('[data-testid="office-role-auth-loading"]')
+        .isVisible()
+        .catch(() => false);
+      return text.length > 0 && (shellVisible || hasNotFoundSurface || authRedirected)
         ? {
             currentUrl,
-            currentPath: pathFromUrl(currentUrl),
+            currentPath,
             bodySample: text.slice(0, 280),
+            hasNotFoundSurface,
+            authRedirected,
+            shellVisible,
+            loadingFallbackVisible,
           }
         : null;
     },
@@ -170,12 +202,115 @@ async function verifyRoute(page: Page, route: typeof routes[number]) {
   );
 
   return {
-    route,
+    routeId: entry.screenId,
+    role: entry.role,
+    route: entry.route,
+    routeModule: entry.routeModule,
+    expectedShellTestId: entry.expectedShellTestId,
     finalUrl: settled.currentUrl,
     finalPath: settled.currentPath,
-    redirected: settled.currentPath !== route,
-    openedInLocalDev: settled.currentPath === route,
+    redirected: settled.currentPath !== entry.route,
+    openedInLocalDev:
+      settled.currentPath === entry.route &&
+      settled.shellVisible &&
+      !settled.hasNotFoundSurface &&
+      !settled.authRedirected &&
+      !settled.loadingFallbackVisible,
+    hasNotFoundSurface: settled.hasNotFoundSurface,
+    authRedirected: settled.authRedirected,
+    expectedRoleShellVisible: settled.shellVisible,
+    loadingFallbackVisible: settled.loadingFallbackVisible,
+    blankScreen: settled.bodySample.length === 0,
     bodySample: settled.bodySample,
+  };
+}
+
+async function verifyInvalidRouteIsRejected(page: Page) {
+  await page.goto(`${baseUrl}${invalidRoute}`, {
+    waitUntil: "domcontentloaded",
+    timeout: 60_000,
+  });
+  return poll(
+    "local-role-invalid-route-rejected",
+    async () => {
+      const text = await bodyText(page);
+      const hasNotFoundSurface =
+        /Страница не найдена|page not found|not found/i.test(text);
+      return hasNotFoundSurface
+        ? {
+            route: invalidRoute,
+            finalPath: pathFromUrl(page.url()),
+            hasNotFoundSurface,
+            bodySample: text.slice(0, 280),
+          }
+        : null;
+    },
+    45_000,
+    500,
+  );
+}
+
+function evaluateStaticRouteInventory() {
+  return routeInventory.map((entry) => {
+    const routeModulePath = path.join(projectRoot, entry.routeModule);
+    const source = fs.existsSync(routeModulePath)
+      ? fs.readFileSync(routeModulePath, "utf8")
+      : "";
+    return {
+      ...entry,
+      routeModuleExists: fs.existsSync(routeModulePath),
+      routeDefinitionMatches:
+        source.includes(`route="${entry.route}"`) &&
+        source.includes(`requiredRole="${entry.role}"`),
+    };
+  });
+}
+
+function evaluateProductionRbacNegativeProof() {
+  const productionWeb = {
+    envValue: "1",
+    host: "app.example.com",
+    isDev: false,
+    platformOS: "web",
+    releaseChannel: "production",
+    storageValue: "1",
+    webdriver: false,
+  } as const;
+  const productionNative = {
+    envValue: "1",
+    host: null,
+    isDev: false,
+    platformOS: "android",
+    releaseChannel: "production",
+    storageValue: "1",
+    webdriver: false,
+  } as const;
+  const localWithoutExplicitOptIn = {
+    envValue: null,
+    host: "localhost",
+    isDev: true,
+    platformOS: "web",
+    releaseChannel: "development",
+    storageValue: null,
+    webdriver: false,
+  } as const;
+  const cases = [
+    {
+      id: "production_web_rejects_injected_flags",
+      allowed: isLocalDeveloperFullAccessAllowed(productionWeb),
+    },
+    {
+      id: "production_native_rejects_injected_flags",
+      allowed: isLocalDeveloperFullAccessAllowed(productionNative),
+    },
+    {
+      id: "local_requires_explicit_opt_in",
+      allowed: isLocalDeveloperFullAccessAllowed(localWithoutExplicitOptIn),
+    },
+  ];
+  return {
+    status: cases.every((item) => item.allowed === false) ? "GREEN" : "RED",
+    cases,
   };
 }
 
@@ -208,24 +343,35 @@ async function main() {
     const page = await browser.newPage();
 
     await page.addInitScript(
-      ({ key, value }) => {
-        window.localStorage.setItem(key, value);
+      ({ authStorageKey, developerStorageKey, sessionValue }) => {
+        window.localStorage.setItem(authStorageKey, sessionValue);
+        window.localStorage.setItem(developerStorageKey, "1");
       },
       {
-        key: supabaseStorageKey,
-        value: JSON.stringify(session),
+        authStorageKey: supabaseStorageKey,
+        developerStorageKey: LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY,
+        sessionValue: JSON.stringify(session),
       },
     );
 
+    const staticInventory = evaluateStaticRouteInventory();
     const routeResults = [] as Array<Awaited<ReturnType<typeof verifyRoute>>>;
-    for (const route of routes) {
-      routeResults.push(await verifyRoute(page, route));
+    for (const entry of routeInventory) {
+      routeResults.push(await verifyRoute(page, entry));
     }
+    const invalidRouteProof = await verifyInvalidRouteIsRejected(page);
+    const productionRbacNegativeProof = evaluateProductionRbacNegativeProof();
 
     const entryPolicy = evaluateEntryPolicyProof();
+    const inventoryIsCanonical = staticInventory.every(
+      (item) => item.routeModuleExists && item.routeDefinitionMatches,
+    );
     const payload = {
       status:
         routeResults.every((item) => item.openedInLocalDev)
+        && inventoryIsCanonical
+        && invalidRouteProof.hasNotFoundSurface
+        && productionRbacNegativeProof.status === "GREEN"
         && entryPolicy.postAuthEntryUsesAccessHub
           ? "GREEN"
           : "NOT_GREEN",
@@ -235,10 +381,35 @@ async function main() {
         role: user.role,
         email: user.email,
       },
+      developerOverrideRequested: true,
+      inventoryIsCanonical,
       routes: routeResults,
+      invalidRouteProof,
+      productionRbacNegativeProof,
       entryPolicy,
     };
 
+    writeJsonArtifact(inventoryPath, {
+      status: inventoryIsCanonical ? "GREEN" : "RED",
+      source: "src/lib/officeRuntime/officeRuntimePolicy.ts#OFFICE_ACCESS_ROUTE_MANIFEST",
+      routes: staticInventory,
+    });
+    writeJsonArtifact(dispositionPath, {
+      status: "GREEN",
+      priorFalseGreenRoutes: [
+        "/director",
+        "/buyer",
+        "/accountant",
+        "/warehouse",
+        "/contractor",
+      ].map((legacyRoute) => ({
+        legacyRoute,
+        disposition: "removed_from_verifier",
+        reason: "No matching Expo Router module; canonical route is nested under /office.",
+      })),
+      aliasesCreated: 0,
+    });
+    writeJsonArtifact(productionNegativePath, productionRbacNegativeProof);
     writeJsonArtifact(smokePath, payload);
     fs.writeFileSync(
       proofPath,
@@ -255,6 +426,8 @@ async function main() {
           (item) =>
             `- \`${item.route}\` -> \`${item.finalPath}\` | redirected=${item.redirected ? "true" : "false"} | opened=${item.openedInLocalDev ? "true" : "false"}`,
         ),
+        `- Invalid route rejected: ${invalidRouteProof.hasNotFoundSurface ? "true" : "false"}`,
+        `- Production RBAC bypass rejected: ${productionRbacNegativeProof.status === "GREEN" ? "true" : "false"}`,
         "",
         "## Entry policy",
         `- postAuthEntryRoute = \`${entryPolicy.postAuthEntryRoute}\``,
@@ -264,6 +437,7 @@ async function main() {
     );
 
     console.log(JSON.stringify(payload, null, 2));
+    if (payload.status !== "GREEN") process.exitCode = 1;
   } finally {
     await browser?.close().catch(() => {});
     await cleanupTempUser(admin, user);

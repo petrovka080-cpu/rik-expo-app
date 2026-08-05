@@ -66,7 +66,10 @@ describe("office.layout.model", () => {
             industry: "Construction",
           },
           developerOverride: {
-            actorUserId: "user-1",
+            actorUserId: null,
+            actorRole: null,
+            entitlement: null,
+            authorizationSource: "local_ui_only",
             isEnabled: true,
             isActive: true,
             allowedRoles: ["director"],
@@ -88,7 +91,7 @@ describe("office.layout.model", () => {
       isInitialLoading: false,
       showOfficeDirections: true,
       showCompanyFeedback: true,
-      showDeveloperOverride: false,
+      showDeveloperOverride: true,
     });
   });
 
@@ -100,6 +103,9 @@ describe("office.layout.model", () => {
           ...EMPTY_DATA,
           developerOverride: {
             actorUserId: "user-1",
+            actorRole: "platform_developer",
+            entitlement: "platform_developer",
+            authorizationSource: "server_entitlement",
             isEnabled: true,
             isActive: true,
             allowedRoles: ["director", "buyer", "foreman"],
@@ -135,7 +141,7 @@ describe("office.layout.model", () => {
       isInitialLoading: false,
       showOfficeDirections: true,
       showCompanyFeedback: false,
-      showDeveloperOverride: false,
+      showDeveloperOverride: true,
     });
   });
 });

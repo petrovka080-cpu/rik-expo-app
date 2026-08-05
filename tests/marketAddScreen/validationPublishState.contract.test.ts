@@ -7,17 +7,18 @@ const read = (relativePath: string) =>
 describe("market add screen validation and publish state", () => {
   it("keeps validation visible on the add listing screen", () => {
     const screen = read("src/screens/profile/AddListingScreen.tsx");
+    const validation = read("src/screens/profile/addListingValidation.ts");
     const modal = read("src/screens/profile/components/ListingModal.tsx");
     const primitives = read("src/screens/profile/components/ProfilePrimitives.tsx");
     const styles = read("src/screens/profile/profile.styles.ts");
 
     expect(screen).toContain("buildAddListingValidationErrors");
-    expect(screen).toContain("marketplaceMediaAssetIds.length < 1");
+    expect(validation).toContain("params.marketplaceMediaAssetIds.length < 1");
     expect(screen).toContain("marketplaceMediaUploading");
     expect(screen).toContain("marketplaceFailedMediaCount");
     expect(screen).toContain('setPublishStatus("uploading_media")');
-    expect(screen).toContain("parsePositiveListingPrice");
-    expect(screen).toContain("normalizePhoneDigits");
+    expect(validation).toContain("parsePositiveListingPrice");
+    expect(validation).toContain('params.listingPhone.replace(/\\D/g, "")');
     expect(screen).toContain("setValidationErrors(nextValidationErrors)");
     expect(modal).toContain("market-add-error-summary");
     expect(modal).toContain("market-add-media-error");

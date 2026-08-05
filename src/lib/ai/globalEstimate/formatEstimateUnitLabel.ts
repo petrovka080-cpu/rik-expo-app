@@ -1,3 +1,5 @@
+import { resolveProfessionalUnitDefinition } from "../../estimate/professionalUnitRegistry";
+
 const UNIT_LABELS_RU: Record<string, string> = {
   linear_m: "\u043f\u043e\u0433. \u043c",
   m: "\u043f\u043e\u0433. \u043c",
@@ -47,7 +49,10 @@ const UNIT_LABELS_RU: Record<string, string> = {
 export function formatEstimateUnitLabel(unit?: string | null): string {
   const normalized = String(unit ?? "").trim();
   if (!normalized) return "";
-  return UNIT_LABELS_RU[normalized] ?? UNIT_LABELS_RU[normalized.toLowerCase()] ?? normalized;
+  return resolveProfessionalUnitDefinition(normalized)?.displayRu ??
+    UNIT_LABELS_RU[normalized] ??
+    UNIT_LABELS_RU[normalized.toLowerCase()] ??
+    normalized;
 }
 
 export function hasRawEstimateUnitLabel(text: string): boolean {

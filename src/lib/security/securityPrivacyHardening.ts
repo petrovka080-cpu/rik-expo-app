@@ -59,6 +59,9 @@ export type SecurityPrivacyFinding = {
     | "email"
     | "phone"
     | "credential"
+    | "private_url"
+    | "local_file_path"
+    | "authorization_header"
     | "signed_url_secret"
     | "raw_provider_payload"
     | "raw_debug_payload"
@@ -70,7 +73,13 @@ export type SecurityPrivacyFinding = {
 const EMAIL_RE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const PHONE_RE = /(?:\+\d[\d\s().-]{7,}\d|\b\d{3}[\s().-]\d{3}[\s().-]\d{2,}\b)/;
 const CREDENTIAL_RE =
-  /\b(?:Bearer\s+[A-Za-z0-9._~+/=-]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|(?:access_token|refresh_token|api_key|apikey|signature)=\S+)/i;
+  /\b(?:sk-[A-Za-z0-9_-]{12,}|Bearer\s+[A-Za-z0-9._~+/=-]+|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|(?:access_token|refresh_token|api_key|apikey|signature)=\S+)/i;
+const PRIVATE_URL_RE =
+  /\b(?:file:\/\/\/?[^\s"'<>]+|https?:\/\/[^\s"'<>]*(?:\/private\/|\/signed\/|[?&](?:token|signature|access_token)=)[^\s"'<>]*)/i;
+const LOCAL_FILE_PATH_RE =
+  /(?:\b[A-Z]:\\(?:Users|Documents and Settings)\\[^\r\n"'<>]+|\/(?:Users|home)\/[^\s"'<>]+)/i;
+const AUTHORIZATION_HEADER_RE =
+  /\bauthorization\s*[:=]\s*["']?(?:Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+/i;
 const RAW_PROVIDER_PAYLOAD_RE = /\b(?:rawProviderPayload|raw_provider_payload|providerPayload)\s*[:=]\s*["'{[]/i;
 const RAW_DEBUG_PAYLOAD_RE = /\b(?:runtime_debug|debug_provider|rawDbRows|raw_db_rows)\s*[:=]\s*(?:true|["'{[])/i;
 const forbiddenSupabaseKeyToken = ["SUPABASE", "SERVICE", "ROLE", "KEY"].join("_");
@@ -97,6 +106,9 @@ export function containsSecuritySensitiveText(value: unknown): boolean {
     EMAIL_RE.test(text) ||
     PHONE_RE.test(text) ||
     CREDENTIAL_RE.test(text) ||
+    PRIVATE_URL_RE.test(text) ||
+    LOCAL_FILE_PATH_RE.test(text) ||
+    AUTHORIZATION_HEADER_RE.test(text) ||
     RAW_PROVIDER_PAYLOAD_RE.test(text) ||
     RAW_DEBUG_PAYLOAD_RE.test(text)
   );
@@ -107,6 +119,15 @@ export function scanSecuritySensitiveText(file: string, text: string): SecurityP
   if (EMAIL_RE.test(text)) findings.push({ file, kind: "email", evidence: redactFindingEvidence(text) });
   if (PHONE_RE.test(text)) findings.push({ file, kind: "phone", evidence: redactFindingEvidence(text) });
   if (CREDENTIAL_RE.test(text)) findings.push({ file, kind: "credential", evidence: redactFindingEvidence(text) });
+  if (PRIVATE_URL_RE.test(text)) {
+    findings.push({ file, kind: "private_url", evidence: redactFindingEvidence(text) });
+  }
+  if (LOCAL_FILE_PATH_RE.test(text)) {
+    findings.push({ file, kind: "local_file_path", evidence: redactFindingEvidence(text) });
+  }
+  if (AUTHORIZATION_HEADER_RE.test(text)) {
+    findings.push({ file, kind: "authorization_header", evidence: redactFindingEvidence(text) });
+  }
   if (/[?&](?:access_token|refresh_token|signature|token)=/i.test(text)) {
     findings.push({ file, kind: "signed_url_secret", evidence: redactFindingEvidence(text) });
   }

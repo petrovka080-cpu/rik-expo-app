@@ -9,7 +9,6 @@ import type {
   CreateCompanyDraft,
   OfficeAccessScreenData,
 } from "./officeAccess.types";
-import { DirectionCard } from "./officeHub.cards";
 import { OfficeCompanyCreateSection } from "./officeHub.companyCreateSection";
 import {
   COPY,
@@ -18,9 +17,21 @@ import {
 } from "./officeHub.constants";
 import { styles } from "./officeHub.styles";
 import type { OfficeHubRoleAccessState } from "./useOfficeHubRoleAccess";
+import { renderOfficeDirectionSection } from "./officeHub.directionSections";
 
 export { DirectionCard, InviteCard, MemberCard } from "./officeHub.cards";
 export { OfficeCompanyCreateSection } from "./officeHub.companyCreateSection";
+export {
+  AccountantOfficeSection,
+  BuyerOfficeSection,
+  ContractorOfficeSection,
+  DirectorOfficeSection,
+  EngineerOfficeSection,
+  ForemanOfficeSection,
+  ReportsOfficeSection,
+  SecurityOfficeSection,
+  WarehouseOfficeSection,
+} from "./officeHub.directionSections";
 export {
   OfficeInviteModalSection,
   OfficeInvitesSection,
@@ -56,113 +67,18 @@ type OfficeHubSectionChrome = {
   renderSubtreeBoundary: RenderSubtreeBoundary;
 };
 
-type OfficeDirectionSectionProps = {
-  canInvite: boolean;
-  card: OfficeWorkspaceCard;
-  onInvite: (card: OfficeWorkspaceCard) => void;
-  onOpen: (card: OfficeWorkspaceCard) => void;
-};
-
-function OfficeDirectionSectionCard({
-  canInvite,
-  card,
-  onInvite,
-  onOpen,
-}: OfficeDirectionSectionProps) {
-  return (
-    <DirectionCard
-      card={card}
-      canInvite={canInvite}
-      onOpen={() => onOpen(card)}
-      onInvite={() => onInvite(card)}
-    />
-  );
-}
-
-export const DirectorOfficeSection = React.memo(function DirectorOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const ForemanOfficeSection = React.memo(function ForemanOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const BuyerOfficeSection = React.memo(function BuyerOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const AccountantOfficeSection = React.memo(
-  function AccountantOfficeSection(props: OfficeDirectionSectionProps) {
-    return <OfficeDirectionSectionCard {...props} />;
-  },
-);
-
-export const WarehouseOfficeSection = React.memo(
-  function WarehouseOfficeSection(props: OfficeDirectionSectionProps) {
-    return <OfficeDirectionSectionCard {...props} />;
-  },
-);
-
-export const ContractorOfficeSection = React.memo(
-  function ContractorOfficeSection(props: OfficeDirectionSectionProps) {
-    return <OfficeDirectionSectionCard {...props} />;
-  },
-);
-
-export const SecurityOfficeSection = React.memo(function SecurityOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const EngineerOfficeSection = React.memo(function EngineerOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-export const ReportsOfficeSection = React.memo(function ReportsOfficeSection(
-  props: OfficeDirectionSectionProps,
-) {
-  return <OfficeDirectionSectionCard {...props} />;
-});
-
-const OFFICE_DIRECTION_SECTION_BY_KEY: Record<
-  string,
-  React.ElementType<OfficeDirectionSectionProps>
-> = {
-  accountant: AccountantOfficeSection,
-  buyer: BuyerOfficeSection,
-  contractor: ContractorOfficeSection,
-  director: DirectorOfficeSection,
-  engineer: EngineerOfficeSection,
-  foreman: ForemanOfficeSection,
-  reports: ReportsOfficeSection,
-  security: SecurityOfficeSection,
-  warehouse: WarehouseOfficeSection,
-};
-
-function renderOfficeDirectionSection(props: OfficeDirectionSectionProps) {
-  const Section =
-    OFFICE_DIRECTION_SECTION_BY_KEY[props.card.key] ??
-    OfficeDirectionSectionCard;
-  return <Section key={props.card.key} {...props} />;
-}
-
 export function OfficeDeveloperOverrideSection({
   activeEffectiveRole,
+  actorRole,
+  authorizationSource,
   developerRoleSaving,
   roles,
   onClear,
   onSelectRole,
 }: {
   activeEffectiveRole?: string | null;
+  actorRole?: string | null;
+  authorizationSource?: string | null;
   developerRoleSaving: string | null;
   roles: readonly DeveloperOverrideRole[];
   onClear: () => void;
@@ -174,7 +90,9 @@ export function OfficeDeveloperOverrideSection({
         <View style={styles.grow}>
           <Text style={styles.eyebrow}>Dev override</Text>
           <Text style={styles.helper}>
-            Active role: {activeEffectiveRole ?? "normal"}
+            Actor: {actorRole ?? "local UI"} · Effective role:{" "}
+            {activeEffectiveRole ?? "normal"} · Source:{" "}
+            {authorizationSource ?? "none"}
           </Text>
         </View>
         <Pressable

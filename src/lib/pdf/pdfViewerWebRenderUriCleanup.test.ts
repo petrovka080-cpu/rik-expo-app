@@ -1,11 +1,12 @@
 import { resolvePdfViewerWebRenderUriCleanup } from "./pdfViewerWebRenderUriCleanup";
 
 describe("pdfViewerWebRenderUriCleanup", () => {
-  it("revokes only web blob render URIs", () => {
+  it("revokes only blob URLs explicitly owned by the viewer", () => {
     expect(
       resolvePdfViewerWebRenderUriCleanup({
         platform: "web",
         uri: "blob:https://example.com/pdf-render",
+        ownedByViewer: true,
       }),
     ).toEqual({
       revokeUri: "blob:https://example.com/pdf-render",
@@ -16,6 +17,7 @@ describe("pdfViewerWebRenderUriCleanup", () => {
       resolvePdfViewerWebRenderUriCleanup({
         platform: "web",
         uri: "https://example.com/document.pdf",
+        ownedByViewer: true,
       }).revokeUri,
     ).toBeNull();
 
@@ -23,6 +25,15 @@ describe("pdfViewerWebRenderUriCleanup", () => {
       resolvePdfViewerWebRenderUriCleanup({
         platform: "android",
         uri: "blob:https://example.com/pdf-render",
+        ownedByViewer: true,
+      }).revokeUri,
+    ).toBeNull();
+
+    expect(
+      resolvePdfViewerWebRenderUriCleanup({
+        platform: "web",
+        uri: "blob:https://example.com/storage-owned",
+        ownedByViewer: false,
       }).revokeUri,
     ).toBeNull();
   });
@@ -32,6 +43,7 @@ describe("pdfViewerWebRenderUriCleanup", () => {
       resolvePdfViewerWebRenderUriCleanup({
         platform: "web",
         uri: "blob:https://example.com/pdf-render",
+        ownedByViewer: true,
         commitState: false,
       }),
     ).toEqual({

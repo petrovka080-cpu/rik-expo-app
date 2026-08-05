@@ -28,6 +28,9 @@ describe("foreman AI estimate screen embedding", () => {
     expect(navigation).not.toContain("openWorkTypePicker");
     expect(composer).toContain('testID="foreman-ai-estimate-row-qty"');
     expect(composer).toContain('testID="foreman-ai-estimate-row-price"');
+    expect(composer).toContain('testID="foreman-ai-estimate-list"');
+    expect(composer).toContain('testID="foreman-ai-estimate-row-count"');
+    expect(composer).toContain('accessibilityLabel={`estimate-row-${row.rowId}`}');
     expect(composer).toContain('testID="foreman-ai-estimate-catalog-search"');
     expect(composer).toContain('testID="foreman-ai-estimate-open-draft"');
     expect(composer).toContain('testID="foreman-ai-estimate-work-suggestions"');
@@ -35,6 +38,10 @@ describe("foreman AI estimate screen embedding", () => {
     expect(composer).toContain("searchGlobalWorkSmartSuggestions");
     expect(composer).toContain("explicitWorkKey");
     expect(composer).toContain("transparent={false}");
+    expect(composer).toContain("data={mapping?.rows ?? []}");
+    expect(composer).toContain("renderItem={({ item }) => renderEstimateRow(item)}");
+    expect(composer).toContain("keyExtractor={estimateRowKeyExtractor}");
+    expect(composer).not.toMatch(/mapping\?\.rows\.slice\(\s*0\s*,\s*\d+\s*\)/);
   });
 
   it("keeps consumer repair request flow separate from foreman AI estimate composer", () => {

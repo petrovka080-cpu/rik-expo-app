@@ -19,10 +19,14 @@ describe("assistantClient model gateway migration contract", () => {
     expect(source).toContain("export async function sendAssistantMessage(options:");
   });
 
-  it("uses AiModelGateway instead of direct Gemini or aiRepository calls", () => {
+  it("uses the platform provider backed by AiModelGateway", () => {
     const source = readSource("src/features/ai/assistantClient.ts");
+    const providerSource = readSource(
+      "src/lib/aiPlatform/providers/ServerAiModelProvider.ts",
+    );
 
-    expect(source).toContain("AiModelGateway");
+    expect(source).toContain("ServerAiModelProvider");
+    expect(providerSource).toContain("AiModelGateway");
     expect(source).not.toContain("geminiGateway");
     expect(source).not.toContain("requestAiGeneratedText");
   });

@@ -13,6 +13,10 @@ export type RoadScopeIdV4 =
   | "FULL_ROAD_INFRASTRUCTURE"
   | "ROAD_REPAIR_REHABILITATION";
 
+export function isRoadScopeIdV4(value: string): value is RoadScopeIdV4 {
+  return Object.hasOwn(ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4, value);
+}
+
 export type RoadScopeResolverStatusV4 = "RESOLVED" | "NEEDS_SCOPE_SELECTION" | "NOT_ROAD";
 export const ROAD_SCOPE_RESOLVER_VERSION_V4 = "road-scope-resolver-v4.1.0" as const;
 
@@ -69,13 +73,17 @@ export type RoadGeometryResolutionV4 = {
   evidence: string[];
 };
 
-const ROAD = /(?:асфальт|дорог|покрыт|щеб[её]н|тротуар|жол|жолду|фрезер|road|pavement)/iu;
+const ROAD = /(?:асфальт|дорог|дорожн[а-яё]*\s+(?:покрыт|одежд)|щеб[её]н|тротуар|парковк|жол|жолду|фрезер|\broad\b|\bpavement\b|\bparking\b)/iu;
 const PREPARED_BASE =
   /(?:готов[а-яё]*\s+(?:щеб[её]ночн[а-яё]*\s+)?основан|подготовлен[а-яё]*\s+основан|по\s+готовому|даяр\s+(?:шагыл\s+)?негиз)/iu;
 const PAVEMENT =
-  /(?:дорожн[а-яё]*\s+одежд|подготов[а-яё]*\s+грунт|землян[а-яё]*\s+полотн|щеб[её]ночн[а-яё]*\s+основан|основан[а-яё]*\s+и\s+(?:два|2)\s+сло|жол\s+т[өо]ш[өо]м)/iu;
+  /(?:строительств[\p{L}-]*\s+(?:автомобильн[\p{L}-]*\s+)?дорог|дорожн[а-яё]*\s+одежд|подготов[а-яё]*\s+грунт|землян[а-яё]*\s+полотн|щеб[её]ночн[а-яё]*\s+основан|основан[а-яё]*\s+и\s+(?:два|2)\s+сло|жол\s+т[өо]ш[өо]м|\broad\s+construction\b|full\s+pavement\s+structure)/iu;
 const INFRASTRUCTURE =
   /(?:полн[а-яё]*\s+строительств[а-яё]*\s+(?:автомобильн[а-яё]*\s+)?дорог|водоотвод|освещен|освещён|ливнев|разметк|огражден|ограждён|дорожн[а-яё]*\s+знак|инфраструктур|толук\s+жол)/iu;
+const PAVEMENT_COMPONENT_SEQUENCE =
+  /(?:основан[\p{L}-]*.{0,30}щеб|щеб[\p{L}-]*.{0,30}основан|щеб[\p{L}-]*.{0,40}пес|пес[\p{L}-]*.{0,40}щеб|бетонн[\p{L}-]*\s+дорог|цементобетонн[\p{L}-]*\s+покрыт)/iu;
+const INFRASTRUCTURE_COMPONENT =
+  /\b(?:drainage|stormwater|lighting|marking|guardrail|road\s+signs?)\b/iu;
 const REPAIR =
   /(?:ремонт|реабилитац|реконструкц|фрезер|стар[а-яё]*\s+покрыт|ямоч|калыбына\s+келтир)/iu;
 const SURFACING_ACTION = /(?:улож|уклад|асфальтир|асфальттоо|покрыт|overlay|surfacing)/iu;
@@ -121,14 +129,18 @@ export function parseRoadGeometryV4(rawText: string): RoadGeometryResolutionV4 {
   return { status: "RESOLVED", lengthM, widthM, areaM2, thicknessMm, evidence: [directArea != null ? "direct_area" : "length_width"] };
 }
 
-const PROFILE_BY_SCOPE: Record<RoadScopeIdV4, AsphaltAssemblyProfileIdV4> = {
+export const ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4: Readonly<
+  Record<RoadScopeIdV4, AsphaltAssemblyProfileIdV4>
+> = {
   ROAD_SURFACING_ONLY: "surfacing_on_prepared_base",
   FULL_PAVEMENT_STRUCTURE: "new_full_road_pavement",
   FULL_ROAD_INFRASTRUCTURE: "new_full_road_infrastructure",
   ROAD_REPAIR_REHABILITATION: "rehabilitation_with_milling",
 };
 
-const KIND_BY_SCOPE: Record<RoadScopeIdV4, EstimateSemanticKind> = {
+export const ASPHALT_SEMANTIC_KIND_BY_ROAD_SCOPE_V4: Readonly<
+  Record<RoadScopeIdV4, EstimateSemanticKind>
+> = {
   ROAD_SURFACING_ONLY: "PROFESSIONAL_WORK",
   FULL_PAVEMENT_STRUCTURE: "COMPOSITE_PROJECT",
   FULL_ROAD_INFRASTRUCTURE: "COMPOSITE_PROJECT",
@@ -154,17 +166,65 @@ export function semanticKindForAsphaltProfileV4(profile: AsphaltAssemblyProfileI
     : "PROFESSIONAL_WORK";
 }
 
+export function isRoadCatalogWorkIdV4(value: string): boolean {
+  return /(?:asphalt|(?:^|[_:-])road(?:[_:-]|$)|дорож|асфальт)/iu.test(value);
+}
+
 export function resolveRoadScopeV4(input: {
   originalText: string;
   requestedCatalogWorkId: string;
   selectedScopeId?: RoadScopeIdV4 | null;
+  exactProfessionalWorkId?: string | null;
 }): RoadScopeResolutionV4 {
   const originalText = input.originalText.normalize("NFKC").replace(/\u00a0/g, " ").trim();
   const selected = input.selectedScopeId ?? null;
   if (selected) {
     return resolved(originalText, input.requestedCatalogWorkId, selected, ["user_scope_selection"]);
   }
-  const roadCatalogSelection = /(?:asphalt|road|дорож|асфальт)/iu.test(input.requestedCatalogWorkId);
+  if (input.exactProfessionalWorkId?.trim()) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: [`exact_professional_work:${input.exactProfessionalWorkId.trim()}`],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
+  const roadCatalogSelection = isRoadCatalogWorkIdV4(input.requestedCatalogWorkId);
+  const explicitRoadSubject =
+    /(?:асфальт|дорог|дорожн[\p{L}-]*\s+(?:покрыт|одежд)|тротуар|парковк|\broad\b|\bpavement\b|\bhighway\b|\bparking\b)/iu.test(originalText);
+  if (!explicitRoadSubject && !roadCatalogSelection) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: [],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
+  const roadIsOnlyLocationContext =
+    /(?:под\s+дорог[\p{L}-]*|через\s+дорог[\p{L}-]*|вдоль\s+дорог[\p{L}-]*)/iu.test(originalText);
+  if (roadIsOnlyLocationContext && !roadCatalogSelection) {
+    return {
+      resolverStatus: "NOT_ROAD",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: ["road_mentioned_as_location_context"],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
   if (!ROAD.test(originalText) && !roadCatalogSelection) {
     return {
       resolverStatus: "NOT_ROAD",
@@ -185,10 +245,10 @@ export function resolveRoadScopeV4(input: {
     return resolved(originalText, input.requestedCatalogWorkId, "ROAD_SURFACING_ONLY", ["surfacing_only_explicit"]);
   }
   const infrastructureNegated = /без\s+(?:бордюр[а-яё]*\s+и\s+)?водоотвод/iu.test(originalText);
-  if (INFRASTRUCTURE.test(originalText) && !infrastructureNegated) {
+  if ((INFRASTRUCTURE.test(originalText) || INFRASTRUCTURE_COMPONENT.test(originalText)) && !infrastructureNegated) {
     return resolved(originalText, input.requestedCatalogWorkId, "FULL_ROAD_INFRASTRUCTURE", ["road_infrastructure_explicit"]);
   }
-  if (PAVEMENT.test(originalText) && !PREPARED_BASE.test(originalText)) {
+  if ((PAVEMENT.test(originalText) || PAVEMENT_COMPONENT_SEQUENCE.test(originalText)) && !PREPARED_BASE.test(originalText)) {
     return resolved(originalText, input.requestedCatalogWorkId, "FULL_PAVEMENT_STRUCTURE", ["pavement_structure_explicit"]);
   }
   if (PREPARED_BASE.test(originalText) && SURFACING_ACTION.test(originalText)) {
@@ -271,8 +331,8 @@ function resolved(
     originalText,
     requestedCatalogWorkId,
     selectedScopeId,
-    profileId: PROFILE_BY_SCOPE[selectedScopeId],
-    semanticKind: KIND_BY_SCOPE[selectedScopeId],
+    profileId: ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4[selectedScopeId],
+    semanticKind: ASPHALT_SEMANTIC_KIND_BY_ROAD_SCOPE_V4[selectedScopeId],
     evidence,
     assumptions: [],
     exclusions,

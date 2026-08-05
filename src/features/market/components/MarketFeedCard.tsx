@@ -23,6 +23,8 @@ type ListingMediaItem =
   | { kind: "video"; uri: string }
   | { kind: "placeholder"; source: ImageSourcePropType };
 
+const MARKET_FEED_CARD_MEDIA_MAX_ITEMS = 12;
+
 type Props = {
   listing: MarketHomeListingCard;
   onOpen: () => void;
@@ -108,7 +110,10 @@ export default function MarketFeedCard({
       ...Array.from(new Set(photoUrls)).map((uri) => ({ kind: "photo" as const, uri })),
       ...Array.from(new Set(listing.videoUrls)).map((uri) => ({ kind: "video" as const, uri })),
     ];
-    return items.length ? items : [{ kind: "placeholder", source: photoUrls.length ? imageSource : listing.imageSource }];
+    return (items.length
+      ? items
+      : [{ kind: "placeholder" as const, source: photoUrls.length ? imageSource : listing.imageSource }]
+    ).slice(0, MARKET_FEED_CARD_MEDIA_MAX_ITEMS);
   }, [imageSource, listing.imageSource, listing.imageUrl, listing.imageUrls, listing.videoUrls]);
 
   const currentMediaIndex = Math.min(mediaIndex, mediaItems.length - 1);
@@ -176,7 +181,7 @@ export default function MarketFeedCard({
           onMomentumScrollEnd={handleMediaMomentumEnd}
           testID={`market_feed_card_media_scroll_${listing.id}`}
         >
-          {mediaItems.map((item, index) => {
+          {mediaItems.slice(0, MARKET_FEED_CARD_MEDIA_MAX_ITEMS).map((item, index) => {
             const mediaKey = item.kind === "placeholder" ? "placeholder" : item.uri;
             const imageItemSource =
               item.kind === "photo"

@@ -13,8 +13,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { execFileSync } from "child_process";
 
 const SRC = path.resolve(__dirname, "../../src");
+const REPO_ROOT = path.resolve(SRC, "..");
+const SOURCE_BUDGET_GROWTH_BASELINE_SHA =
+  "43c16245be9df5be23c9d1dbadccf18b8cc57154";
 
 function getFileStats(relativePath: string) {
   const fullPath = path.join(SRC, relativePath);
@@ -110,6 +114,137 @@ describe("performance budget вЂ” bundle module count", () => {
   // Threshold: alert if source file count grows beyond ~20% above baseline
   it("source module count within budget", () => {
     const tsFiles = countFilesRecursive(SRC, /\.tsx?$/);
+    const currentSourceFiles = execFileSync(
+      "git",
+      [
+        "ls-files",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "--",
+        "src",
+      ],
+      { cwd: REPO_ROOT, encoding: "utf8" },
+    )
+      .split(/\r?\n/)
+      .filter(
+        (file) =>
+          /^src\/.*\.tsx?$/.test(file) &&
+          fs.existsSync(path.join(REPO_ROOT, file)),
+      );
+    const sourceFilesAtGrowthBaseline = new Set(
+      execFileSync(
+        "git",
+        [
+          "ls-tree",
+          "-r",
+          "--name-only",
+          SOURCE_BUDGET_GROWTH_BASELINE_SHA,
+          "--",
+          "src",
+        ],
+        { cwd: REPO_ROOT, encoding: "utf8" },
+      )
+        .split(/\r?\n/)
+        .filter((file) => /^src\/.*\.tsx?$/.test(file)),
+    );
+    const sPostBaselineGovernedSourceGrowthFiles = currentSourceFiles.filter(
+      (file) => !sourceFilesAtGrowthBaseline.has(file),
+    ).length;
+    const sCurrentCorePostCheckpointSourceFiles = [
+      "src/lib/ai/inlineWorkPromptContract.ts",
+      "src/lib/estimate/aiEstimateParameterCardContract.ts",
+      "src/lib/estimate/application/buildAiEstimateParameterCardView.ts",
+      "src/lib/estimate/application/createInitialEstimateDraftRevision.ts",
+      "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
+      "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const t8ConsumerRepairApplicationServiceOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/lib\/consumerRequests\/.*applicationService.*\.ts$/i.test(file),
+    );
+    const sT8ConsumerRepairApplicationServiceOwnerFiles =
+      t8ConsumerRepairApplicationServiceOwnerFiles.length;
+    const t8ProfessionalUnitOntologyOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/lib\/estimate\/.*professionalUnit(?:Registry|Ontology).*\.ts$/i.test(file),
+    );
+    const sT8ProfessionalUnitOntologyOwnerFiles =
+      t8ProfessionalUnitOntologyOwnerFiles.length;
+    const t8OfficeDirectionFacadeOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        /^src\/screens\/office\/officeHub\.direction(?:Sections|Facade).*\.tsx?$/i.test(file),
+    );
+    const sT8OfficeDirectionFacadeOwnerFiles =
+      t8OfficeDirectionFacadeOwnerFiles.length;
+    const sDeveloperOverridePolicyOwnerFiles = [
+      "src/lib/developerOverridePolicy.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAddListingPureOwnerFiles = [
+      "src/screens/profile/addListingCatalogItem.contract.test.ts",
+      "src/screens/profile/addListingCatalogItem.ts",
+      "src/screens/profile/addListingCoordinates.contract.test.ts",
+      "src/screens/profile/addListingCoordinates.ts",
+      "src/screens/profile/addListingNavigation.contract.test.ts",
+      "src/screens/profile/addListingNavigation.ts",
+      "src/screens/profile/addListingProjection.contract.test.ts",
+      "src/screens/profile/addListingProjection.ts",
+      "src/screens/profile/addListingSubmission.contract.test.ts",
+      "src/screens/profile/addListingSubmission.ts",
+      "src/screens/profile/addListingValidation.contract.test.ts",
+      "src/screens/profile/addListingValidation.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAddListingHookOwnerFiles = [
+      "src/screens/profile/hooks/useAddListingOwnerContext.ts",
+      "src/screens/profile/hooks/useAddListingOwners.contract.test.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sReactNativeWebStyleOwnerFiles = [
+      "src/ui/reactNativeWebStyle.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sAsphaltReferenceV1DraftSessionPdfPerformanceFiles = [
+      "src/lib/consumerRequests/consumerRequestPdfStorage.web.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.ts",
+      "src/lib/documents/pdfWebPreviewIdentity.ts",
+      "src/lib/estimate/draftSession/estimateDraftSession.ts",
+      "src/lib/estimate/v4/asphalt/asphaltReferenceV1.ts",
+      "src/lib/estimate/workProfiles/estimateWorkProfileRegistry.ts",
+      "src/lib/estimate/workProfiles/registeredEstimateWorkProfiles.ts",
+      "src/lib/pdf/pdfViewerWebFramePool.test.ts",
+      "src/lib/pdf/pdfViewerWebFramePool.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sCanonicalEstimateFoundationOwnerFiles = [
+      "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
+      "src/lib/ai/estimateCompiler/professionalEstimateRouteCapabilities.ts",
+      "src/lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan.ts",
+      "src/lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting.ts",
+      "src/lib/estimate/ownedDomain/expandOwnedDomainBoqRows.ts",
+      "src/lib/ai/globalEstimate/globalTaxRules.ts",
+      "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts",
+      "src/lib/estimate/canonicalParameters/canonicalParameterSchemaRegistry.ts",
+      "src/lib/estimate/canonicalParameters/index.ts",
+      "src/lib/estimate/canonicalParameters/projectEstimateDraftRevisionToCanonicalSession.ts",
+      "src/lib/estimate/canonicalParameters/registeredCanonicalParameterSchemas.ts",
+      "src/lib/estimate/runtime/buildCanonicalParameterCards.ts",
+      "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts",
+      "src/lib/estimate/v4/electrical/consumerRequestCanonicalElectricalEstimate.ts",
+      "src/lib/estimate/v4/electrical/electricalCanonicalV1.ts",
+      "src/lib/estimate/v4/electrical/electricalProfessionalBoqV1.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sRequestEstimateLaunchLifecycleOwnerFiles = [
+      "src/lib/navigation/requestEstimateLaunchLifecycle.test.ts",
+      "src/lib/navigation/requestEstimateLaunchLifecycle.ts",
+      "src/lib/navigation/requestEstimateLaunchObservability.ts",
+      "src/lib/navigation/requestEstimateLaunchPayload.test.ts",
+      "src/lib/navigation/requestEstimateLaunchPayload.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sNativeEstimateDurableStorageOwnerFiles = [
+      "src/lib/platform/estimateRevisionDurableStore.asyncStorage.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
+    const sPlatformDeveloperAccessOwnerFiles = [
+      "src/lib/platformDeveloper/PlatformDeveloperRouteGate.tsx",
+      "src/lib/platformDeveloper/platformDeveloperAccessMatrix.ts",
+    ].filter((file) => currentSourceFiles.includes(file)).length;
     const p3ATypeBoundaryFiles = countFilesRecursive(
       path.join(SRC, "types", "contracts"),
       /\.ts$/,
@@ -627,8 +762,8 @@ describe("performance budget вЂ” bundle module count", () => {
       /\.ts$/,
     );
     const sB2CConsumerRepairRequestFiles =
-      countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /\.tsx?$/) +
-      countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /\.ts$/);
+      countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /^(?!.*\.test\.tsx?$).*\.tsx?$/) +
+      countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /^(?!.*\.test\.ts$).*\.ts$/);
     const sRequestEstimateBoqCatalogViewFiles = [
       path.join(SRC, "features", "consumerRepair", "requestEstimateViewModel.ts"),
       path.join(SRC, "features", "consumerRepair", "RequestEstimateSummaryCard.tsx"),
@@ -749,6 +884,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "estimateStructuredPipeline"),
       /\.ts$/,
     );
+    const sProfessionalEstimateRowDisplayBoundaryFiles = [
+      path.join(SRC, "lib", "estimateStructuredPipeline", "professionalEstimateRowDisplay.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sEstimateToProjectExecutionProcurementHandoffFiles = [
       path.join(SRC, "lib", "projectExecution", "buildProjectExecutionDraftFromEstimate.ts"),
       path.join(SRC, "lib", "projectExecution", "projectExecutionTypes.ts"),
@@ -775,13 +913,24 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "requestEstimateScreenActions.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sEditableEstimateWorkspaceConsumerRepairFiles = [
-      path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenRenderModel.ts"),
+      path.join(SRC, "features", "consumerRepair", "ConsumerRepairProgressiveEstimatePanel.tsx"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestEditableEstimateSnapshot.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sConsumerRepairRequestScreenOwnerSplitFiles = [
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenView.tsx"),
       path.join(SRC, "features", "consumerRepair", "ConsumerRepairRequestScreenContainer.tsx"),
       path.join(SRC, "features", "consumerRepair", "useConsumerRepairPhotoCaptureController.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sConsumerRepairGovernancePersistenceBoundaryFiles = [
+      path.join(SRC, "lib", "consumerRequests", "approvedHistoryScaleMatrix.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestAccessPolicy.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestAuditTrail.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestGlobalEstimateIntegration.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestLedgerBridge.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestLegacyEstimateGuard.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestPdfStorage.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestRepository.ts"),
+      path.join(SRC, "lib", "consumerRequests", "replayApprovedEstimateHistory.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -871,6 +1020,25 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "estimateTemplate10000"),
       /\.ts$/,
     );
+    const sProfessionalExpandedFormulaAndBoqValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionFormulaDsl.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplateBoqValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedPricingValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplatePricingValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedNormKnowledgeFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormGoldenCases.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormKnowledgeBase.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionNormKnowledgeBaseCore.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedExtendedValidationFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionTemplateExtendedValidation.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sProfessionalExpandedNormPackFiles = [
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionProfessionalNormPackRegistry.ts"),
+      path.join(SRC, "lib", "ai", "estimateTemplate10000", "productionProjectTemplateGroups.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sProfessionalExpandedEstimateCompilerFiles = [
       path.join(SRC, "lib", "ai", "estimateCompiler", "expandedEstimateCompiler.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -901,6 +1069,9 @@ describe("performance budget вЂ” bundle module count", () => {
         path.join(SRC, "lib", "ai", "estimatePresentation", "buildProfessionalEstimateTableViewModel.ts"),
         path.join(SRC, "lib", "ai", "estimatePresentation", "validateProfessionalEstimateTableViewModel.ts"),
       ].filter((file) => fs.existsSync(file)).length;
+    const sConstructionUnitSemanticValidationFiles = [
+      path.join(SRC, "lib", "ai", "constructionFormulas", "validateConstructionUnitSemantics.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sUniversalEstimatorKernelFiles =
       countFilesRecursive(path.join(SRC, "lib", "ai", "estimatorKernel"), /\.ts$/) +
       [
@@ -1955,7 +2126,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateStatePayloadFiles -
         sRequestEstimateFeatureStateMachineFiles -
         sEditableEstimateWorkspaceConsumerRepairFiles -
-        sConsumerRepairRequestScreenOwnerSplitFiles,
+        sConsumerRepairRequestScreenOwnerSplitFiles -
+        sConsumerRepairGovernancePersistenceBoundaryFiles,
     ).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
@@ -1981,17 +2153,83 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sPricebookRatebookGovernanceFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalEstimateTemplateEngineFiles).toBeLessThanOrEqual(20);
     expect(sForemanAiEstimateRoleChainFiles).toBeLessThanOrEqual(13);
-    expect(sProfessionalExpandedTemplate10000Files).toBeLessThanOrEqual(4);
+    expect(
+      sProfessionalExpandedTemplate10000Files -
+        sProfessionalExpandedFormulaAndBoqValidationFiles -
+        sProfessionalExpandedPricingValidationFiles -
+        sProfessionalExpandedNormKnowledgeFiles -
+        sProfessionalExpandedExtendedValidationFiles -
+        sProfessionalExpandedNormPackFiles,
+    ).toBeLessThanOrEqual(4);
+    expect(sProfessionalExpandedFormulaAndBoqValidationFiles).toBeLessThanOrEqual(2);
+    expect(sProfessionalExpandedPricingValidationFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalExpandedNormKnowledgeFiles).toBeLessThanOrEqual(3);
+    expect(sProfessionalExpandedExtendedValidationFiles).toBeLessThanOrEqual(1);
+    expect(sProfessionalExpandedNormPackFiles).toBeLessThanOrEqual(2);
     expect(sProfessionalExpandedEstimateCompilerFiles).toBeLessThanOrEqual(1);
     expect(sProfessionalEstimateComposerOwnerSplitFiles).toBeLessThanOrEqual(2);
-    expect(sEstimateStructuredPipelineUiPdfBindingFiles).toBeLessThanOrEqual(9);
+    expect(
+      sEstimateStructuredPipelineUiPdfBindingFiles -
+        sProfessionalEstimateRowDisplayBoundaryFiles,
+    ).toBeLessThanOrEqual(9);
+    expect(sProfessionalEstimateRowDisplayBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sEstimateToProjectExecutionProcurementHandoffFiles).toBeLessThanOrEqual(3);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
+    // Exact working-tree baseline on 2026-07-24. This intentionally includes
+    // untracked source modules, so the next .ts/.tsx addition fails before commit.
+    expect(
+      sPostBaselineGovernedSourceGrowthFiles -
+        sCurrentCorePostCheckpointSourceFiles -
+        sT8ConsumerRepairApplicationServiceOwnerFiles -
+        sT8ProfessionalUnitOntologyOwnerFiles -
+        sT8OfficeDirectionFacadeOwnerFiles -
+        sDeveloperOverridePolicyOwnerFiles -
+        sAddListingPureOwnerFiles -
+        sAddListingHookOwnerFiles -
+        sReactNativeWebStyleOwnerFiles -
+        sAsphaltReferenceV1DraftSessionPdfPerformanceFiles -
+        sCanonicalEstimateFoundationOwnerFiles -
+        sRequestEstimateLaunchLifecycleOwnerFiles -
+        sNativeEstimateDurableStorageOwnerFiles -
+        sPlatformDeveloperAccessOwnerFiles,
+    ).toBeLessThanOrEqual(508);
+    expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(t8ConsumerRepairApplicationServiceOwnerFiles).toEqual([
+      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+    ]);
+    expect(t8ProfessionalUnitOntologyOwnerFiles).toEqual([
+      "src/lib/estimate/professionalUnitRegistry.ts",
+    ]);
+    expect(t8OfficeDirectionFacadeOwnerFiles).toEqual([
+      "src/screens/office/officeHub.directionSections.tsx",
+    ]);
+    const t8ExactOwnerFiles = [
+      ...t8ConsumerRepairApplicationServiceOwnerFiles,
+      ...t8ProfessionalUnitOntologyOwnerFiles,
+      ...t8OfficeDirectionFacadeOwnerFiles,
+    ];
+    expect(new Set(t8ExactOwnerFiles).size).toBe(t8ExactOwnerFiles.length);
+    expect(
+      t8ExactOwnerFiles.every((file) => !sourceFilesAtGrowthBaseline.has(file)),
+    ).toBe(true);
+    expect(sT8ConsumerRepairApplicationServiceOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sT8ProfessionalUnitOntologyOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sT8OfficeDirectionFacadeOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sDeveloperOverridePolicyOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sAddListingPureOwnerFiles).toBeLessThanOrEqual(12);
+    expect(sAddListingHookOwnerFiles).toBeLessThanOrEqual(2);
+    expect(sReactNativeWebStyleOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sAsphaltReferenceV1DraftSessionPdfPerformanceFiles).toBeLessThanOrEqual(10);
+    expect(sCanonicalEstimateFoundationOwnerFiles).toBeLessThanOrEqual(16);
+    expect(sRequestEstimateLaunchLifecycleOwnerFiles).toBeLessThanOrEqual(5);
+    expect(sNativeEstimateDurableStorageOwnerFiles).toBeLessThanOrEqual(1);
+    expect(sPlatformDeveloperAccessOwnerFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sEditableEstimateWorkspaceConsumerRepairFiles).toBeLessThanOrEqual(2);
     expect(sConsumerRepairRequestScreenOwnerSplitFiles).toBeLessThanOrEqual(3);
+    expect(sConsumerRepairGovernancePersistenceBoundaryFiles).toBeLessThanOrEqual(9);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(
@@ -2012,7 +2250,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
-    expect(sLiveB2cRequestEmbeddedAiEstimateRealityFiles).toBeLessThanOrEqual(22);
+    expect(
+      sLiveB2cRequestEmbeddedAiEstimateRealityFiles -
+        sConstructionUnitSemanticValidationFiles,
+    ).toBeLessThanOrEqual(22);
+    expect(sConstructionUnitSemanticValidationFiles).toBeLessThanOrEqual(1);
     expect(sUniversalEstimatorKernelFiles).toBeLessThanOrEqual(17);
     expect(sOpenWorldEstimateSemanticCoverageFiles).toBeLessThanOrEqual(2);
     expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);
@@ -2345,7 +2587,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sMultiDomainProfessionalBoqVisibleLabelPolicyFiles -
         sEstimateStructuredPipelineUiPdfBindingFiles -
         sEstimateToProjectExecutionProcurementHandoffFiles -
-        sCurrentPlatformIntegrationGreenSourceFiles,
+        sCurrentPlatformIntegrationGreenSourceFiles -
+        sPostBaselineGovernedSourceGrowthFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

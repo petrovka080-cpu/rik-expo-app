@@ -22,7 +22,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
-import { isLocalDeveloperFullAccessAllowed } from "../developerOverride";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { resetSessionBoundary } from "../session/sessionBoundary";
@@ -48,6 +47,7 @@ function isTimeoutLikeAuthError(error: unknown): boolean {
 
 export type AuthLifecycleState = {
   authSessionState: AuthSessionState;
+  authenticatedUserId: string | null;
   authSessionStateRef: React.MutableRefObject<AuthSessionState>;
   setAuthSessionState: (next: AuthSessionState) => void;
   hasSession: boolean | null;
@@ -148,6 +148,9 @@ export function useAuthLifecycle(deps: {
     status: "unknown",
     reason: "bootstrap_pending",
   });
+  const [authenticatedUserId, setAuthenticatedUserId] = useState<string | null>(
+    null,
+  );
 
   const initStartedRef = useRef(false);
   const launchMarkerRef = useRef(false);
@@ -259,12 +262,16 @@ export function useAuthLifecycle(deps: {
   }, []);
 
   const clearSessionBoundaryState = useCallback(
-    (reason: string) => resetSessionBoundary(reason),
+    (reason: string) => {
+      setAuthenticatedUserId(null);
+      return resetSessionBoundary(reason);
+    },
     [],
   );
 
   // --- Role profile warming (background, non-blocking) ---
   const loadRoleForCurrentSession = useCallback(async (user?: User | null) => {
+    setAuthenticatedUserId(user?.id ?? null);
     if (!hasAuthLifecycleClient()) return;
     try {
       await warmCurrentSessionProfile("root_layout", user);
@@ -305,38 +312,6 @@ export function useAuthLifecycle(deps: {
   // --- INIT: bootstrap session + auth listener (ONCE, stable deps) ---
   useEffect(() => {
     if (initStartedRef.current) return;
-
-    const localDeveloperFullAccessAllowed = shouldApplyLocalDeveloperFullAccess({
-      isAllowed: isLocalDeveloperFullAccessAllowed(),
-      pathname: pathnameRef.current,
-      segments: segmentsRef.current,
-    });
-
-    if (localDeveloperFullAccessAllowed) {
-      initStartedRef.current = true;
-      recordPlatformObservability({
-        screen: "request",
-        surface: "startup_bootstrap",
-        category: "ui",
-        event: "bootstrap_enter",
-        result: "success",
-        extra: {
-          owner: "root_layout",
-          pathname: pathnameRef.current,
-          localDeveloperFullAccess: true,
-        },
-      });
-      recordAuthGateEvent("auth_local_developer_full_access", "success", {
-        caller: "root_layout",
-        reason: "local_dev_full_access",
-      });
-      setAuthSessionState({
-        status: "authenticated",
-        reason: "bootstrap_authenticated",
-      });
-      setSessionLoaded(true);
-      return;
-    }
 
     if (!hasAuthLifecycleClient()) return;
     initStartedRef.current = true;
@@ -638,6 +613,7 @@ export function useAuthLifecycle(deps: {
 
   return {
     authSessionState,
+    authenticatedUserId,
     authSessionStateRef,
     setAuthSessionState,
     hasSession,

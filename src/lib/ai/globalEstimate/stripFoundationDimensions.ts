@@ -59,6 +59,7 @@ export function buildStripFoundationQuantityContext(dimensions: GlobalEstimatePa
   const anchorBoltsPcs = Math.max(8, Math.ceil(length / 2));
   const embeddedPartsPcs = Math.max(4, Math.ceil(length / 6));
   const dewateringShifts = Math.max(1, Math.ceil(trenchVolume / 90));
+  const compactorShifts = Math.max(1, Math.ceil(backfillVolume / 80));
   const wasteVolume = Math.max(0.01, Math.round((trenchVolume - backfillVolume) * 100) / 100);
   const labSampleSets = Math.max(1, Math.ceil(concreteVolume / 50));
 
@@ -86,6 +87,7 @@ export function buildStripFoundationQuantityContext(dimensions: GlobalEstimatePa
     strip_foundation_anchor_bolts_pcs: anchorBoltsPcs,
     strip_foundation_embedded_parts_pcs: embeddedPartsPcs,
     strip_foundation_dewatering_shifts: dewateringShifts,
+    strip_foundation_compactor_shifts: compactorShifts,
     strip_foundation_waste_volume_m3: wasteVolume,
     strip_foundation_lab_sample_sets: labSampleSets,
   };

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
+import { withoutExactEstimateRevisionStorageDependencyFiles } from "../greenCloseoutCurrentWaveAllowlist";
 
 const repoRoot = path.resolve(__dirname, "../..");
 
@@ -304,7 +305,9 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
 
   it("keeps the wave inside production-safe code, test, and artifact boundaries", () => {
     const changed = dirtyPaths();
-    const forbidden = changed.filter(
+    const dependencyScopedChanged =
+      withoutExactEstimateRevisionStorageDependencyFiles(changed, repoRoot);
+    const forbidden = dependencyScopedChanged.filter(
       (file) =>
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&

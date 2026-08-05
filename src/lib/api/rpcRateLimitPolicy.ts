@@ -7,6 +7,8 @@ import {
   type SupabaseRpcRateLimitPolicy,
 } from "../../shared/scale/rateLimitPolicies";
 
+export type { SupabaseRpcRateLimitClassification } from "../../shared/scale/rateLimitPolicies";
+
 export type RpcRuntimePolicyClass =
   | "list_like_read"
   | "detail_read"

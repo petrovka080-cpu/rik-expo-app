@@ -11,9 +11,7 @@ import {
 } from "./officeRuntimePolicy";
 import {
   loadDeveloperOverrideContext,
-  resolveLocalDeveloperOverrideContext,
 } from "../developerOverride";
-import { LOCAL_DEVELOPER_ACTOR_USER_ID } from "../developerOverride.constants";
 import { resolveCurrentSessionRole } from "../sessionRole";
 import { getSessionSafe, supabase } from "../supabaseClient";
 
@@ -68,29 +66,6 @@ async function resolveOfficeWorkspaceRuntimeRole(params: {
   return null;
 }
 
-function resolveLocalDeveloperRuntimeResolution(params: {
-  requiredRole: OfficeRouteRole;
-}): OfficeRuntimeResolution | null {
-  const localDeveloperOverride = resolveLocalDeveloperOverrideContext();
-  const localDeveloperRole = localDeveloperOverride
-    ? resolveOfficeRuntimeRoleFromSources({
-        requiredRole: params.requiredRole,
-        sessionRole: null,
-        developerOverride: localDeveloperOverride,
-      })
-    : null;
-
-  if (!localDeveloperRole) return null;
-
-  return {
-    status: "ready",
-    context: buildOfficeRuntimeContext({
-      userId: localDeveloperOverride?.actorUserId ?? LOCAL_DEVELOPER_ACTOR_USER_ID,
-      role: localDeveloperRole,
-    }),
-  };
-}
-
 export function useOfficeRuntimeContextOptional() {
   return useContext(OfficeRuntimeReactContext);
 }
@@ -107,9 +82,6 @@ async function loadOfficeRuntimeResolution(params: {
   route: string;
   requiredRole: OfficeRouteRole;
 }): Promise<OfficeRuntimeResolution> {
-  const localDeveloperResolution = resolveLocalDeveloperRuntimeResolution(params);
-  if (localDeveloperResolution) return localDeveloperResolution;
-
   const sessionResult = await getSessionSafe({
     caller: "office_role_auth_context",
     route: params.route,
@@ -239,24 +211,11 @@ export function OfficeRoleAuthContextGate({
   route: string;
 }) {
   const [resolution, setResolution] = useState<OfficeRuntimeResolution>(
-    () =>
-      resolveLocalDeveloperRuntimeResolution({ requiredRole }) ?? {
-        status: "loading",
-      },
+    { status: "loading" },
   );
 
   useEffect(() => {
     let active = true;
-    const localDeveloperResolution = resolveLocalDeveloperRuntimeResolution({
-      requiredRole,
-    });
-    if (localDeveloperResolution) {
-      setResolution(localDeveloperResolution);
-      return () => {
-        active = false;
-      };
-    }
-
     setResolution({ status: "loading" });
 
     void loadOfficeRuntimeResolution({ route, requiredRole })

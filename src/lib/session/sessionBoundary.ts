@@ -16,6 +16,10 @@
 
 type SessionBoundaryCleaners = {
   clearDocumentSessions: () => void;
+  clearPooledWebPdfFrames: () => void;
+  clearGeneratedPdfViewerSessionCache: () => void;
+  clearConsumerRepairPdfWebObjectUrls: () => void;
+  clearWebPdfPreviewCacheForSessionBoundary: () => Promise<void>;
   clearPdfRunnerSessionState: () => void;
   clearCurrentSessionRoleCache: () => void;
   clearRealtimeSessionState: () => void;
@@ -34,6 +38,14 @@ type SessionBoundaryCleaners = {
 function loadSessionBoundaryCleaners(): SessionBoundaryCleaners {
   const { clearDocumentSessions } =
     require("../documents/pdfDocumentSessions") as typeof import("../documents/pdfDocumentSessions");
+  const { clearWebPdfPreviewCacheForSessionBoundary } =
+    require("../documents/pdfWebPreviewCache") as typeof import("../documents/pdfWebPreviewCache");
+  const { clearPooledWebPdfFrames } =
+    require("../pdf/pdfViewerWebFramePool") as typeof import("../pdf/pdfViewerWebFramePool");
+  const { clearGeneratedPdfViewerSessionCache } =
+    require("../estimatePdf/generatedPdfViewerFile") as typeof import("../estimatePdf/generatedPdfViewerFile");
+  const { clearConsumerRepairPdfWebObjectUrls } =
+    require("../consumerRequests/consumerRequestPdfStorage") as typeof import("../consumerRequests/consumerRequestPdfStorage");
   const { clearPdfRunnerSessionState } =
     require("../pdfRunner") as typeof import("../pdfRunner");
   const { clearCurrentSessionRoleCache } =
@@ -57,6 +69,10 @@ function loadSessionBoundaryCleaners(): SessionBoundaryCleaners {
 
   return {
     clearDocumentSessions,
+    clearPooledWebPdfFrames,
+    clearGeneratedPdfViewerSessionCache,
+    clearConsumerRepairPdfWebObjectUrls,
+    clearWebPdfPreviewCacheForSessionBoundary,
     clearPdfRunnerSessionState,
     clearCurrentSessionRoleCache,
     clearRealtimeSessionState,
@@ -107,6 +123,9 @@ export async function resetSessionBoundary(reason: string): Promise<void> {
   const cleaners = loadSessionBoundaryCleaners();
 
   // --- Synchronous resets (module-level singletons) ---
+  cleaners.clearPooledWebPdfFrames();
+  cleaners.clearGeneratedPdfViewerSessionCache();
+  cleaners.clearConsumerRepairPdfWebObjectUrls();
   cleaners.clearDocumentSessions();
   cleaners.clearCurrentSessionRoleCache();
   cleaners.clearPdfRunnerSessionState();
@@ -121,6 +140,11 @@ export async function resetSessionBoundary(reason: string): Promise<void> {
   cleaners.invalidateRequestsReadCapabilitiesCache();
 
   // --- Async cache purge ---
+  try {
+    await cleaners.clearWebPdfPreviewCacheForSessionBoundary();
+  } catch (purgeError) {
+    recordSessionBoundaryPurgeFailure(reason, purgeError);
+  }
   try {
     await cleaners.clearAppCache({ mode: "session", owner: `session_boundary:${reason}` });
   } catch (purgeError) {

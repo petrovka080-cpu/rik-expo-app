@@ -1,4 +1,5 @@
 import {
+  calculateExpandedComplexEstimate,
   EXPANDED_COMPLEX_REQUIRED_CALCULATOR_IDS,
   EXPANDED_COMPLEX_TEMPLATES,
   EXPANDED_COMPLEX_WORK_FAMILIES,
@@ -57,5 +58,18 @@ describe("expanded complex taxonomy", () => {
       expect(family.pdfPolicy).toBe("GROUPED_WITH_ASSUMPTIONS_TRACE_AND_SOURCES");
       expect(family.buyerHandoffPolicy).toBe("MATERIAL_EQUIPMENT_DELIVERY_ONLY");
     }
+  });
+
+  it("does not concatenate a DN diameter with the following pipeline length", () => {
+    const estimate = calculateExpandedComplexEstimate({
+      prompt: "технологический трубопровод DN200 300 м",
+      familyId: "technological_pipeline",
+    });
+
+    expect(estimate?.input_parameters.diameter_mm).toBe(200);
+    expect(estimate?.input_parameters.length_m).toBe(300);
+    expect(
+      estimate?.material_rows.find((row) => row.code === "process_piping_lm_or_t")?.quantity,
+    ).toBe(306);
   });
 });

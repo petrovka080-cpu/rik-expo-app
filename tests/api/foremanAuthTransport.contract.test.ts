@@ -38,7 +38,7 @@ describe("foreman auth transport boundary", () => {
     expect(transportSource).toContain("loadCurrentForemanAuthIdentity");
   });
 
-  it("keeps real signed-in foreman sessions ahead of local developer fallback for subcontract history", () => {
+  it("requires a real signed-in foreman session without a local developer identity fallback", () => {
     const transportSource = read("src/screens/foreman/foreman.auth.transport.ts");
     const subcontractHistorySource = read("src/screens/foreman/hooks/useForemanSubcontractHistory.ts");
     const subcontractHistoryControllerSource = read(
@@ -46,11 +46,11 @@ describe("foreman auth transport boundary", () => {
     );
     const sessionReadIndex = transportSource.indexOf("const { session } = await getSessionSafe");
     const sessionIdentityReturnIndex = transportSource.indexOf("if (sessionIdentity.id) return sessionIdentity");
-    const localFallbackIndex = transportSource.indexOf("if (isLocalDeveloperFullAccessAllowed())");
 
     expect(sessionReadIndex).toBeGreaterThan(-1);
     expect(sessionIdentityReturnIndex).toBeGreaterThan(sessionReadIndex);
-    expect(localFallbackIndex).toBeGreaterThan(sessionIdentityReturnIndex);
+    expect(transportSource).not.toContain("isLocalDeveloperFullAccessAllowed");
+    expect(transportSource).not.toContain("LOCAL_DEVELOPER_ACTOR_USER_ID");
     expect(subcontractHistorySource).not.toContain("LOCAL_DEVELOPER_ACTOR_USER_ID");
     expect(subcontractHistoryControllerSource).not.toContain("LOCAL_DEVELOPER_ACTOR_USER_ID");
   });

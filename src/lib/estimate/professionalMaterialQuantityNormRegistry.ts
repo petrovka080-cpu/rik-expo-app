@@ -12,9 +12,17 @@ const ALL_NORMS: ProfessionalMaterialQuantityNorm[] = [
   ...(priorityFamilyQuantityNormsJson as ProfessionalMaterialQuantityNorm[]),
 ];
 
+const PATTERN_CACHE = new Map<string, RegExp>();
+
 function matchesPattern(pattern: string | null | undefined, value: string): boolean {
-  if (!pattern?.trim()) return false;
-  return new RegExp(pattern, "i").test(value);
+  const normalizedPattern = pattern?.trim();
+  if (!normalizedPattern) return false;
+  let compiled = PATTERN_CACHE.get(normalizedPattern);
+  if (!compiled) {
+    compiled = new RegExp(normalizedPattern, "i");
+    PATTERN_CACHE.set(normalizedPattern, compiled);
+  }
+  return compiled.test(value);
 }
 
 function familyMatches(normFamily: string, family: string): boolean {
@@ -33,7 +41,10 @@ function scoreNorm(norm: ProfessionalMaterialQuantityNorm, input: {
     (matchesPattern(norm.materialKeyPattern, input.row.materialKey ?? "") ? 16 : 0) +
     (matchesPattern(norm.materialNamePattern, rowText) ? 12 : 0);
   const unitScore = norm.unit && norm.unit === input.row.unit ? 4 : 0;
-  if (norm.family === "*" && patternScore === 0 && unitScore === 0) return -1;
+  // A family match identifies the search domain; it is not sufficient evidence
+  // that a pipe/asphalt/geotextile norm applies to every material row in that
+  // family. Require the row/material pattern or the declared unit to match.
+  if (patternScore === 0 && unitScore === 0) return -1;
   score += patternScore + unitScore;
   return score;
 }
@@ -46,9 +57,15 @@ export function findProfessionalMaterialQuantityNorm(input: {
   row: ProfessionalBoqRow;
   family: string;
 }): ProfessionalMaterialQuantityNorm | null {
-  const scored = ALL_NORMS
-    .map((norm) => ({ norm, score: scoreNorm(norm, input) }))
-    .filter((item) => item.score >= 0)
-    .sort((left, right) => right.score - left.score);
-  return scored[0]?.norm ?? null;
+  if (input.row.rowType !== "material") return null;
+  let bestNorm: ProfessionalMaterialQuantityNorm | null = null;
+  let bestScore = -1;
+  for (const norm of ALL_NORMS) {
+    const score = scoreNorm(norm, input);
+    if (score > bestScore) {
+      bestNorm = norm;
+      bestScore = score;
+    }
+  }
+  return bestNorm;
 }

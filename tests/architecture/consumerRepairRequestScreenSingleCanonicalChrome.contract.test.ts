@@ -25,7 +25,8 @@ describe("consumer repair request screen canonical chrome", () => {
     expect(form).not.toContain("Электрика");
     expect(form).not.toContain("Двери/окна");
 
-    expect(chrome).toContain('testID: sent || approved ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"');
+    expect(chrome).toContain("const finalized = (sent || approved) && !needsFreshApproval");
+    expect(chrome).toContain('testID: finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"');
     expect(chrome).toContain('testID: "consumer-repair-delete-draft"');
     expect(sticky.indexOf("{primary ? <StickyButton action={primary} variant=\"primary\" /> : null}"))
       .toBeLessThan(sticky.indexOf("{danger ? <StickyButton action={danger} variant=\"danger\" /> : null}"));

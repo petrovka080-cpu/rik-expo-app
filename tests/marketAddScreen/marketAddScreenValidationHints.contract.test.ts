@@ -7,14 +7,17 @@ const read = (relativePath: string) =>
 describe("market add screen validation hints contract", () => {
   it("keeps guided field hints, error summary and submit prevention visible", () => {
     const screen = read("src/screens/profile/AddListingScreen.tsx");
+    const validation = read("src/screens/profile/addListingValidation.ts");
     const modal = read("src/screens/profile/components/ListingModal.tsx");
     const primitives = read("src/screens/profile/components/ProfilePrimitives.tsx");
     const styles = read("src/screens/profile/profile.styles.ts");
 
     expect(screen).toContain("buildAddListingValidationErrors");
-    expect(screen).toContain("hasValidationErrors(nextValidationErrors)");
-    expect(screen).toContain("firstValidationError(nextValidationErrors)");
+    expect(screen).toContain("hasAddListingValidationErrors(nextValidationErrors)");
+    expect(screen).toContain("firstAddListingValidationError(nextValidationErrors)");
     expect(screen).toContain("setValidationErrors(nextValidationErrors)");
+    expect(validation).toContain("export function buildAddListingValidationErrors");
+    expect(validation).toContain("params.marketplaceMediaAssetIds.length < 1");
     expect(modal).toContain("market-add-error-summary");
     expect(modal).toContain("market-add-media-error");
     expect(modal).toContain("validationErrors.listingTitle");

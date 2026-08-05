@@ -12,6 +12,7 @@ import {
   type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
 import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
+import { buildCanonicalParameterCards } from "../../lib/estimate/runtime/buildCanonicalParameterCards";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import {
   compactConsumerRepairBundleForDurableStorage,
@@ -168,10 +169,25 @@ test("A: exact /request path immediately creates a calculated professional BOQ f
   const bundle = selectPendingScope(initialBundle("Асфальтирование парковки площадью 5000 м²"), "FULL_PAVEMENT_STRUCTURE");
   const revision = currentRevision(bundle);
   const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
+  const canonicalCards = buildCanonicalParameterCards({
+    session: bundle.canonicalParameterSession ?? null,
+    revision,
+  });
 
   expect(bundle.draft.selectedWorkKey).toBe(ASPHALT_WORK_ID_V4);
   expect(revision.selectedTemplateId).toBe(ASPHALT_V4_RUNTIME_TEMPLATE_ID);
   expect(revision.professionalWorkId).toBe(ASPHALT_WORK_ID_V4);
+  expect(bundle.canonicalParameterSession).toMatchObject({
+    canonicalWorkKey: ASPHALT_WORK_ID_V4,
+    revisionId: revision.revisionId,
+  });
+  expect(canonicalCards.find((card) => card.key === "area_m2")).toEqual(
+    expect.objectContaining({
+      value: 5000,
+      editable: true,
+      missing: false,
+    }),
+  );
   expect(revision.legacyRowsCount).toBe(0);
   expect(revision.boq.rows.length).toBeGreaterThan(30);
   expect(revision.boq.rows.every((row) => row.quantity > 0 && Boolean(row.unit) && Boolean(row.quantityFormula))).toBe(true);
@@ -418,18 +434,32 @@ test.each([
   expect(Object.values(coverage.counters).every((value) => value === 0)).toBe(true);
 });
 
-test("reference basis creates a complete 1000 m² BOQ when volume is absent", () => {
-  const bundle = selectPendingScope(initialBundle("Устройство асфальтобетонного дорожного покрытия"), "ROAD_SURFACING_ONLY");
-  const revision = currentRevision(bundle);
-  expect(revision.quantityBasis).toEqual(expect.objectContaining({
-    basisType: "reference",
-    area_m2: 1000,
-    source: "reference_policy",
-  }));
-  expect(revision.params.area_m2).toEqual(expect.objectContaining({ value: 1000, source: "default_assumption" }));
-  expect(revision.boq.rows.length).toBeGreaterThan(30);
-  expect(revision.boq.rows.every((row) => row.quantity > 0)).toBe(true);
-  expect(bundle.draft.aiSummaryRu).toMatch(/1[\s\u00a0]?000/u);
+test("scope selection cannot compile a reference 1000 m² BOQ when geometry is absent", () => {
+  const initial = initialBundle("Устройство асфальтобетонного дорожного покрытия");
+  const bundle = selectConsumerRepairRoadScopeV4({
+    requestDraftId: initial.draft.id,
+    userId: initial.draft.consumerUserId,
+    selectedScope: "ROAD_SURFACING_ONLY",
+    createdAt: "2026-07-24T02:00:00.000Z",
+  });
+
+  expect(bundle.pendingRoadScopeSelection).toBeNull();
+  expect(bundle.estimateDraftSession).toMatchObject({
+    status: "PARAMETERS_REQUIRED",
+    scopePresetId: "ROAD_SURFACING_ONLY",
+    parameters: {},
+    activeRevisionId: null,
+  });
+  expect(bundle.estimateDraftRevisionState).toBeNull();
+  expect(bundle.items).toHaveLength(0);
+  expect(bundle.canonicalParameterSession).toMatchObject({
+    canonicalWorkKey: ASPHALT_WORK_ID_V4,
+    status: "BLOCKING_REQUIRED",
+  });
+  expect(
+    bundle.canonicalParameterSession?.blockingMissingParameterIds,
+  ).toEqual(expect.arrayContaining(["area_m2", "length_m", "width_m"]));
+  expect(bundle.draft.missingData).toContain("Укажите площадь либо подтверждённые длину и ширину.");
 });
 
 test("B and D: new two-layer parking compiles only confirmed base and pavement scope", () => {

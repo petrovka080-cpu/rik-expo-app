@@ -40,8 +40,8 @@ describe("S_RUNTIME_04_FLATLIST_TUNING_BATCH_B", () => {
     const controller = readRepoFile("src/features/market/useMarketHomeController.ts");
 
     expect(source).toContain("MARKET_HOME_FEED_FLATLIST_TUNING");
-    expect(source).toContain("initialNumToRender: 6");
-    expect(source).toContain("maxToRenderPerBatch: 6");
+    expect(source).toContain("initialNumToRender: 5");
+    expect(source).toContain("maxToRenderPerBatch: 5");
     expect(source).toContain("updateCellsBatchingPeriod: 32");
     expect(source).toContain("windowSize: 7");
     expect(source).toContain('removeClippedSubviews: Platform.OS !== "web"');
@@ -49,7 +49,7 @@ describe("S_RUNTIME_04_FLATLIST_TUNING_BATCH_B", () => {
     expect(source).toContain("keyExtractor={marketHomeListingKeyExtractor}");
     expect(source).toContain("onRefresh={handleRefreshFeed}");
     expect(source).toContain("onEndReached={handleEndReached}");
-    expect(controller).toContain("void loadFeedStage(\"refresh\");");
+    expect(controller).toContain("void loadFeedStage(\"refresh\").finally");
     expect(controller).toContain("const handleEndReached = useCallback");
     expect(source).toContain("onEndReachedThreshold={0.35}");
   });

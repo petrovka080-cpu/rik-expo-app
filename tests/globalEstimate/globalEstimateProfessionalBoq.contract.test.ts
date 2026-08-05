@@ -63,4 +63,21 @@ describe("global estimate professional BOQ delivery contract", () => {
 
     expect(result.work.workKey).toBe("foundation_rebar_reinforcement");
   });
+
+  it("keeps generic rebar installation as its own public work type", async () => {
+    const { result } = calculateUniversalRoutedEstimate("Estimate rebar_installation 96 linear_m", {
+      countryCode: "KG",
+      city: "Bishkek",
+      language: "en",
+      explicitWorkKey: "rebar_installation",
+    });
+
+    expect(result.work.workKey).toBe("rebar_installation");
+    expect(result.work.title).toMatch(/rebar|арматур|армирован/i);
+    expect(result.work.title).not.toMatch(/foundation|фундамент/i);
+    expect(result.input).toMatchObject({
+      volume: 96,
+      unit: "linear_m",
+    });
+  });
 });

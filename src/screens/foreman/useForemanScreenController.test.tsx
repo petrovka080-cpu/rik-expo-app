@@ -47,8 +47,8 @@ const mockLoadStoredFioState = jest.fn().mockResolvedValue({
   lastConfirmIso: "2026-04-01T07:00:00.000Z",
 });
 const mockSaveStoredFioState = jest.fn().mockResolvedValue(["Foreman One"]);
-const mockGetUser = jest.fn().mockResolvedValue({
-  data: {
+const mockGetSessionSafe = jest.fn().mockResolvedValue({
+  session: {
     user: {
       id: "user-1",
       email: "foreman@example.com",
@@ -59,6 +59,7 @@ const mockGetUser = jest.fn().mockResolvedValue({
       },
     },
   },
+  degraded: false,
 });
 const foremanHistoryPdfDescriptor = {
   uri: "https://example.com/foreman-history.pdf",
@@ -222,10 +223,9 @@ jest.mock("../../ui/GlobalBusy", () => ({
 }));
 
 jest.mock("../../lib/supabaseClient", () => ({
+  getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   supabase: {
-    auth: {
-      getUser: (...args: unknown[]) => mockGetUser(...args),
-    },
+    auth: {},
   },
 }));
 
@@ -529,8 +529,8 @@ describe("useForemanScreenController", () => {
       lastConfirmIso: "2026-04-01T07:00:00.000Z",
     });
     mockSaveStoredFioState.mockResolvedValue(["Foreman One"]);
-    mockGetUser.mockResolvedValue({
-      data: {
+    mockGetSessionSafe.mockResolvedValue({
+      session: {
         user: {
           id: "user-1",
           email: "foreman@example.com",
@@ -541,6 +541,7 @@ describe("useForemanScreenController", () => {
           },
         },
       },
+      degraded: false,
     });
   });
 

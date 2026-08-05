@@ -70,9 +70,11 @@ export type AiApprovalInboxMaestroArtifact = {
 };
 
 const projectRoot = process.cwd();
+const artifactRoot = process.env.JEST_WORKER_ID
+  ? path.join(projectRoot, ".release-runtime", "jest-artifacts", process.env.JEST_WORKER_ID)
+  : path.join(projectRoot, "artifacts");
 const artifactPath = path.join(
-  projectRoot,
-  "artifacts",
+  artifactRoot,
   "S_AI_MAGIC_07_APPROVAL_INBOX_EXECUTION_GATE_emulator.json",
 );
 const FIXTURE_WRITE_FIELD = "se" + "ed_used";

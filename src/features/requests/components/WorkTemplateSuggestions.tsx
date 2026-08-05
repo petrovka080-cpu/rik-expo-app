@@ -4,6 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
 import type { GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate";
 
+const WORK_TEMPLATE_SUGGESTION_MAX_ITEMS = 12;
+
 export type WorkTemplateSuggestionsProps = {
   candidateTemplates: InlineWorkTemplateCandidate[];
   legacyWorkSuggestions?: GlobalWorkSmartSearchSuggestion[];
@@ -37,7 +39,7 @@ export function WorkTemplateSuggestions({
       showsVerticalScrollIndicator
       testID="consumer-repair-work-suggestions"
     >
-      {candidateTemplates.map((candidate, index) => (
+      {candidateTemplates.slice(0, WORK_TEMPLATE_SUGGESTION_MAX_ITEMS).map((candidate, index) => (
         <Pressable
           key={candidate.templateId}
           accessibilityRole="button"

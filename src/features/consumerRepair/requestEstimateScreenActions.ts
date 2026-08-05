@@ -26,54 +26,104 @@ import type {
   ConsumerRepairSelectedWork,
   ConsumerRequestValidationErrorItem,
 } from "../../lib/consumerRequests/consumerRequestTypes";
-import {
-  buildGlobalSelectedWorkBinding,
-  searchGlobalWorkSmartSuggestions,
-  type GlobalSelectedWorkBinding,
-  type GlobalWorkSmartSearchSuggestion,
+import type {
+  GlobalSelectedWorkBinding,
+  GlobalWorkSmartSearchSuggestion,
 } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { GlobalWorkCategory } from "../../lib/ai/globalEstimate/globalEstimateTypes";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
-import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
-import { buildProfessionalWorkPassport } from "../../lib/estimate/buildProfessionalWorkPassport";
 import type { buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
+import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 import {
-  ASPHALT_WORK_ID_V4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   ROAD_SCOPE_SELECTION_QUESTION_RU,
   resolveRoadEstimateScopeV4,
-} from "../../lib/estimate/v4/asphalt";
-import { routeMultiDomainReferencePromptV4 } from "../../lib/estimate/v4/multiDomainReferenceNlpV4";
-import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../../lib/estimate/v4/multiDomainReferencePassportsV4";
+} from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
+import type {
+  buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft,
+  buildDirectConsumerRepairOpenWorldAiDraft as BuildDirectConsumerRepairOpenWorldAiDraft,
+} from "./consumerRepairAiAdapter";
 import {
-  buildProjectExecutionDraftFromEstimate,
-  buildProjectExecutionDraftFromRevision,
-} from "../../lib/projectExecution";
-import type { buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft } from "./consumerRepairAiAdapter";
+  resolveDirectConsumerRepairOpenWorldOwner,
+  shouldUseDirectConsumerRepairOpenWorldDraft,
+} from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
 
 type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
+type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRepairOpenWorldAiDraft;
 type ConsumerRepairRuntimeDraftBuilder = typeof BuildConsumerRepairDraftFromAiEstimateRuntime;
 
-function loadConsumerRepairDraftBuilders(): {
-  buildConsumerRepairAiDraft: ConsumerRepairAiDraftBuilder;
-  buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
-} {
+function recordConsumerRepairEstimateBuildTiming(
+  stage: string,
+  startedAt: number,
+): void {
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
+  console.info("[RikEstimateBuild]", JSON.stringify({
+    stage,
+    elapsedMs: Date.now() - startedAt,
+  }));
+}
+
+function loadGlobalWorkSmartSearch() {
+  return require(
+    "../../lib/ai/globalEstimate/globalWorkSmartSearch"
+  ) as typeof import("../../lib/ai/globalEstimate/globalWorkSmartSearch");
+}
+
+function loadMultiDomainReferenceV4() {
+  return {
+    ...require(
+      "../../lib/estimate/v4/multiDomainReferenceNlpV4"
+    ) as typeof import("../../lib/estimate/v4/multiDomainReferenceNlpV4"),
+    ...require(
+      "../../lib/estimate/v4/multiDomainReferencePassportsV4"
+    ) as typeof import("../../lib/estimate/v4/multiDomainReferencePassportsV4"),
+  };
+}
+
+function loadProfessionalWorkPassport() {
+  return require(
+    "../../lib/estimate/buildProfessionalWorkPassport"
+  ) as typeof import("../../lib/estimate/buildProfessionalWorkPassport");
+}
+
+function loadProjectExecutionDraftBuilders() {
+  return require(
+    "../../lib/projectExecution"
+  ) as typeof import("../../lib/projectExecution");
+}
+
+function loadConsumerRepairAiDraftBuilder(): ConsumerRepairAiDraftBuilder {
   const adapter = require("./consumerRepairAiAdapter") as {
     buildConsumerRepairAiDraft: ConsumerRepairAiDraftBuilder;
   };
+  return adapter.buildConsumerRepairAiDraft;
+}
+
+function loadDirectConsumerRepairOpenWorldAiDraftBuilder(): DirectConsumerRepairOpenWorldAiDraftBuilder {
+  const adapter = require("./consumerRepairAiAdapter") as {
+    buildDirectConsumerRepairOpenWorldAiDraft: DirectConsumerRepairOpenWorldAiDraftBuilder;
+  };
+  return adapter.buildDirectConsumerRepairOpenWorldAiDraft;
+}
+
+function loadRegisteredEstimateWorkProfiles() {
+  return require(
+    "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles"
+  ) as typeof import("../../lib/estimate/workProfiles/registeredEstimateWorkProfiles");
+}
+
+function loadConsumerRepairRuntimeDraftBuilder(): ConsumerRepairRuntimeDraftBuilder {
   const runtime = require(
     "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
   ) as {
     buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
   };
-  return {
-    buildConsumerRepairAiDraft: adapter.buildConsumerRepairAiDraft,
-    buildConsumerRepairDraftFromAiEstimateRuntime:
-      runtime.buildConsumerRepairDraftFromAiEstimateRuntime,
-  };
+  return runtime.buildConsumerRepairDraftFromAiEstimateRuntime;
 }
 
 export type ConsumerRepairProjectExecutionAction =
@@ -94,6 +144,7 @@ export type ConsumerRepairRequestScreenState = {
   preferredTimeText: string;
   contactPhone: string;
   roadScopeSelectionBusy?: boolean;
+  pdfOpenBusy?: boolean;
   bundle: ConsumerRepairDraftBundle | null;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -152,6 +203,18 @@ export async function buildConsumerRepairRequestPdfViewerNavigation(
     originModule: "reports",
     source: "generated",
     entityId: pdf.requestId,
+    cacheKey: `consumer-repair-pdf:${pdf.pdfId}`,
+    cacheIdentity: {
+      tenantId: pdf.tenantId,
+      companyId: pdf.companyId,
+      userId: pdf.ownerUserId,
+      sessionBoundaryId: pdf.sessionBoundaryId,
+      revisionId: pdf.revisionId,
+      snapshotHash: pdf.snapshotHash,
+      rendererVersion: pdf.rendererVersion,
+      locale: pdf.locale,
+      currency: pdf.currency,
+    },
   });
 
   return {
@@ -287,45 +350,60 @@ function normalizeInitialProblemText(value: string | null | undefined): string {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
-export function recoverConsumerRepairActiveWorkspaceForProblemText(
-  history: ConsumerRepairDraftBundle[],
-  problemText: string | null | undefined,
-): ConsumerRepairDraftBundle | null {
-  const normalizedProblemText = normalizeInitialProblemText(problemText);
-  if (!normalizedProblemText) return null;
-  return history.find((bundle) =>
-    isConsumerRepairActiveWorkspaceBundle(bundle) &&
-    normalizeInitialProblemText(bundle.draft.problemText) === normalizedProblemText
-  ) ?? null;
+export function buildEstimateDraftSessionTransitionStatusMessage(
+  bundle: ConsumerRepairDraftBundle,
+): string {
+  switch (bundle.estimateDraftSession?.status) {
+    case "PARAMETERS_REQUIRED":
+      return "Состав работ выбран. Укажите обязательные параметры для расчёта.";
+    case "REVIEW":
+      return "Состав работ выбран. Смета рассчитана.";
+    case "STALE_RESULT_REJECTED":
+      return "Результат устарел и не был применён. Проверьте текущие параметры.";
+    case "COMPILE_FAILED":
+      return "Не удалось выполнить расчёт из текущих параметров.";
+    default:
+      return "Состояние сметы обновлено.";
+  }
 }
 
 export function buildInitialConsumerRepairRequestState(params: {
   initialProblemText?: string;
+  initialDraftId?: string;
   history: ConsumerRepairDraftBundle[];
   approvedHistoryPage?: ConsumerRepairApprovedHistoryPage;
 }): ConsumerRepairRequestScreenState {
   const initialProblemText = normalizeInitialProblemText(params.initialProblemText);
-  const recoveredBundle = initialProblemText
-    ? recoverConsumerRepairActiveWorkspaceForProblemText(params.history, initialProblemText)
-    : recoverLatestConsumerRepairActiveWorkspace(params.history);
+  const initialDraftId = String(params.initialDraftId ?? "").trim();
+  const recoveredBundle = initialDraftId
+    ? params.history.find((bundle) =>
+      isConsumerRepairActiveWorkspaceBundle(bundle) && bundle.draft.id === initialDraftId
+    ) ?? null
+    : null;
+  const exactDraftMissing = Boolean(initialDraftId && !recoveredBundle);
   return {
     problemText: recoveredBundle ? "" : initialProblemText,
     repairType: "Ремонт",
-    city: "",
-    addressText: "",
-    preferredTimeText: "",
-    contactPhone: "",
+    city: recoveredBundle?.draft.city ?? "",
+    addressText: recoveredBundle?.draft.addressText ?? "",
+    preferredTimeText: recoveredBundle?.draft.preferredTimeText ?? "",
+    contactPhone: recoveredBundle?.draft.contactPhone ?? "",
     bundle: recoveredBundle,
     history: params.history,
     approvedHistoryPage: params.approvedHistoryPage ?? buildConsumerRepairApprovedHistoryPageFromLoadedHistory(params.history),
     aiAnswerRu: null,
-    statusMessage: null,
+    statusMessage: exactDraftMissing
+      ? "Указанный черновик не найден или недоступен. Создана чистая сессия без переноса данных."
+      : null,
     validationErrors: [],
     catalogPickerVisible: false,
     catalogPickerTargetItemId: null,
     catalogPickerInitialQuery: undefined,
     lastRemovedItem: null,
-    selectedWork: selectedWorkFromBundle(recoveredBundle),
+    // The input composer is a new draft session even while an exact historical
+    // workspace is displayed. WorkIntent remains owned by that bundle until an
+    // explicit clone or a new catalog selection.
+    selectedWork: null,
     selectedHistoryId: null,
     editingParam: null,
   };
@@ -333,12 +411,6 @@ export function buildInitialConsumerRepairRequestState(params: {
 
 export function isConsumerRepairActiveWorkspaceBundle(bundle: ConsumerRepairDraftBundle): boolean {
   return bundle.draft.status === "draft" && !bundle.draft.deletedAt;
-}
-
-export function recoverLatestConsumerRepairActiveWorkspace(
-  history: ConsumerRepairDraftBundle[],
-): ConsumerRepairDraftBundle | null {
-  return history.find(isConsumerRepairActiveWorkspaceBundle) ?? null;
 }
 
 export function buildDeletedConsumerRepairDraftState(
@@ -427,6 +499,7 @@ export function buildApprovedConsumerRepairWorkspaceClearedState(params: {
 
 export function toConsumerRepairSelectedWork(binding: GlobalSelectedWorkBinding): ConsumerRepairSelectedWork {
   return {
+    selectedCatalogWorkId: binding.selectedWorkKey,
     selectedWorkKey: binding.selectedWorkKey,
     selectedWorkTitleRu: binding.selectedTitleRu,
     selectedWorkCategoryKey: binding.selectedCategoryKey,
@@ -464,7 +537,8 @@ export function focusConsumerRepairProblemInputAtEnd(
 export function selectedWorkFromBundle(bundle: ConsumerRepairDraftBundle | null): GlobalSelectedWorkBinding | null {
   if (!bundle?.draft.selectedWorkKey || !bundle.draft.selectedWorkTitleRu) return null;
   return {
-    selectedWorkKey: bundle.draft.selectedWorkKey,
+    selectedWorkKey:
+      bundle.draft.selectedCatalogWorkId ?? bundle.draft.selectedWorkKey,
     selectedTitleRu: bundle.draft.selectedWorkTitleRu,
     selectedCategoryKey: (bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType) as GlobalSelectedWorkBinding["selectedCategoryKey"],
     selectedCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
@@ -481,7 +555,7 @@ export function refreshSelectedWorkBinding(
   if (!selectedWork) return null;
   const nextRawInput = rawInput || selectedWork.rawInput;
   try {
-    return buildGlobalSelectedWorkBinding({
+    return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
       selectedWorkKey: selectedWork.selectedWorkKey,
       rawInput: nextRawInput,
     });
@@ -503,7 +577,7 @@ export function buildSelectedWorkFromSuggestion(
   suggestion: GlobalWorkSmartSearchSuggestion,
   rawInput: string,
 ): GlobalSelectedWorkBinding {
-  return buildGlobalSelectedWorkBinding({
+  return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
     selectedWorkKey: suggestion.workKey,
     rawInput,
   });
@@ -518,7 +592,7 @@ export function buildSelectedWorkFromTemplateCandidate(
   candidate: InlineWorkTemplateCandidate,
   rawInput: string,
 ): GlobalSelectedWorkBinding {
-  return buildGlobalSelectedWorkBinding({
+  return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
     selectedWorkKey: candidate.workKey?.trim() || candidate.family,
     rawInput,
   });
@@ -556,6 +630,10 @@ export function preserveSelectedWorkResolverInput(
 export function buildMultiDomainReferenceSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
+  const {
+    routeMultiDomainReferencePromptV4,
+    MULTI_DOMAIN_REFERENCE_PASSPORTS_V4,
+  } = loadMultiDomainReferenceV4();
   const routed = routeMultiDomainReferencePromptV4(rawInput);
   if (routed.kind !== "MATCH" || routed.catalogWorkId === "asphalt_pavement") return null;
   const passport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
@@ -603,7 +681,10 @@ export function searchConsumerRepairWorkSuggestions(
   selectedWork: GlobalSelectedWorkBinding | null,
 ): GlobalWorkSmartSearchSuggestion[] {
   if (selectedWork || !shouldShowConsumerRepairWorkSuggestions(query)) return [];
-  return searchGlobalWorkSmartSuggestions({ query, limit: 8 });
+  return loadGlobalWorkSmartSearch().searchGlobalWorkSmartSuggestions({
+    query,
+    limit: 8,
+  });
 }
 
 function draftHasPricedRows(draft: ConsumerRepairAiDraft | null): boolean {
@@ -667,7 +748,9 @@ function isExactPassportBackedNaturalLanguageDraft(
   if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
   if (draft.items.length < 20) return false;
   if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
-  const passport = buildProfessionalWorkPassport(selectedTemplateIdFromDraft(draft) ?? "");
+  const passport = loadProfessionalWorkPassport().buildProfessionalWorkPassport(
+    selectedTemplateIdFromDraft(draft) ?? "",
+  );
   if (!passport) return false;
   const prompt = normalizePassportPromptText(problemText);
   const passportName = normalizePassportPromptText(passport.localizedNameRu);
@@ -679,7 +762,7 @@ function isMultiDomainReferenceV4Draft(
 ): draft is ConsumerRepairAiDraft {
   return Boolean(
     draft?.selectedWork?.selectedWorkKey &&
-    draft.items.length >= 20 &&
+    draft.items.length > 0 &&
     draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
   );
 }
@@ -696,7 +779,24 @@ export function buildConsumerRepairSelectedWorkEditableField(params: {
     params.selectedWork?.selectedWorkKey === fallback.selectedWorkKey &&
     nextProblemText === (params.currentBundle.draft.problemText || "")
   ) {
-    return toConsumerRepairSelectedWork(fallback);
+    const draft = params.currentBundle.draft;
+    if (
+      draft.selectedWorkKey &&
+      draft.selectedWorkTitleRu &&
+      draft.selectedWorkCategoryKey &&
+      draft.selectedWorkCategoryTitleRu
+    ) {
+      return {
+        selectedCatalogWorkId: draft.selectedCatalogWorkId ?? null,
+        selectedWorkKey: draft.selectedWorkKey,
+        selectedWorkTitleRu: draft.selectedWorkTitleRu,
+        selectedWorkCategoryKey: draft.selectedWorkCategoryKey,
+        selectedWorkCategoryTitleRu: draft.selectedWorkCategoryTitleRu,
+        selectedWorkRawInput: draft.selectedWorkRawInput ?? draft.problemText ?? "",
+        selectedWorkSource: "user_selected",
+        selectedWorkResolverReGuessed: false,
+      };
+    }
   }
   const refreshed = params.selectedWork
     ? refreshSelectedWorkBinding(
@@ -721,10 +821,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   selectedWork: GlobalSelectedWorkBinding | null;
   aiDraft: ReturnType<ConsumerRepairAiDraftBuilder>;
 } {
-  const {
-    buildConsumerRepairAiDraft,
-    buildConsumerRepairDraftFromAiEstimateRuntime,
-  } = loadConsumerRepairDraftBuilders();
+  const buildStartedAt = Date.now();
   const nextProblemText = params.problemText.trim();
   // A catalog selection replaces the visible input with its professional
   // title. Preserve the original natural query for runtime routing; otherwise
@@ -748,21 +845,66 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         items: [],
       }
       : null;
-  const runtimeDraft = scopeSelectionDraft ? null : buildConsumerRepairDraftFromAiEstimateRuntime({
+  const registeredSelectedProfile = selectedWork?.selectedWorkKey
+    ? loadRegisteredEstimateWorkProfiles().getRegisteredEstimateWorkProfile(
+        selectedWork.selectedWorkKey,
+      )
+    : null;
+  const selectedCanonicalElectrical =
+    registeredSelectedProfile?.canonicalWorkKey === "electrical_area_installation";
+  const directOpenWorldOwner =
+    resolveDirectConsumerRepairOpenWorldOwner(resolverInput);
+  const directOpenWorldDraft = Boolean(
+    !scopeSelectionDraft &&
+    (
+      !params.selectedWork ||
+      selectedCanonicalElectrical ||
+      directOpenWorldOwner === "electrical"
+    ) &&
+    roadScopeResolution.resolverStatus === "NOT_ROAD" &&
+    shouldUseDirectConsumerRepairOpenWorldDraft(resolverInput) &&
+    !loadMultiDomainReferenceV4().isExactMultiDomainReferencePromptV4(
+      resolverInput,
+    ),
+  );
+  const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft
+    ? null
+    : (() => {
+      const buildConsumerRepairDraftFromAiEstimateRuntime =
+        loadConsumerRepairRuntimeDraftBuilder();
+      recordConsumerRepairEstimateBuildTiming("RUNTIME_MODULE_READY", buildStartedAt);
+      return buildConsumerRepairDraftFromAiEstimateRuntime({
       rawInput: resolverInput,
       selectedWorkKey: selectedWork?.selectedWorkKey,
       selectedTemplateId: selectedWork?.selectedWorkKey,
       selectedTemplateName: selectedWork?.selectedTitleRu,
       city: params.city || undefined,
       currency: "KGS",
-    });
-  const aiDraft = scopeSelectionDraft ?? (runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
+      });
+    })();
+  recordConsumerRepairEstimateBuildTiming("RUNTIME_DRAFT_READY", buildStartedAt);
+  const aiDraft = scopeSelectionDraft ?? (directOpenWorldDraft
+    ? (() => {
+      const buildDirectConsumerRepairOpenWorldAiDraft =
+        loadDirectConsumerRepairOpenWorldAiDraftBuilder();
+      recordConsumerRepairEstimateBuildTiming("DIRECT_FALLBACK_MODULE_READY", buildStartedAt);
+      const directDraft = buildDirectConsumerRepairOpenWorldAiDraft(resolverInput, {
+        city: params.city || undefined,
+        selectedWorkKey: selectedWork?.selectedWorkKey,
+        selectedWork: consumerSelectedWork,
+      });
+      recordConsumerRepairEstimateBuildTiming("DIRECT_FALLBACK_DRAFT_READY", buildStartedAt);
+      return directDraft;
+    })()
+    : runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
     : isMultiDomainReferenceV4Draft(runtimeDraft)
       ? runtimeDraft
     : isExactPassportBackedNaturalLanguageDraft(runtimeDraft, resolverInput)
       ? runtimeDraft
     : (() => {
+      const buildConsumerRepairAiDraft = loadConsumerRepairAiDraftBuilder();
+      recordConsumerRepairEstimateBuildTiming("FALLBACK_MODULE_READY", buildStartedAt);
       const fallbackAiDraft = buildConsumerRepairAiDraft(resolverInput, {
         city: params.city || undefined,
         selectedWorkKey: selectedWork?.selectedWorkKey,
@@ -772,6 +914,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         ? runtimeDraft
         : fallbackAiDraft;
     })());
+  recordConsumerRepairEstimateBuildTiming("DRAFT_SELECTED", buildStartedAt);
   const selectedWorkForDraft = aiDraft.items.length > 0 &&
     aiDraft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
     ? consumerSelectedWork ?? aiDraft.selectedWork
@@ -798,6 +941,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       }
       : null,
   });
+  recordConsumerRepairEstimateBuildTiming("BUNDLE_PERSISTED", buildStartedAt);
   return { bundle, selectedWork, aiDraft };
 }
 
@@ -815,22 +959,30 @@ export function saveProjectExecutionDraftForRequest(input: {
   bundle: ConsumerRepairDraftBundle;
   statusMessage: string;
 } {
+  const {
+    buildProjectExecutionDraftFromEstimate,
+    buildProjectExecutionDraftFromRevision,
+  } = loadProjectExecutionDraftBuilders();
   const payload = input.bundle.structuredEstimatePayload;
   const revisionState = input.bundle.estimateDraftRevisionState;
   const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId) ?? null;
-  const projectExecutionDraft = payload
-    ? buildProjectExecutionDraftFromEstimate(payload, {
-        source: "request_estimate",
-        countryCode: payload.locale.countryCode,
-        cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
-        generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
-        sourceRequestId: input.bundle.draft.id,
-      })
-    : revision?.matchedFamily === ASPHALT_WORK_ID_V4 && revision.boq.rows.length > 0
-      ? buildProjectExecutionDraftFromRevision(revision, {
+  const projectExecutionDraft = revision && revision.boq.rows.length > 0
+    ? buildProjectExecutionDraftFromRevision(revision, {
           source: "request_estimate",
-          countryCode: "KG",
-          cityOrRegion: input.bundle.draft.city ?? undefined,
+          countryCode: payload?.locale.countryCode ?? "KG",
+          cityOrRegion:
+            payload?.locale.city ??
+            payload?.locale.stateOrRegion ??
+            input.bundle.draft.city ??
+            undefined,
+          generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
+          sourceRequestId: input.bundle.draft.id,
+        })
+    : payload
+      ? buildProjectExecutionDraftFromEstimate(payload, {
+          source: "request_estimate",
+          countryCode: payload.locale.countryCode,
+          cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
           generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
           sourceRequestId: input.bundle.draft.id,
         })

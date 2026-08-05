@@ -2,6 +2,10 @@ import {
   GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY,
   verifyRouteErrorBoundaryCoverage,
 } from "../../scripts/scale/verifyRouteErrorBoundaryCoverage";
+import {
+  CANONICAL_APP_TSX_ROUTE_COUNT,
+  CANONICAL_APP_TSX_ROUTE_FILES,
+} from "../../scripts/scale/canonicalAppRouteInventory";
 
 describe("architecture: all app routes have error boundary coverage", () => {
   it("requires each real screen route to use withScreenErrorBoundary", () => {
@@ -10,7 +14,10 @@ describe("architecture: all app routes have error boundary coverage", () => {
     });
 
     expect(verification.final_status).toBe(GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY);
-    expect(verification.metrics.routes_total).toBe(53);
+    expect(verification.inventory.map((entry) => entry.route).sort()).toEqual(
+      [...CANONICAL_APP_TSX_ROUTE_FILES].sort(),
+    );
+    expect(verification.metrics.routes_total).toBe(CANONICAL_APP_TSX_ROUTE_COUNT);
     expect(verification.metrics.screenRoutesWithBoundary).toBe(
       verification.metrics.screenRoutesTotal,
     );

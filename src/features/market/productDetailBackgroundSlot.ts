@@ -1,19 +1,20 @@
-type ProductBackgroundScheduler = {
-  requestIdleCallback?: (callback: () => void) => number;
-  requestAnimationFrame?: (callback: () => void) => number;
-};
-
 export function waitForProductDetailBackgroundSlot(): Promise<void> {
   return new Promise((resolve) => {
-    const scheduler = globalThis as unknown as ProductBackgroundScheduler;
+    const requestIdle: unknown = Reflect.get(
+      globalThis,
+      "requestIdleCallback",
+    );
+    const requestFrame: unknown = Reflect.get(
+      globalThis,
+      "requestAnimationFrame",
+    );
     const resolveOnIdle = () => {
-      if (typeof scheduler.requestIdleCallback === "function") {
-        scheduler.requestIdleCallback(resolve);
+      if (typeof requestIdle === "function") {
+        requestIdle(resolve);
         return;
       }
       resolve();
     };
-    const requestFrame = scheduler.requestAnimationFrame;
     if (typeof requestFrame === "function") {
       requestFrame(() => {
         requestFrame(resolveOnIdle);

@@ -1,5 +1,5 @@
 import React, { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { InteractionManager, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, usePathname, useRouter, useSegments } from "expo-router";
 
 import RoleScreenLayout from "../../../src/components/layout/RoleScreenLayout";
@@ -19,6 +19,7 @@ import {
   recordOfficeRouteScopeInactive,
   recordOfficeRouteScopeSkipReason,
 } from "../../../src/lib/navigation/officeReentryBreadcrumbs";
+import { getSessionSafe } from "../../../src/lib/supabaseClient";
 import { resolveOfficeRouteScopePlan } from "../../../src/screens/office/office.route";
 import {
   buildOfficeAccessEntryCopy,
@@ -161,18 +162,28 @@ function OfficeIndexRoute() {
     [router],
   );
 
-  useEffect(() => {
-    let hydrateTimeout: ReturnType<typeof setTimeout> | null = null;
-    const frame = requestAnimationFrame(() => {
-      hydrateTimeout = setTimeout(() => {
-        setHydrateFullOffice(true);
-      }, 250);
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      if (hydrateTimeout) clearTimeout(hydrateTimeout);
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      let task: ReturnType<typeof InteractionManager.runAfterInteractions> | null = null;
+      let hydrateTimeout: ReturnType<typeof setTimeout> | null = null;
+      void getSessionSafe({ caller: "office_index_route_focus_hydration" }).then(
+        ({ session }) => {
+          if (!active || !session?.user?.id) return;
+          task = InteractionManager.runAfterInteractions(() => {
+            hydrateTimeout = setTimeout(() => {
+              if (active) setHydrateFullOffice(true);
+            }, 250);
+          });
+        },
+      );
+      return () => {
+        active = false;
+        task?.cancel?.();
+        if (hydrateTimeout) clearTimeout(hydrateTimeout);
+      };
+    }, []),
+  );
 
   useEffect(() => {
     const identity = identityRef.current;

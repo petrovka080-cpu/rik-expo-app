@@ -11,6 +11,7 @@
 
 import fs from "fs";
 import path from "path";
+import { CANONICAL_APP_TSX_ROUTE_FILES } from "../../scripts/scale/canonicalAppRouteInventory";
 
 const appDir = path.join(__dirname, "../../app");
 const tabsDir = path.join(appDir, "(tabs)");
@@ -43,11 +44,18 @@ const ACTIVE_FEATURE_ROUTES = [
   "ai-command-center.tsx",
   "ai-procurement-copilot.tsx",
   "auction/[id].tsx",
+  "market/my-listings.tsx",
   "product/[id].tsx",
   "reports/dashboard.tsx",
 ] as const;
 
+const ACTIVE_API_ROUTES = [
+  "__version+api.ts",
+  "api/version+api.ts",
+] as const;
+
 const ACTIVE_ADMIN_ROUTES = [
+  "admin/_layout.tsx",
   "admin/global-estimate/index.tsx",
   "admin/global-estimate/work-types.tsx",
   "admin/global-estimate/templates.tsx",
@@ -127,6 +135,7 @@ describe("route contract", () => {
       ...ACTIVE_ROOT_ROUTES,
       ...ACTIVE_AUTH_ROUTES,
       ...ACTIVE_FEATURE_ROUTES,
+      ...ACTIVE_API_ROUTES,
       ...ACTIVE_ADMIN_ROUTES,
       ...ACTIVE_VISIBLE_TABS,
       ...ACTIVE_HIDDEN_TABS,
@@ -213,19 +222,11 @@ describe("route contract", () => {
   describe("no undocumented route files", () => {
     it("all files in app/ are covered by this contract", () => {
       const allKnown = new Set([
+        ...CANONICAL_APP_TSX_ROUTE_FILES,
         ...ACTIVE_ROOT_ROUTES,
-        ...ACTIVE_AUTH_ROUTES,
-        ...ACTIVE_FEATURE_ROUTES,
-        ...ACTIVE_ADMIN_ROUTES,
-        ...ACTIVE_VISIBLE_TABS,
-        ...ACTIVE_HIDDEN_TABS,
-        ...ACTIVE_OFFICE_ROUTES,
-        ...RE_EXPORT_ALIASES.map((a) => a.file),
-        ...LEGACY_ROUTES,
-        ...ORPHANED_ROUTES,
+        ...ACTIVE_API_ROUTES,
         // Non-route files
         "global.css",
-        "calculator/_webStyleGuard.tsx",
       ]);
 
       const actualFiles: string[] = [];

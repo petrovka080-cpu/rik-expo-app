@@ -1,6 +1,9 @@
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
 import { buildRequestEstimateTopProofText } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
-import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import {
+  buildRequestEstimateViewModel,
+  sanitizeRequestEstimatePublicText,
+} from "../../src/features/consumerRepair/requestEstimateViewModel";
 import { allPayloads, buildRequestBundleFromPayload, expectNoForbiddenVisibleText } from "./structuredPipelineTestHelpers";
 
 describe("request structured estimate binding", () => {
@@ -35,7 +38,9 @@ describe("request structured estimate binding", () => {
     expect(primaryVisibleText).not.toMatch(/confidence|sourceConfidence|\u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0441\u0442\u044c|\u0422\u043e\u0447\u043d\u043e\u0441\u0442\u044c/i);
     expect(viewModel?.sourceLabels.length).toBeGreaterThan(0);
     expect(detailsText).toMatch(/\u041d\u0430\u043b\u043e\u0433|\u041d\u0414\u0421|NDS|VAT|GST|tax/i);
-    expect(primaryVisibleText).toContain(payload.rows[0].visibleName);
+    expect(primaryVisibleText.toLocaleLowerCase("ru-RU")).toContain(
+      payload.rows[0].visibleName.toLocaleLowerCase("ru-RU"),
+    );
   });
 
   it("keeps Android top proof rich enough for API34 canonical request replay", () => {
@@ -49,7 +54,7 @@ describe("request structured estimate binding", () => {
     expect(topProofText).toMatch(/\u041d\u0430\u043b\u043e\u0433|\u041d\u0414\u0421|NDS|VAT|GST|tax/i);
     expect(topProofText).toMatch(/\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a|\u0443\u0432\u0435\u0440\u0435\u043d\u043d|confidence|source/i);
     for (const line of viewModel?.visibleLines.slice(0, 5) ?? []) {
-      expect(topProofText).toContain(line.text);
+      expect(topProofText).toContain(sanitizeRequestEstimatePublicText(line.text));
     }
   });
 });

@@ -16,6 +16,10 @@ import {
 } from "../../src/lib/estimate/v4/asphalt";
 
 const ambiguous = "Асфальтировать дорогу 1000 метров, ширина 32 метра";
+const explicitAsphaltSurface =
+  "Дороги, транспорт и площадки: асфальтобетон бетонный покрытие 2000 метров длина и 32 метра ширина";
+const exactAsphaltReferenceInput =
+  "Дороги, транспорт и площадки: асфальтобетон бетонный покрытие 5400 метров длина и 15 метров ширина";
 
 describe("Road Scope Truth V4 production integration", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
@@ -36,6 +40,148 @@ describe("Road Scope Truth V4 production integration", () => {
       selectedWorkKey: "asphalt_paving",
       createdAt: "2026-07-24T00:00:00.000Z",
     })).toThrow("road_scope_selection_required");
+  });
+
+  test.each([
+    ["Asphalt Demolition 34 m2 in Almaty request 2", "asphalt_demolition"],
+    ["Asphalt Milling 338 m2 in Bishkek request 1433", "asphalt_milling"],
+    ["Road Compaction 312 m2 in Bishkek request 1469", "road_compaction"],
+  ])("exact component work bypasses broad road scope selection: %s", (prompt, expectedWorkKey) => {
+    const result = buildEstimateFromInlineWorkPrompt({ rawInput: prompt });
+
+    expect(result.blockingReason).not.toBe("road_scope_selection_required");
+    expect(result.draft?.selectedWork?.selectedWorkKey).toBe(expectedWorkKey);
+    expect(result.draft?.items.length).toBeGreaterThan(0);
+    expect(result.roadScopeResolution?.resolverStatus).toBe("NOT_ROAD");
+  });
+
+  test("/request preserves postfix dimensions and compiles the 702-row benchmark after explicit full-road selection", () => {
+    const selectedWork = {
+      selectedWorkKey: "asphalt_concrete_pavement",
+      selectedTitleRu: "Дороги, транспорт и площадки: асфальтобетон бетонный покрытие",
+      selectedCategoryKey: "roadworks" as const,
+      selectedCategoryTitleRu: "Дороги, транспорт и площадки",
+      rawInput: explicitAsphaltSurface,
+      source: "user_selected" as const,
+      resolverReGuessed: false as const,
+    };
+    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "road-surface-user",
+      problemText: explicitAsphaltSurface,
+      repairType: "road_construction",
+      city: "Бишкек",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork,
+    });
+
+    expect(bundle.estimateDraftRevisionState).toBeNull();
+    expect(bundle.pendingRoadScopeSelection).toMatchObject({
+      originalUserText: explicitAsphaltSurface,
+      offeredScopes: expect.arrayContaining(["FULL_ROAD_INFRASTRUCTURE"]),
+    });
+    expect(aiDraft.items).toHaveLength(0);
+
+    const selected = selectConsumerRepairRoadScopeV4({
+      requestDraftId: bundle.draft.id,
+      userId: "road-surface-user",
+      selectedScope: "FULL_ROAD_INFRASTRUCTURE",
+      createdAt: "2026-07-26T00:00:00.000Z",
+    });
+    expect(selected.pendingRoadScopeSelection).toBeNull();
+    expect(selected.estimateDraftRevisionState?.revisions).toHaveLength(1);
+    expect(selected.estimateDraftRevisionState?.revisions[0]?.params).toMatchObject({
+      length_m: { value: 2000 },
+      width_m: { value: 32 },
+    });
+    expect(selected.estimateDraftRevisionState?.revisions[0]?.quantityBasis).toMatchObject({
+      basisType: "project",
+      area_m2: 64000,
+    });
+    expect(selected.estimateDraftRevisionState?.revisions[0]?.boq.rows).toHaveLength(702);
+    expect(selected.items).toHaveLength(702);
+  });
+
+  test.each([
+    ["FULL_ROAD_INFRASTRUCTURE", 702],
+    ["ROAD_SURFACING_ONLY", 54],
+  ] as const)(
+    "5400 × 15 preserves 81,000 m² and compiles the versioned %s golden",
+    (selectedScope, expectedRows) => {
+      const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+        consumerUserId: `asphalt-reference-${selectedScope}`,
+        problemText: exactAsphaltReferenceInput,
+        repairType: "road_construction",
+        city: "Бишкек",
+        addressText: "",
+        preferredTimeText: "",
+        contactPhone: "",
+        selectedWork: null,
+      });
+
+      expect(bundle.estimateDraftSession).toMatchObject({
+        status: "SCOPE_REQUIRED",
+        scopePresetId: null,
+        parameters: {
+          length_m: { value: 5400, unit: "m", origin: "USER_ENTERED" },
+          width_m: { value: 15, unit: "m", origin: "USER_ENTERED" },
+          area_m2: {
+            value: 81000,
+            unit: "m2",
+            origin: "PROJECT_DERIVED",
+            derivedFrom: ["length_m", "width_m"],
+          },
+        },
+      });
+      expect(bundle.pendingRoadScopeSelection?.offeredScopes).toHaveLength(4);
+      expect(bundle.items).toHaveLength(0);
+      expect(bundle.estimateDraftRevisionState).toBeNull();
+
+      const selected = selectConsumerRepairRoadScopeV4({
+        requestDraftId: bundle.draft.id,
+        userId: `asphalt-reference-${selectedScope}`,
+        selectedScope,
+        createdAt: "2026-07-26T00:00:00.000Z",
+      });
+      expect(selected.estimateDraftSession).toMatchObject({
+        status: "REVIEW",
+        scopePresetId: selectedScope,
+        activeRevisionId: selected.estimateDraftRevisionState?.currentRevisionId,
+      });
+      expect(selected.estimateDraftRevisionState?.revisions).toHaveLength(1);
+      expect(selected.estimateDraftRevisionState?.revisions[0]?.quantityBasis?.area_m2).toBe(81000);
+      expect(selected.items).toHaveLength(expectedRows);
+    },
+  );
+
+  test("conflicting explicit and derived geometry blocks compilation until confirmation", () => {
+    const input = "асфальт площадь 128000 м2, длина 2000 м, ширина 32 м";
+    const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "road-geometry-conflict-user",
+      problemText: input,
+      repairType: "road_construction",
+      city: "Бишкек",
+      addressText: "",
+      preferredTimeText: "",
+      contactPhone: "",
+      selectedWork: null,
+    });
+
+    expect(bundle.estimateDraftSession?.parameters).toMatchObject({
+      area_m2: { value: 128000, confirmedAt: null, requiresConfirmation: true },
+      length_m: { value: 2000, confirmedAt: null, requiresConfirmation: true },
+      width_m: { value: 32, confirmedAt: null, requiresConfirmation: true },
+    });
+    const selected = selectConsumerRepairRoadScopeV4({
+      requestDraftId: bundle.draft.id,
+      userId: "road-geometry-conflict-user",
+      selectedScope: "FULL_ROAD_INFRASTRUCTURE",
+      createdAt: "2026-07-26T00:00:00.000Z",
+    });
+    expect(selected.estimateDraftSession?.status).toBe("PARAMETERS_REQUIRED");
+    expect(selected.estimateDraftRevisionState).toBeNull();
+    expect(selected.items).toHaveLength(0);
   });
 
   test("/request preserves the prompt and exposes exactly four scope choices without a revision", () => {

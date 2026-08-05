@@ -109,11 +109,11 @@ function parameterCardsDoNotUsePlusMinus(): boolean {
   return !/editable-param-(?:plus|minus)|\+\s*<\/Text>|-\s*<\/Text>/i.test(source);
 }
 
-export function auditAiEstimateParameterCardsDurableHistoryRuntimeHardening(input: { writeSummary?: boolean } = {}) {
+export async function auditAiEstimateParameterCardsDurableHistoryRuntimeHardening(input: { writeSummary?: boolean } = {}) {
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
   const coverage = auditAiEstimateParameterCoverage11610({ writeSummary: true }).summary;
   const durable = auditConsumerRepairDurableSaveFallback({ writeSummary: true }).summary;
-  const history = auditApprovedHistoryGrowthAfterParameterCards({ writeSummary: true }).summary;
+  const history = (await auditApprovedHistoryGrowthAfterParameterCards({ writeSummary: true })).summary;
   const extraction = auditAiEstimateParameterExtractionPriority({ writeSummary: true }).summary;
   const runtime = runAiEstimateParameterRuntimeMatrix({ writeSummary: true }).summary;
   const visible = auditAiEstimateVisibleRussianOnly().summary;
@@ -289,9 +289,15 @@ export function auditAiEstimateParameterCardsDurableHistoryRuntimeHardening(inpu
 }
 
 if (require.main === module) {
-  const result = auditAiEstimateParameterCardsDurableHistoryRuntimeHardening({ writeSummary: true });
-  console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
-  if (result.summary.final_status !== GREEN_AI_ESTIMATE_PARAMETER_CARDS_DURABLE_HISTORY_RUNTIME_HARDENED_NO_RELEASE) {
-    process.exitCode = 1;
-  }
+  void auditAiEstimateParameterCardsDurableHistoryRuntimeHardening({ writeSummary: true })
+    .then((result) => {
+      console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
+      if (result.summary.final_status !== GREEN_AI_ESTIMATE_PARAMETER_CARDS_DURABLE_HISTORY_RUNTIME_HARDENED_NO_RELEASE) {
+        process.exitCode = 1;
+      }
+    })
+    .catch((error: unknown) => {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    });
 }

@@ -1,4 +1,7 @@
-export const AI_ESTIMATE_REPLAYABLE_CORE_SCHEMA = "ai-estimate-replay-record-v1" as const;
+import type { EstimateResolvedIdentity } from "./estimateDraftRevisionContract";
+
+export const AI_ESTIMATE_REPLAYABLE_CORE_SCHEMA = "ai-estimate-replay-record-v2" as const;
+export const AI_ESTIMATE_LEGACY_REPLAYABLE_CORE_SCHEMA = "ai-estimate-replay-record-v1" as const;
 
 export const AI_ESTIMATE_CATALOG_VERSION = "ai-estimate-catalog-11610-v1" as const;
 export const AI_ESTIMATE_NORM_REGISTRY_VERSION = "professional-norm-registry-v1" as const;
@@ -43,12 +46,30 @@ export type EstimateReplayRecord = {
   snapshot_rows_hash: string;
   snapshot_totals_hash: string;
   version_lineage: EstimateReplayVersionLineage;
+  resolved_identity: EstimateResolvedIdentity;
   hashes: EstimateReplayHashSet;
   replay_record_builder_created: true;
   all_replay_records_have_snapshot: true;
   all_replay_records_have_version_lineage: true;
+  all_new_replay_records_have_resolved_identity: true;
+  new_revision_prompt_fallback_used: false;
   fake_green_claimed: false;
 };
+
+export type LegacyEstimateReplayRecord = Omit<
+  EstimateReplayRecord,
+  | "schema"
+  | "resolved_identity"
+  | "all_new_replay_records_have_resolved_identity"
+  | "new_revision_prompt_fallback_used"
+> & {
+  schema: typeof AI_ESTIMATE_LEGACY_REPLAYABLE_CORE_SCHEMA;
+  resolved_identity?: undefined;
+};
+
+export type AnyEstimateReplayRecord =
+  | EstimateReplayRecord
+  | LegacyEstimateReplayRecord;
 
 export type EstimateReplayDriftType =
   | "none"
@@ -89,6 +110,7 @@ export type EstimateReplayRecordValidation = {
   replay_comparator_created: boolean;
   all_replay_records_have_snapshot: boolean;
   all_replay_records_have_version_lineage: boolean;
+  all_new_replay_records_have_resolved_identity: boolean;
   valid: boolean;
   failures: string[];
 };

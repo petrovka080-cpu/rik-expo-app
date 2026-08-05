@@ -1,4 +1,5 @@
 import { formatGlobalCurrency, formatGlobalNumber, localizedText, resolveGlobalLocalization } from "./globalLocalizationCore";
+import { logger } from "../../logger";
 import { getGlobalEstimateTemplate } from "./globalEstimateTemplateService";
 import { resolveGlobalPriceSourceFreshness } from "./dataOps/globalPriceSourceFreshnessService";
 import type {
@@ -25,7 +26,6 @@ import { parseUniversalConstructionQuantities } from "../constructionFormulas";
 import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
 import { resolveEstimatorOutcome } from "../estimatorKernel";
 import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../estimatorKernel";
-import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
   buildProfessionalExpandedGlobalEstimate,
@@ -35,7 +35,10 @@ import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
 } from "./stripFoundationDimensions";
-import { toVisibleEstimateLabel } from "../../estimatePresentation/visibleEstimateLabelPolicy";
+import {
+  toVisibleEstimateLabel,
+  visibleOperationLabelForKey,
+} from "../../estimatePresentation/visibleEstimateLabelPolicy";
 import {
   buildProfessionalEstimateComplexityProfile,
   type ProfessionalEstimateComplexityProfile,
@@ -168,11 +171,13 @@ function visibleEstimateRowName(params: {
   name: string;
   sectionType: GlobalEstimateSectionType;
   materialKey?: string;
+  rowCode?: string;
 }): string {
   return toVisibleEstimateLabel({
     label: params.name,
     materialKey: params.materialKey,
     sectionType: params.sectionType,
+    internalKey: params.rowCode,
   });
 }
 
@@ -325,6 +330,7 @@ type ProfessionalWbsSupplementRow = {
   applicabilityReason?: string;
   scopeDriver?: string;
   semanticSignature?: string;
+  includedInProcurement?: boolean;
 };
 
 function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSupplementSpec[] {
@@ -393,7 +399,7 @@ function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSuppl
     { key: "measurement", title: "обмеры, ведомость объемов и рабочие отметки" },
     { key: "site_preparation", title: "подготовка зоны работ и защита смежных поверхностей" },
     { key: "demolition", title: "локальный демонтаж и подготовка основания" },
-    { key: "base_preparation", title: "выравнивание, очистка и приемка основания" },
+    { key: "base_preparation", title: "выравнивание, очистка и подготовка основания" },
     { key: "primary_materials", title: "основные материалы по технологии работ" },
     { key: "auxiliary_materials", title: "расходные изделия, крепеж и доборные элементы" },
     { key: "installation", title: "основной технологический монтаж или устройство" },
@@ -404,14 +410,14 @@ function professionalWbsSpecsForCategory(category: string): ProfessionalWbsSuppl
     { key: "quality", title: "контроль качества, размеров и скрытых операций" },
     { key: "finish", title: "финишная доводка и уборка зоны работ" },
     { key: "as_built", title: "исполнительная фиксация и передача результата" },
-    { key: "handover", title: "приемка, замечания и рекомендации эксплуатации" },
+    { key: "handover", title: "передача результата и рекомендации эксплуатации" },
   ];
 }
 
 function professionalWbsSpec(key: string, scope: string): ProfessionalWbsSupplementSpec {
   return {
     key,
-    title: key.replace(/_/g, " "),
+    title: visibleOperationLabelForKey(key),
     scopeDriver: `${scope}:${key}`,
     applicabilityRule: `work scope matches ${scope}; WBS phase ${key} is selected before BOQ row generation`,
   };
@@ -436,6 +442,17 @@ function isLogisticsOnlyProfessionalWbsSpec(spec: ProfessionalWbsSupplementSpec)
   return key === "logistics" || key.includes("delivery") || key.includes("logistics");
 }
 
+function isDocumentationOnlyProfessionalWbsSpec(spec: ProfessionalWbsSupplementSpec): boolean {
+  const key = spec.key.toLocaleLowerCase("en-US");
+  return key === "as_built" || key === "as_built_docs";
+}
+
+function professionalWbsNonTransportTitle(spec: ProfessionalWbsSupplementSpec): string {
+  if (spec.key === "waste") return "сбор и упаковка отходов работ";
+  if (spec.key === "demolition") return spec.title.replace(/\s+и\s+вывоз.*$/iu, "");
+  return spec.title;
+}
+
 function industrialInfrastructureWbsSpecs(input: {
   workKey: string;
   workTitle: string;
@@ -450,9 +467,12 @@ function industrialInfrastructureWbsSpecs(input: {
       "fire_safety", "temporary_power", "equipment_mobilization", "crane_operations", "module_delivery",
       "inverter_delivery", "cable_testing", "iv_curve_testing", "insulation_testing", "relay_testing",
       "scada_commissioning", "grid_synchronization", "performance_ratio_test", "as_built_docs", "handover_training",
+      "pile_pullout_testing", "mounting_torque_inspection", "module_quality_inspection", "string_mapping",
+      "inverter_functional_testing", "transformer_oil_testing", "plant_controller", "weather_station",
+      "harmonic_studies", "reactive_power_testing", "revenue_metering_verification", "grid_model_validation",
     ], "utility_solar");
   }
-  return professionalWbsSpecs([
+  const infrastructureSpecs = professionalWbsSpecs([
     "site_survey", "geotechnical_survey", "temporary_works", "earthworks", "foundations", "concrete", "steelwork",
     "primary_equipment", "secondary_equipment", "cable_routes", "power_cables", "control_cables", "earthing",
     "lightning_protection", "automation", "scada", "telemetry", "protection", "metering", "fire_safety",
@@ -461,6 +481,17 @@ function industrialInfrastructureWbsSpecs(input: {
     "maintenance_access", "warranty_checks", "commissioning_spares", "performance_tests", "safety_case",
     "operations_manual",
   ], "industrial_infrastructure");
+  if (input.workKey !== "mini_chp_preparation") return infrastructureSpecs;
+  return [
+    ...infrastructureSpecs,
+    ...professionalWbsSpecs([
+      "fuel_supply_interface", "gas_pressure_reduction", "fuel_gas_detection", "engine_generator_package",
+      "heat_recovery_system", "cooling_circuit", "lubrication_system", "exhaust_stack",
+      "combustion_air", "acoustic_attenuation", "water_treatment", "thermal_buffer",
+      "circulation_pumps", "heat_exchangers", "district_heating_interface", "auxiliary_power",
+      "black_start_system", "generator_synchronization", "emissions_monitoring", "heat_balance_testing",
+    ], "mini_chp"),
+  ];
 }
 
 function professionalWbsSpecsForScope(input: {
@@ -469,6 +500,9 @@ function professionalWbsSpecsForScope(input: {
   category: string;
   profile: ProfessionalEstimateComplexityProfile;
 }): ProfessionalWbsSupplementSpec[] {
+  if (input.category === "roadworks") {
+    return uniqueProfessionalWbsSpecs(professionalWbsSpecsForCategory(input.category));
+  }
   if (input.profile.level === "mega_project") {
     return uniqueProfessionalWbsSpecs([
       ...industrialInfrastructureWbsSpecs(input),
@@ -516,6 +550,9 @@ function buildProfessionalWbsSupplementRows(input: {
   const measuredUnit = normalizeGlobalUnit(input.baseUnit) as GlobalUnitInput["normalizedUnit"];
   const workLabel = input.workTitle.toLocaleLowerCase("ru-RU");
   specs.forEach((spec, index) => {
+    if (spec.key === "quality" || spec.key === "handover") {
+      return;
+    }
     const cycle = 1;
     const suffix = cycle > 1 ? `, этап ${cycle}` : "";
     const quantity = measuredUnit === "set" || measuredUnit === "pcs" ? Math.max(1, Math.ceil(baseQuantity)) : baseQuantity;
@@ -523,6 +560,7 @@ function buildProfessionalWbsSupplementRows(input: {
     const tripQuantity = Math.max(1, Math.ceil(quantity / (measuredUnit === "sq_m" ? 180 : measuredUnit === "linear_m" ? 120 : measuredUnit === "m3" ? 12 : 40)));
     const codeBase = `professional_wbs_${input.workKey}_${spec.key}_${cycle}`.replace(/[^a-zA-Z0-9_]/g, "_").toLocaleLowerCase("en-US");
     const logisticsOnly = isLogisticsOnlyProfessionalWbsSpec(spec);
+    const nonTransportTitle = professionalWbsNonTransportTitle(spec);
     const planningMeasurement = professionalWbsMeasurement({
       ...input,
       baseQuantity,
@@ -581,47 +619,114 @@ function buildProfessionalWbsSupplementRows(input: {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_planning`,
-        name: `${spec.title}: рабочая привязка для ${workLabel}${suffix}`,
+        name: `${nonTransportTitle}: рабочая привязка для ${workLabel}${suffix}`,
         unit: planningMeasurement.unit,
         quantity: planningMeasurement.quantity,
         quantityFormula: planningMeasurement.quantityFormula,
         formulaTrace: planningMeasurement.formulaTrace,
+        applicabilityRule: spec.applicabilityRule,
+        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+        scopeDriver: spec.scopeDriver,
+        semanticSignature: `${input.workKey}|${spec.key}|planning`,
         unitPrice: 45 + index * 3,
       });
     }
     if (input.includeMaterials && !logisticsOnly) {
-      rows.push({
-        sectionType: "materials",
-        code: `${codeBase}_materials`,
-        materialKey: `${input.workKey}_${spec.key}_materials`,
-        name: `${spec.title}: материалы и комплектующие для ${workLabel}${suffix}`,
-        unit: materialMeasurement.unit,
-        quantity: materialMeasurement.quantity,
-        quantityFormula: materialMeasurement.quantityFormula,
-        formulaTrace: materialMeasurement.formulaTrace,
-        unitPrice: 110 + index * 5,
-      });
+      if (isDocumentationOnlyProfessionalWbsSpec(spec)) {
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_documentation_package`,
+          name: `Подготовка и передача комплекта исполнительной документации для ${workLabel}${suffix}`,
+          unit: "set",
+          quantity: 1,
+          quantityFormula: "1",
+          formulaTrace: `scopeDriver=${spec.scopeDriver ?? `${codeBase}:scope`}; quantity=1; unit=set`,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|documentation_package`,
+          unitPrice: 110 + index * 5,
+          includedInProcurement: false,
+        });
+      } else if (input.category !== "roadworks") {
+        rows.push({
+          sectionType: "materials",
+          code: `${codeBase}_materials`,
+          materialKey: `${input.workKey}_${spec.key}_materials`,
+          name: `${nonTransportTitle}: материалы и комплектующие для ${workLabel}${suffix}`,
+          unit: materialMeasurement.unit,
+          quantity: materialMeasurement.quantity,
+          quantityFormula: materialMeasurement.quantityFormula,
+          formulaTrace: materialMeasurement.formulaTrace,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|materials`,
+          unitPrice: 110 + index * 5,
+          includedInProcurement: true,
+        });
+      }
     }
     if (input.includeLabor && !logisticsOnly) {
       rows.push({
         sectionType: "labor",
         code: `${codeBase}_execution`,
-        name: `${spec.title}: выполнение работ по ${workLabel}${suffix}`,
+        name: `${nonTransportTitle}: выполнение работ по ${workLabel}${suffix}`,
         unit: executionMeasurement.unit,
         quantity: executionMeasurement.quantity,
         quantityFormula: executionMeasurement.quantityFormula,
         formulaTrace: executionMeasurement.formulaTrace,
+        applicabilityRule: spec.applicabilityRule,
+        applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+        scopeDriver: spec.scopeDriver,
+        semanticSignature: `${input.workKey}|${spec.key}|execution`,
         unitPrice: 95 + index * 4,
       });
+      if (input.category === "roadworks") {
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_quality_control`,
+          name: `${nonTransportTitle}: операционный контроль качества для ${workLabel}${suffix}`,
+          unit: qualityMeasurement.unit,
+          quantity: qualityMeasurement.quantity,
+          quantityFormula: qualityMeasurement.quantityFormula,
+          formulaTrace: qualityMeasurement.formulaTrace,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} requires an explicit roadworks quality checkpoint.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|quality_control`,
+          unitPrice: 65 + index * 3,
+          includedInProcurement: false,
+        });
+        rows.push({
+          sectionType: "labor",
+          code: `${codeBase}_work_record`,
+          name: `${nonTransportTitle}: журнал выполнения и исполнительная фиксация для ${workLabel}${suffix}`,
+          unit: "set",
+          quantity: 1,
+          quantityFormula: "1",
+          formulaTrace: `scopeDriver=${spec.scopeDriver ?? `${codeBase}:scope`}; quantity=1; unit=set`,
+          applicabilityRule: spec.applicabilityRule,
+          applicabilityReason: `WBS phase ${spec.key} requires a traceable roadworks execution record.`,
+          scopeDriver: spec.scopeDriver,
+          semanticSignature: `${input.workKey}|${spec.key}|work_record`,
+          unitPrice: 55 + index * 2,
+          includedInProcurement: false,
+        });
+      }
     }
     rows.push({
       sectionType: "equipment",
       code: `${codeBase}_equipment`,
-      name: `${spec.title}: инструмент, техника и измерительное оборудование для ${workLabel}${suffix}`,
+      name: `${nonTransportTitle}: инструмент, техника и измерительное оборудование для ${workLabel}${suffix}`,
       unit: equipmentMeasurement.unit,
       quantity: equipmentMeasurement.quantity,
       quantityFormula: equipmentMeasurement.quantityFormula,
       formulaTrace: equipmentMeasurement.formulaTrace,
+      applicabilityRule: spec.applicabilityRule,
+      applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+      scopeDriver: spec.scopeDriver,
+      semanticSignature: `${input.workKey}|${spec.key}|equipment`,
       unitPrice: 2600 + index * 120,
     });
     rows.push({
@@ -632,20 +737,12 @@ function buildProfessionalWbsSupplementRows(input: {
       quantity: deliveryMeasurement.quantity,
       quantityFormula: deliveryMeasurement.quantityFormula,
       formulaTrace: deliveryMeasurement.formulaTrace,
+      applicabilityRule: spec.applicabilityRule,
+      applicabilityReason: `WBS phase ${spec.key} is selected for ${input.workKey} from the declared ${spec.scopeDriver} scope.`,
+      scopeDriver: spec.scopeDriver,
+      semanticSignature: `${input.workKey}|${spec.key}|delivery`,
       unitPrice: 4200 + index * 150,
     });
-    if (input.includeLabor && !logisticsOnly) {
-      rows.push({
-        sectionType: "labor",
-        code: `${codeBase}_quality`,
-        name: `${spec.title}: контроль качества и исполнительная фиксация для ${workLabel}${suffix}`,
-        unit: qualityMeasurement.unit,
-        quantity: qualityMeasurement.quantity,
-        quantityFormula: qualityMeasurement.quantityFormula,
-        formulaTrace: qualityMeasurement.formulaTrace,
-        unitPrice: 3200 + index * 95,
-      });
-    }
   });
   return rows;
 }
@@ -711,6 +808,7 @@ function appendProfessionalWbsRows(params: {
       priceStatus: "priced",
       sourceId: RATE_SOURCE.id,
       sourceEvidence: evidence,
+      formulaId: `formula:${supplement.code}`,
       quantityFormula,
       calculationTrace,
       sourceParameters: {
@@ -731,11 +829,18 @@ function appendProfessionalWbsRows(params: {
       normSourceTitle: RATE_SOURCE.label,
       normVersion,
       normReviewStatus,
+      templateId: `professional_wbs:${supplement.code}`,
+      templateVersion: normVersion,
       applicabilityRule: supplement.applicabilityRule ?? `wbs_phase_applies_to:${supplement.code}`,
       applicabilityReason: supplement.applicabilityReason ?? "Scope-driven WBS phase selected before row generation.",
       scopeDriver,
       semanticSignature,
       confidence: rowConfidence,
+      includedInEstimate: true,
+      includedInProcurement: supplement.includedInProcurement ?? supplement.sectionType !== "labor",
+      optional: false,
+      editable: true,
+      deletedByUser: false,
     });
   }
 }
@@ -1119,6 +1224,7 @@ function buildGlobalEstimateFromConstructionWorkPlan(
     estimateId: semanticEstimateIdFor(plan, input),
     outputContract: {
       format: "professional_boq",
+      detailLevel: "professional_expanded",
       hasIntro: true,
       hasAssumptions: true,
       hasMaterialsSection: rowBuild.sections.some((section) => section.type === "materials"),
@@ -1212,6 +1318,13 @@ function estimatorKernelInputQuantity(
     .find((value): value is number => Number.isFinite(value));
   if (formulaVolume !== undefined) return { value: formulaVolume, unit: "m3" };
   if (plan.quantities.lengthM !== undefined) return { value: plan.quantities.lengthM, unit: "linear_m" };
+  const parsedInput = parseVolume(input?.text);
+  if (parsedInput) {
+    return {
+      value: parsedInput.volume,
+      unit: normalizeGlobalUnit(parsedInput.unit),
+    };
+  }
   if (plan.quantities.count !== undefined) return { value: plan.quantities.count, unit: "pcs" };
   if (plan.quantities.floorCount !== undefined) return { value: plan.quantities.floorCount, unit: "pcs" };
   return { value: Math.max(1, plan.quantities.powerKw ?? 1), unit: "set" };
@@ -1326,20 +1439,52 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
         materialKey,
         rateKey: templateRow.rateKey,
         sourcePolicy: "configured_reference",
+        formulaId: `formula:${canonicalWork.workKey}:${templateRow.code}:quantity`,
+        quantityFormula: templateRow.quantityFormula,
+        calculationTrace: [
+          `formula=${templateRow.quantityFormula}`,
+          `inputQuantity=${inputQuantity.value}`,
+          `inputUnit=${inputQuantity.unit}`,
+          `result=${quantity}`,
+          `resultUnit=${unit}`,
+        ].join("; "),
+        templateId: `global_estimate_template:${canonicalWork.workKey}`,
+        templateVersion: "global-estimate-template-v1",
+        normId: `configured_quantity_rule:${canonicalWork.workKey}:${templateRow.code}`,
+        normFamilyId: `configured_quantity_rules:${canonicalWork.workKey}`,
+        normSourceId: RATE_SOURCE.id,
+        normSourceTitle: RATE_SOURCE.label,
+        normVersion: "global-estimate-seed-quantity-rules-v1",
+        normReviewStatus: "configured_quantity_rule_not_external_norm",
       };
       });
     })
     .filter((item): item is DynamicProfessionalBoqRow => Boolean(item));
 }
 
-function buildGlobalEstimateFromEstimatorKernel(
+export function buildGlobalEstimateFromEstimatorKernel(
   plan: EstimatorReasoningPlan,
   boq: DynamicProfessionalBoq,
   input: GlobalEstimateInput,
   canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] },
 ): GlobalEstimateResult {
+  const kernelBuildStartedAt = Date.now();
+  const recordKernelBuildTiming = (stage: string): void => {
+    if (
+      typeof __DEV__ === "undefined" ||
+      !__DEV__ ||
+      plan.workKey !== "electrical_area_installation"
+    ) {
+      return;
+    }
+    logger.info("RikGlobalEstimateKernelBuild", JSON.stringify({
+      stage,
+      elapsedMs: Date.now() - kernelBuildStartedAt,
+    }));
+  };
   const inputQuantity = estimatorKernelInputQuantity(plan, input);
   const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru", currency: input.currency ?? plan.pricingPolicy.currency });
+  recordKernelBuildTiming("LOCALE_READY");
   const resultWorkKey = canonicalWork?.workKey ?? plan.workKey;
   const resultWorkTitle = canonicalWork?.title ?? plan.titleRu.replace(/^Профессиональная предварительная смета на /, "");
   const resultWorkCategory = canonicalWork?.category ?? plan.category;
@@ -1350,6 +1495,7 @@ function buildGlobalEstimateFromEstimatorKernel(
     ...boq.rows,
     ...canonicalTemplateRowsForEstimatorKernel({ canonicalWork, plan, input, locale, existingRows: boq.rows }),
   ].filter((row) => !isPaidControlEstimateRow(row));
+  recordKernelBuildTiming("DYNAMIC_ROWS_READY");
   const sections = sectionTypes
     .map((sectionType, sectionIndex) => {
       const rows = dynamicRows.filter((row) => row.sectionType === sectionType);
@@ -1367,6 +1513,32 @@ function buildGlobalEstimateFromEstimatorKernel(
           url: evidence.url,
         });
         const materialKey = row.materialKey;
+        const compilerFormulaIds = plan.formulas.map((formula) => formula.formulaId);
+        const compilerInputs = Object.assign({}, ...plan.formulas.map((formula) => formula.inputs));
+        const compilerOutputs = Object.assign({}, ...plan.formulas.map((formula) => formula.outputs));
+        const formulaId = row.formulaId ?? `formula:dynamic_professional_boq:${resultWorkKey}:${row.code}`;
+        const quantityFormula = row.quantityFormula ?? `DynamicProfessionalBoqCompiler.resolve("${row.code}")`;
+        const calculationTrace = row.calculationTrace ?? [
+          `compiler=${boq.compilerId}`,
+          `formulaIds=${compilerFormulaIds.join(",") || "semantic_frame_quantity"}`,
+          `inputs=${JSON.stringify(compilerInputs)}`,
+          `outputs=${JSON.stringify(compilerOutputs)}`,
+          `rowCode=${row.code}`,
+          `result=${row.quantity}`,
+          `resultUnit=${row.unit}`,
+        ].join("; ");
+        const templateId = row.templateId ?? `dynamic_professional_boq:${resultWorkKey}`;
+        const templateVersion = row.templateVersion ?? "dynamic-professional-boq-compiler-v1";
+        const normId = row.normId ?? `configured_quantity_rule:${resultWorkKey}:${row.code}`;
+        const normFamilyId = row.normFamilyId ?? `configured_quantity_rules:${resultWorkKey}`;
+        const normSourceId = row.normSourceId ?? RATE_SOURCE.id;
+        const normSourceTitle = row.normSourceTitle ?? RATE_SOURCE.label;
+        const normVersion = row.normVersion ?? "dynamic-professional-boq-quantity-rules-v1";
+        const normReviewStatus = row.normReviewStatus ?? "configured_quantity_rule_not_external_norm";
+        const includedInEstimate = row.includedInEstimate !== false;
+        const includedInProcurement =
+          row.includedInProcurement ??
+          (includedInEstimate && sectionType !== "labor");
         return {
           rowNumber: rowNumber(sectionIndex + 1, rowIndex + 1),
           code: row.code,
@@ -1381,10 +1553,78 @@ function buildGlobalEstimateFromEstimatorKernel(
           total,
           displayTotal: formatGlobalCurrency(total, locale),
           currency: locale.currency,
-          priceStatus: row.sourcePolicy === "manual_review" ? "manual_fallback" : "priced",
+          priceStatus: includedInEstimate
+            ? row.sourcePolicy === "manual_review"
+              ? "manual_fallback"
+              : "priced"
+            : "unavailable",
           sourceId: evidence.sourceId,
           sourceEvidence: [evidence],
+          formulaId,
+          quantityFormula,
+          calculationTrace,
+          sourceParameters: {
+            compilerId: boq.compilerId,
+            rowCode: row.code,
+            semanticObject: plan.semanticFrame.object,
+            semanticOperation: plan.semanticFrame.operation,
+            canonicalParameters: plan.canonicalParameters ?? null,
+            calculationVersion: plan.calculationVersion ?? null,
+            normId,
+            normSourceId,
+            normSourceType: "configured_reference",
+            normVersion,
+            normReviewStatus,
+            normSourceProfile: row.normSourceProfile ?? "PROJECT_SPECIFIC",
+            normSourceJurisdiction:
+              row.normSourceJurisdiction ?? "KG_PROJECT_CONTEXT",
+            normSourcePublisher:
+              row.normSourcePublisher ?? "Rik configured reference",
+            normSourceEffectiveDate:
+              row.normSourceEffectiveDate ?? "UNCONFIRMED",
+            normSourceCheckedAt:
+              row.normSourceCheckedAt ?? evidence.checkedAt,
+            normSourceReference:
+              row.normSourceReference ?? normSourceId,
+            normSourceSnapshotSha256:
+              row.normSourceSnapshotSha256 ?? null,
+            normSourceLicenseStatus:
+              row.normSourceLicenseStatus ?? "EXPERT_REVIEW_REQUIRED",
+            normSourceLifecycleStatus:
+              row.normSourceLifecycleStatus ?? "EXPERT_REVIEW_REQUIRED",
+            applicabilityRule:
+              `estimator_semantic_frame_object:${plan.semanticFrame.object}`,
+            sourceApplicabilityStatus: "preliminary_configured_rule_requires_project_scope_review",
+            includedInEstimate,
+            includedInProcurement,
+            parameterBlockerIds: row.parameterBlockerIds ?? [],
+            conditionalStatus:
+              !includedInEstimate && (row.parameterBlockerIds?.length ?? 0) > 0
+                ? "blocked_missing_parameters"
+                : null,
+            conditionalReason:
+              !includedInEstimate && (row.parameterBlockerIds?.length ?? 0) > 0
+                ? `Required parameters are not confirmed: ${row.parameterBlockerIds?.join(", ")}`
+                : null,
+          },
+          templateId,
+          templateVersion,
+          normId,
+          normFamilyId,
+          normSourceId,
+          normSourceTitle,
+          normVersion,
+          normReviewStatus,
+          applicabilityRule: `estimator_semantic_frame_object:${plan.semanticFrame.object}`,
+          applicabilityReason: `Estimator semantic frame selected operation ${plan.semanticFrame.operation}.`,
+          scopeDriver: `${plan.workKey}:${row.code}`,
+          semanticSignature: `${plan.workKey}|${sectionType}|${row.code}|${row.unit}`,
           confidence: rowConfidence,
+          includedInEstimate,
+          includedInProcurement,
+          optional: row.optional === true,
+          editable: row.editable !== false,
+          deletedByUser: false,
         };
       });
       return {
@@ -1395,6 +1635,7 @@ function buildGlobalEstimateFromEstimatorKernel(
       };
     })
     .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
+  recordKernelBuildTiming("SECTIONS_READY");
 
   const preliminaryInput = {
     volume: inputQuantity.value,
@@ -1418,7 +1659,14 @@ function buildGlobalEstimateFromEstimatorKernel(
     input: preliminaryInput,
     requiresReview: false,
   });
-  if (complexityProfile.level !== "local_operation") {
+  recordKernelBuildTiming("COMPLEXITY_PROFILE_READY");
+  // A pre-expanded owned-domain BOQ already carries explicit WBS depth.
+  // Appending the universal supplement would duplicate scope and prices.
+  if (
+    plan.workKey !== "electrical_area_installation" &&
+    complexityProfile.level !== "local_operation" &&
+    dynamicRows.length < 100
+  ) {
     appendProfessionalWbsRows({
       sections,
       rows: buildProfessionalWbsSupplementRows({
@@ -1442,6 +1690,7 @@ function buildGlobalEstimateFromEstimatorKernel(
   const taxResolution = input.includeTax === false
     ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
     : resolveGlobalTaxRule(locale, input);
+  recordKernelBuildTiming("TAX_RULE_READY");
   if (taxResolution.source) sourceMap.set(taxResolution.source.id, taxResolution.source);
   confidences.push(taxResolution.confidence);
   const tax = calculateGlobalTax({ sections, taxResolution });
@@ -1455,6 +1704,7 @@ function buildGlobalEstimateFromEstimatorKernel(
     estimateId: dynamicEstimateIdFor(plan, input),
     outputContract: {
       format: "professional_boq",
+      detailLevel: "professional_expanded",
       hasIntro: true,
       hasAssumptions: boq.assumptions.length > 0,
       hasMaterialsSection: sections.some((section) => section.type === "materials"),
@@ -1513,7 +1763,9 @@ function buildGlobalEstimateFromEstimatorKernel(
     confidence: confidenceMin(confidences),
     requiresReview: true,
   };
+  recordKernelBuildTiming("RESULT_READY");
   const unitSemantics = validateConstructionUnitSemantics(result);
+  recordKernelBuildTiming("UNIT_SEMANTICS_READY");
   if (!unitSemantics.passed) {
     throw new Error(`UNIVERSAL_ESTIMATOR_UNIT_SEMANTICS_FAILED:${unitSemantics.failures.join(",")}`);
   }
@@ -1527,6 +1779,7 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "apartment_capital_renovation",
   "gable_roof_installation",
   "roof_waterproofing",
+  "slab_foundation",
 ]);
 
 const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
@@ -1561,6 +1814,7 @@ const DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS = new Set([
   "dynamic_pump_automation_control_estimate",
   "dynamic_construction_site_lighting_service_estimate",
   "dynamic_greenhouse_climate_automation_estimate",
+  "fire_alarm_installation",
 ]);
 
 const BROAD_DYNAMIC_ESTIMATOR_WORK_KEYS = new Set([
@@ -1576,7 +1830,6 @@ const ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS = new Set([
   "cold_room_installation",
   "dock_leveler_installation",
   "dynamic_foundation_estimate",
-  "fire_alarm_installation",
   "industrial_equipment_installation",
   "smoke_extraction_system",
 ]);
@@ -1669,6 +1922,23 @@ function canonicalWorkForDynamicEstimator(
   ) {
     return canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorPlan);
   }
+  if (estimatorPlan.workKey === "dynamic_foundation_estimate") {
+    const normalized = String(input.text ?? "").toLocaleLowerCase("ru-RU");
+    if (
+      /\u044d\u043a\u0440\u0430\u043d|\u0448\u0443\u043c\u043e\u0437\u0430\u0449\u0438\u0442|noise\s*(?:barrier|screen)/i.test(normalized)
+    ) {
+      return undefined;
+    }
+    const locale = resolveGlobalLocalization(input);
+    const resolvedWork = resolveGlobalWorkType({ ...input, language: locale.language });
+    if (resolvedWork.workKey === "slab_foundation" || resolvedWork.workKey === "foundation_concrete") {
+      return {
+        workKey: resolvedWork.workKey,
+        title: resolvedWork.title,
+        category: resolvedWork.category,
+      };
+    }
+  }
   if (estimatorPlan.workKey.startsWith("open_world_")) {
     return undefined;
   }
@@ -1691,7 +1961,8 @@ function numericAreaFromText(text: string | undefined): number | null {
 function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: string): boolean {
   const text = input.text ?? "";
   if (workKey === "strip_foundation") {
-    return true;
+    const unit = input.unit ? normalizeGlobalUnit(input.unit) : null;
+    return unit !== "pcs" && unit !== "set";
   }
   if (workKey === "asphalt_paving") {
     const area = input.volume ?? numericAreaFromText(text) ?? 0;
@@ -1724,7 +1995,44 @@ function routeFallbackMayYieldToDynamicEstimator(
   return estimatorPlan.workKey.startsWith("dynamic_") || estimatorPlan.workKey.startsWith("open_world_");
 }
 
-export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
+function withCanonicalVisibleWorkTitle(
+  result: GlobalEstimateResult,
+  fallbackTitle: string,
+): GlobalEstimateResult {
+  if (!/\b(?:material|materials|work|works|other|system|fallback|debug|warning|professional|generic)\b/i.test(result.work.title)) {
+    return result;
+  }
+  return {
+    ...result,
+    work: {
+      ...result.work,
+      title: fallbackTitle,
+    },
+  };
+}
+
+function withVisibleEstimateRowProjection(result: GlobalEstimateResult): GlobalEstimateResult {
+  return {
+    ...result,
+    sections: result.sections.map((section) => ({
+      ...section,
+      rows: section.rows.map((row) => ({
+        ...row,
+        name: row.sourceParameters?.sourceApplicabilityStatus ===
+          "passport_row_source_bound_to_exact_template"
+          ? row.name
+          : visibleEstimateRowName({
+            name: row.name,
+            sectionType: section.type,
+            materialKey: row.materialKey,
+            rowCode: row.code,
+          }),
+      })),
+    })),
+  };
+}
+
+function calculateGlobalConstructionEstimateUnprojected(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
   const locale = resolveGlobalLocalization(input);
   const explicitPassport = input.explicitTemplateId ? getProfessionalWorkPassport(input.explicitTemplateId) : null;
@@ -1732,9 +2040,19 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     return buildGlobalEstimateFromProfessionalWorkPassport(explicitPassport, { ...input, language: locale.language, currency: locale.currency });
   }
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
-  const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
+  const preferGovernedTemplate =
+    work.workKey !== "drywall_partition" &&
+    shouldPreferGovernedTemplate(input, work.workKey);
   const detailLevel = input.estimateDetailLevel ?? (input.text ? "professional_expanded" : "standard");
   const workKeyResolvedFromRoute = input.explicitWorkKeyFromRoute === true;
+  const promptResolvedWork = input.text
+    ? resolveGlobalWorkType({ text: input.text, language: locale.language })
+    : null;
+  const routeWorkKeyHasPromptEvidence =
+    input.explicitWorkKeyFromRoute === true &&
+    input.explicitWorkKey != null &&
+    input.explicitWorkKey !== "other_construction_work" &&
+    promptResolvedWork?.workKey === input.explicitWorkKey;
   const blockProfessionalExpandedForGovernedFormula =
     preferGovernedTemplate &&
     (
@@ -1746,11 +2064,12 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
     : null;
   const estimatorPlan = estimatorOutcome?.plan;
+  const estimatorBoq = estimatorOutcome?.boq ?? null;
   const professionalExpandedWorkKey = detailLevel === "professional_expanded" && !blockProfessionalExpandedForGovernedFormula
     ? resolveProfessionalExpandedWorkKey({
       estimateInput: input,
       resolvedWorkKey: work.workKey,
-      semanticWorkKey: semanticPlan?.workKey,
+      semanticWorkKey: routeWorkKeyHasPromptEvidence ? null : semanticPlan?.workKey,
     })
     : null;
   const explicitWorkKeyIsUserSelected =
@@ -1770,6 +2089,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorPlan?.workKey.startsWith("dynamic_") &&
     (
       professionalExpandedWorkKey === "foundation_waterproofing" ||
+      professionalExpandedWorkKey === "foundation_project" ||
       shouldSimpleApartmentRenovationPromptUseExpanded(input, professionalExpandedWorkKey) ||
       (
         explicitWorkKeyIsUserSelected &&
@@ -1779,15 +2099,34 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     );
   const routeFallbackYieldsToDynamicEstimator =
     routeFallbackMayYieldToDynamicEstimator(input, estimatorPlan);
+  const canonicalEstimatorWork = estimatorPlan?.workKey === "concrete_pedestal_pour"
+    ? undefined
+    : estimatorPlan
+      ? canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorPlan)
+      : undefined;
   const dynamicEstimatorRespectsSelectedWork =
-    !explicitWorkKeyIsUserSelected ||
+    (
+      !explicitWorkKeyIsUserSelected &&
+      (
+        !routeWorkKeyHasPromptEvidence ||
+        (estimatorPlan != null && DYNAMIC_ESTIMATOR_FIRST_WORK_KEYS.has(estimatorPlan.workKey)) ||
+        (estimatorPlan != null && ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(estimatorPlan.workKey))
+      )
+    ) ||
     estimatorPlan?.workKey === input.explicitWorkKey ||
     estimatorPlan?.workKey === professionalExpandedWorkKey ||
+    canonicalEstimatorWork?.workKey === input.explicitWorkKey ||
+    canonicalEstimatorWork?.workKey === professionalExpandedWorkKey ||
+    (
+      routeWorkKeyHasPromptEvidence &&
+      estimatorPlan?.category === work.category
+    ) ||
     routeFallbackYieldsToDynamicEstimator;
   const shouldUseDynamicEstimatorBeforeExpanded =
     detailLevel === "professional_expanded" &&
     !preferGovernedTemplate &&
     estimatorPlan &&
+    estimatorBoq &&
     dynamicEstimatorRespectsSelectedWork &&
     estimatorOutcome.parsableWorkDetected &&
     estimatorOutcome.dynamicBoqUsed &&
@@ -1800,44 +2139,42 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
       estimatorPlan.workKey.startsWith("dynamic_")
     );
 
-  if (shouldUseDynamicEstimatorBeforeExpanded) {
-    const canonicalWork = estimatorPlan.workKey === "concrete_pedestal_pour"
-      ? undefined
-      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorPlan);
+  if (shouldUseDynamicEstimatorBeforeExpanded && estimatorBoq) {
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorPlan,
-      compileDynamicProfessionalBoq(estimatorPlan),
+      estimatorBoq,
       input,
-      canonicalWork,
+      canonicalEstimatorWork,
     );
   }
 
   if (professionalExpandedWorkKey) {
-    return withComplexityAdaptiveBoqDepth(buildProfessionalExpandedGlobalEstimate({
-      estimateInput: {
-        ...input,
-        estimateDetailLevel: "professional_expanded",
-      },
-      workKey: professionalExpandedWorkKey,
-    }), input);
+    return withCanonicalVisibleWorkTitle(
+      withComplexityAdaptiveBoqDepth(buildProfessionalExpandedGlobalEstimate({
+        estimateInput: {
+          ...input,
+          estimateDetailLevel: "professional_expanded",
+        },
+        workKey: professionalExpandedWorkKey,
+      }), input),
+      work.title,
+    );
   }
 
   if (
     !preferGovernedTemplate &&
     estimatorOutcome?.plan &&
+    estimatorBoq &&
     dynamicEstimatorRespectsSelectedWork &&
     estimatorOutcome.parsableWorkDetected &&
     estimatorOutcome.dynamicBoqUsed &&
     !estimatorOutcome.failures.length
   ) {
-    const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
-      ? undefined
-      : canonicalWorkForDynamicEstimator(input, semanticPlan, estimatorOutcome.plan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
-      compileDynamicProfessionalBoq(estimatorOutcome.plan),
+      estimatorBoq,
       input,
-      canonicalWork,
+      canonicalEstimatorWork,
     );
   }
 
@@ -1910,6 +2247,9 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         }];
         confidences.push(rowConfidence);
         const total = round2(quantityValue * rate.rate.priceDefault);
+        const quantityRuleVersion = "global-estimate-seed-quantity-rules-v1";
+        const quantityRuleSourceId = "src_global_estimate_configured_quantity_rules_v1";
+        const formulaId = `formula:${work.workKey}:${templateRow.code}:quantity`;
         return {
           rowNumber: templateRow.rowNumber,
           code: templateRow.code,
@@ -1930,7 +2270,43 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           }),
           sourceId: rate.source.id,
           sourceEvidence,
+          formulaId,
+          quantityFormula: templateRow.quantityFormula,
+          calculationTrace: [
+            `template=${template.workKey}`,
+            `templateVersion=${quantityRuleVersion}`,
+            `input=${area} ${normalizedInput.normalizedUnit}`,
+            `formula=${templateRow.quantityFormula}`,
+            `result=${quantityValue} ${unit}`,
+            `normSource=${quantityRuleSourceId}`,
+            "normProvenance=configured_quantity_rule_not_external_norm",
+          ].join("; "),
+          sourceParameters: {
+            baseQuantity: area,
+            baseUnit: normalizedInput.normalizedUnit,
+            rowUnit: unit,
+            workKey: work.workKey,
+            rowCode: templateRow.code,
+            normSourceId: quantityRuleSourceId,
+            normSourceTitle: "Configured global estimate quantity rules",
+            normSourceProvenance: "configured_quantity_rule_not_external_norm",
+            normVersion: quantityRuleVersion,
+            normReviewStatus: "preliminary_configured_quantity_rule",
+          },
+          templateId: `global_estimate_template:${template.workKey}`,
+          templateVersion: quantityRuleVersion,
+          normId: `quantity_rule:${work.workKey}:${templateRow.code}`,
+          normFamilyId: `quantity_rule_family:${work.workKey}`,
+          normSourceId: quantityRuleSourceId,
+          normSourceTitle: "Configured global estimate quantity rules",
+          normVersion: quantityRuleVersion,
+          normReviewStatus: "preliminary_configured_quantity_rule",
           confidence: rowConfidence,
+          includedInEstimate: true,
+          includedInProcurement: section.type === "materials",
+          optional: !templateRow.required,
+          editable: true,
+          deletedByUser: false,
         };
       }).filter((row): row is SourceBackedEstimateRow => Boolean(row));
       return {
@@ -2048,6 +2424,10 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     confidence: finalConfidence,
     requiresReview: finalConfidence !== "high" || tax.taxType === "unknown" || work.safetyReviewRequired || work.dangerous,
   };
+}
+
+export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
+  return withVisibleEstimateRowProjection(calculateGlobalConstructionEstimateUnprojected(input));
 }
 
 export async function calculateGlobalConstructionEstimate(input: GlobalEstimateInput): Promise<GlobalEstimateResult> {

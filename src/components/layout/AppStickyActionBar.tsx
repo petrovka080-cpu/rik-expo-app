@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
+import { createReactNativeWebViewStyle } from "../../ui/reactNativeWebStyle";
 import { APP_LAYOUT } from "./appLayout";
 
 type AppStickyAction = {
@@ -19,6 +20,7 @@ type AppStickyAction = {
   loading?: boolean;
   testID?: string;
   testId?: string;
+  showLabel?: boolean;
 };
 
 export type AppStickyActionBarProps = {
@@ -79,7 +81,8 @@ function StickyButton({
   const keepsReadableLabel =
     variant === "primary" && normalizedLabel.includes("объяв");
   const iconOnly =
-    variant === "danger" ||
+    action.showLabel !== true &&
+    (variant === "danger" ||
     (variant === "primary" &&
       !keepsReadableLabel &&
       (normalizedLabel.includes("утверд") ||
@@ -88,7 +91,7 @@ function StickyButton({
         normalizedLabel.includes("опубликов") ||
         normalizedLabel.includes("готово") ||
         normalizedLabel.includes("сохран") ||
-        normalizedLabel === "ok"));
+        normalizedLabel === "ok")));
   const textStyle = isPrimary || variant === "danger" ? styles.primaryText : styles.secondaryText;
   const invokeAction = () => {
     if (!disabled) void action.onPress();
@@ -190,10 +193,10 @@ function resolveStickyActionIcon(
 }
 
 const fixedPosition = Platform.select({
-  web: {
+  web: createReactNativeWebViewStyle({
     position: "fixed",
     bottom: "var(--app-sticky-action-bottom)",
-  } as unknown as ViewStyle,
+  }),
   default: {
     position: "absolute",
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,

@@ -7,6 +7,10 @@
 import { resetSessionBoundary } from "./sessionBoundary";
 
 const mockClearDocumentSessions = jest.fn();
+const mockClearPooledWebPdfFrames = jest.fn();
+const mockClearGeneratedPdfViewerSessionCache = jest.fn();
+const mockClearConsumerRepairPdfWebObjectUrls = jest.fn();
+const mockClearWebPdfPreviewCacheForSessionBoundary = jest.fn();
 const mockClearCurrentSessionRoleCache = jest.fn();
 const mockClearPdfRunnerSessionState = jest.fn();
 const mockClearOfficeHubBootstrapSnapshot = jest.fn();
@@ -22,6 +26,26 @@ const mockRecordPlatformObservability = jest.fn();
 jest.mock("../documents/pdfDocumentSessions", () => ({
   clearDocumentSessions: (...args: unknown[]) =>
     mockClearDocumentSessions(...args),
+}));
+
+jest.mock("../documents/pdfWebPreviewCache", () => ({
+  clearWebPdfPreviewCacheForSessionBoundary: (...args: unknown[]) =>
+    mockClearWebPdfPreviewCacheForSessionBoundary(...args),
+}));
+
+jest.mock("../pdf/pdfViewerWebFramePool", () => ({
+  clearPooledWebPdfFrames: (...args: unknown[]) =>
+    mockClearPooledWebPdfFrames(...args),
+}));
+
+jest.mock("../estimatePdf/generatedPdfViewerFile", () => ({
+  clearGeneratedPdfViewerSessionCache: (...args: unknown[]) =>
+    mockClearGeneratedPdfViewerSessionCache(...args),
+}));
+
+jest.mock("../consumerRequests/consumerRequestPdfStorage", () => ({
+  clearConsumerRepairPdfWebObjectUrls: (...args: unknown[]) =>
+    mockClearConsumerRepairPdfWebObjectUrls(...args),
 }));
 
 jest.mock("../pdfRunner", () => ({
@@ -82,6 +106,10 @@ jest.mock("../observability/platformObservability", () => ({
 describe("resetSessionBoundary", () => {
   beforeEach(() => {
     mockClearDocumentSessions.mockReset();
+    mockClearPooledWebPdfFrames.mockReset();
+    mockClearGeneratedPdfViewerSessionCache.mockReset();
+    mockClearConsumerRepairPdfWebObjectUrls.mockReset();
+    mockClearWebPdfPreviewCacheForSessionBoundary.mockReset().mockResolvedValue(undefined);
     mockClearCurrentSessionRoleCache.mockReset();
     mockClearPdfRunnerSessionState.mockReset();
     mockClearOfficeHubBootstrapSnapshot.mockReset();
@@ -99,6 +127,10 @@ describe("resetSessionBoundary", () => {
     await resetSessionBoundary("terminal_sign_out");
 
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
+    expect(mockClearPooledWebPdfFrames).toHaveBeenCalledTimes(1);
+    expect(mockClearGeneratedPdfViewerSessionCache).toHaveBeenCalledTimes(1);
+    expect(mockClearConsumerRepairPdfWebObjectUrls).toHaveBeenCalledTimes(1);
+    expect(mockClearWebPdfPreviewCacheForSessionBoundary).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
     expect(mockClearPdfRunnerSessionState).toHaveBeenCalledTimes(1);
     expect(mockClearOfficeHubBootstrapSnapshot).toHaveBeenCalledTimes(1);

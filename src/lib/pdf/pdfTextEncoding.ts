@@ -143,17 +143,23 @@ export function buildPdfTextOperators(args: {
   size: number;
   visibleText: string;
   visibleTextHex?: string;
-  extractText?: string;
+  extractText?: string | null;
   visibleFontName?: string;
   extractFontName?: string;
 }): string {
   const visibleFontName = args.visibleFontName ?? "F2";
   const extractFontName = args.extractFontName ?? "F1";
   const visible = String(args.visibleText || " ").replace(/\r/g, " ").replace(/\t/g, " ").trim() || " ";
-  const extract = String(args.extractText ?? args.visibleText ?? " ").replace(/\r/g, " ").replace(/\t/g, " ").trim() || " ";
   const visibleHex = args.visibleTextHex || encodePdfUnicodeTextHex(visible);
+  const visibleOperator =
+    `BT /${visibleFontName} ${args.size} Tf 0 Tr 1 0 0 1 ${args.x} ${args.y} Tm [<${visibleHex}>] TJ ET`;
+  if (args.extractText === null) return visibleOperator;
+  const extract = String(args.extractText ?? args.visibleText ?? " ")
+    .replace(/\r/g, " ")
+    .replace(/\t/g, " ")
+    .trim() || " ";
   return [
-    `BT /${visibleFontName} ${args.size} Tf 0 Tr 1 0 0 1 ${args.x} ${args.y} Tm [<${visibleHex}>] TJ ET`,
+    visibleOperator,
     `BT /${extractFontName} ${args.size} Tf 3 Tr 1 0 0 1 ${args.x} ${args.y} Tm <${encodePdfUnicodeTextHex(extract)}> Tj ET`,
   ].join("\n");
 }

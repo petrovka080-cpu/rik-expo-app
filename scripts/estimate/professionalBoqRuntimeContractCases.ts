@@ -40,7 +40,7 @@ export const PROFESSIONAL_BOQ_RUNTIME_CONTRACT_CASES: readonly ProfessionalBoqRu
   {
     case_id: "runtime-road-001",
     category: "roadworks",
-    prompt: "дорога 1 км ширина 6 м",
+    prompt: "Полное строительство дорожной одежды, длина 1 км, ширина 6 м",
     high_risk: true,
   },
   {

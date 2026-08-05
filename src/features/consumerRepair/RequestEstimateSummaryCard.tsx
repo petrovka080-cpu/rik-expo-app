@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
@@ -11,6 +12,13 @@ type Props = {
 export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
   render(): React.ReactElement {
     const { viewModel, missingParameterCount } = this.props;
+    const estimateUnitLabels = Array.from(new Set(
+      viewModel.sections.flatMap((section) =>
+        section.items
+          .map((item) => formatEstimateUnitLabel(item.unitLabel || item.unit))
+          .filter(Boolean)
+      ),
+    )).map((unit) => unit === "\u043c\u00b2" ? "\u043c\u00b2 (\u043c2)" : unit);
     const parameterLabel = typeof missingParameterCount === "number"
       ? `Нужно уточнить: ${missingParameterCount} ${pluralizeRu(missingParameterCount, "параметр", "параметра", "параметров")}`
       : "Для точности нужно уточнить параметры";
@@ -22,11 +30,22 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.meta} testID="request-estimate-row-count">
           {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
         </Text>
+        {estimateUnitLabels.length > 0 ? (
+          <Text style={styles.meta} testID="request-estimate-unit-semantics">
+            {"\u0415\u0434\u0438\u043d\u0438\u0446\u044b \u0441\u043c\u0435\u0442\u044b"}: {estimateUnitLabels.join(", ")}
+          </Text>
+        ) : null}
         <Text style={styles.total}>
           Итого по позициям: {viewModel.totalLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-price-status">
           Цены: {viewModel.priceStatusLabel}
+        </Text>
+        <Text style={styles.meta} testID="request-estimate-trust-level">
+          {viewModel.trustLevelLabel}
+        </Text>
+        <Text style={styles.meta} testID="request-estimate-commercial-level">
+          {viewModel.commercialEstimateLevelLabel}
         </Text>
         <Text style={styles.meta} testID="request-estimate-parameter-status">
           {parameterLabel}

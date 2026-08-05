@@ -1,4 +1,9 @@
-import type { EstimatePdfDocument, EstimatePdfViewModel } from "./estimatePdfTypes";
+import type {
+  EstimatePdfBinaryDocument,
+  EstimatePdfDocument,
+  EstimatePdfViewModel,
+} from "./estimatePdfTypes";
+import { strToU8, zlibSync } from "fflate";
 import { buildEmbeddedInterPdfFontObjects, collectPdfTextCodePoints, encodePdfInterGlyphTextHex } from "../pdf/embeddedPdfFont";
 import { ESTIMATE_SIGNATURE_BLOCKS, ESTIMATE_SIGNATURE_SECTION_TITLE } from "../pdf/estimateSignatureBlocks";
 import { buildPdfTextOperators } from "../pdf/pdfTextEncoding";
@@ -98,6 +103,11 @@ function bytesToAscii(bytes: Uint8Array): string {
     result += String.fromCharCode(...chunk);
   }
   return result;
+}
+
+function buildCompressedPdfStream(value: string): string {
+  const compressed = zlibSync(strToU8(value), { level: 6 });
+  return bytesToAscii(compressed);
 }
 
 function wrapEstimateTableCellText(value: string, width: number, maxLines: number): string[] {
@@ -366,13 +376,18 @@ function showStructuredText(
   y: number,
   text: string,
   size = FONT_SIZE,
-  extractText?: string,
+  extractText?: string | null,
 ): void {
   const clean = String(text ?? "").replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
-  const cleanExtractText = extractText == null
-    ? clean
+  const cleanExtractText = extractText === null
+    ? null
+    : extractText === undefined
+      ? clean
     : String(extractText).replace(/\r/g, " ").replace(/\t/g, " ").replace(/\s+/g, " ").trim() || " ";
-  page.texts.push(cleanExtractText);
+  page.texts.push(clean);
+  if (cleanExtractText !== null && cleanExtractText !== clean) {
+    page.texts.push(cleanExtractText);
+  }
   page.ops.push(buildPdfTextOperators({
     x,
     y,
@@ -463,7 +478,6 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
     const cellLines = column.key === "name"
       ? wrapEstimateTableCellText(estimatePdfCellValue(row, column.key), column.width, 3)
       : [fitEstimatePdfCellText(estimatePdfCellValue(row, column.key), column.width)];
-    const logicalCellValue = estimatePdfCellValue(row, column.key);
     cellLines.forEach((value, lineIndex) => {
       const approxWidth = value.length * 3.7;
       const textX =
@@ -472,14 +486,27 @@ function drawStructuredTableRow(page: StructuredPdfPage, y: number, row: Estimat
           : column.align === "center"
             ? x + Math.max(4, (column.width - approxWidth) / 2)
             : x + 4;
-      const extractText =
-        column.key === "name" && lineIndex > 0
-          ? value
-          : logicalCellValue;
-      showStructuredText(page, Math.max(x + 4, textX), y - 10 - lineIndex * 9, value, SMALL_FONT, extractText);
+      showStructuredText(
+        page,
+        Math.max(x + 4, textX),
+        y - 10 - lineIndex * 9,
+        value,
+        SMALL_FONT,
+        null,
+      );
     });
     x += column.width;
   }
+  showStructuredText(
+    page,
+    LEFT,
+    y - ROW_HEIGHT + 2,
+    " ",
+    1,
+    ESTIMATE_TABLE_COLUMNS
+      .map((column) => estimatePdfCellValue(row, column.key))
+      .join(" | "),
+  );
   return y - ROW_HEIGHT;
 }
 
@@ -588,8 +615,43 @@ function buildStructuredEstimatePages(viewModel: EstimatePdfViewModel): Structur
     showStructuredText(page, LEFT + 8, y, viewModel.tax.warning, SMALL_FONT);
     y -= 12;
   }
+
+  const visibleAssumptions = viewModel.assumptions.length
+    ? viewModel.assumptions
+    : ["Нет допущений"];
+  if (y < BOTTOM + 90) {
+    page = startStructuredPage(pages);
+    y = TOP;
+  }
+  y = addStructuredSectionTitle(page, y, "Параметры и допущения");
+  for (const assumption of visibleAssumptions) {
+    if (y < BOTTOM + 24) {
+      page = startStructuredPage(pages);
+      y = TOP;
+      y = addStructuredSectionTitle(page, y, "Параметры и допущения — продолжение");
+    }
+    showStructuredText(page, LEFT + 8, y, `- ${assumption}`, SMALL_FONT);
+    y -= 11;
+  }
+
+  if (y < BOTTOM + 90) {
+    page = startStructuredPage(pages);
+    y = TOP;
+  }
   y = addStructuredSectionTitle(page, y, "Что уточнить");
-  y = addStructuredParagraphList(page, y, viewModel.clarifyingQuestions.length ? viewModel.clarifyingQuestions : ["Нет вопросов"], 4) - 8;
+  const visibleQuestions = viewModel.clarifyingQuestions.length
+    ? viewModel.clarifyingQuestions
+    : ["Нет вопросов"];
+  for (const question of visibleQuestions) {
+    if (y < BOTTOM + 24) {
+      page = startStructuredPage(pages);
+      y = TOP;
+      y = addStructuredSectionTitle(page, y, "Что уточнить — продолжение");
+    }
+    showStructuredText(page, LEFT + 8, y, `- ${question}`, SMALL_FONT);
+    y -= 11;
+  }
+  y -= 8;
 
   if (y < BOTTOM + 130) {
     page = startStructuredPage(pages);
@@ -638,8 +700,14 @@ function renderStructuredPdfBody(pages: StructuredPdfPage[]): { body: string; by
   const pageRefs: number[] = [];
   for (const pageItem of pages) {
     const content = pageItem.ops.join("\n");
+    const compressedContent = buildCompressedPdfStream(content);
     const contentId = objects.length + 1;
-    objects.push({ id: contentId, body: `<< /Length ${content.length} >>\nstream\n${content}\nendstream` });
+    objects.push({
+      id: contentId,
+      body:
+        `<< /Length ${compressedContent.length} /Filter /FlateDecode >>\n`
+        + `stream\n${compressedContent}\nendstream`,
+    });
     const pageId = objects.length + 1;
     pageRefs.push(pageId);
     objects.push({
@@ -669,10 +737,11 @@ function renderStructuredPdfBody(pages: StructuredPdfPage[]): { body: string; by
   };
 }
 
-export function renderEstimatePdfDocument(viewModel: EstimatePdfViewModel): EstimatePdfDocument {
+export function renderEstimatePdfBinaryDocument(
+  viewModel: EstimatePdfViewModel,
+): EstimatePdfBinaryDocument {
   const pdfId = stablePdfId(`${viewModel.estimateId}:${viewModel.generatedAt}`);
   const rendered = renderStructuredPdfBody(buildStructuredEstimatePages(viewModel));
-  const base64 = bytesToBase64(rendered.bytes);
   return {
     pdfId,
     title: viewModel.title,
@@ -680,9 +749,17 @@ export function renderEstimatePdfDocument(viewModel: EstimatePdfViewModel): Esti
     contentType: "application/pdf",
     bytes: rendered.bytes,
     body: rendered.body,
+    text: rendered.text,
+  };
+}
+
+export function renderEstimatePdfDocument(viewModel: EstimatePdfViewModel): EstimatePdfDocument {
+  const rendered = renderEstimatePdfBinaryDocument(viewModel);
+  const base64 = bytesToBase64(rendered.bytes);
+  return {
+    ...rendered,
     base64,
     dataUri: `data:application/pdf;base64,${base64}`,
-    text: rendered.text,
   };
 }
 

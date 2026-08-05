@@ -16,10 +16,14 @@ const flowFiles = [
 
 describe("AI assistant stable e2e test IDs", () => {
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
+  const assistantMessageViewsSource = read(
+    "src/features/ai/AIAssistantReadyProductPanels.tsx",
+  );
   const assistantProductPanelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
   const assistantShortcutRowsSource = read("src/features/ai/AIAssistantShortcutRows.tsx");
   const assistantUiSource = [
     assistantSource,
+    assistantMessageViewsSource,
     assistantProductPanelsSource,
     assistantShortcutRowsSource,
   ].join("\n");
@@ -77,13 +81,17 @@ describe("AI assistant stable e2e test IDs", () => {
   });
 
   it("targets the generated assistant reply instead of the initial greeting", () => {
-    expect(assistantSource).toContain("hasPriorUserPrompt");
-    expect(assistantSource).toContain("hasAnyUserPrompt");
-    expect(assistantSource).toContain("isLatestAssistantReply");
-    expect(assistantSource).toContain("shouldCompactAssistantHistory");
-    expect(assistantSource).toContain('index === messages.length - 1');
-    expect(assistantSource).toContain('testID={responseTestId}');
-    expect(assistantSource).toContain(
+    expect(assistantMessageViewsSource).toContain("hasPriorUserPrompt");
+    expect(assistantMessageViewsSource).toContain("hasAnyUserPrompt");
+    expect(assistantMessageViewsSource).toContain("isLatestAssistantReply");
+    expect(assistantMessageViewsSource).toContain(
+      "shouldCompactAssistantHistory",
+    );
+    expect(assistantMessageViewsSource).toContain(
+      'index === messages.length - 1',
+    );
+    expect(assistantMessageViewsSource).toContain('testID={responseTestId}');
+    expect(assistantMessageViewsSource).toContain(
       "numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}",
     );
   });

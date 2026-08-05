@@ -331,7 +331,8 @@ const loadCanonicalRequestItemsForBuyerGroups = async (
   const rows: BuyerCanonicalRequestItemRow[] = [];
   for (const ids of chunkBuyerIds(requestIds, 100)) {
     let offset = 0;
-    for (;;) {
+    let hasMoreRows = true;
+    while (hasMoreRows) {
       if (rows.length >= BUYER_INBOX_REQUEST_ITEMS_COMPLETION_MAX_ROWS) {
         throw new Error(
           `buyer request item completion exceeded max row ceiling (${BUYER_INBOX_REQUEST_ITEMS_COMPLETION_MAX_ROWS})`,
@@ -355,9 +356,10 @@ const loadCanonicalRequestItemsForBuyerGroups = async (
       rows.push(...pageRows);
 
       if (pageRows.length < BUYER_INBOX_REQUEST_ITEMS_COMPLETION_PAGE_SIZE) {
-        break;
+        hasMoreRows = false;
+      } else {
+        offset += BUYER_INBOX_REQUEST_ITEMS_COMPLETION_PAGE_SIZE;
       }
-      offset += BUYER_INBOX_REQUEST_ITEMS_COMPLETION_PAGE_SIZE;
     }
   }
 

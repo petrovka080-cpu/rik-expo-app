@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 import {
   PRODUCTION_BUSINESS_READONLY_FORBIDDEN_MUTATION_OPERATIONS,
@@ -113,8 +114,13 @@ export type DirectSupabaseExceptionRegistry = {
 
 export type ComponentDebtEntry = {
   file: string;
+  physicalLineCount: number;
+  meaningfulModuleLineCount: number;
+  maxCallableMeaningfulLineCount: number;
   lineCount: number;
   hookCount: number;
+  importCount: number;
+  responsibilityOwnerCount: number;
 };
 
 export type ProductionRawLoopPattern = "while_true" | "for_ever";
@@ -1033,6 +1039,8 @@ export type ArchitectureAntiRegressionReport = {
     godComponentCount: number;
     hookPressureComponentCount: number;
     topByLines: readonly ComponentDebtEntry[];
+    topByPhysicalLines: readonly ComponentDebtEntry[];
+    topByDependencies: readonly ComponentDebtEntry[];
     topByHooks: readonly ComponentDebtEntry[];
   };
   checks: readonly ArchitectureGuardrailCheck[];
@@ -1089,6 +1097,8 @@ const RATE_LIMIT_MARKETPLACE_5PCT_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MARKETPLA
 const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MONITOR_WINDOW_STABLE";
 const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
 const AI_MODEL_GATEWAY_PATH = "src/features/ai/model/AiModelGateway.ts";
+const AI_SERVER_MODEL_PROVIDER_PATH =
+  "src/lib/aiPlatform/providers/ServerAiModelProvider.ts";
 const AI_MODEL_TYPES_PATH = "src/features/ai/model/AiModelTypes.ts";
 const AI_DISABLED_PROVIDER_PATH = "src/features/ai/model/DisabledModelProvider.ts";
 const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelProvider.ts";
@@ -2438,6 +2448,10 @@ export function evaluateAiModelBoundaryGuardrail(params: {
     source: safeReadProjectFile({ readFile, relativePath: file }) ?? "",
   }));
   const modelGatewaySource = safeReadProjectFile({ readFile, relativePath: AI_MODEL_GATEWAY_PATH });
+  const serverModelProviderSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_SERVER_MODEL_PROVIDER_PATH,
+  });
   const modelTypesSource = safeReadProjectFile({ readFile, relativePath: AI_MODEL_TYPES_PATH });
   const disabledProviderSource = safeReadProjectFile({ readFile, relativePath: AI_DISABLED_PROVIDER_PATH });
   const legacyGeminiProviderSource = safeReadProjectFile({ readFile, relativePath: AI_LEGACY_GEMINI_PROVIDER_PATH });
@@ -2456,7 +2470,8 @@ export function evaluateAiModelBoundaryGuardrail(params: {
     .filter((entry) => aiClientSecretPattern.test(entry.source));
 
   const assistantClientUsesGateway =
-    Boolean(assistantClientSource?.includes("AiModelGateway")) &&
+    Boolean(assistantClientSource?.includes("ServerAiModelProvider")) &&
+    Boolean(serverModelProviderSource?.includes("AiModelGateway")) &&
     !Boolean(assistantClientSource?.includes("geminiGateway")) &&
     !Boolean(assistantClientSource?.includes("requestAiGeneratedText"));
   const aiReportsRedactionContractPresent =
@@ -2472,6 +2487,9 @@ export function evaluateAiModelBoundaryGuardrail(params: {
   ];
   const errors = [
     ...(modelGatewaySource ? [] : [`missing_file:${AI_MODEL_GATEWAY_PATH}`]),
+    ...(serverModelProviderSource
+      ? []
+      : [`missing_file:${AI_SERVER_MODEL_PROVIDER_PATH}`]),
     ...(modelTypesSource ? [] : [`missing_file:${AI_MODEL_TYPES_PATH}`]),
     ...(disabledProviderSource ? [] : [`missing_file:${AI_DISABLED_PROVIDER_PATH}`]),
     ...(legacyGeminiProviderSource ? [] : [`missing_file:${AI_LEGACY_GEMINI_PROVIDER_PATH}`]),
@@ -8601,10 +8619,62 @@ export function scanComponentDebtSource(params: {
   file: string;
   source: string;
 }): ComponentDebtEntry {
+  const sourceFile = ts.createSourceFile(
+    params.file,
+    params.source,
+    ts.ScriptTarget.Latest,
+    true,
+    params.file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const callableSpans: number[] = [];
+  const recordSpan = (node: ts.Node) => {
+    const callableSource = params.source.slice(node.getStart(sourceFile), node.getEnd());
+    callableSpans.push(
+      callableSource.split(/\r?\n/).filter((line) => line.trim().length > 0).length,
+    );
+  };
+  for (const statement of sourceFile.statements) {
+    if (ts.isFunctionDeclaration(statement)) {
+      recordSpan(statement);
+      continue;
+    }
+    if (ts.isClassDeclaration(statement)) {
+      for (const member of statement.members) {
+        if (
+          ts.isMethodDeclaration(member) ||
+          ts.isConstructorDeclaration(member) ||
+          ts.isGetAccessorDeclaration(member) ||
+          ts.isSetAccessorDeclaration(member)
+        ) {
+          recordSpan(member);
+        }
+      }
+      continue;
+    }
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        const initializer = declaration.initializer;
+        if (initializer && (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer))) {
+          recordSpan(initializer);
+        }
+      }
+    }
+  }
+  const physicalLineCount = params.source.split(/\r?\n/).length;
+  const meaningfulModuleLineCount = params.source
+    .split(/\r?\n/)
+    .filter((line) => line.trim().length > 0).length;
+  const maxCallableMeaningfulLineCount =
+    callableSpans.length > 0 ? Math.max(...callableSpans) : meaningfulModuleLineCount;
   return {
     file: normalizePath(params.file),
-    lineCount: params.source.split(/\r?\n/).length,
+    physicalLineCount,
+    meaningfulModuleLineCount,
+    maxCallableMeaningfulLineCount,
+    lineCount: maxCallableMeaningfulLineCount,
     hookCount: Array.from(params.source.matchAll(/\buse[A-Z][A-Za-z0-9_]*\s*\(/g)).length,
+    importCount: sourceFile.statements.filter(ts.isImportDeclaration).length,
+    responsibilityOwnerCount: callableSpans.length,
   };
 }
 
@@ -8620,6 +8690,12 @@ export function scanComponentDebt(projectRoot: string): ArchitectureAntiRegressi
       }),
     );
   const topByLines = [...entries].sort((left, right) => right.lineCount - left.lineCount).slice(0, 12);
+  const topByPhysicalLines = [...entries]
+    .sort((left, right) => right.physicalLineCount - left.physicalLineCount)
+    .slice(0, 12);
+  const topByDependencies = [...entries]
+    .sort((left, right) => right.importCount - left.importCount)
+    .slice(0, 12);
   const topByHooks = [...entries].sort((left, right) => right.hookCount - left.hookCount).slice(0, 12);
 
   return {
@@ -8629,6 +8705,8 @@ export function scanComponentDebt(projectRoot: string): ArchitectureAntiRegressi
     godComponentCount: entries.filter((entry) => entry.lineCount >= GOD_COMPONENT_LINE_THRESHOLD).length,
     hookPressureComponentCount: entries.filter((entry) => entry.hookCount >= HOOK_PRESSURE_THRESHOLD).length,
     topByLines,
+    topByPhysicalLines,
+    topByDependencies,
     topByHooks,
   };
 }

@@ -38,6 +38,9 @@ export function buildEstimateReplayRecord(input: {
   createdAt?: string;
   versionLineage?: Partial<EstimateReplayVersionLineage>;
 }): EstimateReplayRecord {
+  if (!input.revision.resolvedIdentity) {
+    throw new Error("REPLAY_RESOLVED_IDENTITY_REQUIRED_FOR_NEW_REVISION");
+  }
   const costing = calculateProfessionalCostForDraftRows({
     templateId: input.revision.selectedTemplateId,
     family: input.revision.matchedFamily,
@@ -68,6 +71,7 @@ export function buildEstimateReplayRecord(input: {
     snapshot_rows_hash: input.snapshot.rowsHash,
     snapshot_totals_hash: input.snapshot.totalsHash,
     version_lineage: versionLineage,
+    resolved_identity: input.revision.resolvedIdentity,
     hashes: estimateReplayHashes({
       revision: input.revision,
       snapshot: input.snapshot,
@@ -78,6 +82,8 @@ export function buildEstimateReplayRecord(input: {
     replay_record_builder_created: true,
     all_replay_records_have_snapshot: true,
     all_replay_records_have_version_lineage: true,
+    all_new_replay_records_have_resolved_identity: true,
+    new_revision_prompt_fallback_used: false,
     fake_green_claimed: false,
   };
 }

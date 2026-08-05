@@ -50,6 +50,7 @@ export type ProfessionalBoqRecipeRow = {
   normVersion: string;
   normReviewStatus: string;
   calculationTraceTemplate: string;
+  formulaContext?: Record<string, unknown>;
   includedInEstimate: boolean;
   includedInProcurement: boolean;
   priceStatus: "PRICE_MISSING";

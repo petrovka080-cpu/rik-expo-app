@@ -191,6 +191,14 @@ async function revealApprovedPdfAction(page: Page): Promise<boolean> {
   if (await historyButton.count() === 0) return false;
   await historyButton.scrollIntoViewIfNeeded().catch(() => undefined);
   await historyButton.click({ timeout: 30_000 });
+  await page.getByTestId("consumer-repair-history-modal")
+    .waitFor({ timeout: 45_000 })
+    .catch(() => undefined);
+  if (await page.getByTestId("consumer-repair-history-pdf").count() > 0) return true;
+  const historyMain = page.getByTestId("consumer-repair-history-main").first();
+  if (await historyMain.count() > 0) {
+    await historyMain.click({ timeout: 30_000 });
+  }
   await page.getByTestId("consumer-repair-history-open-pdf-expanded")
     .waitFor({ timeout: 90_000 })
     .catch(() => undefined);
@@ -222,6 +230,16 @@ async function expandDeliveryFieldsIfNeeded(page: Page): Promise<void> {
   const summary = page.getByTestId("consumer-repair-delivery-summary");
   if (await summary.count() > 0) await summary.click();
   await page.getByTestId("consumer-repair-phone-input").waitFor({ timeout: 45_000 });
+}
+
+async function revealAllEstimateRows(page: Page): Promise<void> {
+  for (let pageIndex = 0; pageIndex < 250; pageIndex += 1) {
+    const loadMore = page.getByTestId("request-estimate-items-load-more");
+    if (await loadMore.count() === 0) return;
+    await loadMore.scrollIntoViewIfNeeded();
+    await loadMore.click({ timeout: 30_000 });
+  }
+  throw new Error("estimate_items_pagination_did_not_finish");
 }
 
 function bodyHas(bodyText: string, marker: string | null): boolean {
@@ -285,12 +303,18 @@ async function runBrowserCase(
     await setInputText(page, "consumer-repair-problem-input", testCase.prompt);
     await page.getByTestId("consumer-repair-prepare-draft").click();
     await page.getByTestId("request-estimate-summary-card").waitFor({ timeout: 90_000 });
-    if (await page.getByTestId("request-estimate-details-toggle").count()) {
+    if (await page.getByTestId("request-estimate-parameters-toggle").count()) {
+      await page.getByTestId("request-estimate-parameters-toggle").click();
+      await page.getByTestId("request-estimate-parameter-panel").waitFor({ timeout: 45_000 });
+    } else if (await page.getByTestId("request-estimate-details-toggle").count()) {
       await page.getByTestId("request-estimate-details-toggle").click();
       await page.getByTestId("request-estimate-details-panel").waitFor({ timeout: 45_000 });
     }
+    await revealAllEstimateRows(page);
     const summaryCardVisibleBeforeApprove = await page.getByTestId("request-estimate-summary-card").count() > 0;
-    const detailsDrawerVisibleBeforeApprove = await page.getByTestId("request-estimate-details-panel").count() > 0;
+    const detailsDrawerVisibleBeforeApprove =
+      await page.getByTestId("request-estimate-parameter-panel").count() > 0 ||
+      await page.getByTestId("request-estimate-details-panel").count() > 0;
     const assumptionsVisibleBeforeApprove = await page.getByTestId("request-estimate-assumptions").count() > 0;
     const groupedSectionCount = await count(page, "[data-testid^='request-estimate-section-']");
     const quantityInputs = await count(page, "[data-testid^='consumer-repair-item-quantity-input-']");

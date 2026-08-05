@@ -30,6 +30,21 @@ describe("AI construction know-how architecture", () => {
     }
 
     const commandCenter = read("src/features/ai/commandCenter/AiCommandCenterScreen.tsx");
+    const emulatorRunner = read("scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts");
+    expect(emulatorRunner).toContain('"android.intent.action.VIEW"');
+    expect(emulatorRunner).toContain('"rik://ai-command-center"');
+    expect(emulatorRunner).toContain("openCommandCenterViaAndroidIntent");
+    expect(emulatorRunner).toContain('resource-id="ai.command_center.screen"');
+    expect(emulatorRunner).toContain('"ai.assistant.open"');
+    expect(emulatorRunner).toContain("targetAssistantInputViaGlobalUi");
+    expect(emulatorRunner).toContain('"rik://profile"');
+    expect(emulatorRunner).toContain("- eraseText: 200");
+    expect(emulatorRunner).toContain('id: "ai.assistant.clear"');
+    expect(emulatorRunner).toContain('id: "ai.assistant.response"');
+    expect(emulatorRunner).toContain("observePersistentAssistantResponse");
+    expect(read("src/features/ai/AIAssistantReadyProductPanels.tsx")).toContain(
+      'testID="ai.assistant.clear"',
+    );
     for (const testId of [
       "ai.construction.knowhow.preview",
       "ai.construction.knowhow.role",
@@ -82,5 +97,17 @@ describe("AI construction know-how architecture", () => {
     expect(report.summary.noDomainMutation).toBe(true);
     expect(report.summary.noMobileExternalFetch).toBe(true);
     expect(report.summary.noProviderChange).toBe(true);
+  });
+
+  it("rejects stale API 34 APK cache entries before runtime proof", () => {
+    const buildRunner = read("scripts/e2e/androidApi34BuildIfNeeded.ts");
+
+    expect(buildRunner).toContain('const CACHE_MANIFEST_NAME = "cache-manifest.json"');
+    expect(buildRunner).toContain("cacheManifest?.js_bundle_fingerprint === fingerprints.jsBundleFingerprint");
+    expect(buildRunner).toContain("cacheManifest?.source_tree_hash === fingerprints.sourceTreeHash");
+    expect(buildRunner).toContain("buildReleaseApk()");
+    expect(buildRunner).toContain("if (!explicitSourceApk)");
+    expect(buildRunner).toContain("spawnGradleAssembleRelease(candidate)");
+    expect(buildRunner).toContain('"release", "app-release.apk"');
   });
 });

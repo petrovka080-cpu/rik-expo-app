@@ -1,13 +1,13 @@
 import {
-  GREEN_AI_ESTIMATE_GOLDEN_BENCHMARK_EXPERT_ACCEPTANCE_COMMITTED_NO_BUILDS,
   runGoldenBenchmarkAcceptance,
+  STOP_GOLDEN_BENCHMARK_BLOCKED_BY_NPLUS_OR_TRUST_LAYER_NOT_READY,
 } from "../../scripts/estimate/goldenBenchmarkCore";
 
 describe("golden benchmark runner", () => {
-  it("passes all golden benchmark cases without claiming runtime smoke evidence", () => {
+  it("runs all golden cases while preserving the independent trust-layer STOP", () => {
     const summary = runGoldenBenchmarkAcceptance();
 
-    expect(summary.final_status).toBe(GREEN_AI_ESTIMATE_GOLDEN_BENCHMARK_EXPERT_ACCEPTANCE_COMMITTED_NO_BUILDS);
+    expect(summary.final_status).toBe(STOP_GOLDEN_BENCHMARK_BLOCKED_BY_NPLUS_OR_TRUST_LAYER_NOT_READY);
     expect(summary.golden_cases_count).toBeGreaterThanOrEqual(250);
     expect(summary.golden_cases_passed).toBe(summary.golden_cases_count);
     expect(summary.critical_cases_passed).toBe(true);
@@ -19,5 +19,8 @@ describe("golden benchmark runner", () => {
     expect(summary.actual_web_browser_golden_benchmark_smoke_passed).toBe(false);
     expect(summary.actual_android_chrome_golden_benchmark_smoke_passed).toBe(false);
     expect(summary.route_equivalent_not_reported_as_real_browser).toBe(true);
+    expect(summary.blockers).toContain(
+      "STOP_GOLDEN_BENCHMARK_BLOCKED_BY_NPLUS_OR_TRUST_LAYER_NOT_READY:ready_professional_count_mismatch|not_ready_count:10000",
+    );
   });
 });

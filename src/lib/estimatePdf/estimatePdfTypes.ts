@@ -91,6 +91,11 @@ export type EstimatePdfDocument = {
   text: string;
 };
 
+export type EstimatePdfBinaryDocument = Omit<
+  EstimatePdfDocument,
+  "base64" | "dataUri"
+>;
+
 export type EstimatePdfValidationResult = {
   valid: boolean;
   text: string;

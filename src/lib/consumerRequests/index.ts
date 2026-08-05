@@ -1,9 +1,30 @@
+import {
+  asphaltProfessionalCategoryFromSourceParametersV4,
+  asphaltProfessionalCategoryPresentationV4,
+} from "../estimate/v4/asphalt/asphaltProfessionalPresentationV4";
+import type { ConsumerRepairRequestItem } from "./consumerRequestTypes";
+
+export function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
+  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
+  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).itemLabelRu;
+  if (item.itemType === "work") return "Работа";
+  if (item.itemType === "material") return "Материал";
+  if (item.itemType === "service") return "Оборудование / доставка";
+  return "Позиция";
+}
+
 export {
   CONSUMER_REPAIR_CONTEXT,
   CONSUMER_REPAIR_FORBIDDEN_OFFICE_ROUTES,
   assertConsumerRepairScope,
 } from "./consumerRequestAccessPolicy";
-export { auditConsumerRepairRequestEvent, createConsumerRepairEvent } from "./consumerRequestAuditTrail";
+export {
+  auditConsumerRepairRequestEvent,
+  buildConsumerRequestEstimateRuntimeTrace,
+  CONSUMER_REQUEST_ESTIMATE_RUNTIME_TRACE_SCHEMA_VERSION,
+  createConsumerRepairEvent,
+  type ConsumerRequestEstimateRuntimeTrace,
+} from "./consumerRequestAuditTrail";
 export {
   assertConsumerRepairDraftActionAllowed,
   resolveConsumerRepairDraftTransition,
@@ -20,6 +41,11 @@ export {
   type ConsumerRepairPayloadSourceGovernanceResult,
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
+export {
+  APPROVED_HISTORY_SCALE_MATRIX,
+  evaluateApprovedHistoryScaleMatrix,
+  type ApprovedHistoryScaleMatrix,
+} from "./approvedHistoryScaleMatrix";
 export {
   detectConsumerRepairLegacyFakeEstimateRevision,
   type ConsumerRepairLegacyEstimateDetection,
@@ -42,9 +68,9 @@ export {
 export {
   assertConsumerRepairGlobalEstimateDraftSafe,
   buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
   createGlobalEstimateB2cDraftTrace,
 } from "./consumerRequestGlobalEstimateIntegration";
+export { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 export {
   replayApprovedEstimateHistoryRecords,
   type ApprovedEstimateHistoryReplayResult,
@@ -69,6 +95,7 @@ export {
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
+  initializeConsumerRepairTransactionalDurableStorage,
   listApprovedEstimateHistoryRecords,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
@@ -84,6 +111,9 @@ export {
   type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "./consumerRequestService";
+export {
+  createConsumerRepairDraftFromGlobalEstimate,
+} from "./consumerRequestEstimateApplicationService";
 export type {
   ApprovedEstimateHistoryRecord,
   ConsumerMarketplaceLink,

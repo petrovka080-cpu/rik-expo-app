@@ -16,6 +16,6 @@ describe("request state no duplicate draft logic", () => {
     expect(featureSources).not.toMatch(/createConsumerRepairRequestDraft\s*\(/);
     expect(featureSources).not.toMatch(/sendConsumerRepairRequestToMarketplace\s*\(/);
     expect(screenAdapterSources).toContain("addConsumerRepairRequestItem");
-    expect(screenAdapterSources).toContain("generateConsumerRepairRequestPdfForDraft");
+    expect(screenAdapterSources).toContain("ensureConsumerRepairRequestPdfAvailable");
   });
 });

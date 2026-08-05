@@ -13,6 +13,7 @@ describe("marketplace add product screen still works contract", () => {
   it("keeps /add wired to the marketplace listing screen", () => {
     const route = read("app/add.tsx");
     const screen = read("src/screens/profile/AddListingScreen.tsx");
+    const submission = read("src/screens/profile/addListingSubmission.ts");
     const modal = decodeEscapedUnicode(
       read("src/screens/profile/components/ListingModal.tsx"),
     );
@@ -23,7 +24,8 @@ describe("marketplace add product screen still works contract", () => {
 
     expect(route).toContain("AddListingScreenComponent");
     expect(route).toContain('route: "/add"');
-    expect(screen).toContain("createMarketListing({");
+    expect(screen).toContain("submitAddListing({");
+    expect(submission).toContain("createListing: createMarketListing");
     expect(modal).toContain("add-listing-flow-publish");
     expect(modal).toContain("add-listing-flow-close");
     expect(modal).toContain("market-add-open-listing");

@@ -48,9 +48,14 @@ export function renderProfessionalCostSection(input: {
     `equipment=${categoryMoney(input.lines, (line) => line.rowType === "equipment", input.summary.equipmentSubtotal, input.summary.currency)}`,
     `transport=${categoryMoney(input.lines, (line) => line.rowType === "transport", input.summary.transportSubtotal, input.summary.currency)}`,
     `overhead_mobilization=${categoryMoney(input.lines, (line) => line.rowType === "overhead" || line.rowType === "mobilization", input.summary.overheadMobilizationSubtotal, input.summary.currency)}`,
-    `preliminary_total=${money(input.summary.preliminaryTotal, input.summary.currency)}`,
+    input.summary.resolution === "PARTIAL_PRELIMINARY_COST_PRICE_INPUT_REQUIRED"
+      ? `preliminary_priced_subtotal=${money(input.summary.preliminaryTotal, input.summary.currency)}`
+      : `preliminary_total=${money(input.summary.preliminaryTotal, input.summary.currency)}`,
     "Price coverage policy",
+    `cost_resolution=${input.summary.resolution}`,
     `preliminary_total_allowed=${input.summary.preliminaryTotalAllowed}`,
+    `required_price_input_rows=${input.summary.requiredPriceInputRowIds.length}`,
+    ...input.summary.requiredPriceInputRowIds.map((rowId) => `required_price_input=${rowId}`),
     "contract_total_claimed=false",
     "Contract total not claimed",
     "Line unit price/subtotal",

@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { GlobalSelectedWorkBinding, GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
-import { deriveWorkPromptState, type WorkPromptState } from "../../../lib/ai/workPromptStateMachine";
+import type { WorkPromptState } from "../../../lib/ai/workPromptStateMachine";
 import type { ConsumerRepairAiDraft } from "../../../lib/consumerRequests";
 import { ExtractedParamsChips } from "./ExtractedParamsChips";
 import { WorkTemplateSuggestions } from "./WorkTemplateSuggestions";
@@ -43,6 +43,9 @@ export function buildWorkEstimatePromptFieldState(input: {
   previousState?: WorkPromptState | null;
   draft?: ConsumerRepairAiDraft | null;
 }): WorkPromptState {
+  const { deriveWorkPromptState } = require(
+    "../../../lib/ai/workPromptStateMachine"
+  ) as typeof import("../../../lib/ai/workPromptStateMachine");
   return deriveWorkPromptState({
     rawInput: input.value,
     selectedTemplateId: input.selectedWork?.selectedWorkKey,
@@ -50,6 +53,61 @@ export function buildWorkEstimatePromptFieldState(input: {
     previousState: input.previousState,
     draftReady: Boolean(input.draft && input.draft.items.length > 0),
   });
+}
+
+function shouldUseLightweightPromptState(value: string): boolean {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (!normalized) return true;
+  const wordCount = normalized.split(" ").filter(Boolean).length;
+  return (
+    wordCount >= 6 ||
+    /\b\d+(?:[,.]\d+)?\s*(?:м2|м²|м3|м³|м|км|мм|см|шт|этаж(?:ей|а)?|квт|мвт|ква|dn\d+|d\d+)\b/iu.test(
+      normalized,
+    )
+  );
+}
+
+function buildLightweightPromptState(input: {
+  value: string;
+  selectedWork?: GlobalSelectedWorkBinding | null;
+  draft?: ConsumerRepairAiDraft | null;
+}): WorkPromptState {
+  const rawInput = input.value;
+  const selectedTemplateId = input.selectedWork?.selectedWorkKey ?? null;
+  const selectedTemplateName = input.selectedWork?.selectedTitleRu ?? null;
+  return {
+    status: input.draft?.items.length
+      ? "DRAFT_READY"
+      : rawInput.trim()
+        ? selectedTemplateId
+          ? "TEMPLATE_SELECTED"
+          : "TYPING_WORK"
+        : "IDLE",
+    rawInput,
+    selectedTemplateId,
+    selectedTemplateName,
+    parseResult: {
+      rawInput,
+      matchedTemplate: null,
+      candidateTemplates: [],
+      paramText: rawInput.trim(),
+      extractedParams: {},
+      rawInputFacts: [],
+      rawInputFactExtraction: {
+        raw_input: rawInput,
+        facts: [],
+        metrics: {
+          explicit_input_facts_ignored: 0,
+          explicit_input_unit_mismatches: 0,
+          explicit_input_facts_overwritten_by_default: 0,
+        },
+      },
+      assumptions: [],
+      missingInputs: [],
+      canBuildPreliminaryEstimate: false,
+      mustAskUserToSelectTemplate: false,
+    },
+  };
 }
 
 export function buildWorkEstimatePromptFieldViewModel(input: {
@@ -97,7 +155,14 @@ export function WorkEstimatePromptField({
   onSelectLegacyWorkSuggestion,
   onSelectTemplateCandidate,
 }: WorkEstimatePromptFieldProps): React.ReactElement {
-  const state = buildWorkEstimatePromptFieldState({ value, selectedWork, previousState, draft });
+  const state = shouldUseLightweightPromptState(value)
+    ? buildLightweightPromptState({ value, selectedWork, draft })
+    : buildWorkEstimatePromptFieldState({
+        value,
+        selectedWork,
+        previousState,
+        draft,
+      });
   const model = buildWorkEstimatePromptFieldViewModel({ state, draft });
   const candidateTemplates = state.parseResult.matchedTemplate
     ? []

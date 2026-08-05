@@ -21,6 +21,7 @@ export type DocumentAsset = {
   uri: string;
   fileSource: PdfSource;
   sourceKind: PdfSourceKind;
+  objectUrlOwnership?: "document-session";
   fileName: string;
   title: string;
   mimeType: "application/pdf";
@@ -188,13 +189,27 @@ const sessionExpired = (session: DocumentSession) => {
   return Date.now() - ts > SESSION_TTL_MS;
 };
 
+function releaseDocumentAsset(asset: DocumentAsset | undefined): void {
+  if (
+    asset?.objectUrlOwnership === "document-session"
+    && getUriScheme(asset.uri) === "blob"
+    && typeof URL !== "undefined"
+    && typeof URL.revokeObjectURL === "function"
+  ) {
+    URL.revokeObjectURL(asset.uri);
+  }
+}
+
 const evictSession = (sessionId: string) => {
   const session = sessions.get(sessionId);
   if (!session) return;
   sessions.delete(sessionId);
   const assetId = session.assetId;
   const assetStillUsed = Array.from(sessions.values()).some((row) => row.assetId === assetId);
-  if (!assetStillUsed) assets.delete(assetId);
+  if (!assetStillUsed) {
+    releaseDocumentAsset(assets.get(assetId));
+    assets.delete(assetId);
+  }
 };
 
 export function cleanupExpiredDocumentSessions() {
@@ -218,11 +233,13 @@ export function cleanupExpiredDocumentSessions() {
       (asset) => !Array.from(sessions.values()).some((session) => session.assetId === asset.assetId),
     );
     if (!unusedAsset) break;
+    releaseDocumentAsset(unusedAsset);
     assets.delete(unusedAsset.assetId);
   }
 }
 
 export function clearDocumentSessions() {
+  for (const asset of assets.values()) releaseDocumentAsset(asset);
   sessions.clear();
   assets.clear();
 }
@@ -454,6 +471,7 @@ export function createInMemoryDocumentPreviewSession(
     uri: doc.uri,
     fileSource: doc.fileSource,
     sourceKind: doc.fileSource.kind,
+    objectUrlOwnership: doc.objectUrlOwnership,
     fileName: doc.fileName,
     title: doc.title,
     mimeType: doc.mimeType,
@@ -465,6 +483,53 @@ export function createInMemoryDocumentPreviewSession(
   };
   assets.set(assetId, asset);
   const session = createDocumentSession(asset, "ready");
+  return { session, asset };
+}
+
+export function restoreInMemoryDocumentPreviewSession(input: {
+  sessionId: string;
+  doc: DocumentDescriptor;
+  sessionCreatedAt?: string;
+}): { session: DocumentSession; asset: DocumentAsset } {
+  cleanupExpiredDocumentSessions();
+  const sessionId = String(input.sessionId || "").trim();
+  if (!sessionId) throw new Error("Document preview session id is empty.");
+
+  const existing = getDocumentSessionSnapshot(sessionId);
+  if (existing.session && existing.asset) {
+    return {
+      session: existing.session,
+      asset: existing.asset,
+    };
+  }
+
+  const assetId = makeId("asset");
+  const asset: DocumentAsset = {
+    assetId,
+    uri: input.doc.uri,
+    fileSource: input.doc.fileSource,
+    sourceKind: input.doc.fileSource.kind,
+    objectUrlOwnership: input.doc.objectUrlOwnership,
+    fileName: input.doc.fileName,
+    title: input.doc.title,
+    mimeType: input.doc.mimeType,
+    documentType: input.doc.documentType,
+    originModule: input.doc.originModule,
+    source: input.doc.source,
+    createdAt: input.doc.createdAt || nowIso(),
+    entityId: input.doc.entityId,
+  };
+  const createdAt = input.sessionCreatedAt || nowIso();
+  const session: DocumentSession = {
+    sessionId,
+    assetId,
+    status: "ready",
+    createdAt,
+    lastAccessAt: nowIso(),
+  };
+  assets.set(assetId, asset);
+  sessions.set(sessionId, session);
+  cleanupExpiredDocumentSessions();
   return { session, asset };
 }
 

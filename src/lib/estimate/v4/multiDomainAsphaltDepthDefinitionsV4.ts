@@ -3,7 +3,7 @@ import type {
   ReferenceBoqRowV4,
   ReferenceFormulaNodeV4,
   ReferenceParameterV4,
-} from "./multiDomainReferencePassportsV4";
+} from "./multiDomainReferenceTypesV4";
 
 export type AsphaltDepthDefinitionV4 = {
   parameters: readonly ReferenceParameterV4[];

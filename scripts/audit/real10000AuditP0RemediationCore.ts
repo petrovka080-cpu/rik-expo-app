@@ -24,15 +24,27 @@ export const REAL10000_P0_REMEDIATION_DIR = path.join(
   "S_REAL_10000_AUDIT_P0_REMEDIATION",
 );
 
+function real10000P0RemediationOutputDir(): string {
+  const workerId = process.env.JEST_WORKER_ID;
+  if (!workerId || process.env.VERIFICATION_CANONICAL_WRITE === "1") return REAL10000_P0_REMEDIATION_DIR;
+  return path.join(
+    process.cwd(),
+    ".release-runtime",
+    "test-evidence",
+    `jest-${workerId}-pid-${process.pid}`,
+    "S_REAL_10000_AUDIT_P0_REMEDIATION",
+  );
+}
+
 type JsonRecord = Record<string, unknown>;
 
 function ensureDir(): void {
-  fs.mkdirSync(REAL10000_P0_REMEDIATION_DIR, { recursive: true });
+  fs.mkdirSync(real10000P0RemediationOutputDir(), { recursive: true });
 }
 
 export function writeReal10000P0RemediationJson(name: string, value: unknown): void {
   ensureDir();
-  fs.writeFileSync(path.join(REAL10000_P0_REMEDIATION_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  fs.writeFileSync(path.join(real10000P0RemediationOutputDir(), name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 function readSourceJson<T>(name: string, fallback: T): T {
@@ -40,7 +52,10 @@ function readSourceJson<T>(name: string, fallback: T): T {
 }
 
 function writeSourceJson(name: string, value: unknown): void {
-  fs.writeFileSync(path.join(REAL10000_AUDIT_SOURCE_DIR, name), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  if (process.env.JEST_WORKER_ID && process.env.VERIFICATION_CANONICAL_WRITE !== "1") return;
+  const outputPath = path.join(REAL10000_AUDIT_SOURCE_DIR, name);
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 function boolEnv(name: string): boolean {
@@ -48,6 +63,8 @@ function boolEnv(name: string): boolean {
 }
 
 function readRemediationJson<T>(name: string, fallback: T): T {
+  const runtimePath = path.join(real10000P0RemediationOutputDir(), name);
+  if (fs.existsSync(runtimePath)) return readJsonFile(runtimePath, fallback);
   return readJsonFile(path.join(REAL10000_P0_REMEDIATION_DIR, name), fallback);
 }
 
@@ -126,7 +143,10 @@ export function runSelfValidatingMatrixRemediationAudit(): JsonRecord {
   return result;
 }
 
-export function refreshReal10000InfrastructureRuntimeEvidence(): JsonRecord {
+function buildReal10000InfrastructureRuntimeEvidence(): {
+  result: JsonRecord;
+  runtimeResults: JsonRecord[];
+} {
   const runtime = readSourceJson<JsonRecord[]>("runtime_results.json", []);
   const boqQuality = readSourceJson<JsonRecord[]>("boq_quality_results.json", []);
   const affectedDomains = new Set(["paving_stone_paths", "drainage_channels"]);
@@ -176,7 +196,11 @@ export function refreshReal10000InfrastructureRuntimeEvidence(): JsonRecord {
     refreshed_failures: byDomain.filter((item) => Array.isArray(item.failures) && item.failures.length > 0),
   };
   writeReal10000P0RemediationJson("fixed_infrastructure_depth.json", result);
-  return result;
+  return { result, runtimeResults: refreshedRuntime };
+}
+
+export function refreshReal10000InfrastructureRuntimeEvidence(): JsonRecord {
+  return buildReal10000InfrastructureRuntimeEvidence().result;
 }
 
 function evaluatePrompt(params: {
@@ -340,12 +364,13 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
   const beforeHoles = resolveBeforeHoles();
   writeReal10000P0RemediationJson("before_holes.json", beforeHoles);
 
-  const infrastructure = refreshReal10000InfrastructureRuntimeEvidence();
+  const infrastructureRefresh = buildReal10000InfrastructureRuntimeEvidence();
+  const infrastructure = infrastructureRefresh.result;
   const golden = runP0GoldenPromptRemediationAudit();
   const exactPrompt = runExactPromptLookupRemediationAudit();
   const selfValidating = runSelfValidatingMatrixRemediationAudit();
 
-  const afterResults = runAllReal10000EstimateAuditPhases();
+  const afterResults = runAllReal10000EstimateAuditPhases({ runtimeResults: infrastructureRefresh.runtimeResults });
   const afterMatrix = buildReal10000EstimateAuditMatrix(afterResults);
   const afterHoles = afterResults.flatMap((item) => item.holes);
   writeReal10000AuditJson("phase_results.json", afterResults);
@@ -501,7 +526,7 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
     `Fake green claimed: ${String(matrix.fake_green_claimed)}`,
     "",
   ].join("\n");
-  fs.writeFileSync(path.join(REAL10000_P0_REMEDIATION_DIR, "proof.md"), proof, "utf8");
+  fs.writeFileSync(path.join(real10000P0RemediationOutputDir(), "proof.md"), proof, "utf8");
 
   return { matrix, failures, infrastructure, golden, exactPrompt, selfValidating, afterMatrix };
 }

@@ -82,6 +82,22 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).toContain("console_actionable_warnings");
     expect(runnerSource).toContain("console_known_framework_warnings");
     expect(runnerSource).toContain("result.console_actionable_warnings.length === 0");
+    expect(runnerSource).toContain("async function closeRolePage(rolePage)");
+    expect(runnerSource).toContain('removeAllListeners("console")');
+    expect(runnerSource).toContain("await rolePage.page.waitForTimeout(500)");
+    expect(runnerSource).toContain(
+      'await page.waitForLoadState("networkidle", { timeout: 30_000 })',
+    );
+    const teardown = runnerSource.slice(
+      runnerSource.indexOf("async function closeRolePage(rolePage)"),
+      runnerSource.indexOf("async function openForemanMaterials"),
+    );
+    expect(teardown.indexOf('removeAllListeners("console")')).toBeLessThan(
+      teardown.indexOf("waitForTimeout(500)"),
+    );
+    expect(teardown.indexOf("waitForTimeout(500)")).toBeLessThan(
+      teardown.indexOf("context.close()"),
+    );
     expect(runnerSource).toContain("runBackOfficeRoleSurfaces");
     expect(runnerSource).toContain("warehouse-tab-stock");
     expect(runnerSource).toContain("contractor-work-card-");
@@ -98,8 +114,14 @@ describe("office market live web E2E harness contract", () => {
     expect(docsSource).toContain("DO_NOT_GREEN_ROUTE_ONLY");
     expect(runnerSource).toContain("marketplace_item_scope_detail_v1");
     expect(runnerSource).toContain("erp_items_json");
+    expect(runnerSource).toContain("detail.data?.items_json");
+    expect(runnerSource).toContain("published market listing contains an unverified catalog identity");
+    expect(runnerSource).toContain('.from("catalog_items")');
+    expect(runnerSource).toContain('.in("rik_code", catalogCodes)');
+    expect(runnerSource).toContain("MARKET_ADD_MEDIA_LIMITS.maxPhotos");
     expect(runnerSource).toContain("marketplace.media.entrypoints.suggestion.change");
     expect(runnerSource).toContain("marketplace.media.entrypoints.suggestion.remove");
+    expect(runnerSource).toContain("market_feed_card_image_${listing.id}_0");
     expect(runnerSource).toContain('const readdPhotoButton = byTestId(page, "marketplace.media.entrypoints.gallery_photo_button").first();');
     expect(runnerSource).not.toContain("openMarketplaceMediaPicker");
     expect(runnerSource).toContain("/add?returnTo=market-my-listings");
@@ -127,5 +149,6 @@ describe("office market live web E2E harness contract", () => {
     expect(runnerSource).not.toMatch(/eas\s+(build|submit|update)/i);
     expect(runnerSource).not.toMatch(/release:verify|release:freeze|release_started\s*:\s*true/);
     expect(runnerSource).not.toMatch(/native_build_started\s*:\s*true|eas_started\s*:\s*true/);
+    expect(runnerSource).toContain("supabase_realtime_socket_closed_during_role_context_teardown");
   });
 });

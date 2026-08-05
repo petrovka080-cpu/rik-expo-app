@@ -69,6 +69,7 @@ jest.mock("../supabaseClient", () => ({
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   hasPersistedAuthSessionHint: (...args: unknown[]) =>
     mockHasPersistedAuthSessionHint(...args),
+  isSupabaseEnvValid: true,
   supabase: {
     auth: {
       onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),

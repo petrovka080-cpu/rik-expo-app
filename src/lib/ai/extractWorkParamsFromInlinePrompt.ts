@@ -1,4 +1,4 @@
-import { repairGlobalWorkMojibakeRu } from "./globalEstimate";
+import { repairGlobalWorkMojibakeRu } from "./globalEstimate/globalWorkSmartSearch";
 
 export type InlineWorkPromptExtractedParam = {
   value: number | string | boolean;
@@ -18,6 +18,10 @@ export type InlineWorkPromptExtractedParams = Record<string, InlineWorkPromptExt
 
 const DECIMAL = "(\\d+(?:[,.]\\d+)?)";
 const LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)";
+const POSITIVE_DECIMAL = "(?<![\\d-])(\\d+(?:[,.]\\d+)?)";
+const OPTIONAL_LINEAR_UNIT = "(км|km|мм|mm|см|cm|м|m|метр|метра|метров|meter|meters)?";
+const LENGTH_LABEL = "(?:длин(?:а|ой|у|ы)?|протяженн(?:ость|остью)|length)";
+const WIDTH_LABEL = "(?:ширин(?:а|ой|у|ы)?|width)";
 
 export function normalizeInlineWorkPromptText(value: string | null | undefined): string {
   return repairGlobalWorkMojibakeRu(String(value ?? ""))
@@ -54,6 +58,8 @@ function setParam(
     sourceText: string;
     confidence?: number;
     overwrite?: boolean;
+    requiresConfirmation?: boolean;
+    affectedFormulas?: string[];
   },
 ): void {
   if (!input.overwrite && params[key]) return;
@@ -63,6 +69,8 @@ function setParam(
     canonicalUnit: input.canonicalUnit,
     sourceText: input.sourceText.trim(),
     confidence: input.confidence ?? 0.92,
+    ...(input.requiresConfirmation ? { requiresConfirmation: true } : {}),
+    ...(input.affectedFormulas ? { affectedFormulas: [...input.affectedFormulas] } : {}),
   };
 }
 
@@ -89,16 +97,56 @@ function extractKeywordLinear(
   target: "m" | "mm",
   params: InlineWorkPromptExtractedParams,
 ): void {
-  const pattern = new RegExp(`(?:${keywordPattern})\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu");
-  const match = pattern.exec(text);
-  const value = parseNumber(match?.[1]);
-  if (value == null) return;
-  const unit = match?.[2] ?? (target === "m" ? "м" : "мм");
-  const converted = target === "m" ? toMeters(value, unit) : toMillimeters(value, unit);
-  setParam(params, key, round(converted), {
-    unit,
-    canonicalUnit: target,
-    sourceText: match?.[0] ?? "",
+  const patterns = [
+    new RegExp(`(?:${keywordPattern})\\s*(?:=|:)?\\s*${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}`, "iu"),
+    new RegExp(`${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}\\s*(?:${keywordPattern})`, "iu"),
+  ];
+  for (const pattern of patterns) {
+    const match = pattern.exec(text);
+    const value = parseNumber(match?.[1]);
+    if (value == null || value <= 0) continue;
+    const unit = match?.[2] ?? (target === "m" ? "м" : "мм");
+    const converted = target === "m" ? toMeters(value, unit) : toMillimeters(value, unit);
+    setParam(params, key, round(converted), {
+      unit,
+      canonicalUnit: target,
+      sourceText: match?.[0] ?? "",
+    });
+    return;
+  }
+}
+
+function hasPlanGeometryContext(text: string): boolean {
+  return /(?:асфальт|дорог|проезж|покрыти|площадк|тротуар|парков|road|pavement)/iu.test(text);
+}
+
+function extractPlanDimensionPair(
+  text: string,
+  params: InlineWorkPromptExtractedParams,
+): void {
+  if (!hasPlanGeometryContext(text)) return;
+  const pair = new RegExp(
+    `${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}\\s*(?:x|на)\\s*${POSITIVE_DECIMAL}\\s*${OPTIONAL_LINEAR_UNIT}`,
+    "iu",
+  ).exec(text);
+  if (!pair) return;
+  const length = parseNumber(pair[1]);
+  const width = parseNumber(pair[3]);
+  if (length == null || width == null || length <= 0 || width <= 0) return;
+  const sharedUnit = pair[4] ?? pair[2] ?? "м";
+  const lengthUnit = pair[2] ?? sharedUnit;
+  const widthUnit = pair[4] ?? sharedUnit;
+  setParam(params, "length_m", round(toMeters(length, lengthUnit)), {
+    unit: lengthUnit,
+    canonicalUnit: "m",
+    sourceText: pair[0],
+    confidence: 0.9,
+  });
+  setParam(params, "width_m", round(toMeters(width, widthUnit)), {
+    unit: widthUnit,
+    canonicalUnit: "m",
+    sourceText: pair[0],
+    confidence: 0.9,
   });
 }
 
@@ -112,7 +160,7 @@ function extractKeywordLinearWithMiddleWords(
   const pattern = new RegExp(`(?:${keywordPattern})(?:\\s+[\\p{L}-]+){0,3}\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu");
   const match = pattern.exec(text);
   const value = parseNumber(match?.[1]);
-  if (value == null) return;
+  if (value == null || value <= 0) return;
   const unit = match?.[2] ?? (target === "m" ? "м" : "мм");
   const converted = target === "m" ? toMeters(value, unit) : toMillimeters(value, unit);
   setParam(params, key, round(converted), {
@@ -135,7 +183,7 @@ function extractNamedCount(
   for (const pattern of patterns) {
     const match = pattern.exec(text);
     const value = parseNumber(match?.[1]);
-    if (value == null) continue;
+    if (value == null || value <= 0) continue;
     setParam(params, key, Math.max(1, Math.round(value)), {
       unit: "pcs",
       canonicalUnit: "pcs",
@@ -154,7 +202,7 @@ function extractArea(text: string, params: InlineWorkPromptExtractedParams): voi
   for (const pattern of patterns) {
     const match = pattern.exec(text);
     const value = parseNumber(match?.[1]);
-    if (value == null) continue;
+    if (value == null || value <= 0) continue;
     setParam(params, "area_m2", round(value), {
       unit: "m2",
       canonicalUnit: "m2",
@@ -172,7 +220,7 @@ function extractVolume(text: string, params: InlineWorkPromptExtractedParams): v
   for (const pattern of patterns) {
     const match = pattern.exec(text);
     const value = parseNumber(match?.[1]);
-    if (value == null) continue;
+    if (value == null || value <= 0) continue;
     setParam(params, "volume_m3", round(value), {
       unit: "m3",
       canonicalUnit: "m3",
@@ -216,7 +264,7 @@ function extractDiameter(text: string, params: InlineWorkPromptExtractedParams):
   const pipe = /(?:^|\s)(?:труба|трубы|трубопровод|пнд|пэ|pnd|hdpe)\s+(?:пнд\s+|пэ\s+|pnd\s+|hdpe\s+)?(\d{2,4})(?:\s|$)/iu.exec(text);
   const rawValue = shorthand?.[1] ?? keyword?.[1] ?? pipe?.[1];
   const value = parseNumber(rawValue);
-  if (value == null) return;
+  if (value == null || value <= 0) return;
   const unit = keyword?.[2] ?? "мм";
   setParam(params, "diameter_mm", round(toMillimeters(value, unit)), {
     unit,
@@ -226,6 +274,7 @@ function extractDiameter(text: string, params: InlineWorkPromptExtractedParams):
 }
 
 function extractCableSection(text: string, params: InlineWorkPromptExtractedParams): void {
+  if (hasPlanGeometryContext(text)) return;
   const match = /\b(\d+)\s*x\s*(\d+(?:[,.]\d+)?)\b/iu.exec(text);
   if (!match) return;
   setParam(params, "cable_section", `${match[1]}x${match[2].replace(",", ".")}`, {
@@ -261,7 +310,7 @@ function extractElectrical(text: string, params: InlineWorkPromptExtractedParams
 function extractPoleStep(text: string, params: InlineWorkPromptExtractedParams): void {
   const match = new RegExp(`(?:опор(?:ы)?\\s+через|шаг\\s+опор)\\s*(?:=|:)?\\s*${DECIMAL}\\s*${LINEAR_UNIT}?`, "iu").exec(text);
   const value = parseNumber(match?.[1]);
-  if (value == null) return;
+  if (value == null || value <= 0) return;
   const unit = match?.[2] ?? "м";
   setParam(params, "pole_step_m", round(toMeters(value, unit)), {
     unit,
@@ -272,9 +321,9 @@ function extractPoleStep(text: string, params: InlineWorkPromptExtractedParams):
 }
 
 function extractGenericLinear(text: string, params: InlineWorkPromptExtractedParams): void {
-  const km = new RegExp(`${DECIMAL}\\s*(?:км|km)(?=\\s|$|[,.;])`, "iu").exec(text);
+  const km = new RegExp(`${POSITIVE_DECIMAL}\\s*(?:км|km)(?=\\s|$|[,.;])`, "iu").exec(text);
   const kmValue = parseNumber(km?.[1]);
-  if (kmValue != null) {
+  if (kmValue != null && kmValue > 0) {
     const meters = round(kmValue * 1000);
     setParam(params, "length_m", meters, {
       unit: "km",
@@ -290,9 +339,9 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
     });
   }
 
-  const bareCm = new RegExp(`${DECIMAL}\\s*(?:см|cm)(?=\\s|$|[,.;])`, "iu").exec(text);
+  const bareCm = new RegExp(`${POSITIVE_DECIMAL}\\s*(?:см|cm)(?=\\s|$|[,.;])`, "iu").exec(text);
   const bareCmValue = parseNumber(bareCm?.[1]);
-  if (bareCmValue != null && !params.depth_mm && !params.thickness_m) {
+  if (bareCmValue != null && bareCmValue > 0 && !params.depth_mm && !params.thickness_m) {
     setParam(params, "depth_mm", round(bareCmValue * 10), {
       unit: "cm",
       canonicalUnit: "mm",
@@ -301,7 +350,7 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
     });
   }
 
-  const meterValues = [...text.matchAll(new RegExp(`${DECIMAL}\\s*(?:м|m|метр|метра|метров)(?=\\s|$|[,.;])`, "giu"))];
+  const meterValues = [...text.matchAll(new RegExp(`${POSITIVE_DECIMAL}\\s*(?:м|m|метр|метра|метров)(?=\\s|$|[,.;])`, "giu"))];
   const semanticLinearParams = [
     params.line_length_m,
     params.width_m,
@@ -328,7 +377,7 @@ function extractGenericLinear(text: string, params: InlineWorkPromptExtractedPar
   });
   if (!params.length_m && unclaimedMeterValue) {
     const value = parseNumber(unclaimedMeterValue[1]);
-    if (value != null) {
+    if (value != null && value > 0) {
       setParam(params, "length_m", round(value), {
         unit: "m",
         canonicalUnit: "m",
@@ -348,10 +397,53 @@ function extractMode(text: string, params: InlineWorkPromptExtractedParams): voi
   });
 }
 
+function extractPowerCapacity(text: string, params: InlineWorkPromptExtractedParams): void {
+  const match = /(?:мощност[ьи]|capacity_mw|power)\s*(?:=|:)?\s*(\d+(?:[,.]\d+)?)\s*(мвт|mw|квт|kw)\b/iu.exec(text);
+  const value = parseNumber(match?.[1]);
+  if (value == null || value <= 0) return;
+  const unit = String(match?.[2] ?? "").toLocaleLowerCase("ru-RU");
+  const capacityMw = unit === "квт" || unit === "kw" ? value / 1000 : value;
+  setParam(params, "capacity_mw", round(capacityMw), {
+    unit: "MW",
+    canonicalUnit: "MW",
+    sourceText: match?.[0] ?? "",
+    confidence: 0.95,
+  });
+}
+
 function addDerivedParams(params: InlineWorkPromptExtractedParams): void {
   const length = typeof params.length_m?.value === "number" ? params.length_m.value : null;
+  const width = typeof params.width_m?.value === "number" ? params.width_m.value : null;
   const height = typeof params.height_m?.value === "number" ? params.height_m.value : null;
   const thickness = typeof params.thickness_m?.value === "number" ? params.thickness_m.value : null;
+  if (length != null && width != null) {
+    const derivedArea = round(length * width);
+    const explicitArea =
+      typeof params.area_m2?.value === "number" &&
+      params.area_m2.sourceText !== "length_m * width_m"
+        ? params.area_m2.value
+        : null;
+    if (
+      explicitArea != null &&
+      Math.abs(explicitArea - derivedArea) > Math.max(0.01, derivedArea * 0.0001)
+    ) {
+      for (const key of ["area_m2", "length_m", "width_m"]) {
+        if (!params[key]) continue;
+        params[key] = {
+          ...params[key],
+          requiresConfirmation: true,
+          affectedFormulas: ["area_m2 = length_m * width_m"],
+        };
+      }
+    }
+    setParam(params, "area_m2", round(length * width), {
+      unit: "m2",
+      canonicalUnit: "m2",
+      sourceText: "length_m * width_m",
+      confidence: 0.9,
+      overwrite: false,
+    });
+  }
   if (length != null && height != null && thickness != null) {
     setParam(params, "volume_m3", round(length * height * thickness), {
       unit: "m3",
@@ -360,6 +452,27 @@ function addDerivedParams(params: InlineWorkPromptExtractedParams): void {
       confidence: 0.9,
       overwrite: false,
     });
+  }
+}
+
+function markImplausiblePlanGeometry(
+  text: string,
+  params: InlineWorkPromptExtractedParams,
+): void {
+  if (!hasPlanGeometryContext(text)) return;
+  const outliers = [
+    ["length_m", 1_000_000],
+    ["width_m", 200],
+    ["area_m2", 100_000_000],
+  ] as const;
+  for (const [key, upperBound] of outliers) {
+    const parameter = params[key];
+    if (typeof parameter?.value !== "number" || parameter.value <= upperBound) continue;
+    params[key] = {
+      ...parameter,
+      requiresConfirmation: true,
+      affectedFormulas: [...new Set([...(parameter.affectedFormulas ?? []), "plan_geometry"])],
+    };
   }
 }
 
@@ -374,9 +487,10 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractKeywordLinearWithMiddleWords(text, "trench_depth_m", "глубин[аы]\\s+транше[а-я]*|trench\\s+depth", "m", params);
   extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "толщин[аы]\\s+утеплител[а-я]*|утеплител[а-я]*|insulation\\s+thickness", "mm", params);
   extractKeywordLinearWithMiddleWords(text, "insulation_thickness_mm", "утеплени[а-я]*|теплоизоляци[а-я]*", "mm", params);
-  extractKeywordLinear(text, "length_m", "длина|протяженность|length", "m", params);
+  extractKeywordLinearWithMiddleWords(text, "channel_length_m", "длин[аы]\\s+канал[а-я]*|channel\\s+length|channel_length_m", "m", params);
+  extractKeywordLinear(text, "length_m", LENGTH_LABEL, "m", params);
   extractKeywordLinear(text, "line_length_m", "длина\\s+линии|трасса|line\\s+length", "m", params);
-  extractKeywordLinear(text, "width_m", "ширина|width", "m", params);
+  extractKeywordLinear(text, "width_m", WIDTH_LABEL, "m", params);
   extractKeywordLinear(text, "height_m", "высота|height", "m", params);
   extractKeywordLinear(text, "thickness_m", "толщина|thickness", "m", params);
   extractKeywordLinear(text, "depth_mm", "глубина|depth", "mm", params);
@@ -386,9 +500,12 @@ export function extractWorkParamsFromInlinePrompt(rawInput: string): InlineWorkP
   extractConstructionCounts(text, params);
   extractElectrical(text, params);
   extractPoleStep(text, params);
+  extractPowerCapacity(text, params);
   extractMode(text, params);
+  extractPlanDimensionPair(text, params);
   extractGenericLinear(text, params);
   addDerivedParams(params);
+  markImplausiblePlanGeometry(text, params);
 
   return params;
 }

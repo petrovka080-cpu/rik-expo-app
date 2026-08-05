@@ -7,6 +7,16 @@ describe("Android API34 canonical replay app-root evidence", () => {
       path.join(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
       "utf8",
     );
+  const aiRouteSource = () =>
+    fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/ai.tsx"),
+      "utf8",
+    );
+  const requestRouteSource = () =>
+    fs.readFileSync(
+      path.join(process.cwd(), "app/(tabs)/request/index.tsx"),
+      "utf8",
+    );
 
   it("does not let a transient first dev-client load error override later proven root-marker evidence", () => {
     const runner = source();
@@ -26,7 +36,11 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).toContain("function appRootProofReady");
     expect(runner).toContain("function requestRouteProofReady");
     expect(runner).toContain("function appRootOrAuthReady");
-    expect(runner).toContain("ready: appRootOrAuthReady");
+    expect(runner).toContain("function authenticatedAppRootOrAuthReady");
+    expect(runner).toContain("const ready = requireAuthenticatedSession");
+    expect(runner).toContain("? authenticatedAppRootOrAuthReady");
+    expect(runner).toContain(": appRootOrAuthReady");
+    expect(runner).toContain("ready,");
     expect(runner).toContain("if (isAuthLoginCapture(root)) break");
     expect(runner).toContain("const rootMarkerProven = appRootProofReady(root)");
     expect(runner).toContain("appRootMarkerProven = appRootProofReady(root)");
@@ -60,6 +74,48 @@ describe("Android API34 canonical replay app-root evidence", () => {
     );
   });
 
+  it("does not accept a static AI history surface as proof that the current launch payload was applied", () => {
+    const runner = source();
+
+    expect(runner).toContain("function aiLaunchPayloadApplied");
+    expect(runner).toContain('xml.includes(\'resource-id="ai.assistant.loading"\')');
+    expect(runner).toContain('xml.includes(\'resource-id="ai.assistant.response"\')');
+    expect(runner).toContain("function caseLaunchReadyForCase");
+    expect(runner).toMatch(
+      /testCase\.route !== "\/ai\?context=foreman"\s*\|\|\s*aiLaunchPayloadApplied\(screen\.xml\)/s,
+    );
+    expect(runner).not.toContain(
+      'xml.includes(\'resource-id="ai.assistant.response.history"\')',
+    );
+  });
+
+  it("binds request and AI readiness to the exact launch identity from each URI candidate", () => {
+    const runner = source();
+    const aiRoute = aiRouteSource();
+    const requestRoute = requestRouteSource();
+
+    expect(runner).toContain("function launchReadyMarkerForUri");
+    expect(runner).toContain("launchCandidateSequence += 1");
+    expect(runner).toContain('query.set("launchId", launchId)');
+    expect(runner).toContain(
+      '!screen.xml.includes(`resource-id="${expectedLaunchMarker}"`)',
+    );
+    expect(aiRoute).toContain(
+      "buildRequestEstimateLaunchReadyMarkerId(",
+    );
+    expect(aiRoute).toContain("launchPayload.launchId");
+    expect(requestRoute).toContain(
+      "buildRequestEstimateLaunchReadyMarkerId(launchId)",
+    );
+  });
+
+  it("remounts the AI assistant when a new warm-launch payload arrives", () => {
+    const route = aiRouteSource();
+
+    expect(route).toContain('key={launchPayload?.launchId ?? "direct"}');
+    expect(route).toContain("launchPayload={launchPayload}");
+  });
+
   it("does not report completed Android AI output as an unsubmitted prompt", () => {
     const runner = source();
 
@@ -72,10 +128,17 @@ describe("Android API34 canonical replay app-root evidence", () => {
     expect(runner).not.toContain("prompt_submitted: routeMarkerProven");
   });
 
-  it("uses only registered canonical route URIs during canonical replay", () => {
+  it("uses only the device-proven AI URI and its registered historical fallback during canonical replay", () => {
     const runner = source();
 
-    expect(runner).toContain("return [buildUri(testCase)]");
+    expect(runner).toContain('return `rik://ai?${query.toString()}`');
+    expect(runner).toContain('return `rik:///ai?${query.toString()}`');
+    expect(runner).toContain(
+      'buildAndroidHostUri(testCase, `${launchIdBase}-host`)',
+    );
+    expect(runner).toContain(
+      'buildUri(testCase, `${launchIdBase}-path`)',
+    );
     expect(runner).not.toContain('buildUri(testCase, "scheme")');
     expect(runner).not.toContain('buildUri(testCase, "tabs")');
     expect(runner).not.toContain('rik:///%28tabs%29/ai?${query.toString()}');

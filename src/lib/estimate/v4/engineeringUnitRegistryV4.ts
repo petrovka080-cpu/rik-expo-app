@@ -1,4 +1,5 @@
 import type { BoqCategoryV4, EngineeringDimensionV4 } from "./professionalEstimateV4Contract";
+import { getProfessionalUnitDefinition } from "../professionalUnitRegistry";
 
 export type DimensionAxisV4 =
   | "length"
@@ -33,7 +34,30 @@ const ALL_MEASURED_CATEGORIES: BoqCategoryV4[] = [
   "work", "material", "equipment", "subcontract_service", "transport", "temporary_work", "testing", "waste",
 ];
 
+function sharedUnitDefinition(
+  code: "pack" | "circuit" | "zone",
+  allowedBoqCategories: BoqCategoryV4[],
+): EngineeringUnitDefinitionV4 {
+  const definition = getProfessionalUnitDefinition(code);
+  if (!definition) throw new Error(`SHARED_PROFESSIONAL_UNIT_NOT_REGISTERED:${code}`);
+  return {
+    unit_id: definition.code,
+    symbol: definition.displayRu,
+    localized_name_ru: definition.displayNameRu,
+    dimension: definition.dimension as EngineeringDimensionV4,
+    vector: definition.dimension === "count" ? { count: 1 } : { package: 1 },
+    conversion_factor_to_si: definition.conversionFactorToSi,
+    conversion_offset_to_si: 0,
+    precision: definition.precision,
+    allowed_boq_categories: allowedBoqCategories,
+    aliases: [...definition.aliases],
+  };
+}
+
 const UNITS: EngineeringUnitDefinitionV4[] = [
+  sharedUnitDefinition("pack", ["material", "equipment", "temporary_work"]),
+  sharedUnitDefinition("circuit", ALL_MEASURED_CATEGORIES),
+  sharedUnitDefinition("zone", ALL_MEASURED_CATEGORIES),
   { unit_id: "one", symbol: "—", localized_name_ru: "безразмерная величина", dimension: "dimensionless", vector: {}, conversion_factor_to_si: 1, conversion_offset_to_si: 0, precision: 4, allowed_boq_categories: ["commercial_adjustment"], aliases: ["1", "dimensionless"] },
   { unit_id: "percent", symbol: "%", localized_name_ru: "процент", dimension: "dimensionless", vector: {}, conversion_factor_to_si: 0.01, conversion_offset_to_si: 0, precision: 2, allowed_boq_categories: ["commercial_adjustment"], aliases: ["pct", "процент", "%"] },
   { unit_id: "pcs", symbol: "шт.", localized_name_ru: "штука", dimension: "count", vector: { count: 1 }, conversion_factor_to_si: 1, conversion_offset_to_si: 0, precision: 0, allowed_boq_categories: ALL_MEASURED_CATEGORIES, aliases: ["pc", "piece", "pieces", "шт", "point"] },

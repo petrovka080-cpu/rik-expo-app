@@ -1,0 +1,45 @@
+{
+  "schema": "t8-final-r5-root-cause-fix-matrix/v1",
+  "baseline_sha": "a117116b42ff6aca597e7b2e332c88180deb0157",
+  "initial_candidate_hash": "e8fad7fd80ef75a10ae7e222f61e86d64b7ce024a7c5306b38a81177d4b10f1d",
+  "initial_terminal_failures": { "suites": 43, "assertions": 57 },
+  "clusters": [
+    {
+      "id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "initial_failed_suites": 21,
+      "owners": ["scripts/verification/requiredArtifactPreflight.ts", "scripts/verification/producers/generateRpcContractEvidence.ts", "scripts/verification/producers/generateRealtimeFanoutEvidence.ts"],
+      "fix": "Exact manifest, content-addressed hydration, schema/hash validation, deterministic missing producers, fail-fast and read-only seal.",
+      "proof": "preflight 343/343; focused RPC/realtime/preflight 4 suites and 16 tests passed"
+    },
+    {
+      "id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "initial_failed_suites": 17,
+      "owners": ["verification/v1/required-artifacts.manifest.json", "scripts/verification/requiredArtifactPreflight.ts"],
+      "fix": "Hydrate only exact attested evidence and bind every prepared artifact to schema, producer version and content SHA256.",
+      "proof": "17 suites and 19 tests passed after exact hydration"
+    },
+    {
+      "id": "PREVIOUS_BOQ_VISIBLE_LABEL_PROOF_NOT_GREEN",
+      "initial_failed_suites": 3,
+      "owners": ["verification/v1/required-artifacts.manifest.json"],
+      "fix": "Restore the exact canonical BOQ proof lineage through preflight instead of weakening label or GREEN assertions.",
+      "proof": "3 suites and 3 tests passed"
+    },
+    {
+      "id": "FLATLIST_EXACT_INVENTORY_DRIFT",
+      "initial_failed_suites": 1,
+      "owners": ["scripts/perf/generateFlatListRuntimeInventory.ts", "verification/v1/flatlist-runtime-inventory.json"],
+      "fix": "Regenerate the exact 62-instance inventory and explicitly prove the tuned ProfessionalEstimateComposer runtime instance.",
+      "proof": "1 suite and 7 tests passed; exact 62, gaps 0, duplicates 0"
+    },
+    {
+      "id": "REAL10000_P0_REMEDIATION_INCOMPLETE",
+      "initial_failed_suites": 1,
+      "owners": ["scripts/audit/real10000AuditP0RemediationCore.ts", "scripts/audit/real10000EstimateAuditCore.ts"],
+      "fix": "Use in-memory refreshed runtime evidence and PID/worker-scoped test outputs; canonical evidence remains read-only.",
+      "proof": "2 suites and 2 tests passed; after_p0_holes=0; canonical source hashes unchanged"
+    }
+  ],
+  "affected_shadow_validation": { "known_terminal_consumers": 43, "selected_known_consumers": 43, "missing_known_consumers": 0 },
+  "status": "FOCUSED_AND_AFFECTED_FUNCTIONAL_CONSUMERS_GREEN_CLEAN_SCOPE_RERUN_PENDING"
+}

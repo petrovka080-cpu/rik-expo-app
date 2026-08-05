@@ -1,0 +1,685 @@
+{
+  "schema": "t8-final-r5-initial-full-jest-failure-ledger:v1",
+  "status": "NOT_GREEN_INITIAL_TERMINAL_RED_CAPTURED",
+  "source_sha": "a117116b42ff6aca597e7b2e332c88180deb0157",
+  "source_tree_hash": "3bfaaa98686d235b4b05357653c4f251ce06c564",
+  "product_source_sha": "48fece69993197530e69647ff5f3f63ec69bdee2",
+  "candidate_hash": "e8fad7fd80ef75a10ae7e222f61e86d64b7ce024a7c5306b38a81177d4b10f1d",
+  "run": {
+    "started_at": "2026-08-03T04:33:48.689Z",
+    "ended_at": "2026-08-03T14:15:57.927Z",
+    "duration_ms": 34932846,
+    "exit_code": 1,
+    "was_interrupted": false,
+    "oom_detected": false,
+    "crash_detected": false,
+    "force_exit_requested": true,
+    "force_exit_warning_observed": true
+  },
+  "totals": {
+    "suites": {
+      "total": 5165,
+      "passed": 5122,
+      "failed": 43,
+      "skipped": 0,
+      "runtime_error": 0
+    },
+    "tests": {
+      "total": 11108,
+      "passed": 11051,
+      "failed": 57,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "terminal_artifacts": [
+    {
+      "path": "C:\\dev\\rik-expo-t8-r5-evidence\\a117116b42ff6aca597e7b2e332c88180deb0157\\initial-full-jest\\result.json",
+      "bytes": 8020700,
+      "sha256": "bab456e03107965f343816e0d35b95a728a5107806505ff19b1a587bcd5c3679"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-t8-r5-evidence\\a117116b42ff6aca597e7b2e332c88180deb0157\\initial-full-jest\\summary.json",
+      "bytes": 250,
+      "sha256": "6897d9598a99139b3bb8824e1bac7d4082f634f03cc4f67401b4012498ae6163"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-t8-r5-evidence\\a117116b42ff6aca597e7b2e332c88180deb0157\\initial-full-jest\\stderr.log",
+      "bytes": 5269594,
+      "sha256": "a48f0939d8e1a0b38e2bd42ac59bc67721b0539880e3d495e20e2868b032fc45"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-t8-r5-evidence\\a117116b42ff6aca597e7b2e332c88180deb0157\\initial-full-jest\\stdout.log",
+      "bytes": 220,
+      "sha256": "919825940c0fe74db70114cc7c78de6f77bbe4158a58b52a7524fc4223bac63a"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-t8-r5-evidence\\a117116b42ff6aca597e7b2e332c88180deb0157\\initial-full-jest\\exit_code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    }
+  ],
+  "root_cause_clusters": [
+    {
+      "id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "category": "INFRASTRUCTURE_EVIDENCE",
+      "cause": "The frozen full-Jest runner did not run a required-artifact preflight. Ignored prerequisite evidence was absent, while the older 153-suite remediation path only performed unversioned cross-worktree copying. Several RPC/realtime artifacts have consumers but no canonical source producer.",
+      "owner": "scripts/release/runFrozenFullJest.ts",
+      "producerFamilies": [
+        "MISSING_CANONICAL_PRODUCER:S_RPC_6/S_RPC_7/S_RT_6",
+        "scripts/audit/runConstructionWorkOntologyMigrationCloseout.ts",
+        "scripts/e2e/runSelectedWorkEnterpriseVisible1000RealInputAcceptance.ts",
+        "scripts/e2e/runSelectedWorkEnterprise1000PdfProof.ts",
+        "scripts/e2e/runAiEstimateCanaryEvaluationProof.ts",
+        "scripts/ai/verifyAiObservabilitySafety.ts",
+        "scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts"
+      ],
+      "proof": "Direct ENOENT failures plus runFrozenFullJest.ts having no prerequisite stage; currentCoreRemediationEvidencePrerequisites.ts is imported only by runCurrentCoreRemediation153.ts.",
+      "failed_suites": 21,
+      "failed_assertions": 35,
+      "suites": [
+        "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts",
+        "tests/api/sRpc7MutationResultEnvelopes.contract.test.ts",
+        "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+        "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts",
+        "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts",
+        "tests/canaryEvaluation/evidenceLedgerRequiresAllArtifacts.contract.test.ts",
+        "tests/canaryEvaluation/manualEstimatorReviewThreshold.contract.test.ts",
+        "tests/constructionWorkOntology/catalogItemsUntouched.contract.test.ts",
+        "tests/constructionWorkOntology/catalogLinksNoFakeReferences.contract.test.ts",
+        "tests/constructionWorkOntology/noPromptLookup.contract.test.ts",
+        "tests/constructionWorkOntology/noSecondCatalog.contract.test.ts",
+        "tests/constructionWorkOntology/productNoRegression.contract.test.ts",
+        "tests/constructionWorkOntology/repositoryReadContracts.contract.test.ts",
+        "tests/constructionWorkOntology/rlsPolicies.contract.test.ts",
+        "tests/constructionWorkOntology/standardsLicenseGuard.contract.test.ts",
+        "tests/constructionWorkOntology/workAliasesNormalization.contract.test.ts",
+        "tests/constructionWorkOntology/workDefinitionsUniqueKeys.contract.test.ts",
+        "tests/realtime/realtimeFanoutBudgetProof.contract.test.ts",
+        "tests/release/closeoutReadOnly.contract.test.ts",
+        "tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts",
+        "tests/selectedWorkEnterprise1000/selectedWorkEnterprise1000.contract.test.ts"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "category": "EVIDENCE_LINEAGE",
+      "cause": "Final-readiness and scorecard consumers evaluated missing or stale historical matrices, including a blocked enterprise release-candidate matrix, instead of an exact-SHA immutable evidence set.",
+      "owner": "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+      "producerFamilies": [
+        "scripts/audit/greenClaimArtifactReconciliation.shared.ts",
+        "scripts/audit/final50k92ScoreReaudit.shared.ts",
+        "scripts/e2e/enterpriseReleaseCandidate.shared.ts"
+      ],
+      "proof": "The terminal assertions report NO_GO/BLOCKED statuses and unsuperseded matrix paths; the ignored workspace matrices have mixed GREEN/BLOCKED lineage and no exact candidate SHA.",
+      "failed_suites": 17,
+      "failed_assertions": 17,
+      "suites": [
+        "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts",
+        "tests/architecture/finalReadinessRequiresRollbackAndKillSwitch.contract.test.ts",
+        "tests/architecture/maxArchitectureScaleRiskAuditCurrentEvidence.contract.test.ts",
+        "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts",
+        "tests/audit/final50kReadiness.contract.test.ts",
+        "tests/audit/finalScorecardEvidence.contract.test.ts",
+        "tests/audit/greenClaimArtifactConsistency.contract.test.ts",
+        "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts",
+        "tests/audit/replayVerifiedMatrices.contract.test.ts",
+        "tests/finalReadiness/aiEstimateGoNoGoMatrix.contract.test.ts",
+        "tests/finalReadiness/canaryDisabledByDefault.contract.test.ts",
+        "tests/finalReadiness/killSwitchRequired.contract.test.ts",
+        "tests/finalReadiness/liveWebJourneyRequired.contract.test.ts",
+        "tests/finalReadiness/matrixLedgerRequiresAllPrerequisitesGreen.contract.test.ts",
+        "tests/finalReadiness/observabilityRequired.contract.test.ts",
+        "tests/finalReadiness/pdfFinalProofRequired.contract.test.ts",
+        "tests/finalReadiness/rollbackRequired.contract.test.ts"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "PREVIOUS_BOQ_VISIBLE_LABEL_PROOF_NOT_GREEN",
+      "category": "EVIDENCE_PREREQUISITE",
+      "cause": "The structured-pipeline closeout cannot validate its exact-material/live-visible-label prerequisite in a clean candidate.",
+      "owner": "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+      "producerFamilies": [
+        "scripts/audit/runMultiDomainProfessionalBoqCloseout.ts",
+        "artifacts/S_MULTI_DOMAIN_PROFESSIONAL_BOQ_RECIPE_COMPILER_EXACT_MATERIALS/live_ui_visible_label_proof.json"
+      ],
+      "proof": "All three consumers return the identical PREVIOUS_LIVE_VISIBLE_LABEL_PROOF_NOT_GREEN failure code.",
+      "failed_suites": 3,
+      "failed_assertions": 3,
+      "suites": [
+        "tests/estimateStructuredPipeline/finalMatrix.contract.test.ts",
+        "tests/estimateStructuredPipeline/previousBoqExactMaterialsGreenRequired.contract.test.ts",
+        "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "FLATLIST_EXACT_INVENTORY_DRIFT",
+      "category": "PRODUCTION_INVENTORY",
+      "cause": "A tuned production FlatList was added to ProfessionalEstimateComposer after the exact 61-instance lock, producing 62 instances (8 FlatList + 54 FlashList) with zero tuning violations.",
+      "owner": "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "producerFamilies": [
+        "scripts/perf/flatListTuningRegression.ts"
+      ],
+      "proof": "Scanner output identifies src/components/estimate/ProfessionalEstimateComposer.tsx:358, added by 878fe431, as the new tuned instance; exact assertion received 62 instead of 61.",
+      "failed_suites": 1,
+      "failed_assertions": 1,
+      "suites": [
+        "tests/perf/flatListTuningRegressionScanner.contract.test.ts"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "REAL10000_P0_REMEDIATION_INCOMPLETE",
+      "category": "PRODUCT_EVIDENCE",
+      "cause": "The canonical Real10000 remediation audit still reports five P0 holes.",
+      "owner": "scripts/audit/real10000AuditP0RemediationCore.ts",
+      "producerFamilies": [
+        "scripts/audit/real10000AuditP0RemediationCore.ts"
+      ],
+      "proof": "The terminal assertion expected after_p0_holes=0 and received 5.",
+      "failed_suites": 1,
+      "failed_assertions": 1,
+      "suites": [
+        "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts"
+      ],
+      "status": "OPEN"
+    }
+  ],
+  "failed_suites": [
+    {
+      "suite": "tests/api/sRpc6HighRiskRpcValidation.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "S-RPC-6 high-risk RPC validation keeps S-RPC-6 artifacts valid",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/api/sRpc7MutationResultEnvelopes.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "S-RPC-7 mutation result envelopes keeps previous RPC waves closed and forbidden surfaces untouched",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_RPC_6_high_risk_rpc_validation_matrix.json'"
+        },
+        {
+          "full_name": "S-RPC-7 mutation result envelopes keeps S-RPC-7 artifacts valid",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "AI estimate final readiness rollout boundary keeps final readiness as an audit gate without enabling production rollout",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"GO_INTERNAL_CANARY_ONLY\"\nReceived: \"NO_GO\""
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "AI trace observability architecture keeps AI trace recording redacted, bounded, and provider-free",
+          "expected_actual": "Error: expect(received).toMatchObject(expected)\n\n- Expected  - 1\n+ Received  + 1\n\n  Object {\n    \"name\": \"ai_trace_observability\",\n-   \"status\": \"pass\",\n+   \"status\": \"fail\",\n  }"
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/finalReadinessRequiresRollbackAndKillSwitch.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires rollback and kill switch readiness together",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/maxArchitectureScaleRiskAuditCurrentEvidence.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "max architecture scale risk audit current evidence uses fresh hardening-wave matrices and leaves only live-proof external P1 blockers",
+          "expected_actual": "Error: expect(received).toBeGreaterThanOrEqual(expected)\n\nExpected: >= 8.6\nReceived:    7.7"
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "no green claim without replay evidence requires replay runtime, full Jest, release verify, and fake-green=false for reconciliation green",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"GREEN_GREEN_CLAIM_ARTIFACT_RECONCILIATION_READY\"\nReceived: \"BLOCKED_GREEN_CLAIM_ARTIFACT_RECONCILIATION\""
+        }
+      ]
+    },
+    {
+      "suite": "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "no silent historical matrix mutation keeps historical matrices as history and writes only superseding matrices",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_RLS_DYNAMIC_CROSS_TENANT_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/audit/final50kReadiness.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "final 50k readiness allows 9.2 readiness only when live RLS and 50k database proofs are present",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/audit/finalScorecardEvidence.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "final 50k 9.2 scorecard evidence uses hardening-wave evidence and requires live proof evidence for live gates",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/audit/greenClaimArtifactConsistency.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "green claim artifact consistency classifies stale historical matrices through replay supersession instead of hiding them",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "release guard replay ledger policy keeps artifact reconciliation in release verify and blocks unsuperseded inconsistency",
+          "expected_actual": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 5\n\n- Array []\n+ Array [\n+   \"artifacts/S_RLS_DYNAMIC_CROSS_TENANT_matrix.json\",\n+   \"artifacts/S_ALL_SCREENS_matrix.json\",\n+   \"artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_matrix.json\",\n+ ]"
+        }
+      ]
+    },
+    {
+      "suite": "tests/audit/replayVerifiedMatrices.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "replay verified matrices carry replay proof gates and do not fake green",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/canaryEvaluation/canaryEvaluationProofArtifacts.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "canary evaluation proof artifacts are present without rerunning prerequisite-sensitive proof",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/canaryEvaluation/evidenceLedgerRequiresAllArtifacts.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "canary evaluation evidence ledger requires every internal canary artifact",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/canaryEvaluation/manualEstimatorReviewThreshold.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "manual estimator review sample meets the 300 estimate threshold",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 300\nReceived: 0"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/catalogItemsUntouched.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "does not mutate catalog_items and uses it only as an FK target for optional links",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\catalog_items_untouched_proof.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/catalogLinksNoFakeReferences.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "allows only real catalog_items references for optional work catalog links",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\repository_contract_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/noPromptLookup.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "does not add prompt lookup or hardcoded prompt answer tables",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\no_prompt_lookup_proof.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/noSecondCatalog.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "does not create a second marketplace/product catalog",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\no_second_catalog_proof.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/productNoRegression.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "keeps product UI, request, foreman, history, and PDF source-of-truth outside this migration",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\product_no_regression_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/repositoryReadContracts.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "exposes read-only repository primitives without semantic search, OpenSearch, or LLM resolver behavior",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\repository_contract_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/rlsPolicies.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "enables RLS and keeps anonymous writes closed for every new table",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\rls_policy_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/standardsLicenseGuard.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "uses internal/custom classification codes and blocks unlicensed official CSI claims",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\standards_license_guard.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/workAliasesNormalization.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "normalizes construction work aliases without AI calls",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\normalization_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/constructionWorkOntology/workDefinitionsUniqueKeys.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "seeds 50 unique internal work keys across 10 domains with at least 5 works per domain",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_CATALOG_WORK_PLATFORM_ADDITIVE_ONTOLOGY_MIGRATION\\seed_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/estimateStructuredPipeline/finalMatrix.contract.test.ts",
+      "cluster_id": "PREVIOUS_BOQ_VISIBLE_LABEL_PROOF_NOT_GREEN",
+      "failed_assertions": [
+        {
+          "full_name": "structured estimate pipeline final matrix writes green closeout proof",
+          "expected_actual": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 8\n\n- Array []\n+ Array [\n+   Object {\n+     \"area\": \"previous_boq_green\",\n+     \"caseId\": undefined,\n+     \"code\": \"PREVIOUS_LIVE_VISIBLE_LABEL_PROOF_NOT_GREEN\",\n+     \"detail\": undefined,\n+   },\n+ ]"
+        }
+      ]
+    },
+    {
+      "suite": "tests/estimateStructuredPipeline/previousBoqExactMaterialsGreenRequired.contract.test.ts",
+      "cluster_id": "PREVIOUS_BOQ_VISIBLE_LABEL_PROOF_NOT_GREEN",
+      "failed_assertions": [
+        {
+          "full_name": "previous BOQ exact materials closeout prerequisite requires previous BOQ exact materials green and visible label proof artifact",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/aiEstimateGoNoGoMatrix.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "AI estimate final readiness GO/NO-GO matrix aggregates all prerequisite green matrices into one internal-canary GO decision",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"GREEN_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_READY\"\nReceived: \"NO_GO_PREREQUISITE_NOT_GREEN\""
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/canaryDisabledByDefault.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "keeps internal canary disabled by default while proving readiness",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/killSwitchRequired.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires AI estimate kill switches before final readiness GO",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/liveWebJourneyRequired.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires live web journey proof before GO",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/matrixLedgerRequiresAllPrerequisitesGreen.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires every prerequisite matrix to be green in the final readiness ledger",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/observabilityRequired.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires observability before final readiness GO",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/pdfFinalProofRequired.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires final PDF proof with readable structured output",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/finalReadiness/rollbackRequired.contract.test.ts",
+      "cluster_id": "STALE_REPLAY_AND_FINAL_READINESS_LINEAGE",
+      "failed_assertions": [
+        {
+          "full_name": "requires rollback readiness before final readiness GO",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ]
+    },
+    {
+      "suite": "tests/perf/flatListTuningRegressionScanner.contract.test.ts",
+      "cluster_id": "FLATLIST_EXACT_INVENTORY_DRIFT",
+      "failed_assertions": [
+        {
+          "full_name": "S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER keeps the current runtime FlatList and FlashList inventory locked",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 61\nReceived: 62"
+        }
+      ]
+    },
+    {
+      "suite": "tests/real10000Audit/remediationRerunAuditP0Zero.contract.test.ts",
+      "cluster_id": "REAL10000_P0_REMEDIATION_INCOMPLETE",
+      "failed_assertions": [
+        {
+          "full_name": "Real10000 remediation reruns audit with zero P0 holes",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: 5"
+        }
+      ]
+    },
+    {
+      "suite": "tests/realtime/realtimeFanoutBudgetProof.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "S-RT-6 realtime fanout budget proof recomputes the persistent mounted channel budget without regressing S-RT-5",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_RT_6_realtime_fanout_budget_proof_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/release/closeoutReadOnly.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "closeout read-only contract does not dirty the worktree when the selected-work closeout verifier runs",
+          "expected_actual": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: 0\nReceived: 1"
+        }
+      ]
+    },
+    {
+      "suite": "tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "preflight canonical evidence immutability keeps canonical matrices byte-identical and writes completed run-scoped diagnostics",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_RELEASE_PIPELINE_matrix.json'"
+        }
+      ]
+    },
+    {
+      "suite": "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts",
+      "cluster_id": "PREVIOUS_BOQ_VISIBLE_LABEL_PROOF_NOT_GREEN",
+      "failed_assertions": [
+        {
+          "full_name": "estimate structured pipeline UI/PDF binding closeout keeps request, marketplace, history, foreman AI, and PDF rows on the structured source of truth",
+          "expected_actual": "Error: expect(received).toEqual(expected) // deep equality\n\n- Expected  - 1\n+ Received  + 8\n\n- Array []\n+ Array [\n+   Object {\n+     \"area\": \"previous_boq_green\",\n+     \"caseId\": undefined,\n+     \"code\": \"PREVIOUS_LIVE_VISIBLE_LABEL_PROOF_NOT_GREEN\",\n+     \"detail\": undefined,\n+   },\n+ ]"
+        }
+      ]
+    },
+    {
+      "suite": "tests/selectedWorkEnterprise1000/selectedWorkEnterprise1000.contract.test.ts",
+      "cluster_id": "ARTIFACT_PREFLIGHT_AND_PRODUCER_GAP",
+      "failed_assertions": [
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts keeps the dataset out of product-search and pdf-action accounting",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\dataset_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts covers at least 50 selected-work domains",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\dataset_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts preserves required scenario quotas",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts requires previous smart-search selected-work green",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\previous_green_validation.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts keeps selected work as the source of truth for all cases",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\selected_work_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts parses quantity edge cases with explicit selected-work units",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\quantity_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts builds exact BOQ materials for every selected work case",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\boq_exact_materials_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts does not expose generic visible labels or mojibake",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\visible_label_scan.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts keeps control rows out of paid line items",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\control_rows_scan.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts does not use English fallback labels",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\english_fallback_scan.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts keeps catalog labels visible and free of internal keys",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\catalog_label_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts matches UI rows to PDF-ready rows",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\ui_pdf_parity_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts matches request, history, and foreman payloads",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\request_history_foreman_parity_matrix.json'"
+        },
+        {
+          "full_name": "selected work enterprise visible 1000 acceptance contracts proves PDF-ready 1000 payloads and 250 actual PDFs",
+          "expected_actual": "Error: ENOENT: no such file or directory, open 'C:\\dev\\rik-expo-app-t8-cert-a117116b\\artifacts\\S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE\\pdf_ready_1000_matrix.json'"
+        }
+      ]
+    }
+  ],
+  "unmapped_failed_suites": [],
+  "duplicate_suite_mappings": [],
+  "fake_green_claimed": false,
+  "generated_at": "2026-08-03T14:26:02.409Z",
+  "generated_at_excluded_from_content_hash": true,
+  "content_sha256": "39d26d6cf2eda565d9e693e7dc713b9b5afdd6ccbf4a89a437d030110932a074"
+}

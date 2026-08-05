@@ -585,6 +585,8 @@ export function runBlackboxNegativeMutations(): NegativeMutationSummary {
     const mutated = {
       ...row,
       quantity: Number(row.sourceParameters?.baseQuantity ?? row.quantity ?? 100),
+      formulaId: "",
+      calculationTrace: "",
       normSourceId: "generated_family_default_blackbox_mutation",
       sourceParameters: {
         ...row.sourceParameters,
@@ -757,6 +759,26 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
     fullSourceMatches &&
     fullSummary.ready_professional_count === 10000 &&
     fullSummary.generic_fallback_count === 0;
+  const currentManifestTotal = PRODUCTION_WORK_DEFINITIONS_10000.length;
+  const reportedReadiness = previousFullGreenVerified
+    ? {
+        manifestTotal: Number(fullSummary?.manifest_total_templates ?? currentManifestTotal),
+        readyProfessional: Number(fullSummary?.ready_professional_count ?? 0),
+        notReady: Number(fullSummary?.not_ready_count ?? 0),
+        genericFallback: Number(fullSummary?.generic_fallback_count ?? 0),
+        syntheticFamilyDefault: Number(fullSummary?.synthetic_family_default_count ?? 0),
+        templatesOnlyGenericNorms: Number(fullSummary?.templates_only_generic_norms_count ?? 0),
+        templatesWithRealNormSources: Number(fullSummary?.templates_with_real_norm_sources_count ?? 0),
+      }
+    : {
+        manifestTotal: currentManifestTotal,
+        readyProfessional: 0,
+        notReady: currentManifestTotal,
+        genericFallback: -1,
+        syntheticFamilyDefault: -1,
+        templatesOnlyGenericNorms: -1,
+        templatesWithRealNormSources: 0,
+      };
 
   const pdfRowsEqual = caseResults.every((item) => item.pdf_rows_equal_snapshot_rows);
   const pdfNoMojibake = caseResults.every((item) => item.no_mojibake);
@@ -789,9 +811,8 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
   const forbiddenEnvBlockers = FORBIDDEN_BROWSER_GREEN_ENV_FLAGS
     .filter((name) => envFlag(name))
     .map((name) => `FORBIDDEN_BROWSER_GREEN_ENV_FLAG_SET:${name}`);
-  const blockers = [
+  const systemBlockers = [
     ...lineageBlockers,
-    ...failedCases.flatMap((item) => item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)),
     rendered.rendered_snapshots_10000_passed ? "" : "rendered_snapshots_not_green",
     negative.negative_tests_prove_gates_fail ? "" : "negative_mutations_not_rejected",
     pdfRowsEqual ? "" : "pdf_rows_not_equal_snapshot_rows",
@@ -806,6 +827,12 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
     ...sourceGateBlockers,
     ...forbiddenEnvBlockers,
   ].filter(Boolean);
+  const caseBlockers = failedCases.flatMap((item) =>
+    item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)
+  );
+  // Keep gate and evidence failures observable even when a large corpus produces
+  // more case-level diagnostics than the bounded public summary can retain.
+  const blockers = [...systemBlockers, ...caseBlockers];
 
   const runtimeDir = path.join(process.cwd(), RUNTIME_ROOT, timestampForPath());
   const summaryPath = path.join(runtimeDir, "summary.json");
@@ -818,13 +845,13 @@ export function runBlackboxAcceptance(options: RunBlackboxOptions = {}): Blackbo
     branch,
     upstream_sync: upstreamSync,
     previous_full_green_verified: previousFullGreenVerified,
-    manifest_total_templates: Number(fullSummary?.manifest_total_templates ?? 0),
-    ready_professional_count: Number(fullSummary?.ready_professional_count ?? 0),
-    not_ready_count: Number(fullSummary?.not_ready_count ?? -1),
-    generic_fallback_count: Number(fullSummary?.generic_fallback_count ?? -1),
-    synthetic_family_default_count: Number(fullSummary?.synthetic_family_default_count ?? -1),
-    templates_only_generic_norms_count: Number(fullSummary?.templates_only_generic_norms_count ?? -1),
-    templates_with_real_norm_sources_count: Number(fullSummary?.templates_with_real_norm_sources_count ?? 0),
+    manifest_total_templates: reportedReadiness.manifestTotal,
+    ready_professional_count: reportedReadiness.readyProfessional,
+    not_ready_count: reportedReadiness.notReady,
+    generic_fallback_count: reportedReadiness.genericFallback,
+    synthetic_family_default_count: reportedReadiness.syntheticFamilyDefault,
+    templates_only_generic_norms_count: reportedReadiness.templatesOnlyGenericNorms,
+    templates_with_real_norm_sources_count: reportedReadiness.templatesWithRealNormSources,
     all_green_artifacts_found: Boolean(
       full.filePath && webEvidence.artifact_path && androidEvidence.artifact_path && staticGreenArtifactsFound
     ),

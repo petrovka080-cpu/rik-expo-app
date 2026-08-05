@@ -33,11 +33,11 @@ export const ANDROID_AUTH_EMAIL_FIELD_ID = "auth.login.email";
 export const ANDROID_AUTH_PASSWORD_FIELD_ID = "auth.login.password";
 export const ANDROID_AUTH_SUBMIT_ID = "auth.login.submit";
 export const ANDROID_AUTHENTICATED_PROFILE_MARKER_ID = "profile-edit-open";
+export const ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID =
+  "ROUTE_PROOF_AUTHENTICATED_SESSION_READY";
 export const ANDROID_AUTHENTICATED_SESSION_MARKER_IDS = [
+  ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID,
   ANDROID_AUTHENTICATED_PROFILE_MARKER_ID,
-  "app-bottom-nav",
-  "tabs.profile",
-  "bottom-tab-profile",
 ] as const;
 export const ANDROID_AUTHENTICATED_SHELL_MARKER_IDS = [
   "app-bottom-nav",
@@ -249,8 +249,9 @@ export function isAndroidAuthenticatedShellSurfaceXml(xml: string) {
 export function isAndroidAuthenticatedSessionSurfaceXml(xml: string) {
   return (
     !isAndroidAuthLoginScreenXml(xml) &&
-    (ANDROID_AUTHENTICATED_SESSION_MARKER_IDS.some((marker) => androidXmlHasResourceId(xml, marker)) ||
-      isAndroidAuthenticatedShellSurfaceXml(xml))
+    ANDROID_AUTHENTICATED_SESSION_MARKER_IDS.some((marker) =>
+      androidXmlHasResourceId(xml, marker),
+    )
   );
 }
 
@@ -301,7 +302,7 @@ export function isAndroidCanonicalRequestRouteReadyXml(xml: string) {
 export function classifyAndroidAuthenticatedReadinessXml(xml: string): AndroidAuthenticatedReadinessState {
   if (isAndroidPageNotFoundXml(xml)) return "ROUTE_FAILURE";
   if (isAndroidAuthLoginScreenXml(xml)) return "UNAUTHENTICATED";
-  if (isAndroidAuthenticatedProfileSurfaceXml(xml)) return "AUTHENTICATED_READY";
+  if (isAndroidAuthenticatedSessionSurfaceXml(xml)) return "AUTHENTICATED_READY";
   if (isAndroidAuthenticatedShellSurfaceXml(xml)) return "AUTHENTICATED_PENDING";
   return "UNKNOWN";
 }
@@ -988,7 +989,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     renderablePredicate: (xml: string) => boolean,
   ) {
     ensureAndroidReverseProxy(options.devClientPort);
-    startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: true });
+    // Callers may already have started the dev client immediately before
+    // entering the auth flow. Re-deliver the project URL without force-stop;
+    // blank/launcher recovery below still performs a hard restart when it is
+    // actually needed.
+    startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: false });
     let blankSurfaceStreak = 0;
 
     let screen = await poll(
@@ -1134,6 +1139,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       (/android\.widget\.ProgressBar/i.test(xml) ||
         /enabled="false"[^>]*content-desc="(?:Войти|Login)/i.test(xml) ||
         /content-desc="(?:Войти|Login)"[^>]*enabled="false"/i.test(xml));
+    const isAuthenticatedSessionReady = (xml: string) =>
+      isAndroidAuthenticatedSessionSurfaceXml(xml);
     const submitLoginAction = async (loginNode: AndroidNode | null) => {
       pressAndroidKey(66);
       await sleep(300);
@@ -1201,15 +1208,16 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       }
     };
 
-    if (!isLoginScreen(current.xml) && !params.successPredicate(current.xml)) {
+    if (!isLoginScreen(current.xml) && !isAuthenticatedSessionReady(current.xml)) {
       const routedLoginOrSuccess = await openAndroidRoute({
         packageName: params.packageName,
-        routes: [params.protectedRoute, params.protectedRoute.replace("://", ":///")],
+        routes: ["rik:///auth/login"],
         artifactBase: `${params.artifactBase}-initial-protected-route`,
-        predicate: (xml) => params.successPredicate(xml) || isLoginScreen(xml),
+        predicate: (xml) =>
+          isAuthenticatedSessionReady(xml) || isLoginScreen(xml),
         renderablePredicate: params.renderablePredicate,
         loginScreenPredicate: isLoginScreen,
-        timeoutMs: 35_000,
+        timeoutMs: 20_000,
         delayMs: 1200,
       }).catch(() => null);
       if (routedLoginOrSuccess) {
@@ -1306,14 +1314,6 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       throw fieldMismatchError(stage, fieldId, current.node, expected);
     };
 
-    const confirmLoginFieldText = async (stage: string, fieldId: AndroidAuthFieldId, expected: string) => {
-      const current = await readLoginField(stage, fieldId);
-      if (!verifyAndroidAuthFieldValue(current.node, expected).ok) {
-        throw fieldMismatchError(stage, fieldId, current.node, expected);
-      }
-      return current;
-    };
-
     if (isLoginScreen(current.xml)) {
       const nodes = parseAndroidNodes(current.xml);
       const emailNode = findAndroidAuthTextFieldNode(nodes, ANDROID_AUTH_EMAIL_FIELD_ID);
@@ -1324,32 +1324,41 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         throw new Error("Android login controls were not found by auth.login.* testIDs");
       }
 
-      await setLoginFieldText("email-fill", ANDROID_AUTH_EMAIL_FIELD_ID, params.user.email);
-      const confirmedEmail = await confirmLoginFieldText("email-confirm", ANDROID_AUTH_EMAIL_FIELD_ID, params.user.email);
+      const confirmedEmail = await setLoginFieldText(
+        "email-fill",
+        ANDROID_AUTH_EMAIL_FIELD_ID,
+        params.user.email,
+      );
       const emailLengthAfterConfirm = getAndroidAuthFieldValue(confirmedEmail.node).length;
 
       const passwordFill = await setLoginFieldText("password-fill", ANDROID_AUTH_PASSWORD_FIELD_ID, params.user.password, {
         verifyExact: false,
         requireSecure: true,
       });
-      const emailAfterPassword = await confirmLoginFieldText(
-        "email-after-password",
+      // The typed-password dump is already a fresh atomic UI snapshot. Reuse
+      // it to verify email preservation, password security and the submit
+      // control instead of taking three identical screenshot+dumps. This keeps
+      // the same assertions while removing ~15 s from every real Android login.
+      const passwordFillNodes = parseAndroidNodes(passwordFill.screen.xml);
+      const emailAfterPasswordNode = findAndroidAuthTextFieldNode(
+        passwordFillNodes,
         ANDROID_AUTH_EMAIL_FIELD_ID,
-        params.user.email,
       );
-      if (getAndroidAuthFieldValue(emailAfterPassword.node).length !== emailLengthAfterConfirm) {
+      if (
+        !verifyAndroidAuthFieldValue(emailAfterPasswordNode, params.user.email).ok ||
+        getAndroidAuthFieldValue(emailAfterPasswordNode).length !== emailLengthAfterConfirm
+      ) {
         throw new Error("Android auth email length changed while filling password");
       }
       const refreshedPasswordNode = findAndroidAuthTextFieldNode(
-        parseAndroidNodes(passwordFill.screen.xml),
+        passwordFillNodes,
         ANDROID_AUTH_PASSWORD_FIELD_ID,
       );
       if (!refreshedPasswordNode?.password || !getAndroidAuthFieldValue(refreshedPasswordNode)) {
         throw new Error("Android auth password field was not filled securely");
       }
 
-      const submitScreen = await getStableLoginScreen("submit-ready");
-      const refreshedLoginNode = findAndroidAuthSubmitNode(parseAndroidNodes(submitScreen.xml));
+      const refreshedLoginNode = findAndroidAuthSubmitNode(passwordFillNodes);
       if (!refreshedLoginNode) {
         throw new Error("Android login submit control was not found by auth.login.submit testID");
       }
@@ -1410,7 +1419,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             return null;
           }
           blankSurfaceStreak = 0;
-          return cleaned;
+          return isAuthenticatedSessionReady(cleaned.xml) ? cleaned : null;
         },
         45_000,
         1500,
@@ -1418,7 +1427,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      if (params.successPredicate(current.xml)) return current;
+      if (
+        isAuthenticatedSessionReady(current.xml) &&
+        params.successPredicate(current.xml)
+      ) {
+        return current;
+      }
       if (isAndroidLauncherHome(current.xml) || isAndroidDevLauncherHome(current.xml) || isAndroidBlankAppSurface(current.xml)) {
         if (isAndroidLauncherHome(current.xml)) {
           recoveryState.environmentRecoveryUsed = true;
@@ -1448,7 +1462,10 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     if (isLoginScreen(current.xml)) {
       throw new Error(`android login did not complete for ${params.protectedRoute}`);
     }
-    if (params.successPredicate(current.xml) || params.renderablePredicate(current.xml)) {
+    if (
+      isAuthenticatedSessionReady(current.xml) &&
+      (params.successPredicate(current.xml) || params.renderablePredicate(current.xml))
+    ) {
       return current;
     }
 

@@ -64,6 +64,17 @@ export type CatalogQualityDashboard = {
     ready_professional_count: number;
     generic_fallback_count: number;
     blind_quantity_copy_count: number;
+    blind_copy_without_formula_trace: number;
+    identity_formula_without_verified_coefficient: number;
+    unit_dimension_mismatch: number;
+    mechanically_compilable: number;
+    formula_runtime_valid: number;
+    formula_semantic_unverified: number;
+    norm_source_unregistered: number;
+    norm_source_verified: number;
+    procurement_applicable: number;
+    price_covered: number;
+    professional_ready: number;
     missing_formula_trace_count: number;
     required_calculator_modules_count: number;
     required_calculator_modules_present_count: number;
@@ -150,6 +161,17 @@ export function buildCatalogQualityDashboard(options: { writeFiles?: boolean } =
       ready_professional_count: p0.p0_ready_professional_count,
       generic_fallback_count: p0.p0_generic_fallback_count,
       blind_quantity_copy_count: p0.p0_blind_quantity_copy_count,
+      blind_copy_without_formula_trace: p0.p0_blind_copy_without_formula_trace,
+      identity_formula_without_verified_coefficient: p0.p0_identity_formula_without_verified_coefficient,
+      unit_dimension_mismatch: p0.p0_unit_dimension_mismatch,
+      mechanically_compilable: p0.p0_formula_mechanically_compilable,
+      formula_runtime_valid: p0.p0_formula_runtime_valid,
+      formula_semantic_unverified: p0.p0_formula_semantic_unverified,
+      norm_source_unregistered: p0.p0_norm_source_unregistered,
+      norm_source_verified: p0.p0_norm_source_verified,
+      procurement_applicable: p0.p0_procurement_applicable,
+      price_covered: p0.p0_price_covered,
+      professional_ready: p0.p0_professional_ready_row_count,
       missing_formula_trace_count: p0.p0_missing_formula_trace_count,
       required_calculator_modules_count: p0.required_calculator_modules_count,
       required_calculator_modules_present_count: p0.required_calculator_modules_present_count,

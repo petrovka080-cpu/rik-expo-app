@@ -4,7 +4,7 @@
   "work_family_id": "solar_power_plant",
   "work_family_group": "ENERGY_TPP_HPP",
   "engine": "expanded_complex",
-  "estimate_level": "PRELIMINARY_BOQ",
+  "estimate_level": "ROM_CONCEPT",
   "input_parameters": {
     "capacity_mw": 5
   },

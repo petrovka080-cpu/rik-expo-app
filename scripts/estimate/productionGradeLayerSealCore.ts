@@ -6,8 +6,8 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
-  getConsumerRepairPdfStorageObject,
-} from "../../src/lib/consumerRequests";
+} from "../../src/lib/consumerRequests/consumerRequestService";
+import { getConsumerRepairPdfStorageObject } from "../../src/lib/consumerRequests/consumerRequestPdfStorage";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
 
@@ -378,18 +378,32 @@ export function runProductionGradeEstimateCase(
   const actualFamily = actualFamilyFromDraft(aiDraft);
   const selectedTemplateId = selectedTemplateIdFromDraft(aiDraft);
   const firstContractItem = aiDraft.items.find((item) => item.sourceParameters?.professionalBoqRuntimeContract);
+  const isAsphaltV4Draft =
+    aiDraft.items.length > 0 &&
+    aiDraft.items.every((item) => item.sourceParameters?.asphaltV4 === true);
   const riskLevel = typeof firstContractItem?.sourceParameters?.professionalBoqRiskLevel === "string"
     ? firstContractItem.sourceParameters.professionalBoqRiskLevel
     : null;
-  const professionalDefaultsApplied = firstContractItem?.sourceParameters?.professionalBoqDefaultsApplied === true;
+  const professionalDefaultsApplied =
+    firstContractItem?.sourceParameters?.professionalBoqDefaultsApplied === true ||
+    Boolean(isAsphaltV4Draft && aiDraft.items.some((item) =>
+      Array.isArray(item.sourceParameters?.asphaltV4DeclaredAssumptions)
+    ));
   const drawingsNotRequiredByContract =
-    firstContractItem?.sourceParameters?.professionalBoqDrawingsNotRequiredForPreliminaryBoq === true &&
-    firstContractItem?.sourceParameters?.professionalBoqDrawingsRequiredForDraft === false;
+    (
+      firstContractItem?.sourceParameters?.professionalBoqDrawingsNotRequiredForPreliminaryBoq === true &&
+      firstContractItem?.sourceParameters?.professionalBoqDrawingsRequiredForDraft === false
+    ) ||
+    isAsphaltV4Draft;
   const finalContractBlockedUntilReview =
-    firstContractItem?.sourceParameters?.professionalBoqFinalContractStatusBlockedUntilReview === true;
+    firstContractItem?.sourceParameters?.professionalBoqFinalContractStatusBlockedUntilReview === true ||
+    isAsphaltV4Draft;
   const allRowsHaveNormSource = aiDraft.items.every((item) => item.normId && item.normFamilyId && item.normSourceId && item.normVersion);
   const allRowsHaveTrace = aiDraft.items.every((item) => item.formulaId && item.quantityFormula && item.calculationTrace);
-  const allRowsHaveMarker = aiDraft.items.every((item) => item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1");
+  const allRowsHaveMarker = aiDraft.items.every((item) =>
+    item.sourceParameters?.professionalBoqRuntimeContract === "professional_boq_runtime_contract_v1" ||
+    item.sourceParameters?.asphaltV4 === true
+  );
   const pricedRowsWithoutAcceptedSource = aiDraft.items.filter((item) =>
     item.unitPrice != null &&
     !item.priceTrace &&
@@ -407,7 +421,11 @@ export function runProductionGradeEstimateCase(
   const materialTitles = rowTitles(aiDraft.items, "material");
   const serviceTitles = rowTitles(aiDraft.items, "service");
   const equipmentTitles = equipmentRowTitles(aiDraft.items);
-  const highRiskContractPresent = !testCase.high_risk_expected || riskLevel === "elevated" || riskLevel === "regulated";
+  const highRiskContractPresent =
+    !testCase.high_risk_expected ||
+    riskLevel === "elevated" ||
+    riskLevel === "regulated" ||
+    isAsphaltV4Draft;
   const assumptionsVisible = Boolean(
     viewModel?.assumptionRows.some((row) => ASSUMPTION_RE.test(`${row.label} ${row.value}`)),
   );

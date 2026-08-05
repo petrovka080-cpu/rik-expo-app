@@ -12,8 +12,17 @@ describe("project execution procurement handoff visible labels", () => {
       expect(item.catalogSearchQuery).toBe(item.materialVisibleName);
       expect(item.materialVisibleName).not.toMatch(PROJECT_EXECUTION_FORBIDDEN_VISIBLE_PATTERN);
       expect(item.catalogSearchQuery).not.toMatch(PROJECT_EXECUTION_FORBIDDEN_VISIBLE_PATTERN);
-      expect(item.priceStatus).toBe(item.catalogItemId ? "known_catalog_price" : "price_required");
-      expect(item).not.toHaveProperty("unitPrice");
+      if (item.priceStatus === "known_catalog_price") {
+        expect(item.selectedPriceSource?.price_status).toBe("priced");
+        expect(item.selectedPriceSource?.price_source_id).toBeTruthy();
+        expect(item.unitPrice).toBeGreaterThan(0);
+        expect(item.amount).toBe(item.selectedPriceSource?.selected_amount);
+        expect(item.missingPrice).toBe(false);
+      } else {
+        expect(item.unitPrice).toBeNull();
+        expect(item.amount).toBeNull();
+        expect(item.missingPrice).toBe(true);
+      }
       expect(item).not.toHaveProperty("supplierPrice");
     }
   });

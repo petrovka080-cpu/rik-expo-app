@@ -16,6 +16,7 @@ export function resolveEstimatorOutcome(input: {
     return {
       classification: "SEMANTIC_FRAME_MISSING",
       plan: null,
+      boq: null,
       parsableWorkDetected: false,
       regulatedWorkDetected: false,
       templateExactMatch: false,
@@ -31,8 +32,10 @@ export function resolveEstimatorOutcome(input: {
   const formulaValidation = validateFormulaResult(plan);
   const failures = [...validation.failures, ...formulaValidation.failures];
   let dynamicBoqUsed = false;
+  let compiledBoq: DynamicProfessionalBoq | null = null;
   try {
     const boq = compileDynamicProfessionalBoq(plan);
+    compiledBoq = boq;
     dynamicBoqUsed = true;
     const boqValidation = validateDynamicProfessionalBoq(boq);
     const regulatedValidation = validateRegulatedSafeEstimate({ plan, boq });
@@ -48,6 +51,7 @@ export function resolveEstimatorOutcome(input: {
   return {
     classification,
     plan,
+    boq: compiledBoq,
     parsableWorkDetected: plan.parsableWorkDetected,
     regulatedWorkDetected: plan.regulatedWorkDetected,
     templateExactMatch: plan.templateExactMatch,
@@ -83,7 +87,7 @@ export type OpenWorldConstructionComposerResult = {
 
 export function composeOpenWorldConstructionPreliminaryBoq(text: string): OpenWorldConstructionComposerResult {
   const outcome = resolveEstimatorOutcome({ text });
-  if (!outcome.plan || outcome.failures.length > 0) {
+  if (!outcome.plan || !outcome.boq || outcome.failures.length > 0) {
     return {
       classification: "template_gap",
       plan: outcome.plan,
@@ -91,11 +95,10 @@ export function composeOpenWorldConstructionPreliminaryBoq(text: string): OpenWo
       rowCount: 0,
     };
   }
-  const boq = compileDynamicProfessionalBoq(outcome.plan);
   return {
     classification: "preliminary_boq",
     plan: outcome.plan,
-    boq,
-    rowCount: boq.rows.length,
+    boq: outcome.boq,
+    rowCount: outcome.boq.rows.length,
   };
 }

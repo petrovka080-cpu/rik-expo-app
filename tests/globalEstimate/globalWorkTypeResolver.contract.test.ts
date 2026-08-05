@@ -74,4 +74,26 @@ describe("global work type resolver", () => {
     expect(screenFoundation.workKey).not.toBe("crane_service");
     expect(craneService.workKey).toBe("crane_service");
   });
+
+  it("keeps composite roadworks and bridge contexts ahead of conflicting single aliases", () => {
+    const industrialRoadworks = resolveGlobalWorkType({
+      text: "estimate cost for roadworks site grading base compaction industrial earthworks and site preparation package alpha 40 sqm",
+      language: "en",
+    });
+    const bridgeCulvert = resolveGlobalWorkType({
+      text: "estimate cost for concrete bridge culvert installation residential small bridges and culverts package alpha 84 sqm",
+      language: "en",
+    });
+
+    expect(industrialRoadworks).toMatchObject({
+      workKey: "road_subgrade",
+      category: "roadworks",
+      confidence: "high",
+    });
+    expect(bridgeCulvert).toMatchObject({
+      workKey: "bridge_construction",
+      category: "concrete",
+      confidence: "high",
+    });
+  });
 });

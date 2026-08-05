@@ -1,13 +1,19 @@
-import type { ConsumerRepairAiDraft, ConsumerRepairItemType, ConsumerRepairSelectedWork } from "../../consumerRequests";
-import { formatEstimateUnitLabel } from "../../ai/globalEstimate";
+import type {
+  ConsumerRepairAiDraft,
+  ConsumerRepairItemType,
+  ConsumerRepairSelectedWork,
+} from "../../consumerRequests/consumerRequestTypes";
+import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
 import type { EstimateDraftRevision, ProfessionalBoqRow } from "../estimateDraftRevisionContract";
-import { createAiEstimateRuntime } from "./createAiEstimateRuntime";
+import { createEstimateDraftRevision } from "../createEstimateDraftRevision";
 import type { AiEstimateCreateDraftInput } from "./AiEstimateRuntimeContract";
 import {
   ASPHALT_PROFESSIONAL_NAME_RU_V4,
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
-} from "../v4/asphalt";
+} from "../v4/asphalt/asphaltV4Constants";
+import { buildCanonicalElectricalConsumerRepairAiDraft } from "../v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
+import { ELECTRICAL_CANONICAL_WORK_KEY } from "../v4/electrical/electricalCanonicalV1";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../v4/multiDomainReferencePassportsV4";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
@@ -159,11 +165,44 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
 export function buildConsumerRepairDraftFromAiEstimateRuntime(
   input: AiEstimateCreateDraftInput,
 ): ConsumerRepairAiDraft | null {
-  const runtime = createAiEstimateRuntime();
-  const { revision } = runtime.createDraft(input);
+  const revision = createEstimateDraftRevision({
+    estimateDraftId: input.estimateDraftId,
+    rawInput: input.rawInput,
+    selectedTemplateId: input.selectedTemplateId,
+    selectedTemplateName: input.selectedTemplateName,
+    selectedWorkKey: input.selectedWorkKey,
+    city: input.city,
+    currency: input.currency,
+    countryCode: input.countryCode,
+    paramOverrides: input.selectedRoadScope
+      ? {
+        selectedRoadScope: {
+          value: input.selectedRoadScope,
+          source: "user_input",
+          sourceText: "Explicit road scope selection",
+          lastChangedAt: input.createdAt ?? new Date().toISOString(),
+        },
+      }
+      : undefined,
+    createdAt: input.createdAt,
+    source: "initial_prompt",
+    revisionIndex: 1,
+  });
   const isAsphaltV4 = revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
     revision.professionalWorkId === ASPHALT_WORK_ID_V4;
+  if (
+    revision.matchedFamily === ELECTRICAL_CANONICAL_WORK_KEY ||
+    revision.professionalWorkId === ELECTRICAL_CANONICAL_WORK_KEY ||
+    input.selectedWorkKey === ELECTRICAL_CANONICAL_WORK_KEY
+  ) {
+    return buildCanonicalElectricalConsumerRepairAiDraft({
+      text: input.rawInput,
+      countryCode: input.countryCode ?? "KG",
+      city: input.city ?? "Bishkek",
+      currency: input.currency ?? "KGS",
+    });
+  }
   if (revision.boq.rows.length === 0 && !isAsphaltV4) return null;
   return buildConsumerRepairDraftFromAiEstimateRevision(revision);
 }

@@ -1,9 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
   AUTONOMOUS_ESTIMATE_PROGRAM_RUNTIME_ROOT,
-  AUTONOMOUS_PRIORITY_PLAN_PATH,
   buildAutonomousEstimatePriorityPlan,
   type AutonomousEstimatePriorityPlan,
 } from "./buildAutonomousEstimatePriorityPlan";
@@ -39,10 +38,6 @@ function timestampForPath(): string {
 }
 
 function readOrBuildPlan(): AutonomousEstimatePriorityPlan {
-  const fullPath = path.join(process.cwd(), AUTONOMOUS_PRIORITY_PLAN_PATH);
-  if (existsSync(fullPath)) {
-    return JSON.parse(readFileSync(fullPath, "utf8")) as AutonomousEstimatePriorityPlan;
-  }
   return buildAutonomousEstimatePriorityPlan({
     writeFiles: false,
     writeRuntime: false,

@@ -1,16 +1,19 @@
 import { composeOpenWorldConstructionPreliminaryBoq } from "../ai/estimatorKernel/resolveEstimatorOutcome";
 import type { DynamicProfessionalBoqRow } from "../ai/estimatorKernel/estimatorKernelTypes";
-import { formatEstimateUnitLabel } from "../ai/globalEstimate";
-import {
-  PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG,
-  buildProfessionalEstimateSnapshot,
-  type ProfessionalCurrency,
-  type ProfessionalEstimateCaseUnit,
-  type ProfessionalEstimateRowKind,
-  type ProfessionalRegion,
-  type ProfessionalWorkSpecificTemplate,
-} from "../ai/professionalEstimateTemplates";
-import type { ConsumerRepairAiDraft, ConsumerRepairSelectedWork } from "../consumerRequests";
+import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
+import { PROFESSIONAL_WORK_SPECIFIC_TEMPLATE_CATALOG } from "../ai/professionalEstimateTemplates/workSpecificTemplateCatalog";
+import { buildProfessionalEstimateSnapshot } from "../ai/professionalEstimateTemplates/professionalEstimateSnapshot";
+import type {
+  ProfessionalCurrency,
+  ProfessionalEstimateCaseUnit,
+  ProfessionalEstimateRowKind,
+  ProfessionalRegion,
+  ProfessionalWorkSpecificTemplate,
+} from "../ai/professionalEstimateTemplates/professionalEstimateTypes";
+import type {
+  ConsumerRepairAiDraft,
+  ConsumerRepairSelectedWork,
+} from "../consumerRequests/consumerRequestTypes";
 import {
   PROFESSIONAL_BOQ_RUNTIME_CONTRACT_ID,
   PROFESSIONAL_BOQ_RUNTIME_SOURCE_ID,
@@ -662,7 +665,11 @@ export function buildDynamicProfessionalBoqDraftFromPrompt(input: {
         dynamicProfessionalBoqCompilerId: boq.compilerId,
         dynamicProfessionalBoqWorkKey: plan.workKey,
         dynamicProfessionalBoqRowIndex: rowIndex,
-        includedInProcurement: row.sectionType !== "labor",
+        includedInEstimate: row.includedInEstimate !== false,
+        includedInProcurement:
+          row.includedInProcurement ??
+          (row.includedInEstimate !== false && row.sectionType !== "labor"),
+        parameterBlockerIds: row.parameterBlockerIds ?? [],
       },
       templateId: `${plan.workKey}_dynamic_professional_boq_runtime_v1`,
       templateVersion: "2026.07.05",

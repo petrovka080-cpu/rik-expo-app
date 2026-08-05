@@ -1,7 +1,30 @@
 import type { GlobalUnitInput, GlobalUnitSystem } from "./globalEstimateTypes";
+import { resolveProfessionalUnitDefinition } from "../../estimate/professionalUnitRegistry";
+
+function globalUnitForRegistryCode(code: string): GlobalUnitInput["normalizedUnit"] | null {
+  if (code === "m2") return "sq_m";
+  if (code === "m" || code === "lm") return "linear_m";
+  if (code === "t") return "ton";
+  if (
+    code === "sq_ft" ||
+    code === "linear_ft" ||
+    code === "pcs" ||
+    code === "set" ||
+    code === "shift" ||
+    code === "kg" ||
+    code === "lbs" ||
+    code === "m3" ||
+    code === "cu_ft"
+  ) {
+    return code;
+  }
+  return null;
+}
 
 export function normalizeGlobalUnit(rawUnit: string | undefined): GlobalUnitInput["normalizedUnit"] {
   const unit = (rawUnit ?? "").normalize("NFKC").toLowerCase().replace(/\s+/g, "_");
+  const registryUnit = globalUnitForRegistryCode(resolveProfessionalUnitDefinition(rawUnit)?.code ?? "");
+  if (registryUnit) return registryUnit;
   if (
     unit === "m2" ||
     unit === "\u043c2" ||
@@ -51,6 +74,7 @@ export function normalizeGlobalUnit(rawUnit: string | undefined): GlobalUnitInpu
     unit === "РєРѕРјРїР»." ||
     unit === "РєРѕРјРїР»"
   ) return "set";
+  if (unit === "shift" || unit === "\u0441\u043c\u0435\u043d\u0430" || unit === "\u0441\u043c\u0435\u043d\u044b") return "shift";
   if (unit === "kg" || unit === "\u043a\u0433" || unit === "РєРі") return "kg";
   if (unit === "lbs" || unit === "lb") return "lbs";
   if (unit === "m3" || unit === "\u043c3" || unit === "Рј3" || unit.includes("\u043a\u0443\u0431")) return "m3";
@@ -70,12 +94,22 @@ export function normalizeGlobalUnit(rawUnit: string | undefined): GlobalUnitInpu
 }
 
 export function displayUnitFor(unit: GlobalUnitInput["normalizedUnit"], unitSystem: GlobalUnitSystem): string {
+  const registryCode =
+    unit === "sq_m" ? "m2" :
+      unit === "linear_m" ? "lm" :
+        unit === "ton" ? "t" :
+          unit;
+  const registryLabel = resolveProfessionalUnitDefinition(registryCode);
+  if (registryLabel) {
+    return unitSystem === "metric" ? registryLabel.displayRu : registryLabel.displayEn;
+  }
   if (unit === "sq_m") return "\u043c\u00b2";
   if (unit === "sq_ft") return "sq ft";
   if (unit === "linear_m") return unitSystem === "metric" ? "\u043f\u043e\u0433. \u043c" : "linear m";
   if (unit === "linear_ft") return "linear ft";
   if (unit === "pcs") return unitSystem === "metric" ? "\u0448\u0442" : "pcs";
   if (unit === "set") return unitSystem === "metric" ? "\u043a\u043e\u043c\u043f\u043b." : "set";
+  if (unit === "shift") return unitSystem === "metric" ? "\u0441\u043c\u0435\u043d\u0430" : "shift";
   if (unit === "kg") return "\u043a\u0433";
   if (unit === "lbs") return "lbs";
   if (unit === "m3") return "\u043c\u00b3";

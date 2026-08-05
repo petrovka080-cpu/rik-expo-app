@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
@@ -8,11 +10,20 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
-  CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
   CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX,
+  hydrateTransactionalConsumerRepairRequestStore,
+  setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import {
+  CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX,
+  flushTransactionalConsumerRepairWrites,
+} from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import {
+  InMemoryEstimateRevisionDurableStore,
+  type DurableFailurePoint,
+} from "../../src/lib/platform/estimateRevisionDurableStore";
 
 function controlledStorage() {
   const values = new Map<string, string>();
@@ -52,7 +63,110 @@ function createFullRoad() {
 }
 
 describe("full-road normalized durable failure recovery V4", () => {
-  test("replaces the previous large snapshot in place when browser quota cannot hold R1 and R2 together", () => {
+  const originalPlatformOs = Platform.OS;
+
+  beforeEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "web",
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => originalPlatformOs,
+    });
+  });
+
+  test("moves the 702-row R1/R2 flow off localStorage and reloads it through the transactional bridge", async () => {
+    const controlled = controlledStorage();
+    const durableStore = new InMemoryEstimateRevisionDurableStore();
+    Object.defineProperty(globalThis, "localStorage", {
+      value: controlled.storage,
+      configurable: true,
+    });
+    try {
+      __resetConsumerRepairRequestStoreForTests();
+      setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+      const baseline = createFullRoad();
+      const enriched = commitPreparedConsumerRepairRequestBundle({
+        ...baseline,
+        items: baseline.items.map((item, index) => ({
+          ...item,
+          unitPrice: index + 0.25,
+          priceEditedByConsumer: true,
+          priceStatus: "USER_ENTERED_PRICE" as const,
+          priceSource: "user" as const,
+          priceSourceLabel: "Цена введена пользователем",
+        })),
+        estimateComments: Array.from({ length: 24 }, (_, index) => ({
+          id: `transactional-comment-${index}`,
+          ownerUserId: baseline.draft.consumerUserId,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          text: `Комментарий ${index + 1}`,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          updatedAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+        })),
+        estimateAttachments: Array.from({ length: 8 }, (_, index) => ({
+          id: `transactional-attachment-${index}`,
+          ownerScope: "estimate" as const,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          fileName: `road-specification-${index + 1}.pdf`,
+          mimeType: "application/pdf",
+          sizeBytes: 1024 + index,
+          contentHash: `transactional-road-specification-${index + 1}`,
+          storageReference: `redacted://road/specification/${index + 1}`,
+          thumbnailReference: null,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+          privacy: "redacted" as const,
+          redacted: true,
+        })),
+      });
+      const revised = applyConsumerRepairDraftRevisionParamBatchPatch({
+        requestDraftId: enriched.draft.id,
+        userId: enriched.draft.consumerUserId,
+        patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
+      });
+      await flushTransactionalConsumerRepairWrites();
+
+      const encodedId = encodeURIComponent(baseline.draft.id);
+      expect([...controlled.values.keys()].some((key) =>
+        key === `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodedId}` ||
+        key === `${CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX}${encodedId}` ||
+        key.startsWith(`${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodedId}:`)
+      )).toBe(false);
+      expect(controlled.values.has(
+        `${CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX}${encodedId}`,
+      )).toBe(true);
+
+      // Native force-stop recovery cannot depend on Web localStorage metadata.
+      controlled.values.delete(
+        `${CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX}${encodedId}`,
+      );
+      __simulateConsumerRepairRequestStoreReloadForTests();
+      await hydrateTransactionalConsumerRepairRequestStore();
+      const restored = getConsumerRepairRequest(baseline.draft.id);
+      expect(restored.estimateDraftRevisionState?.currentRevisionId)
+        .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
+      expect(restored.estimateDraftRevisionState?.revisions).toHaveLength(2);
+      expect(restored.items.filter((item) => item.unitPrice != null)).toHaveLength(702);
+      expect(restored.estimateComments).toHaveLength(24);
+      expect(restored.estimateAttachments).toHaveLength(8);
+      expect(durableStore.revisionCount(baseline.draft.id)).toBe(2);
+    } finally {
+      __resetConsumerRepairRequestStoreForTests();
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    }
+  });
+
+  test("persists R1 and R2 outside browser quota-limited localStorage", async () => {
     const values = new Map<string, string>();
     const quotaBytes = 5 * 1024 * 1024;
     const storage: Storage = {
@@ -73,27 +187,83 @@ describe("full-road normalized durable failure recovery V4", () => {
     Object.defineProperty(globalThis, "localStorage", { value: storage, configurable: true });
     try {
       __resetConsumerRepairRequestStoreForTests();
+      const durableStore = new InMemoryEstimateRevisionDurableStore();
+      setConsumerRepairTransactionalDurableStoreForTests(durableStore);
       const baseline = createFullRoad();
-      const previousRevisionId = baseline.estimateDraftRevisionState?.currentRevisionId;
+      const enriched = commitPreparedConsumerRepairRequestBundle({
+        ...baseline,
+        items: baseline.items.map((item, index) => ({
+          ...item,
+          unitPrice: index + 0.25,
+          priceEditedByConsumer: true,
+          priceStatus: "USER_ENTERED_PRICE" as const,
+          priceSource: "user" as const,
+          priceSourceLabel: "Цена введена пользователем",
+        })),
+        estimateComments: Array.from({ length: 24 }, (_, index) => ({
+          id: `quota-comment-${index}`,
+          ownerUserId: baseline.draft.consumerUserId,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          text: `Комментарий к строке ${index + 1}`,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          updatedAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+        })),
+        estimateAttachments: Array.from({ length: 8 }, (_, index) => ({
+          id: `quota-attachment-${index}`,
+          ownerScope: "estimate" as const,
+          estimateId: baseline.draft.id,
+          revisionId: baseline.estimateDraftRevisionState?.currentRevisionId ?? null,
+          rowId: baseline.items[index]?.sourceParameters?.rowCode as string,
+          fileName: `road-specification-${index + 1}.pdf`,
+          mimeType: "application/pdf",
+          sizeBytes: 1024 + index,
+          contentHash: `road-specification-${index + 1}`,
+          storageReference: `redacted://road/specification/${index + 1}`,
+          thumbnailReference: null,
+          createdAt: "2026-07-24T05:01:00.000Z",
+          deleted: false,
+          privacy: "redacted" as const,
+          redacted: true,
+        })),
+      });
+      const recordPrefix = encodeURIComponent(baseline.draft.id);
       const revised = applyConsumerRepairDraftRevisionParamBatchPatch({
-        requestDraftId: baseline.draft.id,
-        userId: baseline.draft.consumerUserId,
+        requestDraftId: enriched.draft.id,
+        userId: enriched.draft.consumerUserId,
         patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
       });
-      expect(revised.estimateDraftRevisionState?.currentRevisionId).not.toBe(previousRevisionId);
+      await flushTransactionalConsumerRepairWrites();
+      expect([...values.keys()].some((key) =>
+        key === `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${recordPrefix}` ||
+        key === `${CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX}${recordPrefix}` ||
+        key.startsWith(`${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${recordPrefix}:`)
+      )).toBe(false);
 
       __simulateConsumerRepairRequestStoreReloadForTests();
+      await hydrateTransactionalConsumerRepairRequestStore();
       const restored = getConsumerRepairRequest(baseline.draft.id);
       expect(restored.estimateDraftRevisionState?.currentRevisionId)
         .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
+      expect(restored.estimateDraftRevisionState?.revisions).toHaveLength(2);
       expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
+      expect(restored.items.every((item) => item.unitPrice != null)).toBe(true);
+      expect(restored.estimateComments ?? []).toHaveLength(24);
+      expect(restored.estimateAttachments ?? []).toHaveLength(8);
+      const durableCodeUnits = [...values.entries()].reduce(
+        (total, [key, value]) => total + key.length + value.length,
+        0,
+      );
+      expect(durableCodeUnits).toBeLessThanOrEqual(quotaBytes);
     } finally {
       __resetConsumerRepairRequestStoreForTests();
       delete (globalThis as { localStorage?: Storage }).localStorage;
     }
   });
 
-  test("recovers a 702-row revision through 12 controlled failure classes", () => {
+  test("recovers a 702-row revision through 12 controlled failure classes", async () => {
     const controlled = controlledStorage();
     Object.defineProperty(globalThis, "localStorage", { value: controlled.storage, configurable: true });
     const failureClasses = [
@@ -115,7 +285,10 @@ describe("full-road normalized durable failure recovery V4", () => {
       for (const failureClass of failureClasses) {
         controlled.rejectWrites(null);
         __resetConsumerRepairRequestStoreForTests();
+        const durableStore = new InMemoryEstimateRevisionDurableStore();
+        setConsumerRepairTransactionalDurableStoreForTests(durableStore);
         const baseline = createFullRoad();
+        await flushTransactionalConsumerRepairWrites();
         const revisionId = baseline.estimateDraftRevisionState?.currentRevisionId ?? null;
         const changed = {
           ...baseline,
@@ -148,30 +321,35 @@ describe("full-road normalized durable failure recovery V4", () => {
             redacted: true,
           }],
         };
-        if (["before_write", "attachment_metadata_write", "comment_write", "quota_exceeded", "storage_rejected"].includes(failureClass)) {
-          controlled.rejectWrites((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX));
-        } else if (failureClass === "after_snapshot_before_pointer") {
-          controlled.rejectWrites((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX));
-        } else if (failureClass === "after_pointer_before_v2") {
-          controlled.rejectWrites((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX));
-        } else if (failureClass === "secondary_index") {
-          controlled.rejectWrites((key) => key === CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY);
-        }
+        const injectedPointByClass: Partial<Record<typeof failureClass, DurableFailurePoint>> = {
+          before_write: "before_write",
+          after_snapshot_before_pointer: "before_pointer_switch",
+          attachment_metadata_write: "after_revision_write",
+          comment_write: "before_read_back",
+          quota_exceeded: "before_write",
+          storage_rejected: "after_revision_write",
+          after_pointer_before_v2: "after_pointer_switch",
+          secondary_index: "before_orphan_cleanup",
+        };
+        const injectedPoint = injectedPointByClass[failureClass];
+        durableStore.setFailureInjector(injectedPoint
+          ? (point) => {
+            if (point === injectedPoint) throw new Error(`INJECTED:${failureClass}`);
+          }
+          : null);
         commitPreparedConsumerRepairRequestBundle(changed);
-        controlled.rejectWrites(null);
+        await flushTransactionalConsumerRepairWrites();
+        durableStore.setFailureInjector(null);
 
         if (failureClass === "corrupt_current_json" || failureClass === "checksum_mismatch") {
-          const pointerKey = [...controlled.values.keys()].find((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX));
-          const pointer = pointerKey ? JSON.parse(controlled.values.get(pointerKey) ?? "{}") : null;
-          const snapshotKey = pointer
-            ? `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(baseline.draft.id)}:${pointer.currentChecksum}`
-            : null;
-          if (snapshotKey) controlled.values.set(snapshotKey, failureClass === "corrupt_current_json" ? "{broken" : "{}");
+          durableStore.corruptCurrentForTests(baseline.draft.id);
         }
         if (failureClass === "same_idempotency_key" || failureClass === "double_save") {
           commitPreparedConsumerRepairRequestBundle(changed);
+          await flushTransactionalConsumerRepairWrites();
         }
         __simulateConsumerRepairRequestStoreReloadForTests();
+        await hydrateTransactionalConsumerRepairRequestStore();
         const restored = getConsumerRepairRequest(baseline.draft.id);
         expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
         expect(new Set(restored.estimateDraftRevisionState?.revisions.map((revision) => revision.revisionId)).size)
@@ -180,8 +358,7 @@ describe("full-road normalized durable failure recovery V4", () => {
           .toBe(restored.estimateComments?.length ?? 0);
         expect(new Set(restored.estimateAttachments?.map((attachment) => attachment.id) ?? []).size)
           .toBe(restored.estimateAttachments?.length ?? 0);
-        const snapshotKeys = [...controlled.values.keys()].filter((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX));
-        expect(snapshotKeys.length).toBeLessThanOrEqual(2);
+        expect(durableStore.revisionCount(baseline.draft.id)).toBeLessThanOrEqual(2);
         recovered += 1;
       }
     } finally {

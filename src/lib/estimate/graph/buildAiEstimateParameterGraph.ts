@@ -79,6 +79,34 @@ function rowDependencies(rows: readonly ProfessionalBoqRow[]): AiEstimateParamet
   }));
 }
 
+function revisionParameterNodes(
+  revision: EstimateDraftRevision,
+  dependencies: readonly AiEstimateParameterGraphRowDependency[],
+  rowIdsByParameter: ReadonlyMap<string, readonly string[]>,
+): AiEstimateParameterGraphNode[] {
+  const missingByKey = new Map(revision.missingInputs.map((input) => [input.key, input]));
+  const keys = uniqueSorted([...Object.keys(revision.params), ...missingByKey.keys()]);
+  return keys.map((key) => {
+    const affectedRowIds = rowIdsByParameter.get(key) ?? [];
+    const affectedRowIdSet = new Set(affectedRowIds);
+    return {
+      key,
+      kind: nodeKindForRevisionParam(revision, key),
+      required: missingByKey.has(key),
+      formulaRefs: uniqueSorted(
+        dependencies
+          .filter((row) => affectedRowIdSet.has(row.rowId))
+          .map((row) => row.formula ?? "")
+          .filter(Boolean),
+      ),
+      affectedBoqRowIds: uniqueSorted(affectedRowIds),
+      pdfDependency: true,
+      buyerPackageDependency: true,
+      historyRevisionDependency: true,
+    };
+  });
+}
+
 export function buildAiEstimateParameterGraph(input: {
   templateId?: string | null;
   revision?: EstimateDraftRevision | null;
@@ -86,20 +114,32 @@ export function buildAiEstimateParameterGraph(input: {
   const templateId = input.revision?.selectedTemplateId ?? input.templateId ?? null;
   if (!templateId) return null;
   const passport = buildAiEstimateNormativeWorkParameterPassport(templateId);
-  if (!passport) return null;
   const rows = rowsForInput(templateId, input.revision);
-  const baseNodes = passport.requirements.map((requirement) => requirementNode(requirement, input.revision));
-  const formulaVariables = rowDependencies(rows)
-    .flatMap((row) => row.parameterKeys)
-    .filter((key) => !baseNodes.some((node) => node.key === key))
-    .map((key): AiEstimateParameterGraphNode => ({
+  const dependencies = rowDependencies(rows);
+  const rowIdsByParameter = new Map<string, string[]>();
+  for (const dependency of dependencies) {
+    for (const key of dependency.parameterKeys) {
+      rowIdsByParameter.set(
+        key,
+        uniqueSorted([...(rowIdsByParameter.get(key) ?? []), dependency.rowId]),
+      );
+    }
+  }
+  const baseNodes = passport
+    ? passport.requirements.map((requirement) => requirementNode(requirement, input.revision))
+    : input.revision
+      ? revisionParameterNodes(input.revision, dependencies, rowIdsByParameter)
+      : [];
+  if (!passport && !input.revision) return null;
+  const baseNodeKeys = new Set(baseNodes.map((node) => node.key));
+  const formulaVariables = [...rowIdsByParameter.entries()]
+    .filter(([key]) => !baseNodeKeys.has(key))
+    .map(([key, affectedBoqRowIds]): AiEstimateParameterGraphNode => ({
       key,
       kind: "formula_variable",
       required: false,
       formulaRefs: [],
-      affectedBoqRowIds: rows
-        .filter((row) => extractAiEstimateFormulaIdentifiers(row.quantityFormula).includes(key))
-        .map((row) => row.rowId),
+      affectedBoqRowIds,
       pdfDependency: true,
       buyerPackageDependency: true,
       historyRevisionDependency: true,
@@ -119,7 +159,7 @@ export function buildAiEstimateParameterGraph(input: {
     templateId,
     revisionId: input.revision?.revisionId ?? null,
     nodes: [...nodesByKey.values()].sort((a, b) => a.key.localeCompare(b.key)),
-    rowDependencies: rowDependencies(rows),
+    rowDependencies: dependencies,
     exactIdentifierDependencyMatching: true,
     substringDependencyMatchingAbsent: true,
     sourceRevision: input.revision ?? undefined,
