@@ -1705,6 +1705,8 @@
       ]
     },
     {
+      "artifact_id": "observability-matrix",
+      "logical_role": "canonical-observability-immutability-snapshot",
       "path": "artifacts/S_OBSERVABILITY_matrix.json",
       "content_type": "application/json",
       "schema_version": "legacy-json-contract:v1",
@@ -1721,7 +1723,18 @@
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
         "full-jest"
-      ]
+      ],
+      "runtime_output_policy": "run-scoped-only",
+      "producer_module": "scripts/audit/observabilityOps.shared.ts",
+      "input_files": ["scripts/audit/observabilityOps.shared.ts", "src/lib/ops/productionOpsTelemetry.ts"],
+      "source_sha_policy": "current-candidate",
+      "content_sha256_policy": "producer-output",
+      "consumers": ["tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts"],
+      "storage_policy": "gitignored-runtime-evidence",
+      "hydration_policy": "regenerate-from-tracked-inputs",
+      "allowed_source_lineage": "exact-current-candidate",
+      "generated_at_policy": "excluded-from-content-hash",
+      "contains_sensitive_data": false
     },
     {
       "path": "artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/failures.json",
@@ -5904,6 +5917,8 @@
       ]
     },
     {
+      "artifact_id": "release-pipeline-matrix",
+      "logical_role": "canonical-release-pipeline-immutability-snapshot",
       "path": "artifacts/S_RELEASE_PIPELINE_matrix.json",
       "content_type": "application/json",
       "schema_version": "legacy-json-contract:v1",
@@ -5920,7 +5935,18 @@
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
         "full-jest"
-      ]
+      ],
+      "runtime_output_policy": "run-scoped-only",
+      "producer_module": "scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts",
+      "input_files": ["scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts"],
+      "source_sha_policy": "current-candidate",
+      "content_sha256_policy": "producer-output",
+      "consumers": ["tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts"],
+      "storage_policy": "gitignored-runtime-evidence",
+      "hydration_policy": "regenerate-from-tracked-inputs",
+      "allowed_source_lineage": "exact-current-candidate",
+      "generated_at_policy": "excluded-from-content-hash",
+      "contains_sensitive_data": false
     },
     {
       "path": "artifacts/S_RELEASE_PIPELINE_STABILIZATION/android_verify.json",
@@ -6265,6 +6291,8 @@
       ]
     },
     {
+      "artifact_id": "security-privacy-matrix",
+      "logical_role": "canonical-security-privacy-immutability-snapshot",
       "path": "artifacts/S_SECURITY_PRIVACY_matrix.json",
       "content_type": "application/json",
       "schema_version": "legacy-json-contract:v1",
@@ -6272,16 +6300,27 @@
       "bytes": 510,
       "input_fingerprint": "sha256:bedadb003838669b4c3c7be249cd073b66874f731139bf16a77183bff89abf6e",
       "producer": {
-        "producer_id": "immutable-attested-evidence-cache-v1",
-        "owner": "verification/v1/required-artifacts.manifest.json",
-        "command": null,
-        "version": "1",
-        "deterministic": false
+        "producer_id": "security-privacy-runtime-snapshot-v2",
+        "owner": "scripts/audit/securityPrivacyHardening.shared.ts",
+        "command": "node node_modules/tsx/dist/cli.mjs scripts/audit/auditSecurityPrivacyHardening.ts",
+        "version": "2",
+        "deterministic": true
       },
       "retention_policy": "external-evidence-store-until-superseded",
       "required_by_gates": [
         "full-jest"
-      ]
+      ],
+      "runtime_output_policy": "run-scoped-only",
+      "producer_module": "scripts/audit/securityPrivacyHardening.shared.ts",
+      "input_files": ["scripts/audit/securityPrivacyHardening.shared.ts", "src/lib/security/securityPrivacyHardening.ts"],
+      "source_sha_policy": "current-candidate",
+      "content_sha256_policy": "producer-output",
+      "consumers": ["tests/releasePipeline/preflightCanonicalEvidenceImmutability.contract.test.ts"],
+      "storage_policy": "gitignored-runtime-evidence",
+      "hydration_policy": "regenerate-from-tracked-inputs",
+      "allowed_source_lineage": "exact-current-candidate",
+      "generated_at_policy": "excluded-from-content-hash",
+      "contains_sensitive_data": true
     },
     {
       "path": "artifacts/S_SELECTED_WORK_ENTERPRISE_VISIBLE_1000_REAL_INPUT_ESTIMATE_ACCEPTANCE/actual_pdf_250_matrix.json",
@@ -6608,5 +6647,5 @@
     }
   ],
   "generated_at": "2026-08-04T12:06:39.795Z",
-  "content_sha256": "c5ae067de1acf984108ff0f22c9667a7ed3f70a1157fa55d56b2d778a7f6536e"
+  "content_sha256": "115c219bea1d1f64168d0739e6e097d4e44b6f2b3dc4aa6ff97e2e4167498ef3"
 }

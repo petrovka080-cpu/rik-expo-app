@@ -12,6 +12,8 @@ export type RequiredArtifactProducer = {
 };
 
 export type RequiredArtifactEntry = {
+  artifact_id?: string;
+  logical_role?: string;
   path: string;
   content_type: "application/json" | "text/markdown";
   schema_version: string;
@@ -21,6 +23,32 @@ export type RequiredArtifactEntry = {
   producer: RequiredArtifactProducer;
   retention_policy: string;
   required_by_gates: string[];
+  runtime_output_policy?: "run-scoped-only";
+  producer_module?: string;
+  input_files?: string[];
+  source_sha_policy?: "current-candidate";
+  content_sha256_policy?: "producer-output";
+  consumers?: string[];
+  storage_policy?: "gitignored-runtime-evidence";
+  hydration_policy?: "regenerate-from-tracked-inputs";
+  allowed_source_lineage?: "exact-current-candidate";
+  generated_at_policy?: "excluded-from-content-hash";
+  contains_sensitive_data?: boolean;
+};
+
+export type ManifestBackedRuntimeSnapshot = {
+  artifact_id: string;
+  artifact_path: string;
+  snapshot_path: string;
+  source_sha: string;
+  content_sha256: string;
+  bytes: number;
+  schema_version: string;
+  producer_id: string;
+  producer_module: string;
+  run_id: string;
+  worker_id: string;
+  storage_policy: "gitignored-runtime-evidence";
 };
 
 export type RequiredArtifactManifest = {
@@ -98,6 +126,106 @@ function safeResolve(root: string, relativePath: string): string {
     throw new Error(`required_artifact_outside_root:${relativePath}`);
   }
   return resolved;
+}
+
+function safeSegment(value: string): string {
+  const segment = value.trim().replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  if (!segment) throw new Error(`required_artifact_runtime_segment_invalid:${value}`);
+  return segment;
+}
+
+export function prepareManifestBackedRuntimeSnapshot(input: {
+  root: string;
+  manifestPath: string;
+  artifactPath: string;
+  artifactValue: unknown;
+  subjectSha?: string;
+  expectedContentSha256?: string;
+  runId?: string;
+  workerId?: string;
+}): ManifestBackedRuntimeSnapshot {
+  const root = path.resolve(input.root);
+  const manifest = loadRequiredArtifactManifest(input.manifestPath);
+  const entry = manifest.entries.find((candidate) => candidate.path === input.artifactPath);
+  if (!entry) throw new Error(`required_artifact_manifest_entry_missing:${input.artifactPath}`);
+  if (
+    !entry.artifact_id ||
+    !entry.logical_role ||
+    entry.runtime_output_policy !== "run-scoped-only" ||
+    !entry.producer_module ||
+    !entry.input_files?.length ||
+    entry.source_sha_policy !== "current-candidate" ||
+    entry.content_sha256_policy !== "producer-output" ||
+    !entry.consumers?.length ||
+    entry.storage_policy !== "gitignored-runtime-evidence" ||
+    entry.hydration_policy !== "regenerate-from-tracked-inputs" ||
+    entry.allowed_source_lineage !== "exact-current-candidate" ||
+    entry.generated_at_policy !== "excluded-from-content-hash" ||
+    typeof entry.contains_sensitive_data !== "boolean"
+  ) {
+    throw new Error(`required_artifact_fresh_checkout_contract_incomplete:${input.artifactPath}`);
+  }
+  const subjectSha = input.subjectSha ?? gitSha(root);
+  if (!/^[a-f0-9]{40}$/.test(subjectSha)) {
+    throw new Error(`required_artifact_source_sha_invalid:${subjectSha}`);
+  }
+  const actualSha = gitSha(root);
+  if (subjectSha !== actualSha) {
+    throw new Error(`required_artifact_source_sha_mismatch:${subjectSha}:${actualSha}`);
+  }
+  if (
+    typeof input.artifactValue !== "object" ||
+    input.artifactValue === null ||
+    Array.isArray(input.artifactValue)
+  ) {
+    throw new Error(`required_artifact_schema_invalid:${entry.schema_version}`);
+  }
+  const value = input.artifactValue as Record<string, unknown>;
+  if (typeof value.final_status !== "string" || value.fake_green_claimed !== false) {
+    throw new Error(`required_artifact_schema_invalid:${entry.schema_version}`);
+  }
+  const content = `${JSON.stringify(value, null, 2)}\n`;
+  const contentSha256 = sha256(content);
+  if (input.expectedContentSha256 && input.expectedContentSha256 !== contentSha256) {
+    throw new Error(
+      `required_artifact_content_hash_mismatch:${input.expectedContentSha256}:${contentSha256}`,
+    );
+  }
+  const runId = safeSegment(input.runId ?? process.env.GITHUB_RUN_ID ?? "local");
+  const workerId = safeSegment(
+    input.workerId ?? `worker-${process.env.JEST_WORKER_ID ?? "0"}-pid-${process.pid}`,
+  );
+  const artifactId = safeSegment(entry.artifact_id);
+  const snapshotPath = path.join(
+    root,
+    ".release-runtime",
+    subjectSha,
+    runId,
+    workerId,
+    artifactId,
+    "matrix.json",
+  );
+  fs.mkdirSync(path.dirname(snapshotPath), { recursive: true });
+  const temporaryPath = `${snapshotPath}.tmp`;
+  fs.writeFileSync(temporaryPath, content, "utf8");
+  fs.renameSync(temporaryPath, snapshotPath);
+  if (sha256File(snapshotPath) !== contentSha256) {
+    throw new Error(`required_artifact_written_hash_mismatch:${entry.path}`);
+  }
+  return {
+    artifact_id: entry.artifact_id,
+    artifact_path: entry.path,
+    snapshot_path: snapshotPath,
+    source_sha: subjectSha,
+    content_sha256: contentSha256,
+    bytes: Buffer.byteLength(content),
+    schema_version: entry.schema_version,
+    producer_id: entry.producer.producer_id,
+    producer_module: entry.producer_module,
+    run_id: runId,
+    worker_id: workerId,
+    storage_policy: entry.storage_policy,
+  };
 }
 
 export function contentAddressedCachePath(cacheRoot: string, contentSha256: string): string {

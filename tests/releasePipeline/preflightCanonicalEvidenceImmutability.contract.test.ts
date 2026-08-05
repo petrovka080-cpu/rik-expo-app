@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -14,44 +14,66 @@ import {
   buildReleasePipelineNoTimeoutMobileRuntimeReport,
   writeReleasePipelineNoTimeoutMobileRuntimeRunArtifacts,
 } from "../../scripts/release/releasePipelineNoTimeoutMobileRuntime.shared";
+import {
+  prepareManifestBackedRuntimeSnapshot,
+  sha256File,
+} from "../../scripts/verification/requiredArtifactPreflight";
 
-const canonicalMatrices = [
-  "artifacts/S_SECURITY_PRIVACY_matrix.json",
-  "artifacts/S_OBSERVABILITY_matrix.json",
-  "artifacts/S_RELEASE_PIPELINE_matrix.json",
-] as const;
-
-const sha256 = (filePath: string): string =>
-  createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+const manifestPath = path.join(
+  process.cwd(),
+  "verification/v1/required-artifacts.manifest.json",
+);
 
 describe("preflight canonical evidence immutability", () => {
+  const securityArtifactPath = "artifacts/S_SECURITY_PRIVACY_matrix.json";
+
   it("keeps canonical matrices byte-identical and writes completed run-scoped diagnostics", () => {
-    const before = Object.fromEntries(
-      canonicalMatrices.map((relativePath) => [
-        relativePath,
-        sha256(path.join(process.cwd(), relativePath)),
-      ]),
-    );
+    const securityReport = buildSecurityPrivacyReport();
+    const observabilityReport = buildObservabilityOpsReport();
+    const releaseReport = buildReleasePipelineNoTimeoutMobileRuntimeReport();
+    const snapshots = [
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: "artifacts/S_SECURITY_PRIVACY_matrix.json",
+        artifactValue: securityReport.matrix,
+      }),
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: "artifacts/S_OBSERVABILITY_matrix.json",
+        artifactValue: observabilityReport.matrix,
+      }),
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: "artifacts/S_RELEASE_PIPELINE_matrix.json",
+        artifactValue: releaseReport.matrix,
+      }),
+    ];
+    const before = snapshots.map((snapshot) => sha256File(snapshot.snapshot_path));
 
     const security = writeSecurityPrivacyRunArtifacts(
-      buildSecurityPrivacyReport(),
+      securityReport,
     );
     const observability = writeObservabilityOpsRunArtifacts(
-      buildObservabilityOpsReport(),
+      observabilityReport,
     );
     const release =
       writeReleasePipelineNoTimeoutMobileRuntimeRunArtifacts(
-        buildReleasePipelineNoTimeoutMobileRuntimeReport(),
+        releaseReport,
       ).run;
 
-    expect(
-      Object.fromEntries(
-        canonicalMatrices.map((relativePath) => [
-          relativePath,
-          sha256(path.join(process.cwd(), relativePath)),
-        ]),
-      ),
-    ).toEqual(before);
+    expect(snapshots.map((snapshot) => sha256File(snapshot.snapshot_path))).toEqual(before);
+    for (const snapshot of snapshots) {
+      expect(snapshot.source_sha).toBe(execFileSync(
+        "git", ["rev-parse", "HEAD"], { encoding: "utf8" },
+      ).trim());
+      expect(snapshot.snapshot_path.replace(/\\/g, "/")).toContain(
+        `/.release-runtime/${snapshot.source_sha}/${snapshot.run_id}/${snapshot.worker_id}/${snapshot.artifact_id}/`,
+      );
+      expect(snapshot.content_sha256).toBe(sha256File(snapshot.snapshot_path));
+    }
 
     for (const result of [security, observability, release]) {
       expect(result.runDirectory.replace(/\\/g, "/")).toContain(
@@ -69,6 +91,76 @@ describe("preflight canonical evidence immutability", () => {
           .some((fileName) => fileName.endsWith(".tmp")),
       ).toBe(false);
     }
+  });
+
+  it("fails closed when the manifest entry is missing", () => {
+    expect(() =>
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: "artifacts/S_UNKNOWN_CANONICAL_matrix.json",
+        artifactValue: buildSecurityPrivacyReport().matrix,
+      }),
+    ).toThrow("required_artifact_manifest_entry_missing");
+  });
+
+  it("fails closed for corrupt producer output", () => {
+    expect(() =>
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: securityArtifactPath,
+        artifactValue: "corrupt-json-payload",
+      }),
+    ).toThrow("required_artifact_schema_invalid");
+  });
+
+  it("fails closed for wrong source SHA lineage", () => {
+    expect(() =>
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: securityArtifactPath,
+        artifactValue: buildSecurityPrivacyReport().matrix,
+        subjectSha: "0".repeat(40),
+      }),
+    ).toThrow("required_artifact_source_sha_mismatch");
+  });
+
+  it("fails closed for a wrong producer content hash", () => {
+    expect(() =>
+      prepareManifestBackedRuntimeSnapshot({
+        root: process.cwd(),
+        manifestPath,
+        artifactPath: securityArtifactPath,
+        artifactValue: buildSecurityPrivacyReport().matrix,
+        expectedContentSha256: "0".repeat(64),
+      }),
+    ).toThrow("required_artifact_content_hash_mismatch");
+  });
+
+  it("isolates parallel worker snapshots without changing their bytes", () => {
+    const matrix = buildSecurityPrivacyReport().matrix;
+    const left = prepareManifestBackedRuntimeSnapshot({
+      root: process.cwd(),
+      manifestPath,
+      artifactPath: securityArtifactPath,
+      artifactValue: matrix,
+      runId: "parallel-contract",
+      workerId: "worker-left",
+    });
+    const right = prepareManifestBackedRuntimeSnapshot({
+      root: process.cwd(),
+      manifestPath,
+      artifactPath: securityArtifactPath,
+      artifactValue: matrix,
+      runId: "parallel-contract",
+      workerId: "worker-right",
+    });
+
+    expect(left.snapshot_path).not.toBe(right.snapshot_path);
+    expect(left.content_sha256).toBe(right.content_sha256);
+    expect(sha256File(left.snapshot_path)).toBe(sha256File(right.snapshot_path));
   });
 
   it("requires an explicit canonical-write argument in every CLI owner", () => {
