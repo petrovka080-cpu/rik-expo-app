@@ -117,6 +117,14 @@ function loadRegisteredEstimateWorkProfiles() {
   ) as typeof import("../../lib/estimate/workProfiles/registeredEstimateWorkProfiles");
 }
 
+/* eslint-disable @typescript-eslint/no-require-imports -- keep the request-route bundle lazy like adjacent estimate runtimes */
+function loadRoadworksWaveAProductionBinding() {
+  return require(
+    "../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding"
+  ) as typeof import("../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding");
+}
+/* eslint-enable @typescript-eslint/no-require-imports */
+
 function loadConsumerRepairRuntimeDraftBuilder(): ConsumerRepairRuntimeDraftBuilder {
   const runtime = require(
     "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
@@ -833,8 +841,12 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     originalText: resolverInput,
     requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
   });
+  const roadworksWaveA = loadRoadworksWaveAProductionBinding();
+  const roadworksWaveAResolution = selectedWork?.selectedWorkKey
+    ? roadworksWaveA.getRoadworksWaveAProductionRegistration(selectedWork.selectedWorkKey)
+    : roadworksWaveA.resolveRoadworksWaveAProductionWork({ rawInput: resolverInput });
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
-    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION"
+    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveAResolution
       ? {
         titleRu: ROAD_SCOPE_SELECTION_QUESTION_RU.question,
         summaryRu: "Выберите состав дорожных работ до создания расчёта.",
@@ -883,6 +895,9 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       });
     })();
   recordConsumerRepairEstimateBuildTiming("RUNTIME_DRAFT_READY", buildStartedAt);
+  const roadworksWaveARuntimeDraft = runtimeDraft?.selectedWork?.selectedWorkKey
+    ? roadworksWaveA.getRoadworksWaveAProductionRegistration(runtimeDraft.selectedWork.selectedWorkKey)
+    : null;
   const aiDraft = scopeSelectionDraft ?? (directOpenWorldDraft
     ? (() => {
       const buildDirectConsumerRepairOpenWorldAiDraft =
@@ -896,6 +911,8 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       recordConsumerRepairEstimateBuildTiming("DIRECT_FALLBACK_DRAFT_READY", buildStartedAt);
       return directDraft;
     })()
+    : roadworksWaveARuntimeDraft
+    ? runtimeDraft!
     : runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
     : isMultiDomainReferenceV4Draft(runtimeDraft)

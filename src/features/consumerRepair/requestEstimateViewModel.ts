@@ -793,9 +793,12 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const hasCapitalRenovationCalculator = bundle.items.some((item) => capitalRenovationGroupId(item));
   const hasExpandedComplexCalculator = bundle.items.some((item) => item.sourceParameters?.expandedComplexCalculator === true);
   const hasAsphaltV4 = bundle.items.some((item) => item.sourceParameters?.asphaltV4 === true);
+  const hasAsphaltProfessionalSections = bundle.items.some((item) =>
+    asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters) !== null
+  );
   const sectionIds: RequestEstimateSectionViewModel["id"][] = hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
-    : hasAsphaltV4
+    : hasAsphaltProfessionalSections
       ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4]
       : ["materials", "labor", "equipment", "logistics", "other"];
   const sections = sectionIds
@@ -806,7 +809,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     }))
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(bundle);
-  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || bundle.items.length > 20;
+  const professionalPreview = Boolean(bundle.structuredEstimatePayload) || hasExpandedComplexCalculator || hasAsphaltProfessionalSections || bundle.items.length > 20;
   const productionTrust = buildConsumerRepairProductionTrust({
     estimateId: bundle.draft.id,
     revisionId: bundle.estimateRevisionState?.current_revision_id ?? bundle.editableEstimateSnapshot?.snapshotId ?? "draft",

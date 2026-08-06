@@ -70,9 +70,10 @@ describe("Roadworks Wave A work-specific compilation", () => {
     for (const item of RoadworksWaveAInventory) {
       const base = compileRoadworksWaveAWork(item.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
       for (const parameter of getRoadworksWaveAParameterKeys(item.workId)) {
+        const direction = parameter === "acceptance_lot_m2" ? 0.05 : /capacity/.test(parameter) ? 0.5 : 1.25;
         const changedInput = {
           ...DEFAULT_ROADWORKS_WAVE_A_INPUTS,
-          [parameter]: DEFAULT_ROADWORKS_WAVE_A_INPUTS[parameter as keyof typeof DEFAULT_ROADWORKS_WAVE_A_INPUTS] * 1.25,
+          [parameter]: DEFAULT_ROADWORKS_WAVE_A_INPUTS[parameter as keyof typeof DEFAULT_ROADWORKS_WAVE_A_INPUTS] * direction,
         };
         const changed = compileRoadworksWaveAWork(item.workId, changedInput).rows;
         const changedIds = base

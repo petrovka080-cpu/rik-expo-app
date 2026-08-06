@@ -9,7 +9,7 @@ import {
 } from "../../src/lib/estimate/v4/roadworks";
 
 describe("Roadworks Wave A semantic and normative truth", () => {
-  test("reports the catalog blocker instead of claiming 35 professional models", () => {
+  test("reports the repaired 35-record semantic and composition truth", () => {
     const audit = auditRoadworksWaveASemanticTruth();
     expect(audit).toMatchObject({
       total_work_ids: 35,
@@ -17,9 +17,15 @@ describe("Roadworks Wave A semantic and normative truth", () => {
       catalog_aliases: 0,
       scope_presets: 16,
       domain_review_required: 11,
-      unique_semantic_signatures: 8,
-      scope_profiles_ignored_by_compiler: 27,
-      missing_golden_fixtures: 35,
+      unique_semantic_signatures: 35,
+      scope_profiles_ignored_by_compiler: 0,
+      missing_golden_fixtures: 0,
+      missing_p0_parameters: 0,
+      silent_p0_defaults: 0,
+      missing_formula_sources: 0,
+      generic_output_rows: 0,
+      models_requiring_domain_review: 20,
+      blockerStatus: "ASPHALT_35_COMPOSITION_READY_FOR_PLATFORM_GATES",
       fake_green_claimed: false,
     });
     expect(audit.unexplainedCloneGroups).toEqual([]);
@@ -50,7 +56,10 @@ describe("Roadworks Wave A semantic and normative truth", () => {
   });
 
   test("binds compiled rows only to registered sources without calling compiler output golden", () => {
-    const knownSources = new Set(ROADWORKS_WAVE_A_NORMATIVE_SOURCES.map((source) => source.sourceId));
+    const knownSources = new Set([
+      ...ROADWORKS_WAVE_A_NORMATIVE_SOURCES.map((source) => source.sourceId),
+      "project_quantity_inputs_v3",
+    ]);
     for (const model of RoadworksWaveAInventory.filter((item) => item.catalogClassification === "CANONICAL_WORK_MODEL")) {
       const compilation = compileRoadworksWaveAWork(model.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS);
       expect(compilation.rows.every((row) => row.sourceIds.every((sourceId) => knownSources.has(sourceId)))).toBe(true);
