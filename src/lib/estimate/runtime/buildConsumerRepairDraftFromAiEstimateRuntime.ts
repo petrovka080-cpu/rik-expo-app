@@ -15,6 +15,7 @@ import {
 import { buildCanonicalElectricalConsumerRepairAiDraft } from "../v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 import { ELECTRICAL_CANONICAL_WORK_KEY } from "../v4/electrical/electricalCanonicalV1";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../v4/multiDomainReferencePassportsV4";
+import { getRoadworksWaveAProductionRegistration } from "../v4/roadworks/roadworksWaveAProductionBinding";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
@@ -38,9 +39,20 @@ function isAsphaltV4Revision(revision: EstimateDraftRevision): boolean {
     revision.professionalWorkId === ASPHALT_WORK_ID_V4;
 }
 
+function roadworksWaveARegistration(revision: EstimateDraftRevision) {
+  return getRoadworksWaveAProductionRegistration(revision.matchedFamily)
+    ?? getRoadworksWaveAProductionRegistration(revision.selectedTemplateId)
+    ?? getRoadworksWaveAProductionRegistration(
+      revision.boq.rows.find((row) => typeof row.sourceParameters?.requestedCatalogWorkId === "string")
+        ?.sourceParameters?.requestedCatalogWorkId as string | undefined,
+    );
+}
+
 function revisionTitleRu(revision: EstimateDraftRevision): string {
   if (isCapitalRenovationRevision(revision)) return "Капитальный ремонт квартиры";
   if (isAsphaltV4Revision(revision)) return ASPHALT_PROFESSIONAL_NAME_RU_V4;
+  const roadworksRegistration = roadworksWaveARegistration(revision);
+  if (roadworksRegistration) return roadworksRegistration.professionalNameRu;
   return revision.matchedFamily || revision.selectedTemplateId || "AI estimate";
 }
 
@@ -67,6 +79,18 @@ function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepa
       selectedWorkKey: ASPHALT_WORK_ID_V4,
       selectedWorkTitleRu: ASPHALT_PROFESSIONAL_NAME_RU_V4,
       selectedWorkCategoryKey: "road_construction",
+      selectedWorkCategoryTitleRu: "Дорожные работы",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+  }
+  const roadworksRegistration = roadworksWaveARegistration(revision);
+  if (roadworksRegistration) {
+    return {
+      selectedWorkKey: roadworksRegistration.workId,
+      selectedWorkTitleRu: roadworksRegistration.professionalNameRu,
+      selectedWorkCategoryKey: "roadworks",
       selectedWorkCategoryTitleRu: "Дорожные работы",
       selectedWorkRawInput: revision.rawInput,
       selectedWorkSource: "user_selected",

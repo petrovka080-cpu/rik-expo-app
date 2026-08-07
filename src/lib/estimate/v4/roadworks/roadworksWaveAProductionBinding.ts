@@ -6,11 +6,13 @@ import {
   RoadworksWaveAInventory,
   compileRoadworksWaveAWork,
   getRoadworksWaveAParameterKeys,
+  getRoadworksWaveAParameterDefinitions,
   resolveRoadworksWaveAWork,
   type RoadworksWaveAInputs,
   type RoadworksWaveAInventoryItem,
   type RoadworksWaveARow,
 } from "./roadworksWaveA";
+import { resolveRoadAsphaltProfileV3 } from "./roadworksWaveASemanticTruth";
 
 export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.1";
 
@@ -19,6 +21,7 @@ export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem &
   overlayId: string;
   formulaGraphId: string;
   parameterSchema: readonly string[];
+  parameterDefinitions: ReturnType<typeof getRoadworksWaveAParameterDefinitions>;
   passport: {
     requestedCatalogWorkId: string;
     canonicalWorkId: string;
@@ -38,6 +41,7 @@ export const RoadworksWaveAProductionRegistry: readonly RoadworksWaveAProduction
     overlayId: `${item.workId}:overlay:v4`,
     formulaGraphId: `${item.canonicalModelId}:formula-graph:v1`,
     parameterSchema: getRoadworksWaveAParameterKeys(item.workId),
+    parameterDefinitions: getRoadworksWaveAParameterDefinitions(item.workId),
     passport: {
       requestedCatalogWorkId: item.workId,
       canonicalWorkId: item.canonicalWorkId,
@@ -153,6 +157,7 @@ function numberFromText(text: string, patterns: readonly RegExp[]): number | nul
 
 export function extractRoadworksWaveAProductionInputs(
   input: BuildEstimateFromInlineWorkPromptInput,
+  workId?: string,
 ): { values: RoadworksWaveAInputs; assumptions: readonly string[] } {
   const text = input.rawInput;
   const extracted: Partial<RoadworksWaveAInputs> = {
@@ -173,10 +178,11 @@ export function extractRoadworksWaveAProductionInputs(
   };
   const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS };
   const assumptions: string[] = [];
+  const applicableKeys = new Set(workId ? getRoadworksWaveAParameterKeys(workId) : Object.keys(values));
   for (const key of Object.keys(values) as (keyof RoadworksWaveAInputs)[]) {
     const explicit = positiveOverride(input, key) ?? extracted[key] ?? null;
     if (explicit != null) values[key] = explicit;
-    else assumptions.push(key);
+    else if (applicableKeys.has(key)) assumptions.push(key);
   }
   return { values, assumptions };
 }
@@ -201,17 +207,47 @@ function wbsFor(row: RoadworksWaveARow): string {
   } satisfies Record<RoadworksWaveARow["category"], string>)[row.category];
 }
 
+function professionalCategoryFor(row: RoadworksWaveARow): string {
+  return ({
+    material: "MATERIAL",
+    work: "WORK",
+    labor: "LABOR",
+    equipment: "EQUIPMENT",
+    service: "SERVICE",
+    logistics: "LOGISTICS",
+    test: "LAB_CONTROL",
+    document: "DOCUMENTATION",
+  } satisfies Record<RoadworksWaveARow["category"], string>)[row.category];
+}
+
 export function buildRoadworksWaveAProductionDraft(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): { draft: ConsumerRepairAiDraft; registration: RoadworksWaveAProductionRegistration } | null {
   const registration = resolveRoadworksWaveAProductionWork(input);
   if (!registration) return null;
-  const parameters = extractRoadworksWaveAProductionInputs(input);
-  const compilation = compileRoadworksWaveAWork(registration.canonicalWorkId, parameters.values);
+  const parameters = extractRoadworksWaveAProductionInputs(input, registration.workId);
+  const resolvedProfile = resolveRoadAsphaltProfileV3(registration.workId);
+  const executable = resolvedProfile.domainDecision === "ROADS_AND_PAVEMENTS" && resolvedProfile.scopePresetId !== null;
+  const conditionalRow: RoadworksWaveARow = {
+    rowId: `${registration.canonicalWorkId}:applicability_blocker`,
+    category: "document",
+    nameRu: "Требуется подтверждение области применения и состава работ",
+    unit: "pcs",
+    quantity: 1,
+    formulaId: "conditional_no_certified_quantity",
+    affectedBy: [],
+    sourceIds: ["catalog_applicability_review"],
+    procurementOwner: "customer",
+  };
+  const compilation = executable
+    ? compileRoadworksWaveAWork(registration.canonicalWorkId, parameters.values, { scopeProfile: registration.scopeProfile })
+    : { workId: registration.workId, rows: [conditionalRow] };
   const currency = input.currency ?? "KGS";
   const draft: ConsumerRepairAiDraft = {
     titleRu: `Предварительная профессиональная смета: ${registration.professionalNameRu}`,
-    summaryRu: `Рассчитано ${compilation.rows.length} позиций. Цены не заполнены; требуется проверка дорожным инженером и сметчиком.`,
+    summaryRu: executable
+      ? `Рассчитано ${compilation.rows.length} позиций. Цены не заполнены; требуется проверка дорожным инженером и сметчиком.`
+      : "Асфальтовая смета не рассчитана: сначала подтвердите дорожную область применения и состав работ.",
     repairType: registration.workId,
     selectedWork: {
       selectedWorkKey: registration.workId,
@@ -223,7 +259,9 @@ export function buildRoadworksWaveAProductionDraft(
       selectedWorkResolverReGuessed: false,
     },
     dangerousDiyBlocked: false,
-    missingData: parameters.assumptions.map((key) => `Уточнить: ${key}`),
+    missingData: executable
+      ? parameters.assumptions.map((key) => `Уточнить: ${key}`)
+      : ["Подтвердить дорожную область применения, конструкцию и технологическую операцию."],
     items: compilation.rows.map((row, rowIndex) => ({
       itemType: itemType(row),
       titleRu: row.nameRu,
@@ -245,6 +283,7 @@ export function buildRoadworksWaveAProductionDraft(
         includedInProcurement: row.procurementOwner === "buyer",
         procurementOwner: row.procurementOwner,
         roadworksWaveA: true,
+        asphaltV4ProfessionalCategory: professionalCategoryFor(row),
         requestedCatalogWorkId: registration.workId,
         selectedWorkId: registration.workId,
         canonicalWorkId: registration.canonicalWorkId,
@@ -258,6 +297,9 @@ export function buildRoadworksWaveAProductionDraft(
         assumptionKeys: parameters.assumptions,
         affectedBy: row.affectedBy,
         formulaGraphId: registration.formulaGraphId,
+        executableAsphaltProfile: executable,
+        certificationClass: resolvedProfile.certificationClass,
+        applicabilityBlockers: resolvedProfile.blockers,
         canonicalPayloadFingerprintSeed: `${registration.canonicalModelId}:${registration.scopePresetId ?? "no-preset"}`,
         inlineWorkPrompt: true,
         inlineWorkPromptTemplateId: registration.templateId,

@@ -60,7 +60,7 @@ export type RoadworksWaveARow = {
   rowId: string;
   category: "material" | "work" | "labor" | "equipment" | "service" | "logistics" | "test" | "document";
   nameRu: string;
-  unit: "m2" | "t" | "t_km" | "l" | "h" | "trip" | "item";
+  unit: "m2" | "t" | "t_km" | "l" | "man_hour" | "machine_hour" | "trip" | "pcs";
   quantity: number;
   formulaId: string;
   affectedBy: readonly string[];
@@ -75,6 +75,11 @@ export type RoadworksWaveAInputs = {
   waste_factor: number;
   haul_distance_km: number;
   productivity_m2_h: number;
+  tack_coat_l_m2: number;
+  truck_capacity_t: number;
+  waste_truck_capacity_t: number;
+  acceptance_lot_m2: number;
+  joint_sealant_l_m2: number;
 };
 
 const PREFIX = "paving_roads_landscape_interior_asphalt_";
@@ -95,49 +100,49 @@ const OPERATION_META: Record<RoadworksWaveAOperation, {
     family: "asphalt_pavement_installation",
     manifest: "SINGLE_LAYER_ASPHALT_INSTALLATION",
     assemblies: ["surface_cleaning", "tack_coat", "asphalt_mix", "paving", "compaction", "layer_acceptance"],
-    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h"],
+    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h", "tack_coat_l_m2", "truck_capacity_t", "acceptance_lot_m2"],
   },
   lay: {
     family: "asphalt_mix_placement",
     manifest: "ASPHALT_MIX_PLACEMENT",
     assemblies: ["asphalt_mix", "paving", "mix_delivery", "placement_control"],
-    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h"],
+    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h", "truck_capacity_t", "acceptance_lot_m2"],
   },
   compact: {
     family: "asphalt_compaction",
     manifest: "ASPHALT_LAYER_COMPACTION",
     assemblies: ["roller_compaction", "density_control"],
-    parameters: ["area_m2", "productivity_m2_h"],
+    parameters: ["area_m2", "productivity_m2_h", "acceptance_lot_m2"],
   },
   repair: {
     family: "asphalt_surface_repair",
     manifest: "ASPHALT_SURFACE_REPAIR",
     assemblies: ["repair_boundary_cutting", "damaged_material_removal", "tack_coat", "repair_mix", "repair_compaction", "waste_haul", "repair_acceptance"],
-    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h"],
+    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h", "tack_coat_l_m2", "truck_capacity_t", "waste_truck_capacity_t", "acceptance_lot_m2"],
   },
   prepare: {
     family: "asphalt_surface_preparation",
     manifest: "ASPHALT_SURFACE_PREPARATION",
     assemblies: ["mechanical_cleaning", "local_defect_preparation", "surface_acceptance"],
-    parameters: ["area_m2", "productivity_m2_h"],
+    parameters: ["area_m2", "productivity_m2_h", "acceptance_lot_m2"],
   },
   level: {
     family: "asphalt_leveling",
     manifest: "ASPHALT_LEVELING_COURSE",
     assemblies: ["tack_coat", "leveling_mix", "leveling_placement", "leveling_compaction", "level_control"],
-    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h"],
+    parameters: ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km", "productivity_m2_h", "tack_coat_l_m2", "truck_capacity_t", "acceptance_lot_m2"],
   },
   drain: {
     family: "asphalt_surface_drainage",
     manifest: "ASPHALT_SURFACE_DRAINAGE",
     assemblies: ["drainage_profile_setting", "surface_channel_forming", "drainage_acceptance"],
-    parameters: ["area_m2", "productivity_m2_h"],
+    parameters: ["area_m2", "productivity_m2_h", "acceptance_lot_m2"],
   },
   finish: {
     family: "asphalt_surface_finishing",
     manifest: "ASPHALT_SURFACE_FINISHING",
     assemblies: ["joint_finishing", "surface_cleanup", "finish_acceptance"],
-    parameters: ["area_m2", "productivity_m2_h"],
+    parameters: ["area_m2", "productivity_m2_h", "joint_sealant_l_m2", "acceptance_lot_m2"],
   },
 };
 
@@ -224,11 +229,52 @@ export function getRoadworksWaveAParameterKeys(workId: string): readonly string[
   return operation ? OPERATION_META[operation].parameters : [];
 }
 
+export type RoadworksWaveAParameterDefinition = {
+  parameterId: string;
+  key: keyof RoadworksWaveAInputs;
+  tier: "P0" | "P1" | "P2";
+  unit: "m2" | "mm" | "t_m3" | "ratio" | "km" | "m2_h" | "l_m2" | "t";
+  sourceRole: "USER_PROJECT_INPUT";
+};
+
+const PARAMETER_UNITS: Record<keyof RoadworksWaveAInputs, RoadworksWaveAParameterDefinition["unit"]> = {
+  area_m2: "m2",
+  thickness_mm: "mm",
+  density_t_m3: "t_m3",
+  waste_factor: "ratio",
+  haul_distance_km: "km",
+  productivity_m2_h: "m2_h",
+  tack_coat_l_m2: "l_m2",
+  truck_capacity_t: "t",
+  waste_truck_capacity_t: "t",
+  acceptance_lot_m2: "m2",
+  joint_sealant_l_m2: "l_m2",
+};
+
+export function getRoadworksWaveAParameterDefinitions(workId: string): readonly RoadworksWaveAParameterDefinition[] {
+  return getRoadworksWaveAParameterKeys(workId).map((rawKey) => {
+    const key = rawKey as keyof RoadworksWaveAInputs;
+    const tier = key === "area_m2"
+      ? "P0" as const
+      : ["thickness_mm", "density_t_m3", "haul_distance_km", "productivity_m2_h"].includes(key)
+        ? "P1" as const
+        : "P2" as const;
+    return Object.freeze({
+      parameterId: `${workId}:parameter:${key}:v4`,
+      key,
+      tier,
+      unit: PARAMETER_UNITS[key],
+      sourceRole: "USER_PROJECT_INPUT" as const,
+    });
+  });
+}
+
 const round = (value: number): number => Math.round(value * 1000) / 1000;
 
 export function compileRoadworksWaveAWork(
   workId: string,
   input: RoadworksWaveAInputs,
+  options: { scopeProfile?: RoadworksWaveAScope } = {},
 ): { workId: string; rows: RoadworksWaveARow[] } {
   const operation = getRoadworksWaveAOperation(workId);
   if (!operation) throw new Error(`Unknown Roadworks Wave A work ID: ${workId}`);
@@ -239,7 +285,7 @@ export function compileRoadworksWaveAWork(
   const tonnes = round(area * input.thickness_mm / 1000 * input.density_t_m3 * input.waste_factor);
   const hours = round(area / input.productivity_m2_h);
   const prefix = `${workId}:`;
-  const sourceIds = ({
+  const normativeSourceIds = ({
     install: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
     lay: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
     compact: ["kg_mtd_krer_27_06_20_1"],
@@ -249,6 +295,7 @@ export function compileRoadworksWaveAWork(
     drain: ["kg_snip_32_01_2004_road_design"],
     finish: ["kg_snip_32_01_2004_road_design"],
   } satisfies Record<RoadworksWaveAOperation, readonly string[]>)[operation];
+  const sourceIds = [...normativeSourceIds, "project_quantity_inputs_v3"];
   const row = (
     id: string, category: RoadworksWaveARow["category"], nameRu: string,
     unit: RoadworksWaveARow["unit"], quantity: number, formulaId: string,
@@ -257,18 +304,20 @@ export function compileRoadworksWaveAWork(
     rowId: prefix + id, category, nameRu, unit, quantity: round(quantity), formulaId,
     affectedBy, sourceIds, procurementOwner: owner,
   });
-  const commonControl = row("acceptance", "test", "Контроль результата работ", "item", Math.max(1, Math.ceil(area / 1000)), "ceil(area_m2/1000)", ["area_m2"], "laboratory");
+  const commonControl = row("acceptance", "test", "Контроль результата работ", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2"], "laboratory");
   const mixes = [
     row("mix", "material", operation === "repair" ? "Ремонтная асфальтобетонная смесь" : "Асфальтобетонная смесь заданного проектом типа", "t", tonnes, "area_m2*thickness_mm/1000*density_t_m3*waste_factor", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor"], "buyer"),
-    row("mix_delivery", "logistics", "Доставка асфальтобетонной смеси", "trip", Math.max(1, Math.ceil(tonnes / 20)), "ceil(mix_t/20)", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km"], "contractor"),
+    row("mix_delivery", "logistics", "Доставка асфальтобетонной смеси", "trip", Math.max(1, Math.ceil(tonnes / input.truck_capacity_t)), "ceil(mix_t/truck_capacity_t)", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "truck_capacity_t"], "contractor"),
     row("mix_transport", "logistics", "Транспортная работа по доставке смеси", "t_km", tonnes * input.haul_distance_km, "mix_t*haul_distance_km", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km"], "contractor"),
   ];
   const work = (id: string, name: string) => row(id, "work", name, "m2", area, "area_m2", ["area_m2"], "contractor");
-  const machine = (id: string, name: string) => row(id, "equipment", name, "h", hours, "area_m2/productivity_m2_h", ["area_m2", "productivity_m2_h"], "contractor");
+  const machine = (id: string, name: string) => row(id, "equipment", name, "machine_hour", hours, "area_m2/productivity_m2_h", ["area_m2", "productivity_m2_h"], "contractor");
+  const labor = row("crew_labor", "labor", "Труд дорожной бригады", "man_hour", hours, "area_m2/productivity_m2_h", ["area_m2", "productivity_m2_h"], "contractor");
+  const documentation = row("execution_documentation", "document", "Исполнительная документация и журнал работ", "pcs", 1, "one_documentation_set", [], "contractor");
 
   const byOperation: Record<RoadworksWaveAOperation, RoadworksWaveARow[]> = {
     install: [
-      row("tack_coat", "material", "Битумная эмульсия для подгрунтовки", "l", area * 0.3, "area_m2*0.3", ["area_m2"], "buyer"),
+      row("tack_coat", "material", "Битумная эмульсия для подгрунтовки", "l", area * input.tack_coat_l_m2, "area_m2*tack_coat_l_m2", ["area_m2", "tack_coat_l_m2"], "buyer"),
       ...mixes, work("paving", "Устройство однослойного асфальтобетонного покрытия"),
       machine("paver", "Асфальтоукладчик"), machine("roller", "Каток дорожный"), commonControl,
     ],
@@ -277,27 +326,32 @@ export function compileRoadworksWaveAWork(
     repair: [
       work("boundary_cutting", "Оконтуривание и вскрытие границ ремонтной карты"),
       work("removal", "Удаление разрушенного материала"),
-      row("tack_coat", "material", "Битумная эмульсия для подгрунтовки ремонтной карты", "l", area * 0.4, "area_m2*0.4", ["area_m2"], "buyer"),
+      row("tack_coat", "material", "Битумная эмульсия для подгрунтовки ремонтной карты", "l", area * input.tack_coat_l_m2, "area_m2*tack_coat_l_m2", ["area_m2", "tack_coat_l_m2"], "buyer"),
       ...mixes, work("repair_placement", "Устройство ремонтного слоя"),
       machine("repair_equipment", "Комплект техники для ремонта покрытия"),
-      row("waste_haul", "logistics", "Вывоз снятого асфальтобетона", "trip", Math.max(1, Math.ceil(tonnes / 15)), "ceil(removed_t/15)", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km"], "contractor"),
+      row("waste_haul", "logistics", "Вывоз снятого асфальтобетона", "trip", Math.max(1, Math.ceil(tonnes / input.waste_truck_capacity_t)), "ceil(removed_t/waste_truck_capacity_t)", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "waste_truck_capacity_t"], "contractor"),
       row("waste_transport", "logistics", "Транспортная работа по вывозу снятого материала", "t_km", tonnes * input.haul_distance_km, "removed_t*haul_distance_km", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km"], "contractor"),
       commonControl,
     ],
     prepare: [work("cleaning", "Механизированная очистка и подготовка поверхности"), machine("cleaner", "Подметально-уборочная машина"), commonControl],
     level: [
-      row("tack_coat", "material", "Битумная эмульсия под выравнивающий слой", "l", area * 0.3, "area_m2*0.3", ["area_m2"], "buyer"),
+      row("tack_coat", "material", "Битумная эмульсия под выравнивающий слой", "l", area * input.tack_coat_l_m2, "area_m2*tack_coat_l_m2", ["area_m2", "tack_coat_l_m2"], "buyer"),
       ...mixes, work("leveling", "Устройство выравнивающего слоя"), machine("leveling_equipment", "Комплект укладки и уплотнения"), commonControl,
     ],
     drain: [work("profile", "Формирование проектного водоотводного профиля покрытия"), machine("profiling", "Комплект профилирования поверхности"), commonControl],
     finish: [
-      row("joint_sealant", "material", "Материал для герметизации технологических стыков", "l", area * 0.01, "area_m2*0.01", ["area_m2"], "buyer"),
+      row("joint_sealant", "material", "Материал для герметизации технологических стыков", "l", area * input.joint_sealant_l_m2, "area_m2*joint_sealant_l_m2", ["area_m2", "joint_sealant_l_m2"], "buyer"),
       work("finishing", "Финишная обработка стыков и очистка покрытия"),
       machine("finishing_equipment", "Комплект финишной обработки стыков"),
       commonControl,
     ],
   };
-  return { workId, rows: byOperation[operation] };
+  const scopeRows: RoadworksWaveARow[] = options.scopeProfile === "small_area"
+    ? [row("restricted_area_execution", "service", "Организация работ на малой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
+    : options.scopeProfile === "large_area"
+      ? [row("large_area_mechanized_execution", "service", "Организация механизированного потока на большой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
+      : [];
+  return { workId, rows: [...byOperation[operation], labor, documentation, ...scopeRows] };
 }
 
 export function roadworksWaveANaturalLanguageCases(item: RoadworksWaveAInventoryItem): readonly string[] {
@@ -366,4 +420,9 @@ export const DEFAULT_ROADWORKS_WAVE_A_INPUTS: RoadworksWaveAInputs = {
   waste_factor: 1.03,
   haul_distance_km: 20,
   productivity_m2_h: 100,
+  tack_coat_l_m2: 0.3,
+  truck_capacity_t: 20,
+  waste_truck_capacity_t: 15,
+  acceptance_lot_m2: 1000,
+  joint_sealant_l_m2: 0.01,
 };

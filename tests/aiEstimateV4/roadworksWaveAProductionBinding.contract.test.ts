@@ -105,9 +105,12 @@ describe("RoadworksWaveAProductionBindingContract", () => {
 
   test("recalculates each technology family as a new revision and invalidates old artifacts", () => {
     const representatives = [
-      ...new Map(RoadworksWaveAProductionRegistry.map((item) => [item.technologyFamily, item])).values(),
+      ...new Map(RoadworksWaveAProductionRegistry
+        .filter((item) => item.scopeProfile === "standard" &&
+          ["install", "lay", "compact", "repair", "level"].some((operation) => item.workId.includes(`_${operation}_`)))
+        .map((item) => [item.technologyFamily, item])).values(),
     ];
-    expect(representatives).toHaveLength(8);
+    expect(representatives).toHaveLength(5);
     for (const [index, item] of representatives.entries()) {
       const runtime = createAiEstimateRuntime();
       const initial = runtime.createDraft({
@@ -134,6 +137,31 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(changed.revision.artifacts.buyerHandoffId).toBeNull();
       expect(changed.revision.boq.rows.some((row) => beforeById.get(row.rowId) !== row.quantity)).toBe(true);
       expect(changed.revision.boq.rows.every((row) => row.rowId.startsWith(`${item.canonicalWorkId}:`))).toBe(true);
+    }
+  });
+
+  test("keeps ambiguous scope/domain records conditional without a certified Asphalt BOQ", () => {
+    const conditional = RoadworksWaveAProductionRegistry.filter((item) =>
+      item.catalogClassification === "DOMAIN_REVIEW_REQUIRED" ||
+      ["prepare", "drain", "finish"].some((operation) => item.workId.includes(`_${operation}_`)),
+    );
+    expect(conditional.length).toBeGreaterThan(0);
+    for (const item of conditional) {
+      const result = buildEstimateFromInlineWorkPrompt({
+        rawInput: `${item.professionalNameRu} 120 м2`,
+        selectedWorkKey: item.workId,
+        selectedTemplateId: item.templateId,
+      });
+      expect(result.draft?.selectedWork?.selectedWorkKey).toBe(item.workId);
+      expect(result.draft?.items).toHaveLength(1);
+      expect(result.draft?.items[0]).toMatchObject({
+        category: "document",
+        unitPrice: null,
+        priceStatus: "PRICE_MISSING",
+      });
+      expect(result.draft?.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(false);
+      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).toEqual(expect.arrayContaining([expect.any(String)]));
+      expect(result.draft?.items[0]?.sourceParameters?.includedInProcurement).toBe(false);
     }
   });
 });
