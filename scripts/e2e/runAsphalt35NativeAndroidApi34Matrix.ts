@@ -71,11 +71,27 @@ type NativeCaseResult = {
   duration_ms: number;
   phase_durations_ms: Record<string, number>;
   runtime_build_timing: NativeEstimateBuildTimingEvidence;
+  case_start_isolation: NativeCaseIsolationEvidence;
+  case_end_isolation: NativeCaseIsolationEvidence | null;
   phase_reached: "launch" | "p0" | "create" | "edit" | "cold_replay" | "pdf";
+};
+
+type NativeCaseIsolationEvidence = {
+  phase: "before_case" | "after_pdf";
+  pdf_viewer_returned: boolean;
+  internal_pdf_route_was_open: boolean;
+  internal_pdf_route_closed: boolean;
+  history_modal_was_open: boolean;
+  history_modal_closed: boolean;
+  neutral_route_visible: boolean;
+  blocking_modal_present: boolean;
+  data_wipes: 0;
+  failures: string[];
 };
 
 type CliOptions = {
   diagnosticWorkKey: string | null;
+  diagnosticWorkCount: number | null;
   expectedCommit: string;
   devServerPort: number | null;
   allowDirtyDiagnostic: boolean;
@@ -365,6 +381,98 @@ async function returnToTop(swipes = 16): Promise<void> {
     swipe("down", index % 4 === 3);
     await wait(180);
   }
+}
+
+function pdfProjectionVisibleIn(snapshot: ReturnType<typeof dumpUi>): boolean {
+  return Boolean(
+    findNodeById(snapshot, "native-pdf-webview")
+    || findNodeById(snapshot, "native-pdf-handoff-shell")
+    || snapshot.nodes.some((node) => node.packageName !== PACKAGE_NAME && /\.pdf$/i.test(node.text.trim())),
+  );
+}
+
+async function waitForKnownCaseBoundarySurface(timeoutMs = 30_000): Promise<ReturnType<typeof dumpUi>> {
+  const deadline = Date.now() + timeoutMs;
+  let snapshot = dumpUi();
+  while (Date.now() < deadline) {
+    if (
+      findNodeById(snapshot, "consumer-repair-screen")
+      || findNodeById(snapshot, "consumer-repair-history-modal")
+      || findNodeById(snapshot, "native-pdf-handoff-shell")
+    ) {
+      return snapshot;
+    }
+    await wait(WAIT_POLL_MS);
+    snapshot = dumpUi();
+  }
+  return snapshot;
+}
+
+async function restoreNativeCaseIsolation(
+  phase: NativeCaseIsolationEvidence["phase"],
+  expectedPdfProjection: NativeCaseResult["pdf_projection_mode"] = null,
+): Promise<NativeCaseIsolationEvidence> {
+  const failures: string[] = [];
+  let snapshot = dumpUi();
+  const pdfViewerWasOpen = expectedPdfProjection != null || pdfProjectionVisibleIn(snapshot);
+  let pdfViewerReturned = false;
+  if (pdfViewerWasOpen) {
+    const returned = adb(["shell", "input", "keyevent", "4"], 10_000);
+    pdfViewerReturned = returned.ok;
+    if (!returned.ok) failures.push(`${phase}_pdf_viewer_return_failed`);
+    await wait(800);
+    snapshot = await waitForKnownCaseBoundarySurface();
+  }
+
+  const internalPdfRouteWasOpen = Boolean(findNodeById(snapshot, "native-pdf-handoff-shell"));
+  let internalPdfRouteClosed = !internalPdfRouteWasOpen;
+  if (internalPdfRouteWasOpen) {
+    const backNode = findNodeById(snapshot, "pdf-viewer-back");
+    if (!backNode || !tapNode(backNode)) {
+      failures.push(`${phase}_internal_pdf_route_close_failed`);
+    } else {
+      snapshot = await waitForKnownCaseBoundarySurface();
+      internalPdfRouteClosed = !findNodeById(snapshot, "native-pdf-handoff-shell");
+      if (!internalPdfRouteClosed) failures.push(`${phase}_internal_pdf_route_remained_open`);
+    }
+  }
+
+  const historyModalWasOpen = Boolean(findNodeById(snapshot, "consumer-repair-history-modal"));
+  let historyModalClosed = !historyModalWasOpen;
+  if (historyModalWasOpen) {
+    const closeNode = findNodeById(snapshot, "consumer-repair-history-close");
+    if (!closeNode || !tapNode(closeNode)) {
+      failures.push(`${phase}_history_modal_close_failed`);
+    } else {
+      const deadline = Date.now() + 20_000;
+      do {
+        await wait(500);
+        snapshot = dumpUi();
+        historyModalClosed = !findNodeById(snapshot, "consumer-repair-history-modal");
+      } while (!historyModalClosed && Date.now() < deadline);
+      if (!historyModalClosed) failures.push(`${phase}_history_modal_remained_open`);
+    }
+  }
+
+  snapshot = dumpUi();
+  const blockingModalPresent = Boolean(findNodeById(snapshot, "consumer-repair-history-modal"))
+    || pdfProjectionVisibleIn(snapshot);
+  const neutralRouteVisible = Boolean(findNodeById(snapshot, "consumer-repair-screen"));
+  if (blockingModalPresent) failures.push(`${phase}_blocking_modal_present`);
+  if (!neutralRouteVisible) failures.push(`${phase}_neutral_consumer_repair_route_missing`);
+
+  return {
+    phase,
+    pdf_viewer_returned: pdfViewerReturned,
+    internal_pdf_route_was_open: internalPdfRouteWasOpen,
+    internal_pdf_route_closed: internalPdfRouteClosed,
+    history_modal_was_open: historyModalWasOpen,
+    history_modal_closed: historyModalClosed,
+    neutral_route_visible: neutralRouteVisible,
+    blocking_modal_present: blockingModalPresent,
+    data_wipes: 0,
+    failures,
+  };
 }
 
 async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
@@ -806,6 +914,19 @@ async function runCase(
     { scopeProfile: registration.scopeProfile },
   ).rows;
   const expectedRowNames = expectedRows.map((row) => row.nameRu);
+  let caseStartIsolation: NativeCaseIsolationEvidence = {
+    phase: "before_case",
+    pdf_viewer_returned: false,
+    internal_pdf_route_was_open: false,
+    internal_pdf_route_closed: true,
+    history_modal_was_open: false,
+    history_modal_closed: true,
+    neutral_route_visible: false,
+    blocking_modal_present: false,
+    data_wipes: 0,
+    failures: [],
+  };
+  let caseEndIsolation: NativeCaseIsolationEvidence | null = null;
   const readRuntimeBuildTiming = (): NativeEstimateBuildTimingEvidence =>
     parseNativeEstimateBuildTimingEvidence(adb(["logcat", "-d", "-v", "brief"], 30_000).output);
   const finishAtRootFailure = (
@@ -841,9 +962,16 @@ async function runCase(
     duration_ms: Date.now() - startedAt,
     phase_durations_ms: phaseDurationsMs,
     runtime_build_timing: readRuntimeBuildTiming(),
+    case_start_isolation: caseStartIsolation,
+    case_end_isolation: caseEndIsolation,
     phase_reached: phaseReached,
   });
 
+  caseStartIsolation = await restoreNativeCaseIsolation("before_case");
+  if (caseStartIsolation.failures.length > 0) {
+    return finishAtRootFailure("launch", caseStartIsolation.failures);
+  }
+  markPhase("case_start_isolation_complete");
   await returnToTop(12);
   adb(["logcat", "-c"], 15_000);
   const launch = launchUri(requestUri(registration.professionalNameRu, true));
@@ -1071,8 +1199,9 @@ async function runCase(
   const pdfCapture = capture(caseDir, "pdf");
   if (pdfCapture.screenshot) screenshots.push(pdfCapture.screenshot);
   if (pdfCapture.uiDump) uiDumps.push(pdfCapture.uiDump);
-  adb(["shell", "input", "keyevent", "4"], 10_000);
-  await wait(500);
+  caseEndIsolation = await restoreNativeCaseIsolation("after_pdf", pdfProbe.mode);
+  failures.push(...caseEndIsolation.failures);
+  markPhase("case_end_isolation_complete");
 
   const coldReplayPdf = historyExactOwner
     && fullBoqVisible
@@ -1110,6 +1239,8 @@ async function runCase(
     duration_ms: Date.now() - startedAt,
     phase_durations_ms: phaseDurationsMs,
     runtime_build_timing: runtimeBuildTiming,
+    case_start_isolation: caseStartIsolation,
+    case_end_isolation: caseEndIsolation,
     phase_reached: pdfProjectionVisible ? "pdf" : "cold_replay",
   };
 }
@@ -1118,8 +1249,11 @@ function parseOptions(): CliOptions {
   const args = process.argv.slice(2);
   const value = (prefix: string): string | null => args.find((arg) => arg.startsWith(prefix))?.slice(prefix.length) ?? null;
   const devServerPortRaw = value("--dev-server-port=");
+  const diagnosticWorkCountRaw = value("--diagnostic-work-count=");
+  const diagnosticWorkCount = diagnosticWorkCountRaw == null ? null : Number(diagnosticWorkCountRaw);
   return {
     diagnosticWorkKey: value("--diagnostic-work-key="),
+    diagnosticWorkCount,
     expectedCommit: value("--expected-commit=") ?? git(["rev-parse", "HEAD"]),
     devServerPort: devServerPortRaw ? Number(devServerPortRaw) : null,
     allowDirtyDiagnostic: args.includes("--allow-dirty-diagnostic"),
@@ -1150,6 +1284,19 @@ async function main(): Promise<void> {
   if (!packageProbe.ok || !packageProbe.output.includes("package:")) failures.push("native_package_not_installed");
   if (head !== options.expectedCommit) failures.push(`head_expected_${options.expectedCommit}_received_${head}`);
   if (dirty && !options.allowDirtyDiagnostic) failures.push("worktree_not_clean_for_native_acceptance");
+  if (options.diagnosticWorkKey && options.diagnosticWorkCount != null) {
+    failures.push("diagnostic_work_key_and_count_are_mutually_exclusive");
+  }
+  if (
+    options.diagnosticWorkCount != null
+    && (
+      !Number.isInteger(options.diagnosticWorkCount)
+      || options.diagnosticWorkCount < 2
+      || options.diagnosticWorkCount > 5
+    )
+  ) {
+    failures.push(`diagnostic_work_count_expected_2_to_5_received_${options.diagnosticWorkCount}`);
+  }
 
   if (options.clearAppData) {
     const clear = adb(["shell", "pm", "clear", PACKAGE_NAME], 20_000);
@@ -1180,7 +1327,9 @@ async function main(): Promise<void> {
 
   const selected = options.diagnosticWorkKey
     ? RoadworksWaveAProductionRegistry.filter((item) => item.workId === options.diagnosticWorkKey)
-    : [...RoadworksWaveAProductionRegistry];
+    : options.diagnosticWorkCount != null
+      ? RoadworksWaveAProductionRegistry.slice(0, options.diagnosticWorkCount)
+      : [...RoadworksWaveAProductionRegistry];
   if (selected.length === 0) failures.push(`unknown_diagnostic_work_key:${options.diagnosticWorkKey}`);
   const results: NativeCaseResult[] = [];
   if (failures.length === 0) {
@@ -1232,6 +1381,7 @@ async function main(): Promise<void> {
     worktree_clean: !dirty,
     dirty_diagnostic_allowed: options.allowDirtyDiagnostic,
     diagnostic_work_key: options.diagnosticWorkKey,
+    diagnostic_work_count: options.diagnosticWorkCount,
     source_status: status.split(/\r?\n/).filter(Boolean),
     package_probe: packageProbe.output.trim(),
     native_android_api34_create: `${createCount}/${selected.length}`,
@@ -1252,7 +1402,14 @@ async function main(): Promise<void> {
     generated_at: new Date().toISOString(),
     fake_green_claimed: false,
   };
-  const artifactPath = path.join(artifactDir, options.diagnosticWorkKey ? "diagnostic-result.json" : "asphalt-35-native-api34-105-result.json");
+  const artifactPath = path.join(
+    artifactDir,
+    options.diagnosticWorkKey
+      ? "diagnostic-result.json"
+      : options.diagnosticWorkCount != null
+        ? `diagnostic-${options.diagnosticWorkCount}-result.json`
+        : "asphalt-35-native-api34-105-result.json",
+  );
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
   fs.writeFileSync(`${artifactPath}.sha256`, `${sha256(fs.readFileSync(artifactPath))}  ${path.basename(artifactPath)}\n`, "utf8");
   console.log(JSON.stringify({

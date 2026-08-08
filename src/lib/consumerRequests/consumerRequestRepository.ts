@@ -455,8 +455,8 @@ function compactOlderApprovedHistoryRecordsForStorage(
   const approved = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== protectedBundle.draft.id)
     .map((requestDraftId) =>
-      readDurableBundle(storage, requestDraftId) ??
       store.bundles.get(requestDraftId) ??
+      readDurableBundle(storage, requestDraftId) ??
       null
     )
     .filter((candidate): candidate is ConsumerRepairDraftBundle => {
@@ -486,8 +486,8 @@ function pruneDurableDraftRecordsForBundle(
   const candidates = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== bundle.draft.id)
     .map((requestDraftId) =>
-      readDurableBundle(storage, requestDraftId) ??
       store.bundles.get(requestDraftId) ??
+      readDurableBundle(storage, requestDraftId) ??
       null
     )
     .filter((candidate): candidate is ConsumerRepairDraftBundle => {

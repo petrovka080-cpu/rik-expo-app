@@ -610,6 +610,15 @@ test("full-road infrastructure emergency durable compaction preserves the expand
     compactConsumerRepairBundleForDurableStorage(bundle),
   );
   expect(Buffer.byteLength(JSON.stringify(canonicalDurable), "utf8")).toBeLessThanOrEqual(4.5 * 1024 * 1024);
+  const canonicalReopened = decodeConsumerRepairBundleFromDurableStorage(canonicalDurable);
+  if (!canonicalReopened) throw new Error("TEST_CANONICAL_DURABLE_REOPEN_DECODE_FAILED");
+  const canonicalRevision = canonicalReopened.estimateRevisionState?.revisions.find((revision) =>
+    revision.revision_id === canonicalReopened.estimateRevisionState?.current_revision_id
+  );
+  expect(canonicalRevision?.rows_hash).toBe(bundle.estimateRevisionState?.revisions.at(-1)?.rows_hash);
+  expect(canonicalRevision?.editable_estimate_snapshot.rows).toHaveLength(bundle.items.length);
+  expect(canonicalReopened.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows)
+    .toEqual(bundle.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows);
   const compacted = compactConsumerRepairBundleForEmergencyDurableStorage(bundle, { createdAt: "2026-07-22T00:00:00.000Z" });
   const editableState = compacted.estimateRevisionState;
   const draftState = compacted.estimateDraftRevisionState;

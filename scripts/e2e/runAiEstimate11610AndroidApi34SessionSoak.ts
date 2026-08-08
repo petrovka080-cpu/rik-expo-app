@@ -555,7 +555,13 @@ async function readSoakEvidence(page: Page): Promise<SoakBundleEvidence> {
       bundle?.draft?.status === "consumer_approved" || bundle?.draft?.status === "sent_to_marketplace"
     );
     const latestApproved = approved[0] ?? null;
-    const state = latest?.estimateRevisionState ?? latest?.estimateDraftRevisionState ?? null;
+    const compressedRevisionState = latest?.estimateRevisionState?.schema ===
+      "consumer_repair_estimate_revision_state_zlib_v1"
+      ? latest.estimateRevisionState
+      : null;
+    const state = compressedRevisionState
+      ? latest?.estimateDraftRevisionState ?? compressedRevisionState
+      : latest?.estimateRevisionState ?? latest?.estimateDraftRevisionState ?? null;
     const revisions = Array.isArray(state?.revisions) ? state.revisions : [];
     const pdfs = Array.isArray(latest?.pdfs) ? latest.pdfs : [];
     const latestItems = decodeItems(latest);
@@ -578,6 +584,7 @@ async function readSoakEvidence(page: Page): Promise<SoakBundleEvidence> {
             : [];
     const sourceParametersFor = (row) => row?.sourceParameters ?? row?.source_parameters ?? null;
     const rowsHash =
+      compressedRevisionState?.revisions?.[0]?.rows_hash ??
       currentRevision?.rows_hash ??
       currentRevision?.rowsHash ??
       snapshot?.hash ??
@@ -606,7 +613,7 @@ async function readSoakEvidence(page: Page): Promise<SoakBundleEvidence> {
       passportBackedRevisionRowCount: rows.filter((row) =>
         sourceParametersFor(row)?.passportBackedNaturalLanguageIngress === true
       ).length,
-      revisionCount: revisions.length,
+      revisionCount: compressedRevisionState?.revision_count ?? revisions.length,
       currentRevisionId: currentRevisionId,
       rowsHash,
       generatedPdfCount: generatedPdfs.length,
@@ -617,8 +624,10 @@ async function readSoakEvidence(page: Page): Promise<SoakBundleEvidence> {
         generatedPdf.revisionId === currentRevisionId &&
         (!generatedPdf.revisionRowsHash || !rowsHash || generatedPdf.revisionRowsHash === rowsHash)
       ),
-      historyBindingCount: Array.isArray(state?.history_bindings) ? state.history_bindings.length : 0,
-      approvalFreezeCount: Array.isArray(state?.approval_freezes) ? state.approval_freezes.length : 0,
+      historyBindingCount: compressedRevisionState?.history_binding_count ??
+        (Array.isArray(state?.history_bindings) ? state.history_bindings.length : 0),
+      approvalFreezeCount: compressedRevisionState?.approval_freeze_count ??
+        (Array.isArray(state?.approval_freezes) ? state.approval_freezes.length : 0),
       durableRecordCount: bundles.length,
       activeDraftCount: bundles.filter((bundle) => bundle?.draft?.status === "draft" && !bundle?.draft?.deletedAt).length,
       approvedHistoryCount: approved.length,

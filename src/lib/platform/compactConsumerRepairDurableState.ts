@@ -16,6 +16,7 @@ import type {
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
+import { strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
 import {
   createEstimateDraftSession,
   hydrateExactDraft,
@@ -31,6 +32,8 @@ const CONSUMER_REPAIR_DURABLE_EDITABLE_ROWS_SCHEMA =
   "consumer_repair_editable_snapshot_rows_compact_v1" as const;
 const CONSUMER_REPAIR_DURABLE_HISTORY_SUMMARY_SCHEMA =
   "consumer_repair_durable_history_summary_v1" as const;
+const CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA =
+  "consumer_repair_estimate_revision_state_zlib_v1" as const;
 
 const CONSUMER_REPAIR_DURABLE_ITEM_FIELDS = [
   "id",
@@ -154,6 +157,29 @@ type CompactConsumerRepairDurableEditableRows = {
   rows: unknown[][];
 };
 
+type CompressedEstimateRevisionState = {
+  schema: typeof CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA;
+  codec: "zlib+base64";
+  rawByteLength: number;
+  compressedByteLength: number;
+  payload: string;
+  current_revision_id: string;
+  revision_count: number;
+  history_binding_count: number;
+  approval_freeze_count: number;
+  revisions: Array<{
+    revision_id: string;
+    selected_work_key: string;
+    rows_hash: string;
+    editable_estimate_snapshot: {
+      hash: string;
+      row_count: number;
+      passport_backed_row_count: number;
+      first_quantity: number | null;
+    };
+  }>;
+};
+
 function stringLimit(value: string | null | undefined, maxLength: number): string | null {
   if (value == null) return null;
   return value.length > maxLength ? value.slice(0, maxLength) : value;
@@ -162,6 +188,51 @@ function stringLimit(value: string | null | undefined, maxLength: number): strin
 function recordFromUnknown(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
+}
+
+function durableBytesToBase64(bytes: Uint8Array): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const chunks: string[] = [];
+  const inputChunkSize = 12_288;
+  for (let chunkStart = 0; chunkStart < bytes.length; chunkStart += inputChunkSize) {
+    const chunkEnd = Math.min(bytes.length, chunkStart + inputChunkSize);
+    let chunk = "";
+    for (let index = chunkStart; index < chunkEnd; index += 3) {
+      const first = bytes[index];
+      const second = index + 1 < bytes.length ? bytes[index + 1] : 0;
+      const third = index + 2 < bytes.length ? bytes[index + 2] : 0;
+      const triplet = (first << 16) | (second << 8) | third;
+      chunk += alphabet[(triplet >> 18) & 63];
+      chunk += alphabet[(triplet >> 12) & 63];
+      chunk += index + 1 < bytes.length ? alphabet[(triplet >> 6) & 63] : "=";
+      chunk += index + 2 < bytes.length ? alphabet[triplet & 63] : "=";
+    }
+    chunks.push(chunk);
+  }
+  return chunks.join("");
+}
+
+function durableBase64ToBytes(value: string): Uint8Array {
+  const clean = value.replace(/\s+/g, "");
+  if (clean.length % 4 !== 0 || /[^A-Za-z0-9+/=]/.test(clean)) {
+    throw new Error("CONSUMER_REPAIR_DURABLE_COMPRESSED_STATE_INVALID_BASE64");
+  }
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const bytes: number[] = [];
+  for (let index = 0; index < clean.length; index += 4) {
+    const first = alphabet.indexOf(clean[index]);
+    const second = alphabet.indexOf(clean[index + 1]);
+    const third = clean[index + 2] === "=" ? -1 : alphabet.indexOf(clean[index + 2]);
+    const fourth = clean[index + 3] === "=" ? -1 : alphabet.indexOf(clean[index + 3]);
+    if (first < 0 || second < 0 || (third < 0 && clean[index + 2] !== "=") || (fourth < 0 && clean[index + 3] !== "=")) {
+      throw new Error("CONSUMER_REPAIR_DURABLE_COMPRESSED_STATE_INVALID_BASE64");
+    }
+    const triplet = (first << 18) | (second << 12) | ((third < 0 ? 0 : third) << 6) | (fourth < 0 ? 0 : fourth);
+    bytes.push((triplet >> 16) & 255);
+    if (third >= 0) bytes.push((triplet >> 8) & 255);
+    if (fourth >= 0) bytes.push(triplet & 255);
+  }
+  return new Uint8Array(bytes);
 }
 
 function isScalar(value: unknown): value is string | number | boolean | null {
@@ -800,18 +871,56 @@ function decodeEditableEstimateSnapshotFromDurableStorage(value: unknown): Edita
 
 function encodeEstimateRevisionStateForDurableStorage(state: EstimateRevisionState | null | undefined): unknown {
   if (!state) return state ?? null;
-  return {
+  const encodedState = {
     ...state,
     revisions: state.revisions.map((revision) => ({
       ...revision,
       editable_estimate_snapshot: encodeEditableEstimateSnapshotForDurableStorage(revision.editable_estimate_snapshot),
     })),
   };
+  const serializedState = JSON.stringify(encodedState);
+  const compressed = zlibSync(strToU8(serializedState), { level: 6 });
+  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
+    ?? state.revisions.at(-1)
+    ?? null;
+  return {
+    schema: CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA,
+    codec: "zlib+base64",
+    rawByteLength: strToU8(serializedState).length,
+    compressedByteLength: compressed.length,
+    payload: durableBytesToBase64(compressed),
+    current_revision_id: state.current_revision_id,
+    revision_count: state.revisions.length,
+    history_binding_count: state.history_bindings.length,
+    approval_freeze_count: state.approval_freezes.length,
+    revisions: current ? [{
+      revision_id: current.revision_id,
+      selected_work_key: current.selected_work_key,
+      rows_hash: current.rows_hash,
+      editable_estimate_snapshot: {
+        hash: current.editable_estimate_snapshot.hash,
+        row_count: current.editable_estimate_snapshot.rows.length,
+        passport_backed_row_count: current.editable_estimate_snapshot.rows.filter((row) =>
+          row.sourceParameters?.passportBackedNaturalLanguageIngress === true
+        ).length,
+        first_quantity: current.editable_estimate_snapshot.rows[0]?.quantity ?? null,
+      },
+    }] : [],
+  } satisfies CompressedEstimateRevisionState;
 }
 
 function decodeEstimateRevisionStateFromDurableStorage(value: unknown): EstimateRevisionState | null {
   const state = recordFromUnknown(value);
   if (!state) return null;
+  if (state.schema === CONSUMER_REPAIR_DURABLE_COMPRESSED_REVISION_STATE_SCHEMA) {
+    if (state.codec !== "zlib+base64" || typeof state.payload !== "string") return null;
+    try {
+      const decoded = JSON.parse(strFromU8(unzlibSync(durableBase64ToBytes(state.payload))));
+      return decodeEstimateRevisionStateFromDurableStorage(decoded);
+    } catch {
+      return null;
+    }
+  }
   const revisions = Array.isArray(state.revisions)
     ? state.revisions.map((revision) => {
         const revisionRecord = recordFromUnknown(revision);

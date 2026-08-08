@@ -849,7 +849,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   });
   const scopeSelectionQuestion = asphaltScopeSelectionQuestionForIntentV5(resolverInput);
   const roadworksWaveA = loadRoadworksWaveAProductionBinding();
-  const exactRoadworksWaveAProduction = roadworksWaveA.buildRoadworksWaveAProductionDraft({
+  const resolvedRoadworksWaveAProduction = roadworksWaveA.buildRoadworksWaveAProductionDraft({
     rawInput: resolverInput,
     selectedWorkKey: selectedWork?.selectedWorkKey,
     selectedTemplateId: selectedWork?.selectedWorkKey,
@@ -857,14 +857,22 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     city: params.city || undefined,
     currency: "KGS",
   });
-  const explicitlySelectedRoadworksWaveA = exactRoadworksWaveAProduction?.registration ??
-    roadworksWaveA.resolveRoadworksWaveAProductionWork({
+  const exactRoadworksWaveASelection = roadworksWaveA.resolveExactRoadworksWaveAProductionWork({
       selectedWorkKey: selectedWork?.selectedWorkKey,
       selectedTemplateId: selectedWork?.selectedWorkKey,
       rawInput: resolverInput,
     });
+  // Exact catalog identity always wins. A conversational single-operation
+  // match may own an otherwise non-road request, but it must not repaint a
+  // recognized broad parking/road scope merely because that scope mentions an
+  // accessory operation (for example "без водоотвода" or a full road "с
+  // водоотводом").
+  const exactRoadworksWaveAProduction = exactRoadworksWaveASelection ||
+      roadScopeResolution.resolverStatus === "NOT_ROAD"
+    ? resolvedRoadworksWaveAProduction
+    : null;
   const explicitRoadworksWaveAReadiness = roadworksWaveA.getRoadworksWaveAResolutionReadiness(
-    explicitlySelectedRoadworksWaveA,
+    exactRoadworksWaveASelection,
   );
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
     roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&

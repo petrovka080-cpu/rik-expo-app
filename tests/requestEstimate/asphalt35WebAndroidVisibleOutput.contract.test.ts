@@ -16,7 +16,7 @@ describe("Asphalt 35 Web/Android shared visible-output projection", () => {
       __resetConsumerRepairRequestStoreForTests();
       const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
         consumerUserId: `asphalt-35-visible-${index}`,
-        problemText: `${registration.professionalNameRu} 240 м2 толщина 60 мм`,
+        problemText: registration.professionalNameRu,
         repairType: "roadworks",
         city: "Бишкек",
         addressText: "Тестовый объект",

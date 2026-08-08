@@ -62,7 +62,11 @@ export function PdfViewerNativeShell(props: PdfViewerNativeShellProps) {
     if (!props.completed) return <NativeLoadingState />;
 
     return (
-      <Pressable style={styles.viewerBody} onPress={props.onToggleChrome}>
+      <Pressable
+        testID="native-pdf-handoff-shell"
+        style={styles.viewerBody}
+        onPress={props.onToggleChrome}
+      >
         <CenteredPanel
           title="Документ открыт во внешнем PDF-приложении"
           subtitle="Вернитесь в приложение, когда закончите, или откройте документ ещё раз отсюда."

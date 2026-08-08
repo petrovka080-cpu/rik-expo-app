@@ -63,26 +63,34 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   });
   const values = new Map<string, string>();
   let quotaBytes = Number.POSITIVE_INFINITY;
+  let usedBytes = 0;
+  const entryBytes = (key: string, value: string) => key.length + value.length;
   const totalBytesWith = (key: string, value: string) => {
-    const next = new Map(values);
-    next.set(key, value);
-    return Array.from(next).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0);
+    const existing = values.get(key);
+    return usedBytes - (existing == null ? 0 : entryBytes(key, existing)) + entryBytes(key, value);
   };
   const storage: Storage = {
     get length() {
       return values.size;
     },
-    clear: () => values.clear(),
+    clear: () => {
+      values.clear();
+      usedBytes = 0;
+    },
     getItem: (key: string) => values.get(key) ?? null,
     key: (index: number) => Array.from(values.keys())[index] ?? null,
     removeItem: (key: string) => {
+      const existing = values.get(key);
+      if (existing != null) usedBytes -= entryBytes(key, existing);
       values.delete(key);
     },
     setItem: (key: string, value: string) => {
-      if (totalBytesWith(key, value) > quotaBytes) {
+      const projectedBytes = totalBytesWith(key, value);
+      if (projectedBytes > quotaBytes) {
         throw new Error(`QuotaExceeded:${key}`);
       }
       values.set(key, value);
+      usedBytes = projectedBytes;
     },
   };
   Object.defineProperty(globalThis, "localStorage", {
@@ -91,12 +99,15 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   });
   return {
     values,
-    seedBypassQuota: (key, value) => values.set(key, value),
+    seedBypassQuota: (key, value) => {
+      if (values.size === 0) usedBytes = 0;
+      usedBytes = totalBytesWith(key, value);
+      values.set(key, value);
+    },
     setQuota: (maxBytes) => {
       quotaBytes = maxBytes;
     },
-    totalBytes: () =>
-      Array.from(values).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0),
+    totalBytes: () => usedBytes,
     cleanup: () => {
       delete (globalThis as { localStorage?: Storage }).localStorage;
       Object.defineProperty(Platform, "OS", {

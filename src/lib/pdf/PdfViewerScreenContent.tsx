@@ -227,6 +227,7 @@ export function PdfViewerScreenContent(props: PdfViewerScreenContentProps) {
         ]}
       >
         <Pressable
+          testID="pdf-viewer-back"
           onPress={props.onBack}
           style={styles.iconButton}
           accessibilityLabel="Back"

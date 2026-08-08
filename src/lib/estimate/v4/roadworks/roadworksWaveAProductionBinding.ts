@@ -137,10 +137,18 @@ export function resolveRoadworksWaveAProductionWork(input: {
   selectedTemplateId?: string | null;
   rawInput: string;
 }): RoadworksWaveAProductionRegistration | null {
+  return resolveExactRoadworksWaveAProductionWork(input)
+    ?? resolveRoadworksWaveAConversationalWork(input.rawInput).registration;
+}
+
+export function resolveExactRoadworksWaveAProductionWork(input: {
+  selectedWorkKey?: string | null;
+  selectedTemplateId?: string | null;
+  rawInput: string;
+}): RoadworksWaveAProductionRegistration | null {
   return getRoadworksWaveAProductionRegistration(input.selectedWorkKey)
     ?? getRoadworksWaveAProductionRegistration(input.selectedTemplateId)
-    ?? getRoadworksWaveAProductionRegistration(resolveRoadworksWaveAWork(input.rawInput))
-    ?? resolveRoadworksWaveAConversationalWork(input.rawInput).registration;
+    ?? getRoadworksWaveAProductionRegistration(resolveRoadworksWaveAWork(input.rawInput));
 }
 
 export type RoadworksWaveAConversationalResolution = {
@@ -338,6 +346,10 @@ export function buildRoadworksWaveAProductionDraft(
     registration.parameterSchema.map((key) => [key, parameters.values[key]]),
   );
   const resolvedProfile = resolveRoadAsphaltProfileV3(registration.workId);
+  const applicabilityBlockers = [
+    ...resolvedProfile.blockers,
+    ...parameters.blockingAssumptions.map((key) => `required_input_missing:${key}`),
+  ];
   const domainResolutionReadiness = getRoadworksWaveAResolutionReadiness(registration, {
     requiredInputsPresent: parameters.blockingAssumptions.length === 0,
   });
@@ -458,7 +470,7 @@ export function buildRoadworksWaveAProductionDraft(
         formulaGraphId: registration.formulaGraphId,
         executableAsphaltProfile: executable,
         certificationClass: resolvedProfile.certificationClass,
-        applicabilityBlockers: resolvedProfile.blockers,
+        applicabilityBlockers,
         canonicalPayloadFingerprintSeed: `${registration.canonicalModelId}:${registration.scopePresetId ?? "no-preset"}`,
         inlineWorkPrompt: true,
         inlineWorkPromptTemplateId: registration.templateId,

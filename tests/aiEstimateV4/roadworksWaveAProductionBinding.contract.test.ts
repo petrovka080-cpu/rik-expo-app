@@ -287,6 +287,11 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("NEEDS_REQUIRED_INPUTS");
       expect(result.draft?.items[0]?.sourceParameters?.includedInProcurement).toBe(false);
       expect(result.draft?.items[0]?.sourceParameters?.assumptionKeys).toEqual(item.parameterSchema);
+      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).toEqual(
+        expect.arrayContaining(
+          p0ParameterKeys(item.workId).map((key) => `required_input_missing:${key}`),
+        ),
+      );
     }
   });
 

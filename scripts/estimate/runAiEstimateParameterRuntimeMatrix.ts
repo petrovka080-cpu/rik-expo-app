@@ -63,7 +63,7 @@ function isHonestNonCalculationReadyRevision(
   revision: EstimateDraftRevision,
   readiness: DomainResolutionReadiness | null,
 ): boolean {
-  if (!readiness || readiness === "CALCULATION_READY" || readiness === "NEEDS_REQUIRED_INPUTS") return false;
+  if (!readiness || readiness === "CALCULATION_READY") return false;
   return revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
     row.includedInProcurement === false &&
     row.sourceParameters?.domainResolutionReadiness === readiness &&

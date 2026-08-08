@@ -1,7 +1,6 @@
 import path from "node:path";
 
 import { buildAiEstimateCatalogIndex } from "../../src/lib/estimate/catalog/buildAiEstimateCatalogIndex";
-import { buildProfessionalWorkPassport } from "../../src/lib/estimate/buildProfessionalWorkPassport";
 import { buildNormativeParameterCompletenessModel } from "../../src/lib/estimate/buildNormativeParameterCompletenessModel";
 import { createInMemoryAiEstimateHistoryStore } from "../../src/lib/estimate/storage/AiEstimateHistoryStore";
 import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/artifacts/validateAiEstimateBuyerPackageParity";
@@ -33,10 +32,9 @@ function stableSample<T>(values: readonly T[], count: number, salt: number): T[]
   return selected;
 }
 
-function promptForTemplate(templateId: string, index: number): string {
-  const passport = buildProfessionalWorkPassport(templateId);
+function promptForTemplate(templateId: string, localizedNameRu: string, index: number): string {
   return [
-    passport?.localizedNameRu ?? templateId,
+    localizedNameRu || templateId,
     `${80 + index} m2`,
     "length 20 m",
     "width 5 m",
@@ -46,11 +44,15 @@ function promptForTemplate(templateId: string, index: number): string {
   ].join(" ");
 }
 
-function runCreateCase(templateId: string, index: number): boolean {
-  const runtime = createAiEstimateRuntime();
+function runCreateCase(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  templateId: string,
+  localizedNameRu: string,
+  index: number,
+): boolean {
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-create-${index}-${templateId}`,
-    rawInput: promptForTemplate(templateId, index),
+    rawInput: promptForTemplate(templateId, localizedNameRu, index),
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
@@ -70,16 +72,20 @@ function revisionReadiness(revision: EstimateDraftRevision): DomainResolutionRea
     .find((value): value is DomainResolutionReadiness => typeof value === "string") ?? null;
 }
 
-function runOverrideCase(templateId: string, index: number): OverrideCaseResult {
-  const runtime = createAiEstimateRuntime();
+function runOverrideCase(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  templateId: string,
+  localizedNameRu: string,
+  index: number,
+): OverrideCaseResult {
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-override-${index}-${templateId}`,
-    rawInput: promptForTemplate(templateId, index),
+    rawInput: promptForTemplate(templateId, localizedNameRu, index),
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
   const readiness = revisionReadiness(draft.revision);
-  if (readiness && readiness !== "CALCULATION_READY" && readiness !== "NEEDS_REQUIRED_INPUTS") {
+  if (readiness && readiness !== "CALCULATION_READY") {
     const honestlyBlocked = draft.revision.boq.rows.length > 0 && draft.revision.boq.rows.every((row) =>
       row.includedInProcurement === false &&
       row.sourceParameters?.domainResolutionReadiness === readiness &&
@@ -114,22 +120,30 @@ function runOverrideCase(templateId: string, index: number): OverrideCaseResult 
   };
 }
 
-function runMissingCase(templateId: string, index: number): boolean {
-  const runtime = createAiEstimateRuntime();
+function runMissingCase(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  templateId: string,
+  localizedNameRu: string,
+  index: number,
+): boolean {
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-missing-${index}-${templateId}`,
-    rawInput: promptForTemplate(templateId, index),
+    rawInput: promptForTemplate(templateId, localizedNameRu, index),
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
   return Boolean(buildNormativeParameterCompletenessModel(draft.revision));
 }
 
-function runPdfBuyerCase(templateId: string, index: number): { pdf: boolean; buyer: boolean } {
-  const runtime = createAiEstimateRuntime();
+function runPdfBuyerCase(
+  runtime: ReturnType<typeof createAiEstimateRuntime>,
+  templateId: string,
+  localizedNameRu: string,
+  index: number,
+): { pdf: boolean; buyer: boolean } {
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-artifacts-${index}-${templateId}`,
-    rawInput: promptForTemplate(templateId, index),
+    rawInput: promptForTemplate(templateId, localizedNameRu, index),
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
@@ -144,22 +158,36 @@ function runPdfBuyerCase(templateId: string, index: number): { pdf: boolean; buy
 export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolean } = {}) {
   const index = buildAiEstimateCatalogIndex();
   const templates = index.entries.map((entry) => entry.templateId);
+  const localizedNameByTemplateId = new Map(
+    index.entries.map((entry) => [entry.templateId, entry.localizedNameRu]),
+  );
   const random = stableSample(templates, 1000, 1);
   const critical = stableSample(index.entries.filter((entry) => entry.complexityClass !== "simple").map((entry) => entry.templateId), 200, 2);
   const override = stableSample(templates, 200, 3);
   const missing = stableSample(templates, 100, 4);
   const artifacts = stableSample(templates, 100, 5);
   const historyStore = createInMemoryAiEstimateHistoryStore();
+  const runtime = createAiEstimateRuntime();
+  const localizedName = (templateId: string) => localizedNameByTemplateId.get(templateId) ?? templateId;
 
-  const randomPassed = random.filter(runCreateCase).length;
-  const criticalPassed = critical.filter(runCreateCase).length;
-  const overrideResults = override.map(runOverrideCase);
+  const randomPassed = random.filter((templateId, caseIndex) =>
+    runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
+  ).length;
+  const criticalPassed = critical.filter((templateId, caseIndex) =>
+    runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
+  ).length;
+  const overrideResults = override.map((templateId, caseIndex) =>
+    runOverrideCase(runtime, templateId, localizedName(templateId), caseIndex)
+  );
   const overridePassed = overrideResults.filter((result) => result.passed).length;
-  const missingPassed = missing.filter(runMissingCase).length;
-  const artifactResults = artifacts.map(runPdfBuyerCase);
+  const missingPassed = missing.filter((templateId, caseIndex) =>
+    runMissingCase(runtime, templateId, localizedName(templateId), caseIndex)
+  ).length;
+  const artifactResults = artifacts.map((templateId, caseIndex) =>
+    runPdfBuyerCase(runtime, templateId, localizedName(templateId), caseIndex)
+  );
   const pdfPassed = artifactResults.filter((result) => result.pdf).length;
   const buyerPassed = artifactResults.filter((result) => result.buyer).length;
-  const runtime = createAiEstimateRuntime();
   for (let index = 0; index < 100; index += 1) {
     const revision = runtime.createDraft({
       estimateDraftId: `platform-core-v2-history-${index}`,
