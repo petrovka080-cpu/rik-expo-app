@@ -6,6 +6,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import { getRegisteredEstimateWorkProfile } from "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles";
 import {
   ConsumerRepairDraftQuickActions,
@@ -105,7 +106,7 @@ export function ConsumerRepairDraftPanel({
       estimateDraftSession.status === "STALE_RESULT_REJECTED" ||
       estimateDraftSession.status === "COMPILE_FAILED"
     );
-  const revisionState = bundle?.estimateDraftRevisionState ?? null;
+  const revisionState = getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
   return (

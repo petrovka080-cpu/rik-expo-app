@@ -76,11 +76,6 @@ const THIRD_LAYER = [
 ] as const;
 
 const FINISHING = [
-  "longitudinal_joints",
-  "transverse_joints",
-  "edge_treatment",
-  "joint_sealing_material",
-  "joint_sealing_application",
   "incoming_material_control",
   "asphalt_temperature_control",
   "asphalt_compaction_control",
@@ -120,8 +115,6 @@ const EARTHWORK = [
 ] as const;
 
 const SUBBASE = [
-  "geotextile_material",
-  "geotextile_installation",
   "sand_material",
   "sand_delivery",
   "sand_trips",

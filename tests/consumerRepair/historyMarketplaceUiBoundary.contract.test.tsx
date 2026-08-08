@@ -84,6 +84,35 @@ describe("consumer repair history marketplace UI boundary", () => {
     });
   });
 
+  it("keeps estimate approval enabled without marketplace delivery contact", () => {
+    const noop = jest.fn();
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestStickyActions
+          approved={false}
+          sent={false}
+          hasBundle
+          hasSnapshot
+          onOpenPdf={noop}
+          onMakePdf={noop}
+          onCreateNew={noop}
+          onDeleteDraft={noop}
+          onApproveDraft={noop}
+          onPrepareDraft={noop}
+        />,
+      );
+    });
+
+    const approve = renderer.root.findByProps({ testID: "consumer-repair-approve" });
+    expect(approve.props.disabled).not.toBe(true);
+    act(() => approve.props.onPress());
+    expect(noop).toHaveBeenCalledTimes(1);
+
+    act(() => renderer.unmount());
+  });
+
   it("exposes marketplace send only on an approved history snapshot", () => {
     const approved = createApprovedConsumerRepairRequest();
     const noop = jest.fn();

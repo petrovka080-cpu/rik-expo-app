@@ -19,6 +19,52 @@ export type RoadworksWaveAScope =
   | "wet_zone"
   | "technical_room";
 
+export type RoadworksWaveAScopeExecutionProfile = {
+  applicationContext: string;
+  executionMethod: string;
+  applicabilitySourceIds: readonly string[];
+  exclusions: readonly string[];
+};
+
+export const ROADWORKS_WAVE_A_SCOPE_EXECUTION_PROFILES: Readonly<
+  Record<RoadworksWaveAScope, RoadworksWaveAScopeExecutionProfile>
+> = Object.freeze({
+  standard: {
+    applicationContext: "Дорожное покрытие, улица, проезд, площадка или дорога промышленного предприятия со стандартным фронтом работ",
+    executionMethod: "Стандартный механизированный технологический поток по утверждённому проекту",
+    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
+    exclusions: ["Не включает основание и полный комплекс дорожной инфраструктуры, если они не выбраны отдельным scope"],
+  },
+  small_area: {
+    applicationContext: "Локальный или стеснённый наружный участок дорожного покрытия с ограниченным доступом крупной техники",
+    executionMethod: "Малый механизированный комплект и ручная доработка кромок; производительность задаётся проектным вводом",
+    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
+    exclusions: ["Не применяется как скрытый коэффициент к стандартной площади; доступ и производительность подтверждаются пользователем"],
+  },
+  large_area: {
+    applicationContext: "Протяжённый или крупноплощадной наружный фронт дорожных работ",
+    executionMethod: "Непрерывный механизированный поток укладки/обработки с поточным контролем захваток",
+    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
+    exclusions: ["Не включает дополнительные слои дорожной одежды без явного выбора полного pavement scope"],
+  },
+  wet_zone: {
+    applicationContext: "Наружная асфальтированная площадка, проезд или парковочная поверхность с периодическим увлажнением осадками и проектным поверхностным водоотводом",
+    executionMethod: "Дорожная технология выполняется по сухому принятому основанию с явно заданными уклонами, лотками/приёмниками и маршрутом отвода поверхностной воды",
+    applicabilitySourceIds: ["kg_snip_32_01_2004_road_design", "kg_nism_gost_9128_2013"],
+    exclusions: [
+      "Не является санитарной мокрой зоной, внутренней ванной/душевой или гидроизоляцией здания",
+      "Не означает укладку по мокрому основанию",
+      "Не применяется к постоянно погружённым или химически агрессивным поверхностям",
+    ],
+  },
+  technical_room: {
+    applicationContext: "Асфальтобетонный пол производственного технического помещения при допустимой проектной категории воздействий",
+    executionMethod: "Стеснённое устройство асфальтобетонного пола с проектной толщиной и контролем ровности",
+    applicabilitySourceIds: ["kg_sp_31_101_2024_floors", "kg_nism_gost_9128_2013"],
+    exclusions: ["Не применяется при весьма значительном механическом воздействии", "Не применяется без проектной проверки жидкостных, тепловых, антистатических и пожарных требований"],
+  },
+});
+
 export type RoadworksWaveACatalogClassification =
   | "CANONICAL_WORK_MODEL"
   | "SEARCH_ALIAS"
@@ -47,7 +93,7 @@ export type RoadworksWaveAInventoryItem = {
   legacyMappingStatus: "mapped_exactly";
   migrationStatus: "migrated_wave_a";
   semanticModelId: string;
-  semanticOwnership: "canonical_model" | "scope_preset" | "domain_review_required";
+  semanticOwnership: "canonical_model" | "work_specific_profile";
   canonicalModelId: string;
   canonicalWorkId: string;
   scopePresetId: string | null;
@@ -59,13 +105,58 @@ export type RoadworksWaveAInventoryItem = {
 export type RoadworksWaveARow = {
   rowId: string;
   category: "material" | "work" | "labor" | "equipment" | "service" | "logistics" | "test" | "document";
+  rowType: "material" | "work" | "labor" | "equipment" | "service" | "logistics" | "control" | "document";
+  semanticOwner: string;
+  workKey: string;
+  passportId: string;
   nameRu: string;
   unit: "m2" | "t" | "t_km" | "l" | "man_hour" | "machine_hour" | "trip" | "pcs";
+  uom: "m2" | "t" | "t_km" | "l" | "man_hour" | "machine_hour" | "trip" | "pcs";
   quantity: number;
   formulaId: string;
   affectedBy: readonly string[];
+  sourceParameterKeys: readonly string[];
   sourceIds: readonly string[];
+  normativeSourceId: string;
+  normativeRateIds: readonly string[];
+  roundingRule: "ROUND_HALF_UP_3" | "CEIL_POSITIVE" | "EXACT_ONE";
+  wasteRule: "INPUT_WASTE_FACTOR_APPLIED" | "NOT_APPLICABLE";
+  priceSourceId: string | null;
+  priceDate: string | null;
+  revisionId: "REFERENCE_UNSAVED";
+  procurementEligibility: "ELIGIBLE" | "CONTRACTOR_SCOPE" | "EXCLUDED_CONTROL_DOCUMENT";
+  payable: boolean;
   procurementOwner: "buyer" | "contractor" | "laboratory" | "customer";
+};
+
+export type RoadworksWaveANumericInputKey =
+  | "area_m2"
+  | "thickness_mm"
+  | "density_t_m3"
+  | "waste_factor"
+  | "haul_distance_km"
+  | "productivity_m2_h"
+  | "tack_coat_l_m2"
+  | "truck_capacity_t"
+  | "waste_truck_capacity_t"
+  | "acceptance_lot_m2"
+  | "joint_sealant_l_m2";
+
+export type RoadworksWaveAApplicabilityInputKey =
+  | "exterior_surface_kind"
+  | "drainage_outfall_confirmed"
+  | "base_dry_and_accepted"
+  | "floor_mechanical_impact_class"
+  | "floor_liquid_exposure_class"
+  | "approved_floor_mix_type";
+
+export type RoadworksWaveAParameterKey = RoadworksWaveANumericInputKey | RoadworksWaveAApplicabilityInputKey;
+
+export type RoadworksWaveAParameterPresentation = {
+  labelRu: string;
+  unit: RoadworksWaveAParameterDefinition["unit"];
+  inputKind: "number" | "select" | "boolean";
+  choices: readonly { value: string; labelRu: string }[];
 };
 
 export type RoadworksWaveAInputs = {
@@ -80,7 +171,29 @@ export type RoadworksWaveAInputs = {
   waste_truck_capacity_t: number;
   acceptance_lot_m2: number;
   joint_sealant_l_m2: number;
+  exterior_surface_kind: "PARKING" | "DRIVE" | "INDUSTRIAL_SITE" | "EXTERNAL_AREA";
+  drainage_outfall_confirmed: boolean;
+  base_dry_and_accepted: boolean;
+  floor_mechanical_impact_class: "LOW" | "MODERATE" | "SIGNIFICANT";
+  floor_liquid_exposure_class: "NONE" | "LOW_PERIODIC";
+  approved_floor_mix_type: "CAST_ASPHALT" | "RIGID_ASPHALT_CONCRETE";
 };
+
+export const ROADWORKS_WAVE_A_NUMERIC_INPUT_KEYS: readonly RoadworksWaveANumericInputKey[] = Object.freeze([
+  "area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km",
+  "productivity_m2_h", "tack_coat_l_m2", "truck_capacity_t", "waste_truck_capacity_t",
+  "acceptance_lot_m2", "joint_sealant_l_m2",
+]);
+
+export const ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS: Readonly<
+  Record<RoadworksWaveAScope, readonly RoadworksWaveAApplicabilityInputKey[]>
+> = Object.freeze({
+  standard: [],
+  small_area: [],
+  large_area: [],
+  wet_zone: ["exterior_surface_kind", "drainage_outfall_confirmed", "base_dry_and_accepted"],
+  technical_room: ["floor_mechanical_impact_class", "floor_liquid_exposure_class", "approved_floor_mix_type"],
+});
 
 const PREFIX = "paving_roads_landscape_interior_asphalt_";
 const OPERATIONS: readonly RoadworksWaveAOperation[] = [
@@ -146,6 +259,19 @@ const OPERATION_META: Record<RoadworksWaveAOperation, {
   },
 };
 
+export const ROADWORKS_WAVE_A_KRER_27_RATE_IDS_BY_OPERATION: Readonly<
+  Record<RoadworksWaveAOperation, readonly string[]>
+> = Object.freeze({
+  install: ["27-06-019", "27-06-020", "27-06-021"],
+  lay: ["27-06-019", "27-06-020", "27-06-021"],
+  compact: ["27-06-019", "27-06-020"],
+  repair: ["27-03-008", "27-03-009", "27-06-025"],
+  prepare: ["27-03-001", "27-03-002", "27-03-003", "27-03-008"],
+  level: ["27-03-004"],
+  drain: ["27-02-001", "27-02-003"],
+  finish: ["27-06-009", "27-06-011", "27-06-013"],
+});
+
 function parseIdentity(item: CatalogItem): { operation: RoadworksWaveAOperation; scope: RoadworksWaveAScope } | null {
   if (item.work_family_id !== "roadworks" || !item.work_key.startsWith(PREFIX)) return null;
   const tail = item.work_key.slice(PREFIX.length);
@@ -175,12 +301,9 @@ export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = c
   const canonicalModelWorkId = `${PREFIX}${identity.operation}_standard`;
   const canonicalModelId = `roadworks-wave-a:${identity.operation}:v1`;
   const isCanonical = identity.scope === "standard";
-  const isScalePreset = identity.scope === "small_area" || identity.scope === "large_area";
   const catalogClassification: RoadworksWaveACatalogClassification = isCanonical
     ? "CANONICAL_WORK_MODEL"
-    : isScalePreset
-      ? "SCOPE_PRESET"
-      : "DOMAIN_REVIEW_REQUIRED";
+    : "DISTINCT_WORK_SUBTYPE";
   return {
     workId: item.work_key,
     catalogItemId: item.work_catalog_item_id,
@@ -192,7 +315,7 @@ export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = c
     scopeClass: scopeClass(identity.scope),
     primaryQuantity: "area_m2" as const,
     primaryUnit: "m2" as const,
-    parameterSchemaId: `${item.work_key}:parameters:v4`,
+    parameterSchemaId: `${item.work_key}:parameters:v4.3`,
     manifestId: `${meta.manifest}:${identity.scope}`,
     assemblyIds: meta.assemblies,
     sourcePackId: "kg_roadworks_asphalt_wave_a_sources_v1",
@@ -201,21 +324,15 @@ export const RoadworksWaveAInventory: readonly RoadworksWaveAInventoryItem[] = c
     semanticModelId: canonicalModelId,
     semanticOwnership: isCanonical
       ? "canonical_model" as const
-      : isScalePreset
-        ? "scope_preset" as const
-        : "domain_review_required" as const,
+      : "work_specific_profile" as const,
     canonicalModelId,
     canonicalWorkId: canonicalModelWorkId,
-    scopePresetId: isScalePreset ? `roadworks-wave-a:${identity.scope}:v1` : null,
+    scopePresetId: isCanonical ? null : `roadworks-wave-a:${identity.operation}:${identity.scope}:v4.3`,
     catalogClassification,
     classificationReason: isCanonical
-      ? "Стандартная запись владеет единственным formula graph технологической операции."
-      : isScalePreset
-        ? "Масштаб участка является preset входных ограничений, а не отдельной технологией."
-        : "Применимость дорожной технологии к влажной зоне или техническому помещению требует подтверждения профильным инженером.",
-    domainReviewStatus: catalogClassification === "DOMAIN_REVIEW_REQUIRED"
-      ? "applicability_review_required" as const
-      : "not_required_for_catalog_mapping" as const,
+      ? "Стандартная запись владеет базовой технологической операцией и собственным work-specific профилем."
+      : `Контекст ${identity.scope} меняет способ выполнения, применимость, BOQ и контроль; это отдельный work-specific профиль, а не переименование базового шаблона.`,
+    domainReviewStatus: "not_required_for_catalog_mapping" as const,
   };
 }).sort((a, b) => a.workId.localeCompare(b.workId));
 
@@ -224,20 +341,26 @@ export function getRoadworksWaveAOperation(workId: string): RoadworksWaveAOperat
   return item ? parseIdentity(item)?.operation ?? null : null;
 }
 
-export function getRoadworksWaveAParameterKeys(workId: string): readonly string[] {
+export function getRoadworksWaveAParameterKeys(workId: string): readonly RoadworksWaveAParameterKey[] {
   const operation = getRoadworksWaveAOperation(workId);
-  return operation ? OPERATION_META[operation].parameters : [];
+  const item = RoadworksWaveAInventory.find((candidate) => candidate.workId === workId);
+  return operation && item
+    ? [
+      ...OPERATION_META[operation].parameters as readonly RoadworksWaveANumericInputKey[],
+      ...ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS[item.scopeProfile],
+    ]
+    : [];
 }
 
 export type RoadworksWaveAParameterDefinition = {
   parameterId: string;
-  key: keyof RoadworksWaveAInputs;
+  key: RoadworksWaveAParameterKey;
   tier: "P0" | "P1" | "P2";
-  unit: "m2" | "mm" | "t_m3" | "ratio" | "km" | "m2_h" | "l_m2" | "t";
+  unit: "m2" | "mm" | "t_m3" | "ratio" | "km" | "m2_h" | "l_m2" | "t" | "enum" | "boolean";
   sourceRole: "USER_PROJECT_INPUT";
 };
 
-const PARAMETER_UNITS: Record<keyof RoadworksWaveAInputs, RoadworksWaveAParameterDefinition["unit"]> = {
+const PARAMETER_UNITS: Record<RoadworksWaveAParameterKey, RoadworksWaveAParameterDefinition["unit"]> = {
   area_m2: "m2",
   thickness_mm: "mm",
   density_t_m3: "t_m3",
@@ -249,12 +372,64 @@ const PARAMETER_UNITS: Record<keyof RoadworksWaveAInputs, RoadworksWaveAParamete
   waste_truck_capacity_t: "t",
   acceptance_lot_m2: "m2",
   joint_sealant_l_m2: "l_m2",
+  exterior_surface_kind: "enum",
+  drainage_outfall_confirmed: "boolean",
+  base_dry_and_accepted: "boolean",
+  floor_mechanical_impact_class: "enum",
+  floor_liquid_exposure_class: "enum",
+  approved_floor_mix_type: "enum",
 };
 
+export const ROADWORKS_WAVE_A_PARAMETER_PRESENTATION: Readonly<
+  Record<RoadworksWaveAParameterKey, RoadworksWaveAParameterPresentation>
+> = Object.freeze({
+  area_m2: { labelRu: "\u041f\u043b\u043e\u0449\u0430\u0434\u044c \u0440\u0430\u0431\u043e\u0442", unit: "m2", inputKind: "number", choices: [] },
+  thickness_mm: { labelRu: "\u0422\u043e\u043b\u0449\u0438\u043d\u0430 \u0441\u043b\u043e\u044f", unit: "mm", inputKind: "number", choices: [] },
+  density_t_m3: { labelRu: "\u041f\u043b\u043e\u0442\u043d\u043e\u0441\u0442\u044c \u0430\u0441\u0444\u0430\u043b\u044c\u0442\u043e\u0431\u0435\u0442\u043e\u043d\u043d\u043e\u0439 \u0441\u043c\u0435\u0441\u0438", unit: "t_m3", inputKind: "number", choices: [] },
+  waste_factor: { labelRu: "\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u043f\u043e\u0442\u0435\u0440\u044c", unit: "ratio", inputKind: "number", choices: [] },
+  haul_distance_km: { labelRu: "\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438", unit: "km", inputKind: "number", choices: [] },
+  productivity_m2_h: { labelRu: "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0437\u0432\u0435\u043d\u0430", unit: "m2_h", inputKind: "number", choices: [] },
+  tack_coat_l_m2: { labelRu: "\u0420\u0430\u0441\u0445\u043e\u0434 \u0431\u0438\u0442\u0443\u043c\u043d\u043e\u0439 \u044d\u043c\u0443\u043b\u044c\u0441\u0438\u0438", unit: "l_m2", inputKind: "number", choices: [] },
+  truck_capacity_t: { labelRu: "\u0413\u0440\u0443\u0437\u043e\u043f\u043e\u0434\u044a\u0451\u043c\u043d\u043e\u0441\u0442\u044c \u0441\u0430\u043c\u043e\u0441\u0432\u0430\u043b\u0430", unit: "t", inputKind: "number", choices: [] },
+  waste_truck_capacity_t: { labelRu: "\u0413\u0440\u0443\u0437\u043e\u043f\u043e\u0434\u044a\u0451\u043c\u043d\u043e\u0441\u0442\u044c \u0442\u0440\u0430\u043d\u0441\u043f\u043e\u0440\u0442\u0430 \u0434\u043b\u044f \u0432\u044b\u0432\u043e\u0437\u0430", unit: "t", inputKind: "number", choices: [] },
+  acceptance_lot_m2: { labelRu: "\u041f\u043b\u043e\u0449\u0430\u0434\u044c \u043f\u0440\u0438\u0451\u043c\u043e\u0447\u043d\u043e\u0439 \u043f\u0430\u0440\u0442\u0438\u0438", unit: "m2", inputKind: "number", choices: [] },
+  joint_sealant_l_m2: { labelRu: "\u0420\u0430\u0441\u0445\u043e\u0434 \u0433\u0435\u0440\u043c\u0435\u0442\u0438\u043a\u0430 \u0434\u043b\u044f \u0448\u0432\u043e\u0432", unit: "l_m2", inputKind: "number", choices: [] },
+  exterior_surface_kind: {
+    labelRu: "\u0412\u0438\u0434 \u043d\u0430\u0440\u0443\u0436\u043d\u043e\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0438", unit: "enum", inputKind: "select",
+    choices: [
+      { value: "PARKING", labelRu: "\u041f\u0430\u0440\u043a\u043e\u0432\u043a\u0430" },
+      { value: "DRIVE", labelRu: "\u041f\u0440\u043e\u0435\u0437\u0434" },
+      { value: "INDUSTRIAL_SITE", labelRu: "\u041f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430" },
+      { value: "EXTERNAL_AREA", labelRu: "\u041d\u0430\u0440\u0443\u0436\u043d\u0430\u044f \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430" },
+    ],
+  },
+  drainage_outfall_confirmed: {
+    labelRu: "\u0412\u043e\u0434\u043e\u043e\u0442\u0432\u043e\u0434 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d", unit: "boolean", inputKind: "boolean",
+    choices: [{ value: "true", labelRu: "\u0414\u0430" }, { value: "false", labelRu: "\u041d\u0435\u0442" }],
+  },
+  base_dry_and_accepted: {
+    labelRu: "\u041e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0441\u0443\u0445\u043e\u0435 \u0438 \u043f\u0440\u0438\u043d\u044f\u0442\u043e", unit: "boolean", inputKind: "boolean",
+    choices: [{ value: "true", labelRu: "\u0414\u0430" }, { value: "false", labelRu: "\u041d\u0435\u0442" }],
+  },
+  floor_mechanical_impact_class: {
+    labelRu: "\u041a\u043b\u0430\u0441\u0441 \u043c\u0435\u0445\u0430\u043d\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u043d\u0430\u0433\u0440\u0443\u0437\u043a\u0438", unit: "enum", inputKind: "select",
+    choices: [{ value: "LOW", labelRu: "\u041d\u0438\u0437\u043a\u0430\u044f" }, { value: "MODERATE", labelRu: "\u0423\u043c\u0435\u0440\u0435\u043d\u043d\u0430\u044f" }, { value: "SIGNIFICANT", labelRu: "\u0417\u043d\u0430\u0447\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f" }],
+  },
+  floor_liquid_exposure_class: {
+    labelRu: "\u041a\u043b\u0430\u0441\u0441 \u0432\u043e\u0437\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0436\u0438\u0434\u043a\u043e\u0441\u0442\u0435\u0439", unit: "enum", inputKind: "select",
+    choices: [{ value: "NONE", labelRu: "\u041d\u0435\u0442" }, { value: "LOW_PERIODIC", labelRu: "\u0421\u043b\u0430\u0431\u043e\u0435 \u043f\u0435\u0440\u0438\u043e\u0434\u0438\u0447\u0435\u0441\u043a\u043e\u0435" }],
+  },
+  approved_floor_mix_type: {
+    labelRu: "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0442\u0438\u043f \u0441\u043c\u0435\u0441\u0438 \u0434\u043b\u044f \u043f\u043e\u043b\u0430", unit: "enum", inputKind: "select",
+    choices: [{ value: "CAST_ASPHALT", labelRu: "\u041b\u0438\u0442\u043e\u0439 \u0430\u0441\u0444\u0430\u043b\u044c\u0442" }, { value: "RIGID_ASPHALT_CONCRETE", labelRu: "\u0416\u0451\u0441\u0442\u043a\u0438\u0439 \u0430\u0441\u0444\u0430\u043b\u044c\u0442\u043e\u0431\u0435\u0442\u043e\u043d" }],
+  },
+});
+
 export function getRoadworksWaveAParameterDefinitions(workId: string): readonly RoadworksWaveAParameterDefinition[] {
-  return getRoadworksWaveAParameterKeys(workId).map((rawKey) => {
-    const key = rawKey as keyof RoadworksWaveAInputs;
-    const tier = key === "area_m2"
+  return getRoadworksWaveAParameterKeys(workId).map((key) => {
+    const tier = key === "area_m2" || ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS
+      .wet_zone.includes(key as RoadworksWaveAApplicabilityInputKey) || ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS
+      .technical_room.includes(key as RoadworksWaveAApplicabilityInputKey)
       ? "P0" as const
       : ["thickness_mm", "density_t_m3", "haul_distance_km", "productivity_m2_h"].includes(key)
         ? "P1" as const
@@ -278,35 +453,111 @@ export function compileRoadworksWaveAWork(
 ): { workId: string; rows: RoadworksWaveARow[] } {
   const operation = getRoadworksWaveAOperation(workId);
   if (!operation) throw new Error(`Unknown Roadworks Wave A work ID: ${workId}`);
-  for (const [key, value] of Object.entries(input)) {
+  const inventoryItem = RoadworksWaveAInventory.find((item) => item.workId === workId);
+  const scopeProfile = options.scopeProfile ?? inventoryItem?.scopeProfile ?? "standard";
+  for (const key of ROADWORKS_WAVE_A_NUMERIC_INPUT_KEYS) {
+    const value = input[key];
     if (!Number.isFinite(value) || value <= 0) throw new Error(`Invalid ${key}: ${value}`);
+  }
+  if (scopeProfile === "wet_zone" && (
+    !["PARKING", "DRIVE", "INDUSTRIAL_SITE", "EXTERNAL_AREA"].includes(input.exterior_surface_kind) ||
+    input.drainage_outfall_confirmed !== true ||
+    input.base_dry_and_accepted !== true
+  )) {
+    throw new Error("ASPHALT_EXTERNAL_AREA_APPLICABILITY_INPUTS_REQUIRED");
+  }
+  if (scopeProfile === "technical_room" && (
+    !["LOW", "MODERATE", "SIGNIFICANT"].includes(input.floor_mechanical_impact_class) ||
+    !["NONE", "LOW_PERIODIC"].includes(input.floor_liquid_exposure_class) ||
+    !["CAST_ASPHALT", "RIGID_ASPHALT_CONCRETE"].includes(input.approved_floor_mix_type)
+  )) {
+    throw new Error("ASPHALT_INDUSTRIAL_FLOOR_APPLICABILITY_INPUTS_REQUIRED");
   }
   const area = input.area_m2;
   const tonnes = round(area * input.thickness_mm / 1000 * input.density_t_m3 * input.waste_factor);
   const hours = round(area / input.productivity_m2_h);
   const prefix = `${workId}:`;
-  const normativeSourceIds = ({
-    install: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
-    lay: ["kg_nism_gost_9128_2013", "kg_mtd_krer_27_06_20_1"],
-    compact: ["kg_mtd_krer_27_06_20_1"],
-    repair: ["kg_mtd_order_171_2003_patch_repair", "kg_nism_gost_9128_2013"],
-    prepare: ["kg_snip_32_01_2004_road_design"],
-    level: ["kg_nism_gost_9128_2013"],
-    drain: ["kg_snip_32_01_2004_road_design"],
-    finish: ["kg_snip_32_01_2004_road_design"],
+  const operationSourceIds = ({
+    install: ["kg_krer_27_roadworks_2015", "kg_nism_gost_9128_2013"],
+    lay: ["kg_krer_27_roadworks_2015", "kg_nism_gost_9128_2013"],
+    compact: ["kg_krer_27_roadworks_2015"],
+    repair: ["kg_krer_27_roadworks_2015", "kg_mtd_order_171_2003_patch_repair", "kg_nism_gost_9128_2013"],
+    prepare: ["kg_krer_27_roadworks_2015", "kg_snip_32_01_2004_road_design"],
+    level: ["kg_krer_27_roadworks_2015", "kg_nism_gost_9128_2013"],
+    drain: ["kg_krer_27_roadworks_2015", "kg_snip_32_01_2004_road_design"],
+    finish: ["kg_krer_27_roadworks_2015", "kg_snip_32_01_2004_road_design"],
   } satisfies Record<RoadworksWaveAOperation, readonly string[]>)[operation];
+  const normativeSourceIds = scopeProfile === "technical_room"
+    ? ["kg_sp_31_101_2024_floors", "kg_krer_11_floors_2015", "kg_nism_gost_9128_2013"]
+    : [...new Set([
+      ...operationSourceIds,
+      ...ROADWORKS_WAVE_A_SCOPE_EXECUTION_PROFILES[scopeProfile].applicabilitySourceIds,
+    ])];
   const sourceIds = [...normativeSourceIds, "project_quantity_inputs_v3"];
+  const normativeSourceId = scopeProfile === "technical_room"
+    ? "kg_krer_11_floors_2015"
+    : "kg_krer_27_roadworks_2015";
+  const normativeRateIds = scopeProfile === "technical_room"
+    ? input.approved_floor_mix_type === "CAST_ASPHALT"
+      ? ["11-01-019-01", "11-01-019-02"]
+      : ["11-01-019-03", "11-01-019-04"]
+    : ROADWORKS_WAVE_A_KRER_27_RATE_IDS_BY_OPERATION[operation];
+  const passportId = `professional-estimate-passport:v4:${workId}`;
+  const rowType = (category: RoadworksWaveARow["category"]): RoadworksWaveARow["rowType"] =>
+    category === "test" ? "control" : category;
   const row = (
     id: string, category: RoadworksWaveARow["category"], nameRu: string,
     unit: RoadworksWaveARow["unit"], quantity: number, formulaId: string,
-    affectedBy: readonly string[], owner: RoadworksWaveARow["procurementOwner"],
-  ): RoadworksWaveARow => ({
-    rowId: prefix + id, category, nameRu, unit, quantity: round(quantity), formulaId,
-    affectedBy, sourceIds, procurementOwner: owner,
-  });
+    affectedBy: readonly RoadworksWaveAParameterKey[], owner: RoadworksWaveARow["procurementOwner"],
+  ): RoadworksWaveARow => {
+    const sourceParameterKeys = [...new Set<RoadworksWaveAParameterKey>([
+      ...affectedBy,
+      ...(scopeProfile === "technical_room" ? ["approved_floor_mix_type" as const] : []),
+    ])];
+    return ({
+    rowId: prefix + id,
+    category,
+    rowType: rowType(category),
+    semanticOwner: passportId,
+    workKey: workId,
+    passportId,
+    nameRu,
+    unit,
+    uom: unit,
+    quantity: round(quantity),
+    formulaId,
+    affectedBy: sourceParameterKeys,
+    sourceParameterKeys,
+    sourceIds,
+    normativeSourceId,
+    normativeRateIds,
+    roundingRule: formulaId === "one_documentation_set"
+      ? "EXACT_ONE"
+      : formulaId.startsWith("ceil(")
+        ? "CEIL_POSITIVE"
+        : "ROUND_HALF_UP_3",
+    wasteRule: sourceParameterKeys.includes("waste_factor") ? "INPUT_WASTE_FACTOR_APPLIED" : "NOT_APPLICABLE",
+    priceSourceId: null,
+    priceDate: null,
+    revisionId: "REFERENCE_UNSAVED",
+    procurementEligibility: category === "test" || category === "document"
+      ? "EXCLUDED_CONTROL_DOCUMENT"
+      : owner === "buyer"
+        ? "ELIGIBLE"
+        : "CONTRACTOR_SCOPE",
+    payable: category !== "test" && category !== "document",
+    procurementOwner: owner,
+    });
+  };
   const commonControl = row("acceptance", "test", "Контроль результата работ", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2"], "laboratory");
   const mixes = [
-    row("mix", "material", operation === "repair" ? "Ремонтная асфальтобетонная смесь" : "Асфальтобетонная смесь заданного проектом типа", "t", tonnes, "area_m2*thickness_mm/1000*density_t_m3*waste_factor", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor"], "buyer"),
+    row("mix", "material", operation === "repair"
+      ? "Ремонтная асфальтобетонная смесь"
+      : scopeProfile === "technical_room"
+        ? input.approved_floor_mix_type === "CAST_ASPHALT"
+          ? "Литая асфальтобетонная смесь для промышленного пола"
+          : "Жёсткая асфальтобетонная смесь для промышленного пола"
+        : "Асфальтобетонная смесь заданного проектом типа", "t", tonnes, "area_m2*thickness_mm/1000*density_t_m3*waste_factor", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", ...(scopeProfile === "technical_room" ? ["approved_floor_mix_type" as const] : [])], "buyer"),
     row("mix_delivery", "logistics", "Доставка асфальтобетонной смеси", "trip", Math.max(1, Math.ceil(tonnes / input.truck_capacity_t)), "ceil(mix_t/truck_capacity_t)", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "truck_capacity_t"], "contractor"),
     row("mix_transport", "logistics", "Транспортная работа по доставке смеси", "t_km", tonnes * input.haul_distance_km, "mix_t*haul_distance_km", ["area_m2", "thickness_mm", "density_t_m3", "waste_factor", "haul_distance_km"], "contractor"),
   ];
@@ -346,12 +597,71 @@ export function compileRoadworksWaveAWork(
       commonControl,
     ],
   };
-  const scopeRows: RoadworksWaveARow[] = options.scopeProfile === "small_area"
+  const scopeRows: RoadworksWaveARow[] = scopeProfile === "small_area"
     ? [row("restricted_area_execution", "service", "Организация работ на малой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
-    : options.scopeProfile === "large_area"
+    : scopeProfile === "large_area"
       ? [row("large_area_mechanized_execution", "service", "Организация механизированного потока на большой площади", "m2", area, "area_m2", ["area_m2"], "contractor")]
-      : [];
+      : scopeProfile === "wet_zone"
+        ? [
+          row("wet_zone_execution", "service", `Организация работ на наружной поверхности ${input.exterior_surface_kind} после подтверждения сухости основания и водоотвода`, "m2", area, "area_m2", ["area_m2", "exterior_surface_kind", "drainage_outfall_confirmed", "base_dry_and_accepted"], "contractor"),
+          row("wet_zone_acceptance", "test", "Контроль уклонов, водоотвода и пригодности основания", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2", "drainage_outfall_confirmed", "base_dry_and_accepted"], "laboratory"),
+        ]
+        : scopeProfile === "technical_room"
+          ? [
+            row("industrial_floor_execution", "service", `Стеснённое устройство асфальтобетонного пола: воздействие ${input.floor_mechanical_impact_class}, жидкость ${input.floor_liquid_exposure_class}`, "m2", area, "area_m2", ["area_m2", "floor_mechanical_impact_class", "floor_liquid_exposure_class", "approved_floor_mix_type"], "contractor"),
+            row("industrial_floor_acceptance", "test", "Контроль толщины, ровности и проектной категории воздействий на пол", "pcs", Math.max(1, Math.ceil(area / input.acceptance_lot_m2)), "ceil(area_m2/acceptance_lot_m2)", ["area_m2", "acceptance_lot_m2", "floor_mechanical_impact_class", "floor_liquid_exposure_class", "approved_floor_mix_type"], "laboratory"),
+          ]
+          : [];
   return { workId, rows: [...byOperation[operation], labor, documentation, ...scopeRows] };
+}
+
+export type RoadworksWaveAPriceBook = {
+  priceSourceId: string;
+  priceDate: string;
+  currency: "KGS";
+  unitPriceByRowId: Readonly<Record<string, number>>;
+};
+
+export type RoadworksWaveAPricedRow = RoadworksWaveARow & {
+  unitPrice: number | null;
+  lineTotal: number;
+  priceSourceId: string | null;
+  priceDate: string | null;
+};
+
+/**
+ * Applies an explicit, revisionable price source to a compiled quantity graph.
+ * It never invents a market price: every payable row must have its own quote.
+ */
+export function priceRoadworksWaveACompilation(
+  compilation: ReturnType<typeof compileRoadworksWaveAWork>,
+  priceBook: RoadworksWaveAPriceBook,
+): { workId: string; rows: readonly RoadworksWaveAPricedRow[]; monetaryTotal: number; currency: "KGS" } {
+  if (!priceBook.priceSourceId || !/^\d{4}-\d{2}-\d{2}$/.test(priceBook.priceDate)) {
+    throw new Error("ASPHALT_PRICE_SOURCE_AND_DATE_REQUIRED");
+  }
+  const rows = compilation.rows.map((row): RoadworksWaveAPricedRow => {
+    if (!row.payable) {
+      return Object.freeze({ ...row, unitPrice: null, lineTotal: 0, priceSourceId: null, priceDate: null });
+    }
+    const unitPrice = priceBook.unitPriceByRowId[row.rowId];
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+      throw new Error(`ASPHALT_PRICE_REQUIRED:${row.rowId}`);
+    }
+    return Object.freeze({
+      ...row,
+      unitPrice,
+      lineTotal: round(row.quantity * unitPrice),
+      priceSourceId: priceBook.priceSourceId,
+      priceDate: priceBook.priceDate,
+    });
+  });
+  return Object.freeze({
+    workId: compilation.workId,
+    rows: Object.freeze(rows),
+    monetaryTotal: round(rows.reduce((sum, row) => sum + row.lineTotal, 0)),
+    currency: priceBook.currency,
+  });
 }
 
 export function roadworksWaveANaturalLanguageCases(item: RoadworksWaveAInventoryItem): readonly string[] {
@@ -425,4 +735,10 @@ export const DEFAULT_ROADWORKS_WAVE_A_INPUTS: RoadworksWaveAInputs = {
   waste_truck_capacity_t: 15,
   acceptance_lot_m2: 1000,
   joint_sealant_l_m2: 0.01,
+  exterior_surface_kind: "PARKING",
+  drainage_outfall_confirmed: true,
+  base_dry_and_accepted: true,
+  floor_mechanical_impact_class: "MODERATE",
+  floor_liquid_exposure_class: "NONE",
+  approved_floor_mix_type: "CAST_ASPHALT",
 };

@@ -8,5 +8,7 @@ export function validateAiEstimatePdfSnapshotParity(input: {
   return input.pdf.snapshotId === input.snapshot.snapshotId &&
     input.pdf.revisionId === input.snapshot.revisionId &&
     input.pdf.rowsHash === input.snapshot.rowsHash &&
+    input.pdf.presentationIdentityHash === input.snapshot.presentationIdentityHash &&
+    JSON.stringify(input.pdf.presentationIdentity) === JSON.stringify(input.snapshot.presentationIdentity) &&
     input.pdf.rowsEqualLatestRevision === true;
 }

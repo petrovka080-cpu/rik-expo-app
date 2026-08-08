@@ -53,4 +53,26 @@ describe("Verification Architecture V1 impact analyzer", () => {
 
     expect(result.selected_suites.filter((suite) => !fs.existsSync(path.resolve(suite)))).toEqual([]);
   });
+
+  it.each([
+    "src/lib/estimate/createEstimateDraftRevision.ts",
+    "src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding.ts",
+    "src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime.ts",
+    "src/features/consumerRepair/requestEstimateScreenActions.ts",
+  ])("selects the mandatory shared-core downstream pack for %s", (file) => {
+    const result = plan(file);
+    expect(result.selected_gates).toContain("estimate-domain-shared-core-impact");
+    expect(result.selected_suites).toEqual(expect.arrayContaining([
+      "src/features/consumerRepair/consumerRepairAsphaltV4Phase1B.test.ts",
+      "tests/estimateInfrastructure/aiEstimateParameterRuntimeMatrix.contract.test.ts",
+      "tests/estimateInfrastructure/aiEstimatePlatformCoreV2Matrix.contract.test.ts",
+    ]));
+    expect(result.selected_suites.length).toBeGreaterThan(0);
+  });
+
+  it("keeps an Asphalt norm-only change out of unrelated whole-app UI gates", () => {
+    const result = plan("src/lib/estimate/v4/roadworks/roadworksWaveASemanticTruth.ts");
+    expect(result.selected_gates).toContain("estimate-domain-shared-core-impact");
+    expect(result.selected_gates).not.toContain("ui-contracts");
+  });
 });

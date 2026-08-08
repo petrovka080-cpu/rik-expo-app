@@ -390,6 +390,12 @@ function buildAsphaltV4Draft(input: {
         asphaltV4SemanticOwnerId: row.definition.semantic_owner_id,
         asphaltV4SemanticOwnerClass: row.definition.semantic_owner_class,
         asphaltV4ParentWbsId: row.definition.parent_wbs_id,
+        asphaltV4CostingMode: compilation.costing_mode,
+        asphaltV4CostTreatment: row.definition.costing_mode,
+        asphaltV4CostOwnershipId: row.definition.cost_ownership_id,
+        asphaltV4Payable:
+          row.definition.costing_mode === "RESOURCE_BASED" ||
+          row.definition.costing_mode === "COMPOSITE_RATE",
         includedInProcurement: row.included_in_procurement,
         rowCode: row.definition.row_id,
         inlineWorkPrompt: true,
@@ -898,9 +904,103 @@ function shouldPreferSpecificProfessionalFallback(draft: ConsumerRepairAiDraft |
     selectedWorkKey === "dynamic_fencing_estimate";
 }
 
+function buildExactRoadworksWaveAParseResult(input: {
+  rawInput: string;
+  registration: {
+    templateId: string;
+    professionalNameRu: string;
+    workId: string;
+  };
+}): InlineWorkPromptParseResult {
+  const { rawInput, registration } = input;
+  return {
+    rawInput,
+    matchedTemplate: {
+      templateId: registration.templateId,
+      templateName: registration.professionalNameRu,
+      family: registration.workId,
+      confidence: 1,
+      matchSource: "user_selected",
+      matchedTextSpan: [0, rawInput.length],
+    },
+    candidateTemplates: [{
+      templateId: registration.templateId,
+      templateName: registration.professionalNameRu,
+      family: registration.workId,
+      workKey: registration.workId,
+      confidence: 1,
+      reason: "exact_roadworks_wave_a_binding",
+    }],
+    paramText: rawInput.trim(),
+    // Exact Roadworks Wave A parameters and assumptions are attached by the
+    // canonical production binding to the BOQ rows. The revision builder reads
+    // that versioned snapshot, so re-running the global prompt parser here is
+    // both redundant and a source of generic-catalog pre-emption.
+    extractedParams: {},
+    rawInputFacts: [],
+    rawInputFactExtraction: {
+      raw_input: rawInput,
+      facts: [],
+      metrics: {
+        explicit_input_facts_ignored: 0,
+        explicit_input_unit_mismatches: 0,
+        explicit_input_facts_overwritten_by_default: 0,
+      },
+    },
+    assumptions: [],
+    missingInputs: [],
+    canBuildPreliminaryEstimate: true,
+    mustAskUserToSelectTemplate: false,
+  };
+}
+
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
+  let roadworksWaveA: ReturnType<
+    typeof import("./v4/roadworks/roadworksWaveAProductionBinding")["buildRoadworksWaveAProductionDraft"]
+  > = loadRoadworksWaveAProductionDraftBuilder().buildRoadworksWaveAProductionDraft(input);
+  const explicitRoadworksWaveASelection = Boolean(roadworksWaveA && [
+    input.selectedWorkKey?.trim(),
+    input.selectedTemplateId?.trim(),
+  ].some((id) =>
+    id === roadworksWaveA.registration.workId ||
+    id === roadworksWaveA.registration.templateId
+  ));
+  const preferSpecificRoadworksWaveA = Boolean(
+    roadworksWaveA &&
+    input.rawInput.toLocaleLowerCase("ru-RU").includes(
+      roadworksWaveA.registration.professionalNameRu.toLocaleLowerCase("ru-RU"),
+    ),
+  );
+  if (roadworksWaveA && (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA)) {
+    const parseResult = buildExactRoadworksWaveAParseResult({
+      rawInput: input.rawInput,
+      registration: roadworksWaveA.registration,
+    });
+    const contractedDraft = applyProfessionalBoqRuntimeContract(
+      roadworksWaveA.draft,
+      { prompt: input.rawInput },
+    );
+    const roadScopeResolution = resolveRoadEstimateScopeV4({
+      originalText: input.rawInput,
+      requestedCatalogWorkId: roadworksWaveA.registration.workId,
+      selectedScopeId: roadScopeIdForProfileV4(
+        input.paramOverrides?.selectedRoadScope?.value ?? input.paramOverrides?.scope_profile?.value,
+      ),
+      exactProfessionalWorkId: roadworksWaveA.registration.workId,
+    });
+    return {
+      parseResult,
+      draft: contractedDraft,
+      canBuildPreliminaryEstimate: contractedDraft.items.length > 0,
+      blockingReason: contractedDraft.items.length > 0 ? undefined : "draft_empty",
+      pdfMappingValid: contractedDraft.items.length > 0,
+      buyerHandoffMappingValid: contractedDraft.items.some((item) => item.itemType !== "work"),
+      v4ClarificationExperience: null,
+      roadScopeResolution,
+    };
+  }
   const parseResult = parseInlineWorkEstimatePrompt(input);
   const currency = input.currency ?? "KGS";
   const multiDomainRoute = routeMultiDomainReferencePromptV4(input.rawInput);
@@ -959,13 +1059,6 @@ export function buildEstimateFromInlineWorkPrompt(
         selectedScopeId: "ROAD_SURFACING_ONLY",
       })
       : textRoadScopeResolution;
-  let roadworksWaveA: ReturnType<
-    typeof import("./v4/roadworks/roadworksWaveAProductionBinding")["buildRoadworksWaveAProductionDraft"]
-  > = null;
-  if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveA) {
-    roadworksWaveA =
-      loadRoadworksWaveAProductionDraftBuilder().buildRoadworksWaveAProductionDraft(input);
-  }
   if (roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveA) {
     return {
       parseResult,
@@ -974,6 +1067,22 @@ export function buildEstimateFromInlineWorkPrompt(
       blockingReason: "road_scope_selection_required",
       pdfMappingValid: false,
       buyerHandoffMappingValid: false,
+      v4ClarificationExperience: null,
+      roadScopeResolution,
+    };
+  }
+  if (roadworksWaveA && (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA)) {
+    const contractedDraft = applyProfessionalBoqRuntimeContract(
+      roadworksWaveA.draft,
+      { prompt: input.rawInput },
+    );
+    return {
+      parseResult,
+      draft: contractedDraft,
+      canBuildPreliminaryEstimate: contractedDraft.items.length > 0,
+      blockingReason: contractedDraft.items.length > 0 ? undefined : "draft_empty",
+      pdfMappingValid: contractedDraft.items.length > 0,
+      buyerHandoffMappingValid: contractedDraft.items.some((item) => item.itemType !== "work"),
       v4ClarificationExperience: null,
       roadScopeResolution,
     };
@@ -1009,8 +1118,6 @@ export function buildEstimateFromInlineWorkPrompt(
       roadScopeResolution,
     };
   }
-  roadworksWaveA ??=
-    loadRoadworksWaveAProductionDraftBuilder().buildRoadworksWaveAProductionDraft(input);
   const passportBackedDraft = buildPassportBackedDraft({
     parseResult,
     currency,
@@ -1070,20 +1177,6 @@ export function buildEstimateFromInlineWorkPrompt(
     };
   }
 
-  const explicitRoadworksWaveASelection = Boolean(roadworksWaveA && [
-    input.selectedWorkKey?.trim(),
-    input.selectedTemplateId?.trim(),
-  ].some((id) =>
-    id === roadworksWaveA.registration.workId ||
-    id === roadworksWaveA.registration.templateId
-  ));
-  const preferSpecificRoadworksWaveA = Boolean(
-    roadworksWaveA &&
-    !exactMultiDomainReferencePrompt &&
-    input.rawInput.toLocaleLowerCase("ru-RU").includes(
-      roadworksWaveA.registration.professionalNameRu.toLocaleLowerCase("ru-RU"),
-    ),
-  );
   const explicitLegacyTemplateDraft =
     (input.selectedTemplateId || input.selectedWorkKey) &&
     (
@@ -1097,20 +1190,10 @@ export function buildEstimateFromInlineWorkPrompt(
     multiDomainReferenceV4?.passport.professionalEstimatePassportId;
   const allowMultiDomainReferenceDraft =
     exactMultiDomainReferencePrompt || explicitMultiDomainPassport;
-  const preferRichAsphaltV4 = Boolean(
-    asphaltV4 &&
-    (
-      multiDomainAsphaltSelection ||
-      asphaltV4.draft.items.length > 50 ||
-      [
-        input.selectedWorkKey,
-        input.selectedTemplateId,
-      ].some((id) =>
-        id === ASPHALT_WORK_ID_V4 ||
-        id === ASPHALT_V4_RUNTIME_TEMPLATE_ID
-      )
-    ),
-  );
+  // A resolved V4 scope is authoritative regardless of row count. Using an
+  // arbitrary >50 threshold sent valid narrow scopes to the 200-row generic
+  // legacy BOQ and lost their assembly/revision identity.
+  const preferRichAsphaltV4 = Boolean(asphaltV4 && asphaltV4.draft.items.length > 0);
   const preferResolvedAsphaltV4OverLegacyRoadDraft = Boolean(
     preferRichAsphaltV4 &&
     (

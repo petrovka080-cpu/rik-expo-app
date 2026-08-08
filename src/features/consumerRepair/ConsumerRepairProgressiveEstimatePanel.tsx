@@ -24,6 +24,8 @@ import type { ConsumerRepairParamEditState } from "./requestEstimateScreenAction
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
 import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
+import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { pickFileAny } from "../../lib/filePick";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 
@@ -194,6 +196,27 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
     : [...runtime.cards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
 }
 
+export function resolveConsumerRepairParamPatchOperation(input: {
+  paramKey: string;
+  revision: EstimateDraftRevision | null;
+  canonicalParameterSession?: CanonicalParameterSession | null;
+}): UserParamPatchOperation {
+  if (
+    input.revision &&
+    Object.prototype.hasOwnProperty.call(input.revision.params, input.paramKey)
+  ) {
+    return "update_param";
+  }
+  const canonicalParameter = input.canonicalParameterSession?.parameters.find(
+    (parameter) => parameter.parameterId === input.paramKey,
+  );
+  return canonicalParameter?.value != null &&
+    canonicalParameter.state !== "BLOCKING_REQUIRED" &&
+    canonicalParameter.state !== "INVALID"
+    ? "update_param"
+    : "add_param";
+}
+
 export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<Props, ProgressivePanelState> {
   state: ProgressivePanelState = {
     parametersOpen:
@@ -258,6 +281,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     return (
     <View style={styles.wrap}>
       <RequestEstimateSummaryCard viewModel={viewModel} missingParameterCount={count} />
+      <EstimateRevisionTimeline state={this.props.revisionState} />
+      <EstimateRevisionDiff diff={latestDiff} />
       {visibleMissingParameterSummary ? (
         <Text
           style={styles.parameterMeta}
@@ -543,7 +568,11 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   }
 
   private operationForCard(card: AiEstimateParameterCard): UserParamPatchOperation {
-    return this.props.revision?.params[card.key] ? "update_param" : "add_param";
+    return resolveConsumerRepairParamPatchOperation({
+      paramKey: card.key,
+      revision: this.props.revision,
+      canonicalParameterSession: this.props.canonicalParameterSession,
+    });
   }
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {

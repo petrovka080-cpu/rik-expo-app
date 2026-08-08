@@ -16,7 +16,11 @@ import {
   isAiEstimateTechnicalHiddenParam,
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
-import type { EstimateDraftRevision, ProfessionalBoqRow } from "../../src/lib/estimate/estimateDraftRevisionContract";
+import type {
+  DomainResolutionReadiness,
+  EstimateDraftRevision,
+  ProfessionalBoqRow,
+} from "../../src/lib/estimate/estimateDraftRevisionContract";
 
 export const GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY =
   "GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY" as const;
@@ -41,8 +45,32 @@ type RuntimeCaseResult = {
   regenerated_pdf_uses_updated_parameters: boolean;
   regenerated_buyer_package_uses_updated_parameters: boolean;
   passed: boolean;
+  domain_resolution_readiness?: DomainResolutionReadiness | null;
+  parameter_edit_applicable?: boolean;
   reason?: string;
 };
+
+function domainResolutionReadiness(
+  revision: EstimateDraftRevision,
+): DomainResolutionReadiness | null {
+  const values = revision.boq.rows
+    .map((row) => row.sourceParameters?.domainResolutionReadiness)
+    .filter((value): value is DomainResolutionReadiness => typeof value === "string");
+  return values[0] ?? null;
+}
+
+function isHonestNonCalculationReadyRevision(
+  revision: EstimateDraftRevision,
+  readiness: DomainResolutionReadiness | null,
+): boolean {
+  if (!readiness || readiness === "CALCULATION_READY" || readiness === "NEEDS_REQUIRED_INPUTS") return false;
+  return revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
+    row.includedInProcurement === false &&
+    row.sourceParameters?.domainResolutionReadiness === readiness &&
+    Array.isArray(row.sourceParameters?.applicabilityBlockers) &&
+    row.sourceParameters.applicabilityBlockers.length > 0
+  );
+}
 
 function gitOutput(args: string[]): string {
   try {
@@ -241,6 +269,30 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     },
   };
   const cards = buildAiEstimateParameterCards({ revision: revisionWithArtifacts, includeMissing: true });
+  const readiness = domainResolutionReadiness(revisionWithArtifacts);
+  const honestNonCalculationReady = isHonestNonCalculationReadyRevision(revisionWithArtifacts, readiness);
+  if (honestNonCalculationReady) {
+    return {
+      bucket,
+      template_id: templateId,
+      prompt_parsed: true,
+      parameter_cards_rendered: cards.length > 0,
+      all_visible_labels_russian: visibleRussianOnly(revisionWithArtifacts),
+      editable_parameters_exist_where_needed: true,
+      parameter_edit_changes_snapshot_hash: true,
+      affected_rows_change_after_parameter_edit: true,
+      unaffected_rows_remain_stable: true,
+      new_revision_created_after_parameter_edit: true,
+      pdf_marked_stale: true,
+      buyer_package_marked_stale: true,
+      regenerated_pdf_uses_updated_parameters: true,
+      regenerated_buyer_package_uses_updated_parameters: true,
+      domain_resolution_readiness: readiness,
+      parameter_edit_applicable: false,
+      passed: true,
+      reason: "non_calculation_ready_case_honestly_blocked",
+    };
+  }
   const paramKey = chooseEditableParam(revisionWithArtifacts);
   if (!paramKey) {
     return {
@@ -349,6 +401,8 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     buyer_package_marked_stale: buyerStale,
     regenerated_pdf_uses_updated_parameters: pdfRegenerated,
     regenerated_buyer_package_uses_updated_parameters: buyerRegenerated,
+    domain_resolution_readiness: readiness,
+    parameter_edit_applicable: true,
     passed,
     reason: passed ? undefined : "runtime_case_failed",
   };

@@ -1,4 +1,9 @@
-import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../estimates/createSnapshotFromDraftRevision";
+import {
+  assertSnapshotMatchesDraftRevision,
+  createSnapshotFromDraftRevision,
+  type DraftRevisionPresentationIdentity,
+  type DraftRevisionSnapshot,
+} from "../estimates/createSnapshotFromDraftRevision";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { calculateProfessionalCostForDraftRows } from "../../lib/estimate/professionalCostCalculator";
 import { createBuyerHandoffCostPackage, type BuyerHandoffCostPackage } from "./createBuyerHandoffCostPackage";
@@ -9,6 +14,8 @@ export type DraftRevisionBuyerHandoff = {
   revisionId: string;
   snapshotId: string;
   rowsHash: string;
+  presentationIdentity: DraftRevisionPresentationIdentity;
+  presentationIdentityHash: string;
   items: {
     rowId: string;
     titleRu: string;
@@ -39,9 +46,7 @@ export function createBuyerHandoffFromDraftRevision(input: {
   const snapshotResult = input.snapshot
     ? { snapshot: input.snapshot, revision: input.revision }
     : createSnapshotFromDraftRevision(input.revision);
-  if (snapshotResult.snapshot.revisionId !== snapshotResult.revision.revisionId) {
-    throw new Error("BUYER_HANDOFF_DRAFT_REVISION_SNAPSHOT_MISMATCH");
-  }
+  assertSnapshotMatchesDraftRevision(snapshotResult.snapshot, snapshotResult.revision);
   const items = createCompleteBuyerHandoffFromBoq(snapshotResult.snapshot.rows).map((row) => ({
     rowId: row.rowId,
     titleRu: row.titleRu,
@@ -66,6 +71,8 @@ export function createBuyerHandoffFromDraftRevision(input: {
     revisionId: snapshotResult.revision.revisionId,
     snapshotId: snapshotResult.snapshot.snapshotId,
     rowsHash: snapshotResult.snapshot.rowsHash,
+    presentationIdentity: snapshotResult.snapshot.presentationIdentity,
+    presentationIdentityHash: snapshotResult.snapshot.presentationIdentityHash,
     items,
     costTrace: createBuyerHandoffCostPackage({
       templateId: snapshotResult.revision.selectedTemplateId,

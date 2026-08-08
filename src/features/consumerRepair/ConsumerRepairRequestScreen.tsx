@@ -1,6 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
-import { Text, TextInput, View } from "react-native";
+import { Platform, Text, TextInput, View } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
@@ -18,6 +18,7 @@ import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimat
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { awaitTransactionalConsumerRepairBundleCommit } from "../../lib/platform/consumerRepairTransactionalDurableBridge";
 import { recordRequestEstimateLaunchStage } from "../../lib/navigation/requestEstimateLaunchObservability";
 import {
   markRequestEstimateIntentStage,
@@ -159,6 +160,20 @@ export function shouldAutoPrepareInitialConsumerRepairRequest(props: ConsumerRep
   return Boolean(props.autoPrepare || props.autoPdf || props.initialProblemText?.trim());
 }
 
+export function shouldSkipAcknowledgedRequestEstimateLaunch(input: {
+  launchId: string | null | undefined;
+  isAcknowledged: (launchId: string) => boolean;
+  launchFingerprint?: string | null;
+  isFingerprintAcknowledged?: (fingerprint: string) => boolean;
+}): boolean {
+  const launchId = input.launchId?.trim();
+  if (launchId) return input.isAcknowledged(launchId);
+  const fingerprint = input.launchFingerprint?.trim();
+  return Boolean(
+    fingerprint && input.isFingerprintAcknowledged?.(fingerprint),
+  );
+}
+
 export function isRequestEstimateLaunchBundleRendered(input: {
   bundle: ConsumerRepairDraftBundle;
   expectedPrompt: string | null | undefined;
@@ -199,6 +214,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   } | null = null;
   private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
+  private approvalCommitInFlight = false;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
@@ -401,6 +417,38 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   }
   private applyInitialDeepLinkFlow(): void {
     if (this.initialDeepLinkApplied) return;
+    const reconciledLaunch =
+      requestEstimateIntentLifecycle.reconcileAcknowledgedRouteLaunch({
+        launchId: this.props.launchId,
+        fingerprint: this.props.launchFingerprint,
+      });
+    if (reconciledLaunch.acknowledged) {
+      // A route remount can occur between the UI ACK and the deferred draftId
+      // binding. Android also exposes the same raw Intent to +native-intent and
+      // the root listener; those owners may independently create one generated
+      // launchId. Reconcile that single alias to the canonical immutable draft
+      // instead of compiling another initial revision.
+      this.initialDeepLinkApplied = true;
+      const requestDraftId = reconciledLaunch.requestDraftId;
+      if (requestDraftId && this.state.bundle?.draft.id !== requestDraftId) {
+        const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
+        const approvedHistoryPage =
+          listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+        const restored = buildInitialConsumerRepairRequestState({
+          initialProblemText: this.props.initialProblemText,
+          initialDraftId: requestDraftId,
+          history,
+          approvedHistoryPage,
+        });
+        if (restored.bundle) {
+          this.historyLoaded = true;
+          this.setState(restored, () => {
+            router.setParams({ draftId: requestDraftId });
+          });
+        }
+      }
+      return;
+    }
     if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
     const launchProblemText =
       this.props.initialProblemText?.trim() || this.state.problemText.trim();
@@ -499,6 +547,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       route: "/request" as const,
       fingerprint: this.props.launchFingerprint,
     };
+    requestEstimateIntentLifecycle.bindPendingDraft(
+      launchId,
+      bundle.draft.id,
+    );
     if (!markRequestEstimateIntentStage(launchId, "DRAFT_SESSION_READY")) {
       return;
     }
@@ -820,11 +872,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState(buildDeletedConsumerRepairDraftState("Заявка удалена."));
     this.refreshHistory(null);
   };
-  private approveDraft = () => {
+  private approveDraft = async () => {
+    if (this.approvalCommitInFlight) return;
+    this.approvalCommitInFlight = true;
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
+      if (Platform.OS !== "web") {
+        await awaitTransactionalConsumerRepairBundleCommit({
+          requestDraftId: bundle.draft.id,
+          expectedStatus: bundle.draft.status,
+          expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
+        });
+      }
       const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
       const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
       this.historyLoaded = true;
@@ -837,7 +898,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         statusMessage: "Заявка утверждена. PDF сохранён в истории, смета доступна там же для PDF, редактирования и отправки в маркет.",
       }));
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+      } else {
+        this.setState({
+          statusMessage: "Не удалось надёжно сохранить утверждённую смету. Повторите подтверждение.",
+        });
+      }
+    } finally {
+      this.approvalCommitInFlight = false;
     }
   };
   private completePdfOpen = async () => {

@@ -6,7 +6,9 @@ import {
   createRequestEstimateLaunchPayloadV1,
   decodeRequestEstimateLaunchPayloadV1,
   encodeRequestEstimateLaunchPayloadV1,
+  isGeneratedRequestEstimateLaunchIdV1,
   resolveRequestEstimateLaunchTargetV1,
+  requestEstimateLaunchFingerprintForRouteParametersV1,
 } from "./requestEstimateLaunchPayload";
 
 describe("RequestEstimateLaunchPayloadV1", () => {
@@ -75,6 +77,26 @@ describe("RequestEstimateLaunchPayloadV1", () => {
       autoPrepare: "1",
       prompt: "roof",
     });
+  });
+
+  it("reconstructs the canonical fingerprint from transient raw route parameters", () => {
+    const target = resolveRequestEstimateLaunchTargetV1(
+      "rik:///request?prompt=asphalt%20repair&autoPrepare=1",
+      { issuedAt },
+    );
+    expect(requestEstimateLaunchFingerprintForRouteParametersV1({
+      route: "/request",
+      workIntent: "asphalt repair",
+      parameters: { autoPrepare: "1", prompt: "asphalt repair" },
+    })).toBe(target?.payload.fingerprint);
+    expect(isGeneratedRequestEstimateLaunchIdV1({
+      launchId: target?.payload.launchId,
+      fingerprint: target?.payload.fingerprint,
+    })).toBe(true);
+    expect(isGeneratedRequestEstimateLaunchIdV1({
+      launchId: "user-explicit-launch-0001",
+      fingerprint: target?.payload.fingerprint,
+    })).toBe(false);
   });
 
   it("rejects corrupt, oversized, unknown-field, and empty-work payloads", () => {

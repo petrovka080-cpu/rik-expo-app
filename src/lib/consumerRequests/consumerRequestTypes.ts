@@ -6,7 +6,10 @@ import type {
   EditableEstimateSnapshot,
 } from "../ai/editableEstimate";
 import type { EstimateRevisionState } from "../ai/estimateRevisions";
-import type { EstimateDraftRevisionState } from "../estimate/estimateDraftRevisionContract";
+import type {
+  EstimateDraftRevision,
+  EstimateDraftRevisionState,
+} from "../estimate/estimateDraftRevisionContract";
 import type { EstimateDraftSession } from "../estimate/draftSession/estimateDraftSession";
 import type { CanonicalParameterSession } from "../estimate/canonicalParameters/canonicalParameterCore";
 import type { ProjectExecutionDraft } from "../projectExecution/projectExecutionTypes";
@@ -349,6 +352,8 @@ export type ConsumerRepairAiDraft = {
   estimatePresentation?: EstimatePresentationViewModel;
   structuredEstimatePayload?: StructuredEstimatePayload;
   electricalCircuitSchedule?: ElectricalCircuitScheduleV1;
+  /** Exact runtime revision already used to project items; not a second build request. */
+  runtimeEstimateDraftRevision?: EstimateDraftRevision;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;
@@ -407,7 +412,8 @@ export type ConsumerRequestValidationErrorCode =
   | "OWNER_MISMATCH"
   | "ESTIMATE_PARAMETERS_REQUIRED"
   | "ESTIMATE_PARAM_BATCH_EMPTY"
-  | "ESTIMATE_REVISION_BATCH_REJECTED";
+  | "ESTIMATE_REVISION_BATCH_REJECTED"
+  | "ESTIMATE_REVISION_STATE_RECOVERY_REQUIRED";
 
 export type ConsumerRequestValidationErrorItem = {
   code: ConsumerRequestValidationErrorCode;

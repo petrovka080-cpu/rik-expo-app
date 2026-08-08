@@ -101,13 +101,16 @@ export function buildProfessionalAssumptionEngineResult(input: {
   rowCount: number;
   hasAnySourceBackedPrice: boolean;
   riskPolicy: ProfessionalBoqRiskPolicy;
+  allowPromptDefaults?: boolean;
 }): ProfessionalAssumptionEngineResult {
   const missingPolicy = buildProfessionalMissingInputPolicy({
     prompt: input.prompt,
     riskPolicy: input.riskPolicy,
   });
   const pricePolicyRu = input.hasAnySourceBackedPrice ? SOURCE_BACKED_PRICE_POLICY_RU : PRICE_MISSING_POLICY_RU;
-  const defaultAssumptionsRu = defaultAssumptionsForPrompt(input.prompt);
+  const defaultAssumptionsRu = input.allowPromptDefaults === false
+    ? []
+    : defaultAssumptionsForPrompt(input.prompt);
   const assumptionsRu = unique([
     `Предварительная BOQ-структура собрана по ${input.rowCount} строкам из указанного пользователем объема.`,
     missingPolicy.drawingsPolicyRu,

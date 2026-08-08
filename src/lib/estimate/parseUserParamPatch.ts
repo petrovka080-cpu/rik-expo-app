@@ -23,6 +23,13 @@ function parseNumberLike(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseBooleanLike(value: string): boolean | null {
+  const normalized = value.trim().toLocaleLowerCase("ru-RU");
+  if (["true", "yes", "да"].includes(normalized)) return true;
+  if (["false", "no", "нет"].includes(normalized)) return false;
+  return null;
+}
+
 function phraseForParam(key: string, rawValue: string): string {
   if (key === "q") return `объем работ ${rawValue}`;
   if (key === "area_m2") return `площадь ${rawValue}`;
@@ -68,7 +75,8 @@ export function parseUserParamPatch(input: ParseUserParamPatchInput): UserParamP
   const extracted = extractWorkParamsFromInlinePrompt(phraseForParam(input.paramKey, rawValue));
   const exact = extracted[input.paramKey];
   const parsedNumber = parseNumberLike(rawValue);
-  const parsedValue = exact?.value ?? parsedNumber ?? rawValue;
+  const parsedBoolean = parseBooleanLike(rawValue);
+  const parsedValue = exact?.value ?? parsedNumber ?? parsedBoolean ?? rawValue;
   return {
     revisionId: input.revision.revisionId,
     selectedTemplateId: input.revision.selectedTemplateId,

@@ -2,6 +2,7 @@ import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
   ROADWORKS_WAVE_A_NORMATIVE_SOURCES,
   RoadworksWaveAInventory,
+  auditAsphalt35ScaledCloneIntegrityV5,
   auditRoadworksWaveASemanticTruth,
   compileRoadworksWaveAWork,
   getRoadworksWaveAOperation,
@@ -13,10 +14,10 @@ describe("Roadworks Wave A semantic and normative truth", () => {
     const audit = auditRoadworksWaveASemanticTruth();
     expect(audit).toMatchObject({
       total_work_ids: 35,
-      distinct_professional_models: 8,
+      distinct_professional_models: 35,
       catalog_aliases: 0,
-      scope_presets: 16,
-      domain_review_required: 11,
+      scope_presets: 0,
+      domain_review_required: 0,
       unique_semantic_signatures: 35,
       scope_profiles_ignored_by_compiler: 0,
       missing_golden_fixtures: 0,
@@ -24,13 +25,37 @@ describe("Roadworks Wave A semantic and normative truth", () => {
       silent_p0_defaults: 0,
       missing_formula_sources: 0,
       generic_output_rows: 0,
-      models_requiring_domain_review: 20,
-      blockerStatus: "ASPHALT_35_COMPOSITION_READY_FOR_PLATFORM_GATES",
+      models_requiring_domain_review: 0,
+      blockerStatus: "ASPHALT_35_UNIQUE_PROFESSIONAL_PASSPORTS_READY_FOR_DOMAIN_GATES",
       fake_green_claimed: false,
     });
     expect(audit.unexplainedCloneGroups).toEqual([]);
     expect(audit.invalidCanonicalMappings).toEqual([]);
     expect(audit.missingSourceCoverage).toEqual([]);
+  });
+
+  test("rejects renamed two-scale clones, hard-coded 111-row BOQ and area-only length rows", () => {
+    expect(auditAsphalt35ScaledCloneIntegrityV5()).toMatchObject({
+      records: 35,
+      unique_two_scale_shapes: 35,
+      cross_work_scaled_clone_count: 0,
+      cross_work_scaled_clone_groups: [],
+      area_only_length_rows: 0,
+      hard_coded_111_row_boq_count: 0,
+      scaled_clone_pair_cases: 2,
+      scaled_clone_pair_cases_total: 2,
+      same_work_900_780_semantic_stability: 1,
+      different_work_owner_separation: 1,
+      historical_revision_mutation: 0,
+      historical_900_780_read_only_regression: {
+        unexpected_changed_rows: [],
+        constant_rows_preserved: true,
+        lot_rows_not_blind_scaled: true,
+        area_only_length_rows: [],
+        historical_storage_mutated: false,
+        passed: true,
+      },
+    });
   });
 
   test("mapped catalog entries preserve identity but resolve to one canonical semantic owner", () => {

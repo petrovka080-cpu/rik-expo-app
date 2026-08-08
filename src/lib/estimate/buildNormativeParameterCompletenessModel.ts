@@ -58,6 +58,7 @@ export function buildNormativeParameterCompletenessModel(
   revision: EstimateDraftRevision | null | undefined,
 ): AiEstimateNormativeParameterCompletenessModel | null {
   if (!revision?.selectedTemplateId) return null;
+  if (revision.boq.rows.some((row) => row.sourceParameters?.roadworksWaveA === true)) return null;
   const passport = buildAiEstimateNormativeWorkParameterPassport(revision.selectedTemplateId);
   if (!passport) return null;
   const items = passport.requirements

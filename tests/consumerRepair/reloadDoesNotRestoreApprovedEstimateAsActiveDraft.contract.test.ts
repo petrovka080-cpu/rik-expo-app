@@ -16,6 +16,7 @@ import {
 import {
   isFreshRequestEstimateLaunchWorkspace,
   isRequestEstimatePromptComposerRendered,
+  shouldSkipAcknowledgedRequestEstimateLaunch,
   shouldAutoPrepareInitialConsumerRepairRequest,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 
@@ -134,6 +135,37 @@ describe("reload does not restore approved estimate as active draft", () => {
     expect(buildConsumerRepairRequestRenderModel(launchState, {
       includeWorkSuggestions: false,
     }).workSuggestions).toEqual([]);
+  });
+
+  it("does not compile an acknowledged launch again during the route-binding remount", () => {
+    const acknowledged = new Set(["exact-road-launch-0001"]);
+    const isAcknowledged = (launchId: string) => acknowledged.has(launchId);
+
+    expect(shouldSkipAcknowledgedRequestEstimateLaunch({
+      launchId: " exact-road-launch-0001 ",
+      isAcknowledged,
+    })).toBe(true);
+    expect(shouldSkipAcknowledgedRequestEstimateLaunch({
+      launchId: "new-road-launch-0002",
+      isAcknowledged,
+    })).toBe(false);
+    expect(shouldSkipAcknowledgedRequestEstimateLaunch({
+      launchId: null,
+      isAcknowledged,
+    })).toBe(false);
+    expect(shouldSkipAcknowledgedRequestEstimateLaunch({
+      launchId: null,
+      isAcknowledged,
+      launchFingerprint: "same-native-envelope",
+      isFingerprintAcknowledged: (fingerprint) =>
+        fingerprint === "same-native-envelope",
+    })).toBe(true);
+    expect(shouldSkipAcknowledgedRequestEstimateLaunch({
+      launchId: "new-explicit-launch-0003",
+      isAcknowledged,
+      launchFingerprint: "same-native-envelope",
+      isFingerprintAcknowledged: () => true,
+    })).toBe(false);
   });
 
   it("projects the user status from the canonical DraftSession state", () => {

@@ -36,6 +36,17 @@ export function ProfessionalCostSummary({
       <Text style={styles.meta} testID="professional-missing-price-count">
         Missing prices: {summary.missingPriceRowsCount}
       </Text>
+      <Text style={styles.meta} testID="professional-priced-unpriced-count">
+        Priced rows: {summary.pricedRowsCount}; unpriced rows: {summary.missingPriceRowsCount}; currency: {summary.currency}
+      </Text>
+      <Text style={styles.meta} testID="professional-costing-mode">
+        Costing mode: {summary.costingMode}; double counting: {summary.doubleCountingCount}; unknown treatment: {summary.unknownCostTreatmentCount}
+      </Text>
+      {summary.missingPriceRowsCount > 0 ? (
+        <Text style={styles.meta} testID="professional-quantity-only-warning">
+          Количественная ведомость рассчитана. Полная стоимость не рассчитана: отсутствуют цены по {summary.missingPriceRowsCount} позициям.
+        </Text>
+      ) : null}
       <Text style={styles.meta} testID="professional-cost-resolution">
         Cost resolution: {summary.resolution === "PRELIMINARY_COST_AVAILABLE"
           ? "preliminary cost available"

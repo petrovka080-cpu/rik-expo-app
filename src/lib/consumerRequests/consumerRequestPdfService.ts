@@ -358,11 +358,13 @@ export function buildConsumerRepairStructuredEstimatePdfViewModel(input: {
   const capitalSectionOrder = (Object.keys(CAPITAL_RENOVATION_GROUP_TITLES) as CapitalRenovationGroupId[])
     .map((groupId) => `capital_${groupId}`);
   const hasCapitalRenovationCalculator = items.some((item) => pdfCapitalGroupId(item));
-  const hasAsphaltV4 = items.some((item) => item.sourceParameters?.asphaltV4 === true);
+  const hasAsphaltV4 = items.some((item) =>
+    asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters) != null
+  );
   const sectionOrder = hasCapitalRenovationCalculator
     ? [...capitalSectionOrder, "materials", "labor", "equipment", "delivery"]
     : hasAsphaltV4
-      ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4]
+      ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4, "materials", "labor", "equipment", "delivery"]
       : ["materials", "labor", "equipment", "delivery"];
   const sections = sectionOrder
     .map((type, sectionIndex): EstimatePdfSectionViewModel | null => {

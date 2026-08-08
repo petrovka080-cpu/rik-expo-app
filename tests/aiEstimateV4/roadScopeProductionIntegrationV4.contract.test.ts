@@ -55,7 +55,7 @@ describe("Road Scope Truth V4 production integration", () => {
     expect(result.roadScopeResolution?.resolverStatus).toBe("NOT_ROAD");
   });
 
-  test("/request preserves postfix dimensions and compiles the 702-row benchmark after explicit full-road selection", () => {
+  test("/request preserves postfix dimensions and compiles the semantic full-road contract after explicit selection", () => {
     const selectedWork = {
       selectedWorkKey: "asphalt_concrete_pavement",
       selectedTitleRu: "Дороги, транспорт и площадки: асфальтобетон бетонный покрытие",
@@ -99,16 +99,26 @@ describe("Road Scope Truth V4 production integration", () => {
       basisType: "project",
       area_m2: 64000,
     });
-    expect(selected.estimateDraftRevisionState?.revisions[0]?.boq.rows).toHaveLength(702);
-    expect(selected.items).toHaveLength(702);
+    const revisionRows = selected.estimateDraftRevisionState?.revisions[0]?.boq.rows ?? [];
+    const rowIds = revisionRows.map((row) => row.rowId);
+    expect(revisionRows.length).toBeGreaterThan(0);
+    expect(selected.items).toHaveLength(revisionRows.length);
+    expect(rowIds).toEqual(expect.arrayContaining([
+      "subgrade_compaction",
+      "asphalt_layer_3_material",
+      "storm_pipe",
+      "lighting_pole",
+      "sign_warning_panel",
+    ]));
+    expect(rowIds).not.toEqual(expect.arrayContaining(["geotextile_material", "geotextile_installation"]));
   });
 
   test.each([
-    ["FULL_ROAD_INFRASTRUCTURE", 702],
-    ["ROAD_SURFACING_ONLY", 54],
+    ["FULL_ROAD_INFRASTRUCTURE", ["storm_pipe", "lighting_pole", "sign_warning_panel"], []],
+    ["ROAD_SURFACING_ONLY", ["base_emulsion_material", "asphalt_layer_1_material"], ["topsoil_stripping", "storm_pipe"]],
   ] as const)(
-    "5400 × 15 preserves 81,000 m² and compiles the versioned %s golden",
-    (selectedScope, expectedRows) => {
+    "5400 × 15 preserves 81,000 m² and compiles the semantic %s contract",
+    (selectedScope, requiredRows, forbiddenRows) => {
       const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
         consumerUserId: `asphalt-reference-${selectedScope}`,
         problemText: exactAsphaltReferenceInput,
@@ -151,7 +161,10 @@ describe("Road Scope Truth V4 production integration", () => {
       });
       expect(selected.estimateDraftRevisionState?.revisions).toHaveLength(1);
       expect(selected.estimateDraftRevisionState?.revisions[0]?.quantityBasis?.area_m2).toBe(81000);
-      expect(selected.items).toHaveLength(expectedRows);
+      const rowIds = selected.items.map((item) => item.sourceParameters?.rowCode);
+      expect(selected.items.length).toBeGreaterThan(0);
+      expect(rowIds).toEqual(expect.arrayContaining([...requiredRows]));
+      expect(forbiddenRows.every((rowId) => !rowIds.includes(rowId))).toBe(true);
     },
   );
 

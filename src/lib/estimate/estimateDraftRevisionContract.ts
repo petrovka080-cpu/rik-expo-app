@@ -5,6 +5,44 @@ import type {
   ElectricalCircuitScheduleV1,
 } from "./v4/electrical/electricalProfessionalBoqV1";
 
+export type DomainResolutionReadiness =
+  | "CALCULATION_READY"
+  | "NEEDS_SCOPE_SELECTION"
+  | "NEEDS_REQUIRED_INPUTS"
+  | "RECLASSIFICATION_REQUIRED"
+  | "NORMATIVE_SOURCE_GAP"
+  | "APPLICATION_NOT_ALLOWED"
+  | "UNSUPPORTED_OR_AMBIGUOUS";
+
+export type DomainResolutionReadinessInput = {
+  resolutionExists: boolean;
+  reclassifiedToOtherDomain?: boolean;
+  scopeRequired?: boolean;
+  scopeResolved?: boolean;
+  requiredInputsPresent?: boolean;
+  normativeApplicabilityResolved?: boolean;
+  applicationAllowed?: boolean;
+  calculationStrategyAvailable?: boolean;
+  ambiguous?: boolean;
+};
+
+/**
+ * Shared fail-closed readiness contract. A resolver hit is identity evidence,
+ * not permission to compile an estimate.
+ */
+export function resolveDomainResolutionReadiness(
+  input: DomainResolutionReadinessInput,
+): DomainResolutionReadiness {
+  if (input.reclassifiedToOtherDomain) return "RECLASSIFICATION_REQUIRED";
+  if (!input.resolutionExists || input.ambiguous) return "UNSUPPORTED_OR_AMBIGUOUS";
+  if (input.normativeApplicabilityResolved === false) return "NORMATIVE_SOURCE_GAP";
+  if (input.applicationAllowed === false) return "APPLICATION_NOT_ALLOWED";
+  if (input.scopeRequired && !input.scopeResolved) return "NEEDS_SCOPE_SELECTION";
+  if (input.requiredInputsPresent === false) return "NEEDS_REQUIRED_INPUTS";
+  if (input.calculationStrategyAvailable === false) return "UNSUPPORTED_OR_AMBIGUOUS";
+  return "CALCULATION_READY";
+}
+
 export type EstimateDraftRevisionSource =
   | "initial_prompt"
   | "param_edit"
@@ -82,6 +120,10 @@ export type ProfessionalBoqRow = {
   rateKey?: string | null;
   includedInProcurement: boolean;
   materialQuantity?: ProfessionalMaterialQuantityLine | null;
+  costingMode?: "RESOURCE_MODE" | "UNIT_RATE_MODE" | null;
+  costTreatment?: "COMPOSITE_RATE" | "RESOURCE_BASED" | "ANALYTICAL_ONLY" | "INFORMATIONAL_SUBTOTAL" | null;
+  costOwnershipId?: string | null;
+  payable?: boolean | null;
 };
 
 export type ParamToCalculationTraceParam = {
@@ -148,12 +190,16 @@ export type EstimateResolvedIdentity = {
   parameterSchemaId?: string;
   parameterSchemaVersion?: string;
   calculationStrategyId: string;
+  calculationProfileId?: string;
+  calculationProfileVersion?: string;
   canonicalModelId: string;
   canonicalModelVersion: string;
   selectedScope: string | null;
   scopePresetId: string | null;
   resolvedParameters: Record<string, EstimateDraftRevisionParam>;
   formulaGraphVersion: string;
+  normativeCompositionId?: string;
+  semanticFingerprint?: string;
   compilerVersion: string;
   sourceBindingVersions: Array<{
     sourceId: string;
@@ -170,6 +216,8 @@ export type EstimateResolvedIdentity = {
 export type EstimateDraftRevision = {
   estimateDraftId: string;
   revisionId: string;
+  /** Exact creation instant used by UI/PDF/procurement identity projections. */
+  createdAt?: string;
   previousRevisionId: string | null;
   source: EstimateDraftRevisionSource;
   rawInput: string;

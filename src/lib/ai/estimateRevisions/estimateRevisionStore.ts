@@ -96,6 +96,7 @@ export function createEstimateRevisionState(input: CreateEstimateRevisionStateIn
     history_bindings: [],
     approval_freezes: [],
     conflicts: [],
+    calculation_state: null,
     fake_green_claimed: false,
   };
   assertEstimateRevisionStateIntegrity(state);

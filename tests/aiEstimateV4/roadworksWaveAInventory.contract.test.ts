@@ -25,7 +25,7 @@ describe("Roadworks Wave A canonical inventory", () => {
       expect(item.catalogItemId).toBe(source?.work_catalog_item_id);
       expect(item.templateId).toBe(source?.template_id);
       expect(item.professionalNameRu).toBe(source?.professional_name_ru);
-      expect(item.parameterSchemaId).toBe(`${item.workId}:parameters:v4`);
+      expect(item.parameterSchemaId).toBe(`${item.workId}:parameters:v4.3`);
       expect(item.technologyFamily).not.toMatch(/^(roadworks|asphalt)$/);
       expect(item.assemblyIds.length).toBeGreaterThan(0);
       expect(getRoadworksWaveAOperation(item.workId)).not.toBeNull();

@@ -21,7 +21,7 @@ export const CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD = 500;
 // The row threshold still routes the 702-row maximum to transactional storage.
 const LARGE_REVISION_SERIALIZED_THRESHOLD = 4_000_000;
 const FORBIDDEN_DURABLE_KEYS = /^(?:base64|binary|bytes|blob|dataUrl|privateUrl|signedUrl|accessToken|refreshToken|secret)$/i;
-const PRIVATE_URL = /^(?:data:|blob:|https?:\/\/)|[?&](?:token|signature|sig|x-amz-credential)=/i;
+const PRIVATE_URL = /^(?:data:|blob:)|:\/\/[^/?#]*@|[?&](?:token|signature|sig|x-amz-credential)=/i;
 
 let storeOverride: EstimateRevisionDurableStore | null = null;
 let runtimeStore: EstimateRevisionDurableStore | null = null;
@@ -166,6 +166,23 @@ export function queueTransactionalConsumerRepairBundleWrite(input: {
 
 export async function flushTransactionalConsumerRepairWrites(): Promise<void> {
   await Promise.all([...writeQueues.values()]);
+}
+
+export async function awaitTransactionalConsumerRepairBundleCommit(input: {
+  requestDraftId: string;
+  expectedStatus: ConsumerRepairDraftBundle["draft"]["status"];
+  expectedRevisionId: string | null;
+}): Promise<void> {
+  await flushTransactionalConsumerRepairWrites();
+  const committed = await activeStore().recoverLastValid(input.requestDraftId);
+  const committedRevisionId = committed?.estimateDraftRevisionState?.currentRevisionId ?? null;
+  if (
+    !committed
+    || committed.draft.status !== input.expectedStatus
+    || committedRevisionId !== input.expectedRevisionId
+  ) {
+    throw new Error("CONSUMER_REPAIR_TRANSACTIONAL_COMMIT_NOT_DURABLE");
+  }
 }
 
 export function setConsumerRepairTransactionalStoreForTests(

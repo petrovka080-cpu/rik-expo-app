@@ -149,6 +149,7 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
     repairType: revisionRepairType(revision),
     selectedWork: selectedWorkFromRevision(revision),
     dangerousDiyBlocked: false,
+    runtimeEstimateDraftRevision: revision,
     missingData: revision.missingInputs.map((input) => input.label),
     items: revision.boq.rows.map((row) => ({
       itemType: itemTypeForRow(row),
@@ -186,10 +187,11 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
   };
 }
 
-export function buildConsumerRepairDraftFromAiEstimateRuntime(
+function createConsumerRepairRuntimeRevision(
   input: AiEstimateCreateDraftInput,
-): ConsumerRepairAiDraft | null {
-  const revision = createEstimateDraftRevision({
+  prebuiltExactRoadworksWaveADraft?: ConsumerRepairAiDraft,
+): EstimateDraftRevision {
+  return createEstimateDraftRevision({
     estimateDraftId: input.estimateDraftId,
     rawInput: input.rawInput,
     selectedTemplateId: input.selectedTemplateId,
@@ -198,20 +200,32 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,
-    paramOverrides: input.selectedRoadScope
+    paramOverrides: input.paramOverrides || input.selectedRoadScope
       ? {
-        selectedRoadScope: {
-          value: input.selectedRoadScope,
-          source: "user_input",
-          sourceText: "Explicit road scope selection",
-          lastChangedAt: input.createdAt ?? new Date().toISOString(),
-        },
+        ...(input.paramOverrides ?? {}),
+        ...(input.selectedRoadScope
+          ? {
+            selectedRoadScope: {
+              value: input.selectedRoadScope,
+              source: "user_input" as const,
+              sourceText: "Explicit road scope selection",
+              lastChangedAt: input.createdAt ?? new Date().toISOString(),
+            },
+          }
+          : {}),
       }
       : undefined,
     createdAt: input.createdAt,
     source: "initial_prompt",
     revisionIndex: 1,
+    prebuiltExactRoadworksWaveADraft,
   });
+}
+
+function projectConsumerRepairRuntimeRevision(
+  revision: EstimateDraftRevision,
+  input: AiEstimateCreateDraftInput,
+): ConsumerRepairAiDraft | null {
   const isAsphaltV4 = revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
     revision.professionalWorkId === ASPHALT_WORK_ID_V4;
@@ -229,4 +243,23 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
   }
   if (revision.boq.rows.length === 0 && !isAsphaltV4) return null;
   return buildConsumerRepairDraftFromAiEstimateRevision(revision);
+}
+
+export function buildConsumerRepairDraftFromAiEstimateRuntime(
+  input: AiEstimateCreateDraftInput,
+): ConsumerRepairAiDraft | null {
+  return projectConsumerRepairRuntimeRevision(
+    createConsumerRepairRuntimeRevision(input),
+    input,
+  );
+}
+
+export function buildConsumerRepairDraftFromExactRoadworksWaveARuntime(
+  input: AiEstimateCreateDraftInput,
+  exactDraft: ConsumerRepairAiDraft,
+): ConsumerRepairAiDraft | null {
+  return projectConsumerRepairRuntimeRevision(
+    createConsumerRepairRuntimeRevision(input, exactDraft),
+    input,
+  );
 }

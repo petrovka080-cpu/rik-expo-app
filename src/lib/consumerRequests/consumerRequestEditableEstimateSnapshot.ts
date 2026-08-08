@@ -14,8 +14,10 @@ import {
   bindEstimateRevisionToHistoryEntry,
   bindEstimateRevisionToPdfExport,
   bindEstimateRevisionToRequestPayload,
+  bindEstimateRevisionCalculationState,
   createEstimateRevisionFromSnapshot,
   createEstimateRevisionState,
+  getBoundEstimateRevisionCalculationState,
   getCurrentEstimateRevision,
   normalizeEstimateRevisionCurrency,
   restoreEstimateRevisionAsNewRevision,
@@ -343,10 +345,34 @@ function archiveStaleGeneratedPdfs(
 
 function withRevisionSnapshot(bundle: ConsumerRepairDraftBundle, state: EstimateRevisionState): ConsumerRepairDraftBundle {
   const revision = getCurrentEstimateRevision(state);
-  return applyEditableEstimateSnapshotToConsumerRepairBundle(
+  const projected = applyEditableEstimateSnapshotToConsumerRepairBundle(
     { ...bundle, estimateRevisionState: state, pdfs: archiveStaleGeneratedPdfs(bundle.pdfs, revision.revision_id) },
     revision.editable_estimate_snapshot,
   );
+  return {
+    ...projected,
+    // The immutable revision owns this projection. Re-hashing it while merely
+    // copying rows back to request items would split the approval/PDF identity.
+    editableEstimateSnapshot: revision.editable_estimate_snapshot,
+  };
+}
+
+function withCanonicalCalculationState(
+  bundle: ConsumerRepairDraftBundle,
+  state: EstimateRevisionState,
+): ConsumerRepairDraftBundle {
+  const alreadyBound = getBoundEstimateRevisionCalculationState(state);
+  const boundState = alreadyBound || !bundle.estimateDraftRevisionState
+    ? state
+    : bindEstimateRevisionCalculationState(state, bundle.estimateDraftRevisionState);
+  const canonicalCalculationState = getBoundEstimateRevisionCalculationState(boundState);
+  return {
+    ...bundle,
+    estimateRevisionState: boundState,
+    // Compatibility projection only. Parameter mutations read the hash-bound
+    // calculation_state owned by EstimateRevisionState.
+    estimateDraftRevisionState: canonicalCalculationState,
+  };
 }
 
 export function ensureConsumerRepairBundleEstimateRevisionState(
@@ -368,7 +394,10 @@ export function ensureConsumerRepairBundleEstimateRevisionState(
       source: "AI_GENERATED",
       status: "DRAFT",
     });
-    return { ...bundle, editableEstimateSnapshot, estimateRevisionState: state };
+    return withCanonicalCalculationState(
+      { ...bundle, editableEstimateSnapshot },
+      state,
+    );
   }
 
   const current = getCurrentEstimateRevision(existing);
@@ -388,9 +417,15 @@ export function ensureConsumerRepairBundleEstimateRevisionState(
       reason_ru: "\u0421\u0432\u044f\u0437\u044c revision-state \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0430 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0438\u043c \u0441\u0442\u0440\u043e\u043a\u0430\u043c draft-\u0441\u043c\u0435\u0442\u044b.",
       created_at: bundle.draft.updatedAt ?? new Date().toISOString(),
     });
-    return { ...bundle, editableEstimateSnapshot, estimateRevisionState: repairedState };
+    return withCanonicalCalculationState(
+      { ...bundle, editableEstimateSnapshot },
+      repairedState,
+    );
   }
-  return { ...bundle, editableEstimateSnapshot, estimateRevisionState: existing };
+  return withCanonicalCalculationState(
+    { ...bundle, editableEstimateSnapshot },
+    existing,
+  );
 }
 
 export function appendConsumerRepairEstimateRevisionFromSnapshot(input: {
@@ -420,11 +455,17 @@ export function appendConsumerRepairEstimateRevisionFromSnapshot(input: {
     reason_ru: input.reason_ru,
     created_at: input.created_at,
   });
-  const revision = getCurrentEstimateRevision(state);
+  const calculationState = input.nextBundle.estimateDraftRevisionState;
+  const boundState = calculationState
+    ? bindEstimateRevisionCalculationState(state, calculationState)
+    : state;
+  const revision = getCurrentEstimateRevision(boundState);
   return {
     ...input.nextBundle,
     editableEstimateSnapshot,
-    estimateRevisionState: state,
+    estimateRevisionState: boundState,
+    estimateDraftRevisionState:
+      getBoundEstimateRevisionCalculationState(boundState),
     pdfs: archiveStaleGeneratedPdfs(input.nextBundle.pdfs, revision.revision_id),
   };
 }
@@ -505,7 +546,7 @@ export function freezeConsumerRepairEstimateRevision(input: {
     actor_id: input.actor_id,
     created_at: input.created_at,
   });
-  return { ...bundle, estimateRevisionState: state };
+  return withRevisionSnapshot(bundle, state);
 }
 
 export function bindConsumerRepairEstimateRevisionPdf(input: {
@@ -521,7 +562,7 @@ export function bindConsumerRepairEstimateRevisionPdf(input: {
     actor_id: input.actor_id,
     created_at: input.created_at,
   });
-  return { binding, bundle: { ...bundle, estimateRevisionState: state } };
+  return { binding, bundle: withRevisionSnapshot(bundle, state) };
 }
 
 export function bindConsumerRepairEstimateRevisionRequest(input: {

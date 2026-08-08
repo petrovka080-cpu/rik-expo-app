@@ -106,6 +106,26 @@ export function assertEstimateRevisionStateIntegrity(state: EstimateRevisionStat
     if (rowsHash !== revision.rows_hash) throw new Error(`ESTIMATE_REVISION_ROWS_HASH_STALE:${revision.revision_id}`);
     if (totalsHash !== revision.totals_hash) throw new Error(`ESTIMATE_REVISION_TOTALS_HASH_STALE:${revision.revision_id}`);
   }
+  const calculationBinding = state.calculation_state;
+  if (calculationBinding) {
+    if (calculationBinding.adapter_version !== "estimate-revision-calculation-state-binding-v1") {
+      throw new Error("ESTIMATE_REVISION_CALCULATION_STATE_ADAPTER_UNSUPPORTED");
+    }
+    if (!calculationBinding.immutable) {
+      throw new Error("ESTIMATE_REVISION_CALCULATION_STATE_MUTABLE");
+    }
+    if (stableEstimateRevisionHash(calculationBinding.state) !== calculationBinding.calculation_state_hash) {
+      throw new Error("ESTIMATE_REVISION_CALCULATION_STATE_HASH_STALE");
+    }
+    const currentCalculationRevision = calculationBinding.state.revisions.find(
+      (revision) => revision.revisionId === calculationBinding.state.currentRevisionId,
+    );
+    if (!currentCalculationRevision) {
+      throw new Error(
+        `ESTIMATE_REVISION_CALCULATION_CURRENT_MISSING:${calculationBinding.state.currentRevisionId}`,
+      );
+    }
+  }
 }
 
 export function countEstimateRevisionInternalKeysVisible(text: string): number {

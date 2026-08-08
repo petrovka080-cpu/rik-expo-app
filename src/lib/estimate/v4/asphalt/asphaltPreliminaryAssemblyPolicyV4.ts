@@ -95,6 +95,7 @@ function baseSeeds(profile: AsphaltAssemblyProfileIdV4): AssumptionSeed[] {
   const fullConstruction = profile === "new_full_road_pavement" || profile === "new_full_road_infrastructure" || profile === "parking_full_construction";
   const common: AssumptionSeed[] = [
     { canonical_key: "scope_profile", value: profile, unit_id: null, reason_ru: `Профессиональный ScopeResolver выбрал профиль ${profile}; пользователь может изменить профиль уточнением.`, affected_row_ids: [] },
+    { canonical_key: "costing_mode", value: "RESOURCE_MODE", unit_id: null, reason_ru: "По умолчанию выбран ресурсный режим: стоимость операций не дублирует материалы, труд, машины, логистику и услуги.", affected_row_ids: [] },
     { canonical_key: "asphalt_layer_count", value: 2, unit_id: "pcs", reason_ru: "Для предварительного расчёта принято двухслойное асфальтобетонное покрытие; состав подлежит замене данными проекта.", affected_row_ids: ["asphalt_layer_1_material", "asphalt_layer_2_material"] },
     { canonical_key: "asphalt_layer_1_mixture_type", value: "coarse_lower", unit_id: null, reason_ru: "Нижний слой предварительно задан как связующий; точный тип и марка определяются проектом.", affected_row_ids: ["asphalt_layer_1_material"] },
     { canonical_key: "asphalt_layer_1_thickness_mm", value: 60, unit_id: "mm", reason_ru: "Толщина нижнего слоя 60 мм является изменяемым инженерным допущением предварительной сборки.", affected_row_ids: ["asphalt_layer_1_material", "asphalt_layer_1_paving"] },
@@ -190,9 +191,6 @@ function baseSeeds(profile: AsphaltAssemblyProfileIdV4): AssumptionSeed[] {
       { canonical_key: "crushed_density_t_m3", value: 1.5, unit_id: "t_m3", reason_ru: "Насыпная плотность щебня 1,50 т/м³ принята только для предварительной транспортной работы.", affected_row_ids: ["crushed_layer_1_delivery", "crushed_layer_2_delivery"] },
       { canonical_key: "crushed_water_rate_m3_m3", value: 0.02, unit_id: "one", reason_ru: "Технологическая вода 0,02 м³ на 1 м³ уплотнённого щебёночного слоя принята предварительно.", affected_row_ids: ["crushed_layer_1_moistening_water", "crushed_layer_2_moistening_water", "crushed_layer_1_moistening", "crushed_layer_2_moistening"] },
       { canonical_key: "base_density_test_interval_m2", value: 2000, unit_id: "m2_test", reason_ru: "Контроль плотности основания принят по одному измерению на 2000 м² каждого слоя до утверждения программы контроля.", affected_row_ids: ["sand_density_control", "crushed_layer_1_density_control", "crushed_layer_2_density_control"] },
-      { canonical_key: "geotextile_required", value: true, unit_id: null, reason_ru: "В предварительную полную конструкцию включён разделительный геотекстиль; применимость должен подтвердить проект.", affected_row_ids: ["geotextile_material", "geotextile_installation"] },
-      { canonical_key: "geotextile_type", value: "separation", unit_id: null, reason_ru: "Тип геотекстиля предварительно принят разделительным без назначения марки.", affected_row_ids: ["geotextile_material"] },
-      { canonical_key: "geotextile_overlap_percent", value: 10, unit_id: "percent", reason_ru: "Нахлёст геотекстиля 10 % принят как изменяемое допущение до схемы раскладки.", affected_row_ids: ["geotextile_material", "geotextile_installation"] },
       { canonical_key: "grader_productivity_m2_per_machine_hour", value: 220, unit_id: "m2_machine_hour", reason_ru: "Производительность автогрейдера 220 м²/маш.-ч является изменяемым инженерным допущением.", affected_row_ids: ["grader"] },
     ];
   }

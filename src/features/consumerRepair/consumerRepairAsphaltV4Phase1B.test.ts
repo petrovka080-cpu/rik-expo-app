@@ -26,8 +26,8 @@ import {
   ASPHALT_WORK_ID_V4,
   auditAsphaltProfessionalEstimateV4,
   compileAsphaltProfessionalEstimateV4,
+  type AsphaltScopeSelectionIdV5,
   type AsphaltRuntimeRowProjectionV4,
-  type RoadScopeIdV4,
   validateAsphaltRuntimeTruthV4,
   validateAsphaltWorkAssemblyCoverageV4,
 } from "../../lib/estimate/v4/asphalt";
@@ -114,7 +114,7 @@ function initialBundle(prompt: string, userId = "phase1b-user"): ConsumerRepairD
   }).bundle;
 }
 
-function selectPendingScope(bundle: ConsumerRepairDraftBundle, scope: RoadScopeIdV4): ConsumerRepairDraftBundle {
+function selectPendingScope(bundle: ConsumerRepairDraftBundle, scope: AsphaltScopeSelectionIdV5): ConsumerRepairDraftBundle {
   expect(bundle.pendingRoadScopeSelection?.offeredScopes).toHaveLength(4);
   expect(bundle.estimateDraftRevisionState).toBeNull();
   expect(bundle.items).toHaveLength(0);
@@ -166,7 +166,7 @@ beforeEach(() => {
 });
 
 test("A: exact /request path immediately creates a calculated professional BOQ for 5000 m²", () => {
-  const bundle = selectPendingScope(initialBundle("Асфальтирование парковки площадью 5000 м²"), "FULL_PAVEMENT_STRUCTURE");
+  const bundle = selectPendingScope(initialBundle("Асфальтирование парковки площадью 5000 м²"), "NEW_PARKING_FULL_CONSTRUCTION");
   const revision = currentRevision(bundle);
   const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
   const canonicalCards = buildCanonicalParameterCards({
@@ -197,7 +197,7 @@ test("A: exact /request path immediately creates a calculated professional BOQ f
     area_m2: 5000,
     source: "raw_input",
   }));
-  expect(revision.workAssemblyId).toBe("new_full_road_pavement_preliminary_v1");
+  expect(revision.workAssemblyId).toBe("parking_full_construction_preliminary_v1");
   expect(revision.professionalClarification?.understood).toEqual(expect.arrayContaining([
     expect.objectContaining({ label_ru: "Площадь покрытия", value_ru: "5 000 м²" }),
   ]));
@@ -221,8 +221,6 @@ test("A: exact /request path immediately creates a calculated professional BOQ f
     "asphalt_layer_2_material",
     "base_emulsion_material",
     "emulsion_interface_1_2",
-    "joint_sealing_material",
-    "edge_treatment",
     "road_workers",
     "surface_cleaner",
     "bitumen_distributor",
@@ -242,7 +240,7 @@ test("A: exact /request path immediately creates a calculated professional BOQ f
 });
 
 test("quantity basis: 1 km × 32 m becomes 32 000 m² and survives in the real BOQ", () => {
-  const bundle = selectPendingScope(initialBundle("Асфальтирование парковки, длина 1 км, ширина 32 м"), "FULL_PAVEMENT_STRUCTURE");
+  const bundle = selectPendingScope(initialBundle("Асфальтирование парковки, длина 1 км, ширина 32 м"), "NEW_PARKING_FULL_CONSTRUCTION");
   const revision = currentRevision(bundle);
   expect(revision.params.length_m?.value).toBe(1000);
   expect(revision.params.width_m?.value).toBe(32);
@@ -327,7 +325,6 @@ test("Phase 1C: prepared-base and full-road scopes keep the same 3000 × 32 geom
     "topsoil_stripping",
     "subgrade_excavation",
     "soil_haul",
-    "geotextile_material",
     "sand_material",
     "sand_delivery",
     "crushed_layer_1_material",
@@ -463,7 +460,7 @@ test("scope selection cannot compile a reference 1000 m² BOQ when geometry is a
 });
 
 test("B and D: new two-layer parking compiles only confirmed base and pavement scope", () => {
-  const initial = selectPendingScope(initialBundle("Новая парковка площадью 5000 м², двухслойное покрытие, без бордюров и водоотвода"), "FULL_PAVEMENT_STRUCTURE");
+  const initial = selectPendingScope(initialBundle("Парковка площадью 5000 м², двухслойное покрытие, без бордюров и водоотвода"), "NEW_PARKING_FULL_CONSTRUCTION");
   const bundle = applyPatches(initial, BASE_PATCHES);
   const revision = currentRevision(bundle);
   const ids = revision.boq.rows.map((row) => row.rowId);
@@ -497,10 +494,10 @@ test("B and D: new two-layer parking compiles only confirmed base and pavement s
 });
 
 test("default new-construction assembly survives an unrelated clarification", () => {
-  const initial = selectPendingScope(initialBundle("Новая парковка площадью 5000 м², двухслойное асфальтобетонное покрытие"), "FULL_PAVEMENT_STRUCTURE");
+  const initial = selectPendingScope(initialBundle("Парковка площадью 5000 м², двухслойное асфальтобетонное покрытие"), "NEW_PARKING_FULL_CONSTRUCTION");
   const before = currentRevision(initial);
   const beforeIds = before.boq.rows.map((row) => row.rowId);
-  expect(before.workAssemblyId).toBe("new_full_road_pavement_preliminary_v1");
+  expect(before.workAssemblyId).toBe("parking_full_construction_preliminary_v1");
   expect(beforeIds).toEqual(expect.arrayContaining(["crushed_layer_1_material", "crushed_layer_2_material", "grader"]));
 
   const afterBundle = applyConsumerRepairDraftRevisionParamPatch({
@@ -558,7 +555,7 @@ test("E: confirmed curbs, drainage and geotextile are split into material and wo
 });
 
 test("F: uploaded specification is a document control and creates a traceable document row", () => {
-  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 900 м² по приложенной спецификации"), "FULL_PAVEMENT_STRUCTURE");
+  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 900 м² по приложенной спецификации"), "NEW_PARKING_FULL_CONSTRUCTION");
   const initialRevision = currentRevision(initial);
   const projectCard = buildAiEstimateParameterCards({ revision: initialRevision, includeMissing: true })
     .find((card) => card.key === "project_document");
@@ -568,7 +565,7 @@ test("F: uploaded specification is a document control and creates a traceable do
 });
 
 test("G and H: revision changes only dependent quantities and preserves lower-layer identity", () => {
-  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 1000 м²"), "FULL_PAVEMENT_STRUCTURE");
+  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 1000 м²"), "NEW_PARKING_FULL_CONSTRUCTION");
   let bundle = applyPatches(initial, BASE_PATCHES);
   const lowerItem = bundle.items.find((item) => item.sourceParameters?.rowCode === "asphalt_layer_1_material");
   if (!lowerItem) throw new Error("TEST_LOWER_LAYER_ITEM_MISSING");
@@ -685,7 +682,7 @@ test("full-road width edit keeps every V4 quantity aligned with the professional
 });
 
 test("core, UI, PDF and procurement use one applicable BOQ identity", () => {
-  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 1000 м²"), "FULL_PAVEMENT_STRUCTURE");
+  const initial = selectPendingScope(initialBundle("Асфальтирование парковки площадью 1000 м²"), "NEW_PARKING_FULL_CONSTRUCTION");
   let bundle = applyPatches(initial, BASE_PATCHES);
   const revision = currentRevision(bundle);
   const pdf = renderPdfFromDraftRevision({ revision });

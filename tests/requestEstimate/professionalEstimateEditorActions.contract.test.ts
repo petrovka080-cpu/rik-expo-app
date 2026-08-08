@@ -27,6 +27,10 @@ describe("professional estimate editor actions", () => {
     expect(requestEstimateUi).toContain("consumer-repair-add-photo-draft");
     expect(requestEstimateUi).toContain("Фото");
     expect(requestEstimateUi).toContain("<RequestEstimateItemsEditor");
+    expect(progressivePanel).toContain('import { EstimateRevisionTimeline }');
+    expect(progressivePanel).toContain('<EstimateRevisionTimeline state={this.props.revisionState} />');
+    expect(progressivePanel).toContain('import { EstimateRevisionDiff }');
+    expect(progressivePanel).toContain('<EstimateRevisionDiff diff={latestDiff} />');
   });
 
   it("uses broad examples in the input placeholder instead of only apartment capital renovation", () => {

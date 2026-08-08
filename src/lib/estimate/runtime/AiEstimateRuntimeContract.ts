@@ -2,7 +2,7 @@ import type { DraftRevisionSnapshot } from "../../../features/estimates/createSn
 import type { DraftRevisionPdfArtifact } from "../../../features/pdf/renderPdfFromDraftRevision";
 import type { DraftRevisionBuyerHandoff } from "../../../features/procurement/createBuyerHandoffFromDraftRevision";
 import type { AiEstimateParameterCard } from "../aiEstimateParameterCardContract";
-import type { EstimateDraftRevision, EstimateDraftRevisionDiff } from "../estimateDraftRevisionContract";
+import type { EstimateDraftRevision, EstimateDraftRevisionDiff, EstimateDraftRevisionParam } from "../estimateDraftRevisionContract";
 import type { AiEstimateLedgerHistoryRecord } from "../ledger/AiEstimateLedgerTypes";
 import type { AiEstimateWorkClassification } from "../semantic/AiEstimateWorkClassifier";
 import type { AiEstimateNormativeWorkParameterPassport } from "../aiEstimateNormativeWorkParameterPassport";
@@ -19,6 +19,7 @@ export type AiEstimateCreateDraftInput = {
   currency?: string | null;
   countryCode?: string | null;
   selectedRoadScope?: RoadScopeIdV4 | null;
+  paramOverrides?: Record<string, EstimateDraftRevisionParam>;
   createdAt?: string;
 };
 

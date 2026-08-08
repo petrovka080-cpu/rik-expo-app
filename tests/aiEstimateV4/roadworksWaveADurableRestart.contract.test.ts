@@ -11,6 +11,7 @@ import {
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 import { RoadworksWaveAProductionRegistry } from "../../src/lib/estimate/v4/roadworks";
+import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 
 function installLocalStorageMock(): () => void {
   const values = new Map<string, string>();
@@ -153,6 +154,46 @@ describe("RoadworksWaveADurableRestartContract", () => {
       const sessionBPayload = buildConsumerRepairCanonicalDraftPayload(sessionB, "draft_save");
       expect(sessionBPayload.draft.selectedWorkKey).toBe(sessionAPayload.draft.selectedWorkKey);
       expect(fingerprint(canonicalWaveAFingerprintInput(sessionB))).toBe(sessionAFingerprint);
+      expect(sessionB.items[0]?.sourceParameters).toMatchObject({
+        roadworksWaveA: true,
+        selectedWorkId: item.workId,
+        canonicalWorkId: item.canonicalWorkId,
+        parameterSchemaId: item.parameterSchemaId,
+        calculationProfileId: item.calculationProfileId,
+        normativeCompositionId: item.normativeCompositionId,
+        semanticFingerprint: item.semanticFingerprint,
+      });
+      expect(sessionB.items[0]?.sourceParameters?.domainResolutionReadiness).toBe(
+        sessionA.items[0]?.sourceParameters?.domainResolutionReadiness,
+      );
+      expect(sessionB.items[0]?.sourceParameters?.asphaltV4ProfessionalCategory).toBe(
+        sessionA.items[0]?.sourceParameters?.asphaltV4ProfessionalCategory,
+      );
+      const consumerPdfView = buildConsumerRepairStructuredEstimatePdfViewModel({
+        draft: sessionB.draft,
+        items: sessionB.items,
+        media: sessionB.media,
+        generatedAt: "2026-07-23T03:00:30.000Z",
+      });
+      expect(consumerPdfView).not.toBeNull();
+      expect(consumerPdfView?.sections.flatMap((section) => section.rows).map((row) => row.name).sort()).toEqual(
+        sessionB.items.map((row) => row.titleRu).sort(),
+      );
+      const metadataBefore = sessionA.items[0]?.sourceParameters?.roadworksWaveAParameterMetadata as Record<string, any>;
+      const metadataAfter = sessionB.items[0]?.sourceParameters?.roadworksWaveAParameterMetadata as Record<string, any>;
+      expect(Object.keys(metadataAfter)).toEqual(Object.keys(metadataBefore));
+      for (const key of Object.keys(metadataBefore)) {
+        expect(metadataAfter[key]).toMatchObject({
+          labelRu: metadataBefore[key].labelRu,
+          unit: metadataBefore[key].unit,
+          inputKind: metadataBefore[key].inputKind,
+          tier: metadataBefore[key].tier,
+          requiredFor: metadataBefore[key].requiredFor,
+        });
+        if (metadataBefore[key].choices.length > 0) {
+          expect(metadataAfter[key].choices).toEqual(metadataBefore[key].choices);
+        }
+      }
       const currentRevisionId = sessionB.estimateDraftRevisionState?.currentRevisionId;
       const revision = sessionB.estimateDraftRevisionState?.revisions.find(
         (candidate) => candidate.revisionId === currentRevisionId,

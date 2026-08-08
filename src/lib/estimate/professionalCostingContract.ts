@@ -67,6 +67,9 @@ export type ProfessionalCostResolution =
   | "PRICE_INPUT_REQUIRED";
 
 export type ProfessionalCostSummary = ProfessionalCostSectionTotals & {
+  costingMode: "RESOURCE_MODE" | "UNIT_RATE_MODE" | "LEGACY_UNSPECIFIED" | "MIXED_INVALID";
+  doubleCountingCount: number;
+  unknownCostTreatmentCount: number;
   currency: ProfessionalCostCurrency;
   costRowsCount: number;
   pricedRowsCount: number;

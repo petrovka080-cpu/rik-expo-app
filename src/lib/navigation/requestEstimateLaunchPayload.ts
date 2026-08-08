@@ -170,6 +170,32 @@ function fingerprintText(value: string): string {
   return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
+export function requestEstimateLaunchFingerprintForRouteParametersV1(input: {
+  route: RequestEstimateLaunchRouteV1;
+  workIntent: string;
+  parameters: Record<string, string>;
+}): string {
+  const route = normalizeRoute(input.route);
+  const workIntent = normalizeText(input.workIntent);
+  if (!workIntent) return fail("REQUEST_ESTIMATE_LAUNCH_WORK_INTENT_REQUIRED");
+  const parameters = normalizeParameters(input.parameters);
+  return fingerprintText(JSON.stringify({ route, workIntent, parameters }));
+}
+
+export function isGeneratedRequestEstimateLaunchIdV1(input: {
+  launchId: string | null | undefined;
+  fingerprint: string | null | undefined;
+}): boolean {
+  const launchId = normalizeText(input.launchId);
+  const fingerprint = normalizeText(input.fingerprint).toLowerCase();
+  if (!launchId || !fingerprint) return false;
+  const prefix = `request-estimate:${fingerprint}:`;
+  const issuedAtToken = launchId.startsWith(prefix)
+    ? launchId.slice(prefix.length)
+    : "";
+  return /^[a-z0-9]{6,20}$/i.test(issuedAtToken);
+}
+
 function stablePayloadJson(payload: RequestEstimateLaunchPayloadV1): string {
   return JSON.stringify({
     version: payload.version,
@@ -310,9 +336,11 @@ export function createRequestEstimateLaunchPayloadV1(input: {
   }
   const parameters = normalizeParameters(input.parameters);
   const issuedAt = normalizeIssuedAt(input.issuedAt ?? new Date().toISOString());
-  const fingerprint = fingerprintText(
-    JSON.stringify({ route, workIntent, parameters }),
-  );
+  const fingerprint = requestEstimateLaunchFingerprintForRouteParametersV1({
+    route,
+    workIntent,
+    parameters,
+  });
   const launchId =
     normalizeText(input.launchId) ||
     `request-estimate:${fingerprint}:${Date.parse(issuedAt).toString(36)}`;

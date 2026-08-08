@@ -63,7 +63,7 @@ import {
 } from "../estimate/v4/asphalt/asphaltV4Constants";
 import {
   isRoadScopeIdV4,
-  type RoadScopeIdV4,
+  type AsphaltScopeSelectionIdV5,
 } from "../estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
@@ -102,6 +102,8 @@ import {
   projectEstimateDraftRevisionToCanonicalSession,
   projectEstimateDraftSessionToCanonicalSession,
 } from "../estimate/canonicalParameters";
+import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
+import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -115,6 +117,48 @@ function loadConsumerRepairPdfService() {
   return require(
     "./consumerRequestPdfService"
   ) as typeof import("./consumerRequestPdfService");
+}
+
+function estimateRevisionStateRecoveryValidationError(
+  cause: string,
+): ConsumerRepairValidationError {
+  return new ConsumerRepairValidationError([{
+    code: "ESTIMATE_REVISION_STATE_RECOVERY_REQUIRED",
+    messageRu:
+      "Сохранённое состояние ревизии сметы не удалось однозначно восстановить. " +
+      "Исходная смета не изменена; откройте её заново или создайте из истории отдельный черновик.",
+    field: `estimateDraftRevisionState:${cause.slice(0, 120)}`,
+  }]);
+}
+
+function resolveConsumerRepairCalculationStateForMutation(
+  bundle: ConsumerRepairDraftBundle,
+): {
+  canonicalBundle: ConsumerRepairDraftBundle;
+  state: EstimateDraftRevisionState;
+} {
+  try {
+    const canonicalBundle = ensureExactRoadworksCalculationStateBinding(
+      ensureConsumerRepairBundleEstimateRevisionState(bundle),
+    );
+    const state = getBoundEstimateRevisionCalculationState(
+      canonicalBundle.estimateRevisionState,
+    );
+    if (!state) {
+      throw estimateRevisionStateRecoveryValidationError("state_missing");
+    }
+    return { canonicalBundle, state };
+  } catch (error) {
+    if (error instanceof ConsumerRepairValidationError) throw error;
+    const cause = error instanceof Error ? error.message : "unknown_revision_state_failure";
+    if (
+      cause.startsWith("ESTIMATE_REVISION_") ||
+      cause.startsWith("CONSUMER_REPAIR_ESTIMATE_REVISION_")
+    ) {
+      throw estimateRevisionStateRecoveryValidationError(cause);
+    }
+    throw error;
+  }
 }
 
 function loadConsumerRepairDraftRevisionDependencies() {
@@ -136,6 +180,13 @@ function hasRoadworksWaveARegistration(workId: string | null | undefined): boole
   const roadworksModule = require("../estimate/v4/roadworks") as
     typeof import("../estimate/v4/roadworks");
   return Boolean(roadworksModule.getRoadworksWaveAProductionRegistration(workId));
+}
+
+function roadworksWaveARegistration(workId: string | null | undefined) {
+  if (!workId) return null;
+  const roadworksModule = require("../estimate/v4/roadworks") as
+    typeof import("../estimate/v4/roadworks");
+  return roadworksModule.getRoadworksWaveAProductionRegistration(workId);
 }
 
 export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
@@ -289,6 +340,37 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
   }
 }
 
+function selectedWorkForRevisionStateRecovery(
+  bundle: ConsumerRepairDraftBundle,
+): ConsumerRepairSelectedWork | null {
+  const rowBoundWorkKey = bundle.items
+    .map((item) => item.sourceParameters?.requestedCatalogWorkId)
+    .find((value): value is string => typeof value === "string" && value.trim().length > 0)
+    ?.trim() ?? null;
+  const selectedWorkKey = bundle.draft.selectedWorkKey?.trim()
+    || bundle.structuredEstimatePayload?.workKey?.trim()
+    || rowBoundWorkKey;
+  if (!selectedWorkKey) return null;
+  const roadworksRegistration = roadworksWaveARegistration(selectedWorkKey);
+  const selectedWorkTitleRu = bundle.draft.selectedWorkTitleRu?.trim()
+    || roadworksRegistration?.professionalNameRu
+    || bundle.draft.title?.trim()
+    || selectedWorkKey;
+  return {
+    selectedWorkKey,
+    selectedWorkTitleRu,
+    selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey?.trim()
+      || (roadworksRegistration ? "roadworks" : bundle.draft.repairType),
+    selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu?.trim()
+      || (roadworksRegistration ? "Дорожные работы" : bundle.draft.repairType),
+    selectedWorkRawInput: bundle.draft.selectedWorkRawInput?.trim()
+      || bundle.draft.problemText?.trim()
+      || selectedWorkTitleRu,
+    selectedWorkSource: "user_selected",
+    selectedWorkResolverReGuessed: false,
+  };
+}
+
 function userEnteredDraftSessionParameters(
   rawInput: string,
   confirmedAt: string,
@@ -350,7 +432,7 @@ function pendingRoadScopeSelectionFromSession(
     requestId: session.draftId,
     originalUserText: requirement.originalUserText,
     requestedCatalogWorkId: requirement.requestedCatalogWorkId,
-    offeredScopes: [...requirement.offeredScopePresetIds] as RoadScopeIdV4[],
+    offeredScopes: [...requirement.offeredScopePresetIds] as AsphaltScopeSelectionIdV5[],
     resolverEvidence: [...requirement.resolverEvidence],
     resolverVersion: requirement.resolverVersion,
     createdAt: requirement.createdAt,
@@ -592,7 +674,18 @@ export function createConsumerRepairRequestDraft(input: {
   // EstimateRevisionState is created from these exact request items below.
   // Re-running the legacy AI runtime here would compile the same estimate a
   // second time during synchronous Android persistence.
+  const runtimeEstimateDraftRevision = input.aiDraft?.runtimeEstimateDraftRevision ?? null;
+  const runtimeEstimateDraftRevisionState: EstimateDraftRevisionState | null =
+    runtimeEstimateDraftRevision
+      ? {
+          estimateDraftId: runtimeEstimateDraftRevision.estimateDraftId,
+          currentRevisionId: runtimeEstimateDraftRevision.revisionId,
+          revisions: [runtimeEstimateDraftRevision],
+          diffs: [],
+        }
+      : null;
   const estimateDraftRevisionState = canonicalElectricalState?.estimateDraftRevisionState ??
+    runtimeEstimateDraftRevisionState ??
     ((items.length > 0 || isAsphaltV4) &&
     !hasCanonicalStructuredEstimate
     ? createEstimateDraftRevisionStateForConsumerBundle({
@@ -1210,28 +1303,8 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     });
   }
 
-  const selectedWork = bundle.draft.selectedWorkKey && bundle.draft.selectedWorkTitleRu
-    ? {
-        selectedWorkKey: bundle.draft.selectedWorkKey,
-        selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
-        selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
-        selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
-        selectedWorkRawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
-        selectedWorkSource: "user_selected" as const,
-        selectedWorkResolverReGuessed: false as const,
-      }
-    : null;
-  const state = bundle.estimateDraftRevisionState
-    ?? createEstimateDraftRevisionStateForConsumerBundle({
-      draftId: bundle.draft.id,
-      rawInput: bundle.draft.problemText ?? "",
-      selectedWork,
-      city: bundle.draft.city,
-      currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-      countryCode: "KG",
-      createdAt: bundle.draft.createdAt,
-    });
-  if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
+  const { canonicalBundle, state } =
+    resolveConsumerRepairCalculationStateForMutation(bundle);
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
   if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
   const runtime = loadAiEstimateRuntime();
@@ -1243,7 +1316,7 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     createdAt: input.createdAt,
     revisionIndex: state.revisions.length + 1,
   });
-  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(bundle, result.revision);
+  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(canonicalBundle, result.revision);
   const nextState: EstimateDraftRevisionState = {
     estimateDraftId: state.estimateDraftId,
     currentRevisionId: recalculatedRevision.revisionId,
@@ -1252,10 +1325,10 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
   };
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
   if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
-  const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
+  const items = createConsumerRepairItemsFromDraftRevision(canonicalBundle.draft.id, nextRevision);
   const nextBundleBase: ConsumerRepairDraftBundle = {
-    ...bundle,
-    draft: updateDraftRecord(bundle.draft, {
+    ...canonicalBundle,
+    draft: updateDraftRecord(canonicalBundle.draft, {
       problemText: nextRevision.rawInput,
       title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
       repairType: bundle.draft.repairType,
@@ -1278,22 +1351,22 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
       selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
     }),
     items,
-    pdfs: archivePdfsForStaleDraftRevision(bundle, nextRevision.revisionId),
+    pdfs: archivePdfsForStaleDraftRevision(canonicalBundle, nextRevision.revisionId),
     estimateDraftRevisionState: nextState,
     canonicalParameterSession:
       projectEstimateDraftRevisionToCanonicalSession({
         revision: nextRevision,
         draftId: bundle.draft.id,
         createdAt: input.createdAt ?? new Date().toISOString(),
-        previousSession: bundle.canonicalParameterSession,
-      }) ?? bundle.canonicalParameterSession,
+        previousSession: canonicalBundle.canonicalParameterSession,
+      }) ?? canonicalBundle.canonicalParameterSession,
   };
   const nextBundleWithSnapshot = {
     ...nextBundleBase,
     editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
   };
   const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
-    previousBundle: bundle,
+    previousBundle: canonicalBundle,
     nextBundle: nextBundleWithSnapshot,
     event_type: "AI_RECALCULATED",
     source: "AI_RECALCULATED",
@@ -1416,28 +1489,8 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     });
   }
 
-  const selectedWork = bundle.draft.selectedWorkKey && bundle.draft.selectedWorkTitleRu
-    ? {
-        selectedWorkKey: bundle.draft.selectedWorkKey,
-        selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
-        selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? bundle.draft.repairType,
-        selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? bundle.draft.repairType,
-        selectedWorkRawInput: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? "",
-        selectedWorkSource: "user_selected" as const,
-        selectedWorkResolverReGuessed: false as const,
-      }
-    : null;
-  const state = bundle.estimateDraftRevisionState
-    ?? createEstimateDraftRevisionStateForConsumerBundle({
-      draftId: bundle.draft.id,
-      rawInput: bundle.draft.problemText ?? "",
-      selectedWork,
-      city: bundle.draft.city,
-      currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-      countryCode: "KG",
-      createdAt: bundle.draft.createdAt,
-    });
-  if (!state) throw new Error("CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_STATE_MISSING");
+  const { canonicalBundle, state } =
+    resolveConsumerRepairCalculationStateForMutation(bundle);
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
   if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
 
@@ -1454,7 +1507,7 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     patches: cleanPatches,
   });
 
-  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(bundle, result.revision);
+  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(canonicalBundle, result.revision);
   const nextState: EstimateDraftRevisionState = {
     estimateDraftId: state.estimateDraftId,
     currentRevisionId: recalculatedRevision.revisionId,
@@ -1463,8 +1516,8 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   };
   const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
   if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
-  const items = createConsumerRepairItemsFromDraftRevision(bundle.draft.id, nextRevision);
-  const manualPriceCountBefore = bundle.items.filter((item) =>
+  const items = createConsumerRepairItemsFromDraftRevision(canonicalBundle.draft.id, nextRevision);
+  const manualPriceCountBefore = canonicalBundle.items.filter((item) =>
     item.unitPrice != null && (
       item.priceEditedByConsumer === true ||
       item.priceSource === "user" ||
@@ -1481,8 +1534,8 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   }
   const changedParamKeys = result.diff.changedParams.map((param) => param.key);
   const nextBundleBase: ConsumerRepairDraftBundle = {
-    ...bundle,
-    draft: updateDraftRecord(bundle.draft, {
+    ...canonicalBundle,
+    draft: updateDraftRecord(canonicalBundle.draft, {
       problemText: nextRevision.rawInput,
       title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
       repairType: bundle.draft.repairType,
@@ -1505,22 +1558,22 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
       selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
     }),
     items,
-    pdfs: archivePdfsForStaleDraftRevision(bundle, nextRevision.revisionId),
+    pdfs: archivePdfsForStaleDraftRevision(canonicalBundle, nextRevision.revisionId),
     estimateDraftRevisionState: nextState,
     canonicalParameterSession:
       projectEstimateDraftRevisionToCanonicalSession({
         revision: nextRevision,
         draftId: bundle.draft.id,
         createdAt: input.createdAt ?? new Date().toISOString(),
-        previousSession: bundle.canonicalParameterSession,
-      }) ?? bundle.canonicalParameterSession,
+        previousSession: canonicalBundle.canonicalParameterSession,
+      }) ?? canonicalBundle.canonicalParameterSession,
   };
   const nextBundleWithSnapshot = {
     ...nextBundleBase,
     editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
   };
   const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
-    previousBundle: bundle,
+    previousBundle: canonicalBundle,
     nextBundle: nextBundleWithSnapshot,
     event_type: "AI_RECALCULATED",
     source: "AI_RECALCULATED",

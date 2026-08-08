@@ -12,6 +12,7 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import {
   ConsumerRepairRequestContent,
@@ -38,6 +39,27 @@ export function consumerRepairLegacyEstimateRequiresRebuild(
     bundle.canonicalParameterSession == null &&
     !hasCompiledEstimate &&
     bundle.estimateDraftSession?.status === "PARAMETERS_REQUIRED",
+  );
+}
+
+export function consumerRepairBundleHasPdfEligibleSnapshot(
+  bundle: ConsumerRepairDraftBundle | null,
+): boolean {
+  if (!bundle?.editableEstimateSnapshot) return false;
+  if (
+    bundle.structuredEstimatePayload != null ||
+    bundle.estimateDraftSession == null ||
+    bundle.estimateDraftSession.status === "REVIEW"
+  ) return true;
+  const state = getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
+  const current = state?.revisions.find((revision) =>
+    revision.revisionId === state.currentRevisionId
+  ) ?? null;
+  return Boolean(
+    current &&
+    current.status !== "blocking_required" &&
+    current.missingInputs.length === 0 &&
+    current.boq.rows.length > 0,
   );
 }
 
@@ -132,11 +154,13 @@ export function ConsumerRepairRequestScreenView({
   onPrepareDraft,
   onSelectRoadScope,
 }: ConsumerRepairRequestScreenViewProps) {
+  const currentDraftRevisionState =
+    getConsumerRepairCalculationStateForReadOnlyDisplay(renderModel.bundle);
   const currentDraftRevision =
-    renderModel.bundle?.estimateDraftRevisionState?.revisions.find(
+    currentDraftRevisionState?.revisions.find(
       (revision) =>
         revision.revisionId ===
-        renderModel.bundle?.estimateDraftRevisionState?.currentRevisionId,
+        currentDraftRevisionState.currentRevisionId,
     ) ?? null;
   const legacyEstimateRequiresRebuild =
     consumerRepairLegacyEstimateRequiresRebuild(renderModel.bundle);
@@ -219,21 +243,7 @@ export function ConsumerRepairRequestScreenView({
         hasBundle={Boolean(renderModel.bundle)}
         hasPendingPrompt={state.problemText.trim().length > 0}
         estimateRequiresRebuild={legacyEstimateRequiresRebuild}
-        hasSnapshot={Boolean(
-          renderModel.bundle?.editableEstimateSnapshot &&
-          (
-            renderModel.bundle.structuredEstimatePayload != null ||
-            renderModel.bundle.estimateDraftSession == null ||
-            renderModel.bundle.estimateDraftSession.status === "REVIEW"
-          )
-        )}
-        approvalMissingRequiredContact={Boolean(
-          renderModel.bundle &&
-          (
-            state.addressText.trim().length < 3 ||
-            state.contactPhone.replace(/\D/g, "").length < 7
-          )
-        )}
+        hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
         approvalBlockedByEstimate={approvalBlockedByEstimate}
         needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
         onOpenPdf={() => onOpenPdf()}

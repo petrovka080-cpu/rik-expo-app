@@ -272,11 +272,21 @@ describe("approved history durable storage migration", () => {
     const afterReload = listConsumerRepairApprovedHistory(userId, { limit: 20 });
     const durableRecordKeys = Array.from(storage?.values.keys() ?? [])
       .filter((key) => key.startsWith(CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX));
-    const sampleDurableRecord = JSON.parse(storage?.values.get(durableRecordKeys[0] ?? "") ?? "{}") as {
+    type StoredDurableRecord = {
       structuredEstimatePayload?: unknown;
       items?: unknown;
       itemsCompactV1?: { fields?: string[] };
+      durableHistorySummary?: { fullSnapshotAvailable?: boolean } | null;
     };
+    const durableRecords = durableRecordKeys.map((key) =>
+      JSON.parse(storage?.values.get(key) ?? "{}") as StoredDurableRecord
+    );
+    const sampleSummaryRecord = durableRecords.find(
+      (record) => record.durableHistorySummary?.fullSnapshotAvailable === false,
+    );
+    const sampleFullRecord = durableRecords.find(
+      (record) => record.durableHistorySummary?.fullSnapshotAvailable === true,
+    );
 
     expect(afterReload.totalApprovedCount).toBe(15);
     expect(afterReload.items).toHaveLength(15);
@@ -284,13 +294,15 @@ describe("approved history durable storage migration", () => {
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY)).toBe(false);
     expect(storage?.values.has(CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY)).toBe(true);
     expect(durableRecordKeys.length).toBeGreaterThanOrEqual(15);
-    expect(sampleDurableRecord.structuredEstimatePayload).toBeNull();
-    expect(sampleDurableRecord.items).toBeUndefined();
-    expect(sampleDurableRecord.itemsCompactV1).toBeTruthy();
-    expect(sampleDurableRecord.itemsCompactV1?.fields).toContain("titleRu");
-    expect(sampleDurableRecord.itemsCompactV1?.fields).toContain("quantity");
-    expect(sampleDurableRecord.itemsCompactV1?.fields).not.toContain("catalogItemId");
-    expect(sampleDurableRecord.itemsCompactV1?.fields).not.toContain("priceSourceId");
+    expect(sampleSummaryRecord?.structuredEstimatePayload).toBeNull();
+    expect(sampleSummaryRecord?.items).toBeUndefined();
+    expect(sampleSummaryRecord?.itemsCompactV1).toBeTruthy();
+    expect(sampleSummaryRecord?.itemsCompactV1?.fields).toContain("titleRu");
+    expect(sampleSummaryRecord?.itemsCompactV1?.fields).toContain("quantity");
+    expect(sampleSummaryRecord?.itemsCompactV1?.fields).not.toContain("catalogItemId");
+    expect(sampleSummaryRecord?.itemsCompactV1?.fields).not.toContain("priceSourceId");
+    expect(sampleFullRecord?.itemsCompactV1?.fields).toContain("catalogItemId");
+    expect(sampleFullRecord?.itemsCompactV1?.fields).toContain("priceSourceId");
   });
 
   it("surfaces a localStorage quota failure without crashing when pruning cannot make the new record fit", () => {

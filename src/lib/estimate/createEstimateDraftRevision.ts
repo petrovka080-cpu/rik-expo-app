@@ -1,4 +1,4 @@
-import { buildEstimateFromInlineWorkPrompt, type InlineWorkPromptEstimateBuildResult } from "./buildEstimateFromInlineWorkPrompt";
+import type { InlineWorkPromptEstimateBuildResult } from "./buildEstimateFromInlineWorkPrompt";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionArtifacts,
@@ -13,6 +13,7 @@ import type {
 } from "./estimateDraftRevisionContract";
 import type { ConsumerRepairAiDraft } from "../consumerRequests/consumerRequestTypes";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
+import type { InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 import {
   buildAiEstimateMissingInputs,
@@ -41,6 +42,12 @@ function loadProfessionalWorkPassportBuilder() {
   ) as typeof import("./buildProfessionalWorkPassport");
 }
 
+function loadInlineWorkPromptEstimateBuilder() {
+  return require(
+    "./buildEstimateFromInlineWorkPrompt"
+  ) as typeof import("./buildEstimateFromInlineWorkPrompt");
+}
+
 function buildProfessionalWorkPassportIfApplicable(templateId: string) {
   if (templateId.endsWith("_dynamic_professional_boq_runtime_v1")) return null;
   return loadProfessionalWorkPassportBuilder().buildProfessionalWorkPassport(templateId);
@@ -63,6 +70,7 @@ export type CreateEstimateDraftRevisionInput = {
   assumptionOverrides?: EstimateDraftRevision["assumptions"];
   artifacts?: Partial<EstimateDraftRevisionArtifacts>;
   changedParamKey?: string | null;
+  prebuiltExactRoadworksWaveADraft?: ConsumerRepairAiDraft | null;
 };
 
 const EMPTY_ARTIFACTS: EstimateDraftRevisionArtifacts = {
@@ -170,6 +178,20 @@ export function buildProfessionalBoqRowsFromConsumerDraft(draft: ConsumerRepairA
         ? item.sourceParameters.includedInProcurement
         : item.itemType !== "work" && item.itemType !== "document",
       materialQuantity: null,
+      costingMode: item.sourceParameters?.asphaltV4CostingMode === "RESOURCE_MODE" || item.sourceParameters?.asphaltV4CostingMode === "UNIT_RATE_MODE"
+        ? item.sourceParameters.asphaltV4CostingMode
+        : null,
+      costTreatment: ["COMPOSITE_RATE", "RESOURCE_BASED", "ANALYTICAL_ONLY", "INFORMATIONAL_SUBTOTAL"].includes(
+        String(item.sourceParameters?.asphaltV4CostTreatment ?? ""),
+      )
+        ? item.sourceParameters?.asphaltV4CostTreatment as NonNullable<ProfessionalBoqRow["costTreatment"]>
+        : null,
+      costOwnershipId: typeof item.sourceParameters?.asphaltV4CostOwnershipId === "string"
+        ? item.sourceParameters.asphaltV4CostOwnershipId
+        : null,
+      payable: typeof item.sourceParameters?.asphaltV4Payable === "boolean"
+        ? item.sourceParameters.asphaltV4Payable
+        : null,
     };
   });
 }
@@ -283,6 +305,51 @@ function mergeCalculatorInputParams(
   visibleParameterLabels: ReadonlyMap<string, string> = new Map(),
 ): Record<string, EstimateDraftRevisionParam> {
   const merged = { ...params };
+  const roadworksWaveASource = rows.find((row) => row.sourceParameters?.roadworksWaveA === true)?.sourceParameters;
+  const roadworksWaveASnapshot = roadworksWaveASource?.parameterSnapshot &&
+    typeof roadworksWaveASource.parameterSnapshot === "object" &&
+    !Array.isArray(roadworksWaveASource.parameterSnapshot)
+    ? roadworksWaveASource.parameterSnapshot as Record<string, unknown>
+    : {};
+  const roadworksWaveAAssumptionKeys = new Set(
+    Array.isArray(roadworksWaveASource?.assumptionKeys)
+      ? roadworksWaveASource.assumptionKeys.filter((key): key is string => typeof key === "string")
+      : [],
+  );
+  const roadworksWaveAMetadata = roadworksWaveASource?.roadworksWaveAParameterMetadata &&
+    typeof roadworksWaveASource.roadworksWaveAParameterMetadata === "object" &&
+    !Array.isArray(roadworksWaveASource.roadworksWaveAParameterMetadata)
+    ? roadworksWaveASource.roadworksWaveAParameterMetadata as Record<string, Record<string, unknown>>
+    : {};
+  for (const [key, value] of Object.entries(roadworksWaveASnapshot)) {
+    if (!isPrimitiveParamValue(value) || !(key in roadworksWaveAMetadata)) continue;
+    const existing = merged[key];
+    if (roadworksWaveAAssumptionKeys.has(key)) {
+      if (roadworksWaveAMetadata[key]?.tier === "P0") {
+        if (!existing || existing.source === "default_assumption" || existing.source === "derived") delete merged[key];
+        continue;
+      }
+      if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
+      const unit = roadworksWaveAMetadata[key]?.unit;
+      merged[key] = {
+        value,
+        canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
+        source: "default_assumption",
+        sourceText: `${roadworksWaveAMetadata[key]?.defaultSourceId ?? "roadworks-wave-a-versioned-defaults"}:${roadworksWaveAMetadata[key]?.defaultSourceVersion ?? "unknown"}`,
+        lastChangedAt: now,
+      };
+      continue;
+    }
+    if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
+    const unit = roadworksWaveAMetadata[key]?.unit;
+    merged[key] = {
+      value,
+      canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
+      source: "user_input",
+      sourceText: "roadworks_wave_a_explicit_input",
+      lastChangedAt: now,
+    };
+  }
   const revisionMetadata = rows.find((row) =>
     Array.isArray(row.sourceParameters?.asphaltV4AssumptionKeys) ||
     Array.isArray(row.sourceParameters?.asphaltV4DerivedParameterKeys)
@@ -524,8 +591,56 @@ function runtimeParameterLabels(rows: readonly ProfessionalBoqRow[]): ReadonlyMa
     for (const [key, value] of Object.entries(candidate)) {
       if (typeof value === "string" && value.trim()) labels.set(key, value.trim());
     }
+    const roadworksMetadata = row.sourceParameters?.roadworksWaveAParameterMetadata;
+    if (!roadworksMetadata || typeof roadworksMetadata !== "object" || Array.isArray(roadworksMetadata)) continue;
+    for (const [key, raw] of Object.entries(roadworksMetadata)) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const label = (raw as Record<string, unknown>).labelRu;
+      if (typeof label === "string" && label.trim()) labels.set(key, label.trim());
+    }
   }
   return labels;
+}
+
+function roadworksWaveARevisionContext(rows: readonly ProfessionalBoqRow[]): {
+  workKey: string;
+  parameterSchemaId: string;
+  parameterKeys: string[];
+  assumptionKeys: string[];
+  metadata: Record<string, Record<string, unknown>>;
+} | null {
+  const source = rows.find((row) => row.sourceParameters?.roadworksWaveA === true)?.sourceParameters;
+  if (!source) return null;
+  const workKey = typeof source.selectedWorkId === "string" ? source.selectedWorkId : "";
+  const parameterSchemaId = typeof source.parameterSchemaId === "string" ? source.parameterSchemaId : "";
+  const snapshot = source.parameterSnapshot && typeof source.parameterSnapshot === "object" && !Array.isArray(source.parameterSnapshot)
+    ? source.parameterSnapshot as Record<string, unknown>
+    : {};
+  const metadata = source.roadworksWaveAParameterMetadata &&
+    typeof source.roadworksWaveAParameterMetadata === "object" &&
+    !Array.isArray(source.roadworksWaveAParameterMetadata)
+    ? source.roadworksWaveAParameterMetadata as Record<string, Record<string, unknown>>
+    : {};
+  const parameterKeys = Object.keys(metadata).filter((key) => key in snapshot);
+  const assumptionKeys = Array.isArray(source.assumptionKeys)
+    ? source.assumptionKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
+    : [];
+  return workKey && parameterSchemaId && parameterKeys.length > 0
+    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, metadata }
+    : null;
+}
+
+function missingInputsFromRoadworksWaveA(
+  context: NonNullable<ReturnType<typeof roadworksWaveARevisionContext>>,
+): EstimateDraftRevision["missingInputs"] {
+  return context.assumptionKeys.filter((key) => context.metadata[key]?.tier === "P0").map((key) => ({
+    key,
+    label: typeof context.metadata[key]?.labelRu === "string"
+      ? context.metadata[key].labelRu as string
+      : key,
+    blocksPreliminaryEstimate: true,
+    requiredFor: "contract_ready" as const,
+  }));
 }
 
 function limitMissingInputsByRawInputPolicy(input: {
@@ -591,6 +706,12 @@ function passportPrimaryQuantityParamKey(
 function sourceParamKeys(row: ProfessionalBoqRow, params: Record<string, EstimateDraftRevisionParam>): string[] {
   const sourceParameters = row.sourceParameters ?? {};
   const keys = Object.keys(params);
+  const declaredAffectedBy = Array.isArray(sourceParameters.affectedBy)
+    ? sourceParameters.affectedBy.filter(
+      (key): key is string => typeof key === "string" && keys.includes(key),
+    )
+    : [];
+  if (declaredAffectedBy.length > 0) return declaredAffectedBy;
   const trace = `${row.quantityFormula ?? ""};${row.calculationTrace ?? ""}`;
   const formulaKeys = keys.filter((key) => formulaReferencesKey(trace, key));
   if (formulaKeys.length > 0) return formulaKeys;
@@ -740,19 +861,104 @@ function usesCanonicalMultiDomainReferenceV4(rows: readonly ProfessionalBoqRow[]
   return rows.length > 0 && rows.every((row) => row.sourceParameters?.multiDomainReferenceV4 === true);
 }
 
+function usesExactRoadworksWaveAConsumerDraft(
+  draft: ConsumerRepairAiDraft | null,
+): boolean {
+  return Boolean(
+    draft?.items.length &&
+    draft.items.every((item) => item.sourceParameters?.roadworksWaveA === true),
+  );
+}
+
+function buildPrebuiltExactRoadworksWaveAResult(input: {
+  rawInput: string;
+  selectedTemplateId?: string | null;
+  selectedTemplateName?: string | null;
+  selectedWorkKey?: string | null;
+  draft: ConsumerRepairAiDraft;
+}): InlineWorkPromptEstimateBuildResult {
+  if (!usesExactRoadworksWaveAConsumerDraft(input.draft)) {
+    throw new Error("PREBUILT_EXACT_ROADWORKS_WAVE_A_DRAFT_INVALID");
+  }
+  const selectedWorkKey = input.draft.selectedWork?.selectedWorkKey?.trim();
+  const templateId = input.draft.items[0]?.templateId?.trim() ||
+    input.selectedTemplateId?.trim() ||
+    selectedWorkKey;
+  if (!selectedWorkKey || !templateId || (
+    input.selectedWorkKey?.trim() && input.selectedWorkKey.trim() !== selectedWorkKey
+  )) {
+    throw new Error("PREBUILT_EXACT_ROADWORKS_WAVE_A_IDENTITY_MISMATCH");
+  }
+  const templateName = input.selectedTemplateName?.trim() ||
+    input.draft.selectedWork?.selectedWorkTitleRu?.trim() ||
+    input.draft.titleRu;
+  const parseResult: InlineWorkPromptParseResult = {
+    rawInput: input.rawInput,
+    matchedTemplate: {
+      templateId,
+      templateName,
+      family: selectedWorkKey,
+      confidence: 1,
+      matchSource: "user_selected",
+      matchedTextSpan: [0, input.rawInput.length],
+    },
+    candidateTemplates: [{
+      templateId,
+      templateName,
+      family: selectedWorkKey,
+      workKey: selectedWorkKey,
+      confidence: 1,
+      reason: "prebuilt_exact_roadworks_wave_a_binding",
+    }],
+    paramText: input.rawInput.trim(),
+    extractedParams: {},
+    rawInputFacts: [],
+    rawInputFactExtraction: {
+      raw_input: input.rawInput,
+      facts: [],
+      metrics: {
+        explicit_input_facts_ignored: 0,
+        explicit_input_unit_mismatches: 0,
+        explicit_input_facts_overwritten_by_default: 0,
+      },
+    },
+    assumptions: [],
+    missingInputs: [],
+    canBuildPreliminaryEstimate: true,
+    mustAskUserToSelectTemplate: false,
+  };
+  return {
+    parseResult,
+    draft: input.draft,
+    canBuildPreliminaryEstimate: true,
+    pdfMappingValid: true,
+    buyerHandoffMappingValid: input.draft.items.some((item) => item.itemType !== "work"),
+    v4ClarificationExperience: null,
+    roadScopeResolution: null,
+  };
+}
+
 export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionInput): EstimateDraftRevision {
   const source = input.source ?? "initial_prompt";
   const createdAt = input.createdAt ?? new Date().toISOString();
-  const result = buildEstimateFromInlineWorkPrompt({
-    rawInput: input.rawInput,
-    selectedTemplateId: input.selectedTemplateId,
-    selectedWorkKey: input.selectedWorkKey,
-    selectedTemplateName: input.selectedTemplateName,
-    city: input.city,
-    currency: input.currency,
-    countryCode: input.countryCode,
-    paramOverrides: input.paramOverrides,
-  });
+  const result = input.prebuiltExactRoadworksWaveADraft
+    ? buildPrebuiltExactRoadworksWaveAResult({
+      rawInput: input.rawInput,
+      selectedTemplateId: input.selectedTemplateId,
+      selectedTemplateName: input.selectedTemplateName,
+      selectedWorkKey: input.selectedWorkKey,
+      draft: input.prebuiltExactRoadworksWaveADraft,
+    })
+    : loadInlineWorkPromptEstimateBuilder().buildEstimateFromInlineWorkPrompt({
+      rawInput: input.rawInput,
+      selectedTemplateId: input.selectedTemplateId,
+      selectedWorkKey: input.selectedWorkKey,
+      selectedTemplateName: input.selectedTemplateName,
+      city: input.city,
+      currency: input.currency,
+      countryCode: input.countryCode,
+      paramOverrides: input.paramOverrides,
+    });
   if (result.blockingReason === "road_scope_selection_required") {
     throw new Error("road_scope_selection_required");
   }
@@ -762,6 +968,11 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     Boolean(result.v4ClarificationExperience) ||
     Boolean(result.draft?.items.some((item) => item.sourceParameters?.asphaltV4 === true));
   const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
+  // Exact Roadworks Wave A already owns its passport, parameter schema and
+  // calculation identity in the compiled row metadata. Re-entering the broad
+  // professional catalog here performs a second generic catalog scan on the
+  // cold request path and can never add authoritative information.
+  const exactRoadworksWaveAConsumerDraft = usesExactRoadworksWaveAConsumerDraft(result.draft);
   const draftDisagreesWithBroadMatch = Boolean(
     draftTemplateId &&
     draftSelectedWorkKey &&
@@ -772,7 +983,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const requestedReferencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
     (item) => item.professionalEstimatePassportId === requestedTemplateId,
   );
-  const requestedPassport = requestedTemplateId
+  const requestedPassport = requestedTemplateId && !exactRoadworksWaveAConsumerDraft
     ? buildProfessionalWorkPassportIfApplicable(requestedTemplateId)
     : null;
   const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
@@ -784,7 +995,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
         : (
           draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
         );
-  const passport = selectedTemplateId
+  const passport = selectedTemplateId && !exactRoadworksWaveAConsumerDraft
     ? buildProfessionalWorkPassportIfApplicable(selectedTemplateId)
     : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
@@ -806,8 +1017,12 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     templateId: selectedTemplateId,
     family: matchedFamily,
   });
+  const roadworksWaveAContext = roadworksWaveARevisionContext(initialRows);
+  const exactRoadworksWaveADraft = roadworksWaveAContext !== null;
   const isMultiDomainReferenceV4Draft = usesCanonicalMultiDomainReferenceV4(initialRows);
-  const parameterSchema = buildAiEstimateParameterSchema(selectedTemplateId);
+  const parameterSchema = exactRoadworksWaveADraft
+    ? null
+    : buildAiEstimateParameterSchema(selectedTemplateId);
   const visibleParameterLabels = new Map(runtimeParameterLabels(initialRows));
   for (const field of parameterSchema?.fields ?? []) {
     visibleParameterLabels.set(field.key, field.labelRu);
@@ -836,7 +1051,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     family: matchedFamily,
   });
   const trace = buildTrace({ revisionId, selectedTemplateId, params, rows });
-  const missingInputs = limitMissingInputsByRawInputPolicy({
+  const missingInputs = exactRoadworksWaveADraft
+    ? missingInputsFromRoadworksWaveA(roadworksWaveAContext)
+    : limitMissingInputsByRawInputPolicy({
     matchedFamily,
     rawInputFacts: result.parseResult.rawInputFacts,
     missingInputs: buildAiEstimateMissingInputs({
@@ -849,14 +1066,30 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
         : missingInputsFromParse(result.parseResult.missingInputs)
       ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),
-  });
+    });
   const estimateLevel = resolveEstimateLevel({ result, matchedFamily, missingInputs, rows });
   const assumptionsByKey = new Map<string, EstimateDraftRevision["assumptions"][number]>();
   for (const assumption of assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides)) {
     assumptionsByKey.set(assumption.key, assumption);
   }
   for (const assumption of declaredAsphaltAssumptionsFromRows(rows)) assumptionsByKey.set(assumption.key, assumption);
-  const roadScopeBinding = result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
+  if (roadworksWaveAContext) {
+    for (const key of roadworksWaveAContext.assumptionKeys) {
+      const assumedParam = params[key];
+      const usesVersionedDefault = assumedParam?.source === "default_assumption";
+      assumptionsByKey.set(key, {
+        key,
+        value: usesVersionedDefault ? assumedParam.value : null,
+        reason: usesVersionedDefault
+          ? `Versioned exact-work default: ${assumedParam.sourceText ?? "roadworks-wave-a-versioned-defaults"}`
+          : `Required exact-work input is not confirmed: ${roadworksWaveAContext.metadata[key]?.labelRu ?? key}`,
+        replacedByUserInput: false,
+        visibleToUser: true,
+      });
+    }
+  }
+  const roadScopeBinding = !exactRoadworksWaveADraft &&
+    result.roadScopeResolution?.resolverStatus === "RESOLVED" &&
     result.roadScopeResolution.selectedScopeId && result.roadScopeResolution.semanticKind &&
     result.roadScopeResolution.semanticKind !== "SEARCH_ALIAS" &&
     result.roadScopeResolution.semanticKind !== "DOMAIN_REVIEW_REQUIRED"
@@ -879,7 +1112,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       compositeProject: null,
     }
     : null;
+  const calculationProfileId = stringSourceParameter(rows, ["calculationProfileId"]);
   const calculationStrategyId =
+    calculationProfileId ||
     input.selectedTemplateId?.trim() ||
     input.selectedWorkKey?.trim() ||
     draftSelectedWorkKey ||
@@ -893,21 +1128,32 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const identityWithoutChecksum = {
     requestedCatalogWorkId:
       roadScopeBinding?.requestedCatalogWorkId ||
+      stringSourceParameter(rows, ["requestedCatalogWorkId", "selectedWorkId"]) ||
       input.selectedWorkKey?.trim() ||
       null,
-    passportId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : selectedTemplateId,
+    passportId:
+      stringSourceParameter(rows, ["professionalEstimatePassportId", "passportId", "semanticOwner"]) ||
+      (isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : selectedTemplateId),
+    passportVersion: stringSourceParameter(rows, ["professionalEstimatePassportVersion", "passportVersion"]) || undefined,
+    parameterSchemaId: stringSourceParameter(rows, ["parameterSchemaId"]) || undefined,
+    parameterSchemaVersion: stringSourceParameter(rows, ["parameterSchemaVersion"]) || undefined,
     calculationStrategyId,
-    canonicalModelId: selectedTemplateId,
+    calculationProfileId: calculationProfileId || undefined,
+    calculationProfileVersion: stringSourceParameter(rows, ["calculationProfileVersion"]) || undefined,
+    canonicalModelId: stringSourceParameter(rows, ["canonicalModelId"]) || selectedTemplateId,
     canonicalModelVersion:
+      stringSourceParameter(rows, ["canonicalModelVersion"]) ||
       rows.find((row) => row.templateVersion)?.templateVersion ||
       formulaGraphVersion,
     selectedScope:
-      roadScopeBinding?.selectedRoadScope ||
       stringSourceParameter(rows, ["selectedRoadScope", "scopeProfile"]) ||
+      roadScopeBinding?.selectedRoadScope ||
       null,
     scopePresetId: stringSourceParameter(rows, ["scopePresetId"]) || null,
     resolvedParameters: params,
     formulaGraphVersion,
+    normativeCompositionId: stringSourceParameter(rows, ["normativeCompositionId"]) || undefined,
+    semanticFingerprint: stringSourceParameter(rows, ["semanticFingerprint"]) || undefined,
     compilerVersion: ESTIMATE_RESOLVED_IDENTITY_COMPILER_VERSION,
     sourceBindingVersions: sourceBindingVersions(rows),
     semanticOwner:
@@ -927,22 +1173,23 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   return {
     estimateDraftId,
     revisionId,
+    createdAt,
     previousRevisionId: input.previousRevisionId ?? null,
     source,
     rawInput: input.rawInput,
     selectedTemplateId,
     matchedFamily,
-    professionalWorkId: isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null,
+    professionalWorkId: roadworksWaveAContext?.workKey ?? (isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null),
     workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
     roadScopeBinding,
     resolvedIdentity,
     quantityBasis: isAsphaltV4Draft ? quantityBasisFromRows(rows) : null,
-    workSpecificParameterSchemaId: isAsphaltV4Draft
+    workSpecificParameterSchemaId: roadworksWaveAContext?.parameterSchemaId ?? (isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id
-      : null,
-    workSpecificParameterSignature: isAsphaltV4Draft
+      : null),
+    workSpecificParameterSignature: roadworksWaveAContext?.parameterKeys ?? (isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.map((parameter) => parameter.parameter_id)
-      : [],
+      : []),
     applicableBoqSignature: applicableBoqSignature(rows),
     legacyRowsCount: isAsphaltV4Draft
       ? rows.filter((row) => row.sourceParameters?.asphaltV4 !== true).length

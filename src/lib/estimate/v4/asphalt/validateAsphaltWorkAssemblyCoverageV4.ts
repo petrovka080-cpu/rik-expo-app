@@ -33,7 +33,18 @@ export function validateAsphaltWorkAssemblyCoverageV4(
   const ids = rows.map((row) => row.definition.row_id);
   const idSet = new Set(ids);
   const manifest = getAsphaltScopeManifestV4(compilation.preliminary_assembly_policy.profile_id);
-  const required = manifest.required_row_ids;
+  const jointGeometryRows = ["longitudinal_joints", "transverse_joints"]
+    .filter((rowId) => idSet.has(rowId));
+  const jointPackageRequired = jointGeometryRows.length > 0
+    ? [...jointGeometryRows, "edge_treatment", "joint_sealing_material", "joint_sealing_application"]
+    : [];
+  const required = [...new Set([...manifest.required_row_ids, ...jointPackageRequired])];
+  const explicitlyExcluded = jointGeometryRows.length === 0
+    ? [
+        ...manifest.explicitly_excluded_wbs_ru,
+        "Продольные и поперечные стыки, обработка кромок и герметизация исключены: отсутствует подтверждённая геометрия length × width и/или схема проходов и захваток; коэффициент м/м² не применяется.",
+      ]
+    : manifest.explicitly_excluded_wbs_ru;
   const physicalKeys = rows
     .filter((row) => row.definition.professional_category === "MATERIAL" || row.definition.professional_category === "PRODUCT")
     .map((row) => `${row.definition.professional_name_ru}|${row.definition.technical_specification_ru}|${row.definition.unit_id}`);
@@ -72,7 +83,7 @@ export function validateAsphaltWorkAssemblyCoverageV4(
     assembly_id: compilation.preliminary_assembly_policy.assembly_id,
     manifest_id: manifest.manifest_id,
     manifest_coverage_ratio: required.length === 0 ? 1 : (required.length - counters.required_wbs_rows_missing) / required.length,
-    explicitly_excluded_wbs_ru: manifest.explicitly_excluded_wbs_ru,
+    explicitly_excluded_wbs_ru: explicitlyExcluded,
     quantity_basis: compilation.quantity_basis,
     required_row_ids: required,
     counters,

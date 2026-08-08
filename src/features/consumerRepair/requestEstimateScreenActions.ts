@@ -37,11 +37,14 @@ import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerT
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
-import type { buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
+import type {
+  buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime,
+  buildConsumerRepairDraftFromExactRoadworksWaveARuntime as BuildConsumerRepairDraftFromExactRoadworksWaveARuntime,
+} from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 import {
   ROAD_SCOPE_RESOLVER_VERSION_V4,
-  ROAD_SCOPE_SELECTION_QUESTION_RU,
+  asphaltScopeSelectionQuestionForIntentV5,
   resolveRoadEstimateScopeV4,
 } from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
 import type {
@@ -56,6 +59,8 @@ import {
 type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
 type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRepairOpenWorldAiDraft;
 type ConsumerRepairRuntimeDraftBuilder = typeof BuildConsumerRepairDraftFromAiEstimateRuntime;
+type ConsumerRepairExactRoadworksRuntimeDraftBuilder =
+  typeof BuildConsumerRepairDraftFromExactRoadworksWaveARuntime;
 
 function recordConsumerRepairEstimateBuildTiming(
   stage: string,
@@ -125,13 +130,14 @@ function loadRoadworksWaveAProductionBinding() {
 }
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-function loadConsumerRepairRuntimeDraftBuilder(): ConsumerRepairRuntimeDraftBuilder {
+function loadConsumerRepairRuntimeDraftBuilders(): {
+  buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
+  buildConsumerRepairDraftFromExactRoadworksWaveARuntime: ConsumerRepairExactRoadworksRuntimeDraftBuilder;
+} {
   const runtime = require(
     "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
-  ) as {
-    buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
-  };
-  return runtime.buildConsumerRepairDraftFromAiEstimateRuntime;
+  ) as typeof import("../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime");
+  return runtime;
 }
 
 export type ConsumerRepairProjectExecutionAction =
@@ -841,19 +847,36 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     originalText: resolverInput,
     requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
   });
+  const scopeSelectionQuestion = asphaltScopeSelectionQuestionForIntentV5(resolverInput);
   const roadworksWaveA = loadRoadworksWaveAProductionBinding();
-  const roadworksWaveAResolution = selectedWork?.selectedWorkKey
-    ? roadworksWaveA.getRoadworksWaveAProductionRegistration(selectedWork.selectedWorkKey)
-    : roadworksWaveA.resolveRoadworksWaveAProductionWork({ rawInput: resolverInput });
+  const exactRoadworksWaveAProduction = roadworksWaveA.buildRoadworksWaveAProductionDraft({
+    rawInput: resolverInput,
+    selectedWorkKey: selectedWork?.selectedWorkKey,
+    selectedTemplateId: selectedWork?.selectedWorkKey,
+    selectedTemplateName: selectedWork?.selectedTitleRu,
+    city: params.city || undefined,
+    currency: "KGS",
+  });
+  const explicitlySelectedRoadworksWaveA = exactRoadworksWaveAProduction?.registration ??
+    roadworksWaveA.resolveRoadworksWaveAProductionWork({
+      selectedWorkKey: selectedWork?.selectedWorkKey,
+      selectedTemplateId: selectedWork?.selectedWorkKey,
+      rawInput: resolverInput,
+    });
+  const explicitRoadworksWaveAReadiness = roadworksWaveA.getRoadworksWaveAResolutionReadiness(
+    explicitlySelectedRoadworksWaveA,
+  );
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
-    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" && !roadworksWaveAResolution
+    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
+      explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
+      explicitRoadworksWaveAReadiness !== "NEEDS_REQUIRED_INPUTS"
       ? {
-        titleRu: ROAD_SCOPE_SELECTION_QUESTION_RU.question,
+        titleRu: scopeSelectionQuestion.question,
         summaryRu: "Выберите состав дорожных работ до создания расчёта.",
         repairType: "road_construction",
         selectedWork: consumerSelectedWork ?? undefined,
         dangerousDiyBlocked: false,
-        missingData: ROAD_SCOPE_SELECTION_QUESTION_RU.options.map((option) => option.label),
+        missingData: scopeSelectionQuestion.options.map((option) => option.label),
         items: [],
       }
       : null;
@@ -882,17 +905,22 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft
     ? null
     : (() => {
-      const buildConsumerRepairDraftFromAiEstimateRuntime =
-        loadConsumerRepairRuntimeDraftBuilder();
+      const runtimeBuilders = loadConsumerRepairRuntimeDraftBuilders();
       recordConsumerRepairEstimateBuildTiming("RUNTIME_MODULE_READY", buildStartedAt);
-      return buildConsumerRepairDraftFromAiEstimateRuntime({
-      rawInput: resolverInput,
-      selectedWorkKey: selectedWork?.selectedWorkKey,
-      selectedTemplateId: selectedWork?.selectedWorkKey,
-      selectedTemplateName: selectedWork?.selectedTitleRu,
-      city: params.city || undefined,
-      currency: "KGS",
-      });
+      const runtimeInput = {
+        rawInput: resolverInput,
+        selectedWorkKey: selectedWork?.selectedWorkKey,
+        selectedTemplateId: selectedWork?.selectedWorkKey,
+        selectedTemplateName: selectedWork?.selectedTitleRu,
+        city: params.city || undefined,
+        currency: "KGS",
+      };
+      return exactRoadworksWaveAProduction
+        ? runtimeBuilders.buildConsumerRepairDraftFromExactRoadworksWaveARuntime(
+          runtimeInput,
+          exactRoadworksWaveAProduction.draft,
+        )
+        : runtimeBuilders.buildConsumerRepairDraftFromAiEstimateRuntime(runtimeInput);
     })();
   recordConsumerRepairEstimateBuildTiming("RUNTIME_DRAFT_READY", buildStartedAt);
   const roadworksWaveARuntimeDraft = runtimeDraft?.selectedWork?.selectedWorkKey
@@ -951,7 +979,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         pendingIntentId: `road-scope:${encodeURIComponent(resolverInput)}:${selectedWork?.selectedWorkKey ?? "natural-input"}`,
         originalUserText: resolverInput,
         requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? ASPHALT_WORK_ID_V4,
-        offeredScopes: ROAD_SCOPE_SELECTION_QUESTION_RU.options.map((option) => option.scopeId),
+        offeredScopes: scopeSelectionQuestion.options.map((option) => option.scopeId),
         resolverEvidence: [...roadScopeResolution.evidence],
         resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
         createdAt: new Date().toISOString(),

@@ -66,18 +66,42 @@ describe("Roadworks Wave A work-specific compilation", () => {
     }
   });
 
-  test("has no dead declared parameter and isolates sensitivity to linked rows", () => {
+  test("has no dead declared parameter, isolates edits to linked rows and rejects unconfirmed applicability", () => {
     for (const item of RoadworksWaveAInventory) {
       const base = compileRoadworksWaveAWork(item.workId, DEFAULT_ROADWORKS_WAVE_A_INPUTS).rows;
       for (const parameter of getRoadworksWaveAParameterKeys(item.workId)) {
-        const direction = parameter === "acceptance_lot_m2" ? 0.05 : /capacity/.test(parameter) ? 0.5 : 1.25;
+        expect(base.some((row) => row.sourceParameterKeys.includes(parameter))).toBe(true);
+        const current = DEFAULT_ROADWORKS_WAVE_A_INPUTS[parameter];
+        if (typeof current === "boolean") {
+          expect(() => compileRoadworksWaveAWork(item.workId, {
+            ...DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+            [parameter]: false,
+          })).toThrow(/APPLICABILITY_INPUTS_REQUIRED/);
+          continue;
+        }
+        const editedValue = typeof current === "number"
+          ? current * (parameter === "acceptance_lot_m2" ? 0.05 : /capacity/.test(parameter) ? 0.5 : 1.25)
+          : ({
+            exterior_surface_kind: "DRIVE",
+            floor_mechanical_impact_class: "SIGNIFICANT",
+            floor_liquid_exposure_class: "LOW_PERIODIC",
+            approved_floor_mix_type: "RIGID_ASPHALT_CONCRETE",
+          } as const)[parameter as "exterior_surface_kind" | "floor_mechanical_impact_class" | "floor_liquid_exposure_class" | "approved_floor_mix_type"];
         const changedInput = {
           ...DEFAULT_ROADWORKS_WAVE_A_INPUTS,
-          [parameter]: DEFAULT_ROADWORKS_WAVE_A_INPUTS[parameter as keyof typeof DEFAULT_ROADWORKS_WAVE_A_INPUTS] * direction,
+          [parameter]: editedValue,
         };
         const changed = compileRoadworksWaveAWork(item.workId, changedInput).rows;
         const changedIds = base
-          .filter((row, index) => row.quantity !== changed[index]?.quantity)
+          .filter((row, index) => JSON.stringify({
+            quantity: row.quantity,
+            nameRu: row.nameRu,
+            normativeRateIds: row.normativeRateIds,
+          }) !== JSON.stringify({
+            quantity: changed[index]?.quantity,
+            nameRu: changed[index]?.nameRu,
+            normativeRateIds: changed[index]?.normativeRateIds,
+          }))
           .map((row) => row.rowId);
         expect(changedIds.length).toBeGreaterThan(0);
         for (const rowId of changedIds) {

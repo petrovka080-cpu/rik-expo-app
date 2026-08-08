@@ -1,26 +1,45 @@
 import { formatEstimateUnitLabel } from "../../../ai/globalEstimate";
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests";
 import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
+import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+  ROADWORKS_WAVE_A_NUMERIC_INPUT_KEYS,
+  ROADWORKS_WAVE_A_PARAMETER_PRESENTATION,
+  ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS,
   RoadworksWaveAInventory,
   compileRoadworksWaveAWork,
   getRoadworksWaveAParameterKeys,
   getRoadworksWaveAParameterDefinitions,
   resolveRoadworksWaveAWork,
   type RoadworksWaveAInputs,
+  type RoadworksWaveAApplicabilityInputKey,
+  type RoadworksWaveAParameterKey,
+  type RoadworksWaveANumericInputKey,
   type RoadworksWaveAInventoryItem,
   type RoadworksWaveARow,
 } from "./roadworksWaveA";
-import { resolveRoadAsphaltProfileV3 } from "./roadworksWaveASemanticTruth";
+import {
+  buildRoadworksWaveAProfessionalPassportV4,
+  resolveRoadAsphaltProfileV3,
+} from "./roadworksWaveASemanticTruth";
+import {
+  resolveDomainResolutionReadiness,
+  type DomainResolutionReadiness,
+} from "../../estimateDraftRevisionContract";
+import { applyProfessionalBoqRuntimeContract } from "../../professionalBoqAssumptions";
 
-export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.1";
+export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.3";
 
 export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem & {
   migrationVersion: typeof ROADWORKS_WAVE_A_MIGRATION_VERSION;
   overlayId: string;
   formulaGraphId: string;
-  parameterSchema: readonly string[];
+  calculationProfileId: string;
+  parameterSchemaId: string;
+  normativeCompositionId: string;
+  semanticFingerprint: string;
+  parameterSchema: readonly RoadworksWaveAParameterKey[];
   parameterDefinitions: ReturnType<typeof getRoadworksWaveAParameterDefinitions>;
   passport: {
     requestedCatalogWorkId: string;
@@ -32,27 +51,51 @@ export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem &
     technologyFamily: string;
     scopeProfile: string;
   };
+  professionalPassport: ReturnType<typeof buildRoadworksWaveAProfessionalPassportV4>;
 };
 
 export const RoadworksWaveAProductionRegistry: readonly RoadworksWaveAProductionRegistration[] =
-  RoadworksWaveAInventory.map((item) => ({
-    ...item,
-    migrationVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
-    overlayId: `${item.workId}:overlay:v4`,
-    formulaGraphId: `${item.canonicalModelId}:formula-graph:v1`,
-    parameterSchema: getRoadworksWaveAParameterKeys(item.workId),
-    parameterDefinitions: getRoadworksWaveAParameterDefinitions(item.workId),
-    passport: {
-      requestedCatalogWorkId: item.workId,
-      canonicalWorkId: item.canonicalWorkId,
-      canonicalModelId: item.canonicalModelId,
-      canonicalModelVersion: "1",
-      scopePresetId: item.scopePresetId,
-      professionalNameRu: item.professionalNameRu,
-      technologyFamily: item.technologyFamily,
-      scopeProfile: item.scopeProfile,
-    },
-  }));
+  RoadworksWaveAInventory.map((item) => {
+    const professionalPassport = buildRoadworksWaveAProfessionalPassportV4(item.workId);
+    const calculationProfileId = `roadworks-wave-a:${item.workId}:calculation-profile:v4.3`;
+    const parameterSchemaId = `${item.workId}:parameter-schema:v4.3`;
+    const formulaGraphId = professionalPassport.calculation.formulaGraphVersion;
+    const normativeCompositionId = professionalPassport.normativeComposition.compositionId;
+    return {
+      ...item,
+      migrationVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
+      overlayId: `${item.workId}:overlay:v4.3`,
+      formulaGraphId,
+      calculationProfileId,
+      parameterSchemaId,
+      normativeCompositionId,
+      semanticFingerprint: estimateDeterministicHash({
+        workKey: item.workId,
+        canonicalModelId: item.canonicalModelId,
+        scopePresetId: item.scopePresetId,
+        scopeProfile: item.scopeProfile,
+        passportId: professionalPassport.passportId,
+        passportVersion: professionalPassport.version,
+        calculationProfileId,
+        parameterSchemaId,
+        formulaGraphId,
+        normativeCompositionId,
+      }),
+      parameterSchema: getRoadworksWaveAParameterKeys(item.workId),
+      parameterDefinitions: getRoadworksWaveAParameterDefinitions(item.workId),
+      passport: {
+        requestedCatalogWorkId: item.workId,
+        canonicalWorkId: item.canonicalWorkId,
+        canonicalModelId: item.canonicalModelId,
+        canonicalModelVersion: "1",
+        scopePresetId: item.scopePresetId,
+        professionalNameRu: item.professionalNameRu,
+        technologyFamily: item.technologyFamily,
+        scopeProfile: item.scopeProfile,
+      },
+      professionalPassport,
+    };
+  });
 
 const registrationByWorkId = new Map(
   RoadworksWaveAProductionRegistry.map((registration) => [registration.workId, registration]),
@@ -66,6 +109,27 @@ export function getRoadworksWaveAProductionRegistration(
 ): RoadworksWaveAProductionRegistration | null {
   if (!id) return null;
   return registrationByWorkId.get(id) ?? registrationByTemplateId.get(id) ?? null;
+}
+
+export function getRoadworksWaveAResolutionReadiness(
+  registration: RoadworksWaveAProductionRegistration | null,
+  input: { scopeResolved?: boolean; requiredInputsPresent?: boolean } = {},
+): DomainResolutionReadiness {
+  if (!registration) {
+    return resolveDomainResolutionReadiness({ resolutionExists: false });
+  }
+  const profile = resolveRoadAsphaltProfileV3(registration.workId);
+  const normativeApplicabilityResolved = Boolean(profile.classificationVerdictId);
+  const applicationAllowed = profile.domainDecision !== "DOMAIN_REVIEW_REQUIRED" && profile.blockers.length === 0;
+  return resolveDomainResolutionReadiness({
+    resolutionExists: true,
+    scopeRequired: profile.scopePresetId === null,
+    scopeResolved: input.scopeResolved ?? profile.scopePresetId !== null,
+    requiredInputsPresent: input.requiredInputsPresent ?? true,
+    normativeApplicabilityResolved,
+    applicationAllowed,
+    calculationStrategyAvailable: normativeApplicabilityResolved && applicationAllowed && profile.scopePresetId !== null,
+  });
 }
 
 export function resolveRoadworksWaveAProductionWork(input: {
@@ -134,9 +198,11 @@ export function resolveRoadworksWaveAConversationalWork(
 
 function positiveOverride(
   input: BuildEstimateFromInlineWorkPromptInput,
-  key: keyof RoadworksWaveAInputs,
+  key: RoadworksWaveANumericInputKey,
 ): number | null {
-  const raw = input.paramOverrides?.[key]?.value;
+  const override = input.paramOverrides?.[key];
+  if (override?.source === "default_assumption" || override?.source === "derived") return null;
+  const raw = override?.value;
   const value = typeof raw === "number"
     ? raw
     : typeof raw === "string"
@@ -158,9 +224,13 @@ function numberFromText(text: string, patterns: readonly RegExp[]): number | nul
 export function extractRoadworksWaveAProductionInputs(
   input: BuildEstimateFromInlineWorkPromptInput,
   workId?: string,
-): { values: RoadworksWaveAInputs; assumptions: readonly string[] } {
+): {
+  values: RoadworksWaveAInputs;
+  assumptions: readonly RoadworksWaveAParameterKey[];
+  blockingAssumptions: readonly RoadworksWaveAParameterKey[];
+} {
   const text = input.rawInput;
-  const extracted: Partial<RoadworksWaveAInputs> = {
+  const extracted: Partial<Record<RoadworksWaveANumericInputKey, number>> = {
     area_m2: numberFromText(text, [
       /(\d[\d\s]*(?:[.,]\d+)?)\s*(?:м(?:2|²)|кв(?:адратн[\p{L}]*)?\s*м)/iu,
       /площад[\p{L}]*\s*(?:—|:|=)?\s*(\d[\d\s]*(?:[.,]\d+)?)/iu,
@@ -177,14 +247,52 @@ export function extractRoadworksWaveAProductionInputs(
     ]) ?? undefined,
   };
   const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS };
-  const assumptions: string[] = [];
-  const applicableKeys = new Set(workId ? getRoadworksWaveAParameterKeys(workId) : Object.keys(values));
-  for (const key of Object.keys(values) as (keyof RoadworksWaveAInputs)[]) {
+  const assumptions: RoadworksWaveAParameterKey[] = [];
+  const applicableParameterKeys = workId
+    ? [...getRoadworksWaveAParameterKeys(workId)]
+    : Object.keys(values) as RoadworksWaveAParameterKey[];
+  const applicableKeys = new Set<RoadworksWaveAParameterKey>(applicableParameterKeys);
+  for (const key of ROADWORKS_WAVE_A_NUMERIC_INPUT_KEYS) {
     const explicit = positiveOverride(input, key) ?? extracted[key] ?? null;
     if (explicit != null) values[key] = explicit;
     else if (applicableKeys.has(key)) assumptions.push(key);
   }
-  return { values, assumptions };
+  const registration = getRoadworksWaveAProductionRegistration(workId);
+  const applicabilityKeys = registration
+    ? ROADWORKS_WAVE_A_SCOPE_APPLICABILITY_PARAMETER_KEYS[registration.scopeProfile]
+    : [];
+  const allowedValues: Readonly<Record<RoadworksWaveAApplicabilityInputKey, readonly unknown[]>> = {
+    exterior_surface_kind: ["PARKING", "DRIVE", "INDUSTRIAL_SITE", "EXTERNAL_AREA"],
+    drainage_outfall_confirmed: [true],
+    base_dry_and_accepted: [true],
+    floor_mechanical_impact_class: ["LOW", "MODERATE", "SIGNIFICANT"],
+    floor_liquid_exposure_class: ["NONE", "LOW_PERIODIC"],
+    approved_floor_mix_type: ["CAST_ASPHALT", "RIGID_ASPHALT_CONCRETE"],
+  };
+  for (const key of applicabilityKeys) {
+    const override = input.paramOverrides?.[key];
+    const explicit = override?.source === "default_assumption" || override?.source === "derived"
+      ? undefined
+      : override?.value;
+    if (allowedValues[key].includes(explicit)) {
+      Object.assign(values, { [key]: explicit });
+    } else {
+      assumptions.push(key);
+    }
+  }
+  const tierByKey = new Map(
+    getRoadworksWaveAParameterDefinitions(workId ?? "").map((definition) => [definition.key, definition.tier]),
+  );
+  const assumptionSet = new Set(assumptions);
+  const orderedAssumptions = [
+    ...applicableParameterKeys.filter((key) => assumptionSet.has(key)),
+    ...assumptions.filter((key) => !applicableKeys.has(key)),
+  ];
+  return {
+    values,
+    assumptions: orderedAssumptions,
+    blockingAssumptions: orderedAssumptions.filter((key) => tierByKey.get(key) === "P0"),
+  };
 }
 
 function itemType(row: RoadworksWaveARow): ConsumerRepairAiDraft["items"][number]["itemType"] {
@@ -226,21 +334,42 @@ export function buildRoadworksWaveAProductionDraft(
   const registration = resolveRoadworksWaveAProductionWork(input);
   if (!registration) return null;
   const parameters = extractRoadworksWaveAProductionInputs(input, registration.workId);
+  const exactParameterSnapshot = Object.fromEntries(
+    registration.parameterSchema.map((key) => [key, parameters.values[key]]),
+  );
   const resolvedProfile = resolveRoadAsphaltProfileV3(registration.workId);
-  const executable = resolvedProfile.domainDecision === "ROADS_AND_PAVEMENTS" && resolvedProfile.scopePresetId !== null;
+  const domainResolutionReadiness = getRoadworksWaveAResolutionReadiness(registration, {
+    requiredInputsPresent: parameters.blockingAssumptions.length === 0,
+  });
+  const executable = domainResolutionReadiness === "CALCULATION_READY";
   const conditionalRow: RoadworksWaveARow = {
-    rowId: `${registration.canonicalWorkId}:applicability_blocker`,
+    rowId: `${registration.workId}:applicability_blocker`,
     category: "document",
+    rowType: "document",
+    semanticOwner: registration.professionalPassport.passportId,
+    workKey: registration.workId,
+    passportId: registration.professionalPassport.passportId,
     nameRu: "Требуется подтверждение области применения и состава работ",
     unit: "pcs",
+    uom: "pcs",
     quantity: 1,
     formulaId: "conditional_no_certified_quantity",
     affectedBy: [],
+    sourceParameterKeys: [],
     sourceIds: ["catalog_applicability_review"],
+    normativeSourceId: "catalog_applicability_review",
+    normativeRateIds: [],
+    roundingRule: "EXACT_ONE",
+    wasteRule: "NOT_APPLICABLE",
+    priceSourceId: null,
+    priceDate: null,
+    revisionId: "REFERENCE_UNSAVED",
+    procurementEligibility: "EXCLUDED_CONTROL_DOCUMENT",
+    payable: false,
     procurementOwner: "customer",
   };
   const compilation = executable
-    ? compileRoadworksWaveAWork(registration.canonicalWorkId, parameters.values, { scopeProfile: registration.scopeProfile })
+    ? compileRoadworksWaveAWork(registration.workId, parameters.values, { scopeProfile: registration.scopeProfile })
     : { workId: registration.workId, rows: [conditionalRow] };
   const currency = input.currency ?? "KGS";
   const draft: ConsumerRepairAiDraft = {
@@ -260,8 +389,8 @@ export function buildRoadworksWaveAProductionDraft(
     },
     dangerousDiyBlocked: false,
     missingData: executable
-      ? parameters.assumptions.map((key) => `Уточнить: ${key}`)
-      : ["Подтвердить дорожную область применения, конструкцию и технологическую операцию."],
+      ? []
+      : parameters.blockingAssumptions.map((key) => `Уточнить обязательный параметр: ${key}`),
     items: compilation.rows.map((row, rowIndex) => ({
       itemType: itemType(row),
       titleRu: row.nameRu,
@@ -280,9 +409,10 @@ export function buildRoadworksWaveAProductionDraft(
       sourceParameters: {
         rowCode: row.rowId,
         wbsCode: wbsFor(row),
-        includedInProcurement: row.procurementOwner === "buyer",
+        includedInProcurement: row.procurementEligibility === "ELIGIBLE",
         procurementOwner: row.procurementOwner,
         roadworksWaveA: true,
+        domainResolutionReadiness,
         asphaltV4ProfessionalCategory: professionalCategoryFor(row),
         requestedCatalogWorkId: registration.workId,
         selectedWorkId: registration.workId,
@@ -290,12 +420,41 @@ export function buildRoadworksWaveAProductionDraft(
         canonicalModelId: registration.canonicalModelId,
         canonicalModelVersion: registration.passport.canonicalModelVersion,
         scopePresetId: registration.scopePresetId,
-        semanticOwner: registration.canonicalModelId,
+        semanticOwner: registration.professionalPassport.passportId,
+        professionalEstimatePassportId: registration.professionalPassport.passportId,
+        professionalEstimatePassportVersion: registration.professionalPassport.version,
+        calculationProfileId: registration.calculationProfileId,
+        calculationProfileVersion: "roadworks-wave-a-calculation-profile:v4.3",
+        parameterSchemaId: registration.parameterSchemaId,
+        parameterSchemaVersion: registration.migrationVersion,
+        normativeCompositionId: registration.normativeCompositionId,
+        semanticFingerprint: registration.semanticFingerprint,
         migrationVersion: registration.migrationVersion,
         scopeProfile: registration.scopeProfile,
-        parameterSnapshot: parameters.values,
-        assumptionKeys: parameters.assumptions,
-        affectedBy: row.affectedBy,
+        parameterSnapshot: rowIndex === 0 ? exactParameterSnapshot : undefined,
+        assumptionKeys: rowIndex === 0 ? parameters.assumptions : undefined,
+        roadworksWaveAParameterMetadata: rowIndex === 0
+          ? Object.fromEntries(
+            registration.parameterDefinitions.map((definition) => {
+              const presentation = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[definition.key];
+              return [definition.key, {
+                ...presentation,
+                tier: definition.tier,
+                requiredFor: definition.tier === "P0" ? "contract_ready" : "better_accuracy",
+                defaultValue: DEFAULT_ROADWORKS_WAVE_A_INPUTS[definition.key],
+                defaultSourceId: "roadworks-wave-a-versioned-defaults",
+                defaultSourceVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
+              }];
+            }),
+          )
+          : undefined,
+        affectedBy: row.sourceParameterKeys,
+        normativeSourceId: row.normativeSourceId,
+        normativeRateIds: row.normativeRateIds,
+        roundingRule: row.roundingRule,
+        wasteRule: row.wasteRule,
+        procurementEligibility: row.procurementEligibility,
+        payable: row.payable,
         formulaGraphId: registration.formulaGraphId,
         executableAsphaltProfile: executable,
         certificationClass: resolvedProfile.certificationClass,
@@ -310,8 +469,8 @@ export function buildRoadworksWaveAProductionDraft(
       templateVersion: registration.migrationVersion,
       normId: `norm:roadworks-wave-a:${row.rowId}`,
       normFamilyId: `norm_family:${registration.technologyFamily}`,
-      normSourceId: row.sourceIds[0],
-      normSourceTitle: "Нормативный пакет дорожных работ — требуется экспертное подтверждение",
+      normSourceId: row.normativeSourceId,
+      normSourceTitle: "Официальный нормативный и сметно-ресурсный пакет работы",
       normVersion: registration.migrationVersion,
       normReviewStatus: "road_engineer_review_required",
       priceStatus: "PRICE_MISSING",
@@ -324,5 +483,8 @@ export function buildRoadworksWaveAProductionDraft(
       rateKey: `${registration.workId}:${row.rowId}`,
     })),
   };
-  return { draft, registration };
+  return {
+    draft: applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput }),
+    registration,
+  };
 }

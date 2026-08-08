@@ -11,11 +11,29 @@ import type {
 import { compareEstimateDraftRevisions } from "./compareEstimateDraftRevisions";
 import type { UserParamPatch } from "./validateUserParamPatch";
 import { aiEstimateRuPromptPhraseForParameter } from "./aiEstimateRuParameterDictionary";
+import {
+  getRoadworksWaveAProductionRegistration,
+  type RoadworksWaveAProductionRegistration,
+} from "./v4/roadworks";
 
 export type RecalculateEstimateDraftRevisionResult = {
   revision: EstimateDraftRevision;
   diff: EstimateDraftRevisionDiff;
 };
+
+function exactRoadworksWaveARegistration(
+  revision: EstimateDraftRevision,
+): RoadworksWaveAProductionRegistration | null {
+  if (
+    revision.boq.rows.length === 0 ||
+    !revision.boq.rows.every((row) => row.sourceParameters?.roadworksWaveA === true)
+  ) {
+    return null;
+  }
+  return getRoadworksWaveAProductionRegistration(
+    revision.resolvedIdentity?.requestedCatalogWorkId ?? revision.matchedFamily,
+  );
+}
 
 function sourceForPatch(patch: UserParamPatch): EstimateDraftRevisionSource {
   if (patch.operation === "add_param") return "param_add";
@@ -60,8 +78,16 @@ export function buildPromptForEstimateDraftRevisionRecalc(
   revision: EstimateDraftRevision,
   params: Record<string, EstimateDraftRevisionParam>,
 ): string {
-  const passport = buildProfessionalWorkPassport(revision.selectedTemplateId);
-  const templateLabel = (passport?.localizedNameRu || revision.matchedFamily || revision.selectedTemplateId).replace(/_/g, " ");
+  const exactRoadworks = exactRoadworksWaveARegistration(revision);
+  const passport = exactRoadworks
+    ? null
+    : buildProfessionalWorkPassport(revision.selectedTemplateId);
+  const templateLabel = (
+    exactRoadworks?.professionalNameRu ||
+    passport?.localizedNameRu ||
+    revision.matchedFamily ||
+    revision.selectedTemplateId
+  ).replace(/_/g, " ");
   const hasSpecificAreaParam = Object.keys(params).some((key) => key !== "area_m2" && /_area_m2$/.test(key));
   const paramText = Object.entries(params)
     .filter(([key]) => key !== "estimate_level" && key !== "prices")
@@ -86,7 +112,10 @@ export function recalculateEstimateDraftRevision(
   const changedAt = input.createdAt ?? new Date().toISOString();
   const patched = applyUserParamPatch(previous, patch, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
-  const passport = buildProfessionalWorkPassport(previous.selectedTemplateId);
+  const exactRoadworks = exactRoadworksWaveARegistration(previous);
+  const passport = exactRoadworks
+    ? null
+    : buildProfessionalWorkPassport(previous.selectedTemplateId);
   const paramOverrides = previous.roadScopeBinding
     ? {
       ...patched.params,
@@ -102,7 +131,11 @@ export function recalculateEstimateDraftRevision(
     previousRevisionId: previous.revisionId,
     rawInput,
     selectedTemplateId: previous.selectedTemplateId,
-    selectedTemplateName: passport?.localizedNameRu ?? previous.selectedTemplateId,
+    selectedTemplateName:
+      exactRoadworks?.professionalNameRu ??
+      passport?.localizedNameRu ??
+      previous.selectedTemplateId,
+    selectedWorkKey: exactRoadworks?.workId,
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,
@@ -177,7 +210,10 @@ export function recalculateEstimateDraftRevisionBatch(
   const changedAt = input.createdAt ?? new Date().toISOString();
   const patched = applyUserParamPatches(previous, patches, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
-  const passport = buildProfessionalWorkPassport(previous.selectedTemplateId);
+  const exactRoadworks = exactRoadworksWaveARegistration(previous);
+  const passport = exactRoadworks
+    ? null
+    : buildProfessionalWorkPassport(previous.selectedTemplateId);
   const source = patches.length === 1 ? sourceForPatch(patches[0]) : "param_batch";
   const paramOverrides = previous.roadScopeBinding
     ? {
@@ -194,7 +230,11 @@ export function recalculateEstimateDraftRevisionBatch(
     previousRevisionId: previous.revisionId,
     rawInput,
     selectedTemplateId: previous.selectedTemplateId,
-    selectedTemplateName: passport?.localizedNameRu ?? previous.selectedTemplateId,
+    selectedTemplateName:
+      exactRoadworks?.professionalNameRu ??
+      passport?.localizedNameRu ??
+      previous.selectedTemplateId,
+    selectedWorkKey: exactRoadworks?.workId,
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,

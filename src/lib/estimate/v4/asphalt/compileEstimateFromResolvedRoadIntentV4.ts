@@ -1,7 +1,7 @@
 import {
   ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4,
+  type AsphaltScopeSelectionIdV5,
   type EstimateSemanticKind,
-  type RoadScopeIdV4,
   type RoadScopeResolutionV4,
 } from "./roadScopeTruthV4";
 import { compileAsphaltProfessionalEstimateV4, type AsphaltProfessionalEstimateCompilationV4 } from "./compileAsphaltProfessionalEstimateV4";
@@ -18,7 +18,7 @@ export type ResolvedRoadEstimateIntentV4 = {
   originalUserText: string;
   requestedCatalogWorkId: string;
   semanticKind: EstimateSemanticKind;
-  selectedScope: RoadScopeIdV4;
+  selectedScope: AsphaltScopeSelectionIdV5;
   resolutionOrigin: RoadResolutionOriginV4;
   resolverEvidence: string[];
   assumptions: string[];

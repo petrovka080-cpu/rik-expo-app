@@ -36,10 +36,12 @@ describe("POST-R6-01 catalog resolution foundation V3", () => {
     expect(profile.attestationHash).toMatch(/^eh_[a-f0-9]{16}$/);
   });
 
-  test("asks for scope instead of creating an ambiguous asphalt BOQ", () => {
+  test("keeps the exact preparation work on its versioned layer scope", () => {
     const profile = resolveRoadAsphaltProfileV3("paving_roads_landscape_interior_asphalt_prepare_standard");
-    expect(profile.scopePresetId).toBeNull();
-    expect(profile.blockers).toContain("ASPHALT_SCOPE_CLARIFICATION_REQUIRED");
+    expect(profile.scopePresetId).toBe("ASPHALT_LAYER");
+    expect(profile.platformScopeId).toBe("ROAD_SURFACING_ONLY");
+    expect(profile.certificationClass).toBe("B");
+    expect(profile.blockers).toEqual([]);
   });
 
   test("four scopes are materially distinct and composite ownership fails closed", () => {

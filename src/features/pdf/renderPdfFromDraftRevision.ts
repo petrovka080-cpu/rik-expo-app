@@ -1,4 +1,9 @@
-import { createSnapshotFromDraftRevision, type DraftRevisionSnapshot } from "../estimates/createSnapshotFromDraftRevision";
+import {
+  assertSnapshotMatchesDraftRevision,
+  createSnapshotFromDraftRevision,
+  type DraftRevisionPresentationIdentity,
+  type DraftRevisionSnapshot,
+} from "../estimates/createSnapshotFromDraftRevision";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { getExpandedComplexWorkFamily } from "../../lib/ai/expandedComplexWorks";
 import { buildAiEstimateParameterCardView } from "../../lib/estimate/application/buildAiEstimateParameterCardView";
@@ -19,6 +24,8 @@ export type DraftRevisionPdfArtifact = {
   revisionId: string;
   snapshotId: string;
   rowsHash: string;
+  presentationIdentity: DraftRevisionPresentationIdentity;
+  presentationIdentityHash: string;
   rowsEqualLatestRevision: true;
   pdf_revision_binding_enforced: true;
   body: string;
@@ -26,6 +33,21 @@ export type DraftRevisionPdfArtifact = {
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value);
+}
+
+function renderPresentationIdentity(identity: DraftRevisionPresentationIdentity): string {
+  return [
+    `revision_id=${identity.revisionId}`,
+    `work_key=${identity.workKey}`,
+    `scope=${identity.scopeId ?? "NOT_SELECTED"}`,
+    `area_m2=${identity.areaM2 ?? "NOT_PROVIDED"}`,
+    `length_m=${identity.lengthM ?? "NOT_PROVIDED"}`,
+    `width_m=${identity.widthM ?? "NOT_PROVIDED"}`,
+    `created_at=${identity.createdAt}`,
+    `current_or_history=${identity.currentOrHistory}`,
+    `row_count=${identity.rowCount}`,
+    `pricing_status=${identity.pricingStatus}`,
+  ].join("\n");
 }
 
 function estimateLevelRu(revision: EstimateDraftRevision): string {
@@ -106,9 +128,7 @@ export function renderPdfFromDraftRevision(input: {
   const snapshotResult = input.snapshot
     ? { snapshot: input.snapshot, revision: input.revision }
     : createSnapshotFromDraftRevision(input.revision);
-  if (snapshotResult.snapshot.revisionId !== snapshotResult.revision.revisionId) {
-    throw new Error("PDF_DRAFT_REVISION_SNAPSHOT_MISMATCH");
-  }
+  assertSnapshotMatchesDraftRevision(snapshotResult.snapshot, snapshotResult.revision);
   const cost = calculateProfessionalCostForDraftRows({
     templateId: snapshotResult.revision.selectedTemplateId,
     family: snapshotResult.revision.matchedFamily,
@@ -119,9 +139,12 @@ export function renderPdfFromDraftRevision(input: {
     revisionId: snapshotResult.revision.revisionId,
     snapshotId: snapshotResult.snapshot.snapshotId,
     rowsHash: snapshotResult.snapshot.rowsHash,
+    presentationIdentity: snapshotResult.snapshot.presentationIdentity,
+    presentationIdentityHash: snapshotResult.snapshot.presentationIdentityHash,
     rowsEqualLatestRevision: true,
     pdf_revision_binding_enforced: true,
     body: [
+      renderPresentationIdentity(snapshotResult.snapshot.presentationIdentity),
       renderHumanPdfCover(snapshotResult.revision, cost.summary.preliminaryTotalAllowed),
       renderProfessionalBoqFullMaterialComposition({ rows: snapshotResult.snapshot.rows }),
       renderMaterialQuantityTraceSection({

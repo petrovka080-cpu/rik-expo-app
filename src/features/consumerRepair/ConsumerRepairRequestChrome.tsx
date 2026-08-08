@@ -73,7 +73,6 @@ type StickyActionsProps = {
   hasSnapshot: boolean;
   hasPendingPrompt?: boolean;
   estimateRequiresRebuild?: boolean;
-  approvalMissingRequiredContact?: boolean;
   approvalBlockedByEstimate?: boolean;
   needsFreshApproval?: boolean;
   onOpenPdf: () => void;
@@ -91,7 +90,6 @@ export function ConsumerRepairRequestStickyActions({
   hasSnapshot,
   hasPendingPrompt = false,
   estimateRequiresRebuild = false,
-  approvalMissingRequiredContact = false,
   approvalBlockedByEstimate = false,
   needsFreshApproval = false,
   onOpenPdf,
@@ -144,12 +142,9 @@ export function ConsumerRepairRequestStickyActions({
             ? {
                 labelRu: approvalBlockedByEstimate
                   ? "Сначала рассчитайте смету"
-                  : approvalMissingRequiredContact
-                    ? "Заполните адрес и телефон"
-                    : "Подтвердить смету",
+                  : "Подтвердить смету",
                 onPress: onApproveDraft,
-                disabled:
-                  approvalMissingRequiredContact || approvalBlockedByEstimate,
+                disabled: approvalBlockedByEstimate,
                 showLabel: true,
                 testID: "consumer-repair-approve",
               }

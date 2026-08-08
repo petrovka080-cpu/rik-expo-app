@@ -7,6 +7,10 @@ import { createInMemoryAiEstimateHistoryStore } from "../../src/lib/estimate/sto
 import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/artifacts/validateAiEstimateBuyerPackageParity";
 import { validateAiEstimatePdfSnapshotParity } from "../../src/lib/estimate/artifacts/validateAiEstimatePdfSnapshotParity";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import type {
+  DomainResolutionReadiness,
+  EstimateDraftRevision,
+} from "../../src/lib/estimate/estimateDraftRevisionContract";
 import { runAiEstimatePlatformCoreV2Harness } from "../e2e/aiEstimateE2eHarness.shared";
 import { gitOutput, timestampForPath, writeJson } from "./buildControlledPilotHealthDashboard";
 
@@ -53,7 +57,20 @@ function runCreateCase(templateId: string, index: number): boolean {
   return draft.revision.selectedTemplateId.length > 0 && draft.revision.boq.rows.length > 0;
 }
 
-function runOverrideCase(templateId: string, index: number): boolean {
+type OverrideCaseResult = {
+  template_id: string;
+  passed: boolean;
+  domain_resolution_readiness: DomainResolutionReadiness | null;
+  reason: string;
+};
+
+function revisionReadiness(revision: EstimateDraftRevision): DomainResolutionReadiness | null {
+  return revision.boq.rows
+    .map((row) => row.sourceParameters?.domainResolutionReadiness)
+    .find((value): value is DomainResolutionReadiness => typeof value === "string") ?? null;
+}
+
+function runOverrideCase(templateId: string, index: number): OverrideCaseResult {
   const runtime = createAiEstimateRuntime();
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-override-${index}-${templateId}`,
@@ -61,6 +78,21 @@ function runOverrideCase(templateId: string, index: number): boolean {
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
+  const readiness = revisionReadiness(draft.revision);
+  if (readiness && readiness !== "CALCULATION_READY" && readiness !== "NEEDS_REQUIRED_INPUTS") {
+    const honestlyBlocked = draft.revision.boq.rows.length > 0 && draft.revision.boq.rows.every((row) =>
+      row.includedInProcurement === false &&
+      row.sourceParameters?.domainResolutionReadiness === readiness &&
+      Array.isArray(row.sourceParameters?.applicabilityBlockers) &&
+      row.sourceParameters.applicabilityBlockers.length > 0
+    );
+    return {
+      template_id: templateId,
+      passed: honestlyBlocked,
+      domain_resolution_readiness: readiness,
+      reason: honestlyBlocked ? "non_calculation_ready_case_honestly_blocked" : "invalid_readiness_blocker",
+    };
+  }
   const paramKey = draft.revision.trace.params
     .filter((param) => param.affectsRowIds.length > 0 && typeof draft.revision.params[param.key]?.value === "number")
     .sort((a, b) => b.affectsRowIds.length - a.affectsRowIds.length)[0]?.key ?? "q";
@@ -73,7 +105,13 @@ function runOverrideCase(templateId: string, index: number): boolean {
     createdAt: "2026-07-09T00:01:00.000Z",
     revisionIndex: 2,
   });
-  return result.revision.revisionId !== draft.revision.revisionId && result.diff.changedRowsCount > 0;
+  const passed = result.revision.revisionId !== draft.revision.revisionId && result.diff.changedRowsCount > 0;
+  return {
+    template_id: templateId,
+    passed,
+    domain_resolution_readiness: readiness,
+    reason: passed ? "parameter_override_recalculated_rows" : "parameter_override_did_not_change_rows",
+  };
 }
 
 function runMissingCase(templateId: string, index: number): boolean {
@@ -115,7 +153,8 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
 
   const randomPassed = random.filter(runCreateCase).length;
   const criticalPassed = critical.filter(runCreateCase).length;
-  const overridePassed = override.filter(runOverrideCase).length;
+  const overrideResults = override.map(runOverrideCase);
+  const overridePassed = overrideResults.filter((result) => result.passed).length;
   const missingPassed = missing.filter(runMissingCase).length;
   const artifactResults = artifacts.map(runPdfBuyerCase);
   const pdfPassed = artifactResults.filter((result) => result.pdf).length;
@@ -163,6 +202,10 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
     random_create_draft_cases_passed: `${randomPassed}/1000`,
     critical_create_draft_cases_passed: `${criticalPassed}/200`,
     parameter_override_cases_passed: `${overridePassed}/200`,
+    parameter_override_failures: overrideResults.filter((result) => !result.passed),
+    parameter_override_non_calculation_ready_cases: overrideResults.filter(
+      (result) => result.reason === "non_calculation_ready_case_honestly_blocked",
+    ).length,
     missing_input_cases_passed: `${missingPassed}/100`,
     pdf_snapshot_parity_cases_passed: `${pdfPassed}/100`,
     buyer_package_parity_cases_passed: `${buyerPassed}/100`,

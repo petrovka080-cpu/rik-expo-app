@@ -522,10 +522,23 @@ function pruneDurableDraftRecordsForBundle(
 }
 
 function persistAllConsumerRepairDurableRecords(storage: Storage): boolean {
+  const newestApprovedId = [...store.bundles.values()]
+    .filter((bundle) => isConsumerRepairApprovedHistoryStatus(bundle.draft.status))
+    .sort((left, right) => {
+      const byCreatedAt = approvedHistoryCreatedAt(right).localeCompare(approvedHistoryCreatedAt(left));
+      return byCreatedAt === 0 ? right.draft.id.localeCompare(left.draft.id) : byCreatedAt;
+    })[0]?.draft.id ?? null;
   let allPersisted = true;
   for (const bundle of store.bundles.values()) {
     if (durablePrunedBundleIds.has(bundle.draft.id)) continue;
-    allPersisted = persistConsumerRepairDurableRecord(storage, bundle) && allPersisted;
+    const persisted =
+      isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
+      && bundle.draft.id !== newestApprovedId
+        ? persistConsumerRepairDurableApprovedSummaryRecord(storage, bundle, {
+            updateMemoryStore: false,
+          })
+        : persistConsumerRepairDurableRecord(storage, bundle);
+    allPersisted = persisted && allPersisted;
   }
   persistConsumerRepairDurableManifest(storage);
   return allPersisted;

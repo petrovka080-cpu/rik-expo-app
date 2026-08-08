@@ -47,6 +47,7 @@ describe("RequestEstimateIntentLifecycle", () => {
       lifecycle.markStage(first.payload.launchId, "INTENT_ACKNOWLEDGED"),
     ).toBe(true);
     expect(lifecycle.getPending()).toBeNull();
+    expect(lifecycle.isFingerprintAcknowledged(first.payload.fingerprint!)).toBe(true);
     expect(lifecycle.receive(first, "snapshot").kind).toBe(
       "duplicate_acknowledged",
     );
@@ -68,9 +69,48 @@ describe("RequestEstimateIntentLifecycle", () => {
       kind: "accepted",
       replacedLaunchId: null,
     });
+    expect(second.payload.fingerprint).toBe(first.payload.fingerprint);
     expect(lifecycle.getPending()?.target.payload.launchId).toBe(
       second.payload.launchId,
     );
+  });
+
+  it("reconciles one generated native redirect alias to the acknowledged exact draft", () => {
+    const lifecycle = new RequestEstimateIntentLifecycle();
+    const first = resolveRequestEstimateLaunchTargetV1(
+      "rik:///request?prompt=asphalt%20repair&autoPrepare=1",
+      { issuedAt: "2026-08-08T10:08:38.975Z" },
+    );
+    if (!first?.payload.fingerprint) throw new Error("generated target required");
+    const fingerprint = first.payload.fingerprint;
+    lifecycle.receive(first, "native_view_intent");
+    lifecycle.markStage(first.payload.launchId, "URL_PARSED");
+    lifecycle.markStage(first.payload.launchId, "AUTH_RESOLVED");
+    lifecycle.markStage(first.payload.launchId, "INTENT_APPLIED");
+    expect(lifecycle.bindPendingDraft(
+      first.payload.launchId,
+      "consumer-draft-exact-0001",
+    )).toBe(true);
+    lifecycle.markStage(first.payload.launchId, "DRAFT_SESSION_READY");
+    lifecycle.markStage(first.payload.launchId, "UI_READY");
+    lifecycle.markStage(first.payload.launchId, "INTENT_ACKNOWLEDGED");
+
+    expect(lifecycle.reconcileAcknowledgedRouteLaunch({
+      launchId: `request-estimate:${fingerprint}:msk7oq7q`,
+      fingerprint,
+    })).toEqual({
+      acknowledged: true,
+      requestDraftId: "consumer-draft-exact-0001",
+      matchedBy: "generated_fingerprint_alias",
+    });
+    expect(lifecycle.reconcileAcknowledgedRouteLaunch({
+      launchId: `request-estimate:${fingerprint}:msk7third`,
+      fingerprint,
+    }).acknowledged).toBe(false);
+    expect(lifecycle.reconcileAcknowledgedRouteLaunch({
+      launchId: "user-explicit-launch-0002",
+      fingerprint,
+    }).acknowledged).toBe(false);
   });
 
   it("keeps only the latest pre-auth intent across request and AI", () => {
@@ -114,6 +154,7 @@ describe("RequestEstimateIntentLifecycle", () => {
     lifecycle.clearSessionBoundary();
 
     expect(lifecycle.isAcknowledged(first.payload.launchId)).toBe(false);
+    expect(lifecycle.isFingerprintAcknowledged(first.payload.fingerprint!)).toBe(false);
     expect(lifecycle.getPending()).toBeNull();
     expect(lifecycle.receive(first, "url_event").kind).toBe("accepted");
   });

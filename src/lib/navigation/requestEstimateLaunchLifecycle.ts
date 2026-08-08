@@ -1,4 +1,7 @@
-import type { RequestEstimateLaunchTargetV1 } from "./requestEstimateLaunchPayload";
+import {
+  isGeneratedRequestEstimateLaunchIdV1,
+  type RequestEstimateLaunchTargetV1,
+} from "./requestEstimateLaunchPayload";
 
 export type RequestEstimateIntentLifecycleStage =
   | "INTENT_RECEIVED"
@@ -55,9 +58,15 @@ const ALLOWED_NEXT_STAGES: Readonly<
 export class RequestEstimateIntentLifecycle {
   private pending: PendingRequestEstimateIntent | null = null;
   private readonly acknowledgedLaunchIds = new Set<string>();
+  private readonly acknowledgedFingerprints = new Set<string>();
+  private readonly acknowledgedDraftIdsByLaunchId = new Map<string, string>();
+  private readonly acknowledgedDraftIdsByFingerprint = new Map<string, string>();
+  private readonly acknowledgedLaunchIdsByFingerprint = new Map<string, string>();
+  private readonly generatedAliasAvailableFingerprints = new Set<string>();
   private readonly supersededLaunchIds = new Set<string>();
   private readonly listeners = new Set<() => void>();
   private latestAuthoritativeLaunchId: string | null = null;
+  private pendingDraftId: string | null = null;
 
   private emitChange(): void {
     for (const listener of this.listeners) listener();
@@ -75,6 +84,26 @@ export class RequestEstimateIntentLifecycle {
       const oldest = ids.values().next().value;
       if (typeof oldest !== "string") break;
       ids.delete(oldest);
+    }
+  }
+
+  private trimAcknowledgedLaunchState(): void {
+    while (this.acknowledgedLaunchIds.size > MAX_ACKNOWLEDGED_LAUNCH_IDS) {
+      const oldest = this.acknowledgedLaunchIds.values().next().value;
+      if (typeof oldest !== "string") break;
+      this.acknowledgedLaunchIds.delete(oldest);
+      this.acknowledgedDraftIdsByLaunchId.delete(oldest);
+    }
+  }
+
+  private trimAcknowledgedFingerprintState(): void {
+    while (this.acknowledgedFingerprints.size > MAX_ACKNOWLEDGED_LAUNCH_IDS) {
+      const oldest = this.acknowledgedFingerprints.values().next().value;
+      if (typeof oldest !== "string") break;
+      this.acknowledgedFingerprints.delete(oldest);
+      this.acknowledgedDraftIdsByFingerprint.delete(oldest);
+      this.acknowledgedLaunchIdsByFingerprint.delete(oldest);
+      this.generatedAliasAvailableFingerprints.delete(oldest);
     }
   }
 
@@ -132,6 +161,7 @@ export class RequestEstimateIntentLifecycle {
       source,
       stage: "INTENT_RECEIVED",
     };
+    this.pendingDraftId = null;
     this.emitChange();
     return {
       kind: "accepted",
@@ -171,6 +201,18 @@ export class RequestEstimateIntentLifecycle {
     );
   }
 
+  bindPendingDraft(launchId: string, requestDraftId: string): boolean {
+    const normalizedDraftId = requestDraftId.trim();
+    if (
+      !normalizedDraftId ||
+      this.pending?.target.payload.launchId !== launchId
+    ) {
+      return false;
+    }
+    this.pendingDraftId = normalizedDraftId;
+    return true;
+  }
+
   acknowledge(launchId: string): boolean {
     if (this.acknowledgedLaunchIds.has(launchId)) return false;
     if (
@@ -179,11 +221,30 @@ export class RequestEstimateIntentLifecycle {
     ) {
       return false;
     }
+    const fingerprint = this.pending.target.payload.fingerprint;
     this.acknowledgedLaunchIds.add(launchId);
-    this.trimTerminalIds(this.acknowledgedLaunchIds);
+    if (fingerprint) {
+      this.acknowledgedFingerprints.add(fingerprint);
+      this.acknowledgedLaunchIdsByFingerprint.set(fingerprint, launchId);
+      if (this.pendingDraftId) {
+        this.acknowledgedDraftIdsByFingerprint.set(
+          fingerprint,
+          this.pendingDraftId,
+        );
+      }
+      if (isGeneratedRequestEstimateLaunchIdV1({ launchId, fingerprint })) {
+        this.generatedAliasAvailableFingerprints.add(fingerprint);
+      }
+      this.trimAcknowledgedFingerprintState();
+    }
+    if (this.pendingDraftId) {
+      this.acknowledgedDraftIdsByLaunchId.set(launchId, this.pendingDraftId);
+    }
+    this.trimAcknowledgedLaunchState();
     if (this.pending?.target.payload.launchId === launchId) {
       this.pending = null;
     }
+    this.pendingDraftId = null;
     this.emitChange();
     return true;
   }
@@ -192,9 +253,76 @@ export class RequestEstimateIntentLifecycle {
     return this.acknowledgedLaunchIds.has(launchId);
   }
 
+  isFingerprintAcknowledged(fingerprint: string): boolean {
+    return this.acknowledgedFingerprints.has(fingerprint);
+  }
+
+  reconcileAcknowledgedRouteLaunch(input: {
+    launchId: string | null | undefined;
+    fingerprint: string | null | undefined;
+  }): {
+    acknowledged: boolean;
+    requestDraftId: string | null;
+    matchedBy:
+      | "launch_id"
+      | "missing_identity_fingerprint"
+      | "generated_fingerprint_alias"
+      | null;
+  } {
+    const launchId = String(input.launchId ?? "").trim();
+    const fingerprint = String(input.fingerprint ?? "").trim();
+    if (launchId && this.acknowledgedLaunchIds.has(launchId)) {
+      return {
+        acknowledged: true,
+        requestDraftId:
+          this.acknowledgedDraftIdsByLaunchId.get(launchId) ?? null,
+        matchedBy: "launch_id",
+      };
+    }
+    if (!fingerprint || !this.acknowledgedFingerprints.has(fingerprint)) {
+      return { acknowledged: false, requestDraftId: null, matchedBy: null };
+    }
+    if (!launchId) {
+      return {
+        acknowledged: true,
+        requestDraftId:
+          this.acknowledgedDraftIdsByFingerprint.get(fingerprint) ?? null,
+        matchedBy: "missing_identity_fingerprint",
+      };
+    }
+    if (
+      this.pending?.target.payload.launchId === launchId ||
+      !isGeneratedRequestEstimateLaunchIdV1({ launchId, fingerprint }) ||
+      !this.generatedAliasAvailableFingerprints.has(fingerprint) ||
+      this.acknowledgedLaunchIdsByFingerprint.get(fingerprint) === launchId
+    ) {
+      return { acknowledged: false, requestDraftId: null, matchedBy: null };
+    }
+
+    const requestDraftId =
+      this.acknowledgedDraftIdsByFingerprint.get(fingerprint) ?? null;
+    this.generatedAliasAvailableFingerprints.delete(fingerprint);
+    this.acknowledgedLaunchIds.add(launchId);
+    if (requestDraftId) {
+      this.acknowledgedDraftIdsByLaunchId.set(launchId, requestDraftId);
+    }
+    this.trimAcknowledgedLaunchState();
+    return {
+      acknowledged: true,
+      requestDraftId,
+      matchedBy: "generated_fingerprint_alias",
+    };
+  }
+
   clearSessionBoundary(): void {
     this.pending = null;
+    this.pendingDraftId = null;
     this.acknowledgedLaunchIds.clear();
+    this.acknowledgedFingerprints.clear();
+    this.acknowledgedDraftIdsByLaunchId.clear();
+    this.acknowledgedDraftIdsByFingerprint.clear();
+    this.acknowledgedLaunchIdsByFingerprint.clear();
+    this.generatedAliasAvailableFingerprints.clear();
     this.supersededLaunchIds.clear();
     this.latestAuthoritativeLaunchId = null;
     this.emitChange();

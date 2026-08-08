@@ -9,8 +9,8 @@ import {
 describe("Asphalt 35 Web/Android shared visible-output projection", () => {
   test("projects every catalog record without row truncation, raw IDs or false totals", () => {
     const decisions = new Map(buildAsphalt35NormativeCompositionLedgerV3().map((row) => [row.workId, row]));
-    let executableSeen = 0;
-    let blockedSeen = 0;
+    let calculationReadySeen = 0;
+    let needsRequiredInputsSeen = 0;
 
     for (const [index, registration] of RoadworksWaveAProductionRegistry.entries()) {
       __resetConsumerRepairRequestStoreForTests();
@@ -47,18 +47,36 @@ describe("Asphalt 35 Web/Android shared visible-output projection", () => {
       expect(publicSurface).not.toMatch(/paving_roads_landscape_interior|template_/i);
       expect(publicSurface).not.toMatch(/(?:Р|С)Р[А-Яа-я]/u);
 
-      if (decision.terminalDecision === "EXECUTABLE_B") {
+      expect(decision.terminalDecision).toBe("EXECUTABLE_B");
+      const calculationReady = bundle.items.every(
+        (item) => item.sourceParameters?.executableAsphaltProfile === true,
+      );
+      if (calculationReady) {
         expect(bundle.items.length).toBeGreaterThanOrEqual(5);
-        expect(web.sections.map((section) => section.title)).toEqual(expect.arrayContaining(["Работы", "Труд", "Машины и механизмы", "Лабораторный контроль", "Документация"]));
-        executableSeen += 1;
+        const sectionTitles = web.sections.map((section) => section.title);
+        expect(sectionTitles).toEqual(expect.arrayContaining(["Работы", "Труд", "Машины и механизмы", "Лабораторный контроль", "Документация"]));
+        if (decision.applicableCategories.includes("material")) expect(sectionTitles).toContain("Материалы");
+        if (decision.applicableCategories.includes("service")) expect(sectionTitles).toContain("Услуги");
+        if (decision.applicableCategories.includes("logistics")) expect(sectionTitles).toContain("Логистика");
+        calculationReadySeen += 1;
       } else {
         expect(bundle.items).toHaveLength(1);
-        expect(web.visibleLines.map((line) => line.text).join(" ")).toContain("Требуется подтверждение области применения");
-        expect(bundle.items[0].sourceParameters?.executableAsphaltProfile).toBe(false);
-        blockedSeen += 1;
+        expect(bundle.items[0]).toMatchObject({
+          category: "document",
+          unitPrice: null,
+          priceStatus: "PRICE_MISSING",
+        });
+        expect(bundle.items[0]?.sourceParameters?.selectedWorkId).toBe(registration.workId);
+        expect(bundle.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("NEEDS_REQUIRED_INPUTS");
+        expect(bundle.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(false);
+        expect(bundle.items[0]?.sourceParameters?.includedInProcurement).toBe(false);
+        needsRequiredInputsSeen += 1;
       }
     }
 
-    expect({ executableSeen, blockedSeen }).toEqual({ executableSeen: 15, blockedSeen: 20 });
+    expect({ calculationReadySeen, needsRequiredInputsSeen }).toEqual({
+      calculationReadySeen: 0,
+      needsRequiredInputsSeen: 35,
+    });
   });
 });

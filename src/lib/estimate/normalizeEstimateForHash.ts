@@ -120,6 +120,8 @@ export function normalizeSnapshotForHash(snapshot: DraftRevisionSnapshot) {
   return {
     rowsHash: snapshot.rowsHash,
     totalsHash: snapshot.totalsHash,
+    presentationIdentity: snapshot.presentationIdentity,
+    presentationIdentityHash: snapshot.presentationIdentityHash,
     rows: normalizeBoqRowsForHash(snapshot.rows),
     snapshot_revision_binding_enforced: snapshot.snapshot_revision_binding_enforced,
   };
@@ -154,6 +156,8 @@ export function normalizeCostingForHash(costing: ProfessionalCostingResult) {
 export function normalizePdfPackageForHash(pdf: DraftRevisionPdfArtifact) {
   return {
     rowsHash: pdf.rowsHash,
+    presentationIdentity: pdf.presentationIdentity,
+    presentationIdentityHash: pdf.presentationIdentityHash,
     rowsEqualLatestRevision: pdf.rowsEqualLatestRevision,
     pdf_revision_binding_enforced: pdf.pdf_revision_binding_enforced,
     body: pdf.body,
@@ -163,6 +167,8 @@ export function normalizePdfPackageForHash(pdf: DraftRevisionPdfArtifact) {
 export function normalizeBuyerHandoffForHash(buyerHandoff: DraftRevisionBuyerHandoff) {
   return {
     rowsHash: buyerHandoff.rowsHash,
+    presentationIdentity: buyerHandoff.presentationIdentity,
+    presentationIdentityHash: buyerHandoff.presentationIdentityHash,
     items: buyerHandoff.items,
     costTrace: buyerHandoff.costTrace,
     buyer_handoff_revision_binding_enforced: buyerHandoff.buyer_handoff_revision_binding_enforced,

@@ -142,6 +142,9 @@ describe("transactional platform durable adapters", () => {
         base64: "AAAA",
         retainedMetadata: "safe",
       },
+      normativeSource: {
+        normSourceReference: "https://minstroy.gov.kg/ru/kyzmat/443/show",
+      },
     } as unknown as RevisionBundle;
 
     const sanitized = sanitizeConsumerRepairTransactionalBundle(input) as RevisionBundle & {
@@ -155,6 +158,10 @@ describe("transactional platform durable adapters", () => {
       fileName: "specification.pdf",
     });
     expect(sanitized.sourceSecrets).toEqual({ retainedMetadata: "safe" });
+    expect((sanitized as unknown as { normativeSource: { normSourceReference: string } })
+      .normativeSource.normSourceReference).toBe(
+      "https://minstroy.gov.kg/ru/kyzmat/443/show",
+    );
     expect(JSON.stringify(sanitized)).not.toContain("secret-token");
     expect(JSON.stringify(sanitized)).not.toContain("base64,AAAA");
   });

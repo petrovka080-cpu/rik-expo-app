@@ -1,4 +1,5 @@
 import type { EditableEstimateSnapshot } from "../editableEstimate";
+import type { EstimateDraftRevisionState } from "../../estimate/estimateDraftRevisionContract";
 
 export type EstimateRevisionStatus =
   | "DRAFT"
@@ -165,7 +166,21 @@ export type EstimateRevisionState = {
   history_bindings: EstimateRevisionHistoryBinding[];
   approval_freezes: EstimateRevisionApprovalFreeze[];
   conflicts: EstimateRevisionConflict[];
+  /**
+   * Canonical, hash-bound calculation state used to edit estimate parameters.
+   * The old ConsumerRepairDraftBundle.estimateDraftRevisionState field is only
+   * a compatibility projection of this value and must never be treated as an
+   * independent mutable owner.
+   */
+  calculation_state?: EstimateRevisionCalculationStateBinding | null;
   fake_green_claimed: false;
+};
+
+export type EstimateRevisionCalculationStateBinding = {
+  adapter_version: "estimate-revision-calculation-state-binding-v1";
+  calculation_state_hash: string;
+  state: EstimateDraftRevisionState;
+  immutable: true;
 };
 
 export type CreateEstimateRevisionStateInput = {

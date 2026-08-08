@@ -10,3 +10,4 @@ export * from "./estimateRevisionRequestBinding";
 export * from "./estimateRevisionHistoryBinding";
 export * from "./estimateRevisionRestore";
 export * from "./estimateRevisionIntegrityGuard";
+export * from "./estimateRevisionCalculationStateBinding";

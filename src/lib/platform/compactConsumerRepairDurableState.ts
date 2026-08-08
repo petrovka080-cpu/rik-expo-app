@@ -47,6 +47,8 @@ const CONSUMER_REPAIR_DURABLE_ITEM_FIELDS = [
   "selectedCatalogItemId",
   "materialKey",
   "rateKey",
+  "catalogBindingStatus",
+  "catalogCandidates",
   "category",
   "sourceId",
   "sourceLabel",
@@ -65,6 +67,9 @@ const CONSUMER_REPAIR_DURABLE_ITEM_FIELDS = [
   "priceSource",
   "priceSourceId",
   "priceSourceLabel",
+  "priceTrace",
+  "priceCandidates",
+  "selectedProductBinding",
   "quantityEditedByConsumer",
   "priceEditedByConsumer",
   "sourceParameters",
@@ -107,6 +112,7 @@ const CONSUMER_REPAIR_DURABLE_EDITABLE_ROW_FIELDS = [
   "materialKey",
   "rateKey",
   "catalogBindingStatus",
+  "catalogCandidates",
   "category",
   "sourceId",
   "sourceLabel",
@@ -194,10 +200,31 @@ export function compactConsumerRepairSourceParameters(
     "includedInEstimate",
     "includedInProcurement",
     "roadworksWaveA",
+    "domainResolutionReadiness",
+    "executableAsphaltProfile",
+    "requestedCatalogWorkId",
     "selectedWorkId",
     "canonicalWorkId",
+    "canonicalModelId",
+    "canonicalModelVersion",
+    "scopePresetId",
+    "semanticOwner",
+    "professionalEstimatePassportId",
+    "professionalEstimatePassportVersion",
+    "calculationProfileId",
+    "calculationProfileVersion",
+    "parameterSchemaId",
+    "parameterSchemaVersion",
+    "normativeCompositionId",
+    "semanticFingerprint",
     "migrationVersion",
     "scopeProfile",
+    "asphaltV4ProfessionalCategory",
+    "normativeSourceId",
+    "roundingRule",
+    "wasteRule",
+    "procurementEligibility",
+    "payable",
     "procurementOwner",
     "formulaGraphId",
     "canonicalPayloadFingerprintSeed",
@@ -237,6 +264,24 @@ export function compactConsumerRepairSourceParameters(
   if (extractedParams) compact.extractedParams = extractedParams;
   const parameterSnapshot = compactScalarRecord(sourceParameters.parameterSnapshot);
   if (parameterSnapshot) compact.parameterSnapshot = parameterSnapshot;
+  const roadworksParameterMetadata = recordFromUnknown(sourceParameters.roadworksWaveAParameterMetadata);
+  if (roadworksParameterMetadata) {
+    const metadata = Object.fromEntries(Object.entries(roadworksParameterMetadata).flatMap(([key, raw]) => {
+      const record = recordFromUnknown(raw);
+      if (!record) return [];
+      const scalar = compactScalarRecord(record) ?? {};
+      const choices = Array.isArray(record.choices)
+        ? record.choices.flatMap((choice) => {
+            const option = recordFromUnknown(choice);
+            return typeof option?.value === "string" && typeof option?.labelRu === "string"
+              ? [{ value: option.value, labelRu: option.labelRu }]
+              : [];
+          }).slice(0, 8)
+        : [];
+      return [[key, { ...scalar, ...(choices.length > 0 ? { choices } : {}) }]];
+    }));
+    if (Object.keys(metadata).length > 0) compact.roadworksWaveAParameterMetadata = metadata;
+  }
   for (const key of ["assumptionKeys", "affectedBy"]) {
     const value = sourceParameters[key];
     if (Array.isArray(value) && value.every((item) => typeof item === "string")) {
@@ -265,12 +310,14 @@ function compactConsumerRepairItemForDurableStorage(
     selectedCatalogItemId: item.selectedCatalogItemId,
     materialKey: item.materialKey,
     rateKey: item.rateKey,
+    catalogBindingStatus: item.catalogBindingStatus,
+    catalogCandidates: [],
     category: item.category,
     sourceId: item.sourceId,
     sourceLabel: item.sourceLabel,
     formulaId: item.formulaId,
     quantityFormula: item.quantityFormula,
-    calculationTrace: item.calculationTrace,
+    calculationTrace: stringLimit(item.calculationTrace, 720),
     templateId: item.templateId,
     templateVersion: item.templateVersion,
     normId: item.normId,
@@ -283,6 +330,9 @@ function compactConsumerRepairItemForDurableStorage(
     priceSource: item.priceSource,
     priceSourceId: item.priceSourceId,
     priceSourceLabel: item.priceSourceLabel,
+    priceTrace: item.priceTrace,
+    priceCandidates: item.priceCandidates,
+    selectedProductBinding: item.selectedProductBinding,
     quantityEditedByConsumer: item.quantityEditedByConsumer,
     priceEditedByConsumer: item.priceEditedByConsumer,
     sourceParameters: compactConsumerRepairSourceParameters(item.sourceParameters),
@@ -577,20 +627,15 @@ export function compactConsumerRepairBundleForDurableStorage(
     durableHistorySummary: approvedHistoryBundle
       ? buildConsumerRepairDurableHistorySummary(bundle, { fullSnapshotAvailable: bundle.items.length > 0 })
       : bundle.durableHistorySummary ?? null,
-    items: bundle.items.map(approvedHistoryBundle
-      ? compactConsumerRepairApprovedHistoryItemForDurableStorage
-      : compactConsumerRepairItemForDurableStorage),
-    editableEstimateSnapshot: approvedHistoryBundle || bundle.estimateRevisionState
+    // The current bundle remains the canonical cold-replay source. Its hash-basis
+    // fields must stay lossless; only the explicitly summary-only/emergency paths
+    // below may truncate traces or discard typed BOQ/revision state.
+    items: bundle.items,
+    editableEstimateSnapshot: bundle.estimateRevisionState
       ? null
-      : compactEditableEstimateSnapshotForDurableStorage(bundle.editableEstimateSnapshot),
-    estimateRevisionState: approvedHistoryBundle
-      ? null
-      : bundle.estimateDraftRevisionState
-        ? compactCurrentEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState)
-        : compactEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),
-    estimateDraftRevisionState: approvedHistoryBundle
-      ? null
-      : compactEstimateDraftRevisionStateForDurableStorage(bundle.estimateDraftRevisionState),
+      : bundle.editableEstimateSnapshot ?? null,
+    estimateRevisionState: bundle.estimateRevisionState ?? null,
+    estimateDraftRevisionState: bundle.estimateDraftRevisionState ?? null,
     structuredEstimatePayload: null,
     projectExecutionDrafts: [],
     events: bundle.events.slice(-24).map((event) => ({
@@ -720,6 +765,7 @@ function decodeEditableEstimateRows(value: unknown): EditableEstimateRow[] | nul
       const item: Partial<EditableEstimateRow> = {};
       fields.forEach((field, index) => {
         const fieldValue = row[index];
+        if (field === "removed" && fieldValue == null) return;
         if (fieldValue !== undefined) {
           (item as Record<string, unknown>)[field] = fieldValue;
         }
@@ -786,14 +832,18 @@ function decodeEstimateRevisionStateFromDurableStorage(value: unknown): Estimate
 }
 
 export function encodeConsumerRepairBundleForDurableStorage(bundle: ConsumerRepairDraftBundle): unknown {
-  const approvedHistoryBundle = isConsumerRepairApprovedHistoryStatus(bundle.draft.status);
+  const approvedHistorySummaryBundle =
+    isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
+    && bundle.durableHistorySummary?.fullSnapshotAvailable === false;
   return {
     ...bundle,
     items: undefined,
     itemsCompactV1: encodeConsumerRepairDurableItems(
       bundle.items,
       bundle.draft.id,
-      approvedHistoryBundle ? CONSUMER_REPAIR_DURABLE_APPROVED_ITEM_FIELDS : CONSUMER_REPAIR_DURABLE_ITEM_FIELDS,
+      approvedHistorySummaryBundle
+        ? CONSUMER_REPAIR_DURABLE_APPROVED_ITEM_FIELDS
+        : CONSUMER_REPAIR_DURABLE_ITEM_FIELDS,
     ),
     editableEstimateSnapshot: encodeEditableEstimateSnapshotForDurableStorage(bundle.editableEstimateSnapshot),
     estimateRevisionState: encodeEstimateRevisionStateForDurableStorage(bundle.estimateRevisionState),

@@ -22,7 +22,7 @@ const status = git("status", "--porcelain=v1");
 const diff = execFileSync("git", ["diff", "--binary"], { encoding: "utf8" });
 const subjectTreeHash = sha256({ exactSha, status, diff });
 const generatedAt = new Date().toISOString();
-const outputRoot = path.resolve(".release-runtime", "asphalt-v3-final-r1", exactSha, "composition");
+const outputRoot = path.resolve(".release-runtime", "asphalt-v3-final-r5", exactSha, "composition");
 
 const denominator = RoadworksWaveAInventory.map((item, index) => ({
   ordinal: index + 1,
@@ -50,7 +50,7 @@ for (const row of executable) {
 }
 
 const envelope = <T>(payload: T) => ({
-  schema: "post-r6-01-final-r1-evidence-v1",
+  schema: "post-r6-01-final-r5-evidence-v1",
   generated_at: generatedAt,
   producer_command: "npx tsx scripts/estimate/auditRoadworksWaveASemanticTruth.ts",
   exact_sha: exactSha,

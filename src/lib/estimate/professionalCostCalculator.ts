@@ -128,7 +128,14 @@ function lineFromResolved(input: {
   };
 }
 
-function summarize(lines: readonly ProfessionalCostLine[]): ProfessionalCostSummary {
+function summarize(
+  lines: readonly ProfessionalCostLine[],
+  ownershipAudit: Pick<ProfessionalCostSummary, "costingMode" | "doubleCountingCount" | "unknownCostTreatmentCount"> = {
+    costingMode: "LEGACY_UNSPECIFIED",
+    doubleCountingCount: 0,
+    unknownCostTreatmentCount: 0,
+  },
+): ProfessionalCostSummary {
   const subtotal = (match: (line: ProfessionalCostLine) => boolean) =>
     roundMoney(lines.filter(match).reduce((sum, line) => sum + (line.lineSubtotal ?? 0), 0));
   const costRowsCount = lines.length;
@@ -136,6 +143,7 @@ function summarize(lines: readonly ProfessionalCostLine[]): ProfessionalCostSumm
   const missingPriceRowsCount = lines.filter((line) => line.priceState === "missing_price").length;
   const policy = validateProfessionalCostingPolicy({ lines });
   const baseSummary = {
+    ...ownershipAudit,
     currency: lines[0]?.currency ?? DEFAULT_CURRENCY,
     costRowsCount,
     pricedRowsCount,
@@ -249,7 +257,26 @@ export function calculateProfessionalCostForDraftRows(input: {
   family: string;
   rows: readonly ProfessionalBoqRow[];
 }): ProfessionalCostingResult {
-  const resolved = input.rows.map((row) => {
+  const declaredModes = [...new Set(input.rows
+    .map((row) => row.costingMode)
+    .filter((mode): mode is "RESOURCE_MODE" | "UNIT_RATE_MODE" => Boolean(mode)))];
+  const costingMode = declaredModes.length > 1
+    ? "MIXED_INVALID" as const
+    : declaredModes[0] ?? "LEGACY_UNSPECIFIED" as const;
+  const unknownCostTreatmentCount = input.rows.filter((row) =>
+    row.costingMode != null && row.costTreatment == null
+  ).length;
+  const costRows = input.rows.filter((row) => {
+    if (row.payable === false) return false;
+    if (row.costTreatment === "ANALYTICAL_ONLY" || row.costTreatment === "INFORMATIONAL_SUBTOTAL") return false;
+    if (row.costingMode != null && row.costTreatment == null) return false;
+    return true;
+  });
+  const payableOwnershipIds = costRows
+    .map((row) => row.costOwnershipId)
+    .filter((owner): owner is string => Boolean(owner));
+  const doubleCountingCount = payableOwnershipIds.length - new Set(payableOwnershipIds).size;
+  const resolved = costRows.map((row) => {
     const rowType = costRowTypeFromText(row.rowType, `${row.titleRu} ${row.normFamilyId ?? ""}`);
     const unit = normalizeCanonicalProfessionalBoqUnit(row.unit) ?? row.unit;
     const itemType = professionalPricebookItemTypeForCostRowType(rowType);
@@ -286,6 +313,6 @@ export function calculateProfessionalCostForDraftRows(input: {
   return {
     lines,
     sources: resolved.map((item) => item.source),
-    summary: summarize(lines),
+    summary: summarize(lines, { costingMode, doubleCountingCount, unknownCostTreatmentCount }),
   };
 }

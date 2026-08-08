@@ -57,10 +57,11 @@ describe("Asphalt V4 professional compiler", () => {
     )).toBe(true);
     expect(compilation.price_coverage).toMatchObject({
       priced_rows: 0,
-      missing_price_rows: compilation.compiled_rows.length,
+      missing_price_rows: compilation.price_coverage.total_rows,
       total_amount: null,
       display_total_ru: "Итог не рассчитан: цены не заполнены",
     });
+    expect(compilation.price_coverage.total_rows).toBeGreaterThan(0);
     expect(compilation.passport.boq_rows.every((row) =>
       row.applicability && row.inclusion_reason_ru && row.exclusion_rule && row.source_id,
     )).toBe(true);

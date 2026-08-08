@@ -13,6 +13,8 @@ export function validateAiEstimateBuyerPackageParity(input: {
   return input.buyerPackage.snapshotId === input.snapshot.snapshotId &&
     input.buyerPackage.revisionId === input.snapshot.revisionId &&
     input.buyerPackage.rowsHash === input.snapshot.rowsHash &&
+    input.buyerPackage.presentationIdentityHash === input.snapshot.presentationIdentityHash &&
+    JSON.stringify(input.buyerPackage.presentationIdentity) === JSON.stringify(input.snapshot.presentationIdentity) &&
     input.buyerPackage.forbiddenWorkRowsPresent === false &&
     input.buyerPackage.items.every((item) => allowedIds.has(item.rowId));
 }

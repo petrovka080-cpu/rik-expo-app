@@ -1,3 +1,9 @@
+import type {
+  CompleteEstimateCategory,
+  CompleteEstimateContract,
+  MaterialCompletenessContract,
+} from "../materialCompletenessContract";
+
 export type ProfessionalEstimatePassportV4 = {
   passportId: string;
   catalogWorkId: string;
@@ -8,6 +14,8 @@ export type ProfessionalEstimatePassportV4 = {
     workType: string;
     workSubtype: string;
     technology: string;
+    verdictId: string;
+    verdictReason: readonly string[];
   };
   identity: {
     professionalNameRu: string;
@@ -33,6 +41,9 @@ export type ProfessionalEstimatePassportV4 = {
     roundingPolicy: readonly string[];
   };
   boq: {
+    profileId: string;
+    semanticOwner: string;
+    rowOwnershipContract: string;
     materialRows: readonly string[];
     laborRows: readonly string[];
     equipmentRows: readonly string[];
@@ -46,6 +57,42 @@ export type ProfessionalEstimatePassportV4 = {
     quantitySources: readonly string[];
     applicabilitySources: readonly string[];
     assumptions: readonly string[];
+  };
+  normativeComposition: {
+    compositionId: string;
+    technicalRequirementSourceIds: readonly string[];
+    estimateResourceNormSourceIds: readonly string[];
+    testMethodSourceIds: readonly string[];
+    internationalCrosswalkSourceIds: readonly string[];
+    marketPriceSourceIds: readonly string[];
+    aiRecommendationSourceIds: readonly string[];
+    userOverrideSourceIds: readonly string[];
+    conflictResolution: readonly string[];
+    unresolvedConflictIds: readonly string[];
+  };
+  contracts: {
+    readiness: {
+      contractId: string;
+      state: "CALCULATION_READY" | "NEEDS_REQUIRED_INPUTS";
+      requiredInputKeys: readonly string[];
+    };
+    revision: {
+      contractId: string;
+      immutableSnapshotRequired: true;
+    };
+    pdfProjection: {
+      contractId: string;
+      sourceOfTruth: "IMMUTABLE_REVISION";
+    };
+    procurementProjection: {
+      contractId: string;
+      sourceOfTruth: "IMMUTABLE_REVISION";
+      excludesControlAndDocumentRows: true;
+    };
+    materialCompleteness: MaterialCompletenessContract;
+    completeEstimate: CompleteEstimateContract & {
+      categoryPolicy: Readonly<Record<CompleteEstimateCategory, "REQUIRED_OR_EXPLICIT_NA">>;
+    };
   };
   pricing: {
     catalogBindings: readonly string[];

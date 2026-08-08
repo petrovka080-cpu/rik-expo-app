@@ -12,17 +12,27 @@ const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
-async function runBoundedDurableHydration(): Promise<void> {
+type BoundedDurableHydrationOutcome =
+  | { status: "ready" }
+  | { status: "failed" }
+  | { status: "timed_out"; completion: Promise<void> };
+
+async function runBoundedDurableHydration(): Promise<BoundedDurableHydrationOutcome> {
+  const completion = hydrateTransactionalConsumerRepairRequestStore();
   let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
-    await Promise.race([
-      hydrateTransactionalConsumerRepairRequestStore(),
-      new Promise<never>((_, reject) => {
+    const status = await Promise.race([
+      completion.then(
+        () => "ready" as const,
+        () => "failed" as const,
+      ),
+      new Promise<"timed_out">((resolve) => {
         timeout = setTimeout(() => {
-          reject(new Error("CONSUMER_REPAIR_DURABLE_HYDRATION_TIMEOUT"));
+          resolve("timed_out");
         }, DURABLE_HYDRATION_TIMEOUT_MS);
       }),
     ]);
+    return status === "timed_out" ? { status, completion } : { status };
   } finally {
     if (timeout) clearTimeout(timeout);
   }
@@ -37,17 +47,26 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     const attempt = hydrationAttemptRef.current + 1;
     hydrationAttemptRef.current = attempt;
     setDurableStatus("loading");
-    void runBoundedDurableHydration().then(
-      () => {
-        if (hydrationAttemptRef.current !== attempt) return;
+    void runBoundedDurableHydration().then((outcome) => {
+      if (hydrationAttemptRef.current !== attempt) return;
+      if (outcome.status === "ready") {
         screenRef.current?.refreshAfterDurableHydration();
         setDurableStatus("ready");
-      },
-      () => {
-        if (hydrationAttemptRef.current !== attempt) return;
-        setDurableStatus("recovery");
-      },
-    );
+        return;
+      }
+      setDurableStatus("recovery");
+      if (outcome.status === "failed") return;
+      void outcome.completion.then(
+        () => {
+          if (hydrationAttemptRef.current !== attempt) return;
+          screenRef.current?.refreshAfterDurableHydration();
+          setDurableStatus("ready");
+        },
+        () => {
+          // The recovery action remains available for a terminal storage error.
+        },
+      );
+    });
   }, []);
   React.useEffect(() => {
     hydrate();

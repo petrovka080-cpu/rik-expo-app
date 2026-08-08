@@ -87,6 +87,7 @@ export type AsphaltProfessionalEstimateCompilationV4 = {
   source_trace_complete: boolean;
   preliminary_assembly_policy: AsphaltPreliminaryAssemblyPolicyV4;
   quantity_basis: AsphaltQuantityBasisV4;
+  costing_mode: "RESOURCE_MODE" | "UNIT_RATE_MODE";
 };
 
 export type CompileAsphaltProfessionalEstimateV4Input = {
@@ -492,6 +493,11 @@ export function compileAsphaltProfessionalEstimateV4(
     persisted_assumption_keys: mergedFacts.persisted_assumption_keys,
   });
   const scopeProfile = assemblyPolicy.profile_id;
+  const rawCostingMode = stringValue(values.get("costing_mode"));
+  if (rawCostingMode && rawCostingMode !== "RESOURCE_MODE" && rawCostingMode !== "UNIT_RATE_MODE") {
+    throw new Error(`ASPHALT_COSTING_MODE_INVALID:${rawCostingMode}`);
+  }
+  const costingMode = rawCostingMode === "UNIT_RATE_MODE" ? "UNIT_RATE_MODE" as const : "RESOURCE_MODE" as const;
   const fullRoadInfrastructure = scopeProfile === "new_full_road_infrastructure";
   const assumptionsByKey = new Map(assemblyPolicy.assumptions.map((assumption) => [assumption.canonical_key, assumption]));
   for (const assumption of assemblyPolicy.assumptions) {
@@ -606,6 +612,11 @@ export function compileAsphaltProfessionalEstimateV4(
     const formula = addFormula(row.formula_id, row.expression, row.input_units, row.unit_id, sourceIds, `${row.inclusion_reason_ru} Формула: ${row.expression}. Результат: ${round(row.quantity)} ${row.unit_id}.`);
     const category = validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.name_ru });
     categoryBlockers.push(...category.blockers.map((blocker) => `${row.row_id}:${blocker}`));
+    const costTreatment = row.costing_mode ?? (row.informational
+      ? "ANALYTICAL_ONLY"
+      : costingMode === "RESOURCE_MODE"
+        ? row.category === "work" ? "ANALYTICAL_ONLY" : "RESOURCE_BASED"
+        : row.category === "work" ? "COMPOSITE_RATE" : "ANALYTICAL_ONLY");
     const definition: BoqLineDefinitionV4 = {
       row_id: row.row_id,
       wbs_code: row.wbs_code,
@@ -634,7 +645,7 @@ export function compileAsphaltProfessionalEstimateV4(
       shared_scope_key: null,
       alternative_group: null,
       price_status: "PRICE_MISSING",
-      costing_mode: row.costing_mode ?? (row.informational ? "ANALYTICAL_ONLY" : "RESOURCE_BASED"),
+      costing_mode: costTreatment,
       priced: false,
       parent_wbs_id: `wbs:${row.wbs_code}`,
       cost_ownership_id: row.cost_ownership_id ?? `cost:${row.row_id}`,
@@ -944,14 +955,26 @@ export function compileAsphaltProfessionalEstimateV4(
 
   const paverWorkingWidth = numericValue(values.get("paver_working_width_m"));
   const pavingShiftLength = numericValue(values.get("paving_shift_length_m"));
-  if (positive(area.value) && positive(paverWorkingWidth) && positive(pavingShiftLength)) {
-    const longitudinalLength = area.value / paverWorkingWidth;
-    const transverseLength = area.value / pavingShiftLength;
-    addLine({ row_id: "longitudinal_joints", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство продольных стыков асфальтобетонного покрытия", action: "устроить", action_object: "продольные стыки", specification_ru: `Предварительная схема полос принята по рабочей ширине ${paverWorkingWidth} м; герметизация учтена отдельной строкой.`, unit_id: "m", formula_id: "longitudinal_joint_length", expression: `${areaExpression} / paver_working_width_m`, input_units: withArea({ paver_working_width_m: "m" }, { paver_working_width_m: paverWorkingWidth }).units, input_values: withArea({ paver_working_width_m: "m" }, { paver_working_width_m: paverWorkingWidth }).values, quantity: longitudinalLength, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Длина получена из площади и принятой рабочей ширины укладки.", exclusion_rule: "Пересчитать после утверждения схемы полос.", source_ids: ["kg_krer_2015_collection_27"] });
-    addLine({ row_id: "transverse_joints", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство поперечных стыков асфальтобетонного покрытия", action: "устроить", action_object: "поперечные стыки", specification_ru: `Предварительная длина технологической захватки ${pavingShiftLength} м; герметизация учтена отдельной строкой.`, unit_id: "m", formula_id: "transverse_joint_length", expression: `${areaExpression} / paving_shift_length_m`, input_units: withArea({ paving_shift_length_m: "m" }, { paving_shift_length_m: pavingShiftLength }).units, input_values: withArea({ paving_shift_length_m: "m" }, { paving_shift_length_m: pavingShiftLength }).values, quantity: transverseLength, applicability: "pavement_assembly_selected", inclusion_reason_ru: "Длина получена из площади и принятой длины технологической захватки.", exclusion_rule: "Пересчитать после утверждения графика захваток.", source_ids: ["kg_krer_2015_collection_27"] });
-    addLine({ row_id: "joint_sealing_material", wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: "Материал для герметизации продольных и поперечных стыков", action: "поставить", action_object: "материал для герметизации стыков", specification_ru: "Тип материала и поперечное сечение — по проекту/техкарте; предварительная закупочная единица — метр обрабатываемого стыка.", unit_id: "m", formula_id: "joint_sealing_material_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: longitudinalLength + transverseLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Материал привязан к рассчитанной суммарной длине стыков.", exclusion_rule: "Заменить расходом конкретного материала после выбора спецификации.", source_ids: ["engineering_assumption:asphalt-preliminary-assembly:v1:paver_working_width_m"], price_key: "asphalt_joint_sealing_material_project_spec", procurement: true });
-    addLine({ row_id: "joint_sealing_application", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Герметизация продольных и поперечных стыков покрытия", action: "герметизировать", action_object: "стыки покрытия", specification_ru: "Очистка и нанесение выбранного герметизирующего материала по техкарте; материал учтён отдельной закупочной строкой.", unit_id: "m", formula_id: "joint_sealing_application_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: longitudinalLength + transverseLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Герметизация отделена от устройства стыков и материала.", exclusion_rule: "Пересчитать по утверждённой схеме стыков.", source_ids: ["kg_krer_2015_collection_27"] });
-    addLine({ row_id: "edge_treatment", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Обработка кромок перед устройством стыков покрытия", action: "обработать", action_object: "кромки асфальтобетонных полос и захваток", specification_ru: "Очистка, выравнивание и подготовка кромок перед сопряжением и герметизацией; длина привязана к рассчитанным продольным и поперечным стыкам.", unit_id: "m", formula_id: "edge_treatment_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: longitudinalLength + transverseLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Обработка кромок является отдельной операцией, предшествующей устройству стыков.", exclusion_rule: "Пересчитать по утверждённой схеме полос и захваток.", source_ids: ["kg_krer_2015_collection_27"] });
+  const roadLength = numericValue(values.get("length_m"));
+  const roadWidth = numericValue(values.get("width_m"));
+  const jointLayerCount = numericValue(values.get("asphalt_layer_count"));
+  if (positive(roadLength) && positive(roadWidth) && positive(paverWorkingWidth) && positive(pavingShiftLength) && positive(jointLayerCount)) {
+    const pavingPasses = Math.ceil(roadWidth / paverWorkingWidth);
+    const longitudinalSeamsPerLayer = Math.max(0, pavingPasses - 1);
+    const pavingSections = Math.ceil(roadLength / pavingShiftLength);
+    const transverseSeamsPerLayer = Math.max(0, pavingSections - 1);
+    const longitudinalLength = roadLength * longitudinalSeamsPerLayer * jointLayerCount;
+    const transverseLength = roadWidth * transverseSeamsPerLayer * jointLayerCount;
+    const totalJointLength = longitudinalLength + transverseLength;
+    const geometryUnits = { length_m: "m", width_m: "m", paver_working_width_m: "m", paving_shift_length_m: "m", asphalt_layer_count: "one" };
+    const geometryValues = { length_m: roadLength, width_m: roadWidth, paver_working_width_m: paverWorkingWidth, paving_shift_length_m: pavingShiftLength, asphalt_layer_count: jointLayerCount };
+    if (positive(longitudinalLength)) addLine({ row_id: "longitudinal_joints", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство продольных стыков асфальтобетонного покрытия", action: "устроить", action_object: "продольные стыки", specification_ru: `Ширина дороги ${roadWidth} м, рабочая ширина укладки ${paverWorkingWidth} м, проходов ${pavingPasses}, слоёв ${jointLayerCount}.`, unit_id: "m", formula_id: "longitudinal_joint_length", expression: "length_m * max(0, ceil(width_m / paver_working_width_m) - 1) * asphalt_layer_count", input_units: geometryUnits, input_values: geometryValues, quantity: longitudinalLength, applicability: "confirmed_road_geometry_and_paving_passes", inclusion_reason_ru: "Длина рассчитана из длины дороги, числа фактических проходов и числа слоёв, а не коэффициентом от площади.", exclusion_rule: "Пересчитать после утверждения схемы проходов асфальтоукладчика.", source_ids: ["kg_krer_2015_collection_27"] });
+    if (positive(transverseLength)) addLine({ row_id: "transverse_joints", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Устройство поперечных стыков асфальтобетонного покрытия", action: "устроить", action_object: "поперечные стыки", specification_ru: `Длина дороги ${roadLength} м, длина сменной захватки ${pavingShiftLength} м, захваток ${pavingSections}, слоёв ${jointLayerCount}.`, unit_id: "m", formula_id: "transverse_joint_length", expression: "width_m * max(0, ceil(length_m / paving_shift_length_m) - 1) * asphalt_layer_count", input_units: geometryUnits, input_values: geometryValues, quantity: transverseLength, applicability: "confirmed_road_geometry_and_paving_shifts", inclusion_reason_ru: "Длина рассчитана из ширины дороги, числа сменных захваток и числа слоёв, а не коэффициентом от площади.", exclusion_rule: "Пересчитать после утверждения графика захваток.", source_ids: ["kg_krer_2015_collection_27"] });
+    if (positive(totalJointLength)) {
+      addLine({ row_id: "joint_sealing_material", wbs_code: "04", section: "Материалы", phase: "pavement", category: "material", name_ru: "Материал для герметизации продольных и поперечных стыков", action: "поставить", action_object: "материал для герметизации стыков", specification_ru: "Тип материала и поперечное сечение — по проекту/техкарте; предварительная закупочная единица — метр обрабатываемого стыка.", unit_id: "m", formula_id: "joint_sealing_material_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: totalJointLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Материал привязан к рассчитанной суммарной длине стыков.", exclusion_rule: "Заменить расходом конкретного материала после выбора спецификации.", source_ids: ["engineering_assumption:asphalt-preliminary-assembly:v1:paver_working_width_m"], price_key: "asphalt_joint_sealing_material_project_spec", procurement: true });
+      addLine({ row_id: "joint_sealing_application", wbs_code: "06", section: "Работы", phase: "pavement", category: "work", name_ru: "Герметизация продольных и поперечных стыков покрытия", action: "герметизировать", action_object: "стыки покрытия", specification_ru: "Очистка и нанесение выбранного герметизирующего материала по техкарте; материал учтён отдельной закупочной строкой.", unit_id: "m", formula_id: "joint_sealing_application_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: totalJointLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Герметизация отделена от устройства стыков и материала.", exclusion_rule: "Пересчитать по утверждённой схеме стыков.", source_ids: ["kg_krer_2015_collection_27"] });
+      addLine({ row_id: "edge_treatment", wbs_code: "04", section: "Работы", phase: "pavement", category: "work", name_ru: "Обработка кромок перед устройством стыков покрытия", action: "обработать", action_object: "кромки асфальтобетонных полос и захваток", specification_ru: "Очистка, выравнивание и подготовка кромок перед сопряжением и герметизацией; длина привязана к рассчитанным продольным и поперечным стыкам.", unit_id: "m", formula_id: "edge_treatment_length", expression: "longitudinal_joint_length_m + transverse_joint_length_m", input_units: { longitudinal_joint_length_m: "m", transverse_joint_length_m: "m" }, input_values: { longitudinal_joint_length_m: longitudinalLength, transverse_joint_length_m: transverseLength }, quantity: totalJointLength, applicability: "pavement_joints_present", inclusion_reason_ru: "Обработка кромок является отдельной операцией, предшествующей устройству стыков.", exclusion_rule: "Пересчитать по утверждённой схеме полос и захваток.", source_ids: ["kg_krer_2015_collection_27"] });
+    }
   }
 
   if (positive(area.value)) {
@@ -1142,15 +1165,18 @@ export function compileAsphaltProfessionalEstimateV4(
   const passport = buildPassport({ formulas, rows: definitions, operations, resources, procurement, commercial, unresolved: [...unresolved].sort(), assumptions });
   const structural = validateProfessionalEstimatePassportV4(passport);
   const compileBlockers = [...structural.blockers, ...formulaBlockers, ...categoryBlockers];
+  const costEligibleRows = compiledRows.filter((row) =>
+    row.definition.costing_mode === "RESOURCE_BASED" || row.definition.costing_mode === "COMPOSITE_RATE"
+  );
   return {
     passport,
     compiled_rows: compiledRows,
     extracted_facts: facts,
     clarification: composeAsphaltClarificationExperienceV4({ raw_text: input.raw_text, facts }),
     price_coverage: {
-      total_rows: compiledRows.length,
+      total_rows: costEligibleRows.length,
       priced_rows: 0,
-      missing_price_rows: compiledRows.length,
+      missing_price_rows: costEligibleRows.length,
       coverage_ratio: 0,
       total_amount: null,
       display_total_ru: "Итог не рассчитан: цены не заполнены",
@@ -1162,5 +1188,6 @@ export function compileAsphaltProfessionalEstimateV4(
     source_trace_complete: definitions.every((row) => Boolean(row.source_id && row.explanation_trace_ru)),
     preliminary_assembly_policy: assemblyPolicy,
     quantity_basis: quantityBasis,
+    costing_mode: costingMode,
   };
 }

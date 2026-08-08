@@ -1,6 +1,18 @@
-import type { ProfessionalBoqAssumptions, ProfessionalBoqRiskPolicy } from "./professionalBoqContract";
+import type { ConsumerRepairAiDraft } from "../consumerRequests/consumerRequestTypes";
+import {
+  PROFESSIONAL_BOQ_RUNTIME_CONTRACT_ID,
+  type ProfessionalBoqAssumptions,
+  type ProfessionalBoqRiskPolicy,
+} from "./professionalBoqContract";
 import { buildProfessionalAssumptionEngineResult } from "./professionalAssumptionEngine";
+import { buildProfessionalBoqRiskPolicy } from "./professionalBoqRiskPolicy";
 import { safeJsonParseValue } from "../format";
+
+const RAW_PUBLIC_TEXT_RE =
+  /\b(?:PRICE_MISSING|source_parameters|template_id|template_version|formula_id|raw_ai_json|round_to|normFactor|baseQuantity|region\s+[A-Z]{2}|price date|confidence\s+\d|PARTIAL_PRICE_MISSING)\b/i;
+
+const REFUSAL_PUBLIC_TEXT_RE =
+  /(?:не\s+могу\s+рассчитать|невозможно\s+посчитать|только\s+после\s+черт|без\s+черт[её]ж|drawings_required_stop)/i;
 
 function unique(items: string[]): string[] {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
@@ -11,8 +23,99 @@ export function buildProfessionalBoqAssumptions(input: {
   rowCount: number;
   hasAnySourceBackedPrice: boolean;
   riskPolicy: ProfessionalBoqRiskPolicy;
+  allowPromptDefaults?: boolean;
 }): ProfessionalBoqAssumptions {
   return buildProfessionalAssumptionEngineResult(input);
+}
+
+function hasSourceBackedPrice(item: ConsumerRepairAiDraft["items"][number]): boolean {
+  return item.unitPrice != null && (
+    Boolean(item.priceTrace) ||
+    item.priceStatus === "CATALOG_PRICE_VERIFIED" ||
+    item.priceStatus === "PRICEBOOK_VERIFIED" ||
+    item.priceStatus === "REFERENCE_PRICE_ESTIMATE"
+  );
+}
+
+function publicSummaryFallback(draft: ConsumerRepairAiDraft): string {
+  return `${draft.titleRu || "Смета"}. Предварительная BOQ-смета готова к проверке и редактированию.`;
+}
+
+function appendUniquePublicSummaryParts(parts: string[]): string[] {
+  const result: string[] = [];
+  for (const part of parts.map((line) => line.trim()).filter(Boolean)) {
+    if (result.some((existing) => existing === part || existing.includes(part))) continue;
+    result.push(part);
+  }
+  return result;
+}
+
+export function sanitizeProfessionalBoqPublicSummary(
+  summary: string | null | undefined,
+  fallback: string,
+): string {
+  const lines = String(summary ?? "")
+    .split(/\r?\n/g)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .filter((line) => !RAW_PUBLIC_TEXT_RE.test(line))
+    .filter((line) => !/^Точный справочник материалов:/i.test(line));
+  const compact = lines.join(" ").replace(/\s+/g, " ").trim();
+  return compact || fallback;
+}
+
+export function applyProfessionalBoqRuntimeContract(
+  draft: ConsumerRepairAiDraft,
+  input: { prompt: string },
+): ConsumerRepairAiDraft {
+  if (draft.items.length === 0) return draft;
+  const riskPolicy = buildProfessionalBoqRiskPolicy({
+    prompt: input.prompt,
+    repairType: draft.repairType,
+    selectedWorkKey: draft.selectedWork?.selectedWorkKey,
+  });
+  const assumptions = buildProfessionalBoqAssumptions({
+    prompt: input.prompt,
+    rowCount: draft.items.length,
+    hasAnySourceBackedPrice: draft.items.some(hasSourceBackedPrice),
+    riskPolicy,
+    allowPromptDefaults: !draft.items.every((item) => item.sourceParameters?.roadworksWaveA === true),
+  });
+  const summary = sanitizeProfessionalBoqPublicSummary(draft.summaryRu, publicSummaryFallback(draft));
+  const publicSummaryParts = appendUniquePublicSummaryParts([
+    summary,
+    riskPolicy.summaryNoteRu,
+    assumptions.drawingsPolicyRu,
+    assumptions.pricePolicyRu,
+  ]).filter((line) => !REFUSAL_PUBLIC_TEXT_RE.test(line) || line.includes("предварительный BOQ"));
+
+  return {
+    ...draft,
+    summaryRu: publicSummaryParts.join(" "),
+    dangerousDiyBlocked: false,
+    safetyMessageRu: riskPolicy.requiresSpecialist ? riskPolicy.summaryNoteRu : draft.safetyMessageRu,
+    missingData: unique([...draft.missingData, ...assumptions.missingInputsRu]),
+    items: draft.items.map((item, index) => ({
+      ...item,
+      sourceParameters: {
+        ...(item.sourceParameters ?? {}),
+        professionalBoqRuntimeContract: PROFESSIONAL_BOQ_RUNTIME_CONTRACT_ID,
+        professionalBoqRuntimeRowIndex: index,
+        professionalBoqRiskLevel: riskPolicy.riskLevel,
+        professionalBoqRiskCodes: riskPolicy.riskCodes,
+        professionalBoqRiskNotesRu: riskPolicy.publicNotesRu,
+        professionalBoqAssumptionsRu: assumptions.assumptionsRu,
+        professionalBoqDefaultAssumptionsRu: assumptions.defaultAssumptionsRu ?? [],
+        professionalBoqMissingInputsRu: assumptions.missingInputsRu,
+        professionalBoqPricePolicyRu: assumptions.pricePolicyRu,
+        professionalBoqDrawingsPolicyRu: assumptions.drawingsPolicyRu,
+        professionalBoqDrawingsRequiredForDraft: false,
+        professionalBoqDrawingsNotRequiredForPreliminaryBoq: true,
+        professionalBoqDefaultsApplied: assumptions.professionalDefaultsApplied === true,
+        professionalBoqFinalContractStatusBlockedUntilReview: true,
+      },
+    })),
+  };
 }
 
 export function professionalBoqRiskRowsFromSourceParameters(

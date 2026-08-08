@@ -41,9 +41,17 @@ function asphaltV4ParameterKey(parameterId: string): string {
 function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
   labels: Map<string, string>;
   units: Map<string, string>;
+  inputKinds: Map<string, AiEstimateParameterInputKind>;
+  choices: Map<string, { value: string; labelRu: string }[]>;
+  requiredFor: Map<string, "contract_ready" | "better_accuracy" | "safety_review">;
+  roadworksWaveAParameterKeys: Set<string>;
 } {
   const labels = new Map<string, string>();
   const units = new Map<string, string>();
+  const inputKinds = new Map<string, AiEstimateParameterInputKind>();
+  const choices = new Map<string, { value: string; labelRu: string }[]>();
+  const requiredFor = new Map<string, "contract_ready" | "better_accuracy" | "safety_review">();
+  const roadworksWaveAParameterKeys = new Set<string>();
   for (const row of revision.boq.rows) {
     const source = row.sourceParameters ?? {};
     for (const [property, target] of [["asphaltV4ParameterLabelsRu", labels], ["asphaltV4ParameterUnits", units]] as const) {
@@ -53,8 +61,33 @@ function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
         if (typeof text === "string" && text.trim()) target.set(key, text.trim());
       }
     }
+    const roadworksMetadata = source.roadworksWaveAParameterMetadata;
+    if (!roadworksMetadata || typeof roadworksMetadata !== "object" || Array.isArray(roadworksMetadata)) continue;
+    for (const [key, raw] of Object.entries(roadworksMetadata)) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      const metadata = raw as Record<string, unknown>;
+      roadworksWaveAParameterKeys.add(key);
+      if (typeof metadata.labelRu === "string" && metadata.labelRu.trim()) labels.set(key, metadata.labelRu.trim());
+      if (typeof metadata.unit === "string" && metadata.unit.trim()) units.set(key, metadata.unit.trim());
+      if (["number", "select", "boolean", "text"].includes(String(metadata.inputKind))) {
+        inputKinds.set(key, metadata.inputKind as AiEstimateParameterInputKind);
+      }
+      if (metadata.requiredFor === "contract_ready" || metadata.requiredFor === "better_accuracy" || metadata.requiredFor === "safety_review") {
+        requiredFor.set(key, metadata.requiredFor);
+      }
+      if (Array.isArray(metadata.choices)) {
+        const normalized = metadata.choices.flatMap((choice) => {
+          if (!choice || typeof choice !== "object" || Array.isArray(choice)) return [];
+          const candidate = choice as Record<string, unknown>;
+          return typeof candidate.value === "string" && typeof candidate.labelRu === "string"
+            ? [{ value: candidate.value, labelRu: candidate.labelRu }]
+            : [];
+        });
+        if (normalized.length > 0) choices.set(key, normalized);
+      }
+    }
   }
-  return { labels, units };
+  return { labels, units, inputKinds, choices, requiredFor, roadworksWaveAParameterKeys };
 }
 
 type AsphaltClarificationQuestion = NonNullable<EstimateDraftRevision["professionalClarification"]>["critical_required"][number];
@@ -344,9 +377,9 @@ function syntheticField(
     labelRu: aiEstimateRuLabelForParameter(key, fallbackLabelRu),
     unit,
     unitRu: aiEstimateRuUnitForParameter(key, unit),
-    required: false,
-    requiredFor: "better_accuracy",
-    inputKind: cardInputKindFromClarification(question) ?? (typeof revision.params[key]?.value === "number" || Boolean(unit) ? "number" : "text"),
+    required: runtimeMetadata.requiredFor.get(key) === "contract_ready",
+    requiredFor: runtimeMetadata.requiredFor.get(key) ?? "better_accuracy",
+    inputKind: cardInputKindFromClarification(question) ?? runtimeMetadata.inputKinds.get(key) ?? (typeof revision.params[key]?.value === "number" || Boolean(unit) ? "number" : "text"),
     editable: true,
     source: "professional_suggestion",
     affectsRowIds: affectedRowIds,
@@ -421,14 +454,15 @@ export function buildAiEstimateParameterCards(input: {
   const revision = input.revision;
   if (!revision) return [];
   const asphaltV4 = isAsphaltV4Revision(revision);
-  const schema = asphaltV4 ? null : buildAiEstimateParameterSchema(revision.selectedTemplateId);
+  const runtimeMetadata = collectRuntimeParameterMetadata(revision);
+  const exactRoadworksWaveA = runtimeMetadata.roadworksWaveAParameterKeys.size > 0;
+  const schema = asphaltV4 || exactRoadworksWaveA ? null : buildAiEstimateParameterSchema(revision.selectedTemplateId);
   const fieldsByKey = asphaltV4
     ? asphaltV4Fields(revision)
     : new Map((schema?.fields ?? []).map((field) => [field.key, field]));
   const missingLabelsByKey = new Map(revision.missingInputs.map((item) => [item.key, item.label]));
-  const runtimeMetadata = collectRuntimeParameterMetadata(revision);
   const clarificationByKey = clarificationQuestionsByKey(revision);
-  const normativeModel = asphaltV4 ? null : buildNormativeParameterCompletenessModel(revision);
+  const normativeModel = asphaltV4 || exactRoadworksWaveA ? null : buildNormativeParameterCompletenessModel(revision);
   const formulaBackedSourceParams = collectFormulaBackedSourceParameters(revision, runtimeMetadata.labels, runtimeMetadata.units);
   for (const item of normativeModel?.passport.requirements ?? []) {
     if (!fieldsByKey.has(item.key)) fieldsByKey.set(item.key, fieldFromNormativeRequirement(item));
@@ -438,6 +472,7 @@ export function buildAiEstimateParameterCards(input: {
     const fallback = fieldsByKey.get(key)?.labelRu ?? runtimeMetadata.labels.get(key) ?? missingLabelsByKey.get(key);
     if (
       (!asphaltV4 || fieldsByKey.has(key)) &&
+      (!exactRoadworksWaveA || runtimeMetadata.roadworksWaveAParameterKeys.has(key)) &&
       !isAiEstimateTechnicalHiddenParam(key) &&
       hasHumanReadableAiEstimateParameterPassport(key, fallback)
     ) keys.add(key);
@@ -456,6 +491,7 @@ export function buildAiEstimateParameterCards(input: {
     for (const missing of revision.missingInputs) {
       if (
         (!asphaltV4 || fieldsByKey.has(missing.key)) &&
+        (!exactRoadworksWaveA || runtimeMetadata.roadworksWaveAParameterKeys.has(missing.key)) &&
         !isAiEstimateTechnicalHiddenParam(missing.key) &&
         hasHumanReadableAiEstimateParameterPassport(missing.key, missing.label)
       ) keys.add(missing.key);
@@ -494,12 +530,13 @@ export function buildAiEstimateParameterCards(input: {
     const labelRu = contextualLabel(revision, key, field.labelRu);
     const revisionMissing = revision.missingInputs.find((item) => item.key === key);
     const asphaltMetadata = asphaltV4 ? asphaltV4CardMetadata(key) : null;
+    const runtimeChoices = runtimeMetadata.choices.get(key) ?? [];
     if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/i.test(labelRu)) return [];
     return [{
       key,
       labelRu,
       value: param?.value ?? null,
-      displayValueRu: formatValue(key, param?.value ?? null, unitRu, asphaltMetadata?.choices),
+      displayValueRu: formatValue(key, param?.value ?? null, unitRu, asphaltMetadata?.choices ?? runtimeChoices),
       unitRu,
       source,
       sourceLabelRu: aiEstimateRuSourceLabel(source),
@@ -525,7 +562,7 @@ export function buildAiEstimateParameterCards(input: {
       changesInEstimateRu: question?.changes_in_estimate_ru,
       missingValueConsequenceRu: question?.missing_value_consequence_ru ?? asphaltMetadata?.missingValueConsequenceRu,
       provenanceRu: question?.current_value_source_ru,
-      choices: question?.choices.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })) ?? asphaltMetadata?.choices,
+      choices: question?.choices.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })) ?? asphaltMetadata?.choices ?? runtimeChoices,
     }];
   });
 

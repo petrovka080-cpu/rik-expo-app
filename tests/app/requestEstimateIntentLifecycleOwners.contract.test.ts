@@ -63,6 +63,19 @@ describe("request estimate intent lifecycle owners", () => {
 
     const requestRoute = read("app/(tabs)/request/index.tsx");
     expect(requestRoute).not.toContain("key={`${launchId");
+    expect(requestRoute).toContain(
+      "requestEstimateLaunchFingerprintForRouteParametersV1",
+    );
+    expect(requestOwner).toContain("isFingerprintAcknowledged");
+    expect(requestOwner).toContain("reconcileAcknowledgedRouteLaunch");
+    expect(requestOwner).toContain("bindPendingDraft");
+    const initialLaunchFlow = requestOwner.slice(
+      requestOwner.indexOf("private applyInitialDeepLinkFlow"),
+      requestOwner.indexOf("private refreshHistory"),
+    );
+    expect(initialLaunchFlow.indexOf("reconcileAcknowledgedRouteLaunch")).toBeLessThan(
+      initialLaunchFlow.indexOf("shouldAutoPrepareInitialConsumerRepairRequest(this.props)"),
+    );
     expect(requestOwner).toContain(
       "prevProps.initialDraftId !== this.props.initialDraftId",
     );

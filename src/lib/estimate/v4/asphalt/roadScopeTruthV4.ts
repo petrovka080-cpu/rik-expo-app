@@ -13,7 +13,16 @@ export type RoadScopeIdV4 =
   | "FULL_ROAD_INFRASTRUCTURE"
   | "ROAD_REPAIR_REHABILITATION";
 
-export function isRoadScopeIdV4(value: string): value is RoadScopeIdV4 {
+export type ParkingScopeIdV5 =
+  | "NEW_PARKING_FULL_CONSTRUCTION"
+  | "PAVEMENT_ON_CONFIRMED_PREPARED_BASE"
+  | "OVERLAY_EXISTING_PAVEMENT"
+  | "LOCAL_REPAIR_OR_MILLING";
+
+export type AsphaltScopeSelectionIdV5 = RoadScopeIdV4 | ParkingScopeIdV5;
+
+/** Kept under the legacy name because persisted callers already import it. */
+export function isRoadScopeIdV4(value: string): value is AsphaltScopeSelectionIdV5 {
   return Object.hasOwn(ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4, value);
 }
 
@@ -24,7 +33,7 @@ export type RoadScopeResolutionV4 = {
   resolverStatus: RoadScopeResolverStatusV4;
   originalText: string;
   requestedCatalogWorkId: string;
-  selectedScopeId: RoadScopeIdV4 | null;
+  selectedScopeId: AsphaltScopeSelectionIdV5 | null;
   profileId: AsphaltAssemblyProfileIdV4 | null;
   semanticKind: EstimateSemanticKind | null;
   evidence: string[];
@@ -53,7 +62,7 @@ export type RoadScopeRevisionBindingV4 = {
   requestedCatalogWorkId: string;
   originalUserText: string;
   semanticKind: Extract<EstimateSemanticKind, "PROFESSIONAL_WORK" | "SCOPE_PRESET" | "COMPOSITE_PROJECT">;
-  selectedRoadScope: RoadScopeIdV4;
+  selectedRoadScope: AsphaltScopeSelectionIdV5;
   resolverEvidence: string[];
   assumptions: string[];
   exclusions: string[];
@@ -89,6 +98,10 @@ const REPAIR =
 const SURFACING_ACTION = /(?:улож|уклад|асфальтир|асфальттоо|покрыт|overlay|surfacing)/iu;
 const SURFACING_ONLY =
   /(?:не\s+нужн[а-яё]*\s+полн[а-яё]*\s+дорог|только\s+(?:верхн[а-яё]*\s+сло|асфальт|покрыт)|без\s+(?:нов[а-яё]*\s+)?основан)/iu;
+const PARKING = /(?:парковк|автостоян|\bparking\b)/iu;
+const NEW_PARKING = /(?:построи[а-яё]*|строительств[а-яё]*|нов[а-яё]*)[^.]{0,50}(?:парковк|автостоян)|(?:парковк|автостоян)[^.]{0,50}(?:с\s+нуля|нов[а-яё]*\s+строительств)/iu;
+const PARKING_OVERLAY = /(?:обнов|усилен|нов[а-яё]*\s+сло[а-яё]*\s+по\s+существ|поверх\s+существ|overlay)/iu;
+const PARKING_LOCAL_REPAIR = /(?:локальн[а-яё]*\s+ремонт|ямоч|ремонт[а-яё]*\s+карт|фрезер|milling|patch)/iu;
 
 function metricNumber(value: string): number {
   return Number(value.replace(/\s+/g, "").replace(",", "."));
@@ -130,21 +143,29 @@ export function parseRoadGeometryV4(rawText: string): RoadGeometryResolutionV4 {
 }
 
 export const ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4: Readonly<
-  Record<RoadScopeIdV4, AsphaltAssemblyProfileIdV4>
+  Record<AsphaltScopeSelectionIdV5, AsphaltAssemblyProfileIdV4>
 > = {
   ROAD_SURFACING_ONLY: "surfacing_on_prepared_base",
   FULL_PAVEMENT_STRUCTURE: "new_full_road_pavement",
   FULL_ROAD_INFRASTRUCTURE: "new_full_road_infrastructure",
   ROAD_REPAIR_REHABILITATION: "rehabilitation_with_milling",
+  NEW_PARKING_FULL_CONSTRUCTION: "parking_full_construction",
+  PAVEMENT_ON_CONFIRMED_PREPARED_BASE: "parking_surfacing_only",
+  OVERLAY_EXISTING_PAVEMENT: "overlay_on_existing_pavement",
+  LOCAL_REPAIR_OR_MILLING: "local_patch_repair",
 };
 
 export const ASPHALT_SEMANTIC_KIND_BY_ROAD_SCOPE_V4: Readonly<
-  Record<RoadScopeIdV4, EstimateSemanticKind>
+  Record<AsphaltScopeSelectionIdV5, EstimateSemanticKind>
 > = {
   ROAD_SURFACING_ONLY: "PROFESSIONAL_WORK",
   FULL_PAVEMENT_STRUCTURE: "COMPOSITE_PROJECT",
   FULL_ROAD_INFRASTRUCTURE: "COMPOSITE_PROJECT",
   ROAD_REPAIR_REHABILITATION: "PROFESSIONAL_WORK",
+  NEW_PARKING_FULL_CONSTRUCTION: "COMPOSITE_PROJECT",
+  PAVEMENT_ON_CONFIRMED_PREPARED_BASE: "SCOPE_PRESET",
+  OVERLAY_EXISTING_PAVEMENT: "PROFESSIONAL_WORK",
+  LOCAL_REPAIR_OR_MILLING: "PROFESSIONAL_WORK",
 };
 
 export const ROAD_SCOPE_SELECTION_QUESTION_RU = {
@@ -156,6 +177,26 @@ export const ROAD_SCOPE_SELECTION_QUESTION_RU = {
     { scopeId: "ROAD_REPAIR_REHABILITATION", label: "Ремонт существующей дороги" },
   ],
 } as const;
+
+export const PARKING_SCOPE_SELECTION_QUESTION_RU = {
+  question: "Какой состав парковки требуется рассчитать?",
+  options: [
+    { scopeId: "NEW_PARKING_FULL_CONSTRUCTION", label: "Построить парковку с нуля" },
+    { scopeId: "PAVEMENT_ON_CONFIRMED_PREPARED_BASE", label: "Уложить асфальт на готовое основание" },
+    { scopeId: "OVERLAY_EXISTING_PAVEMENT", label: "Обновить существующее покрытие новым слоем" },
+    { scopeId: "LOCAL_REPAIR_OR_MILLING", label: "Выполнить локальный ремонт или фрезерование" },
+  ],
+  unknownBaseOption: {
+    label: "Не знаю — требуется обследование основания",
+    resolution: "NEEDS_REQUIRED_INPUTS",
+  },
+} as const;
+
+export function asphaltScopeSelectionQuestionForIntentV5(originalText: string) {
+  return PARKING.test(originalText.normalize("NFKC"))
+    ? PARKING_SCOPE_SELECTION_QUESTION_RU
+    : ROAD_SCOPE_SELECTION_QUESTION_RU;
+}
 
 export function semanticKindForAsphaltProfileV4(profile: AsphaltAssemblyProfileIdV4): EstimateSemanticKind {
   if (profile === "new_full_road_pavement" || profile === "new_full_road_infrastructure" || profile === "parking_full_construction") {
@@ -173,7 +214,7 @@ export function isRoadCatalogWorkIdV4(value: string): boolean {
 export function resolveRoadScopeV4(input: {
   originalText: string;
   requestedCatalogWorkId: string;
-  selectedScopeId?: RoadScopeIdV4 | null;
+  selectedScopeId?: AsphaltScopeSelectionIdV5 | null;
   exactProfessionalWorkId?: string | null;
 }): RoadScopeResolutionV4 {
   const originalText = input.originalText.normalize("NFKC").replace(/\u00a0/g, " ").trim();
@@ -238,6 +279,31 @@ export function resolveRoadScopeV4(input: {
       exclusions: [],
     };
   }
+  if (PARKING.test(originalText)) {
+    if (PARKING_LOCAL_REPAIR.test(originalText)) {
+      return resolved(originalText, input.requestedCatalogWorkId, "LOCAL_REPAIR_OR_MILLING", ["parking_local_repair_or_milling_explicit"]);
+    }
+    if (PARKING_OVERLAY.test(originalText)) {
+      return resolved(originalText, input.requestedCatalogWorkId, "OVERLAY_EXISTING_PAVEMENT", ["parking_overlay_explicit"]);
+    }
+    if (NEW_PARKING.test(originalText)) {
+      return resolved(originalText, input.requestedCatalogWorkId, "NEW_PARKING_FULL_CONSTRUCTION", ["new_parking_full_construction_explicit"]);
+    }
+    if (PREPARED_BASE.test(originalText) && SURFACING_ACTION.test(originalText)) {
+      return resolved(originalText, input.requestedCatalogWorkId, "PAVEMENT_ON_CONFIRMED_PREPARED_BASE", ["parking_prepared_base_explicit"]);
+    }
+    return {
+      resolverStatus: "NEEDS_SCOPE_SELECTION",
+      originalText,
+      requestedCatalogWorkId: input.requestedCatalogWorkId,
+      selectedScopeId: null,
+      profileId: null,
+      semanticKind: null,
+      evidence: ["parking_intent_present", "parking_scope_not_explicit", "prepared_base_not_assumed"],
+      assumptions: [],
+      exclusions: [],
+    };
+  }
   if (REPAIR.test(originalText)) {
     return resolved(originalText, input.requestedCatalogWorkId, "ROAD_REPAIR_REHABILITATION", ["repair_or_milling_explicit"]);
   }
@@ -270,11 +336,15 @@ export function resolveRoadScopeV4(input: {
 /** The only public production entry point for road scope selection. */
 export const resolveRoadEstimateScopeV4 = resolveRoadScopeV4;
 
-export function roadScopeIdForProfileV4(profile: unknown): RoadScopeIdV4 | null {
-  if (profile === "surfacing_on_prepared_base" || profile === "parking_surfacing_only" || profile === "ROAD_SURFACING_ONLY") return "ROAD_SURFACING_ONLY";
-  if (profile === "new_full_road_pavement" || profile === "parking_full_construction" || profile === "FULL_PAVEMENT_STRUCTURE") return "FULL_PAVEMENT_STRUCTURE";
+export function roadScopeIdForProfileV4(profile: unknown): AsphaltScopeSelectionIdV5 | null {
+  if (profile === "parking_surfacing_only" || profile === "PAVEMENT_ON_CONFIRMED_PREPARED_BASE") return "PAVEMENT_ON_CONFIRMED_PREPARED_BASE";
+  if (profile === "parking_full_construction" || profile === "NEW_PARKING_FULL_CONSTRUCTION") return "NEW_PARKING_FULL_CONSTRUCTION";
+  if (profile === "overlay_on_existing_pavement" || profile === "OVERLAY_EXISTING_PAVEMENT") return "OVERLAY_EXISTING_PAVEMENT";
+  if (profile === "local_patch_repair" || profile === "LOCAL_REPAIR_OR_MILLING") return "LOCAL_REPAIR_OR_MILLING";
+  if (profile === "surfacing_on_prepared_base" || profile === "ROAD_SURFACING_ONLY") return "ROAD_SURFACING_ONLY";
+  if (profile === "new_full_road_pavement" || profile === "FULL_PAVEMENT_STRUCTURE") return "FULL_PAVEMENT_STRUCTURE";
   if (profile === "new_full_road_infrastructure" || profile === "FULL_ROAD_INFRASTRUCTURE") return "FULL_ROAD_INFRASTRUCTURE";
-  if (profile === "rehabilitation_with_milling" || profile === "overlay_on_existing_pavement" || profile === "local_patch_repair" || profile === "ROAD_REPAIR_REHABILITATION") {
+  if (profile === "rehabilitation_with_milling" || profile === "ROAD_REPAIR_REHABILITATION") {
     return "ROAD_REPAIR_REHABILITATION";
   }
   return null;
@@ -317,14 +387,16 @@ export function buildRoadScopeRevisionBindingV4(input: {
 function resolved(
   originalText: string,
   requestedCatalogWorkId: string,
-  selectedScopeId: RoadScopeIdV4,
+  selectedScopeId: AsphaltScopeSelectionIdV5,
   evidence: string[],
 ): RoadScopeResolutionV4 {
   const exclusions =
-    selectedScopeId === "ROAD_SURFACING_ONLY"
+    selectedScopeId === "ROAD_SURFACING_ONLY" || selectedScopeId === "PAVEMENT_ON_CONFIRMED_PREPARED_BASE"
       ? ["earthworks", "new_base", "drainage", "lighting", "road_safety_infrastructure"]
-      : selectedScopeId === "FULL_PAVEMENT_STRUCTURE"
+      : selectedScopeId === "FULL_PAVEMENT_STRUCTURE" || selectedScopeId === "NEW_PARKING_FULL_CONSTRUCTION"
         ? ["drainage", "lighting", "road_safety_infrastructure"]
+        : selectedScopeId === "OVERLAY_EXISTING_PAVEMENT" || selectedScopeId === "LOCAL_REPAIR_OR_MILLING"
+          ? ["new_earthworks", "new_full_base", "new_road_infrastructure"]
         : [];
   return {
     resolverStatus: "RESOLVED",

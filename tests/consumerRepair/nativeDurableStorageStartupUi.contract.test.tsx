@@ -97,4 +97,39 @@ describe("consumer repair durable storage startup UI", () => {
       renderer.unmount();
     });
   });
+
+  it("automatically leaves recovery when the bounded hydration completes late", async () => {
+    let resolveHydration!: () => void;
+    mockInitializeDurableStorage.mockImplementationOnce(
+      () => new Promise<void>((resolve) => {
+        resolveHydration = resolve;
+      }),
+    );
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(<ConsumerRepairRequestScreen />);
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(3_001);
+      await Promise.resolve();
+    });
+    expect(
+      renderer.root.findByProps({ testID: "consumer-repair-storage-recovery" }),
+    ).toBeTruthy();
+
+    await act(async () => {
+      resolveHydration();
+      await Promise.resolve();
+    });
+
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+    expect(mockRefreshAfterDurableHydration).toHaveBeenCalledTimes(1);
+    expect(
+      renderer.root.findAllByProps({ testID: "consumer-repair-storage-recovery" }),
+    ).toHaveLength(0);
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
 });

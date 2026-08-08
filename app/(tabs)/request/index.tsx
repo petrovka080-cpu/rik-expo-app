@@ -7,6 +7,7 @@ import {
   RequestEstimateLaunchPayloadError,
   buildRequestEstimateLaunchReadyMarkerId,
   decodeRequestEstimateLaunchPayloadV1,
+  requestEstimateLaunchFingerprintForRouteParametersV1,
 } from "../../../src/lib/navigation/requestEstimateLaunchPayload";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
@@ -19,6 +20,8 @@ function RequestRoute() {
   const params = useLocalSearchParams<{
     autoPdf?: string | string[];
     autoPrepare?: string | string[];
+    autoSend?: string | string[];
+    context?: string | string[];
     description?: string | string[];
     draftId?: string | string[];
     launchError?: string | string[];
@@ -53,6 +56,18 @@ function RequestRoute() {
     (getParam(params.launchId).trim() || undefined);
   const autoPrepare = getParam(launchParameters.autoPrepare).trim() === "1";
   const autoPdf = getParam(launchParameters.autoPdf).trim() === "1";
+  const fallbackFingerprintParameters = Object.fromEntries(
+    (["autoPdf", "autoPrepare", "autoSend", "context", "description", "prompt"] as const)
+      .map((key) => [key, getParam(params[key]).trim()] as const)
+      .filter(([, value]) => value.length > 0),
+  );
+  const launchFingerprint = launchPayload?.fingerprint ?? (prompt
+    ? requestEstimateLaunchFingerprintForRouteParametersV1({
+        route: "/request",
+        workIntent: prompt,
+        parameters: fallbackFingerprintParameters,
+      })
+    : undefined);
 
   if (launchError) {
     return (
@@ -74,7 +89,7 @@ function RequestRoute() {
       <ConsumerRepairRequestScreen
         initialProblemText={prompt || undefined}
         initialDraftId={draftId || undefined}
-        launchFingerprint={launchPayload?.fingerprint}
+        launchFingerprint={launchFingerprint}
         launchId={launchId}
         autoPrepare={autoPrepare || autoPdf}
         autoPdf={autoPdf}
