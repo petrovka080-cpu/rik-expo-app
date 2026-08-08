@@ -109,7 +109,11 @@ export type ConsumerRepairRequestScreenProps = {
   autoPrepare?: boolean;
   autoPdf?: boolean;
 };
-export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & { onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void; MobilePhotoCaptureFlowNode?: React.ReactElement | null; };
+export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & {
+  onInitialLaunchBuildSettled?: () => void;
+  onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
+  MobilePhotoCaptureFlowNode?: React.ReactElement | null;
+};
 
 export function isFreshRequestEstimateLaunchWorkspace(
   props: ConsumerRepairRequestScreenProps,
@@ -449,14 +453,26 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           });
         }
       }
+      this.props.onInitialLaunchBuildSettled?.();
       return;
     }
-    if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) return;
+    if (!shouldAutoPrepareInitialConsumerRepairRequest(this.props)) {
+      this.props.onInitialLaunchBuildSettled?.();
+      return;
+    }
     const launchProblemText =
       this.props.initialProblemText?.trim() || this.state.problemText.trim();
-    if (!launchProblemText) return;
+    if (!launchProblemText) {
+      this.props.onInitialLaunchBuildSettled?.();
+      return;
+    }
     this.initialDeepLinkApplied = true;
-    const bundle = this.buildDraftBundle(launchProblemText);
+    let bundle: ConsumerRepairDraftBundle;
+    try {
+      bundle = this.buildDraftBundle(launchProblemText);
+    } finally {
+      this.props.onInitialLaunchBuildSettled?.();
+    }
     if (!this.props.autoPdf) return;
     try {
       const pdfBundle = ensureConsumerRepairRequestPdfAvailable({

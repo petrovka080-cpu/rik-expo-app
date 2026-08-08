@@ -842,13 +842,16 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   // the build step silently compiles the legacy catalog model.
   const resolverInput = params.selectedWork?.rawInput.trim() || nextProblemText;
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, resolverInput);
+  recordConsumerRepairEstimateBuildTiming("SELECTED_WORK_READY", buildStartedAt);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
   const roadScopeResolution = resolveRoadEstimateScopeV4({
     originalText: resolverInput,
     requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
   });
   const scopeSelectionQuestion = asphaltScopeSelectionQuestionForIntentV5(resolverInput);
+  recordConsumerRepairEstimateBuildTiming("ROAD_SCOPE_READY", buildStartedAt);
   const roadworksWaveA = loadRoadworksWaveAProductionBinding();
+  recordConsumerRepairEstimateBuildTiming("ROADWORKS_MODULE_READY", buildStartedAt);
   const resolvedRoadworksWaveAProduction = roadworksWaveA.buildRoadworksWaveAProductionDraft({
     rawInput: resolverInput,
     selectedWorkKey: selectedWork?.selectedWorkKey,
@@ -857,6 +860,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     city: params.city || undefined,
     currency: "KGS",
   });
+  recordConsumerRepairEstimateBuildTiming("ROADWORKS_DRAFT_READY", buildStartedAt);
   const exactRoadworksWaveASelection = roadworksWaveA.resolveExactRoadworksWaveAProductionWork({
       selectedWorkKey: selectedWork?.selectedWorkKey,
       selectedTemplateId: selectedWork?.selectedWorkKey,
@@ -874,6 +878,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const explicitRoadworksWaveAReadiness = roadworksWaveA.getRoadworksWaveAResolutionReadiness(
     exactRoadworksWaveASelection,
   );
+  recordConsumerRepairEstimateBuildTiming("ROADWORKS_SELECTION_READY", buildStartedAt);
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
     roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
       explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
@@ -910,6 +915,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       resolverInput,
     ),
   );
+  recordConsumerRepairEstimateBuildTiming("RUNTIME_ROUTING_READY", buildStartedAt);
   const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft
     ? null
     : (() => {

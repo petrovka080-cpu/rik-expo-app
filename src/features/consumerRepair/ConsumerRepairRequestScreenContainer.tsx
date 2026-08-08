@@ -4,12 +4,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { hydrateTransactionalConsumerRepairRequestStore } from "../../lib/consumerRequests/consumerRequestRepository";
 import {
   ConsumerRepairRequestScreenController,
+  shouldAutoPrepareInitialConsumerRepairRequest,
   type ConsumerRepairRequestScreenProps,
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
-const FRESH_BUILD_HISTORY_HYDRATION_DELAY_MS = 45_000;
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
@@ -46,6 +46,12 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     React.useState<DurableHydrationStatus>("loading");
   const hydrationAttemptRef = React.useRef(0);
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
+  const freshBuildKey = shouldAutoPrepareInitialConsumerRepairRequest(props) &&
+    props.initialProblemText?.trim() &&
+    !props.initialDraftId?.trim()
+    ? props.launchId?.trim() || props.launchFingerprint?.trim() || props.initialProblemText.trim()
+    : null;
+  const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
   const hydrate = React.useCallback(() => {
     const attempt = hydrationAttemptRef.current + 1;
     hydrationAttemptRef.current = attempt;
@@ -72,23 +78,15 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     });
   }, [props.initialDraftId]);
   React.useEffect(() => {
-    // A fresh exact-intent build is queued by the child controller in a
-    // microtask. Keep unrelated history recovery outside the complete cold
-    // persistence budget: React Native can flush effects before that microtask,
-    // and a large native store would otherwise contend with the required
-    // runtime compilation even when hydration was deferred by one task.
-    const deferForFreshBuild = Boolean(
-      props.initialProblemText?.trim() && !props.initialDraftId?.trim(),
-    );
-    const deferredHydration = deferForFreshBuild
-      ? setTimeout(hydrate, FRESH_BUILD_HISTORY_HYDRATION_DELAY_MS)
-      : null;
-    if (!deferForFreshBuild) hydrate();
+    // Native effects can run before the controller's queued initial build.
+    // Wait for its explicit persisted/settled signal instead of racing a fixed
+    // timer against a cold Hermes module graph and a large durable history.
+    if (freshBuildKey && settledFreshBuildKey !== freshBuildKey) return;
+    hydrate();
     return () => {
-      if (deferredHydration !== null) clearTimeout(deferredHydration);
       hydrationAttemptRef.current += 1;
     };
-  }, [hydrate, props.initialDraftId, props.initialProblemText]);
+  }, [freshBuildKey, hydrate, settledFreshBuildKey]);
   const photoCapture = useConsumerRepairPhotoCaptureController({
     onStatusMessage: (statusMessage) => screenRef.current?.setPhotoCaptureStatusMessage(statusMessage),
     onMaterialPhotoCaptured: (result) => {
@@ -100,6 +98,9 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       <ConsumerRepairRequestScreenController
         ref={screenRef}
         {...props}
+        onInitialLaunchBuildSettled={() => {
+          if (freshBuildKey) setSettledFreshBuildKey(freshBuildKey);
+        }}
         onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
         MobilePhotoCaptureFlowNode={photoCapture.flow}
       />

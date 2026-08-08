@@ -3,6 +3,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 const mockInitializeDurableStorage = jest.fn<Promise<void>, []>();
 const mockRefreshAfterDurableHydration = jest.fn();
+let settleInitialLaunchBuild: (() => void) | null = null;
 
 jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
   hydrateTransactionalConsumerRepairRequestStore: () =>
@@ -15,8 +16,26 @@ jest.mock(
     const ReactRuntime = require("react") as typeof React;
     const { View } = require("react-native") as typeof import("react-native");
     return {
-      ConsumerRepairRequestScreenController: ReactRuntime.forwardRef(
-        function MockConsumerRepairRequestScreenController(_props, ref) {
+      shouldAutoPrepareInitialConsumerRepairRequest: (props: {
+        initialProblemText?: string;
+        initialDraftId?: string;
+        launchId?: string;
+        autoPrepare?: boolean;
+        autoPdf?: boolean;
+      }) => Boolean(
+        !props.initialDraftId?.trim() &&
+        (props.autoPrepare || props.autoPdf || (!props.launchId?.trim() && props.initialProblemText?.trim())),
+      ),
+      ConsumerRepairRequestScreenController: ReactRuntime.forwardRef<
+        {
+          refreshAfterDurableHydration: () => void;
+          setPhotoCaptureStatusMessage: () => void;
+          openMaterialCatalogFromCapturedPhoto: () => void;
+        },
+        { onInitialLaunchBuildSettled?: () => void }
+      >(
+        function MockConsumerRepairRequestScreenController(props, ref) {
+          settleInitialLaunchBuild = props.onInitialLaunchBuildSettled ?? null;
           ReactRuntime.useImperativeHandle(ref, () => ({
             refreshAfterDurableHydration: mockRefreshAfterDurableHydration,
             setPhotoCaptureStatusMessage: jest.fn(),
@@ -50,6 +69,7 @@ describe("consumer repair durable storage startup UI", () => {
     jest.useFakeTimers();
     mockInitializeDurableStorage.mockReset();
     mockRefreshAfterDurableHydration.mockReset();
+    settleInitialLaunchBuild = null;
   });
 
   afterEach(() => {
@@ -133,7 +153,7 @@ describe("consumer repair durable storage startup UI", () => {
     });
   });
 
-  it("keeps unrelated durable history hydration outside the fresh-build persistence budget", async () => {
+  it("waits for the fresh initial build to settle before hydrating unrelated history", async () => {
     mockInitializeDurableStorage.mockResolvedValueOnce();
     let renderer!: TestRenderer.ReactTestRenderer;
 
@@ -150,14 +170,15 @@ describe("consumer repair durable storage startup UI", () => {
     expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
 
     await act(async () => {
-      jest.advanceTimersByTime(44_999);
+      jest.advanceTimersByTime(120_000);
       await Promise.resolve();
     });
 
     expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
 
     await act(async () => {
-      jest.advanceTimersByTime(1);
+      if (!settleInitialLaunchBuild) throw new Error("initial_launch_settlement_callback_missing");
+      settleInitialLaunchBuild();
       await Promise.resolve();
     });
 
