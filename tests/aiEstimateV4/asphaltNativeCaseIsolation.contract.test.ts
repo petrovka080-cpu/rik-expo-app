@@ -46,4 +46,19 @@ describe("Asphalt native case isolation contract", () => {
     expect(source).toContain('total: "105/105"');
     expect(source).toContain('"asphalt-35-native-api34-105-result.json"');
   });
+
+  it("scrolls a clipped exact parameter wrapper before requiring its owned native input", () => {
+    const source = readRunner();
+    const exactInputLookup = source.slice(
+      source.indexOf("async function findSafeInputOwnedByExactEditor"),
+      source.indexOf("function tapNode"),
+    );
+
+    expect(exactInputLookup).toContain("if (!input)");
+    expect(exactInputLookup).toContain("lookup.node.bounds");
+    expect(exactInputLookup).toContain("nativeNodeSafeViewportAdjustment");
+    expect(exactInputLookup).toContain('editorAdjustment !== "none"');
+    expect(exactInputLookup).toContain("swipe(editorAdjustment)");
+    expect(exactInputLookup).not.toContain("android.widget.EditText");
+  });
 });

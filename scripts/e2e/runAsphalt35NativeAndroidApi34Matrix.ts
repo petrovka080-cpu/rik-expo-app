@@ -307,7 +307,20 @@ async function findSafeInputOwnedByExactEditor(
     const lookup = await scrollToId(editorId, 20);
     if (!lookup.node) continue;
     const input = findInputOwnedByEditor(lookup.snapshot, lookup.node);
-    if (!input) continue;
+    if (!input) {
+      // React Native may expose the exact editor wrapper before mounting its
+      // clipped native TextInput below the sticky action bar. Move the exact
+      // wrapper into the safe viewport, then reacquire its owned child; never
+      // fall back to a generic EditText from another parameter or BOQ row.
+      const editorAdjustment = nativeNodeSafeViewportAdjustment(
+        lookup.node.bounds,
+        viewport().height,
+      );
+      if (editorAdjustment === "invalid") return null;
+      if (editorAdjustment !== "none") swipe(editorAdjustment);
+      await wait(600);
+      continue;
+    }
     const adjustment = nativeNodeSafeViewportAdjustment(
       input.bounds,
       viewport().height,
