@@ -996,7 +996,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
           draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
         );
   const passport = selectedTemplateId && !exactRoadworksWaveAConsumerDraft
-    ? buildProfessionalWorkPassportIfApplicable(selectedTemplateId)
+    ? requestedPassport?.templateId === selectedTemplateId
+      ? requestedPassport
+      : buildProfessionalWorkPassportIfApplicable(selectedTemplateId)
     : null;
   const estimateDraftId = input.estimateDraftId ?? `draft_${safeIdPart(selectedTemplateId || input.rawInput)}`;
   const revisionId = createStableRevisionId({
