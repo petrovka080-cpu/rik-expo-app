@@ -73,8 +73,9 @@ describe("deterministic sharded full Jest runner", () => {
       "tests/a.test.ts": 600_000,
       "tests/b.test.ts": 300_000,
       "tests/c.test.ts": 200_000,
+      "tests/d.test.ts": 100_000,
     });
-    const shards = planWeightedJestShards(calibrated, 3);
+    const shards = planWeightedJestShards(calibrated, 4);
 
     expect(validateWeightedJestShardPlan(calibrated, shards)).toEqual({
       missing: [],
@@ -82,9 +83,9 @@ describe("deterministic sharded full Jest runner", () => {
       unexpected: [],
     });
     expect(
-      ["tests/a.test.ts", "tests/b.test.ts", "tests/c.test.ts"].map((testPath) =>
+      ["tests/a.test.ts", "tests/b.test.ts", "tests/c.test.ts", "tests/d.test.ts"].map((testPath) =>
         shards.find((shard) => shard.test_files.includes(testPath))?.shard_id,
       ),
-    ).toEqual([0, 1, 2]);
+    ).toEqual([0, 1, 2, 3]);
   });
 });

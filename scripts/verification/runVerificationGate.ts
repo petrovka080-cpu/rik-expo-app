@@ -176,7 +176,7 @@ async function run(): Promise<void> {
   const stderrPath = path.join(outputDir, "stderr.log");
   const suites = plan.selected_suites.filter((suite) => fs.existsSync(path.join(root, suite)));
   const missingSuites = plan.selected_suites.filter((suite) => !fs.existsSync(path.join(root, suite)));
-  const shardCount = level === "affected" ? 3 : 1;
+  const shardCount = level === "affected" ? 4 : 1;
   const shardPlan = buildAffectedJestShardPlan({ root, suites, shardCount });
   const runId = started.toISOString().replace(/[:.]/g, "-");
   const shardRuns = missingSuites.length === 0 && suites.length > 0
