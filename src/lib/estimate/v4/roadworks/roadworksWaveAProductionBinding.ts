@@ -54,35 +54,28 @@ export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem &
   professionalPassport: ReturnType<typeof buildRoadworksWaveAProfessionalPassportV4>;
 };
 
-export const RoadworksWaveAProductionRegistry: readonly RoadworksWaveAProductionRegistration[] =
-  RoadworksWaveAInventory.map((item) => {
-    const professionalPassport = buildRoadworksWaveAProfessionalPassportV4(item.workId);
+export function buildRoadworksWaveAProductionRegistry(
+  inventory: readonly RoadworksWaveAInventoryItem[] = RoadworksWaveAInventory,
+  passportBuilder: typeof buildRoadworksWaveAProfessionalPassportV4 =
+    buildRoadworksWaveAProfessionalPassportV4,
+): readonly RoadworksWaveAProductionRegistration[] {
+  return inventory.map((item) => {
     const calculationProfileId = `roadworks-wave-a:${item.workId}:calculation-profile:v4.3`;
     const parameterSchemaId = `${item.workId}:parameter-schema:v4.3`;
-    const formulaGraphId = professionalPassport.calculation.formulaGraphVersion;
-    const normativeCompositionId = professionalPassport.normativeComposition.compositionId;
-    return {
+    let professionalPassport: ReturnType<typeof buildRoadworksWaveAProfessionalPassportV4> | null = null;
+    let parameterSchema: readonly RoadworksWaveAParameterKey[] | null = null;
+    let parameterDefinitions: ReturnType<typeof getRoadworksWaveAParameterDefinitions> | null = null;
+    let semanticFingerprint: string | null = null;
+    const getProfessionalPassport = () => {
+      professionalPassport ??= passportBuilder(item.workId);
+      return professionalPassport;
+    };
+    const registration = {
       ...item,
       migrationVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
       overlayId: `${item.workId}:overlay:v4.3`,
-      formulaGraphId,
       calculationProfileId,
       parameterSchemaId,
-      normativeCompositionId,
-      semanticFingerprint: estimateDeterministicHash({
-        workKey: item.workId,
-        canonicalModelId: item.canonicalModelId,
-        scopePresetId: item.scopePresetId,
-        scopeProfile: item.scopeProfile,
-        passportId: professionalPassport.passportId,
-        passportVersion: professionalPassport.version,
-        calculationProfileId,
-        parameterSchemaId,
-        formulaGraphId,
-        normativeCompositionId,
-      }),
-      parameterSchema: getRoadworksWaveAParameterKeys(item.workId),
-      parameterDefinitions: getRoadworksWaveAParameterDefinitions(item.workId),
       passport: {
         requestedCatalogWorkId: item.workId,
         canonicalWorkId: item.canonicalWorkId,
@@ -93,9 +86,63 @@ export const RoadworksWaveAProductionRegistry: readonly RoadworksWaveAProduction
         technologyFamily: item.technologyFamily,
         scopeProfile: item.scopeProfile,
       },
-      professionalPassport,
     };
+    Object.defineProperties(registration, {
+      professionalPassport: {
+        enumerable: true,
+        get: getProfessionalPassport,
+      },
+      formulaGraphId: {
+        enumerable: true,
+        get: () => getProfessionalPassport().calculation.formulaGraphVersion,
+      },
+      normativeCompositionId: {
+        enumerable: true,
+        get: () => getProfessionalPassport().normativeComposition.compositionId,
+      },
+      parameterSchema: {
+        enumerable: true,
+        get: () => {
+          parameterSchema ??= getRoadworksWaveAParameterKeys(item.workId);
+          return parameterSchema;
+        },
+      },
+      parameterDefinitions: {
+        enumerable: true,
+        get: () => {
+          parameterDefinitions ??= getRoadworksWaveAParameterDefinitions(item.workId);
+          return parameterDefinitions;
+        },
+      },
+      semanticFingerprint: {
+        enumerable: true,
+        get: () => {
+          if (semanticFingerprint) return semanticFingerprint;
+          const passport = getProfessionalPassport();
+          const formulaGraphId = passport.calculation.formulaGraphVersion;
+          const normativeCompositionId = passport.normativeComposition.compositionId;
+          semanticFingerprint = estimateDeterministicHash({
+            workKey: item.workId,
+            canonicalModelId: item.canonicalModelId,
+            scopePresetId: item.scopePresetId,
+            scopeProfile: item.scopeProfile,
+            passportId: passport.passportId,
+            passportVersion: passport.version,
+            calculationProfileId,
+            parameterSchemaId,
+            formulaGraphId,
+            normativeCompositionId,
+          });
+          return semanticFingerprint;
+        },
+      },
+    });
+    return registration as RoadworksWaveAProductionRegistration;
   });
+}
+
+export const RoadworksWaveAProductionRegistry =
+  buildRoadworksWaveAProductionRegistry();
 
 const registrationByWorkId = new Map(
   RoadworksWaveAProductionRegistry.map((registration) => [registration.workId, registration]),

@@ -6,8 +6,11 @@ import { buildConsumerRepairDraftFromExactRoadworksWaveARuntime } from "../../sr
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
   ROADWORKS_WAVE_A_MIGRATION_VERSION,
+  RoadworksWaveAInventory,
   RoadworksWaveAProductionRegistry,
+  buildRoadworksWaveAProductionRegistry,
   buildRoadworksWaveAProductionDraft,
+  buildRoadworksWaveAProfessionalPassportV4,
   getRoadworksWaveAParameterDefinitions,
   getRoadworksWaveAParameterKeys,
   roadworksWaveANaturalLanguageCases,
@@ -32,6 +35,31 @@ function p0ParameterKeys(workId: string) {
 }
 
 describe("RoadworksWaveAProductionBindingContract", () => {
+  test("defers professional passport projections until their exact registration is used", () => {
+    const builtWorkIds: string[] = [];
+    const inventory = RoadworksWaveAInventory.slice(0, 2);
+    const registry = buildRoadworksWaveAProductionRegistry(
+      inventory,
+      (workId) => {
+        builtWorkIds.push(workId);
+        return buildRoadworksWaveAProfessionalPassportV4(workId);
+      },
+    );
+
+    expect(registry).toHaveLength(2);
+    expect(builtWorkIds).toEqual([]);
+
+    expect(registry[0].professionalPassport.passportId).toBeTruthy();
+    expect(registry[0].formulaGraphId).toBeTruthy();
+    expect(registry[0].normativeCompositionId).toBeTruthy();
+    expect(registry[0].semanticFingerprint).toBeTruthy();
+    expect(builtWorkIds).toEqual([registry[0].workId]);
+
+    expect(registry[1].parameterSchema.length).toBeGreaterThan(0);
+    expect(registry[1].parameterDefinitions.length).toBeGreaterThan(0);
+    expect(builtWorkIds).toEqual([registry[0].workId]);
+  });
+
   test("owns all 35 registrations without legacy or generic owners", () => {
     expect(RoadworksWaveAProductionRegistry).toHaveLength(35);
     expect(new Set(RoadworksWaveAProductionRegistry.map((item) => item.workId)).size).toBe(35);
