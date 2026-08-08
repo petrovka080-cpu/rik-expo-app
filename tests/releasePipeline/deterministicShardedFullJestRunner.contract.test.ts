@@ -4,6 +4,7 @@ import {
   validateWeightedJestShardPlan,
   type WeightedJestManifestEntry,
 } from "../../scripts/release/runDeterministicShardedFullJest";
+import { applyAffectedJestRuntimeCalibration } from "../../scripts/verification/affectedJestSharding";
 
 function entry(testPath: string, weight: number): WeightedJestManifestEntry {
   return {
@@ -65,5 +66,25 @@ describe("deterministic sharded full Jest runner", () => {
       { microbatch_id: 2, test_files: ["tests/e.test.ts", "tests/f.test.ts"] },
     ]);
     expect(microbatches.flatMap((item) => item.test_files)).toEqual(shard.test_files);
+  });
+
+  it("keeps measured long-running affected suites on separate bounded shards", () => {
+    const calibrated = applyAffectedJestRuntimeCalibration(manifest, {
+      "tests/a.test.ts": 600_000,
+      "tests/b.test.ts": 300_000,
+      "tests/c.test.ts": 200_000,
+    });
+    const shards = planWeightedJestShards(calibrated, 3);
+
+    expect(validateWeightedJestShardPlan(calibrated, shards)).toEqual({
+      missing: [],
+      duplicates: [],
+      unexpected: [],
+    });
+    expect(
+      ["tests/a.test.ts", "tests/b.test.ts", "tests/c.test.ts"].map((testPath) =>
+        shards.find((shard) => shard.test_files.includes(testPath))?.shard_id,
+      ),
+    ).toEqual([0, 1, 2]);
   });
 });
