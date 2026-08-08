@@ -14,6 +14,7 @@ import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consum
 import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
+import { hydrateNextTransactionalConsumerRepairHistoryPage } from "../../lib/consumerRequests/consumerRequestRepository";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
@@ -215,6 +216,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
   private approvalCommitInFlight = false;
+  private durableHistoryLoadInFlight = false;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
@@ -1257,17 +1259,42 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
-  private loadMoreApprovedHistory = () => {
+  private loadMoreApprovedHistory = async () => {
+    if (this.durableHistoryLoadInFlight) return;
     if (!this.historyLoaded) {
       this.ensureHistoryLoaded();
       return;
     }
-    const approvedHistoryPage = appendNextApprovedHistoryPage(
-      this.state.approvedHistoryPage,
-      (cursorCreatedAt, limit) => listConsumerRepairApprovedHistory(CONSUMER_USER_ID, { limit, cursorCreatedAt }),
-    );
-    if (approvedHistoryPage !== this.state.approvedHistoryPage) {
-      this.setState({ approvedHistoryPage });
+    this.durableHistoryLoadInFlight = true;
+    try {
+      await hydrateNextTransactionalConsumerRepairHistoryPage(
+        this.state.approvedHistoryPage.pageSize,
+      );
+      const currentPage = this.state.approvedHistoryPage;
+      if (currentPage.items.length === 0) {
+        this.setState({
+          approvedHistoryPage: listConsumerRepairApprovedHistory(CONSUMER_USER_ID, {
+            limit: currentPage.pageSize,
+          }),
+        });
+        return;
+      }
+      const cursorCreatedAt = currentPage.nextCursorCreatedAt
+        ?? currentPage.items.at(-1)?.draft.createdAt
+        ?? null;
+      if (!cursorCreatedAt) return;
+      const approvedHistoryPage = appendNextApprovedHistoryPage(
+        { ...currentPage, nextCursorCreatedAt: cursorCreatedAt },
+        (cursor, limit) => listConsumerRepairApprovedHistory(CONSUMER_USER_ID, {
+          limit,
+          cursorCreatedAt: cursor,
+        }),
+      );
+      if (approvedHistoryPage !== currentPage) {
+        this.setState({ approvedHistoryPage });
+      }
+    } finally {
+      this.durableHistoryLoadInFlight = false;
     }
   };
   private renderScreenView(state: State): React.ReactElement {

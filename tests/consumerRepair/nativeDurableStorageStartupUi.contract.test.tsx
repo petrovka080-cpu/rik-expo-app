@@ -132,4 +132,31 @@ describe("consumer repair durable storage startup UI", () => {
       renderer.unmount();
     });
   });
+
+  it("defers unrelated durable history hydration until after a fresh initial build microtask", async () => {
+    mockInitializeDurableStorage.mockResolvedValueOnce();
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestScreen
+          initialProblemText="Новая точная асфальтовая работа"
+          autoPrepare
+        />,
+      );
+      await Promise.resolve();
+    });
+
+    expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
+
+    await act(async () => {
+      jest.advanceTimersByTime(0);
+      await Promise.resolve();
+    });
+
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
 });

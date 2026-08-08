@@ -17,8 +17,10 @@ type BoundedDurableHydrationOutcome =
   | { status: "failed" }
   | { status: "timed_out"; completion: Promise<void> };
 
-async function runBoundedDurableHydration(): Promise<BoundedDurableHydrationOutcome> {
-  const completion = hydrateTransactionalConsumerRepairRequestStore();
+async function runBoundedDurableHydration(
+  requestedDraftId?: string,
+): Promise<BoundedDurableHydrationOutcome> {
+  const completion = hydrateTransactionalConsumerRepairRequestStore(requestedDraftId);
   let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
     const status = await Promise.race([
@@ -47,7 +49,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     const attempt = hydrationAttemptRef.current + 1;
     hydrationAttemptRef.current = attempt;
     setDurableStatus("loading");
-    void runBoundedDurableHydration().then((outcome) => {
+    void runBoundedDurableHydration(props.initialDraftId?.trim()).then((outcome) => {
       if (hydrationAttemptRef.current !== attempt) return;
       if (outcome.status === "ready") {
         screenRef.current?.refreshAfterDurableHydration();
@@ -67,13 +69,23 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
         },
       );
     });
-  }, []);
+  }, [props.initialDraftId]);
   React.useEffect(() => {
-    hydrate();
+    // A fresh exact-intent build is queued by the child controller in a
+    // microtask. Start unrelated history recovery in the next task so a large
+    // durable store cannot contend with the one required runtime compilation.
+    const deferForFreshBuild = Boolean(
+      props.initialProblemText?.trim() && !props.initialDraftId?.trim(),
+    );
+    const deferredHydration = deferForFreshBuild
+      ? setTimeout(hydrate, 0)
+      : null;
+    if (!deferForFreshBuild) hydrate();
     return () => {
+      if (deferredHydration !== null) clearTimeout(deferredHydration);
       hydrationAttemptRef.current += 1;
     };
-  }, [hydrate]);
+  }, [hydrate, props.initialDraftId, props.initialProblemText]);
   const photoCapture = useConsumerRepairPhotoCaptureController({
     onStatusMessage: (statusMessage) => screenRef.current?.setPhotoCaptureStatusMessage(statusMessage),
     onMaterialPhotoCaptured: (result) => {

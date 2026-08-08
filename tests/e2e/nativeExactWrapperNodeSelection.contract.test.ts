@@ -1,5 +1,6 @@
 import {
   findNativeNodeOwnedByExactWrapper,
+  findNativeWrapperOwningExactText,
   nativeBoundsAreContainedBy,
   nativeNodeSafeViewportAdjustment,
   nativeOptionalControlledInputIsEmpty,
@@ -25,6 +26,34 @@ describe("native exact-wrapper node selection", () => {
       [{ id: "editable-param-popover-input", bounds: "[10,10][90,90]" }],
       { bounds: "[100,100][200,200]" },
       (node) => node.id === "editable-param-popover-input",
+    )).toBeNull();
+  });
+
+  it("selects only the history wrapper that geometrically owns the exact title", () => {
+    const nodes = [
+      { id: "consumer-repair-history-main", text: "", bounds: "[100,200][900,420]" },
+      { id: "title", text: "Старая смета", bounds: "[150,230][780,280]" },
+      { id: "consumer-repair-history-main", text: "", bounds: "[100,440][900,660]" },
+      { id: "title", text: "Точная новая смета", bounds: "[150,470][780,520]" },
+    ];
+
+    expect(findNativeWrapperOwningExactText(
+      nodes,
+      (node) => node.id === "consumer-repair-history-main",
+      (node) => node.text,
+      "Точная новая смета",
+    )?.bounds).toBe("[100,440][900,660]");
+  });
+
+  it("fails closed instead of selecting a generic history row", () => {
+    expect(findNativeWrapperOwningExactText(
+      [
+        { id: "consumer-repair-history-main", text: "", bounds: "[100,200][900,420]" },
+        { id: "title", text: "Другая смета", bounds: "[150,230][780,280]" },
+      ],
+      (node) => node.id === "consumer-repair-history-main",
+      (node) => node.text,
+      "Ожидаемая смета",
     )).toBeNull();
   });
 

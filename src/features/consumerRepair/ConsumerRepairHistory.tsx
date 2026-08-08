@@ -7,6 +7,7 @@ import type {
   ConsumerRepairApprovedHistoryPage,
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
+import { hasUnhydratedTransactionalConsumerRepairBundles } from "../../lib/consumerRequests/consumerRequestRepository";
 import { ConsumerRepairPdfRow } from "./ConsumerRepairPdfRow";
 import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
 
@@ -45,7 +46,9 @@ export function ConsumerRepairHistory({
   const approvedCount = approvedHistoryPage.totalApprovedCount;
   const loadedCount = approvedHistory.length;
   const remainingCount = Math.max(approvedCount - loadedCount, 0);
-  const hasMore = Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount;
+  const hasPendingDurableBundles = hasUnhydratedTransactionalConsumerRepairBundles();
+  const hasMore = hasPendingDurableBundles
+    || (Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount);
   const selectedApprovedBundle = selectedHistoryId
     ? approvedHistory.find((bundle) => bundle.draft.id === selectedHistoryId) ?? null
     : null;
@@ -145,7 +148,10 @@ export function ConsumerRepairHistory({
                       testID="consumer-repair-history-load-more"
                     >
                       <Text style={styles.loadMoreText}>
-                        Показать ещё {Math.min(approvedHistoryPage.pageSize, remainingCount)}
+                        Показать ещё {Math.min(
+                          approvedHistoryPage.pageSize,
+                          remainingCount || approvedHistoryPage.pageSize,
+                        )}
                       </Text>
                     </Pressable>
                   ) : null

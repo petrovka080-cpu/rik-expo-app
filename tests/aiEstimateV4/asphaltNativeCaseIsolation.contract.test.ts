@@ -61,4 +61,17 @@ describe("Asphalt native case isolation contract", () => {
     expect(exactInputLookup).toContain("swipe(editorAdjustment)");
     expect(exactInputLookup).not.toContain("android.widget.EditText");
   });
+
+  it("reopens the exact cold-replayed revision without assuming that a capped page count grows", () => {
+    const source = readRunner();
+    const coldReplay = source.slice(
+      source.indexOf("const coldLaunch = launchUri(requestUri())"),
+      source.indexOf('markPhase("cold_replay_complete")'),
+    );
+
+    expect(coldReplay).toContain("tapHistoryEntryByExactTitle(registration.professionalNameRu)");
+    expect(coldReplay).toContain("history_exact_title_open_failed");
+    expect(coldReplay).not.toContain("waitForApprovedHistoryCountAtLeast");
+    expect(coldReplay).not.toContain('tapById("consumer-repair-history-main"');
+  });
 });

@@ -48,6 +48,23 @@ export function findNativeNodeOwnedByExactWrapper<TNode extends NativeBoundedNod
   ) ?? null;
 }
 
+export function findNativeWrapperOwningExactText<TNode extends NativeBoundedNode>(
+  nodes: readonly TNode[],
+  matchesWrapper: (node: TNode) => boolean,
+  readText: (node: TNode) => string,
+  expectedText: string,
+): TNode | null {
+  const normalizedExpectedText = expectedText.trim();
+  if (!normalizedExpectedText) return null;
+  return nodes.find((wrapper) =>
+    matchesWrapper(wrapper)
+    && nodes.some((node) =>
+      readText(node).trim() === normalizedExpectedText
+      && nativeBoundsAreContainedBy(node.bounds, wrapper.bounds)
+    )
+  ) ?? null;
+}
+
 export function nativeOptionalControlledInputIsEmpty(
   node: { text: string } | null,
   placeholder: string,

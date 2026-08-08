@@ -10,6 +10,7 @@ import {
 } from "./nativeEstimateBuildTimingEvidence";
 import {
   findNativeNodeOwnedByExactWrapper,
+  findNativeWrapperOwningExactText,
   nativeNodeSafeViewportAdjustment,
   nativeOptionalControlledInputIsEmpty,
 } from "./nativeExactWrapperNodeSelection";
@@ -389,6 +390,55 @@ async function scrollToId(testId: string, maxSwipes = 18): Promise<{ snapshot: R
   return { snapshot, node: null };
 }
 
+async function tapHistoryEntryByExactTitle(
+  expectedTitle: string,
+  maxSwipes = 20,
+  timeoutMs = 180_000,
+): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  let direction: "up" | "down" = "up";
+  let swipesInDirection = 0;
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  while (Date.now() < deadline) {
+    const snapshot = dumpUi();
+    const exactHistoryMain = findNativeWrapperOwningExactText(
+      snapshot.nodes,
+      (node) => nodeHasId(node, "consumer-repair-history-main"),
+      (node) => node.text,
+      expectedTitle,
+    );
+    if (exactHistoryMain) {
+      const adjustment = nativeNodeSafeViewportAdjustment(
+        exactHistoryMain.bounds,
+        viewport().height,
+      );
+      if (adjustment === "none") return tapNode(exactHistoryMain);
+      if (adjustment === "invalid") return false;
+      swipe(adjustment);
+      await wait(600);
+      continue;
+    }
+
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint
+      ? stableBoundaryCount + 1
+      : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2 || swipesInDirection >= maxSwipes) {
+      direction = direction === "up" ? "down" : "up";
+      swipesInDirection = 0;
+      stableBoundaryCount = 0;
+      await wait(1_500);
+      continue;
+    }
+    swipe(direction, swipesInDirection % 4 === 3);
+    swipesInDirection += 1;
+    await wait(600);
+  }
+  return false;
+}
+
 async function returnToTop(swipes = 16): Promise<void> {
   for (let index = 0; index < swipes; index += 1) {
     swipe("down", index % 4 === 3);
@@ -668,26 +718,6 @@ async function waitForApprovedHistoryIncrement(
     const lookup = await scrollToId("consumer-repair-history-loaded-count", 20);
     const numbers = (lookup.node?.text ?? "").match(/\d+/g)?.map(Number) ?? [];
     if (numbers.length >= 2 && numbers[0] > 0 && numbers[1] > previousApprovedCount) return true;
-    await wait(5_000);
-  }
-  return false;
-}
-
-async function waitForApprovedHistoryCountAtLeast(
-  expectedApprovedCount: number,
-  timeoutMs = 180_000,
-): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    const lookup = await scrollToId("consumer-repair-history-loaded-count", 20);
-    const numbers = (lookup.node?.text ?? "").match(/\d+/g)?.map(Number) ?? [];
-    if (
-      numbers.length >= 2
-      && numbers[0] >= expectedApprovedCount
-      && numbers[1] >= expectedApprovedCount
-    ) {
-      return true;
-    }
     await wait(5_000);
   }
   return false;
@@ -1167,16 +1197,15 @@ async function runCase(
   const coldLaunch = launchUri(requestUri());
   if (!coldLaunch.ok) failures.push(`cold_launch_failed:${coldLaunch.output.slice(0, 240)}`);
   await waitForIdSparse("consumer-repair-history-button", 180_000, 15_000, 6_000);
-  if (!await waitForApprovedHistoryCountAtLeast(approvedHistoryCountBefore + 1)) {
-    failures.push("cold_history_durable_count_missing");
-  }
   if (!await tapById("consumer-repair-history-button", 16)) {
     failures.push("history_open_failed");
   } else {
     const modal = await waitForId("consumer-repair-history-modal", 30_000);
     if (!findNodeById(modal, "consumer-repair-history-modal")) failures.push("history_modal_missing");
   }
-  if (!await tapById("consumer-repair-history-main", 10)) failures.push("history_latest_open_failed");
+  if (!await tapHistoryEntryByExactTitle(registration.professionalNameRu)) {
+    failures.push("history_exact_title_open_failed");
+  }
   const history = await waitForId("consumer-repair-history-readonly-snapshot", 90_000);
   const historyExactOwner = history.text.includes(registration.professionalNameRu);
   if (!historyExactOwner) failures.push("history_exact_owner_title_missing");

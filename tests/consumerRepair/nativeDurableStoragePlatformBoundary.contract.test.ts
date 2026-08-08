@@ -4,9 +4,13 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
   initializeConsumerRepairTransactionalDurableStorage,
+  listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
 import {
   getConsumerRepairBundle,
+  hasUnhydratedTransactionalConsumerRepairBundles,
+  hydrateNextTransactionalConsumerRepairHistoryPage,
+  hydrateTransactionalConsumerRepairRequestStore,
   setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import {
@@ -15,18 +19,23 @@ import {
   type RevisionBundle,
 } from "../../src/lib/platform/estimateRevisionDurableStore";
 
-function nativeBundle(id: string): RevisionBundle {
+function nativeBundle(
+  id: string,
+  input: { approved?: boolean; createdAt?: string } = {},
+): RevisionBundle {
+  const createdAt = input.createdAt ?? "2026-07-28T00:00:00.000Z";
   return {
     draft: {
       id,
       consumerUserId: "consumer-demo-user",
-      status: "draft",
+      status: input.approved ? "consumer_approved" : "draft",
       title: id,
       problemText: id,
       repairType: "road_construction",
       missingData: [],
-      createdAt: "2026-07-28T00:00:00.000Z",
-      updatedAt: "2026-07-28T00:00:00.000Z",
+      createdAt,
+      updatedAt: createdAt,
+      approvedAt: input.approved ? createdAt : undefined,
     },
     items: [],
     media: [],
@@ -125,5 +134,71 @@ describe("consumer repair native durable storage platform boundary", () => {
     expect(getConsumerRepairBundle("native-good-draft").draft.id).toBe(
       "native-good-draft",
     );
+  });
+
+  it("hydrates native transactional history in bounded newest-first pages without deleting older revisions", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "android",
+    });
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { product: "ReactNative" },
+    });
+    __resetConsumerRepairRequestStoreForTests();
+
+    const baseTime = Date.UTC(2026, 7, 8, 12, 0, 0);
+    const bundles = new Map<string, RevisionBundle>();
+    for (let index = 0; index < 25; index += 1) {
+      const timestamp = baseTime + index * 1_000;
+      const id = `consumer_draft_${timestamp.toString(36)}_native${index}`;
+      bundles.set(id, nativeBundle(id, {
+        approved: true,
+        createdAt: new Date(timestamp).toISOString(),
+      }));
+    }
+    const recoveryOrder: string[] = [];
+    const durableStore: EstimateRevisionDurableStore = {
+      listKeys: async () => [...bundles.keys()].reverse(),
+      readBundle: async (key) => bundles.get(key) ?? null,
+      recoverLastValid: async (key) => {
+        recoveryOrder.push(key);
+        return bundles.get(key) ?? null;
+      },
+      writeBundleAtomically: async () => ({
+        status: "FAILED",
+        version: null,
+        error: {
+          code: "STORAGE_UNAVAILABLE",
+          message: "not used",
+          currentVersion: null,
+        },
+      }),
+      deleteOrphans: async () => undefined,
+    };
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+
+    await hydrateTransactionalConsumerRepairRequestStore();
+    const firstPage = listConsumerRepairApprovedHistory("consumer-demo-user", { limit: 20 });
+    const expectedNewestIds = [...bundles.keys()].reverse().slice(0, 20);
+
+    expect(recoveryOrder).toEqual(expectedNewestIds);
+    expect(firstPage.items.map((bundle) => bundle.draft.id)).toEqual(expectedNewestIds);
+    expect(firstPage.totalApprovedCount).toBe(20);
+    expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(true);
+
+    await expect(hydrateNextTransactionalConsumerRepairHistoryPage()).resolves.toBe(5);
+    const refreshedFirstPage = listConsumerRepairApprovedHistory("consumer-demo-user", { limit: 20 });
+    const secondPage = listConsumerRepairApprovedHistory("consumer-demo-user", {
+      limit: 20,
+      cursorCreatedAt: refreshedFirstPage.nextCursorCreatedAt,
+    });
+    expect(refreshedFirstPage.totalApprovedCount).toBe(25);
+    expect(secondPage.items.map((bundle) => bundle.draft.id)).toEqual(
+      [...bundles.keys()].slice(0, 5).reverse(),
+    );
+    expect(new Set(recoveryOrder)).toEqual(new Set(bundles.keys()));
+    expect(hasUnhydratedTransactionalConsumerRepairBundles()).toBe(false);
   });
 });

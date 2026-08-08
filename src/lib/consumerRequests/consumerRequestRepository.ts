@@ -37,6 +37,7 @@ const store = {
 };
 
 const APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT = 6;
+export const TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE = 20;
 
 export const CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY = "rik.consumer_repair.request_bundles.v1";
 export const CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY = "rik.consumer_repair.request_bundles.v2.manifest";
@@ -59,6 +60,10 @@ type ConsumerRepairDurableV2Snapshot = {
 let durableHydrated = false;
 let legacyMigrationPending = false;
 const durablePrunedBundleIds = new Set<string>();
+let transactionalDurableBundleIndexInitialized = false;
+let transactionalDurableBundleIds: string[] = [];
+const hydratedTransactionalDurableBundleIds = new Set<string>();
+let transactionalHydrationQueue: Promise<void> = Promise.resolve();
 
 export type ConsumerRepairHistoryPageOptions = {
   cursorCreatedAt?: string | null;
@@ -658,9 +663,35 @@ function removeLocalPayloadForTransactionalBundle(
   }
 }
 
-export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<void> {
-  hydrateConsumerRepairRequestStore();
-  const storage = getWebDurableStorage();
+function transactionalDraftIdTimestamp(requestDraftId: string): number | null {
+  const timestamp = requestDraftId.match(/^consumer_draft_([0-9a-z]+)_/i)?.[1];
+  if (!timestamp) return null;
+  const parsed = Number.parseInt(timestamp, 36);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+function newestTransactionalDraftIdsFirst(left: string, right: string): number {
+  const leftTimestamp = transactionalDraftIdTimestamp(left);
+  const rightTimestamp = transactionalDraftIdTimestamp(right);
+  if (leftTimestamp != null && rightTimestamp != null && leftTimestamp !== rightTimestamp) {
+    return rightTimestamp - leftTimestamp;
+  }
+  if (leftTimestamp != null && rightTimestamp == null) return -1;
+  if (leftTimestamp == null && rightTimestamp != null) return 1;
+  return right.localeCompare(left);
+}
+
+function enqueueTransactionalHydration<T>(operation: () => Promise<T>): Promise<T> {
+  const next = transactionalHydrationQueue.then(operation, operation);
+  transactionalHydrationQueue = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+}
+
+async function initializeTransactionalDurableBundleIndex(storage: Storage | null): Promise<void> {
+  if (transactionalDurableBundleIndexInitialized) return;
   const ids = new Set(await settleDurableOperation(
     listTransactionalConsumerRepairDurableBundleIds(),
     [],
@@ -669,8 +700,6 @@ export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<
     for (const requestDraftId of listTransactionalConsumerRepairBundleIds(storage)) {
       ids.add(requestDraftId);
     }
-  }
-  if (storage) {
     for (const requestDraftId of readDurableRecordIds(storage)) {
       const legacyBundle = readDurableBundle(storage, requestDraftId);
       if (!legacyBundle || !isLargeConsumerRepairRevisionBundle(legacyBundle)) continue;
@@ -687,7 +716,18 @@ export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<
       });
     }
   }
-  const recovered = await Promise.all([...ids].map(async (requestDraftId) => ({
+  transactionalDurableBundleIds = [...ids].sort(newestTransactionalDraftIdsFirst);
+  transactionalDurableBundleIndexInitialized = true;
+}
+
+async function hydrateTransactionalDurableBundleIds(
+  requestDraftIds: readonly string[],
+): Promise<number> {
+  const ids = requestDraftIds.filter((requestDraftId) =>
+    !hydratedTransactionalDurableBundleIds.has(requestDraftId)
+  );
+  if (ids.length === 0) return 0;
+  const recovered = await Promise.all(ids.map(async (requestDraftId) => ({
     requestDraftId,
     bundle: await settleDurableOperation(
       readTransactionalConsumerRepairBundle(requestDraftId),
@@ -695,11 +735,61 @@ export async function hydrateTransactionalConsumerRepairRequestStore(): Promise<
     ),
   })));
   for (const { requestDraftId, bundle } of recovered) {
+    hydratedTransactionalDurableBundleIds.add(requestDraftId);
     if (!bundle) continue;
     const normalized = normalizeEstimateDraftSessionCompatibilityView(bundle);
     store.bundles.set(requestDraftId, cloneConsumerRepairValue(normalized));
     syncConsumerRepairBundleToAiEstimateLedger(normalized);
   }
+  return ids.length;
+}
+
+export async function hydrateTransactionalConsumerRepairRequestStore(
+  requestedDraftId?: string,
+): Promise<void> {
+  hydrateConsumerRepairRequestStore();
+  const storage = getWebDurableStorage();
+  await enqueueTransactionalHydration(async () => {
+    await initializeTransactionalDurableBundleIndex(storage);
+    const unhydratedIds = transactionalDurableBundleIds.filter((requestDraftId) =>
+      !hydratedTransactionalDurableBundleIds.has(requestDraftId)
+    );
+    const eagerIds = storage
+      ? unhydratedIds
+      : unhydratedIds.slice(0, TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE);
+    const exactRequestedDraftId = requestedDraftId?.trim();
+    if (
+      exactRequestedDraftId
+      && transactionalDurableBundleIds.includes(exactRequestedDraftId)
+      && !hydratedTransactionalDurableBundleIds.has(exactRequestedDraftId)
+      && !eagerIds.includes(exactRequestedDraftId)
+    ) {
+      eagerIds.push(exactRequestedDraftId);
+    }
+    await hydrateTransactionalDurableBundleIds(eagerIds);
+  });
+}
+
+export async function hydrateNextTransactionalConsumerRepairHistoryPage(
+  limit = TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE,
+): Promise<number> {
+  const boundedLimit = Math.min(
+    Math.max(Math.trunc(limit), 1),
+    TRANSACTIONAL_CONSUMER_REPAIR_HYDRATION_PAGE_SIZE,
+  );
+  return enqueueTransactionalHydration(async () => {
+    await initializeTransactionalDurableBundleIndex(getWebDurableStorage());
+    const nextIds = transactionalDurableBundleIds
+      .filter((requestDraftId) => !hydratedTransactionalDurableBundleIds.has(requestDraftId))
+      .slice(0, boundedLimit);
+    return hydrateTransactionalDurableBundleIds(nextIds);
+  });
+}
+
+export function hasUnhydratedTransactionalConsumerRepairBundles(): boolean {
+  return transactionalDurableBundleIds.some((requestDraftId) =>
+    !hydratedTransactionalDurableBundleIds.has(requestDraftId)
+  );
 }
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
@@ -857,6 +947,10 @@ export function resetConsumerRepairRequestStoreForTests(): void {
   durableHydrated = true;
   legacyMigrationPending = false;
   durablePrunedBundleIds.clear();
+  transactionalDurableBundleIndexInitialized = false;
+  transactionalDurableBundleIds = [];
+  hydratedTransactionalDurableBundleIds.clear();
+  transactionalHydrationQueue = Promise.resolve();
   resetConsumerRepairDurableSaveDiagnosticsForTests();
   resetConsumerRepairAiEstimateLedgerForTests();
   setConsumerRepairTransactionalStoreForTests(null);
@@ -880,10 +974,18 @@ export function resetConsumerRepairRequestStoreForTests(): void {
 export function simulateConsumerRepairRequestStoreReloadForTests(): void {
   store.bundles.clear();
   durableHydrated = false;
+  transactionalDurableBundleIndexInitialized = false;
+  transactionalDurableBundleIds = [];
+  hydratedTransactionalDurableBundleIds.clear();
+  transactionalHydrationQueue = Promise.resolve();
 }
 
 export function setConsumerRepairTransactionalDurableStoreForTests(
   durableStore: EstimateRevisionDurableStore | null,
 ): void {
+  transactionalDurableBundleIndexInitialized = false;
+  transactionalDurableBundleIds = [];
+  hydratedTransactionalDurableBundleIds.clear();
+  transactionalHydrationQueue = Promise.resolve();
   setConsumerRepairTransactionalStoreForTests(durableStore);
 }
