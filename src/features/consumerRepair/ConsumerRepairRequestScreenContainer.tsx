@@ -9,6 +9,7 @@ import {
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
+const FRESH_BUILD_HISTORY_HYDRATION_DELAY_MS = 45_000;
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
@@ -72,13 +73,15 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   }, [props.initialDraftId]);
   React.useEffect(() => {
     // A fresh exact-intent build is queued by the child controller in a
-    // microtask. Start unrelated history recovery in the next task so a large
-    // durable store cannot contend with the one required runtime compilation.
+    // microtask. Keep unrelated history recovery outside the complete cold
+    // persistence budget: React Native can flush effects before that microtask,
+    // and a large native store would otherwise contend with the required
+    // runtime compilation even when hydration was deferred by one task.
     const deferForFreshBuild = Boolean(
       props.initialProblemText?.trim() && !props.initialDraftId?.trim(),
     );
     const deferredHydration = deferForFreshBuild
-      ? setTimeout(hydrate, 0)
+      ? setTimeout(hydrate, FRESH_BUILD_HISTORY_HYDRATION_DELAY_MS)
       : null;
     if (!deferForFreshBuild) hydrate();
     return () => {

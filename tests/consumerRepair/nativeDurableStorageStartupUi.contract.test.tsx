@@ -133,7 +133,7 @@ describe("consumer repair durable storage startup UI", () => {
     });
   });
 
-  it("defers unrelated durable history hydration until after a fresh initial build microtask", async () => {
+  it("keeps unrelated durable history hydration outside the fresh-build persistence budget", async () => {
     mockInitializeDurableStorage.mockResolvedValueOnce();
     let renderer!: TestRenderer.ReactTestRenderer;
 
@@ -150,7 +150,14 @@ describe("consumer repair durable storage startup UI", () => {
     expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
 
     await act(async () => {
-      jest.advanceTimersByTime(0);
+      jest.advanceTimersByTime(44_999);
+      await Promise.resolve();
+    });
+
+    expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
       await Promise.resolve();
     });
 

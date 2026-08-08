@@ -502,11 +502,12 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   }
 
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
+    const nextDraftSignature = this.draftSignature(this.buildCards());
     if (
       prevProps.revision?.revisionId !== this.props.revision?.revisionId ||
       prevProps.canonicalParameterSession?.fingerprint !==
         this.props.canonicalParameterSession?.fingerprint ||
-      prevProps.viewModel !== this.props.viewModel
+      nextDraftSignature !== this.state.draftSignature
     ) {
       this.syncDraftFromProps();
     }

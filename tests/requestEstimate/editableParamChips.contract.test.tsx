@@ -96,7 +96,12 @@ function renderPanel(rawInput = "вентфасад под ключ 1500 кв м
   act(() => {
     renderer = TestRenderer.create(renderPanelElement());
   });
-  return { renderer, onApplyParamPatch, onApplyParamBatch };
+  return {
+    renderer,
+    onApplyParamPatch,
+    onApplyParamBatch,
+    rerender: () => renderer.update(renderPanelElement()),
+  };
 }
 
 describe("editable param chips UI", () => {
@@ -106,7 +111,8 @@ describe("editable param chips UI", () => {
 
     expect(countJsonTestId(hostTree, "request-estimate-parameter-panel")).toBe(0);
     expect(countJsonTestId(hostTree, "editable-param-chip-facade_area_m2")).toBe(0);
-    expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(0);
+    expect(countJsonTestId(hostTree, "estimate-revision-timeline")).toBe(1);
+    expect(countJsonTestId(hostTree, "estimate-current-revision-id")).toBe(1);
     expect(visibleText(hostTree)).not.toMatch(/PRICE_MISSING|prices:|estimate_level:|Price source not selected|buyer handoff/);
 
     act(() => {
@@ -120,7 +126,7 @@ describe("editable param chips UI", () => {
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(1);
     expect(countTestIdsWithPrefix(renderer.toJSON(), "editable-param-chip-")).toBeGreaterThan(0);
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-visible-missing-parameters")).toBeLessThanOrEqual(1);
-    expect(countJsonTestId(renderer.toJSON(), "estimate-revision-timeline")).toBe(0);
+    expect(countJsonTestId(renderer.toJSON(), "estimate-revision-timeline")).toBe(1);
 
     const inlineEditors = renderer.root.findAll((node: TestRenderer.ReactTestInstance) =>
       typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-inline-editor-"),
@@ -202,6 +208,46 @@ describe("editable param chips UI", () => {
       expect.objectContaining({ paramKey: editedKeys[2], rawValue: "333" }),
     ]));
     expect(onApplyParamPatch).not.toHaveBeenCalled();
+  });
+
+  it("preserves a local parameter edit across an unrelated parent rerender", () => {
+    const { renderer, onApplyParamBatch, rerender } = renderPanel();
+
+    act(() => {
+      const openButton = renderer.root
+        .findAllByProps({ testID: "request-estimate-parameters-toggle" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!openButton) throw new Error("parameters_toggle_missing");
+      openButton.props.onPress();
+    });
+
+    const editor = renderer.root.findAll((node: TestRenderer.ReactTestInstance) =>
+      typeof node.props.testID === "string" && node.props.testID.startsWith("editable-param-inline-editor-"),
+    )[0];
+    const editedParamKey = String(editor.props.testID).replace("editable-param-inline-editor-", "");
+    act(() => {
+      editor.findByProps({ testID: "editable-param-popover-input" }).props.onChangeText("137");
+    });
+
+    act(() => rerender());
+
+    const rerenderedEditor = renderer.root.findByProps({
+      testID: `editable-param-inline-editor-${editedParamKey}`,
+    });
+    expect(rerenderedEditor.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("137");
+    expect(countJsonTestId(renderer.toJSON(), "editable-param-batch-apply")).toBe(1);
+
+    act(() => {
+      const applyButton = renderer.root
+        .findAllByProps({ testID: "editable-param-batch-apply" })
+        .find((node: TestRenderer.ReactTestInstance) => typeof node.props.onPress === "function");
+      if (!applyButton) throw new Error("batch_apply_missing_after_rerender");
+      applyButton.props.onPress();
+    });
+
+    expect(onApplyParamBatch).toHaveBeenCalledWith([
+      expect.objectContaining({ paramKey: editedParamKey, rawValue: "137" }),
+    ]);
   });
 
   it("cancels local parameter edits without submitting a recalculation", () => {
