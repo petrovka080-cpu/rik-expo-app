@@ -281,13 +281,18 @@ function sortRequirements(
 
 export function buildAiEstimateNormativeWorkParameterPassport(
   templateId: string | null | undefined,
+  input: { professionalPassport?: ProfessionalWorkPassport | null } = {},
 ): AiEstimateNormativeWorkParameterPassport | null {
   const key = String(templateId ?? "").trim();
   if (!key) return null;
   if (passportCache.has(key)) return passportCache.get(key) ?? null;
 
-  const passport = buildProfessionalWorkPassport(key);
-  const schema = buildAiEstimateParameterSchema(key);
+  const passport = input.professionalPassport?.templateId === key
+    ? input.professionalPassport
+    : buildProfessionalWorkPassport(key);
+  const schema = buildAiEstimateParameterSchema(key, {
+    professionalPassport: passport,
+  });
   if (!passport || !schema) {
     return rememberNormativePassport(key, null);
   }

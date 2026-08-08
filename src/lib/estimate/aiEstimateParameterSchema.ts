@@ -13,7 +13,11 @@ import {
   isAiEstimateTechnicalHiddenParam,
   unitFromKey,
 } from "./aiEstimateRuParameterDictionary";
-import type { ProfessionalBoqRecipeRow, WorkPassportParameter } from "./workPassportContract";
+import type {
+  ProfessionalBoqRecipeRow,
+  ProfessionalWorkPassport,
+  WorkPassportParameter,
+} from "./workPassportContract";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 
 export type AiEstimateParameterInputKind = "number" | "text" | "boolean" | "select";
@@ -299,7 +303,10 @@ function sortFields(fields: readonly AiEstimateParameterSchemaField[]): AiEstima
   return [...fields].sort((a, b) => a.priority - b.priority || a.labelRu.localeCompare(b.labelRu, "ru"));
 }
 
-export function buildAiEstimateParameterSchema(templateId: string): AiEstimateParameterSchema | null {
+export function buildAiEstimateParameterSchema(
+  templateId: string,
+  input: { professionalPassport?: ProfessionalWorkPassport | null } = {},
+): AiEstimateParameterSchema | null {
   const key = String(templateId ?? "").trim();
   if (!key) return null;
   if (schemaCache.has(key)) return schemaCache.get(key) ?? null;
@@ -343,7 +350,9 @@ export function buildAiEstimateParameterSchema(templateId: string): AiEstimatePa
     return rememberParameterSchema(key, schema);
   }
 
-  const passport = buildProfessionalWorkPassport(key);
+  const passport = input.professionalPassport?.templateId === key
+    ? input.professionalPassport
+    : buildProfessionalWorkPassport(key);
   if (!passport) {
     return rememberParameterSchema(key, null);
   }

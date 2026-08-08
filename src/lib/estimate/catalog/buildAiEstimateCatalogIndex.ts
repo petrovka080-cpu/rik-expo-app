@@ -27,7 +27,9 @@ function complexityClass(rowCount: number, requirementCount: number): AiEstimate
 
 function entryForTemplate(templateId: string): AiEstimateCatalogIndexEntry {
   const passport = buildProfessionalWorkPassport(templateId);
-  const normative = buildAiEstimateNormativeWorkParameterPassport(templateId);
+  const normative = buildAiEstimateNormativeWorkParameterPassport(templateId, {
+    professionalPassport: passport,
+  });
   if (!passport || !normative) {
     throw new Error(`AI_ESTIMATE_CATALOG_INDEX_TEMPLATE_UNREADY:${templateId}`);
   }

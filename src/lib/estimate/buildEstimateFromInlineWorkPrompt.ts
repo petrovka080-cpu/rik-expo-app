@@ -820,11 +820,13 @@ function buildPassportBackedDraft(input: {
   parseResult: InlineWorkPromptParseResult;
   currency: string;
   selectedTemplateId?: string | null;
+  professionalPassport?: ProfessionalWorkPassport | null;
 }): ConsumerRepairAiDraft | null {
   const templateId = input.selectedTemplateId?.trim() || input.parseResult.matchedTemplate?.templateId;
   if (!templateId) return null;
-  const passport: ProfessionalWorkPassport | null =
-    loadProfessionalWorkPassportBuilder().buildProfessionalWorkPassport(templateId);
+  const passport: ProfessionalWorkPassport | null = input.professionalPassport?.templateId === templateId
+    ? input.professionalPassport
+    : loadProfessionalWorkPassportBuilder().buildProfessionalWorkPassport(templateId);
   if (!passport) return null;
   const baseQuantity = primaryQuantity(input.parseResult) ?? 1;
   const selectedWork = input.selectedTemplateId
@@ -1118,15 +1120,21 @@ export function buildEstimateFromInlineWorkPrompt(
       roadScopeResolution,
     };
   }
-  const passportBackedDraft = buildPassportBackedDraft({
-    parseResult,
-    currency,
-  });
+  // An exact user selection is authoritative and is selected before the broad
+  // prompt-matched fallback below. Building both drafts duplicated a complete
+  // passport/BOQ projection while the fallback could never be consumed.
+  const passportBackedDraft = exactSelectedProfessionalWorkId
+    ? null
+    : buildPassportBackedDraft({
+      parseResult,
+      currency,
+    });
   const explicitlySelectedPassportDraft = exactSelectedProfessionalWorkId
     ? buildPassportBackedDraft({
       parseResult,
       currency,
       selectedTemplateId: exactSelectedProfessionalWorkId,
+      professionalPassport: explicitlySelectedProfessionalPassport,
     })
     : null;
   const expandedCalculatorDraft = buildExpandedDraft({ parseResult, currency });
