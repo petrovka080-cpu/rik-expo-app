@@ -22,6 +22,7 @@ import {
   auditAsphalt35ScaledCloneIntegrityV5,
   buildAsphalt35MaterialCompletenessLedgerV5,
   buildAsphalt35NormativeCompositionLedgerV3,
+  getRoadworksWaveAParameterDefinitions,
   getRoadworksWaveAParameterKeys,
   roadworksWaveANaturalLanguageCases,
 } from "../../src/lib/estimate/v4/roadworks";
@@ -143,6 +144,12 @@ for (const [index, registration] of RoadworksWaveAProductionRegistry.entries()) 
   const workFailures: string[] = [];
   const changedAt = `2026-08-07T08:${String(index).padStart(2, "0")}:00.000Z`;
   const positiveOverrides = explicitOverrides(registration.workId, changedAt);
+  const omittedP0Key = getRoadworksWaveAParameterDefinitions(registration.workId)
+    .find((definition) => definition.tier === "P0")?.key;
+  if (!omittedP0Key) throw new Error(`ASPHALT_35_P0_SCHEMA_EMPTY:${registration.workId}`);
+  const incompleteOverrides = Object.fromEntries(
+    Object.entries(positiveOverrides).filter(([key]) => key !== omittedP0Key),
+  );
 
   const naturalRoutes = roadworksWaveANaturalLanguageCases(registration).map((rawInput) => {
     const routed = buildEstimateFromInlineWorkPrompt({ rawInput });
@@ -167,9 +174,10 @@ for (const [index, registration] of RoadworksWaveAProductionRegistry.entries()) 
   });
 
   const incomplete = buildEstimateFromInlineWorkPrompt({
-    rawInput: `${registration.professionalNameRu} 120 м²`,
+    rawInput: registration.professionalNameRu,
     selectedWorkKey: registration.workId,
     selectedTemplateId: registration.templateId,
+    paramOverrides: incompleteOverrides,
   });
   const incompleteRows = incomplete.draft?.items ?? [];
   const incompletePassed = incomplete.draft?.selectedWork?.selectedWorkKey === registration.workId &&
@@ -181,6 +189,8 @@ for (const [index, registration] of RoadworksWaveAProductionRegistry.entries()) 
   if (!incompletePassed) workFailures.push(`incomplete_p0_not_fail_closed:${registration.workId}`);
   incompleteRecords.push({
     work_key: registration.workId,
+    omitted_p0_key: omittedP0Key,
+    supplied_parameter_keys: Object.keys(incompleteOverrides).sort(),
     readiness: incompleteRows[0]?.sourceParameters?.domainResolutionReadiness ?? null,
     row_count: incompleteRows.length,
     procurement_rows: incompleteRows.filter((row) => row.sourceParameters?.includedInProcurement === true).length,
