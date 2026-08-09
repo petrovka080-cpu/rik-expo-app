@@ -541,22 +541,22 @@ async function restoreNativeCaseIsolation(
   };
 }
 
-async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
+async function findSafeNodeById(testId: string, maxSwipes = 18): Promise<UiNode | null> {
   let found = await scrollToId(testId, maxSwipes);
   let node = found.node;
-  if (!node) return false;
+  if (!node) return null;
   const { height } = viewport();
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const adjustment = nativeNodeSafeViewportAdjustment(node.bounds, height);
-    if (adjustment === "none") return tapNode(node);
-    if (adjustment === "invalid") return false;
+    if (adjustment === "none") return node;
+    if (adjustment === "invalid") return null;
     swipe(adjustment);
     await wait(600);
     const snapshot = dumpUi();
     const moved = findNodeById(snapshot, testId);
     if (!moved) {
       const reacquired = await scrollToId(testId, 4);
-      if (!reacquired.node) return false;
+      if (!reacquired.node) return null;
       found = reacquired;
       node = reacquired.node;
       continue;
@@ -564,7 +564,12 @@ async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
     found = { snapshot, node: moved };
     node = moved;
   }
-  return false;
+  return null;
+}
+
+async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
+  const node = await findSafeNodeById(testId, maxSwipes);
+  return Boolean(node && tapNode(node));
 }
 
 async function waitForId(testId: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<ReturnType<typeof dumpUi>> {
@@ -774,7 +779,17 @@ async function setInlineParameter(
     return false;
   };
   const tapExactEnumOptionAndWaitForCommit = async (choiceValue: string): Promise<boolean> => {
-    if (!await tapById(`editable-param-option-${key}-${choiceValue}`, 4)) return false;
+    const optionId = `editable-param-option-${key}-${choiceValue}`;
+    if (!await findSafeNodeById(optionId, 4)) return false;
+    // The exact node can still move briefly after ScrollView momentum ends.
+    // Settle first, then reacquire the same exact ID and tap only its current,
+    // safe bounds. Never reuse coordinates from the pre-settle snapshot.
+    await wait(800);
+    const stableSnapshot = dumpUi();
+    const stableNode = findNodeById(stableSnapshot, optionId);
+    if (!stableNode) return false;
+    if (nativeNodeSafeViewportAdjustment(stableNode.bounds, viewport().height) !== "none") return false;
+    if (!tapNode(stableNode)) return false;
     // Let React Native Pressability and the controlled-state onChange commit
     // before any follow-up swipe can compete with the accepted exact tap.
     await wait(800);

@@ -129,8 +129,21 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("const editor = exactEditor.node");
     expect(setter).not.toContain("editable-param-batch-dirty-count");
     expect(setter).toContain("tapExactEnumOptionAndWaitForCommit");
-    expect(setter).toContain("await wait(800)");
+    expect(setter).toContain("findSafeNodeById(optionId, 4)");
+    expect(setter).toContain("const stableSnapshot = dumpUi()");
+    expect(setter).toContain("const stableNode = findNodeById(stableSnapshot, optionId)");
+    expect(setter).toContain('nativeNodeSafeViewportAdjustment(stableNode.bounds, viewport().height) !== "none"');
     expect(setter.indexOf("await wait(800)")).toBeLessThan(
+      setter.indexOf("const stableSnapshot = dumpUi()"),
+    );
+    expect(setter.indexOf("const stableNode = findNodeById(stableSnapshot, optionId)")).toBeLessThan(
+      setter.indexOf("if (!tapNode(stableNode)) return false"),
+    );
+    expect(setter.indexOf("if (!tapNode(stableNode)) return false")).toBeLessThan(
+      setter.lastIndexOf("await wait(800)"),
+    );
+    expect(setter).toContain("await wait(800)");
+    expect(setter.lastIndexOf("await wait(800)")).toBeLessThan(
       setter.indexOf("return waitForCommittedValue()"),
     );
     expect(setter).toContain("primary-not-dirty");
@@ -140,7 +153,7 @@ describe("Asphalt native case isolation contract", () => {
   it("reacquires every exact tap target into the safe viewport from either clipped edge", () => {
     const source = readRunner();
     const exactTap = source.slice(
-      source.indexOf("async function tapById"),
+      source.indexOf("async function findSafeNodeById"),
       source.indexOf("async function waitForId"),
     );
 
