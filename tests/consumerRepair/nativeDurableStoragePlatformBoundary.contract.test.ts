@@ -136,6 +136,42 @@ describe("consumer repair native durable storage platform boundary", () => {
     );
   });
 
+  it("keeps awaiting a slow native recovery after the bounded UI notice expires", async () => {
+    jest.useFakeTimers();
+    const bundle = nativeBundle("native-slow-draft", { approved: true });
+    let releaseRecovery = (): void => undefined;
+    const slowRecovery = new Promise<RevisionBundle | null>((resolve) => {
+      releaseRecovery = () => resolve(bundle);
+    });
+    const durableStore: EstimateRevisionDurableStore = {
+      listKeys: async () => [bundle.draft.id],
+      readBundle: async () => null,
+      recoverLastValid: async () => slowRecovery,
+      writeBundleAtomically: async () => ({
+        status: "FAILED",
+        version: null,
+        error: {
+          code: "STORAGE_UNAVAILABLE",
+          message: "not used",
+          currentVersion: null,
+        },
+      }),
+      deleteOrphans: async () => undefined,
+    };
+    setConsumerRepairTransactionalDurableStoreForTests(durableStore);
+    __simulateConsumerRepairRequestStoreReloadForTests();
+
+    const hydration = hydrateTransactionalConsumerRepairRequestStore();
+    for (let turn = 0; turn < 6; turn += 1) await Promise.resolve();
+    await jest.advanceTimersByTimeAsync(3_001);
+    releaseRecovery();
+    await hydration;
+
+    expect(getConsumerRepairBundle(bundle.draft.id).draft.id).toBe(
+      bundle.draft.id,
+    );
+  });
+
   it("hydrates native transactional history in bounded newest-first pages without deleting older revisions", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,

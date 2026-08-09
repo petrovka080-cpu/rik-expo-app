@@ -729,10 +729,8 @@ async function hydrateTransactionalDurableBundleIds(
   if (ids.length === 0) return 0;
   const recovered = await Promise.all(ids.map(async (requestDraftId) => ({
     requestDraftId,
-    bundle: await settleDurableOperation(
-      readTransactionalConsumerRepairBundle(requestDraftId),
-      null,
-    ),
+    bundle: await readTransactionalConsumerRepairBundle(requestDraftId)
+      .catch(() => null),
   })));
   for (const { requestDraftId, bundle } of recovered) {
     hydratedTransactionalDurableBundleIds.add(requestDraftId);
