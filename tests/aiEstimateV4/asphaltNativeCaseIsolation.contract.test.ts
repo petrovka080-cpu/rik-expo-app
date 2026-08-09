@@ -97,6 +97,8 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("String(choice.value) !== value");
     expect(setter).toContain("editable-param-option-${key}-${alternate.value}");
     expect(setter).toContain("waitForCommittedValue()");
+    expect(setter).toContain("scrollToId(`editable-param-inline-editor-${key}`, 8)");
+    expect(setter).toContain("const editor = exactEditor.node");
     expect(setter).toContain("primary-not-dirty");
     expect(setter).toContain("alternate-not-dirty");
   });

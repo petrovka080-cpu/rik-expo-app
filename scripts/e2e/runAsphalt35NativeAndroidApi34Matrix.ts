@@ -743,9 +743,10 @@ async function setInlineParameter(
   const waitForCommittedValue = async (): Promise<boolean> => {
     const deadline = Date.now() + 15_000;
     while (Date.now() < deadline) {
-      const snapshot = dumpUi();
+      const exactEditor = await scrollToId(`editable-param-inline-editor-${key}`, 8);
+      const snapshot = exactEditor.snapshot;
       const dirty = findNodeById(snapshot, `editable-param-dirty-${key}`);
-      const editor = findNodeById(snapshot, `editable-param-inline-editor-${key}`);
+      const editor = exactEditor.node;
       const input = editor ? findInputOwnedByEditor(snapshot, editor) : null;
       if (presentation.choices.length > 0 && dirty) return true;
       if (dirty && input?.text === value) return true;
