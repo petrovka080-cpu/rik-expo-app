@@ -21,6 +21,7 @@ describe("Asphalt native case isolation contract", () => {
     expect(isolation).toContain('"consumer-repair-history-modal"');
     expect(isolation).toContain('"consumer-repair-history-close"');
     expect(isolation).toContain('"consumer-repair-screen"');
+    expect(isolation).toContain("isAndroidRequestRouteSurfaceXml(snapshot.xml)");
     expect(isolation).toContain("blocking_modal_present: blockingModalPresent");
     expect(isolation).toContain("data_wipes: 0");
     expect(isolation).not.toContain('"pm", "clear"');

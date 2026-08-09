@@ -14,6 +14,7 @@ import {
   nativeNodeSafeViewportAdjustment,
   nativeOptionalControlledInputIsEmpty,
 } from "./nativeExactWrapperNodeSelection";
+import { isAndroidRequestRouteSurfaceXml } from "../_shared/androidHarness";
 import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
   ROADWORKS_WAVE_A_PARAMETER_PRESENTATION,
@@ -457,12 +458,17 @@ function pdfProjectionVisibleIn(snapshot: ReturnType<typeof dumpUi>): boolean {
   );
 }
 
+function neutralConsumerRepairRouteVisibleIn(snapshot: ReturnType<typeof dumpUi>): boolean {
+  return Boolean(findNodeById(snapshot, "consumer-repair-screen"))
+    || isAndroidRequestRouteSurfaceXml(snapshot.xml);
+}
+
 async function waitForKnownCaseBoundarySurface(timeoutMs = 30_000): Promise<ReturnType<typeof dumpUi>> {
   const deadline = Date.now() + timeoutMs;
   let snapshot = dumpUi();
   while (Date.now() < deadline) {
     if (
-      findNodeById(snapshot, "consumer-repair-screen")
+      neutralConsumerRepairRouteVisibleIn(snapshot)
       || findNodeById(snapshot, "consumer-repair-history-modal")
       || findNodeById(snapshot, "native-pdf-handoff-shell")
     ) {
@@ -523,7 +529,7 @@ async function restoreNativeCaseIsolation(
   snapshot = dumpUi();
   const blockingModalPresent = Boolean(findNodeById(snapshot, "consumer-repair-history-modal"))
     || pdfProjectionVisibleIn(snapshot);
-  const neutralRouteVisible = Boolean(findNodeById(snapshot, "consumer-repair-screen"));
+  const neutralRouteVisible = neutralConsumerRepairRouteVisibleIn(snapshot);
   if (blockingModalPresent) failures.push(`${phase}_blocking_modal_present`);
   if (!neutralRouteVisible) failures.push(`${phase}_neutral_consumer_repair_route_missing`);
 
