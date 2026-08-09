@@ -783,6 +783,35 @@ async function waitForChangedRevision(
   return { snapshot: last, label: revisionLabel(last) };
 }
 
+async function applyEditAndWaitForChangedRevision(
+  previousRevisionLabel: string,
+  timeoutMs = 420_000,
+): Promise<{
+  snapshot: ReturnType<typeof dumpUi>;
+  label: string | null;
+  applyTapped: boolean;
+}> {
+  const deadline = Date.now() + timeoutMs;
+  let last = { snapshot: dumpUi(), label: null as string | null, applyTapped: false };
+  for (let attempt = 0; attempt < 3 && Date.now() < deadline; attempt += 1) {
+    // A successful `adb input tap` only proves that Android accepted the
+    // coordinate. Reacquire the exact action and require a new immutable
+    // revision before accepting the edit; the status from the initial P0 apply
+    // remains visible and is deliberately not an acknowledgement signal.
+    if (!await tapById("editable-param-batch-apply", 16)) continue;
+    last.applyTapped = true;
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
+    const changed = await waitForChangedRevision(
+      previousRevisionLabel,
+      Math.min(120_000, remainingMs),
+    );
+    last = { ...changed, applyTapped: true };
+    if (changed.label && changed.label !== previousRevisionLabel) return last;
+  }
+  return last;
+}
+
 function visibleBuildIdentity(snapshot: ReturnType<typeof dumpUi>): string | null {
   const node = findNodeById(snapshot, "build-identity")
     ?? snapshot.nodes.find((candidate) => candidate.contentDesc === "BUILD_IDENTITY");
@@ -1126,11 +1155,10 @@ async function runCase(
       revision_after_edit: null,
     };
   }
-  if (failures.length === 0 && !await tapById("editable-param-batch-apply", 16)) failures.push("edit_apply_failed");
-  await waitForId("request-estimate-parameter-apply-status", 120_000);
   const changedRevision = revisionBeforeEdit
-    ? await waitForChangedRevision(revisionBeforeEdit)
-    : { snapshot: dumpUi(), label: null };
+    ? await applyEditAndWaitForChangedRevision(revisionBeforeEdit)
+    : { snapshot: dumpUi(), label: null, applyTapped: false };
+  if (!changedRevision.applyTapped) failures.push("edit_apply_failed");
   const editedDiff = await scrollToId("estimate-revision-diff-param-area_m2", 24);
   const edited = editedDiff.snapshot;
   const revisionAfterEdit = changedRevision.label;

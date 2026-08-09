@@ -62,6 +62,26 @@ describe("Asphalt native case isolation contract", () => {
     expect(exactInputLookup).not.toContain("android.widget.EditText");
   });
 
+  it("requires an immutable revision acknowledgement instead of accepting a stale apply status", () => {
+    const source = readRunner();
+    const editApply = source.slice(
+      source.indexOf("async function applyEditAndWaitForChangedRevision"),
+      source.indexOf("function visibleBuildIdentity"),
+    );
+    const editFlow = source.slice(
+      source.indexOf("const changedRevision = revisionBeforeEdit"),
+      source.indexOf("const editedDiff"),
+    );
+
+    expect(editApply).toContain('tapById("editable-param-batch-apply", 16)');
+    expect(editApply).toContain("waitForChangedRevision");
+    expect(editApply).toContain("changed.label !== previousRevisionLabel");
+    expect(editApply).toContain("Math.min(120_000, remainingMs)");
+    expect(editApply).not.toContain("request-estimate-parameter-apply-status");
+    expect(source).toContain("applyEditAndWaitForChangedRevision(revisionBeforeEdit)");
+    expect(editFlow).not.toContain('waitForId("request-estimate-parameter-apply-status"');
+  });
+
   it("reopens the exact cold-replayed revision without assuming that a capped page count grows", () => {
     const source = readRunner();
     const coldReplay = source.slice(
