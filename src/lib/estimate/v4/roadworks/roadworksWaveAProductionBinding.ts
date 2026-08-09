@@ -383,31 +383,47 @@ function professionalCategoryFor(row: RoadworksWaveARow): string {
   } satisfies Record<RoadworksWaveARow["category"], string>)[row.category];
 }
 
+function recordRoadworksWaveABuildTiming(stage: string, startedAt: number): void {
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
+  if (typeof navigator === "undefined" || navigator.product !== "ReactNative") return;
+  console.info("[RikRoadworksBuild]", JSON.stringify({
+    stage,
+    elapsedMs: Date.now() - startedAt,
+  }));
+}
+
 export function buildRoadworksWaveAProductionDraft(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): { draft: ConsumerRepairAiDraft; registration: RoadworksWaveAProductionRegistration } | null {
+  const buildStartedAt = Date.now();
   const registration = resolveRoadworksWaveAProductionWork(input);
   if (!registration) return null;
+  recordRoadworksWaveABuildTiming("WORK_RESOLVED", buildStartedAt);
   const parameters = extractRoadworksWaveAProductionInputs(input, registration.workId);
   const exactParameterSnapshot = Object.fromEntries(
     registration.parameterSchema.map((key) => [key, parameters.values[key]]),
   );
+  recordRoadworksWaveABuildTiming("PARAMETERS_READY", buildStartedAt);
   const resolvedProfile = resolveRoadAsphaltProfileV3(registration.workId);
   const applicabilityBlockers = [
     ...resolvedProfile.blockers,
     ...parameters.blockingAssumptions.map((key) => `required_input_missing:${key}`),
   ];
+  recordRoadworksWaveABuildTiming("PROFILE_READY", buildStartedAt);
   const domainResolutionReadiness = getRoadworksWaveAResolutionReadiness(registration, {
     requiredInputsPresent: parameters.blockingAssumptions.length === 0,
   });
   const executable = domainResolutionReadiness === "CALCULATION_READY";
+  recordRoadworksWaveABuildTiming("READINESS_READY", buildStartedAt);
+  const professionalPassport = registration.professionalPassport;
+  recordRoadworksWaveABuildTiming("PASSPORT_READY", buildStartedAt);
   const conditionalRow: RoadworksWaveARow = {
     rowId: `${registration.workId}:applicability_blocker`,
     category: "document",
     rowType: "document",
-    semanticOwner: registration.professionalPassport.passportId,
+    semanticOwner: professionalPassport.passportId,
     workKey: registration.workId,
-    passportId: registration.professionalPassport.passportId,
+    passportId: professionalPassport.passportId,
     nameRu: "Требуется подтверждение области применения и состава работ",
     unit: "pcs",
     uom: "pcs",
@@ -430,6 +446,7 @@ export function buildRoadworksWaveAProductionDraft(
   const compilation = executable
     ? compileRoadworksWaveAWork(registration.workId, parameters.values, { scopeProfile: registration.scopeProfile })
     : { workId: registration.workId, rows: [conditionalRow] };
+  recordRoadworksWaveABuildTiming("COMPILATION_READY", buildStartedAt);
   const currency = input.currency ?? "KGS";
   const draft: ConsumerRepairAiDraft = {
     titleRu: `Предварительная профессиональная смета: ${registration.professionalNameRu}`,
@@ -479,9 +496,9 @@ export function buildRoadworksWaveAProductionDraft(
         canonicalModelId: registration.canonicalModelId,
         canonicalModelVersion: registration.passport.canonicalModelVersion,
         scopePresetId: registration.scopePresetId,
-        semanticOwner: registration.professionalPassport.passportId,
-        professionalEstimatePassportId: registration.professionalPassport.passportId,
-        professionalEstimatePassportVersion: registration.professionalPassport.version,
+        semanticOwner: professionalPassport.passportId,
+        professionalEstimatePassportId: professionalPassport.passportId,
+        professionalEstimatePassportVersion: professionalPassport.version,
         calculationProfileId: registration.calculationProfileId,
         calculationProfileVersion: "roadworks-wave-a-calculation-profile:v4.3",
         parameterSchemaId: registration.parameterSchemaId,
@@ -542,8 +559,11 @@ export function buildRoadworksWaveAProductionDraft(
       rateKey: `${registration.workId}:${row.rowId}`,
     })),
   };
+  recordRoadworksWaveABuildTiming("ITEMS_READY", buildStartedAt);
+  const contractedDraft = applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput });
+  recordRoadworksWaveABuildTiming("CONTRACT_READY", buildStartedAt);
   return {
-    draft: applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput }),
+    draft: contractedDraft,
     registration,
   };
 }

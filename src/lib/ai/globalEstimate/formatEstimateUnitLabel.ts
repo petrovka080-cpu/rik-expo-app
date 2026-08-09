@@ -1,4 +1,7 @@
-import { resolveProfessionalUnitDefinition } from "../../estimate/professionalUnitRegistry";
+import {
+  getProfessionalUnitDefinition,
+  resolveProfessionalUnitDefinition,
+} from "../../estimate/professionalUnitRegistry";
 
 const UNIT_LABELS_RU: Record<string, string> = {
   linear_m: "\u043f\u043e\u0433. \u043c",
@@ -49,7 +52,12 @@ const UNIT_LABELS_RU: Record<string, string> = {
 export function formatEstimateUnitLabel(unit?: string | null): string {
   const normalized = String(unit ?? "").trim();
   if (!normalized) return "";
-  return resolveProfessionalUnitDefinition(normalized)?.displayRu ??
+  // Runtime BOQ rows already carry canonical registry codes. Resolve those by
+  // direct Map lookup so a cold Hermes build does not initialize Unicode NFKC
+  // merely to display common labels such as `pcs`, `m2`, or `kg`. Aliases keep
+  // the existing normalized resolution path and therefore the same semantics.
+  return getProfessionalUnitDefinition(normalized)?.displayRu ??
+    resolveProfessionalUnitDefinition(normalized)?.displayRu ??
     UNIT_LABELS_RU[normalized] ??
     UNIT_LABELS_RU[normalized.toLowerCase()] ??
     normalized;
