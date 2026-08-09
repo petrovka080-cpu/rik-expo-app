@@ -124,11 +124,18 @@ function normalizeUnitToken(value: string): string {
 const BY_CODE = new Map<string, ProfessionalUnitDefinition>(
   DEFINITIONS.map((entry) => [entry.code, entry]),
 );
-const BY_ALIAS = new Map<string, ProfessionalUnitDefinition>();
-for (const entry of DEFINITIONS) {
-  for (const alias of [entry.code, ...entry.aliases]) {
-    BY_ALIAS.set(normalizeUnitToken(alias), entry);
+let byAlias: Map<string, ProfessionalUnitDefinition> | null = null;
+
+function getProfessionalUnitAliasIndex(): Map<string, ProfessionalUnitDefinition> {
+  if (byAlias) return byAlias;
+  const next = new Map<string, ProfessionalUnitDefinition>();
+  for (const entry of DEFINITIONS) {
+    for (const alias of [entry.code, ...entry.aliases]) {
+      next.set(normalizeUnitToken(alias), entry);
+    }
   }
+  byAlias = next;
+  return next;
 }
 
 export function getProfessionalUnitDefinition(code: string): ProfessionalUnitDefinition | null {
@@ -137,7 +144,7 @@ export function getProfessionalUnitDefinition(code: string): ProfessionalUnitDef
 
 export function resolveProfessionalUnitDefinition(value: string | null | undefined): ProfessionalUnitDefinition | null {
   if (!value) return null;
-  return BY_ALIAS.get(normalizeUnitToken(value)) ?? null;
+  return getProfessionalUnitAliasIndex().get(normalizeUnitToken(value)) ?? null;
 }
 
 export function convertProfessionalUnitQuantity(value: number, fromUnit: string, toUnit: string): number | null {
