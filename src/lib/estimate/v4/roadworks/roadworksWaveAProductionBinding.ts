@@ -1,4 +1,4 @@
-import { formatEstimateUnitLabel } from "../../../ai/globalEstimate";
+import { formatEstimateUnitLabel } from "../../../ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests";
 import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
