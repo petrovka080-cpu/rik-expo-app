@@ -743,7 +743,7 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
       const editor = findNodeById(snapshot, `editable-param-inline-editor-${key}`);
       const missing = findNodeById(snapshot, `request-estimate-missing-param-${key}`);
       const input = editor ? findInputOwnedByEditor(snapshot, editor) : null;
-      if (presentation.choices.length > 0 && (dirty || (!editor && !missing))) return true;
+      if (presentation.choices.length > 0 && (dirty || !missing)) return true;
       if (dirty && input?.text === value) return true;
       await wait(750);
     }
