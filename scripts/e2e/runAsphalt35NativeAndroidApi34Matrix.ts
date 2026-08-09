@@ -741,9 +741,8 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
       const snapshot = dumpUi();
       const dirty = findNodeById(snapshot, `editable-param-dirty-${key}`);
       const editor = findNodeById(snapshot, `editable-param-inline-editor-${key}`);
-      const missing = findNodeById(snapshot, `request-estimate-missing-param-${key}`);
       const input = editor ? findInputOwnedByEditor(snapshot, editor) : null;
-      if (presentation.choices.length > 0 && (dirty || !missing)) return true;
+      if (presentation.choices.length > 0 && dirty) return true;
       if (dirty && input?.text === value) return true;
       await wait(750);
     }
@@ -752,6 +751,14 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (presentation.choices.length > 0) {
       if (await tapById(`editable-param-option-${key}-${value}`, 4) && await waitForCommittedValue()) return true;
+      const alternate = presentation.choices.find((choice) => String(choice.value) !== value);
+      if (
+        alternate
+        && await tapById(`editable-param-option-${key}-${alternate.value}`, 4)
+        && await waitForCommittedValue()
+        && await tapById(`editable-param-option-${key}-${value}`, 4)
+        && await waitForCommittedValue()
+      ) return true;
       continue;
     }
     const editorId = `editable-param-inline-editor-${key}`;
