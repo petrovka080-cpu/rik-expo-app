@@ -97,8 +97,13 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("String(choice.value) !== value");
     expect(setter).toContain("editable-param-option-${key}-${alternate.value}");
     expect(setter).toContain("waitForCommittedValue()");
-    expect(setter).toContain("scrollToId(`editable-param-inline-editor-${key}`, 8)");
+    expect(setter).toContain("reacquireExactEnumEditorAfterRerender");
+    expect(setter).toContain("const initial = await scrollToId(editorId, 8)");
+    expect(setter).toContain("reverseStep < 4");
+    expect(setter).toContain('swipe("down", reverseStep === 3)');
+    expect(setter).toContain("findNodeById(snapshot, editorId)");
     expect(setter).toContain("const editor = exactEditor.node");
+    expect(setter).not.toContain("editable-param-batch-dirty-count");
     expect(setter).toContain("primary-not-dirty");
     expect(setter).toContain("alternate-not-dirty");
   });

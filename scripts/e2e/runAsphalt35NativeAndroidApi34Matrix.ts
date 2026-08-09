@@ -740,10 +740,27 @@ async function setInlineParameter(
   caseDir: string,
 ): Promise<boolean> {
   const presentation = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[key];
+  const reacquireExactEnumEditorAfterRerender = async () => {
+    const editorId = `editable-param-inline-editor-${key}`;
+    const initial = await scrollToId(editorId, 8);
+    if (initial.node) return initial;
+    let snapshot = initial.snapshot;
+    for (let reverseStep = 0; reverseStep < 4; reverseStep += 1) {
+      // Selecting an enum can rerender the dirty bar while the bidirectional
+      // lookup is already returning from the lower boundary. Continue only in
+      // that exact reverse direction and still require the same editor ID.
+      swipe("down", reverseStep === 3);
+      await wait(450);
+      snapshot = dumpUi();
+      const node = findNodeById(snapshot, editorId);
+      if (node) return { snapshot, node };
+    }
+    return { snapshot, node: null };
+  };
   const waitForCommittedValue = async (): Promise<boolean> => {
     const deadline = Date.now() + 15_000;
     while (Date.now() < deadline) {
-      const exactEditor = await scrollToId(`editable-param-inline-editor-${key}`, 8);
+      const exactEditor = await reacquireExactEnumEditorAfterRerender();
       const snapshot = exactEditor.snapshot;
       const dirty = findNodeById(snapshot, `editable-param-dirty-${key}`);
       const editor = exactEditor.node;
