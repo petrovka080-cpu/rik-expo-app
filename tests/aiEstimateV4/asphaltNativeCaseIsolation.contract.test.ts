@@ -126,4 +126,19 @@ describe("Asphalt native case isolation contract", () => {
     expect(coldReplay).not.toContain("waitForApprovedHistoryCountAtLeast");
     expect(coldReplay).not.toContain('tapById("consumer-repair-history-main"');
   });
+
+  it("opens the PDF owned by the selected immutable history snapshot before any generic row PDF", () => {
+    const source = readRunner();
+    const pdfOpen = source.slice(
+      source.indexOf("const pdfTapped ="),
+      source.indexOf("if (!pdfTapped)"),
+    );
+
+    expect(pdfOpen.indexOf('tapById("consumer-repair-history-open-pdf-expanded"')).toBeLessThan(
+      pdfOpen.indexOf('tapById("consumer-repair-history-pdf"'),
+    );
+    expect(pdfOpen.indexOf('tapById("consumer-repair-history-open-pdf-inline"')).toBeLessThan(
+      pdfOpen.indexOf('tapById("consumer-repair-history-pdf"'),
+    );
+  });
 });

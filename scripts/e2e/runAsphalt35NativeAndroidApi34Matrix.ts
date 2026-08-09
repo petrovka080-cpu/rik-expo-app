@@ -1248,9 +1248,9 @@ async function runCase(
   markPhase("cold_replay_complete");
 
   await returnToTop(12);
-  const pdfTapped = await tapById("consumer-repair-history-pdf", 10)
-    || await tapById("consumer-repair-history-open-pdf-expanded", 8)
-    || await tapById("consumer-repair-history-open-pdf-inline", 8);
+  const pdfTapped = await tapById("consumer-repair-history-open-pdf-expanded", 8)
+    || await tapById("consumer-repair-history-open-pdf-inline", 8)
+    || await tapById("consumer-repair-history-pdf", 10);
   if (!pdfTapped) failures.push("history_pdf_action_missing");
   const pdfProbe = await waitForPdfProjection(90_000);
   const pdfProjectionVisible = pdfProbe.mode != null;
