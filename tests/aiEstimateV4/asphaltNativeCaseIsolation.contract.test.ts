@@ -42,7 +42,8 @@ describe("Asphalt native case isolation contract", () => {
     expect(source).toContain('value("--diagnostic-work-count=")');
     expect(source).toContain('value("--diagnostic-start-index=")');
     expect(source).toContain("diagnostic_work_count_expected_2_to_5");
-    expect(source).toContain("options.diagnosticStartIndex + options.diagnosticWorkCount");
+    expect(source).toContain("(options.diagnosticStartIndex + offset) % RoadworksWaveAProductionRegistry.length");
+    expect(source).toContain("{ length: options.diagnosticWorkCount }");
     expect(source).toContain("const fullAcceptance = selected.length === 35");
     expect(source).toContain('total: "105/105"');
     expect(source).toContain('"asphalt-35-native-api34-105-result.json"');

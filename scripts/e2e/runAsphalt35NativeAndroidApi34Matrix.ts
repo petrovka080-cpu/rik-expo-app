@@ -1436,9 +1436,11 @@ async function main(): Promise<void> {
   const selected = options.diagnosticWorkKey
     ? RoadworksWaveAProductionRegistry.filter((item) => item.workId === options.diagnosticWorkKey)
     : options.diagnosticWorkCount != null
-      ? RoadworksWaveAProductionRegistry.slice(
-        options.diagnosticStartIndex,
-        options.diagnosticStartIndex + options.diagnosticWorkCount,
+      ? Array.from(
+        { length: options.diagnosticWorkCount },
+        (_, offset) => RoadworksWaveAProductionRegistry[
+          (options.diagnosticStartIndex + offset) % RoadworksWaveAProductionRegistry.length
+        ],
       )
       : [...RoadworksWaveAProductionRegistry];
   if (selected.length === 0) failures.push(`unknown_diagnostic_work_key:${options.diagnosticWorkKey}`);
