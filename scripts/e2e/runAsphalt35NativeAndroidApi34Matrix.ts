@@ -748,13 +748,13 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
     return false;
   };
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const editorId = `editable-param-inline-editor-${key}`;
-    const owned = await findSafeInputOwnedByExactEditor(editorId);
-    if (!owned) continue;
     if (presentation.choices.length > 0) {
       if (await tapById(`editable-param-option-${key}-${value}`, 4) && await waitForCommittedValue()) return true;
       continue;
     }
+    const editorId = `editable-param-inline-editor-${key}`;
+    const owned = await findSafeInputOwnedByExactEditor(editorId);
+    if (!owned) continue;
     if (!tapNode(owned.input)) continue;
     await wait(200);
     if (await replaceFocusedInput(value) && await waitForCommittedValue()) return true;

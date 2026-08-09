@@ -80,6 +80,20 @@ describe("Asphalt native case isolation contract", () => {
     expect(exactInputLookup).not.toContain("android.widget.EditText");
   });
 
+  it("selects exact enum options without requiring an EditText inside the enum editor", () => {
+    const source = readRunner();
+    const setter = source.slice(
+      source.indexOf("async function setInlineParameter"),
+      source.indexOf("function revisionLabel"),
+    );
+
+    expect(setter.indexOf("presentation.choices.length > 0")).toBeLessThan(
+      setter.indexOf("findSafeInputOwnedByExactEditor"),
+    );
+    expect(setter).toContain("editable-param-option-${key}-${value}");
+    expect(setter).toContain("waitForCommittedValue()");
+  });
+
   it("requires an immutable revision acknowledgement instead of accepting a stale apply status", () => {
     const source = readRunner();
     const editApply = source.slice(
