@@ -544,10 +544,11 @@ async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
   let node = found.node;
   if (!node) return false;
   const { height } = viewport();
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const point = center(node.bounds);
-    if (!point || point.y <= height * 0.62) break;
-    swipe("up");
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const adjustment = nativeNodeSafeViewportAdjustment(node.bounds, height);
+    if (adjustment === "none") return tapNode(node);
+    if (adjustment === "invalid") return false;
+    swipe(adjustment);
     await wait(600);
     const snapshot = dumpUi();
     const moved = findNodeById(snapshot, testId);
@@ -561,7 +562,7 @@ async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
     found = { snapshot, node: moved };
     node = moved;
   }
-  return tapNode(node);
+  return false;
 }
 
 async function waitForId(testId: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<ReturnType<typeof dumpUi>> {

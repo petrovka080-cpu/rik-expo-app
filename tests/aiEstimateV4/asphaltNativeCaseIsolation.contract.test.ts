@@ -98,6 +98,20 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("waitForCommittedValue()");
   });
 
+  it("reacquires every exact tap target into the safe viewport from either clipped edge", () => {
+    const source = readRunner();
+    const exactTap = source.slice(
+      source.indexOf("async function tapById"),
+      source.indexOf("async function waitForId"),
+    );
+
+    expect(exactTap).toContain("nativeNodeSafeViewportAdjustment(node.bounds, height)");
+    expect(exactTap).toContain('adjustment === "invalid"');
+    expect(exactTap).toContain("swipe(adjustment)");
+    expect(exactTap).toContain("findNodeById(snapshot, testId)");
+    expect(exactTap).not.toContain("point.y <= height * 0.62");
+  });
+
   it("requires an immutable revision acknowledgement instead of accepting a stale apply status", () => {
     const source = readRunner();
     const editApply = source.slice(
