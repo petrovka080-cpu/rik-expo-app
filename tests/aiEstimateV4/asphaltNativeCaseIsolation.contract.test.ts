@@ -105,6 +105,26 @@ describe("Asphalt native case isolation contract", () => {
     expect(exactInputLookup).not.toContain("android.widget.EditText");
   });
 
+  it("hands focus off from the exact native text input before the next enum action", () => {
+    const source = readRunner();
+    const focusHandoff = source.slice(
+      source.indexOf("async function replaceFocusedInput"),
+      source.indexOf("async function setTextInput"),
+    );
+
+    expect(focusHandoff).toContain("const dismissed = await dismissSoftKeyboard()");
+    expect(focusHandoff).toContain("const blurred = dismissed && await blurFocusedNativeTextInput()");
+    expect(focusHandoff).toContain('class="android.widget.EditText"');
+    expect(focusHandoff).toContain('focused="true"');
+    expect(focusHandoff).toContain('["shell", "input", "keyevent", "66"]');
+    expect(focusHandoff).toContain("return !hasFocusedNativeTextInput(dumpUi())");
+    expect(focusHandoff).toContain("return typed && dismissed && blurred");
+    expect(focusHandoff).not.toContain('["shell", "input", "keyevent", "111"]');
+    expect(focusHandoff.indexOf("dismissSoftKeyboard()")).toBeLessThan(
+      focusHandoff.indexOf("blurFocusedNativeTextInput()"),
+    );
+  });
+
   it("selects exact enum options without requiring an EditText inside the enum editor", () => {
     const source = readRunner();
     const setter = source.slice(

@@ -651,8 +651,9 @@ async function replaceFocusedInput(value: string): Promise<boolean> {
   adb(["shell", "input", "keyevent", ...Array.from({ length: 96 }, () => "67")], 20_000);
   const typed = inputText(value);
   const dismissed = await dismissSoftKeyboard();
+  const blurred = dismissed && await blurFocusedNativeTextInput();
   await wait(250);
-  return typed && dismissed;
+  return typed && dismissed && blurred;
 }
 
 async function dismissSoftKeyboard(): Promise<boolean> {
@@ -663,6 +664,25 @@ async function dismissSoftKeyboard(): Promise<boolean> {
     await wait(750);
   }
   return !/mInputShown=true/i.test(adb(["shell", "dumpsys", "input_method"], 15_000).output);
+}
+
+function hasFocusedNativeTextInput(snapshot: ReturnType<typeof dumpUi>): boolean {
+  return snapshot.nodes.some((node) =>
+    node.attrs.includes('class="android.widget.EditText"')
+    && node.attrs.includes('focused="true"')
+  );
+}
+
+async function blurFocusedNativeTextInput(): Promise<boolean> {
+  const before = dumpUi();
+  if (!hasFocusedNativeTextInput(before)) return true;
+  // Hiding the numeric IME does not clear React Native TextInput focus. A
+  // bounded single-line submit hands focus off without navigating Back or
+  // tapping an unrelated control; fail closed if the exact focus persists.
+  const submitted = adb(["shell", "input", "keyevent", "66"], 5_000);
+  if (!submitted.ok) return false;
+  await wait(500);
+  return !hasFocusedNativeTextInput(dumpUi());
 }
 
 async function setTextInput(testId: string, value: string, maxSwipes = 18): Promise<boolean> {
