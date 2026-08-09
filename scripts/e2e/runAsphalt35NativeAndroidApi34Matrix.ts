@@ -734,7 +734,11 @@ function rawParameterValue(key: RoadworksWaveAParameterKey): string {
   return String(DEFAULT_ROADWORKS_WAVE_A_INPUTS[key]);
 }
 
-async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string): Promise<boolean> {
+async function setInlineParameter(
+  key: RoadworksWaveAParameterKey,
+  value: string,
+  caseDir: string,
+): Promise<boolean> {
   const presentation = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[key];
   const waitForCommittedValue = async (): Promise<boolean> => {
     const deadline = Date.now() + 15_000;
@@ -752,6 +756,7 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (presentation.choices.length > 0) {
       if (await tapById(`editable-param-option-${key}-${value}`, 4) && await waitForCommittedValue()) return true;
+      capture(caseDir, `p0-${key}-attempt-${attempt + 1}-primary-not-dirty`);
       const alternate = presentation.choices.find((choice) => String(choice.value) !== value);
       if (
         alternate
@@ -760,6 +765,7 @@ async function setInlineParameter(key: RoadworksWaveAParameterKey, value: string
         && await tapById(`editable-param-option-${key}-${value}`, 4)
         && await waitForCommittedValue()
       ) return true;
+      capture(caseDir, `p0-${key}-attempt-${attempt + 1}-alternate-not-dirty`);
       continue;
     }
     const editorId = `editable-param-inline-editor-${key}`;
@@ -1095,7 +1101,7 @@ async function runCase(
     return finishAtRootFailure("p0", [`p0_schema_mismatch:${observedP0.length}/${expectedP0.length}`], observedP0);
   }
   for (const key of expectedP0) {
-    if (!await setInlineParameter(key, rawParameterValue(key))) {
+    if (!await setInlineParameter(key, rawParameterValue(key), caseDir)) {
       return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
     }
   }
@@ -1152,7 +1158,7 @@ async function runCase(
     16,
   );
   if (!editPanel.node) failures.push("parameter_disclosure_open_failed_before_edit");
-  if (editPanel.node && !await setInlineParameter("area_m2", "137")) failures.push("edit_area_failed");
+  if (editPanel.node && !await setInlineParameter("area_m2", "137", caseDir)) failures.push("edit_area_failed");
   if (failures.length > 0) {
     const failedEditCapture = capture(caseDir, "edit-area-failure");
     if (failedEditCapture.screenshot) screenshots.push(failedEditCapture.screenshot);
@@ -1461,6 +1467,7 @@ async function main(): Promise<void> {
       persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result);
       results.push(result);
       console.log(`NATIVE_ANDROID_API34 ${registration.workId} create=${result.create} edit=${result.edit} replay_pdf=${result.cold_replay_pdf} failures=${result.failures.length}`);
+      if (result.failures.length > 0) break;
     }
   }
 

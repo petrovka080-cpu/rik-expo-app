@@ -64,6 +64,7 @@ describe("Asphalt native case isolation contract", () => {
     expect(source.indexOf("persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result)")).toBeLessThan(
       source.indexOf("results.push(result)"),
     );
+    expect(source).toContain("if (result.failures.length > 0) break");
   });
 
   it("scrolls a clipped exact parameter wrapper before requiring its owned native input", () => {
@@ -96,6 +97,8 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("String(choice.value) !== value");
     expect(setter).toContain("editable-param-option-${key}-${alternate.value}");
     expect(setter).toContain("waitForCommittedValue()");
+    expect(setter).toContain("primary-not-dirty");
+    expect(setter).toContain("alternate-not-dirty");
   });
 
   it("reacquires every exact tap target into the safe viewport from either clipped edge", () => {
