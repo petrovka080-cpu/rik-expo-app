@@ -78,6 +78,18 @@ describe("native exact-wrapper node selection", () => {
     expect(nativeNodeSafeViewportAdjustment("malformed", 2400)).toBe("invalid");
   });
 
+  it("admits the fully visible cold-replay history button without changing the generic tap boundary", () => {
+    const historyButtonBounds = "[42,1423][1038,1560]";
+
+    expect(nativeNodeSafeViewportAdjustment(historyButtonBounds, 2400)).toBe("up");
+    expect(nativeNodeSafeViewportAdjustment(
+      historyButtonBounds,
+      2400,
+      0.2,
+      0.66,
+    )).toBe("none");
+  });
+
   it("requires an exact visible optional input and accepts only its empty controlled state", () => {
     expect(nativeOptionalControlledInputIsEmpty({ text: "" }, "Адрес")).toBe(true);
     expect(nativeOptionalControlledInputIsEmpty({ text: "Адрес" }, "Адрес")).toBe(true);

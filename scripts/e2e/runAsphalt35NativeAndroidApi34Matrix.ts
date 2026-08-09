@@ -541,13 +541,23 @@ async function restoreNativeCaseIsolation(
   };
 }
 
-async function findSafeNodeById(testId: string, maxSwipes = 18): Promise<UiNode | null> {
+async function findSafeNodeById(
+  testId: string,
+  maxSwipes = 18,
+  safeTopFraction = 0.2,
+  safeBottomFraction = 0.62,
+): Promise<UiNode | null> {
   let found = await scrollToId(testId, maxSwipes);
   let node = found.node;
   if (!node) return null;
   const { height } = viewport();
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    const adjustment = nativeNodeSafeViewportAdjustment(node.bounds, height);
+    const adjustment = nativeNodeSafeViewportAdjustment(
+      node.bounds,
+      height,
+      safeTopFraction,
+      safeBottomFraction,
+    );
     if (adjustment === "none") return node;
     if (adjustment === "invalid") return null;
     swipe(adjustment);
@@ -567,8 +577,13 @@ async function findSafeNodeById(testId: string, maxSwipes = 18): Promise<UiNode 
   return null;
 }
 
-async function tapById(testId: string, maxSwipes = 18): Promise<boolean> {
-  const node = await findSafeNodeById(testId, maxSwipes);
+async function tapById(
+  testId: string,
+  maxSwipes = 18,
+  safeTopFraction = 0.2,
+  safeBottomFraction = 0.62,
+): Promise<boolean> {
+  const node = await findSafeNodeById(testId, maxSwipes, safeTopFraction, safeBottomFraction);
   return Boolean(node && tapNode(node));
 }
 
@@ -1302,7 +1317,7 @@ async function runCase(
   const coldLaunch = launchUri(requestUri());
   if (!coldLaunch.ok) failures.push(`cold_launch_failed:${coldLaunch.output.slice(0, 240)}`);
   await waitForIdSparse("consumer-repair-history-button", 180_000, 15_000, 6_000);
-  if (!await tapById("consumer-repair-history-button", 16)) {
+  if (!await tapById("consumer-repair-history-button", 16, 0.2, 0.66)) {
     failures.push("history_open_failed");
   } else {
     const modal = await waitForId("consumer-repair-history-modal", 30_000);

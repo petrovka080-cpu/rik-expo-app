@@ -177,7 +177,10 @@ describe("Asphalt native case isolation contract", () => {
       source.indexOf("async function waitForId"),
     );
 
-    expect(exactTap).toContain("nativeNodeSafeViewportAdjustment(node.bounds, height)");
+    expect(exactTap).toContain("safeTopFraction = 0.2");
+    expect(exactTap).toContain("safeBottomFraction = 0.62");
+    expect(exactTap).toContain("safeTopFraction,");
+    expect(exactTap).toContain("safeBottomFraction,");
     expect(exactTap).toContain('adjustment === "invalid"');
     expect(exactTap).toContain("swipe(adjustment)");
     expect(exactTap).toContain("findNodeById(snapshot, testId)");
@@ -213,6 +216,7 @@ describe("Asphalt native case isolation contract", () => {
 
     expect(coldReplay).toContain("tapHistoryEntryByExactTitle(registration.professionalNameRu)");
     expect(coldReplay).toContain("history_exact_title_open_failed");
+    expect(coldReplay).toContain('tapById("consumer-repair-history-button", 16, 0.2, 0.66)');
     expect(coldReplay).not.toContain("waitForApprovedHistoryCountAtLeast");
     expect(coldReplay).not.toContain('tapById("consumer-repair-history-main"');
   });
