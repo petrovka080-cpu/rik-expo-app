@@ -92,6 +92,8 @@ describe("Asphalt native case isolation contract", () => {
       setter.indexOf("findSafeInputOwnedByExactEditor"),
     );
     expect(setter).toContain("editable-param-option-${key}-${value}");
+    expect(setter).toContain("request-estimate-missing-param-${key}");
+    expect(setter).toContain("dirty || (!editor && !missing)");
     expect(setter).toContain("waitForCommittedValue()");
   });
 
