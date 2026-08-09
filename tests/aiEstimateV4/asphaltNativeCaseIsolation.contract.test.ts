@@ -40,11 +40,29 @@ describe("Asphalt native case isolation contract", () => {
     const source = readRunner();
 
     expect(source).toContain('value("--diagnostic-work-count=")');
+    expect(source).toContain('value("--diagnostic-start-index=")');
     expect(source).toContain("diagnostic_work_count_expected_2_to_5");
-    expect(source).toContain("RoadworksWaveAProductionRegistry.slice(0, options.diagnosticWorkCount)");
+    expect(source).toContain("options.diagnosticStartIndex + options.diagnosticWorkCount");
     expect(source).toContain("const fullAcceptance = selected.length === 35");
     expect(source).toContain('total: "105/105"');
     expect(source).toContain('"asphalt-35-native-api34-105-result.json"');
+  });
+
+  it("durably flushes every terminal case and captures failures that occur before the normal case directory exists", () => {
+    const source = readRunner();
+    const persistence = source.slice(
+      source.indexOf("function persistTerminalCaseEvidence"),
+      source.indexOf("async function main"),
+    );
+
+    expect(persistence).toContain('"asphalt-native-terminal-case-result/v1"');
+    expect(persistence).toContain('"terminal-case-result.json"');
+    expect(persistence).toContain("result.failures.length > 0");
+    expect(persistence).toContain("terminal-${result.phase_reached}-failure");
+    expect(source).toContain("persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result)");
+    expect(source.indexOf("persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result)")).toBeLessThan(
+      source.indexOf("results.push(result)"),
+    );
   });
 
   it("scrolls a clipped exact parameter wrapper before requiring its owned native input", () => {

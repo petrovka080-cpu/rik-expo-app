@@ -93,6 +93,7 @@ type NativeCaseIsolationEvidence = {
 type CliOptions = {
   diagnosticWorkKey: string | null;
   diagnosticWorkCount: number | null;
+  diagnosticStartIndex: number;
   expectedCommit: string;
   devServerPort: number | null;
   allowDirtyDiagnostic: boolean;
@@ -1321,9 +1322,11 @@ function parseOptions(): CliOptions {
   const devServerPortRaw = value("--dev-server-port=");
   const diagnosticWorkCountRaw = value("--diagnostic-work-count=");
   const diagnosticWorkCount = diagnosticWorkCountRaw == null ? null : Number(diagnosticWorkCountRaw);
+  const diagnosticStartIndexRaw = value("--diagnostic-start-index=");
   return {
     diagnosticWorkKey: value("--diagnostic-work-key="),
     diagnosticWorkCount,
+    diagnosticStartIndex: diagnosticStartIndexRaw == null ? 0 : Number(diagnosticStartIndexRaw),
     expectedCommit: value("--expected-commit=") ?? git(["rev-parse", "HEAD"]),
     devServerPort: devServerPortRaw ? Number(devServerPortRaw) : null,
     allowDirtyDiagnostic: args.includes("--allow-dirty-diagnostic"),
@@ -1334,6 +1337,33 @@ function parseOptions(): CliOptions {
 
 function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function persistTerminalCaseEvidence(
+  artifactDir: string,
+  caseNumber: number,
+  result: NativeCaseResult,
+): void {
+  const caseDir = path.join(artifactDir, "cases", result.work_key);
+  fs.mkdirSync(caseDir, { recursive: true });
+  if (result.failures.length > 0 && result.screenshots.length === 0 && result.ui_dumps.length === 0) {
+    const failureCapture = capture(caseDir, `terminal-${result.phase_reached}-failure`);
+    if (failureCapture.screenshot) result.screenshots.push(failureCapture.screenshot);
+    if (failureCapture.uiDump) result.ui_dumps.push(failureCapture.uiDump);
+  }
+  const ledgerPath = path.join(caseDir, "terminal-case-result.json");
+  const ledger = {
+    schema: "asphalt-native-terminal-case-result/v1",
+    case_number: caseNumber,
+    terminal: true,
+    result,
+  };
+  fs.writeFileSync(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`, "utf8");
+  fs.writeFileSync(
+    `${ledgerPath}.sha256`,
+    `${sha256(fs.readFileSync(ledgerPath))}  ${path.basename(ledgerPath)}\n`,
+    "utf8",
+  );
 }
 
 async function main(): Promise<void> {
@@ -1367,6 +1397,14 @@ async function main(): Promise<void> {
   ) {
     failures.push(`diagnostic_work_count_expected_2_to_5_received_${options.diagnosticWorkCount}`);
   }
+  if (
+    !Number.isInteger(options.diagnosticStartIndex)
+    || options.diagnosticStartIndex < 0
+    || options.diagnosticStartIndex >= RoadworksWaveAProductionRegistry.length
+    || (options.diagnosticWorkCount == null && options.diagnosticStartIndex !== 0)
+  ) {
+    failures.push(`diagnostic_start_index_invalid:${options.diagnosticStartIndex}`);
+  }
 
   if (options.clearAppData) {
     const clear = adb(["shell", "pm", "clear", PACKAGE_NAME], 20_000);
@@ -1398,13 +1436,17 @@ async function main(): Promise<void> {
   const selected = options.diagnosticWorkKey
     ? RoadworksWaveAProductionRegistry.filter((item) => item.workId === options.diagnosticWorkKey)
     : options.diagnosticWorkCount != null
-      ? RoadworksWaveAProductionRegistry.slice(0, options.diagnosticWorkCount)
+      ? RoadworksWaveAProductionRegistry.slice(
+        options.diagnosticStartIndex,
+        options.diagnosticStartIndex + options.diagnosticWorkCount,
+      )
       : [...RoadworksWaveAProductionRegistry];
   if (selected.length === 0) failures.push(`unknown_diagnostic_work_key:${options.diagnosticWorkKey}`);
   const results: NativeCaseResult[] = [];
   if (failures.length === 0) {
-    for (const registration of selected) {
+    for (const [caseIndex, registration] of selected.entries()) {
       const result = await runCase(registration, artifactDir, appBuildIdentityMatches, options.devServerPort);
+      persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result);
       results.push(result);
       console.log(`NATIVE_ANDROID_API34 ${registration.workId} create=${result.create} edit=${result.edit} replay_pdf=${result.cold_replay_pdf} failures=${result.failures.length}`);
     }
