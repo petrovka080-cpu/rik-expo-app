@@ -815,6 +815,11 @@ async function setInlineParameter(
   };
   const tapExactEnumOptionAndWaitForCommit = async (choiceValue: string): Promise<boolean> => {
     const optionId = `editable-param-option-${key}-${choiceValue}`;
+    // Numeric P0 fields can leave the shared ScrollView below an earlier enum
+    // editor. Re-establish the known top origin before the exact-ID search so
+    // its forward-first scan cannot move farther away from that enum. The tap
+    // remains fail-closed on the exact option and its exact dirty marker.
+    await returnToTop(16);
     if (!await findSafeNodeById(optionId, 4)) return false;
     // The exact node can still move briefly after ScrollView momentum ends.
     // Settle first, then reacquire the same exact ID and tap only its current,

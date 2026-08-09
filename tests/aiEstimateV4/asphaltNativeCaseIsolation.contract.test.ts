@@ -149,6 +149,10 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("const editor = exactEditor.node");
     expect(setter).not.toContain("editable-param-batch-dirty-count");
     expect(setter).toContain("tapExactEnumOptionAndWaitForCommit");
+    expect(setter).toContain("await returnToTop(16)");
+    expect(setter.indexOf("await returnToTop(16)")).toBeLessThan(
+      setter.indexOf("findSafeNodeById(optionId, 4)"),
+    );
     expect(setter).toContain("findSafeNodeById(optionId, 4)");
     expect(setter).toContain("const stableSnapshot = dumpUi()");
     expect(setter).toContain("const stableNode = findNodeById(stableSnapshot, optionId)");
