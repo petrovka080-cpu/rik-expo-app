@@ -4,6 +4,7 @@ import TestRenderer, { act } from "react-test-renderer";
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { RoadworksWaveAProductionRegistry } from "../../src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding";
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");
@@ -39,12 +40,12 @@ function countJsonTestId(tree: JsonTree, testID: string): number {
     );
 }
 
-function renderElectricalPanel(prompt: string) {
+function renderElectricalPanel(prompt: string, repairType = "estimate") {
   __resetConsumerRepairRequestStoreForTests();
   const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
     consumerUserId: "electrical-parameter-editor-ui",
     problemText: prompt,
-    repairType: "estimate",
+    repairType,
     city: "Bishkek",
     addressText: "",
     preferredTimeText: "",
@@ -52,6 +53,7 @@ function renderElectricalPanel(prompt: string) {
     selectedWork: null,
   });
   const noop = jest.fn();
+  const onApplyParamBatch = jest.fn();
   let renderer!: TestRenderer.ReactTestRenderer;
   act(() => {
     renderer = TestRenderer.create(
@@ -66,7 +68,7 @@ function renderElectricalPanel(prompt: string) {
         onAddManual={noop}
         onAddCustom={noop}
         onApplyParamPatch={noop}
-        onApplyParamBatch={noop}
+        onApplyParamBatch={onApplyParamBatch}
       />,
     );
   });
@@ -81,10 +83,38 @@ function renderElectricalPanel(prompt: string) {
     if (!toggle) throw new Error("ELECTRICAL_PARAMETER_TOGGLE_MISSING");
     act(() => toggle.props.onPress());
   }
-  return { renderer, bundle };
+  return { renderer, bundle, onApplyParamBatch };
 }
 
 describe("canonical electrical parameter editor UI", () => {
+  it("commits an explicitly tapped required enum default even when display text is unchanged", () => {
+    const wetZone = RoadworksWaveAProductionRegistry.find(
+      (entry) => entry.workId === "paving_roads_landscape_interior_asphalt_repair_wet_zone",
+    );
+    if (!wetZone) throw new Error("WET_ZONE_REGISTRATION_MISSING");
+    const { renderer, bundle, onApplyParamBatch } = renderElectricalPanel(
+      wetZone.professionalNameRu,
+      "roadworks",
+    );
+    expect(countJsonTestId(
+      renderer.toJSON(),
+      "request-estimate-missing-param-exterior_surface_kind",
+    )).toBe(1);
+
+    const exactDefault = renderer.root.findByProps({
+      testID: "editable-param-option-exterior_surface_kind-PARKING",
+    });
+    act(() => exactDefault.props.onPress());
+    expect(countJsonTestId(renderer.toJSON(), "editable-param-dirty-exterior_surface_kind")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "editable-param-batch-apply")).toBe(1);
+
+    const apply = renderer.root.findByProps({ testID: "editable-param-batch-apply" });
+    act(() => apply.props.onPress());
+    expect(onApplyParamBatch).toHaveBeenCalledWith([
+      { operation: "add_param", paramKey: "exterior_surface_kind", rawValue: "PARKING" },
+    ]);
+  });
+
   it("renders the five control values as separate editable fields with visible assumptions", () => {
     const { renderer } = renderElectricalPanel(
       "электромонтаж 10 розеток и 10 выключателей\nдлина трассы 154 метра\nплощадь 87 м²\n8 точек освещения",

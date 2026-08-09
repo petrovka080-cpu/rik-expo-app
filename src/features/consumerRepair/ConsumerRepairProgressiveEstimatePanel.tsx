@@ -403,7 +403,17 @@ type ParameterDisclosurePanelState = {
   draftRevisionId: string | null;
   draftSignature: string;
   validationErrors: Record<string, string>;
+  explicitlyConfirmedMissingValues: Record<string, true>;
 };
+
+export function isConsumerRepairParameterExplicitlyDirty(input: {
+  baselineValue: string;
+  draftValue: string;
+  explicitlyConfirmedMissingValue: boolean;
+}): boolean {
+  return input.explicitlyConfirmedMissingValue ||
+    input.draftValue.trim() !== input.baselineValue.trim();
+}
 
 type InlineParamEditorProps = {
   paramKey: string;
@@ -495,6 +505,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     draftRevisionId: null,
     draftSignature: "",
     validationErrors: {},
+    explicitlyConfirmedMissingValues: {},
   };
 
   componentDidMount(): void {
@@ -554,6 +565,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       draftRevisionId: this.props.revision?.revisionId ?? null,
       draftSignature: this.draftSignature(cards),
       validationErrors: {},
+      explicitlyConfirmedMissingValues: {},
     });
   }
 
@@ -563,9 +575,11 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
 
   private dirtyKeys(): string[] {
     const keys = new Set([...Object.keys(this.state.baselineValues), ...Object.keys(this.state.draftValues)]);
-    return [...keys].filter((key) =>
-      (this.state.draftValues[key] ?? "").trim() !== (this.state.baselineValues[key] ?? "").trim()
-    );
+    return [...keys].filter((key) => isConsumerRepairParameterExplicitlyDirty({
+      baselineValue: this.state.baselineValues[key] ?? "",
+      draftValue: this.state.draftValues[key] ?? "",
+      explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[key] === true,
+    }));
   }
 
   private operationForCard(card: AiEstimateParameterCard): UserParamPatchOperation {
@@ -577,6 +591,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   }
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
+    const card = this.buildCards().find((candidate) => candidate.key === paramKey);
     this.setState((state) => ({
       draftValues: {
         ...state.draftValues,
@@ -586,6 +601,9 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
         ...state.validationErrors,
         [paramKey]: "",
       },
+      explicitlyConfirmedMissingValues: card?.missing
+        ? { ...state.explicitlyConfirmedMissingValues, [paramKey]: true }
+        : state.explicitlyConfirmedMissingValues,
     }));
   };
 
@@ -593,6 +611,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     this.setState({
       draftValues: { ...this.state.baselineValues },
       validationErrors: {},
+      explicitlyConfirmedMissingValues: {},
     });
   };
 
@@ -633,7 +652,11 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     } = this.props;
     const rawValue = this.initialEditValue(card);
     const baseline = this.state.baselineValues[card.key] ?? "";
-    const isDirty = rawValue.trim() !== baseline.trim();
+    const isDirty = isConsumerRepairParameterExplicitlyDirty({
+      baselineValue: baseline,
+      draftValue: rawValue,
+      explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
+    });
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
     // A derived value describes provenance, not immutability. Editing it creates
     // an explicit user override in the next revision and must use the same

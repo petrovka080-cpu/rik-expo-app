@@ -1,4 +1,7 @@
-import { resolveConsumerRepairParamPatchOperation } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
+import {
+  isConsumerRepairParameterExplicitlyDirty,
+  resolveConsumerRepairParamPatchOperation,
+} from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import type { CanonicalParameterSession } from "../../src/lib/estimate/canonicalParameters/canonicalParameterCore";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 
@@ -13,6 +16,19 @@ function canonicalSession(parameter: {
 }
 
 describe("consumer repair parameter patch operation", () => {
+  it("treats a user-confirmed missing enum default as dirty against persisted state", () => {
+    expect(isConsumerRepairParameterExplicitlyDirty({
+      baselineValue: "PARKING",
+      draftValue: "PARKING",
+      explicitlyConfirmedMissingValue: true,
+    })).toBe(true);
+    expect(isConsumerRepairParameterExplicitlyDirty({
+      baselineValue: "PARKING",
+      draftValue: "PARKING",
+      explicitlyConfirmedMissingValue: false,
+    })).toBe(false);
+  });
+
   it("updates canonical parameters after a legacy revision-state handoff", () => {
     expect(resolveConsumerRepairParamPatchOperation({
       paramKey: "area_m2",
