@@ -60,11 +60,34 @@ describe("Asphalt native case isolation contract", () => {
     expect(persistence).toContain('"terminal-case-result.json"');
     expect(persistence).toContain("result.failures.length > 0");
     expect(persistence).toContain("terminal-${result.phase_reached}-failure");
-    expect(source).toContain("persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result)");
-    expect(source.indexOf("persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result)")).toBeLessThan(
+    const provenancePersist = "persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result, {";
+    expect(source).toContain(provenancePersist);
+    expect(source).toContain("candidate_sha: head");
+    expect(source).toContain("tree_hash: tree");
+    expect(source).toContain("run_id: options.runId");
+    expect(source).toContain("evidence_kind: evidenceKind");
+    expect(source.indexOf(provenancePersist)).toBeLessThan(
       source.indexOf("results.push(result)"),
     );
     expect(source).toContain("if (result.failures.length > 0) break");
+  });
+
+  it("fail-closes R6 candidate identity and isolates every diagnostic/full output by run ID", () => {
+    const source = readRunner();
+
+    expect(source).toContain('value("--run-id=")');
+    expect(source).toContain('value("--expected-tree=")');
+    expect(source).toContain('"asphalt-v3-final-r6"');
+    expect(source).toContain("safeRunId");
+    expect(source).toContain("evidenceKind");
+    expect(source).toContain("run_output_root_not_empty");
+    expect(source).toContain("ACTIVE_CANDIDATE_OWNER.json");
+    expect(source).toContain("ACTIVE_GOAL_IDENTITY_MISMATCH:owner_commit_tree");
+    expect(source).toContain("active_candidate_owner_matches: activeOwnerMatches");
+    expect(source).toContain("...provenance");
+    expect(source).toContain('"asphalt-native-run-artifact-manifest/v1"');
+    expect(source).toContain('path.join(artifactDir, "artifact-manifest.json")');
+    expect(source).not.toContain('"asphalt-v3-final-r5", head, "native-android-api34"');
   });
 
   it("scrolls a clipped exact parameter wrapper before requiring its owned native input", () => {

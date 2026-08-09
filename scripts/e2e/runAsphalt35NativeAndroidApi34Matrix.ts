@@ -91,10 +91,12 @@ type NativeCaseIsolationEvidence = {
 };
 
 type CliOptions = {
+  runId: string;
   diagnosticWorkKey: string | null;
   diagnosticWorkCount: number | null;
   diagnosticStartIndex: number;
   expectedCommit: string;
+  expectedTree: string;
   devServerPort: number | null;
   allowDirtyDiagnostic: boolean;
   clearAppData: boolean;
@@ -1363,10 +1365,12 @@ function parseOptions(): CliOptions {
   const diagnosticWorkCount = diagnosticWorkCountRaw == null ? null : Number(diagnosticWorkCountRaw);
   const diagnosticStartIndexRaw = value("--diagnostic-start-index=");
   return {
+    runId: value("--run-id=") ?? "",
     diagnosticWorkKey: value("--diagnostic-work-key="),
     diagnosticWorkCount,
     diagnosticStartIndex: diagnosticStartIndexRaw == null ? 0 : Number(diagnosticStartIndexRaw),
-    expectedCommit: value("--expected-commit=") ?? git(["rev-parse", "HEAD"]),
+    expectedCommit: value("--expected-commit=") ?? "",
+    expectedTree: value("--expected-tree=") ?? "",
     devServerPort: devServerPortRaw ? Number(devServerPortRaw) : null,
     allowDirtyDiagnostic: args.includes("--allow-dirty-diagnostic"),
     clearAppData: args.includes("--clear-app-data"),
@@ -1378,10 +1382,35 @@ function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+type TerminalEvidenceProvenance = {
+  candidate_sha: string;
+  tree_hash: string;
+  run_id: string;
+  evidence_kind: "diagnostic" | "full";
+};
+
+function collectArtifactHashes(artifactDir: string): Array<{ path: string; bytes: number; sha256: string }> {
+  const files: string[] = [];
+  const visit = (directory: string): void => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(entryPath);
+      else if (!/^artifact-manifest\.json(?:\.sha256)?$/.test(entry.name)) files.push(entryPath);
+    }
+  };
+  visit(artifactDir);
+  return files.sort().map((filePath) => ({
+    path: path.relative(artifactDir, filePath).split(path.sep).join("/"),
+    bytes: fs.statSync(filePath).size,
+    sha256: sha256(fs.readFileSync(filePath)),
+  }));
+}
+
 function persistTerminalCaseEvidence(
   artifactDir: string,
   caseNumber: number,
   result: NativeCaseResult,
+  provenance: TerminalEvidenceProvenance,
 ): void {
   const caseDir = path.join(artifactDir, "cases", result.work_key);
   fs.mkdirSync(caseDir, { recursive: true });
@@ -1393,6 +1422,7 @@ function persistTerminalCaseEvidence(
   const ledgerPath = path.join(caseDir, "terminal-case-result.json");
   const ledger = {
     schema: "asphalt-native-terminal-case-result/v1",
+    ...provenance,
     case_number: caseNumber,
     terminal: true,
     result,
@@ -1413,15 +1443,50 @@ async function main(): Promise<void> {
   const dirty = Boolean(status.trim());
   const subjectPatchHash = sha256(git(["diff", "--binary", "HEAD"]));
   const expectedIdentityToken = options.expectedCommit;
-  const artifactDir = path.join(process.cwd(), ".release-runtime", "asphalt-v3-final-r5", head, "native-android-api34");
+  const evidenceKind: "diagnostic" | "full" = options.diagnosticWorkKey || options.diagnosticWorkCount != null
+    ? "diagnostic"
+    : "full";
+  const runIdValid = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(options.runId);
+  const safeRunId = runIdValid ? options.runId : `invalid-run-id-${process.pid}`;
+  const artifactDir = path.join(
+    process.cwd(),
+    ".release-runtime",
+    "asphalt-v3-final-r6",
+    head,
+    safeRunId,
+    evidenceKind,
+  );
+  const artifactDirWasNonEmpty = fs.existsSync(artifactDir) && fs.readdirSync(artifactDir).length > 0;
   fs.mkdirSync(artifactDir, { recursive: true });
+  const activeOwnerPath = path.join(
+    process.cwd(),
+    ".release-runtime",
+    "asphalt-v3-final-r6",
+    "ACTIVE_CANDIDATE_OWNER.json",
+  );
+  let activeOwner: Record<string, unknown> | null = null;
+  try {
+    activeOwner = JSON.parse(fs.readFileSync(activeOwnerPath, "utf8")) as Record<string, unknown>;
+  } catch {
+    activeOwner = null;
+  }
+  const activeOwnerMatches = activeOwner?.["candidate_sha"] === head
+    && activeOwner?.["tree_hash"] === tree;
 
   const device = adb(["shell", "getprop", "ro.build.version.sdk"], 10_000);
   const packageProbe = adb(["shell", "pm", "path", PACKAGE_NAME], 10_000);
   const failures: string[] = [];
+  if (!runIdValid) failures.push("run_id_invalid_or_missing");
+  if (artifactDirWasNonEmpty) failures.push("run_output_root_not_empty");
   if (!device.ok || device.output.trim() !== API_LEVEL) failures.push(`api_level_expected_34_received_${device.output.trim() || "missing"}`);
   if (!packageProbe.ok || !packageProbe.output.includes("package:")) failures.push("native_package_not_installed");
-  if (head !== options.expectedCommit) failures.push(`head_expected_${options.expectedCommit}_received_${head}`);
+  if (head !== options.expectedCommit) {
+    failures.push(`ACTIVE_GOAL_IDENTITY_MISMATCH:commit_expected_${options.expectedCommit || "missing"}_received_${head}`);
+  }
+  if (tree !== options.expectedTree) {
+    failures.push(`ACTIVE_GOAL_IDENTITY_MISMATCH:tree_expected_${options.expectedTree || "missing"}_received_${tree}`);
+  }
+  if (!activeOwnerMatches) failures.push("ACTIVE_GOAL_IDENTITY_MISMATCH:owner_commit_tree");
   if (dirty && !options.allowDirtyDiagnostic) failures.push("worktree_not_clean_for_native_acceptance");
   if (options.diagnosticWorkKey && options.diagnosticWorkCount != null) {
     failures.push("diagnostic_work_key_and_count_are_mutually_exclusive");
@@ -1487,7 +1552,12 @@ async function main(): Promise<void> {
   if (failures.length === 0) {
     for (const [caseIndex, registration] of selected.entries()) {
       const result = await runCase(registration, artifactDir, appBuildIdentityMatches, options.devServerPort);
-      persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result);
+      persistTerminalCaseEvidence(artifactDir, caseIndex + 1, result, {
+        candidate_sha: head,
+        tree_hash: tree,
+        run_id: options.runId,
+        evidence_kind: evidenceKind,
+      });
       results.push(result);
       console.log(`NATIVE_ANDROID_API34 ${registration.workId} create=${result.create} edit=${result.edit} replay_pdf=${result.cold_replay_pdf} failures=${result.failures.length}`);
       if (result.failures.length > 0) break;
@@ -1528,8 +1598,13 @@ async function main(): Promise<void> {
     native_auth_login_attempted: authResult.attempted,
     native_auth_login_completed: authResult.ok,
     native_build_identity_matches_expected_commit: appBuildIdentityMatches,
+    run_id: options.runId,
+    evidence_kind: evidenceKind,
+    active_candidate_owner_path: activeOwnerPath,
+    active_candidate_owner_matches: activeOwnerMatches,
     source_head: head,
     expected_commit: options.expectedCommit,
+    expected_tree: options.expectedTree,
     committed_tree_hash: tree,
     subject_patch_sha256: subjectPatchHash,
     worktree_clean: !dirty,
@@ -1566,6 +1641,18 @@ async function main(): Promise<void> {
   );
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
   fs.writeFileSync(`${artifactPath}.sha256`, `${sha256(fs.readFileSync(artifactPath))}  ${path.basename(artifactPath)}\n`, "utf8");
+  const manifestPath = path.join(artifactDir, "artifact-manifest.json");
+  const manifest = {
+    schema: "asphalt-native-run-artifact-manifest/v1",
+    candidate_sha: head,
+    tree_hash: tree,
+    run_id: options.runId,
+    evidence_kind: evidenceKind,
+    files: collectArtifactHashes(artifactDir),
+    generated_at: new Date().toISOString(),
+  };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  fs.writeFileSync(`${manifestPath}.sha256`, `${sha256(fs.readFileSync(manifestPath))}  ${path.basename(manifestPath)}\n`, "utf8");
   console.log(JSON.stringify({
     final_status: artifact.final_status,
     artifact_path: artifactPath,
