@@ -92,10 +92,11 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter.indexOf("presentation.choices.length > 0")).toBeLessThan(
       setter.indexOf("findSafeInputOwnedByExactEditor"),
     );
-    expect(setter).toContain("editable-param-option-${key}-${value}");
+    expect(setter).toContain("editable-param-option-${key}-${choiceValue}");
+    expect(setter).toContain("tapExactEnumOptionAndWaitForCommit(value)");
     expect(setter).toContain("presentation.choices.length > 0 && dirty");
     expect(setter).toContain("String(choice.value) !== value");
-    expect(setter).toContain("editable-param-option-${key}-${alternate.value}");
+    expect(setter).toContain("tapExactEnumOptionAndWaitForCommit(String(alternate.value))");
     expect(setter).toContain("waitForCommittedValue()");
     expect(setter).toContain("reacquireExactEnumEditorAfterRerender");
     expect(setter).toContain("const initial = await scrollToId(editorId, 8)");
@@ -104,6 +105,11 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("findNodeById(snapshot, editorId)");
     expect(setter).toContain("const editor = exactEditor.node");
     expect(setter).not.toContain("editable-param-batch-dirty-count");
+    expect(setter).toContain("tapExactEnumOptionAndWaitForCommit");
+    expect(setter).toContain("await wait(800)");
+    expect(setter.indexOf("await wait(800)")).toBeLessThan(
+      setter.indexOf("return waitForCommittedValue()"),
+    );
     expect(setter).toContain("primary-not-dirty");
     expect(setter).toContain("alternate-not-dirty");
   });

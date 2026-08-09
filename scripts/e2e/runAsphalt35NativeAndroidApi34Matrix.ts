@@ -771,17 +771,22 @@ async function setInlineParameter(
     }
     return false;
   };
+  const tapExactEnumOptionAndWaitForCommit = async (choiceValue: string): Promise<boolean> => {
+    if (!await tapById(`editable-param-option-${key}-${choiceValue}`, 4)) return false;
+    // Let React Native Pressability and the controlled-state onChange commit
+    // before any follow-up swipe can compete with the accepted exact tap.
+    await wait(800);
+    return waitForCommittedValue();
+  };
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (presentation.choices.length > 0) {
-      if (await tapById(`editable-param-option-${key}-${value}`, 4) && await waitForCommittedValue()) return true;
+      if (await tapExactEnumOptionAndWaitForCommit(value)) return true;
       capture(caseDir, `p0-${key}-attempt-${attempt + 1}-primary-not-dirty`);
       const alternate = presentation.choices.find((choice) => String(choice.value) !== value);
       if (
         alternate
-        && await tapById(`editable-param-option-${key}-${alternate.value}`, 4)
-        && await waitForCommittedValue()
-        && await tapById(`editable-param-option-${key}-${value}`, 4)
-        && await waitForCommittedValue()
+        && await tapExactEnumOptionAndWaitForCommit(String(alternate.value))
+        && await tapExactEnumOptionAndWaitForCommit(value)
       ) return true;
       capture(caseDir, `p0-${key}-attempt-${attempt + 1}-alternate-not-dirty`);
       continue;
