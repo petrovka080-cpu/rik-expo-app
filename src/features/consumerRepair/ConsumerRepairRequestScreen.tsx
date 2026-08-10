@@ -469,7 +469,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.initialDeepLinkApplied = true;
     let bundle: ConsumerRepairDraftBundle;
     try {
-      bundle = this.buildDraftBundle(launchProblemText);
+      bundle = this.buildDraftBundle(launchProblemText, "launch");
     } finally {
       this.props.onInitialLaunchBuildSettled?.();
     }
@@ -509,8 +509,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
       ?? null;
   }
-  private buildDraftBundle(problemTextOverride?: string): ConsumerRepairDraftBundle {
-    const isLaunchBuild = Boolean(problemTextOverride?.trim());
+  private buildDraftBundle(
+    problemTextOverride?: string,
+    buildOrigin: "composer" | "launch" = "composer",
+  ): ConsumerRepairDraftBundle {
+    const isLaunchBuild = buildOrigin === "launch";
     const sourceProblemText = problemTextOverride?.trim() || this.state.problemText;
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
@@ -1088,6 +1091,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         rawValue,
         userId: CONSUMER_USER_ID,
       });
+      if (!bundle.estimateDraftRevisionState) {
+        const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
+        this.updateCurrentBundle(
+          bundle,
+          `Параметр сохранён. Для расчёта осталось уточнить: ${missingCount}.`,
+        );
+        return;
+      }
       const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
       this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
@@ -1103,6 +1114,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         patches,
         userId: CONSUMER_USER_ID,
       });
+      if (!bundle.estimateDraftRevisionState) {
+        const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
+        this.updateCurrentBundle(
+          bundle,
+          `Параметры сохранены. Для расчёта осталось уточнить: ${missingCount}.`,
+        );
+        return;
+      }
       const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
       this.updateCurrentBundle(bundle, `Смета пересчитана одной ревизией: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {

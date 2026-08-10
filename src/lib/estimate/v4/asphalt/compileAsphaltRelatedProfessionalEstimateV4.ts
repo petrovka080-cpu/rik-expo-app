@@ -495,6 +495,12 @@ function readinessFor(parameters: ExactParameterSet): DomainResolutionReadiness 
   return "CALCULATION_READY";
 }
 
+function readinessLabelRu(readiness: DomainResolutionReadiness): string {
+  if (readiness === "NEEDS_REQUIRED_INPUTS") return "нужно заполнить обязательные параметры";
+  if (readiness === "CALCULATION_READY") return "готово к расчёту";
+  return "требуется уточнение исходных данных";
+}
+
 function metadataFor(profile: AsphaltRelatedProfileV4): Record<string, AsphaltRelatedParameterMetadataV4> {
   return Object.fromEntries(
     [...new Set([...profile.requiredParameters, ...profile.optionalParameters, "work_scope"])]
@@ -555,8 +561,8 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
       ? `Предварительная профессиональная смета: ${profile.professionalNameRu}`
       : `${profile.professionalNameRu}: требуются обязательные исходные данные`,
     summaryRu: executable
-      ? `Точная операция ${resolvedOperationClass}; сформировано ${seeds.length} семантически типизированных позиций без generic fallback.`
-      : `Точная операция сохранена. Статус ${readiness}; укладочный профиль вместо выбранной операции не применяется.`,
+      ? `Точная операция «${profile.professionalNameRu}»; сформировано ${seeds.length} профессиональных позиций без подмены универсальным расчётом.`
+      : `Точная операция сохранена: ${readinessLabelRu(readiness)}. Укладочный профиль вместо выбранной операции не применяется.`,
     repairType: profile.canonicalWorkKey,
     selectedWork: {
       selectedCatalogWorkId: requestedCatalogRecordId,

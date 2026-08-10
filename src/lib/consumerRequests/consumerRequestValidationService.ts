@@ -10,6 +10,25 @@ function hasUsefulDescription(bundle: ConsumerRepairDraftBundle): boolean {
   return (bundle.draft.problemText ?? "").trim().length >= 20;
 }
 
+function hasApprovalDescriptionOrExactCalculatedWork(
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  if (hasUsefulDescription(bundle)) return true;
+  const selectedWorkKey = bundle.draft.selectedWorkKey?.trim();
+  const revisionState = bundle.estimateDraftRevisionState;
+  const currentRevision = revisionState?.revisions.find(
+    (revision) => revision.revisionId === revisionState.currentRevisionId,
+  );
+  return Boolean(
+    bundle.draft.selectedWorkSource === "user_selected" &&
+    selectedWorkKey &&
+    currentRevision?.professionalWorkId === selectedWorkKey &&
+    currentRevision.boq.rows.length > 0 &&
+    bundle.items.length > 0 &&
+    revisionState?.currentRevisionId,
+  );
+}
+
 function hasValidContactPhone(bundle: ConsumerRepairDraftBundle): boolean {
   const phone = (bundle.draft.contactPhone ?? "").trim();
   const digitCount = phone.replace(/\D/g, "").length;
@@ -74,7 +93,7 @@ export function validateConsumerRepairRequestForApprove(
     });
   }
 
-  if (!hasUsefulDescription(bundle) && bundle.media.length < 1) {
+  if (!hasApprovalDescriptionOrExactCalculatedWork(bundle) && bundle.media.length < 1) {
     errors.push({
       code: "DESCRIPTION_REQUIRED",
       messageRu: "Добавьте описание проблемы.",

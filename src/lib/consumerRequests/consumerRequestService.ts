@@ -48,11 +48,13 @@ import {
 import { recordEstimateTelemetryEvent } from "../../features/estimates/telemetry/estimateTelemetryRecorder";
 import {
   commitEstimateCompileResult,
+  bindEstimateDraftScope,
   createEstimateDraftSession,
   failEstimateCompile,
   prepareEstimateCompile,
   selectScope,
   selectEstimateDraftWork,
+  setEstimateDraftParameters,
   type EstimateDraftSession,
   type EstimateDraftSessionParameterValue,
   type EstimateDraftScopeRequirement,
@@ -102,6 +104,7 @@ import { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/el
 import {
   projectEstimateDraftRevisionToCanonicalSession,
   projectEstimateDraftSessionToCanonicalSession,
+  type CanonicalParameter,
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
@@ -1331,6 +1334,22 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     });
   }
 
+  const initialExactAsphaltRelatedRevision =
+    applyInitialExactAsphaltRelatedParameterBatch({
+      bundle,
+      patches: [{
+        operation: input.operation,
+        paramKey: input.paramKey.trim(),
+        rawValue: input.rawValue.trim(),
+      }],
+      userId,
+      createdAt: input.createdAt ?? new Date().toISOString(),
+      eventType: "estimate_params_recalculated",
+    });
+  if (initialExactAsphaltRelatedRevision) {
+    return initialExactAsphaltRelatedRevision;
+  }
+
   const { canonicalBundle, state } =
     resolveConsumerRepairCalculationStateForMutation(bundle);
   const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
@@ -1469,6 +1488,375 @@ function assertSafeDraftRevisionBatchResult(input: {
   ]);
 }
 
+function canonicalParameterPatchError(
+  code: string,
+  paramKey: string,
+): ConsumerRepairValidationError {
+  return new ConsumerRepairValidationError([{
+    code: "ESTIMATE_PARAMETERS_REQUIRED",
+    messageRu: `Параметр «${paramKey}» содержит недопустимое значение. Смета не изменена.`,
+    field: `${paramKey}:${code}`,
+  }]);
+}
+
+function parseCanonicalParameterPatchValue(
+  parameter: CanonicalParameter,
+  rawValue: string,
+): number | string | boolean {
+  const raw = rawValue.trim();
+  let value: number | string | boolean;
+  if (parameter.valueType === "number") {
+    const parsed = Number(raw.replace(/\s+/g, "").replace(",", "."));
+    if (!Number.isFinite(parsed)) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NUMBER_INVALID", parameter.parameterId);
+    }
+    value = parsed;
+  } else if (parameter.valueType === "boolean") {
+    if (/^(?:true|1|yes|да)$/iu.test(raw)) value = true;
+    else if (/^(?:false|0|no|нет)$/iu.test(raw)) value = false;
+    else throw canonicalParameterPatchError("CANONICAL_PARAMETER_BOOLEAN_INVALID", parameter.parameterId);
+  } else {
+    if (!raw) throw canonicalParameterPatchError("CANONICAL_PARAMETER_TEXT_REQUIRED", parameter.parameterId);
+    value = raw;
+  }
+
+  const validation = parameter.validation;
+  if (typeof value === "number") {
+    if (validation.min != null && value < validation.min) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_BELOW_MIN", parameter.parameterId);
+    }
+    if (validation.max != null && value > validation.max) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_ABOVE_MAX", parameter.parameterId);
+    }
+    if (validation.integer && !Number.isInteger(value)) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_INTEGER_REQUIRED", parameter.parameterId);
+    }
+  }
+  if (
+    parameter.allowedValues.length > 0 &&
+    !parameter.allowedValues.some((candidate) => candidate.value === value)
+  ) {
+    throw canonicalParameterPatchError("CANONICAL_PARAMETER_ALLOWED_VALUE_REQUIRED", parameter.parameterId);
+  }
+  return value;
+}
+
+function estimateDraftSessionParametersFromRevisionParams(
+  params: EstimateDraftRevision["params"],
+  createdAt: string,
+): Record<string, EstimateDraftSessionParameterValue> {
+  return Object.fromEntries(Object.entries(params).map(([key, parameter]) => [
+    key,
+    {
+      value: parameter.value,
+      ...(parameter.canonicalUnit ? { unit: parameter.canonicalUnit } : {}),
+      origin: parameter.source === "default_assumption"
+        ? "PROJECT_DERIVED" as const
+        : "USER_ENTERED" as const,
+      confirmedAt: parameter.source === "default_assumption" ? null : createdAt,
+      sourceText: parameter.sourceText,
+    },
+  ]));
+}
+
+function applyInitialExactAsphaltRelatedParameterBatch(input: {
+  bundle: ConsumerRepairDraftBundle;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  userId: string;
+  createdAt: string;
+  eventType: "estimate_params_recalculated" | "estimate_params_batch_recalculated";
+}): ConsumerRepairDraftBundle | null {
+  if (input.bundle.estimateDraftRevisionState) return null;
+  const canonicalSession = input.bundle.canonicalParameterSession;
+  if (!canonicalSession) return null;
+  const selectedCatalogWorkId =
+    input.bundle.draft.selectedCatalogWorkId ??
+    input.bundle.draft.selectedWorkKey ??
+    canonicalSession.canonicalWorkKey;
+  const profile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedCatalogWorkId);
+  if (!profile || profile.canonicalWorkKey !== canonicalSession.canonicalWorkKey) return null;
+
+  const params: Record<string, EstimateDraftRevision["params"][string]> = {};
+  for (const parameter of canonicalSession.parameters) {
+    if (
+      parameter.value == null ||
+      !parameter.valid ||
+      parameter.source === "MISSING"
+    ) {
+      continue;
+    }
+    params[parameter.parameterId] = {
+      value: parameter.value,
+      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
+      source: parameter.source === "ASSUMED" ? "default_assumption" : "user_input",
+      sourceText: parameter.sourceText ?? `canonical-session:${parameter.parameterId}`,
+      lastChangedAt: input.createdAt,
+    };
+  }
+
+  for (const patch of input.patches) {
+    const parameter = canonicalSession.parameters.find(
+      (candidate) => candidate.parameterId === patch.paramKey,
+    );
+    if (!parameter) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NOT_REGISTERED", patch.paramKey);
+    }
+    if (patch.operation === "remove_param") {
+      delete params[patch.paramKey];
+      continue;
+    }
+    params[patch.paramKey] = {
+      value: parseCanonicalParameterPatchValue(parameter, patch.rawValue),
+      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
+      source: "user_input",
+      sourceText: patch.rawValue,
+      lastChangedAt: input.createdAt,
+    };
+  }
+
+  const values = new Map(
+    Object.entries(params).map(([key, parameter]) => [key, parameter.value]),
+  );
+  const blockingMissingParameterIds = canonicalSession.parameters
+    .filter((parameter) => {
+      if (parameter.requiredLevel !== "BLOCKING_REQUIRED") return false;
+      const condition = parameter.visibilityCondition;
+      const visible = condition.kind === "ALWAYS" ||
+        values.get(condition.parameterId) === condition.value;
+      return visible && !params[parameter.parameterId];
+    })
+    .map((parameter) => parameter.parameterId);
+  if (blockingMissingParameterIds.length > 0) {
+    throw new ConsumerRepairValidationError([{
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu:
+        `Заполните все обязательные параметры (${blockingMissingParameterIds.length}): ` +
+        blockingMissingParameterIds.join(", ") + ". Исходный черновик не изменён.",
+      field: "params",
+    }]);
+  }
+
+  const conditionallyRequiredParameterKeys = [
+    ...profile.requiredParameters,
+    ...(params.haul_required?.value === true
+      ? ["haul_distance_km", "truck_payload_t"]
+      : []),
+    ...(params.removal_extent?.value === "PARTIAL"
+      ? ["total_area_m2", "removal_share"]
+      : []),
+    ...(params.work_scope?.value === "DEMOLITION_AND_REINSTATEMENT"
+      ? ["reinstatement_depth_mm", "new_asphalt_density_t_m3"]
+      : []),
+  ];
+  const sourceSession =
+    input.bundle.estimateDraftSession?.workIntent?.canonicalWorkKey === profile.canonicalWorkKey
+      ? input.bundle.estimateDraftSession
+      : selectEstimateDraftWork(
+        createEstimateDraftSession({ draftId: input.bundle.draft.id }),
+        {
+          catalogWorkId: selectedCatalogWorkId,
+          canonicalWorkKey: profile.canonicalWorkKey,
+          source: "EXPLICIT_SELECTION",
+          scopeRequired: false,
+        },
+      );
+  const scopedSession = bindEstimateDraftScope(sourceSession, {
+    scopePresetId: profile.calculationProfileId,
+    calculationStrategyId: profile.calculationStrategyId,
+    parameterSchemaVersion: profile.parameterSchemaId,
+    engineVersion: profile.formulaGraphVersion,
+    requiredParameterAlternatives: [{
+      alternativeId: `${profile.canonicalWorkKey}:all-required`,
+      parameterKeys: [...new Set(conditionallyRequiredParameterKeys)],
+    }],
+  });
+  const candidateParameterSession = setEstimateDraftParameters(
+    scopedSession,
+    estimateDraftSessionParametersFromRevisionParams(params, input.createdAt),
+  );
+  const candidateCanonicalSession =
+    projectEstimateDraftSessionToCanonicalSession({
+      session: candidateParameterSession,
+      createdAt: input.createdAt,
+      previousSession: canonicalSession,
+    }) ?? canonicalSession;
+  if (
+    candidateParameterSession.status !== "READY_TO_COMPILE" ||
+    candidateCanonicalSession.blockingMissingParameterIds.length > 0
+  ) {
+    const missingLabels = candidateCanonicalSession.parameters
+      .filter((parameter) =>
+        candidateCanonicalSession.blockingMissingParameterIds.includes(parameter.parameterId)
+      )
+      .map((parameter) => parameter.label);
+    const next = withEvent({
+      ...input.bundle,
+      draft: updateDraftRecord(input.bundle.draft, {
+        missingData: missingLabels,
+        aiSummaryRu:
+          `Точная операция сохранена. Для расчёта нужно уточнить ещё: ${missingLabels.join(", ")}.`,
+      }),
+      estimateDraftSession: candidateParameterSession,
+      canonicalParameterSession: candidateCanonicalSession,
+    }, createConsumerRepairEvent({
+      requestDraftId: input.bundle.draft.id,
+      eventType: "estimate_parameters_required",
+      actorType: "consumer",
+      actorUserId: input.userId,
+      payload: {
+        changedParamKeys: input.patches.map((patch) => patch.paramKey),
+        conditionalParametersRevealed: candidateCanonicalSession.blockingMissingParameterIds,
+        revisionId: null,
+        rowsAfter: 0,
+      },
+    }));
+    return saveConsumerRepairBundle(next);
+  }
+
+  const runtime = loadAiEstimateRuntime();
+  let revision: EstimateDraftRevision;
+  try {
+    revision = runtime.createDraft({
+      estimateDraftId: input.bundle.draft.id,
+      rawInput:
+        input.bundle.draft.problemText ??
+        input.bundle.draft.selectedWorkRawInput ??
+        profile.professionalNameRu,
+      selectedWorkKey: selectedCatalogWorkId,
+      selectedTemplateId: selectedCatalogWorkId,
+      selectedTemplateName:
+        input.bundle.draft.selectedWorkTitleRu ?? profile.professionalNameRu,
+      city: input.bundle.draft.city,
+      currency: input.bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+      countryCode: "KG",
+      paramOverrides: params,
+      createdAt: input.createdAt,
+    }).revision;
+  } catch (error) {
+    const cause = error instanceof Error ? error.message : "unknown";
+    if (
+      cause === "NEEDS_REQUIRED_INPUTS" ||
+      cause === "NORMATIVE_SOURCE_GAP"
+    ) {
+      throw new ConsumerRepairValidationError([{
+        code: "ESTIMATE_PARAMETERS_REQUIRED",
+        messageRu: "Для расчёта не хватает обязательных исходных данных. Черновик сохранён без частичной сметы.",
+        field: `params:${cause}`,
+      }]);
+    }
+    throw error;
+  }
+
+  const failures = [
+    revision.estimateDraftId === input.bundle.draft.id ? "" : "draft_identity_changed",
+    revision.professionalWorkId === profile.canonicalWorkKey ? "" : "exact_operation_changed",
+    revision.boq.rows.length > 0 ? "" : "boq_rows_missing",
+    revision.status === "draft_ready" ? "" : `revision_not_ready:${revision.status}`,
+    ...profile.requiredParameters.map((key) => revision.params[key] ? "" : `required_parameter_missing:${key}`),
+    ...input.patches.map((patch) =>
+      patch.operation === "remove_param" || revision.params[patch.paramKey]
+        ? ""
+        : `patched_parameter_missing:${patch.paramKey}`
+    ),
+  ].filter(Boolean);
+  if (failures.length > 0) {
+    throw new ConsumerRepairValidationError([{
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu: `Смета ещё не готова к расчёту. Исходный черновик не изменён: ${failures.join(", ")}.`,
+      field: "params",
+    }]);
+  }
+
+  const parameterSession = setEstimateDraftParameters(
+    scopedSession,
+    estimateDraftSessionParametersFromRevisionParams(revision.params, input.createdAt),
+  );
+  if (parameterSession.status !== "READY_TO_COMPILE") {
+    throw new ConsumerRepairValidationError([{
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu: "Не все обязательные параметры подтверждены. Исходный черновик не изменён.",
+      field: "params",
+    }]);
+  }
+  const compilingSession = prepareEstimateCompile(parameterSession).session;
+  const committedSession = commitEstimateCompileResult(compilingSession, {
+    draftId: input.bundle.draft.id,
+    selectionEpoch: compilingSession.selectionEpoch,
+    contextHash: compilingSession.contextHash!,
+    revisionId: revision.revisionId,
+    scopePresetId: compilingSession.scopePresetId!,
+    parameterSchemaVersion: compilingSession.parameterSchemaVersion!,
+    calculationStrategyId: compilingSession.calculationStrategyId!,
+  });
+  if (committedSession.status !== "REVIEW") {
+    throw new Error("ESTIMATE_INITIAL_COMPILE_COMMIT_REJECTED");
+  }
+
+  const revisionState: EstimateDraftRevisionState = {
+    estimateDraftId: input.bundle.draft.id,
+    currentRevisionId: revision.revisionId,
+    revisions: [revision],
+    diffs: [],
+  };
+  const nextBase: ConsumerRepairDraftBundle = {
+    ...input.bundle,
+    draft: updateDraftRecord(input.bundle.draft, {
+      problemText: revision.rawInput,
+      title: profile.professionalNameRu,
+      repairType: profile.canonicalWorkKey,
+      selectedCatalogWorkId,
+      selectedWorkKey: profile.canonicalWorkKey,
+      selectedWorkTitleRu: profile.professionalNameRu,
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+      aiSummaryRu: `${profile.professionalNameRu}: строк BOQ ${revision.boq.rows.length}.`,
+      missingData: [
+        ...revision.missingInputs.map((item) => item.label),
+        ...revision.assumptions
+          .filter((assumption) => !assumption.replacedByUserInput)
+          .map((assumption) => assumption.reason),
+      ],
+    }),
+    items: createConsumerRepairItemsFromDraftRevision(input.bundle.draft.id, revision),
+    pdfs: archivePdfsForStaleDraftRevision(input.bundle, revision.revisionId),
+    estimateDraftRevisionState: revisionState,
+    estimateDraftSession: committedSession,
+    canonicalParameterSession:
+      projectEstimateDraftRevisionToCanonicalSession({
+        revision,
+        draftId: input.bundle.draft.id,
+        createdAt: input.createdAt,
+        previousSession: canonicalSession,
+      }) ?? canonicalSession,
+    pendingRoadScopeSelection: null,
+  };
+  const withSnapshot: ConsumerRepairDraftBundle = {
+    ...nextBase,
+    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBase),
+  };
+  const canonicalBundle = ensureConsumerRepairBundleEstimateRevisionState(withSnapshot);
+  return saveConsumerRepairBundle(withEvent(
+    canonicalBundle,
+    createConsumerRepairEvent({
+      requestDraftId: input.bundle.draft.id,
+      eventType: input.eventType,
+      actorType: "consumer",
+      actorUserId: input.userId,
+      payload: {
+        initialRevisionCreated: true,
+        changedParamKeys: input.patches.map((patch) => patch.paramKey),
+        patchCount: input.patches.length,
+        revisionId: revision.revisionId,
+        previousRevisionId: null,
+        rowsBefore: 0,
+        rowsAfter: revision.boq.rows.length,
+        pdfStatus: "not_generated",
+      },
+    }),
+  ));
+}
+
 export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   requestDraftId: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
@@ -1515,6 +1903,18 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
       createdAt: input.createdAt ?? new Date().toISOString(),
       eventType: "estimate_params_batch_recalculated",
     });
+  }
+
+  const initialExactAsphaltRelatedRevision =
+    applyInitialExactAsphaltRelatedParameterBatch({
+      bundle,
+      patches: cleanPatches,
+      userId,
+      createdAt: input.createdAt ?? new Date().toISOString(),
+      eventType: "estimate_params_batch_recalculated",
+    });
+  if (initialExactAsphaltRelatedRevision) {
+    return initialExactAsphaltRelatedRevision;
   }
 
   const { canonicalBundle, state } =

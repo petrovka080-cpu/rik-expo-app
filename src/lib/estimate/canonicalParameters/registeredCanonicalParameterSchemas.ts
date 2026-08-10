@@ -83,6 +83,27 @@ function asphaltRelatedValueType(
   return ASPHALT_RELATED_PARAMETER_METADATA_V4[key]?.unit ? "number" : "string";
 }
 
+const ASPHALT_RELATED_ALLOWED_VALUE_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
+  COLD_MILLING: "Холодное фрезерование",
+  MECHANICAL_BREAKOUT: "Механизированный демонтаж",
+  MANUAL_BREAKOUT: "Ручной демонтаж",
+  COMBINED: "Комбинированный способ",
+  FULL: "Полный демонтаж",
+  PARTIAL: "Частичный демонтаж",
+  RECYCLING: "Переработка",
+  RECOVERED_MATERIAL: "Повторное использование",
+  TEMPORARY_STORAGE: "Временное складирование",
+  DISPOSAL: "Утилизация",
+  PURE_DEMOLITION: "Только демонтаж",
+  DEMOLITION_AND_REINSTATEMENT: "Демонтаж и восстановление",
+  true: "Да",
+  false: "Нет",
+});
+
+function asphaltRelatedAllowedValueLabelRu(value: string | boolean): string {
+  return ASPHALT_RELATED_ALLOWED_VALUE_LABELS_RU[String(value)] ?? String(value);
+}
+
 export const ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4: readonly CanonicalParameterSchema[] =
   Object.freeze(ASPHALT_RELATED_EXTRA_PROFILES_V4
     // asphalt_concrete_pavement is the established Asphalt V4 owner above.
@@ -130,7 +151,10 @@ export const ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4: readonly CanonicalP
             ...(metadata.integer ? { integer: true } : {}),
           }
           : { nonEmpty: true },
-        allowedValues: allowedValues.map((value) => ({ value, label: String(value) })),
+        allowedValues: allowedValues.map((value) => ({
+          value,
+          label: asphaltRelatedAllowedValueLabelRu(value),
+        })),
         affectsRows: [profile.canonicalWorkKey],
         affectsFormula: [profile.formulaGraphVersion],
         normativeSource: null,

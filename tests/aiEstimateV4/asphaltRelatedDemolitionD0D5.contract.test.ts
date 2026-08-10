@@ -3,6 +3,7 @@ import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/c
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
+  applyConsumerRepairDraftRevisionParamBatchPatch,
   approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
@@ -136,7 +137,164 @@ describe("asphalt-related demolition D0-D5 exact production contract", () => {
     expect(result.bundle.canonicalParameterSession?.parameters.find(
       (parameter) => parameter.parameterId === "removal_area_m2",
     )?.value).toBe(2000);
+    expect(result.bundle.draft.aiSummaryRu).not.toContain("NEEDS_REQUIRED_INPUTS");
+    expect(result.bundle.canonicalParameterSession?.parameters.find(
+      (parameter) => parameter.parameterId === "removal_method",
+    )?.allowedValues).toContainEqual({
+      value: "MECHANICAL_BREAKOUT",
+      label: "Механизированный демонтаж",
+    });
     expect(result.bundle.canonicalParameterSession?.blockingMissingParameterIds.length).toBeGreaterThan(0);
+  });
+
+  test("D0 applies one complete parameter batch and atomically creates the first exact demolition revision", () => {
+    const result = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "asphalt-related-d0-transition",
+      problemText: "Демонтаж асфальта 2000 м²",
+      repairType: "demolition",
+      city: "Bishkek",
+      addressText: "D0 transition",
+      preferredTimeText: "today",
+      contactPhone: "0700000000",
+      selectedWork: {
+        selectedWorkKey: "asphalt_demolition",
+        selectedTitleRu: "Демонтаж асфальта",
+        selectedCategoryKey: "demolition",
+        selectedCategoryTitleRu: "Демонтаж",
+        rawInput: "Демонтаж асфальта 2000 м²",
+        source: "user_selected",
+        resolverReGuessed: false,
+      },
+    });
+    const requestDraftId = result.bundle.draft.id;
+    const completePatches = [
+      { operation: "add_param" as const, paramKey: "removal_depth_mm", rawValue: "50" },
+      { operation: "add_param" as const, paramKey: "removal_method", rawValue: "MECHANICAL_BREAKOUT" },
+      { operation: "add_param" as const, paramKey: "removal_extent", rawValue: "FULL" },
+      { operation: "add_param" as const, paramKey: "existing_asphalt_density_t_m3", rawValue: "2,35" },
+      { operation: "add_param" as const, paramKey: "haul_required", rawValue: "false" },
+      { operation: "add_param" as const, paramKey: "material_destination", rawValue: "RECYCLING" },
+    ];
+
+    expect(() => applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId,
+      userId: "asphalt-related-d0-transition",
+      patches: completePatches.slice(0, 4),
+      createdAt: CREATED_AT,
+    })).toThrow(/Заполните все обязательные параметры/);
+    expect(getConsumerRepairRequest(requestDraftId).items).toHaveLength(0);
+    expect(getConsumerRepairRequest(requestDraftId).estimateDraftRevisionState).toBeNull();
+
+    const calculated = applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId,
+      userId: "asphalt-related-d0-transition",
+      patches: completePatches,
+      createdAt: CREATED_AT,
+    });
+    const revision = calculated.estimateDraftRevisionState?.revisions[0];
+    expect(result.bundle.items).toHaveLength(0);
+    expect(result.bundle.estimateDraftRevisionState).toBeNull();
+    expect(calculated.estimateDraftRevisionState?.revisions).toHaveLength(1);
+    expect(calculated.estimateDraftRevisionState?.currentRevisionId).toBe(revision?.revisionId);
+    expect(revision).toMatchObject({
+      professionalWorkId: "asphalt_demolition",
+      status: "draft_ready",
+    });
+    expect(revision?.params.haul_required.value).toBe(false);
+    expect(revision?.boq.rows.length).toBeGreaterThan(0);
+    expect(revision?.boq.rows.every((row) => row.sourceParameters?.asphaltRelatedV4 === true)).toBe(true);
+    expect(calculated.items.length).toBe(revision?.boq.rows.length);
+    expect(calculated.estimateDraftSession).toMatchObject({
+      activeRevisionId: revision?.revisionId,
+      status: "REVIEW",
+    });
+    expect(calculated.canonicalParameterSession).toMatchObject({
+      canonicalWorkKey: "asphalt_demolition",
+      status: "COMPLETE",
+    });
+    expect(calculated.estimateRevisionState?.current_revision_id).toBeTruthy();
+
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const restored = getConsumerRepairRequest(requestDraftId);
+    expect(restored.estimateDraftRevisionState?.currentRevisionId).toBe(revision?.revisionId);
+    expect(restored.items).toHaveLength(revision?.boq.rows.length ?? 0);
+  });
+
+  test("D0 reveals haul-dependent inputs without a crash and calculates after the second atomic batch", () => {
+    const result = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: "asphalt-related-d0-haul",
+      problemText: "Демонтаж асфальта 2000 м²",
+      repairType: "demolition",
+      city: "Bishkek",
+      addressText: "D0 haul",
+      preferredTimeText: "today",
+      contactPhone: "0700000000",
+      selectedWork: {
+        selectedWorkKey: "asphalt_demolition",
+        selectedTitleRu: "Демонтаж асфальта",
+        selectedCategoryKey: "demolition",
+        selectedCategoryTitleRu: "Демонтаж",
+        rawInput: "Демонтаж асфальта 2000 м²",
+        source: "user_selected",
+        resolverReGuessed: false,
+      },
+    });
+    const requestDraftId = result.bundle.draft.id;
+    const parametersRequired = applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId,
+      userId: "asphalt-related-d0-haul",
+      createdAt: CREATED_AT,
+      patches: [
+        { operation: "add_param", paramKey: "removal_depth_mm", rawValue: "50" },
+        { operation: "add_param", paramKey: "removal_method", rawValue: "MECHANICAL_BREAKOUT" },
+        { operation: "add_param", paramKey: "removal_extent", rawValue: "FULL" },
+        { operation: "add_param", paramKey: "existing_asphalt_density_t_m3", rawValue: "2.35" },
+        { operation: "add_param", paramKey: "haul_required", rawValue: "true" },
+        { operation: "add_param", paramKey: "material_destination", rawValue: "RECYCLING" },
+      ],
+    });
+
+    expect(parametersRequired.items).toHaveLength(0);
+    expect(parametersRequired.estimateDraftRevisionState).toBeNull();
+    expect(parametersRequired.estimateDraftSession?.status).toBe("PARAMETERS_REQUIRED");
+    expect(parametersRequired.canonicalParameterSession?.blockingMissingParameterIds).toEqual([
+      "haul_distance_km",
+      "truck_payload_t",
+    ]);
+
+    const calculated = applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId,
+      userId: "asphalt-related-d0-haul",
+      createdAt: CREATED_AT,
+      patches: [
+        { operation: "add_param", paramKey: "haul_distance_km", rawValue: "20" },
+        { operation: "add_param", paramKey: "truck_payload_t", rawValue: "20" },
+      ],
+    });
+    const revision = calculated.estimateDraftRevisionState?.revisions[0];
+    expect(calculated.estimateDraftRevisionState?.revisions).toHaveLength(1);
+    expect(revision?.professionalWorkId).toBe("asphalt_demolition");
+    expect(revision?.boq.rows.find((row) => row.formulaId === "truck_trip_ceiling_v1")?.quantity).toBe(12);
+    expect(calculated.canonicalParameterSession?.status).toBe("COMPLETE");
+  });
+
+  test("an exact calculated demolition estimate approves even when its catalog title is the whole short description", () => {
+    const draft = runtimeDraft("asphalt_demolition", fullDemolition({ haul_required: false }));
+    const bundle = createConsumerRepairRequestDraft({
+      consumerUserId: "asphalt-related-short-approval",
+      problemText: "Демонтаж асфальта",
+      repairType: "asphalt_demolition",
+      city: "Bishkek",
+      aiDraft: draft,
+    });
+
+    const approved = approveConsumerRepairRequestDraft({
+      requestDraftId: bundle.draft.id,
+      userId: bundle.draft.consumerUserId,
+      generatedAt: CREATED_AT,
+    });
+    expect(approved.draft.status).toBe("consumer_approved");
+    expect(approved.pdfs[0]?.pdfStatus).toBe("generated");
   });
 
   test.each([

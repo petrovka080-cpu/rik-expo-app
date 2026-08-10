@@ -621,6 +621,17 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const validationErrors: Record<string, string> = {};
     const patches: ConsumerRepairDraftRevisionParamBatchPatch[] = [];
 
+    for (const card of cardsByKey.values()) {
+      if (
+        this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED" &&
+        card.missing &&
+        card.clarificationTier === "critical" &&
+        !(this.state.draftValues[card.key] ?? "").trim()
+      ) {
+        validationErrors[card.key] = "Заполните обязательный параметр перед расчётом сметы.";
+      }
+    }
+
     for (const key of dirtyKeys) {
       const card = cardsByKey.get(key);
       const rawValue = (this.state.draftValues[key] ?? "").trim();
@@ -710,8 +721,19 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       recommended: 1,
       optional: 2,
     } as const;
+    const canonicalBlockingParameterIds = new Set(
+      this.props.canonicalParameterSession?.blockingMissingParameterIds ?? [],
+    );
+    const initialCanonicalCalculationBlocked =
+      this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
     const missingCards = cards
-      .filter((card) => card.missing)
+      .filter((card) =>
+        card.missing &&
+        (
+          !initialCanonicalCalculationBlocked ||
+          canonicalBlockingParameterIds.has(card.key)
+        )
+      )
       .sort(
         (left, right) =>
           clarificationRank[left.clarificationTier ?? "optional"] -
@@ -726,7 +748,18 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       !assumptionCards.includes(card)
     );
     const derivedCards = cards.filter((card) => card.source === "formula_derived");
-    const visibleMissingCards = showAllMissing ? missingCards : missingCards.slice(0, 5);
+    const criticalMissingCards = missingCards.filter(
+      (card) => card.clarificationTier === "critical",
+    );
+    const nonCriticalMissingCards = missingCards.filter(
+      (card) => card.clarificationTier !== "critical",
+    );
+    const visibleMissingCards = showAllMissing
+      ? missingCards
+      : [
+        ...criticalMissingCards,
+        ...nonCriticalMissingCards.slice(0, Math.max(0, 5 - criticalMissingCards.length)),
+      ];
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
     const clarification = this.props.revision?.professionalClarification;
