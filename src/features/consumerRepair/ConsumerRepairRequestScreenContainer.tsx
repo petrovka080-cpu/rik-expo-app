@@ -93,17 +93,24 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       void screenRef.current?.openMaterialCatalogFromCapturedPhoto(result);
     },
   });
+  const exactDraftHydrationPending = Boolean(
+    props.initialDraftId?.trim() && durableStatus === "loading",
+  );
   return (
     <View style={styles.root}>
-      <ConsumerRepairRequestScreenController
-        ref={screenRef}
-        {...props}
-        onInitialLaunchBuildSettled={() => {
-          if (freshBuildKey) setSettledFreshBuildKey(freshBuildKey);
-        }}
-        onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
-        MobilePhotoCaptureFlowNode={photoCapture.flow}
-      />
+      {exactDraftHydrationPending ? (
+        <View testID="consumer-repair-exact-draft-hydration-gate" style={styles.exactDraftHydrationGate} />
+      ) : (
+        <ConsumerRepairRequestScreenController
+          ref={screenRef}
+          {...props}
+          onInitialLaunchBuildSettled={() => {
+            if (freshBuildKey) setSettledFreshBuildKey(freshBuildKey);
+          }}
+          onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
+          MobilePhotoCaptureFlowNode={photoCapture.flow}
+        />
+      )}
       {durableStatus === "loading" ? (
         <View
           accessibilityLiveRegion="polite"
@@ -140,6 +147,9 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
 
 const styles = StyleSheet.create({
   root: {
+    flex: 1,
+  },
+  exactDraftHydrationGate: {
     flex: 1,
   },
   storageNotice: {

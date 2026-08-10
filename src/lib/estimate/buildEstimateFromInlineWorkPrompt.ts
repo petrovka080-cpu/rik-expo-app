@@ -82,6 +82,18 @@ function loadRoadworksWaveAProductionDraftBuilder() {
   ) as typeof import("./v4/roadworks/roadworksWaveAProductionBinding");
 }
 
+function loadAsphaltRelatedExactProductionDraftBuilder() {
+  return require(
+    "./v4/asphalt/asphaltRelatedProductionBindingV4"
+  ) as typeof import("./v4/asphalt/asphaltRelatedProductionBindingV4");
+}
+
+function loadAsphaltRelatedExactRoutingV4() {
+  return require(
+    "./v4/asphalt/asphaltRelatedExactRoutingV4"
+  ) as typeof import("./v4/asphalt/asphaltRelatedExactRoutingV4");
+}
+
 function loadMultiDomainReferenceProductionDraftBuilder() {
   return require(
     "./v4/multiDomainReferenceProductionBindingV4"
@@ -956,9 +968,136 @@ function buildExactRoadworksWaveAParseResult(input: {
   };
 }
 
+function buildExactAsphaltRelatedParseResult(input: {
+  rawInput: string;
+  profile: {
+    canonicalWorkKey: string;
+    professionalNameRu: string;
+  };
+}): InlineWorkPromptParseResult {
+  const { rawInput, profile } = input;
+  const templateId = `${profile.canonicalWorkKey}:exact-professional-estimate:v1`;
+  return {
+    rawInput,
+    matchedTemplate: {
+      templateId,
+      templateName: profile.professionalNameRu,
+      family: profile.canonicalWorkKey,
+      confidence: 1,
+      matchSource: "user_selected",
+      matchedTextSpan: [0, rawInput.length],
+    },
+    candidateTemplates: [{
+      templateId,
+      templateName: profile.professionalNameRu,
+      family: profile.canonicalWorkKey,
+      workKey: profile.canonicalWorkKey,
+      confidence: 1,
+      reason: "exact_asphalt_related_semantic_binding",
+    }],
+    paramText: rawInput.trim(),
+    extractedParams: {},
+    rawInputFacts: [],
+    rawInputFactExtraction: {
+      raw_input: rawInput,
+      facts: [],
+      metrics: {
+        explicit_input_facts_ignored: 0,
+        explicit_input_unit_mismatches: 0,
+        explicit_input_facts_overwritten_by_default: 0,
+      },
+    },
+    assumptions: [],
+    missingInputs: [],
+    canBuildPreliminaryEstimate: true,
+    mustAskUserToSelectTemplate: false,
+  };
+}
+
+function buildUnsupportedExactWorkParseResult(
+  rawInput: string,
+  requestedId: string,
+): InlineWorkPromptParseResult {
+  return {
+    rawInput,
+    matchedTemplate: null,
+    candidateTemplates: [],
+    paramText: rawInput.trim(),
+    extractedParams: {},
+    rawInputFacts: [],
+    rawInputFactExtraction: {
+      raw_input: rawInput,
+      facts: [],
+      metrics: {
+        explicit_input_facts_ignored: 0,
+        explicit_input_unit_mismatches: 0,
+        explicit_input_facts_overwritten_by_default: 0,
+      },
+    },
+    assumptions: [],
+    missingInputs: [{
+      param: requestedId,
+      label: `UNSUPPORTED_EXACT_WORK_KEY:${requestedId}`,
+      requiredFor: "contract_ready",
+      blocksPreliminaryEstimate: false,
+    }],
+    canBuildPreliminaryEstimate: false,
+    mustAskUserToSelectTemplate: false,
+    blockingReason: "UNSUPPORTED_EXACT_WORK_KEY",
+  };
+}
+
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
+  const explicitExactId = input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim() || "";
+  const exactRouting = loadAsphaltRelatedExactRoutingV4()
+    .resolveAsphaltRelatedExactRoutingV4(explicitExactId);
+  if (exactRouting.status === "UNSUPPORTED_EXACT_WORK_KEY") {
+    return {
+      parseResult: buildUnsupportedExactWorkParseResult(input.rawInput, exactRouting.requestedId),
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "UNSUPPORTED_EXACT_WORK_KEY",
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
+      v4ClarificationExperience: null,
+      roadScopeResolution: null,
+    };
+  }
+  // An explicit catalog identity is authoritative. Resolve every registered
+  // asphalt-related operation before any word-based road/asphalt fallback so
+  // demolition, milling, repair and installation cannot repaint each other.
+  // The canonical pavement owner already has the established Asphalt V4
+  // compiler. Once one of its four road scopes is selected, keep that route
+  // in the established compiler instead of re-entering the domain adapter
+  // with a different P0 schema.
+  const selectedCanonicalAsphaltScope = Boolean(
+    exactRouting.status === "BOUND_EXTRA" &&
+    exactRouting.canonicalWorkKey === ASPHALT_WORK_ID_V4 &&
+    input.paramOverrides?.selectedRoadScope,
+  );
+  const exactAsphaltRelated = selectedCanonicalAsphaltScope
+    ? null
+    : loadAsphaltRelatedExactProductionDraftBuilder().buildAsphaltRelatedExactProductionDraftV4(input);
+  if (exactAsphaltRelated) {
+    const parseResult = buildExactAsphaltRelatedParseResult({
+      rawInput: input.rawInput,
+      profile: exactAsphaltRelated.profile,
+    });
+    return {
+      parseResult,
+      draft: exactAsphaltRelated.draft,
+      canBuildPreliminaryEstimate: exactAsphaltRelated.draft.items.length > 0,
+      blockingReason: exactAsphaltRelated.readiness === "CALCULATION_READY"
+        ? undefined
+        : exactAsphaltRelated.readiness,
+      pdfMappingValid: exactAsphaltRelated.draft.items.length > 0,
+      buyerHandoffMappingValid: exactAsphaltRelated.draft.items.some((item) => item.itemType !== "work"),
+      v4ClarificationExperience: null,
+      roadScopeResolution: null,
+    };
+  }
   let roadworksWaveA: ReturnType<
     typeof import("./v4/roadworks/roadworksWaveAProductionBinding")["buildRoadworksWaveAProductionDraft"]
   > = loadRoadworksWaveAProductionDraftBuilder().buildRoadworksWaveAProductionDraft(input);

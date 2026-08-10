@@ -118,6 +118,37 @@ describe("consumer repair durable storage startup UI", () => {
     });
   });
 
+  it("does not mount an exact draft controller before its transactional pointer is hydrated", async () => {
+    let resolveHydration!: () => void;
+    mockInitializeDurableStorage.mockImplementationOnce(
+      () => new Promise<void>((resolve) => {
+        resolveHydration = resolve;
+      }),
+    );
+    let renderer!: TestRenderer.ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestScreen initialDraftId="consumer_draft_transactional" />,
+      );
+    });
+
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-screen" })).toHaveLength(0);
+    expect(renderer.root.findByProps({
+      testID: "consumer-repair-exact-draft-hydration-gate",
+    })).toBeTruthy();
+
+    await act(async () => {
+      resolveHydration();
+      await Promise.resolve();
+    });
+
+    expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
   it("automatically leaves recovery when the bounded hydration completes late", async () => {
     let resolveHydration!: () => void;
     mockInitializeDurableStorage.mockImplementationOnce(

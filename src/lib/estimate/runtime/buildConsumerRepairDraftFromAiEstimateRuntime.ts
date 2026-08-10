@@ -16,9 +16,20 @@ import { buildCanonicalElectricalConsumerRepairAiDraft } from "../v4/electrical/
 import { ELECTRICAL_CANONICAL_WORK_KEY } from "../v4/electrical/electricalCanonicalV1";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "../v4/multiDomainReferencePassportsV4";
 import { getRoadworksWaveAProductionRegistration } from "../v4/roadworks/roadworksWaveAProductionBinding";
+import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../v4/asphalt/asphaltRelatedSemanticRegistryV4";
+import {
+  buildAsphaltRelatedExactProductionDraftV4,
+  isExactAsphaltRelatedConsumerDraftV4 as isExactAsphaltRelatedProductionDraftV4,
+} from "../v4/asphalt/asphaltRelatedProductionBindingV4";
 
 const CAPITAL_RENOVATION_WORK_KEY = "apartment_capital_renovation";
 const CAPITAL_RENOVATION_TEMPLATE_ID = "capital_renovation_professional_calculator_v1";
+
+export function isExactAsphaltRelatedConsumerDraftV4(
+  draft: ConsumerRepairAiDraft | null,
+): boolean {
+  return isExactAsphaltRelatedProductionDraftV4(draft);
+}
 
 function itemTypeForRow(row: ProfessionalBoqRow): ConsumerRepairItemType {
   if (row.rowType === "material") return "material";
@@ -34,9 +45,26 @@ function isCapitalRenovationRevision(revision: EstimateDraftRevision): boolean {
 }
 
 function isAsphaltV4Revision(revision: EstimateDraftRevision): boolean {
-  return revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+  return !isExactAsphaltRelatedRevision(revision) && (
+    revision.selectedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     revision.matchedFamily === ASPHALT_WORK_ID_V4 ||
-    revision.professionalWorkId === ASPHALT_WORK_ID_V4;
+    revision.professionalWorkId === ASPHALT_WORK_ID_V4
+  );
+}
+
+function asphaltRelatedProfile(revision: EstimateDraftRevision) {
+  const requestedCatalogWorkId = revision.boq.rows.find((row) =>
+    row.sourceParameters?.asphaltRelatedV4 === true &&
+    typeof row.sourceParameters?.requestedCatalogWorkId === "string"
+  )?.sourceParameters?.requestedCatalogWorkId as string | undefined;
+  return getAsphaltRelatedProfileByCatalogRecordIdV4(revision.professionalWorkId)
+    ?? getAsphaltRelatedProfileByCatalogRecordIdV4(revision.matchedFamily)
+    ?? getAsphaltRelatedProfileByCatalogRecordIdV4(requestedCatalogWorkId);
+}
+
+function isExactAsphaltRelatedRevision(revision: EstimateDraftRevision): boolean {
+  return revision.boq.rows.length > 0 &&
+    revision.boq.rows.every((row) => row.sourceParameters?.asphaltRelatedV4 === true);
 }
 
 function roadworksWaveARegistration(revision: EstimateDraftRevision) {
@@ -49,6 +77,10 @@ function roadworksWaveARegistration(revision: EstimateDraftRevision) {
 }
 
 function revisionTitleRu(revision: EstimateDraftRevision): string {
+  const exactAsphaltRelatedProfile = asphaltRelatedProfile(revision);
+  if (exactAsphaltRelatedProfile && isExactAsphaltRelatedRevision(revision)) {
+    return exactAsphaltRelatedProfile.professionalNameRu;
+  }
   if (isCapitalRenovationRevision(revision)) return "Капитальный ремонт квартиры";
   if (isAsphaltV4Revision(revision)) return ASPHALT_PROFESSIONAL_NAME_RU_V4;
   const roadworksRegistration = roadworksWaveARegistration(revision);
@@ -57,12 +89,34 @@ function revisionTitleRu(revision: EstimateDraftRevision): string {
 }
 
 function revisionRepairType(revision: EstimateDraftRevision): string {
+  const exactAsphaltRelatedProfile = asphaltRelatedProfile(revision);
+  if (exactAsphaltRelatedProfile && isExactAsphaltRelatedRevision(revision)) {
+    return exactAsphaltRelatedProfile.canonicalWorkKey;
+  }
   if (isCapitalRenovationRevision(revision)) return CAPITAL_RENOVATION_WORK_KEY;
   if (isAsphaltV4Revision(revision)) return ASPHALT_WORK_ID_V4;
   return revision.matchedFamily || revision.selectedTemplateId || "ai_estimate";
 }
 
 function selectedWorkFromRevision(revision: EstimateDraftRevision): ConsumerRepairSelectedWork | undefined {
+  const exactAsphaltRelatedProfile = asphaltRelatedProfile(revision);
+  if (exactAsphaltRelatedProfile && isExactAsphaltRelatedRevision(revision)) {
+    const requestedCatalogWorkId = revision.resolvedIdentity?.requestedCatalogWorkId ??
+      revision.boq.rows.find((row) => typeof row.sourceParameters?.requestedCatalogWorkId === "string")
+        ?.sourceParameters?.requestedCatalogWorkId as string | undefined;
+    const removal = exactAsphaltRelatedProfile.operationClass.includes("DEMOLITION") ||
+      exactAsphaltRelatedProfile.operationClass.includes("MILLING");
+    return {
+      selectedCatalogWorkId: requestedCatalogWorkId ?? exactAsphaltRelatedProfile.canonicalCatalogRecordId,
+      selectedWorkKey: exactAsphaltRelatedProfile.canonicalWorkKey,
+      selectedWorkTitleRu: exactAsphaltRelatedProfile.professionalNameRu,
+      selectedWorkCategoryKey: removal ? "demolition" : "roadworks",
+      selectedWorkCategoryTitleRu: removal ? "Демонтаж" : "Дорожные работы",
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    };
+  }
   if (isCapitalRenovationRevision(revision)) {
     return {
       selectedWorkKey: CAPITAL_RENOVATION_WORK_KEY,
@@ -248,6 +302,19 @@ function projectConsumerRepairRuntimeRevision(
 export function buildConsumerRepairDraftFromAiEstimateRuntime(
   input: AiEstimateCreateDraftInput,
 ): ConsumerRepairAiDraft | null {
+  const exactAsphaltRelated = buildAsphaltRelatedExactProductionDraftV4({
+    rawInput: input.rawInput,
+    selectedTemplateId: input.selectedTemplateId,
+    selectedWorkKey: input.selectedWorkKey,
+    selectedTemplateName: input.selectedTemplateName,
+    city: input.city,
+    currency: input.currency,
+    countryCode: input.countryCode,
+    paramOverrides: input.paramOverrides,
+  });
+  if (exactAsphaltRelated && exactAsphaltRelated.readiness !== "CALCULATION_READY") {
+    return exactAsphaltRelated.draft;
+  }
   return projectConsumerRepairRuntimeRevision(
     createConsumerRepairRuntimeRevision(input),
     input,

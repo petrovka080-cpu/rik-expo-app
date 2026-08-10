@@ -40,6 +40,7 @@ import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEs
 import type {
   buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime,
   buildConsumerRepairDraftFromExactRoadworksWaveARuntime as BuildConsumerRepairDraftFromExactRoadworksWaveARuntime,
+  isExactAsphaltRelatedConsumerDraftV4 as IsExactAsphaltRelatedConsumerDraftV4,
 } from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 import {
@@ -61,6 +62,8 @@ type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRep
 type ConsumerRepairRuntimeDraftBuilder = typeof BuildConsumerRepairDraftFromAiEstimateRuntime;
 type ConsumerRepairExactRoadworksRuntimeDraftBuilder =
   typeof BuildConsumerRepairDraftFromExactRoadworksWaveARuntime;
+type ConsumerRepairExactAsphaltRelatedDraftPredicate =
+  typeof IsExactAsphaltRelatedConsumerDraftV4;
 
 function recordConsumerRepairEstimateBuildTiming(
   stage: string,
@@ -88,6 +91,12 @@ function loadMultiDomainReferenceV4() {
       "../../lib/estimate/v4/multiDomainReferencePassportsV4"
     ) as typeof import("../../lib/estimate/v4/multiDomainReferencePassportsV4"),
   };
+}
+
+function loadAsphaltRelatedSemanticRegistryV4() {
+  return require(
+    "../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4"
+  ) as typeof import("../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4");
 }
 
 function loadProfessionalWorkPassport() {
@@ -133,6 +142,7 @@ function loadRoadworksWaveAProductionBinding() {
 function loadConsumerRepairRuntimeDraftBuilders(): {
   buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
   buildConsumerRepairDraftFromExactRoadworksWaveARuntime: ConsumerRepairExactRoadworksRuntimeDraftBuilder;
+  isExactAsphaltRelatedConsumerDraftV4: ConsumerRepairExactAsphaltRelatedDraftPredicate;
 } {
   const runtime = require(
     "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
@@ -719,6 +729,10 @@ function runtimeDraftReadyForRequestAutoPrepare(
 ): draft is ConsumerRepairAiDraft {
   if (!draft) return false;
   if (
+    draft.items.length > 0 &&
+    draft.items.every((item) => item.sourceParameters?.asphaltRelatedV4 === true)
+  ) return true;
+  if (
     draft.repairType === ASPHALT_WORK_ID_V4 ||
     draft.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
   ) return true;
@@ -878,9 +892,15 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const explicitRoadworksWaveAReadiness = roadworksWaveA.getRoadworksWaveAResolutionReadiness(
     exactRoadworksWaveASelection,
   );
+  const exactAsphaltRelatedSelection = selectedWork?.selectedWorkKey
+    ? loadAsphaltRelatedSemanticRegistryV4().getAsphaltRelatedProfileByCatalogRecordIdV4(
+      selectedWork.selectedWorkKey,
+    )
+    : null;
   recordConsumerRepairEstimateBuildTiming("ROADWORKS_SELECTION_READY", buildStartedAt);
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
     roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
+      !exactAsphaltRelatedSelection &&
       explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
       explicitRoadworksWaveAReadiness !== "NEEDS_REQUIRED_INPUTS"
       ? {
@@ -940,6 +960,8 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const roadworksWaveARuntimeDraft = runtimeDraft?.selectedWork?.selectedWorkKey
     ? roadworksWaveA.getRoadworksWaveAProductionRegistration(runtimeDraft.selectedWork.selectedWorkKey)
     : null;
+  const exactAsphaltRelatedRuntimeDraft =
+    loadConsumerRepairRuntimeDraftBuilders().isExactAsphaltRelatedConsumerDraftV4(runtimeDraft);
   const aiDraft = scopeSelectionDraft ?? (directOpenWorldDraft
     ? (() => {
       const buildDirectConsumerRepairOpenWorldAiDraft =
@@ -955,6 +977,8 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     })()
     : roadworksWaveARuntimeDraft
     ? runtimeDraft!
+    : exactAsphaltRelatedRuntimeDraft
+    ? runtimeDraft!
     : runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
     ? runtimeDraft
     : isMultiDomainReferenceV4Draft(runtimeDraft)
@@ -969,7 +993,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
         selectedWorkKey: selectedWork?.selectedWorkKey,
         selectedWork: consumerSelectedWork,
       });
-      return runtimeDraftWinsAgainstFallback(runtimeDraft, fallbackAiDraft)
+      return runtimeDraft && runtimeDraftWinsAgainstFallback(runtimeDraft, fallbackAiDraft)
         ? runtimeDraft
         : fallbackAiDraft;
     })());

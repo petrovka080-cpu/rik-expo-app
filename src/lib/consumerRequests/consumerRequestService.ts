@@ -65,6 +65,7 @@ import {
   isRoadScopeIdV4,
   type AsphaltScopeSelectionIdV5,
 } from "../estimate/v4/asphalt/roadScopeTruthV4";
+import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -352,17 +353,31 @@ function selectedWorkForRevisionStateRecovery(
     || rowBoundWorkKey;
   if (!selectedWorkKey) return null;
   const roadworksRegistration = roadworksWaveARegistration(selectedWorkKey);
+  const exactAsphaltRelatedProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedWorkKey);
   const selectedWorkTitleRu = bundle.draft.selectedWorkTitleRu?.trim()
     || roadworksRegistration?.professionalNameRu
+    || exactAsphaltRelatedProfile?.professionalNameRu
     || bundle.draft.title?.trim()
     || selectedWorkKey;
   return {
     selectedWorkKey,
     selectedWorkTitleRu,
     selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey?.trim()
-      || (roadworksRegistration ? "roadworks" : bundle.draft.repairType),
+      || (roadworksRegistration
+        ? "roadworks"
+        : exactAsphaltRelatedProfile?.uiGroup === "DEMOLITION_WORKS"
+          ? "demolition"
+          : exactAsphaltRelatedProfile
+            ? "roadworks"
+            : bundle.draft.repairType),
     selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu?.trim()
-      || (roadworksRegistration ? "Дорожные работы" : bundle.draft.repairType),
+      || (roadworksRegistration
+        ? "Дорожные работы"
+        : exactAsphaltRelatedProfile?.uiGroup === "DEMOLITION_WORKS"
+          ? "Демонтаж"
+          : exactAsphaltRelatedProfile
+            ? "Дорожные работы"
+            : bundle.draft.repairType),
     selectedWorkRawInput: bundle.draft.selectedWorkRawInput?.trim()
       || bundle.draft.problemText?.trim()
       || selectedWorkTitleRu,
@@ -410,13 +425,26 @@ function createSelectedWorkDraftSession(input: {
   const empty = createEstimateDraftSession({ draftId: input.draftId });
   const catalogWorkId = input.selectedWork?.selectedWorkKey ?? input.fallbackCatalogWorkId?.trim() ?? "";
   if (!catalogWorkId) return empty;
+  const exactAsphaltRelatedProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
+  const extractedParameters = userEnteredDraftSessionParameters(input.rawInput, input.createdAt);
+  const parameters = exactAsphaltRelatedProfile?.requiredParameters.includes("removal_area_m2") &&
+    extractedParameters.area_m2 &&
+    !extractedParameters.removal_area_m2
+    ? {
+      ...extractedParameters,
+      removal_area_m2: {
+        ...extractedParameters.area_m2,
+        sourceText: extractedParameters.area_m2.sourceText ?? "exact asphalt-related removal area",
+      },
+    }
+    : extractedParameters;
   return selectEstimateDraftWork(empty, {
     catalogWorkId,
-    canonicalWorkKey: catalogWorkId,
+    canonicalWorkKey: exactAsphaltRelatedProfile?.canonicalWorkKey ?? catalogWorkId,
     source: input.selectedWork ? "EXPLICIT_SELECTION" : "FREE_TEXT",
     scopeRequired: input.scopeRequired,
     scopeRequirement: input.scopeRequirement,
-    parameters: userEnteredDraftSessionParameters(input.rawInput, input.createdAt),
+    parameters,
   });
 }
 

@@ -96,7 +96,12 @@ export function buildProjectExecutionDraftFromRevision(
     revisionId: revision.revisionId,
     rows: rowSignature,
   });
-  const projectTitle = "Проект: Устройство асфальтобетонного дорожного покрытия";
+  const exactProfessionalTitle = rows
+    .map((row) => row.sourceParameters?.professionalNameRu)
+    .find((value): value is string => typeof value === "string" && value.trim().length > 0)
+    ?.trim() ?? null;
+  const defaultVisibleTitle = exactProfessionalTitle ?? "Устройство асфальтобетонного дорожного покрытия";
+  const projectTitle = `Проект: ${defaultVisibleTitle}`;
   const packageId = stableId("project_work_package", { sourcePayloadHash, revisionId: revision.revisionId });
   const tasks = rows
     .filter((row) => row.rowType !== "material")
@@ -106,8 +111,8 @@ export function buildProjectExecutionDraftFromRevision(
     .map((row) => buildProcurementItem(row, sourcePayloadHash));
   const workPackages = [{
     id: packageId,
-    title: "Устройство асфальтобетонного дорожного покрытия",
-    customerVisibleTitle: "Устройство асфальтобетонного дорожного покрытия",
+    title: defaultVisibleTitle,
+    customerVisibleTitle: defaultVisibleTitle,
     description: "Выполнение подтверждённого состава работ из текущей ревизии сметы.",
     sourceEstimateId: revision.estimateDraftId,
     sourceRowIds: rows.map((row) => row.rowId),
@@ -124,12 +129,12 @@ export function buildProjectExecutionDraftFromRevision(
     sourceRequestId: options.sourceRequestId,
     sourcePayloadHash,
     projectTitle,
-    customerVisibleTitle: "Устройство асфальтобетонного дорожного покрытия",
+    customerVisibleTitle: defaultVisibleTitle,
     workPackages,
     tasks,
     procurementItems,
     handoffSummary: {
-      sourceEstimateTitle: "Устройство асфальтобетонного дорожного покрытия",
+      sourceEstimateTitle: defaultVisibleTitle,
       workPackageCount: workPackages.length,
       taskCount: tasks.length,
       procurementItemCount: procurementItems.length,
@@ -147,9 +152,10 @@ export function buildProjectExecutionDraftFromRevision(
       cityOrRegion: options.cityOrRegion,
     },
   };
-  if (revision.matchedFamily !== "asphalt_concrete_pavement") {
+  if (revision.matchedFamily !== "asphalt_concrete_pavement" || exactProfessionalTitle) {
     const visibleTitle =
-      revision.boq.sections.find((section) => section.rowIds.length > 0)?.title?.trim()
+      exactProfessionalTitle
+      || revision.boq.sections.find((section) => section.rowIds.length > 0)?.title?.trim()
       || revision.boq.rows[0]?.titleRu?.trim()
       || "Профессиональная смета";
     result.projectTitle = `Проект: ${visibleTitle}`;

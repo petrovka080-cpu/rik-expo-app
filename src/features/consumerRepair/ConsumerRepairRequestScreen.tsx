@@ -876,7 +876,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           bundle,
           buildEstimateDraftSessionTransitionStatusMessage(bundle),
         );
-      } catch {
+      } catch (error) {
+        console.error("[ConsumerRepairRoadScope] scope calculation failed", error);
         this.setState({ statusMessage: "Не удалось выполнить расчёт. Выберите состав ещё раз." });
       } finally {
         this.setState({ roadScopeSelectionBusy: false });

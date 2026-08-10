@@ -792,10 +792,19 @@ export function hasUnhydratedTransactionalConsumerRepairBundles(): boolean {
 
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
   hydrateConsumerRepairRequestStore();
+  const parameterCollectionOnly = bundle.items.length === 0 &&
+    bundle.estimateDraftRevisionState == null &&
+    bundle.estimateRevisionState == null &&
+    bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
+  // A fail-closed parameter session is a request/session artifact, not an
+  // estimate. Creating an empty editable snapshot or immutable compatibility
+  // revision here would be a partial estimate mutation before P0 is complete.
   const normalized = normalizeEstimateDraftSessionCompatibilityView(
-    ensureConsumerRepairBundleEstimateRevisionState(
-      ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
-    ),
+    parameterCollectionOnly
+      ? { ...bundle, editableEstimateSnapshot: null }
+      : ensureConsumerRepairBundleEstimateRevisionState(
+        ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
+      ),
   );
   store.bundles.set(bundle.draft.id, cloneConsumerRepairValue(normalized));
   syncConsumerRepairBundleToAiEstimateLedger(normalized);
