@@ -30,8 +30,9 @@ describe("Asphalt native case isolation contract", () => {
     expect(source).toContain('restoreNativeCaseIsolation("before_case")');
     expect(source).toContain('restoreNativeCaseIsolation("after_pdf", pdfProbe.mode)');
     expect(source.indexOf('restoreNativeCaseIsolation("before_case")')).toBeLessThan(
-      source.indexOf("launchUri(requestUri(registration.professionalNameRu, true))"),
+      source.indexOf("const launch = launchUri(requestUri("),
     );
+    expect(source).toContain("registration.requestedCatalogRecordId");
 
     expect(read("src/lib/pdf/PdfViewerNativeShell.tsx")).toContain('testID="native-pdf-handoff-shell"');
     expect(read("src/lib/pdf/PdfViewerScreenContent.tsx")).toContain('testID="pdf-viewer-back"');
@@ -48,6 +49,29 @@ describe("Asphalt native case isolation contract", () => {
     expect(source).toContain("const fullAcceptance = selected.length === 35");
     expect(source).toContain('total: "105/105"');
     expect(source).toContain('"asphalt-35-native-api34-105-result.json"');
+  });
+
+  it("adds the R9 extra9 matrix and the exact three-case API34 diagnostic without weakening old35", () => {
+    const source = readRunner();
+
+    expect(source).toContain('value("--matrix-scope=")');
+    expect(source).toContain('matrixScopeRaw !== "all44"');
+    expect(source).toContain('args.includes("--r9-diagnostic")');
+    expect(source).toContain("ASPHALT_RELATED_EXTRA_PROFILES_V4.map");
+    expect(source).toContain('"road-scope-option-full_road_infrastructure"');
+    expect(source).toContain('"diagnostic-demolition-no-haul"');
+    expect(source).toContain('"diagnostic-demolition-with-haul"');
+    expect(source).toContain('dependentParameterKeys: ["haul_distance_km", "truck_payload_t"]');
+    expect(source).toContain('haul_required: true');
+    expect(source).toContain('"dependent_p0_second_apply_failed"');
+    expect(source).toContain('total: "27/27"');
+    expect(source).toContain('total: "132/132"');
+    expect(source).toContain('"ASPHALT_R9_ANDROID_M44X3_RESULT.json"');
+    expect(source).toContain("old_35_subset:");
+    expect(source).toContain("extra_9_subset:");
+    expect(source).toContain("observed_boq_rows: appliedRowCount");
+    expect(source).toContain('"asphalt-r9-extra-9-native-api34-27-result.json"');
+    expect(source).toContain("registration.requestedCatalogRecordId");
   });
 
   it("durably flushes every terminal case and captures failures that occur before the normal case directory exists", () => {

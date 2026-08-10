@@ -7,6 +7,7 @@ import {
   commitPreparedConsumerRepairRequestBundle,
   getConsumerRepairRequest,
   selectConsumerRepairRoadScopeV4,
+  type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
@@ -62,6 +63,17 @@ function createFullRoad() {
   });
 }
 
+function currentRevisionRows(bundle: ConsumerRepairDraftBundle) {
+  const state = bundle.estimateDraftRevisionState;
+  return state?.revisions.find(
+    (revision) => revision.revisionId === state.currentRevisionId,
+  )?.boq.rows ?? [];
+}
+
+function rowIds(bundle: ConsumerRepairDraftBundle): string[] {
+  return currentRevisionRows(bundle).map((row) => row.rowId);
+}
+
 describe("full-road normalized durable failure recovery V4", () => {
   const originalPlatformOs = Platform.OS;
 
@@ -79,7 +91,7 @@ describe("full-road normalized durable failure recovery V4", () => {
     });
   });
 
-  test("moves the 702-row R1/R2 flow off localStorage and reloads it through the transactional bridge", async () => {
+  test("moves the complete R1/R2 flow off localStorage and reloads it through the transactional bridge", async () => {
     const controlled = controlledStorage();
     const durableStore = new InMemoryEstimateRevisionDurableStore();
     Object.defineProperty(globalThis, "localStorage", {
@@ -134,6 +146,7 @@ describe("full-road normalized durable failure recovery V4", () => {
         userId: enriched.draft.consumerUserId,
         patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
       });
+      expect(currentRevisionRows(revised).length).toBeGreaterThan(600);
       await flushTransactionalConsumerRepairWrites();
 
       const encodedId = encodeURIComponent(baseline.draft.id);
@@ -156,7 +169,9 @@ describe("full-road normalized durable failure recovery V4", () => {
       expect(restored.estimateDraftRevisionState?.currentRevisionId)
         .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
       expect(restored.estimateDraftRevisionState?.revisions).toHaveLength(2);
-      expect(restored.items.filter((item) => item.unitPrice != null)).toHaveLength(702);
+      expect(rowIds(restored)).toEqual(rowIds(revised));
+      expect(restored.items.filter((item) => item.unitPrice != null))
+        .toHaveLength(currentRevisionRows(revised).length);
       expect(restored.estimateComments).toHaveLength(24);
       expect(restored.estimateAttachments).toHaveLength(8);
       expect(durableStore.revisionCount(baseline.draft.id)).toBe(2);
@@ -235,6 +250,7 @@ describe("full-road normalized durable failure recovery V4", () => {
         userId: enriched.draft.consumerUserId,
         patches: [{ operation: "update_param", paramKey: "width_m", rawValue: "30" }],
       });
+      expect(currentRevisionRows(revised).length).toBeGreaterThan(600);
       await flushTransactionalConsumerRepairWrites();
       expect([...values.keys()].some((key) =>
         key === `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${recordPrefix}` ||
@@ -248,7 +264,7 @@ describe("full-road normalized durable failure recovery V4", () => {
       expect(restored.estimateDraftRevisionState?.currentRevisionId)
         .toBe(revised.estimateDraftRevisionState?.currentRevisionId);
       expect(restored.estimateDraftRevisionState?.revisions).toHaveLength(2);
-      expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
+      expect(rowIds(restored)).toEqual(rowIds(revised));
       expect(restored.items.every((item) => item.unitPrice != null)).toBe(true);
       expect(restored.estimateComments ?? []).toHaveLength(24);
       expect(restored.estimateAttachments ?? []).toHaveLength(8);
@@ -263,7 +279,7 @@ describe("full-road normalized durable failure recovery V4", () => {
     }
   });
 
-  test("recovers a 702-row revision through 12 controlled failure classes", async () => {
+  test("recovers the exact full-road revision through 12 controlled failure classes", async () => {
     const controlled = controlledStorage();
     Object.defineProperty(globalThis, "localStorage", { value: controlled.storage, configurable: true });
     const failureClasses = [
@@ -288,6 +304,8 @@ describe("full-road normalized durable failure recovery V4", () => {
         const durableStore = new InMemoryEstimateRevisionDurableStore();
         setConsumerRepairTransactionalDurableStoreForTests(durableStore);
         const baseline = createFullRoad();
+        const expectedRowIds = rowIds(baseline);
+        expect(expectedRowIds.length).toBeGreaterThan(600);
         await flushTransactionalConsumerRepairWrites();
         const revisionId = baseline.estimateDraftRevisionState?.currentRevisionId ?? null;
         const changed = {
@@ -351,7 +369,7 @@ describe("full-road normalized durable failure recovery V4", () => {
         __simulateConsumerRepairRequestStoreReloadForTests();
         await hydrateTransactionalConsumerRepairRequestStore();
         const restored = getConsumerRepairRequest(baseline.draft.id);
-        expect(restored.estimateDraftRevisionState?.revisions.at(-1)?.boq.rows).toHaveLength(702);
+        expect(rowIds(restored)).toEqual(expectedRowIds);
         expect(new Set(restored.estimateDraftRevisionState?.revisions.map((revision) => revision.revisionId)).size)
           .toBe(restored.estimateDraftRevisionState?.revisions.length);
         expect(new Set(restored.estimateComments?.map((comment) => comment.id) ?? []).size)

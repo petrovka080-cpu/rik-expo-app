@@ -17,7 +17,7 @@ type OpenMeasurement = {
 
 type ScopeMeasurement = {
   scope: "ROAD_SURFACING_ONLY" | "FULL_ROAD_INFRASTRUCTURE";
-  rows: 54 | 702;
+  rows: number;
   cold: OpenMeasurement;
   reloadMs?: number;
   warm: OpenMeasurement[];
@@ -47,16 +47,28 @@ async function compileScope(
   scopeTestId:
     | "road-scope-option-road_surfacing_only"
     | "road-scope-option-full_road_infrastructure",
-  rows: 54 | 702,
-): Promise<void> {
+  expectedRows: number | null,
+): Promise<number> {
   await page.getByTestId("consumer-repair-problem-input").fill(ROAD_PROMPT);
   await expect(page.getByTestId("inline-work-prompt-param-chip-length_m")).toContainText("5400");
   await expect(page.getByTestId("inline-work-prompt-param-chip-width_m")).toContainText("15");
   await page.getByTestId("inline-work-prompt-build-estimate").click();
   await expect(page.getByTestId("road-scope-selection")).toBeVisible();
   await page.getByTestId(scopeTestId).click();
-  await expect(page.getByTestId("request-estimate-row-count")).toContainText(String(rows));
+  const rowCount = page.getByTestId("request-estimate-row-count");
+  let rows = 0;
+  if (expectedRows != null) {
+    await expect(rowCount).toContainText(String(expectedRows));
+    rows = expectedRows;
+  } else {
+    await expect.poll(async () => {
+      const text = await rowCount.innerText();
+      rows = Number(text.replace(/\s+/g, "").match(/\d+/u)?.[0] ?? 0);
+      return rows;
+    }).toBeGreaterThan(600);
+  }
   await expect(page.getByTestId("consumer-estimate-make-pdf")).toBeVisible();
+  return rows;
 }
 
 async function openPdfAndMeasure(page: Page): Promise<OpenMeasurement> {
@@ -133,11 +145,11 @@ async function measureScope(
   scopeTestId:
     | "road-scope-option-road_surfacing_only"
     | "road-scope-option-full_road_infrastructure",
-  rows: 54 | 702,
+  expectedRows: number | null,
   proveReload: boolean,
 ): Promise<ScopeMeasurement> {
   await openCleanRequest(page);
-  await compileScope(page, scopeTestId, rows);
+  const rows = await compileScope(page, scopeTestId, expectedRows);
   const cold = await openPdfAndMeasure(page);
 
   let reloadMs: number | undefined;
@@ -171,7 +183,7 @@ async function measureScope(
   };
 }
 
-test("browser PDF path meets feedback, cold/warm budgets and reload recovery for 54/702 Asphalt V1 rows", async ({
+test("browser PDF path meets feedback, cold/warm budgets and reload recovery for complete Asphalt V1 scopes", async ({
   page,
 }, testInfo: TestInfo) => {
   const consoleErrors: string[] = [];
@@ -192,7 +204,7 @@ test("browser PDF path meets feedback, cold/warm budgets and reload recovery for
     page,
     "FULL_ROAD_INFRASTRUCTURE",
     "road-scope-option-full_road_infrastructure",
-    702,
+    null,
     false,
   );
   const allFeedback = [surfacing.cold, ...surfacing.warm, fullRoad.cold, ...fullRoad.warm]

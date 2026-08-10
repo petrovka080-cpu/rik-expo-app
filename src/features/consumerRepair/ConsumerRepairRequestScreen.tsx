@@ -38,7 +38,7 @@ import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairReq
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
 import {
   appendNextApprovedHistoryPage,
-  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
+  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildConsumerRepairExactCatalogLaunchSelectedWork, buildConsumerRepairSelectedWorkDraftBundle, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildEstimateDraftSessionTransitionStatusMessage,
   buildConsumerRepairRequestPdfViewerNavigation, buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
@@ -104,6 +104,7 @@ type State = ConsumerRepairRequestScreenState;
 export type ConsumerRepairRequestScreenProps = {
   initialProblemText?: string;
   initialDraftId?: string;
+  initialSelectedCatalogWorkId?: string;
   launchFingerprint?: string;
   launchId?: string;
   autoPrepare?: boolean;
@@ -261,7 +262,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         return;
       }
     }
-    if (launchChanged || prevProps.initialProblemText !== this.props.initialProblemText || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
+    if (launchChanged || prevProps.initialProblemText !== this.props.initialProblemText || prevProps.initialSelectedCatalogWorkId !== this.props.initialSelectedCatalogWorkId || prevProps.autoPrepare !== this.props.autoPrepare || prevProps.autoPdf !== this.props.autoPdf) {
       this.initialDeepLinkApplied = false;
       const nextProblemText = this.props.initialProblemText?.trim();
       if (
@@ -515,6 +516,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   ): ConsumerRepairDraftBundle {
     const isLaunchBuild = buildOrigin === "launch";
     const sourceProblemText = problemTextOverride?.trim() || this.state.problemText;
+    const launchSelectedWork = isLaunchBuild && this.props.initialSelectedCatalogWorkId?.trim()
+      ? buildConsumerRepairExactCatalogLaunchSelectedWork({
+          catalogWorkId: this.props.initialSelectedCatalogWorkId,
+          rawInput: sourceProblemText,
+        })
+      : null;
     const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
       consumerUserId: CONSUMER_USER_ID,
       problemText: sourceProblemText,
@@ -525,7 +532,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       contactPhone: this.state.contactPhone,
       // A launch payload is a complete new WorkIntent. It must never inherit a
       // catalog binding left in the already-mounted composer.
-      selectedWork: isLaunchBuild ? null : this.state.selectedWork,
+      selectedWork: isLaunchBuild ? launchSelectedWork : this.state.selectedWork,
     });
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);

@@ -29,7 +29,7 @@ import {
 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 export const ASPHALT_RELATED_R8_INVENTORY_VERSION =
-  "asphalt-related-global-domain-r8:2026-08-10.v1" as const;
+  "asphalt-related-global-domain-r9:2026-08-10.v1" as const;
 
 export type AsphaltRelatedR8Classification =
   | "EXECUTABLE"
@@ -163,7 +163,7 @@ function buildOld35Records(): AsphaltRelatedR8InventoryRecord[] {
       previous_35: true,
       previous_35_absence_reason: null,
       implementation_status: "REUSED_EXISTING_V4_PLATFORM",
-      test_status: "R8_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
+      test_status: "R9_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
       exclusion_type: null,
       exclusion_reason: null,
       exclusion_evidence: null,
@@ -200,7 +200,7 @@ function buildExpandedRecords(startOrdinal: number): AsphaltRelatedR8InventoryRe
       previous_35: false,
       previous_35_absence_reason: "Expanded-complex catalog (1610) was outside the earlier base-10000 Roadworks Wave A slice.",
       implementation_status: "EXACT_V4_ADAPTER_REGISTERED",
-      test_status: "R8_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
+      test_status: "R9_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
       exclusion_type: null,
       exclusion_reason: null,
       exclusion_evidence: null,
@@ -237,7 +237,7 @@ function buildIncludedBuiltInRecords(startOrdinal: number): AsphaltRelatedR8Inve
       previous_35: false,
       previous_35_absence_reason: "Built-in AI work definition was outside the earlier base-10000 Roadworks Wave A slice.",
       implementation_status: "EXACT_V4_ADAPTER_REGISTERED",
-      test_status: "R8_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
+      test_status: "R9_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
       exclusion_type: null,
       exclusion_reason: null,
       exclusion_evidence: null,
@@ -347,16 +347,16 @@ export function buildAsphaltRelatedR8Inventory() {
       passport_id: owner.passport_id,
       formula_graph_id: owner.formula_graph_id,
       normative_composition_id: owner.normative_composition_id,
-      runtime_status: "R8_EXACT_BINDING_GREEN",
-      Web_status: "PENDING_R8_ACTUAL_BROWSER",
-      Android_status: "PENDING_R8_API34",
-      PDF_status: "R8_IMMUTABLE_PROJECTION_GREEN",
+      runtime_status: "R9_EXACT_BINDING_GREEN",
+      Web_status: "R9_WEB_R53_REAL_BROWSER_GREEN",
+      Android_status: "PENDING_R9_API34_M44X3",
+      PDF_status: "R9_IMMUTABLE_PROJECTION_GREEN",
     };
   });
   const blocked = records.filter((entry) => entry.classification === "BLOCKED_MISSING_OWNER");
   const summary = {
     version: ASPHALT_RELATED_R8_INVENTORY_VERSION,
-    status: "R8_ACTIVE_NOT_GREEN",
+    status: "R9_ACTIVE_NOT_GREEN",
     previous_records: old35.length,
     inventory_candidates_N: records.length,
     asphalt_related_R: related.length,
@@ -418,33 +418,75 @@ function markdownTable(headers: readonly string[], rows: readonly (readonly unkn
 function renderReport(inventory: ReturnType<typeof buildAsphaltRelatedR8Inventory>): string {
   const additional = inventory.records.filter((entry) => !entry.previous_35 && entry.canonical_technology_id !== null);
   const exclusions = inventory.records.filter((entry) => entry.exclusion_type !== null);
-  const completed = [
-    ["Generic asphalt fallback for exact additional keys", "Exact catalog identity was not bound before generic construction fallback.", "asphaltRelatedSemanticRegistryV4.ts; asphaltRelatedProductionBindingV4.ts; asphaltRelatedExactRoutingV4.ts; buildEstimateFromInlineWorkPrompt.ts; requestEstimateScreenActions.ts", "asphaltRelatedExactBindingR8.contract.test.ts; 53/53 GREEN", "Existing V4 compiler/runtime/revision path with thin exact adapter", "Exact binding, history, PDF and procurement GREEN", "Actual Web + Android"],
-    ["Alias identity lost during session/replay", "Selected catalog record and canonical owner were not normalized through one O(1) registry.", "consumerRequestService.ts; createEstimateDraftRevision.ts; buildConsumerRepairDraftFromAiEstimateRuntime.ts", "asphaltRelatedExactBindingR8.contract.test.ts; aliases 9/9 GREEN", "Existing canonical parameter session and immutable revision", "Cold reload/history parity GREEN", "Actual Web + Android"],
-    ["Demolition routed to installation semantics", "asphalt_demolition previously fell through generic asphalt installation ownership.", "compileAsphaltRelatedProfessionalEstimateV4.ts; registeredCanonicalParameterSchemas.ts; buildProjectExecutionDraftFromRevision.ts", "asphaltRelatedDemolitionD0D5.contract.test.ts; D0-D5 GREEN", "FULL_DEPTH_DEMOLITION / PARTIAL_DEPTH_REMOVAL / COLD_MILLING / LOCAL_BREAKUP / DEMOLITION_AND_REINSTATEMENT", "D0-D5, forbidden-owner and lifecycle gates GREEN", "Actual Web D0-D5 + Android diagnostic"],
+  const scenarios = [
+    ["D0", "area=120; остальные P0 отсутствуют", "canonical parameter session; BOQ=0; storage/history без mutation", "нет", "любые calculation owners", "0", "PDF/procurement запрещены", "запрещено"],
+    ["D0 Apply 5/6", "заполнены 5 из 6 P0; одно обязательное поле пусто", "inline validation у поля; compiler не запускается; BOQ/storage без mutation", "нет", "любые calculation owners", "0", "PDF/procurement запрещены", "запрещено"],
+    ["D1 FULL_DEPTH_DEMOLITION", "area=120; depth=50; full; density=2.35; haul=false; recycling", "атомарная первая R1; durable replay exact", "demolition volume/mass, labor, equipment, documentation", "asphalt_mix, tack_coat, paver, new_layer_compaction", "1", "PDF=current R1; procurement или явно 0 items", "разрешено для current exact R1"],
+    ["D2 PARTIAL_DEPTH_REMOVAL", "total_area=200; removal_share=0.6; depth=50; density=2.35", "R1; demolition_area=120; mass из geometry пользователя", "partial removal, mass balance", "installation owners", "1", "PDF/procurement привязаны к R1", "разрешено"],
+    ["D3 COLD_MILLING", "area=120; depth=50; number_of_passes=2; density=2.35", "R1; trace числа проходов", "cold milling, passes, mass balance", "paver/new layer", "1", "PDF/procurement привязаны к R1", "разрешено"],
+    ["D4 LOCAL_BREAKUP", "area=120; local breakup; boundary confirmed; depth/density provided", "R1; local demolition only", "local breakup, handling, documentation", "new pavement owners", "1", "PDF/procurement привязаны к R1", "разрешено"],
+    ["D5 PHASE_1 → PHASE_2", "explicit DEMOLITION_AND_REINSTATEMENT; reinstatement depth/density provided", "двухфазная exact revision только после явного выбора", "demolition owners, затем explicit reinstatement owners", "implicit installation before phase selection", "1 current two-phase revision", "PDF/procurement только current revision", "разрешено"],
+    ["haul dependent", "D1 + haul=true; distance=20 km; payload=20 t", "первый Apply только раскрывает dependent fields; второй создаёт R1", "removed_mass, haul_tkm, ceil truck_trips", "invented normative distance/payload", "0 → 1", "PDF/procurement после R1", "разрешено после R1"],
   ];
-  return `# ASPHALT_RELATED discovery report — R8\n\n` +
-    `Status: \`R8_ACTIVE_NOT_GREEN\`  \nInventory version: \`${inventory.version}\`  \nLedger SHA-256: \`${inventory.ledger_sha256}\`\n\n` +
+  const additionalOwners = ASPHALT_RELATED_EXTRA_PROFILES_V4.map((profile) => [
+    profile.canonicalWorkKey,
+    profile.passportId,
+    profile.parameterSchemaId,
+    profile.formulaGraphVersion,
+    profile.normativeCompositionId,
+    profile.calculationStrategyId,
+    profile.canonicalCatalogRecordId,
+    profile.catalogRecordIds.join(", "),
+  ]);
+  return `# ASPHALT_RELATED discovery report — R9\n\n` +
+    `Status: \`R9_ACTIVE_NOT_GREEN\`  \nInventory version: \`${inventory.version}\`  \nLedger SHA-256: \`${inventory.ledger_sha256}\`\n\n` +
     `The ledger uses exact typed identifiers. Keyword/regex matching is not used to classify or count candidates.\n\n` +
-    `## Таблица A — итоговые числа\n\n` +
-    markdownTable(["metric", "value"], Object.entries(inventory.summary).filter(([key]) => !["version", "status"].includes(key))) +
-    `\n\n## Таблица B — все дополнительные записи сверх прежних 35\n\n` +
+    `Summary: N=${inventory.summary.inventory_candidates_N}; R=${inventory.summary.asphalt_related_R}; M=${inventory.summary.unique_technologies_M}; A=${inventory.summary.aliases_A}; E=${inventory.summary.exclusions_E}; previous_35=${inventory.summary.old_35_bound}/35; additional_records=${inventory.summary.additional_catalog_records_and_aliases}; blocked=${inventory.summary.blocked}; orphan=${inventory.summary.orphan}; ambiguous=${inventory.summary.ambiguous}; duplicate=${inventory.summary.duplicate_candidate_id}; unclassified=${inventory.summary.unclassified}.\n\n` +
+    `## Таблица A — все 56 кандидатов\n\n` +
     markdownTable(
-      ["№", "catalog_id", "work_key", "русское название", "UI-группа", "source_catalog", "classification", "canonical_technology_id", "alias_of", "semantic_domains", "operation_class", "passport_id", "calculation_strategy_id", "почему отсутствовала", "implementation_status", "test_status"],
-      additional.map((entry, index) => [index + 1, entry.catalog_id, entry.work_key, entry.name_ru, entry.ui_group, entry.source_catalog, entry.classification, entry.canonical_technology_id, entry.alias_of, entry.semantic_domains.join(", "), entry.operation_class, entry.passport_id, entry.calculation_strategy_id, entry.previous_35_absence_reason, entry.implementation_status, entry.test_status]),
+      ["ordinal", "source", "catalog_id", "work_key", "name_ru", "catalog_group", "classification", "canonical_technology_id", "alias_of", "previous_35", "passport_id", "parameter_schema_id", "formula_graph_id", "calculation_strategy_id", "status", "evidence"],
+      inventory.records.map((entry) => [entry.ordinal, entry.source_catalog, entry.catalog_id, entry.work_key, entry.name_ru, entry.ui_group, entry.classification, entry.canonical_technology_id, entry.alias_of, entry.previous_35, entry.passport_id, entry.parameter_schema_id, entry.formula_graph_id, entry.calculation_strategy_id, entry.implementation_status, entry.exclusion_evidence ?? entry.test_status]),
     ) +
-    `\n\n## Таблица C — все уникальные технологии M\n\n` +
+    `\n\n## Таблица B — 18 дополнительных asphalt-related records\n\n` +
+    `Состав denominator: 8 Built-in AI work records и 10 expanded templates семейств \`asphalt_concrete_pavement\` / \`bridge_asphalt\`. Canonical record владеет technology; alias ссылается на него без второго compiler owner.\n\n` +
     markdownTable(
-      ["canonical_technology_id", "название", "operation_class", "catalog records", "aliases", "parameter_schema_id", "passport_id", "formula_graph_id", "normative_composition_id", "runtime_status", "Web_status", "Android_status", "PDF_status"],
-      inventory.technologies.map((entry) => [entry.canonical_technology_id, entry.name_ru, entry.operation_class, entry.catalog_records, entry.aliases, entry.parameter_schema_id, entry.passport_id, entry.formula_graph_id, entry.normative_composition_id, entry.runtime_status, entry.Web_status, entry.Android_status, entry.PDF_status]),
+      ["№", "source", "catalog_id", "work_key", "name_ru", "classification", "canonical_technology_id", "alias_of", "why"],
+      additional.map((entry, index) => [
+        index + 1,
+        entry.source_catalog,
+        entry.catalog_id,
+        entry.work_key,
+        entry.name_ru,
+        entry.classification,
+        entry.canonical_technology_id,
+        entry.alias_of,
+        `${entry.previous_35_absence_reason} ${entry.classification === "ALIAS" ? `Fan-in в canonical record ${entry.alias_of}; отдельный compiler не создаётся.` : "Exact canonical runtime owner."}`,
+      ]),
     ) +
-    `\n\n## Таблица D — исключения E\n\n` +
+    `\n\n## Таблица C — 3 поимённых исключения\n\n` +
     markdownTable(
-      ["catalog_id/key", "название", "тип", "почему не является строительной работой", "доказательство исключения"],
+      ["catalog_id/key", "name_ru", "type", "reason", "evidence"],
       exclusions.map((entry) => [`${entry.catalog_id} / ${entry.work_key}`, entry.name_ru, entry.exclusion_type, entry.exclusion_reason, entry.exclusion_evidence]),
     ) +
-    `\n\n## Таблица E — что агент уже сделал\n\n` +
-    markdownTable(["исправленный дефект", "root cause", "изменённые production-файлы", "изменённые test-файлы", "owner", "полученный gate", "оставшийся gate"], completed) +
+    `\n\n## Таблица D — 9 дополнительных canonical owners\n\n` +
+    markdownTable(
+      ["canonical owner", "V4 passport", "schema", "formula graph", "normative composition", "routing/calculation owner", "canonical record", "record IDs / aliases"],
+      additionalOwners,
+    ) +
+    `\n\n## Таблица E — D0–D5 lifecycle\n\n` +
+    markdownTable(["scenario", "input", "expected lifecycle", "BOQ owners", "forbidden owners", "revision count", "PDF/procurement", "approval"], scenarios) +
+    `\n\n## Normative ownership — M=44\n\n` +
+    markdownTable(
+      ["canonical_technology_id", "normative_composition_id", "Кыргызстан", "ЕАЭС/межгосударственный", "СНГ/международный", "status / numeric rule boundary"],
+      inventory.technologies.map((entry) => [
+        entry.canonical_technology_id,
+        entry.normative_composition_id,
+        "КРЕР-2015, сборник 27 — сметный классификатор; конкретная расценка только при её наличии в source ledger",
+        "ГОСТ 9128-2013 / ТР ТС 014/2011 — требования к материалу/дороге, только когда применимо; не ценовое правило",
+        "Отдельный numeric source не заявлен; юрисдикция — только справочная при явной ссылке",
+        "Статус документа берётся только из source ledger; draft не обозначается действующим. Geometry/mass рассчитываются из P0 пользователя и не являются нормативной расценкой.",
+      ]),
+    ) +
     `\n\n## Source scan ledger\n\n` +
     markdownTable(
       ["source_id", "source_path", "total_records", "exact_asphalt_refs", "new_inventory_candidates", "evidence"],

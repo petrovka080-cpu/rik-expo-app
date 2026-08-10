@@ -76,6 +76,7 @@ function recordConsumerRepairEstimateBuildTiming(
   }));
 }
 
+/* eslint-disable @typescript-eslint/no-require-imports -- synchronous lazy loaders keep heavy estimate runtimes out of request-route startup */
 function loadGlobalWorkSmartSearch() {
   return require(
     "../../lib/ai/globalEstimate/globalWorkSmartSearch"
@@ -131,14 +132,11 @@ function loadRegisteredEstimateWorkProfiles() {
   ) as typeof import("../../lib/estimate/workProfiles/registeredEstimateWorkProfiles");
 }
 
-/* eslint-disable @typescript-eslint/no-require-imports -- keep the request-route bundle lazy like adjacent estimate runtimes */
 function loadRoadworksWaveAProductionBinding() {
   return require(
     "../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding"
   ) as typeof import("../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding");
 }
-/* eslint-enable @typescript-eslint/no-require-imports */
-
 function loadConsumerRepairRuntimeDraftBuilders(): {
   buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
   buildConsumerRepairDraftFromExactRoadworksWaveARuntime: ConsumerRepairExactRoadworksRuntimeDraftBuilder;
@@ -149,6 +147,7 @@ function loadConsumerRepairRuntimeDraftBuilders(): {
   ) as typeof import("../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime");
   return runtime;
 }
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 export type ConsumerRepairProjectExecutionAction =
   | "create_project"
@@ -534,6 +533,35 @@ export function toConsumerRepairSelectedWork(binding: GlobalSelectedWorkBinding)
   };
 }
 
+export function buildConsumerRepairExactCatalogLaunchSelectedWork(input: {
+  catalogWorkId: string;
+  rawInput: string;
+}): GlobalSelectedWorkBinding {
+  const catalogWorkId = input.catalogWorkId.trim();
+  const rawInput = input.rawInput.trim();
+  const roadworks = loadRoadworksWaveAProductionBinding()
+    .RoadworksWaveAProductionRegistry
+    .find((entry) => entry.workId === catalogWorkId || entry.templateId === catalogWorkId);
+  const asphaltRelated = loadAsphaltRelatedSemanticRegistryV4()
+    .getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
+  if (!roadworks && !asphaltRelated) {
+    throw new Error(`UNSUPPORTED_EXACT_WORK_KEY:${catalogWorkId || "empty"}`);
+  }
+  const demolition = asphaltRelated?.uiGroup === "DEMOLITION_WORKS";
+  return {
+    selectedWorkKey: catalogWorkId,
+    selectedTitleRu:
+      roadworks?.professionalNameRu
+      ?? asphaltRelated?.professionalNameRu
+      ?? catalogWorkId,
+    selectedCategoryKey: demolition ? "demolition" : "roadworks",
+    selectedCategoryTitleRu: demolition ? "Демонтаж" : "Дорожные работы",
+    rawInput,
+    source: "user_selected",
+    resolverReGuessed: false,
+  };
+}
+
 export function focusConsumerRepairProblemInputAtEnd(
   inputRef: React.RefObject<TextInput | null>,
   value: string,
@@ -897,10 +925,12 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
       selectedWork.selectedWorkKey,
     )
     : null;
+  const exactAsphaltConcreteScopeSelection =
+    exactAsphaltRelatedSelection?.canonicalWorkKey === ASPHALT_WORK_ID_V4;
   recordConsumerRepairEstimateBuildTiming("ROADWORKS_SELECTION_READY", buildStartedAt);
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
     roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
-      !exactAsphaltRelatedSelection &&
+      (!exactAsphaltRelatedSelection || exactAsphaltConcreteScopeSelection) &&
       explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
       explicitRoadworksWaveAReadiness !== "NEEDS_REQUIRED_INPUTS"
       ? {

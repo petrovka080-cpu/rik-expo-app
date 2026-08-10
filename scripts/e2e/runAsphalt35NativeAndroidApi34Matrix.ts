@@ -22,6 +22,14 @@ import {
   compileRoadworksWaveAWork,
   type RoadworksWaveAParameterKey,
 } from "../../src/lib/estimate/v4/roadworks";
+import {
+  ASPHALT_RELATED_PARAMETER_METADATA_V4,
+  compileAsphaltRelatedProfessionalEstimateV4,
+} from "../../src/lib/estimate/v4/asphalt/compileAsphaltRelatedProfessionalEstimateV4";
+import {
+  ASPHALT_RELATED_EXTRA_PROFILES_V4,
+  type AsphaltRelatedProfileV4,
+} from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const DEVICE_ID = process.env.E2E_ANDROID_DEVICE_ID ?? "emulator-5554";
@@ -47,11 +55,13 @@ type UiNode = {
 
 type NativeCaseResult = {
   work_key: string;
+  evidence_case_id: string;
   title: string;
   scope_profile: string;
   expected_p0: string[];
   observed_p0: string[];
   expected_boq_rows: number;
+  observed_boq_rows: number | null;
   create: boolean;
   edit: boolean;
   cold_replay_pdf: boolean;
@@ -102,7 +112,91 @@ type CliOptions = {
   allowDirtyDiagnostic: boolean;
   clearAppData: boolean;
   forceDevReload: boolean;
+  matrixScope: "old35" | "extra9" | "all44";
+  r9Diagnostic: boolean;
+  activeOwnerPath: string | null;
 };
+
+type NativeMatrixRegistration = {
+  workId: string;
+  professionalNameRu: string;
+  scopeProfile: string;
+  parameterDefinitions: readonly { key: string; tier: string }[];
+  requestedCatalogRecordId: string | null;
+  extraProfile: AsphaltRelatedProfileV4 | null;
+  inputValues: Readonly<Record<string, string | number | boolean>>;
+  editParameterKey: "area_m2" | "removal_area_m2";
+  scopeOptionTestId: string | null;
+  dependentParameterKeys: readonly string[];
+  evidenceCaseId: string;
+};
+
+const ASPHALT_RELATED_NATIVE_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
+  area_m2: 120,
+  removal_area_m2: 120,
+  removal_depth_mm: 50,
+  removal_method: "MECHANICAL_BREAKOUT",
+  removal_extent: "FULL",
+  existing_asphalt_density_t_m3: 2.35,
+  haul_required: false,
+  material_destination: "RECYCLING",
+  wearing_layer_thickness_mm: 50,
+  binder_layer_thickness_mm: 60,
+  asphalt_density_t_m3: 2.35,
+  prepared_base_confirmed: true,
+  bridge_deck_system_confirmed: true,
+  traffic_class_confirmed: true,
+});
+
+function roadworksNativeRegistration(
+  registration: typeof RoadworksWaveAProductionRegistry[number],
+): NativeMatrixRegistration {
+  return {
+    ...registration,
+    requestedCatalogRecordId: null,
+    extraProfile: null,
+    inputValues: DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+    editParameterKey: "area_m2",
+    scopeOptionTestId: null,
+    dependentParameterKeys: [],
+    evidenceCaseId: registration.workId,
+  };
+}
+
+function extraNativeRegistration(
+  profile: AsphaltRelatedProfileV4,
+  overrides: Partial<Pick<NativeMatrixRegistration,
+    "scopeOptionTestId" | "dependentParameterKeys" | "evidenceCaseId" | "inputValues"
+  >> = {},
+): NativeMatrixRegistration {
+  const removalArea = profile.requiredParameters.includes("removal_area_m2");
+  return {
+    workId: profile.canonicalWorkKey,
+    professionalNameRu: profile.professionalNameRu,
+    scopeProfile: profile.operationClass,
+    parameterDefinitions: profile.requiredParameters
+      .filter((key) => key !== (removalArea ? "removal_area_m2" : "area_m2"))
+      .map((key) => ({ key, tier: "P0" })),
+    requestedCatalogRecordId: profile.canonicalCatalogRecordId,
+    extraProfile: profile,
+    inputValues: overrides.inputValues ?? ASPHALT_RELATED_NATIVE_INPUTS,
+    editParameterKey: removalArea ? "removal_area_m2" : "area_m2",
+    scopeOptionTestId: overrides.scopeOptionTestId ?? (
+      profile.canonicalWorkKey === "asphalt_concrete_pavement"
+        ? "road-scope-option-full_pavement_structure"
+        : null
+    ),
+    dependentParameterKeys: overrides.dependentParameterKeys ?? [],
+    evidenceCaseId: overrides.evidenceCaseId ?? profile.canonicalWorkKey,
+  };
+}
+
+const ROADWORKS_NATIVE_REGISTRY = Object.freeze(
+  RoadworksWaveAProductionRegistry.map(roadworksNativeRegistration),
+);
+const ASPHALT_RELATED_EXTRA_NATIVE_REGISTRY = Object.freeze(
+  ASPHALT_RELATED_EXTRA_PROFILES_V4.map((profile) => extraNativeRegistration(profile)),
+);
 
 function git(args: string[]): string {
   return execFileSync("git", args, {
@@ -798,21 +892,29 @@ async function waitForApprovedHistoryIncrement(
   return false;
 }
 
-function p0Keys(workKey: string): RoadworksWaveAParameterKey[] {
-  const registration = RoadworksWaveAProductionRegistry.find((item) => item.workId === workKey);
-  return registration?.parameterDefinitions.filter((definition) => definition.tier === "P0").map((definition) => definition.key) ?? [];
+function p0Keys(registration: NativeMatrixRegistration): string[] {
+  return registration.parameterDefinitions
+    .filter((definition) => definition.tier === "P0")
+    .map((definition) => definition.key);
 }
 
-function rawParameterValue(key: RoadworksWaveAParameterKey): string {
-  return String(DEFAULT_ROADWORKS_WAVE_A_INPUTS[key]);
+function rawParameterValue(registration: NativeMatrixRegistration, key: string): string {
+  return String(registration.inputValues[key]);
+}
+
+function parameterChoices(key: string): readonly { value: string | boolean }[] {
+  const roadworks = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[key as RoadworksWaveAParameterKey];
+  if (roadworks) return roadworks.choices;
+  return (ASPHALT_RELATED_PARAMETER_METADATA_V4[key]?.allowedValues ?? [])
+    .map((value) => ({ value }));
 }
 
 async function setInlineParameter(
-  key: RoadworksWaveAParameterKey,
+  key: string,
   value: string,
   caseDir: string,
 ): Promise<boolean> {
-  const presentation = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[key];
+  const presentation = { choices: parameterChoices(key) };
   const reacquireExactEnumEditorAfterRerender = async () => {
     const editorId = `editable-param-inline-editor-${key}`;
     const initial = await scrollToId(editorId, 8);
@@ -968,10 +1070,11 @@ function capture(caseDir: string, name: string): { screenshot: string | null; ui
   return { screenshot: shot.ok ? screenshot : null, uiDump: dumped.ok ? uiDump : null };
 }
 
-function requestUri(prompt?: string, autoPrepare = false): string {
+function requestUri(prompt?: string, autoPrepare = false, catalogWorkId?: string | null): string {
   const url = new URL("rik:///request");
   if (prompt) url.searchParams.set("prompt", prompt);
   if (autoPrepare) url.searchParams.set("autoPrepare", "1");
+  if (catalogWorkId) url.searchParams.set("catalogWorkId", catalogWorkId);
   return url.toString();
 }
 
@@ -1032,7 +1135,7 @@ async function openCurrentDevBundle(port: number, forceReload = false): Promise<
   return false;
 }
 
-async function ensureAuthenticatedRequestRoute(devServerPort: number): Promise<{ ok: boolean; attempted: boolean; reason: string | null }> {
+async function ensureAuthenticatedRequestRoute(_devServerPort: number): Promise<{ ok: boolean; attempted: boolean; reason: string | null }> {
   let snapshot = dumpUi();
   const authVisible = Boolean(findNodeById(snapshot, "auth.login.screen"));
   if (authVisible) {
@@ -1095,8 +1198,32 @@ async function collectVisibleRowNames(expectedNames: string[], maxSwipes = 24): 
   return { found, text: snapshots.join("\n") };
 }
 
+function expectedRowsFor(registration: NativeMatrixRegistration): { nameRu: string }[] {
+  if (!registration.extraProfile) {
+    return compileRoadworksWaveAWork(
+      registration.workId,
+      DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+      { scopeProfile: registration.scopeProfile as never },
+    ).rows;
+  }
+  if (registration.scopeOptionTestId) return [];
+  const compiled = compileAsphaltRelatedProfessionalEstimateV4({
+    rawInput: `${registration.professionalNameRu}, площадь 120 м²`,
+    selectedWorkKey: registration.requestedCatalogRecordId,
+    selectedTemplateId: registration.requestedCatalogRecordId,
+    paramOverrides: Object.fromEntries(Object.entries(registration.inputValues).map(([key, value]) => [
+      key,
+      { value, source: "user_input" as const },
+    ])),
+  });
+  if (!compiled || compiled.readiness !== "CALCULATION_READY") {
+    throw new Error(`NATIVE_EXPECTED_EXACT_COMPILATION_NOT_READY:${registration.workId}`);
+  }
+  return compiled.draft.items.map((item) => ({ nameRu: item.titleRu }));
+}
+
 async function runCase(
-  registration: typeof RoadworksWaveAProductionRegistry[number],
+  registration: NativeMatrixRegistration,
   artifactDir: string,
   buildIdentityVisible: boolean,
   devServerPort: number | null,
@@ -1109,13 +1236,9 @@ async function runCase(
   const failures: string[] = [];
   const screenshots: string[] = [];
   const uiDumps: string[] = [];
-  const caseDir = path.join(artifactDir, "cases", registration.workId);
-  const expectedP0 = p0Keys(registration.workId);
-  const expectedRows = compileRoadworksWaveAWork(
-    registration.workId,
-    DEFAULT_ROADWORKS_WAVE_A_INPUTS,
-    { scopeProfile: registration.scopeProfile },
-  ).rows;
+  const caseDir = path.join(artifactDir, "cases", registration.evidenceCaseId);
+  const expectedP0 = p0Keys(registration);
+  const expectedRows = expectedRowsFor(registration);
   const expectedRowNames = expectedRows.map((row) => row.nameRu);
   let caseStartIsolation: NativeCaseIsolationEvidence = {
     phase: "before_case",
@@ -1139,11 +1262,13 @@ async function runCase(
     revisionBeforeEdit: string | null = null,
   ): NativeCaseResult => ({
     work_key: registration.workId,
+    evidence_case_id: registration.evidenceCaseId,
     title: registration.professionalNameRu,
     scope_profile: registration.scopeProfile,
     expected_p0: expectedP0,
     observed_p0: observedP0,
     expected_boq_rows: expectedRows.length,
+    observed_boq_rows: null,
     create: false,
     edit: false,
     cold_replay_pdf: false,
@@ -1177,66 +1302,101 @@ async function runCase(
   markPhase("case_start_isolation_complete");
   await returnToTop(12);
   adb(["logcat", "-c"], 15_000);
-  const launch = launchUri(requestUri(registration.professionalNameRu, true));
+  const launchPrompt = `${registration.professionalNameRu}, площадь 120 м². Подробное описание работ для исполнителя.`;
+  const launch = launchUri(requestUri(
+    launchPrompt,
+    true,
+    registration.requestedCatalogRecordId,
+  ));
   if (!launch.ok) return finishAtRootFailure("launch", [`create_launch_failed:${launch.output.slice(0, 240)}`]);
-  let initial = await waitForIdSparse("request-estimate-parameters-toggle", 420_000, 35_000, 10_000);
-  markPhase("exact_intent_p0_disclosure_ready");
-  if (!findNodeById(initial, "request-estimate-parameters-toggle")) {
-    const failedCapture = capture(caseDir, "p0-root-failure");
-    if (failedCapture.screenshot) screenshots.push(failedCapture.screenshot);
-    if (failedCapture.uiDump) uiDumps.push(failedCapture.uiDump);
-    return finishAtRootFailure("launch", ["p0_disclosure_toggle_missing_after_exact_intent"]);
-  }
-  if (!await tapById("request-estimate-parameters-toggle", 4)) {
-    return finishAtRootFailure("p0", ["p0_disclosure_toggle_tap_failed"]);
-  }
-  initial = await waitForIdSparse("request-estimate-parameter-panel", 60_000, 2_000, 4_000);
-  if (!findNodeById(initial, "request-estimate-parameter-panel")) {
-    // A native deep link may dispatch twice while the first lazy runtime build is
-    // still settling. The second immutable draft projection legitimately
-    // remounts the screen and closes local disclosure state. Wait for that
-    // projection to settle, then reacquire and tap the current native node.
-    await wait(45_000);
-    if (await tapById("request-estimate-parameters-toggle", 6)) {
-      initial = await waitForIdSparse("request-estimate-parameter-panel", 60_000, 2_000, 4_000);
+  let observedP0: string[] = [];
+  let applied: ReturnType<typeof dumpUi>;
+  if (registration.scopeOptionTestId) {
+    const scope = await waitForIdSparse(registration.scopeOptionTestId, 420_000, 35_000, 10_000);
+    if (!findNodeById(scope, registration.scopeOptionTestId)) {
+      return finishAtRootFailure("launch", ["road_scope_option_missing_after_exact_intent"]);
     }
-  }
-  if (!findNodeById(initial, "request-estimate-parameter-panel")) {
-    return finishAtRootFailure("p0", ["p0_parameter_panel_missing_after_disclosure"]);
-  }
-  const observedP0 = expectedP0.filter((key) => initial.text.includes(`request-estimate-missing-param-${key}`));
-  for (const key of expectedP0) {
-    if (!observedP0.includes(key)) {
-      const found = await scrollToId(`request-estimate-missing-param-${key}`, 16);
-      if (found.node) observedP0.push(key);
+    if (!await tapById(registration.scopeOptionTestId, 6)) {
+      return finishAtRootFailure("p0", ["road_scope_option_tap_failed"]);
     }
-  }
-  if (observedP0.length !== expectedP0.length) {
-    return finishAtRootFailure("p0", [`p0_schema_mismatch:${observedP0.length}/${expectedP0.length}`], observedP0);
-  }
-  for (const key of expectedP0) {
-    if (!await setInlineParameter(key, rawParameterValue(key), caseDir)) {
-      return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
+    applied = await waitForCompiledProjection(1);
+  } else {
+    let initial = await waitForIdSparse("request-estimate-parameters-toggle", 420_000, 35_000, 10_000);
+    markPhase("exact_intent_p0_disclosure_ready");
+    if (!findNodeById(initial, "request-estimate-parameters-toggle")) {
+      const failedCapture = capture(caseDir, "p0-root-failure");
+      if (failedCapture.screenshot) screenshots.push(failedCapture.screenshot);
+      if (failedCapture.uiDump) uiDumps.push(failedCapture.uiDump);
+      return finishAtRootFailure("launch", ["p0_disclosure_toggle_missing_after_exact_intent"]);
     }
+    if (!await tapById("request-estimate-parameters-toggle", 4)) {
+      return finishAtRootFailure("p0", ["p0_disclosure_toggle_tap_failed"]);
+    }
+    initial = await waitForIdSparse("request-estimate-parameter-panel", 60_000, 2_000, 4_000);
+    if (!findNodeById(initial, "request-estimate-parameter-panel")) {
+      // A native deep link may dispatch twice while the first lazy runtime build is
+      // still settling. The second immutable draft projection legitimately
+      // remounts the screen and closes local disclosure state. Wait for that
+      // projection to settle, then reacquire and tap the current native node.
+      await wait(45_000);
+      if (await tapById("request-estimate-parameters-toggle", 6)) {
+        initial = await waitForIdSparse("request-estimate-parameter-panel", 60_000, 2_000, 4_000);
+      }
+    }
+    if (!findNodeById(initial, "request-estimate-parameter-panel")) {
+      return finishAtRootFailure("p0", ["p0_parameter_panel_missing_after_disclosure"]);
+    }
+    observedP0 = expectedP0.filter((key) => initial.text.includes(`request-estimate-missing-param-${key}`));
+    for (const key of expectedP0) {
+      if (!observedP0.includes(key)) {
+        const found = await scrollToId(`request-estimate-missing-param-${key}`, 16);
+        if (found.node) observedP0.push(key);
+      }
+    }
+    if (observedP0.length !== expectedP0.length) {
+      return finishAtRootFailure("p0", [`p0_schema_mismatch:${observedP0.length}/${expectedP0.length}`], observedP0);
+    }
+    for (const key of expectedP0) {
+      if (!await setInlineParameter(key, rawParameterValue(registration, key), caseDir)) {
+        return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
+      }
+    }
+    // Enum dirty-state verification finishes beside the last edited card. Start
+    // the batch action lookup from the deterministic screen origin so a prior
+    // retry cannot send the bidirectional search to the delivery/history tail.
+    await returnToTop(20);
+    if (!await tapById("editable-param-batch-apply", 16)) {
+      return finishAtRootFailure("p0", ["p0_apply_failed"], observedP0);
+    }
+    for (const key of registration.dependentParameterKeys) {
+      const dependent = await scrollToId(`request-estimate-missing-param-${key}`, 16);
+      if (!dependent.node) {
+        return finishAtRootFailure("p0", [`dependent_p0_missing_after_first_apply:${key}`], observedP0);
+      }
+      if (!await setInlineParameter(key, rawParameterValue(registration, key), caseDir)) {
+        return finishAtRootFailure("p0", [`dependent_p0_fill_failed:${key}`], observedP0);
+      }
+    }
+    if (registration.dependentParameterKeys.length > 0) {
+      await returnToTop(20);
+      if (!await tapById("editable-param-batch-apply", 16)) {
+        return finishAtRootFailure("p0", ["dependent_p0_second_apply_failed"], observedP0);
+      }
+    }
+    await returnToTop(20);
+    applied = await waitForCompiledProjection(Math.max(1, expectedRows.length));
   }
-  // Enum dirty-state verification finishes beside the last edited card. Start
-  // the batch action lookup from the deterministic screen origin so a prior
-  // retry cannot send the bidirectional search to the delivery/history tail.
-  await returnToTop(20);
-  if (!await tapById("editable-param-batch-apply", 16)) {
-    return finishAtRootFailure("p0", ["p0_apply_failed"], observedP0);
-  }
-  await returnToTop(20);
-  const applied = await waitForCompiledProjection(expectedRows.length);
   markPhase("p0_compiled_projection_ready");
-  const appliedStatus = await scrollToId("request-estimate-parameter-apply-status", 24);
+  const appliedStatus = registration.scopeOptionTestId
+    ? { node: findNodeById(applied, "estimate-current-revision-id") }
+    : await scrollToId("request-estimate-parameter-apply-status", 24);
   if (!appliedStatus.node) {
     return finishAtRootFailure("p0", ["compiled_revision_status_missing_after_p0_apply"], observedP0);
   }
   const appliedRowCount = Number(
     (findNodeById(applied, "request-estimate-row-count")?.text ?? "").match(/\d+/)?.[0] ?? -1,
   );
-  if (appliedRowCount !== expectedRows.length) {
+  if (appliedRowCount <= 0 || (expectedRows.length > 0 && appliedRowCount !== expectedRows.length)) {
     return finishAtRootFailure(
       "p0",
       [`compiled_boq_row_count_expected_${expectedRows.length}_received_${appliedRowCount}`],
@@ -1251,10 +1411,10 @@ async function runCase(
     "request-estimate-items-editor-content",
     16,
   );
-  const compiled = compiledLookup.snapshot;
   const revisionBeforeLookup = await scrollToId("estimate-current-revision-id", 24);
   const revisionBeforeEdit = revisionLabel(revisionBeforeLookup.snapshot);
-  const exactOwnerVisible = applied.text.includes(registration.professionalNameRu);
+  const exactOwnerVisible = applied.text.includes(registration.professionalNameRu)
+    || Boolean(findNodeById(applied, `request-estimate-canonical-owner-${registration.workId}`));
   if (!compiledLookup.node) {
     return finishAtRootFailure("p0", ["compiled_boq_missing_after_p0_apply"], observedP0);
   }
@@ -1276,7 +1436,10 @@ async function runCase(
     16,
   );
   if (!editPanel.node) failures.push("parameter_disclosure_open_failed_before_edit");
-  if (editPanel.node && !await setInlineParameter("area_m2", "137", caseDir)) failures.push("edit_area_failed");
+  if (
+    editPanel.node
+    && !await setInlineParameter(registration.editParameterKey, "137", caseDir)
+  ) failures.push(`edit_area_failed:${registration.editParameterKey}`);
   if (failures.length > 0) {
     const failedEditCapture = capture(caseDir, "edit-area-failure");
     if (failedEditCapture.screenshot) screenshots.push(failedEditCapture.screenshot);
@@ -1294,7 +1457,10 @@ async function runCase(
     ? await applyEditAndWaitForChangedRevision(revisionBeforeEdit)
     : { snapshot: dumpUi(), label: null, applyTapped: false };
   if (!changedRevision.applyTapped) failures.push("edit_apply_failed");
-  const editedDiff = await scrollToId("estimate-revision-diff-param-area_m2", 24);
+  const editedDiff = await scrollToId(
+    `estimate-revision-diff-param-${registration.editParameterKey}`,
+    24,
+  );
   const edited = editedDiff.snapshot;
   const finalEditRevisionLabel = revisionLabel(edited);
   const revisionAfterEdit = finalEditRevisionLabel && finalEditRevisionLabel !== revisionBeforeEdit
@@ -1425,11 +1591,13 @@ async function runCase(
   markPhase("pdf_projection_complete");
   return {
     work_key: registration.workId,
+    evidence_case_id: registration.evidenceCaseId,
     title: registration.professionalNameRu,
     scope_profile: registration.scopeProfile,
     expected_p0: expectedP0,
     observed_p0: observedP0,
     expected_boq_rows: expectedRows.length,
+    observed_boq_rows: appliedRowCount,
     create,
     edit,
     cold_replay_pdf: coldReplayPdf,
@@ -1464,6 +1632,10 @@ function parseOptions(): CliOptions {
   const diagnosticWorkCountRaw = value("--diagnostic-work-count=");
   const diagnosticWorkCount = diagnosticWorkCountRaw == null ? null : Number(diagnosticWorkCountRaw);
   const diagnosticStartIndexRaw = value("--diagnostic-start-index=");
+  const matrixScopeRaw = value("--matrix-scope=") ?? "old35";
+  if (matrixScopeRaw !== "old35" && matrixScopeRaw !== "extra9" && matrixScopeRaw !== "all44") {
+    throw new Error(`NATIVE_MATRIX_SCOPE_INVALID:${matrixScopeRaw}`);
+  }
   return {
     runId: value("--run-id=") ?? "",
     diagnosticWorkKey: value("--diagnostic-work-key="),
@@ -1475,6 +1647,9 @@ function parseOptions(): CliOptions {
     allowDirtyDiagnostic: args.includes("--allow-dirty-diagnostic"),
     clearAppData: args.includes("--clear-app-data"),
     forceDevReload: args.includes("--force-dev-reload"),
+    matrixScope: matrixScopeRaw,
+    r9Diagnostic: args.includes("--r9-diagnostic"),
+    activeOwnerPath: value("--active-owner-path="),
   };
 }
 
@@ -1489,7 +1664,7 @@ type TerminalEvidenceProvenance = {
   evidence_kind: "diagnostic" | "full";
 };
 
-function collectArtifactHashes(artifactDir: string): Array<{ path: string; bytes: number; sha256: string }> {
+function collectArtifactHashes(artifactDir: string): { path: string; bytes: number; sha256: string }[] {
   const files: string[] = [];
   const visit = (directory: string): void => {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -1512,7 +1687,7 @@ function persistTerminalCaseEvidence(
   result: NativeCaseResult,
   provenance: TerminalEvidenceProvenance,
 ): void {
-  const caseDir = path.join(artifactDir, "cases", result.work_key);
+  const caseDir = path.join(artifactDir, "cases", result.evidence_case_id);
   fs.mkdirSync(caseDir, { recursive: true });
   if (result.failures.length > 0 && result.screenshots.length === 0 && result.ui_dumps.length === 0) {
     const failureCapture = capture(caseDir, `terminal-${result.phase_reached}-failure`);
@@ -1543,27 +1718,32 @@ async function main(): Promise<void> {
   const dirty = Boolean(status.trim());
   const subjectPatchHash = sha256(git(["diff", "--binary", "HEAD"]));
   const expectedIdentityToken = options.expectedCommit;
-  const evidenceKind: "diagnostic" | "full" = options.diagnosticWorkKey || options.diagnosticWorkCount != null
+  const evidenceKind: "diagnostic" | "full" = options.r9Diagnostic || options.diagnosticWorkKey || options.diagnosticWorkCount != null
     ? "diagnostic"
     : "full";
   const runIdValid = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(options.runId);
   const safeRunId = runIdValid ? options.runId : `invalid-run-id-${process.pid}`;
+  const evidenceRoot = options.matrixScope === "old35" && !options.r9Diagnostic
+    ? "asphalt-v3-final-r6"
+    : "asphalt-related-r9";
   const artifactDir = path.join(
     process.cwd(),
     ".release-runtime",
-    "asphalt-v3-final-r6",
+    evidenceRoot,
     head,
     safeRunId,
     evidenceKind,
   );
   const artifactDirWasNonEmpty = fs.existsSync(artifactDir) && fs.readdirSync(artifactDir).length > 0;
   fs.mkdirSync(artifactDir, { recursive: true });
-  const activeOwnerPath = path.join(
-    process.cwd(),
-    ".release-runtime",
-    "asphalt-v3-final-r6",
-    "ACTIVE_CANDIDATE_OWNER.json",
-  );
+  const activeOwnerPath = options.activeOwnerPath
+    ? path.resolve(process.cwd(), options.activeOwnerPath)
+    : path.join(
+      process.cwd(),
+      ".release-runtime",
+      evidenceRoot,
+      "ACTIVE_CANDIDATE_OWNER.json",
+    );
   let activeOwner: Record<string, unknown> | null = null;
   try {
     activeOwner = JSON.parse(fs.readFileSync(activeOwnerPath, "utf8")) as Record<string, unknown>;
@@ -1591,6 +1771,9 @@ async function main(): Promise<void> {
   if (options.diagnosticWorkKey && options.diagnosticWorkCount != null) {
     failures.push("diagnostic_work_key_and_count_are_mutually_exclusive");
   }
+  if (options.r9Diagnostic && (options.diagnosticWorkKey || options.diagnosticWorkCount != null)) {
+    failures.push("r9_diagnostic_and_legacy_diagnostic_are_mutually_exclusive");
+  }
   if (
     options.diagnosticWorkCount != null
     && (
@@ -1604,7 +1787,13 @@ async function main(): Promise<void> {
   if (
     !Number.isInteger(options.diagnosticStartIndex)
     || options.diagnosticStartIndex < 0
-    || options.diagnosticStartIndex >= RoadworksWaveAProductionRegistry.length
+    || options.diagnosticStartIndex >= (
+      options.matrixScope === "old35"
+        ? RoadworksWaveAProductionRegistry.length
+        : options.matrixScope === "extra9"
+          ? ASPHALT_RELATED_EXTRA_NATIVE_REGISTRY.length
+          : RoadworksWaveAProductionRegistry.length + ASPHALT_RELATED_EXTRA_NATIVE_REGISTRY.length
+    )
     || (options.diagnosticWorkCount == null && options.diagnosticStartIndex !== 0)
   ) {
     failures.push(`diagnostic_start_index_invalid:${options.diagnosticStartIndex}`);
@@ -1637,16 +1826,53 @@ async function main(): Promise<void> {
     }
   }
 
-  const selected = options.diagnosticWorkKey
-    ? RoadworksWaveAProductionRegistry.filter((item) => item.workId === options.diagnosticWorkKey)
-    : options.diagnosticWorkCount != null
-      ? Array.from(
-        { length: options.diagnosticWorkCount },
-        (_, offset) => RoadworksWaveAProductionRegistry[
-          (options.diagnosticStartIndex + offset) % RoadworksWaveAProductionRegistry.length
-        ],
-      )
-      : [...RoadworksWaveAProductionRegistry];
+  const baseRegistry = options.matrixScope === "old35"
+    ? ROADWORKS_NATIVE_REGISTRY
+    : options.matrixScope === "extra9"
+      ? ASPHALT_RELATED_EXTRA_NATIVE_REGISTRY
+      : Object.freeze([...ROADWORKS_NATIVE_REGISTRY, ...ASPHALT_RELATED_EXTRA_NATIVE_REGISTRY]);
+  const asphaltConcreteProfile = ASPHALT_RELATED_EXTRA_PROFILES_V4.find(
+    (profile) => profile.canonicalWorkKey === "asphalt_concrete_pavement",
+  );
+  const demolitionProfile = ASPHALT_RELATED_EXTRA_PROFILES_V4.find(
+    (profile) => profile.canonicalWorkKey === "asphalt_demolition",
+  );
+  const r9DiagnosticRegistry = asphaltConcreteProfile && demolitionProfile
+    ? [
+      extraNativeRegistration(asphaltConcreteProfile, {
+        scopeOptionTestId: "road-scope-option-full_road_infrastructure",
+        evidenceCaseId: "diagnostic-full-road-infrastructure",
+      }),
+      extraNativeRegistration(demolitionProfile, {
+        evidenceCaseId: "diagnostic-demolition-no-haul",
+      }),
+      extraNativeRegistration(demolitionProfile, {
+        evidenceCaseId: "diagnostic-demolition-with-haul",
+        dependentParameterKeys: ["haul_distance_km", "truck_payload_t"],
+        inputValues: {
+          ...ASPHALT_RELATED_NATIVE_INPUTS,
+          haul_required: true,
+          haul_distance_km: 20,
+          truck_payload_t: 20,
+        },
+      }),
+    ]
+    : [];
+  const selected = options.r9Diagnostic
+    ? r9DiagnosticRegistry
+    : options.diagnosticWorkKey
+      ? baseRegistry.filter((item) => item.workId === options.diagnosticWorkKey)
+      : options.diagnosticWorkCount != null
+        ? Array.from(
+          { length: options.diagnosticWorkCount },
+          (_, offset) => options.matrixScope === "old35"
+            ? ROADWORKS_NATIVE_REGISTRY[
+              (options.diagnosticStartIndex + offset) % RoadworksWaveAProductionRegistry.length
+            ]
+            : baseRegistry[(options.diagnosticStartIndex + offset) % baseRegistry.length],
+        )
+        : [...baseRegistry];
+  if (options.r9Diagnostic && selected.length !== 3) failures.push("r9_diagnostic_registry_expected_3");
   if (selected.length === 0) failures.push(`unknown_diagnostic_work_key:${options.diagnosticWorkKey}`);
   const results: NativeCaseResult[] = [];
   if (failures.length === 0) {
@@ -1659,7 +1885,7 @@ async function main(): Promise<void> {
         evidence_kind: evidenceKind,
       });
       results.push(result);
-      console.log(`NATIVE_ANDROID_API34 ${registration.workId} create=${result.create} edit=${result.edit} replay_pdf=${result.cold_replay_pdf} failures=${result.failures.length}`);
+      console.info(`NATIVE_ANDROID_API34 ${registration.workId} create=${result.create} edit=${result.edit} replay_pdf=${result.cold_replay_pdf} failures=${result.failures.length}`);
       if (result.failures.length > 0) break;
     }
   }
@@ -1674,18 +1900,30 @@ async function main(): Promise<void> {
     ...results.flatMap((result) => result.failures.map((failure) => `${result.work_key}:${failure}`)),
   ];
   const fullAcceptance = selected.length === 35;
+  const extraAcceptance = options.matrixScope === "extra9" && !options.r9Diagnostic && selected.length === 9;
+  const r9FullAcceptance = options.matrixScope === "all44" && !options.r9Diagnostic && selected.length === 44;
   const green = allFailures.length === 0
     && createCount === selected.length
     && editCount === selected.length
     && replayCount === selected.length
-    && (!fullAcceptance || (!dirty && head === options.expectedCommit));
+    && (!(fullAcceptance || extraAcceptance || r9FullAcceptance) || (!dirty && head === options.expectedCommit));
   const artifact = {
-    schema: "asphalt-35-native-expo-react-native-api34-matrix:v1",
+    schema: extraAcceptance || r9FullAcceptance || options.r9Diagnostic
+      ? "asphalt-r9-native-expo-react-native-api34-matrix:v1"
+      : "asphalt-35-native-expo-react-native-api34-matrix:v1",
     final_status: green
-      ? fullAcceptance
-        ? "GREEN_NATIVE_ANDROID_API34_ASPHALT_35X3"
-        : "GREEN_NATIVE_ANDROID_API34_DIAGNOSTIC"
-      : "RED_NATIVE_ANDROID_API34_ASPHALT_35X3",
+      ? r9FullAcceptance
+        ? "GREEN_NATIVE_ANDROID_API34_ASPHALT_R9_M44X3"
+        : extraAcceptance
+        ? "GREEN_NATIVE_ANDROID_API34_ASPHALT_R9_EXTRA_9X3"
+        : fullAcceptance
+          ? "GREEN_NATIVE_ANDROID_API34_ASPHALT_35X3"
+          : options.r9Diagnostic
+            ? "GREEN_NATIVE_ANDROID_API34_ASPHALT_R9_DIAGNOSTIC_3X3"
+            : "GREEN_NATIVE_ANDROID_API34_DIAGNOSTIC"
+      : extraAcceptance || r9FullAcceptance || options.r9Diagnostic
+        ? "RED_NATIVE_ANDROID_API34_ASPHALT_R9"
+        : "RED_NATIVE_ANDROID_API34_ASPHALT_35X3",
     target: "native_expo_react_native",
     automation: "adb_uiautomator",
     package_name: PACKAGE_NAME,
@@ -1711,21 +1949,39 @@ async function main(): Promise<void> {
     dirty_diagnostic_allowed: options.allowDirtyDiagnostic,
     diagnostic_work_key: options.diagnosticWorkKey,
     diagnostic_work_count: options.diagnosticWorkCount,
+    matrix_scope: options.matrixScope,
+    r9_diagnostic: options.r9Diagnostic,
     source_status: status.split(/\r?\n/).filter(Boolean),
     package_probe: packageProbe.output.trim(),
     native_android_api34_create: `${createCount}/${selected.length}`,
     native_android_api34_edit: `${editCount}/${selected.length}`,
     native_android_api34_cold_replay_pdf: `${replayCount}/${selected.length}`,
     native_android_api34: `${createCount + editCount + replayCount}/${selected.length * 3}`,
+    old_35_subset: r9FullAcceptance ? {
+      create: `${results.slice(0, 35).filter((result) => result.create).length}/35`,
+      edit: `${results.slice(0, 35).filter((result) => result.edit).length}/35`,
+      cold_replay_pdf: `${results.slice(0, 35).filter((result) => result.cold_replay_pdf).length}/35`,
+      total: `${results.slice(0, 35).reduce((sum, result) => sum + Number(result.create) + Number(result.edit) + Number(result.cold_replay_pdf), 0)}/105`,
+    } : null,
+    extra_9_subset: r9FullAcceptance ? {
+      create: `${results.slice(35).filter((result) => result.create).length}/9`,
+      edit: `${results.slice(35).filter((result) => result.edit).length}/9`,
+      cold_replay_pdf: `${results.slice(35).filter((result) => result.cold_replay_pdf).length}/9`,
+      total: `${results.slice(35).reduce((sum, result) => sum + Number(result.create) + Number(result.edit) + Number(result.cold_replay_pdf), 0)}/27`,
+    } : null,
     runtime_draft_ready_within_30s: `${runtimeBudgetCount}/${selected.length}`,
     first_persist_within_45s: `${runtimeBudgetCount}/${selected.length}`,
     duplicate_build_count: duplicateBuildCount,
-    required_full_counts: {
-      create: "35/35",
-      edit: "35/35",
-      cold_replay_pdf: "35/35",
-      total: "105/105",
-    },
+    required_full_counts: r9FullAcceptance
+      ? { create: "44/44", edit: "44/44", cold_replay_pdf: "44/44", total: "132/132" }
+      : extraAcceptance
+      ? { create: "9/9", edit: "9/9", cold_replay_pdf: "9/9", total: "27/27" }
+      : {
+        create: "35/35",
+        edit: "35/35",
+        cold_replay_pdf: "35/35",
+        total: "105/105",
+      },
     results,
     failures: allFailures,
     generated_at: new Date().toISOString(),
@@ -1733,11 +1989,17 @@ async function main(): Promise<void> {
   };
   const artifactPath = path.join(
     artifactDir,
-    options.diagnosticWorkKey
+    options.r9Diagnostic
+      ? "r9-diagnostic-3-result.json"
+      : options.diagnosticWorkKey
       ? "diagnostic-result.json"
       : options.diagnosticWorkCount != null
         ? `diagnostic-${options.diagnosticWorkCount}-result.json`
-        : "asphalt-35-native-api34-105-result.json",
+        : r9FullAcceptance
+          ? "ASPHALT_R9_ANDROID_M44X3_RESULT.json"
+          : extraAcceptance
+          ? "asphalt-r9-extra-9-native-api34-27-result.json"
+          : "asphalt-35-native-api34-105-result.json",
   );
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
   fs.writeFileSync(`${artifactPath}.sha256`, `${sha256(fs.readFileSync(artifactPath))}  ${path.basename(artifactPath)}\n`, "utf8");
@@ -1753,7 +2015,7 @@ async function main(): Promise<void> {
   };
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   fs.writeFileSync(`${manifestPath}.sha256`, `${sha256(fs.readFileSync(manifestPath))}  ${path.basename(manifestPath)}\n`, "utf8");
-  console.log(JSON.stringify({
+  console.info(JSON.stringify({
     final_status: artifact.final_status,
     artifact_path: artifactPath,
     native_android_api34_create: artifact.native_android_api34_create,

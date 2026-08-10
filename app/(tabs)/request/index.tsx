@@ -22,6 +22,7 @@ function RequestRoute() {
     autoPrepare?: string | string[];
     autoSend?: string | string[];
     context?: string | string[];
+    catalogWorkId?: string | string[];
     description?: string | string[];
     draftId?: string | string[];
     launchError?: string | string[];
@@ -51,13 +52,14 @@ function RequestRoute() {
     getParam(launchParameters.prompt).trim() ||
     getParam(launchParameters.description).trim();
   const draftId = getParam(params.draftId).trim();
+  const catalogWorkId = getParam(launchParameters.catalogWorkId).trim();
   const launchId =
     launchPayload?.launchId ??
     (getParam(params.launchId).trim() || undefined);
   const autoPrepare = getParam(launchParameters.autoPrepare).trim() === "1";
   const autoPdf = getParam(launchParameters.autoPdf).trim() === "1";
   const fallbackFingerprintParameters = Object.fromEntries(
-    (["autoPdf", "autoPrepare", "autoSend", "context", "description", "prompt"] as const)
+    (["autoPdf", "autoPrepare", "autoSend", "catalogWorkId", "context", "description", "prompt"] as const)
       .map((key) => [key, getParam(params[key]).trim()] as const)
       .filter(([, value]) => value.length > 0),
   );
@@ -89,6 +91,7 @@ function RequestRoute() {
       <ConsumerRepairRequestScreen
         initialProblemText={prompt || undefined}
         initialDraftId={draftId || undefined}
+        initialSelectedCatalogWorkId={catalogWorkId || undefined}
         launchFingerprint={launchFingerprint}
         launchId={launchId}
         autoPrepare={autoPrepare || autoPdf}

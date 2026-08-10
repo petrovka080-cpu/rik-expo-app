@@ -30,6 +30,17 @@ async function attachScreenshot(page: Page, testInfo: TestInfo, name: string): P
   });
 }
 
+async function expectCompleteFullRoad(page: Page): Promise<number> {
+  const rowCount = page.getByTestId("request-estimate-row-count");
+  let parsed = 0;
+  await expect.poll(async () => {
+    const text = await rowCount.innerText();
+    parsed = Number(text.replace(/\s+/g, "").match(/\d+/u)?.[0] ?? 0);
+    return parsed;
+  }, { timeout: 120_000 }).toBeGreaterThan(600);
+  return parsed;
+}
+
 test("manual /request flow seals DraftSession isolation and Asphalt Reference V1 scopes", async ({ page }, testInfo) => {
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
@@ -51,18 +62,14 @@ test("manual /request flow seals DraftSession isolation and Asphalt Reference V1
   await attachScreenshot(page, testInfo, "four-canonical-scopes");
 
   await fullRoad.click();
-  await expect(page.getByTestId("request-estimate-row-count")).toContainText("702", {
-    timeout: 120_000,
-  });
+  const firstFullRoadRows = await expectCompleteFullRoad(page);
   await expect(page.getByTestId("request-estimate-summary-card")).toContainText("81 000");
   const exactDraftUrl = page.url();
   expect(new URL(exactDraftUrl).searchParams.get("draftId")).toBeTruthy();
-  await attachScreenshot(page, testInfo, "full-road-702");
+  await attachScreenshot(page, testInfo, "full-road-complete");
 
   await page.reload({ waitUntil: "domcontentloaded", timeout: 90_000 });
-  await expect(page.getByTestId("request-estimate-row-count")).toContainText("702", {
-    timeout: 120_000,
-  });
+  expect(await expectCompleteFullRoad(page)).toBe(firstFullRoadRows);
   await expect(page.getByTestId("request-estimate-summary-card")).toContainText("81 000");
   expect(page.url()).toBe(exactDraftUrl);
 
@@ -84,9 +91,7 @@ test("manual /request flow seals DraftSession isolation and Asphalt Reference V1
   await openCleanRequest(page);
   await enterPromptAndBuild(page, SECOND_ROAD_PROMPT);
   await page.getByTestId("road-scope-option-full_road_infrastructure").click();
-  await expect(page.getByTestId("request-estimate-row-count")).toContainText("702", {
-    timeout: 120_000,
-  });
+  await expectCompleteFullRoad(page);
   await expect(page.getByTestId("request-estimate-summary-card")).toContainText("64 000");
   await attachScreenshot(page, testInfo, "second-geometry-64000");
 

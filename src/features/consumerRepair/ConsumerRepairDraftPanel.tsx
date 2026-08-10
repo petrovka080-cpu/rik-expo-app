@@ -109,6 +109,16 @@ export function ConsumerRepairDraftPanel({
   const revisionState = getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
+  const selectedCatalogWorkId = bundle?.draft.selectedCatalogWorkId?.trim() ?? "";
+  const canonicalProfessionalWorkId = currentRevision?.professionalWorkId?.trim() ?? "";
+  const exactSelectionUsedGenericFallback = Boolean(
+    currentRevision?.boq.rows.some((row) =>
+      row.sourceParameters?.exactSelectionGenericFallbackUsed === true
+    ),
+  );
+  const hasProcurementRows = Boolean(
+    currentRevision?.boq.rows.some((row) => row.includedInProcurement),
+  );
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -121,6 +131,34 @@ export function ConsumerRepairDraftPanel({
               : "Позиции пока пустые"}
         </Text>
       </View>
+      {selectedCatalogWorkId ? (
+        <View
+          accessible={false}
+          style={styles.runtimeIdentityMarker}
+          testID={`request-estimate-selected-catalog-id-${selectedCatalogWorkId}`}
+        />
+      ) : null}
+      {canonicalProfessionalWorkId ? (
+        <View
+          accessible={false}
+          style={styles.runtimeIdentityMarker}
+          testID={`request-estimate-canonical-owner-${canonicalProfessionalWorkId}`}
+        />
+      ) : null}
+      {currentRevision ? (
+        <View
+          accessible={false}
+          style={styles.runtimeIdentityMarker}
+          testID={`request-estimate-exact-generic-fallback-${exactSelectionUsedGenericFallback ? "used" : "not-used"}`}
+        />
+      ) : null}
+      {currentRevision && !hasProcurementRows ? (
+        <View
+          accessible={false}
+          style={styles.runtimeIdentityMarker}
+          testID="request-estimate-procurement-not-applicable-zero-items"
+        />
+      ) : null}
 
       {bundle?.pendingRoadScopeSelection && onSelectRoadScope ? (
         <View style={styles.scopeSelection} testID="road-scope-selection">
@@ -270,6 +308,12 @@ function statusLabel(status: ConsumerRepairDraftBundle["draft"]["status"]): stri
 }
 
 const styles = StyleSheet.create({
+  runtimeIdentityMarker: {
+    position: "absolute",
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
   scopeSelection: { gap: 8, marginBottom: 12 },
   scopeSelectionTitle: { color: "#0F172A", fontSize: 16, fontWeight: "700" },
   scopeButton: { borderColor: "#CBD5E1", borderRadius: 10, borderWidth: 1, padding: 12 },

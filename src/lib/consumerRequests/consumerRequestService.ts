@@ -111,6 +111,7 @@ import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestEx
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
+/* eslint-disable @typescript-eslint/no-require-imports -- synchronous lazy loaders preserve the service/runtime cycle boundary and startup cost */
 function loadAiEstimateRuntime() {
   const runtimeModule = require("../estimate/runtime/createAiEstimateRuntime") as
     typeof import("../estimate/runtime/createAiEstimateRuntime");
@@ -192,6 +193,7 @@ function roadworksWaveARegistration(workId: string | null | undefined) {
     typeof import("../estimate/v4/roadworks");
   return roadworksModule.getRoadworksWaveAProductionRegistration(workId);
 }
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
   "consumer_approved",
@@ -344,7 +346,7 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
   }
 }
 
-function selectedWorkForRevisionStateRecovery(
+function _selectedWorkForRevisionStateRecovery(
   bundle: ConsumerRepairDraftBundle,
 ): ConsumerRepairSelectedWork | null {
   const rowBoundWorkKey = bundle.items
@@ -2511,7 +2513,7 @@ export function ensureConsumerRepairRequestPdfAvailable(input: {
     created_at: regeneratedPdf.createdAt,
   });
   const revisionPdf = attachConsumerRepairPdfRevisionMetadata(regeneratedPdf, bound.binding);
-  return saveConsumerRepairBundle(withEvent(
+  return savePreparedConsumerRepairBundle(withEvent(
     {
       ...bound.bundle,
       pdfs: [revisionPdf, ...bound.bundle.pdfs.filter((candidate) => candidate.id !== revisionPdf.id)],

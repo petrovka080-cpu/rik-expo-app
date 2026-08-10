@@ -556,13 +556,20 @@ export function bindConsumerRepairEstimateRevisionPdf(input: {
   created_at?: string;
 }): { bundle: ConsumerRepairDraftBundle; binding: EstimateRevisionPdfBinding } {
   const bundle = ensureConsumerRepairBundleEstimateRevisionState(input.bundle);
+  if (!bundle.estimateRevisionState) {
+    throw new Error("CONSUMER_REPAIR_ESTIMATE_REVISION_STATE_MISSING");
+  }
   const { state, binding } = bindEstimateRevisionToPdfExport({
-    state: currentRevisionState(bundle),
+    state: bundle.estimateRevisionState,
     pdf_id: input.pdf_id,
     actor_id: input.actor_id,
     created_at: input.created_at,
   });
-  return { binding, bundle: withRevisionSnapshot(bundle, state) };
+  // A PDF binding changes only revision metadata. Re-projecting every immutable
+  // snapshot row back into request items here is redundant and makes large
+  // professional estimates pay an O(rows) conversion and re-hash after the PDF
+  // was already rendered from that exact snapshot.
+  return { binding, bundle: { ...bundle, estimateRevisionState: state } };
 }
 
 export function bindConsumerRepairEstimateRevisionRequest(input: {

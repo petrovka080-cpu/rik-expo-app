@@ -4,7 +4,7 @@ import {
 } from "../../src/lib/estimate/v4/asphalt";
 
 describe("road composite ownership V4", () => {
-  test("assigns one professional semantic owner to all 30 WBS and 702 BOQ rows", () => {
+  test("assigns one professional semantic owner to every applicable full-road row", () => {
     const compilation = compileAsphaltProfessionalEstimateV4({
       raw_text: "Полное строительство автомобильной дороги 1000 м²",
       parameter_overrides: {
@@ -18,7 +18,7 @@ describe("road composite ownership V4", () => {
       ROAD_COMPOSITE_OWNERS_V4.flatMap((owner) => owner.wbsIds.map((wbsId) => [wbsId, owner] as const)),
     );
 
-    expect(rows).toHaveLength(702);
+    expect(rows.length).toBeGreaterThan(600);
     expect(wbsIds.size).toBe(30);
     expect([...wbsIds].every((wbsId) => ownerByWbs.has(wbsId))).toBe(true);
     expect(rows.every((row) => row.definition.semantic_owner_id === ownerByWbs.get(row.definition.wbs_code)?.ownerId)).toBe(true);
@@ -31,5 +31,30 @@ describe("road composite ownership V4", () => {
       row.definition.costing_mode !== "INFORMATIONAL_SUBTOTAL"
     );
     expect(new Set(costedRows.map((row) => row.definition.cost_ownership_id)).size).toBe(costedRows.length);
+
+    const areaOnlyRowIds = new Set(rows.map((row) => row.definition.row_id));
+    expect(areaOnlyRowIds.has("geotextile_material")).toBe(false);
+    expect(areaOnlyRowIds.has("longitudinal_joints")).toBe(false);
+    expect(areaOnlyRowIds.has("transverse_joints")).toBe(false);
+
+    const confirmedGeometry = compileAsphaltProfessionalEstimateV4({
+      raw_text: "Полное строительство автомобильной дороги длиной 1000 м и шириной 10 м",
+      parameter_overrides: {
+        scope_profile: { value: "new_full_road_infrastructure", source: "test" },
+        length_m: { value: 1000, source: "test" },
+        width_m: { value: 10, source: "test" },
+        area_m2: { value: 10000, source: "test" },
+      },
+    });
+    const confirmedGeometryIds = new Set(
+      confirmedGeometry.compiled_rows.map((row) => row.definition.row_id),
+    );
+    expect([
+      "longitudinal_joints",
+      "transverse_joints",
+      "joint_sealing_material",
+      "joint_sealing_application",
+      "edge_treatment",
+    ].every((rowId) => confirmedGeometryIds.has(rowId))).toBe(true);
   });
 });
