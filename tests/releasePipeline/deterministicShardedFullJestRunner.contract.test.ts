@@ -4,7 +4,11 @@ import {
   validateWeightedJestShardPlan,
   type WeightedJestManifestEntry,
 } from "../../scripts/release/runDeterministicShardedFullJest";
-import { applyAffectedJestRuntimeCalibration } from "../../scripts/verification/affectedJestSharding";
+import {
+  applyAffectedJestRuntimeCalibration,
+  MAX_LOCAL_AFFECTED_JEST_SHARDS,
+  resolveAffectedJestShardCount,
+} from "../../scripts/verification/affectedJestSharding";
 
 function entry(testPath: string, weight: number): WeightedJestManifestEntry {
   return {
@@ -87,5 +91,19 @@ describe("deterministic sharded full Jest runner", () => {
         shards.find((shard) => shard.test_files.includes(testPath))?.shard_id,
       ),
     ).toEqual([0, 1, 2, 3]);
+  });
+
+  it("bounds local affected concurrency without changing suite membership", () => {
+    expect(MAX_LOCAL_AFFECTED_JEST_SHARDS).toBe(3);
+    expect(resolveAffectedJestShardCount(65, 8)).toBe(3);
+    expect(resolveAffectedJestShardCount(2, 8)).toBe(2);
+    expect(resolveAffectedJestShardCount(65, 1)).toBe(1);
+
+    const shards = planWeightedJestShards(manifest, resolveAffectedJestShardCount(manifest.length, 8));
+    expect(validateWeightedJestShardPlan(manifest, shards)).toEqual({
+      missing: [],
+      duplicates: [],
+      unexpected: [],
+    });
   });
 });

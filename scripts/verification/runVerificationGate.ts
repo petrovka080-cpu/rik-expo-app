@@ -3,7 +3,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-import { buildAffectedJestShardPlan } from "./affectedJestSharding";
+import {
+  buildAffectedJestShardPlan,
+  resolveAffectedJestShardCount,
+} from "./affectedJestSharding";
 import { buildVerificationPlan, type VerificationLevel } from "./impactAnalyzer";
 import { mergeVerificationShards, type ShardResult } from "./verificationShardMerger";
 
@@ -176,7 +179,7 @@ async function run(): Promise<void> {
   const stderrPath = path.join(outputDir, "stderr.log");
   const suites = plan.selected_suites.filter((suite) => fs.existsSync(path.join(root, suite)));
   const missingSuites = plan.selected_suites.filter((suite) => !fs.existsSync(path.join(root, suite)));
-  const shardCount = level === "affected" ? 4 : 1;
+  const shardCount = level === "affected" ? resolveAffectedJestShardCount(suites.length) : 1;
   const shardPlan = buildAffectedJestShardPlan({ root, suites, shardCount });
   const runId = started.toISOString().replace(/[:.]/g, "-");
   const shardRuns = missingSuites.length === 0 && suites.length > 0

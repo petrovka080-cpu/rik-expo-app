@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { availableParallelism as osAvailableParallelism } from "node:os";
 import path from "node:path";
 
 import {
@@ -20,6 +21,15 @@ const DEFAULT_CALIBRATION_PATH = path.join(
   "v1",
   "affected-jest-runtime-calibration.json",
 );
+
+export const MAX_LOCAL_AFFECTED_JEST_SHARDS = 3;
+
+export function resolveAffectedJestShardCount(
+  suiteCount: number,
+  availableParallelism = osAvailableParallelism(),
+): number {
+  return Math.max(1, Math.min(suiteCount, availableParallelism, MAX_LOCAL_AFFECTED_JEST_SHARDS));
+}
 
 function sha256(value: Buffer | string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
