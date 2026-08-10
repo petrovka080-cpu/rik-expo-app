@@ -935,7 +935,10 @@ function capture(caseDir: string, name: string): { screenshot: string | null; ui
     });
     fs.writeFileSync(screenshot, binary);
   }
-  const dumped = dumpUi();
+  let dumped = dumpUi();
+  for (let retry = 0; !dumped.ok && retry < 2; retry += 1) {
+    dumped = dumpUi();
+  }
   if (dumped.ok) fs.writeFileSync(uiDump, dumped.xml, "utf8");
   return { screenshot: shot.ok ? screenshot : null, uiDump: dumped.ok ? uiDump : null };
 }
@@ -1264,7 +1267,10 @@ async function runCase(
   if (!changedRevision.applyTapped) failures.push("edit_apply_failed");
   const editedDiff = await scrollToId("estimate-revision-diff-param-area_m2", 24);
   const edited = editedDiff.snapshot;
-  const revisionAfterEdit = changedRevision.label;
+  const finalEditRevisionLabel = revisionLabel(edited);
+  const revisionAfterEdit = finalEditRevisionLabel && finalEditRevisionLabel !== revisionBeforeEdit
+    ? finalEditRevisionLabel
+    : changedRevision.label;
   const immutableRevisionVisible = Boolean(
     revisionBeforeEdit
     && revisionAfterEdit
@@ -1383,6 +1389,12 @@ async function runCase(
     && pdfFullBoqVisible;
   const runtimeBuildTiming = readRuntimeBuildTiming();
   failures.push(...runtimeBuildTiming.failures);
+  if (screenshots.length !== 4) {
+    failures.push(`mandatory_png_count_expected_4_received_${screenshots.length}`);
+  }
+  if (uiDumps.length !== 4) {
+    failures.push(`mandatory_xml_count_expected_4_received_${uiDumps.length}`);
+  }
   markPhase("pdf_projection_complete");
   return {
     work_key: registration.workId,

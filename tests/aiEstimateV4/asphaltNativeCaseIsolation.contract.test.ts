@@ -210,6 +210,24 @@ describe("Asphalt native case isolation contract", () => {
     expect(editApply).not.toContain("request-estimate-parameter-apply-status");
     expect(source).toContain("applyEditAndWaitForChangedRevision(revisionBeforeEdit)");
     expect(editFlow).not.toContain('waitForId("request-estimate-parameter-apply-status"');
+    expect(source).toContain("const finalEditRevisionLabel = revisionLabel(edited)");
+    expect(source).toContain("finalEditRevisionLabel !== revisionBeforeEdit");
+    expect(source).toContain("? finalEditRevisionLabel");
+  });
+
+  it("retries only a failed paired XML capture and fail-closes incomplete successful-case evidence", () => {
+    const source = readRunner();
+    const captureFlow = source.slice(
+      source.indexOf("function capture"),
+      source.indexOf("function requestUri"),
+    );
+
+    expect(captureFlow).toContain("let dumped = dumpUi()");
+    expect(captureFlow).toContain("!dumped.ok && retry < 2");
+    expect(captureFlow).toContain("dumped = dumpUi()");
+    expect(captureFlow).not.toContain("wait(");
+    expect(source).toContain("mandatory_png_count_expected_4_received_${screenshots.length}");
+    expect(source).toContain("mandatory_xml_count_expected_4_received_${uiDumps.length}");
   });
 
   it("reopens the exact cold-replayed revision without assuming that a capped page count grows", () => {
