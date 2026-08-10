@@ -1194,6 +1194,10 @@ async function runCase(
       return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
     }
   }
+  // Enum dirty-state verification finishes beside the last edited card. Start
+  // the batch action lookup from the deterministic screen origin so a prior
+  // retry cannot send the bidirectional search to the delivery/history tail.
+  await returnToTop(20);
   if (!await tapById("editable-param-batch-apply", 16)) {
     return finishAtRootFailure("p0", ["p0_apply_failed"], observedP0);
   }

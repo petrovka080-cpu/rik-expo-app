@@ -175,6 +175,20 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("alternate-not-dirty");
   });
 
+  it("reanchors primary P0 Apply before exact batch-action lookup", () => {
+    const source = readRunner();
+    const p0Apply = source.slice(
+      source.indexOf("for (const key of expectedP0)"),
+      source.indexOf("const applied = await waitForCompiledProjection"),
+    );
+
+    expect(p0Apply).toContain("await returnToTop(20)");
+    expect(p0Apply).toContain('tapById("editable-param-batch-apply", 16)');
+    expect(p0Apply.indexOf("await returnToTop(20)")).toBeLessThan(
+      p0Apply.indexOf('tapById("editable-param-batch-apply", 16)'),
+    );
+  });
+
   it("reacquires every exact tap target into the safe viewport from either clipped edge", () => {
     const source = readRunner();
     const exactTap = source.slice(
