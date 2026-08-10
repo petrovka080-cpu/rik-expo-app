@@ -189,6 +189,32 @@ describe("Asphalt native case isolation contract", () => {
     );
   });
 
+  it("reacquires optional approval contact inputs in one exact forward snapshot", () => {
+    const source = readRunner();
+    const contactLookup = source.slice(
+      source.indexOf("async function findOptionalApprovalContactInputs"),
+      source.indexOf("async function readApprovedHistoryCount"),
+    );
+    const approvalFlow = source.slice(
+      source.indexOf("const approvedHistoryCountBefore"),
+      source.indexOf("const approveNode"),
+    );
+
+    expect(contactLookup).toContain("await returnToTop(20)");
+    expect(contactLookup).toContain("index < 24");
+    expect(contactLookup).toContain('findNodeById(snapshot, "consumer-repair-address-input")');
+    expect(contactLookup).toContain('findNodeById(snapshot, "consumer-repair-phone-input")');
+    expect(contactLookup).toContain("if (address && phone)");
+    expect(contactLookup).toContain('findNodeById(snapshot, "consumer-repair-delivery-summary")');
+    expect(contactLookup).toContain('swipe("up", index % 4 === 3)');
+    expect(contactLookup).not.toContain("scrollToId");
+    expect(contactLookup).not.toContain("tapNode");
+    expect(approvalFlow).toContain("await findOptionalApprovalContactInputs()");
+    expect(approvalFlow).toContain('nativeOptionalControlledInputIsEmpty(optionalContacts.address, "Адрес")');
+    expect(approvalFlow).toContain('nativeOptionalControlledInputIsEmpty(optionalContacts.phone, "Телефон")');
+    expect(approvalFlow).toContain("approval_optional_contact_state_contract_failed");
+  });
+
   it("reacquires every exact tap target into the safe viewport from either clipped edge", () => {
     const source = readRunner();
     const exactTap = source.slice(

@@ -753,6 +753,31 @@ async function openDisclosureAndFind(
   return content;
 }
 
+async function findOptionalApprovalContactInputs(): Promise<{
+  snapshot: ReturnType<typeof dumpUi>;
+  address: UiNode | null;
+  phone: UiNode | null;
+}> {
+  await returnToTop(20);
+  let snapshot = dumpUi();
+  for (let index = 0; index < 24; index += 1) {
+    const address = findNodeById(snapshot, "consumer-repair-address-input");
+    const phone = findNodeById(snapshot, "consumer-repair-phone-input");
+    if (address && phone) return { snapshot, address, phone };
+    // A collapsed summary proves that delivery data is populated. Keep the
+    // empty optional-contact assertion fail-closed instead of expanding or
+    // accepting that state. Otherwise scan forward without the generic
+    // fingerprint boundary, which can settle early on the long estimate page.
+    if (findNodeById(snapshot, "consumer-repair-delivery-summary")) {
+      return { snapshot, address: null, phone: null };
+    }
+    swipe("up", index % 4 === 3);
+    await wait(450);
+    snapshot = dumpUi();
+  }
+  return { snapshot, address: null, phone: null };
+}
+
 async function readApprovedHistoryCount(): Promise<number | null> {
   const lookup = await scrollToId("consumer-repair-history-loaded-count", 20);
   const numbers = (lookup.node?.text ?? "").match(/\d+/g)?.map(Number) ?? [];
@@ -1307,18 +1332,16 @@ async function runCase(
   if (approvedHistoryCountBefore == null) {
     return finishAfterEditFailure(["approved_history_baseline_missing"]);
   }
-  await returnToTop(20);
   // Approval freezes the estimate/PDF revision and intentionally does not send
   // to marketplace. Delivery contact is optional here and becomes mandatory
   // only in validateConsumerRepairRequestForMarketplace.
-  const optionalAddress = (await scrollToId("consumer-repair-address-input", 24)).node;
-  const optionalPhone = (await scrollToId("consumer-repair-phone-input", 24)).node;
+  const optionalContacts = await findOptionalApprovalContactInputs();
   // Android UiAutomator exposes a React Native TextInput placeholder through
   // the node's `text` attribute when its controlled value is still empty.
   // Accept only that exact native projection (or an actual empty string); any
   // user/contact value remains a contract failure.
-  const optionalAddressIsEmpty = nativeOptionalControlledInputIsEmpty(optionalAddress, "Адрес");
-  const optionalPhoneIsEmpty = nativeOptionalControlledInputIsEmpty(optionalPhone, "Телефон");
+  const optionalAddressIsEmpty = nativeOptionalControlledInputIsEmpty(optionalContacts.address, "Адрес");
+  const optionalPhoneIsEmpty = nativeOptionalControlledInputIsEmpty(optionalContacts.phone, "Телефон");
   if (!optionalAddressIsEmpty || !optionalPhoneIsEmpty) {
     return finishAfterEditFailure(["approval_optional_contact_state_contract_failed"]);
   }
