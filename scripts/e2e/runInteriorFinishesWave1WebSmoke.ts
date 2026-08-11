@@ -200,7 +200,16 @@ async function waitForTransactionalBundle(
 }
 
 async function clickControl(locator: Locator): Promise<void> {
-  await locator.click(target === "android-chrome" ? { force: true } : undefined);
+  if (target === "android-chrome") {
+    // Android Chrome exposes oversized sticky-layer hit boxes through CDP.
+    // Keep the real control away from both sticky bars before dispatching the
+    // pointer event so an option cannot accidentally hit the Delete action.
+    await locator.evaluate((element) => element.scrollIntoView({ block: "center", inline: "center" }));
+    await locator.page().waitForTimeout(100);
+    await locator.click({ force: true });
+    return;
+  }
+  await locator.click();
 }
 
 async function setParameter(page: Page, parameterId: string, value: string): Promise<void> {
