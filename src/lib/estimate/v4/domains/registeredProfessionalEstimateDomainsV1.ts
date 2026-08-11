@@ -8,6 +8,12 @@ import {
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
   buildInteriorFinishesFromInlineInputV1,
 } from "./interiorFinishesComplete";
+import {
+  WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS,
+  WATER_SEWER_COMPLETE_DOMAIN_ID,
+  WATER_SEWER_DOMAIN_INVENTORY,
+  buildWaterSewerFromInlineInputV1,
+} from "./waterSupplySewerageComplete";
 
 export const REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1 =
   "registered-professional-estimate-domains:v1" as const;
@@ -41,27 +47,39 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
 ): RegisteredProfessionalEstimateSelectionV1 | null {
   const exactIdentity = normalizedIdentity(identity);
   if (!exactIdentity) return null;
-  const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
+  const interiorInventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
     exactIdentity === candidate.catalog_id ||
     exactIdentity === candidate.work_key ||
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  if (!inventory) return null;
-  const canonicalParameterSchema = INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS.find(
-    (schema) => schema.canonicalWorkKey === inventory.work_key,
+  const waterSewerInventory = interiorInventory ? undefined : WATER_SEWER_DOMAIN_INVENTORY.find((candidate) =>
+    exactIdentity === candidate.catalog_id ||
+    exactIdentity === candidate.work_key ||
+    exactIdentity === candidate.template_id ||
+    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
+  const inventory = interiorInventory ?? waterSewerInventory;
+  if (!inventory) return null;
+  const waterSewer = Boolean(waterSewerInventory);
+  const canonicalParameterSchema = (waterSewer
+    ? WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS
+    : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
+      (schema) => schema.canonicalWorkKey === inventory.work_key,
+    );
   if (!canonicalParameterSchema) {
     throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
   }
   return Object.freeze({
-    domain_id: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    domain_id: waterSewer ? WATER_SEWER_COMPLETE_DOMAIN_ID : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,
     template_id: `domain-passport:${inventory.catalog_id}:v1`,
     title_ru: inventory.localized_name_ru,
-    category_key: registeredInteriorCategoryKey(inventory.source_domain_id),
-    category_title_ru: "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+    category_key: waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
+    category_title_ru: waterSewer
+      ? "Водоснабжение и канализация"
+      : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
     canonical_parameter_schema: canonicalParameterSchema,
     calculation_strategy_id: canonicalParameterSchema.calculationVersion,
     engine_version: REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1,
@@ -98,5 +116,7 @@ export function buildRegisteredProfessionalEstimateParameterCollectionDraftV1(in
 export function buildRegisteredProfessionalEstimateFromInlineInputV1(
   input: BuildEstimateFromInlineWorkPromptInput,
 ) {
-  return buildInteriorFinishesFromInlineInputV1(input);
+  const interior = buildInteriorFinishesFromInlineInputV1(input);
+  if (interior.exact_match) return interior;
+  return buildWaterSewerFromInlineInputV1(input);
 }
