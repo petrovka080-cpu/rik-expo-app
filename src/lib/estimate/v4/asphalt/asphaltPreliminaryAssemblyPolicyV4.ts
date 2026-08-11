@@ -33,6 +33,10 @@ export type AsphaltPreliminaryAssemblyPolicyV4 = {
   assumptions: AsphaltDeclaredAssumptionV4[];
 };
 
+export type AsphaltAssumptionPolicyV4 =
+  | "ALLOW_DECLARED_PRELIMINARY"
+  | "FORBID_QUANTITY_ASSUMPTIONS";
+
 type AssumptionSeed = Omit<AsphaltDeclaredAssumptionV4, "parameter_id" | "source_id" | "confidence" | "user_confirmed">;
 
 const POLICY_ID = "asphalt_preliminary_assembly_policy_v1" as const;
@@ -300,20 +304,25 @@ export function buildAsphaltPreliminaryAssemblyPolicyV4(input: {
   raw_text: string;
   existing_values: ReadonlyMap<string, unknown>;
   persisted_assumption_keys?: ReadonlySet<string>;
+  assumption_policy?: AsphaltAssumptionPolicyV4;
+  profile_override?: AsphaltAssemblyProfileIdV4 | null;
 }): AsphaltPreliminaryAssemblyPolicyV4 {
-  const profile = profileFor(input.raw_text, input.existing_values);
+  const profile = input.profile_override ?? profileFor(input.raw_text, input.existing_values);
   const assumptions: AsphaltDeclaredAssumptionV4[] = [];
   const length = numberValue(input.existing_values.get("length_m"));
   const width = numberValue(input.existing_values.get("width_m"));
   const area = numberValue(input.existing_values.get("area_m2"));
-  const seeds = [
-    ...baseSeeds(profile),
-    ...(profile === "new_full_road_infrastructure" ? fullRoadInfrastructureSeeds({ length, width, area }) : []),
-  ];
+  const assumptionsAllowed = input.assumption_policy !== "FORBID_QUANTITY_ASSUMPTIONS";
+  const seeds = assumptionsAllowed
+    ? [
+      ...baseSeeds(profile),
+      ...(profile === "new_full_road_infrastructure" ? fullRoadInfrastructureSeeds({ length, width, area }) : []),
+    ]
+    : [];
   const geometrySeeds: AssumptionSeed[] = [];
-  if (length != null && length > 0 && width != null && width > 0 && !hasValue(input.existing_values.get("exclusions_m2"))) {
+  if (assumptionsAllowed && length != null && length > 0 && width != null && width > 0 && !hasValue(input.existing_values.get("exclusions_m2"))) {
     geometrySeeds.push({ canonical_key: "exclusions_m2", value: 0, unit_id: "m2", reason_ru: "Исключаемая площадь предварительно принята равной 0 м²; пользователь может указать островки и иные исключения.", affected_row_ids: ["asphalt_area"] });
-  } else if (!(area != null && area > 0) && !(length != null && length > 0 && width != null && width > 0)) {
+  } else if (assumptionsAllowed && !(area != null && area > 0) && !(length != null && length > 0 && width != null && width > 0)) {
     geometrySeeds.push(
       { canonical_key: "geometry_method", value: "direct_area", unit_id: null, reason_ru: "При отсутствии объёма выбран явный reference-basis.", affected_row_ids: ["asphalt_area"] },
       { canonical_key: "area_m2", value: 1000, unit_id: "m2", reason_ru: "Reference-смета рассчитана на 1000 м² и заменяется геометрией объекта после уточнения.", affected_row_ids: ["asphalt_area"] },
@@ -352,7 +361,9 @@ export function buildAsphaltPreliminaryAssemblyPolicyV4(input: {
     public_scope_id: profile.toUpperCase() as Uppercase<AsphaltAssemblyProfileIdV4>,
     profile_id: profile,
     profile_title_ru: titles[profile],
-    summary_ru: `Предварительно принято: ${titles[profile]}. Допущения можно изменить в уточняющих параметрах.`,
+    summary_ru: assumptionsAllowed
+      ? `Предварительно принято: ${titles[profile]}. Допущения можно изменить в уточняющих параметрах.`
+      : `Расчёт без скрытых quantity-допущений: ${titles[profile]}. Недостающие проектные и нормативные значения блокируют зависимые ресурсы.`,
     assumptions,
   };
 }

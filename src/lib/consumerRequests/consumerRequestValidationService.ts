@@ -5,6 +5,8 @@ import type {
   ConsumerRequestValidationResult,
   ConsumerRepairDraftBundle,
 } from "./consumerRequestTypes";
+import { getRoadworksWaveAOperation } from "../estimate/v4/roadworks";
+import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 function hasUsefulDescription(bundle: ConsumerRepairDraftBundle): boolean {
   return (bundle.draft.problemText ?? "").trim().length >= 20;
@@ -61,6 +63,70 @@ function ownerError(bundle: ConsumerRepairDraftBundle, userId: string): Consumer
   };
 }
 
+export function consumerRepairExactAsphaltApprovalErrors(
+  bundle: ConsumerRepairDraftBundle | null,
+): ConsumerRequestValidationErrorItem[] {
+  if (!bundle) return [];
+  const selectedCatalogId = bundle.draft.selectedCatalogWorkId?.trim() || bundle.draft.selectedWorkKey?.trim() || "";
+  const selectedWorkKey = bundle.draft.selectedWorkKey?.trim() || "";
+  const exactProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedCatalogId || selectedWorkKey);
+  const roadworksOperation = getRoadworksWaveAOperation(selectedWorkKey);
+  if (!exactProfile && !roadworksOperation) return [];
+
+  const errors: ConsumerRequestValidationErrorItem[] = [];
+  const state = bundle.estimateDraftRevisionState;
+  const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
+  const expectedWorkKey = exactProfile?.canonicalWorkKey ?? selectedWorkKey;
+  const block = (code: ConsumerRequestValidationErrorItem["code"], messageRu: string, field: string) => {
+    errors.push({ code, messageRu, field });
+  };
+  if (!state || !current) {
+    block("ESTIMATE_REVISION_REQUIRED", "Сначала сформируйте текущую профессиональную ревизию сметы.", "estimateRevision");
+    return errors;
+  }
+  if (state.revisions.at(-1)?.revisionId !== state.currentRevisionId) {
+    block("ESTIMATE_LATEST_REVISION_REQUIRED", "Подтверждать можно только последнюю ревизию сметы.", "estimateRevision");
+  }
+  if (current.professionalWorkId !== expectedWorkKey || selectedWorkKey !== expectedWorkKey) {
+    block("ESTIMATE_SELECTED_WORK_MISMATCH", "Текущая ревизия не принадлежит выбранной работе. Пересчитайте смету.", "selectedWorkKey");
+  }
+  if (current.status !== "draft_ready" || current.missingInputs.length > 0) {
+    block("ESTIMATE_PARAMETERS_REQUIRED", "Заполните обязательные параметры и пересчитайте смету перед подтверждением.", "canonicalParameters");
+  }
+  if (current.boq.rows.length === 0) {
+    block("ESTIMATE_PROFESSIONAL_COMPLETENESS_REQUIRED", "Смета пуста: профессиональная постадийная декомпозиция ещё не сформирована.", "boq");
+  }
+  if (current.boq.rows.some((row) => !Number.isFinite(row.quantity) || row.quantity <= 0)) {
+    block("ESTIMATE_QUANTITY_INVALID", "В смете есть пустые или недопустимые количества. Пересчитайте смету.", "boq.quantity");
+  }
+  if (current.boq.rows.some((row) =>
+    row.sourceParameters?.exactSelectionGenericFallbackUsed === true ||
+    !row.sourceParameters?.professionalEstimatePassportId
+  )) {
+    block("ESTIMATE_EXACT_PROFESSIONAL_OWNER_REQUIRED", "Смета содержит общий шаблон вместо точного профессионального паспорта.", "boq.owner");
+  }
+  if (
+    bundle.items.length !== current.boq.rows.length ||
+    bundle.items.some((item) => item.sourceParameters?.estimateDraftRevisionId !== current.revisionId)
+  ) {
+    block("ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED", "Показанные позиции не совпадают с текущей ревизией. Пересчитайте смету.", "items");
+  }
+  if (
+    bundle.canonicalParameterSession?.blockingMissingParameterIds.length ||
+    bundle.canonicalParameterSession?.invalidParameterIds.length ||
+    (bundle.canonicalParameterSession && bundle.canonicalParameterSession.revisionId !== current.revisionId)
+  ) {
+    block("ESTIMATE_CANONICAL_SESSION_STALE", "Параметры не подтверждены для текущей ревизии.", "canonicalParameters");
+  }
+  if (
+    bundle.estimateDraftSession &&
+    (bundle.estimateDraftSession.status !== "REVIEW" || bundle.estimateDraftSession.activeRevisionId !== current.revisionId)
+  ) {
+    block("ESTIMATE_DRAFT_SESSION_STALE", "Расчёт не завершён для текущей ревизии.", "estimateDraftSession");
+  }
+  return errors;
+}
+
 export function validateConsumerRepairRequestForApprove(
   requestId: string,
   userId: string,
@@ -84,6 +150,8 @@ export function validateConsumerRepairRequestForApprove(
       field: "canonicalParameters",
     });
   }
+
+  errors.push(...consumerRepairExactAsphaltApprovalErrors(bundle));
 
   if (bundle.items.length < 1) {
     errors.push({

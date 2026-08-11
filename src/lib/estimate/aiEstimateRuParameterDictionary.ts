@@ -144,6 +144,9 @@ const UNIT_LABELS: Record<string, string> = {
   t: "т",
   ton: "т",
   t_m3: "т/м³",
+  "t/m3": "т/м³",
+  t_km: "т·км",
+  "t*km": "т·км",
   kg_m3: "кг/м³",
   percent: "%",
   one: "",
@@ -303,7 +306,7 @@ export function aiEstimateRuPromptPhraseForParameter(key: string): string {
 export function aiEstimateRuUnitForParameter(key: string, unit?: string | null): string {
   const resolved = unit ?? PARAMETER_DICTIONARY[key]?.unit ?? unitFromKey(key);
   if (!resolved) return "";
-  return UNIT_LABELS[resolved] ?? resolved;
+  return UNIT_LABELS[resolved] ?? UNIT_LABELS[resolved.toLowerCase()] ?? resolved;
 }
 
 export function aiEstimateCanonicalUnitForParameter(key: string, unit?: string | null): string | undefined {

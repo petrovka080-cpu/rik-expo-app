@@ -25,11 +25,13 @@ import {
 } from "../../src/lib/estimate/v4/roadworks";
 import {
   ASPHALT_RELATED_EXTRA_PROFILES_V4,
+  asphaltRelatedCatalogBindingV4,
+  getAsphaltRelatedProfileByCanonicalWorkKeyV4,
   getAsphaltRelatedProfileByCatalogRecordIdV4,
 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 export const ASPHALT_RELATED_R8_INVENTORY_VERSION =
-  "asphalt-related-global-domain-r9:2026-08-10.v1" as const;
+  "asphalt-related-global-domain-r9:2026-08-11.v2" as const;
 
 export type AsphaltRelatedR8Classification =
   | "EXECUTABLE"
@@ -119,7 +121,15 @@ const CLEAN_EXTRA_TITLES: Readonly<Record<string, string>> = Object.freeze({
   asphalt_base_layer: "Устройство нижнего слоя асфальтобетонного покрытия",
 });
 
-const EXPANDED_FAMILY_IDS = Object.freeze(["asphalt_concrete_pavement", "bridge_asphalt"]);
+const SCOPE_ROUTED_ASPHALT_ROAD_FAMILY_IDS = Object.freeze([
+  "road_construction",
+  "village_road_construction",
+]);
+const EXPANDED_FAMILY_IDS = Object.freeze([
+  "asphalt_concrete_pavement",
+  "bridge_asphalt",
+  ...SCOPE_ROUTED_ASPHALT_ROAD_FAMILY_IDS,
+]);
 const ALL_BUILT_IN_CANDIDATE_KEYS = Object.freeze([
   ...INCLUDED_BUILT_IN_KEYS,
   ...Object.keys(EXCLUDED_BUILT_IN),
@@ -173,34 +183,43 @@ function buildOld35Records(): AsphaltRelatedR8InventoryRecord[] {
 
 function buildExpandedRecords(startOrdinal: number): AsphaltRelatedR8InventoryRecord[] {
   const familyIds = new Set(EXPANDED_FAMILY_IDS);
+  const scopeRoutedFamilyIds = new Set(SCOPE_ROUTED_ASPHALT_ROAD_FAMILY_IDS);
   const matches = expandedTemplates.filter((entry) => familyIds.has(entry.work_family_id));
-  invariant(matches.length === 10, `EXPANDED_EXACT_COUNT:${matches.length}`);
+  invariant(matches.length === 20, `EXPANDED_EXACT_COUNT:${matches.length}`);
   return matches.map((entry, index) => {
-    const profile = getAsphaltRelatedProfileByCatalogRecordIdV4(entry.template_id);
+    const scopeRouted = scopeRoutedFamilyIds.has(entry.work_family_id);
+    const profile = scopeRouted
+      ? getAsphaltRelatedProfileByCanonicalWorkKeyV4("asphalt_concrete_pavement")
+      : getAsphaltRelatedProfileByCatalogRecordIdV4(entry.template_id);
     invariant(profile, `EXPANDED_PROFILE_MISSING:${entry.template_id}`);
-    const canonical = entry.template_id === profile.canonicalCatalogRecordId;
+    const binding = asphaltRelatedCatalogBindingV4(profile, entry.template_id);
+    const canonical = !scopeRouted && entry.template_id === profile.canonicalCatalogRecordId;
     return {
       ordinal: startOrdinal + index,
       candidate_id: `expanded-1610:${entry.template_id}`,
       catalog_id: entry.template_id,
       work_key: entry.work_family_id,
-      name_ru: CLEAN_EXTRA_TITLES[profile.canonicalWorkKey],
+      name_ru: scopeRouted
+        ? `${CLEAN_EXTRA_TITLES[profile.canonicalWorkKey]} — ${entry.work_family_id === "village_road_construction" ? "сельская дорога" : "автомобильная дорога"}`
+        : CLEAN_EXTRA_TITLES[profile.canonicalWorkKey],
       ui_group: profile.uiGroup,
       source_catalog: "EXPANDED_COMPLEX_TEMPLATES_1610",
       classification: canonical ? "EXECUTABLE" : "ALIAS",
       canonical_technology_id: profile.canonicalWorkKey,
       alias_of: canonical ? null : profile.canonicalCatalogRecordId,
       semantic_domains: profile.semanticDomains,
-      operation_class: profile.operationClass,
-      passport_id: profile.passportId,
+      operation_class: scopeRouted ? "COMPOSITE_ROAD_SCOPE" : profile.operationClass,
+      passport_id: binding.professionalPassportId,
       calculation_strategy_id: profile.calculationStrategyId,
-      parameter_schema_id: profile.parameterSchemaId,
-      formula_graph_id: profile.formulaGraphVersion,
-      normative_composition_id: profile.normativeCompositionId,
+      parameter_schema_id: binding.parameterSchemaId,
+      formula_graph_id: binding.formulaBindingId,
+      normative_composition_id: binding.normApplicabilityProfileId,
       previous_35: false,
-      previous_35_absence_reason: "Expanded-complex catalog (1610) was outside the earlier base-10000 Roadworks Wave A slice.",
-      implementation_status: "EXACT_V4_ADAPTER_REGISTERED",
-      test_status: "R9_EXACT_BINDING_HISTORY_PDF_PROCUREMENT_GREEN",
+      previous_35_absence_reason: scopeRouted
+        ? "Global re-scan found a scope-routed asphalt composite road record that the previous denominator omitted."
+        : "Expanded-complex catalog (1610) was outside the earlier base-10000 Roadworks Wave A slice.",
+      implementation_status: scopeRouted ? "ASPHALT_V4_SCOPE_ROUTING_REGISTERED" : "EXACT_V4_ADAPTER_REGISTERED",
+      test_status: "ABSOLUTE_OVERRIDE_PRODUCT_RED_PENDING_FULL_RECOVERY",
       exclusion_type: null,
       exclusion_reason: null,
       exclusion_evidence: null,
@@ -215,11 +234,13 @@ function buildIncludedBuiltInRecords(startOrdinal: number): AsphaltRelatedR8Inve
   return matches.map((entry, index) => {
     const profile = getAsphaltRelatedProfileByCatalogRecordIdV4(entry.workKey);
     invariant(profile, `BUILT_IN_PROFILE_MISSING:${entry.workKey}`);
+    const catalogId = `built-in-ai-1000:${entry.id}`;
+    const binding = asphaltRelatedCatalogBindingV4(profile, catalogId);
     const canonical = entry.workKey === profile.canonicalWorkKey;
     return {
       ordinal: startOrdinal + index,
       candidate_id: `built-in-ai-1000:${entry.id}`,
-      catalog_id: `built-in-ai-1000:${entry.id}`,
+      catalog_id: catalogId,
       work_key: entry.workKey,
       name_ru: CLEAN_EXTRA_TITLES[profile.canonicalWorkKey],
       ui_group: profile.uiGroup,
@@ -229,11 +250,11 @@ function buildIncludedBuiltInRecords(startOrdinal: number): AsphaltRelatedR8Inve
       alias_of: canonical ? null : profile.canonicalCatalogRecordId,
       semantic_domains: profile.semanticDomains,
       operation_class: profile.operationClass,
-      passport_id: profile.passportId,
+      passport_id: binding.professionalPassportId,
       calculation_strategy_id: profile.calculationStrategyId,
-      parameter_schema_id: profile.parameterSchemaId,
-      formula_graph_id: profile.formulaGraphVersion,
-      normative_composition_id: profile.normativeCompositionId,
+      parameter_schema_id: binding.parameterSchemaId,
+      formula_graph_id: binding.formulaBindingId,
+      normative_composition_id: binding.normApplicabilityProfileId,
       previous_35: false,
       previous_35_absence_reason: "Built-in AI work definition was outside the earlier base-10000 Roadworks Wave A slice.",
       implementation_status: "EXACT_V4_ADAPTER_REGISTERED",
@@ -301,9 +322,9 @@ function buildSourceScans(records: readonly AsphaltRelatedR8InventoryRecord[]): 
   const uiMatches = BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((entry) => includedWorkKeys.has(entry.workKey));
   invariant(baseMatches.length === 35, `BASE_SCAN:${baseMatches.length}`);
   invariant(readinessMatches.length === 35, `READINESS_SCAN:${readinessMatches.length}`);
-  invariant(expandedTemplateMatches.length === 10, `EXPANDED_TEMPLATE_SCAN:${expandedTemplateMatches.length}`);
-  invariant(expandedFamilyMatches.length === 2, `EXPANDED_FAMILY_SCAN:${expandedFamilyMatches.length}`);
-  invariant(expandedReadinessMatches.length === 2, `EXPANDED_READINESS_SCAN:${expandedReadinessMatches.length}`);
+  invariant(expandedTemplateMatches.length === 20, `EXPANDED_TEMPLATE_SCAN:${expandedTemplateMatches.length}`);
+  invariant(expandedFamilyMatches.length === 4, `EXPANDED_FAMILY_SCAN:${expandedFamilyMatches.length}`);
+  invariant(expandedReadinessMatches.length === 4, `EXPANDED_READINESS_SCAN:${expandedReadinessMatches.length}`);
   invariant(builtIn1000Matches.length === 11, `BUILT_IN_1000_SCAN:${builtIn1000Matches.length}`);
   invariant(global150Matches.length === 2, `GLOBAL_150_SCAN:${global150Matches.length}`);
   invariant(RoadworksWaveAInventory.length === 35, `ROADWORKS_SCAN:${RoadworksWaveAInventory.length}`);
@@ -311,9 +332,9 @@ function buildSourceScans(records: readonly AsphaltRelatedR8InventoryRecord[]): 
   return [
     { source_id: "base_work_catalog_10000", source_path: "data/estimate-catalog/work-items/work-catalog-10000.json", total_records: baseCatalog.items.length, exact_asphalt_refs: baseMatches.length, new_inventory_candidates: 35, evidence: "Exact equality against the 35 typed Roadworks Wave A work keys." },
     { source_id: "readiness_manifest_10000", source_path: "data/estimate-templates/estimate-10000-readiness-manifest.json", total_records: readiness10000.templates.length, exact_asphalt_refs: readinessMatches.length, new_inventory_candidates: 0, evidence: "Exact work-key mirror of the 35 base records; no duplicate candidates emitted." },
-    { source_id: "expanded_templates_1610", source_path: "data/estimate-catalog/expanded-complex/templates.json", total_records: expandedTemplates.length, exact_asphalt_refs: expandedTemplateMatches.length, new_inventory_candidates: 10, evidence: "Exact typed family IDs asphalt_concrete_pavement and bridge_asphalt." },
-    { source_id: "expanded_work_families", source_path: "data/estimate-catalog/expanded-complex/work-families.json", total_records: expandedFamilies.length, exact_asphalt_refs: expandedFamilyMatches.length, new_inventory_candidates: 0, evidence: "Two family owners corroborate the ten template records." },
-    { source_id: "expanded_readiness", source_path: "data/estimate-catalog/expanded-complex-readiness-manifest.json", total_records: expandedReadiness.families.length, exact_asphalt_refs: expandedReadinessMatches.length, new_inventory_candidates: 0, evidence: "Readiness rows corroborate both expanded family owners." },
+    { source_id: "expanded_templates_1610", source_path: "data/estimate-catalog/expanded-complex/templates.json", total_records: expandedTemplates.length, exact_asphalt_refs: expandedTemplateMatches.length, new_inventory_candidates: 20, evidence: "Exact typed family IDs asphalt_concrete_pavement, bridge_asphalt, road_construction and village_road_construction; the latter two are scope-routed composite aliases." },
+    { source_id: "expanded_work_families", source_path: "data/estimate-catalog/expanded-complex/work-families.json", total_records: expandedFamilies.length, exact_asphalt_refs: expandedFamilyMatches.length, new_inventory_candidates: 0, evidence: "Four typed family owners corroborate the twenty template records." },
+    { source_id: "expanded_readiness", source_path: "data/estimate-catalog/expanded-complex-readiness-manifest.json", total_records: expandedReadiness.families.length, exact_asphalt_refs: expandedReadinessMatches.length, new_inventory_candidates: 0, evidence: "Readiness rows corroborate all four typed family owners." },
     { source_id: "built_in_ai_1000", source_path: "src/lib/ai/builtInAi1000/builtInAi1000ConstructionCases.ts", total_records: BUILT_IN_AI_1000_CONSTRUCTION_CASES.length, exact_asphalt_refs: builtIn1000Matches.length, new_inventory_candidates: 11, evidence: "Eight included work definitions plus three typed exclusions, selected by exact work_key." },
     { source_id: "built_in_ai_10000", source_path: "src/lib/ai/builtInAi10000/builtInAi10000ConstructionCases.ts", total_records: BUILT_IN_AI_10000_CONSTRUCTION_CASES.length, exact_asphalt_refs: builtIn10000Matches.length, new_inventory_candidates: 0, evidence: "Generated cases are corroborating usages of known exact work keys, not catalog definitions." },
     { source_id: "global_150", source_path: "src/lib/ai/globalEstimate/globalConstructionWorkTypeCatalog150.ts", total_records: GLOBAL_CONSTRUCTION_WORK_TYPE_150_CASES.length, exact_asphalt_refs: global150Matches.length, new_inventory_candidates: 0, evidence: "asphalt_paving and asphalt_patch_repair duplicate already-owned work keys." },
@@ -347,10 +368,10 @@ export function buildAsphaltRelatedR8Inventory() {
       passport_id: owner.passport_id,
       formula_graph_id: owner.formula_graph_id,
       normative_composition_id: owner.normative_composition_id,
-      runtime_status: "R9_EXACT_BINDING_GREEN",
-      Web_status: "R9_WEB_R53_REAL_BROWSER_GREEN",
+      runtime_status: "ABSOLUTE_OVERRIDE_PRODUCT_RED",
+      Web_status: "PENDING_FULL_R63_WEB_RECOVERY",
       Android_status: "PENDING_R9_API34_M44X3",
-      PDF_status: "R9_IMMUTABLE_PROJECTION_GREEN",
+      PDF_status: "PENDING_FULL_R63_PDF_PARITY",
     };
   });
   const blocked = records.filter((entry) => entry.classification === "BLOCKED_MISSING_OWNER");
@@ -375,10 +396,10 @@ export function buildAsphaltRelatedR8Inventory() {
   };
   invariant(summary.inventory_candidates_N === summary.asphalt_related_R + summary.exclusions_E, "N_NE_R_PLUS_E");
   invariant(summary.asphalt_related_R === summary.unique_technologies_M + summary.aliases_A, "R_NE_M_PLUS_A");
-  invariant(summary.inventory_candidates_N === 56, `N:${summary.inventory_candidates_N}`);
-  invariant(summary.asphalt_related_R === 53, `R:${summary.asphalt_related_R}`);
+  invariant(summary.inventory_candidates_N === 66, `N:${summary.inventory_candidates_N}`);
+  invariant(summary.asphalt_related_R === 63, `R:${summary.asphalt_related_R}`);
   invariant(summary.unique_technologies_M === 44, `M:${summary.unique_technologies_M}`);
-  invariant(summary.aliases_A === 9, `A:${summary.aliases_A}`);
+  invariant(summary.aliases_A === 19, `A:${summary.aliases_A}`);
   invariant(summary.exclusions_E === 3, `E:${summary.exclusions_E}`);
   invariant(summary.blocked === 0 && summary.orphan === 0 && summary.ambiguous === 0, "OWNERSHIP_NOT_CLOSED");
   invariant(summary.duplicate_candidate_id === 0 && summary.unclassified === 0, "IDENTITY_NOT_CLOSED");

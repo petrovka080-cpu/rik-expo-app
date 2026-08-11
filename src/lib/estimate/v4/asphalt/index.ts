@@ -15,5 +15,7 @@ export * from "./asphaltClarificationExperienceV4";
 export * from "./validateAsphaltRuntimeTruthV4";
 export * from "./validateAsphaltWorkAssemblyCoverageV4";
 export * from "./compileAsphaltProfessionalEstimateV4";
+export * from "./asphaltAssociatedWorkAssembliesV4";
+export * from "./asphaltRemovalResourceAssembliesV4";
 export * from "./auditAsphaltProfessionalEstimateV4";
 export * from "./auditFullRoadInfrastructurePhase1DV4";

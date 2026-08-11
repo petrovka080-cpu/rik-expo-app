@@ -1,4 +1,5 @@
 export * from "./professionalEstimateV4Contract";
+export * from "./professionalProjectAssemblyV4";
 export * from "./engineeringUnitRegistryV4";
 export * from "./categoryUnitContractV4";
 export * from "./formulaDimensionValidatorV4";

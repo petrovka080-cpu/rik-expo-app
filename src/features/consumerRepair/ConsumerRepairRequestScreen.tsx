@@ -1,8 +1,9 @@
 import React from "react";
 import { router } from "expo-router";
-import { Platform, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import {
   applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
+  buildApprovedEstimateHistoryRecord,
   commitPreparedConsumerRepairRequestBundle, createConsumerRepairDraftFromHistorySnapshot,
   deleteConsumerRepairRequestDraft, ensureConsumerRepairRequestPdfAvailable, getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
@@ -11,10 +12,15 @@ import {
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
+import { logger } from "../../lib/logger";
 import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
-import { hydrateNextTransactionalConsumerRepairHistoryPage } from "../../lib/consumerRequests/consumerRequestRepository";
+import {
+  awaitConsumerRepairBundleDurableCommit,
+  findConsumerRepairBundle,
+  hydrateNextTransactionalConsumerRepairHistoryPage,
+} from "../../lib/consumerRequests/consumerRequestRepository";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
@@ -126,7 +132,7 @@ export function isFreshRequestEstimateLaunchWorkspace(
   );
 }
 
-function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenControllerProps): boolean {
+export function shouldDeferInitialHistoryLoad(props: ConsumerRepairRequestScreenProps): boolean {
   return Boolean(
     shouldAutoPrepareInitialConsumerRepairRequest(props) ||
     isFreshRequestEstimateLaunchWorkspace(props)
@@ -221,6 +227,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
   private approvalCommitInFlight = false;
+  private parameterApplyInFlight = false;
   private durableHistoryLoadInFlight = false;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
@@ -908,15 +915,32 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
       const bundle = approveConsumerRepairRequestDraft({ requestDraftId: synced.draft.id, userId: CONSUMER_USER_ID });
-      if (Platform.OS !== "web") {
-        await awaitTransactionalConsumerRepairBundleCommit({
-          requestDraftId: bundle.draft.id,
-          expectedStatus: bundle.draft.status,
-          expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
-        });
-      }
+      await awaitTransactionalConsumerRepairBundleCommit({
+        requestDraftId: bundle.draft.id,
+        expectedStatus: bundle.draft.status,
+        expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
+      });
       const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
-      const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+      const durableApprovedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_USER_ID);
+      const approvedHistoryPage = durableApprovedHistoryPage.items.some(
+        (candidate) => candidate.draft.id === bundle.draft.id,
+      )
+        ? durableApprovedHistoryPage
+        : {
+          ...durableApprovedHistoryPage,
+          items: [bundle, ...durableApprovedHistoryPage.items].slice(
+            0,
+            durableApprovedHistoryPage.pageSize,
+          ),
+          records: [
+            buildApprovedEstimateHistoryRecord(bundle),
+            ...durableApprovedHistoryPage.records,
+          ].slice(0, durableApprovedHistoryPage.pageSize),
+          totalApprovedCount: Math.max(
+            durableApprovedHistoryPage.totalApprovedCount,
+            durableApprovedHistoryPage.items.length + 1,
+          ),
+        };
       this.historyLoaded = true;
       const nextHistory = history.some((candidate) => candidate.draft.id === bundle.draft.id)
         ? history
@@ -930,6 +954,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
       } else {
+        console.error("[ConsumerRepairApprove] durable approval commit failed", error);
         this.setState({
           statusMessage: "Не удалось надёжно сохранить утверждённую смету. Повторите подтверждение.",
         });
@@ -1087,9 +1112,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.updateCurrentBundle(bundle);
   };
-  private applyParamPatch = (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
+  private applyParamPatch = async (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
     const current = this.state.bundle;
     if (!current) return;
+    const patches: ConsumerRepairDraftRevisionParamBatchPatch[] = [{ operation, paramKey, rawValue }];
+    const previousRevisionCount = current.estimateDraftRevisionState?.revisions.length ?? 0;
+    const expectedCatalogId = current.draft.selectedCatalogWorkId ?? null;
+    const expectedWorkKey =
+      current.canonicalParameterSession?.canonicalWorkKey ??
+      current.draft.selectedWorkKey ??
+      null;
     try {
       const bundle = applyConsumerRepairDraftRevisionParamPatch({
         requestDraftId: current.draft.id,
@@ -1102,19 +1134,83 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
         this.updateCurrentBundle(
           bundle,
-          `Параметр сохранён. Для расчёта осталось уточнить: ${missingCount}.`,
+          missingCount > 0
+            ? `Параметр сохранён. Для расчёта осталось уточнить: ${missingCount}.`
+            : "Параметр сохранён, но ревизия сметы не сформирована. Повторите применение; введённые данные сохранены.",
         );
         return;
       }
-      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1; // single-parameter apply
+      const revisionState = bundle.estimateDraftRevisionState;
+      const revision = revisionState.revisions.find(
+        (candidate) => candidate.revisionId === revisionState.currentRevisionId,
+      );
+      const invariantFailures = [
+        revisionCount === previousRevisionCount + 1 ? "" : `revision_count:${previousRevisionCount}->${revisionCount}`,
+        revision ? "" : "current_revision_missing",
+        revision && revision.boq.rows.length > 0 ? "" : "empty_boq",
+        expectedCatalogId == null || bundle.draft.selectedCatalogWorkId === expectedCatalogId
+          ? ""
+          : `catalog_identity:${expectedCatalogId}->${bundle.draft.selectedCatalogWorkId ?? "missing"}`,
+        expectedWorkKey == null || revision?.professionalWorkId === expectedWorkKey
+          ? ""
+          : `work_identity:${expectedWorkKey}->${revision?.professionalWorkId ?? "missing"}`,
+      ].filter(Boolean);
+      if (invariantFailures.length > 0) {
+        throw new Error(`CONSUMER_REPAIR_PARAMETER_APPLY_INVARIANT_FAILED:${invariantFailures.join("|")}`);
+      }
+      await awaitConsumerRepairBundleDurableCommit({
+        requestDraftId: bundle.draft.id,
+        expectedStatus: bundle.draft.status,
+        expectedRevisionId: revisionState.currentRevisionId,
+      });
+      const reopened = findConsumerRepairBundle(bundle.draft.id);
+      if (
+        !reopened ||
+        reopened.estimateDraftRevisionState?.currentRevisionId !== revisionState.currentRevisionId
+      ) {
+        throw new Error("CONSUMER_REPAIR_PARAMETER_APPLY_REOPEN_REVISION_MISMATCH");
+      }
+      this.updateCurrentBundle(
+        reopened,
+        `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
+      );
+      return;
       this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+      } else {
+        logger.error(
+          "ConsumerRepairSingleParameterApply",
+          error instanceof Error ? error.message : String(error),
+        );
+        this.setState({
+          statusMessage: "Не удалось сформировать или надёжно сохранить смету. Параметр не подтверждён — повторите применение.",
+        });
+      }
     }
   };
-  private applyParamBatch = (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+    if (this.parameterApplyInFlight) return;
     const current = this.state.bundle;
     if (!current) return;
+    this.parameterApplyInFlight = true;
+    const previousRevisionCount = current.estimateDraftRevisionState?.revisions.length ?? 0;
+    const expectedCatalogId = current.draft.selectedCatalogWorkId ?? null;
+    const expectedWorkKey =
+      current.canonicalParameterSession?.canonicalWorkKey ??
+      current.draft.selectedWorkKey ??
+      null;
+    logger.info("ConsumerRepairParameterApply", JSON.stringify({
+      stage: "started",
+      requestDraftId: current.draft.id,
+      patchCount: patches.length,
+      previousRevisionCount,
+    }));
+    this.setState({
+      statusMessage: "Применяем параметры и надёжно сохраняем новую ревизию сметы…",
+    });
     try {
       const bundle = applyConsumerRepairDraftRevisionParamBatchPatch({
         requestDraftId: current.draft.id,
@@ -1125,14 +1221,63 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
         this.updateCurrentBundle(
           bundle,
-          `Параметры сохранены. Для расчёта осталось уточнить: ${missingCount}.`,
+          missingCount > 0
+            ? `Параметры сохранены. Для расчёта осталось уточнить: ${missingCount}.`
+            : "Параметры сохранены, но ревизия сметы не сформирована. Повторите применение; введённые данные сохранены.",
         );
         return;
       }
       const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
+      const revisionState = bundle.estimateDraftRevisionState;
+      const revision = revisionState.revisions.find(
+        (candidate) => candidate.revisionId === revisionState.currentRevisionId,
+      );
+      const invariantFailures = [
+        revisionCount === previousRevisionCount + 1 ? "" : `revision_count:${previousRevisionCount}->${revisionCount}`,
+        revision ? "" : "current_revision_missing",
+        revision && revision.boq.rows.length > 0 ? "" : "empty_boq",
+        expectedCatalogId == null || bundle.draft.selectedCatalogWorkId === expectedCatalogId
+          ? ""
+          : `catalog_identity:${expectedCatalogId}->${bundle.draft.selectedCatalogWorkId ?? "missing"}`,
+        expectedWorkKey == null || revision?.professionalWorkId === expectedWorkKey
+          ? ""
+          : `work_identity:${expectedWorkKey}->${revision?.professionalWorkId ?? "missing"}`,
+      ].filter(Boolean);
+      if (invariantFailures.length > 0) {
+        throw new Error(`CONSUMER_REPAIR_PARAMETER_APPLY_INVARIANT_FAILED:${invariantFailures.join("|")}`);
+      }
+      await awaitConsumerRepairBundleDurableCommit({
+        requestDraftId: bundle.draft.id,
+        expectedStatus: bundle.draft.status,
+        expectedRevisionId: revisionState.currentRevisionId,
+      });
+      const reopened = findConsumerRepairBundle(bundle.draft.id);
+      if (
+        !reopened ||
+        reopened.estimateDraftRevisionState?.currentRevisionId !== revisionState.currentRevisionId
+      ) {
+        throw new Error("CONSUMER_REPAIR_PARAMETER_APPLY_REOPEN_REVISION_MISMATCH");
+      }
+      this.updateCurrentBundle(
+        reopened,
+        `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
+      );
+      return;
       this.updateCurrentBundle(bundle, `Смета пересчитана одной ревизией: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+      } else {
+        logger.error(
+          "ConsumerRepairParameterApply",
+          error instanceof Error ? error.message : String(error),
+        );
+        this.setState({
+          statusMessage: "Не удалось сформировать или надёжно сохранить смету. Параметры не подтверждены — повторите применение.",
+        });
+      }
+    } finally {
+      this.parameterApplyInFlight = false;
     }
   };
   private openProcurement = () => {

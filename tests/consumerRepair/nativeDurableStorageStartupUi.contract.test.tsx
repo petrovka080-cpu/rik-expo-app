@@ -26,6 +26,21 @@ jest.mock(
         !props.initialDraftId?.trim() &&
         (props.autoPrepare || props.autoPdf || (!props.launchId?.trim() && props.initialProblemText?.trim())),
       ),
+      shouldDeferInitialHistoryLoad: (props: {
+        initialProblemText?: string;
+        initialDraftId?: string;
+        launchId?: string;
+        autoPrepare?: boolean;
+        autoPdf?: boolean;
+      }) => Boolean(
+        !props.initialDraftId?.trim() &&
+        (
+          props.autoPrepare ||
+          props.autoPdf ||
+          (props.launchId?.trim() && props.initialProblemText?.trim()) ||
+          (!props.launchId?.trim() && props.initialProblemText?.trim())
+        )
+      ),
       ConsumerRepairRequestScreenController: ReactRuntime.forwardRef<
         {
           refreshAfterDurableHydration: () => void;
@@ -76,7 +91,7 @@ describe("consumer repair durable storage startup UI", () => {
     jest.useRealTimers();
   });
 
-  it("mounts the request screen immediately and offers retry after the 3 second hydration bound", async () => {
+  it("gates history-backed startup and offers retry after the 3 second hydration bound", async () => {
     mockInitializeDurableStorage.mockImplementationOnce(
       () => new Promise<void>(() => undefined),
     );
@@ -86,7 +101,10 @@ describe("consumer repair durable storage startup UI", () => {
       renderer = TestRenderer.create(<ConsumerRepairRequestScreen />);
     });
 
-    expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
+    expect(renderer.root.findAllByProps({ testID: "consumer-repair-screen" })).toHaveLength(0);
+    expect(renderer.root.findByProps({
+      testID: "consumer-repair-exact-draft-hydration-gate",
+    })).toBeTruthy();
     expect(
       renderer.root.findByProps({ testID: "consumer-repair-storage-hydrating" }),
     ).toBeTruthy();
@@ -109,7 +127,10 @@ describe("consumer repair durable storage startup UI", () => {
     });
 
     expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(2);
-    expect(mockRefreshAfterDurableHydration).toHaveBeenCalledTimes(1);
+    // The gated controller mounts from the now-hydrated repository; there was
+    // no earlier mounted instance that needed an imperative refresh.
+    expect(mockRefreshAfterDurableHydration).toHaveBeenCalledTimes(0);
+    expect(renderer.root.findByProps({ testID: "consumer-repair-screen" })).toBeTruthy();
     expect(
       renderer.root.findAllByProps({ testID: "consumer-repair-storage-recovery" }),
     ).toHaveLength(0);

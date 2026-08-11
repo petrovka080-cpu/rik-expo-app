@@ -37,6 +37,13 @@ export type CanonicalParameterVisibilityCondition =
       kind: "PARAMETER_EQUALS";
       parameterId: string;
       value: CanonicalParameterValue;
+    }
+  | {
+      kind: "ANY_OF";
+      conditions: readonly {
+        parameterId: string;
+        value: CanonicalParameterValue;
+      }[];
     };
 
 export type CanonicalParameterValidation = {
@@ -153,8 +160,13 @@ function isVisible(
   values: ReadonlyMap<string, CanonicalParameterValue>,
 ): boolean {
   if (definition.visibilityCondition.kind === "ALWAYS") return true;
-  return values.get(definition.visibilityCondition.parameterId) ===
-    definition.visibilityCondition.value;
+  if (definition.visibilityCondition.kind === "PARAMETER_EQUALS") {
+    return values.get(definition.visibilityCondition.parameterId) ===
+      definition.visibilityCondition.value;
+  }
+  return definition.visibilityCondition.conditions.some(
+    (condition) => values.get(condition.parameterId) === condition.value,
+  );
 }
 
 function validateValue(
@@ -306,19 +318,22 @@ export function createCanonicalParameterSession(input: {
     input.schema.requiredAlternatives.some((alternative) =>
       alternative.parameterIds.every((parameterId) => presentValidIds.has(parameterId))
     );
-  const blockingDefinitions = parameters.filter((parameter) =>
-    parameter.requiredLevel === "BLOCKING_REQUIRED" && parameter.value == null
+  const alternativeParameterIds = new Set(
+    input.schema.requiredAlternatives.flatMap((alternative) => alternative.parameterIds),
   );
-  const blockingMissingParameterIds = hasRequiredAlternative
-    ? []
-    : blockingDefinitions.map((parameter) => parameter.parameterId);
+  const blockingMissingParameterIds = parameters
+    .filter((parameter) =>
+      parameter.requiredLevel === "BLOCKING_REQUIRED" &&
+      parameter.value == null &&
+      (!alternativeParameterIds.has(parameter.parameterId) || !hasRequiredAlternative)
+    )
+    .map((parameter) => parameter.parameterId);
   const contractMissingParameterIds = parameters
     .filter((parameter) =>
       parameter.value == null &&
       (
         parameter.requiredLevel === "CONTRACT_REQUIRED" ||
-        parameter.requiredLevel === "CONDITIONAL" ||
-        (parameter.requiredLevel === "BLOCKING_REQUIRED" && hasRequiredAlternative)
+        parameter.requiredLevel === "CONDITIONAL"
       )
     )
     .map((parameter) => parameter.parameterId);

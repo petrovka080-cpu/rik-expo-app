@@ -17,6 +17,7 @@ import {
   DEFAULT_ROADWORKS_WAVE_A_INPUTS,
   RoadworksWaveAProductionRegistry,
   getRoadworksWaveAParameterKeys,
+  type RoadworksWaveAParameterKey,
 } from "../../src/lib/estimate/v4/roadworks";
 import type { RoadworksWaveAProductionRegistration } from "../../src/lib/estimate/v4/roadworks";
 import {
@@ -24,6 +25,14 @@ import {
   getConsumerRepairCalculationStateForReadOnlyDisplay,
 } from "../../src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import { consumerRepairBundleHasPdfEligibleSnapshot } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenView";
+
+function requiredRoadworksWaveADefault(
+  key: RoadworksWaveAParameterKey,
+): string | number | boolean {
+  const value = DEFAULT_ROADWORKS_WAVE_A_INPUTS[key];
+  if (value === undefined) throw new Error(`ROADWORKS_WAVE_A_DEFAULT_MISSING:${key}`);
+  return value;
+}
 
 function installLocalStorageMock(): () => void {
   const values = new Map<string, string>();
@@ -60,7 +69,7 @@ function createRuntimeBundle(
       getRoadworksWaveAParameterKeys(work.workId).map((key) => [
         key,
         {
-          value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
+          value: requiredRoadworksWaveADefault(key),
           source: "user_input" as const,
           sourceText: "state-handoff-production-fixture",
           lastChangedAt: "2026-08-07T01:00:00.000Z",

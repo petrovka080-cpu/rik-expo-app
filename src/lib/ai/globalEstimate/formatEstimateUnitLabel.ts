@@ -33,6 +33,33 @@ const UNIT_LABELS_RU: Record<string, string> = {
   man_hour: "\u0447\u0435\u043b.-\u0447",
   machine_hour: "\u043c\u0430\u0448.-\u0447",
   t_km: "\u0442\u00b7\u043a\u043c",
+  "t*km": "\u0442\u00b7\u043a\u043c",
+  "t\u00b7km": "\u0442\u00b7\u043a\u043c",
+  "t\u00b7\u043a\u043c": "\u0442\u00b7\u043a\u043c",
+  t_m3: "\u0442/\u043c\u00b3",
+  "t/m3": "\u0442/\u043c\u00b3",
+  "t/m\u00b3": "\u0442/\u043c\u00b3",
+  kg_m2: "\u043a\u0433/\u043c\u00b2",
+  kg_m: "\u043a\u0433/\u043f\u043e\u0433. \u043c",
+  l_m2: "\u043b/\u043c\u00b2",
+  km_machine_hour: "\u043a\u043c/\u043c\u0430\u0448.-\u0447",
+  m2_machine_hour: "\u043c\u00b2/\u043c\u0430\u0448.-\u0447",
+  m2_man_hour: "\u043c\u00b2/\u0447\u0435\u043b.-\u0447",
+  m2_test: "\u043c\u00b2/\u0438\u0441\u043f.",
+  m3_machine_hour: "\u043c\u00b3/\u043c\u0430\u0448.-\u0447",
+  m_man_hour: "\u043f\u043e\u0433. \u043c/\u0447\u0435\u043b.-\u0447",
+  m_machine_hour: "\u043f\u043e\u0433. \u043c/\u043c\u0430\u0448.-\u0447",
+  m3_pcs: "\u043c\u00b3/\u0448\u0442",
+  pcs_man_hour: "\u0448\u0442/\u0447\u0435\u043b.-\u0447",
+  pcs_machine_hour: "\u0448\u0442/\u043c\u0430\u0448.-\u0447",
+  t_machine_hour: "\u0442/\u043c\u0430\u0448.-\u0447",
+  trip_test: "\u0440\u0435\u0439\u0441/\u0438\u0441\u043f.",
+  mm2: "\u043c\u043c\u00b2",
+  one: "\u0431\u0435\u0437\u0440\u0430\u0437\u043c.",
+  percent: "%",
+  t_trip: "\u0442/\u0440\u0435\u0439\u0441",
+  mm: "\u043c\u043c",
+  km: "\u043a\u043c",
   service: "\u0443\u0441\u043b.",
   test: "\u0438\u0441\u043f\u044b\u0442\u0430\u043d\u0438\u0435",
   document: "\u043a\u043e\u043c\u043f\u043b.",
@@ -64,5 +91,5 @@ export function formatEstimateUnitLabel(unit?: string | null): string {
 }
 
 export function hasRawEstimateUnitLabel(text: string): boolean {
-  return /\b(linear_m|sq_m|cubic_m|pcs|shift|trip)\b/.test(text);
+  return /\b(linear_m|sq_m|cubic_m|pcs|shift|trip|t_m3|t_km)\b|t\/m3|t\*km/.test(text);
 }

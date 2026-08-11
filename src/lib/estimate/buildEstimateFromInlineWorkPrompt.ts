@@ -32,8 +32,10 @@ import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
   ASPHALT_V4_RUNTIME_TITLE_RU,
+  ASPHALT_FAMILY_ID_V4,
   ASPHALT_WORK_ID_V4,
 } from "./v4/asphalt/asphaltV4Constants";
+import { professionalEstimatePassportId } from "./v4/professionalEstimatePassportV4";
 import type { AsphaltCompiledBoqLineV4 } from "./v4/asphalt/compileAsphaltProfessionalEstimateV4";
 import type { AsphaltClarificationExperienceV4 } from "./v4/asphalt/asphaltClarificationExperienceV4";
 import {
@@ -270,6 +272,10 @@ function buildAsphaltV4Draft(input: {
     .test(input.parseResult.rawInput);
   const selectedAsphaltAlias = selectedIds.some((value) =>
     value === "asphalt_paving" ||
+    value === ASPHALT_FAMILY_ID_V4 ||
+    value === "village_road_construction" ||
+    value.startsWith(`${ASPHALT_FAMILY_ID_V4}_`) ||
+    value.startsWith("village_road_construction_") ||
     value === ASPHALT_WORK_ID_V4 ||
     value === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
@@ -336,6 +342,11 @@ function buildAsphaltV4Draft(input: {
     ...compilation.clarification.recommended,
     ...compilation.clarification.optional_or_assumption,
   ].map((item) => item.title_ru);
+  const requestedCatalogWorkId = input.sourceInput.selectedTemplateId?.trim() ||
+    input.sourceInput.selectedWorkKey?.trim() ||
+    input.parseResult.matchedTemplate?.templateId ||
+    ASPHALT_WORK_ID_V4;
+  const catalogPassportId = professionalEstimatePassportId(requestedCatalogWorkId);
   const draft: ConsumerRepairAiDraft = {
     titleRu: `Расширенная предварительная профессиональная смета: ${compilation.preliminary_assembly_policy.profile_title_ru}`,
     summaryRu: [
@@ -349,6 +360,7 @@ function buildAsphaltV4Draft(input: {
     ].join(" "),
     repairType: ASPHALT_WORK_ID_V4,
     selectedWork: {
+      selectedCatalogWorkId: requestedCatalogWorkId,
       selectedWorkKey: ASPHALT_WORK_ID_V4,
       selectedWorkTitleRu: ASPHALT_V4_RUNTIME_TITLE_RU,
       selectedWorkCategoryKey: "road_construction",
@@ -379,6 +391,14 @@ function buildAsphaltV4Draft(input: {
         ...row.formula_input_values,
         formulaContext: row.formula_input_values,
         asphaltV4: true,
+        requestedCatalogWorkId,
+        professionalEstimatePassportId: catalogPassportId,
+        canonicalProfessionalEstimatePassportId: professionalEstimatePassportId(ASPHALT_WORK_ID_V4),
+        boqBlueprintId: `${requestedCatalogWorkId}:boq-blueprint:v4`,
+        parameterSchemaId: `${requestedCatalogWorkId}:parameter-schema:v4`,
+        formulaBindingId: `${requestedCatalogWorkId}:formula-binding:v4`,
+        normApplicabilityProfileId: `${requestedCatalogWorkId}:norm-applicability:v4`,
+        deterministicFixtureId: `${requestedCatalogWorkId}:deterministic-fixture:v4`,
         asphaltV4AssumptionIds: row.assumption_ids,
         area_m2: compilation.quantity_basis.area_m2,
         ...(rowIndex === 0 ? {
@@ -1068,16 +1088,17 @@ export function buildEstimateFromInlineWorkPrompt(
   // An explicit catalog identity is authoritative. Resolve every registered
   // asphalt-related operation before any word-based road/asphalt fallback so
   // demolition, milling, repair and installation cannot repaint each other.
-  // The canonical pavement owner already has the established Asphalt V4
-  // compiler. Once one of its four road scopes is selected, keep that route
-  // in the established compiler instead of re-entering the domain adapter
-  // with a different P0 schema.
-  const selectedCanonicalAsphaltScope = Boolean(
+  // Preserve the pre-resource-contract road-scope flow when an existing client
+  // sends only selectedRoadScope. New resource-level requests explicitly send
+  // estimate_scope_mode and enter the registered domain adapter, which delegates
+  // the pavement body to the same core compiler and composes typed children.
+  const legacySelectedCanonicalAsphaltScope = Boolean(
     exactRouting.status === "BOUND_EXTRA" &&
     exactRouting.canonicalWorkKey === ASPHALT_WORK_ID_V4 &&
-    input.paramOverrides?.selectedRoadScope,
+    input.paramOverrides?.selectedRoadScope &&
+    !input.paramOverrides?.estimate_scope_mode,
   );
-  const exactAsphaltRelated = selectedCanonicalAsphaltScope
+  const exactAsphaltRelated = legacySelectedCanonicalAsphaltScope
     ? null
     : loadAsphaltRelatedExactProductionDraftBuilder().buildAsphaltRelatedExactProductionDraftV4(input);
   if (exactAsphaltRelated) {

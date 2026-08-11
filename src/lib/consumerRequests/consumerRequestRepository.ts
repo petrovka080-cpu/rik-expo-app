@@ -23,6 +23,7 @@ import {
   syncConsumerRepairBundleToAiEstimateLedger,
 } from "./consumerRequestLedgerBridge";
 import {
+  awaitTransactionalConsumerRepairBundleCommit,
   isLargeConsumerRepairRevisionBundle,
   listTransactionalConsumerRepairBundleIds,
   listTransactionalConsumerRepairDurableBundleIds,
@@ -457,6 +458,9 @@ function compactOlderApprovedHistoryRecordsForStorage(
   protectedBundle: ConsumerRepairDraftBundle,
 ): boolean {
   removeLegacyDurableStoreIfV2Exists(storage);
+  const transactionallyCommittedIds = new Set(
+    listTransactionalConsumerRepairBundleIds(storage),
+  );
   const approved = readDurableRecordIds(storage)
     .filter((requestDraftId) => requestDraftId !== protectedBundle.draft.id)
     .map((requestDraftId) =>
@@ -473,14 +477,28 @@ function compactOlderApprovedHistoryRecordsForStorage(
       return byCreatedAt === 0 ? right.draft.id.localeCompare(left.draft.id) : byCreatedAt;
     });
 
-  let compacted = false;
+  let migrated = false;
   for (const candidate of approved.slice(APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT)) {
     if (isApprovedHistorySummaryOnlyBundle(candidate)) continue;
-    if (!persistConsumerRepairDurableApprovedSummaryRecord(storage, candidate)) return compacted;
-    compacted = true;
+    // A transactional pointer is written only after an atomic full-snapshot
+    // commit. Re-queueing the same approved bundle on every newer approval
+    // made history growth quadratic and delayed the user's acknowledgement.
+    if (transactionallyCommittedIds.has(candidate.draft.id)) continue;
+    migrated = true;
+    void queueTransactionalConsumerRepairBundleWrite({
+      bundle: candidate,
+      storage,
+      onCommitted: () => {
+        const latest = store.bundles.get(candidate.draft.id) ?? candidate;
+        persistConsumerRepairDurableApprovedSummaryRecord(storage, latest, {
+          updateMemoryStore: false,
+        });
+        removeLocalPayloadForTransactionalBundle(storage, candidate.draft.id, true);
+        persistConsumerRepairDurableManifest(storage);
+      },
+    });
   }
-  if (compacted) persistConsumerRepairDurableManifest(storage);
-  return compacted;
+  return migrated;
 }
 
 function pruneDurableDraftRecordsForBundle(
@@ -587,7 +605,8 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
   const storage = getWebDurableStorage();
   if (
     isReactNativeRuntime() ||
-    isLargeConsumerRepairRevisionBundle(bundle)
+    isLargeConsumerRepairRevisionBundle(bundle) ||
+    isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
   ) {
     const preserveApprovedSummary =
       isConsumerRepairApprovedHistoryStatus(bundle.draft.status);
@@ -847,7 +866,38 @@ export function savePreparedConsumerRepairBundle(bundle: ConsumerRepairDraftBund
   return normalized;
 }
 
-export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {
+export async function awaitConsumerRepairBundleDurableCommit(input: {
+  requestDraftId: string;
+  expectedStatus: ConsumerRepairDraftBundle["draft"]["status"];
+  expectedRevisionId: string | null;
+}): Promise<void> {
+  const current = store.bundles.get(input.requestDraftId) ?? null;
+  if (!current) throw new Error("CONSUMER_REPAIR_DURABLE_COMMIT_BUNDLE_MISSING");
+  const storage = getWebDurableStorage();
+  const usesTransactionalStorage =
+    isReactNativeRuntime() ||
+    isLargeConsumerRepairRevisionBundle(current) ||
+    isConsumerRepairApprovedHistoryStatus(current.draft.status);
+  if (usesTransactionalStorage) {
+    await awaitTransactionalConsumerRepairBundleCommit(input);
+    return;
+  }
+  if (!storage) return;
+  const persisted = readDurableBundle(storage, input.requestDraftId);
+  const persistedRevisionId =
+    persisted?.estimateDraftRevisionState?.currentRevisionId ?? null;
+  if (
+    !persisted ||
+    persisted.draft.status !== input.expectedStatus ||
+    persistedRevisionId !== input.expectedRevisionId
+  ) {
+    throw new Error("CONSUMER_REPAIR_LOCAL_DURABLE_COMMIT_NOT_DURABLE");
+  }
+}
+
+export function findConsumerRepairBundle(
+  requestDraftId: string,
+): ConsumerRepairDraftBundle | null {
   hydrateConsumerRepairRequestStore();
   let bundle = store.bundles.get(requestDraftId);
   if (!bundle) {
@@ -863,6 +913,11 @@ export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairD
       bundle = normalized;
     }
   }
+  return bundle ? cloneConsumerRepairValue(bundle) : null;
+}
+
+export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {
+  const bundle = findConsumerRepairBundle(requestDraftId);
   if (!bundle) {
     const storage = getWebDurableStorage();
     const localRecordPresent = Boolean(
@@ -878,7 +933,7 @@ export function getConsumerRepairBundle(requestDraftId: string): ConsumerRepairD
       `Consumer repair request draft not found. id=${requestDraftId}; local=${localRecordPresent}; transactionalPointer=${transactionalPointerPresent}`,
     );
   }
-  return cloneConsumerRepairValue(bundle);
+  return bundle;
 }
 
 export function deleteConsumerRepairBundle(requestDraftId: string): ConsumerRepairDraftBundle {

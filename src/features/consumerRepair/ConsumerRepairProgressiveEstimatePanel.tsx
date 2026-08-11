@@ -27,6 +27,7 @@ import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
 import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisionTimeline";
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { pickFileAny } from "../../lib/filePick";
+import { logger } from "../../lib/logger";
 import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
 
 type ItemEditorHandlers = {
@@ -77,6 +78,31 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
   if (last === 1) return one;
   if (last >= 2 && last <= 4) return few;
   return many;
+}
+
+function canonicalNumericInputRule(input: {
+  min?: number;
+  max?: number;
+  integer?: boolean;
+  unit?: string;
+}): string {
+  const unit = input.unit ? ` ${input.unit}` : "";
+  const minimum = input.min === Number.EPSILON
+    ? `больше 0${unit}`
+    : input.min != null
+      ? `${input.min.toLocaleString("ru-RU")}${unit}`
+      : null;
+  const maximum = input.max != null
+    ? `${input.max.toLocaleString("ru-RU")}${unit}`
+    : null;
+  const range = minimum && maximum
+    ? `от ${minimum} до ${maximum}`
+    : minimum
+      ? input.min === Number.EPSILON ? minimum : `не меньше ${minimum}`
+      : maximum
+        ? `не больше ${maximum}`
+        : "числовое значение";
+  return input.integer ? `${range}; только целое число` : range;
 }
 
 function buildRuntimeViewModel(
@@ -271,7 +297,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       .slice(0, 5)
       .map((parameter) =>
         parameter.unit
-          ? `${parameter.label}, ${parameter.unit}`
+          ? `${parameter.label}, ${aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit)}`
           : parameter.label
       )
       .join(" · ") ?? "";
@@ -423,6 +449,7 @@ type InlineParamEditorProps = {
   unitLabel?: string;
   dirty: boolean;
   error?: string;
+  hint?: string;
   choices?: { value: string; labelRu: string }[];
   clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
@@ -430,7 +457,7 @@ type InlineParamEditorProps = {
 
 class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, choices, clarificationControl, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, clarificationControl, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
 
     return (
@@ -484,6 +511,11 @@ class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
             />
           )}
           {unitLabel ? <Text style={styles.inlineParamUnit}>{unitLabel}</Text> : null}
+          {hint ? (
+            <Text style={styles.parameterMeta} testID={`editable-param-validation-hint-${paramKey}`}>
+              {hint}
+            </Text>
+          ) : null}
           {error ? (
             <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
               {error}
@@ -621,23 +653,32 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const validationErrors: Record<string, string> = {};
     const patches: ConsumerRepairDraftRevisionParamBatchPatch[] = [];
 
-    for (const card of cardsByKey.values()) {
-      if (
-        this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED" &&
-        card.missing &&
-        card.clarificationTier === "critical" &&
-        !(this.state.draftValues[card.key] ?? "").trim()
-      ) {
-        validationErrors[card.key] = "Заполните обязательный параметр перед расчётом сметы.";
-      }
-    }
-
     for (const key of dirtyKeys) {
       const card = cardsByKey.get(key);
       const rawValue = (this.state.draftValues[key] ?? "").trim();
       if (!rawValue) {
         validationErrors[key] = "Введите значение перед применением.";
         continue;
+      }
+      const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
+        (parameter) => parameter.parameterId === key,
+      );
+      if (canonicalParameter?.valueType === "number") {
+        const parsed = Number(rawValue.replace(",", "."));
+        const { min, max, integer } = canonicalParameter.validation;
+        const rule = canonicalNumericInputRule({ min, max, integer });
+        if (!Number.isFinite(parsed)) {
+          validationErrors[key] = `${canonicalParameter.label}: введите число.`;
+          continue;
+        }
+        if (
+          (min != null && parsed < min) ||
+          (max != null && parsed > max) ||
+          (integer === true && !Number.isInteger(parsed))
+        ) {
+          validationErrors[key] = `${canonicalParameter.label}: норматив ввода по расчётному паспорту — ${rule}.`;
+          continue;
+        }
       }
       patches.push({
         operation: card ? this.operationForCard(card) : "update_param",
@@ -647,10 +688,25 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     }
 
     if (Object.keys(validationErrors).length > 0) {
+      logger.info("ConsumerRepairParameterApplyClick", JSON.stringify({
+        result: "client_validation_rejected",
+        dirtyCount: dirtyKeys.length,
+        invalidParameterIds: Object.keys(validationErrors),
+      }));
       this.setState({ validationErrors });
       return;
     }
     if (patches.length === 0) return;
+    // Submit every non-empty edited value atomically even when other required
+    // parameters are still missing. The canonical service is the single owner
+    // of cross-field/oneOf validation and persists partial progress. Blocking
+    // here on unrelated or hidden cards made the button silently do nothing
+    // for bridge, parking and other exact Asphalt profiles.
+    logger.info("ConsumerRepairParameterApplyClick", JSON.stringify({
+      result: "submitted",
+      patchCount: patches.length,
+      parameterIds: patches.map((patch) => patch.paramKey),
+    }));
     this.props.onApplyParamBatch?.(patches);
   }
 
@@ -669,6 +725,15 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     });
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
+    const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
+      (parameter) => parameter.parameterId === card.key,
+    );
+    const validationHint = canonicalParameter?.valueType === "number"
+      ? `Норматив ввода по расчётному паспорту: ${canonicalNumericInputRule({
+        ...canonicalParameter.validation,
+        unit: card.unitRu,
+      })}.`
+      : undefined;
     // A derived value describes provenance, not immutability. Editing it creates
     // an explicit user override in the next revision and must use the same
     // atomic batch path as every other parameter.
@@ -700,6 +765,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             unitLabel={card.unitRu}
             dirty={isDirty}
             error={this.state.validationErrors[card.key]}
+            hint={validationHint}
             choices={card.choices}
             clarificationControl={card.clarificationControl}
             onChange={this.changeDraftValue}
@@ -817,6 +883,11 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
               <Text style={styles.inlineParamButtonText}>Отменить изменения</Text>
             </Pressable>
           </View>
+          {Object.values(this.state.validationErrors).find(Boolean) ? (
+            <Text style={styles.inlineParamError} testID="editable-param-batch-validation-error">
+              {Object.values(this.state.validationErrors).find(Boolean)}
+            </Text>
+          ) : null}
         </View>
       ) : null}
       {latestDiff ? (

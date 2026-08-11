@@ -13,12 +13,25 @@ export function EstimateRevisionTimeline({
   const current = state.revisions[currentIndex] ?? state.revisions[state.revisions.length - 1];
   if (!current) return null;
   const currentNumber = currentIndex + 1;
+  const selectedCatalogId = current.resolvedIdentity?.requestedCatalogWorkId
+    ?? current.selectedTemplateId;
+  const selectedWorkKey = current.professionalWorkId?.trim() ?? "";
+  const compiledRevisionMarkerTestId = [
+    "estimate-compiled-revision-v1",
+    `catalog-${selectedCatalogId}`,
+    `work-${selectedWorkKey}`,
+    `owner-${selectedWorkKey}`,
+    `revision-${current.revisionId}`,
+    `ordinal-${currentNumber}`,
+    `rows-${current.boq.rows.length}`,
+    `status-${current.status}`,
+  ].join("--");
   const artifactStatus = current.artifacts.artifactsValidForRevisionId === current.revisionId
     ? "PDF и пакет закупки актуальны"
     : "PDF и пакет закупки нужно пересоздать";
   return (
     <View style={styles.panel} testID="estimate-revision-timeline">
-      <Text style={styles.title}>Версия {currentNumber}</Text>
+      <Text style={styles.title} testID={compiledRevisionMarkerTestId}>Версия {currentNumber}</Text>
       <Text style={styles.meta} testID="estimate-current-revision-id">Текущая версия: {currentNumber}</Text>
       <Text style={styles.meta} testID="estimate-current-revision-artifacts">{artifactStatus}</Text>
       <View style={styles.row}>

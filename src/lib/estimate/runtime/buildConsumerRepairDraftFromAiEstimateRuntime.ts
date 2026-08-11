@@ -243,7 +243,7 @@ export function buildConsumerRepairDraftFromAiEstimateRevision(
 
 function createConsumerRepairRuntimeRevision(
   input: AiEstimateCreateDraftInput,
-  prebuiltExactRoadworksWaveADraft?: ConsumerRepairAiDraft,
+  prebuiltExactDraft?: ConsumerRepairAiDraft,
 ): EstimateDraftRevision {
   return createEstimateDraftRevision({
     estimateDraftId: input.estimateDraftId,
@@ -272,7 +272,11 @@ function createConsumerRepairRuntimeRevision(
     createdAt: input.createdAt,
     source: "initial_prompt",
     revisionIndex: 1,
-    prebuiltExactRoadworksWaveADraft,
+    // createEstimateDraftRevision owns the immutable revision projection for
+    // every exact production draft. Reuse the draft already compiled by the
+    // selected domain adapter so Apply cannot silently run a second compiler
+    // with a different catalog identity or parameter contract.
+    prebuiltExactDraft,
   });
 }
 
@@ -302,21 +306,35 @@ function projectConsumerRepairRuntimeRevision(
 export function buildConsumerRepairDraftFromAiEstimateRuntime(
   input: AiEstimateCreateDraftInput,
 ): ConsumerRepairAiDraft | null {
-  const exactAsphaltRelated = buildAsphaltRelatedExactProductionDraftV4({
-    rawInput: input.rawInput,
-    selectedTemplateId: input.selectedTemplateId,
-    selectedWorkKey: input.selectedWorkKey,
-    selectedTemplateName: input.selectedTemplateName,
-    city: input.city,
-    currency: input.currency,
-    countryCode: input.countryCode,
-    paramOverrides: input.paramOverrides,
-  });
+  const selectedProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(
+    input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim(),
+  );
+  // The canonical full-road owner already has the established Asphalt V4
+  // compiler. A resolved road scope must enter that compiler directly; the
+  // compact related-work adapter has a different P0 contract and must not
+  // intercept the request before createEstimateDraftRevision can compile it.
+  const useEstablishedFullRoadCompiler = Boolean(
+    selectedProfile?.canonicalWorkKey === ASPHALT_WORK_ID_V4 &&
+    input.selectedRoadScope &&
+    !input.paramOverrides?.estimate_scope_mode,
+  );
+  const exactAsphaltRelated = useEstablishedFullRoadCompiler
+    ? null
+    : buildAsphaltRelatedExactProductionDraftV4({
+      rawInput: input.rawInput,
+      selectedTemplateId: input.selectedTemplateId,
+      selectedWorkKey: input.selectedWorkKey,
+      selectedTemplateName: input.selectedTemplateName,
+      city: input.city,
+      currency: input.currency,
+      countryCode: input.countryCode,
+      paramOverrides: input.paramOverrides,
+    });
   if (exactAsphaltRelated && exactAsphaltRelated.readiness !== "CALCULATION_READY") {
     return exactAsphaltRelated.draft;
   }
   return projectConsumerRepairRuntimeRevision(
-    createConsumerRepairRuntimeRevision(input),
+    createConsumerRepairRuntimeRevision(input, exactAsphaltRelated?.draft),
     input,
   );
 }

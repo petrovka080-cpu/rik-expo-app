@@ -23,6 +23,7 @@ import {
 import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
+import { consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -168,7 +169,8 @@ export function ConsumerRepairRequestScreenView({
     renderModel.bundle?.canonicalParameterSession?.status ===
       "BLOCKING_REQUIRED" ||
     currentDraftRevision?.status === "blocking_required" ||
-    legacyEstimateRequiresRebuild
+    legacyEstimateRequiresRebuild ||
+    consumerRepairExactAsphaltApprovalErrors(renderModel.bundle).length > 0
   );
   return (
     <AppScreen hasStickyAction style={styles.screen}>

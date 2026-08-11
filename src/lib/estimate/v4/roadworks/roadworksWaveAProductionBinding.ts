@@ -11,11 +11,13 @@ import {
   compileRoadworksWaveAWork,
   getRoadworksWaveAParameterKeys,
   getRoadworksWaveAParameterDefinitions,
+  roadworksWaveAParameterPresentation,
   resolveRoadworksWaveAWork,
   type RoadworksWaveAInputs,
   type RoadworksWaveAApplicabilityInputKey,
   type RoadworksWaveAParameterKey,
   type RoadworksWaveANumericInputKey,
+  type RoadworksWaveAMachineProductivityKey,
   type RoadworksWaveAInventoryItem,
   type RoadworksWaveARow,
 } from "./roadworksWaveA";
@@ -253,7 +255,7 @@ export function resolveRoadworksWaveAConversationalWork(
 
 function positiveOverride(
   input: BuildEstimateFromInlineWorkPromptInput,
-  key: RoadworksWaveANumericInputKey,
+  key: RoadworksWaveANumericInputKey | RoadworksWaveAMachineProductivityKey,
 ): number | null {
   const override = input.paramOverrides?.[key];
   if (override?.source === "default_assumption" || override?.source === "derived") return null;
@@ -301,14 +303,17 @@ export function extractRoadworksWaveAProductionInputs(
       /(?:доставк[\p{L}]*|завод[\p{L}]*)\s*(?:—|:|=|до)?\s*(\d+(?:[.,]\d+)?)\s*км/iu,
     ]) ?? undefined,
   };
-  const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS };
+  const values = { ...DEFAULT_ROADWORKS_WAVE_A_INPUTS } as RoadworksWaveAInputs & Record<string, unknown>;
   const assumptions: RoadworksWaveAParameterKey[] = [];
   const applicableParameterKeys = workId
     ? [...getRoadworksWaveAParameterKeys(workId)]
     : Object.keys(values) as RoadworksWaveAParameterKey[];
   const applicableKeys = new Set<RoadworksWaveAParameterKey>(applicableParameterKeys);
-  for (const key of ROADWORKS_WAVE_A_NUMERIC_INPUT_KEYS) {
-    const explicit = positiveOverride(input, key) ?? extracted[key] ?? null;
+  const numericKeys = applicableParameterKeys.filter((key): key is RoadworksWaveANumericInputKey | RoadworksWaveAMachineProductivityKey =>
+    roadworksWaveAParameterPresentation(key).inputKind === "number"
+  );
+  for (const key of numericKeys) {
+    const explicit = positiveOverride(input, key) ?? (key in extracted ? extracted[key as RoadworksWaveANumericInputKey] : undefined) ?? null;
     if (explicit != null) values[key] = explicit;
     else if (applicableKeys.has(key)) assumptions.push(key);
   }
@@ -344,7 +349,7 @@ export function extractRoadworksWaveAProductionInputs(
     ...assumptions.filter((key) => !applicableKeys.has(key)),
   ];
   return {
-    values,
+    values: values as RoadworksWaveAInputs,
     assumptions: orderedAssumptions,
     blockingAssumptions: orderedAssumptions.filter((key) => tierByKey.get(key) === "P0"),
   };
@@ -365,6 +370,7 @@ function wbsFor(row: RoadworksWaveARow): string {
     equipment: "05",
     service: "06",
     logistics: "07",
+    waste_stream: "07",
     test: "08",
     document: "09",
   } satisfies Record<RoadworksWaveARow["category"], string>)[row.category];
@@ -378,6 +384,7 @@ function professionalCategoryFor(row: RoadworksWaveARow): string {
     equipment: "EQUIPMENT",
     service: "SERVICE",
     logistics: "LOGISTICS",
+    waste_stream: "WASTE_STREAM",
     test: "LAB_CONTROL",
     document: "DOCUMENTATION",
   } satisfies Record<RoadworksWaveARow["category"], string>)[row.category];
@@ -512,7 +519,7 @@ export function buildRoadworksWaveAProductionDraft(
         roadworksWaveAParameterMetadata: rowIndex === 0
           ? Object.fromEntries(
             registration.parameterDefinitions.map((definition) => {
-              const presentation = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[definition.key];
+              const presentation = roadworksWaveAParameterPresentation(definition.key);
               return [definition.key, {
                 ...presentation,
                 tier: definition.tier,
@@ -560,7 +567,14 @@ export function buildRoadworksWaveAProductionDraft(
     })),
   };
   recordRoadworksWaveABuildTiming("ITEMS_READY", buildStartedAt);
+  // The Roadworks Wave A compiler owns the exact P0 schema. The shared open-world
+  // contract may add generic clarifications (geometry, photos, address, etc.) that
+  // do not belong to this selected catalog operation. Preserve the compiler's
+  // exact result so a fully supplied passport cannot be turned back into a
+  // NEEDS_REQUIRED_INPUTS draft after a successful compile.
+  const exactMissingData = [...draft.missingData];
   const contractedDraft = applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput });
+  contractedDraft.missingData = exactMissingData;
   recordRoadworksWaveABuildTiming("CONTRACT_READY", buildStartedAt);
   return {
     draft: contractedDraft,

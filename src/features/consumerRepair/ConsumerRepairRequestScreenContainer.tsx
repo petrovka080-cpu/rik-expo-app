@@ -5,6 +5,7 @@ import { hydrateTransactionalConsumerRepairRequestStore } from "../../lib/consum
 import {
   ConsumerRepairRequestScreenController,
   shouldAutoPrepareInitialConsumerRepairRequest,
+  shouldDeferInitialHistoryLoad,
   type ConsumerRepairRequestScreenProps,
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
@@ -93,12 +94,11 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       void screenRef.current?.openMaterialCatalogFromCapturedPhoto(result);
     },
   });
-  const exactDraftHydrationPending = Boolean(
-    props.initialDraftId?.trim() && durableStatus === "loading",
-  );
+  const durableHydrationPending = durableStatus === "loading" &&
+    !shouldDeferInitialHistoryLoad(props);
   return (
     <View style={styles.root}>
-      {exactDraftHydrationPending ? (
+      {durableHydrationPending ? (
         <View testID="consumer-repair-exact-draft-hydration-gate" style={styles.exactDraftHydrationGate} />
       ) : (
         <ConsumerRepairRequestScreenController

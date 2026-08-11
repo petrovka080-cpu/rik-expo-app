@@ -14,13 +14,22 @@ import {
   getRoadworksWaveAParameterDefinitions,
   getRoadworksWaveAParameterKeys,
   roadworksWaveANaturalLanguageCases,
+  type RoadworksWaveAParameterKey,
 } from "../../src/lib/estimate/v4/roadworks";
+
+function requiredRoadworksWaveADefault(
+  key: RoadworksWaveAParameterKey,
+): string | number | boolean {
+  const value = DEFAULT_ROADWORKS_WAVE_A_INPUTS[key];
+  if (value === undefined) throw new Error(`ROADWORKS_WAVE_A_DEFAULT_MISSING:${key}`);
+  return value;
+}
 
 function explicitOverrides(workId: string) {
   return Object.fromEntries(getRoadworksWaveAParameterKeys(workId).map((key) => [
     key,
     {
-      value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
+      value: requiredRoadworksWaveADefault(key),
       source: "user_input" as const,
       sourceText: "all-35-contract",
       lastChangedAt: "2026-08-07T00:00:00.000Z",

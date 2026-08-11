@@ -18,6 +18,19 @@ function countJsonTestId(tree: JsonTree, testID: string): number {
     + (tree.children ?? []).reduce((count, child) => count + countJsonTestId(typeof child === "string" ? null : child, testID), 0);
 }
 
+function collectJsonTestIds(tree: JsonTree): { type: string; testID: string }[] {
+  if (!tree) return [];
+  if (Array.isArray(tree)) return tree.flatMap(collectJsonTestIds);
+  const own = typeof tree.props?.testID === "string"
+    ? [{ type: tree.type, testID: tree.props.testID }]
+    : [];
+  return own.concat(
+    (tree.children ?? []).flatMap((child) =>
+      typeof child === "string" ? [] : collectJsonTestIds(child)
+    ),
+  );
+}
+
 describe("estimate revision diff UI", () => {
   it("shows changed params, changed rows and current revision artifact status", () => {
     const r1 = createEstimateDraftRevision({
@@ -57,5 +70,23 @@ describe("estimate revision diff UI", () => {
     expect(countJsonTestId(hostTree, "estimate-revision-diff")).toBe(1);
     expect(countJsonTestId(hostTree, "estimate-revision-diff-param-length_m")).toBe(1);
     expect(countJsonTestId(hostTree, "estimate-revision-artifact-status")).toBe(1);
+    const compiledMarkers = collectJsonTestIds(hostTree)
+      .filter(({ testID }) => testID.startsWith("estimate-compiled-revision-v1--"));
+    const selectedCatalogId = r2.resolvedIdentity?.requestedCatalogWorkId ?? r2.selectedTemplateId;
+    const selectedWorkKey = r2.professionalWorkId?.trim() ?? "";
+    expect(compiledMarkers).toEqual([{
+      type: "Text",
+      testID: [
+        "estimate-compiled-revision-v1",
+        `catalog-${selectedCatalogId}`,
+        `work-${selectedWorkKey}`,
+        `owner-${selectedWorkKey}`,
+        `revision-${r2.revisionId}`,
+        "ordinal-2",
+        `rows-${r2.boq.rows.length}`,
+        `status-${r2.status}`,
+      ].join("--"),
+    }]);
+    expect(JSON.stringify(hostTree)).not.toContain("runtimeIdentityMarker");
   });
 });

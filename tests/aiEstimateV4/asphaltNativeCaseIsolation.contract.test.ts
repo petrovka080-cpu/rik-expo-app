@@ -22,6 +22,16 @@ describe("Asphalt native case isolation contract", () => {
     expect(isolation).toContain('"consumer-repair-history-close"');
     expect(isolation).toContain('"consumer-repair-screen"');
     expect(isolation).toContain("isAndroidRequestRouteSurfaceXml(snapshot.xml)");
+    expect(isolation).toContain("function externalViewerAnrCloseNode");
+    expect(isolation).toContain('nodeHasId(node, "android:id/alertTitle")');
+    expect(isolation).toContain('nodeHasId(node, "android:id/aerr_close")');
+    expect(isolation).toContain('expectedPdfProjection === "android_external_viewer"');
+    expect(isolation).toContain("external_viewer_anr_close_failed");
+    expect(isolation).toContain("function pressSystemBackAndWaitForIdAbsent");
+    expect(isolation).toContain('pressSystemBackAndWaitForIdAbsent("native-pdf-handoff-shell")');
+    expect(isolation).toContain('pressSystemBackAndWaitForIdAbsent("consumer-repair-history-modal")');
+    expect(isolation).toContain('snapshot.ok !== false && !findNodeById(snapshot, testId)');
+    expect(isolation).toContain("snapshot = await waitForKnownCaseBoundarySurface()");
     expect(isolation).toContain("blocking_modal_present: blockingModalPresent");
     expect(isolation).toContain("data_wipes: 0");
     expect(isolation).not.toContain('"pm", "clear"');
@@ -130,7 +140,55 @@ describe("Asphalt native case isolation contract", () => {
     expect(exactInputLookup).not.toContain("android.widget.EditText");
   });
 
-  it("hands focus off from the exact native text input before the next enum action", () => {
+  it("types a P0 value only after focus is proven inside the exact parameter editor", () => {
+    const source = readRunner();
+    const focusExact = source.slice(
+      source.indexOf("async function focusInputOwnedByExactEditor"),
+      source.indexOf("function tapNode"),
+    );
+    const setter = source.slice(
+      source.indexOf("async function setInlineParameter"),
+      source.indexOf("async function applyEditAndWaitForChangedRevision"),
+    );
+
+    expect(focusExact).toContain("const stableEditor = findNodeById(stableSnapshot, editorId)");
+    expect(focusExact).toContain("findInputOwnedByEditor(stableSnapshot, stableEditor)");
+    expect(focusExact).toContain("tapNode(stableInput)");
+    expect(focusExact).toContain("const focusedEditor = findNodeById(focusedSnapshot, editorId)");
+    expect(focusExact).toContain("findInputOwnedByEditor(focusedSnapshot, focusedEditor)");
+    expect(focusExact).toContain("focusedInput?.attrs.includes('focused=\"true\"')");
+    expect(setter).toContain("if (!await focusInputOwnedByExactEditor(editorId)) {");
+    expect(setter.indexOf("focusInputOwnedByExactEditor(editorId)")).toBeLessThan(
+      setter.indexOf("replaceFocusedInput(value)"),
+    );
+    expect(setter).toContain("exact-focus-missing");
+    expect(setter).toContain("input-not-committed");
+    expect(setter).not.toContain("tapNode(owned.input)");
+  });
+
+  it("rereads a transiently missing UiAutomator XML before fingerprinting or deleting it", () => {
+    const source = readRunner();
+    const dumpFlow = source.slice(
+      source.indexOf("function dumpUi"),
+      source.indexOf("function nodeHasId"),
+    );
+
+    expect(source).toContain("let uiDumpSequence = 0");
+    expect(dumpFlow).toContain("dumpAttempt < 2");
+    expect(dumpFlow).toContain("uiDumpSequence += 1");
+    expect(dumpFlow).toContain("`${UI_DUMP_DEVICE_PATH_PREFIX}-${process.pid}-${uiDumpSequence}.xml`");
+    expect(dumpFlow).toContain("let read = dumped.ok");
+    expect(dumpFlow).toContain('!read.output.includes("<hierarchy")');
+    expect(dumpFlow).toContain("readAttempt < 20");
+    expect(dumpFlow).toContain('["shell", "sleep", "0.25"]');
+    expect(dumpFlow).toContain('read = adb(["exec-out", "cat", uiDumpDevicePath]');
+    expect(dumpFlow.indexOf("readAttempt < 20")).toBeLessThan(
+      dumpFlow.indexOf('["shell", "rm", "-f", uiDumpDevicePath]'),
+    );
+    expect(dumpFlow).toContain('return { ok: false, xml: "", nodes: []');
+  });
+
+  it("observes the committed native value before dismissing the IME", () => {
     const source = readRunner();
     const focusHandoff = source.slice(
       source.indexOf("async function replaceFocusedInput"),
@@ -138,15 +196,41 @@ describe("Asphalt native case isolation contract", () => {
     );
 
     expect(focusHandoff).toContain("const dismissed = await dismissSoftKeyboard()");
-    expect(focusHandoff).toContain("const blurred = dismissed && await blurFocusedNativeTextInput()");
+    expect(focusHandoff).toContain("const focusedInput = before.nodes.find");
+    expect(focusHandoff).toContain('["shell", "input", "keycombination", "113", "29"]');
+    expect(focusHandoff).toContain("if (!selectedAll.ok) return false");
+    expect(focusHandoff).toContain("const visibleDeadline = Date.now() + 5_000");
+    expect(focusHandoff).toContain("const currentFocusedInput = snapshot.nodes.find");
+    expect(focusHandoff).toContain("currentFocusedInput?.text === value");
+    expect(focusHandoff).toContain("if (!typedValueVisible) return false");
+    expect(focusHandoff.indexOf("await wait(800)")).toBeLessThan(
+      focusHandoff.indexOf("const visibleDeadline"),
+    );
+    expect(focusHandoff).not.toContain("length: 96");
+    expect(focusHandoff).not.toContain('"keyevent", "123"');
     expect(focusHandoff).toContain('class="android.widget.EditText"');
     expect(focusHandoff).toContain('focused="true"');
-    expect(focusHandoff).toContain('["shell", "input", "keyevent", "66"]');
-    expect(focusHandoff).toContain("return !hasFocusedNativeTextInput(dumpUi())");
-    expect(focusHandoff).toContain("return typed && dismissed && blurred");
+    expect(focusHandoff).toContain("return dismissed");
+    expect(focusHandoff).not.toContain('["shell", "input", "keyevent", "66"]');
     expect(focusHandoff).not.toContain('["shell", "input", "keyevent", "111"]');
-    expect(focusHandoff.indexOf("dismissSoftKeyboard()")).toBeLessThan(
-      focusHandoff.indexOf("blurFocusedNativeTextInput()"),
+    expect(focusHandoff.indexOf("currentFocusedInput?.text === value")).toBeLessThan(
+      focusHandoff.indexOf("dismissSoftKeyboard()"),
+    );
+  });
+
+  it("keeps the native IME dismissed without submitting a focused delivery field before viewport search", () => {
+    const source = readRunner();
+    const observation = source.slice(
+      source.indexOf("async function observeCompiledRevisionAcrossViewport"),
+      source.indexOf("function inputText"),
+    );
+
+    expect(observation).toContain("const keyboardDismissed = await dismissSoftKeyboard()");
+    expect(observation).toContain("const keyboardRemainedDismissed = keyboardDismissed && await dismissSoftKeyboard()");
+    expect(observation).toContain("STOP_R9_HARNESS_COMPILED_VIEWPORT_IME_NOT_DISMISSED");
+    expect(observation).not.toContain("blurFocusedNativeTextInput()");
+    expect(observation.indexOf("dismissSoftKeyboard()")).toBeLessThan(
+      observation.indexOf("findCompiledRevisionMarkerAcrossViewport"),
     );
   });
 
@@ -154,11 +238,11 @@ describe("Asphalt native case isolation contract", () => {
     const source = readRunner();
     const setter = source.slice(
       source.indexOf("async function setInlineParameter"),
-      source.indexOf("function revisionLabel"),
+      source.indexOf("async function applyEditAndWaitForChangedRevision"),
     );
 
     expect(setter.indexOf("presentation.choices.length > 0")).toBeLessThan(
-      setter.indexOf("findSafeInputOwnedByExactEditor"),
+      setter.indexOf("focusInputOwnedByExactEditor"),
     );
     expect(setter).toContain("editable-param-option-${key}-${choiceValue}");
     expect(setter).toContain("tapExactEnumOptionAndWaitForCommit(value)");
@@ -174,11 +258,15 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("const editor = exactEditor.node");
     expect(setter).not.toContain("editable-param-batch-dirty-count");
     expect(setter).toContain("tapExactEnumOptionAndWaitForCommit");
-    expect(setter).toContain("await returnToTop(16)");
-    expect(setter.indexOf("await returnToTop(16)")).toBeLessThan(
-      setter.indexOf("findSafeNodeById(optionId, 4)"),
+    expect(setter).toContain("const visibleSnapshot = dumpUi()");
+    expect(setter).toContain("const visibleNode = findNodeById(visibleSnapshot, optionId)");
+    expect(setter).toContain("const exactSafeNode = visibleNode");
+    expect(setter).toContain("nativeNodeSafeViewportAdjustment(visibleNode.bounds, viewport().height)");
+    expect(setter).toContain("findSafeRequestNodeByIdFromTop(optionId, 18)");
+    expect(setter.indexOf("const visibleSnapshot = dumpUi()")).toBeLessThan(
+      setter.indexOf("findSafeRequestNodeByIdFromTop(optionId, 18)"),
     );
-    expect(setter).toContain("findSafeNodeById(optionId, 4)");
+    expect(setter).toContain("if (!exactSafeNode) return false");
     expect(setter).toContain("const stableSnapshot = dumpUi()");
     expect(setter).toContain("const stableNode = findNodeById(stableSnapshot, optionId)");
     expect(setter).toContain('nativeNodeSafeViewportAdjustment(stableNode.bounds, viewport().height) !== "none"');
@@ -199,11 +287,80 @@ describe("Asphalt native case isolation contract", () => {
     expect(setter).toContain("alternate-not-dirty");
   });
 
+  it("finds enum options from the exact request ScrollView gutter without a system-edge or center gesture", () => {
+    const source = readRunner();
+    const topReturn = source.slice(
+      source.indexOf("function requestSummaryCardAnchoredInSafeViewport"),
+      source.indexOf("async function findSafeRequestNodeByIdFromTop"),
+    );
+    const finder = source.slice(
+      source.indexOf("async function findSafeRequestNodeByIdFromTop"),
+      source.indexOf("async function readSettledViewport"),
+    );
+
+    expect(topReturn).toContain('findNodeById(snapshot, "request-estimate-summary-card")');
+    expect(topReturn).toContain("nativeNodeSafeViewportAdjustment(summary.bounds, viewport().height)");
+    expect(topReturn).toContain("requestSummaryCardAnchoredInSafeViewport(snapshot)");
+    expect(topReturn).toContain("scrollKnownRequestContainer(snapshot, direction)");
+    expect(topReturn).toContain('scanForAnchor("down")');
+    expect(topReturn).toContain('scanForAnchor("up")');
+    expect(topReturn).toContain("step < maxSwipes");
+    expect(source).toContain("Math.min(50, (rect.right - rect.left) * 0.046)");
+    expect(source).not.toContain("Math.min(76, (rect.right - rect.left) * 0.071)");
+    expect(source).not.toContain("Math.min(64, (rect.right - rect.left) * 0.06)");
+    expect(source).not.toContain("Math.min(24, (rect.right - rect.left) * 0.02)");
+    const exactGutterScroll = source.slice(
+      source.indexOf("async function scrollKnownRequestContainer"),
+      source.indexOf("function scrollKnownRequestContainerUp"),
+    );
+    expect(exactGutterScroll).toContain("await wait(200)");
+    expect(exactGutterScroll).toContain("(rect.bottom - rect.top) * 0.28");
+    expect(exactGutterScroll).toContain("(rect.bottom - rect.top) * 0.72");
+    expect(exactGutterScroll).toContain('const motionEvents: readonly ["DOWN" | "MOVE" | "UP", number][]');
+    expect(exactGutterScroll).toContain('["DOWN", startY]');
+    expect(exactGutterScroll).toContain('["MOVE", yAt(0.5)]');
+    expect(exactGutterScroll).toContain('["UP", endY]');
+    expect(exactGutterScroll).toContain('"motionevent"');
+    expect(exactGutterScroll).not.toContain('"swipe"');
+    expect(exactGutterScroll).toContain("if (index > 0) await wait(80)");
+    expect(exactGutterScroll).toContain("if (!await dismissSoftKeyboard()) return false");
+    expect(exactGutterScroll).toContain("return dismissSoftKeyboard()");
+    expect(exactGutterScroll.indexOf("await wait(200)")).toBeLessThan(
+      exactGutterScroll.indexOf("const motionEvents"),
+    );
+    expect(finder).toContain("await returnKnownRequestContainerToTop()");
+    expect(finder).toContain("step <= maxSwipes");
+    expect(finder).toContain('scrollKnownRequestContainer(snapshot, "up")');
+    expect(finder).toContain("nativeNodeSafeViewportAdjustment(node.bounds, viewport().height)");
+    expect(finder).toContain("stableBoundaryCount >= 2");
+    expect(finder).not.toContain('const x = Math.round(width * 0.5)');
+  });
+
+  it("navigates estimate disclosures only through exact request-container IDs", () => {
+    const source = readRunner();
+    const disclosureFlow = source.slice(
+      source.indexOf("async function collapseDisclosureIfOpen"),
+      source.indexOf("async function findOptionalApprovalContactInputs"),
+    );
+    const editTransition = source.slice(
+      source.indexOf("const create = true"),
+      source.indexOf("const changedRevision = await applyEditAndWaitForChangedRevision"),
+    );
+
+    expect(disclosureFlow).toContain("findSafeRequestNodeByIdFromTop(testId, 24)");
+    expect(disclosureFlow).toContain("findSafeRequestNodeByIdFromTop(toggleId, maxSwipes)");
+    expect(disclosureFlow).toContain("findRequestNodeByIdFromTop(contentId, maxSwipes)");
+    expect(disclosureFlow).toContain("tapNode(exactToggle)");
+    expect(disclosureFlow).not.toContain("scrollToId(");
+    expect(disclosureFlow).not.toContain("tapById(");
+    expect(editTransition).not.toContain("await returnToTop(16)");
+  });
+
   it("reanchors primary P0 Apply before exact batch-action lookup", () => {
     const source = readRunner();
     const p0Apply = source.slice(
       source.indexOf("for (const key of expectedP0)"),
-      source.indexOf("const applied = await waitForCompiledProjection"),
+      source.indexOf("const observedCreate = await observeCompiledRevisionAcrossViewport"),
     );
 
     expect(p0Apply).toContain("await returnToTop(20)");
@@ -211,6 +368,64 @@ describe("Asphalt native case isolation contract", () => {
     expect(p0Apply.indexOf("await returnToTop(20)")).toBeLessThan(
       p0Apply.indexOf('tapById("editable-param-batch-apply", 16)'),
     );
+  });
+
+  it("reanchors the create marker from a safely visible summary instead of a clipped XML remnant", () => {
+    const source = readRunner();
+    const createFlow = source.slice(
+      source.indexOf("const d0Timing = readRuntimeBuildTiming()"),
+      source.indexOf("if (!observedCreate.observation)"),
+    );
+
+    expect(createFlow).toContain("returnKnownRequestContainerToTop(40)");
+    expect(createFlow).toContain('"create_post_apply_top_reanchor_failed"');
+    expect(createFlow.indexOf("returnKnownRequestContainerToTop(40)")).toBeLessThan(
+      createFlow.indexOf("const observedCreate"),
+    );
+  });
+
+  it("acknowledges the exact scope and preliminary revision before final P0 Apply", () => {
+    const source = readRunner();
+    const start = source.indexOf("if (registration.scopeOptionTestId)");
+    const end = source.indexOf(
+      'let initial = await waitForIdSparse("request-estimate-parameters-toggle"',
+      start,
+    );
+    const scopeFlow = source.slice(start, end);
+
+    expect(scopeFlow).toContain("findSafeNodeById(registration.scopeOptionTestId, 6)");
+    expect(scopeFlow).toContain("await wait(800)");
+    expect(scopeFlow).toContain("settledScopeNode");
+    expect(scopeFlow).toContain('"request-estimate-selected-scope"');
+    expect(scopeFlow).toContain('phase: "precreate"');
+    expect(scopeFlow).toContain('expectedCalculationStatus: "needs_more_params_but_preliminary_available"');
+    expect(scopeFlow).toContain("createPreviousRevisionId = precreateCompiledRevision.current_revision_id");
+    expect(scopeFlow).toContain("discoverGovernedScopeCriticalMissingKeys(initial)");
+    expect(scopeFlow).toContain("p0_governance_unknown_parameter:");
+    expect(scopeFlow).toContain("p0_governed_input_value_missing:");
+    expect(scopeFlow).toContain("for (const key of expectedP0)");
+    expect(scopeFlow).toContain('tapById("editable-param-batch-apply", 16)');
+    expect(scopeFlow).not.toContain("tapById(registration.scopeOptionTestId");
+    expect(scopeFlow).not.toContain("p0_schema_mismatch:");
+    expect(source).toContain("expectedCalculationStatus: registration.scopeOptionTestId");
+    expect(source).toContain('? "needs_more_params_but_preliminary_available"');
+    expect(source).toContain(': "draft_ready"');
+  });
+
+  it("derives scope P0 from exact visible IDs and the production Asphalt schema", () => {
+    const source = readRunner();
+    const discovery = source.slice(
+      source.indexOf("const ASPHALT_SCOPE_PARAMETER_DEFINITIONS"),
+      source.indexOf("async function setInlineParameter"),
+    );
+
+    expect(discovery).toContain("ASPHALT_WORK_SPECIFIC_PARAMETERS_V4.map");
+    expect(discovery).toContain('parameter.necessity === "critical"');
+    expect(discovery).toContain("classifyGovernedMissingParameterKeys");
+    expect(discovery).toContain("scrollKnownRequestContainerUp(snapshot)");
+    expect(discovery).toContain("step <= 18");
+    expect(discovery).toContain("unknownKeys");
+    expect(discovery).not.toContain("registration.parameterDefinitions");
   });
 
   it("reacquires optional approval contact inputs in one exact forward snapshot", () => {
@@ -258,25 +473,47 @@ describe("Asphalt native case isolation contract", () => {
 
   it("requires an immutable revision acknowledgement instead of accepting a stale apply status", () => {
     const source = readRunner();
+    const exactApplyLookup = source.slice(
+      source.indexOf("async function findExactBatchApplyBeforeEditedParameter"),
+      source.indexOf("async function readSettledViewport"),
+    );
     const editApply = source.slice(
       source.indexOf("async function applyEditAndWaitForChangedRevision"),
       source.indexOf("function visibleBuildIdentity"),
     );
     const editFlow = source.slice(
-      source.indexOf("const changedRevision = revisionBeforeEdit"),
+      source.indexOf("const changedRevision = await applyEditAndWaitForChangedRevision"),
       source.indexOf("const editedDiff"),
     );
 
-    expect(editApply).toContain('tapById("editable-param-batch-apply", 16)');
-    expect(editApply).toContain("waitForChangedRevision");
-    expect(editApply).toContain("changed.label !== previousRevisionLabel");
-    expect(editApply).toContain("Math.min(120_000, remainingMs)");
+    expect(exactApplyLookup).toContain('findNodeById(snapshot, "editable-param-batch-apply")');
+    expect(exactApplyLookup).toContain('scrollKnownRequestContainer(snapshot, "down")');
+    expect(exactApplyLookup).toContain("stableBoundaryCount >= 2");
+    expect(exactApplyLookup).not.toContain("returnKnownRequestContainerToTop");
+    expect(editApply).toContain("findExactBatchApplyBeforeEditedParameter()");
+    expect(editApply).toContain("!exactApplyNode || !tapNode(exactApplyNode)");
+    expect(editApply).toContain('capture(input.caseDir, "edit-apply-action-missing")');
+    expect(editApply).not.toContain('tapById("editable-param-batch-apply"');
+    expect(editApply).toContain("await returnKnownRequestContainerToTop()");
+    expect(editApply).toContain('failureToken: "edit_post_apply_top_reanchor_failed"');
+    expect(editApply.indexOf("await returnKnownRequestContainerToTop()")).toBeLessThan(
+      editApply.indexOf("const observed = await observeCompiledRevisionAcrossViewport"),
+    );
+    expect(editApply).toContain("observeCompiledRevisionAcrossViewport");
+    expect(editApply).toContain("previousRevisionId: input.previous.current_revision_id");
+    expect(editApply).toContain("baselineRevisionOrdinal: input.previous.revision_ordinal");
+    expect(editApply).toContain("expectedBuildDelta: 0");
+    expect(editApply).toContain("expectedCalculationStatus: input.expectedCalculationStatus");
     expect(editApply).not.toContain("request-estimate-parameter-apply-status");
-    expect(source).toContain("applyEditAndWaitForChangedRevision(revisionBeforeEdit)");
+    expect(editApply).not.toContain("for (let attempt");
+    expect(source).toContain("const changedRevision = await applyEditAndWaitForChangedRevision({");
+    expect(editFlow).toContain("previous: createCompiledRevision");
+    expect(editFlow).toContain("expectedCalculationStatus: createCompiledRevision.calculation_status");
+    expect(editFlow).toContain('changedRevision.failureToken !== "edit_apply_failed"');
+    expect(editFlow).toContain("failures.push(changedRevision.failureToken)");
+    expect(editFlow).toContain("editCompiledRevision = changedRevision.observation");
     expect(editFlow).not.toContain('waitForId("request-estimate-parameter-apply-status"');
-    expect(source).toContain("const finalEditRevisionLabel = revisionLabel(edited)");
-    expect(source).toContain("finalEditRevisionLabel !== revisionBeforeEdit");
-    expect(source).toContain("? finalEditRevisionLabel");
+    expect(source).toContain("const revisionAfterEdit = changedRevision.label");
   });
 
   it("retries only a failed paired XML capture and fail-closes incomplete successful-case evidence", () => {
@@ -308,18 +545,30 @@ describe("Asphalt native case isolation contract", () => {
     expect(coldReplay).not.toContain('tapById("consumer-repair-history-main"');
   });
 
-  it("opens the PDF owned by the selected immutable history snapshot before any generic row PDF", () => {
+  it("opens only the PDF owned by the selected immutable history snapshot", () => {
     const source = readRunner();
+    const ownerLookup = source.slice(
+      source.indexOf("async function findSelectedHistoryInlinePdfAction"),
+      source.indexOf("async function returnToTop"),
+    );
     const pdfOpen = source.slice(
-      source.indexOf("const pdfTapped ="),
+      source.indexOf("const exactHistoryPdfNode ="),
       source.indexOf("if (!pdfTapped)"),
     );
 
-    expect(pdfOpen.indexOf('tapById("consumer-repair-history-open-pdf-expanded"')).toBeLessThan(
-      pdfOpen.indexOf('tapById("consumer-repair-history-pdf"'),
-    );
-    expect(pdfOpen.indexOf('tapById("consumer-repair-history-open-pdf-inline"')).toBeLessThan(
-      pdfOpen.indexOf('tapById("consumer-repair-history-pdf"'),
-    );
+    expect(ownerLookup).toContain("expectedTitle: string");
+    expect(ownerLookup).toContain('findNodeById(snapshot, "consumer-repair-history-readonly-snapshot")');
+    expect(ownerLookup).toContain("findNativeWrapperOwningExactText(");
+    expect(ownerLookup).toContain('nodeHasId(candidate, "consumer-repair-history-main")');
+    expect(ownerLookup).toContain('nodeHasId(candidate, "consumer-repair-history-row")');
+    expect(ownerLookup).toContain("nativeBoundsAreContainedBy(exactHistoryMain.bounds, candidate.bounds)");
+    expect(ownerLookup).toContain("findNativeNodeOwnedByExactWrapper(");
+    expect(ownerLookup).toContain('nodeHasId(candidate, "consumer-repair-history-pdf")');
+    expect(ownerLookup).not.toContain("consumer-repair-history-open-pdf-inline");
+    expect(ownerLookup).toContain('swipe("down", step % 4 === 3)');
+    expect(ownerLookup).toContain("stableBoundaryCount >= 2");
+    expect(pdfOpen).toContain("findSelectedHistoryInlinePdfAction(registration.professionalNameRu)");
+    expect(pdfOpen).toContain("exactHistoryPdfNode && tapNode(exactHistoryPdfNode)");
+    expect(pdfOpen).not.toContain("consumer-repair-history-open-pdf-expanded");
   });
 });

@@ -79,7 +79,13 @@ export function applyProfessionalBoqRuntimeContract(
     rowCount: draft.items.length,
     hasAnySourceBackedPrice: draft.items.some(hasSourceBackedPrice),
     riskPolicy,
-    allowPromptDefaults: !draft.items.every((item) => item.sourceParameters?.roadworksWaveA === true),
+    // Exact V4 domain compilers already carry every quantity-affecting input in
+    // the immutable parameter snapshot. Prompt heuristics must not add a second
+    // layer of silent domain defaults after compilation.
+    allowPromptDefaults: !draft.items.every((item) =>
+      item.sourceParameters?.roadworksWaveA === true ||
+      item.sourceParameters?.asphaltRelatedV4 === true
+    ),
   });
   const summary = sanitizeProfessionalBoqPublicSummary(draft.summaryRu, publicSummaryFallback(draft));
   const publicSummaryParts = appendUniquePublicSummaryParts([

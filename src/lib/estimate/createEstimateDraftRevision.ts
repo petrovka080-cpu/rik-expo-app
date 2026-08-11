@@ -71,6 +71,9 @@ export type CreateEstimateDraftRevisionInput = {
   assumptionOverrides?: EstimateDraftRevision["assumptions"];
   artifacts?: Partial<EstimateDraftRevisionArtifacts>;
   changedParamKey?: string | null;
+  /** Exact domain draft compiled once before immutable revision projection. */
+  prebuiltExactDraft?: ConsumerRepairAiDraft | null;
+  /** @deprecated Use prebuiltExactDraft. Kept for Roadworks Wave A callers. */
   prebuiltExactRoadworksWaveADraft?: ConsumerRepairAiDraft | null;
 };
 
@@ -849,11 +852,17 @@ function buildTrace(input: {
   };
 }
 
-function resolveStatus(result: InlineWorkPromptEstimateBuildResult): EstimateDraftRevision["status"] {
+function resolveStatus(
+  result: InlineWorkPromptEstimateBuildResult,
+  remainingMissingInputCount = result.parseResult.missingInputs.length,
+): EstimateDraftRevision["status"] {
   if (result.parseResult.mustAskUserToSelectTemplate) return "needs_template_selection";
-  if (result.v4ClarificationExperience && result.draft) return "needs_more_params_but_preliminary_available";
   if (!result.draft || result.draft.items.length === 0) return "failed";
-  if (result.parseResult.missingInputs.length > 0) return "needs_more_params_but_preliminary_available";
+  // The clarification model remains attached for editing even after every
+  // applicable input is resolved. Status must follow the final filtered
+  // missing-input set, otherwise a complete Asphalt V4 revision can never be
+  // approved despite missing_required_count === 0 and a non-empty BOQ.
+  if (remainingMissingInputCount > 0) return "needs_more_params_but_preliminary_available";
   return "draft_ready";
 }
 
@@ -961,24 +970,28 @@ function usesExactAsphaltRelatedConsumerDraft(
   return isExactAsphaltRelatedConsumerDraftV4(draft);
 }
 
-function buildPrebuiltExactRoadworksWaveAResult(input: {
+function buildPrebuiltExactDraftResult(input: {
   rawInput: string;
   selectedTemplateId?: string | null;
   selectedTemplateName?: string | null;
   selectedWorkKey?: string | null;
   draft: ConsumerRepairAiDraft;
 }): InlineWorkPromptEstimateBuildResult {
-  if (!usesExactRoadworksWaveAConsumerDraft(input.draft)) {
-    throw new Error("PREBUILT_EXACT_ROADWORKS_WAVE_A_DRAFT_INVALID");
+  const exactRoadworksWaveA = usesExactRoadworksWaveAConsumerDraft(input.draft);
+  const exactAsphaltRelated = usesExactAsphaltRelatedConsumerDraft(input.draft);
+  if (!exactRoadworksWaveA && !exactAsphaltRelated) {
+    throw new Error("PREBUILT_EXACT_DRAFT_INVALID");
   }
   const selectedWorkKey = input.draft.selectedWork?.selectedWorkKey?.trim();
+  const selectedCatalogWorkId = input.draft.selectedWork?.selectedCatalogWorkId?.trim();
   const templateId = input.draft.items[0]?.templateId?.trim() ||
     input.selectedTemplateId?.trim() ||
     selectedWorkKey;
+  const requestedWorkId = input.selectedWorkKey?.trim();
   if (!selectedWorkKey || !templateId || (
-    input.selectedWorkKey?.trim() && input.selectedWorkKey.trim() !== selectedWorkKey
+    requestedWorkId && ![selectedWorkKey, selectedCatalogWorkId, templateId].includes(requestedWorkId)
   )) {
-    throw new Error("PREBUILT_EXACT_ROADWORKS_WAVE_A_IDENTITY_MISMATCH");
+    throw new Error("PREBUILT_EXACT_DRAFT_IDENTITY_MISMATCH");
   }
   const templateName = input.selectedTemplateName?.trim() ||
     input.draft.selectedWork?.selectedWorkTitleRu?.trim() ||
@@ -999,7 +1012,9 @@ function buildPrebuiltExactRoadworksWaveAResult(input: {
       family: selectedWorkKey,
       workKey: selectedWorkKey,
       confidence: 1,
-      reason: "prebuilt_exact_roadworks_wave_a_binding",
+      reason: exactAsphaltRelated
+        ? "prebuilt_exact_asphalt_related_binding"
+        : "prebuilt_exact_roadworks_wave_a_binding",
     }],
     paramText: input.rawInput.trim(),
     extractedParams: {},
@@ -1032,13 +1047,14 @@ function buildPrebuiltExactRoadworksWaveAResult(input: {
 export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionInput): EstimateDraftRevision {
   const source = input.source ?? "initial_prompt";
   const createdAt = input.createdAt ?? new Date().toISOString();
-  const result = input.prebuiltExactRoadworksWaveADraft
-    ? buildPrebuiltExactRoadworksWaveAResult({
+  const prebuiltExactDraft = input.prebuiltExactDraft ?? input.prebuiltExactRoadworksWaveADraft;
+  const result = prebuiltExactDraft
+    ? buildPrebuiltExactDraftResult({
       rawInput: input.rawInput,
       selectedTemplateId: input.selectedTemplateId,
       selectedTemplateName: input.selectedTemplateName,
       selectedWorkKey: input.selectedWorkKey,
-      draft: input.prebuiltExactRoadworksWaveADraft,
+      draft: prebuiltExactDraft,
     })
     : loadInlineWorkPromptEstimateBuilder().buildEstimateFromInlineWorkPrompt({
       rawInput: input.rawInput,
@@ -1057,7 +1073,9 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     !result.canBuildPreliminaryEstimate &&
     usesExactAsphaltRelatedConsumerDraft(result.draft)
   ) {
-    throw new Error(result.blockingReason ?? "NEEDS_REQUIRED_INPUTS");
+    const reason = result.blockingReason ?? "NEEDS_REQUIRED_INPUTS";
+    const missing = result.draft?.missingData.filter(Boolean).join("|") ?? "";
+    throw new Error(missing ? `${reason}:${missing}` : reason);
   }
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
@@ -1326,7 +1344,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     trace,
     status: exactAsphaltRelatedDraft && asphaltRelatedContext.readiness !== "CALCULATION_READY"
       ? "blocking_required"
-      : resolveStatus(result),
+      : resolveStatus(result, missingInputs.length),
     artifacts: {
       ...EMPTY_ARTIFACTS,
       ...(input.artifacts ?? {}),

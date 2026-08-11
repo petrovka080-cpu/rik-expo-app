@@ -129,7 +129,13 @@ export function queueTransactionalConsumerRepairBundleWrite(input: {
     const expectedVersion = current
       ? serializeRevisionBundle(current).version
       : null;
-    const durableBundle = sanitizeConsumerRepairTransactionalBundle(input.bundle);
+    // Native request bundles contain several compatibility projections of the
+    // same immutable estimate. Persist only the canonical compact projection;
+    // writing the in-memory shape directly exhausts AsyncStorage across the
+    // no-data-wipe Android matrix even though each logical revision is valid.
+    const durableBundle = sanitizeConsumerRepairTransactionalBundle(
+      compactConsumerRepairBundleForDurableStorage(input.bundle),
+    );
     const result = await store.writeBundleAtomically(key, expectedVersion, durableBundle);
     if (result.status === "FAILED") {
       input.onFailed?.(result);

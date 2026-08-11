@@ -17,6 +17,7 @@ import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
   deleteConsumerRepairBundle,
+  findConsumerRepairBundle,
   getConsumerRepairBundle,
   hydrateConsumerRepairRequestStoreForLedger,
   hydrateTransactionalConsumerRepairRequestStore,
@@ -67,7 +68,10 @@ import {
   isRoadScopeIdV4,
   type AsphaltScopeSelectionIdV5,
 } from "../estimate/v4/asphalt/roadScopeTruthV4";
-import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
+import {
+  asphaltRelatedParameterKeysForProfileV4,
+  getAsphaltRelatedProfileByCatalogRecordIdV4,
+} from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
@@ -102,9 +106,12 @@ import {
 } from "../estimate/v4/electrical/electricalCanonicalV1";
 import { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
 import {
+  ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA,
+  REGISTERED_CANONICAL_PARAMETER_SCHEMAS,
   projectEstimateDraftRevisionToCanonicalSession,
   projectEstimateDraftSessionToCanonicalSession,
   type CanonicalParameter,
+  type CanonicalParameterDefinition,
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
@@ -453,6 +460,52 @@ function createSelectedWorkDraftSession(input: {
   });
 }
 
+function commitRuntimeRevisionDraftSession(input: {
+  session: EstimateDraftSession;
+  revision: EstimateDraftRevision;
+  createdAt: string;
+}): EstimateDraftSession {
+  if (
+    input.revision.status !== "draft_ready" ||
+    input.revision.missingInputs.length > 0 ||
+    input.revision.boq.rows.length === 0 ||
+    !input.session.workIntent
+  ) {
+    return input.session;
+  }
+  const identity = input.revision.resolvedIdentity;
+  const scoped = bindEstimateDraftScope(input.session, {
+    scopePresetId:
+      identity?.scopePresetId ??
+      identity?.calculationProfileId ??
+      input.revision.selectedTemplateId,
+    calculationStrategyId:
+      identity?.calculationStrategyId ??
+      `runtime-revision:${input.revision.professionalWorkId ?? input.revision.selectedTemplateId}`,
+    parameterSchemaVersion:
+      identity?.parameterSchemaVersion ??
+      identity?.parameterSchemaId ??
+      input.revision.workSpecificParameterSchemaId ??
+      "runtime-revision-parameter-schema:v1",
+    engineVersion: identity?.compilerVersion ?? "runtime-estimate-revision:v1",
+    requiredParameterAlternatives: [],
+  });
+  const parameterSession = setEstimateDraftParameters(
+    scoped,
+    estimateDraftSessionParametersFromRevisionParams(input.revision.params, input.createdAt),
+  );
+  const compiling = prepareEstimateCompile(parameterSession).session;
+  return commitEstimateCompileResult(compiling, {
+    draftId: input.session.draftId,
+    selectionEpoch: compiling.selectionEpoch,
+    contextHash: compiling.contextHash!,
+    revisionId: input.revision.revisionId,
+    scopePresetId: compiling.scopePresetId!,
+    parameterSchemaVersion: compiling.parameterSchemaVersion!,
+    calculationStrategyId: compiling.calculationStrategyId!,
+  });
+}
+
 function pendingRoadScopeSelectionFromSession(
   session: EstimateDraftSession | null | undefined,
 ): PendingRoadScopeSelectionV4 | null {
@@ -738,7 +791,9 @@ export function createConsumerRepairRequestDraft(input: {
   const initialRevisionRowByCode = new Map(
     initialRevision?.boq.rows.map((row) => [row.rowId, row]) ?? [],
   );
-  const revisionBoundItems = canonicalElectricalState && initialRevision
+  const revisionBoundItems = runtimeEstimateDraftRevision && initialRevision && !canonicalElectricalState
+    ? createConsumerRepairItemsFromDraftRevision(draft.id, initialRevision)
+    : canonicalElectricalState && initialRevision
     ? items.map((item) => {
         const rowCode = String(item.sourceParameters?.rowCode ?? "");
         const revisionRow = initialRevisionRowByCode.get(rowCode);
@@ -764,8 +819,7 @@ export function createConsumerRepairRequestDraft(input: {
         createdAt: draft.createdAt,
       })
     : null;
-  const estimateDraftSession = canonicalElectricalState?.estimateDraftSession ??
-    createSelectedWorkDraftSession({
+  const selectedWorkDraftSession = createSelectedWorkDraftSession({
         draftId: draft.id,
         selectedWork,
         fallbackCatalogWorkId: input.pendingRoadScopeSelection?.requestedCatalogWorkId,
@@ -783,6 +837,16 @@ export function createConsumerRepairRequestDraft(input: {
             }
           : null,
       });
+  const estimateDraftSession = canonicalElectricalState?.estimateDraftSession ??
+    (
+      runtimeEstimateDraftRevision && !input.pendingRoadScopeSelection
+        ? commitRuntimeRevisionDraftSession({
+            session: selectedWorkDraftSession,
+            revision: runtimeEstimateDraftRevision,
+            createdAt: draft.createdAt,
+          })
+        : selectedWorkDraftSession
+    );
   recordCanonicalElectricalCreateTiming("SESSIONS_READY");
   const projectedDraftSessionCanonicalParameters = estimateDraftSession
     ? projectEstimateDraftSessionToCanonicalSession({
@@ -1502,7 +1566,7 @@ function canonicalParameterPatchError(
 }
 
 function parseCanonicalParameterPatchValue(
-  parameter: CanonicalParameter,
+  parameter: CanonicalParameter | CanonicalParameterDefinition,
   rawValue: string,
 ): number | string | boolean {
   const raw = rawValue.trim();
@@ -1557,6 +1621,7 @@ function estimateDraftSessionParametersFromRevisionParams(
         : "USER_ENTERED" as const,
       confirmedAt: parameter.source === "default_assumption" ? null : createdAt,
       sourceText: parameter.sourceText,
+      ...(parameter.source === "derived" ? { derivedFrom: ["length_m", "width_m"] } : {}),
     },
   ]));
 }
@@ -1587,17 +1652,31 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
     ) {
       continue;
     }
+    const deterministicGeometry = parameter.source === "ASSUMED" &&
+      parameter.sourceText === "length_m * width_m";
     params[parameter.parameterId] = {
       value: parameter.value,
       ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
-      source: parameter.source === "ASSUMED" ? "default_assumption" : "user_input",
+      source: deterministicGeometry
+        ? "derived"
+        : parameter.source === "ASSUMED"
+          ? "default_assumption"
+          : "user_input",
       sourceText: parameter.sourceText ?? `canonical-session:${parameter.parameterId}`,
       lastChangedAt: input.createdAt,
     };
   }
 
+  const exactParameterSchema = profile.canonicalWorkKey === ASPHALT_WORK_ID_V4
+    ? ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA
+    : REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(profile.canonicalWorkKey);
   for (const patch of input.patches) {
+    // A batch may set a trigger and its newly visible dependent field in one
+    // Apply command. Resolve that field from the authoritative schema even if
+    // it was absent from the pre-click visible-session projection.
     const parameter = canonicalSession.parameters.find(
+      (candidate) => candidate.parameterId === patch.paramKey,
+    ) ?? exactParameterSchema?.definitions.find(
       (candidate) => candidate.parameterId === patch.paramKey,
     );
     if (!parameter) {
@@ -1616,32 +1695,11 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
     };
   }
 
-  const values = new Map(
-    Object.entries(params).map(([key, parameter]) => [key, parameter.value]),
-  );
-  const blockingMissingParameterIds = canonicalSession.parameters
-    .filter((parameter) => {
-      if (parameter.requiredLevel !== "BLOCKING_REQUIRED") return false;
-      const condition = parameter.visibilityCondition;
-      const visible = condition.kind === "ALWAYS" ||
-        values.get(condition.parameterId) === condition.value;
-      return visible && !params[parameter.parameterId];
-    })
-    .map((parameter) => parameter.parameterId);
-  if (blockingMissingParameterIds.length > 0) {
-    throw new ConsumerRepairValidationError([{
-      code: "ESTIMATE_PARAMETERS_REQUIRED",
-      messageRu:
-        `Заполните все обязательные параметры (${blockingMissingParameterIds.length}): ` +
-        blockingMissingParameterIds.join(", ") + ". Исходный черновик не изменён.",
-      field: "params",
-    }]);
-  }
-
+  const profileParameterKeys = new Set(asphaltRelatedParameterKeysForProfileV4(profile));
   const conditionallyRequiredParameterKeys = [
     ...profile.requiredParameters,
     ...(params.haul_required?.value === true
-      ? ["haul_distance_km", "truck_payload_t"]
+      ? ["haul_distance_km", "truck_payload_t"].filter((key) => profileParameterKeys.has(key))
       : []),
     ...(params.removal_extent?.value === "PARTIAL"
       ? ["total_area_m2", "removal_share"]
@@ -1649,7 +1707,42 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
     ...(params.work_scope?.value === "DEMOLITION_AND_REINSTATEMENT"
       ? ["reinstatement_depth_mm", "new_asphalt_density_t_m3"]
       : []),
+    ...(params.tack_coat_required?.value === true ? ["tack_coat_rate_l_m2"] : []),
+    ...(params.binder_layer_required?.value === true
+      ? ["binder_layer_thickness_mm", "binder_mix_type"]
+      : []),
+    ...(params.base_construction_required?.value === true
+      ? ["base_layer_thickness_mm", "base_material_type"]
+      : []),
+    ...(params.curb_required?.value === true ? ["curb_length_m", "curb_type"] : []),
+    ...(params.drainage_required?.value === true
+      ? ["drainage_length_m", "drainage_type"]
+      : []),
+    ...(params.marking_required?.value === true ? ["marking_area_m2"] : []),
+    ...(params.milling_required?.value === true
+      ? ["milling_depth_mm", "number_of_passes"]
+      : []),
+    ...(params.boundary_cut_required?.value === true ? ["boundary_cut_length_m"] : []),
   ];
+  const exactRequiredKeys = [...new Set(conditionallyRequiredParameterKeys)]
+    .filter((key) => profileParameterKeys.has(key));
+  const geometryAlternatives = profileParameterKeys.has("area_m2") &&
+    profileParameterKeys.has("length_m") &&
+    profileParameterKeys.has("width_m")
+    ? [
+      {
+        alternativeId: `${profile.canonicalWorkKey}:area`,
+        parameterKeys: [...exactRequiredKeys.filter((key) => !["area_m2", "length_m", "width_m"].includes(key)), "area_m2"],
+      },
+      {
+        alternativeId: `${profile.canonicalWorkKey}:length-width`,
+        parameterKeys: [...exactRequiredKeys.filter((key) => !["area_m2", "length_m", "width_m"].includes(key)), "length_m", "width_m"],
+      },
+    ]
+    : [{
+      alternativeId: `${profile.canonicalWorkKey}:all-required`,
+      parameterKeys: exactRequiredKeys,
+    }];
   const sourceSession =
     input.bundle.estimateDraftSession?.workIntent?.canonicalWorkKey === profile.canonicalWorkKey
       ? input.bundle.estimateDraftSession
@@ -1667,10 +1760,7 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
     calculationStrategyId: profile.calculationStrategyId,
     parameterSchemaVersion: profile.parameterSchemaId,
     engineVersion: profile.formulaGraphVersion,
-    requiredParameterAlternatives: [{
-      alternativeId: `${profile.canonicalWorkKey}:all-required`,
-      parameterKeys: [...new Set(conditionallyRequiredParameterKeys)],
-    }],
+    requiredParameterAlternatives: geometryAlternatives,
   });
   const candidateParameterSession = setEstimateDraftParameters(
     scopedSession,
@@ -1695,8 +1785,9 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
       ...input.bundle,
       draft: updateDraftRecord(input.bundle.draft, {
         missingData: missingLabels,
-        aiSummaryRu:
-          `Точная операция сохранена. Для расчёта нужно уточнить ещё: ${missingLabels.join(", ")}.`,
+        aiSummaryRu: missingLabels.length > 0
+          ? `Точная операция сохранена. Для расчёта нужно уточнить: ${missingLabels.join(", ")}.`
+          : "Параметры сохранены, но расчёт не сформирован. Повторите применение; исходные значения не потеряны.",
       }),
       estimateDraftSession: candidateParameterSession,
       canonicalParameterSession: candidateCanonicalSession,
@@ -1736,9 +1827,15 @@ function applyInitialExactAsphaltRelatedParameterBatch(input: {
     }).revision;
   } catch (error) {
     const cause = error instanceof Error ? error.message : "unknown";
+    logger.error("consumer-repair-asphalt-apply-compile-failed", {
+      requestDraftId: input.bundle.draft.id,
+      selectedCatalogWorkId,
+      canonicalWorkKey: profile.canonicalWorkKey,
+      cause,
+    });
     if (
-      cause === "NEEDS_REQUIRED_INPUTS" ||
-      cause === "NORMATIVE_SOURCE_GAP"
+      cause.startsWith("NEEDS_REQUIRED_INPUTS") ||
+      cause.startsWith("NORMATIVE_SOURCE_GAP")
     ) {
       throw new ConsumerRepairValidationError([{
         code: "ESTIMATE_PARAMETERS_REQUIRED",
@@ -2755,14 +2852,18 @@ export function listConsumerRepairApprovedHistory(
     limit: pageSize,
     statuses: CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   });
-  const items = ledgerPage.records.map((record) => {
-    const bundle = getConsumerRepairBundle(record.approvedEstimateId);
+  const resolvedRecords = ledgerPage.records.flatMap((record) => {
+    const bundle = findConsumerRepairBundle(record.approvedEstimateId);
+    // A ledger pointer can outlive a locally cached bundle (for example after
+    // a browser-storage migration). One stale record must not crash the whole
+    // request screen or make the parameter-apply action unreachable.
+    if (!bundle) return [];
     if (bundle.draft.consumerUserId !== consumerUserId) throw new Error("CONSUMER_REPAIR_LEDGER_OWNER_MISMATCH");
-    return bundle;
+    return [{ record, bundle }];
   });
   return {
-    items,
-    records: ledgerPage.records,
+    items: resolvedRecords.map(({ bundle }) => bundle),
+    records: resolvedRecords.map(({ record }) => record),
     totalApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(
       consumerUserId,
       CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,

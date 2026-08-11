@@ -5,12 +5,46 @@ import type {
 import type { EstimateDraftSession } from "../draftSession/estimateDraftSession";
 import {
   createCanonicalParameterSession,
+  type CanonicalParameterSchema,
   type CanonicalParameterSeed,
   type CanonicalParameterSession,
   type CanonicalParameterSource,
   type CanonicalParameterValue,
 } from "./canonicalParameterCore";
-import { REGISTERED_CANONICAL_PARAMETER_SCHEMAS } from "./registeredCanonicalParameterSchemas";
+import {
+  ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA,
+  REGISTERED_CANONICAL_PARAMETER_SCHEMAS,
+} from "./registeredCanonicalParameterSchemas";
+import {
+  asphaltRelatedCatalogBindingV4,
+  getAsphaltRelatedProfileByCatalogRecordIdV4,
+} from "../v4/asphalt/asphaltRelatedSemanticRegistryV4";
+
+function catalogBoundSchema(
+  schema: CanonicalParameterSchema,
+  identity: Readonly<Record<string, unknown>> | null | undefined,
+): CanonicalParameterSchema {
+  const parameterSchemaId = typeof identity?.parameterSchemaId === "string"
+    ? identity.parameterSchemaId.trim()
+    : "";
+  const passportId = typeof identity?.professionalEstimatePassportId === "string"
+    ? identity.professionalEstimatePassportId.trim()
+    : "";
+  const formulaBindingId = typeof identity?.formulaBindingId === "string"
+    ? identity.formulaBindingId.trim()
+    : "";
+  if (!parameterSchemaId || !passportId) return schema;
+  return Object.freeze({
+    ...schema,
+    schemaId: parameterSchemaId.startsWith("canonical:")
+      ? parameterSchemaId
+      : `canonical:${parameterSchemaId}`,
+    workPassportId: passportId,
+    calculationVersion: formulaBindingId
+      ? `${schema.calculationVersion}|${formulaBindingId}`
+      : schema.calculationVersion,
+  });
+}
 
 function sourceForParam(
   parameter: EstimateDraftRevisionParam,
@@ -69,8 +103,13 @@ export function projectEstimateDraftRevisionToCanonicalSession(input: {
   createdAt: string;
   previousSession?: CanonicalParameterSession | null;
 }): CanonicalParameterSession | null {
-  const schema =
-    REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(
+  const firstRowIdentity = input.revision.boq.rows[0]?.sourceParameters;
+  const exactAsphaltResourceRevision =
+    firstRowIdentity?.asphaltRelatedV4 === true &&
+    input.revision.professionalWorkId === ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA.canonicalWorkKey;
+  const canonicalSchema = exactAsphaltResourceRevision
+    ? ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA
+    : REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(
       input.revision.professionalWorkId ?? "",
     ) ??
     REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(
@@ -79,7 +118,11 @@ export function projectEstimateDraftRevisionToCanonicalSession(input: {
     REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByWorkPassportId(
       input.revision.selectedTemplateId,
     );
-  if (!schema) return null;
+  if (!canonicalSchema) return null;
+  const schema = catalogBoundSchema(
+    canonicalSchema,
+    firstRowIdentity,
+  );
 
   const seeds: CanonicalParameterSeed[] = [];
   for (const definition of schema.definitions) {
@@ -149,11 +192,21 @@ export function projectEstimateDraftSessionToCanonicalSession(input: {
 }): CanonicalParameterSession | null {
   const canonicalWorkKey = input.session.workIntent?.canonicalWorkKey;
   if (!canonicalWorkKey) return null;
-  const schema =
+  const canonicalSchema =
     REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(
       canonicalWorkKey,
     );
-  if (!schema) return null;
+  if (!canonicalSchema) return null;
+  const catalogWorkId = input.session.workIntent?.catalogWorkId ?? canonicalWorkKey;
+  const asphaltProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
+  const binding = asphaltProfile
+    ? asphaltRelatedCatalogBindingV4(asphaltProfile, catalogWorkId)
+    : null;
+  const schema = catalogBoundSchema(canonicalSchema, binding ? {
+    parameterSchemaId: binding.parameterSchemaId,
+    professionalEstimatePassportId: binding.professionalPassportId,
+    formulaBindingId: binding.formulaBindingId,
+  } : null);
   const seeds: CanonicalParameterSeed[] = schema.definitions.flatMap(
     (definition) => {
       const parameter = input.session.parameters[definition.parameterId];

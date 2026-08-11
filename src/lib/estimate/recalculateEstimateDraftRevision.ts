@@ -41,6 +41,15 @@ function sourceForPatch(patch: UserParamPatch): EstimateDraftRevisionSource {
   return "param_edit";
 }
 
+function selectedWorkKeyForRecalculation(
+  previous: EstimateDraftRevision,
+  exactRoadworks: RoadworksWaveAProductionRegistration | null,
+): string | undefined {
+  return exactRoadworks?.workId
+    ?? previous.resolvedIdentity?.requestedCatalogWorkId?.trim()
+    ?? undefined;
+}
+
 function valueToPromptToken(key: string, param: EstimateDraftRevisionParam): string {
   const value = String(param.value);
   const unit = param.canonicalUnit;
@@ -135,7 +144,7 @@ export function recalculateEstimateDraftRevision(
       exactRoadworks?.professionalNameRu ??
       passport?.localizedNameRu ??
       previous.selectedTemplateId,
-    selectedWorkKey: exactRoadworks?.workId,
+    selectedWorkKey: selectedWorkKeyForRecalculation(previous, exactRoadworks),
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,
@@ -234,7 +243,7 @@ export function recalculateEstimateDraftRevisionBatch(
       exactRoadworks?.professionalNameRu ??
       passport?.localizedNameRu ??
       previous.selectedTemplateId,
-    selectedWorkKey: exactRoadworks?.workId,
+    selectedWorkKey: selectedWorkKeyForRecalculation(previous, exactRoadworks),
     city: input.city,
     currency: input.currency,
     countryCode: input.countryCode,

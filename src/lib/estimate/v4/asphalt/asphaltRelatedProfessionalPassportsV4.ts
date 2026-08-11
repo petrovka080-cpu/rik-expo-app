@@ -9,6 +9,7 @@ import {
 } from "../professionalEstimatePassportV4";
 import {
   ASPHALT_RELATED_EXTRA_PROFILES_V4,
+  asphaltRelatedCatalogBindingV4,
   getAsphaltRelatedProfileByCatalogRecordIdV4,
   type AsphaltRelatedProfileV4,
 } from "./asphaltRelatedSemanticRegistryV4";
@@ -218,5 +219,80 @@ export function getAsphaltRelatedProfessionalPassportV4(
   catalogRecordIdOrWorkKey: string | null | undefined,
 ): ProfessionalEstimatePassportV4 | null {
   const profile = getAsphaltRelatedProfileByCatalogRecordIdV4(catalogRecordIdOrWorkKey);
-  return profile ? passportByWorkKey.get(profile.canonicalWorkKey) ?? null : null;
+  if (!profile) return null;
+  const canonicalPassport = passportByWorkKey.get(profile.canonicalWorkKey) ?? null;
+  if (!canonicalPassport) return null;
+  const requestedCatalogRecordId = catalogRecordIdOrWorkKey?.trim() || profile.canonicalCatalogRecordId;
+  const binding = asphaltRelatedCatalogBindingV4(profile, requestedCatalogRecordId);
+  if (
+    canonicalPassport.catalogWorkId === requestedCatalogRecordId &&
+    canonicalPassport.passportId === binding.professionalPassportId
+  ) {
+    return canonicalPassport;
+  }
+  const aliasPassport: ProfessionalEstimatePassportV4 = {
+    ...canonicalPassport,
+    passportId: binding.professionalPassportId,
+    catalogWorkId: requestedCatalogRecordId,
+    classification: {
+      ...canonicalPassport.classification,
+      verdictId: `${requestedCatalogRecordId}:typed-classification:v4`,
+    },
+    parameters: {
+      ...canonicalPassport.parameters,
+      dependencies: canonicalPassport.parameters.dependencies.map((dependency) =>
+        `${binding.formulaBindingId}:${dependency}`
+      ),
+    },
+    boq: {
+      ...canonicalPassport.boq,
+      profileId: binding.boqBlueprintId,
+      semanticOwner: binding.professionalPassportId,
+      rowOwnershipContract: `${requestedCatalogRecordId}:row-ownership:v4`,
+    },
+    normativeComposition: {
+      ...canonicalPassport.normativeComposition,
+      compositionId: binding.normApplicabilityProfileId,
+    },
+    contracts: {
+      ...canonicalPassport.contracts,
+      readiness: {
+        ...canonicalPassport.contracts.readiness,
+        contractId: `${requestedCatalogRecordId}:readiness:v4`,
+      },
+      revision: {
+        ...canonicalPassport.contracts.revision,
+        contractId: `${requestedCatalogRecordId}:immutable-revision:v4`,
+      },
+      pdfProjection: {
+        ...canonicalPassport.contracts.pdfProjection,
+        contractId: `${requestedCatalogRecordId}:pdf-projection:v4`,
+      },
+      procurementProjection: {
+        ...canonicalPassport.contracts.procurementProjection,
+        contractId: `${requestedCatalogRecordId}:procurement-projection:v4`,
+      },
+      materialCompleteness: {
+        ...canonicalPassport.contracts.materialCompleteness,
+        contractId: `${requestedCatalogRecordId}:material-completeness:v4`,
+        ownerWorkKey: requestedCatalogRecordId,
+      },
+      completeEstimate: {
+        ...canonicalPassport.contracts.completeEstimate,
+        contractId: `${requestedCatalogRecordId}:complete-estimate:v4`,
+        ownerWorkKey: requestedCatalogRecordId,
+      },
+    },
+    migration: {
+      ...canonicalPassport.migration,
+      legacyTemplateIds: [requestedCatalogRecordId],
+      semanticOwner: binding.professionalPassportId,
+    },
+    evidence: {
+      ...canonicalPassport.evidence,
+      independentGoldenFixtures: [binding.deterministicFixtureId],
+    },
+  };
+  assertPassportOwnership(aliasPassport);
+  return Object.freeze(aliasPassport);
 }

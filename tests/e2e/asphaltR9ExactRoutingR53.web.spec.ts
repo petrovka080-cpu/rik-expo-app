@@ -37,6 +37,14 @@ const EXTRA_INPUTS: Readonly<Record<string, string | number | boolean>> = Object
 type Inventory = ReturnType<typeof buildAsphaltRelatedR8Inventory>;
 type RelatedRecord = Inventory["records"][number];
 
+function requiredRoadworksWaveADefault(
+  key: RoadworksWaveAParameterKey,
+): string | number | boolean {
+  const value = DEFAULT_ROADWORKS_WAVE_A_INPUTS[key];
+  if (value === undefined) throw new Error(`ROADWORKS_WAVE_A_DEFAULT_MISSING:${key}`);
+  return value;
+}
+
 type R53CaseResult = {
   ordinal: number;
   selected_id: string;
@@ -115,7 +123,7 @@ function p0Values(record: RelatedRecord): Record<string, string | number | boole
       .filter((definition) => definition.tier === "P0")
       .map((definition) => [
         definition.key,
-        DEFAULT_ROADWORKS_WAVE_A_INPUTS[definition.key as RoadworksWaveAParameterKey],
+        requiredRoadworksWaveADefault(definition.key as RoadworksWaveAParameterKey),
       ]),
   );
 }

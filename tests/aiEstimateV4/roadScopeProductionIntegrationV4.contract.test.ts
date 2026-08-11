@@ -1,8 +1,15 @@
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { recalculateEstimateDraftRevisionBatch } from "../../src/lib/estimate/recalculateEstimateDraftRevision";
+import {
+  buildConsumerRepairExactCatalogLaunchSelectedWork,
+  buildConsumerRepairSelectedWorkDraftBundle,
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
+  applyConsumerRepairDraftRevisionParamBatchPatch,
+  approveConsumerRepairRequestDraft,
+  listConsumerRepairApprovedHistory,
   selectConsumerRepairRoadScopeV4,
 } from "../../src/lib/consumerRequests";
 import {
@@ -24,7 +31,7 @@ const exactAsphaltReferenceInput =
 describe("Road Scope Truth V4 production integration", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
   test("ambiguous asphalt cannot compile or create a revision", () => {
-    const result = buildEstimateFromInlineWorkPrompt({ rawInput: ambiguous, selectedWorkKey: "asphalt_paving" });
+    const result = buildEstimateFromInlineWorkPrompt({ rawInput: ambiguous, selectedWorkKey: "road_construction" });
     expect(result).toMatchObject({
       draft: null,
       canBuildPreliminaryEstimate: false,
@@ -37,7 +44,7 @@ describe("Road Scope Truth V4 production integration", () => {
     });
     expect(() => createEstimateDraftRevision({
       rawInput: ambiguous,
-      selectedWorkKey: "asphalt_paving",
+      selectedWorkKey: "road_construction",
       createdAt: "2026-07-24T00:00:00.000Z",
     })).toThrow("road_scope_selection_required");
   });
@@ -321,5 +328,119 @@ describe("Road Scope Truth V4 production integration", () => {
       resolverVersion: "road-scope-resolver-v4.1.0",
     });
     expect(revision.boq.rows.length).toBeGreaterThan(0);
+  });
+
+  test("batch recalculation preserves the exact selected Asphalt catalog record identity", () => {
+    const exactCatalogRecordId = "asphalt_concrete_pavement_preliminary_boq_expanded_complex_v1";
+    const initial = createEstimateDraftRevision({
+      rawInput: ambiguous,
+      selectedWorkKey: exactCatalogRecordId,
+      paramOverrides: {
+        selectedRoadScope: {
+          value: "FULL_PAVEMENT_STRUCTURE",
+          source: "user_input",
+          lastChangedAt: "2026-08-10T00:00:00.000Z",
+        },
+      },
+      createdAt: "2026-08-10T00:00:00.000Z",
+    });
+    expect(initial.resolvedIdentity?.requestedCatalogWorkId).toBe(exactCatalogRecordId);
+
+    const recalculated = recalculateEstimateDraftRevisionBatch(initial, [
+      {
+        revisionId: initial.revisionId,
+        selectedTemplateId: initial.selectedTemplateId,
+        operation: "add_param",
+        paramKey: "geometry_method",
+        rawValue: "direct_area",
+        parsedValue: "direct_area",
+      },
+      {
+        revisionId: initial.revisionId,
+        selectedTemplateId: initial.selectedTemplateId,
+        operation: "add_param",
+        paramKey: "length_m",
+        rawValue: "12",
+        parsedValue: 12,
+        canonicalUnit: "m",
+      },
+      {
+        revisionId: initial.revisionId,
+        selectedTemplateId: initial.selectedTemplateId,
+        operation: "add_param",
+        paramKey: "width_m",
+        rawValue: "10",
+        parsedValue: 10,
+        canonicalUnit: "m",
+      },
+    ], {
+      createdAt: "2026-08-10T00:01:00.000Z",
+      revisionIndex: 2,
+    });
+
+    expect(recalculated.revision.revisionId).not.toBe(initial.revisionId);
+    expect(recalculated.revision.resolvedIdentity?.requestedCatalogWorkId).toBe(exactCatalogRecordId);
+    expect(recalculated.revision.roadScopeBinding).toMatchObject({
+      requestedCatalogWorkId: exactCatalogRecordId,
+      selectedRoadScope: "FULL_PAVEMENT_STRUCTURE",
+    });
+    expect(recalculated.revision.boq.rows.length).toBeGreaterThan(0);
+  });
+
+  test("exact expanded Asphalt R3 with unconfirmed contract inputs cannot be approved", () => {
+    const userId = "asphalt-expanded-approval-user";
+    const exactCatalogRecordId = "asphalt_concrete_pavement_preliminary_boq_expanded_complex_v1";
+    const rawInput = "Asphalt concrete pavement, area 120 m2";
+    const selectedWork = buildConsumerRepairExactCatalogLaunchSelectedWork({
+      catalogWorkId: exactCatalogRecordId,
+      rawInput,
+    });
+    const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
+      consumerUserId: userId,
+      problemText: rawInput,
+      repairType: "roadworks",
+      city: "Bishkek",
+      addressText: "Asphalt approval test address",
+      preferredTimeText: "Any time",
+      contactPhone: "+996 555 123 456",
+      selectedWork,
+    });
+    const scoped = selectConsumerRepairRoadScopeV4({
+      requestDraftId: bundle.draft.id,
+      userId,
+      selectedScope: "FULL_PAVEMENT_STRUCTURE",
+      createdAt: "2026-08-10T00:00:00.000Z",
+    });
+    const created = applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId: scoped.draft.id,
+      userId,
+      createdAt: "2026-08-10T00:01:00.000Z",
+      patches: [
+        { operation: "add_param", paramKey: "geometry_method", rawValue: "direct_area" },
+        { operation: "add_param", paramKey: "length_m", rawValue: "12" },
+        { operation: "add_param", paramKey: "width_m", rawValue: "10" },
+      ],
+    });
+    const edited = applyConsumerRepairDraftRevisionParamBatchPatch({
+      requestDraftId: created.draft.id,
+      userId,
+      createdAt: "2026-08-10T00:02:00.000Z",
+      patches: [
+        { operation: "update_param", paramKey: "area_m2", rawValue: "137" },
+      ],
+    });
+
+    expect(edited.estimateDraftRevisionState?.revisions).toHaveLength(3);
+    expect(edited.estimateDraftRevisionState?.revisions[2]?.resolvedIdentity?.requestedCatalogWorkId)
+      .toBe(exactCatalogRecordId);
+
+    expect(edited.estimateDraftRevisionState?.revisions[2]?.status)
+      .toBe("needs_more_params_but_preliminary_available");
+    expect(() => approveConsumerRepairRequestDraft({
+      requestDraftId: edited.draft.id,
+      userId,
+      generatedAt: "2026-08-10T00:03:00.000Z",
+    })).toThrow("Заполните обязательные параметры");
+    expect(listConsumerRepairApprovedHistory(userId).totalApprovedCount).toBe(0);
   });
 });

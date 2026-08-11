@@ -5,12 +5,24 @@ import path from "node:path";
 
 import { buildAndroidDeepLinkLaunchArgs } from "./androidDeepLinkLaunchContract";
 import {
+  STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH,
+  assessNoRevisionTransition,
+  classifyGovernedMissingParameterKeys,
+  findCompiledRevisionMarkerAcrossViewport,
+  visibleCompiledRevisionIds,
+  type CompiledRevisionExpectedIdentity,
+  type CompiledRevisionIdentityEvidence,
+  type CompiledRevisionViewportSearchResult,
+  type CompiledRevisionViewportSnapshot,
+} from "./asphaltCompiledRevisionViewport";
+import {
   parseNativeEstimateBuildTimingEvidence,
   type NativeEstimateBuildTimingEvidence,
 } from "./nativeEstimateBuildTimingEvidence";
 import {
   findNativeNodeOwnedByExactWrapper,
   findNativeWrapperOwningExactText,
+  nativeBoundsAreContainedBy,
   nativeNodeSafeViewportAdjustment,
   nativeOptionalControlledInputIsEmpty,
 } from "./nativeExactWrapperNodeSelection";
@@ -30,13 +42,31 @@ import {
   ASPHALT_RELATED_EXTRA_PROFILES_V4,
   type AsphaltRelatedProfileV4,
 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
+import {
+  ASPHALT_WORK_SPECIFIC_PARAMETERS_V4,
+  getAsphaltParameterV4,
+} from "../../src/lib/estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const DEVICE_ID = process.env.E2E_ANDROID_DEVICE_ID ?? "emulator-5554";
 const API_LEVEL = "34";
-const UI_DUMP_DEVICE_PATH = "/sdcard/asphalt-native-api34.xml";
+const UI_DUMP_DEVICE_PATH_PREFIX = "/sdcard/asphalt-native-api34";
+let uiDumpSequence = 0;
 const WAIT_POLL_MS = 1_200;
 const DEFAULT_TIMEOUT_MS = 90_000;
+const STOP_R9_EVIDENCE_COMPILED_REVISION_PNG_XML_PAIR_MISSING =
+  "STOP_R9_EVIDENCE_COMPILED_REVISION_PNG_XML_PAIR_MISSING";
+const STOP_R9_HARNESS_COMPILED_VIEWPORT_IME_NOT_DISMISSED =
+  "STOP_R9_HARNESS_COMPILED_VIEWPORT_IME_NOT_DISMISSED";
+
+const DEFINED_DEFAULT_ROADWORKS_WAVE_A_INPUTS: Readonly<Record<string, string | number | boolean>> =
+  (() => {
+    const result: Record<string, string | number | boolean> = {};
+    for (const [key, value] of Object.entries(DEFAULT_ROADWORKS_WAVE_A_INPUTS)) {
+      if (value !== undefined) result[key] = value;
+    }
+    return Object.freeze(result);
+  })();
 
 type CommandResult = {
   ok: boolean;
@@ -76,6 +106,9 @@ type NativeCaseResult = {
   build_identity_visible: boolean;
   revision_before_edit: string | null;
   revision_after_edit: string | null;
+  precreate_compiled_revision: NativeCompiledRevisionObservation | null;
+  create_compiled_revision: NativeCompiledRevisionObservation | null;
+  edit_compiled_revision: NativeCompiledRevisionObservation | null;
   missing_boq_row_names: string[];
   screenshots: string[];
   ui_dumps: string[];
@@ -86,6 +119,21 @@ type NativeCaseResult = {
   case_start_isolation: NativeCaseIsolationEvidence;
   case_end_isolation: NativeCaseIsolationEvidence | null;
   phase_reached: "launch" | "p0" | "create" | "edit" | "cold_replay" | "pdf";
+};
+
+type NativeCompiledRevisionObservation = CompiledRevisionIdentityEvidence & {
+  marker_recovery_swipes: number;
+  viewport_fingerprints: string[];
+  before_xml: string;
+  final_xml: string;
+  viewport_artifacts: NativeCompiledViewportArtifact[];
+};
+
+type NativeCompiledViewportArtifact = {
+  boundary: "before" | "pending_poll" | "anchor_recovery" | "after_scroll" | "final";
+  step: number;
+  xml: string;
+  png: string | null;
 };
 
 type NativeCaseIsolationEvidence = {
@@ -133,6 +181,13 @@ type NativeMatrixRegistration = {
 
 const ASPHALT_RELATED_NATIVE_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
   area_m2: 120,
+  geometry_method: "direct_area",
+  length_m: 12,
+  width_m: 10,
+  exclusions_m2: 0,
+  purpose: "public_road",
+  traffic_load_category: "medium",
+  construction_mode: "new_construction",
   removal_area_m2: 120,
   removal_depth_mm: 50,
   removal_method: "MECHANICAL_BREAKOUT",
@@ -155,7 +210,7 @@ function roadworksNativeRegistration(
     ...registration,
     requestedCatalogRecordId: null,
     extraProfile: null,
-    inputValues: DEFAULT_ROADWORKS_WAVE_A_INPUTS,
+    inputValues: DEFINED_DEFAULT_ROADWORKS_WAVE_A_INPUTS,
     editParameterKey: "area_m2",
     scopeOptionTestId: null,
     dependentParameterKeys: [],
@@ -357,15 +412,32 @@ async function extractGeneratedPdfText(fileName: string | null): Promise<string 
 }
 
 function dumpUi(): { ok: boolean; xml: string; nodes: UiNode[]; text: string; error: string | null } {
-  const dumped = adb(["shell", "timeout", "12", "uiautomator", "dump", "--compressed", UI_DUMP_DEVICE_PATH], 16_000);
-  const read = dumped.ok ? adb(["exec-out", "cat", UI_DUMP_DEVICE_PATH], 20_000) : null;
-  adb(["shell", "rm", "-f", UI_DUMP_DEVICE_PATH], 5_000);
-  if (!read?.ok || !read.output.includes("<hierarchy")) {
-    return { ok: false, xml: read?.output ?? "", nodes: [], text: "", error: read?.output || dumped.output };
+  let lastError = "";
+  for (let dumpAttempt = 0; dumpAttempt < 2; dumpAttempt += 1) {
+    uiDumpSequence += 1;
+    const uiDumpDevicePath = `${UI_DUMP_DEVICE_PATH_PREFIX}-${process.pid}-${uiDumpSequence}.xml`;
+    const dumped = adb(["shell", "timeout", "12", "uiautomator", "dump", "--compressed", uiDumpDevicePath], 16_000);
+    let read = dumped.ok ? adb(["exec-out", "cat", uiDumpDevicePath], 20_000) : null;
+    for (
+      let readAttempt = 0;
+      dumped.ok && (!read?.ok || !read.output.includes("<hierarchy")) && readAttempt < 20;
+      readAttempt += 1
+    ) {
+      // A successful UiAutomator command can return before its device-side XML
+      // becomes readable. Keep the exact snapshot boundary for five bounded
+      // seconds and never fingerprint transient `cat` error text.
+      adb(["shell", "sleep", "0.25"], 5_000);
+      read = adb(["exec-out", "cat", uiDumpDevicePath], 20_000);
+    }
+    adb(["shell", "rm", "-f", uiDumpDevicePath], 5_000);
+    if (read?.ok && read.output.includes("<hierarchy")) {
+      const nodes = parseNodes(read.output);
+      const text = nodes.flatMap((node) => [node.resourceId, node.contentDesc, node.text]).filter(Boolean).join("\n");
+      return { ok: true, xml: read.output, nodes, text, error: null };
+    }
+    lastError = read?.output || dumped.output;
   }
-  const nodes = parseNodes(read.output);
-  const text = nodes.flatMap((node) => [node.resourceId, node.contentDesc, node.text]).filter(Boolean).join("\n");
-  return { ok: true, xml: read.output, nodes, text, error: null };
+  return { ok: false, xml: "", nodes: [], text: "", error: lastError };
 }
 
 function nodeHasId(node: UiNode, testId: string): boolean {
@@ -385,6 +457,17 @@ function center(bounds: string): { x: number; y: number } | null {
   return {
     x: Math.round((Number(match[1]) + Number(match[3])) / 2),
     y: Math.round((Number(match[2]) + Number(match[4])) / 2),
+  };
+}
+
+function boundsRect(bounds: string): { left: number; top: number; right: number; bottom: number } | null {
+  const match = bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+  if (!match) return null;
+  return {
+    left: Number(match[1]),
+    top: Number(match[2]),
+    right: Number(match[3]),
+    bottom: Number(match[4]),
   };
 }
 
@@ -432,6 +515,32 @@ async function findSafeInputOwnedByExactEditor(
     await wait(600);
   }
   return null;
+}
+
+async function focusInputOwnedByExactEditor(editorId: string): Promise<boolean> {
+  const owned = await findSafeInputOwnedByExactEditor(editorId);
+  if (!owned) return false;
+  // The long parameter panel can rerender between safe-bounds recovery and
+  // the tap. Settle, reacquire the same exact wrapper and only then focus its
+  // contained TextInput; never type into a previously focused delivery field.
+  await wait(500);
+  const stableSnapshot = dumpUi();
+  const stableEditor = findNodeById(stableSnapshot, editorId);
+  const stableInput = stableEditor
+    ? findInputOwnedByEditor(stableSnapshot, stableEditor)
+    : null;
+  if (
+    !stableInput
+    || nativeNodeSafeViewportAdjustment(stableInput.bounds, viewport().height) !== "none"
+    || !tapNode(stableInput)
+  ) return false;
+  await wait(300);
+  const focusedSnapshot = dumpUi();
+  const focusedEditor = findNodeById(focusedSnapshot, editorId);
+  const focusedInput = focusedEditor
+    ? findInputOwnedByEditor(focusedSnapshot, focusedEditor)
+    : null;
+  return Boolean(focusedInput?.attrs.includes('focused="true"'));
 }
 
 function tapNode(node: UiNode): boolean {
@@ -537,6 +646,62 @@ async function tapHistoryEntryByExactTitle(
   return false;
 }
 
+async function findSelectedHistoryInlinePdfAction(
+  expectedTitle: string,
+  maxSwipes = 72,
+): Promise<UiNode | null> {
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  for (let step = 0; step <= maxSwipes; step += 1) {
+    const snapshot = dumpUi();
+    const readonlySnapshot = findNodeById(snapshot, "consumer-repair-history-readonly-snapshot");
+    const exactHistoryMain = readonlySnapshot
+      ? findNativeWrapperOwningExactText(
+        snapshot.nodes,
+        (candidate) => nodeHasId(candidate, "consumer-repair-history-main"),
+        (candidate) => candidate.text,
+        expectedTitle,
+      )
+      : null;
+    const exactHistoryRow = exactHistoryMain
+      ? snapshot.nodes.find((candidate) =>
+        nodeHasId(candidate, "consumer-repair-history-row")
+        && nativeBoundsAreContainedBy(exactHistoryMain.bounds, candidate.bounds)
+      ) ?? null
+      : null;
+    const node = exactHistoryRow
+      ? findNativeNodeOwnedByExactWrapper(
+        snapshot.nodes,
+        exactHistoryRow,
+        (candidate) => nodeHasId(candidate, "consumer-repair-history-pdf"),
+      )
+      : null;
+    if (node) {
+      const adjustment = nativeNodeSafeViewportAdjustment(
+        node.bounds,
+        viewport().height,
+        0.2,
+        0.66,
+      );
+      if (adjustment === "none") return node;
+      if (adjustment === "invalid") return null;
+      swipe(adjustment);
+      await wait(600);
+      continue;
+    }
+
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint
+      ? stableBoundaryCount + 1
+      : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2) return null;
+    swipe("down", step % 4 === 3);
+    await wait(450);
+  }
+  return null;
+}
+
 async function returnToTop(swipes = 16): Promise<void> {
   for (let index = 0; index < swipes; index += 1) {
     swipe("down", index % 4 === 3);
@@ -557,6 +722,19 @@ function neutralConsumerRepairRouteVisibleIn(snapshot: ReturnType<typeof dumpUi>
     || isAndroidRequestRouteSurfaceXml(snapshot.xml);
 }
 
+function externalViewerAnrCloseNode(snapshot: ReturnType<typeof dumpUi>): UiNode | null {
+  const externalAnrTitle = snapshot.nodes.find((node) =>
+    nodeHasId(node, "android:id/alertTitle")
+    && /isn't responding$/i.test(node.text.trim())
+  );
+  if (!externalAnrTitle) return null;
+  return snapshot.nodes.find((node) =>
+    node.packageName === "android"
+    && nodeHasId(node, "android:id/aerr_close")
+    && /^Close app$/i.test(node.text.trim())
+  ) ?? null;
+}
+
 async function waitForKnownCaseBoundarySurface(timeoutMs = 30_000): Promise<ReturnType<typeof dumpUi>> {
   const deadline = Date.now() + timeoutMs;
   let snapshot = dumpUi();
@@ -565,6 +743,7 @@ async function waitForKnownCaseBoundarySurface(timeoutMs = 30_000): Promise<Retu
       neutralConsumerRepairRouteVisibleIn(snapshot)
       || findNodeById(snapshot, "consumer-repair-history-modal")
       || findNodeById(snapshot, "native-pdf-handoff-shell")
+      || externalViewerAnrCloseNode(snapshot)
     ) {
       return snapshot;
     }
@@ -572,6 +751,24 @@ async function waitForKnownCaseBoundarySurface(timeoutMs = 30_000): Promise<Retu
     snapshot = dumpUi();
   }
   return snapshot;
+}
+
+async function pressSystemBackAndWaitForIdAbsent(
+  testId: string,
+  timeoutMs = 20_000,
+): Promise<{ sent: boolean; closed: boolean; snapshot: ReturnType<typeof dumpUi> }> {
+  const sent = adb(["shell", "input", "keyevent", "4"], 10_000).ok;
+  let snapshot = dumpUi();
+  if (!sent) return { sent, closed: false, snapshot };
+  const deadline = Date.now() + timeoutMs;
+  do {
+    await wait(500);
+    snapshot = dumpUi();
+    if (snapshot.ok !== false && !findNodeById(snapshot, testId)) {
+      return { sent, closed: true, snapshot };
+    }
+  } while (Date.now() < deadline);
+  return { sent, closed: false, snapshot };
 }
 
 async function restoreNativeCaseIsolation(
@@ -590,33 +787,61 @@ async function restoreNativeCaseIsolation(
     snapshot = await waitForKnownCaseBoundarySurface();
   }
 
+  const externalViewerAnrClose = expectedPdfProjection === "android_external_viewer"
+    ? externalViewerAnrCloseNode(snapshot)
+    : null;
+  if (externalViewerAnrClose) {
+    if (!tapNode(externalViewerAnrClose)) {
+      failures.push(`${phase}_external_viewer_anr_close_failed`);
+    } else {
+      await wait(1_500);
+      snapshot = await waitForKnownCaseBoundarySurface();
+    }
+  }
+
   const internalPdfRouteWasOpen = Boolean(findNodeById(snapshot, "native-pdf-handoff-shell"));
   let internalPdfRouteClosed = !internalPdfRouteWasOpen;
   if (internalPdfRouteWasOpen) {
-    const backNode = findNodeById(snapshot, "pdf-viewer-back");
-    if (!backNode || !tapNode(backNode)) {
-      failures.push(`${phase}_internal_pdf_route_close_failed`);
+    if (expectedPdfProjection === "android_external_viewer") {
+      const closed = await pressSystemBackAndWaitForIdAbsent("native-pdf-handoff-shell");
+      snapshot = closed.snapshot;
+      internalPdfRouteClosed = closed.closed;
+      if (!closed.sent) failures.push(`${phase}_internal_pdf_route_close_failed`);
+      else if (!closed.closed) failures.push(`${phase}_internal_pdf_route_remained_open`);
     } else {
-      snapshot = await waitForKnownCaseBoundarySurface();
-      internalPdfRouteClosed = !findNodeById(snapshot, "native-pdf-handoff-shell");
-      if (!internalPdfRouteClosed) failures.push(`${phase}_internal_pdf_route_remained_open`);
+      const backNode = findNodeById(snapshot, "pdf-viewer-back");
+      if (!backNode || !tapNode(backNode)) {
+        failures.push(`${phase}_internal_pdf_route_close_failed`);
+      } else {
+        snapshot = await waitForKnownCaseBoundarySurface();
+        internalPdfRouteClosed = !findNodeById(snapshot, "native-pdf-handoff-shell");
+        if (!internalPdfRouteClosed) failures.push(`${phase}_internal_pdf_route_remained_open`);
+      }
     }
   }
 
   const historyModalWasOpen = Boolean(findNodeById(snapshot, "consumer-repair-history-modal"));
   let historyModalClosed = !historyModalWasOpen;
   if (historyModalWasOpen) {
-    const closeNode = findNodeById(snapshot, "consumer-repair-history-close");
-    if (!closeNode || !tapNode(closeNode)) {
-      failures.push(`${phase}_history_modal_close_failed`);
+    if (expectedPdfProjection === "android_external_viewer") {
+      const closed = await pressSystemBackAndWaitForIdAbsent("consumer-repair-history-modal");
+      snapshot = closed.snapshot;
+      historyModalClosed = closed.closed;
+      if (!closed.sent) failures.push(`${phase}_history_modal_close_failed`);
+      else if (!closed.closed) failures.push(`${phase}_history_modal_remained_open`);
     } else {
-      const deadline = Date.now() + 20_000;
-      do {
-        await wait(500);
-        snapshot = dumpUi();
-        historyModalClosed = !findNodeById(snapshot, "consumer-repair-history-modal");
-      } while (!historyModalClosed && Date.now() < deadline);
-      if (!historyModalClosed) failures.push(`${phase}_history_modal_remained_open`);
+      const closeNode = findNodeById(snapshot, "consumer-repair-history-close");
+      if (!closeNode || !tapNode(closeNode)) {
+        failures.push(`${phase}_history_modal_close_failed`);
+      } else {
+        const deadline = Date.now() + 20_000;
+        do {
+          await wait(500);
+          snapshot = dumpUi();
+          historyModalClosed = !findNodeById(snapshot, "consumer-repair-history-modal");
+        } while (!historyModalClosed && Date.now() < deadline);
+        if (!historyModalClosed) failures.push(`${phase}_history_modal_remained_open`);
+      }
     }
   }
 
@@ -719,26 +944,349 @@ async function waitForIdSparse(
   return last;
 }
 
-async function waitForCompiledProjection(
-  expectedRowCount: number,
+async function waitForRuntimeBuildDelta(
+  readRuntimeBuildTiming: () => NativeEstimateBuildTimingEvidence,
+  baselineBuildCount: number,
+  expectedDelta: 0 | 1,
   timeoutMs = 420_000,
-): Promise<ReturnType<typeof dumpUi>> {
-  await wait(3_000);
-  const deadline = Date.now() + Math.max(0, timeoutMs - 3_000);
-  let last = dumpUi();
-  while (Date.now() < deadline) {
-    const rowCountText = findNodeById(last, "request-estimate-row-count")?.text ?? "";
-    const parameterStatusText = findNodeById(last, "request-estimate-parameter-status")?.text ?? "";
-    if (
-      Number(rowCountText.match(/\d+/)?.[0] ?? -1) === expectedRowCount
-      && /\b0\b/.test(parameterStatusText)
-    ) {
-      return last;
+): Promise<NativeEstimateBuildTimingEvidence> {
+  const deadline = Date.now() + timeoutMs;
+  let last = readRuntimeBuildTiming();
+  while (
+    Date.now() < deadline
+    && last.runtime_build_count - baselineBuildCount < expectedDelta
+  ) {
+    await wait(WAIT_POLL_MS);
+    last = readRuntimeBuildTiming();
+  }
+  return last;
+}
+
+async function scrollKnownRequestContainer(
+  snapshot: CompiledRevisionViewportSnapshot,
+  direction: "up" | "down",
+): Promise<boolean> {
+  const container = snapshot.nodes.find((node) => nodeHasId(node as UiNode, "consumer-repair-screen"));
+  const rect = container ? boundsRect(container.bounds) : null;
+  if (!rect || rect.bottom - rect.top < 200) return false;
+  // Stay inside the exact ScrollView and left of the first card input (x=81 on
+  // the governed API34 viewport). x=50 leaves 31 px beyond Android touch slop;
+  // x=76 could focus a delivery field while the vertical motion crossed it.
+  const x = Math.round(rect.left + Math.min(50, (rect.right - rect.left) * 0.046));
+  const upperY = Math.round(rect.top + (rect.bottom - rect.top) * 0.28);
+  const lowerY = Math.round(rect.top + (rect.bottom - rect.top) * 0.72);
+  const [startY, endY] = direction === "up" ? [lowerY, upperY] : [upperY, lowerY];
+  // UiAutomator toggles its Accessibility service for every dump. Give that
+  // service a bounded teardown window before injecting the next exact gutter
+  // gesture. Emit the touch lifecycle explicitly: Android can acknowledge a
+  // monolithic `input swipe` while dropping it during this transition.
+  if (!await dismissSoftKeyboard()) return false;
+  await wait(200);
+  const yAt = (fraction: number): number => Math.round(startY + (endY - startY) * fraction);
+  const motionEvents: readonly ["DOWN" | "MOVE" | "UP", number][] = [
+    ["DOWN", startY],
+    ["MOVE", yAt(0.25)],
+    ["MOVE", yAt(0.5)],
+    ["MOVE", yAt(0.75)],
+    ["MOVE", endY],
+    ["UP", endY],
+  ];
+  let gestureOk = true;
+  for (const [index, [event, y]] of motionEvents.entries()) {
+    if (index > 0) await wait(80);
+    const injected = adb([
+      "shell",
+      "input",
+      "motionevent",
+      event,
+      String(x),
+      String(y),
+    ], 10_000);
+    gestureOk = gestureOk && injected.ok;
+  }
+  if (!gestureOk) return false;
+  await wait(300);
+  return dismissSoftKeyboard();
+}
+
+function scrollKnownRequestContainerUp(snapshot: CompiledRevisionViewportSnapshot): Promise<boolean> {
+  return scrollKnownRequestContainer(snapshot, "up");
+}
+
+function requestSummaryCardAnchoredInSafeViewport(
+  snapshot: ReturnType<typeof dumpUi>,
+): boolean {
+  const summary = findNodeById(snapshot, "request-estimate-summary-card");
+  return Boolean(
+    summary
+    && nativeNodeSafeViewportAdjustment(summary.bounds, viewport().height) === "none"
+  );
+}
+
+async function returnKnownRequestContainerToTop(maxSwipes = 24): Promise<boolean> {
+  let snapshot = dumpUi();
+  if (requestSummaryCardAnchoredInSafeViewport(snapshot)) return true;
+  const scanForAnchor = async (direction: "up" | "down"): Promise<boolean> => {
+    let previousFingerprint = sha256(snapshot.xml);
+    let stableBoundaryCount = 0;
+    for (let step = 0; step < maxSwipes; step += 1) {
+      if (!await scrollKnownRequestContainer(snapshot, direction)) return false;
+      await wait(500);
+      snapshot = dumpUi();
+      if (requestSummaryCardAnchoredInSafeViewport(snapshot)) return true;
+      const fingerprint = sha256(snapshot.xml);
+      stableBoundaryCount = fingerprint === previousFingerprint ? stableBoundaryCount + 1 : 0;
+      previousFingerprint = fingerprint;
+      if (stableBoundaryCount >= 2) break;
     }
-    await wait(3_000);
+    return false;
+  };
+  // Most callers begin below the request summary, so recover upward first.
+  // A legacy generic `returnToTop` can, however, overshoot into the prompt and
+  // delivery region above the draft. From that boundary the opposite gesture
+  // is required to reach the same exact summary anchor.
+  if (await scanForAnchor("down")) return true;
+  return scanForAnchor("up");
+}
+
+async function findSafeRequestNodeByIdFromTop(
+  testId: string,
+  maxSwipes = 18,
+): Promise<UiNode | null> {
+  if (!await returnKnownRequestContainerToTop()) return null;
+  let snapshot = dumpUi();
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  for (let step = 0; step <= maxSwipes; step += 1) {
+    const node = findNodeById(snapshot, testId);
+    if (node) {
+      const adjustment = nativeNodeSafeViewportAdjustment(node.bounds, viewport().height);
+      if (adjustment === "none") return node;
+      if (adjustment === "invalid") return null;
+      if (!await scrollKnownRequestContainer(snapshot, adjustment)) return null;
+    } else if (!await scrollKnownRequestContainer(snapshot, "up")) {
+      return null;
+    }
+    await wait(500);
+    snapshot = dumpUi();
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint ? stableBoundaryCount + 1 : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2) return null;
+  }
+  return null;
+}
+
+async function findRequestNodeByIdFromTop(
+  testId: string,
+  maxSwipes = 18,
+): Promise<{ snapshot: ReturnType<typeof dumpUi>; node: UiNode | null }> {
+  if (!await returnKnownRequestContainerToTop()) {
+    const snapshot = dumpUi();
+    return { snapshot, node: null };
+  }
+  let snapshot = dumpUi();
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  for (let step = 0; step <= maxSwipes; step += 1) {
+    const node = findNodeById(snapshot, testId);
+    if (node) return { snapshot, node };
+    if (!await scrollKnownRequestContainer(snapshot, "up")) break;
+    await wait(500);
+    snapshot = dumpUi();
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint ? stableBoundaryCount + 1 : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2) break;
+  }
+  return { snapshot, node: null };
+}
+
+async function findExactBatchApplyBeforeEditedParameter(
+  maxSwipes = 20,
+): Promise<UiNode | null> {
+  let snapshot = dumpUi();
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  for (let step = 0; step <= maxSwipes; step += 1) {
+    const node = findNodeById(snapshot, "editable-param-batch-apply");
+    if (node) {
+      const adjustment = nativeNodeSafeViewportAdjustment(node.bounds, viewport().height);
+      if (adjustment === "none") return node;
+      if (adjustment === "invalid") return null;
+      if (!await scrollKnownRequestContainer(snapshot, adjustment)) return null;
+    } else if (!await scrollKnownRequestContainer(snapshot, "down")) {
+      return null;
+    }
+    await wait(500);
+    snapshot = dumpUi();
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint ? stableBoundaryCount + 1 : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2) return null;
+  }
+  return null;
+}
+
+async function readSettledViewport(previousFingerprint: string): Promise<ReturnType<typeof dumpUi>> {
+  const deadline = Date.now() + 8_000;
+  let last = dumpUi();
+  let lastChangedFingerprint = "";
+  let stableChangedSnapshots = 0;
+  while (Date.now() < deadline) {
+    const currentFingerprint = sha256(last.xml);
+    if (currentFingerprint !== previousFingerprint) {
+      stableChangedSnapshots = currentFingerprint === lastChangedFingerprint
+        ? stableChangedSnapshots + 1
+        : 0;
+      lastChangedFingerprint = currentFingerprint;
+      if (stableChangedSnapshots >= 1) return last;
+    }
+    await wait(150);
     last = dumpUi();
   }
   return last;
+}
+
+function writeCompiledViewportEvidence(
+  caseDir: string,
+  phase: "precreate" | "create" | "edit",
+  boundary: NativeCompiledViewportArtifact["boundary"],
+  step: number,
+  name: string,
+  snapshot: CompiledRevisionViewportSnapshot,
+): NativeCompiledViewportArtifact {
+  fs.mkdirSync(caseDir, { recursive: true });
+  const xml = path.join(caseDir, `${phase}-compiled-marker-${name}.xml`);
+  const png = path.join(caseDir, `${phase}-compiled-marker-${name}.png`);
+  fs.writeFileSync(xml, snapshot.xml, "utf8");
+  const screenshot = adbBuffer(["exec-out", "screencap", "-p"], 20_000);
+  if (screenshot && screenshot.length > 0) fs.writeFileSync(png, screenshot);
+  return {
+    boundary,
+    step,
+    xml,
+    png: screenshot && screenshot.length > 0 ? png : null,
+  };
+}
+
+async function observeCompiledRevisionAcrossViewport(input: {
+  caseDir: string;
+  phase: "precreate" | "create" | "edit";
+  expected: CompiledRevisionExpectedIdentity;
+  readRuntimeBuildTiming: () => NativeEstimateBuildTimingEvidence;
+}): Promise<{
+  snapshot: ReturnType<typeof dumpUi>;
+  observation: NativeCompiledRevisionObservation | null;
+  failureToken: string | null;
+}> {
+  const timing = await waitForRuntimeBuildDelta(
+    input.readRuntimeBuildTiming,
+    input.expected.baselineBuildCount,
+    input.expected.expectedBuildDelta,
+  );
+  const buildDelta = timing.runtime_build_count - input.expected.baselineBuildCount;
+  if (buildDelta !== input.expected.expectedBuildDelta) {
+    return {
+      snapshot: dumpUi(),
+      observation: null,
+      failureToken: `${STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH}:build_count_delta_expected_${input.expected.expectedBuildDelta}_received_${buildDelta}`,
+    };
+  }
+
+  const keyboardDismissed = await dismissSoftKeyboard();
+  await wait(300);
+  const keyboardRemainedDismissed = keyboardDismissed && await dismissSoftKeyboard();
+  if (!keyboardDismissed || !keyboardRemainedDismissed) {
+    return {
+      snapshot: dumpUi(),
+      observation: null,
+      failureToken: STOP_R9_HARNESS_COMPILED_VIEWPORT_IME_NOT_DISMISSED,
+    };
+  }
+
+  let beforeXml = "";
+  let finalXml = "";
+  const viewportArtifacts: NativeCompiledViewportArtifact[] = [];
+  const search: CompiledRevisionViewportSearchResult = await findCompiledRevisionMarkerAcrossViewport({
+    expected: input.expected,
+    currentBuildCount: timing.runtime_build_count,
+    readViewport: async () => dumpUi(),
+    scrollKnownContainerUp: scrollKnownRequestContainerUp,
+    readSettledViewport,
+    recoverKnownAnchor: async () => {
+      if (!await returnKnownRequestContainerToTop()) return null;
+      return dumpUi();
+    },
+    fingerprint: (snapshot) => sha256(snapshot.xml),
+    maxSwipes: 12,
+    onViewport: (boundary, step, snapshot) => {
+      if (boundary === "before") {
+        const artifact = writeCompiledViewportEvidence(
+          input.caseDir,
+          input.phase,
+          boundary,
+          step,
+          "before",
+          snapshot,
+        );
+        viewportArtifacts.push(artifact);
+        beforeXml = artifact.xml;
+      } else if (boundary === "pending_poll") {
+        viewportArtifacts.push(writeCompiledViewportEvidence(
+          input.caseDir,
+          input.phase,
+          boundary,
+          step,
+          `pending-poll-${step}`,
+          snapshot,
+        ));
+      } else if (boundary === "anchor_recovery") {
+        viewportArtifacts.push(writeCompiledViewportEvidence(
+          input.caseDir,
+          input.phase,
+          boundary,
+          step,
+          `anchor-recovery-${step}`,
+          snapshot,
+        ));
+      } else if (boundary === "after_scroll") {
+        viewportArtifacts.push(writeCompiledViewportEvidence(
+          input.caseDir,
+          input.phase,
+          boundary,
+          step,
+          `after-scroll-${step}`,
+          snapshot,
+        ));
+      } else {
+        const artifact = writeCompiledViewportEvidence(
+          input.caseDir,
+          input.phase,
+          boundary,
+          step,
+          "final",
+          snapshot,
+        );
+        viewportArtifacts.push(artifact);
+        finalXml = artifact.xml;
+      }
+    },
+  });
+  const captureIncomplete = viewportArtifacts.some((artifact) => artifact.png == null);
+  return {
+    snapshot: search.snapshot as ReturnType<typeof dumpUi>,
+    observation: search.evidence && !captureIncomplete ? {
+      ...search.evidence,
+      marker_recovery_swipes: search.swipes,
+      viewport_fingerprints: search.viewportFingerprints,
+      before_xml: beforeXml,
+      final_xml: finalXml,
+      viewport_artifacts: viewportArtifacts,
+    } : null,
+    failureToken: search.failureToken
+      ?? (captureIncomplete ? STOP_R9_EVIDENCE_COMPILED_REVISION_PNG_XML_PAIR_MISSING : null),
+  };
 }
 
 function inputText(value: string): boolean {
@@ -762,13 +1310,50 @@ function inputText(value: string): boolean {
 }
 
 async function replaceFocusedInput(value: string): Promise<boolean> {
-  adb(["shell", "input", "keyevent", "123"], 5_000);
-  adb(["shell", "input", "keyevent", ...Array.from({ length: 96 }, () => "67")], 20_000);
-  const typed = inputText(value);
-  const dismissed = await dismissSoftKeyboard();
-  const blurred = dismissed && await blurFocusedNativeTextInput();
+  const before = dumpUi();
+  const focusedInput = before.nodes.find((node) =>
+    node.attrs.includes('class="android.widget.EditText"')
+    && node.attrs.includes('focused="true"')
+  );
+  if (!focusedInput) return false;
+  // Android's atomic Ctrl+A selection is reliable for both numeric and text
+  // React Native inputs. A long multi-DEL command can time out after ADB has
+  // acknowledged only part of the edit, so never use it as replacement proof.
   await wait(250);
-  return typed && dismissed && blurred;
+  const selectedAll = adb(["shell", "input", "keycombination", "113", "29"], 10_000);
+  if (!selectedAll.ok) return false;
+  await wait(200);
+  const typed = inputText(value);
+  if (!typed) return false;
+  // `adb input text` returning zero only proves that Android accepted the
+  // command. React Native can still be delivering the resulting onChange;
+  // hiding or submitting the IME immediately can blur the controlled input
+  // before that value is committed and restore its old text. Require the new
+  // value to be observable on the same focused native input first.
+  // Give Android's queued key events the same settled boundary proven by the
+  // direct device diagnostic before starting the comparatively heavy
+  // UiAutomator dump. Dumping immediately can monopolize accessibility while
+  // the final input event is still being delivered.
+  await wait(800);
+  const visibleDeadline = Date.now() + 5_000;
+  let typedValueVisible = false;
+  while (Date.now() < visibleDeadline) {
+    const snapshot = dumpUi();
+    const currentFocusedInput = snapshot.nodes.find((node) =>
+      node.attrs.includes('class="android.widget.EditText"')
+      && node.attrs.includes('focused="true"')
+    );
+    if (currentFocusedInput?.text === value) {
+      typedValueVisible = true;
+      break;
+    }
+    await wait(250);
+  }
+  if (!typedValueVisible) return false;
+  await wait(600);
+  const dismissed = await dismissSoftKeyboard();
+  await wait(250);
+  return dismissed;
 }
 
 async function dismissSoftKeyboard(): Promise<boolean> {
@@ -779,25 +1364,6 @@ async function dismissSoftKeyboard(): Promise<boolean> {
     await wait(750);
   }
   return !/mInputShown=true/i.test(adb(["shell", "dumpsys", "input_method"], 15_000).output);
-}
-
-function hasFocusedNativeTextInput(snapshot: ReturnType<typeof dumpUi>): boolean {
-  return snapshot.nodes.some((node) =>
-    node.attrs.includes('class="android.widget.EditText"')
-    && node.attrs.includes('focused="true"')
-  );
-}
-
-async function blurFocusedNativeTextInput(): Promise<boolean> {
-  const before = dumpUi();
-  if (!hasFocusedNativeTextInput(before)) return true;
-  // Hiding the numeric IME does not clear React Native TextInput focus. A
-  // bounded single-line submit hands focus off without navigating Back or
-  // tapping an unrelated control; fail closed if the exact focus persists.
-  const submitted = adb(["shell", "input", "keyevent", "66"], 5_000);
-  if (!submitted.ok) return false;
-  await wait(500);
-  return !hasFocusedNativeTextInput(dumpUi());
 }
 
 async function setTextInput(testId: string, value: string, maxSwipes = 18): Promise<boolean> {
@@ -818,13 +1384,17 @@ async function waitForEnabledId(testId: string, timeoutMs = 60_000): Promise<UiN
 }
 
 async function collapseDisclosureIfOpen(testId: string): Promise<boolean> {
-  const lookup = await scrollToId(testId, 24);
-  if (!lookup.node) return false;
-  const label = `${lookup.node.text} ${lookup.node.contentDesc}`;
+  const exactToggle = await findSafeRequestNodeByIdFromTop(testId, 24);
+  if (!exactToggle) return false;
+  const label = `${exactToggle.text} ${exactToggle.contentDesc}`;
   if (!/\u0421\u043a\u0440\u044b\u0442\u044c/u.test(label)) return true;
-  if (!await tapById(testId, 6)) return false;
+  if (!tapNode(exactToggle)) return false;
   await wait(750);
-  return true;
+  const settledToggle = await findSafeRequestNodeByIdFromTop(testId, 24);
+  return Boolean(
+    settledToggle
+    && !/\u0421\u043a\u0440\u044b\u0442\u044c/u.test(`${settledToggle.text} ${settledToggle.contentDesc}`)
+  );
 }
 
 async function openDisclosureAndFind(
@@ -832,16 +1402,16 @@ async function openDisclosureAndFind(
   contentId: string,
   maxSwipes = 16,
 ): Promise<{ snapshot: ReturnType<typeof dumpUi>; node: UiNode | null }> {
-  let content = { snapshot: dumpUi(), node: null as UiNode | null };
+  let content = await findRequestNodeByIdFromTop(contentId, maxSwipes);
   const initiallyVisible = findNodeById(content.snapshot, contentId);
   if (initiallyVisible) return { snapshot: content.snapshot, node: initiallyVisible };
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const toggle = await scrollToId(toggleId, maxSwipes);
-    if (!toggle.node) return content;
-    const open = /\u0421\u043a\u0440\u044b\u0442\u044c/u.test(`${toggle.node.text} ${toggle.node.contentDesc}`);
-    if (!open && !await tapById(toggleId, 6)) return content;
+    const exactToggle = await findSafeRequestNodeByIdFromTop(toggleId, maxSwipes);
+    if (!exactToggle) return content;
+    const open = /\u0421\u043a\u0440\u044b\u0442\u044c/u.test(`${exactToggle.text} ${exactToggle.contentDesc}`);
+    if (!open && !tapNode(exactToggle)) return content;
     await wait(1_500);
-    content = await scrollToId(contentId, maxSwipes);
+    content = await findRequestNodeByIdFromTop(contentId, maxSwipes);
     if (content.node) return content;
   }
   return content;
@@ -905,8 +1475,56 @@ function rawParameterValue(registration: NativeMatrixRegistration, key: string):
 function parameterChoices(key: string): readonly { value: string | boolean }[] {
   const roadworks = ROADWORKS_WAVE_A_PARAMETER_PRESENTATION[key as RoadworksWaveAParameterKey];
   if (roadworks) return roadworks.choices;
-  return (ASPHALT_RELATED_PARAMETER_METADATA_V4[key]?.allowedValues ?? [])
+  const relatedChoices = ASPHALT_RELATED_PARAMETER_METADATA_V4[key]?.allowedValues ?? [];
+  if (relatedChoices.length > 0) return relatedChoices
     .map((value) => ({ value }));
+  return (getAsphaltParameterV4(key)?.choices ?? []).map((choice) => ({ value: choice.value }));
+}
+
+const ASPHALT_SCOPE_PARAMETER_DEFINITIONS = Object.freeze(
+  ASPHALT_WORK_SPECIFIC_PARAMETERS_V4.map((parameter) => ({
+    canonicalKey: parameter.canonical_key,
+    critical: parameter.necessity === "critical",
+    internal: parameter.internal_only === true,
+  })),
+);
+
+async function discoverGovernedScopeCriticalMissingKeys(
+  initialSnapshot: ReturnType<typeof dumpUi>,
+): Promise<{ criticalKeys: string[]; unknownKeys: string[] }> {
+  const criticalKeys = new Set<string>();
+  const unknownKeys = new Set<string>();
+  let snapshot = initialSnapshot;
+  let previousFingerprint = "";
+  let stableBoundaryCount = 0;
+  let noNewCriticalCount = 0;
+  let sawNonCritical = false;
+  for (let step = 0; step <= 18; step += 1) {
+    const beforeCount = criticalKeys.size;
+    const classified = classifyGovernedMissingParameterKeys(
+      snapshot.nodes,
+      ASPHALT_SCOPE_PARAMETER_DEFINITIONS,
+    );
+    classified.criticalKeys.forEach((key) => criticalKeys.add(key));
+    classified.unknownKeys.forEach((key) => unknownKeys.add(key));
+    sawNonCritical = sawNonCritical || classified.nonCriticalKeys.length > 0;
+    noNewCriticalCount = criticalKeys.size === beforeCount ? noNewCriticalCount + 1 : 0;
+    if (unknownKeys.size > 0) break;
+    if (sawNonCritical && criticalKeys.size > 0 && noNewCriticalCount >= 2) break;
+    if (criticalKeys.size > 0 && noNewCriticalCount >= 6) break;
+    const fingerprint = sha256(snapshot.xml);
+    stableBoundaryCount = fingerprint === previousFingerprint ? stableBoundaryCount + 1 : 0;
+    previousFingerprint = fingerprint;
+    if (stableBoundaryCount >= 2 || step === 18) break;
+    if (!await scrollKnownRequestContainerUp(snapshot)) break;
+    await wait(500);
+    snapshot = dumpUi();
+  }
+  const governedOrder = ASPHALT_SCOPE_PARAMETER_DEFINITIONS.map((definition) => definition.canonicalKey);
+  return {
+    criticalKeys: governedOrder.filter((key) => criticalKeys.has(key)),
+    unknownKeys: [...unknownKeys].sort(),
+  };
 }
 
 async function setInlineParameter(
@@ -948,12 +1566,19 @@ async function setInlineParameter(
   };
   const tapExactEnumOptionAndWaitForCommit = async (choiceValue: string): Promise<boolean> => {
     const optionId = `editable-param-option-${key}-${choiceValue}`;
+    const visibleSnapshot = dumpUi();
+    const visibleNode = findNodeById(visibleSnapshot, optionId);
+    const exactSafeNode = visibleNode
+      && nativeNodeSafeViewportAdjustment(visibleNode.bounds, viewport().height) === "none"
+      ? visibleNode
+      : await findSafeRequestNodeByIdFromTop(optionId, 18);
     // Numeric P0 fields can leave the shared ScrollView below an earlier enum
     // editor. Re-establish the known top origin before the exact-ID search so
-    // its forward-first scan cannot move farther away from that enum. The tap
-    // remains fail-closed on the exact option and its exact dirty marker.
-    await returnToTop(16);
-    if (!await findSafeNodeById(optionId, 4)) return false;
+    // its forward-first scan cannot move farther away from that enum. When the
+    // exact option is already safely visible, preserve that stronger boundary
+    // instead of scrolling away from the accepted tap target. The tap remains
+    // fail-closed on the exact option and its exact dirty marker.
+    if (!exactSafeNode) return false;
     // The exact node can still move briefly after ScrollView momentum ends.
     // Settle first, then reacquire the same exact ID and tap only its current,
     // safe bounds. Never reuse coordinates from the pre-settle snapshot.
@@ -982,64 +1607,81 @@ async function setInlineParameter(
       continue;
     }
     const editorId = `editable-param-inline-editor-${key}`;
-    const owned = await findSafeInputOwnedByExactEditor(editorId);
-    if (!owned) continue;
-    if (!tapNode(owned.input)) continue;
-    await wait(200);
+    if (!await focusInputOwnedByExactEditor(editorId)) {
+      capture(caseDir, `p0-${key}-attempt-${attempt + 1}-exact-focus-missing`);
+      continue;
+    }
     if (await replaceFocusedInput(value) && await waitForCommittedValue()) return true;
+    capture(caseDir, `p0-${key}-attempt-${attempt + 1}-input-not-committed`);
   }
   return false;
 }
 
-function revisionLabel(snapshot: ReturnType<typeof dumpUi>): string | null {
-  const node = findNodeById(snapshot, "estimate-current-revision-id");
-  return node?.text || node?.contentDesc || null;
-}
-
-async function waitForChangedRevision(
-  previousRevisionLabel: string,
-  timeoutMs = 420_000,
-): Promise<{ snapshot: ReturnType<typeof dumpUi>; label: string | null }> {
-  const deadline = Date.now() + timeoutMs;
-  let last = dumpUi();
-  while (Date.now() < deadline) {
-    await returnToTop(5);
-    const lookup = await scrollToId("estimate-current-revision-id", 6);
-    last = lookup.snapshot;
-    const label = revisionLabel(last);
-    if (label && label !== previousRevisionLabel) return { snapshot: last, label };
-    await wait(10_000);
-  }
-  return { snapshot: last, label: revisionLabel(last) };
-}
-
 async function applyEditAndWaitForChangedRevision(
-  previousRevisionLabel: string,
-  timeoutMs = 420_000,
+  input: {
+    caseDir: string;
+    previous: NativeCompiledRevisionObservation;
+    selectedCatalogId: string;
+    selectedWorkKey: string;
+    canonicalOwner: string;
+    expectedCalculationStatus: NativeCompiledRevisionObservation["calculation_status"];
+    readRuntimeBuildTiming: () => NativeEstimateBuildTimingEvidence;
+  },
 ): Promise<{
   snapshot: ReturnType<typeof dumpUi>;
   label: string | null;
   applyTapped: boolean;
+  observation: NativeCompiledRevisionObservation | null;
+  failureToken: string | null;
 }> {
-  const deadline = Date.now() + timeoutMs;
-  let last = { snapshot: dumpUi(), label: null as string | null, applyTapped: false };
-  for (let attempt = 0; attempt < 3 && Date.now() < deadline; attempt += 1) {
-    // A successful `adb input tap` only proves that Android accepted the
-    // coordinate. Reacquire the exact action and require a new immutable
-    // revision before accepting the edit; the status from the initial P0 apply
-    // remains visible and is deliberately not an acknowledgement signal.
-    if (!await tapById("editable-param-batch-apply", 16)) continue;
-    last.applyTapped = true;
-    const remainingMs = deadline - Date.now();
-    if (remainingMs <= 0) break;
-    const changed = await waitForChangedRevision(
-      previousRevisionLabel,
-      Math.min(120_000, remainingMs),
-    );
-    last = { ...changed, applyTapped: true };
-    if (changed.label && changed.label !== previousRevisionLabel) return last;
+  const baselineBuildCount = input.readRuntimeBuildTiming().runtime_build_count;
+  // One exact tap may create at most one immutable revision. Retrying an
+  // accepted coordinate would hide a duplicate product transition, so a
+  // missing acknowledgement fails closed instead of tapping Apply again.
+  const exactApplyNode = await findExactBatchApplyBeforeEditedParameter();
+  if (!exactApplyNode || !tapNode(exactApplyNode)) {
+    capture(input.caseDir, "edit-apply-action-missing");
+    return {
+      snapshot: dumpUi(),
+      label: null,
+      applyTapped: false,
+      observation: null,
+      failureToken: "edit_apply_failed",
+    };
   }
-  return last;
+  await wait(800);
+  if (!await returnKnownRequestContainerToTop()) {
+    return {
+      snapshot: dumpUi(),
+      label: null,
+      applyTapped: true,
+      observation: null,
+      failureToken: "edit_post_apply_top_reanchor_failed",
+    };
+  }
+  const observed = await observeCompiledRevisionAcrossViewport({
+    caseDir: input.caseDir,
+    phase: "edit",
+    expected: {
+      selectedCatalogId: input.selectedCatalogId,
+      selectedWorkKey: input.selectedWorkKey,
+      canonicalOwner: input.canonicalOwner,
+      previousRevisionId: input.previous.current_revision_id,
+      baselineRevisionOrdinal: input.previous.revision_ordinal,
+      baselineBuildCount,
+      expectedBuildDelta: 0,
+      expectedRowCount: input.previous.compiled_row_count,
+      expectedCalculationStatus: input.expectedCalculationStatus,
+    },
+    readRuntimeBuildTiming: input.readRuntimeBuildTiming,
+  });
+  return {
+    snapshot: observed.snapshot,
+    label: observed.observation?.current_revision_id ?? null,
+    applyTapped: true,
+    observation: observed.observation,
+    failureToken: observed.failureToken,
+  };
 }
 
 function visibleBuildIdentity(snapshot: ReturnType<typeof dumpUi>): string | null {
@@ -1237,7 +1879,7 @@ async function runCase(
   const screenshots: string[] = [];
   const uiDumps: string[] = [];
   const caseDir = path.join(artifactDir, "cases", registration.evidenceCaseId);
-  const expectedP0 = p0Keys(registration);
+  let expectedP0 = p0Keys(registration);
   const expectedRows = expectedRowsFor(registration);
   const expectedRowNames = expectedRows.map((row) => row.nameRu);
   let caseStartIsolation: NativeCaseIsolationEvidence = {
@@ -1253,6 +1895,9 @@ async function runCase(
     failures: [],
   };
   let caseEndIsolation: NativeCaseIsolationEvidence | null = null;
+  let precreateCompiledRevision: NativeCompiledRevisionObservation | null = null;
+  let createCompiledRevision: NativeCompiledRevisionObservation | null = null;
+  let editCompiledRevision: NativeCompiledRevisionObservation | null = null;
   const readRuntimeBuildTiming = (): NativeEstimateBuildTimingEvidence =>
     parseNativeEstimateBuildTimingEvidence(adb(["logcat", "-d", "-v", "brief"], 30_000).output);
   const finishAtRootFailure = (
@@ -1283,6 +1928,9 @@ async function runCase(
     build_identity_visible: buildIdentityVisible,
     revision_before_edit: revisionBeforeEdit,
     revision_after_edit: null,
+    precreate_compiled_revision: precreateCompiledRevision,
+    create_compiled_revision: createCompiledRevision,
+    edit_compiled_revision: editCompiledRevision,
     missing_boq_row_names: [],
     screenshots,
     ui_dumps: uiDumps,
@@ -1310,16 +1958,115 @@ async function runCase(
   ));
   if (!launch.ok) return finishAtRootFailure("launch", [`create_launch_failed:${launch.output.slice(0, 240)}`]);
   let observedP0: string[] = [];
-  let applied: ReturnType<typeof dumpUi>;
+  const transitionBaselineBuildCount = 0;
+  let createPreviousRevisionId: string | null = null;
+  let createBaselineRevisionOrdinal = 0;
   if (registration.scopeOptionTestId) {
     const scope = await waitForIdSparse(registration.scopeOptionTestId, 420_000, 35_000, 10_000);
     if (!findNodeById(scope, registration.scopeOptionTestId)) {
       return finishAtRootFailure("launch", ["road_scope_option_missing_after_exact_intent"]);
     }
-    if (!await tapById(registration.scopeOptionTestId, 6)) {
+    const d0Timing = readRuntimeBuildTiming();
+    const d0 = assessNoRevisionTransition({
+      baselineBuildCount: transitionBaselineBuildCount,
+      currentBuildCount: d0Timing.runtime_build_count,
+      maximumBuildDelta: 1,
+      visibleRevisionIds: visibleCompiledRevisionIds(scope.nodes),
+    });
+    if (!d0.ok) {
+      return finishAtRootFailure("p0", [
+        `${STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH}:d0_revision_expected_0_build_delta_expected_0_or_1`,
+      ]);
+    }
+    const safeScopeNode = await findSafeNodeById(registration.scopeOptionTestId, 6);
+    if (!safeScopeNode) {
       return finishAtRootFailure("p0", ["road_scope_option_tap_failed"]);
     }
-    applied = await waitForCompiledProjection(1);
+    await wait(800);
+    const settledScopeSnapshot = dumpUi();
+    const settledScopeNode = findNodeById(settledScopeSnapshot, registration.scopeOptionTestId);
+    if (
+      !settledScopeNode
+      || nativeNodeSafeViewportAdjustment(settledScopeNode.bounds, viewport().height) !== "none"
+      || !tapNode(settledScopeNode)
+    ) {
+      return finishAtRootFailure("p0", ["road_scope_option_exact_settled_tap_failed"]);
+    }
+    const selectedScope = await waitForIdSparse(
+      "request-estimate-selected-scope",
+      180_000,
+      2_000,
+      2_000,
+    );
+    if (!findNodeById(selectedScope, "request-estimate-selected-scope")) {
+      return finishAtRootFailure("p0", ["road_scope_selection_transition_missing"]);
+    }
+    const observedPrecreate = await observeCompiledRevisionAcrossViewport({
+      caseDir,
+      phase: "precreate",
+      expected: {
+        selectedCatalogId: registration.requestedCatalogRecordId ?? registration.workId,
+        selectedWorkKey: registration.workId,
+        canonicalOwner: registration.workId,
+        previousRevisionId: null,
+        baselineRevisionOrdinal: 0,
+        baselineBuildCount: transitionBaselineBuildCount,
+        expectedBuildDelta: 1,
+        expectedRowCount: null,
+        expectedCalculationStatus: "needs_more_params_but_preliminary_available",
+      },
+      readRuntimeBuildTiming,
+    });
+    if (!observedPrecreate.observation) {
+      return finishAtRootFailure("p0", [
+        observedPrecreate.failureToken ?? "preliminary_compiled_revision_observation_missing_after_scope",
+      ]);
+    }
+    precreateCompiledRevision = observedPrecreate.observation;
+    createPreviousRevisionId = precreateCompiledRevision.current_revision_id;
+    createBaselineRevisionOrdinal = precreateCompiledRevision.revision_ordinal;
+
+    const toggleLookup = await scrollToId("request-estimate-parameters-toggle", 24);
+    markPhase("exact_intent_p0_disclosure_ready");
+    if (!toggleLookup.node) {
+      return finishAtRootFailure("p0", ["p0_disclosure_toggle_missing_after_scope_selection"]);
+    }
+    if (!await tapById("request-estimate-parameters-toggle", 6)) {
+      return finishAtRootFailure("p0", ["p0_disclosure_toggle_tap_failed_after_scope_selection"]);
+    }
+    let initial = await waitForIdSparse("request-estimate-parameter-panel", 60_000, 2_000, 4_000);
+    if (!findNodeById(initial, "request-estimate-parameter-panel")) {
+      return finishAtRootFailure("p0", ["p0_parameter_panel_missing_after_scope_selection"]);
+    }
+    const governedScopeMissing = await discoverGovernedScopeCriticalMissingKeys(initial);
+    if (governedScopeMissing.unknownKeys.length > 0) {
+      return finishAtRootFailure("p0", [
+        `p0_governance_unknown_parameter:${governedScopeMissing.unknownKeys.join(",")}`,
+      ]);
+    }
+    expectedP0 = governedScopeMissing.criticalKeys;
+    observedP0 = [...expectedP0];
+    if (expectedP0.length === 0) {
+      return finishAtRootFailure("p0", ["p0_governed_critical_schema_empty_after_scope_selection"]);
+    }
+    const missingHarnessValues = expectedP0.filter((key) =>
+      !Object.prototype.hasOwnProperty.call(registration.inputValues, key)
+    );
+    if (missingHarnessValues.length > 0) {
+      return finishAtRootFailure("p0", [
+        `p0_governed_input_value_missing:${missingHarnessValues.join(",")}`,
+      ], observedP0);
+    }
+    for (const key of expectedP0) {
+      if (!await setInlineParameter(key, rawParameterValue(registration, key), caseDir)) {
+        return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
+      }
+    }
+    await returnToTop(20);
+    if (!await tapById("editable-param-batch-apply", 16)) {
+      return finishAtRootFailure("p0", ["p0_apply_failed_after_scope_selection"], observedP0);
+    }
+    await returnToTop(20);
   } else {
     let initial = await waitForIdSparse("request-estimate-parameters-toggle", 420_000, 35_000, 10_000);
     markPhase("exact_intent_p0_disclosure_ready");
@@ -1361,6 +2108,19 @@ async function runCase(
         return finishAtRootFailure("p0", [`p0_fill_failed:${key}`], observedP0);
       }
     }
+    const d0Timing = readRuntimeBuildTiming();
+    const d0Snapshot = dumpUi();
+    const d0 = assessNoRevisionTransition({
+      baselineBuildCount: transitionBaselineBuildCount,
+      currentBuildCount: d0Timing.runtime_build_count,
+      maximumBuildDelta: 1,
+      visibleRevisionIds: visibleCompiledRevisionIds(d0Snapshot.nodes),
+    });
+    if (!d0.ok) {
+      return finishAtRootFailure("p0", [
+        `${STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH}:d0_revision_expected_0_build_delta_expected_0_or_1`,
+      ], observedP0);
+    }
     // Enum dirty-state verification finishes beside the last edited card. Start
     // the batch action lookup from the deterministic screen origin so a prior
     // retry cannot send the bidirectional search to the delivery/history tail.
@@ -1368,8 +2128,10 @@ async function runCase(
     if (!await tapById("editable-param-batch-apply", 16)) {
       return finishAtRootFailure("p0", ["p0_apply_failed"], observedP0);
     }
+    let lastDependentSnapshot = initial;
     for (const key of registration.dependentParameterKeys) {
       const dependent = await scrollToId(`request-estimate-missing-param-${key}`, 16);
+      lastDependentSnapshot = dependent.snapshot;
       if (!dependent.node) {
         return finishAtRootFailure("p0", [`dependent_p0_missing_after_first_apply:${key}`], observedP0);
       }
@@ -1378,31 +2140,53 @@ async function runCase(
       }
     }
     if (registration.dependentParameterKeys.length > 0) {
+      const firstApplyTiming = readRuntimeBuildTiming();
+      const firstApply = assessNoRevisionTransition({
+        baselineBuildCount: transitionBaselineBuildCount,
+        currentBuildCount: firstApplyTiming.runtime_build_count,
+        maximumBuildDelta: 1,
+        visibleRevisionIds: visibleCompiledRevisionIds(lastDependentSnapshot.nodes),
+      });
+      if (!firstApply.ok) {
+        return finishAtRootFailure("p0", [
+          `${STOP_R9_PRODUCT_COMPILED_REVISION_IDENTITY_MISMATCH}:dependent_first_apply_revision_delta_expected_0`,
+        ], observedP0);
+      }
       await returnToTop(20);
       if (!await tapById("editable-param-batch-apply", 16)) {
         return finishAtRootFailure("p0", ["dependent_p0_second_apply_failed"], observedP0);
       }
     }
-    await returnToTop(20);
-    applied = await waitForCompiledProjection(Math.max(1, expectedRows.length));
+    if (!await returnKnownRequestContainerToTop(40)) {
+      return finishAtRootFailure("p0", ["create_post_apply_top_reanchor_failed"], observedP0);
+    }
   }
+  const observedCreate = await observeCompiledRevisionAcrossViewport({
+    caseDir,
+    phase: "create",
+    expected: {
+      selectedCatalogId: registration.requestedCatalogRecordId ?? registration.workId,
+      selectedWorkKey: registration.workId,
+      canonicalOwner: registration.workId,
+      previousRevisionId: createPreviousRevisionId,
+      baselineRevisionOrdinal: createBaselineRevisionOrdinal,
+      baselineBuildCount: transitionBaselineBuildCount,
+      expectedBuildDelta: 1,
+      expectedRowCount: expectedRows.length > 0 ? expectedRows.length : null,
+      expectedCalculationStatus: registration.scopeOptionTestId
+        ? "needs_more_params_but_preliminary_available"
+        : "draft_ready",
+    },
+    readRuntimeBuildTiming,
+  });
+  if (!observedCreate.observation) {
+    return finishAtRootFailure("p0", [
+      observedCreate.failureToken ?? "compiled_revision_observation_missing_after_p0_apply",
+    ], observedP0);
+  }
+  createCompiledRevision = observedCreate.observation;
   markPhase("p0_compiled_projection_ready");
-  const appliedStatus = registration.scopeOptionTestId
-    ? { node: findNodeById(applied, "estimate-current-revision-id") }
-    : await scrollToId("request-estimate-parameter-apply-status", 24);
-  if (!appliedStatus.node) {
-    return finishAtRootFailure("p0", ["compiled_revision_status_missing_after_p0_apply"], observedP0);
-  }
-  const appliedRowCount = Number(
-    (findNodeById(applied, "request-estimate-row-count")?.text ?? "").match(/\d+/)?.[0] ?? -1,
-  );
-  if (appliedRowCount <= 0 || (expectedRows.length > 0 && appliedRowCount !== expectedRows.length)) {
-    return finishAtRootFailure(
-      "p0",
-      [`compiled_boq_row_count_expected_${expectedRows.length}_received_${appliedRowCount}`],
-      observedP0,
-    );
-  }
+  const appliedRowCount = createCompiledRevision.compiled_row_count;
   if (!await collapseDisclosureIfOpen("request-estimate-parameters-toggle")) {
     return finishAtRootFailure("create", ["parameter_disclosure_collapse_failed_after_p0_apply"], observedP0);
   }
@@ -1411,10 +2195,8 @@ async function runCase(
     "request-estimate-items-editor-content",
     16,
   );
-  const revisionBeforeLookup = await scrollToId("estimate-current-revision-id", 24);
-  const revisionBeforeEdit = revisionLabel(revisionBeforeLookup.snapshot);
-  const exactOwnerVisible = applied.text.includes(registration.professionalNameRu)
-    || Boolean(findNodeById(applied, `request-estimate-canonical-owner-${registration.workId}`));
+  const revisionBeforeEdit = createCompiledRevision.current_revision_id;
+  const exactOwnerVisible = createCompiledRevision.canonical_owner === registration.workId;
   if (!compiledLookup.node) {
     return finishAtRootFailure("p0", ["compiled_boq_missing_after_p0_apply"], observedP0);
   }
@@ -1426,7 +2208,6 @@ async function runCase(
   const create = true;
   markPhase("create_complete");
 
-  await returnToTop(16);
   if (!await collapseDisclosureIfOpen("request-estimate-items-editor")) {
     failures.push("boq_disclosure_collapse_failed_before_edit");
   }
@@ -1453,19 +2234,25 @@ async function runCase(
       revision_after_edit: null,
     };
   }
-  const changedRevision = revisionBeforeEdit
-    ? await applyEditAndWaitForChangedRevision(revisionBeforeEdit)
-    : { snapshot: dumpUi(), label: null, applyTapped: false };
+  const changedRevision = await applyEditAndWaitForChangedRevision({
+    caseDir,
+    previous: createCompiledRevision,
+    selectedCatalogId: registration.requestedCatalogRecordId ?? registration.workId,
+    selectedWorkKey: registration.workId,
+    canonicalOwner: registration.workId,
+    expectedCalculationStatus: createCompiledRevision.calculation_status,
+    readRuntimeBuildTiming,
+  });
   if (!changedRevision.applyTapped) failures.push("edit_apply_failed");
+  if (changedRevision.failureToken && changedRevision.failureToken !== "edit_apply_failed") {
+    failures.push(changedRevision.failureToken);
+  }
+  editCompiledRevision = changedRevision.observation;
   const editedDiff = await scrollToId(
     `estimate-revision-diff-param-${registration.editParameterKey}`,
     24,
   );
-  const edited = editedDiff.snapshot;
-  const finalEditRevisionLabel = revisionLabel(edited);
-  const revisionAfterEdit = finalEditRevisionLabel && finalEditRevisionLabel !== revisionBeforeEdit
-    ? finalEditRevisionLabel
-    : changedRevision.label;
+  const revisionAfterEdit = changedRevision.label;
   const immutableRevisionVisible = Boolean(
     revisionBeforeEdit
     && revisionAfterEdit
@@ -1548,10 +2335,8 @@ async function runCase(
   if (replayCapture.uiDump) uiDumps.push(replayCapture.uiDump);
   markPhase("cold_replay_complete");
 
-  await returnToTop(12);
-  const pdfTapped = await tapById("consumer-repair-history-open-pdf-expanded", 8)
-    || await tapById("consumer-repair-history-open-pdf-inline", 8)
-    || await tapById("consumer-repair-history-pdf", 10);
+  const exactHistoryPdfNode = await findSelectedHistoryInlinePdfAction(registration.professionalNameRu);
+  const pdfTapped = Boolean(exactHistoryPdfNode && tapNode(exactHistoryPdfNode));
   if (!pdfTapped) failures.push("history_pdf_action_missing");
   const pdfProbe = await waitForPdfProjection(90_000);
   const pdfProjectionVisible = pdfProbe.mode != null;
@@ -1612,6 +2397,9 @@ async function runCase(
     build_identity_visible: buildIdentityVisible,
     revision_before_edit: revisionBeforeEdit,
     revision_after_edit: revisionAfterEdit,
+    precreate_compiled_revision: precreateCompiledRevision,
+    create_compiled_revision: createCompiledRevision,
+    edit_compiled_revision: editCompiledRevision,
     missing_boq_row_names: missingBoqRowNames,
     screenshots,
     ui_dumps: uiDumps,
