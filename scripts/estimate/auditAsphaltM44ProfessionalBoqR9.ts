@@ -1681,6 +1681,21 @@ export async function runAsphaltM44ProfessionalBoqAuditR9(): Promise<void> {
       scenarioRows.every((row) => row.professional_verdict === "PASS") &&
       coreCompatibilityGreen &&
       (!dualScope || fullScopeGreen);
+    const focusedContracts = parseArg("focused-contracts") ?? "NOT_RECORDED";
+    const webReferenceGreen = webArtifact !== null &&
+      webArtifact.apply_click === 1 &&
+      webArtifact.new_revision === 1 &&
+      typeof webArtifact.boq_rows === "number" &&
+      webArtifact.boq_rows > 0 &&
+      typeof webArtifact.exact_catalog_id === "string" &&
+      webArtifact.exact_catalog_id.length > 0 &&
+      typeof webArtifact.exact_work_key === "string" &&
+      webArtifact.exact_work_key.length > 0 &&
+      webArtifact.history_reopen_same_revision === true;
+    const asphaltReferenceGreen = afterGreen &&
+      dualScope &&
+      focusedContracts === "29/29" &&
+      webReferenceGreen;
     const primaryNames = [
       `${prefix}_LEDGER.csv`, `${prefix}_LEDGER.json`, `${prefix}_SUMMARY.md`,
       `${allPrefix}.csv`, `${allPrefix}.json`, `${allPrefix}.md`,
@@ -2065,7 +2080,7 @@ export async function runAsphaltM44ProfessionalBoqAuditR9(): Promise<void> {
     }
     if (webArtifact && webArtifactPath) {
       const shortGateCounts = {
-        focused_contracts: parseArg("focused-contracts") ?? "NOT_RECORDED",
+        focused_contracts: focusedContracts,
         catalog_records: `${all63.filter((row) => row.professional_verdict === "PASS").length}/63`,
         canonical_technologies: `${m44.filter((row) => row.professional_verdict === "PASS").length}/44`,
         aliases_and_scope_wrappers: `${all63.filter((row) => row.alias_of).length}/19`,
@@ -2094,8 +2109,14 @@ export async function runAsphaltM44ProfessionalBoqAuditR9(): Promise<void> {
           history_reopen_same_revision: webArtifact.history_reopen_same_revision,
         },
         boq_and_quantity_state: "GREEN",
+        resource_norm_state: "GREEN",
         costing_state: "PRICE_REQUIRED",
-        final_status: "GREEN_ASPHALT_R63_M44_A19_RESOURCE_LEVEL_PROFESSIONAL_ASSEMBLY",
+        full_jest: "NOT_RUN",
+        merge_release_deploy_ota: "NOT_RUN",
+        assembly_status: "GREEN_ASPHALT_R63_M44_A19_RESOURCE_LEVEL_PROFESSIONAL_ASSEMBLY",
+        final_status: asphaltReferenceGreen
+          ? "GREEN_ASPHALT_R63_M44_A19_PROFESSIONAL_ESTIMATE_REFERENCE_DURABLE_HISTORY_READY_FOR_11610_SCALE_NO_FULL_JEST_NO_RELEASE"
+          : "RED_ASPHALT_R63_M44_A19_PROFESSIONAL_ESTIMATE_REFERENCE_DURABLE_HISTORY",
       }, null, 2)}\n`, "utf8");
     }
     const manifest = {
@@ -2130,9 +2151,12 @@ export async function runAsphaltM44ProfessionalBoqAuditR9(): Promise<void> {
       writeFileSync(path.join(outputDirectory, finalManifestName), `${JSON.stringify({
         ...manifest,
         denominator: { N: 66, R: 63, M: 44, A: 19, E: 3 },
-        final_status: afterGreen
+        assembly_status: afterGreen
           ? "GREEN_POST_R8_01_ASPHALT_R63_M44_A19_RESOURCE_LEVEL_PROFESSIONAL_ASSEMBLY"
           : "RED_POST_R8_01_ASPHALT_R63_M44_A19_RESOURCE_LEVEL_PROFESSIONAL_ASSEMBLY",
+        final_status: asphaltReferenceGreen
+          ? "GREEN_ASPHALT_R63_M44_A19_PROFESSIONAL_ESTIMATE_REFERENCE_DURABLE_HISTORY_READY_FOR_11610_SCALE_NO_FULL_JEST_NO_RELEASE"
+          : "RED_ASPHALT_R63_M44_A19_PROFESSIONAL_ESTIMATE_REFERENCE_DURABLE_HISTORY",
       }, null, 2)}\n`, "utf8");
     }
     process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
