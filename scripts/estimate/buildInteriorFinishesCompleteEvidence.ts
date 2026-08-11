@@ -92,7 +92,7 @@ function writeCsv(name: string, rows: readonly Record<string, unknown>[]): void 
   }));
   const headers = Object.keys(enriched[0] ?? {});
   const content = [headers.map(csvCell).join(","), ...enriched.map((row) =>
-    headers.map((header) => csvCell(row[header])).join(","))].join("\n");
+    headers.map((header) => csvCell((row as Record<string, unknown>)[header])).join(","))].join("\n");
   writeFileSync(join(root, name), `${content}\n`, "utf8");
 }
 

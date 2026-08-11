@@ -14,6 +14,12 @@ import {
   WATER_SEWER_DOMAIN_INVENTORY,
   buildWaterSewerFromInlineInputV1,
 } from "./waterSupplySewerageComplete";
+import {
+  HVAC_CANONICAL_PARAMETER_SCHEMAS,
+  HVAC_COMPLETE_DOMAIN_ID,
+  HVAC_DOMAIN_INVENTORY,
+  buildHvacFromInlineInputV1,
+} from "./heatingVentilationComplete";
 
 export const REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1 =
   "registered-professional-estimate-domains:v1" as const;
@@ -59,27 +65,42 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const inventory = interiorInventory ?? waterSewerInventory;
+  const hvacInventory = interiorInventory || waterSewerInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
+    exactIdentity === candidate.catalog_id ||
+    exactIdentity === candidate.work_key ||
+    exactIdentity === candidate.template_id ||
+    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
+  );
+  const inventory = interiorInventory ?? waterSewerInventory ?? hvacInventory;
   if (!inventory) return null;
   const waterSewer = Boolean(waterSewerInventory);
-  const canonicalParameterSchema = (waterSewer
-    ? WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS
-    : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
+  const hvac = Boolean(hvacInventory);
+  const canonicalParameterSchema = (hvac
+    ? HVAC_CANONICAL_PARAMETER_SCHEMAS
+    : waterSewer
+      ? WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS
+      : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
       (schema) => schema.canonicalWorkKey === inventory.work_key,
     );
   if (!canonicalParameterSchema) {
     throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
   }
   return Object.freeze({
-    domain_id: waterSewer ? WATER_SEWER_COMPLETE_DOMAIN_ID : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    domain_id: hvac
+      ? HVAC_COMPLETE_DOMAIN_ID
+      : waterSewer
+        ? WATER_SEWER_COMPLETE_DOMAIN_ID
+        : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,
     template_id: `domain-passport:${inventory.catalog_id}:v1`,
     title_ru: inventory.localized_name_ru,
-    category_key: waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
-    category_title_ru: waterSewer
-      ? "Водоснабжение и канализация"
-      : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+    category_key: hvac ? "heating_hvac" : waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
+    category_title_ru: hvac
+      ? "Отопление, вентиляция и кондиционирование"
+      : waterSewer
+        ? "Водоснабжение и канализация"
+        : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
     canonical_parameter_schema: canonicalParameterSchema,
     calculation_strategy_id: canonicalParameterSchema.calculationVersion,
     engine_version: REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1,
@@ -118,5 +139,7 @@ export function buildRegisteredProfessionalEstimateFromInlineInputV1(
 ) {
   const interior = buildInteriorFinishesFromInlineInputV1(input);
   if (interior.exact_match) return interior;
-  return buildWaterSewerFromInlineInputV1(input);
+  const waterSewer = buildWaterSewerFromInlineInputV1(input);
+  if (waterSewer.exact_match) return waterSewer;
+  return buildHvacFromInlineInputV1(input);
 }

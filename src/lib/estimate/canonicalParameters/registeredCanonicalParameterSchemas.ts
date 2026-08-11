@@ -18,6 +18,7 @@ import { ASPHALT_RELATED_PARAMETER_METADATA_V4 } from "../v4/asphalt/asphaltRela
 import { ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 } from "../v4/asphalt/compileAsphaltRelatedThroughCoreV4";
 import { INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/interiorFinishesComplete/canonicalParameterSchemas";
 import { WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/waterSupplySewerageComplete/canonicalParameterSchemas";
+import { HVAC_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/heatingVentilationComplete/canonicalParameterSchemas";
 import {
   CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
   type CanonicalParameterDefinition,
@@ -400,4 +401,5 @@ export const REGISTERED_CANONICAL_PARAMETER_SCHEMAS =
     ...ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4,
     ...INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS,
     ...WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS,
+    ...HVAC_CANONICAL_PARAMETER_SCHEMAS,
   ]);
