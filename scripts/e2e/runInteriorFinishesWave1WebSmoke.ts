@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { chromium, type BrowserContext, type Page } from "playwright";
+import { chromium, type BrowserContext, type Locator, type Page } from "playwright";
 
 import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 import {
@@ -12,7 +12,7 @@ import {
 } from "../../src/lib/navigation/requestEstimateLaunchPayload";
 import { decodeConsumerRepairBundleFromDurableStorage } from "../../src/lib/platform/compactConsumerRepairDurableState";
 import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
-import { interiorWave1ScopeOf } from "../../src/lib/estimate/v4/domains/interiorFinishesWave1";
+import { INTERIOR_FINISHES_DOMAIN_INVENTORY } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
 import { openAndroidChromeCdpSession } from "./androidChromeCdpHarness";
 
 const baseUrl = process.env.INTERIOR_WAVE1_WEB_BASE_URL ?? "http://localhost:8081";
@@ -20,7 +20,7 @@ const target = process.env.INTERIOR_WAVE1_SMOKE_TARGET === "android-chrome" ? "a
 const androidDeviceId = process.env.E2E_ANDROID_DEVICE_ID ?? "emulator-5554";
 const outputRoot = path.join(
   ".release-runtime",
-  "professional-estimate-domain-factory-v1",
+  "interior-finishes-domain-complete-r1",
   `interior-${target}-${new Date().toISOString().replace(/[:.]/g, "-")}`,
 );
 const bundlePrefix = "rik.consumer_repair.request_bundle.v2:";
@@ -28,12 +28,12 @@ const bundlePrefix = "rik.consumer_repair.request_bundle.v2:";
 type AnyBundle = ConsumerRepairDraftBundle & Record<string, any>;
 
 const scenarios = [
-  "plaster_paint_interior_paint_wall_apply_standard",
-  "plaster_paint_interior_wall_plaster_apply_wet_zone",
-  "plaster_paint_interior_glass_fiber_apply_high_load",
-  "plaster_paint_interior_corner_apply_small_area",
-  "plaster_paint_interior_wall_putty_apply_repair",
-  "plaster_paint_interior_paint_ceiling_apply_technical_room",
+  "plaster_paint_interior_wall_plaster_apply_standard",
+  "tile_stone_interior_shower_tile_lay_wet_zone",
+  "flooring_interior_subfloor_prepare_standard",
+  "drywall_ceiling_interior_drywall_partition_install_standard",
+  "drywall_ceiling_interior_drywall_ceiling_install_technical_room",
+  "flooring_interior_laminate_replace_standard",
 ] as const;
 
 const activeScenarios = target === "android-chrome" ? scenarios.slice(0, 2) : scenarios;
@@ -45,6 +45,8 @@ const values: Readonly<Record<string, string>> = Object.freeze({
   funding_source: "PRIVATE_RECOMMENDED",
   project_type: "RESIDENTIAL_INTERIOR",
   area_m2: "120",
+  length_m: "12",
+  width_m: "10",
   junction_length_m: "48",
   surface_type: "PROJECT_SPECIFIED",
   existing_condition: "ACCEPTED",
@@ -81,6 +83,24 @@ const values: Readonly<Record<string, string>> = Object.freeze({
   repair_removed_mass_kg_per_output: "8",
   repair_removal_productivity_output_per_man_hour: "3",
   repair_waste_haul_distance_km: "18",
+  material_consumption_kg_m2: "0.9",
+  labor_productivity_m2_per_man_hour: "8",
+  equipment_productivity_m2_per_machine_hour: "25",
+  preparation_productivity_m2_per_man_hour: "15",
+  protective_consumables_rate_kg_m2: "0.05",
+  system_accessory_rate_per_m2: "0.1",
+  qa_interval_m2_per_test: "100",
+  small_area_detail_productivity_m2_per_man_hour: "4",
+  large_area_handling_productivity_kg_per_machine_hour: "750",
+  wet_zone_protection_rate_kg_m2: "0.35",
+  wet_zone_test_interval_m2: "40",
+  technical_protection_rate_kg_m2: "0.22",
+  technical_detail_productivity_m2_per_man_hour: "5",
+  high_load_reinforcement_rate_m2_m2: "1.08",
+  high_load_reinforcement_productivity_m2_per_man_hour: "6",
+  removal_area_m2: "24",
+  removed_mass_kg_m2: "8",
+  removal_productivity_m2_per_man_hour: "3",
 });
 
 function hash(value: unknown): string {
@@ -179,12 +199,16 @@ async function waitForTransactionalBundle(
   })}`);
 }
 
+async function clickControl(locator: Locator): Promise<void> {
+  await locator.click(target === "android-chrome" ? { force: true } : undefined);
+}
+
 async function setParameter(page: Page, parameterId: string, value: string): Promise<void> {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const option = page.getByTestId(`editable-param-option-${parameterId}-${value}`).first();
     if (await option.count()) {
       await option.scrollIntoViewIfNeeded();
-      await option.click();
+      await clickControl(option);
       return;
     }
     const editor = page.getByTestId(`editable-param-inline-editor-${parameterId}`).first();
@@ -195,7 +219,7 @@ async function setParameter(page: Page, parameterId: string, value: string): Pro
     }
     const showMore = page.getByTestId("request-estimate-show-more-parameters");
     if (await showMore.count()) {
-      await showMore.click();
+      await clickControl(showMore);
     }
     await page.waitForTimeout(100);
   }
@@ -204,15 +228,32 @@ async function setParameter(page: Page, parameterId: string, value: string): Pro
 
 async function openAllParameters(page: Page): Promise<void> {
   if (await page.getByTestId("request-estimate-parameter-panel").count() === 0) {
-    await page.getByTestId("request-estimate-parameters-toggle").click();
+    await clickControl(page.getByTestId("request-estimate-parameters-toggle"));
   }
   const showMore = page.getByTestId("request-estimate-show-more-parameters");
-  if (await showMore.count()) await showMore.click();
+  if (await showMore.count()) await clickControl(showMore);
+}
+
+async function clickApply(page: Page): Promise<void> {
+  const apply = page.getByTestId("editable-param-batch-apply").first();
+  if (target === "android-chrome") {
+    await apply.evaluate((element) => element.scrollIntoView({ block: "center", inline: "center" }));
+    await page.waitForTimeout(150);
+    // The mobile web shell has sticky header/footer layers whose oversized
+    // hit-test boxes can overlap a visually unobscured control in CDP. This is
+    // the same established Android-Chrome harness treatment used by the
+    // Asphalt matrix; it still dispatches the real React press handler.
+    await apply.click({ force: true });
+    return;
+  } else {
+    await apply.scrollIntoViewIfNeeded();
+  }
+  await apply.click();
 }
 
 async function fillDelivery(page: Page): Promise<void> {
   if (await page.getByTestId("consumer-repair-address-input").count() === 0) {
-    await page.getByTestId("consumer-repair-delivery-summary").click();
+    await clickControl(page.getByTestId("consumer-repair-delivery-summary"));
   }
   await page.getByTestId("consumer-repair-city-input").fill("Bishkek");
   await page.getByTestId("consumer-repair-address-input").fill("64 Malikova Street");
@@ -224,7 +265,7 @@ async function proveHistoryUi(page: Page, title: string): Promise<void> {
   const history = page.getByTestId("consumer-repair-history-button");
   await history.waitFor({ timeout: 30_000 });
   await history.scrollIntoViewIfNeeded();
-  await history.click();
+  await clickControl(history);
   const modal = page.getByTestId("consumer-repair-history-modal");
   await modal.waitFor({ timeout: 30_000 });
   const firstRow = modal.getByTestId("consumer-repair-history-row").first();
@@ -232,9 +273,9 @@ async function proveHistoryUi(page: Page, title: string): Promise<void> {
   if (!(await firstRow.innerText()).includes(title)) {
     throw new Error(`INTERIOR_WEB_HISTORY_LATEST_TITLE_MISMATCH:${title}:${await firstRow.innerText()}`);
   }
-  await firstRow.getByTestId("consumer-repair-history-main").click();
+  await clickControl(firstRow.getByTestId("consumer-repair-history-main"));
   await modal.getByTestId("consumer-repair-history-readonly-snapshot").waitFor({ timeout: 30_000 });
-  await modal.getByTestId("consumer-repair-history-close").click();
+  await clickControl(modal.getByTestId("consumer-repair-history-close"));
 }
 
 async function runScenario(
@@ -254,9 +295,9 @@ async function runScenario(
   try {
     const scenarioValues: Readonly<Record<string, string>> = {
       ...values,
-      scope_capability: interiorWave1ScopeOf(catalogId),
+      scope_capability: INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.catalog_id === catalogId)?.scope_capability ?? "",
     };
-    const launchId = `interior-wave1-web-${index + 1}-${Date.now()}`;
+    const launchId = `interior-complete-${target}-${index + 1}-${Date.now()}`;
     const launchTarget = resolveRequestEstimateLaunchTargetV1(
       `/request?autoPrepare=1&catalogWorkId=${encodeURIComponent(catalogId)}&prompt=${encodeURIComponent(selection.title_ru)}`,
       { launchId },
@@ -282,7 +323,7 @@ async function runScenario(
     await setParameter(page, "estimate_scope_mode", values.estimate_scope_mode);
     await page.waitForTimeout(100);
     const showMore = page.getByTestId("request-estimate-show-more-parameters");
-    if (await showMore.count()) await showMore.click();
+    if (await showMore.count()) await clickControl(showMore);
     for (const definition of selection.canonical_parameter_schema.definitions) {
       if (definition.parameterId === "estimate_scope_mode") continue;
       const parameterValue = scenarioValues[definition.parameterId];
@@ -291,9 +332,7 @@ async function runScenario(
       }
       await setParameter(page, definition.parameterId, parameterValue);
     }
-    const apply = page.getByTestId("editable-param-batch-apply").first();
-    await apply.scrollIntoViewIfNeeded();
-    await apply.click();
+    await clickApply(page);
     await page.getByTestId("consumer-repair-status").filter({
       hasText: "Параметры применены. Смета сформирована и сохранена: R1",
     }).waitFor({ timeout: 60_000 });
@@ -323,8 +362,7 @@ async function runScenario(
       : "junction_length_m";
     await openAllParameters(page);
     await setParameter(page, quantityKey, String(160 + index));
-    await apply.scrollIntoViewIfNeeded();
-    await apply.click();
+    await clickApply(page);
     await page.getByTestId("consumer-repair-status").filter({
       hasText: "сохранена: R2",
     }).waitFor({ timeout: 60_000 });
@@ -341,7 +379,7 @@ async function runScenario(
     const approve = page.getByTestId("consumer-repair-approve");
     await approve.waitFor({ timeout: 30_000 });
     await approve.scrollIntoViewIfNeeded();
-    await approve.click();
+    await clickControl(approve);
     const approvedSummary = await waitForBundle(page, draftId, (bundle) =>
       bundle.draft.status === "consumer_approved" &&
       bundle.pdfs.some((pdf) => pdf.pdfStatus === "generated"),
@@ -406,6 +444,9 @@ async function runScenario(
       throw new Error(`INTERIOR_WEB_DURABLE_REOPEN_MISMATCH:${catalogId}`);
     }
     await proveHistoryUi(page, selection.title_ru);
+    if (consoleErrors.length > 0 || pageErrors.length > 0) {
+      throw new Error(`INTERIOR_WEB_CONSOLE_RED:${catalogId}:${JSON.stringify({ consoleErrors, pageErrors })}`);
+    }
     await page.screenshot({
       path: path.join(outputRoot, `${index + 1}-${catalogId}.png`),
       fullPage: true,
@@ -462,7 +503,7 @@ async function main(): Promise<void> {
   const browser = androidSession?.browser ?? await chromium.launch({ headless: true });
   const context = androidSession?.context ?? await browser.newContext({ viewport: { width: 1440, height: 1100 } });
   await context.addInitScript(() => {
-    const resetMarker = "rik.interior-wave1-web-smoke.storage-reset.v1";
+    const resetMarker = "rik.interior-complete-web-smoke.storage-reset.v1";
     if (window.sessionStorage.getItem(resetMarker) === "1") return;
     window.localStorage.clear();
     window.sessionStorage.setItem(resetMarker, "1");
@@ -475,12 +516,14 @@ async function main(): Promise<void> {
       results.push(await runScenario(context, catalogId, index));
     }
     artifact = {
-      schema: `interior-finishes-wave1-${target}-representative-smoke:v1`,
+      schema: `interior-finishes-complete-${target}-representative-smoke:v1`,
       generated_at: new Date().toISOString(),
       source_sha: git("rev-parse", "HEAD"),
       source_tree: git("rev-parse", "HEAD^{tree}"),
       status: "GREEN",
       scenario_count: results.length,
+      passed: results.length,
+      total: activeScenarios.length,
       scenarios: results,
       duration_ms: Date.now() - startedAt,
       base_url: baseUrl,
@@ -489,12 +532,14 @@ async function main(): Promise<void> {
     };
   } catch (error) {
     artifact = {
-      schema: `interior-finishes-wave1-${target}-representative-smoke:v1`,
+      schema: `interior-finishes-complete-${target}-representative-smoke:v1`,
       generated_at: new Date().toISOString(),
       source_sha: git("rev-parse", "HEAD"),
       source_tree: git("rev-parse", "HEAD^{tree}"),
       status: "RED",
       scenario_count: 0,
+      passed: 0,
+      total: activeScenarios.length,
       classification: "PRODUCT_OR_HARNESS_RED",
       signature: error instanceof Error ? error.message : String(error),
       duration_ms: Date.now() - startedAt,
@@ -512,8 +557,8 @@ async function main(): Promise<void> {
   const artifactPath = path.join(
     outputRoot,
     target === "android-chrome"
-      ? "INTERIOR_FINISHES_WAVE_1_ANDROID_SMOKE.json"
-      : "INTERIOR_FINISHES_WAVE_1_WEB_SMOKE.json",
+      ? "INTERIOR_FINISHES_COMPLETE_ANDROID_SMOKE.json"
+      : "INTERIOR_FINISHES_COMPLETE_WEB_SMOKE.json",
   );
   writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
   console.info(JSON.stringify({ artifact: artifactPath, ...artifact }, null, 2));

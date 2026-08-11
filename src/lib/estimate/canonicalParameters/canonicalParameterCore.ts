@@ -321,14 +321,21 @@ export function createCanonicalParameterSession(input: {
   const alternativeParameterIds = new Set(
     input.schema.requiredAlternatives.flatMap((alternative) => alternative.parameterIds),
   );
-  const blockingMissingParameterIds = parameters
+  const resolvedParameters = parameters.map((parameter) =>
+    hasRequiredAlternative &&
+    alternativeParameterIds.has(parameter.parameterId) &&
+    parameter.value == null
+      ? Object.freeze({ ...parameter, state: "NOT_APPLICABLE" as const })
+      : parameter
+  );
+  const blockingMissingParameterIds = resolvedParameters
     .filter((parameter) =>
       parameter.requiredLevel === "BLOCKING_REQUIRED" &&
       parameter.value == null &&
       (!alternativeParameterIds.has(parameter.parameterId) || !hasRequiredAlternative)
     )
     .map((parameter) => parameter.parameterId);
-  const contractMissingParameterIds = parameters
+  const contractMissingParameterIds = resolvedParameters
     .filter((parameter) =>
       parameter.value == null &&
       (
@@ -337,10 +344,10 @@ export function createCanonicalParameterSession(input: {
       )
     )
     .map((parameter) => parameter.parameterId);
-  const assumptionParameterIds = parameters
+  const assumptionParameterIds = resolvedParameters
     .filter((parameter) => parameter.source === "ASSUMED")
     .map((parameter) => parameter.parameterId);
-  const invalidParameterIds = parameters
+  const invalidParameterIds = resolvedParameters
     .filter((parameter) => !parameter.valid)
     .map((parameter) => parameter.parameterId);
   const status = sessionStatus({
@@ -358,7 +365,7 @@ export function createCanonicalParameterSession(input: {
     calculationVersion: input.schema.calculationVersion,
     revisionId: input.revisionId,
     status,
-    parameters: parameters.map((parameter) => ({
+    parameters: resolvedParameters.map((parameter) => ({
       parameterId: parameter.parameterId,
       value: parameter.value,
       source: parameter.source,
@@ -379,7 +386,7 @@ export function createCanonicalParameterSession(input: {
     canonicalWorkKey: input.schema.canonicalWorkKey,
     calculationVersion: input.schema.calculationVersion,
     status,
-    parameters: Object.freeze(parameters),
+    parameters: Object.freeze(resolvedParameters),
     blockingMissingParameterIds: Object.freeze(blockingMissingParameterIds),
     contractMissingParameterIds: Object.freeze(contractMissingParameterIds),
     assumptionParameterIds: Object.freeze(assumptionParameterIds),

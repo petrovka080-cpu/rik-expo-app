@@ -1,11 +1,13 @@
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests/consumerRequestTypes";
+import type { GlobalWorkCategory } from "../../../ai/globalEstimate";
 import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
 import type { CanonicalParameterSchema } from "../../canonicalParameters";
 import {
-  INTERIOR_FINISHES_WAVE_1_CANONICAL_PARAMETER_SCHEMAS,
-  INTERIOR_FINISHES_WAVE_1_INVENTORY,
-  buildInteriorFinishesWave1FromInlineInputV1,
-} from "./interiorFinishesWave1";
+  INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS,
+  INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+  INTERIOR_FINISHES_DOMAIN_INVENTORY,
+  buildInteriorFinishesFromInlineInputV1,
+} from "./interiorFinishesComplete";
 
 export const REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1 =
   "registered-professional-estimate-domains:v1" as const;
@@ -16,7 +18,7 @@ export type RegisteredProfessionalEstimateSelectionV1 = {
   work_key: string;
   template_id: string;
   title_ru: string;
-  category_key: "plastering";
+  category_key: GlobalWorkCategory;
   category_title_ru: string;
   canonical_parameter_schema: CanonicalParameterSchema;
   calculation_strategy_id: string;
@@ -27,31 +29,38 @@ function normalizedIdentity(value: string | null | undefined): string {
   return String(value ?? "").normalize("NFKC").trim();
 }
 
+function registeredInteriorCategoryKey(sourceDomainId: string): GlobalWorkCategory {
+  if (sourceDomainId === "drywall_ceiling") return "drywall";
+  if (sourceDomainId === "flooring") return "flooring";
+  if (sourceDomainId === "tile_stone") return "tile";
+  return "plastering";
+}
+
 export function resolveRegisteredProfessionalEstimateSelectionV1(
   identity: string | null | undefined,
 ): RegisteredProfessionalEstimateSelectionV1 | null {
   const exactIdentity = normalizedIdentity(identity);
   if (!exactIdentity) return null;
-  const inventory = INTERIOR_FINISHES_WAVE_1_INVENTORY.find((candidate) =>
+  const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
     exactIdentity === candidate.catalog_id ||
     exactIdentity === candidate.work_key ||
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
   if (!inventory) return null;
-  const canonicalParameterSchema = INTERIOR_FINISHES_WAVE_1_CANONICAL_PARAMETER_SCHEMAS.find(
+  const canonicalParameterSchema = INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS.find(
     (schema) => schema.canonicalWorkKey === inventory.work_key,
   );
   if (!canonicalParameterSchema) {
     throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
   }
   return Object.freeze({
-    domain_id: "interior_finishes_wave_1",
+    domain_id: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,
     template_id: `domain-passport:${inventory.catalog_id}:v1`,
     title_ru: inventory.localized_name_ru,
-    category_key: "plastering",
+    category_key: registeredInteriorCategoryKey(inventory.source_domain_id),
     category_title_ru: "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
     canonical_parameter_schema: canonicalParameterSchema,
     calculation_strategy_id: canonicalParameterSchema.calculationVersion,
@@ -89,5 +98,5 @@ export function buildRegisteredProfessionalEstimateParameterCollectionDraftV1(in
 export function buildRegisteredProfessionalEstimateFromInlineInputV1(
   input: BuildEstimateFromInlineWorkPromptInput,
 ) {
-  return buildInteriorFinishesWave1FromInlineInputV1(input);
+  return buildInteriorFinishesFromInlineInputV1(input);
 }

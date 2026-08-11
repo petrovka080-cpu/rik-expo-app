@@ -86,6 +86,17 @@ export type ProfessionalDomainParameterSchemaV1 = {
   technology_id: string;
   parameters: readonly ProfessionalDomainParameterDefinitionV1[];
   quantity_alternatives: readonly (readonly string[])[];
+  derived_parameter_rules?: readonly ProfessionalDerivedParameterRuleV1[];
+};
+
+export type ProfessionalDerivedParameterRuleV1 = {
+  target_parameter_id: string;
+  output_unit_id: string;
+  alternatives: readonly {
+    input_parameter_ids: readonly string[];
+    expression: string;
+    calculate: (values: Readonly<Record<string, number>>) => number;
+  }[];
 };
 
 export type ProfessionalNormativeProfileV1 = {
@@ -180,7 +191,7 @@ function conditionKey(condition: ProfessionalParameterConditionV1): string {
 }
 
 function validateSchema(schema: ProfessionalDomainParameterSchemaV1): void {
-  uniqueBy(schema.parameters, (item) => item.parameter_id, "DOMAIN_PARAMETER_DUPLICATE");
+  const parameters = uniqueBy(schema.parameters, (item) => item.parameter_id, "DOMAIN_PARAMETER_DUPLICATE");
   for (const parameter of schema.parameters) {
     if (conditionKey(parameter.visible_when) !== conditionKey(parameter.required_when) && parameter.priority === "P0") {
       throw new Error(`DOMAIN_P0_VISIBLE_REQUIRED_MISMATCH:${schema.schema_id}:${parameter.parameter_id}`);
@@ -189,6 +200,54 @@ function validateSchema(schema: ProfessionalDomainParameterSchemaV1): void {
       throw new Error(`DOMAIN_NUMERIC_TOLERANCE_MISSING:${schema.schema_id}:${parameter.parameter_id}`);
     }
   }
+  for (const rule of schema.derived_parameter_rules ?? []) {
+    if (!parameters.has(rule.target_parameter_id)) {
+      throw new Error(`DOMAIN_DERIVED_PARAMETER_TARGET_MISSING:${schema.schema_id}:${rule.target_parameter_id}`);
+    }
+    if (rule.alternatives.length === 0 || rule.alternatives.some((alternative) =>
+      alternative.input_parameter_ids.length === 0 ||
+      alternative.input_parameter_ids.some((parameterId) => !parameters.has(parameterId)))) {
+      throw new Error(`DOMAIN_DERIVED_PARAMETER_ALTERNATIVE_INVALID:${schema.schema_id}:${rule.target_parameter_id}`);
+    }
+  }
+}
+
+function materializeDerivedParameters(
+  schema: ProfessionalDomainParameterSchemaV1,
+  values: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  const resolved = { ...values };
+  for (const rule of schema.derived_parameter_rules ?? []) {
+    if (resolved[rule.target_parameter_id]?.value != null) continue;
+    const alternative = rule.alternatives.find((candidate) => candidate.input_parameter_ids.every((parameterId) =>
+      typeof resolved[parameterId]?.value === "number" && Number.isFinite(resolved[parameterId].value)));
+    if (!alternative) continue;
+    const numericInputs = Object.fromEntries(alternative.input_parameter_ids.map((parameterId) => [
+      parameterId,
+      Number(resolved[parameterId].value),
+    ]));
+    const derivedValue = alternative.calculate(numericInputs);
+    if (!Number.isFinite(derivedValue) || derivedValue <= 0) {
+      throw new Error(`DOMAIN_DERIVED_PARAMETER_INVALID:${schema.schema_id}:${rule.target_parameter_id}`);
+    }
+    resolved[rule.target_parameter_id] = {
+      value: derivedValue,
+      unit_id: rule.output_unit_id,
+      source_type: "SURVEY_MEASUREMENT",
+      source_id: `derived:${rule.target_parameter_id}:${alternative.expression}:${alternative.input_parameter_ids
+        .map((parameterId) => resolved[parameterId].source_id).join("|")}`,
+      captured_at: alternative.input_parameter_ids
+        .map((parameterId) => resolved[parameterId].captured_at)
+        .sort()
+        .at(-1) ?? new Date(0).toISOString(),
+      confidence: alternative.input_parameter_ids.every((parameterId) => resolved[parameterId].confidence === "high")
+        ? "high"
+        : "medium",
+      applicability: `${rule.target_parameter_id} = ${alternative.expression}; ${alternative.input_parameter_ids
+        .map((parameterId) => `${parameterId}=${resolved[parameterId].value}`).join(", ")}`,
+    };
+  }
+  return resolved;
 }
 
 function conditionMatches(
@@ -275,14 +334,15 @@ export function compileProfessionalEstimateDomainV1(
   if (!technology) throw new Error(`DOMAIN_TECHNOLOGY_NOT_FOUND:${binding.canonical_technology_id}`);
   const schema = factory.schema_by_id.get(technology.parameter_schema_id);
   if (!schema) throw new Error(`DOMAIN_SCHEMA_NOT_FOUND:${technology.parameter_schema_id}`);
+  const parameterValues = materializeDerivedParameters(schema, request.parameter_values);
   if (schema.parameters.some((parameter) => parameter.parameter_id === "scope_capability")) {
-    const requestedScopeCapability = request.parameter_values.scope_capability?.value;
+    const requestedScopeCapability = parameterValues.scope_capability?.value;
     if (requestedScopeCapability !== binding.scope_capability) {
       throw new Error(`DOMAIN_SCOPE_CAPABILITY_MISMATCH:${binding.catalog_id}:${String(requestedScopeCapability)}:${binding.scope_capability}`);
     }
   }
   if (schema.parameters.some((parameter) => parameter.parameter_id === "estimate_scope_mode")) {
-    const requestedScopeMode = request.parameter_values.estimate_scope_mode?.value;
+    const requestedScopeMode = parameterValues.estimate_scope_mode?.value;
     if (requestedScopeMode !== request.scope_mode) {
       throw new Error(`DOMAIN_ESTIMATE_SCOPE_MODE_MISMATCH:${binding.catalog_id}:${String(requestedScopeMode)}:${request.scope_mode}`);
     }
@@ -298,7 +358,7 @@ export function compileProfessionalEstimateDomainV1(
     requested_source_types: [...new Set(normProfiles.flatMap((profile) => profile.requested_source_types))],
   });
   if (schema.parameters.some((parameter) => parameter.parameter_id === "normative_rate_code")) {
-    const explicitRateCode = String(request.parameter_values.normative_rate_code?.value ?? "").trim();
+    const explicitRateCode = String(parameterValues.normative_rate_code?.value ?? "").trim();
     const mismatchedRateSource = normativeResolution.applicable_sources
       .filter((source) => source.exact_rate_code_required)
       .find((source) => (request.normative_request.rate_code_by_source_id?.[source.source_id] ?? "").trim() !== explicitRateCode);
@@ -311,7 +371,7 @@ export function compileProfessionalEstimateDomainV1(
     work_key: binding.work_key,
     canonical_technology_id: binding.canonical_technology_id,
   };
-  const inputBlockers = schemaBlockers(schema, request.parameter_values);
+  const inputBlockers = schemaBlockers(schema, parameterValues);
   if (inputBlockers.length > 0) {
     const withoutHash = {
       exact_identity: exactIdentity,
@@ -341,7 +401,7 @@ export function compileProfessionalEstimateDomainV1(
     requested_catalog_id: binding.catalog_id,
     requested_work_key: binding.work_key,
     scope_mode: request.scope_mode,
-    parameter_values: request.parameter_values,
+    parameter_values: parameterValues,
     child_assemblies: assembly.child_assemblies,
   });
   const applicableSourceIds = normativeResolution.applicable_sources.map((source) => source.source_id).sort();

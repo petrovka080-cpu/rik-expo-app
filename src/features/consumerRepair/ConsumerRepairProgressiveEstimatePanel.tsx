@@ -299,7 +299,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         canonicalParameterSession.contractMissingParameterIds.length
       : missingParameterCount(currentRevision, viewModel.assumptionRows.length);
     const visibleMissingParameterSummary = canonicalParameterSession?.parameters
-      .filter((parameter) => parameter.source === "MISSING")
+      .filter((parameter) => parameter.source === "MISSING" && parameter.state !== "NOT_APPLICABLE")
       .slice(0, 5)
       .map((parameter) =>
         parameter.unit

@@ -104,7 +104,7 @@ export function buildCanonicalParameterCards(input: {
       editable: true,
       clickAction: "open_parameter_editor",
       noStepperControls: true,
-      missing: parameter.value == null,
+      missing: parameter.value == null && parameter.state !== "NOT_APPLICABLE",
       requiredFor: requiredFor(parameter),
       requiredForLabelRu: requiredLabel(parameter),
       affectsRowIds: affectedRowIds,
