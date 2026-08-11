@@ -187,6 +187,12 @@ function loadConsumerRepairDraftRevisionDependencies() {
   };
 }
 
+function loadRegisteredProfessionalEstimateDomainsV1() {
+  return require(
+    "../estimate/v4/domains/registeredProfessionalEstimateDomainsV1"
+  ) as typeof import("../estimate/v4/domains/registeredProfessionalEstimateDomainsV1");
+}
+
 function hasRoadworksWaveARegistration(workId: string | null | undefined): boolean {
   if (!workId) return false;
   const roadworksModule = require("../estimate/v4/roadworks") as
@@ -533,7 +539,7 @@ function itemTypeFromBoqRow(row: ProfessionalBoqRow): ConsumerRepairRequestItem[
   return "service";
 }
 
-function createConsumerRepairItemsFromDraftRevision(
+export function createConsumerRepairItemsFromDraftRevision(
   requestDraftId: string,
   revision: EstimateDraftRevision,
 ): ConsumerRepairRequestItem[] {
@@ -1400,6 +1406,22 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
     });
   }
 
+  const initialRegisteredProfessionalRevision =
+    applyInitialRegisteredProfessionalDomainParameterBatch({
+      bundle,
+      patches: [{
+        operation: input.operation,
+        paramKey: input.paramKey.trim(),
+        rawValue: input.rawValue.trim(),
+      }],
+      userId,
+      createdAt: input.createdAt ?? new Date().toISOString(),
+      eventType: "estimate_params_recalculated",
+    });
+  if (initialRegisteredProfessionalRevision) {
+    return initialRegisteredProfessionalRevision;
+  }
+
   const initialExactAsphaltRelatedRevision =
     applyInitialExactAsphaltRelatedParameterBatch({
       bundle,
@@ -1624,6 +1646,278 @@ function estimateDraftSessionParametersFromRevisionParams(
       ...(parameter.source === "derived" ? { derivedFrom: ["length_m", "width_m"] } : {}),
     },
   ]));
+}
+
+function canonicalParameterDefinitionVisible(
+  definition: CanonicalParameterDefinition,
+  values: Readonly<Record<string, EstimateDraftRevision["params"][string]>>,
+): boolean {
+  const condition = definition.visibilityCondition;
+  if (condition.kind === "ALWAYS") return true;
+  if (condition.kind === "PARAMETER_EQUALS") {
+    return values[condition.parameterId]?.value === condition.value;
+  }
+  return condition.conditions.some(
+    (candidate) => values[candidate.parameterId]?.value === candidate.value,
+  );
+}
+
+function applyInitialRegisteredProfessionalDomainParameterBatch(input: {
+  bundle: ConsumerRepairDraftBundle;
+  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  userId: string;
+  createdAt: string;
+  eventType: "estimate_params_recalculated" | "estimate_params_batch_recalculated";
+}): ConsumerRepairDraftBundle | null {
+  if (input.bundle.estimateDraftRevisionState) return null;
+  const canonicalSession = input.bundle.canonicalParameterSession;
+  if (!canonicalSession) return null;
+  const selectedCatalogWorkId =
+    input.bundle.draft.selectedCatalogWorkId ??
+    input.bundle.draft.selectedWorkKey ??
+    canonicalSession.canonicalWorkKey;
+  const selection = loadRegisteredProfessionalEstimateDomainsV1()
+    .resolveRegisteredProfessionalEstimateSelectionV1(selectedCatalogWorkId);
+  if (!selection || selection.work_key !== canonicalSession.canonicalWorkKey) return null;
+
+  const schema = selection.canonical_parameter_schema;
+  const params: Record<string, EstimateDraftRevision["params"][string]> = {};
+  for (const parameter of canonicalSession.parameters) {
+    if (parameter.value == null || !parameter.valid || parameter.source === "MISSING") continue;
+    params[parameter.parameterId] = {
+      value: parameter.value,
+      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
+      source: parameter.source === "ASSUMED" ? "default_assumption" : "user_input",
+      sourceText: parameter.sourceText ?? `canonical-session:${parameter.parameterId}`,
+      lastChangedAt: input.createdAt,
+    };
+  }
+  for (const patch of input.patches) {
+    const parameter = schema.definitions.find(
+      (candidate) => candidate.parameterId === patch.paramKey,
+    );
+    if (!parameter) {
+      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NOT_REGISTERED", patch.paramKey);
+    }
+    if (patch.operation === "remove_param") {
+      delete params[patch.paramKey];
+      continue;
+    }
+    params[patch.paramKey] = {
+      value: parseCanonicalParameterPatchValue(parameter, patch.rawValue),
+      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
+      source: "user_input",
+      sourceText: patch.rawValue,
+      lastChangedAt: input.createdAt,
+    };
+  }
+
+  const visibleRequiredIds = schema.definitions
+    .filter((definition) => definition.requiredLevel === "BLOCKING_REQUIRED")
+    .filter((definition) => canonicalParameterDefinitionVisible(definition, params))
+    .map((definition) => definition.parameterId);
+  const alternativeIds = new Set(
+    schema.requiredAlternatives.flatMap((alternative) => alternative.parameterIds),
+  );
+  const commonRequiredIds = visibleRequiredIds.filter((id) => !alternativeIds.has(id));
+  const requiredParameterAlternatives = schema.requiredAlternatives.length > 0
+    ? schema.requiredAlternatives.map((alternative) => ({
+      alternativeId: alternative.alternativeId,
+      parameterKeys: [...new Set([...commonRequiredIds, ...alternative.parameterIds])],
+    }))
+    : [{
+      alternativeId: `${selection.work_key}:all-visible-required`,
+      parameterKeys: commonRequiredIds,
+    }];
+  const sourceSession =
+    input.bundle.estimateDraftSession?.workIntent?.catalogWorkId === selection.catalog_id
+      ? input.bundle.estimateDraftSession
+      : selectEstimateDraftWork(
+        createEstimateDraftSession({ draftId: input.bundle.draft.id }),
+        {
+          catalogWorkId: selection.catalog_id,
+          canonicalWorkKey: selection.work_key,
+          source: "EXPLICIT_SELECTION",
+          scopeRequired: false,
+        },
+      );
+  const scopedSession = bindEstimateDraftScope(sourceSession, {
+    scopePresetId: String(params.estimate_scope_mode?.value ?? selection.template_id),
+    calculationStrategyId: selection.calculation_strategy_id,
+    parameterSchemaVersion: schema.schemaVersion,
+    engineVersion: selection.engine_version,
+    requiredParameterAlternatives,
+  });
+  const candidateParameterSession = setEstimateDraftParameters(
+    scopedSession,
+    estimateDraftSessionParametersFromRevisionParams(params, input.createdAt),
+  );
+  const candidateCanonicalSession =
+    projectEstimateDraftSessionToCanonicalSession({
+      session: candidateParameterSession,
+      createdAt: input.createdAt,
+      previousSession: canonicalSession,
+    }) ?? canonicalSession;
+  if (
+    candidateParameterSession.status !== "READY_TO_COMPILE" ||
+    candidateCanonicalSession.blockingMissingParameterIds.length > 0
+  ) {
+    const missingLabels = candidateCanonicalSession.parameters
+      .filter((parameter) =>
+        candidateCanonicalSession.blockingMissingParameterIds.includes(parameter.parameterId)
+      )
+      .map((parameter) => parameter.label);
+    return saveConsumerRepairBundle(withEvent({
+      ...input.bundle,
+      draft: updateDraftRecord(input.bundle.draft, {
+        missingData: missingLabels,
+        aiSummaryRu: missingLabels.length > 0
+          ? `\u0414\u043b\u044f \u0440\u0430\u0441\u0447\u0451\u0442\u0430 \u043d\u0443\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c: ${missingLabels.join(", ")}.`
+          : "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b, \u043d\u043e \u0440\u0430\u0441\u0447\u0451\u0442 \u0435\u0449\u0451 \u043d\u0435 \u0433\u043e\u0442\u043e\u0432.",
+      }),
+      estimateDraftSession: candidateParameterSession,
+      canonicalParameterSession: candidateCanonicalSession,
+    }, createConsumerRepairEvent({
+      requestDraftId: input.bundle.draft.id,
+      eventType: "estimate_parameters_required",
+      actorType: "consumer",
+      actorUserId: input.userId,
+      payload: {
+        changedParamKeys: input.patches.map((patch) => patch.paramKey),
+        conditionalParametersRevealed: candidateCanonicalSession.blockingMissingParameterIds,
+        revisionId: null,
+        rowsAfter: 0,
+      },
+    })));
+  }
+
+  let revision: EstimateDraftRevision;
+  try {
+    revision = loadAiEstimateRuntime().createDraft({
+      estimateDraftId: input.bundle.draft.id,
+      rawInput:
+        input.bundle.draft.problemText ??
+        input.bundle.draft.selectedWorkRawInput ??
+        selection.title_ru,
+      selectedWorkKey: selection.catalog_id,
+      selectedTemplateId: selection.template_id,
+      selectedTemplateName: selection.title_ru,
+      city: input.bundle.draft.city,
+      currency: input.bundle.items.find((item) => item.currency)?.currency ?? "KGS",
+      countryCode: "KG",
+      paramOverrides: params,
+      createdAt: input.createdAt,
+    }).revision;
+  } catch (error) {
+    const cause = error instanceof Error ? error.message : "unknown";
+    logger.error("consumer-repair-professional-domain-apply-compile-failed", {
+      requestDraftId: input.bundle.draft.id,
+      selectedCatalogWorkId: selection.catalog_id,
+      workKey: selection.work_key,
+      cause,
+    });
+    throw new ConsumerRepairValidationError([{
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu:
+        "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043c\u0435\u0442\u0443 \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430\u043c. \u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d \u0431\u0435\u0437 \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u043e\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438.",
+      field: `params:${cause}`,
+    }]);
+  }
+
+  const failures = [
+    revision.estimateDraftId === input.bundle.draft.id ? "" : "draft_identity_changed",
+    revision.professionalWorkId === selection.work_key ? "" : "exact_operation_changed",
+    revision.resolvedIdentity?.requestedCatalogWorkId === selection.catalog_id ? "" : "catalog_identity_changed",
+    revision.boq.rows.length > 0 ? "" : "boq_rows_missing",
+    revision.status === "draft_ready" ? "" : `revision_not_ready:${revision.status}`,
+    revision.missingInputs.length === 0 ? "" : `missing_inputs:${revision.missingInputs.length}`,
+  ].filter(Boolean);
+  if (failures.length > 0) {
+    throw new ConsumerRepairValidationError([{
+      code: "ESTIMATE_PARAMETERS_REQUIRED",
+      messageRu: `\u0421\u043c\u0435\u0442\u0430 \u043d\u0435 \u0441\u043e\u0437\u0434\u0430\u043d\u0430: ${failures.join(", ")}.`,
+      field: "params",
+    }]);
+  }
+
+  const parameterSession = setEstimateDraftParameters(
+    scopedSession,
+    estimateDraftSessionParametersFromRevisionParams(revision.params, input.createdAt),
+  );
+  const compilingSession = prepareEstimateCompile(parameterSession).session;
+  const committedSession = commitEstimateCompileResult(compilingSession, {
+    draftId: input.bundle.draft.id,
+    selectionEpoch: compilingSession.selectionEpoch,
+    contextHash: compilingSession.contextHash!,
+    revisionId: revision.revisionId,
+    scopePresetId: compilingSession.scopePresetId!,
+    parameterSchemaVersion: compilingSession.parameterSchemaVersion!,
+    calculationStrategyId: compilingSession.calculationStrategyId!,
+  });
+  if (committedSession.status !== "REVIEW") {
+    throw new Error("ESTIMATE_INITIAL_COMPILE_COMMIT_REJECTED");
+  }
+
+  const revisionState: EstimateDraftRevisionState = {
+    estimateDraftId: input.bundle.draft.id,
+    currentRevisionId: revision.revisionId,
+    revisions: [revision],
+    diffs: [],
+  };
+  const nextBase: ConsumerRepairDraftBundle = {
+    ...input.bundle,
+    draft: updateDraftRecord(input.bundle.draft, {
+      problemText: revision.rawInput,
+      title: selection.title_ru,
+      repairType: selection.work_key,
+      selectedCatalogWorkId: selection.catalog_id,
+      selectedWorkKey: selection.work_key,
+      selectedWorkTitleRu: selection.title_ru,
+      selectedWorkCategoryKey: selection.category_key,
+      selectedWorkCategoryTitleRu: selection.category_title_ru,
+      selectedWorkRawInput: revision.rawInput,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+      aiSummaryRu: `${selection.title_ru}: \u0441\u0442\u0440\u043e\u043a BOQ ${revision.boq.rows.length}.`,
+      missingData: [],
+    }),
+    items: createConsumerRepairItemsFromDraftRevision(input.bundle.draft.id, revision),
+    pdfs: archivePdfsForStaleDraftRevision(input.bundle, revision.revisionId),
+    estimateDraftRevisionState: revisionState,
+    estimateDraftSession: committedSession,
+    canonicalParameterSession:
+      projectEstimateDraftRevisionToCanonicalSession({
+        revision,
+        draftId: input.bundle.draft.id,
+        createdAt: input.createdAt,
+        previousSession: canonicalSession,
+      }) ?? candidateCanonicalSession,
+    pendingRoadScopeSelection: null,
+  };
+  const withSnapshot: ConsumerRepairDraftBundle = {
+    ...nextBase,
+    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBase),
+  };
+  const canonicalBundle = ensureConsumerRepairBundleEstimateRevisionState(withSnapshot);
+  return saveConsumerRepairBundle(withEvent(
+    canonicalBundle,
+    createConsumerRepairEvent({
+      requestDraftId: input.bundle.draft.id,
+      eventType: input.eventType,
+      actorType: "consumer",
+      actorUserId: input.userId,
+      payload: {
+        initialRevisionCreated: true,
+        changedParamKeys: input.patches.map((patch) => patch.paramKey),
+        patchCount: input.patches.length,
+        revisionId: revision.revisionId,
+        previousRevisionId: null,
+        rowsBefore: 0,
+        rowsAfter: revision.boq.rows.length,
+        pdfStatus: "not_generated",
+      },
+    }),
+  ));
 }
 
 function applyInitialExactAsphaltRelatedParameterBatch(input: {
@@ -2004,6 +2298,18 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     });
   }
 
+  const initialRegisteredProfessionalRevision =
+    applyInitialRegisteredProfessionalDomainParameterBatch({
+      bundle,
+      patches: cleanPatches,
+      userId,
+      createdAt: input.createdAt ?? new Date().toISOString(),
+      eventType: "estimate_params_batch_recalculated",
+    });
+  if (initialRegisteredProfessionalRevision) {
+    return initialRegisteredProfessionalRevision;
+  }
+
   const initialExactAsphaltRelatedRevision =
     applyInitialExactAsphaltRelatedParameterBatch({
       bundle,
@@ -2060,6 +2366,12 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
     );
   }
   const changedParamKeys = result.diff.changedParams.map((param) => param.key);
+  const registeredProfessionalSelection = loadRegisteredProfessionalEstimateDomainsV1()
+    .resolveRegisteredProfessionalEstimateSelectionV1(
+      nextRevision.resolvedIdentity?.requestedCatalogWorkId ??
+      nextRevision.professionalWorkId ??
+      nextRevision.selectedTemplateId,
+    );
   const nextBundleBase: ConsumerRepairDraftBundle = {
     ...canonicalBundle,
     draft: updateDraftRecord(canonicalBundle.draft, {
@@ -2073,10 +2385,13 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
           .filter((assumption) => !assumption.replacedByUserInput)
           .map((assumption) => assumption.reason),
       ],
-      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
+      selectedCatalogWorkId: registeredProfessionalSelection?.catalog_id ??
+        canonicalBundle.draft.selectedCatalogWorkId,
+      selectedWorkKey: registeredProfessionalSelection?.work_key ??
+        (nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
         hasRoadworksWaveARegistration(nextRevision.matchedFamily)
         ? nextRevision.matchedFamily
-        : nextRevision.selectedTemplateId,
+        : nextRevision.selectedTemplateId),
       selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
       selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
       selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,

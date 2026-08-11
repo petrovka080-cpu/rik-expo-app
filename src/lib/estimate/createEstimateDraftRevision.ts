@@ -117,7 +117,7 @@ function sectionTitle(rowType: ProfessionalBoqRow["rowType"]): string {
 }
 
 function rowTypeFromDraftItem(item: ConsumerRepairAiDraft["items"][number]): ProfessionalBoqRow["rowType"] {
-  const asphaltCategory = item.sourceParameters?.asphaltV4Category;
+  const asphaltCategory = item.sourceParameters?.professionalBoqCategory ?? item.sourceParameters?.asphaltV4Category;
   if (asphaltCategory === "material") return "material";
   if (asphaltCategory === "work") return "work";
   if (asphaltCategory === "labor") return "labor";
@@ -705,6 +705,29 @@ function asphaltRelatedRevisionContext(rows: readonly ProfessionalBoqRow[]): {
     : null;
 }
 
+function professionalDomainRevisionContext(rows: readonly ProfessionalBoqRow[]): {
+  workKey: string;
+  catalogId: string;
+  canonicalTechnologyId: string;
+  parameterSchemaId: string;
+  parameterKeys: string[];
+  projectAssemblyId: string;
+} | null {
+  const source = rows.find((row) => row.sourceParameters?.professionalDomainFactoryV1 === true)?.sourceParameters;
+  if (!source) return null;
+  const workKey = typeof source.workKey === "string" ? source.workKey : "";
+  const catalogId = typeof source.catalogId === "string" ? source.catalogId : "";
+  const canonicalTechnologyId = typeof source.canonicalTechnologyId === "string" ? source.canonicalTechnologyId : "";
+  const parameterSchemaId = typeof source.parameterSchemaId === "string" ? source.parameterSchemaId : "";
+  const projectAssemblyId = typeof source.projectAssemblyId === "string" ? source.projectAssemblyId : "";
+  const parameterKeys = Array.isArray(source.parameterKeys)
+    ? source.parameterKeys.filter((key): key is string => typeof key === "string" && key.trim().length > 0)
+    : [];
+  return workKey && catalogId && canonicalTechnologyId && parameterSchemaId && projectAssemblyId && parameterKeys.length > 0
+    ? { workKey, catalogId, canonicalTechnologyId, parameterSchemaId, parameterKeys, projectAssemblyId }
+    : null;
+}
+
 function missingInputsFromAsphaltRelated(
   context: NonNullable<ReturnType<typeof asphaltRelatedRevisionContext>>,
 ): EstimateDraftRevision["missingInputs"] {
@@ -970,6 +993,16 @@ function usesExactAsphaltRelatedConsumerDraft(
   return isExactAsphaltRelatedConsumerDraftV4(draft);
 }
 
+function usesProfessionalDomainFactoryConsumerDraft(
+  draft: ConsumerRepairAiDraft | null,
+): boolean {
+  return Boolean(draft?.items.length && draft.items.every((item) =>
+    item.sourceParameters?.professionalDomainFactoryV1 === true &&
+    typeof item.sourceParameters?.domainId === "string" &&
+    typeof item.sourceParameters?.catalogId === "string" &&
+    typeof item.sourceParameters?.workKey === "string"));
+}
+
 function buildPrebuiltExactDraftResult(input: {
   rawInput: string;
   selectedTemplateId?: string | null;
@@ -979,7 +1012,8 @@ function buildPrebuiltExactDraftResult(input: {
 }): InlineWorkPromptEstimateBuildResult {
   const exactRoadworksWaveA = usesExactRoadworksWaveAConsumerDraft(input.draft);
   const exactAsphaltRelated = usesExactAsphaltRelatedConsumerDraft(input.draft);
-  if (!exactRoadworksWaveA && !exactAsphaltRelated) {
+  const exactProfessionalDomain = usesProfessionalDomainFactoryConsumerDraft(input.draft);
+  if (!exactRoadworksWaveA && !exactAsphaltRelated && !exactProfessionalDomain) {
     throw new Error("PREBUILT_EXACT_DRAFT_INVALID");
   }
   const selectedWorkKey = input.draft.selectedWork?.selectedWorkKey?.trim();
@@ -1014,7 +1048,9 @@ function buildPrebuiltExactDraftResult(input: {
       confidence: 1,
       reason: exactAsphaltRelated
         ? "prebuilt_exact_asphalt_related_binding"
-        : "prebuilt_exact_roadworks_wave_a_binding",
+        : exactProfessionalDomain
+          ? "prebuilt_exact_professional_domain_binding"
+          : "prebuilt_exact_roadworks_wave_a_binding",
     }],
     paramText: input.rawInput.trim(),
     extractedParams: {},
@@ -1089,6 +1125,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   // professional catalog here performs a second generic catalog scan on the
   // cold request path and can never add authoritative information.
   const exactRoadworksWaveAConsumerDraft = usesExactRoadworksWaveAConsumerDraft(result.draft);
+  const exactProfessionalDomainConsumerDraft = usesProfessionalDomainFactoryConsumerDraft(result.draft);
   const draftDisagreesWithBroadMatch = Boolean(
     draftTemplateId &&
     draftSelectedWorkKey &&
@@ -1099,10 +1136,12 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const requestedReferencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
     (item) => item.professionalEstimatePassportId === requestedTemplateId,
   );
-  const requestedPassport = requestedTemplateId && !exactRoadworksWaveAConsumerDraft
+  const requestedPassport = requestedTemplateId && !exactRoadworksWaveAConsumerDraft && !exactProfessionalDomainConsumerDraft
     ? buildProfessionalWorkPassportIfApplicable(requestedTemplateId)
     : null;
-  const selectedTemplateId = requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
+  const selectedTemplateId = exactProfessionalDomainConsumerDraft
+    ? draftTemplateId || requestedTemplateId
+    : requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
       ? requestedReferencePassport.professionalEstimatePassportId
@@ -1111,7 +1150,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
         : (
           draftDisagreesWithBroadMatch ? draftTemplateId : matched?.templateId ?? draftTemplateId
         );
-  const passport = selectedTemplateId && !exactRoadworksWaveAConsumerDraft
+  const passport = selectedTemplateId && !exactRoadworksWaveAConsumerDraft && !exactProfessionalDomainConsumerDraft
     ? requestedPassport?.templateId === selectedTemplateId
       ? requestedPassport
       : buildProfessionalWorkPassportIfApplicable(selectedTemplateId)
@@ -1137,10 +1176,11 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   });
   const roadworksWaveAContext = roadworksWaveARevisionContext(initialRows);
   const asphaltRelatedContext = asphaltRelatedRevisionContext(initialRows);
+  const professionalDomainContext = professionalDomainRevisionContext(initialRows);
   const exactRoadworksWaveADraft = roadworksWaveAContext !== null;
   const exactAsphaltRelatedDraft = asphaltRelatedContext !== null;
   const isMultiDomainReferenceV4Draft = usesCanonicalMultiDomainReferenceV4(initialRows);
-  const parameterSchema = exactRoadworksWaveADraft || exactAsphaltRelatedDraft
+  const parameterSchema = exactRoadworksWaveADraft || exactAsphaltRelatedDraft || professionalDomainContext
     ? null
     : buildAiEstimateParameterSchema(selectedTemplateId);
   const visibleParameterLabels = new Map(runtimeParameterLabels(initialRows));
@@ -1158,6 +1198,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   );
   const recalculatedRows = usesCanonicalCapitalRenovationCalculator(initialRows) ||
     isMultiDomainReferenceV4Draft ||
+    professionalDomainContext !== null ||
     exactAsphaltRelatedDraft ||
     isAsphaltV4Draft
     ? initialRows
@@ -1262,7 +1303,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   const identityWithoutChecksum = {
     requestedCatalogWorkId:
       roadScopeBinding?.requestedCatalogWorkId ||
-      stringSourceParameter(rows, ["requestedCatalogWorkId", "selectedWorkId"]) ||
+      stringSourceParameter(rows, ["requestedCatalogWorkId", "selectedWorkId", "catalogId"]) ||
       input.selectedWorkKey?.trim() ||
       null,
     passportId:
@@ -1280,7 +1321,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       rows.find((row) => row.templateVersion)?.templateVersion ||
       formulaGraphVersion,
     selectedScope:
-      stringSourceParameter(rows, ["selectedRoadScope", "scopeProfile"]) ||
+      stringSourceParameter(rows, ["selectedRoadScope", "scopeProfile", "scopeMode"]) ||
       roadScopeBinding?.selectedRoadScope ||
       null,
     scopePresetId: stringSourceParameter(rows, ["scopePresetId"]) || null,
@@ -1313,19 +1354,21 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     rawInput: input.rawInput,
     selectedTemplateId,
     matchedFamily,
-    professionalWorkId: roadworksWaveAContext?.workKey ?? asphaltRelatedContext?.workKey ?? (isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null),
-    workAssemblyId: isAsphaltV4Draft ? assemblyIdFromRows(rows) : null,
+    professionalWorkId: roadworksWaveAContext?.workKey ?? asphaltRelatedContext?.workKey ?? professionalDomainContext?.workKey ?? (isAsphaltV4Draft ? ASPHALT_WORK_ID_V4 : null),
+    workAssemblyId: professionalDomainContext?.projectAssemblyId ?? (isAsphaltV4Draft ? assemblyIdFromRows(rows) : null),
     roadScopeBinding,
     resolvedIdentity,
     quantityBasis: isAsphaltV4Draft || exactAsphaltRelatedDraft ? quantityBasisFromRows(rows) : null,
-    workSpecificParameterSchemaId: roadworksWaveAContext?.parameterSchemaId ?? asphaltRelatedContext?.parameterSchemaId ?? (isAsphaltV4Draft
+    workSpecificParameterSchemaId: roadworksWaveAContext?.parameterSchemaId ?? asphaltRelatedContext?.parameterSchemaId ?? professionalDomainContext?.parameterSchemaId ?? (isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.schema_id
       : null),
-    workSpecificParameterSignature: roadworksWaveAContext?.parameterKeys ?? asphaltRelatedContext?.parameterKeys ?? (isAsphaltV4Draft
+    workSpecificParameterSignature: roadworksWaveAContext?.parameterKeys ?? asphaltRelatedContext?.parameterKeys ?? professionalDomainContext?.parameterKeys ?? (isAsphaltV4Draft
       ? ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4.parameters.map((parameter) => parameter.parameter_id)
       : []),
     applicableBoqSignature: applicableBoqSignature(rows),
-    legacyRowsCount: isAsphaltV4Draft
+    legacyRowsCount: professionalDomainContext
+      ? rows.filter((row) => row.sourceParameters?.professionalDomainFactoryV1 !== true).length
+      : isAsphaltV4Draft
       ? rows.filter((row) => row.sourceParameters?.asphaltV4 !== true).length
       : exactAsphaltRelatedDraft
         ? rows.filter((row) => row.sourceParameters?.asphaltRelatedV4 !== true).length

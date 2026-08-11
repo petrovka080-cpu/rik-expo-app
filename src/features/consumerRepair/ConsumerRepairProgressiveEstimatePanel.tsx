@@ -11,7 +11,13 @@ import {
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
-import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import {
+  REGISTERED_CANONICAL_PARAMETER_SCHEMAS,
+  createCanonicalParameterSession,
+  type CanonicalParameterSeed,
+  type CanonicalParameterSession,
+  type CanonicalParameterValue,
+} from "../../lib/estimate/canonicalParameters";
 import { buildCanonicalParameterCards } from "../../lib/estimate/runtime/buildCanonicalParameterCards";
 import type {
   EstimateDraftRevision,
@@ -550,7 +556,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       prevProps.revision?.revisionId !== this.props.revision?.revisionId ||
       prevProps.canonicalParameterSession?.fingerprint !==
         this.props.canonicalParameterSession?.fingerprint ||
-      nextDraftSignature !== this.state.draftSignature
+      (this.dirtyKeys().length === 0 && nextDraftSignature !== this.state.draftSignature)
     ) {
       this.syncDraftFromProps();
     }
@@ -568,11 +574,52 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     this.setState((state) => ({ derivedOpen: !state.derivedOpen }));
   };
 
+  private editableCanonicalParameterSession(): CanonicalParameterSession | null {
+    const session = this.props.canonicalParameterSession ?? null;
+    if (!session) return null;
+    const schema = REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getBySchemaId(session.schemaId) ??
+      REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(session.canonicalWorkKey);
+    if (!schema) return session;
+    const currentById = new Map(session.parameters.map((parameter) => [parameter.parameterId, parameter]));
+    const seeds: CanonicalParameterSeed[] = schema.definitions.flatMap((definition) => {
+      const hasDraftValue = Object.prototype.hasOwnProperty.call(this.state.draftValues, definition.parameterId);
+      const rawValue = hasDraftValue
+        ? this.state.draftValues[definition.parameterId]
+        : currentById.get(definition.parameterId)?.value;
+      if (rawValue == null || String(rawValue).trim() === "") return [];
+      let value: CanonicalParameterValue;
+      if (definition.valueType === "number") {
+        const parsed = Number(String(rawValue).replace(",", "."));
+        if (!Number.isFinite(parsed)) return [];
+        value = parsed;
+      } else if (definition.valueType === "boolean") {
+        value = rawValue === true || String(rawValue) === "true";
+      } else {
+        value = String(rawValue);
+      }
+      return [{
+        parameterId: definition.parameterId,
+        value,
+        source: "USER_EXPLICIT" as const,
+        confidence: 1,
+        sourceText: hasDraftValue ? "pending-user-edit" : currentById.get(definition.parameterId)?.sourceText,
+      }];
+    });
+    return createCanonicalParameterSession({
+      schema,
+      draftId: session.draftId,
+      revisionId: session.revisionId,
+      seeds,
+      createdAt: session.updatedAt,
+      previousSession: session,
+    });
+  }
+
   private buildCards(): AiEstimateParameterCard[] {
     return buildConsumerRepairProgressiveParameterCards({
       revision: this.props.revision,
       viewModel: this.props.viewModel,
-      canonicalParameterSession: this.props.canonicalParameterSession,
+      canonicalParameterSession: this.editableCanonicalParameterSession(),
     });
   }
 
@@ -660,7 +707,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
         validationErrors[key] = "Введите значение перед применением.";
         continue;
       }
-      const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
+      const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
         (parameter) => parameter.parameterId === key,
       );
       if (canonicalParameter?.valueType === "number") {
@@ -725,7 +772,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     });
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
-    const canonicalParameter = this.props.canonicalParameterSession?.parameters.find(
+    const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
       (parameter) => parameter.parameterId === card.key,
     );
     const validationHint = canonicalParameter?.valueType === "number"
@@ -787,11 +834,10 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       recommended: 1,
       optional: 2,
     } as const;
-    const canonicalBlockingParameterIds = new Set(
-      this.props.canonicalParameterSession?.blockingMissingParameterIds ?? [],
-    );
+    const canonicalSession = this.editableCanonicalParameterSession();
+    const canonicalBlockingParameterIds = new Set(canonicalSession?.blockingMissingParameterIds ?? []);
     const initialCanonicalCalculationBlocked =
-      this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
+      canonicalSession?.status === "BLOCKING_REQUIRED";
     const missingCards = cards
       .filter((card) =>
         card.missing &&
@@ -805,7 +851,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           clarificationRank[left.clarificationTier ?? "optional"] -
           clarificationRank[right.clarificationTier ?? "optional"],
       );
-    const assumptionCards = this.props.canonicalParameterSession
+    const assumptionCards = canonicalSession
       ? cards.filter((card) => !card.missing && card.source === "catalog_default")
       : [];
     const filledCards = cards.filter((card) =>
@@ -829,7 +875,6 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const hiddenMissingCount = Math.max(0, missingCards.length - visibleMissingCards.length);
     const dirtyCount = this.dirtyKeys().length;
     const clarification = this.props.revision?.professionalClarification;
-    const canonicalSession = this.props.canonicalParameterSession;
     const blockingMissingCount = canonicalSession?.blockingMissingParameterIds.length ?? 0;
     const contractMissingCount = canonicalSession?.contractMissingParameterIds.length ?? missingCards.length;
 

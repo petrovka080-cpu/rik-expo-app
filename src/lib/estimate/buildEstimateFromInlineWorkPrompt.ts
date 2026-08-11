@@ -102,6 +102,12 @@ function loadMultiDomainReferenceProductionDraftBuilder() {
   ) as typeof import("./v4/multiDomainReferenceProductionBindingV4");
 }
 
+function loadRegisteredProfessionalEstimateDomainDraftBuilder() {
+  return require(
+    "./v4/domains/registeredProfessionalEstimateDomainsV1"
+  ) as typeof import("./v4/domains/registeredProfessionalEstimateDomainsV1");
+}
+
 export type BuildEstimateFromInlineWorkPromptInput = {
   rawInput: string;
   selectedTemplateId?: string | null;
@@ -1067,9 +1073,83 @@ function buildUnsupportedExactWorkParseResult(
   };
 }
 
+function buildExactRegisteredProfessionalDomainParseResult(input: {
+  rawInput: string;
+  catalogId: string;
+  workKey: string;
+  templateId: string;
+  titleRu: string;
+  missingParameterIds: readonly string[];
+}): InlineWorkPromptParseResult {
+  return {
+    rawInput: input.rawInput,
+    matchedTemplate: {
+      templateId: input.templateId,
+      templateName: input.titleRu,
+      family: input.workKey,
+      confidence: 1,
+      matchSource: "user_selected",
+      matchedTextSpan: [0, input.rawInput.length],
+    },
+    candidateTemplates: [{
+      templateId: input.templateId,
+      templateName: input.titleRu,
+      family: input.workKey,
+      workKey: input.workKey,
+      confidence: 1,
+      reason: `exact_professional_domain_binding:${input.catalogId}`,
+    }],
+    paramText: input.rawInput.trim(),
+    extractedParams: {},
+    rawInputFacts: [],
+    rawInputFactExtraction: {
+      raw_input: input.rawInput,
+      facts: [],
+      metrics: {
+        explicit_input_facts_ignored: 0,
+        explicit_input_unit_mismatches: 0,
+        explicit_input_facts_overwritten_by_default: 0,
+      },
+    },
+    assumptions: [],
+    missingInputs: input.missingParameterIds.map((parameterId) => ({
+      param: parameterId,
+      label: parameterId,
+      requiredFor: "contract_ready" as const,
+      blocksPreliminaryEstimate: false as const,
+    })),
+    canBuildPreliminaryEstimate: input.missingParameterIds.length === 0,
+    mustAskUserToSelectTemplate: false,
+    ...(input.missingParameterIds.length > 0 ? { blockingReason: "NEEDS_REQUIRED_INPUTS" } : {}),
+  };
+}
+
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
+  const exactRegisteredDomain = loadRegisteredProfessionalEstimateDomainDraftBuilder()
+    .buildRegisteredProfessionalEstimateFromInlineInputV1(input);
+  if (exactRegisteredDomain.exact_match && exactRegisteredDomain.inventory) {
+    const parseResult = buildExactRegisteredProfessionalDomainParseResult({
+      rawInput: input.rawInput,
+      catalogId: exactRegisteredDomain.inventory.catalog_id,
+      workKey: exactRegisteredDomain.inventory.work_key,
+      templateId: `domain-passport:${exactRegisteredDomain.inventory.catalog_id}:v1`,
+      titleRu: exactRegisteredDomain.inventory.localized_name_ru,
+      missingParameterIds: exactRegisteredDomain.missing_parameter_ids,
+    });
+    const draft = exactRegisteredDomain.production?.draft ?? null;
+    return {
+      parseResult,
+      draft,
+      canBuildPreliminaryEstimate: Boolean(draft?.items.length),
+      blockingReason: draft?.items.length ? undefined : "NEEDS_REQUIRED_INPUTS",
+      pdfMappingValid: Boolean(draft?.items.length),
+      buyerHandoffMappingValid: Boolean(draft?.items.some((item) => item.itemType !== "work")),
+      v4ClarificationExperience: null,
+      roadScopeResolution: null,
+    };
+  }
   const explicitExactId = input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim() || "";
   const exactRouting = loadAsphaltRelatedExactRoutingV4()
     .resolveAsphaltRelatedExactRoutingV4(explicitExactId);

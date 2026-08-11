@@ -16,6 +16,7 @@ import {
 } from "../v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import { ASPHALT_RELATED_PARAMETER_METADATA_V4 } from "../v4/asphalt/asphaltRelatedProductionBindingV4";
 import { ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4 } from "../v4/asphalt/compileAsphaltRelatedThroughCoreV4";
+import { INTERIOR_FINISHES_WAVE_1_CANONICAL_PARAMETER_SCHEMAS } from "../v4/domains/interiorFinishesWave1/canonicalParameterSchemas";
 import {
   CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
   type CanonicalParameterDefinition,
@@ -396,4 +397,5 @@ export const REGISTERED_CANONICAL_PARAMETER_SCHEMAS =
     ASPHALT_CANONICAL_PARAMETER_SCHEMA,
     ELECTRICAL_CANONICAL_PARAMETER_SCHEMA,
     ...ASPHALT_RELATED_CANONICAL_PARAMETER_SCHEMAS_V4,
+    ...INTERIOR_FINISHES_WAVE_1_CANONICAL_PARAMETER_SCHEMAS,
   ]);

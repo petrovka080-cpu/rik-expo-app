@@ -100,6 +100,12 @@ function loadAsphaltRelatedSemanticRegistryV4() {
   ) as typeof import("../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4");
 }
 
+function loadRegisteredProfessionalEstimateDomainsV1() {
+  return require(
+    "../../lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1"
+  ) as typeof import("../../lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1");
+}
+
 function loadProfessionalWorkPassport() {
   return require(
     "../../lib/estimate/buildProfessionalWorkPassport"
@@ -544,18 +550,22 @@ export function buildConsumerRepairExactCatalogLaunchSelectedWork(input: {
     .find((entry) => entry.workId === catalogWorkId || entry.templateId === catalogWorkId);
   const asphaltRelated = loadAsphaltRelatedSemanticRegistryV4()
     .getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
-  if (!roadworks && !asphaltRelated) {
+  const registeredProfessional = loadRegisteredProfessionalEstimateDomainsV1()
+    .resolveRegisteredProfessionalEstimateSelectionV1(catalogWorkId);
+  if (!roadworks && !asphaltRelated && !registeredProfessional) {
     throw new Error(`UNSUPPORTED_EXACT_WORK_KEY:${catalogWorkId || "empty"}`);
   }
   const demolition = asphaltRelated?.uiGroup === "DEMOLITION_WORKS";
   return {
-    selectedWorkKey: catalogWorkId,
+    selectedWorkKey: registeredProfessional?.work_key ?? catalogWorkId,
     selectedTitleRu:
       roadworks?.professionalNameRu
       ?? asphaltRelated?.professionalNameRu
+      ?? registeredProfessional?.title_ru
       ?? catalogWorkId,
-    selectedCategoryKey: demolition ? "demolition" : "roadworks",
-    selectedCategoryTitleRu: demolition ? "Демонтаж" : "Дорожные работы",
+    selectedCategoryKey: registeredProfessional?.category_key ?? (demolition ? "demolition" : "roadworks"),
+    selectedCategoryTitleRu: registeredProfessional?.category_title_ru ??
+      (demolition ? "Демонтаж" : "Дорожные работы"),
     rawInput,
     source: "user_selected",
     resolverReGuessed: false,
@@ -886,6 +896,10 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   const selectedWork = refreshSelectedWorkBinding(params.selectedWork, resolverInput);
   recordConsumerRepairEstimateBuildTiming("SELECTED_WORK_READY", buildStartedAt);
   const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
+  const registeredProfessionalSelection = selectedWork?.selectedWorkKey
+    ? loadRegisteredProfessionalEstimateDomainsV1()
+      .resolveRegisteredProfessionalEstimateSelectionV1(selectedWork.selectedWorkKey)
+    : null;
   const roadScopeResolution = resolveRoadEstimateScopeV4({
     originalText: resolverInput,
     requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
@@ -930,6 +944,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
   recordConsumerRepairEstimateBuildTiming("ROADWORKS_SELECTION_READY", buildStartedAt);
   const scopeSelectionDraft: ConsumerRepairAiDraft | null =
     roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
+      !registeredProfessionalSelection &&
       (!exactAsphaltRelatedSelection || exactAsphaltConcreteScopeSelection) &&
       explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
       explicitRoadworksWaveAReadiness !== "NEEDS_REQUIRED_INPUTS"
@@ -966,7 +981,7 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     ),
   );
   recordConsumerRepairEstimateBuildTiming("RUNTIME_ROUTING_READY", buildStartedAt);
-  const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft
+  const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft || registeredProfessionalSelection
     ? null
     : (() => {
       const runtimeBuilders = loadConsumerRepairRuntimeDraftBuilders();
@@ -992,7 +1007,14 @@ export function buildConsumerRepairSelectedWorkDraftBundle(params: {
     : null;
   const exactAsphaltRelatedRuntimeDraft =
     loadConsumerRepairRuntimeDraftBuilders().isExactAsphaltRelatedConsumerDraftV4(runtimeDraft);
-  const aiDraft = scopeSelectionDraft ?? (directOpenWorldDraft
+  const registeredProfessionalParameterCollectionDraft = registeredProfessionalSelection
+    ? loadRegisteredProfessionalEstimateDomainsV1()
+      .buildRegisteredProfessionalEstimateParameterCollectionDraftV1({
+        selection: registeredProfessionalSelection,
+        raw_input: resolverInput,
+      })
+    : null;
+  const aiDraft = scopeSelectionDraft ?? registeredProfessionalParameterCollectionDraft ?? (directOpenWorldDraft
     ? (() => {
       const buildDirectConsumerRepairOpenWorldAiDraft =
         loadDirectConsumerRepairOpenWorldAiDraftBuilder();

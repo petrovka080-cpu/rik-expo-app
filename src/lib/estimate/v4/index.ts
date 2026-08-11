@@ -8,4 +8,7 @@ export * from "./adaptProfessionalWorkPassportV2ToV4";
 export * from "./validateProfessionalEstimateV4";
 export * from "./truthLedgersV4";
 export * from "./catalogProfessionalCoverageLedgerV4";
+export * from "./domainFactory";
+export * from "./domains/interiorFinishesWave1";
+export * from "./domains/registeredProfessionalEstimateDomainsV1";
 export * from "./asphalt";
