@@ -47,6 +47,8 @@ type NormalizedRow = {
   formula_id: string;
   quantity_formula: string;
   calculation_trace: string;
+  parameter_sources: string[];
+  scope_trigger_parameter: string | null;
   source_ids: string[];
   normative_review_status: string;
   cost_ownership: string;
@@ -148,6 +150,10 @@ function normalizeRevisionRow(row: ProfessionalBoqRow): NormalizedRow {
     formula_id: row.formulaId ?? "",
     quantity_formula: row.quantityFormula ?? "",
     calculation_trace: row.calculationTrace ?? "",
+    parameter_sources: sourceArray(source.affectedBy).length > 0
+      ? sourceArray(source.affectedBy)
+      : sourceArray(source.parameterSources),
+    scope_trigger_parameter: typeof source.scopeTriggerParameter === "string" ? source.scopeTriggerParameter : null,
     source_ids: [...new Set([
       ...relatedNormativeSourceIds,
       ...(relatedNormativeSourceIds.length === 0 && typeof row.sourceId === "string" && row.sourceId ? [row.sourceId] : []),
@@ -181,6 +187,10 @@ function normalizeArtifactRow(row: JsonObject): NormalizedRow {
     formula_id: String(row.formula_id ?? ""),
     quantity_formula: String(row.quantity_formula ?? ""),
     calculation_trace: String(row.calculation_trace ?? ""),
+    parameter_sources: sourceArray(row.parameter_sources).length > 0
+      ? sourceArray(row.parameter_sources)
+      : sourceArray(source.parameterSources ?? source.affectedBy),
+    scope_trigger_parameter: typeof source.scopeTriggerParameter === "string" ? source.scopeTriggerParameter : null,
     source_ids: sourceArray(source.normativeSourceIds),
     normative_review_status: String(source.normativeReviewStatus ?? ""),
     cost_ownership: String(source.costOwnership ?? ""),
@@ -210,6 +220,19 @@ function technicalRowIdentity(row: NormalizedRow): JsonObject {
     included_in_procurement: row.included_in_procurement,
     child_passport_id: row.child_passport_id,
   };
+}
+
+function ownerIndependentResourceGraph(rows: readonly NormalizedRow[]): JsonObject[] {
+  return rows.map((row) => ({
+    row_suffix: row.row_id.replace(/^[^:]+:/u, ""),
+    row_type: row.row_type,
+    category: row.category,
+    unit: row.unit,
+    formula_id: row.formula_id.replace(/^[^:]+:/u, ""),
+    quantity_formula: row.quantity_formula,
+    cost_ownership: row.cost_ownership,
+    child_passport_id: row.child_passport_id,
+  })).sort((left, right) => stable(left).localeCompare(stable(right)));
 }
 
 function countPdfRows(pdf: ReturnType<typeof buildConsumerRepairStructuredEstimatePdfViewModel>): number {
@@ -318,7 +341,8 @@ function stageContract(caseId: "ROAD" | "PARKING" | "DEMOLITION", rows: readonly
   const requiredSuffixes = caseId === "PARKING"
     ? [
       "survey_and_layout", "temporary_and_protective_works", "earthwork_and_subgrade", "subbase_and_base",
-      "asphalt_pavement", "curbs", "drainage", "road_marking", "road_signs", "outdoor_lighting",
+      "asphalt_pavement", "parking_geometry_and_manoeuvring", "curbs", "drainage", "road_marking", "road_signs", "outdoor_lighting",
+      "accessible_parking",
       "material_logistics", "quality_control_and_testing", "execution_documentation", "direct_labor", "construction_machinery",
     ]
     : [
@@ -338,6 +362,11 @@ function stageContract(caseId: "ROAD" | "PARKING" | "DEMOLITION", rows: readonly
     ? [
       { stage_id: "standalone_demolition", status: "NOT_APPLICABLE_WITH_REASON", reason: "New parking benchmark does not include existing-pavement removal." },
       { stage_id: "closed_storm_sewer", status: "NOT_APPLICABLE_WITH_REASON", reason: "Only the explicitly scheduled surface-drainage package is included." },
+      { stage_id: "traffic_islands", status: "NOT_APPLICABLE_WITH_REASON", reason: "No island geometry or island-construction scope is present in the versioned reference fixture." },
+      { stage_id: "wheel_stops_and_bollards", status: "NOT_APPLICABLE_WITH_REASON", reason: "Parking furniture is not assumed without an approved schedule and quantities." },
+      { stage_id: "barrier_gate_and_access_control", status: "NOT_APPLICABLE_WITH_REASON", reason: "No gate, barrier or access-control system is selected by the reference fixture." },
+      { stage_id: "ev_charging", status: "NOT_APPLICABLE_WITH_REASON", reason: "No electric-vehicle charging scope or electrical design is selected." },
+      { stage_id: "landscaping", status: "NOT_APPLICABLE_WITH_REASON", reason: "Landscaping is outside the explicit asphalt-parking scope and has no project quantities." },
       { stage_id: "generic_commissioning", status: "NOT_APPLICABLE_WITH_REASON", reason: "Only exact outdoor-lighting tests are included; no generic PNR row is emitted." },
     ]
     : [
@@ -518,10 +547,10 @@ function normativeRegistry(sourceRoot: string) {
       sourceType: "KYRGYZ_BUILDING_NORM",
       authority: "Ministry of Construction, Architecture and Housing and Communal Services of the Kyrgyz Republic",
       jurisdiction: "KG",
-      documentCode: "SN KR Parkings; effective 2018-12-27",
+      documentCode: "SN KR 31-12:2018",
       title: "Стоянки автомобилей",
       officialRepository: "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyenormykyrgyzskojrespublikisistemanormativnyhdokumentovvstroitelstvestoankiavtomobilej-740685a00c177bfa3.03889380.pdf",
-      clauseOrTable: "scope clauses 1.1-1.2 and project-layout provisions",
+      clauseOrTable: "clauses 4.14, 4.16, 5.1.4, 5.1.5 and 5.1.17: accessibility, spaces, aisles, manoeuvring and entry/exit visibility",
       unitBasis: "parking design criterion",
       applicabilityConditions: "parking-specific geometry/accessibility/safety only; KRER resource tables remain separately selected",
       technologyIds: ["asphalt-parking"],
@@ -959,6 +988,7 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
     if (!item) throw new Error(`R11_R63_CASE_MISSING:${catalogId}`);
     return item;
   };
+  const catalogRoadCase = selectCase("built-in-ai-1000:0701");
   const parkingCase = selectCase("built-in-ai-1000:0702");
   const demolitionCase = selectCase("built-in-ai-1000:0670");
   const parkingReferenceDesign = relatedReferenceDesign(parkingCase);
@@ -1046,6 +1076,58 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
   writeJson(path.join(outputRoot, "ASPHALT_ETALON_PARKING_FULL_GEOMETRY_PROOF.json"), parkingProof);
   writeJson(path.join(outputRoot, "ASPHALT_ETALON_DEMOLITION_STANDALONE_PROOF.json"), demolitionProof);
 
+  const accessibleParkingParameterKeys = [
+    "accessible_parking_required", "accessible_space_count", "accessible_sign_count", "accessible_sign_post_count",
+    "accessible_sign_foundation_concrete_m3_per_post", "accessible_symbol_area_m2", "accessible_symbol_compound_kg_m2",
+    "accessible_symbol_beads_kg_m2", "accessible_marking_productivity_m2_per_man_hour",
+    "accessible_sign_installation_pcs_per_man_hour", "accessible_sign_drill_pcs_per_machine_hour",
+    "accessible_marking_machine_productivity_m2_per_machine_hour",
+  ];
+  const parkingGeometryParameterKeys = [
+    "parking_geometry_required", "area_m2", "parking_space_count", "parking_aisle_length_m",
+    "parking_entry_exit_count", "parking_layout_consumable_kg_per_space",
+    "parking_layout_productivity_space_per_man_hour", "parking_survey_productivity_space_per_machine_hour",
+    "parking_geometry_control_interval_m2_per_test",
+  ];
+  const accessibleParkingRows = parkingProof.row_evidence.filter((row) =>
+    row.stage_id.endsWith(":accessible_parking")
+  );
+  const parkingGeometryRows = parkingProof.row_evidence.filter((row) =>
+    row.stage_id.endsWith(":parking_geometry_and_manoeuvring")
+  );
+  const accessibleParameterBindings = accessibleParkingParameterKeys.map((parameter) => ({
+    parameter,
+    affected_row_ids: accessibleParkingRows.filter((row) =>
+      row.parameter_sources.includes(parameter) || row.scope_trigger_parameter === parameter
+    ).map((row) => row.row_id),
+  }));
+  const parkingGeometryParameterBindings = parkingGeometryParameterKeys.map((parameter) => ({
+    parameter,
+    affected_row_ids: parkingGeometryRows.filter((row) =>
+      row.parameter_sources.includes(parameter) || row.scope_trigger_parameter === parameter
+    ).map((row) => row.row_id),
+  }));
+  const parkingParameterBindings = [...parkingGeometryParameterBindings, ...accessibleParameterBindings];
+  const accessibleParkingParameterProof = {
+    schema_version: SCHEMA_VERSION,
+    fixture_trigger: parkingCase.requested_input.accessible_parking_required,
+    required_parameter_count: accessibleParkingParameterKeys.length,
+    accessible_resource_row_count: accessibleParkingRows.length,
+    parking_geometry_parameter_count: parkingGeometryParameterKeys.length,
+    parking_geometry_resource_row_count: parkingGeometryRows.length,
+    typed_child_passports: [...new Set(accessibleParkingRows.map((row) => row.child_passport_id).filter(Boolean))],
+    bindings: parkingParameterBindings,
+    shown_but_unused_parameters: parkingParameterBindings.filter((binding) => binding.affected_row_ids.length === 0).map((binding) => binding.parameter),
+    verdict: parkingCase.requested_input.accessible_parking_required === true &&
+      parkingCase.requested_input.parking_geometry_required === true &&
+      accessibleParkingRows.length === 12 &&
+      parkingGeometryRows.length === 8 &&
+      parkingParameterBindings.every((binding) => binding.affected_row_ids.length > 0)
+      ? "GREEN_PARKING_GEOMETRY_AND_ACCESSIBILITY_PARAMETERS_USED_BY_DISTINCT_RESOURCE_ROWS"
+      : "RED_PARKING_PARAMETER_OR_RESOURCE_GAP",
+  };
+  writeJson(path.join(outputRoot, "ASPHALT_PARKING_PARAMETER_USAGE_PROOF.json"), accessibleParkingParameterProof);
+
   const before25 = baseline.all_records.filter((row) =>
     row.domain_owner === "ASPHALT" && row.verdict === "RED_TRUNCATED_OR_WRONG_SCOPE_PROJECTION"
   );
@@ -1097,6 +1179,12 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
   };
   writeJson(path.join(outputRoot, "ASPHALT_ETALON_ARTIFACT_DISCOVERY.json"), discovery);
 
+  const catalogRoadGraph = ownerIndependentResourceGraph(catalogRoadCase.row_evidence.map(normalizeArtifactRow));
+  const catalogParkingGraph = ownerIndependentResourceGraph(parkingCase.row_evidence.map(normalizeArtifactRow));
+  const catalogRoadGraphSignatures = new Set(catalogRoadGraph.map(stable));
+  const catalogParkingGraphSignatures = new Set(catalogParkingGraph.map(stable));
+  const roadParkingResourceGraphAlias = objectSha256(catalogRoadGraph) === objectSha256(catalogParkingGraph);
+
   const cases = {
     schema_version: SCHEMA_VERSION,
     required_cases_accounted: 3,
@@ -1107,40 +1195,52 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
     ],
     distinctness: {
       road_owner: ASPHALT_WORK_ID_V4,
+      catalog_road_owner: catalogRoadCase.ledger.revision_work_key,
       parking_owner: parkingCase.ledger.revision_work_key,
       demolition_owner: demolitionCase.ledger.revision_work_key,
-      road_parking_alias: false,
+      road_parking_owner_alias: ASPHALT_WORK_ID_V4 === parkingCase.ledger.revision_work_key,
+      road_parking_resource_graph_alias: roadParkingResourceGraphAlias,
+      catalog_road_resource_graph_sha256: objectSha256(catalogRoadGraph),
+      parking_resource_graph_sha256: objectSha256(catalogParkingGraph),
+      shared_normalized_resource_nodes: [...catalogRoadGraphSignatures].filter((signature) => catalogParkingGraphSignatures.has(signature)).length,
+      catalog_road_unique_resource_nodes: [...catalogRoadGraphSignatures].filter((signature) => !catalogParkingGraphSignatures.has(signature)).length,
+      parking_unique_resource_nodes: [...catalogParkingGraphSignatures].filter((signature) => !catalogRoadGraphSignatures.has(signature)).length,
       standalone_demolition_alias: false,
-      verdict: "GREEN_DISTINCT_CANONICAL_OWNERS",
+      verdict: !roadParkingResourceGraphAlias &&
+        ASPHALT_WORK_ID_V4 !== parkingCase.ledger.revision_work_key &&
+        accessibleParkingParameterProof.verdict.startsWith("GREEN_")
+        ? "GREEN_DISTINCT_CANONICAL_OWNERS_AND_RESOURCE_GRAPHS"
+        : "RED_ROAD_PARKING_OWNER_OR_RESOURCE_GRAPH_ALIAS",
     },
   };
   writeJson(path.join(outputRoot, "ASPHALT_ETALON_CASES.json"), cases);
 
   const roadProofFile = path.join(outputRoot, "ASPHALT_ETALON_ROAD_FULL_GEOMETRY_PROOF.json");
   const roadProof = readJson<{ audit: JsonObject; durable: JsonObject; rawRowCount: number; PDFRowCount: number; procurementEligibleRowCount: number }>(roadProofFile);
+  const exactDuplicatesTotal = Number(roadProof.audit.duplicate_exact_content_rows ?? 0) +
+    Number(parkingProof.audit.duplicate_exact_content_rows ?? 0) +
+    Number(demolitionProof.audit.duplicate_exact_content_rows ?? 0);
+  const duplicatePricedOwnersTotal = Number(roadProof.audit.duplicate_priced_cost_owners ?? 0) +
+    Number(parkingProof.audit.duplicate_priced_cost_owners ?? 0) +
+    Number(demolitionProof.audit.duplicate_priced_cost_owners ?? 0);
+  const pendingPreliminaryFactorRows = Number(roadProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) +
+    Number(parkingProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) +
+    Number(demolitionProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0);
   const duplicatePadding = {
     schema_version: SCHEMA_VERSION,
     road: roadProof.audit,
     parking: parkingProof.audit,
     demolition: demolitionProof.audit,
-    exact_duplicates_total: Number(roadProof.audit.duplicate_exact_content_rows ?? 0) +
-      Number(parkingProof.audit.duplicate_exact_content_rows ?? 0) +
-      Number(demolitionProof.audit.duplicate_exact_content_rows ?? 0),
-    duplicate_priced_cost_owners_total: Number(roadProof.audit.duplicate_priced_cost_owners ?? 0) +
-      Number(parkingProof.audit.duplicate_priced_cost_owners ?? 0) +
-      Number(demolitionProof.audit.duplicate_priced_cost_owners ?? 0),
-    preliminary_factor_rows_pending_normative_admission: Number(roadProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) +
-      Number(parkingProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) +
-      Number(demolitionProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0),
+    exact_duplicates_total: exactDuplicatesTotal,
+    duplicate_priced_cost_owners_total: duplicatePricedOwnersTotal,
+    preliminary_factor_rows_pending_normative_admission: pendingPreliminaryFactorRows,
     historical_padding_removed: {
       secondary_expanded_skeleton_rows: 280,
       verdict: "PREVIOUS_700_CONTAINED_INVALID_DUPLICATE_OR_PADDING_AND_REPAIRED",
     },
-    padding_verdict: Number(roadProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) === 0 &&
-      Number(parkingProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) === 0 &&
-      Number(demolitionProof.audit.preliminary_factor_rows_pending_normative_admission ?? 0) === 0
+    padding_verdict: pendingPreliminaryFactorRows === 0 && exactDuplicatesTotal === 0 && duplicatePricedOwnersTotal === 0
       ? "GREEN_NO_PADDING"
-      : "RED_PADDING_NOT_PROVEN_FOR_PRELIMINARY_FACTOR_ROWS",
+      : "RED_PADDING_DUPLICATE_OR_DOUBLE_COUNT_NOT_DISPROVEN",
   };
   writeJson(path.join(outputRoot, "ASPHALT_ETALON_DUPLICATE_PADDING_AUDIT.json"), duplicatePadding);
   const stageResourceProof = {
@@ -1245,6 +1345,8 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
     duplicatePadding.preliminary_factor_rows_pending_normative_admission === 0 ? null : "STOP_ASPHALT_ETALON_PRELIMINARY_FACTOR_DISPOSITION_INCOMPLETE",
     normativeRegistry(sourceRoot).unresolvedSourceCount === 0 ? null : "STOP_ASPHALT_ETALON_SOURCE_REGISTRY_UNRESOLVED",
     duplicatePadding.padding_verdict === "GREEN_NO_PADDING" ? null : "STOP_ASPHALT_ETALON_DUPLICATE_OR_PADDING",
+    cases.distinctness.verdict.startsWith("GREEN_") ? null : "STOP_ASPHALT_ROAD_PARKING_RESOURCE_GRAPH_ALIAS",
+    accessibleParkingParameterProof.verdict.startsWith("GREEN_") ? null : "STOP_ASPHALT_PARKING_PARAMETERS_SHOWN_BUT_UNUSED",
     discovery.verdict.startsWith("GREEN_") ? null : "STOP_ASPHALT_ETALON_ARTIFACT_NOT_FOUND",
     status ? "STOP_ASPHALT_ETALON_EXACT_IDENTITY_NOT_PROVEN:DIRTY_WORKTREE" : null,
     reconciliation.discrepancies_after === 0 ? null : "STOP_ASPHALT_700_VS_116_UNRESOLVED",
@@ -1296,7 +1398,10 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
     asphalt_transfer_contract_sha256: fileSha256(transferContractFile),
     invariants: {
       required_asphalt_etalon_cases_accounted: "3/3",
-      road_and_parking_distinctness: "GREEN",
+      road_and_parking_distinctness: cases.distinctness.verdict,
+      road_parking_resource_graph_alias: cases.distinctness.road_parking_resource_graph_alias,
+      parking_parameters_shown_but_unused: accessibleParkingParameterProof.shown_but_unused_parameters.length,
+      accessible_parking_parameter_usage: accessibleParkingParameterProof.verdict,
       standalone_demolition_ownership: "GREEN",
       exact_artifact_identity: status ? "RED_DIRTY_WORKTREE" : "GREEN",
       scope_boundary_reconciliation: reconciliation.verdict,
@@ -1348,6 +1453,7 @@ export async function runAsphaltProfessionalDepthReferenceR11(): Promise<void> {
     "ASPHALT_ETALON_ROAD_FULL_GEOMETRY_PROOF.json",
     "ASPHALT_ETALON_PARKING_FULL_GEOMETRY_PROOF.json",
     "ASPHALT_ETALON_DEMOLITION_STANDALONE_PROOF.json",
+    "ASPHALT_PARKING_PARAMETER_USAGE_PROOF.json",
     "ASPHALT_ETALON_DUPLICATE_PADDING_AUDIT.json",
     "ASPHALT_ETALON_STAGE_RESOURCE_COVERAGE.json",
     "ASPHALT_700_VS_116_SCOPE_AND_ROW_SEMANTICS_RECONCILIATION.json",

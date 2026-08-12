@@ -198,6 +198,73 @@ describe("Asphalt-related R63 exact binding matrix", () => {
     )).toBe("new_full_road_pavement");
   });
 
+  test("builds accessible parking as a distinct typed resource package inside the full parking estimate", () => {
+    const fullParkingParameters = params({
+      ...ASPHALT_R63_COMPLETE_INPUTS,
+      ...ASPHALT_R63_FULL_INPUTS,
+      estimate_scope_mode: "FULL_APPLICABLE_SCOPE",
+      project_scope: "TURNKEY_PARKING_WITH_SITE_FEATURES",
+      parking_geometry_required: true,
+      accessible_parking_required: true,
+      signing_required: true,
+      lighting_required: true,
+    });
+    const runtime = buildConsumerRepairDraftFromAiEstimateRuntime({
+      rawInput: "Полное строительство парковки 120 м2 с доступными машино-местами",
+      selectedWorkKey: "built-in-ai-1000:0702",
+      selectedTemplateId: "built-in-ai-1000:0702",
+      selectedTemplateName: "Асфальтирование парковки",
+      city: "Bishkek",
+      currency: "KGS",
+      countryCode: "KG",
+      paramOverrides: fullParkingParameters,
+      createdAt: CREATED_AT,
+    });
+    if (!runtime) {
+      const direct = buildEstimateFromInlineWorkPrompt({
+        rawInput: "Полное строительство парковки 120 м2 с доступными машино-местами",
+        selectedWorkKey: "built-in-ai-1000:0702",
+        selectedTemplateId: "built-in-ai-1000:0702",
+        selectedTemplateName: "Асфальтирование парковки",
+        city: "Bishkek",
+        currency: "KGS",
+        countryCode: "KG",
+        paramOverrides: fullParkingParameters,
+      });
+      throw new Error(JSON.stringify({
+        canBuildPreliminaryEstimate: direct.canBuildPreliminaryEstimate,
+        draftItemCount: direct.draft?.items.length ?? 0,
+      }));
+    }
+    const revision = runtime?.runtimeEstimateDraftRevision;
+    if (!revision) {
+      throw new Error(JSON.stringify({
+        missingData: runtime.missingData,
+        selectedWork: runtime.selectedWork,
+      }));
+    }
+    expect(revision?.status).toBe("draft_ready");
+    expect(revision?.missingInputs).toHaveLength(0);
+    expect(revision?.professionalWorkId).toBe("asphalt_parking_lot");
+    const rows = revision?.boq.rows ?? [];
+    const accessibleRows = rows.filter((row) =>
+      row.sourceParameters?.childPassportId === "professional-estimate-passport:v4:accessible-parking"
+    );
+    const parkingGeometryRows = rows.filter((row) =>
+      row.sourceParameters?.stageId === "asphalt:asphalt_parking_lot:parking_geometry_and_manoeuvring"
+    );
+    expect(rows.length).toBeGreaterThan(150);
+    expect(accessibleRows).toHaveLength(12);
+    expect(parkingGeometryRows).toHaveLength(8);
+    expect(parkingGeometryRows.filter((row) =>
+      row.sourceParameters?.childPassportId === "professional-estimate-passport:v4:parking-geometry-and-manoeuvring"
+    )).toHaveLength(8);
+    expect(accessibleRows.every((row) =>
+      row.sourceParameters?.stageId === "asphalt:asphalt_parking_lot:accessible_parking"
+    )).toBe(true);
+    expect(new Set(accessibleRows.map((row) => row.sourceParameters?.costOwnerId)).size).toBe(12);
+  });
+
   test("routes all R=63 records through exact owners, revision, durable history, PDF and procurement", () => {
     const inventory = buildAsphaltRelatedR8Inventory();
     const related = inventory.records.filter((record) => record.canonical_technology_id !== null);

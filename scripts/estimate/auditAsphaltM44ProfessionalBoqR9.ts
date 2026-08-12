@@ -361,7 +361,24 @@ export const FULL_APPLICABLE_EXPLICIT_INPUTS: Readonly<Record<string, string | n
   marking_glass_beads_rate_kg_m2: 0.35,
   marking_productivity_m2_per_man_hour: 12,
   marking_machine_productivity_m2_per_machine_hour: 80,
+  parking_space_count: 36,
+  parking_aisle_length_m: 90,
+  parking_entry_exit_count: 2,
+  parking_layout_consumable_kg_per_space: 0.05,
+  parking_layout_productivity_space_per_man_hour: 3,
+  parking_survey_productivity_space_per_machine_hour: 12,
+  parking_geometry_control_interval_m2_per_test: 500,
   accessible_space_count: 2,
+  accessible_sign_count: 2,
+  accessible_sign_post_count: 2,
+  accessible_sign_foundation_concrete_m3_per_post: 0.12,
+  accessible_symbol_area_m2: 4,
+  accessible_symbol_compound_kg_m2: 0.75,
+  accessible_symbol_beads_kg_m2: 0.35,
+  accessible_marking_productivity_m2_per_man_hour: 8,
+  accessible_sign_installation_pcs_per_man_hour: 0.5,
+  accessible_sign_drill_pcs_per_machine_hour: 2,
+  accessible_marking_machine_productivity_m2_per_machine_hour: 40,
   sign_count: 4,
   sign_post_count: 4,
   sign_foundation_concrete_m3_per_post: 0.12,
@@ -734,6 +751,7 @@ function inputFor(record: AsphaltRelatedR8InventoryRecord, override: Record<stri
     requested.drainage_required = false;
     requested.marking_required = false;
     requested.marking_glass_beads_required = false;
+    requested.parking_geometry_required = false;
     requested.accessible_parking_required = false;
     requested.signing_required = false;
     requested.lighting_required = false;
@@ -745,6 +763,7 @@ function inputFor(record: AsphaltRelatedR8InventoryRecord, override: Record<stri
     requested.drainage_required = false;
     requested.marking_required = false;
     requested.marking_glass_beads_required = false;
+    requested.parking_geometry_required = false;
     requested.accessible_parking_required = false;
     requested.signing_required = false;
     requested.lighting_required = false;
@@ -767,6 +786,7 @@ function inputFor(record: AsphaltRelatedR8InventoryRecord, override: Record<stri
       requested.drainage_required = true;
       requested.marking_required = true;
       requested.marking_glass_beads_required = true;
+      requested.parking_geometry_required = true;
       requested.accessible_parking_required = true;
       requested.signing_required = true;
       requested.lighting_required = true;

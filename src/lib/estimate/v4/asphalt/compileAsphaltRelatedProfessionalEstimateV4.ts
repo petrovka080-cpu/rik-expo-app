@@ -127,7 +127,25 @@ export const ASPHALT_RELATED_PARAMETER_METADATA_V4: Readonly<Record<string, Asph
   marking_glass_beads_required: { labelRu: "Требуются световозвращающие стеклошарики", tier: "P1", allowedValues: [true, false] },
   marking_glass_beads_rate_kg_m2: { labelRu: "Проектный расход стеклошариков", tier: "P1", unit: "kg_m2", minimum: 0.01, maximum: 5 },
   accessible_parking_required: { labelRu: "Требуются доступные парковочные места", tier: "P1", allowedValues: [true, false] },
+  parking_geometry_required: { labelRu: "Требуется проектная разбивка парковки", tier: "P1", allowedValues: [true, false] },
+  parking_space_count: { labelRu: "Количество машино-мест по проекту", tier: "P1", unit: "pcs", minimum: 1, integer: true },
+  parking_aisle_length_m: { labelRu: "Длина маневровых проездов по проекту", tier: "P1", unit: "m", minimum: Number.EPSILON },
+  parking_entry_exit_count: { labelRu: "Количество въездов-выездов по проекту", tier: "P1", unit: "pcs", minimum: 1, integer: true },
+  parking_layout_consumable_kg_per_space: { labelRu: "Расход разбивочного материала на машино-место", tier: "P1", unit: "kg_pcs", minimum: Number.EPSILON },
+  parking_layout_productivity_space_per_man_hour: { labelRu: "Производительность разбивочного звена парковки", tier: "P1", unit: "pcs_man_hour", minimum: Number.EPSILON },
+  parking_survey_productivity_space_per_machine_hour: { labelRu: "Производительность геодезического прибора", tier: "P1", unit: "pcs_machine_hour", minimum: Number.EPSILON },
+  parking_geometry_control_interval_m2_per_test: { labelRu: "Площадь на один контроль геометрии парковки", tier: "P1", unit: "m2_test", minimum: Number.EPSILON },
   accessible_space_count: { labelRu: "Количество доступных парковочных мест", tier: "P1", unit: "pcs", minimum: 1, integer: true },
+  accessible_sign_count: { labelRu: "Количество знаков доступной парковки по проекту", tier: "P1", unit: "pcs", minimum: 1, integer: true },
+  accessible_sign_post_count: { labelRu: "Количество стоек знаков доступной парковки", tier: "P1", unit: "pcs", minimum: 1, integer: true },
+  accessible_sign_foundation_concrete_m3_per_post: { labelRu: "Расход бетона фундамента стойки знака доступной парковки", tier: "P1", unit: "m3_pcs", minimum: Number.EPSILON },
+  accessible_symbol_area_m2: { labelRu: "Проектная площадь символов и зон доступной парковки", tier: "P1", unit: "m2", minimum: Number.EPSILON },
+  accessible_symbol_compound_kg_m2: { labelRu: "Расход материала разметки доступной парковки", tier: "P1", unit: "kg_m2", minimum: Number.EPSILON },
+  accessible_symbol_beads_kg_m2: { labelRu: "Расход стеклошариков разметки доступной парковки", tier: "P1", unit: "kg_m2", minimum: Number.EPSILON },
+  accessible_marking_productivity_m2_per_man_hour: { labelRu: "Производительность труда разметки доступной парковки", tier: "P1", unit: "m2_man_hour", minimum: Number.EPSILON },
+  accessible_sign_installation_pcs_per_man_hour: { labelRu: "Производительность монтажа знаков доступной парковки", tier: "P1", unit: "pcs_man_hour", minimum: Number.EPSILON },
+  accessible_sign_drill_pcs_per_machine_hour: { labelRu: "Производительность буровой машины для стоек доступной парковки", tier: "P1", unit: "pcs_machine_hour", minimum: Number.EPSILON },
+  accessible_marking_machine_productivity_m2_per_machine_hour: { labelRu: "Производительность разметочной машины доступной парковки", tier: "P1", unit: "m2_machine_hour", minimum: Number.EPSILON },
   signing_required: { labelRu: "Требуются дорожные знаки парковки", tier: "P1", allowedValues: [true, false] },
   sign_count: { labelRu: "Количество дорожных знаков", tier: "P1", unit: "pcs", minimum: 1, integer: true },
   lighting_required: { labelRu: "Требуется наружное освещение парковки", tier: "P1", allowedValues: [true, false] },
@@ -442,7 +460,13 @@ function extractParameters(
       ? ["marking_area_m2", "marking_material_type", "marking_material_rate_kg_m2", "marking_glass_beads_required"]
       : []),
     ...(values.marking_glass_beads_required === true ? ["marking_glass_beads_rate_kg_m2"] : []),
-    ...(values.accessible_parking_required === true ? ["accessible_space_count"] : []),
+    ...(values.accessible_parking_required === true ? [
+      "accessible_space_count", "accessible_sign_count", "accessible_sign_post_count",
+      "accessible_symbol_area_m2",
+    ] : []),
+    ...(values.parking_geometry_required === true
+      ? ["parking_space_count", "parking_aisle_length_m", "parking_entry_exit_count"]
+      : []),
     ...(values.signing_required === true ? ["sign_count"] : []),
     ...(values.lighting_required === true
       ? ["lighting_pole_count", "lighting_luminaire_count", "lighting_cable_length_m", "lighting_cabinet_count"]
@@ -473,6 +497,7 @@ function extractParameters(
     ? [
       "sand_layer_required", "crushed_layer_count", "geotextile_required", "curb_required", "drainage_required",
       "marking_required", "signing_required", "lighting_required",
+      ...(profile.applicationContext === "PARKING" ? ["parking_geometry_required", "accessible_parking_required"] : []),
       ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" ? ["bridge_deck_package_required"] : []),
     ].filter((key) => parameterKeys.includes(key))
     : [];
@@ -497,6 +522,12 @@ function extractParameters(
       ...(values.marking_required === true ? ["marking_area_m2"] : []),
       ...(values.signing_required === true ? ["sign_count", "sign_post_count"] : []),
       ...(values.lighting_required === true ? ["lighting_pole_count", "lighting_luminaire_count", "lighting_cable_length_m", "lighting_cabinet_count", "lighting_foundation_concrete_m3", "lighting_earthing_conductor_length_m", "lighting_test_count"] : []),
+      ...(values.accessible_parking_required === true
+        ? ["accessible_space_count", "accessible_sign_count", "accessible_sign_post_count", "accessible_symbol_area_m2"]
+        : []),
+      ...(values.parking_geometry_required === true
+        ? ["parking_space_count", "parking_aisle_length_m", "parking_entry_exit_count"]
+        : []),
       ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && values.bridge_deck_package_required === true
         ? ["waterproofing_repair_area_m2", "protective_layer_thickness_mm", "expansion_joint_length_m"]
         : []),
@@ -523,6 +554,16 @@ function extractParameters(
       ...(fullScope && values.marking_required === true ? ["marking_material_rate_kg_m2", "marking_glass_beads_rate_kg_m2", "marking_productivity_m2_per_man_hour", "marking_machine_productivity_m2_per_machine_hour"] : []),
       ...(fullScope && values.signing_required === true ? ["sign_foundation_concrete_m3_per_post", "sign_installation_pcs_per_man_hour", "sign_drill_pcs_per_machine_hour"] : []),
       ...(fullScope && values.lighting_required === true ? ["lighting_labor_man_hours", "lighting_crane_machine_hours"] : []),
+      ...(fullScope && values.accessible_parking_required === true ? [
+        "accessible_sign_foundation_concrete_m3_per_post", "accessible_symbol_compound_kg_m2",
+        "accessible_symbol_beads_kg_m2", "accessible_marking_productivity_m2_per_man_hour",
+        "accessible_sign_installation_pcs_per_man_hour", "accessible_sign_drill_pcs_per_machine_hour",
+        "accessible_marking_machine_productivity_m2_per_machine_hour",
+      ] : []),
+      ...(fullScope && values.parking_geometry_required === true ? [
+        "parking_layout_consumable_kg_per_space", "parking_layout_productivity_space_per_man_hour",
+        "parking_survey_productivity_space_per_machine_hour", "parking_geometry_control_interval_m2_per_test",
+      ] : []),
       ...(profile.applicationContext === "BRIDGE_OR_STRUCTURE" && values.bridge_deck_package_required === true
         ? ["waterproofing_material_kg_m2", "waterproofing_primer_rate_l_m2", "protective_layer_density_t_m3", "expansion_joint_sealant_kg_m", "bridge_waterproofing_productivity_m2_per_man_hour", "bridge_waterproofing_machine_productivity_m2_per_machine_hour"]
         : []),
@@ -635,6 +676,7 @@ function asphaltStageIdForRowV1(workKey: string, rowId: string, category: string
   const id = rowId.toLocaleLowerCase("en-US");
   let stage = "TECHNOLOGICAL_OPERATION";
   if (/removal:survey_scope/u.test(id)) stage = "EXISTING_PAVEMENT_SURVEY";
+  else if (/(?:^|:)parking_geometry:|parking_scope_acceptance/u.test(id)) stage = "PARKING_GEOMETRY_AND_MANOEUVRING";
   else if (/initial_data|field_site_survey|geodetic|setting_out|axes_marks/u.test(id)) stage = "SURVEY_AND_LAYOUT";
   else if (/mobilization|work_zone|temporary_/u.test(id)) stage = "TEMPORARY_AND_PROTECTIVE_WORKS";
   else if (/removal:(?:volume|mechanical|manual|combined|material_stream)/u.test(id)) stage = "PAVEMENT_REMOVAL";
@@ -646,6 +688,7 @@ function asphaltStageIdForRowV1(workKey: string, rowId: string, category: string
   else if (/sand_|crushed_|geotextile|base_emulsion|\bbase_/u.test(id)) stage = "SUBBASE_AND_BASE";
   else if (/curb/u.test(id)) stage = "CURBS";
   else if (/drainage|storm_/u.test(id)) stage = "DRAINAGE";
+  else if (/(?:^|:)accessible:|accessible_/u.test(id)) stage = "ACCESSIBLE_PARKING";
   else if (/marking/u.test(id)) stage = "ROAD_MARKING";
   else if (/\bsign[:_]|traffic_sign/u.test(id)) stage = "ROAD_SIGNS";
   else if (/lighting|power_cable|grounding/u.test(id)) stage = "OUTDOOR_LIGHTING";

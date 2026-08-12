@@ -41,6 +41,7 @@ const UNIT_LABELS_RU: Record<string, string> = {
   "t/m\u00b3": "\u0442/\u043c\u00b3",
   kg_m2: "\u043a\u0433/\u043c\u00b2",
   kg_m: "\u043a\u0433/\u043f\u043e\u0433. \u043c",
+  kg_pcs: "\u043a\u0433/\u0448\u0442",
   l_m2: "\u043b/\u043c\u00b2",
   km_machine_hour: "\u043a\u043c/\u043c\u0430\u0448.-\u0447",
   m2_machine_hour: "\u043c\u00b2/\u043c\u0430\u0448.-\u0447",

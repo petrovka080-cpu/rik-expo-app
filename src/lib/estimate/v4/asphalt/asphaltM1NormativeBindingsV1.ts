@@ -38,6 +38,27 @@ function exactOfficialSources(rowId: string, wbsCode: string | null): { ids: str
       applicability: "Road-lighting geometry and equipment are owned by the approved lighting design; KRER-33/KRERm-08 guidance and KRERp-01 govern applicable installation and test resource families",
     };
   }
+  if (id.includes(":accessible:") || id.includes("accessible_")) {
+    return {
+      ids: [
+        "kg_sn_parkings_2018:scope_and_accessibility:project_design_applicability",
+        "kg_krer27:tables:27-09-011_to_27-09-015:road_sign_installation",
+        "kg_krer27:tables:27-09-016_to_27-09-019_and_27-09-031_to_27-09-032:official_pdf_pages:171-180",
+        "eaeu_tr_ts014_2011:road_sign_and_marking_applicability",
+      ],
+      applicability: "Parking accessibility, geometry, symbols and sign schedule are fixed by the approved parking design; СН КР 31-12:2018 clauses 4.14, 5.1.5 and 5.1.17 govern parking-specific accessibility while the selected KRER-27 sign and marking tables own installation resources",
+    };
+  }
+  if (id.includes(":parking_geometry:") || id.includes("parking_scope_acceptance")) {
+    return {
+      ids: [
+        "kg_sn_parkings_2018:clause:4.16:entry_exit_visibility_and_manoeuvring",
+        "kg_sn_parkings_2018:clause:5.1.4:parking_spaces_aisles_and_project_geometry",
+        "kg_sn_parkings_2018:clause:5.1.5:accessible_space_dimensions",
+      ],
+      applicability: "Parking-space dimensions, manoeuvring aisles and entry/exit visibility are project-owned geometry under СН КР 31-12:2018 clauses 4.16 and 5.1.4; rows quantify setting-out and acceptance without inventing islands or furniture",
+    };
+  }
   if (id.includes(":marking:") || wbs === "19") {
     return {
       ids: ["kg_krer27:tables:27-09-016_to_27-09-019_and_27-09-031_to_27-09-032:official_pdf_pages:171-180", "eaeu_tr_ts014_2011:road_safety_marking_applicability"],
