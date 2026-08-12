@@ -765,7 +765,7 @@ writeJson("foundation/FOUNDATION_FINAL_VERDICT.json", { schema_version: SCHEMA, 
 const mdCell = (value) => String(value ?? "").replaceAll("|", "\\|").replaceAll(/\r?\n/gu, " ");
 const artifactProof = (relative) => {
   const absolute = path.join(outputRoot, relative);
-  return `\`${absolute}\` — ${statSync(absolute).size} bytes — SHA-256 \`${fileSha(absolute)}\``;
+  return `\`${relative.replaceAll("\\", "/")}\` — ${statSync(absolute).size} bytes — SHA-256 \`${fileSha(absolute)}\``;
 };
 const tableA = asphaltLedger.map((row) => {
   const benchmark = row.benchmark_candidate_boq_row_count == null ? "" : `; benchmark=${row.benchmark_candidate_boq_row_count}`;
@@ -813,6 +813,7 @@ const finalReport = `# POST-FOUNDATION independent exact-SHA audit R1\n\n` +
   `- M1 HEAD/TREE: \`${M1_HEAD}\` / \`${M1_TREE}\`; manifest SHA-256 \`${M1_MANIFEST_SHA}\`.\n` +
   `- Foundation HEAD/TREE: \`${FOUNDATION_HEAD}\` / \`${FOUNDATION_TREE}\`; evidence-index SHA-256 \`${FOUNDATION_INDEX_SHA}\`.\n` +
   `- Audit HEAD/TREE: \`${auditHead}\` / \`${auditTree}\`.\n` +
+  `- Every artifact path below is exact and relative to this report's sealed evidence root.\n` +
   `- M1 program range changed ${m1Changes.length} files. Exact symbols/files/purposes are in Table C and ${artifactProof("changes/M1_CHANGED_FILE_LEDGER.csv")}.\n` +
   `- Foundation changed exactly ${foundationChanges.length} files: \`package.json\` +7 and \`scripts/estimate/runMaster11610Foundation.ts\` +907, deletions 0. It generated inventory/identity/group/passport evidence, not estimates. Ledger: ${artifactProof("changes/FOUNDATION_CHANGED_FILE_LEDGER.csv")}.\n` +
   `- Foundation passports created: 11,610. Professional estimates created: 0. Professional estimates modified: 0. Production content files changed by Foundation: 0.\n\n` +
