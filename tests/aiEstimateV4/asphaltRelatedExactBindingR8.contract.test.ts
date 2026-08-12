@@ -329,6 +329,15 @@ describe("Asphalt-related R63 exact binding matrix", () => {
       expect(rows.every((row) => record.previous_35
         ? row.sourceParameters?.roadworksWaveA === true
         : row.sourceParameters?.asphaltRelatedV4 === true)).toBe(true);
+      expect(rows.every((row) => {
+        const sourceIds = row.sourceParameters?.normativeSourceIds;
+        const locators = row.sourceParameters?.constructionNormLocatorIds;
+        const roles = row.sourceParameters?.normativeSourceRoles;
+        return Array.isArray(sourceIds) && sourceIds.length > 0 &&
+          Array.isArray(locators) && locators.length > 0 &&
+          Array.isArray(roles) && roles.length > 0 &&
+          row.sourceParameters?.normativeLocatorReviewStatus === "exact_construction_locator_bound";
+      })).toBe(true);
 
       const signature = rows.map((row) => [
         row.formulaId,

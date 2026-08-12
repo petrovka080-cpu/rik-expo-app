@@ -30,7 +30,10 @@ import {
   ASPHALT_PROFESSIONAL_PASSPORT_BASE_V4,
 } from "./asphaltProfessionalPassportV4";
 import { asphaltPublicSelectionLabelV4 } from "./asphaltProfessionalPresentationV4";
-import { resolveAsphaltM1NormativeBindingV1 } from "./asphaltM1NormativeBindingsV1";
+import {
+  resolveAsphaltM1NormativeBindingV1,
+  type AsphaltM1NormativeBindingV1,
+} from "./asphaltM1NormativeBindingsV1";
 import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./asphaltWorkSpecificParameterSchemaV4";
 import {
   ASPHALT_WORK_ID_V4,
@@ -55,6 +58,7 @@ export type AsphaltCompiledBoqLineV4 = {
   formula_input_values: Record<string, number>;
   included_in_procurement: boolean;
   assumption_ids: string[];
+  normative_binding: AsphaltM1NormativeBindingV1;
 };
 
 export type AsphaltQuantityBasisV4 = {
@@ -720,7 +724,14 @@ export function compileAsphaltProfessionalEstimateV4(
       explanation_trace_ru: formula.explanation_trace_ru,
     };
     definitions.push(definition);
-    compiledRows.push({ definition, quantity: round(row.quantity), formula_input_values: row.input_values, included_in_procurement: row.procurement === true, assumption_ids: binding.accepted ? [] : assumptionIds });
+    compiledRows.push({
+      definition,
+      quantity: round(row.quantity),
+      formula_input_values: row.input_values,
+      included_in_procurement: row.procurement === true,
+      assumption_ids: binding.accepted ? [] : assumptionIds,
+      normative_binding: binding,
+    });
     strictDerivedFormulaInputs.add(row.row_id);
     if (row.category === "work") {
       operations.push({

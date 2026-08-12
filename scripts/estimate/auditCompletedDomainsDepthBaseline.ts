@@ -36,6 +36,17 @@ const PREDECESSORS = Object.freeze([
   { domain: "HVAC", sha: EXPECTED_HEAD },
 ]);
 
+const ASPHALT_EXTERNAL_BENCHMARK_IDS = new Set([
+  "built-in-ai-1000:0670",
+  "built-in-ai-1000:0701",
+  "built-in-ai-1000:0702",
+  "built-in-ai-1000:0703",
+  "built-in-ai-1000:0704",
+  "built-in-ai-1000:0705",
+  "built-in-ai-1000:0706",
+  "built-in-ai-1000:0707",
+]);
+
 const DOMAIN_FILES = Object.freeze({
   ASPHALT: {
     directory: "asphalt",
@@ -438,15 +449,22 @@ function main(): void {
     }
   }
 
+  const globalInventory = allInventory.filter((row) =>
+    row.domain_owner !== "ASPHALT" || !ASPHALT_EXTERNAL_BENCHMARK_IDS.has(catalogId(row)));
+  invariant(
+    allInventory.filter((row) => row.domain_owner === "ASPHALT").length === 63 &&
+      globalInventory.filter((row) => row.domain_owner === "ASPHALT").length === 55,
+    "ASPHALT_GLOBAL_EXTERNAL_PARTITION_MISMATCH",
+  );
   const owners = new Map<string, DomainKey>();
   const duplicateOwners: JsonRecord[] = [];
-  for (const row of allInventory) {
+  for (const row of globalInventory) {
     const id = catalogId(row);
     const previous = owners.get(id);
     if (previous) duplicateOwners.push({ catalog_id: id, owners: [previous, row.domain_owner] });
     else owners.set(id, row.domain_owner);
   }
-  invariant(owners.size === 4_068, `UNIQUE_DENOMINATOR_MISMATCH:${owners.size}`);
+  invariant(owners.size === 4_060, `UNIQUE_DENOMINATOR_MISMATCH:${owners.size}`);
   invariant(duplicateOwners.length === 0, `DUPLICATE_PRIMARY_OWNER:${JSON.stringify(duplicateOwners)}`);
 
   const signatureGroups = new Map<string, typeof signatures>();
@@ -543,7 +561,7 @@ function main(): void {
     branch: git("branch", "--show-current"),
     worktree_status_before_capture: "CLEAN",
     index_status_before_capture: "CLEAN",
-    reported_denominator: 4_068,
+    reported_denominator: 4_060,
     reconciled_unique_denominator: owners.size,
     source_manifests: sourceManifests,
     manifest_hash_mismatches: 0,
@@ -558,12 +576,14 @@ function main(): void {
   };
   const denominator = {
     schema_version: "completed-domains-unique-denominator:v1",
-    reported: { ASPHALT: 63, INTERIOR: 2_250, WATER_SEWER: 835, HVAC: 920, sum: 4_068 },
+    reported: { ASPHALT: 55, INTERIOR: 2_250, WATER_SEWER: 835, HVAC: 920, sum: 4_060 },
+    benchmark_only_external_asphalt: 8,
+    asphalt_benchmark_corpus: 63,
     reconciled: {
       unique_catalog_ids: owners.size,
       duplicate_primary_owners: duplicateOwners,
-      aliases: allInventory.filter((row) => row.alias_of != null).length,
-      canonical_technologies: new Set(allInventory.map(technologyId)).size,
+      aliases: globalInventory.filter((row) => row.alias_of != null).length,
+      canonical_technologies: new Set(globalInventory.map(technologyId)).size,
       orphan_records: 0,
       silent_exclusions: 0,
       unknown_destination_owners: 0,

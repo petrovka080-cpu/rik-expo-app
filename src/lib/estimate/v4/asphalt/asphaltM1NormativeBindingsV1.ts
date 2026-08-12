@@ -2,8 +2,23 @@ import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 
 export const ASPHALT_M1_NORMATIVE_BINDING_VERSION_V1 = "master-11610:m1:asphalt-normative-binding:v1" as const;
 
+export type AsphaltM1NormativeSourceRoleV1 = {
+  sourceId: string;
+  locatorId: string;
+  applicabilityRole:
+    | "KG_STATUS_OWNER"
+    | "KG_APPLICABILITY_OWNER"
+    | "KG_CONSTRUCTION_NORM_PRIMARY"
+    | "AUTHENTICATED_TEXT_CARRIER";
+};
+
 export type AsphaltM1NormativeBindingV1 = {
   sourceIds: string[];
+  sourceRoles: AsphaltM1NormativeSourceRoleV1[];
+  kgStatusSourceIds: string[];
+  kgApplicabilitySourceIds: string[];
+  constructionNormLocatorIds: string[];
+  locatorReviewStatus: "exact_construction_locator_bound";
   applicability: string;
   referenceDesignSourceId: string | null;
   normativeReviewStatus: "official_scope_verified_benchmark_fixture_inputs_confirmed" | "official_scope_verified_numeric_rate_requires_exact_table_review";
@@ -16,6 +31,127 @@ function unique(values: readonly string[]): string[] {
 
 function safeToken(value: string): string {
   return value.trim().toLocaleLowerCase("en-US").replace(/[^a-z0-9._:-]+/gu, "-").replace(/^-+|-+$/gu, "");
+}
+
+const KG_ROAD_STATUS_ROLES: readonly AsphaltM1NormativeSourceRoleV1[] = Object.freeze([
+  {
+    sourceId: "KG_CBD_CONSTRUCTION_NORMATIVE_SYSTEM_CURRENT",
+    locatorId: "KG_CBD_ORDER_13_NPA_POINTS_16_20_42",
+    applicabilityRole: "KG_STATUS_OWNER",
+  },
+]);
+
+const KG_ROAD_APPLICABILITY_ROLES: readonly AsphaltM1NormativeSourceRoleV1[] = Object.freeze([
+  {
+    sourceId: "KG_MINTRANSPORT_ROAD_QUALITY_CONTROL_RULES",
+    locatorId: "KG_MINTRANSPORT_ROAD_QUALITY_RULES_SECTION_1_POINT_2",
+    applicabilityRole: "KG_APPLICABILITY_OWNER",
+  },
+  {
+    sourceId: "KG_MINTRANSPORT_ROAD_QUALITY_CONTROL_RULES",
+    locatorId: "KG_MINTRANSPORT_ROAD_QUALITY_RULES_POINT_56",
+    applicabilityRole: "KG_APPLICABILITY_OWNER",
+  },
+]);
+
+const KG_INDUSTRIAL_FLOOR_STATUS_ROLES: readonly AsphaltM1NormativeSourceRoleV1[] = Object.freeze([
+  {
+    sourceId: "KG_MINSTROY_SP_KR_31_101_2024_APPROVAL_RECORD",
+    locatorId: "KG_MINSTROY_ORDER_179_SP_KR_31_101_2024_EFFECTIVE_2024_07_05",
+    applicabilityRole: "KG_STATUS_OWNER",
+  },
+]);
+
+function constructionLocatorIds(
+  rowId: string,
+  wbsCode: string | null,
+  industrialFloor: boolean,
+): string[] {
+  if (industrialFloor) {
+    return [
+      "KG_SP_KR_31_101_2024_5_1",
+      "KG_SP_KR_31_101_2024_TABLE_5_1",
+      "KG_SP_KR_31_101_2024_10_1",
+      "KG_SP_KR_31_101_2024_10_6",
+      "KG_SP_KR_31_101_2024_APPENDIX_B_TABLE_B_1",
+    ];
+  }
+  const id = rowId.toLocaleLowerCase("en-US");
+  const wbs = (wbsCode ?? "").replace(/^wbs:/u, "").padStart(2, "0");
+  if (id.includes(":removal:") || id.includes("demolition") || id.includes("milling")) {
+    return ["KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_3_4", "KG_SNIP_3_06_03_85_10_32"];
+  }
+  if (id.includes(":lighting:") || ["22", "23", "24"].includes(wbs)) {
+    return ["KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_13_1", "KG_SNIP_3_06_03_85_13_2"];
+  }
+  if (id.includes(":accessible:") || id.includes("accessible_") || id.includes(":parking_geometry:") || id.includes("parking_scope_acceptance")) {
+    return ["KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_3_1", "KG_SNIP_3_06_03_85_14_1"];
+  }
+  if (id.includes(":marking:") || id.includes(":sign:") || id.includes("guardrail") || ["19", "20", "21"].includes(wbs)) {
+    return ["KG_SNIP_3_06_03_85_13_1", "KG_SNIP_3_06_03_85_13_2", "KG_SNIP_3_06_03_85_14_1"];
+  }
+  if (id.includes(":curb:") || wbs === "13") {
+    return ["KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_14_1"];
+  }
+  if (id.includes(":drainage:") || ["15", "16", "18"].includes(wbs)) {
+    return ["KG_SNIP_3_06_03_85_4_28", "KG_SNIP_3_06_03_85_5_4", "KG_SNIP_3_06_03_85_14_2"];
+  }
+  if (/site_|subgrade|soil|earthwork|excavat|bulldozer|topsoil/u.test(id) || wbs === "05") {
+    return ["KG_SNIP_3_06_03_85_4_2", "KG_SNIP_3_06_03_85_4_18", "KG_SNIP_3_06_03_85_14_2"];
+  }
+  if (/sand_|crushed_|geotextile|base_/u.test(id) || ["08", "09"].includes(wbs)) {
+    return ["KG_SNIP_3_06_03_85_5_1", "KG_SNIP_3_06_03_85_7_1", "KG_SNIP_3_06_03_85_7_2", "KG_SNIP_3_06_03_85_14_2"];
+  }
+  if (/journal|document|protocol|passport|handover/u.test(id) || wbs === "29") {
+    return ["KG_SNIP_3_06_03_85_10_38", "KG_SNIP_3_06_03_85_14_1", "KG_SNIP_3_06_03_85_14_2"];
+  }
+  if (/test|control|survey|laboratory|acceptance/u.test(id) || wbs === "28") {
+    return ["KG_SNIP_3_06_03_85_1_13", "KG_SNIP_3_06_03_85_10_38", "KG_SNIP_3_06_03_85_10_39", "KG_SNIP_3_06_03_85_10_40", "KG_SNIP_3_06_03_85_10_41", "KG_SNIP_3_06_03_85_14_1"];
+  }
+  if (/haul|delivery|trip|transport|mobilization|disposal|recycling/u.test(id) || wbs === "30") {
+    return ["KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_10_13"];
+  }
+  if (/emulsion|tack|prime|surface_preparation/u.test(id)) {
+    return ["KG_SNIP_3_06_03_85_10_16", "KG_SNIP_3_06_03_85_10_17"];
+  }
+  if (/paver|placement|lay|spread/u.test(id)) {
+    return ["KG_SNIP_3_06_03_85_10_16", "KG_SNIP_3_06_03_85_10_18", "KG_SNIP_3_06_03_85_10_19"];
+  }
+  if (/roller|compact|density/u.test(id)) {
+    return ["KG_SNIP_3_06_03_85_10_22", "KG_SNIP_3_06_03_85_10_23", "KG_SNIP_3_06_03_85_10_24", "KG_SNIP_3_06_03_85_10_25", "KG_SNIP_3_06_03_85_10_26", "KG_SNIP_3_06_03_85_10_41"];
+  }
+  if (/repair|patch|defect|pothole/u.test(id)) {
+    return ["KG_SNIP_3_06_03_85_10_17", "KG_SNIP_3_06_03_85_10_31", "KG_SNIP_3_06_03_85_10_32"];
+  }
+  if (/asphalt|mixture|bitumen|pavement/u.test(id) || ["10", "11", "12"].includes(wbs)) {
+    return ["KG_SNIP_3_06_03_85_10_1", "KG_SNIP_3_06_03_85_10_16", "KG_SNIP_3_06_03_85_10_18", "KG_SNIP_3_06_03_85_10_22", "KG_SNIP_3_06_03_85_10_38", "KG_SNIP_3_06_03_85_10_40"];
+  }
+  return ["KG_SNIP_3_06_03_85_1_1", "KG_SNIP_3_06_03_85_1_2", "KG_SNIP_3_06_03_85_14_1"];
+}
+
+function sourceRolesFor(
+  locatorIds: readonly string[],
+  industrialFloor: boolean,
+): AsphaltM1NormativeSourceRoleV1[] {
+  if (industrialFloor) {
+    return [
+      ...KG_INDUSTRIAL_FLOOR_STATUS_ROLES,
+      ...locatorIds.map((locatorId) => ({
+        sourceId: "KG_MINSTROY_SP_KR_31_101_2024_OFFICIAL_PDF",
+        locatorId,
+        applicabilityRole: "KG_CONSTRUCTION_NORM_PRIMARY" as const,
+      })),
+    ];
+  }
+  return [
+    ...KG_ROAD_STATUS_ROLES,
+    ...KG_ROAD_APPLICABILITY_ROLES,
+    ...locatorIds.map((locatorId) => ({
+      sourceId: "RU_HELPENG_SNIP_3_06_03_85_PDF",
+      locatorId,
+      applicabilityRole: "AUTHENTICATED_TEXT_CARRIER" as const,
+    })),
+  ];
 }
 
 function exactOfficialSources(rowId: string, wbsCode: string | null): { ids: string[]; applicability: string } {
@@ -164,6 +300,10 @@ export function resolveAsphaltM1NormativeBindingV1(input: {
     estimateDeterministicHash(parsedManifest) === input.referenceDesignFingerprint,
   );
   const official = exactOfficialSources(input.rowId, input.wbsCode ?? null);
+  const industrialFloor = input.existingSourceIds.includes("kg_sp_31_101_2024_floors") ||
+    input.existingSourceIds.includes("kg_krer_11_floors_2015");
+  const constructionNormLocatorIds = constructionLocatorIds(input.rowId, input.wbsCode ?? null, industrialFloor);
+  const sourceRoles = sourceRolesFor(constructionNormLocatorIds, industrialFloor);
   const referenceDesignSourceId = hasReferenceDesign
     ? `benchmark_fixture:asphalt-m1-reference:${referenceDesignId}:sha256:${referenceDesignSha256}:row:${safeToken(input.rowId)}:formula-inputs`
     : null;
@@ -171,7 +311,21 @@ export function resolveAsphaltM1NormativeBindingV1(input: {
     ? input.existingSourceIds.filter((sourceId) => !sourceId.startsWith("engineering_assumption:"))
     : [...input.existingSourceIds];
   return {
-    sourceIds: unique([...existing, ...official.ids, ...(referenceDesignSourceId ? [referenceDesignSourceId] : [])]),
+    sourceIds: unique([
+      ...existing,
+      ...official.ids,
+      ...sourceRoles.map((role) => role.locatorId),
+      ...(referenceDesignSourceId ? [referenceDesignSourceId] : []),
+    ]),
+    sourceRoles,
+    kgStatusSourceIds: unique(sourceRoles
+      .filter((role) => role.applicabilityRole === "KG_STATUS_OWNER")
+      .map((role) => role.sourceId)),
+    kgApplicabilitySourceIds: unique(sourceRoles
+      .filter((role) => role.applicabilityRole === "KG_APPLICABILITY_OWNER")
+      .map((role) => role.sourceId)),
+    constructionNormLocatorIds,
+    locatorReviewStatus: "exact_construction_locator_bound",
     applicability: official.applicability,
     referenceDesignSourceId,
     normativeReviewStatus: hasReferenceDesign

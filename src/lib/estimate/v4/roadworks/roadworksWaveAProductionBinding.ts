@@ -30,6 +30,7 @@ import {
   type DomainResolutionReadiness,
 } from "../../estimateDraftRevisionContract";
 import { applyProfessionalBoqRuntimeContract } from "../../professionalBoqAssumptions";
+import { resolveAsphaltM1NormativeBindingV1 } from "../asphalt/asphaltM1NormativeBindingsV1";
 
 export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.3";
 
@@ -474,7 +475,15 @@ export function buildRoadworksWaveAProductionDraft(
     missingData: executable
       ? []
       : parameters.blockingAssumptions.map((key) => `Уточнить обязательный параметр: ${key}`),
-    items: compilation.rows.map((row, rowIndex) => ({
+    items: compilation.rows.map((row, rowIndex) => {
+      const normativeBinding = resolveAsphaltM1NormativeBindingV1({
+        rowId: row.rowId,
+        existingSourceIds: row.sourceIds,
+      });
+      const normativeSourceIds = normativeBinding.sourceIds.filter((sourceId) =>
+        !sourceId.startsWith("project_quantity_inputs_")
+      );
+      return ({
       itemType: itemType(row),
       titleRu: row.nameRu,
       quantity: row.quantity,
@@ -532,8 +541,16 @@ export function buildRoadworksWaveAProductionDraft(
           )
           : undefined,
         affectedBy: row.sourceParameterKeys,
+        normativeSources: normativeSourceIds,
+        normativeSourceIds,
         normativeSourceId: row.normativeSourceId,
         normativeRateIds: row.normativeRateIds,
+        normativeSourceRoles: normativeBinding.sourceRoles,
+        kgStatusSourceIds: normativeBinding.kgStatusSourceIds,
+        kgApplicabilitySourceIds: normativeBinding.kgApplicabilitySourceIds,
+        constructionNormLocatorIds: normativeBinding.constructionNormLocatorIds,
+        normativeApplicability: normativeBinding.applicability,
+        normativeLocatorReviewStatus: normativeBinding.locatorReviewStatus,
         roundingRule: row.roundingRule,
         wasteRule: row.wasteRule,
         procurementEligibility: row.procurementEligibility,
@@ -555,7 +572,7 @@ export function buildRoadworksWaveAProductionDraft(
       normSourceId: row.normativeSourceId,
       normSourceTitle: "Официальный нормативный и сметно-ресурсный пакет работы",
       normVersion: registration.migrationVersion,
-      normReviewStatus: "road_engineer_review_required",
+      normReviewStatus: normativeBinding.locatorReviewStatus,
       priceStatus: "PRICE_MISSING",
       priceSource: "missing",
       priceSourceId: null,
@@ -564,7 +581,8 @@ export function buildRoadworksWaveAProductionDraft(
       addedBy: "ai",
       materialKey: row.category === "material" ? row.rowId : null,
       rateKey: `${registration.workId}:${row.rowId}`,
-    })),
+      });
+    }),
   };
   recordRoadworksWaveABuildTiming("ITEMS_READY", buildStartedAt);
   // The Roadworks Wave A compiler owns the exact P0 schema. The shared open-world

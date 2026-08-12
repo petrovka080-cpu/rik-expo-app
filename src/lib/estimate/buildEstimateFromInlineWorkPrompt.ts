@@ -434,6 +434,12 @@ function buildAsphaltV4Draft(input: {
         normativeSourceIds: compilation.passport.formulas.find((formula) =>
           formula.formula_id === row.definition.formula_id
         )?.source_ids ?? (row.definition.source_id ? [row.definition.source_id] : []),
+        normativeSources: row.normative_binding.sourceIds,
+        normativeSourceRoles: row.normative_binding.sourceRoles,
+        kgStatusSourceIds: row.normative_binding.kgStatusSourceIds,
+        kgApplicabilitySourceIds: row.normative_binding.kgApplicabilitySourceIds,
+        constructionNormLocatorIds: row.normative_binding.constructionNormLocatorIds,
+        normativeLocatorReviewStatus: row.normative_binding.locatorReviewStatus,
         normativeReviewStatus: row.definition.specification_status === "SOURCE_CONFIRMED"
           ? "automated_source_verified_benchmark_fixture_inputs_confirmed"
           : "road_engineer_review_required",

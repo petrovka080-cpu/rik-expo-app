@@ -96,9 +96,18 @@ describe("Asphalt 35/35 work-specific formula graph and typed BOQ", () => {
       const changed = before.filter((row, index) => row.quantity !== after[index].quantity);
       expect(changed.length).toBeGreaterThan(0);
       expect(changed.every((row) => row.sourceParameterKeys.includes("thickness_mm"))).toBe(true);
-      expect(before.filter((row) => row.category === "test" || row.category === "document")
+      const changedControlRows = changed.filter((row) => row.category === "test" || row.category === "document");
+      expect(changedControlRows.every((row) =>
+        row.rowId.endsWith(":temperature_control") && row.sourceParameterKeys.includes("thickness_mm")
+      )).toBe(true);
+      expect(before.filter((row) =>
+        (row.category === "test" || row.category === "document") &&
+        !row.sourceParameterKeys.includes("thickness_mm")
+      )
         .every((row, index) => row.quantity === after.filter((candidate) =>
-          candidate.category === "test" || candidate.category === "document")[index].quantity)).toBe(true);
+          (candidate.category === "test" || candidate.category === "document") &&
+          !candidate.sourceParameterKeys.includes("thickness_mm")
+        )[index].quantity)).toBe(true);
     }
   });
 
