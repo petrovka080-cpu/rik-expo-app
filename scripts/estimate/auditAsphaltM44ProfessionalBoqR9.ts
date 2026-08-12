@@ -186,7 +186,7 @@ type ParameterMatrixRow = {
   verdict: "PASS" | "RED";
 };
 
-const COMPLETE_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
+export const COMPLETE_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
   estimate_scope_mode: "MINIMAL_EXPLICIT_SCOPE",
   project_scope: "SURFACING_ONLY",
   area_m2: 120,
@@ -313,7 +313,7 @@ const COMPLETE_INPUTS: Readonly<Record<string, string | number | boolean>> = Obj
   boundary_saw_productivity_m_per_machine_hour: 30,
 });
 
-const FULL_APPLICABLE_EXPLICIT_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
+export const FULL_APPLICABLE_EXPLICIT_INPUTS: Readonly<Record<string, string | number | boolean>> = Object.freeze({
   estimate_scope_mode: "FULL_APPLICABLE_SCOPE",
   project_scope: "PAVEMENT_STRUCTURE",
   base_material_compaction_factor: 1.15,

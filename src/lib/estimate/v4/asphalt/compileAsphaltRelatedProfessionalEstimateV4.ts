@@ -278,6 +278,7 @@ type ExactBoqSeed = {
   childPassportId?: string | null;
   childRevisionId?: string | null;
   scopeTriggerParameter?: string | null;
+  assumptionIds?: readonly string[];
 };
 
 function explicitOverride(input: BuildEstimateFromInlineWorkPromptInput, key: string): unknown {
@@ -618,6 +619,7 @@ function coreRowsToSeeds(rows: readonly AsphaltRelatedCoreRowV4[]): ExactBoqSeed
     childPassportId: row.childPassportId,
     childRevisionId: row.childRevisionId,
     scopeTriggerParameter: row.scopeTriggerParameter,
+    assumptionIds: row.assumptionIds,
   }));
 }
 
@@ -1477,8 +1479,16 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
         inclusionCondition: seed.inclusionCondition ?? "MANDATORY_OR_APPLICABLE_STAGE_OF_SELECTED_BLUEPRINT",
         estimateScopeMode: scopeMode ?? null,
         professionalAssemblyContractVersion: coreCompilation || removalCompilation ? "professional-project-assembly:v4.1" : null,
+        // This legacy counter is consumed as a hidden-default gate. Core
+        // preliminary assumptions are not hidden: their full versioned
+        // records are persisted below on the first revision row.
         professionalAssemblyAssumptionsCount: coreCompilation?.childCompilation.assumptions_count ?? removalCompilation?.childCompilation.assumptions_count ?? 0,
         professionalAssemblyHiddenQuantityDefaults: coreCompilation?.childCompilation.hidden_quantity_defaults ?? removalCompilation?.childCompilation.hidden_quantity_defaults ?? 0,
+        asphaltCoreVisibleAssumptionIds: seed.assumptionIds,
+        asphaltCoreVisibleAssumptionsCount: coreCompilation?.baseCompilation.preliminary_assembly_policy.assumptions.length ?? 0,
+        asphaltCoreVisibleAssumptions: index === 0 && coreCompilation
+          ? coreCompilation.baseCompilation.preliminary_assembly_policy.assumptions
+          : undefined,
         formulaInputValues: seed.formulaInputValues,
         costOwnership: seed.costOwnership,
         costOwnerId: seed.costOwnerId,

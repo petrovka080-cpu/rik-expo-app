@@ -878,8 +878,9 @@ function buildTrace(input: {
 function resolveStatus(
   result: InlineWorkPromptEstimateBuildResult,
   remainingMissingInputCount = result.parseResult.missingInputs.length,
+  exactSelectionConfirmed = false,
 ): EstimateDraftRevision["status"] {
-  if (result.parseResult.mustAskUserToSelectTemplate) return "needs_template_selection";
+  if (result.parseResult.mustAskUserToSelectTemplate && !exactSelectionConfirmed) return "needs_template_selection";
   if (!result.draft || result.draft.items.length === 0) return "failed";
   // The clarification model remains attached for editing even after every
   // applicable input is resolved. Status must follow the final filtered
@@ -894,8 +895,12 @@ function resolveEstimateLevel(input: {
   matchedFamily: string;
   missingInputs: EstimateDraftRevision["missingInputs"];
   rows: readonly ProfessionalBoqRow[];
+  exactSelectionConfirmed?: boolean;
 }): EstimateDraftRevisionEstimateLevel {
-  if (input.result.parseResult.mustAskUserToSelectTemplate || input.rows.length === 0) return "NEEDS_INPUT";
+  if (
+    (input.result.parseResult.mustAskUserToSelectTemplate && !input.exactSelectionConfirmed) ||
+    input.rows.length === 0
+  ) return "NEEDS_INPUT";
   const scaleClass = rawInputFactStringValue(input.result.parseResult.rawInputFacts, "scale_class");
   if (input.matchedFamily === "solar_power_plant" && scaleClass === "utility_scale" && input.missingInputs.length > 0) {
     return "CONCEPT_SCOPE";
@@ -1231,7 +1236,14 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),
     });
-  const estimateLevel = resolveEstimateLevel({ result, matchedFamily, missingInputs, rows });
+  const exactSelectionConfirmed = Boolean(input.selectedTemplateId?.trim() || input.selectedWorkKey?.trim());
+  const estimateLevel = resolveEstimateLevel({
+    result,
+    matchedFamily,
+    missingInputs,
+    rows,
+    exactSelectionConfirmed,
+  });
   const assumptionsByKey = new Map<string, EstimateDraftRevision["assumptions"][number]>();
   for (const assumption of assumptionsFromParse(result.parseResult.assumptions, input.assumptionOverrides)) {
     assumptionsByKey.set(assumption.key, assumption);
@@ -1387,7 +1399,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     trace,
     status: exactAsphaltRelatedDraft && asphaltRelatedContext.readiness !== "CALCULATION_READY"
       ? "blocking_required"
-      : resolveStatus(result, missingInputs.length),
+      : resolveStatus(result, missingInputs.length, exactSelectionConfirmed),
     artifacts: {
       ...EMPTY_ARTIFACTS,
       ...(input.artifacts ?? {}),

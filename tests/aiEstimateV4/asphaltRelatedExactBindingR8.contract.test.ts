@@ -1,4 +1,8 @@
 import { buildAsphaltRelatedR8Inventory } from "../../scripts/estimate/buildAsphaltRelatedR8Inventory";
+import {
+  COMPLETE_INPUTS as ASPHALT_R63_COMPLETE_INPUTS,
+  FULL_APPLICABLE_EXPLICIT_INPUTS as ASPHALT_R63_FULL_INPUTS,
+} from "../../scripts/estimate/auditAsphaltM44ProfessionalBoqR9";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   __resetConsumerRepairRequestStoreForTests,
@@ -9,6 +13,7 @@ import {
 import type { EstimateDraftRevisionParam } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
+import { resolveAsphaltRelatedAssemblyProfileV4 } from "../../src/lib/estimate/v4/asphalt/compileAsphaltRelatedThroughCoreV4";
 import { ASPHALT_RELATED_PROFESSIONAL_PASSPORTS_V4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedProfessionalPassportsV4";
 import { resolveAsphaltRelatedExactRoutingV4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedExactRoutingV4";
 import { ASPHALT_RELATED_EXTRA_PROFILES_V4 } from "../../src/lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
@@ -41,6 +46,10 @@ function params(values: Record<string, string | number | boolean>): Record<strin
 }
 
 const COMPLETE_PARAMETERS = params({
+  ...ASPHALT_R63_COMPLETE_INPUTS,
+  ...ASPHALT_R63_FULL_INPUTS,
+  estimate_scope_mode: "MINIMAL_EXPLICIT_SCOPE",
+  project_scope: "SURFACING_ONLY",
   area_m2: 120,
   removal_area_m2: 120,
   removal_depth_mm: 50,
@@ -61,10 +70,33 @@ const COMPLETE_PARAMETERS = params({
   waste_factor: 1.05,
   haul_distance_km: 10,
   productivity_m2_h: 100,
+  labor_productivity_m2_per_man_hour: 100,
+  truck_average_speed_km_per_machine_hour: 40,
+  truck_turnaround_machine_hours: 0.5,
+  machine_breakdown_roller_productivity_m2_per_machine_hour: 100,
+  machine_roller_productivity_m2_per_machine_hour: 100,
+  machine_finish_roller_productivity_m2_per_machine_hour: 100,
+  machine_surface_cleaner_productivity_m2_per_machine_hour: 100,
+  machine_bitumen_distributor_productivity_m2_per_machine_hour: 100,
+  machine_paver_productivity_m2_per_machine_hour: 100,
+  machine_boundary_saw_productivity_m2_per_machine_hour: 100,
+  machine_breakout_equipment_productivity_m2_per_machine_hour: 100,
+  machine_loader_productivity_m2_per_machine_hour: 100,
+  machine_repair_paver_productivity_m2_per_machine_hour: 100,
+  machine_cleaner_productivity_m2_per_machine_hour: 100,
+  machine_air_compressor_productivity_m2_per_machine_hour: 100,
+  machine_leveling_paver_productivity_m2_per_machine_hour: 100,
+  machine_profiling_productivity_m2_per_machine_hour: 100,
+  machine_survey_equipment_productivity_m2_per_machine_hour: 100,
+  machine_joint_equipment_productivity_m2_per_machine_hour: 100,
+  machine_finishing_cleaner_productivity_m2_per_machine_hour: 100,
   tack_coat_l_m2: 0.3,
   truck_capacity_t: 20,
   waste_truck_capacity_t: 20,
   acceptance_lot_m2: 1000,
+  work_journal_count: 1,
+  execution_documentation_count: 1,
+  material_passport_register_count: 1,
   joint_sealant_l_m2: 0.1,
   exterior_surface_kind: "PARKING",
   drainage_outfall_confirmed: true,
@@ -75,10 +107,10 @@ const COMPLETE_PARAMETERS = params({
 });
 
 function selectedRecordId(record: ReturnType<typeof buildAsphaltRelatedR8Inventory>["records"][number]): string {
-  return record.catalog_id.endsWith("_expanded_complex_v1") ? record.catalog_id : record.work_key;
+  return record.previous_35 ? record.work_key : record.catalog_id;
 }
 
-describe("Asphalt-related R8 exact binding matrix", () => {
+describe("Asphalt-related R63 exact binding matrix", () => {
   let cleanupStorage: () => void;
 
   beforeEach(() => {
@@ -142,10 +174,27 @@ describe("Asphalt-related R8 exact binding matrix", () => {
     expect(result.draft?.items.some((item) => item.sourceParameters?.asphaltRelatedV4 === true)).toBe(false);
   });
 
-  test("routes all R=53 records through exact owners, revision, durable history, PDF and procurement", () => {
+  test("keeps an exact related full-infrastructure scope out of the pavement-only profile", () => {
+    const profile = ASPHALT_RELATED_EXTRA_PROFILES_V4.find(
+      (candidate) => candidate.canonicalWorkKey === "asphalt_concrete_pavement",
+    );
+    expect(profile).toBeDefined();
+    expect(resolveAsphaltRelatedAssemblyProfileV4(
+      profile!,
+      { project_scope: "FULL_ROAD_INFRASTRUCTURE" },
+      "FULL_APPLICABLE_SCOPE",
+    )).toBe("new_full_road_infrastructure");
+    expect(resolveAsphaltRelatedAssemblyProfileV4(
+      profile!,
+      { project_scope: "PAVEMENT_STRUCTURE" },
+      "FULL_APPLICABLE_SCOPE",
+    )).toBe("new_full_road_pavement");
+  });
+
+  test("routes all R=63 records through exact owners, revision, durable history, PDF and procurement", () => {
     const inventory = buildAsphaltRelatedR8Inventory();
     const related = inventory.records.filter((record) => record.canonical_technology_id !== null);
-    expect(related).toHaveLength(53);
+    expect(related).toHaveLength(63);
     expect(related.every((record) =>
       resolveAsphaltRelatedExactRoutingV4(selectedRecordId(record)).status.startsWith("BOUND_")
     )).toBe(true);
@@ -158,6 +207,11 @@ describe("Asphalt-related R8 exact binding matrix", () => {
       signature: string;
       previous35: boolean;
     }[] = [];
+    const readinessBlockers: Array<{
+      catalog_id: string;
+      status: string | null;
+      missing_inputs: string[];
+    }> = [];
     const signatureByCanonical = new Map<string, string>();
 
     for (const [index, record] of related.entries()) {
@@ -171,12 +225,20 @@ describe("Asphalt-related R8 exact binding matrix", () => {
         currency: "KGS",
         countryCode: "KG",
         paramOverrides: COMPLETE_PARAMETERS,
+        selectedRoadScope: record.canonical_technology_id === "asphalt_concrete_pavement"
+          ? "ROAD_SURFACING_ONLY"
+          : null,
         createdAt: CREATED_AT,
       });
       const revision = runtime?.runtimeEstimateDraftRevision;
-      expect(runtime).not.toBeNull();
-      expect(revision).toBeDefined();
-      expect(revision?.status).toBe("draft_ready");
+      if (!revision || revision.status !== "draft_ready" || revision.missingInputs.length > 0) {
+        readinessBlockers.push({
+          catalog_id: record.catalog_id,
+          status: revision?.status ?? null,
+          missing_inputs: revision?.missingInputs.map((input) => input.key) ?? [],
+        });
+        continue;
+      }
       expect(revision?.professionalWorkId).toBe(record.canonical_technology_id);
       expect(revision?.legacyRowsCount).toBe(0);
       expect(runtime?.selectedWork?.selectedWorkResolverReGuessed).toBe(false);
@@ -220,7 +282,8 @@ describe("Asphalt-related R8 exact binding matrix", () => {
       });
     }
 
-    expect(persisted).toHaveLength(53);
+    expect(readinessBlockers).toEqual([]);
+    expect(persisted).toHaveLength(63);
     __simulateConsumerRepairRequestStoreReloadForTests();
 
     for (const record of persisted) {
@@ -253,7 +316,7 @@ describe("Asphalt-related R8 exact binding matrix", () => {
     }
 
     const aliases = related.filter((record) => record.classification === "ALIAS");
-    expect(aliases).toHaveLength(9);
+    expect(aliases).toHaveLength(19);
     for (const alias of aliases) {
       const stored = persisted.find((candidate) => candidate.selectedId === selectedRecordId(alias));
       expect(stored?.signature).toBe(signatureByCanonical.get(alias.canonical_technology_id!));

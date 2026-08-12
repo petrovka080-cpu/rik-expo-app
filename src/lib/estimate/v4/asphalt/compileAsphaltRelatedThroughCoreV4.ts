@@ -145,6 +145,7 @@ export type AsphaltRelatedCoreRowV4 = {
   childPassportId: string | null;
   childRevisionId: string | null;
   scopeTriggerParameter: string | null;
+  assumptionIds: readonly string[];
 };
 
 function sourceType(sourceText: string | null | undefined): ProfessionalValueSourceTypeV4 {
@@ -182,7 +183,7 @@ function parameterValues(
   return result;
 }
 
-function profileOverride(
+export function resolveAsphaltRelatedAssemblyProfileV4(
   profile: AsphaltRelatedProfileV4,
   values: Readonly<Record<string, unknown>>,
   scopeMode: ProfessionalEstimateScopeModeV4,
@@ -195,7 +196,10 @@ function profileOverride(
   }
   const projectScope = String(values.project_scope ?? "");
   if (projectScope === "REHABILITATION") return "rehabilitation_with_milling";
-  if (scopeMode === "FULL_APPLICABLE_SCOPE" || projectScope === "PAVEMENT_STRUCTURE" || projectScope === "FULL_ROAD_INFRASTRUCTURE" || projectScope === "TURNKEY_PARKING_WITH_SITE_FEATURES") {
+  if (projectScope === "FULL_ROAD_INFRASTRUCTURE") {
+    return "new_full_road_infrastructure";
+  }
+  if (scopeMode === "FULL_APPLICABLE_SCOPE" || projectScope === "PAVEMENT_STRUCTURE" || projectScope === "TURNKEY_PARKING_WITH_SITE_FEATURES") {
     return profile.applicationContext === "PARKING" || profile.applicationContext === "YARD_OR_SITE"
       ? "parking_full_construction"
       : "new_full_road_pavement";
@@ -259,7 +263,10 @@ function coreOverrides(
   }
   result.geometry_method = { value: "direct_area", source: "catalog_binding" };
   result.costing_mode = { value: "RESOURCE_MODE", source: "catalog_binding" };
-  result.scope_profile = { value: profileOverride(profile, values, scopeMode), source: "catalog_binding" };
+  result.scope_profile = {
+    value: resolveAsphaltRelatedAssemblyProfileV4(profile, values, scopeMode),
+    source: "catalog_binding",
+  };
   result.construction_mode = {
     value: ["asphalt_overlay", "asphalt_patch_repair", "asphalt_milling"].includes(profile.canonicalWorkKey) ? "repair" : "new_construction",
     source: "catalog_binding",
@@ -357,6 +364,7 @@ function baseRow(
     childPassportId: null,
     childRevisionId: null,
     scopeTriggerParameter: null,
+    assumptionIds: row.assumption_ids,
   };
 }
 
@@ -372,13 +380,16 @@ export function compileAsphaltRelatedThroughCoreV4(input: {
   blockers: string[];
 } {
   const parameterOverrides = coreOverrides(input.profile, input.values, input.scopeMode);
+  const assemblyProfile = resolveAsphaltRelatedAssemblyProfileV4(input.profile, input.values, input.scopeMode);
+  const visiblePreliminaryAssembly = assemblyProfile === "new_full_road_infrastructure" ||
+    assemblyProfile === "parking_full_construction";
   let baseCompilation: AsphaltProfessionalEstimateCompilationV4;
   try {
     baseCompilation = compileAsphaltProfessionalEstimateV4({
       raw_text: input.sourceInput.rawInput,
       parameter_overrides: parameterOverrides,
-      assumption_policy: "FORBID_QUANTITY_ASSUMPTIONS",
-      profile_override: profileOverride(input.profile, input.values, input.scopeMode),
+      ...(visiblePreliminaryAssembly ? {} : { assumption_policy: "FORBID_QUANTITY_ASSUMPTIONS" as const }),
+      profile_override: assemblyProfile,
     });
   } catch (error) {
     const cause = error instanceof Error ? error.message : String(error);
@@ -422,6 +433,7 @@ export function compileAsphaltRelatedThroughCoreV4(input: {
     childPassportId: row.child_passport_id,
     childRevisionId: row.child_revision_id,
     scopeTriggerParameter: row.scope_trigger_parameter,
+    assumptionIds: [],
   }));
   return {
     baseCompilation,
@@ -483,6 +495,7 @@ export function compileAsphaltRemovalThroughCoreV4(input: {
     childPassportId: row.child_passport_id,
     childRevisionId: row.child_revision_id,
     scopeTriggerParameter: row.scope_trigger_parameter,
+    assumptionIds: [],
   }));
   return {
     childCompilation,
