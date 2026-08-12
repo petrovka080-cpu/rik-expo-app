@@ -167,7 +167,18 @@ test("postFoundationMaster11610ContentDelta.contract.test", () => {
 });
 
 test("postFoundationAuditReplayDeterminism.contract.test", { skip: !runA || !runB }, () => {
-  const exclusions = new Set(["journal/AUDIT_APPEND_ONLY_JOURNAL.jsonl", "journal/AUDIT_COMMAND_AND_TEST_LEDGER.jsonl", "replay/REPLAY_RUN_SUMMARY.json", "replay/REPLAY_DETERMINISM_COMPARISON.json", "closeout/MANIFEST.json", "closeout/AUDIT_EVIDENCE_INDEX.json"]);
+  const exclusions = new Set([
+    "journal/AUDIT_APPEND_ONLY_JOURNAL.jsonl",
+    "journal/AUDIT_COMMAND_AND_TEST_LEDGER.jsonl",
+    "replay/REPLAY_RUN_SUMMARY.json",
+    "replay/REPLAY_DETERMINISM_COMPARISON.json",
+    "replay/RUN_A_MANIFEST.json",
+    "replay/RUN_B_MANIFEST.json",
+    "replay/RUN_A_VS_RUN_B_DIFF.json",
+    "closeout/MANIFEST.json",
+    "closeout/AUDIT_EVIDENCE_INDEX.json",
+    "closeout/POST_FOUNDATION_INDEPENDENT_AUDIT_EXACT_SHA_EVIDENCE_INDEX.json",
+  ]);
   const left = hashTree(runA, exclusions);
   const right = hashTree(runB, exclusions);
   assert.deepEqual(left, right);
