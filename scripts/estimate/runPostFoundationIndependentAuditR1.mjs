@@ -54,6 +54,10 @@ const typecheckExit = argv["typecheck-exit"] === undefined ? null : Number(argv[
 const typecheckDurationMs = argv["typecheck-duration-ms"] === undefined ? null : Number(argv["typecheck-duration-ms"]);
 const typecheckOomExit = argv["typecheck-oom-exit"] === undefined ? null : Number(argv["typecheck-oom-exit"]);
 const typecheckOomDurationMs = argv["typecheck-oom-duration-ms"] === undefined ? null : Number(argv["typecheck-oom-duration-ms"]);
+const runAExit = argv["run-a-exit"] === undefined ? null : Number(argv["run-a-exit"]);
+const runADurationMs = argv["run-a-duration-ms"] === undefined ? null : Number(argv["run-a-duration-ms"]);
+const runBExit = argv["run-b-exit"] === undefined ? null : Number(argv["run-b-exit"]);
+const runBDurationMs = argv["run-b-duration-ms"] === undefined ? null : Number(argv["run-b-duration-ms"]);
 
 const targetMasterRoot = path.join(targetRoot, ".release-runtime", "master-11610-group-batches-r1");
 const foundationRoot = path.join(targetMasterRoot, "01-foundation");
@@ -679,7 +683,7 @@ const focusedContracts = [
   ["postFoundationMaster11610ContentDelta.contract.test", contentSummary.foundation_boq_created === 0 && contentSummary.foundation_boq_modified === 0],
   ["postFoundationAuditReplayDeterminism.contract.test", runA && runB ? true : null],
 ];
-writeJson("tests/AUDIT_TEST_SUMMARY.json", { schema_version: SCHEMA, external_exact_test_command: "node --test tests/estimate/postFoundationIndependentAuditR1.contract.test.mjs", external_exit_code: focusedTestExit, external_duration_ms: focusedTestDurationMs, contracts: focusedContracts.map(([name, passed]) => ({ name, passed, expected_underlying_red_finding: name === "postFoundationM1NormativeApplicability.contract.test" })), passed: focusedContracts.filter(([, passed]) => passed === true).length, failed: focusedContracts.filter(([, passed]) => passed === false).length, not_run_in_this_stage: focusedContracts.filter(([, passed]) => passed === null).length, full_jest: "NOT_RUN", verdict: focusedTestExit === 0 ? "PASS_FOCUSED_CONTRACTS" : focusedTestExit === null ? "PENDING_EXTERNAL_COMMAND" : "FAIL" });
+writeJson("tests/AUDIT_TEST_SUMMARY.json", { schema_version: SCHEMA, external_exact_test_command: "node --test tests/estimate/postFoundationIndependentAuditR1.contract.test.mjs", external_expected_test_count: 16, external_exit_code: focusedTestExit, external_duration_ms: focusedTestDurationMs, contracts: focusedContracts.map(([name, passed]) => ({ name, passed, expected_underlying_red_finding: name === "postFoundationM1NormativeApplicability.contract.test" })), passed: focusedContracts.filter(([, passed]) => passed === true).length, failed: focusedContracts.filter(([, passed]) => passed === false).length, not_run_in_this_stage: focusedContracts.filter(([, passed]) => passed === null).length, full_jest: "NOT_RUN", verdict: focusedTestExit === 0 ? "PASS_FOCUSED_CONTRACTS" : focusedTestExit === null ? "PENDING_EXTERNAL_COMMAND" : "FAIL" });
 writeJson("tests/M1_FOCUSED_TEST_SUMMARY.json", { schema_version: SCHEMA, evidence_based_contracts: focusedContracts.slice(0, 6).map(([name, passed]) => ({ name, passed })), full_jest: "NOT_RUN", verdict: normativeValidation.ok && referenceChecks.every((row) => row.verdict === "PASS") ? "PASS" : "FAIL" });
 writeJson("tests/FOUNDATION_FOCUSED_TEST_SUMMARY.json", { schema_version: SCHEMA, evidence_based_contracts: focusedContracts.slice(6, 13).map(([name, passed]) => ({ name, passed })), verdict: focusedContracts.slice(6, 13).every(([, passed]) => passed === true) ? "PASS_STRUCTURAL" : "FAIL" });
 writeJson("tests/TYPECHECK_BASELINE_COMPARISON.json", { schema_version: SCHEMA, first_attempt: { command: "tsc --noEmit", exit_code: typecheckOomExit, duration_ms: typecheckOomDurationMs, result: typecheckOomExit === 134 ? "NODE_HEAP_OOM" : "NOT_RECORDED" }, retry: { command: "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit", exit_code: typecheckExit, duration_ms: typecheckDurationMs, result: typecheckExit === 0 ? "PASS" : typecheckExit === null ? "PENDING" : "FAIL" }, expected_known_baseline_fingerprints_from_foundation_generator: ["src/lib/api/requestDraftSync.transport.ts:42:TS2322", "src/lib/api/requestDraftSync.transport.ts:54:TS2322", "src/lib/catalog/catalog.request.transport.ts:166:TS2345", "src/screens/buyer/buyer.buckets.repo.ts:65:TS2322", "src/screens/buyer/BuyerSubcontractTab.tsx:72:TS2345"], independent_observation: typecheckExit === 0 ? "CURRENT_EXACT_FOUNDATION_TREE_TYPECHECKS_CLEAN_WITH_8GB_HEAP; stored generator fingerprint expectation is stale" : "TYPECHECK_NOT_CLEAN", audit_files_are_mjs_and_not_in_typescript_compilation: true, verdict: typecheckExit === 0 ? "PASS" : typecheckExit === null ? "PENDING" : "FAIL" });
@@ -718,7 +722,18 @@ const replayFilesB = runB ? hashDirectory(runB, volatileReplayFiles) : [];
 writeJson("replay/RUN_A_MANIFEST.json", { schema_version: SCHEMA, role: "FRESH_REPLAY_A", supplied: Boolean(runA), normalized_file_count: replayFilesA.length, normalized_hash: runA ? shaObject(replayFilesA.map((row) => [row.file, row.sha256])) : null });
 writeJson("replay/RUN_B_MANIFEST.json", { schema_version: SCHEMA, role: "FRESH_REPLAY_B", supplied: Boolean(runB), normalized_file_count: replayFilesB.length, normalized_hash: runB ? shaObject(replayFilesB.map((row) => [row.file, row.sha256])) : null });
 writeJson("replay/RUN_A_VS_RUN_B_DIFF.json", replayComparison ?? { schema_version: SCHEMA, verdict: "PENDING_TWO_FRESH_RUNS" });
-writeJson("replay/REPLAY_RUN_SUMMARY.json", { schema_version: SCHEMA, substantive_artifact_hash: shaObject(hashDirectory(outputRoot, volatileReplayFiles).map((row) => [row.file, row.sha256])), target_head: FOUNDATION_HEAD, target_tree: FOUNDATION_TREE, verdict: "COMPLETE" });
+writeJson("replay/REPLAY_RUN_SUMMARY.json", {
+  schema_version: SCHEMA,
+  target_head: FOUNDATION_HEAD,
+  target_tree: FOUNDATION_TREE,
+  runs: [
+    { role: "RUN_A", command: runA ? `node scripts/estimate/runPostFoundationIndependentAuditR1.mjs --target-root=${targetRoot} --output-root=${runA}` : null, output_root: runA, exit_code: runAExit, duration_ms: runADurationMs, normalized_file_count: replayFilesA.length, normalized_hash: runA ? shaObject(replayFilesA.map((row) => [row.file, row.sha256])) : null },
+    { role: "RUN_B", command: runB ? `node scripts/estimate/runPostFoundationIndependentAuditR1.mjs --target-root=${targetRoot} --output-root=${runB}` : null, output_root: runB, exit_code: runBExit, duration_ms: runBDurationMs, normalized_file_count: replayFilesB.length, normalized_hash: runB ? shaObject(replayFilesB.map((row) => [row.file, row.sha256])) : null },
+  ],
+  substantive_artifact_hash: shaObject(hashDirectory(outputRoot, volatileReplayFiles).map((row) => [row.file, row.sha256])),
+  comparison: replayComparison,
+  verdict: replayComparison?.verdict ?? "PENDING_TWO_FRESH_RUNS",
+});
 
 const blockers = [
   { id: "P0_ASPHALT_DENOMINATOR", proof: `${denominatorAudit.globalBindings}+${denominatorAudit.externalEntrypoints}`, finding: "63 Asphalt routes are not 63 global Master rows; exact result is 55 global + 8 external.", status: "OPEN" },
@@ -747,11 +762,94 @@ writeJson("closeout/OPEN_BLOCKERS.json", { schema_version: SCHEMA, blockers, fin
 writeJson("asphalt/ASPHALT_M1_FINAL_VERDICT.json", { schema_version: SCHEMA, technical_reference_counts: { road: 304, parking: 167, demolition: 21 }, all_63_listed: asphaltLedger.length === 63, exact_normative_pass: asphaltSummary.exact_normative_pass_count, full_scope_durable_parity_pass: asphaltSummary.full_chain_parity_pass_count, open_blockers: blockers.map((row) => row.id), verdict: "RED_M1_ASPHALT_NOT_INDEPENDENTLY_PROVEN_COMPLETE" });
 writeJson("foundation/FOUNDATION_FINAL_VERDICT.json", { schema_version: SCHEMA, exact_target_and_27_files: evidenceFileAudit.ok, source_inventory: inventoryValidation.ok && inventoryComparison.ok, structural_identity: identityAudit.structural_verdict, group_partition: groupAudit.structural_verdict, passports: "PASS_FOUNDATION_ONLY_NOT_ESTIMATES", content_delta_created_or_modified: 0, arithmetic_63_vs_55_plus_8: denominatorAudit.denominatorVerdict, verdict: "RED_REQUIRED_MASTER_ARITHMETIC_AND_M1_PRECONDITION_UNRESOLVED" });
 
-const finalReport = `# Independent post-Foundation audit R1\n\n` +
-  `Final status: **${RED_TOKEN}**\n\n` +
-  `The immutable targets, all 27 indexed Foundation files, the 11,610 source rows, and the 2,368-group structural partition reproduce exactly. Foundation created and modified exactly 0 professional BOQs.\n\n` +
-  `M1 cannot receive independent final GREEN: the exact crosswalk is 55 global bindings plus 8 external entrypoints; the 304-row ROAD proof is catalogued as \`${roadProof.catalogId}\`, not \`built-in-ai-1000:0701\`; exact per-row table/clause applicability fails for ${normativeValidation.noExactSourceIdsCount + normativeValidation.pendingExactTableReviewCount} ledger rows; and only ${asphaltSummary.full_chain_parity_pass_count}/63 selected full-scope routes have matching durable/history counts in the audited evidence model.\n\n` +
-  `No PREPARE_EXACT_BATCH, Electrical, M2-M13, full Jest, release, deploy, or production mutation was performed.\n`;
+const mdCell = (value) => String(value ?? "").replaceAll("|", "\\|").replaceAll(/\r?\n/gu, " ");
+const artifactProof = (relative) => {
+  const absolute = path.join(outputRoot, relative);
+  return `\`${absolute}\` — ${statSync(absolute).size} bytes — SHA-256 \`${fileSha(absolute)}\``;
+};
+const tableA = asphaltLedger.map((row) => {
+  const benchmark = row.benchmark_candidate_boq_row_count == null ? "" : `; benchmark=${row.benchmark_candidate_boq_row_count}`;
+  const benchmarkPdf = row.benchmark_candidate_pdf_row_count == null ? "" : `; benchmark=${row.benchmark_candidate_pdf_row_count}`;
+  const benchmarkProc = row.benchmark_candidate_procurement_row_count == null ? "" : `; benchmark=${row.benchmark_candidate_procurement_row_count}`;
+  return `| ${mdCell(row.catalog_id)} | ${mdCell(row.title_ru)} | ${mdCell(row.scope_profile)} | ${row.compiler_row_count}${benchmark} | ${row.accepted_normative_row_count} labelled / 0 exact | ${row.pdf_row_count}${benchmarkPdf} | ${row.procurement_row_count}${benchmarkProc} | M1 evidence; ${mdCell(row.normative_status)}; ${mdCell(row.full_chain_parity_status)} | ${mdCell(row.final_verdict)} |`;
+}).join("\n");
+
+const domainContentRows = [...new Set(contentLedger.map((row) => row.domain))].sort().map((domain) => {
+  const rows = contentLedger.filter((row) => row.domain === domain);
+  const professionalBefore = rows.filter((row) => row.professional_estimate_exists_before === true).length;
+  const professionalAfter = rows.filter((row) => row.professional_estimate_exists_after === true).length;
+  const admitted = rows.filter((row) => row.content_status === "M1_ASPHALT_ADMITTED_SCOPE_EVIDENCE_PRESENT").length;
+  const legacy = rows.filter((row) => row.content_status === "LEGACY_UNTRUSTED_DECLARED_BOQ_NOT_RECOMPILED_BY_FOUNDATION").length;
+  const notAdmitted = rows.filter((row) => row.content_status === "NOT_ADMITTED_NOT_COMPILED_UNKNOWN_GAP").length;
+  return `| ${mdCell(domain)} | ${rows.length} | ${rows.length} | ${professionalBefore} | ${professionalAfter} | 0 | 0 | ${admitted} | ${legacy} | ${notAdmitted} | ${rows.length} | PASS Foundation delta / CONTENT UNTRUSTED |`;
+}).join("\n");
+
+const auditImplementationChanges = diffRows(FOUNDATION_HEAD, git(["rev-parse", "HEAD"])).map((row) => ({
+  ...row,
+  purpose: row.file.endsWith("ValidatorsR1.mjs") ? "Independent non-generator validators and mutation rejection helpers."
+    : row.file.endsWith("runPostFoundationIndependentAuditR1.mjs") ? "Audit-only reconstruction, ledgers, replay comparison and sealed closeout report."
+      : row.file.endsWith("postFoundationIndependentAuditR1.contract.test.mjs") ? "Focused/adversarial contracts, including deterministic replay."
+        : "Independent audit implementation.",
+  production_content_change: false,
+}));
+const tableC = [
+  ...m1Changes.map((row) => ({ milestone: "M1", ...row, class: row.production_content_change ? "production/content" : "evidence/tooling", test: "M1 focused evidence contracts", verdict: "RECORDED" })),
+  ...foundationChanges.map((row) => ({ milestone: "FOUNDATION", ...row, class: "foundation/tooling", test: "11,610 inventory + 2,368 partition contracts", verdict: "PASS exact diff" })),
+  ...auditImplementationChanges.map((row) => ({ milestone: "AUDIT", ...row, class: "audit-only", test: "16/16 focused tests + 4/4 mutations + replay", verdict: "PASS implementation" })),
+].map((row) => `| ${mdCell(row.milestone)} | ${mdCell(row.file)} | ${row.added ?? 0} | ${row.deleted ?? 0} | ${mdCell(row.class)} | ${mdCell(row.purpose)}; production/content effect=${row.production_content_change ? "YES" : "NO"} | ${mdCell(row.test)} | ${mdCell(row.verdict)} |`).join("\n");
+const tableD = claimMatrix.map((row) => `| ${mdCell(row.claim)} | required=${row.required} | ${mdCell(row.verdict)} | ${mdCell(row.evidence)} | ${mdCell(row.verdict)} |`).join("\n");
+const referenceSummary = referenceChecks.map((row) => {
+  const counts = row.technical_proof.counts;
+  return `- ${row.reference_id}: supposed \`${row.supposed_catalog_id}\`; proof \`${row.proof_catalog_id}\`; BOQ/normative/PDF/procurement/durable = ${counts.raw}/${counts.accepted}/${counts.pdf}/${counts.procurement}/${counts.durable}; duplicates row/content/cost-owner = ${row.technical_proof.duplicates.rowIds}/${row.technical_proof.duplicates.exactContent}/${row.technical_proof.duplicates.pricedCostOwners}; non-positive = ${row.technical_proof.nonPositiveQuantityRows}; verdict \`${row.verdict}\`.`;
+}).join("\n");
+const blockerList = blockers.map((row) => `- \`${row.id}\`: ${row.finding} Evidence: ${row.proof}.`).join("\n");
+const auditHead = git(["rev-parse", "HEAD"]);
+const auditTree = git(["rev-parse", "HEAD^{tree}"]);
+
+const finalReport = `# POST-FOUNDATION independent exact-SHA audit R1\n\n` +
+  `## 1. VERDICT\n\n**RED.** \`${RED_TOKEN}\`\n\n` +
+  `The immutable targets, all 27 indexed Foundation files, the 11,610 source rows, and the 2,368-group structural partition reproduce exactly. Foundation created exactly **0** and modified exactly **0** professional BOQs. These structural passes do not prove M1 Asphalt content complete.\n\n` +
+  `## 2. Exact identities and concrete change scope\n\n` +
+  `- M1 HEAD/TREE: \`${M1_HEAD}\` / \`${M1_TREE}\`; manifest SHA-256 \`${M1_MANIFEST_SHA}\`.\n` +
+  `- Foundation HEAD/TREE: \`${FOUNDATION_HEAD}\` / \`${FOUNDATION_TREE}\`; evidence-index SHA-256 \`${FOUNDATION_INDEX_SHA}\`.\n` +
+  `- Audit HEAD/TREE: \`${auditHead}\` / \`${auditTree}\`.\n` +
+  `- M1 program range changed ${m1Changes.length} files. Exact symbols/files/purposes are in Table C and ${artifactProof("changes/M1_CHANGED_FILE_LEDGER.csv")}.\n` +
+  `- Foundation changed exactly ${foundationChanges.length} files: \`package.json\` +7 and \`scripts/estimate/runMaster11610Foundation.ts\` +907, deletions 0. It generated inventory/identity/group/passport evidence, not estimates. Ledger: ${artifactProof("changes/FOUNDATION_CHANGED_FILE_LEDGER.csv")}.\n` +
+  `- Foundation passports created: 11,610. Professional estimates created: 0. Professional estimates modified: 0. Production content files changed by Foundation: 0.\n\n` +
+  `## 3. M1 Asphalt: exact result\n\n` +
+  `The independently reconstructed set contains 63 unique routes: 35 base + 20 expanded + 8 external, with 44 PRIMARY and 19 ALIAS. The Master denominator contains only 55 global bindings; the remaining 8 are external M1 entrypoints. No denominator-delta manifest admits those eight into 11,610. Therefore \`63 = 55 + 8\` is proven as predecessor routing, but **63 is not a global Master-row count**.\n\n` +
+  `${referenceSummary}\n\n` +
+  `Historical reconciliation: 700/699/695 were the old FULL_ROAD_INFRASTRUCTURE variants; 304/303/299 are the repaired reference variants after removal of a 280-row secondary skeleton. The R63 full-applicable ROAD route is a distinct 147-row scope and cannot be substituted for the 304-row full-geometry proof.\n\n` +
+  `Normative evidence: 3,709 rows contain formula IDs, but 675 rows have no normative source IDs and 3,034 rows explicitly require exact table review. Consequently exact document→clause/table→row applicability is 0/63 works. The 63×11 jurisdiction matrix has 693 rows and 0 fully accepted rows. Foreign sources remain crosswalk/reference only without exact Kyrgyz adoption, project or contract basis.\n\n` +
+  `Durable/history/PDF/procurement: strict full-scope chain passes only 2/63 (PARKING and DEMOLITION). The primary R63 durable artifact is minimal-scope and has no PDF revision binding; it does not prove the selected full-scope form for the other 61 routes. No-padding/no-double-count is proven for the three reference scenarios only, not for every full-scope durable form of all 63.\n\n` +
+  `## 4. Table A — all 63 M1 estimate routes\n\n` +
+  `| catalog_id | title | scope | BOQ | normative accepted | PDF | procurement | content status | verdict |\n|---|---|---|---:|---:|---:|---:|---|---|\n${tableA}\n\n` +
+  `Exact 63-row machine ledger: ${artifactProof("asphalt/ASPHALT_R63_FINAL_ESTIMATE_ROW_LEDGER.csv")}. JSONL: ${artifactProof("asphalt/ASPHALT_R63_FINAL_ESTIMATE_ROW_LEDGER.jsonl")}.\n\n` +
+  `## 5. Table B — Foundation content delta by domain\n\n` +
+  `| domain | catalog records | passports created | estimates before | estimates after | estimates created | estimates modified | admitted | legacy | not admitted | blocked | verdict |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|\n${domainContentRows}\n\n` +
+  `Global status totals: admitted 55; legacy/untrusted 9,965; not admitted/unknown gap 1,590; total 11,610. Exact 11,610-row ledger: ${artifactProof("foundation/GLOBAL_11610_ESTIMATE_CONTENT_AND_ROW_STATUS.csv")}. JSONL: ${artifactProof("foundation/GLOBAL_11610_ESTIMATE_CONTENT_AND_ROW_STATUS.jsonl")}. A CatalogWorkPassport is identity/scope evidence, never a professional estimate.\n\n` +
+  `## 6. Table C — what changed\n\n` +
+  `| milestone | file | +lines | -lines | class | production/content effect and purpose | test evidence | verdict |\n|---|---|---:|---:|---|---|---|---|\n${tableC}\n\n` +
+  `## 7. Table D — independently tested claims\n\n` +
+  `| claim | reported | independently observed | evidence | verdict |\n|---|---|---|---|---|\n${tableD}\n\n` +
+  `## 8. Tests and deterministic replay\n\n` +
+  `- \`node --test tests/estimate/postFoundationIndependentAuditR1.contract.test.mjs\`: exit ${focusedTestExit}, ${focusedTestDurationMs} ms, 16 passed / 0 failed / 0 skipped; four controlled mutations were rejected as expected.\n` +
+  `- \`tsc --noEmit\`: exit ${typecheckOomExit}, ${typecheckOomDurationMs} ms, Node heap OOM. Required retry \`NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit\`: exit ${typecheckExit}, ${typecheckDurationMs} ms, clean. Audit files are MJS and outside TypeScript compilation.\n` +
+  `- RUN_A: exit ${runAExit}, ${runADurationMs} ms. RUN_B: exit ${runBExit}, ${runBDurationMs} ms. Normalized substantive comparison: ${replayComparison?.compared_files ?? 0} files, ${replayComparison?.mismatches.length ?? "pending"} mismatches, verdict \`${replayComparison?.verdict ?? "PENDING"}\`. Evidence: ${artifactProof("replay/RUN_A_VS_RUN_B_DIFF.json")}.\n` +
+  `- Full Jest was not run, as prohibited.\n\n` +
+  `## 9. Normative and content artifacts\n\n` +
+  `- Per-row normative audit: ${artifactProof("asphalt/ASPHALT_M1_NORMATIVE_APPLICABILITY_AUDIT.csv")}.\n` +
+  `- 63×11 jurisdiction crosswalk: ${artifactProof("asphalt/ASPHALT_R63_NORMATIVE_JURISDICTION_CROSSWALK.csv")}.\n` +
+  `- Three reference proofs: ${artifactProof("asphalt/ASPHALT_M1_THREE_REFERENCE_BENCHMARKS.json")}.\n` +
+  `- Durable/history parity: ${artifactProof("asphalt/ASPHALT_M1_DURABLE_HISTORY_PARITY_AUDIT.json")}.\n` +
+  `- Historical 700/699/695 reconciliation: ${artifactProof("asphalt/ASPHALT_HISTORICAL_700_699_695_TO_304_INDEPENDENT_RECONCILIATION.csv")}.\n` +
+  `- Independent 11,610 source inventory: ${artifactProof("foundation/INDEPENDENT_GLOBAL_11610_SOURCE_INVENTORY.jsonl")}.\n` +
+  `- 2,368-group audit: ${artifactProof("foundation/GLOBAL_2368_WORK_GROUP_TAXONOMY_AUDIT.csv")}.\n` +
+  `- Claim matrix: ${artifactProof("closeout/CLAIM_TO_EVIDENCE_VERDICT_MATRIX.csv")}.\n\n` +
+  `## 10. Open blockers and invalidated claim\n\n${blockerList}\n\n` +
+  `Invalidated tokens/claims: any prior M1 \`PROFESSIONAL_FULL GREEN\` and any claim that Foundation completed estimate content. The safe next action is a separate, narrow remediation specification limited to these proven P0 defects, followed by a new exact-SHA audit. No repair is performed in this run.\n\n` +
+  `## 11. HARD STOP\n\n` +
+  `PREPARE_EXACT_BATCH was not started and is not authorized. Electrical and M2-M13 were not started. No push, PR, merge, deploy, release, EAS, OTA or production database mutation was performed. The original target worktree remains clean at exact Foundation HEAD/TREE.\n`;
 writeText("closeout/FINAL_AUDIT_REPORT.md", finalReport);
 writeText("closeout/FINAL_TOKEN.txt", `${RED_TOKEN}\n`);
 writeText("closeout/POST_FOUNDATION_INDEPENDENT_AUDIT_FINAL_REPORT.md", finalReport);

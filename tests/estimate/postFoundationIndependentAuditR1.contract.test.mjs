@@ -184,6 +184,26 @@ test("postFoundationAuditReplayDeterminism.contract.test", { skip: !runA || !run
   assert.deepEqual(left, right);
 });
 
+test("postFoundationAuditFinalReportCompleteness.contract.test", { skip: !runA }, () => {
+  const report = readFileSync(path.join(runA, "closeout", "POST_FOUNDATION_INDEPENDENT_AUDIT_FINAL_REPORT.md"), "utf8");
+  for (const heading of [
+    "## 1. VERDICT",
+    "## 4. Table A — all 63 M1 estimate routes",
+    "## 5. Table B — Foundation content delta by domain",
+    "## 6. Table C — what changed",
+    "## 7. Table D — independently tested claims",
+    "## 8. Tests and deterministic replay",
+    "## 11. HARD STOP",
+  ]) assert.match(report, new RegExp(heading.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"), "u"));
+  const tableStart = report.indexOf("| catalog_id | title | scope | BOQ |");
+  const tableEnd = report.indexOf("\n\nExact 63-row machine ledger:", tableStart);
+  assert.ok(tableStart >= 0 && tableEnd > tableStart);
+  const rows = report.slice(tableStart, tableEnd).split(/\r?\n/u).slice(2).filter((line) => line.startsWith("| "));
+  assert.equal(rows.length, 63);
+  assert.equal(jsonl(path.join(runA, "foundation", "GLOBAL_11610_ESTIMATE_CONTENT_AND_ROW_STATUS.jsonl")).length, 11_610);
+  assert.match(report, /SHA-256/u);
+});
+
 test("mutation: duplicate id and overlap are rejected", () => {
   const inventory = [{ catalog_id: "a", source_row_hash: "a".repeat(64) }, { catalog_id: "b", source_row_hash: "b".repeat(64) }];
   assert.equal(mutationMustFail((rows) => validateInventory(rows, 2), inventory, (rows) => { rows[1].catalog_id = "a"; }).passed, true);
