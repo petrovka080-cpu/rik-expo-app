@@ -169,9 +169,16 @@ describe("Asphalt-related R63 exact binding matrix", () => {
     });
 
     expect(result.canBuildPreliminaryEstimate).toBe(true);
-    expect(result.draft?.items.length).toBeGreaterThan(500);
+    expect(result.draft?.items.length).toBeGreaterThan(100);
+    expect(result.draft?.items.length).toBeLessThan(200);
     expect(result.draft?.items.every((item) => item.sourceParameters?.asphaltV4 === true)).toBe(true);
     expect(result.draft?.items.some((item) => item.sourceParameters?.asphaltRelatedV4 === true)).toBe(false);
+    expect(result.draft?.items.some((item) => /^(?:curb_|storm_|drainage_|marking_|sign_|barrier_|lighting_)/u.test(
+      String(item.sourceParameters?.rowCode ?? ""),
+    ))).toBe(false);
+    expect(result.draft?.items.every((item) =>
+      item.sourceParameters?.normativeReviewStatus === "road_engineer_review_required"
+    )).toBe(true);
   });
 
   test("keeps an exact related full-infrastructure scope out of the pavement-only profile", () => {

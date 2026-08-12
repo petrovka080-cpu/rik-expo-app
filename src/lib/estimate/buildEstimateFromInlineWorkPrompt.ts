@@ -428,6 +428,22 @@ function buildAsphaltV4Draft(input: {
         asphaltV4SemanticOwnerId: row.definition.semantic_owner_id,
         asphaltV4SemanticOwnerClass: row.definition.semantic_owner_class,
         asphaltV4ParentWbsId: row.definition.parent_wbs_id,
+        stageId: row.definition.parent_wbs_id,
+        semanticOwner: row.definition.semantic_owner_id,
+        doubleCountGuardKey: row.definition.cost_ownership_id,
+        normativeSourceIds: compilation.passport.formulas.find((formula) =>
+          formula.formula_id === row.definition.formula_id
+        )?.source_ids ?? (row.definition.source_id ? [row.definition.source_id] : []),
+        normativeReviewStatus: row.definition.specification_status === "SOURCE_CONFIRMED"
+          ? "automated_source_verified_benchmark_fixture_inputs_confirmed"
+          : "road_engineer_review_required",
+        normativeApplicability: row.definition.applicability,
+        formulaVersion: ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
+        applicabilityPredicate: row.definition.applicability,
+        wasteOrLossRule: row.definition.waste_coefficient === null
+          ? "NOT_APPLICABLE_OR_INCLUDED_IN_EXACT_FORMULA"
+          : `EXPLICIT_WASTE_COEFFICIENT:${row.definition.waste_coefficient}`,
+        roundingRule: "ROUND_HALF_UP_BY_FORMULA_CONTRACT",
         asphaltV4CostingMode: compilation.costing_mode,
         asphaltV4CostTreatment: row.definition.costing_mode,
         asphaltV4CostOwnershipId: row.definition.cost_ownership_id,
@@ -450,7 +466,9 @@ function buildAsphaltV4Draft(input: {
       normSourceId: row.definition.source_id ?? "kg_krer_2015_collection_27",
       normSourceTitle: compilation.passport.normative_evidence.find((source) => source.source_id === row.definition.source_id)?.title ?? "Подтверждаемая формула Asphalt V4",
       normVersion: ASPHALT_V4_RUNTIME_TEMPLATE_VERSION,
-      normReviewStatus: "road_engineer_review_required",
+      normReviewStatus: row.definition.specification_status === "SOURCE_CONFIRMED"
+        ? "automated_source_verified_benchmark_fixture_inputs_confirmed"
+        : "road_engineer_review_required",
       priceStatus: "PRICE_MISSING",
       priceSource: "missing",
       priceSourceId: null,

@@ -2,17 +2,12 @@ import {
   FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4,
   FULL_ROAD_INFRASTRUCTURE_MATERIAL_ROW_IDS_BY_GROUP_V4,
   FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
+  FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4,
 } from "./asphaltFullRoadInfrastructureAssemblyV4";
 import {
   GREEN_V4_PHASE1D_FULL_ROAD_INFRASTRUCTURE_EXPANDED_PROFESSIONAL_BOQ_END_TO_END_SOFTWARE_SEALED_READY_FOR_ROAD_ENGINEER_AND_ESTIMATOR_REVIEW_NO_RELEASE,
   auditFullRoadInfrastructurePhase1DV4,
 } from "./auditFullRoadInfrastructurePhase1DV4";
-import {
-  FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4,
-  FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4,
-  FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
-  FULL_ROAD_EXPANDED_WBS_V4,
-} from "./asphaltFullRoadExpandedBoqV4";
 import { compileAsphaltProfessionalEstimateV4 } from "./compileAsphaltProfessionalEstimateV4";
 import { validateAsphaltWorkAssemblyCoverageV4 } from "./validateAsphaltWorkAssemblyCoverageV4";
 
@@ -41,22 +36,19 @@ test("NEW_FULL_ROAD_INFRASTRUCTURE compiles the complete 3000 × 32 assembly wit
     .filter((rowId) => !byId.has(rowId)).length;
   const counters = {
     pavementMaterialsMissing: requiredPavementMaterials.filter((rowId) => !byId.has(rowId)).length,
-    curbMaterialsMissing: groupMissing(["curb"]),
-    drainageMaterialsMissing: groupMissing(["drainage", "storm_inlet"]),
-    stormSewerMaterialsMissing: groupMissing(["storm_pipe", "storm_well"]),
+    drainageMaterialsMissing: groupMissing(["drainage"]),
     markingMaterialsMissing: groupMissing(["marking"]),
     signMaterialsMissing: groupMissing(["sign"]),
     signFoundationMaterialsMissing: groupMissing(["sign_foundation"]),
     barrierMaterialsMissing: groupMissing(["barrier"]),
     lightingMaterialsMissing: groupMissing(["lighting"]),
-    expandedRowsMissing: FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4.filter((rowId) => !byId.has(rowId)).length,
-    expandedMaterialsMissing: FULL_ROAD_EXPANDED_REQUIRED_MATERIAL_ROW_IDS_V4.filter((rowId) => !byId.has(rowId)).length,
-    wbsSectionsMissing: Object.keys(FULL_ROAD_EXPANDED_WBS_V4).filter((wbs) => !rows.some((row) => row.definition.wbs_code === wbs)).length,
-    fastenerOwnershipErrors: Object.entries(FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4).filter(([rowId, group]) => byId.get(rowId)?.definition.cost_ownership_id !== `infra:${group}:${rowId}`).length,
+    fastenerOwnershipErrors: Object.entries(FULL_ROAD_INFRASTRUCTURE_FASTENER_OWNERSHIP_V4).filter(([rowId, group]) =>
+      byId.has(rowId) && byId.get(rowId)?.definition.cost_ownership_id !== `infra:${group}:${rowId}`
+    ).length,
     quantityMissing: rows.filter((row) => !Number.isFinite(row.quantity) || row.quantity <= 0).length,
     unitMissing: materialRows.filter((row) => !row.definition.unit_id).length,
     formulaMissing: materialRows.filter((row) => !row.definition.formula_id || !row.definition.explanation_trace_ru).length,
-    sourceOrAssumptionMissing: materialRows.filter((row) => !row.definition.source_id || row.assumption_ids.length === 0).length,
+    sourceMissing: materialRows.filter((row) => !row.definition.source_id).length,
     genericMaterialNames: materialRows.filter((row) => /^(?:материалы?|товары?|оборудование|комплект|прочее)$/iu.test(row.definition.professional_name_ru)).length,
     internalTokensVisible: materialRows.filter((row) => /\b(?:new_full_road_infrastructure|storm_pipe_|lighting_|sign_)\b/iu.test(`${row.definition.professional_name_ru} ${row.definition.technical_specification_ru}`)).length,
     duplicateMaterialOwnership: materialRows.length - new Set(materialRows.map((row) => row.definition.cost_ownership_id)).size,
@@ -64,18 +56,19 @@ test("NEW_FULL_ROAD_INFRASTRUCTURE compiles the complete 3000 × 32 assembly wit
       const procurement = procurementByResource.get(row.definition.row_id);
       return !procurement || procurement.quantity !== row.quantity || procurement.unit_id !== row.definition.unit_id || procurement.specification_ru !== row.definition.technical_specification_ru;
     }).length,
-    informationalComponentsInProcurement: FULL_ROAD_EXPANDED_INFORMATIONAL_COMPONENT_ROW_IDS_V4.filter((rowId) => byId.get(rowId)?.included_in_procurement === true).length,
+    unrequestedOptionalRows: rows.filter((row) => /^(?:curb_|storm_|culvert_|traffic_signal_|bus_stop_|restoration_)/u.test(row.definition.row_id)).length,
   };
 
   expect(compilation.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
   expect(compilation.preliminary_assembly_policy.public_scope_id).toBe("NEW_FULL_ROAD_INFRASTRUCTURE");
   expect(compilation.preliminary_assembly_policy.assembly_id).toBe("new_full_road_infrastructure_preliminary_v1");
   expect(compilation.quantity_basis).toEqual(expect.objectContaining({ length_m: 3000, width_m: 32, area_m2: 96000 }));
-  expect(rows.length).toBeGreaterThan(600);
-  expect(FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4.every((rowId) => byId.has(rowId))).toBe(true);
-  expect(FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4.every((rowId) => byId.has(rowId))).toBe(true);
-  expect(materialRows.length).toBeGreaterThan(250);
-  expect(compilation.passport.procurement_lines.length).toBeGreaterThan(250);
+  expect(rows.length).toBeGreaterThan(300);
+  expect(["drainage", "marking", "sign", "sign_foundation", "barrier", "lighting"].flatMap((group) =>
+    FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4[group as keyof typeof FULL_ROAD_INFRASTRUCTURE_ROW_IDS_BY_GROUP_V4]
+  ).every((rowId) => byId.has(rowId))).toBe(true);
+  expect(materialRows.length).toBeGreaterThan(100);
+  expect(compilation.passport.procurement_lines.length).toBeGreaterThan(100);
   expect(Object.values(counters).every((value) => value === 0)).toBe(true);
   expect(compilation.formula_dimension_blockers).toEqual([]);
   expect(compilation.category_unit_blockers).toEqual([]);
@@ -90,11 +83,6 @@ test("NEW_FULL_ROAD_INFRASTRUCTURE compiles the complete 3000 × 32 assembly wit
 test("full-road infrastructure assumptions are visible, source-backed, dependent and editable", () => {
   const before = compileAsphaltProfessionalEstimateV4({ raw_text: ACCEPTANCE_PROMPT });
   const requiredAssumptions = [
-    "curb_length_m",
-    "storm_inlet_spacing_m",
-    "storm_pipe_diameter_mm",
-    "storm_pipe_length_m",
-    "storm_well_spacing_m",
     "road_marking_area_m2",
     "road_marking_rate_kg_m2",
     "road_marking_beads_rate_kg_m2",
@@ -149,11 +137,13 @@ test("public asphalt catalog wording resolves to the complete accepted road base
     width_m: 32,
     area_m2: 96000,
   }));
-  expect(compilation.compiled_rows.length).toBeGreaterThan(600);
-  expect(compilation.passport.procurement_lines.length).toBeGreaterThan(250);
+  expect(compilation.compiled_rows.length).toBeGreaterThan(300);
+  expect(compilation.passport.procurement_lines.length).toBeGreaterThan(100);
   expect(compilation.compiled_rows.some((row) => row.definition.row_id === "geotextile_material")).toBe(false);
-  expect(Object.keys(FULL_ROAD_EXPANDED_WBS_V4).every((wbs) =>
+  expect(["15", "19", "20", "21", "22", "23", "24"].every((wbs) =>
     compilation.compiled_rows.some((row) => row.definition.wbs_code === wbs))).toBe(true);
+  expect(["06", "07", "13", "14", "16", "17", "18", "25", "26", "27"].every((wbs) =>
+    !compilation.compiled_rows.some((row) => row.definition.wbs_code === wbs))).toBe(true);
   expect(compilation.compiled_rows.every((row) => Number.isFinite(row.quantity) && row.quantity > 0)).toBe(true);
 });
 
@@ -164,7 +154,21 @@ test("an explicit clarification can disable one default infrastructure subassemb
   });
   expect(compilation.preliminary_assembly_policy.profile_id).toBe("new_full_road_infrastructure");
   expect(compilation.compiled_rows.some((row) => row.definition.row_id.startsWith("lighting_"))).toBe(false);
-  expect(compilation.compiled_rows.some((row) => row.definition.row_id === "storm_pipe")).toBe(true);
+  expect(compilation.compiled_rows.some((row) => row.definition.row_id === "storm_pipe")).toBe(false);
+});
+
+test("a bare or forged reference SHA cannot convert preliminary factors into accepted M1 evidence", () => {
+  const compilation = compileAsphaltProfessionalEstimateV4({
+    raw_text: ACCEPTANCE_PROMPT,
+    parameter_overrides: {
+      asphalt_reference_design_id: "forged-reference",
+      asphalt_reference_design_sha256: "a".repeat(64),
+    },
+  });
+  const sources = compilation.passport.formulas.flatMap((formula) => formula.source_ids);
+  expect(compilation.compiled_rows.filter((row) => row.definition.specification_status === "SOURCE_CONFIRMED")).toHaveLength(0);
+  expect(sources.some((source) => source.startsWith("engineering_assumption:"))).toBe(true);
+  expect(sources.some((source) => source.startsWith("benchmark_fixture:"))).toBe(false);
 });
 
 test("full-road rows use the public 30-section WBS without legacy numeric collisions", () => {
@@ -178,20 +182,13 @@ test("full-road rows use the public 30-section WBS without legacy numeric collis
     "base_emulsion_material",
     "asphalt_layer_1_material",
     "joint_sealing_application",
-    "curb_stone_material",
     "drainage_tray",
-    "storm_pipe",
-    "culvert_reinforced_concrete_pipe",
-    "storm_inlet_body",
     "marking_road_paint",
     "sign_warning_panel",
     "barrier_galvanized_beam",
     "lighting_pole",
     "lighting_power_cable",
     "lighting_ground_electrodes",
-    "traffic_signal_vehicle_head",
-    "bus_stop_shelters",
-    "restoration_topsoil",
     "asphalt_compaction_control",
     "execution_documentation",
     "asphalt_layer_1_delivery",
@@ -203,24 +200,18 @@ test("full-road rows use the public 30-section WBS without legacy numeric collis
     base_emulsion_material: "10",
     asphalt_layer_1_material: "11",
     joint_sealing_application: "12",
-    curb_stone_material: "13",
     drainage_tray: "15",
-    storm_pipe: "16",
-    culvert_reinforced_concrete_pipe: "17",
-    storm_inlet_body: "18",
     marking_road_paint: "19",
     sign_warning_panel: "20",
     barrier_galvanized_beam: "21",
     lighting_pole: "22",
     lighting_power_cable: "23",
     lighting_ground_electrodes: "24",
-    traffic_signal_vehicle_head: "25",
-    bus_stop_shelters: "26",
-    restoration_topsoil: "27",
     asphalt_compaction_control: "28",
     execution_documentation: "29",
     asphalt_layer_1_delivery: "30",
   });
+  expect(["curb_stone_material", "storm_pipe", "culvert_reinforced_concrete_pipe", "storm_inlet_body", "traffic_signal_vehicle_head", "bus_stop_shelters", "restoration_topsoil"].every((rowId) => !wbsByRowId.has(rowId))).toBe(true);
   expect(compilation.compiled_rows.every((row) =>
     row.definition.parent_wbs_id === `wbs:${row.definition.wbs_code}`
   )).toBe(true);

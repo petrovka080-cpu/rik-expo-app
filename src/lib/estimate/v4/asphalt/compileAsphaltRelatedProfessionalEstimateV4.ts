@@ -13,6 +13,7 @@ import {
   type AsphaltRelatedProfileV4,
 } from "./asphaltRelatedSemanticRegistryV4";
 import { getAsphaltRelatedProfessionalPassportV4 } from "./asphaltRelatedProfessionalPassportsV4";
+import { resolveAsphaltM1NormativeBindingV1 } from "./asphaltM1NormativeBindingsV1";
 import {
   ASPHALT_MINIMAL_RESOURCE_REQUIRED_KEYS_V4,
   compileAsphaltRemovalThroughCoreV4,
@@ -395,6 +396,13 @@ function extractParameters(
 ): ExactParameterSet {
   const parameterKeys = asphaltRelatedParameterKeysForProfileV4(profile);
   const values = Object.fromEntries(parameterKeys.map((key) => [key, parameterValue(input, key)]));
+  for (const key of [
+    "asphalt_reference_design_id", "asphalt_reference_design_sha256",
+    "asphalt_reference_design_manifest", "asphalt_reference_design_fingerprint",
+  ] as const) {
+    const value = explicitOverride(input, key);
+    if (typeof value === "string" && value.trim()) values[key] = value;
+  }
   if ([
     "FULL_DEPTH_DEMOLITION", "PARTIAL_DEPTH_MILLING", "PARTIAL_DEPTH_REMOVAL", "COLD_MILLING",
     "LOCAL_BREAKUP", "MECHANICAL_BREAKOUT", "REMOVE_AND_HAUL", "RECYCLE_OR_REGENERATE",
@@ -621,6 +629,34 @@ function coreRowsToSeeds(rows: readonly AsphaltRelatedCoreRowV4[]): ExactBoqSeed
     scopeTriggerParameter: row.scopeTriggerParameter,
     assumptionIds: row.assumptionIds,
   }));
+}
+
+function asphaltStageIdForRowV1(workKey: string, rowId: string, category: string): string {
+  const id = rowId.toLocaleLowerCase("en-US");
+  let stage = "TECHNOLOGICAL_OPERATION";
+  if (/removal:survey_scope/u.test(id)) stage = "EXISTING_PAVEMENT_SURVEY";
+  else if (/initial_data|field_site_survey|geodetic|setting_out|axes_marks/u.test(id)) stage = "SURVEY_AND_LAYOUT";
+  else if (/mobilization|work_zone|temporary_/u.test(id)) stage = "TEMPORARY_AND_PROTECTIVE_WORKS";
+  else if (/removal:(?:volume|mechanical|manual|combined|material_stream)/u.test(id)) stage = "PAVEMENT_REMOVAL";
+  else if (/removal:(?:loading|haul|destination)|soil_(?:loading|movement|haul|trips|disposal)/u.test(id)) stage = "WASTE_AND_EARTH_LOGISTICS";
+  else if (/removal:dust/u.test(id)) stage = "DUST_SUPPRESSION";
+  else if (/removal:base_cleaning/u.test(id)) stage = "BASE_CLEANING";
+  else if (/removal:boundary/u.test(id)) stage = "BOUNDARY_CUTTING";
+  else if (/site_clear|site_prepar|topsoil|subgrade|earthwork|\bsoil_/u.test(id)) stage = "EARTHWORK_AND_SUBGRADE";
+  else if (/sand_|crushed_|geotextile|base_emulsion|\bbase_/u.test(id)) stage = "SUBBASE_AND_BASE";
+  else if (/curb/u.test(id)) stage = "CURBS";
+  else if (/drainage|storm_/u.test(id)) stage = "DRAINAGE";
+  else if (/marking/u.test(id)) stage = "ROAD_MARKING";
+  else if (/\bsign[:_]|traffic_sign/u.test(id)) stage = "ROAD_SIGNS";
+  else if (/lighting|power_cable|grounding/u.test(id)) stage = "OUTDOOR_LIGHTING";
+  else if (/asphalt|emulsion|joint|paver|roller|road_worker/u.test(id)) stage = "ASPHALT_PAVEMENT";
+  else if (/delivery|trip|transport|dump_truck|haul/u.test(id)) stage = "MATERIAL_LOGISTICS";
+  else if (/documentation|document|protocol|passport|register/u.test(id) || category === "documentation") stage = "EXECUTION_DOCUMENTATION";
+  else if (/test|control|sampling|survey|acceptance/u.test(id) || category === "testing") stage = "QUALITY_CONTROL_AND_TESTING";
+  else if (category === "labor") stage = "DIRECT_LABOR";
+  else if (category === "machinery") stage = "CONSTRUCTION_MACHINERY";
+  else if (category === "material" || category === "equipment") stage = "MATERIALS_AND_EQUIPMENT";
+  return `asphalt:${workKey}:${stage.toLocaleLowerCase("en-US")}`;
 }
 
 export type AsphaltRelatedResolvedOperationClassV4 =
@@ -1419,7 +1455,25 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
     dangerousDiyBlocked: false,
     missingData: [...parameters.missingRequired, ...parameters.missingNormative]
       .map((key) => parameterMetadata[key]?.labelRu ?? key),
-    items: seeds.map((seed, index) => ({
+    items: seeds.map((seed, index) => {
+      const stageId = asphaltStageIdForRowV1(profile.canonicalWorkKey, seed.rowId, seed.category);
+      const normativeBinding = resolveAsphaltM1NormativeBindingV1({
+        rowId: `${profile.canonicalWorkKey}:${seed.rowId}`,
+        existingSourceIds: seed.normativeSourceIds ?? [],
+        referenceDesignId: typeof parameters.values.asphalt_reference_design_id === "string"
+          ? parameters.values.asphalt_reference_design_id
+          : null,
+        referenceDesignSha256: typeof parameters.values.asphalt_reference_design_sha256 === "string"
+          ? parameters.values.asphalt_reference_design_sha256
+          : null,
+        referenceDesignManifest: typeof parameters.values.asphalt_reference_design_manifest === "string"
+          ? parameters.values.asphalt_reference_design_manifest
+          : null,
+        referenceDesignFingerprint: typeof parameters.values.asphalt_reference_design_fingerprint === "string"
+          ? parameters.values.asphalt_reference_design_fingerprint
+          : null,
+      });
+      return ({
       itemType: seed.itemType,
       titleRu: seed.titleRu,
       quantity: seed.quantity,
@@ -1470,12 +1524,13 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
         exactSelectionGenericFallbackUsed: false,
         exactSelectionUnsupported: false,
         phaseOwner: seed.phaseOwner,
+        stageId,
         boqSemanticOwner: seed.semanticOwner,
         boqSection: seed.category,
         quantityBasis: seed.quantityFormula,
         rounding: seed.rounding ?? (seed.formulaId.includes("ceiling") ? "CEIL_POSITIVE" : "ROUND_HALF_UP_4"),
         parameterSources: seed.affectedBy,
-        normativeSources: ["PROJECT_SPECIFIC_VALUE", "KG_APPLICABILITY_PROFILE_REVIEW_REQUIRED"],
+        normativeSources: normativeBinding.sourceIds,
         inclusionCondition: seed.inclusionCondition ?? "MANDATORY_OR_APPLICABLE_STAGE_OF_SELECTED_BLUEPRINT",
         estimateScopeMode: scopeMode ?? null,
         professionalAssemblyContractVersion: coreCompilation || removalCompilation ? "professional-project-assembly:v4.1" : null,
@@ -1492,7 +1547,8 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
         formulaInputValues: seed.formulaInputValues,
         costOwnership: seed.costOwnership,
         costOwnerId: seed.costOwnerId,
-        normativeSourceIds: seed.normativeSourceIds,
+        doubleCountGuardKey: seed.costOwnerId,
+        normativeSourceIds: normativeBinding.sourceIds,
         parameterSourceIds: seed.parameterSourceIds,
         childPassportId: seed.childPassportId,
         childRevisionId: seed.childRevisionId,
@@ -1513,8 +1569,13 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
         } : undefined,
         affectedBy: seed.affectedBy,
         formulaSourceTrace: `${profile.formulaGraphVersion}:${seed.formulaId}`,
-        normativeSourceId: "KRER_APPLICABILITY_REVIEW_REQUIRED_NO_INVENTED_NUMERIC_RATE",
-        normativeReviewStatus: "official_scope_verified_numeric_rate_requires_exact_table_review",
+        normativeSourceId: normativeBinding.sourceIds[0] ?? "KRER_APPLICABILITY_REVIEW_REQUIRED_NO_INVENTED_NUMERIC_RATE",
+        normativeReviewStatus: normativeBinding.normativeReviewStatus,
+        normativeApplicability: normativeBinding.applicability,
+        applicabilityPredicate: seed.inclusionCondition ?? "MANDATORY_OR_APPLICABLE_STAGE_OF_SELECTED_BLUEPRINT",
+        formulaVersion: profile.formulaGraphVersion,
+        wasteOrLossRule: "EXPLICIT_FORMULA_INPUT_OR_NOT_APPLICABLE",
+        roundingRule: seed.rounding ?? (seed.formulaId.includes("ceiling") ? "CEIL_POSITIVE" : "ROUND_HALF_UP_4"),
         demolitionMassBalance: removalOperation && executable ? "PASS" : undefined,
         newMaterialBalance: parameters.values.work_scope === "DEMOLITION_AND_REINSTATEMENT" && executable ? "PASS" : undefined,
         sameOperationDoubleCount: 0,
@@ -1524,10 +1585,12 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
       templateVersion: ASPHALT_RELATED_SEMANTIC_REGISTRY_VERSION_V4,
       normId: `${catalogBinding.normApplicabilityProfileId}:${seed.rowId}`,
       normFamilyId: "asphalt-related-kr-applicability",
-      normSourceId: "KRER_APPLICABILITY_REVIEW_REQUIRED_NO_INVENTED_NUMERIC_RATE",
-      normSourceTitle: "Официальная область применения КРЕР; числовая норма требует точного выбора таблицы",
+      normSourceId: normativeBinding.sourceIds[0] ?? "KRER_APPLICABILITY_REVIEW_REQUIRED_NO_INVENTED_NUMERIC_RATE",
+      normSourceTitle: normativeBinding.accepted
+        ? "Официальная область применения и exact versioned benchmark-fixture inputs подтверждены"
+        : "Официальная область применения КРЕР; числовая норма требует точного выбора таблицы",
       normVersion: "reviewed-2026-08-10",
-      normReviewStatus: "exact_rate_review_required_before_contract_price",
+      normReviewStatus: normativeBinding.accepted ? "benchmark_fixture_inputs_confirmed" : "exact_rate_review_required_before_contract_price",
       priceStatus: "PRICE_MISSING",
       priceSource: "missing",
       priceSourceId: null,
@@ -1536,7 +1599,8 @@ export function compileAsphaltRelatedProfessionalEstimateV4(
       addedBy: "ai",
       materialKey: seed.materialKey ?? null,
       rateKey: `${profile.canonicalWorkKey}:${seed.rowId}`,
-    })),
+      });
+    }),
   };
   const exactMissingData = [...draft.missingData];
   const contractedDraft = applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput });

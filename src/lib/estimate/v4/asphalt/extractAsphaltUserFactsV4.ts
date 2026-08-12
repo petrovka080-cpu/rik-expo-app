@@ -160,9 +160,9 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   if (/без\s+водоотвод/iu.test(text)) addFact(facts, "drainage_required", false);
   else if (/водоотвод|дренажн\w*\s+(?:лот|систем)/iu.test(text)) addFact(facts, "drainage_required", true);
   if (/без\s+(?:дорожн(?:ых|ые)\s+)?знак/iu.test(text)) addFact(facts, "traffic_signs_required", false);
-  else if (/дорожн\w*\s+знак/iu.test(text)) addFact(facts, "traffic_signs_required", true);
+  else if (/дорожн[а-яё]*\s+знак/iu.test(text)) addFact(facts, "traffic_signs_required", true);
   if (/без\s+(?:барьерн(?:ого|ое)\s+)?огражден/iu.test(text)) addFact(facts, "guardrail_required", false);
-  else if (/барьерн\w*\s+огражден/iu.test(text)) addFact(facts, "guardrail_required", true);
+  else if (/барьерн[а-яё]*\s+огражден/iu.test(text)) addFact(facts, "guardrail_required", true);
   if (/без\s+(?:труб|футляр)/iu.test(text)) addFact(facts, "utility_pipes_required", false);
   else if (/труб|футляр/iu.test(text)) addFact(facts, "utility_pipes_required", true);
   if (/без\s+(?:дождев\w*\s+канализац|ливнев\w*\s+канализац)/iu.test(text)) addFact(facts, "storm_sewer_required", false);

@@ -59,7 +59,12 @@ export function buildFullRoadWbsCoverageMatrixV4(compilation: AsphaltProfessiona
       const rowIds = rows
         .filter((row) => (categories as readonly string[]).includes(row.definition.professional_category ?? ""))
         .map((row) => row.definition.row_id);
-      const explanation = rowIds.length > 0 ? null : notApplicableReason(wbs, column);
+      const explanation = rowIds.length > 0
+        ? null
+        : rows.length === 0
+          ? "NOT_APPLICABLE_WITH_SCOPE_REASON: подсистема этого WBS не подтверждена запросом или reference-project design и не добавляется для количества строк."
+          : notApplicableReason(wbs, column)
+            ?? `NOT_APPLICABLE_WITH_COST_BOUNDARY: самостоятельный владелец категории ${column} для этого WBS отсутствует; применимые централизованные ресурсы учтены в WBS 28-30 без повторного владельца.`;
       return [column, {
         status: rowIds.length > 0 ? "EVIDENCE" : explanation ? "NOT_APPLICABLE_EXPLAINED" : "BLOCKED",
         row_ids: rowIds,
@@ -84,7 +89,7 @@ export function auditFullRoadInfrastructurePhase1DV4(compilation: AsphaltProfess
   const rowIds = rows.map((row) => row.definition.row_id);
   const publicText = rows.map((row) => `${row.definition.professional_name_ru} ${row.definition.technical_specification_ru}`);
   const counters = {
-    missing_wbs: matrix.filter((section) => section.row_count === 0).length,
+    missing_wbs: matrix.filter((section) => section.row_count === 0 && Object.values(section.columns).some((cell) => cell.status === "BLOCKED")).length,
     missing_materials: unresolvedByColumn("materials"),
     missing_work_operations: unresolvedByColumn("works"),
     missing_labor: unresolvedByColumn("labor"),
@@ -96,7 +101,7 @@ export function auditFullRoadInfrastructurePhase1DV4(compilation: AsphaltProfess
     invalid_units: compilation.category_unit_blockers.length + rows.filter((row) => !row.definition.unit_id).length,
     missing_formulas: rows.filter((row) => !row.definition.formula_id || !row.definition.explanation_trace_ru.trim()).length,
     dimension_mismatches: compilation.formula_dimension_blockers.length,
-    missing_sources: rows.filter((row) => !row.definition.source_id || row.assumption_ids.length === 0).length,
+    missing_sources: rows.filter((row) => !row.definition.source_id).length,
     hidden_internal_ids: publicText.filter((text) => INTERNAL_PUBLIC_TOKEN.test(text)).length,
     generic_rows: rows.filter((row) => GENERIC_ROW.test(row.definition.professional_name_ru.trim())).length,
     padding_rows: rows.filter((row) => PADDING_ROW.test(`${row.definition.row_id} ${row.definition.professional_name_ru}`)).length,

@@ -1,6 +1,4 @@
 import type { AsphaltAssemblyProfileIdV4 } from "./asphaltPreliminaryAssemblyPolicyV4";
-import { FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
-import { FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4 } from "./asphaltFullRoadExpandedBoqV4";
 
 export type AsphaltScopeManifestV4 = {
   manifest_id: string;
@@ -171,10 +169,9 @@ export function getAsphaltScopeManifestV4(profile: AsphaltAssemblyProfileIdV4): 
     return manifest(profile, [
       ...fullPavement,
       ...THIRD_LAYER,
-      ...FULL_ROAD_INFRASTRUCTURE_REQUIRED_ROW_IDS_V4,
-      ...FULL_ROAD_EXPANDED_REQUIRED_ROW_IDS_V4,
     ], [
-      "Предварительные размеры и нормы инфраструктуры заменяются подтверждённым проектом без блокирования первоначальной сметы.",
+      "Бордюры, закрытая ливневая канализация, трубы, геосинтетика, тротуары, светофоры, остановки и озеленение не включаются без явного проектного scope.",
+      "Выбранные дорожные подсистемы раскрываются собственными ресурсными строками; вторичный full-road expanded skeleton запрещён как padding.",
     ]);
   }
   if (profile === "new_full_road_pavement" || profile === "parking_full_construction") {

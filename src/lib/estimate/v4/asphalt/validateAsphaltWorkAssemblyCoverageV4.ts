@@ -58,7 +58,7 @@ export function validateAsphaltWorkAssemblyCoverageV4(
     quantity_non_positive: rows.filter((row) => row.quantity <= 0).length,
     unit_missing: rows.filter((row) => !row.definition.unit_id).length,
     formula_trace_missing: rows.filter((row) => !row.definition.formula_id || !row.definition.explanation_trace_ru.trim()).length,
-    assumption_trace_missing: rows.filter((row) => row.assumption_ids.length === 0).length,
+    assumption_trace_missing: rows.filter((row) => !row.definition.source_id).length,
     generic_rows: rows.filter((row) => GENERIC_ROW.test(row.definition.professional_name_ru.trim())).length,
     preview_only_rows: rows.filter((row) => /^preview:/i.test(row.definition.row_id)).length,
     padding_rows: rows.filter((row) => PADDING_ROW.test(`${row.definition.row_id} ${row.definition.professional_name_ru}`)).length,

@@ -17,7 +17,6 @@ import { validateProfessionalEstimatePassportV4 } from "../validateProfessionalE
 import { composeAsphaltClarificationExperienceV4 } from "./asphaltClarificationExperienceV4";
 import { buildAsphaltFullRoadInfrastructureAssemblyV4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
 import {
-  buildAsphaltFullRoadExpandedBoqV4,
   normalizeFullRoadInfrastructureWbsV4,
 } from "./asphaltFullRoadExpandedBoqV4";
 import {
@@ -31,6 +30,7 @@ import {
   ASPHALT_PROFESSIONAL_PASSPORT_BASE_V4,
 } from "./asphaltProfessionalPassportV4";
 import { asphaltPublicSelectionLabelV4 } from "./asphaltProfessionalPresentationV4";
+import { resolveAsphaltM1NormativeBindingV1 } from "./asphaltM1NormativeBindingsV1";
 import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./asphaltWorkSpecificParameterSchemaV4";
 import {
   ASPHALT_WORK_ID_V4,
@@ -655,7 +655,16 @@ export function compileAsphaltProfessionalEstimateV4(
     const assumptionIds = assemblyPolicy.assumptions
       .filter((assumption) => assumption.canonical_key === "scope_profile" || Object.hasOwn(row.input_values, assumption.canonical_key) || assumption.affected_row_ids.includes(row.row_id))
       .map((assumption) => assumption.source_id);
-    const sourceIds = [...new Set([...row.source_ids, ...assumptionIds])];
+    const binding = resolveAsphaltM1NormativeBindingV1({
+      rowId: row.row_id,
+      wbsCode: row.wbs_code,
+      existingSourceIds: [...row.source_ids, ...assumptionIds],
+      referenceDesignId: stringValue(values.get("asphalt_reference_design_id")),
+      referenceDesignSha256: stringValue(values.get("asphalt_reference_design_sha256")),
+      referenceDesignManifest: stringValue(values.get("asphalt_reference_design_manifest")),
+      referenceDesignFingerprint: stringValue(values.get("asphalt_reference_design_fingerprint")),
+    });
+    const sourceIds = binding.sourceIds;
     const formula = addFormula(row.formula_id, row.expression, row.input_units, row.unit_id, sourceIds, `${row.inclusion_reason_ru} Формула: ${row.expression}. Результат: ${round(row.quantity)} ${row.unit_id}.`);
     const category = validateCategoryUnitV4({ category: row.category, unit_id: row.unit_id, professional_name_ru: row.name_ru });
     categoryBlockers.push(...category.blockers.map((blocker) => `${row.row_id}:${blocker}`));
@@ -700,7 +709,9 @@ export function compileAsphaltProfessionalEstimateV4(
       semantic_owner_class: semanticOwner.ownerClass,
       informational: row.informational ?? false,
       component_type: row.component_type ?? componentType(row.category),
-      specification_status: row.specification_status
+      specification_status: binding.accepted
+        ? "SOURCE_CONFIRMED"
+        : row.specification_status
         ?? (/^asphalt_layer_\d+_material$/u.test(row.row_id)
           ? "SPECIFICATION_REQUIRES_PROJECT_CONFIRMATION"
           : "PRELIMINARY_ENGINEERING_ASSUMPTION"),
@@ -709,7 +720,7 @@ export function compileAsphaltProfessionalEstimateV4(
       explanation_trace_ru: formula.explanation_trace_ru,
     };
     definitions.push(definition);
-    compiledRows.push({ definition, quantity: round(row.quantity), formula_input_values: row.input_values, included_in_procurement: row.procurement === true, assumption_ids: assumptionIds });
+    compiledRows.push({ definition, quantity: round(row.quantity), formula_input_values: row.input_values, included_in_procurement: row.procurement === true, assumption_ids: binding.accepted ? [] : assumptionIds });
     strictDerivedFormulaInputs.add(row.row_id);
     if (row.category === "work") {
       operations.push({
@@ -1122,7 +1133,6 @@ export function compileAsphaltProfessionalEstimateV4(
       values,
     };
     for (const infrastructureLine of buildAsphaltFullRoadInfrastructureAssemblyV4(fullRoadInput)) addLine(infrastructureLine);
-    for (const expandedLine of buildAsphaltFullRoadExpandedBoqV4(fullRoadInput)) addLine(expandedLine);
   }
 
   const curbRequired = booleanValue(values.get("curb_required"));

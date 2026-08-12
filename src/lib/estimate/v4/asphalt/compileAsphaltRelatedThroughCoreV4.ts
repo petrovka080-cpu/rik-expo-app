@@ -227,6 +227,13 @@ function copyCoreValues(values: Readonly<Record<string, unknown>>): Record<strin
     const value = values[key];
     if (value !== undefined && value !== null && value !== "") result[key] = { value, source: "edited_by_user" };
   }
+  for (const key of [
+    "asphalt_reference_design_id", "asphalt_reference_design_sha256",
+    "asphalt_reference_design_manifest", "asphalt_reference_design_fingerprint",
+  ] as const) {
+    const value = values[key];
+    if (typeof value === "string" && value.trim()) result[key] = { value, source: "user_input" };
+  }
   return result;
 }
 

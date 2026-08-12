@@ -522,9 +522,8 @@ function numberValue(values: ReadonlyMap<string, unknown>, key: string, fallback
 
 function enabled(values: ReadonlyMap<string, unknown>, key: string): boolean {
   const raw = values.get(key);
-  if (typeof raw === "boolean") return raw;
-  if (typeof raw === "string" && /^(?:false|no|нет)$/iu.test(raw.trim())) return false;
-  return true;
+  if (raw === true) return true;
+  return typeof raw === "string" && /^(?:true|yes|да)$/iu.test(raw.trim());
 }
 
 function buildContext(input: { area_m2: number; length_m: number | null; values: ReadonlyMap<string, unknown> }): Context {
