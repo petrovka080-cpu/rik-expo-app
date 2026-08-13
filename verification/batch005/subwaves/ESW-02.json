@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-02",
+  "technologyFamily": "INTERNAL_POWER_AND_VVG_CABLES",
+  "families": [
+    "POWER_CABLE",
+    "VVG_CABLE"
+  ],
+  "groups": 16,
+  "works": 94,
+  "admission": "GREEN_94_OF_94",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
