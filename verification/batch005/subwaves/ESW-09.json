@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-09",
+  "technologyFamily": "GROUNDING_LIGHTNING_TESTING_RELAY_STORAGE_AND_STREET_LIGHTING",
+  "families": [
+    "battery_energy_storage",
+    "electrical_testing_commissioning",
+    "grounding_system",
+    "lightning_protection",
+    "relay_protection_automation",
+    "street_lighting_poles"
+  ],
+  "groups": 6,
+  "works": 30,
+  "admission": "GREEN_30_OF_30",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
