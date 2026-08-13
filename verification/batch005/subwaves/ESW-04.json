@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-04",
+  "technologyFamily": "DISTRIBUTION_PANELS",
+  "families": [
+    "PANEL"
+  ],
+  "groups": 8,
+  "works": 47,
+  "admission": "GREEN_47_OF_47",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
