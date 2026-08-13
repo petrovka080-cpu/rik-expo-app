@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-07",
+  "technologyFamily": "EXTERNAL_ROUTES_LINES_AND_POLES",
+  "families": [
+    "cable_ducts",
+    "cable_pulling",
+    "cable_trench",
+    "cable_trench_energy",
+    "underground_cable_line",
+    "electrical_poles_04kv",
+    "electrical_poles_10kv",
+    "electrical_poles_35kv",
+    "electrical_poles_110kv",
+    "overhead_power_line_04kv",
+    "overhead_power_line_10kv",
+    "overhead_power_line_35kv",
+    "overhead_power_line_110kv"
+  ],
+  "groups": 13,
+  "works": 65,
+  "admission": "GREEN_65_OF_65",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
