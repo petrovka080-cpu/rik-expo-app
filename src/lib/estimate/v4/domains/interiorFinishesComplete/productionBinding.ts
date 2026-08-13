@@ -33,6 +33,11 @@ import {
   isDrywallArchitecturalElementProfessionalCatalogIdV4,
   isDrywallFlatCeilingProfessionalCatalogIdV6,
 } from "./drywallArchitecturalElementsProfessionalV4";
+import {
+  drywallDomainCalculationStrategyIdV7,
+  drywallDomainProfessionalOwnerIdV7,
+  isDrywallDomainCompletionCatalogIdV7,
+} from "./drywallDomainCompletionProfessionalV7";
 
 export const INTERIOR_FINISHES_PRODUCTION_BINDING_VERSION =
   "interior-finishes-production-binding:v1" as const;
@@ -115,20 +120,25 @@ export function buildInteriorFinishesProductionDraftV1(
   const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`INTERIOR_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const passportId = `domain-passport:${input.catalog_id}:v1`;
+  const domainCompletionV7 = isDrywallDomainCompletionCatalogIdV7(input.catalog_id);
   const registeredProfessionalOwner = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
     ? drywallCeilingBulkheadProfessionalOwnerIdV3(input.catalog_id)
     : isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
       ? drywallArchitecturalElementProfessionalOwnerIdV4(input.catalog_id)
       : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
         ? drywallFlatCeilingProfessionalOwnerIdV6(input.catalog_id)
-        : passportId;
+        : domainCompletionV7
+          ? drywallDomainProfessionalOwnerIdV7(input.catalog_id)
+          : passportId;
   const calculationStrategyId = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
     ? drywallCeilingBulkheadCalculationStrategyIdV3(input.catalog_id)
     : isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
       ? drywallArchitecturalElementCalculationStrategyIdV4(input.catalog_id)
       : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
         ? drywallFlatCeilingCalculationStrategyIdV6(input.catalog_id)
-        : technology.technology_id;
+        : domainCompletionV7
+          ? drywallDomainCalculationStrategyIdV7(input.catalog_id)
+          : technology.technology_id;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
   const parameterMetadata = Object.fromEntries(schema.parameters.map((parameter) => [
     parameter.parameter_id,
@@ -199,6 +209,10 @@ export function buildInteriorFinishesProductionDraftV1(
       priceBasisDate: row.price_basis_date,
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
+      ...(domainCompletionV7 ? {
+        formulaGraphVersion: "FormulaGraphV7",
+        resourceGraphVersion: "ResourceGraphV7",
+      } : {}),
     },
     templateId: registeredProfessionalOwner,
     templateVersion: interiorFinishesDomainFactory.package.manifest.domain_version,

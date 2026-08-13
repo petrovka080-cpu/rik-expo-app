@@ -6,6 +6,11 @@ import {
   drywallArchitecturalElementProfessionalOwnerIdV4,
 } from "./drywallArchitecturalElementsProfessionalV4";
 import { DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6 } from "./drywallFlatCeilingExpectedScopeV6";
+import {
+  DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7,
+  drywallDomainCalculationStrategyIdV7,
+  drywallDomainProfessionalOwnerIdV7,
+} from "./drywallDomainCompletionProfessionalV7";
 import { interiorFinishesDomainFactory } from "./domainPackage";
 import { INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, INTERIOR_FINISHES_DOMAIN_INVENTORY } from "./inventory";
 import { migrateDrywallCeilingBulkheadRevisionV3 } from "./drywallCeilingBulkheadRevisionMigrationV3";
@@ -15,7 +20,8 @@ export const DRYWALL_ARCHITECTURAL_ELEMENT_REVISION_MIGRATION_VERSION_V4 =
 
 const ARCHITECTURAL_AUTHORIZED = new Set(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4);
 const FLAT_CEILING_AUTHORIZED = new Set(DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6);
-const AUTHORIZED = new Set([...ARCHITECTURAL_AUTHORIZED, ...FLAT_CEILING_AUTHORIZED]);
+const DOMAIN_COMPLETION_AUTHORIZED = new Set(DRYWALL_DOMAIN_COMPLETION_CATALOG_IDS_V7);
+const AUTHORIZED = new Set([...ARCHITECTURAL_AUTHORIZED, ...FLAT_CEILING_AUTHORIZED, ...DOMAIN_COMPLETION_AUTHORIZED]);
 
 function catalogIdFromRevision(revision: EstimateDraftRevision): string | null {
   const direct = revision.resolvedIdentity?.requestedCatalogWorkId;
@@ -39,6 +45,11 @@ export function isDrywallFlatCeilingRevisionV6(revision: EstimateDraftRevision):
   return catalogId !== null && FLAT_CEILING_AUTHORIZED.has(catalogId);
 }
 
+export function isDrywallDomainCompletionRevisionV7(revision: EstimateDraftRevision): boolean {
+  const catalogId = catalogIdFromRevision(revision);
+  return catalogId !== null && DOMAIN_COMPLETION_AUTHORIZED.has(catalogId);
+}
+
 /** Normalizes routing metadata only; the immutable BOQ, prices, parameters and artifacts are preserved. */
 export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateDraftRevision): EstimateDraftRevision {
   const catalogId = catalogIdFromRevision(revision);
@@ -48,14 +59,17 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
   const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
   const schema = technology ? interiorFinishesDomainFactory.schema_by_id.get(technology.parameter_schema_id) : null;
   if (!technology || !schema) throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_MIGRATION_ROUTE_MISSING:${catalogId}`);
-  const owner = drywallArchitecturalElementProfessionalOwnerIdV4(catalogId);
-  const strategy = drywallArchitecturalElementCalculationStrategyIdV4(catalogId);
+  const domainCompletion = DOMAIN_COMPLETION_AUTHORIZED.has(catalogId);
+  const owner = domainCompletion ? drywallDomainProfessionalOwnerIdV7(catalogId) : drywallArchitecturalElementProfessionalOwnerIdV4(catalogId);
+  const strategy = domainCompletion ? drywallDomainCalculationStrategyIdV7(catalogId) : drywallArchitecturalElementCalculationStrategyIdV4(catalogId);
   const flatCeiling = FLAT_CEILING_AUTHORIZED.has(catalogId);
-  const semanticVersion = flatCeiling ? "6.0.0" : "4.0.0";
+  const semanticVersion = domainCompletion ? "7.0.0" : flatCeiling ? "6.0.0" : "4.0.0";
+  const formulaGraphVersion = domainCompletion ? "FormulaGraphV7" : flatCeiling ? "FormulaGraphV6" : "FormulaGraphV4";
   const canonicalSchemaId = `canonical:${schema.schema_id}:${catalogId}`;
   const prior = revision.resolvedIdentity;
   const alreadyCanonical = prior?.requestedCatalogWorkId === catalogId && prior.passportId === owner &&
-    prior.semanticOwner === owner && prior.calculationStrategyId === strategy && prior.legacyFallbackUsed !== true &&
+    prior.semanticOwner === owner && prior.calculationStrategyId === strategy && prior.formulaGraphVersion === formulaGraphVersion &&
+    prior.legacyFallbackUsed !== true &&
     revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
       row.sourceParameters?.professionalDomainFactoryV1 === true && row.sourceParameters?.catalogId === catalogId &&
       row.sourceParameters?.semanticOwner === owner && row.sourceParameters?.calculationStrategyId === strategy);
@@ -74,7 +88,7 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
     selectedScope: prior?.selectedScope ?? null,
     scopePresetId: prior?.scopePresetId ?? null,
     resolvedParameters: revision.params,
-    formulaGraphVersion: flatCeiling ? "FormulaGraphV6" : "FormulaGraphV4",
+    formulaGraphVersion,
     normativeCompositionId: prior?.normativeCompositionId,
     semanticFingerprint: prior?.semanticFingerprint,
     compilerVersion: prior?.compilerVersion ?? DRYWALL_ARCHITECTURAL_ELEMENT_REVISION_MIGRATION_VERSION_V4,
@@ -107,6 +121,7 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
           ...(row.sourceParameters ?? {}), professionalDomainFactoryV1: true, registeredProfessionalDomainV4: true,
           legacyRevisionMigratedV4: true, revisionMigrationVersion: DRYWALL_ARCHITECTURAL_ELEMENT_REVISION_MIGRATION_VERSION_V4,
           ...(flatCeiling ? { drywallFlatCeilingRevisionMigratedV6: true, formulaGraphVersion: "FormulaGraphV6", resourceGraphVersion: "ResourceGraphV6" } : {}),
+          ...(domainCompletion ? { drywallDomainCompletionRevisionMigratedV7: true, formulaGraphVersion: "FormulaGraphV7", resourceGraphVersion: "ResourceGraphV7" } : {}),
           domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, domainVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
           catalogId, workKey: inventory.work_key, canonicalTechnologyId: inventory.canonical_technology_id,
           parameterSchemaId: canonicalSchemaId, parameterSchemaVersion: schema.schema_version,
