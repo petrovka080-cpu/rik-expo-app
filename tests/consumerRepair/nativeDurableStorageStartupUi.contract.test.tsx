@@ -4,6 +4,7 @@ import TestRenderer, { act } from "react-test-renderer";
 const mockInitializeDurableStorage = jest.fn<Promise<void>, []>();
 const mockRefreshAfterDurableHydration = jest.fn();
 let settleInitialLaunchBuild: (() => void) | null = null;
+let controllerMountCount = 0;
 
 jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
   hydrateTransactionalConsumerRepairRequestStore: () =>
@@ -51,6 +52,9 @@ jest.mock(
       >(
         function MockConsumerRepairRequestScreenController(props, ref) {
           settleInitialLaunchBuild = props.onInitialLaunchBuildSettled ?? null;
+          ReactRuntime.useEffect(() => {
+            controllerMountCount += 1;
+          }, []);
           ReactRuntime.useImperativeHandle(ref, () => ({
             refreshAfterDurableHydration: mockRefreshAfterDurableHydration,
             setPhotoCaptureStatusMessage: jest.fn(),
@@ -77,6 +81,7 @@ jest.mock(
 // eslint-disable-next-line import/first
 import {
   ConsumerRepairRequestScreen,
+  requestEstimateControllerWorkspaceKey,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 
 describe("consumer repair durable storage startup UI", () => {
@@ -85,6 +90,7 @@ describe("consumer repair durable storage startup UI", () => {
     mockInitializeDurableStorage.mockReset();
     mockRefreshAfterDurableHydration.mockReset();
     settleInitialLaunchBuild = null;
+    controllerMountCount = 0;
   });
 
   afterEach(() => {
@@ -235,6 +241,48 @@ describe("consumer repair durable storage startup UI", () => {
     });
 
     expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("isolates a new automation fingerprint and keeps one workspace key for its bound draft", async () => {
+    mockInitializeDurableStorage.mockResolvedValue();
+    let renderer!: TestRenderer.ReactTestRenderer;
+    const prompt = "Электрика под ключ 100 кв м";
+
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairRequestScreen
+          initialProblemText={prompt}
+          launchId="request-estimate:probe-launch"
+          launchFingerprint="probe-fingerprint"
+        />,
+      );
+      await Promise.resolve();
+    });
+    expect(controllerMountCount).toBe(1);
+
+    await act(async () => {
+      renderer.update(
+        <ConsumerRepairRequestScreen
+          initialProblemText={prompt}
+          launchId="request-estimate:auto-launch"
+          launchFingerprint="auto-fingerprint"
+          autoPrepare
+        />,
+      );
+      await Promise.resolve();
+    });
+    expect(controllerMountCount).toBe(2);
+
+    expect(requestEstimateControllerWorkspaceKey({
+      initialProblemText: prompt,
+      initialDraftId: "consumer-draft-electrical",
+      launchFingerprint: "auto-fingerprint",
+      autoPrepare: true,
+    })).toBe("auto-fingerprint");
+
     await act(async () => {
       renderer.unmount();
     });

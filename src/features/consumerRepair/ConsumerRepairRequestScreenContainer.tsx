@@ -19,6 +19,15 @@ type BoundedDurableHydrationOutcome =
   | { status: "failed" }
   | { status: "timed_out"; completion: Promise<void> };
 
+export function requestEstimateControllerWorkspaceKey(
+  props: ConsumerRepairRequestScreenProps,
+): string {
+  return props.launchFingerprint?.trim()
+    || props.launchId?.trim()
+    || props.initialDraftId?.trim()
+    || "request-composer";
+}
+
 async function runBoundedDurableHydration(
   requestedDraftId?: string,
 ): Promise<BoundedDurableHydrationOutcome> {
@@ -102,6 +111,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
         <View testID="consumer-repair-exact-draft-hydration-gate" style={styles.exactDraftHydrationGate} />
       ) : (
         <ConsumerRepairRequestScreenController
+          key={requestEstimateControllerWorkspaceKey(props)}
           ref={screenRef}
           {...props}
           onInitialLaunchBuildSettled={() => {
