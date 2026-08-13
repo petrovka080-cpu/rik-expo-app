@@ -105,6 +105,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       parameterSnapshot,
       projectAssemblyId: compilation.project_assembly_id,
       childRevisionId: row.child_revision_id,
+      rowCode: row.row_id,
       semanticOwner: row.semantic_owner,
       costOwnerId: row.cost_owner_id,
       includedInProcurement: row.procurement_eligible,
