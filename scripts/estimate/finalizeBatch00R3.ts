@@ -73,10 +73,11 @@ writeJson("10-tests/REPLAY_RECONCILIATION.json", { replayCount: 2, runAArtifacts
 const focused = readJson(focusedJsonPath);
 invariant(focused.success === true && focused.numTotalTestSuites === 24 && focused.numPassedTestSuites === 24 && focused.numTotalTests === 24 && focused.numPassedTests === 24, "FOCUSED_TEST_DENOMINATOR_INVALID");
 const focusedSuites = focused.testResults.map((result: JsonRecord) => path.basename(String(result.name)).replace(/\.ts$/u, "")).sort();
+const focusedRuntimeMs = Math.max(...focused.testResults.map((result: JsonRecord) => Number(result.endTime))) - Math.min(...focused.testResults.map((result: JsonRecord) => Number(result.startTime)));
 writeJson("10-tests/FOCUSED_TEST_RESULTS.json", {
   command: "node <exact-jest> --runTestsByPath <24 mandatory BATCH00 R3 suites> --runInBand --json",
   exitCode: 0, suiteCount: focused.numTotalTestSuites, passedSuites: focused.numPassedTestSuites,
-  testCount: focused.numTotalTests, passedTests: focused.numPassedTests, runtimeSeconds: Number((focused.runTime / 1000).toFixed(3)),
+  testCount: focused.numTotalTests, passedTests: focused.numPassedTests, runtimeSeconds: Number((focusedRuntimeMs / 1000).toFixed(3)),
   suites: focusedSuites, fullJestExecuted: false, verdict: "GREEN_FOCUSED_24_OF_24",
 });
 
