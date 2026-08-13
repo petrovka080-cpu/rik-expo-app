@@ -39,7 +39,11 @@ const candidateHead = git("rev-parse", "HEAD");
 const candidateTree = git("rev-parse", "HEAD^{tree}");
 const firstParent = git("rev-list", "--max-parents=0", "HEAD");
 if (git("status", "--porcelain=v2") !== "") throw new Error("BATCH005_REQUIRES_CLEAN_TRACKED_WORKTREE");
-if (!git("merge-base", "--is-ancestor", H4, candidateHead)) throw new Error("BATCH005_PREDECESSOR_NOT_ANCESTOR");
+try {
+  execFileSync("git", ["-C", target, "merge-base", "--is-ancestor", H4, candidateHead], { windowsHide: true });
+} catch {
+  throw new Error("BATCH005_PREDECESSOR_NOT_ANCESTOR");
+}
 if (git("rev-parse", `${H4}^{tree}`) !== T4) throw new Error("BATCH005_PREDECESSOR_TREE_MISMATCH");
 if (sha256(readFileSync(path.join(predecessor, "closeout/MANIFEST.json"))) !== B4_MANIFEST_SHA) throw new Error("BATCH005_PREDECESSOR_MANIFEST_MISMATCH");
 if (sha256(readFileSync(path.join(predecessor, "06-program/MASTER_11610_PROGRAM_CONTROL_STATE_V7.json"))) !== B4_STATE_SHA) throw new Error("BATCH005_PREDECESSOR_STATE_MISMATCH");
