@@ -16,6 +16,7 @@ import {
   type AiEstimateRuntimePorts,
 } from "../application/createAiEstimateRuntimePorts";
 import type { AiEstimateRuntime } from "./AiEstimateRuntime";
+import { migrateDrywallCeilingBulkheadRevisionV3 } from "../v4/domains/interiorFinishesComplete/drywallCeilingBulkheadRevisionMigrationV3";
 
 export type CreateAiEstimateRuntimeOptions = {
   ports?: Partial<AiEstimateRuntimePorts>;
@@ -75,18 +76,19 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     buildParameterPassport(input) {
-      const passport = buildAiEstimateNormativeWorkParameterPassport(input.revision.selectedTemplateId);
-      const cards = buildAiEstimateParameterCards({ revision: input.revision, includeMissing: true });
-      const completenessModel = buildNormativeParameterCompletenessModel(input.revision);
+      const revision = migrateDrywallCeilingBulkheadRevisionV3(input.revision);
+      const passport = buildAiEstimateNormativeWorkParameterPassport(revision.selectedTemplateId);
+      const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
+      const completenessModel = buildNormativeParameterCompletenessModel(revision);
       return {
-        revisionId: input.revision.revisionId,
-        templateId: input.revision.selectedTemplateId,
+        revisionId: revision.revisionId,
+        templateId: revision.selectedTemplateId,
         passport,
         cards,
-        missingInputs: input.revision.missingInputs,
+        missingInputs: revision.missingInputs,
         completeness: {
-          presentParameterCount: Object.keys(input.revision.params).length,
-          missingParameterCount: completenessModel?.missingRequirements.length ?? input.revision.missingInputs.length,
+          presentParameterCount: Object.keys(revision.params).length,
+          missingParameterCount: completenessModel?.missingRequirements.length ?? revision.missingInputs.length,
           requiredForQuantityMissingCount: completenessModel?.missingRequirements
             .filter((item) => item.requirement.role === "required_for_quantity").length ?? 0,
           requiredForProfessionalAccuracyMissingCount: completenessModel?.missingRequirements
@@ -95,15 +97,16 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     applyParameterOverride(input) {
-      return applyAiEstimateParameterOverride(input);
+      return applyAiEstimateParameterOverride({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
     },
     applyParameterBatchOverride(input) {
-      return applyAiEstimateParameterBatchOverride(input);
+      return applyAiEstimateParameterBatchOverride({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
     },
     answerMissingInput(input) {
-      return applyAiEstimateMissingInputAnswer(input);
+      return applyAiEstimateMissingInputAnswer({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
     },
     approveRevision(input) {
+      input = { ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) };
       const approvedAt = input.approvedAt ?? new Date().toISOString();
       const counts = rowCounts(input.revision);
       ports.ledger.upsertDraft({
@@ -150,6 +153,7 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     rebuildFromRevision(input) {
+      input = { ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) };
       const firstParam = Object.entries(input.revision.params)
         .find(([, param]) => typeof param.value === "number");
       const patch = parseUserParamPatch({
@@ -168,11 +172,11 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     buildPdfSnapshot(input) {
-      return ports.pdf.buildPdfSnapshot({ revision: input.revision });
+      return ports.pdf.buildPdfSnapshot({ revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
     },
     buildBuyerPackage(input) {
       return ports.buyerPackage.buildBuyerPackage({
-        revision: input.revision,
+        revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision),
         snapshot: input.snapshot,
       });
     },
@@ -185,8 +189,9 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       return page;
     },
     validate(input) {
-      const graph = input.revision ? buildAiEstimateParameterGraph({ revision: input.revision }) : null;
-      const dag = input.revision ? buildAiEstimateFormulaDag({ revision: input.revision }) : null;
+      const revision = input.revision ? migrateDrywallCeilingBulkheadRevisionV3(input.revision) : null;
+      const graph = revision ? buildAiEstimateParameterGraph({ revision }) : null;
+      const dag = revision ? buildAiEstimateFormulaDag({ revision }) : null;
       const blockingReasons = [
         graph ? "" : "parameter_graph_missing",
         dag ? "" : "formula_dag_missing",

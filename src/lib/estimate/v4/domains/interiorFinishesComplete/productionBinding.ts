@@ -20,6 +20,11 @@ import {
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
   type InteriorFinishesDomainInventoryRow,
 } from "./inventory";
+import {
+  drywallCeilingBulkheadCalculationStrategyIdV3,
+  drywallCeilingBulkheadProfessionalOwnerIdV3,
+  isDrywallCeilingBulkheadProfessionalCatalogIdV3,
+} from "./drywallCeilingBulkheadProfessionalV3";
 
 export const INTERIOR_FINISHES_PRODUCTION_BINDING_VERSION =
   "interior-finishes-production-binding:v1" as const;
@@ -102,7 +107,23 @@ export function buildInteriorFinishesProductionDraftV1(
   const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`INTERIOR_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const passportId = `domain-passport:${input.catalog_id}:v1`;
+  const registeredProfessionalOwner = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
+    ? drywallCeilingBulkheadProfessionalOwnerIdV3(input.catalog_id)
+    : passportId;
+  const calculationStrategyId = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
+    ? drywallCeilingBulkheadCalculationStrategyIdV3(input.catalog_id)
+    : technology.technology_id;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
+  const parameterMetadata = Object.fromEntries(schema.parameters.map((parameter) => [
+    parameter.parameter_id,
+    {
+      labelRu: parameter.label_ru,
+      unit: parameter.unit_id,
+      inputKind: parameter.input_type === "choice" ? "select" : parameter.input_type,
+      choices: parameter.choices?.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })) ?? [],
+      requiredFor: parameter.priority === "P0" ? "contract_ready" : "better_accuracy",
+    },
+  ]));
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
   const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
     itemType: itemType(row.category),
@@ -110,7 +131,7 @@ export function buildInteriorFinishesProductionDraftV1(
     quantity: row.quantity,
     unit: row.unit_id,
     unitLabel: row.unit_id,
-    unitPrice: null,
+    unitPrice: row.unit_price,
     currency: input.currency,
     source: "reference_price_book",
     category: row.section,
@@ -133,10 +154,13 @@ export function buildInteriorFinishesProductionDraftV1(
       parameterSchemaId: `canonical:${schema.schema_id}:${input.catalog_id}`,
       parameterSchemaVersion: schema.schema_version,
       parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
+      professionalDomainParameterMetadata: parameterMetadata,
       parameterSnapshot,
       projectAssemblyId: compilation.project_assembly_id,
       childRevisionId: row.child_revision_id,
-      semanticOwner: row.semantic_owner,
+      semanticOwner: registeredProfessionalOwner,
+      professionalEstimatePassportId: registeredProfessionalOwner,
+      calculationStrategyId,
       rowCode: row.row_id,
       normativeSourceIds: row.normative_source_ids,
       parameterSourceIds: row.parameter_source_ids,
@@ -144,18 +168,35 @@ export function buildInteriorFinishesProductionDraftV1(
       costOwnerId: row.cost_owner_id,
       includedInProcurement: row.procurement_eligible,
       professionalBoqCategory: row.category,
+      formulaGraphV3: {
+        graphVersion: "FormulaGraphV3",
+        formulaId: row.formula_id,
+        expression: row.formula_expression,
+        inputValues: row.formula_input_values,
+        outputUnit: row.unit_id,
+        substitutionTrace: row.calculation_trace,
+      },
+      professionalResourceGraphV3: row.resource_graph_node_v3,
+      normativeRowTraceV3: row.normative_trace_v3,
+      priceRouteV3: row.price_route_v3,
+      priceBasisReference: row.price_basis_reference,
+      priceBasisDate: row.price_basis_date,
+      workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
+      workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
     },
-    templateId: passportId,
+    templateId: registeredProfessionalOwner,
     templateVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
     normSourceId: applicableSourceIds[0] ?? null,
     normSourceTitle: applicableSourceIds.join(", "),
     normVersion: compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
-    priceStatus: "PRICE_MISSING",
-    priceSource: "missing",
-    priceSourceId: null,
-    priceSourceLabel: "Источник цены не выбран",
-    costConfidence: "missing",
+    priceStatus: row.unit_price == null ? "PRICE_MISSING" : "USER_ENTERED_PRICE",
+    priceSource: row.unit_price == null ? "missing" : "user",
+    priceSourceId: row.price_source_id,
+    priceSourceLabel: row.unit_price == null
+      ? "Цена не применяется к информационной строке материального баланса"
+      : `${row.price_basis_reference} (${row.price_basis_date})`,
+    costConfidence: row.unit_price == null ? "missing" : "high",
     confidence: "high",
     addedBy: "system",
     materialKey: row.category === "material" ? row.semantic_owner : null,
@@ -216,9 +257,11 @@ function missingParameterIds(
 }
 
 function sourceTypeForParameter(parameterId: string): ProfessionalParameterValueV4["source_type"] {
-  if (parameterId === "normative_rate_code" || parameterId === "funding_source" || parameterId === "project_type") {
+  if (parameterId === "normative_rate_code" || parameterId === "funding_source" || parameterId === "project_type" ||
+    parameterId === "price_basis_reference" || parameterId === "price_basis_date") {
     return "PROJECT_DOCUMENT";
   }
+  if (parameterId.startsWith("unit_price_") && parameterId.endsWith("_kgs")) return "USER_EXPLICIT";
   if (parameterId.includes("productivity") || parameterId.includes("interval")) return "VERIFIED_RATEBOOK";
   if (parameterId === "product_profile_id" || parameterId.includes("consumption") || parameterId.includes("mass")) {
     return "MATERIAL_PASSPORT";

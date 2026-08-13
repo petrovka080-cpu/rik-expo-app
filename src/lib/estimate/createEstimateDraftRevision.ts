@@ -1222,6 +1222,13 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     ? missingInputsFromRoadworksWaveA(roadworksWaveAContext)
     : exactAsphaltRelatedDraft
       ? missingInputsFromAsphaltRelated(asphaltRelatedContext)
+    // A compiled registered-domain draft has already passed its exact schema
+    // gate in compileProfessionalEstimateDomainV1. Re-entering the broad
+    // 11,610-work passport/schema lookup here is both redundant and very slow
+    // on Web and native cold paths. Missing-input collection remains on the
+    // parameter-collection branch, where no compiled draft/context exists.
+    : professionalDomainContext
+      ? []
     : limitMissingInputsByRawInputPolicy({
     matchedFamily,
     rawInputFacts: result.parseResult.rawInputFacts,
@@ -1301,6 +1308,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     : null;
   const calculationProfileId = stringSourceParameter(rows, ["calculationProfileId"]);
   const calculationStrategyId =
+    stringSourceParameter(rows, ["calculationStrategyId"]) ||
     calculationProfileId ||
     input.selectedTemplateId?.trim() ||
     input.selectedWorkKey?.trim() ||

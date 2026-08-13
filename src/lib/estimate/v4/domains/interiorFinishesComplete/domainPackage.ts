@@ -31,9 +31,33 @@ import {
   interiorOperationProfile,
   type InteriorFormulaKind,
 } from "./technologyProfiles";
+import {
+  buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
+  type DrywallCeilingBulkheadProfessionalPackagePartsV3,
+} from "./drywallCeilingBulkheadProfessionalV3";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
+
+type InteriorProfessionalOverlayProviderV3 = (
+  inventory: InteriorFinishesDomainInventoryRow,
+) => DrywallCeilingBulkheadProfessionalPackagePartsV3 | null;
+
+const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V3: readonly InteriorProfessionalOverlayProviderV3[] = Object.freeze([
+  buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
+]);
+
+function resolveInteriorProfessionalOverlayV3(
+  inventory: InteriorFinishesDomainInventoryRow,
+): DrywallCeilingBulkheadProfessionalPackagePartsV3 | null {
+  const matches = INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V3
+    .map((provider) => provider(inventory))
+    .filter((value): value is DrywallCeilingBulkheadProfessionalPackagePartsV3 => value !== null);
+  if (matches.length > 1) {
+    throw new Error(`INTERIOR_PROFESSIONAL_OWNER_DUPLICATE:${inventory.catalog_id}`);
+  }
+  return matches[0] ?? null;
+}
 
 function parameter(
   parameter_id: string,
@@ -395,26 +419,29 @@ const resourcePolicies: ProfessionalResourceCompletenessPolicyV1[] = [...INTERIO
 for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
   const profile = interiorOperationProfile(inventory);
   const technologyId = inventory.canonical_technology_id;
-  const schema = schemaFor(inventory);
+  const professionalOverlay = resolveInteriorProfessionalOverlayV3(inventory);
+  const schema = professionalOverlay?.schema ?? schemaFor(inventory);
   const resourceSourceId = normativeSourceId(inventory);
-  const normProfile: ProfessionalNormativeProfileV1 = {
+  const normProfile: ProfessionalNormativeProfileV1 = professionalOverlay?.normative_profile ?? {
     profile_id: `${technologyId}:kg-resource-profile:v1`, profile_version: "1.0.0", technology_id: technologyId,
     jurisdiction: "KG", requested_source_ids: [resourceSourceId], requested_source_types: ["RESOURCE_ESTIMATE_NORM"],
     rejected_foreign_source_ids: ["ru_gesn_15", "ru_fer_15"],
   };
-  const conditional = scopeAssembly(inventory);
-  const children = [mainAssembly(inventory), fullAssembly(inventory), ...(conditional ? [conditional] : [])];
+  const conditional = professionalOverlay ? null : scopeAssembly(inventory);
+  const children = professionalOverlay?.child_assemblies ?? [mainAssembly(inventory), fullAssembly(inventory), ...(conditional ? [conditional] : [])];
   const formulaPackId = `${technologyId}:formula-pack:v1`;
   const assemblyProfileId = `${technologyId}:assembly-profile:v1`;
-  const policyId = `${technologyId}:resource-policy:v1`;
+  const policyId = professionalOverlay?.resource_policy.policy_id ?? `${technologyId}:resource-policy:v1`;
   technologies.push({
     technology_id: technologyId,
     operation_class: inventory.work_type.toUpperCase(),
-    method: `${inventory.calculator_family_id}:${inventory.source_domain_id}:${inventory.work_type}:${inventory.scope_capability}`,
+    method: professionalOverlay
+      ? `DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_V3:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
+      : `${inventory.calculator_family_id}:${inventory.source_domain_id}:${inventory.work_type}:${inventory.scope_capability}`,
     material_system: inventory.work_type === "paint" ? "PAINT" : inventory.work_type === "prime" ? "PRIMER" : interiorMaterialSystemKey(inventory),
     output: { dimension: "AREA", unit_id: "m2" },
-    required_stages: [...profile.required_stages, `SCOPE_${inventory.scope_capability.toUpperCase()}`],
-    optional_stages: profile.optional_stages,
+    required_stages: professionalOverlay?.required_stages ?? [...profile.required_stages, `SCOPE_${inventory.scope_capability.toUpperCase()}`],
+    optional_stages: professionalOverlay?.optional_stages ?? profile.optional_stages,
     forbidden_stages: ["ASPHALT_STAGE", "UNSOURCED_ONE_BUNDLE_RESOURCE", "GENERIC_INTERIOR_INSTALLATION"],
     parameter_schema_id: schema.schema_id, formula_pack_id: formulaPackId, assembly_profile_id: assemblyProfileId,
     normative_profile_ids: [normProfile.profile_id], resource_completeness_policy_id: policyId,
@@ -427,7 +454,7 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
     unit_trace_contract: ["formula_expression", "input_parameter_ids", "input_values_with_sources", "output_unit", "substitution_trace"],
   });
   assemblyProfiles.push({ assembly_profile_id: assemblyProfileId, assembly_profile_version: "1.0.0", technology_id: technologyId, child_assemblies: children });
-  resourcePolicies.push({
+  resourcePolicies.push(professionalOverlay?.resource_policy ?? {
     policy_id: policyId, technology_id: technologyId,
     required_categories: ["material", "labor", "equipment", "transport", "waste", "testing", "documentation"],
     optional_categories: ["subcontract_service", "temporary_work"],

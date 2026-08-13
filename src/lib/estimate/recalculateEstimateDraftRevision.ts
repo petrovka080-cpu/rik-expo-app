@@ -15,6 +15,7 @@ import {
   getRoadworksWaveAProductionRegistration,
   type RoadworksWaveAProductionRegistration,
 } from "./v4/roadworks";
+import { migrateDrywallCeilingBulkheadRevisionV3 } from "./v4/domains/interiorFinishesComplete/drywallCeilingBulkheadRevisionMigrationV3";
 
 export type RecalculateEstimateDraftRevisionResult = {
   revision: EstimateDraftRevision;
@@ -32,6 +33,14 @@ function exactRoadworksWaveARegistration(
   }
   return getRoadworksWaveAProductionRegistration(
     revision.resolvedIdentity?.requestedCatalogWorkId ?? revision.matchedFamily,
+  );
+}
+
+function usesRegisteredProfessionalDomain(revision: EstimateDraftRevision): boolean {
+  return revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
+    row.sourceParameters?.professionalDomainFactoryV1 === true &&
+    typeof row.sourceParameters?.catalogId === "string" &&
+    typeof row.sourceParameters?.workKey === "string",
   );
 }
 
@@ -88,7 +97,7 @@ export function buildPromptForEstimateDraftRevisionRecalc(
   params: Record<string, EstimateDraftRevisionParam>,
 ): string {
   const exactRoadworks = exactRoadworksWaveARegistration(revision);
-  const passport = exactRoadworks
+  const passport = exactRoadworks || usesRegisteredProfessionalDomain(revision)
     ? null
     : buildProfessionalWorkPassport(revision.selectedTemplateId);
   const templateLabel = (
@@ -118,11 +127,12 @@ export function recalculateEstimateDraftRevision(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
+  previous = migrateDrywallCeilingBulkheadRevisionV3(previous);
   const changedAt = input.createdAt ?? new Date().toISOString();
   const patched = applyUserParamPatch(previous, patch, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const exactRoadworks = exactRoadworksWaveARegistration(previous);
-  const passport = exactRoadworks
+  const passport = exactRoadworks || usesRegisteredProfessionalDomain(previous)
     ? null
     : buildProfessionalWorkPassport(previous.selectedTemplateId);
   const paramOverrides = previous.roadScopeBinding
@@ -212,6 +222,7 @@ export function recalculateEstimateDraftRevisionBatch(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
+  previous = migrateDrywallCeilingBulkheadRevisionV3(previous);
   if (patches.length === 0) {
     throw new Error("USER_PARAM_BATCH_EMPTY");
   }
@@ -220,7 +231,7 @@ export function recalculateEstimateDraftRevisionBatch(
   const patched = applyUserParamPatches(previous, patches, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const exactRoadworks = exactRoadworksWaveARegistration(previous);
-  const passport = exactRoadworks
+  const passport = exactRoadworks || usesRegisteredProfessionalDomain(previous)
     ? null
     : buildProfessionalWorkPassport(previous.selectedTemplateId);
   const source = patches.length === 1 ? sourceForPatch(patches[0]) : "param_batch";

@@ -30,7 +30,10 @@ export type ProfessionalAssemblyParameterRoleV4 =
   | "MATERIAL_PASSPORT_VALUE"
   | "NORM_RATE"
   | "LOGISTICS_VALUE"
-  | "CONTROL_PLAN_VALUE";
+  | "CONTROL_PLAN_VALUE"
+  | "PRICE_INPUT"
+  | "PRICE_SOURCE_REFERENCE"
+  | "DEPENDENCY_REFERENCE";
 
 export type ProfessionalAssemblyParameterDefinitionV4 = {
   parameter_id: string;
@@ -53,6 +56,40 @@ export type ProfessionalAssemblyFormulaV4 = {
   calculate: (values: Readonly<Record<string, number>>) => number;
 };
 
+export type ProfessionalNormativeRowTraceV3 = {
+  source_id: string;
+  document_code: string;
+  edition: string;
+  exact_locator: string;
+  source_role: "QUANTITY_NORM" | "WORK_EXECUTION" | "QUALITY_ACCEPTANCE" | "PROJECT_INPUT";
+  applicability: string;
+  foreign_mandatory_for_kg: false;
+};
+
+export type ProfessionalAssemblyPriceRouteV3 =
+  | {
+    kind: "RUNTIME_VALIDATED_INPUT";
+    unit_price_parameter_id: string;
+    price_basis_reference_parameter_id: string;
+    price_basis_date_parameter_id: string;
+    currency_from_request: true;
+    minimum_exclusive: 0;
+  }
+  | {
+    kind: "NOT_APPLICABLE_INFORMATIONAL_OUTPUT";
+    reason: string;
+  };
+
+export type ProfessionalResourceGraphNodeV3 = {
+  graph_version: "ProfessionalResourceGraphV3";
+  typed_child_boundary: "FRAME" | "ALIGN" | "CLAD";
+  resource_class: string;
+  dependency_ids: readonly string[];
+  non_cost_dependencies_only: boolean;
+  context_parameter_ids: readonly string[];
+  forbidden_cost_scopes: readonly string[];
+};
+
 export type ProfessionalAssemblyRowDefinitionV4 = {
   row_id: string;
   section: string;
@@ -65,6 +102,11 @@ export type ProfessionalAssemblyRowDefinitionV4 = {
   normative_source_ids: readonly string[];
   inclusion_condition: string;
   procurement_eligible: boolean;
+  normative_trace_v3?: readonly ProfessionalNormativeRowTraceV3[];
+  price_route_v3?: ProfessionalAssemblyPriceRouteV3;
+  resource_graph_node_v3?: ProfessionalResourceGraphNodeV3;
+  normative_proof_bundle_id_v3?: string;
+  professional_proof_bundle_id_v3?: string;
 };
 
 export type ProfessionalChildAssemblyV4 = {
@@ -92,7 +134,12 @@ export type ProfessionalProjectAssemblyRequestV4 = {
 };
 
 export type ProfessionalAssemblyRequirementV4 = {
-  code: "SCOPE_CONFIRMATION_REQUIRED" | "PROJECT_VALUE_REQUIRED" | "NORM_RATE_REQUIRED";
+  code:
+    | "SCOPE_CONFIRMATION_REQUIRED"
+    | "PROJECT_VALUE_REQUIRED"
+    | "NORM_RATE_REQUIRED"
+    | "PRICE_INPUT_REQUIRED"
+    | "PRICE_SOURCE_REQUIRED";
   child_passport_id: string;
   parameter_id: string;
   title_ru: string;
@@ -124,6 +171,15 @@ export type CompiledProfessionalAssemblyRowV4 = {
   parameter_source_ids: readonly string[];
   inclusion_condition: string;
   procurement_eligible: boolean;
+  unit_price: number | null;
+  price_source_id: string | null;
+  price_basis_reference: string | null;
+  price_basis_date: string | null;
+  normative_trace_v3: readonly ProfessionalNormativeRowTraceV3[];
+  price_route_v3: ProfessionalAssemblyPriceRouteV3 | null;
+  resource_graph_node_v3: ProfessionalResourceGraphNodeV3 | null;
+  normative_proof_bundle_id_v3: string | null;
+  professional_proof_bundle_id_v3: string | null;
 };
 
 export type ProfessionalProjectAssemblyCompilationV4 = {
@@ -161,6 +217,8 @@ function numericValue(value: ProfessionalParameterValueV4 | undefined): number |
 function requirementCode(role: ProfessionalAssemblyParameterRoleV4): ProfessionalAssemblyRequirementV4["code"] {
   if (role === "SCOPE_TRIGGER") return "SCOPE_CONFIRMATION_REQUIRED";
   if (role === "NORM_RATE") return "NORM_RATE_REQUIRED";
+  if (role === "PRICE_INPUT") return "PRICE_INPUT_REQUIRED";
+  if (role === "PRICE_SOURCE_REFERENCE") return "PRICE_SOURCE_REQUIRED";
   return "PROJECT_VALUE_REQUIRED";
 }
 
@@ -263,6 +321,25 @@ export function compileProfessionalProjectAssemblyV4(
         scope: request.scope_mode,
         values: inputValues,
       })}`;
+      let unitPrice: number | null = null;
+      let priceSourceId: string | null = null;
+      let priceBasisReference: string | null = null;
+      let priceBasisDate: string | null = null;
+      if (row.price_route_v3?.kind === "RUNTIME_VALIDATED_INPUT") {
+        const priceValue = request.parameter_values[row.price_route_v3.unit_price_parameter_id];
+        unitPrice = numericValue(priceValue);
+        if (unitPrice == null || unitPrice <= row.price_route_v3.minimum_exclusive) {
+          throw new Error(`PROFESSIONAL_PRICE_INPUT_INVALID:${row.row_id}:${row.price_route_v3.unit_price_parameter_id}`);
+        }
+        const referenceValue = request.parameter_values[row.price_route_v3.price_basis_reference_parameter_id];
+        const dateValue = request.parameter_values[row.price_route_v3.price_basis_date_parameter_id];
+        priceBasisReference = String(referenceValue?.value ?? "").trim() || null;
+        priceBasisDate = String(dateValue?.value ?? "").trim() || null;
+        if (!priceBasisReference || !priceBasisDate) {
+          throw new Error(`PROFESSIONAL_PRICE_PROVENANCE_INVALID:${row.row_id}`);
+        }
+        priceSourceId = priceValue?.source_id ?? null;
+      }
       compiledRows.push({
         parent_project_revision_id: request.parent_revision_id,
         child_passport_id: assembly.child_passport_id,
@@ -287,6 +364,15 @@ export function compileProfessionalProjectAssemblyV4(
         parameter_source_ids: parameterSourceIds,
         inclusion_condition: row.inclusion_condition,
         procurement_eligible: row.procurement_eligible,
+        unit_price: unitPrice,
+        price_source_id: priceSourceId,
+        price_basis_reference: priceBasisReference,
+        price_basis_date: priceBasisDate,
+        normative_trace_v3: row.normative_trace_v3 ?? [],
+        price_route_v3: row.price_route_v3 ?? null,
+        resource_graph_node_v3: row.resource_graph_node_v3 ?? null,
+        normative_proof_bundle_id_v3: row.normative_proof_bundle_id_v3 ?? null,
+        professional_proof_bundle_id_v3: row.professional_proof_bundle_id_v3 ?? null,
       });
     }
   }

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "SingleCanonicalRuntimeProofV1",
+  "status": "GREEN",
+  "authorizedCatalogIds": "16/16",
+  "canonicalProductionOwners": "16/16",
+  "ownerCountPerId": 1,
+  "legacyFallbackReachable": "0/16",
+  "batchSpecificRuntimeBranches": 0,
+  "sameOwnerCreateEditRecalculateHistoryPdfProcurement": "16/16",
+  "legacyRevisionsMigratedWithoutDataLoss": "16/16",
+  "unchangedInteriorRecords": 2234,
+  "duplicateRouting": 0,
+  "doubleCount": 0,
+  "orphanRoutes": 0,
+  "scopeOutsideAuthorized16": 0,
+  "productionDomain": "interior_finishes",
+  "productionModule": "drywallCeilingBulkheadProfessionalV3",
+  "productionRouter": "registeredProfessionalEstimateDomainsV1 -> interiorFinishesProductionBindingV1 -> compileProfessionalEstimateDomainV1",
+  "revisionMigration": "drywall-ceiling-bulkhead-revision-migration:v3",
+  "test": "tests/aiEstimateV4/batch001R2SingleCanonicalRuntimeProof.contract.test.ts",
+  "testResult": { "suites": 1, "tests": 3, "passed": 3, "durationSeconds": 101.772 }
+}

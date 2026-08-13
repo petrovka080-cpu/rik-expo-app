@@ -270,6 +270,21 @@ function schemaBlockers(
       return value == null || (typeof value === "string" && value.trim().length === 0);
     })
     .map((parameter) => `PROJECT_VALUE_REQUIRED:${parameter.parameter_id}`);
+  for (const parameter of schema.parameters.filter((item) => conditionMatches(item.required_when, values))) {
+    const value = values[parameter.parameter_id]?.value;
+    if (value == null || (typeof value === "string" && value.trim().length === 0)) continue;
+    if (parameter.input_type === "number") {
+      const numeric = typeof value === "number" ? value : Number(String(value).replace(/\s+/g, "").replace(",", "."));
+      if (!Number.isFinite(numeric) || (parameter.minimum != null && numeric < parameter.minimum) ||
+        (parameter.maximum != null && numeric > parameter.maximum)) {
+        blockers.push(`PROJECT_VALUE_OUT_OF_RANGE:${parameter.parameter_id}`);
+      }
+    }
+    if (parameter.input_type === "choice" && parameter.choices?.length &&
+      !parameter.choices.some((choice) => choice.value === value)) {
+      blockers.push(`PROJECT_VALUE_NOT_ALLOWED:${parameter.parameter_id}`);
+    }
+  }
   if (schema.quantity_alternatives.length > 0) {
     const alternativeComplete = schema.quantity_alternatives.some((alternative) => alternative.every((parameterId) => {
       const value = values[parameterId]?.value;

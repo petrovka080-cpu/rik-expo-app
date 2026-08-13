@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "Batch001WorkExecutionMatrixV1",
+  "status": "GREEN",
+  "groupOrder": ["FRAME", "ALIGN", "CLAD"],
+  "workCount": 16,
+  "normativeProofCount": 16,
+  "professionalProofCount": 16,
+  "formulaTraceCoveragePercent": 100,
+  "priceRouteCoveragePercent": 100,
+  "durableHistory": "16/16",
+  "pdf": "16/16",
+  "procurement": "16/16",
+  "web": "16/16",
+  "nativeAndroidApi34": "16/16",
+  "works": [
+    { "group": "FRAME", "catalogId": "drywall_ceiling_interior_bulkhead_frame_large_area", "titleRu": "устройство каркаса потолочного короба на большой площади", "boqRows": 17, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_frame_large_area" },
+    { "group": "FRAME", "catalogId": "drywall_ceiling_interior_bulkhead_frame_small_area", "titleRu": "устройство каркаса потолочного короба на малой площади", "boqRows": 17, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_frame_small_area" },
+    { "group": "FRAME", "catalogId": "drywall_ceiling_interior_bulkhead_frame_standard", "titleRu": "устройство каркаса потолочного короба в стандартной зоне", "boqRows": 16, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_frame_standard" },
+    { "group": "FRAME", "catalogId": "drywall_ceiling_interior_bulkhead_frame_technical_room", "titleRu": "устройство каркаса потолочного короба в техническом помещении", "boqRows": 18, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_frame_technical_room" },
+    { "group": "FRAME", "catalogId": "drywall_ceiling_interior_bulkhead_frame_wet_zone", "titleRu": "устройство каркаса потолочного короба во влажной зоне", "boqRows": 19, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_frame_wet_zone" },
+    { "group": "ALIGN", "catalogId": "drywall_ceiling_interior_bulkhead_align_large_area", "titleRu": "выравнивание потолочного короба на большой площади", "boqRows": 13, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_align_large_area" },
+    { "group": "ALIGN", "catalogId": "drywall_ceiling_interior_bulkhead_align_small_area", "titleRu": "выравнивание потолочного короба на малой площади", "boqRows": 13, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_align_small_area" },
+    { "group": "ALIGN", "catalogId": "drywall_ceiling_interior_bulkhead_align_standard", "titleRu": "выравнивание потолочного короба в стандартной зоне", "boqRows": 12, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_align_standard" },
+    { "group": "ALIGN", "catalogId": "drywall_ceiling_interior_bulkhead_align_technical_room", "titleRu": "выравнивание потолочного короба в техническом помещении", "boqRows": 13, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_align_technical_room" },
+    { "group": "ALIGN", "catalogId": "drywall_ceiling_interior_bulkhead_align_wet_zone", "titleRu": "выравнивание потолочного короба во влажной зоне", "boqRows": 14, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_align_wet_zone" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_high_load", "titleRu": "обшивка потолочного короба для высокой нагрузки", "boqRows": 13, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_high_load" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_large_area", "titleRu": "обшивка потолочного короба на большой площади", "boqRows": 13, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_large_area" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_small_area", "titleRu": "обшивка потолочного короба на малой площади", "boqRows": 14, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_small_area" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_standard", "titleRu": "обшивка потолочного короба в стандартной зоне", "boqRows": 12, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_standard" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_technical_room", "titleRu": "обшивка потолочного короба в техническом помещении", "boqRows": 14, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_technical_room" },
+    { "group": "CLAD", "catalogId": "drywall_ceiling_interior_bulkhead_clad_wet_zone", "titleRu": "обшивка потолочного короба во влажной зоне", "boqRows": 14, "owner": "domain-passport:drywall-ceiling-bulkhead-professional-v3:drywall_ceiling_interior_bulkhead_clad_wet_zone" }
+  ]
+}

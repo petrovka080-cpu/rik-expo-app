@@ -1,0 +1,14 @@
+{
+  "schema_version": "Batch001IndependentAuditResultV3",
+  "status": "GREEN",
+  "blockers": [],
+  "detected_count": 0,
+  "envelope_hash": "eh_acee10fba72cf117",
+  "mutations": { "detected": 48, "expected": 48 },
+  "replay": { "green": 2, "expected": 2 },
+  "contentMutationCatalogIds": 16,
+  "outsideScopeMutationCount": 0,
+  "fullJestCount": 0,
+  "queueRecalculated": false,
+  "batch002Selected": false
+}
