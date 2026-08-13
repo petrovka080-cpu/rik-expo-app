@@ -3,6 +3,12 @@ import type { GlobalWorkCategory } from "../../../ai/globalEstimate";
 import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
 import type { CanonicalParameterSchema } from "../../canonicalParameters";
 import {
+  ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS,
+  ELECTRICAL_COMPLETE_DOMAIN_ID,
+  ELECTRICAL_DOMAIN_INVENTORY,
+  buildElectricalFromInlineInputV1,
+} from "./electricalComplete";
+import {
   INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS,
   INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
@@ -65,17 +71,26 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const hvacInventory = interiorInventory || waterSewerInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
+  const electricalInventory = interiorInventory || waterSewerInventory ? undefined : ELECTRICAL_DOMAIN_INVENTORY.find((candidate) =>
     exactIdentity === candidate.catalog_id ||
     exactIdentity === candidate.work_key ||
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const inventory = interiorInventory ?? waterSewerInventory ?? hvacInventory;
+  const hvacInventory = interiorInventory || waterSewerInventory || electricalInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
+    exactIdentity === candidate.catalog_id ||
+    exactIdentity === candidate.work_key ||
+    exactIdentity === candidate.template_id ||
+    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
+  );
+  const inventory = interiorInventory ?? waterSewerInventory ?? electricalInventory ?? hvacInventory;
   if (!inventory) return null;
   const waterSewer = Boolean(waterSewerInventory);
+  const electrical = Boolean(electricalInventory);
   const hvac = Boolean(hvacInventory);
-  const canonicalParameterSchema = (hvac
+  const canonicalParameterSchema = (electrical
+    ? ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS
+    : hvac
     ? HVAC_CANONICAL_PARAMETER_SCHEMAS
     : waterSewer
       ? WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS
@@ -86,7 +101,9 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
     throw new Error(`REGISTERED_PROFESSIONAL_DOMAIN_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
   }
   return Object.freeze({
-    domain_id: hvac
+    domain_id: electrical
+      ? ELECTRICAL_COMPLETE_DOMAIN_ID
+      : hvac
       ? HVAC_COMPLETE_DOMAIN_ID
       : waterSewer
         ? WATER_SEWER_COMPLETE_DOMAIN_ID
@@ -95,8 +112,10 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
     work_key: inventory.work_key,
     template_id: `domain-passport:${inventory.catalog_id}:v1`,
     title_ru: inventory.localized_name_ru,
-    category_key: hvac ? "heating_hvac" : waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
-    category_title_ru: hvac
+    category_key: electrical ? "electrical" : hvac ? "heating_hvac" : waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
+    category_title_ru: electrical
+      ? "Электромонтажные работы"
+      : hvac
       ? "Отопление, вентиляция и кондиционирование"
       : waterSewer
         ? "Водоснабжение и канализация"
@@ -139,6 +158,8 @@ export function buildRegisteredProfessionalEstimateFromInlineInputV1(
 ) {
   const interior = buildInteriorFinishesFromInlineInputV1(input);
   if (interior.exact_match) return interior;
+  const electrical = buildElectricalFromInlineInputV1(input);
+  if (electrical.exact_match) return electrical;
   const waterSewer = buildWaterSewerFromInlineInputV1(input);
   if (waterSewer.exact_match) return waterSewer;
   return buildHvacFromInlineInputV1(input);

@@ -89,7 +89,12 @@ export type ProfessionalResourceGraphNodeV3 = {
     | "FINISH_JOINT"
     | "INSULATE"
     | "PREPARE"
-    | "REPAIR";
+    | "REPAIR"
+    | "ELECTRICAL"
+    | "CIVIL"
+    | "STRUCTURAL"
+    | "FIRE_LIFE_SAFETY"
+    | "ICT_CONTROLS";
   resource_class: string;
   dependency_ids: readonly string[];
   non_cost_dependencies_only: boolean;

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-01",
+  "technologyFamily": "INTERNAL_CABLE_CONTAINMENT",
+  "families": ["CABLE_CHANNEL"],
+  "groups": 8,
+  "works": 47,
+  "admission": "GREEN_47_OF_47",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
