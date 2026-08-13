@@ -34,7 +34,11 @@ import {
 import {
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
 } from "./drywallCeilingBulkheadProfessionalV3";
-import { buildDrywallArchitecturalElementProfessionalPackagePartsV4 } from "./drywallArchitecturalElementsProfessionalV4";
+import {
+  buildDrywallArchitecturalElementProfessionalPackagePartsV4,
+  buildDrywallFlatCeilingProfessionalPackagePartsV6,
+  isDrywallFlatCeilingProfessionalCatalogIdV6,
+} from "./drywallArchitecturalElementsProfessionalV4";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
@@ -56,6 +60,7 @@ type InteriorProfessionalOverlayProviderV4 = (
 const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4: readonly InteriorProfessionalOverlayProviderV4[] = Object.freeze([
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
   buildDrywallArchitecturalElementProfessionalPackagePartsV4,
+  buildDrywallFlatCeilingProfessionalPackagePartsV6,
 ]);
 
 function resolveInteriorProfessionalOverlayV4(
@@ -449,7 +454,9 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
     method: professionalOverlay
       ? `DRYWALL_PROFESSIONAL_OVERLAY:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
       : `${inventory.calculator_family_id}:${inventory.source_domain_id}:${inventory.work_type}:${inventory.scope_capability}`,
-    material_system: inventory.work_type === "paint" ? "PAINT" : inventory.work_type === "prime" ? "PRIMER" : interiorMaterialSystemKey(inventory),
+    material_system: isDrywallFlatCeilingProfessionalCatalogIdV6(inventory.catalog_id)
+      ? "FLAT_CEILING"
+      : inventory.work_type === "paint" ? "PAINT" : inventory.work_type === "prime" ? "PRIMER" : interiorMaterialSystemKey(inventory),
     output: { dimension: "AREA", unit_id: "m2" },
     required_stages: professionalOverlay?.required_stages ?? [...profile.required_stages, `SCOPE_${inventory.scope_capability.toUpperCase()}`],
     optional_stages: professionalOverlay?.optional_stages ?? profile.optional_stages,

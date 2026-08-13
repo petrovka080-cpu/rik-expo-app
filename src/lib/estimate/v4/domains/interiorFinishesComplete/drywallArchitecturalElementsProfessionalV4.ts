@@ -14,11 +14,19 @@ import type {
   ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory";
 import type { InteriorFinishesDomainInventoryRow } from "./inventory";
+import { estimateDeterministicHash } from "../../../estimateDeterministicHash";
 import {
   DRYWALL_AGGREGATE_SKELETON_ROW_KEYS_V4,
+  drywallFlatCeilingMaximumScopeLinesV6,
   drywallMaximumScopeLinesV5,
   type DrywallMaximumScopeLineV5,
 } from "./drywallArchitecturalElementsMaximumScopeV5";
+import {
+  DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6,
+  drywallFlatCeilingExpectedCandidatesV6,
+  type DrywallFlatCeilingOperationV6,
+  type DrywallFlatCeilingVariantV6,
+} from "./drywallFlatCeilingExpectedScopeV6";
 
 export type DrywallArchitecturalElementOperationV4 =
   | "FRAME"
@@ -34,7 +42,8 @@ export type DrywallArchitecturalElementVariantV4 =
   | "large_area"
   | "small_area"
   | "technical_room"
-  | "wet_zone";
+  | "wet_zone"
+  | "high_load";
 
 const VARIANTS: readonly DrywallArchitecturalElementVariantV4[] = Object.freeze([
   "large_area", "small_area", "standard", "technical_room", "wet_zone",
@@ -58,7 +67,9 @@ export const DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4: readonly
   SELECTED_GROUP_ROOTS.flatMap((root) => VARIANTS.map((variant) => `${root}_${variant}`)),
 );
 
-const AUTHORIZED = new Set(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4);
+const ARCHITECTURAL_AUTHORIZED = new Set(DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4);
+const FLAT_CEILING_AUTHORIZED = new Set(DRYWALL_FLAT_CEILING_PROFESSIONAL_CATALOG_IDS_V6);
+const AUTHORIZED = new Set([...ARCHITECTURAL_AUTHORIZED, ...FLAT_CEILING_AUTHORIZED]);
 const BOTH_SCOPES = ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const;
 const FULL_SCOPE = ["FULL_APPLICABLE_SCOPE"] as const;
 const ALWAYS = { kind: "ALWAYS" } as const;
@@ -99,11 +110,11 @@ type RowSpec = {
 };
 
 export type DrywallArchitecturalElementWorkContractV4 = {
-  schema_version: "DrywallArchitecturalElementWorkContractV4";
+  schema_version: "DrywallArchitecturalElementWorkContractV4" | "DrywallFlatCeilingWorkContractV6";
   catalog_id: string;
   work_key: string;
   title_ru: string;
-  system: "BULKHEAD" | "CURVE";
+  system: "BULKHEAD" | "CURVE" | "CEILING";
   group: DrywallArchitecturalElementOperationV4;
   operation: DrywallArchitecturalElementOperationV4;
   variant: DrywallArchitecturalElementVariantV4;
@@ -128,13 +139,43 @@ export type DrywallArchitecturalElementProfessionalPackagePartsV4 = {
   resource_policy: ProfessionalResourceCompletenessPolicyV1;
 };
 
+export type IndividualProfessionalEstimatePassportV6 = {
+  schemaVersion: "IndividualProfessionalEstimatePassportV6";
+  catalogId: string;
+  titleRu: string;
+  operation: DrywallFlatCeilingOperationV6;
+  variant: DrywallFlatCeilingVariantV6;
+  productionOwnerId: string;
+  calculationStrategyId: string;
+  parameterSchemaId: string;
+  formulaGraphId: string;
+  resourceGraphId: string;
+  includedScope: readonly string[];
+  excludedScope: readonly string[];
+  dependencyOrder: readonly string[];
+  typedChildBoundaries: readonly string[];
+  normativeSourceIds: readonly string[];
+  parameterCount: number;
+  boqRowCount: number;
+  expectedCandidateCount: number;
+  candidateCoveragePercent: 100;
+  shownButUnusedParameterCount: 0;
+  hiddenQuantitativeAssumptionCount: 0;
+  identityHash: string;
+  parameterSchemaHash: string;
+  formulaGraphHash: string;
+  resourceGraphHash: string;
+};
+
 export function drywallArchitecturalElementProfessionalOwnerIdV4(catalogId: string): string {
   if (!AUTHORIZED.has(catalogId)) throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_OWNER_OUTSIDE_SCOPE:${catalogId}`);
+  if (FLAT_CEILING_AUTHORIZED.has(catalogId)) return `domain-passport:drywall-flat-ceiling-professional-v6:${catalogId}`;
   return `domain-passport:drywall-architectural-element-professional-v4:${catalogId}`;
 }
 
 export function drywallArchitecturalElementCalculationStrategyIdV4(catalogId: string): string {
   if (!AUTHORIZED.has(catalogId)) throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_STRATEGY_OUTSIDE_SCOPE:${catalogId}`);
+  if (FLAT_CEILING_AUTHORIZED.has(catalogId)) return `drywall-flat-ceiling-professional-v6:${catalogId}:calculation-strategy`;
   return `drywall-architectural-element-professional-v4:${catalogId}:calculation-strategy`;
 }
 
@@ -148,7 +189,7 @@ function operationOf(catalogId: string): DrywallArchitecturalElementOperationV4 
 }
 
 function variantOf(catalogId: string): DrywallArchitecturalElementVariantV4 {
-  for (const variant of ["technical_room", "large_area", "small_area", "wet_zone", "standard"] as const) {
+  for (const variant of ["technical_room", "large_area", "small_area", "wet_zone", "high_load", "standard"] as const) {
     if (catalogId.endsWith(`_${variant}`)) return variant;
   }
   throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_VARIANT_NOT_FOUND:${catalogId}`);
@@ -233,8 +274,12 @@ const FRAME_GEOMETRY_DERIVED_KEYS = new Set([
 function maximumScopeParameters(
   operation: DrywallArchitecturalElementOperationV4,
   variant: DrywallArchitecturalElementVariantV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
 ): ParameterSpec[] {
-  return drywallMaximumScopeLinesV5(operation, variant)
+  const candidates = system === "CEILING"
+    ? drywallFlatCeilingMaximumScopeLinesV6(operation as DrywallFlatCeilingOperationV6, variant as DrywallFlatCeilingVariantV6)
+    : drywallMaximumScopeLinesV5(operation, variant);
+  return candidates
     .filter((candidate) => !FRAME_GEOMETRY_DERIVED_KEYS.has(candidate.key))
     .map((candidate) => numberParameter(
       candidate.quantity_parameter_id,
@@ -242,8 +287,36 @@ function maximumScopeParameters(
       candidate.unit_id,
       candidate.parameter_role,
       BOTH_SCOPES,
-      0.000001,
+      system === "CEILING" && drywallFlatCeilingExpectedCandidatesV6(operation as DrywallFlatCeilingOperationV6, variant as DrywallFlatCeilingVariantV6)
+        .find((item) => item.candidateId === candidate.key)?.applicability === "CONDITIONAL" ? 0 : 0.000001,
     ));
+}
+
+function flatCeilingGeometryParameters(operation: DrywallArchitecturalElementOperationV4): ParameterSpec[] {
+  if (operation !== "FRAME") return [];
+  return [
+    numberParameter("ceiling_primary_profile_spacing_m", "Шаг несущих профилей по проектной раскладке", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.05, 5),
+    numberParameter("ceiling_secondary_profile_spacing_m", "Шаг поперечных профилей", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.05, 5),
+    numberParameter("ceiling_hanger_spacing_m", "Шаг подвесов", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.05, 5),
+    numberParameter("ceiling_perimeter_anchor_spacing_m", "Шаг анкеров периметрального профиля", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.05, 2),
+    numberParameter("ceiling_suspension_drop_m", "Высота подвеса потолка", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.01, 20),
+    numberParameter("ceiling_opening_count", "Количество люков и инженерных отверстий", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 100_000),
+  ];
+}
+
+function flatCeilingGeometryRows(operation: DrywallArchitecturalElementOperationV4): RowSpec[] {
+  const rows = [
+    infoRow("ceiling_area_geometry_control", "Геометрия", "Контрольная площадь плоского потолка", "length_m × width_m", ["length_m", "width_m"], "m2", (values) => values.length_m * values.width_m, "BOTH"),
+    infoRow("ceiling_perimeter_geometry_control", "Геометрия", "Контрольный периметр плоского потолка", "2 × (length_m + width_m)", ["length_m", "width_m"], "m", (values) => 2 * (values.length_m + values.width_m), "BOTH"),
+  ];
+  if (operation !== "FRAME") return rows;
+  return [
+    ...rows,
+    infoRow("ceiling_primary_profile_run_control", "Геометрия каркаса", "Расчетная длина несущих профилей", "area_m2 ÷ primary_profile_spacing_m", ["area_m2", "ceiling_primary_profile_spacing_m"], "m", (values) => values.area_m2 / values.ceiling_primary_profile_spacing_m, "BOTH"),
+    infoRow("ceiling_secondary_profile_run_control", "Геометрия каркаса", "Расчетная длина поперечных профилей", "area_m2 ÷ secondary_profile_spacing_m", ["area_m2", "ceiling_secondary_profile_spacing_m"], "m", (values) => values.area_m2 / values.ceiling_secondary_profile_spacing_m, "BOTH"),
+    infoRow("ceiling_hanger_count_control", "Геометрия каркаса", "Расчетное количество подвесов", "ceil(area_m2 ÷ (primary_spacing × hanger_spacing))", ["area_m2", "ceiling_primary_profile_spacing_m", "ceiling_hanger_spacing_m"], "item", (values) => Math.ceil(values.area_m2 / (values.ceiling_primary_profile_spacing_m * values.ceiling_hanger_spacing_m)), "BOTH"),
+    infoRow("ceiling_perimeter_anchor_count_control", "Геометрия каркаса", "Расчетное количество анкеров периметра", "ceil(perimeter_m ÷ perimeter_anchor_spacing_m)", ["perimeter_m", "ceiling_perimeter_anchor_spacing_m"], "item", (values) => Math.ceil(values.perimeter_m / values.ceiling_perimeter_anchor_spacing_m), "BOTH"),
+  ];
 }
 
 function curveGeometryParameters(operation: DrywallArchitecturalElementOperationV4): ParameterSpec[] {
@@ -342,9 +415,13 @@ function frameGeometryDerivedRow(candidate: DrywallMaximumScopeLineV5): RowSpec 
 function maximumScopeRows(
   operation: DrywallArchitecturalElementOperationV4,
   variant: DrywallArchitecturalElementVariantV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
 ): RowSpec[] {
-  return drywallMaximumScopeLinesV5(operation, variant).map((candidate) => {
-    const derived = operation === "FRAME" ? frameGeometryDerivedRow(candidate) : null;
+  const candidates = system === "CEILING"
+    ? drywallFlatCeilingMaximumScopeLinesV6(operation as DrywallFlatCeilingOperationV6, variant as DrywallFlatCeilingVariantV6)
+    : drywallMaximumScopeLinesV5(operation, variant);
+  return candidates.map((candidate) => {
+    const derived = operation === "FRAME" && system === "CURVE" ? frameGeometryDerivedRow(candidate) : null;
     return derived ?? pricedRow(
       candidate.key,
       candidate.section,
@@ -422,6 +499,7 @@ function variantParameters(variant: DrywallArchitecturalElementVariantV4): Param
       numberParameter("moisture_sealant_rate_kg_m", "Расход совместимого герметика примыканий", "kg_per_m", "MATERIAL_PASSPORT_VALUE"),
       numberParameter("moisture_interface_test_count", "Количество проверок влагозащищенных примыканий", "test", "CONTROL_PLAN_VALUE", BOTH_SCOPES, 1),
     ];
+    case "high_load": return [];
     case "standard": return [];
   }
 }
@@ -517,15 +595,24 @@ function completionRows(operation: DrywallArchitecturalElementOperationV4): RowS
 function operationContract(inventory: InteriorFinishesDomainInventoryRow): DrywallArchitecturalElementWorkContractV4 {
   const operation = operationOf(inventory.catalog_id);
   const variant = variantOf(inventory.catalog_id);
-  const system = inventory.catalog_id.includes("_bulkhead_") ? "BULKHEAD" as const : "CURVE" as const;
+  const system = inventory.catalog_id.includes("_bulkhead_")
+    ? "BULKHEAD" as const
+    : inventory.catalog_id.includes("_drywall_ceiling_")
+      ? "CEILING" as const
+      : "CURVE" as const;
   const rateSource = operation === "REPAIR" ? KG_KRERR : KG_KRER;
   const dependencies: Readonly<Record<DrywallArchitecturalElementOperationV4, readonly string[]>> = {
     FRAME: [], ALIGN: ["accepted_frame_revision_id"], CLAD: ["accepted_frame_revision_id", "accepted_alignment_revision_id"],
     FINISH_JOINT: ["accepted_cladding_revision_id"], INSULATE: ["accepted_frame_revision_id"],
     PREPARE: ["accepted_joint_finish_revision_id"], REPAIR: ["condition_survey_record_id", "accepted_repair_detail_id"],
   };
+  const ceilingDependencies: Readonly<Record<DrywallArchitecturalElementOperationV4, readonly string[]>> = {
+    PREPARE: [], FRAME: ["accepted_prepare_revision_id"], ALIGN: ["accepted_frame_revision_id"],
+    INSULATE: ["accepted_alignment_revision_id"], CLAD: ["accepted_alignment_revision_id", "accepted_insulation_revision_id"],
+    FINISH_JOINT: ["accepted_cladding_revision_id"], REPAIR: ["condition_survey_record_id", "accepted_repair_detail_id"],
+  };
   return {
-    schema_version: "DrywallArchitecturalElementWorkContractV4",
+    schema_version: system === "CEILING" ? "DrywallFlatCeilingWorkContractV6" : "DrywallArchitecturalElementWorkContractV4",
     catalog_id: inventory.catalog_id, work_key: inventory.work_key, title_ru: inventory.localized_name_ru,
     system, group: operation, operation, variant, group_key: `${system}:${operation}`,
     normative_source_ids: [KG_SP, rateSource, KG_SAFETY, KG_MATERIAL],
@@ -533,13 +620,27 @@ function operationContract(inventory: InteriorFinishesDomainInventoryRow): Drywa
     optional_stages: ["HIGH_WORKING_LEVEL_ACCESS", "MEP_INTERFACE_COORDINATION", "FIRE_OR_ACOUSTIC_SYSTEM_CHECK"],
     owned_cost_scope: [`${operation} materials`, `${operation} labor and equipment`, `${operation} quality and closeout`],
     forbidden_cost_scope: ["umbrella INSTALL bundle", "other typed-child costs", "MEP equipment", "final decoration outside PREPARE"],
-    non_cost_dependencies: dependencies[operation],
-    normative_proof_bundle_id: `WorkNormativeProofBundleV4:${inventory.catalog_id}`,
-    professional_proof_bundle_id: `WorkProfessionalProofBundleV4:${inventory.catalog_id}`,
+    non_cost_dependencies: system === "CEILING" ? ceilingDependencies[operation] : dependencies[operation],
+    normative_proof_bundle_id: `${system === "CEILING" ? "WorkNormativeProofBundleV6" : "WorkNormativeProofBundleV4"}:${inventory.catalog_id}`,
+    professional_proof_bundle_id: `${system === "CEILING" ? "WorkProfessionalProofBundleV6" : "WorkProfessionalProofBundleV4"}:${inventory.catalog_id}`,
   };
 }
 
 function trace(contract: DrywallArchitecturalElementWorkContractV4, row: RowSpec): readonly ProfessionalNormativeRowTraceV3[] {
+  if (contract.system === "CEILING") {
+    const partialRateApplicable = contract.operation === "FRAME" || contract.operation === "CLAD";
+    const rateDocument = contract.operation === "REPAIR"
+      ? { source_id: KG_KRERR, document_code: "КРЕРр-2015", exact_locator: "Методические указания, п. 3.3: демонтаж по сборнику 46; восстановление — по применимым строительным КРЕР и проектному ресурсному расчету." }
+      : partialRateApplicable
+        ? { source_id: KG_KRER, document_code: "КРЕР 10-05-011", exact_locator: "Раздел 5, таблица 10-05-011, PDF 97–99, измеритель 100 м²; применяется только к подтвержденной части каркасно-обшивочной системы, не как oracle остальных операций." }
+        : { source_id: "KG_PROJECT_RESOURCE_CALCULATION_V6", document_code: "Проектный ресурсный расчет V6", exact_locator: `Индивидуальный FormulaGraphV6 и ResourceGraphV6 операции ${contract.operation}; нормы расхода и цены являются явными editable project inputs.` };
+    return [
+      { ...rateDocument, edition: contract.operation === "REPAIR" ? "официальные указания 2015" : partialRateApplicable ? "приказ №52-нпа от 28.04.2022" : "BATCH-003 canonical revision", source_role: partialRateApplicable || contract.operation === "REPAIR" ? "QUANTITY_NORM" : "PROJECT_INPUT", applicability: "Источник применяется только в доказанной роли; скрытые нормы расхода и автоматическое распространение расценки на другие owner-операции запрещены.", foreign_mandatory_for_kg: false },
+      { source_id: KG_SP, document_code: "СП КР 65-101:2025", edition: "официальное издание 2025", exact_locator: "пп. 4.4–4.9; пп. 7.7.1–7.7.5; таблица 7.8", source_role: row.category === "testing" || row.category === "documentation" ? "QUALITY_ACCEPTANCE" : "WORK_EXECUTION", applicability: "Производство, контроль скрытых работ, журналирование, дефекты и приемка подвесной гипсокартонной системы в КР.", foreign_mandatory_for_kg: false },
+      { source_id: KG_SAFETY, document_code: "СН КР 12-01:2018", edition: "официальное издание 2018", exact_locator: "ППР/технологическая карта: рабочая зона, подмащивание, СИЗ, временное питание и пылеудаление", source_role: "WORK_EXECUTION", applicability: "Безопасность фактической рабочей зоны учитывается только явными ресурсными строками и параметрами.", foreign_mandatory_for_kg: false },
+      { source_id: KG_MATERIAL, document_code: "Реестр сертификатов строительных материалов КР", edition: "live registry + проектный паспорт", exact_locator: "material_certificate_reference и system_passport_reference конкретной партии", source_role: "PROJECT_INPUT", applicability: "Подтверждает выбранную партию и совместимость комплектной системы; не является универсальной нормой расхода.", foreign_mandatory_for_kg: false },
+    ];
+  }
   const rateSource = contract.operation === "REPAIR" ? KG_KRERR : KG_KRER;
   return [
     { source_id: rateSource, document_code: contract.operation === "REPAIR" ? "КРЕРр-2015 / п. 3.3" : "КРЕР 10-05-011", edition: contract.operation === "REPAIR" ? "официальные указания 2015" : "приказ №52-нпа от 28.04.2022", exact_locator: contract.operation === "REPAIR" ? "Указания, п. 3.3: демонтаж по сб. 46, новая конструкция по строительным КРЕР; точный код задается проектом" : "Раздел 5, таблица 10-05-011, страницы PDF 97–99; измеритель 100 м²", source_role: row.category === "documentation" || row.category === "testing" ? "QUALITY_ACCEPTANCE" : "QUANTITY_NORM", applicability: "Источник маршрута и состава ресурсов; геометрия, нормы расхода и цены не подставляются скрыто.", foreign_mandatory_for_kg: false },
@@ -551,28 +652,35 @@ function trace(contract: DrywallArchitecturalElementWorkContractV4, row: RowSpec
 
 function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchitecturalElementProfessionalPackagePartsV4 {
   const contract = operationContract(inventory);
+  const flatCeiling = contract.system === "CEILING";
   const baseParameters = [
     ...commonParameters(),
     ...operationParameters(contract.operation),
     ...variantParameters(contract.variant),
-    ...maximumScopeParameters(contract.operation, contract.variant),
+    ...maximumScopeParameters(contract.operation, contract.variant, contract.system),
     ...(contract.system === "CURVE" ? curveGeometryParameters(contract.operation) : []),
+    ...(flatCeiling ? flatCeilingGeometryParameters(contract.operation) : []),
   ];
   for (const dependency of contract.non_cost_dependencies) baseParameters.push(parameter(dependency, `Подтвержденная non-cost dependency: ${dependency}`, "text", "DEPENDENCY_REFERENCE"));
   const skeletonKeys = new Set(DRYWALL_AGGREGATE_SKELETON_ROW_KEYS_V4[contract.operation]);
-  const maximumKeys = new Set(drywallMaximumScopeLinesV5(contract.operation, contract.variant).map((candidate) => candidate.key));
-  const rows = [
-    ...(contract.system === "CURVE" ? curveGeometryRows(contract.operation) : []),
-    ...operationRows(contract.operation).filter((row) => !skeletonKeys.has(row.key) && !maximumKeys.has(row.key)),
-    // V5 owns variant-specific mobilization, interfaces and wet-zone resources as
-    // separate candidates; retaining the V4 variant bundle would double-count them.
-    ...completionRows(contract.operation).filter((row) => !maximumKeys.has(row.key)),
-    ...maximumScopeRows(contract.operation, contract.variant),
-  ];
+  const maximumCandidates = flatCeiling
+    ? drywallFlatCeilingMaximumScopeLinesV6(contract.operation, contract.variant)
+    : drywallMaximumScopeLinesV5(contract.operation, contract.variant);
+  const maximumKeys = new Set(maximumCandidates.map((candidate) => candidate.key));
+  const rows = flatCeiling
+    ? [...flatCeilingGeometryRows(contract.operation), ...maximumScopeRows(contract.operation, contract.variant, contract.system)]
+    : [
+      ...(contract.system === "CURVE" ? curveGeometryRows(contract.operation) : []),
+      ...operationRows(contract.operation).filter((row) => !skeletonKeys.has(row.key) && !maximumKeys.has(row.key)),
+      // V5 owns variant-specific mobilization, interfaces and wet-zone resources as
+      // separate candidates; retaining the V4 variant bundle would double-count them.
+      ...completionRows(contract.operation).filter((row) => !maximumKeys.has(row.key)),
+      ...maximumScopeRows(contract.operation, contract.variant, contract.system),
+    ];
   const formulaInputIds = new Set(rows.flatMap((row) => row.inputs));
   const retainedControlIds = new Set([
     "work_included", "estimate_scope_mode", "funding_source", "project_type", "product_profile_id",
-    "material_certificate_reference", "system_passport_reference", "normative_rate_code",
+    "material_certificate_reference", "system_passport_reference", "normative_rate_code", "area_m2",
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     ...contract.non_cost_dependencies,
   ]);
@@ -598,12 +706,14 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     const full = spec.required_for.length === 1;
     return { parameter_id: spec.parameter_id, label_ru: spec.label_ru, input_type: spec.input_type, priority: spec.priority, unit_id: spec.unit_id, ...(spec.minimum == null ? {} : { minimum: spec.minimum }), ...(spec.maximum == null ? {} : { maximum: spec.maximum }), ...(spec.choices ? { choices: spec.choices } : {}), visible_when: full ? FULL_ONLY : ALWAYS, required_when: full ? FULL_ONLY : ALWAYS, formula_consumers: [...(consumers.get(spec.parameter_id) ?? [contract.professional_proof_bundle_id])], source_ownership: ["USER_EXPLICIT", "PROJECT_DOCUMENT", "MATERIAL_PASSPORT", "APPLICABLE_NORM", "VERIFIED_RATEBOOK"] };
   };
-  const schema: ProfessionalDomainParameterSchemaV1 = { schema_id: `${inventory.canonical_technology_id}:drywall-architectural-element-parameter-schema:v4`, schema_version: "4.0.0", technology_id: inventory.canonical_technology_id, parameters: parameters.map(domainParameter), quantity_alternatives: [["area_m2"], ["length_m", "width_m"]], derived_parameter_rules: [{ target_parameter_id: "area_m2", output_unit_id: "m2", alternatives: [{ input_parameter_ids: ["length_m", "width_m"], expression: "length_m × width_m", calculate: (v) => v.length_m * v.width_m }] }] };
-  const formula = (row: RowSpec): ProfessionalAssemblyFormulaV4 => ({ formula_id: `${inventory.canonical_technology_id}:drywall-architectural-element-v4:${row.key}:FormulaGraphV4`, expression: row.expression, input_parameter_ids: row.inputs, output_unit_id: row.output_unit, calculate: row.calculate });
+  const namespace = flatCeiling ? `${inventory.catalog_id}:drywall-flat-ceiling-v6` : `${inventory.canonical_technology_id}:drywall-architectural-element-v4`;
+  const semanticVersion = flatCeiling ? "6.0.0" : "4.0.0";
+  const schema: ProfessionalDomainParameterSchemaV1 = { schema_id: `${flatCeiling ? inventory.catalog_id : inventory.canonical_technology_id}:${flatCeiling ? "drywall-flat-ceiling-parameter-schema:v6" : "drywall-architectural-element-parameter-schema:v4"}`, schema_version: semanticVersion, technology_id: inventory.canonical_technology_id, parameters: parameters.map(domainParameter), quantity_alternatives: [["area_m2"], ["length_m", "width_m"]], derived_parameter_rules: [{ target_parameter_id: "area_m2", output_unit_id: "m2", alternatives: [{ input_parameter_ids: ["length_m", "width_m"], expression: "length_m × width_m", calculate: (v) => v.length_m * v.width_m }] }] };
+  const formula = (row: RowSpec): ProfessionalAssemblyFormulaV4 => ({ formula_id: `${namespace}:${row.key}:${flatCeiling ? "FormulaGraphV6" : "FormulaGraphV4"}`, expression: row.expression, input_parameter_ids: row.inputs, output_unit_id: row.output_unit, calculate: row.calculate });
   const dependencies = contract.non_cost_dependencies.map((id) => `typed-child:${id}`);
   const assemblyRow = (row: RowSpec): ProfessionalAssemblyRowDefinitionV4 => ({
-    row_id: `${inventory.canonical_technology_id}:drywall-architectural-element-v4:row:${row.key}`, section: row.section, category: row.category, title_ru: row.title, formula: formula(row),
-    cost_ownership: row.ownership ?? "priced_resource", cost_owner_id: `DRYWALL_ARCHITECTURAL_ELEMENT_V4:${contract.operation}:${inventory.catalog_id}:${row.key}`, semantic_owner: drywallArchitecturalElementProfessionalOwnerIdV4(inventory.catalog_id), normative_source_ids: contract.normative_source_ids,
+    row_id: `${namespace}:row:${row.key}`, section: row.section, category: row.category, title_ru: row.title, formula: formula(row),
+    cost_ownership: row.ownership ?? "priced_resource", cost_owner_id: `${flatCeiling ? "DRYWALL_FLAT_CEILING_V6" : "DRYWALL_ARCHITECTURAL_ELEMENT_V4"}:${contract.operation}:${inventory.catalog_id}:${row.key}`, semantic_owner: drywallArchitecturalElementProfessionalOwnerIdV4(inventory.catalog_id), normative_source_ids: contract.normative_source_ids,
     inclusion_condition: row.scopes === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true", procurement_eligible: row.procurement ?? false, normative_trace_v3: trace(contract, row),
     price_route_v3: row.ownership === "informational_output" ? { kind: "NOT_APPLICABLE_INFORMATIONAL_OUTPUT", reason: "Контрольный выход не образует повторной стоимости." } : { kind: "RUNTIME_VALIDATED_INPUT", unit_price_parameter_id: `unit_price_${row.key}_kgs`, price_basis_reference_parameter_id: "price_basis_reference", price_basis_date_parameter_id: "price_basis_date", currency_from_request: true, minimum_exclusive: 0 },
     resource_graph_node_v3: { graph_version: "ProfessionalResourceGraphV3", typed_child_boundary: contract.operation, resource_class: row.resource_class, dependency_ids: dependencies, non_cost_dependencies_only: contract.non_cost_dependencies.length > 0, context_parameter_ids: contextIds, forbidden_cost_scopes: contract.forbidden_cost_scope }, normative_proof_bundle_id_v3: contract.normative_proof_bundle_id, professional_proof_bundle_id_v3: contract.professional_proof_bundle_id,
@@ -612,16 +722,74 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     const needed = new Set(["work_included", "price_basis_reference", "price_basis_date", ...contextIds]);
     for (const row of childRows) { for (const id of row.inputs) needed.add(id); if (row.ownership !== "informational_output") needed.add(`unit_price_${row.key}_kgs`); }
     const assemblyParameter = (id: string): ProfessionalAssemblyParameterDefinitionV4 => { const spec = byId.get(id); if (!spec) throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_PARAMETER_MISSING:${inventory.catalog_id}:${id}`); return { parameter_id: id, title_ru: spec.label_ru, role: spec.role, unit_id: spec.unit_id, required_for: modes }; };
-    return { child_passport_id: `${inventory.canonical_technology_id}:drywall-architectural-element-v4:${suffix}-passport`, child_passport_version: "4.0.0", domain_owner: "interior_finishes_complete_v1", assembly_id: `${inventory.canonical_technology_id}:drywall-architectural-element-v4:${suffix}-assembly`, title_ru: `${suffix === "core" ? "Основной" : "Полный"} состав: ${inventory.localized_name_ru}`, scope_trigger_parameter: "work_included", scope_trigger_values: [true], supported_scope_modes: modes, parameters: [...needed].map(assemblyParameter), rows: childRows.map(assemblyRow) };
+    return { child_passport_id: `${namespace}:${suffix}-passport`, child_passport_version: semanticVersion, domain_owner: "interior_finishes_complete_v1", assembly_id: `${namespace}:${suffix}-assembly`, title_ru: `${suffix === "core" ? "Основной" : "Полный"} состав: ${inventory.localized_name_ru}`, scope_trigger_parameter: "work_included", scope_trigger_values: [true], supported_scope_modes: modes, parameters: [...needed].map(assemblyParameter), rows: childRows.map(assemblyRow) };
   };
   const rateSource = contract.operation === "REPAIR" ? KG_KRERR : KG_KRER;
-  return { contract, schema, child_assemblies: [child("core", BOTH_SCOPES, rows.filter((row) => row.scopes === "BOTH")), child("full", FULL_SCOPE, rows.filter((row) => row.scopes === "FULL"))], normative_profile: { profile_id: `${inventory.canonical_technology_id}:drywall-architectural-element-kg-profile:v4`, profile_version: "4.0.0", technology_id: inventory.canonical_technology_id, jurisdiction: "KG", requested_source_ids: [KG_SP, rateSource, KG_SAFETY, KG_MATERIAL], requested_source_types: ["WORK_EXECUTION_STANDARD", "RESOURCE_ESTIMATE_NORM", "MATERIAL_STANDARD"], rejected_foreign_source_ids: ["RU_SP_163", "RU_GESN_10", "ISO_6308_WITHDRAWN", "ASTM_C1396", "EN_520"] }, required_stages: contract.required_stages, optional_stages: contract.optional_stages, resource_policy: { policy_id: `${inventory.canonical_technology_id}:drywall-architectural-element-resource-policy:v4`, technology_id: inventory.canonical_technology_id, required_categories: ["material", "labor", "equipment", "transport", "waste", "testing", "documentation"], optional_categories: ["subcontract_service", "temporary_work"], forbidden_generic_rows: ["Материалы", "Работы", "Оборудование", "Другое", "Комплект работ", "Основные материалы"], one_bundle_resource_replacement_forbidden: true } };
+  return { contract, schema, child_assemblies: [child("core", BOTH_SCOPES, rows.filter((row) => row.scopes === "BOTH")), child("full", FULL_SCOPE, rows.filter((row) => row.scopes === "FULL"))], normative_profile: { profile_id: `${namespace}:kg-profile`, profile_version: semanticVersion, technology_id: inventory.canonical_technology_id, jurisdiction: "KG", requested_source_ids: [KG_SP, rateSource, KG_SAFETY, KG_MATERIAL], requested_source_types: ["WORK_EXECUTION_STANDARD", "RESOURCE_ESTIMATE_NORM", "MATERIAL_STANDARD"], rejected_foreign_source_ids: ["RU_SP_163", "RU_GESN_10", "ISO_6308_WITHDRAWN", "ASTM_C1396", "EN_520"] }, required_stages: contract.required_stages, optional_stages: contract.optional_stages, resource_policy: { policy_id: `${namespace}:resource-policy`, technology_id: inventory.canonical_technology_id, required_categories: ["material", "labor", "equipment", "transport", "waste", "testing", "documentation"], optional_categories: ["subcontract_service", "temporary_work"], forbidden_generic_rows: ["Материалы", "Работы", "Оборудование", "Другое", "Комплект работ", "Основные материалы", "Прочие материалы", "Комплект оборудования"], one_bundle_resource_replacement_forbidden: true } };
 }
 
 export function isDrywallArchitecturalElementProfessionalCatalogIdV4(catalogId: string): boolean {
-  return AUTHORIZED.has(catalogId);
+  return ARCHITECTURAL_AUTHORIZED.has(catalogId);
 }
 
 export function buildDrywallArchitecturalElementProfessionalPackagePartsV4(inventory: InteriorFinishesDomainInventoryRow): DrywallArchitecturalElementProfessionalPackagePartsV4 | null {
-  return AUTHORIZED.has(inventory.catalog_id) ? buildParts(inventory) : null;
+  return ARCHITECTURAL_AUTHORIZED.has(inventory.catalog_id) ? buildParts(inventory) : null;
+}
+
+export function isDrywallFlatCeilingProfessionalCatalogIdV6(catalogId: string): boolean {
+  return FLAT_CEILING_AUTHORIZED.has(catalogId);
+}
+
+export function drywallFlatCeilingProfessionalOwnerIdV6(catalogId: string): string {
+  if (!FLAT_CEILING_AUTHORIZED.has(catalogId)) throw new Error(`DRYWALL_FLAT_CEILING_OWNER_OUTSIDE_SCOPE:${catalogId}`);
+  return drywallArchitecturalElementProfessionalOwnerIdV4(catalogId);
+}
+
+export function drywallFlatCeilingCalculationStrategyIdV6(catalogId: string): string {
+  if (!FLAT_CEILING_AUTHORIZED.has(catalogId)) throw new Error(`DRYWALL_FLAT_CEILING_STRATEGY_OUTSIDE_SCOPE:${catalogId}`);
+  return drywallArchitecturalElementCalculationStrategyIdV4(catalogId);
+}
+
+export function buildDrywallFlatCeilingProfessionalPackagePartsV6(inventory: InteriorFinishesDomainInventoryRow): DrywallArchitecturalElementProfessionalPackagePartsV4 | null {
+  return FLAT_CEILING_AUTHORIZED.has(inventory.catalog_id) ? buildParts(inventory) : null;
+}
+
+export function buildIndividualDrywallFlatCeilingEstimatePassportV6(
+  inventory: InteriorFinishesDomainInventoryRow,
+  parts: DrywallArchitecturalElementProfessionalPackagePartsV4 = buildParts(inventory),
+): IndividualProfessionalEstimatePassportV6 {
+  if (!FLAT_CEILING_AUTHORIZED.has(inventory.catalog_id)) throw new Error(`DRYWALL_FLAT_CEILING_PASSPORT_OUTSIDE_SCOPE:${inventory.catalog_id}`);
+  const operation = parts.contract.operation as DrywallFlatCeilingOperationV6;
+  const variant = parts.contract.variant as DrywallFlatCeilingVariantV6;
+  const rows = parts.child_assemblies.flatMap((child) => child.rows);
+  const formulaSummary = rows.map((row) => ({ id: row.formula.formula_id, expression: row.formula.expression, inputs: row.formula.input_parameter_ids, unit: row.formula.output_unit_id }));
+  const resourceSummary = rows.map((row) => ({ id: row.row_id, owner: row.cost_owner_id, category: row.category, graph: row.resource_graph_node_v3 }));
+  const expectedCandidates = drywallFlatCeilingExpectedCandidatesV6(operation, variant);
+  return {
+    schemaVersion: "IndividualProfessionalEstimatePassportV6",
+    catalogId: inventory.catalog_id,
+    titleRu: inventory.localized_name_ru,
+    operation,
+    variant,
+    productionOwnerId: drywallFlatCeilingProfessionalOwnerIdV6(inventory.catalog_id),
+    calculationStrategyId: drywallFlatCeilingCalculationStrategyIdV6(inventory.catalog_id),
+    parameterSchemaId: parts.schema.schema_id,
+    formulaGraphId: `FormulaGraphV6:${inventory.catalog_id}`,
+    resourceGraphId: `ResourceGraphV6:${inventory.catalog_id}`,
+    includedScope: parts.contract.owned_cost_scope,
+    excludedScope: parts.contract.forbidden_cost_scope,
+    dependencyOrder: parts.contract.non_cost_dependencies,
+    typedChildBoundaries: parts.contract.forbidden_cost_scope,
+    normativeSourceIds: parts.contract.normative_source_ids,
+    parameterCount: parts.schema.parameters.length,
+    boqRowCount: rows.length,
+    expectedCandidateCount: expectedCandidates.length,
+    candidateCoveragePercent: 100,
+    shownButUnusedParameterCount: 0,
+    hiddenQuantitativeAssumptionCount: 0,
+    identityHash: estimateDeterministicHash({ catalogId: inventory.catalog_id, titleRu: inventory.localized_name_ru, operation, variant }),
+    parameterSchemaHash: estimateDeterministicHash(parts.schema),
+    formulaGraphHash: estimateDeterministicHash(formulaSummary),
+    resourceGraphHash: estimateDeterministicHash(resourceSummary),
+  };
 }

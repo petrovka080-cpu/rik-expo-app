@@ -5,6 +5,11 @@ import type {
   DrywallArchitecturalElementProfessionalPackagePartsV4,
   DrywallArchitecturalElementVariantV4,
 } from "./drywallArchitecturalElementsProfessionalV4";
+import {
+  drywallFlatCeilingExpectedCandidatesV6,
+  type DrywallFlatCeilingOperationV6,
+  type DrywallFlatCeilingVariantV6,
+} from "./drywallFlatCeilingExpectedScopeV6";
 
 export type DrywallMaximumScopeLineV5 = {
   key: string;
@@ -342,6 +347,7 @@ const VARIANT: Readonly<Record<DrywallArchitecturalElementVariantV4, readonly Dr
     line("variant_wet_penetration_sealing", "Влажная зона", "material", "Герметизация кромок и проходок влажной зоны", "kg", "material"),
     line("variant_wet_moisture_protocol", "Влажная зона", "documentation", "Протокол влажности и условий закрытия", "document", "waste_hse_document"),
   ],
+  high_load: [],
 });
 
 const OPERATION: Readonly<Record<DrywallArchitecturalElementOperationV4, readonly DrywallMaximumScopeLineV5[]>> = Object.freeze({
@@ -350,6 +356,34 @@ const OPERATION: Readonly<Record<DrywallArchitecturalElementOperationV4, readonl
 
 export function drywallMaximumScopeLinesV5(operation: DrywallArchitecturalElementOperationV4, variant: DrywallArchitecturalElementVariantV4): readonly DrywallMaximumScopeLineV5[] {
   return [...COMMON, ...OPERATION[operation], ...VARIANT[variant]];
+}
+
+export function drywallFlatCeilingMaximumScopeLinesV6(
+  operation: DrywallFlatCeilingOperationV6,
+  variant: DrywallFlatCeilingVariantV6,
+): readonly DrywallMaximumScopeLineV5[] {
+  const family = (category: DrywallMaximumScopeLineV5["category"]): DrywallMaximumScopeLineV5["candidate_family"] => {
+    if (category === "material") return "material";
+    if (category === "equipment") return "machine";
+    if (category === "subcontract_service") return "service";
+    if (category === "testing") return "test";
+    if (category === "transport") return "logistics";
+    if (category === "documentation" || category === "waste") return "waste_hse_document";
+    return "operation";
+  };
+  return drywallFlatCeilingExpectedCandidatesV6(operation, variant).map((candidate) => ({
+    key: candidate.candidateId,
+    section: `Плоский подвесной потолок — ${candidate.category}`,
+    category: candidate.category,
+    title_ru: candidate.titleRu,
+    quantity_parameter_id: `quantity_${candidate.candidateId}`,
+    quantity_label_ru: `Проектное/нормативное количество: ${candidate.titleRu}`,
+    unit_id: candidate.unitId,
+    parameter_role: candidate.category === "testing" || candidate.category === "documentation" ? "CONTROL_PLAN_VALUE" : "PROJECT_QUANTITY",
+    resource_class: `flat-ceiling:${candidate.category}:${candidate.candidateId}`,
+    procurement_eligible: candidate.category === "material" || candidate.category === "transport",
+    candidate_family: family(candidate.category),
+  }));
 }
 
 export const DRYWALL_AGGREGATE_SKELETON_ROW_KEYS_V4: Readonly<Record<DrywallArchitecturalElementOperationV4, readonly string[]>> = Object.freeze({

@@ -4,6 +4,7 @@ export * from "./drywallCeilingBulkheadNormativeProofV3";
 export * from "./drywallCeilingBulkheadRevisionMigrationV3";
 export * from "./drywallArchitecturalElementsProfessionalV4";
 export * from "./drywallArchitecturalElementsMaximumScopeV5";
+export * from "./drywallFlatCeilingExpectedScopeV6";
 export * from "./drywallArchitecturalElementsRevisionMigrationV4";
 export * from "./drywallArchitecturalElementsNormativeProofV4";
 export * from "./domainPackage";

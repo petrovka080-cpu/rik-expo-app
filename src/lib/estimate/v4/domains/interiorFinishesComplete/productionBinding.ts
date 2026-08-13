@@ -28,7 +28,10 @@ import {
 import {
   drywallArchitecturalElementCalculationStrategyIdV4,
   drywallArchitecturalElementProfessionalOwnerIdV4,
+  drywallFlatCeilingCalculationStrategyIdV6,
+  drywallFlatCeilingProfessionalOwnerIdV6,
   isDrywallArchitecturalElementProfessionalCatalogIdV4,
+  isDrywallFlatCeilingProfessionalCatalogIdV6,
 } from "./drywallArchitecturalElementsProfessionalV4";
 
 export const INTERIOR_FINISHES_PRODUCTION_BINDING_VERSION =
@@ -116,12 +119,16 @@ export function buildInteriorFinishesProductionDraftV1(
     ? drywallCeilingBulkheadProfessionalOwnerIdV3(input.catalog_id)
     : isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
       ? drywallArchitecturalElementProfessionalOwnerIdV4(input.catalog_id)
-      : passportId;
+      : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
+        ? drywallFlatCeilingProfessionalOwnerIdV6(input.catalog_id)
+        : passportId;
   const calculationStrategyId = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
     ? drywallCeilingBulkheadCalculationStrategyIdV3(input.catalog_id)
     : isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
       ? drywallArchitecturalElementCalculationStrategyIdV4(input.catalog_id)
-      : technology.technology_id;
+      : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
+        ? drywallFlatCeilingCalculationStrategyIdV6(input.catalog_id)
+        : technology.technology_id;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
   const parameterMetadata = Object.fromEntries(schema.parameters.map((parameter) => [
     parameter.parameter_id,
