@@ -1,0 +1,2 @@
+import { readPostAuditArtifact } from "./batch001PostAuditR2TestSupport";
+test("M5 вычитает exact16: 4005 -> 3989", () => { const a=readPostAuditArtifact<Record<string,unknown>>("11-queue/GLOBAL_AFTER_BATCH001_UNION_INTERSECTION_PROOF.json"); expect(a.originalM5Count).toBe(4005); expect(a.completedCount).toBe(16); expect(a.remainingCount).toBe(3989); expect(a.intersectionCount).toBe(0); expect(a.unionCount).toBe(4005); });

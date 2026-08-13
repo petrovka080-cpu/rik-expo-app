@@ -1,0 +1,2 @@
+import { readPostAuditArtifact } from "./batch001PostAuditR2TestSupport";
+test("Web и native Android API34 имеют 16/16", () => { const w=readPostAuditArtifact<Record<string,unknown>>("07-runtime/WEB_RUNTIME_RECOUNT.json"); const a=readPostAuditArtifact<Record<string,unknown>>("07-runtime/ANDROID_API34_RECOUNT.json"); expect(w.greenCount).toBe(16); expect(a.greenCount).toBe(16); expect(a.webViewSubstitute).toBe(false); });

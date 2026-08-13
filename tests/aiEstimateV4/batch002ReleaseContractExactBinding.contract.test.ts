@@ -1,0 +1,2 @@
+import { readPostAuditArtifact } from "./batch001PostAuditR2TestSupport";
+test("successor exact-bound и placeholder-free", () => { const a=readPostAuditArtifact<Record<string,unknown>>("13-batch002-release/BATCH002_SELECTION_EXACT_PREDECESSOR_BINDING.json"); expect(a.candidateHead).toMatch(/^[0-9a-f]{40}$/u); expect(a.candidateTree).toMatch(/^[0-9a-f]{40}$/u); expect(a.placeholderCount).toBe(0); });
