@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-03",
+  "technologyFamily": "PROTECTION_BREAKERS_AND_RCD",
+  "families": [
+    "BREAKER",
+    "RCD"
+  ],
+  "groups": 16,
+  "works": 94,
+  "admission": "GREEN_94_OF_94",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
