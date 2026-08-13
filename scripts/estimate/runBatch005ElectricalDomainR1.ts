@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
-import { csv, setHash, sha256, stableJson, writeDeterministic, type JsonRecord } from "./postM1ReadmissionR2Core";
+import { csv, setHash, sha256, stableJson, writeDeterministic } from "./postM1ReadmissionR2Core";
 import {
   ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS,
   ELECTRICAL_COMPLETE_DOMAIN_VERSION,
