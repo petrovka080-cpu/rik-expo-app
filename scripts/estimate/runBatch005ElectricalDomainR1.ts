@@ -111,6 +111,7 @@ writeJson("00-activation/BATCH005_SCOPE_GUARD.json", {
   forbiddenOwners: ["SECURITY_ACCESS_CONTROL", "ICT_LOW_CURRENT_COMMUNICATIONS", "FIRE_LIFE_SAFETY_SYSTEM", "ENERGY_GENERATION_FACILITY", "MECHANICAL_PROCESS", "CIVIL_STANDALONE", "STRUCTURAL_STANDALONE"],
   batch006Selected: false, verdict: "GREEN_SCOPE_GUARD",
 });
+mkdirSync(path.join(output, "01-global"), { recursive: true });
 copyFileSync(path.join(predecessor, "01-global/GLOBAL_11610_DOMAIN_IDENTITY_LEDGER.jsonl"), path.join(output, "01-global/GLOBAL_11610_DOMAIN_IDENTITY_LEDGER.jsonl"));
 writeJson("01-global/GLOBAL_PARTITION_V8_PROOF.json", {
   universe: 11610, admitted: admittedAfter.length, m5Remaining: m5After.length, m6Remaining: m6After.length,
