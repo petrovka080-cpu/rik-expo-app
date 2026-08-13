@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-08",
+  "technologyFamily": "SUBSTATIONS_AND_SWITCHGEAR",
+  "families": [
+    "distribution_board_outdoor",
+    "distribution_substation",
+    "outdoor_switchgear",
+    "package_transformer_substation",
+    "substation_10kv",
+    "substation_35kv",
+    "substation_110kv",
+    "transformer_substation"
+  ],
+  "groups": 8,
+  "works": 40,
+  "admission": "GREEN_40_OF_40",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
