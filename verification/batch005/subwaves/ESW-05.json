@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "Batch005ImmutableSubwaveAdmissionR1",
+  "subwaveId": "ESW-05",
+  "technologyFamily": "LIGHTING_AND_LED_SYSTEMS",
+  "families": [
+    "LIGHTING",
+    "LED_STRIP"
+  ],
+  "groups": 16,
+  "works": 94,
+  "admission": "GREEN_94_OF_94",
+  "productionRuntime": "electricalComplete",
+  "independentAudit": "FOCUSED_EXHAUSTIVE_CONTRACT_GREEN",
+  "queueMutationDeferredToExactFinalRebase": true
+}
+
