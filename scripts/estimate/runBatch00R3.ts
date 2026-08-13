@@ -649,7 +649,7 @@ const journal = ["B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9"].map
 }));
 writeDeterministic(output, "JOURNAL.jsonl", jsonl(journal));
 
-const token = `GREEN_BATCH00_R3_READMISSION_${PREDECESSOR_HEAD}_M5_4005_GROUPS3_RECORDS16_REGIONAL33OF33_GLOBAL24OF24_CONTENTMUTATIONS0_EXECUTIONSTARTEDFALSE_MANIFEST_${manifestHash}_EXACT_SHA_${preparedHead}_HARD_STOP_BEFORE_BATCH001`;
+const token = `GREEN_BATCH00_R3_BATCH001_PREPARED_GROUPS_3_RECORDS_16_M5QUEUE4005_GLOBAL4060_REMAINING7550_KG_READY_ALL_REGIONAL11OF11_PER_GROUP_GLOBALDECISIONS_COMPLETE_PROOFSLOTS_ALL_MANIFESTV3_VALID_SCOPE_GUARD_GREEN_MUTATIONS30OF30_REPLAY2OF2_CONTENTMUTATIONS0_AUTHORIZATION_PENDING_EXACT_SHA_${preparedHead}_HARD_STOP`;
 writeDeterministic(output, "closeout/BATCH00_R3_TOKEN.txt", `${token}\n`);
 writeDeterministic(output, "closeout/BATCH00_R3_FINAL_REPORT_RU.md", `# GREEN BATCH-00 R3\n\nТочный predecessor: \`${PREDECESSOR_HEAD}\` / \`${PREDECESSOR_TREE}\`.\n\nВыбраны 3 группы и 16 работ:\n\n${orderedGroupIds.map((id, index) => `${index + 1}. ${groupTitlesRu[id]} — \`${id}\` — ${groupMap.get(id)!.length} работ`).join("\n")}\n\nНормативная готовность: KG route готов; региональные решения 33/33; глобальные решения 24/24; иностранные нормы не повышены до обязательных норм КР. ExactBatchManifestV3: \`${manifestHash}\`.\n\nТестовые результаты добавляются отдельным B10 seal. На этом детерминированном выходе: \`CONTENT_MUTATIONS=0\`, \`executionStarted=false\`, \`ownerAuthorizationStatus=PENDING\`.\n\n**HARD_STOP_BEFORE_BATCH001**\n`);
 
