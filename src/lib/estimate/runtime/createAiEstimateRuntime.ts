@@ -16,7 +16,7 @@ import {
   type AiEstimateRuntimePorts,
 } from "../application/createAiEstimateRuntimePorts";
 import type { AiEstimateRuntime } from "./AiEstimateRuntime";
-import { migrateDrywallCeilingBulkheadRevisionV3 } from "../v4/domains/interiorFinishesComplete/drywallCeilingBulkheadRevisionMigrationV3";
+import { migrateInteriorFinishesProfessionalRevisionV4 } from "../v4/domains/interiorFinishesComplete/drywallArchitecturalElementsRevisionMigrationV4";
 
 export type CreateAiEstimateRuntimeOptions = {
   ports?: Partial<AiEstimateRuntimePorts>;
@@ -76,7 +76,7 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     buildParameterPassport(input) {
-      const revision = migrateDrywallCeilingBulkheadRevisionV3(input.revision);
+      const revision = migrateInteriorFinishesProfessionalRevisionV4(input.revision);
       const passport = buildAiEstimateNormativeWorkParameterPassport(revision.selectedTemplateId);
       const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
       const completenessModel = buildNormativeParameterCompletenessModel(revision);
@@ -97,16 +97,16 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     applyParameterOverride(input) {
-      return applyAiEstimateParameterOverride({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
+      return applyAiEstimateParameterOverride({ ...input, revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) });
     },
     applyParameterBatchOverride(input) {
-      return applyAiEstimateParameterBatchOverride({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
+      return applyAiEstimateParameterBatchOverride({ ...input, revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) });
     },
     answerMissingInput(input) {
-      return applyAiEstimateMissingInputAnswer({ ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
+      return applyAiEstimateMissingInputAnswer({ ...input, revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) });
     },
     approveRevision(input) {
-      input = { ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) };
+      input = { ...input, revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) };
       const approvedAt = input.approvedAt ?? new Date().toISOString();
       const counts = rowCounts(input.revision);
       ports.ledger.upsertDraft({
@@ -153,7 +153,7 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     rebuildFromRevision(input) {
-      input = { ...input, revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) };
+      input = { ...input, revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) };
       const firstParam = Object.entries(input.revision.params)
         .find(([, param]) => typeof param.value === "number");
       const patch = parseUserParamPatch({
@@ -172,11 +172,11 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       };
     },
     buildPdfSnapshot(input) {
-      return ports.pdf.buildPdfSnapshot({ revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision) });
+      return ports.pdf.buildPdfSnapshot({ revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision) });
     },
     buildBuyerPackage(input) {
       return ports.buyerPackage.buildBuyerPackage({
-        revision: migrateDrywallCeilingBulkheadRevisionV3(input.revision),
+        revision: migrateInteriorFinishesProfessionalRevisionV4(input.revision),
         snapshot: input.snapshot,
       });
     },
@@ -189,7 +189,7 @@ export function createAiEstimateRuntime(options: CreateAiEstimateRuntimeOptions 
       return page;
     },
     validate(input) {
-      const revision = input.revision ? migrateDrywallCeilingBulkheadRevisionV3(input.revision) : null;
+      const revision = input.revision ? migrateInteriorFinishesProfessionalRevisionV4(input.revision) : null;
       const graph = revision ? buildAiEstimateParameterGraph({ revision }) : null;
       const dag = revision ? buildAiEstimateFormulaDag({ revision }) : null;
       const blockingReasons = [

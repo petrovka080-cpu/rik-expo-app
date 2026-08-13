@@ -33,26 +33,37 @@ import {
 } from "./technologyProfiles";
 import {
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
-  type DrywallCeilingBulkheadProfessionalPackagePartsV3,
 } from "./drywallCeilingBulkheadProfessionalV3";
+import { buildDrywallArchitecturalElementProfessionalPackagePartsV4 } from "./drywallArchitecturalElementsProfessionalV4";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
 
-type InteriorProfessionalOverlayProviderV3 = (
-  inventory: InteriorFinishesDomainInventoryRow,
-) => DrywallCeilingBulkheadProfessionalPackagePartsV3 | null;
+type InteriorProfessionalOverlayV4 = {
+  contract: { group: string; variant: string };
+  schema: ProfessionalDomainParameterSchemaV1;
+  child_assemblies: readonly ProfessionalChildAssemblyV4[];
+  normative_profile: ProfessionalNormativeProfileV1;
+  required_stages: readonly string[];
+  optional_stages: readonly string[];
+  resource_policy: ProfessionalResourceCompletenessPolicyV1;
+};
 
-const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V3: readonly InteriorProfessionalOverlayProviderV3[] = Object.freeze([
+type InteriorProfessionalOverlayProviderV4 = (
+  inventory: InteriorFinishesDomainInventoryRow,
+) => InteriorProfessionalOverlayV4 | null;
+
+const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4: readonly InteriorProfessionalOverlayProviderV4[] = Object.freeze([
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
+  buildDrywallArchitecturalElementProfessionalPackagePartsV4,
 ]);
 
-function resolveInteriorProfessionalOverlayV3(
+function resolveInteriorProfessionalOverlayV4(
   inventory: InteriorFinishesDomainInventoryRow,
-): DrywallCeilingBulkheadProfessionalPackagePartsV3 | null {
-  const matches = INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V3
+): InteriorProfessionalOverlayV4 | null {
+  const matches = INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4
     .map((provider) => provider(inventory))
-    .filter((value): value is DrywallCeilingBulkheadProfessionalPackagePartsV3 => value !== null);
+    .filter((value): value is InteriorProfessionalOverlayV4 => value !== null);
   if (matches.length > 1) {
     throw new Error(`INTERIOR_PROFESSIONAL_OWNER_DUPLICATE:${inventory.catalog_id}`);
   }
@@ -419,7 +430,7 @@ const resourcePolicies: ProfessionalResourceCompletenessPolicyV1[] = [...INTERIO
 for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
   const profile = interiorOperationProfile(inventory);
   const technologyId = inventory.canonical_technology_id;
-  const professionalOverlay = resolveInteriorProfessionalOverlayV3(inventory);
+  const professionalOverlay = resolveInteriorProfessionalOverlayV4(inventory);
   const schema = professionalOverlay?.schema ?? schemaFor(inventory);
   const resourceSourceId = normativeSourceId(inventory);
   const normProfile: ProfessionalNormativeProfileV1 = professionalOverlay?.normative_profile ?? {
@@ -436,7 +447,7 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
     technology_id: technologyId,
     operation_class: inventory.work_type.toUpperCase(),
     method: professionalOverlay
-      ? `DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_V3:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
+      ? `DRYWALL_PROFESSIONAL_OVERLAY:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
       : `${inventory.calculator_family_id}:${inventory.source_domain_id}:${inventory.work_type}:${inventory.scope_capability}`,
     material_system: inventory.work_type === "paint" ? "PAINT" : inventory.work_type === "prime" ? "PRIMER" : interiorMaterialSystemKey(inventory),
     output: { dimension: "AREA", unit_id: "m2" },

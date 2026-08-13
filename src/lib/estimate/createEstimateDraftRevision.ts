@@ -1359,6 +1359,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       ]) ||
       selectedTemplateId,
     originalPrompt: input.rawInput,
+    legacyFallbackUsed: professionalDomainContext ? false : undefined,
+    fallbackReason: professionalDomainContext ? null : undefined,
     projectionOwner: "estimate_draft_revision" as const,
   } satisfies Omit<EstimateResolvedIdentity, "checksum">;
   const resolvedIdentity: EstimateResolvedIdentity = {

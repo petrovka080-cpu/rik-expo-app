@@ -15,7 +15,7 @@ import {
   getRoadworksWaveAProductionRegistration,
   type RoadworksWaveAProductionRegistration,
 } from "./v4/roadworks";
-import { migrateDrywallCeilingBulkheadRevisionV3 } from "./v4/domains/interiorFinishesComplete/drywallCeilingBulkheadRevisionMigrationV3";
+import { migrateInteriorFinishesProfessionalRevisionV4 } from "./v4/domains/interiorFinishesComplete/drywallArchitecturalElementsRevisionMigrationV4";
 
 export type RecalculateEstimateDraftRevisionResult = {
   revision: EstimateDraftRevision;
@@ -127,7 +127,7 @@ export function recalculateEstimateDraftRevision(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
-  previous = migrateDrywallCeilingBulkheadRevisionV3(previous);
+  previous = migrateInteriorFinishesProfessionalRevisionV4(previous);
   const changedAt = input.createdAt ?? new Date().toISOString();
   const patched = applyUserParamPatch(previous, patch, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
@@ -222,7 +222,7 @@ export function recalculateEstimateDraftRevisionBatch(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
-  previous = migrateDrywallCeilingBulkheadRevisionV3(previous);
+  previous = migrateInteriorFinishesProfessionalRevisionV4(previous);
   if (patches.length === 0) {
     throw new Error("USER_PARAM_BATCH_EMPTY");
   }

@@ -82,7 +82,14 @@ export type ProfessionalAssemblyPriceRouteV3 =
 
 export type ProfessionalResourceGraphNodeV3 = {
   graph_version: "ProfessionalResourceGraphV3";
-  typed_child_boundary: "FRAME" | "ALIGN" | "CLAD";
+  typed_child_boundary:
+    | "FRAME"
+    | "ALIGN"
+    | "CLAD"
+    | "FINISH_JOINT"
+    | "INSULATE"
+    | "PREPARE"
+    | "REPAIR";
   resource_class: string;
   dependency_ids: readonly string[];
   non_cost_dependencies_only: boolean;
