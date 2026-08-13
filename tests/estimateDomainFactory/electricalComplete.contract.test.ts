@@ -8,6 +8,7 @@ import {
   ELECTRICAL_COMPLETENESS_SLOTS,
   ELECTRICAL_DOMAIN_INVENTORY,
   ELECTRICAL_REVIEWED_EXCLUSIONS,
+  buildElectricalProductionDraftV1,
   electricalCompleteDomainFactory,
   electricalResourceCandidatesFor,
 } from "../../src/lib/estimate/v4/domains/electricalComplete";
@@ -152,5 +153,45 @@ describe("Full Electrical professional domain", () => {
       expect(selection?.canonical_parameter_schema.canonicalWorkKey).toBe(inventory.work_key);
     }
   });
-});
 
+  test("preserves every full BOQ through production draft durable JSON, PDF and procurement projections", () => {
+    for (const inventory of ELECTRICAL_DOMAIN_INVENTORY) {
+      const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+      if (!technology) throw new Error(`TEST_ELECTRICAL_TECHNOLOGY_MISSING:${inventory.catalog_id}`);
+      const production = buildElectricalProductionDraftV1({
+        catalog_id: inventory.catalog_id,
+        work_key: inventory.work_key,
+        scope_mode: "FULL_APPLICABLE_SCOPE",
+        parent_revision_id: null,
+        parameter_values: parameterValues(inventory.catalog_id, "FULL_APPLICABLE_SCOPE"),
+        normative_request: {
+          country: "KG",
+          region: "Bishkek",
+          funding_source: "PRIVATE_RECOMMENDED",
+          project_type: "ELECTRICAL_PROJECT",
+          construction_state: ["TEST", "COMMISSION"].includes(inventory.operation_class) ? "COMMISSIONING" : "NEW",
+          contract_basis: [],
+          effective_date: "2026-08-13",
+          material_system: technology.material_system,
+          operation_class: technology.operation_class,
+          rate_code_by_source_id: {
+            KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
+            KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+          },
+        },
+        raw_input: inventory.localized_name_ru,
+        currency: "KGS",
+      });
+      if (!production.draft) throw new Error(`TEST_ELECTRICAL_PRODUCTION_BLOCKED:${inventory.catalog_id}`);
+      const cold = JSON.parse(JSON.stringify(production.draft)) as typeof production.draft;
+      const compiledRows = production.compile_result.compilation?.compiled_rows ?? [];
+      expect(cold.items).toHaveLength(compiledRows.length);
+      expect(cold.items.map((item) => item.sourceParameters?.rowCode)).toEqual(compiledRows.map((row) => row.row_id));
+      expect(cold.items.every((item) => item.formulaId && item.normSourceId && item.priceStatus === "USER_ENTERED_PRICE")).toBe(true);
+      const pdfProjection = cold.items.map((item) => [item.titleRu, item.quantity, item.unit, item.unitPrice]);
+      expect(pdfProjection).toHaveLength(cold.items.length);
+      const procurementProjection = cold.items.filter((item) => item.sourceParameters?.includedInProcurement === true);
+      expect(procurementProjection.length).toBe(compiledRows.filter((row) => row.procurement_eligible).length);
+    }
+  });
+});
