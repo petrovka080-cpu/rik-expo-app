@@ -12,6 +12,7 @@ import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
 } from "./ConsumerRepairProgressiveEstimatePanel";
+import { buildConsumerRepairEditableHistorySummary } from "./consumerRepairEditableHistorySummary";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
@@ -119,6 +120,9 @@ export function ConsumerRepairDraftPanel({
   const hasProcurementRows = Boolean(
     currentRevision?.boq.rows.some((row) => row.includedInProcurement),
   );
+  const editableHistorySummary = buildConsumerRepairEditableHistorySummary(
+    bundle?.estimateRevisionState,
+  );
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -203,6 +207,20 @@ export function ConsumerRepairDraftPanel({
           <View style={styles.selectedScope} testID="request-estimate-selected-scope">
             <Text style={styles.selectedScopeLabel}>Состав работ</Text>
             <Text style={styles.selectedScopeValue}>{selectedScopeOption.labelRu}</Text>
+          </View>
+        ) : null}
+        {editableHistorySummary ? (
+          <View
+            style={styles.selectedScope}
+            testID="consumer-estimate-edit-history-summary"
+          >
+            <Text style={styles.selectedScopeLabel}>История изменений</Text>
+            <Text
+              style={styles.selectedScopeValue}
+              testID={`consumer-estimate-edit-history-${editableHistorySummary.revisions}-revisions-${editableHistorySummary.diffs}-diffs`}
+            >
+              {editableHistorySummary.labelRu}
+            </Text>
           </View>
         ) : null}
         <ConsumerRepairProgressiveEstimatePanel
