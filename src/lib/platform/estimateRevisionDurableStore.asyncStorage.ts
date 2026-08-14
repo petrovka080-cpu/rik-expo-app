@@ -8,6 +8,7 @@ import {
   messageFromDurableError,
   parseDurableEnvelopeBundle,
   serializeRevisionBundle,
+  stableEstimateRevisionChecksum,
   type DurableEnvelope,
   type DurableFailureInjector,
   type DurableFailurePoint,
@@ -33,6 +34,25 @@ function storageKey(recordKey: string): string {
 const LOGICAL_KEY_INDEX_STORAGE_KEY = storageKey("__logical_key_index__");
 const REVISION_INDEX_STORAGE_KEY_PREFIX = storageKey("__revision_index__:");
 
+/**
+ * Android AsyncStorage reads SQLite values through a bounded CursorWindow.
+ * Keep every native value comfortably below that boundary while retaining the
+ * existing 16 MiB logical bundle capacity.
+ */
+export const ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS = 256 * 1024;
+const ASYNC_STORAGE_DURABLE_MAX_SERIALIZED_ENVELOPE_CHARS =
+  ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.asyncStorage * 2 +
+  64 * 1024;
+
+type AsyncStorageDurableChunkManifestV1 = {
+  schemaVersion: "estimate_revision_durable_chunk_manifest_v1";
+  key: string;
+  version: string;
+  chunkCount: number;
+  serializedLength: number;
+  serializedChecksum: string;
+};
+
 type DurableLogicalKeyIndex = {
   schemaVersion: "estimate_revision_durable_logical_key_index_v1";
   keys: string[];
@@ -45,6 +65,42 @@ type DurableRevisionIndex = {
 
 function revisionIndexStorageKey(key: string): string {
   return `${REVISION_INDEX_STORAGE_KEY_PREFIX}${encodeURIComponent(key)}`;
+}
+
+function chunkStorageKey(
+  revisionKey: string,
+  serializedChecksum: string,
+  index: number,
+): string {
+  return `${revisionKey}:chunk:${serializedChecksum}:${index}`;
+}
+
+function parseChunkManifest(
+  value: unknown,
+  expectedKey: string,
+  expectedVersion: string,
+): AsyncStorageDurableChunkManifestV1 | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const candidate = value as Partial<AsyncStorageDurableChunkManifestV1>;
+  const maxChunks = Math.ceil(
+    ASYNC_STORAGE_DURABLE_MAX_SERIALIZED_ENVELOPE_CHARS /
+      ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
+  );
+  if (
+    candidate.schemaVersion !== "estimate_revision_durable_chunk_manifest_v1" ||
+    candidate.key !== expectedKey ||
+    candidate.version !== expectedVersion ||
+    !Number.isSafeInteger(candidate.chunkCount) ||
+    (candidate.chunkCount ?? 0) < 1 ||
+    (candidate.chunkCount ?? 0) > maxChunks ||
+    !Number.isSafeInteger(candidate.serializedLength) ||
+    (candidate.serializedLength ?? 0) < 1 ||
+    (candidate.serializedLength ?? 0) >
+      ASYNC_STORAGE_DURABLE_MAX_SERIALIZED_ENVELOPE_CHARS ||
+    typeof candidate.serializedChecksum !== "string" ||
+    !/^[0-9a-f]{16}$/.test(candidate.serializedChecksum)
+  ) return null;
+  return candidate as AsyncStorageDurableChunkManifestV1;
 }
 
 function parseRecord<T>(value: string | null): T | null {
@@ -194,11 +250,115 @@ implements EstimateRevisionDurableStore {
     key: string,
     version: string,
   ): Promise<DurableEnvelope | null> {
-    return parseRecord<DurableEnvelope>(
-      await this.storage.getItem(
-        storageKey(durableRevisionRecordKey(key, version)),
-      ),
+    const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+    const record = parseRecord<DurableEnvelope | AsyncStorageDurableChunkManifestV1>(
+      await this.storage.getItem(revisionKey),
     );
+    if (record?.schemaVersion === "estimate_revision_durable_envelope_v1") {
+      return record as DurableEnvelope;
+    }
+    const manifest = parseChunkManifest(record, key, version);
+    if (!manifest) return null;
+    const chunks: string[] = [];
+    for (let index = 0; index < manifest.chunkCount; index += 1) {
+      const chunk = await this.storage.getItem(
+        chunkStorageKey(revisionKey, manifest.serializedChecksum, index),
+      );
+      if (
+        chunk === null ||
+        chunk.length < 1 ||
+        chunk.length > ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS
+      ) return null;
+      chunks.push(chunk);
+    }
+    const serializedEnvelope = chunks.join("");
+    if (
+      serializedEnvelope.length !== manifest.serializedLength ||
+      stableEstimateRevisionChecksum(serializedEnvelope) !==
+        manifest.serializedChecksum
+    ) return null;
+    const envelope = parseRecord<DurableEnvelope>(serializedEnvelope);
+    return envelope?.schemaVersion === "estimate_revision_durable_envelope_v1" &&
+        envelope.key === key &&
+        envelope.version === version
+      ? envelope
+      : null;
+  }
+
+  private async writeEnvelope(
+    key: string,
+    version: string,
+    envelope: DurableEnvelope,
+  ): Promise<void> {
+    const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+    const serializedEnvelope = JSON.stringify(envelope);
+    if (serializedEnvelope.length <= ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS) {
+      await this.storage.setItem(revisionKey, serializedEnvelope);
+      return;
+    }
+    const serializedChecksum = stableEstimateRevisionChecksum(serializedEnvelope);
+    const chunks: string[] = [];
+    let offset = 0;
+    while (offset < serializedEnvelope.length) {
+      let end = Math.min(
+        offset + ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
+        serializedEnvelope.length,
+      );
+      const lastCodeUnit = serializedEnvelope.charCodeAt(end - 1);
+      const nextCodeUnit = serializedEnvelope.charCodeAt(end);
+      if (
+        end < serializedEnvelope.length &&
+        lastCodeUnit >= 0xd800 &&
+        lastCodeUnit <= 0xdbff &&
+        nextCodeUnit >= 0xdc00 &&
+        nextCodeUnit <= 0xdfff
+      ) {
+        end -= 1;
+      }
+      chunks.push(serializedEnvelope.slice(offset, end));
+      offset = end;
+    }
+    for (let index = 0; index < chunks.length; index += 1) {
+      await this.storage.setItem(
+        chunkStorageKey(revisionKey, serializedChecksum, index),
+        chunks[index],
+      );
+    }
+    // The compact manifest is the revision commit point. A process death while
+    // staging chunks leaves them unreachable and cannot expose a partial row.
+    await this.storage.setItem(
+      revisionKey,
+      JSON.stringify({
+        schemaVersion: "estimate_revision_durable_chunk_manifest_v1",
+        key,
+        version,
+        chunkCount: chunks.length,
+        serializedLength: serializedEnvelope.length,
+        serializedChecksum,
+      } satisfies AsyncStorageDurableChunkManifestV1),
+    );
+  }
+
+  private async removeEnvelopeRecord(
+    key: string,
+    version: string,
+  ): Promise<void> {
+    const revisionKey = storageKey(durableRevisionRecordKey(key, version));
+    try {
+      const record = parseRecord<unknown>(await this.storage.getItem(revisionKey));
+      const manifest = parseChunkManifest(record, key, version);
+      if (manifest) {
+        for (let index = 0; index < manifest.chunkCount; index += 1) {
+          await this.storage.removeItem(
+            chunkStorageKey(revisionKey, manifest.serializedChecksum, index),
+          );
+        }
+      }
+    } catch {
+      // A legacy oversized value may itself exceed Android's CursorWindow.
+      // Removing its known base key is still safe and makes it unreachable.
+    }
+    await this.storage.removeItem(revisionKey);
   }
 
   async readBundle(key: string): Promise<RevisionBundle | null> {
@@ -240,10 +400,11 @@ implements EstimateRevisionDurableStore {
           bundle,
           ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES.asyncStorage,
         );
-        const revisionKey = storageKey(
-          durableRevisionRecordKey(key, serialized.version),
-        );
-        const existing = await this.readEnvelope(key, serialized.version);
+        // A pre-release oversized legacy AsyncStorage value can itself fail at
+        // the native read boundary. A fresh content-addressed write can safely
+        // replace it with a verified chunk manifest.
+        const existing = await this.readEnvelope(key, serialized.version)
+          .catch(() => null);
         if (
           currentVersion === serialized.version &&
           existing?.checksum === serialized.checksum &&
@@ -268,7 +429,7 @@ implements EstimateRevisionDurableStore {
           checksum: serialized.checksum,
           serializedBundle: serialized.serializedBundle,
         });
-        await this.storage.setItem(revisionKey, JSON.stringify(envelope));
+        await this.writeEnvelope(key, serialized.version, envelope);
         this.inject("after_revision_write");
 
         const verifiedEnvelope = await this.readEnvelope(key, serialized.version);
@@ -399,15 +560,9 @@ implements EstimateRevisionDurableStore {
         .filter((value): value is string => Boolean(value)),
     );
     const versions = await this.readRevisionIndex(key);
-    await Promise.all(
-      versions
-        .filter((version) => !retained.has(version))
-        .map((version) =>
-          this.storage.removeItem(
-            storageKey(durableRevisionRecordKey(key, version)),
-          )
-        ),
-    );
+    for (const version of versions.filter((candidate) => !retained.has(candidate))) {
+      await this.removeEnvelopeRecord(key, version);
+    }
     await this.writeRevisionIndex(key, [...retained]);
   }
 

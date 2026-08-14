@@ -1,4 +1,5 @@
 import {
+  ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
   AsyncStorageEstimateRevisionDurableStore,
   type AsyncKeyValueStorage,
 } from "../../src/lib/platform/estimateRevisionDurableStore.asyncStorage";
@@ -29,6 +30,27 @@ class AsyncStorageDouble implements AsyncKeyValueStorage {
 
   async getAllKeys(): Promise<string[]> {
     return [...this.values.keys()];
+  }
+}
+
+class CursorWindowBoundedAsyncStorageDouble extends AsyncStorageDouble {
+  constructor(private readonly maxValueLength: number) {
+    super();
+  }
+
+  override async getItem(key: string): Promise<string | null> {
+    const value = await super.getItem(key);
+    if (value && value.length > this.maxValueLength) {
+      throw new Error("SQLITE_BLOB_TOO_BIG_FOR_CURSOR_WINDOW");
+    }
+    return value;
+  }
+
+  override async setItem(key: string, value: string): Promise<void> {
+    if (value.length > this.maxValueLength) {
+      throw new Error("SQLITE_BLOB_TOO_BIG_FOR_CURSOR_WINDOW");
+    }
+    await super.setItem(key, value);
   }
 }
 
@@ -112,6 +134,26 @@ function bundle(
       createdAt: "2026-07-28T00:00:00.000Z",
     },
     events: [],
+  };
+}
+
+function largeBundle(
+  version: "r1" | "r2",
+  id = "async-storage-large-estimate",
+): RevisionBundle {
+  const source = bundle(version, id);
+  const baseItem = source.items[0];
+  if (!baseItem) throw new Error("large bundle fixture requires one base row");
+  return {
+    ...source,
+    items: Array.from({ length: 500 }, (_, index) => ({
+      ...baseItem,
+      id: `row-${version}-${index + 1}`,
+      titleRu: index === 0
+        ? `${version} unicode row ${"🙂".repeat(140_000)}`
+        : `${version} native complex row ${index + 1} ${"x".repeat(6_000)}`,
+      quantity: index + 1,
+    })),
   };
 }
 
@@ -277,6 +319,91 @@ describe("native AsyncStorage durable fallback", () => {
       estimateDraftRevisionState: { currentRevisionId: "r1" },
     });
     expect(globalDiscoveryCalls).toBe(0);
+  });
+
+  test("chunks a multi-megabyte 500-row revision below CursorWindow limits and survives restart", async () => {
+    const storage = new CursorWindowBoundedAsyncStorageDouble(
+      ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
+    );
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const written = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      null,
+      largeBundle("r1"),
+    );
+    expect(written).toMatchObject({ status: "WRITTEN" });
+    expect(Math.max(...[...storage.values.values()].map((value) => value.length)))
+      .toBeLessThanOrEqual(ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS);
+    expect([...storage.values.keys()].filter((key) => key.includes(":chunk:")).length)
+      .toBeGreaterThan(1);
+
+    const restarted = new AsyncStorageEstimateRevisionDurableStore(storage);
+    await expect(
+      restarted.recoverLastValid("async-storage-large-estimate"),
+    ).resolves.toMatchObject({
+      estimateDraftRevisionState: { currentRevisionId: "r1" },
+      items: expect.arrayContaining([
+        expect.objectContaining({ id: "row-r1-500" }),
+      ]),
+    });
+    expect((await restarted.readBundle("async-storage-large-estimate"))?.items)
+      .toHaveLength(500);
+    expect(
+      (await restarted.readBundle("async-storage-large-estimate"))?.items[0]
+        ?.titleRu.endsWith("🙂"),
+    ).toBe(true);
+  });
+
+  test("fails closed on a missing chunk and recovers the previous complete revision", async () => {
+    const storage = new CursorWindowBoundedAsyncStorageDouble(
+      ASYNC_STORAGE_DURABLE_CHUNK_MAX_CHARS,
+    );
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    const first = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      null,
+      largeBundle("r1"),
+    );
+    if (first.status === "FAILED") throw new Error(first.error.message);
+    const second = await store.writeBundleAtomically(
+      "async-storage-large-estimate",
+      first.version,
+      largeBundle("r2"),
+    );
+    if (second.status === "FAILED") throw new Error(second.error.message);
+    const secondChunkKey = [...storage.values.keys()].find((key) =>
+      key.includes(encodeURIComponent(second.version)) && key.includes(":chunk:")
+    );
+    if (!secondChunkKey) throw new Error("chunked current revision missing");
+    storage.values.delete(secondChunkKey);
+
+    await expect(store.readBundle("async-storage-large-estimate"))
+      .resolves.toBeNull();
+    await expect(store.recoverLastValid("async-storage-large-estimate"))
+      .resolves.toMatchObject({
+        estimateDraftRevisionState: { currentRevisionId: "r1" },
+      });
+  });
+
+  test("keeps backward compatibility with legacy single-record envelopes", async () => {
+    const storage = new AsyncStorageDouble();
+    const store = new AsyncStorageEstimateRevisionDurableStore(storage);
+    await expect(store.writeBundleAtomically(
+      "async-storage-estimate",
+      null,
+      bundle("r1"),
+    )).resolves.toMatchObject({ status: "WRITTEN" });
+    const revisionRecord = [...storage.values.entries()].find(([key]) =>
+      key.includes("@revision:async-storage-estimate:") && !key.includes(":chunk:")
+    );
+    expect(JSON.parse(revisionRecord?.[1] ?? "{}")).toMatchObject({
+      schemaVersion: "estimate_revision_durable_envelope_v1",
+    });
+    const restarted = new AsyncStorageEstimateRevisionDurableStore(storage);
+    await expect(restarted.recoverLastValid("async-storage-estimate"))
+      .resolves.toMatchObject({
+        estimateDraftRevisionState: { currentRevisionId: "r1" },
+      });
   });
 
   test("keeps R1 visible when a crash happens before the R2 pointer commit", async () => {
