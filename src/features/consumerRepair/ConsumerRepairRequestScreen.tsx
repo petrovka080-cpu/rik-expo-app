@@ -199,6 +199,17 @@ export function isRequestEstimateLaunchBundleRendered(input: {
   );
 }
 
+export function shouldReuseAcknowledgedRequestEstimateLaunch(input: {
+  acknowledged: boolean;
+  requestDraftId: string | null | undefined;
+  autoPrepare?: boolean;
+  autoPdf?: boolean;
+}): boolean {
+  if (!input.acknowledged) return false;
+  if (input.requestDraftId?.trim()) return true;
+  return !input.autoPrepare && !input.autoPdf;
+}
+
 export function isRequestEstimatePromptComposerRendered(input: {
   bundle: ConsumerRepairDraftBundle | null;
   problemText: string;
@@ -436,7 +447,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         launchId: this.props.launchId,
         fingerprint: this.props.launchFingerprint,
       });
-    if (reconciledLaunch.acknowledged) {
+    if (shouldReuseAcknowledgedRequestEstimateLaunch({
+      ...reconciledLaunch,
+      autoPrepare: this.props.autoPrepare,
+      autoPdf: this.props.autoPdf,
+    })) {
       // A route remount can occur between the UI ACK and the deferred draftId
       // binding. Android also exposes the same raw Intent to +native-intent and
       // the root listener; those owners may independently create one generated
@@ -1176,7 +1191,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
       );
       return;
-      this.updateCurrentBundle(bundle, `Смета пересчитана: R${revisionCount}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
@@ -1263,7 +1277,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
       );
       return;
-      this.updateCurrentBundle(bundle, `Смета пересчитана одной ревизией: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`);
     } catch (error) {
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);

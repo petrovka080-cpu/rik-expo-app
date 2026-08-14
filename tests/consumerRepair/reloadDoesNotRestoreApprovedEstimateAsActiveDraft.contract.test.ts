@@ -18,9 +18,26 @@ import {
   isRequestEstimatePromptComposerRendered,
   shouldSkipAcknowledgedRequestEstimateLaunch,
   shouldAutoPrepareInitialConsumerRepairRequest,
+  shouldReuseAcknowledgedRequestEstimateLaunch,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
 
 describe("reload does not restore approved estimate as active draft", () => {
+  it("does not let a composer acknowledgement satisfy an automation launch without a bound draft", () => {
+    expect(shouldReuseAcknowledgedRequestEstimateLaunch({
+      acknowledged: true,
+      requestDraftId: null,
+      autoPrepare: true,
+    })).toBe(false);
+    expect(shouldReuseAcknowledgedRequestEstimateLaunch({
+      acknowledged: true,
+      requestDraftId: "consumer-draft-exact",
+      autoPrepare: true,
+    })).toBe(true);
+    expect(shouldReuseAcknowledgedRequestEstimateLaunch({
+      acknowledged: true,
+      requestDraftId: null,
+    })).toBe(true);
+  });
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
   it("leaves active workspace empty when history contains only an approved laminate estimate", () => {
