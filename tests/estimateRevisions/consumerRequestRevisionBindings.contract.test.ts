@@ -1,13 +1,5 @@
-import {
-  attachConsumerRepairMedia,
-  approveConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  listConsumerRepairRequestHistory,
-  restoreConsumerRepairEstimateRevision,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestItemQuantity,
-  updateConsumerRepairRequestItemUnitPrice,
-} from "../../src/lib/consumerRequests";
+import { attachConsumerRepairMedia, approveConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestItemQuantity, updateConsumerRepairRequestItemUnitPrice } from "../../src/lib/consumerRequests";
+import { restoreConsumerRepairEstimateRevision } from "../../src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
 import { getCurrentEstimateRevision } from "../../src/lib/ai/estimateRevisions";
 import { foundationDraftWithManualCatalogItem, MANUAL_CATALOG_ITEM } from "../requestEstimate/requestEstimateBoqCatalogTestHelpers";
 

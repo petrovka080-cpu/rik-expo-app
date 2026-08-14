@@ -1,6 +1,4 @@
-import {
-  createConsumerRepairDraftFromGlobalEstimate,
-} from "../../consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../consumerRequests/consumerRequestEstimateApplicationService";
 import { logger } from "../../logger";
 import {
   buildGlobalEstimateInputFromRoute,

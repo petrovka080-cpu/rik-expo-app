@@ -16,7 +16,7 @@ import {
   hydrateTransactionalConsumerRepairRequestStore,
   setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX,
   flushTransactionalConsumerRepairWrites,

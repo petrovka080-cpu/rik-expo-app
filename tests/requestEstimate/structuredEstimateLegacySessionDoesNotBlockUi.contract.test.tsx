@@ -3,7 +3,7 @@ import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { consumerRepairLegacyEstimateRequiresRebuild } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenView";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 
 jest.mock("@expo/vector-icons", () => {

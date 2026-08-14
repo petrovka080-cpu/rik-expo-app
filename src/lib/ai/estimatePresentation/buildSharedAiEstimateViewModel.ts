@@ -1,9 +1,9 @@
-import type { GlobalEstimateResult } from "../globalEstimate";
-import {
-  buildStructuredEstimatePayload,
-  type StructuredEstimatePayload,
-  type StructuredEstimateRow,
-} from "../../estimateStructuredPipeline";
+import type { GlobalEstimateResult } from "../globalEstimate/globalEstimateTypes";
+import { buildStructuredEstimatePayload } from "../../estimateStructuredPipeline/buildStructuredEstimatePayload";
+import type {
+  StructuredEstimatePayload,
+  StructuredEstimateRow,
+} from "../../estimateStructuredPipeline/structuredEstimateTypes";
 
 export type SharedAiEstimateViewModelRow = {
   rowId: string;

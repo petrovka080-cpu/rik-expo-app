@@ -1,6 +1,6 @@
 import type { CapturedPhotoAsset } from "../mobilePhotoCapture/mobilePhotoCaptureService";
 import { safeJsonParse } from "../format";
-import { formatEstimateUnitLabel } from "./globalEstimate";
+import { formatEstimateUnitLabel } from "./globalEstimate/formatEstimateUnitLabel";
 import {
   runPhotoMaterialRecognition,
   type PhotoMaterialCatalogProduct,

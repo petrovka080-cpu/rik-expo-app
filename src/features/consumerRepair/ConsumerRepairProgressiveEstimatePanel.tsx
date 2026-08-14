@@ -14,7 +14,7 @@ import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParam
 import type {
   CanonicalParameterSession,
 } from "../../lib/estimate/canonicalParameters";
-import { buildCanonicalParameterCards } from "../../lib/estimate/runtime/buildCanonicalParameterCards";
+import { buildCanonicalParameterCards } from "../../lib/estimatePresentation/buildCanonicalParameterCards";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
@@ -31,7 +31,8 @@ import { EstimateRevisionTimeline } from "../requests/components/EstimateRevisio
 import { EstimateRevisionDiff } from "../requests/components/EstimateRevisionDiff";
 import { pickFileAny } from "../../lib/filePick";
 import { logger } from "../../lib/logger";
-import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
+
+const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
 
 type ItemEditorHandlers = {
   onDecrease: (itemId: string) => void;
@@ -108,26 +109,9 @@ function canonicalNumericInputRule(input: {
   return input.integer ? `${range}; только целое число` : range;
 }
 
-function buildRuntimeViewModel(
-  input: Parameters<
-    typeof import("../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel")
-      .buildAiEstimateRuntimeViewModel
-  >[0],
-) {
-  const { buildAiEstimateRuntimeViewModel } = require(
-    "../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel"
-  ) as typeof import("../../lib/estimate/runtime/buildAiEstimateRuntimeViewModel");
-  return buildAiEstimateRuntimeViewModel(input);
-}
-
 function missingParameterCount(revision: EstimateDraftRevision | null, fallback: number): number {
   if (!revision) return fallback;
-  const runtime = buildRuntimeViewModel({
-    revision,
-    includeMissing: true,
-    maxTraceRows: 0,
-  });
-  return runtime.completeness?.missingRequirements.length ?? revision.missingInputs.length;
+  return revision.missingInputs.length;
 }
 
 const ASSUMPTION_ROW_PARAM_KEYS: Record<string, string> = {
@@ -196,6 +180,57 @@ function buildAssumptionParameterCards(
     .filter((card): card is AiEstimateParameterCard => Boolean(card));
 }
 
+function buildStoredRevisionParameterCards(
+  revision: EstimateDraftRevision | null,
+): AiEstimateParameterCard[] {
+  if (!revision) return [];
+  const missingByKey = new Map(revision.missingInputs.map((item) => [item.key, item]));
+  const keys = new Set([...Object.keys(revision.params), ...missingByKey.keys()]);
+  return [...keys].map((key) => {
+    const parameter = revision.params[key];
+    const missing = missingByKey.get(key);
+    const trace = revision.trace.params.find((item) => item.key === key);
+    const value = parameter?.value ?? null;
+    const unit = parameter?.canonicalUnit;
+    const displayValueRu = value == null
+      ? "Нужно уточнить"
+      : typeof value === "boolean"
+        ? value ? "Да" : "Нет"
+        : `${value}${unit ? ` ${aiEstimateRuUnitForParameter(key, unit)}` : ""}`;
+    return {
+      key,
+      labelRu: aiEstimateRuLabelForParameter(key, missing?.label ?? key),
+      value,
+      displayValueRu,
+      unitRu: aiEstimateRuUnitForParameter(key, unit),
+      source: parameter?.source === "edited_by_user"
+        ? "manual_override"
+        : parameter?.source === "user_input"
+          ? "user_prompt"
+          : parameter?.source === "derived"
+            ? "formula_derived"
+            : parameter ? "catalog_default" : "schema_missing",
+      sourceLabelRu: parameter?.sourceText ?? (parameter ? "Сохранено в revision" : "Нужно уточнить"),
+      inputKind: typeof value === "number" ? "number" : typeof value === "boolean" ? "boolean" : "text",
+      editable: true,
+      clickAction: "open_parameter_editor",
+      noStepperControls: true,
+      missing: !parameter,
+      requiredFor: missing?.requiredFor ?? "better_accuracy",
+      requiredForLabelRu: missing?.blocksPreliminaryEstimate
+        ? "для начала расчёта"
+        : "для повышения точности",
+      affectsRowIds: trace?.affectsRowIds ?? [],
+      affectsRowTitlesRu: [],
+      formulaRefs: (trace?.affectsRowIds ?? []).flatMap((rowId) => {
+        const rowTrace = revision.trace.rows.find((item) => item.rowId === rowId);
+        return rowTrace?.formulaId ? [rowTrace.formulaId] : [];
+      }),
+      whyItMattersRu: missing?.label,
+    };
+  });
+}
+
 function artifactStatus(revision: EstimateDraftRevision | null): string | null {
   if (!revision) return null;
   return revision.artifacts.artifactsValidForRevisionId === revision.revisionId
@@ -213,16 +248,12 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
     revision: input.revision,
   });
   if (canonicalCards.length > 0) return canonicalCards;
-  const runtime = buildRuntimeViewModel({
-    revision: input.revision,
-    includeMissing: true,
-    maxTraceRows: 0,
-  });
-  const existingKeys = new Set(runtime.cards.map((card) => card.key));
-  return input.revision?.professionalWorkId === ASPHALT_WORK_ID_V4 ||
-    input.revision?.matchedFamily === ASPHALT_WORK_ID_V4
-    ? runtime.cards
-    : [...runtime.cards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
+  const storedCards = buildStoredRevisionParameterCards(input.revision);
+  const existingKeys = new Set(storedCards.map((card) => card.key));
+  return input.revision?.professionalWorkId === LEGACY_ASPHALT_WORK_ID ||
+    input.revision?.matchedFamily === LEGACY_ASPHALT_WORK_ID
+    ? storedCards
+    : [...storedCards, ...buildAssumptionParameterCards(input.viewModel, existingKeys)];
 }
 
 export function resolveConsumerRepairParamPatchOperation(input: {

@@ -1,12 +1,7 @@
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  attachConsumerRepairMedia,
-  bindConsumerRepairEstimateRevisionHistory,
-  buildConsumerRepairCanonicalDraftPayload,
-  compareConsumerRepairPayloadParity,
-  generateConsumerRepairRequestPdfForDraft,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, generateConsumerRepairRequestPdfForDraft } from "../../src/lib/consumerRequests";
+import { bindConsumerRepairEstimateRevisionHistory } from "../../src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 
 function rowSignature(row: {

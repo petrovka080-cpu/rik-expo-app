@@ -1,5 +1,5 @@
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
 
 describe("buyer BOQ norm sources", () => {

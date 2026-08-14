@@ -5,8 +5,6 @@ import type {
   ConsumerRequestValidationResult,
   ConsumerRepairDraftBundle,
 } from "./consumerRequestTypes";
-import { getRoadworksWaveAOperation } from "../estimate/v4/roadworks";
-import { getAsphaltRelatedProfileByCatalogRecordIdV4 } from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 
 function hasUsefulDescription(bundle: ConsumerRepairDraftBundle): boolean {
   return (bundle.draft.problemText ?? "").trim().length >= 20;
@@ -67,64 +65,52 @@ export function consumerRepairExactAsphaltApprovalErrors(
   bundle: ConsumerRepairDraftBundle | null,
 ): ConsumerRequestValidationErrorItem[] {
   if (!bundle) return [];
-  const selectedCatalogId = bundle.draft.selectedCatalogWorkId?.trim() || bundle.draft.selectedWorkKey?.trim() || "";
-  const selectedWorkKey = bundle.draft.selectedWorkKey?.trim() || "";
-  const exactProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedCatalogId || selectedWorkKey);
-  const roadworksOperation = getRoadworksWaveAOperation(selectedWorkKey);
-  if (!exactProfile && !roadworksOperation) return [];
+  const revisionIds = new Set(
+    bundle.items
+      .map((item) => item.sourceParameters?.canonicalBackendRevisionId)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+  );
+  const releaseIds = new Set(
+    bundle.items
+      .map((item) => item.sourceParameters?.canonicalBackendReleaseId)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+  );
+  if (revisionIds.size > 0 || releaseIds.size > 0) {
+    if (
+      revisionIds.size !== 1 ||
+      releaseIds.size !== 1 ||
+      bundle.items.some((item) =>
+        item.sourceParameters?.canonicalBackendRevisionId == null ||
+        item.sourceParameters?.canonicalBackendReleaseId == null
+      )
+    ) {
+      return [{
+        code: "ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED",
+        messageRu: "Позиции должны принадлежать одной exact backend revision и одному release.",
+        field: "items.canonicalBackendRevisionId",
+      }];
+    }
+    return [];
+  }
 
-  const errors: ConsumerRequestValidationErrorItem[] = [];
   const state = bundle.estimateDraftRevisionState;
-  const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
-  const expectedWorkKey = exactProfile?.canonicalWorkKey ?? selectedWorkKey;
-  const block = (code: ConsumerRequestValidationErrorItem["code"], messageRu: string, field: string) => {
-    errors.push({ code, messageRu, field });
-  };
-  if (!state || !current) {
-    block("ESTIMATE_REVISION_REQUIRED", "Сначала сформируйте текущую профессиональную ревизию сметы.", "estimateRevision");
-    return errors;
+  if (!state) return [];
+  const current = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
+  if (!current) {
+    return [{
+      code: "ESTIMATE_REVISION_REQUIRED",
+      messageRu: "Legacy revision доступна только для чтения; для изменения выполните явную backend-миграцию.",
+      field: "estimateRevision",
+    }];
   }
   if (state.revisions.at(-1)?.revisionId !== state.currentRevisionId) {
-    block("ESTIMATE_LATEST_REVISION_REQUIRED", "Подтверждать можно только последнюю ревизию сметы.", "estimateRevision");
+    return [{
+      code: "ESTIMATE_LATEST_REVISION_REQUIRED",
+      messageRu: "Подтверждать можно только последнюю сохранённую revision.",
+      field: "estimateRevision",
+    }];
   }
-  if (current.professionalWorkId !== expectedWorkKey || selectedWorkKey !== expectedWorkKey) {
-    block("ESTIMATE_SELECTED_WORK_MISMATCH", "Текущая ревизия не принадлежит выбранной работе. Пересчитайте смету.", "selectedWorkKey");
-  }
-  if (current.status !== "draft_ready" || current.missingInputs.length > 0) {
-    block("ESTIMATE_PARAMETERS_REQUIRED", "Заполните обязательные параметры и пересчитайте смету перед подтверждением.", "canonicalParameters");
-  }
-  if (current.boq.rows.length === 0) {
-    block("ESTIMATE_PROFESSIONAL_COMPLETENESS_REQUIRED", "Смета пуста: профессиональная постадийная декомпозиция ещё не сформирована.", "boq");
-  }
-  if (current.boq.rows.some((row) => !Number.isFinite(row.quantity) || row.quantity <= 0)) {
-    block("ESTIMATE_QUANTITY_INVALID", "В смете есть пустые или недопустимые количества. Пересчитайте смету.", "boq.quantity");
-  }
-  if (current.boq.rows.some((row) =>
-    row.sourceParameters?.exactSelectionGenericFallbackUsed === true ||
-    !row.sourceParameters?.professionalEstimatePassportId
-  )) {
-    block("ESTIMATE_EXACT_PROFESSIONAL_OWNER_REQUIRED", "Смета содержит общий шаблон вместо точного профессионального паспорта.", "boq.owner");
-  }
-  if (
-    bundle.items.length !== current.boq.rows.length ||
-    bundle.items.some((item) => item.sourceParameters?.estimateDraftRevisionId !== current.revisionId)
-  ) {
-    block("ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED", "Показанные позиции не совпадают с текущей ревизией. Пересчитайте смету.", "items");
-  }
-  if (
-    bundle.canonicalParameterSession?.blockingMissingParameterIds.length ||
-    bundle.canonicalParameterSession?.invalidParameterIds.length ||
-    (bundle.canonicalParameterSession && bundle.canonicalParameterSession.revisionId !== current.revisionId)
-  ) {
-    block("ESTIMATE_CANONICAL_SESSION_STALE", "Параметры не подтверждены для текущей ревизии.", "canonicalParameters");
-  }
-  if (
-    bundle.estimateDraftSession &&
-    (bundle.estimateDraftSession.status !== "REVIEW" || bundle.estimateDraftSession.activeRevisionId !== current.revisionId)
-  ) {
-    block("ESTIMATE_DRAFT_SESSION_STALE", "Расчёт не завершён для текущей ревизии.", "estimateDraftSession");
-  }
-  return errors;
+  return [];
 }
 
 export function validateConsumerRepairRequestForApprove(
@@ -175,6 +161,13 @@ export function validateConsumerRepairRequestForApprove(
 export function validateConsumerRepairRequestForMarketplace(
   requestId: string,
   userId: string,
+  canonicalArtifact?: {
+    artifactId: string;
+    revisionId: string;
+    releaseId: string;
+    status: "ready";
+    sha256: string | null;
+  } | null,
 ): ConsumerRequestValidationResult {
   const bundle = getConsumerRepairBundle(requestId);
   const errors: ConsumerRequestValidationErrorItem[] = [];
@@ -241,8 +234,39 @@ export function validateConsumerRepairRequestForMarketplace(
     });
   }
 
+  const canonicalRevisionIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim(),
+  ).filter(Boolean));
+  const canonicalReleaseIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim(),
+  ).filter(Boolean));
+  const canonicalRevisionId = canonicalRevisionIds.size === 1 ? [...canonicalRevisionIds][0] : null;
+  const canonicalReleaseId = canonicalReleaseIds.size === 1 ? [...canonicalReleaseIds][0] : null;
+  const canonicalPdfEvent = canonicalRevisionId && canonicalReleaseId
+    ? bundle.events.find((event) =>
+      event.eventType === "consumer_approved_canonical_backend_pdf" &&
+      event.payload.revisionId === canonicalRevisionId &&
+      event.payload.releaseId === canonicalReleaseId &&
+      typeof event.payload.artifactId === "string" &&
+      event.payload.artifactId.length > 0
+    )
+    : null;
+  const canonicalArtifactValid = Boolean(
+    canonicalRevisionId && canonicalReleaseId && canonicalPdfEvent && canonicalArtifact &&
+    canonicalArtifact.status === "ready" && canonicalArtifact.artifactId.trim() &&
+    canonicalArtifact.revisionId === canonicalRevisionId &&
+    canonicalArtifact.releaseId === canonicalReleaseId,
+  );
   const pdf = latestGeneratedPdf(bundle);
-  if (!pdf) {
+  if (canonicalRevisionId || canonicalReleaseId) {
+    if (!canonicalArtifactValid) {
+      errors.push({
+        code: "PDF_REQUIRED",
+        messageRu: "Р”Р»СЏ marketplace РЅСѓР¶РЅС‹ РіРѕС‚РѕРІС‹Рµ backend PDF Рё procurement Р°СЂС‚РµС„Р°РєС‚С‹ С‚РѕР№ Р¶Рµ revision Рё release.",
+        field: "canonicalArtifact",
+      });
+    }
+  } else if (!pdf) {
     errors.push({
       code: "PDF_REQUIRED",
       messageRu: "Сначала создайте PDF заявки.",

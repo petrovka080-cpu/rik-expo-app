@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { buildEditableEstimateSnapshotFromConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
 import { editableEstimateSnapshotHashBasis } from "../../src/lib/ai/editableEstimate/editableEstimateSnapshotHash";
 import {

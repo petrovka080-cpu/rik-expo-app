@@ -1,4 +1,5 @@
-import { calculateGlobalConstructionEstimateSync, type GlobalEstimateInput, type GlobalWorkCategory } from "../globalEstimate";
+import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
+import type { GlobalEstimateInput, GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
 import { classifyEstimateIntent } from "./estimateIntentClassifier";
 import { assertEstimateIntentBeatsRoleContext } from "./estimateIntentPriorityGuard";
 import type { EstimateIntentRoute } from "./estimateRoutingTypes";

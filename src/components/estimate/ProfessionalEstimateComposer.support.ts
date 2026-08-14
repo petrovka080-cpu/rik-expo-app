@@ -1,9 +1,7 @@
 import { StyleSheet } from "react-native";
 
-import {
-  formatEstimateUnitLabel,
-  type GlobalWorkSmartSearchSuggestion,
-} from "../../lib/ai/globalEstimate";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
 import type {
   ForemanAiEstimateDraftMapping,
   ForemanEstimateContext,
@@ -29,6 +27,7 @@ export type ProfessionalEstimateComposerProps = {
   onDraftCreated: (mapping: ForemanAiEstimateDraftMapping) => void | Promise<void>;
   rikQuickSearch?: (q: string, limit?: number) => Promise<CatalogQuickItem[]>;
   initialText?: string;
+  initialRevisionId?: string | null;
 };
 
 export type RowInputState = {
@@ -61,6 +60,12 @@ export const TEXT = {
   total: "\u0418\u0442\u043e\u0433",
   qty: "\u041a\u043e\u043b-\u0432\u043e",
   price: "\u0426\u0435\u043d\u0430",
+  selectCanonicalWork: "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0447\u043d\u0443\u044e \u0440\u0430\u0431\u043e\u0442\u0443 \u0438\u0437 backend-\u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
+  parametersTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043a\u0430\u043d\u043e\u043d\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0441\u043c\u0435\u0442\u044b",
+  invalidParameter: "\u041d\u0435\u0432\u0435\u0440\u043d\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430",
+  requiredParameters: "\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b",
+  pendingServerAdmission: "\u041d\u0435\u0442 \u0441\u0432\u044f\u0437\u0438: \u0437\u0430\u043f\u0440\u043e\u0441 \u043f\u043e\u043c\u0435\u0447\u0435\u043d PENDING_SERVER_ADMISSION; \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u0430\u044f canonical revision \u043d\u0435 \u0441\u043e\u0437\u0434\u0430\u043d\u0430",
+  backendRevisionImmutable: "\u0421\u0442\u0440\u043e\u043a\u0430 \u0437\u0430\u043f\u0435\u0447\u0430\u0442\u0430\u043d\u0430 backend revision; \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u043e\u0432\u044b\u0439 server-side recalculate.",
 } as const;
 
 const normalizeDecimalInput = (value: string) => value.replace(",", ".").trim();
@@ -120,7 +125,7 @@ export const buildRowInputs = (mapping: ForemanAiEstimateDraftMapping | null): R
       {
         visibleName: row.visibleName,
         quantity: String(row.quantity),
-        unitPrice: String(row.unitPrice),
+        unitPrice: row.unitPrice == null ? "" : String(row.unitPrice),
       },
     ]),
   );

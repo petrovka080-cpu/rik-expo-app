@@ -4,11 +4,10 @@ import TestRenderer, { act } from "react-test-renderer";
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
 import { ConsumerRepairRequestStickyActions } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
 import { ConsumerRepairDeliveryFieldsCard } from "../../src/features/consumerRepair/ConsumerRepairMediaButtons";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  validateConsumerRepairRequestForApprove,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { validateConsumerRepairRequestForApprove } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 
 jest.mock("@expo/vector-icons", () => {
   const mockReact = jest.requireActual("react") as typeof import("react");

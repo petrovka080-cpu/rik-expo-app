@@ -1,4 +1,4 @@
-import type { AiEstimatePdfAction, AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+import type { AiEstimatePdfAction, AiEstimatePdfSource } from "../../lib/ai/estimatePdf/estimatePdfTypes";
 import type { EstimatePresentationViewModel } from "../../lib/ai/estimatePresentation";
 
 export type AssistantRole =
@@ -43,6 +43,8 @@ export interface AssistantMessage {
   estimatePdfSource?: AiEstimatePdfSource;
   estimatePresentation?: EstimatePresentationViewModel;
   actions?: AiEstimatePdfAction[];
+  canonicalEstimateRevisionId?: string;
+  canonicalEstimateReleaseId?: string;
 }
 
 export interface AssistantQuickPrompt {

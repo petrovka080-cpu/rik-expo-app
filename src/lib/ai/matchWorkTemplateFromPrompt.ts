@@ -6,7 +6,7 @@ import {
 import {
   repairGlobalWorkMojibakeRu,
   searchGlobalWorkSmartSuggestions,
-} from "./globalEstimate";
+} from "./globalEstimate/globalWorkSmartSearch";
 import {
   buildProfessionalWorkPassport,
 } from "../estimate/buildProfessionalWorkPassport";

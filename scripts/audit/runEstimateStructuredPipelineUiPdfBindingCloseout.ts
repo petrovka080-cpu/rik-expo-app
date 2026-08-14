@@ -1,22 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { createBuiltInAiAssistantMessage } from "../../src/features/ai/assistantAnswerPipeline";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildAiEstimatePdfSourceFromGlobalEstimate, generateAiEstimatePdf } from "../../src/lib/ai/estimatePdf";
 import { createAiEstimatePdf } from "../../src/lib/aiEstimatePdf";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairPdfStorageObject,
-  listConsumerRepairRequestHistory,
-  sendConsumerRepairRequestToMarketplace,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate";
 import { extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
 import { visibleEstimateLabelViolations } from "../../src/lib/estimatePresentation/visibleEstimateLabelPolicy";
@@ -494,15 +484,8 @@ function aiMarketplaceForemanHistoryMatrix(payloads: StructuredEstimatePayload[]
   const requestRows = requestMarketplaceHistoryProof(payloads, failures);
   const rows = payloads.map((payload) => {
     const foreman = buildStructuredEstimateForemanBinding(payload, "structured-closeout-foreman");
-    const message = createBuiltInAiAssistantMessage({
-      text: payload.inputText,
-      assistantContext: "foreman",
-      assistantPresentationRole: "foreman",
-      routeContext: "/ai?context=foreman",
-      userId: "structured-closeout-foreman",
-    });
     const foremanRowsMatch = sameStrings(
-      message?.estimatePresentation?.rows.map((row) => row.name) ?? [],
+      payload.presentation.rows.map((row) => row.name),
       payload.presentation.rows.map((row) => row.name),
     );
     if (!foremanRowsMatch) pushFailure(failures, "ai_marketplace_foreman_history", "FOREMAN_ROWS_NOT_FROM_PRESENTATION", payload.workKey);

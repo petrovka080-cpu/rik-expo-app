@@ -1,4 +1,4 @@
-import { GLOBAL_EXTERNAL_SOURCE_CONNECTORS, GLOBAL_ESTIMATE_EXTERNAL_SOURCE_FLAGS } from "../globalEstimate";
+import { GLOBAL_EXTERNAL_SOURCE_CONNECTORS, GLOBAL_ESTIMATE_EXTERNAL_SOURCE_FLAGS } from "../globalEstimate/externalSources/globalExternalSourceRegistry";
 
 export const BUILT_IN_AI_SOURCE_TYPES = [
   "internal_marketplace",

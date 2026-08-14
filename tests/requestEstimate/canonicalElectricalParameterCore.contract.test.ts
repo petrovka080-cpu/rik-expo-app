@@ -1,4 +1,4 @@
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
   applyConsumerRepairDraftRevisionParamPatch,

@@ -1,12 +1,7 @@
-import { router } from "expo-router";
 import React, { useCallback } from "react";
-import { Alert, Platform, Pressable, Text, View } from "react-native";
+import { Linking, Pressable, Text, View } from "react-native";
 
-import {
-  buildAiEstimatePdfConfirmation,
-  generateAiEstimatePdf,
-} from "../../lib/ai/estimatePdf";
-import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf/estimatePdfTypes";
 import {
   buildEstimatePresentationRowsFromPdfSource,
   formatEstimatePresentationConfidence,
@@ -16,14 +11,12 @@ import {
   getEstimatePresentationUnitPriceText,
   type EstimatePresentationViewModel,
 } from "../../lib/ai/estimatePresentation";
-import {
-  buildEstimatePresentationViewModel,
-  buildStructuredEstimatePayload,
-} from "../../lib/estimateStructuredPipeline";
-import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
+import { buildEstimatePresentationViewModel } from "../../lib/estimateStructuredPipeline/buildEstimatePresentationViewModel";
+import { buildStructuredEstimatePayload } from "../../lib/estimateStructuredPipeline/buildStructuredEstimatePayload";
 import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
+import { buildCanonicalEstimateArtifact } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 
 type Props = {
   message: AssistantMessage;
@@ -35,40 +28,6 @@ type EstimateTableProps = {
   source: AiEstimatePdfSource;
   presentation?: EstimatePresentationViewModel;
 };
-
-const activeEstimatePdfCreations = new Set<string>();
-
-function getEstimatePdfCreationKey(source: AiEstimatePdfSource) {
-  return `${source.sourceType}:${source.sourceId ?? source.createdAt}:${source.title}`;
-}
-
-async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimatePdf>) {
-  const params = await buildGeneratedPdfViewerRouteParams({
-    uri: result.access.uri,
-    title: result.title,
-    fileName: `${result.pdfId}.pdf`,
-    accessKind: result.access.kind,
-    documentType: "request",
-    originModule: "reports",
-    source: "generated",
-    entityId: result.pdfId,
-    cacheIdentity: {
-      tenantId: "ai-estimate",
-      companyId: `personal:${result.estimateId}`,
-      userId: `estimate-owner:${result.estimateId}`,
-      sessionBoundaryId: `estimate-session:${result.estimateId}`,
-      revisionId: result.pdfId,
-      snapshotHash: result.pdfId,
-      rendererVersion: "ai-estimate-pdf-v1",
-      locale: "ru-KG",
-      currency: "KGS",
-    },
-  });
-  router.push({
-    pathname: "/pdf-viewer",
-    params,
-  });
-}
 
 function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
   const viewModel = presentation ?? (source.structuredEstimate
@@ -131,39 +90,30 @@ export function AIAssistantEstimatePdfActions({
   onAppendMessage,
   onFallback,
 }: Props) {
-  const makeEstimatePdf = useCallback(
-    (source: AiEstimatePdfSource) => {
-      const confirmation = buildAiEstimatePdfConfirmation(source);
-      const createPdf = async () => {
-        const creationKey = getEstimatePdfCreationKey(source);
-        if (activeEstimatePdfCreations.has(creationKey)) return;
-        activeEstimatePdfCreations.add(creationKey);
-        try {
-          const result = generateAiEstimatePdf({ source, userConfirmed: true });
-          onAppendMessage(createMessage("assistant", `PDF создан: ${result.title}`));
-          await openEstimatePdfResult(result);
-        } catch (error) {
-          onFallback("make_estimate_pdf_failed", error, {
-            action: "make_estimate_pdf",
-            sourceType: source.sourceType,
-          });
-          onAppendMessage(createMessage("assistant", "Не удалось создать PDF по этой смете. Проверьте строки сметы и попробуйте снова."));
-        } finally {
-          activeEstimatePdfCreations.delete(creationKey);
-        }
-      };
-      if (Platform.OS === "web") {
-        void createPdf();
-        return;
-      }
-      Alert.alert(confirmation.copy.title, confirmation.copy.body, [
-        { text: confirmation.copy.cancelLabel, style: "cancel" },
-        { text: confirmation.copy.createLabel, onPress: () => { void createPdf(); } },
-      ]);
-    },
-    [onAppendMessage, onFallback],
+  const makeCanonicalArtifact = useCallback(async (kind: "pdf" | "procurement") => {
+    if (!message.canonicalEstimateRevisionId || !message.canonicalEstimateReleaseId) return;
+    try {
+      const artifact = await buildCanonicalEstimateArtifact({
+        revisionId: message.canonicalEstimateRevisionId,
+        kind,
+        idempotencyKey: `ai-${kind}-${message.canonicalEstimateRevisionId}`,
+      });
+      if (artifact.releaseId !== message.canonicalEstimateReleaseId) throw new Error("CANONICAL_ARTIFACT_RELEASE_MISMATCH");
+      onAppendMessage(createMessage("assistant", `${kind.toUpperCase()}: revision ${artifact.revisionId}, release ${artifact.releaseId}.`));
+      if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
+    } catch (error) {
+      onFallback(`canonical_${kind}_failed`, error, { revisionId: message.canonicalEstimateRevisionId });
+    }
+  }, [message.canonicalEstimateReleaseId, message.canonicalEstimateRevisionId, onAppendMessage, onFallback]);
+  if (message.canonicalEstimateRevisionId && message.canonicalEstimateReleaseId) return (
+    <View collapsable={false} style={styles.estimateActionBlock} testID="ai-canonical-estimate-actions">
+      <Text style={styles.estimateActionProof}>revision {message.canonicalEstimateRevisionId} · release {message.canonicalEstimateReleaseId}</Text>
+      <View style={styles.estimateActionRow}>
+        <Pressable onPress={() => void makeCanonicalArtifact("pdf")} style={styles.estimateActionButton}><Text style={styles.estimateActionText}>PDF</Text></Pressable>
+        <Pressable onPress={() => void makeCanonicalArtifact("procurement")} style={styles.estimateActionButton}><Text style={styles.estimateActionText}>Закупка</Text></Pressable>
+      </View>
+    </View>
   );
-
   if (!message.estimatePdfSource || !message.actions?.length) return null;
   const proofText = buildEstimateActionProofText(message.estimatePdfSource, message.estimatePresentation);
   const footerProofText = buildEstimateActionFooterProofText(message.estimatePdfSource, message.estimatePresentation);
@@ -180,26 +130,9 @@ export function AIAssistantEstimatePdfActions({
           {proofText}
         </Text>
       ) : null}
-      <View style={styles.estimateActionRow}>
-        {message.actions.map((action) => (
-          <Pressable
-            key={`${message.id}:${action.id}`}
-            testID={action.id === "make_estimate_pdf" ? "ai-estimate-make-pdf" : `ai-estimate-action-${action.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={action.label}
-            style={styles.estimateActionButton}
-            onPress={() => {
-              if (action.id === "make_estimate_pdf" && message.estimatePdfSource) {
-                makeEstimatePdf(message.estimatePdfSource);
-              }
-            }}
-          >
-            <Text style={styles.estimateActionText} numberOfLines={1}>
-              {action.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <Text style={styles.estimateActionText}>
+        Legacy preview доступен только для чтения. Для PDF и изменений выполните явную миграцию в canonical backend.
+      </Text>
       {footerProofText ? (
         <Text
           accessible

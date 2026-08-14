@@ -12,7 +12,6 @@ import {
   selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
-import { buildConsumerRepairCanonicalDraftPayload } from "./consumerRequestPayloadParity";
 import type { ProjectExecutionDraft } from "../projectExecution";
 import {
   cloneConsumerRepairValue,
@@ -33,14 +32,11 @@ import {
   applyConsumerRepairEstimateRevisionQuantityEdit,
   applyConsumerRepairEstimateRevisionRowRemoval,
   applyConsumerRepairEstimateRevisionUnitPriceEdit,
-  attachConsumerRepairPdfRevisionMetadata,
   buildEditableEstimateSnapshotFromConsumerRepairBundle,
-  bindConsumerRepairEstimateRevisionPdf,
   ensureConsumerRepairBundleEstimateRevisionState,
-  freezeConsumerRepairEstimateRevision,
   withConsumerRepairEditableEstimateAudit,
 } from "./consumerRequestEditableEstimateSnapshot";
-import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
+import { __resetConsumerRepairPdfStorageForTests } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
 import {
   countConsumerRepairApprovedHistoryRecordsFromLedger,
@@ -60,30 +56,17 @@ import {
   type EstimateDraftSessionParameterValue,
   type EstimateDraftScopeRequirement,
 } from "../estimate/draftSession/estimateDraftSession";
-import {
-  ASPHALT_PROFESSIONAL_NAME_RU_V4,
-  ASPHALT_WORK_ID_V4,
-} from "../estimate/v4/asphalt/asphaltV4Constants";
-import {
-  isRoadScopeIdV4,
-  type AsphaltScopeSelectionIdV5,
-} from "../estimate/v4/asphalt/roadScopeTruthV4";
-import {
-  asphaltRelatedParameterKeysForProfileV4,
-  getAsphaltRelatedProfileByCatalogRecordIdV4,
-} from "../estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
+import type { AsphaltScopeSelectionIdV5 } from "../estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
   ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
-  ConsumerRepairPdfSupplement,
   ConsumerRepairCatalogCandidate,
   ConsumerRepairSelectedWork,
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
-  ConsumerRepairPdfOpenResult,
   ConsumerRepairStatus,
   PendingRoadScopeSelectionV4,
 } from "./consumerRequestTypes";
@@ -93,47 +76,52 @@ import type {
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
 import type { UserParamPatchOperation } from "../estimate/validateUserParamPatch";
-import {
-  canonicalElectricalOverridesFromBundle,
-  createCanonicalElectricalEstimateState,
-  diffCanonicalElectricalRevisions,
-} from "../estimate/v4/electrical/consumerRequestCanonicalElectricalEstimate";
-import {
-  ELECTRICAL_CANONICAL_PARAMETER_SCHEMA,
-  ELECTRICAL_CANONICAL_WORK_KEY,
-  type ElectricalCanonicalParameterKey,
-  type ElectricalCanonicalParameterValue,
-} from "../estimate/v4/electrical/electricalCanonicalV1";
-import { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
-import {
-  ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA,
-  REGISTERED_CANONICAL_PARAMETER_SCHEMAS,
-  projectEstimateDraftRevisionToCanonicalSession,
-  projectEstimateDraftSessionToCanonicalSession,
-  type CanonicalParameter,
-  type CanonicalParameterDefinition,
+import type {
+  CanonicalParameter,
+  CanonicalParameterDefinition,
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
-/* eslint-disable @typescript-eslint/no-require-imports -- synchronous lazy loaders preserve the service/runtime cycle boundary and startup cost */
-function loadAiEstimateRuntime() {
-  const runtimeModule = require("../estimate/runtime/createAiEstimateRuntime") as
-    typeof import("../estimate/runtime/createAiEstimateRuntime");
-  return runtimeModule.createAiEstimateRuntime();
+const ASPHALT_WORK_ID_V4 = "asphalt_concrete_pavement" as const;
+const ASPHALT_PROFESSIONAL_NAME_RU_V4 = "Устройство асфальтобетонного дорожного покрытия" as const;
+const ELECTRICAL_CANONICAL_WORK_KEY = "electrical_area_installation" as const;
+
+type ElectricalCanonicalParameterKey = string;
+type ElectricalCanonicalParameterValue = string | number | boolean;
+
+function canonicalBackendRequired(operation: string): never {
+  throw new ConsumerRepairValidationError([{
+    code: "CANONICAL_ESTIMATE_BACKEND_REQUIRED",
+    messageRu:
+      "Расчёт и изменение профессиональной сметы выполняются только canonical backend. Откройте backend-смету; сохранённая legacy revision не изменена.",
+    field: operation,
+  }]);
 }
 
-function loadEstimateDraftRevisionFactory() {
-  return require("../estimate/createEstimateDraftRevision") as
-    typeof import("../estimate/createEstimateDraftRevision");
+function canonicalBackendBindingForItems(
+  items: readonly ConsumerRepairRequestItem[],
+): { revisionId: string; releaseId: string } | null {
+  const revisionIds = new Set(items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const releaseIds = new Set(items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  ));
+  revisionIds.delete("");
+  releaseIds.delete("");
+  if (revisionIds.size !== 1 || releaseIds.size !== 1 || items.length === 0) return null;
+  return { revisionId: [...revisionIds][0], releaseId: [...releaseIds][0] };
 }
 
-function loadConsumerRepairPdfService() {
-  return require(
-    "./consumerRequestPdfService"
-  ) as typeof import("./consumerRequestPdfService");
+function loadAiEstimateRuntime(): any {
+  return canonicalBackendRequired("legacy_ai_estimate_runtime");
+}
+
+function loadEstimateDraftRevisionFactory(): any {
+  return canonicalBackendRequired("legacy_estimate_revision_factory");
 }
 
 function estimateRevisionStateRecoveryValidationError(
@@ -178,40 +166,46 @@ function resolveConsumerRepairCalculationStateForMutation(
   }
 }
 
-function loadConsumerRepairDraftRevisionDependencies() {
-  return {
-    ...require(
-      "../estimate/application/createInitialEstimateDraftRevision"
-    ) as typeof import("../estimate/application/createInitialEstimateDraftRevision"),
-    ...require(
-      "../ai/extractWorkParamsFromInlinePrompt"
-    ) as typeof import("../ai/extractWorkParamsFromInlinePrompt"),
-    ...require(
-      "../estimate/workProfiles/registeredEstimateWorkProfiles"
-    ) as typeof import("../estimate/workProfiles/registeredEstimateWorkProfiles"),
-  };
+function loadConsumerRepairDraftRevisionDependencies(): any {
+  return canonicalBackendRequired("legacy_consumer_revision_dependencies");
 }
 
-function loadRegisteredProfessionalEstimateDomainsV1() {
-  return require(
-    "../estimate/v4/domains/registeredProfessionalEstimateDomainsV1"
-  ) as typeof import("../estimate/v4/domains/registeredProfessionalEstimateDomainsV1");
+function loadRegisteredProfessionalEstimateDomainsV1(): any {
+  return canonicalBackendRequired("legacy_registered_professional_domains");
 }
 
 function hasRoadworksWaveARegistration(workId: string | null | undefined): boolean {
-  if (!workId) return false;
-  const roadworksModule = require("../estimate/v4/roadworks") as
-    typeof import("../estimate/v4/roadworks");
-  return Boolean(roadworksModule.getRoadworksWaveAProductionRegistration(workId));
+  void workId;
+  return false;
 }
 
-function roadworksWaveARegistration(workId: string | null | undefined) {
-  if (!workId) return null;
-  const roadworksModule = require("../estimate/v4/roadworks") as
-    typeof import("../estimate/v4/roadworks");
-  return roadworksModule.getRoadworksWaveAProductionRegistration(workId);
+function roadworksWaveARegistration(workId: string | null | undefined): any {
+  void workId;
+  return null;
 }
-/* eslint-enable @typescript-eslint/no-require-imports */
+
+function isRoadScopeIdV4(value: string): value is AsphaltScopeSelectionIdV5 {
+  return ["FULL_ROAD_INFRASTRUCTURE", "PAVEMENT_ONLY", "REPAIR_PATCH"].includes(value);
+}
+
+const canonicalElectricalOverridesFromBundle = (..._args: unknown[]): any =>
+  canonicalBackendRequired("legacy_electrical_overrides");
+const createCanonicalElectricalEstimateState = (..._args: unknown[]): any =>
+  canonicalBackendRequired("legacy_electrical_compile");
+const diffCanonicalElectricalRevisions = (..._args: unknown[]): any =>
+  canonicalBackendRequired("legacy_electrical_diff");
+const buildCanonicalElectricalConsumerRepairAiDraft = (..._args: unknown[]): any =>
+  canonicalBackendRequired("legacy_electrical_draft_compile");
+const ELECTRICAL_CANONICAL_PARAMETER_SCHEMA = { definitions: [] as CanonicalParameterDefinition[] };
+const ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA = { definitions: [] as CanonicalParameterDefinition[] };
+const REGISTERED_CANONICAL_PARAMETER_SCHEMAS = {
+  getByCanonicalWorkKey: (..._args: unknown[]): any =>
+    canonicalBackendRequired("legacy_registered_parameter_schema"),
+};
+const projectEstimateDraftRevisionToCanonicalSession = (..._args: unknown[]): any => null;
+const projectEstimateDraftSessionToCanonicalSession = (..._args: unknown[]): any => null;
+const asphaltRelatedParameterKeysForProfileV4 = (..._args: unknown[]): string[] => [];
+const getAsphaltRelatedProfileByCatalogRecordIdV4 = (..._args: unknown[]): any => null;
 
 export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] = [
   "consumer_approved",
@@ -249,7 +243,16 @@ export function buildApprovedEstimateHistoryRecord(
   bundle: ConsumerRepairDraftBundle,
 ): ApprovedEstimateHistoryRecord {
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated") ?? null;
-  const sourceRevisionId = latestPdf?.revisionId
+  const canonicalRevisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
+  const canonicalReleaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
+  const canonicalPdfEvent = canonicalRevisionId && canonicalReleaseId
+    ? bundle.events.find((event) =>
+      event.eventType === "consumer_approved_canonical_backend_pdf" &&
+      event.payload.revisionId === canonicalRevisionId &&
+      event.payload.releaseId === canonicalReleaseId,
+    )
+    : null;
+  const sourceRevisionId = (canonicalRevisionId || latestPdf?.revisionId)
     ?? bundle.estimateRevisionState?.current_revision_id
     ?? bundle.estimateDraftRevisionState?.currentRevisionId
     ?? bundle.durableHistorySummary?.sourceRevisionId
@@ -257,7 +260,9 @@ export function buildApprovedEstimateHistoryRecord(
   const revision = bundle.estimateRevisionState?.revisions.find((candidate) =>
     candidate.revision_id === sourceRevisionId
   );
-  const sourceSnapshotId = latestPdf?.snapshotId
+  const sourceSnapshotId = canonicalRevisionId
+    ? `canonical-backend:${canonicalRevisionId}`
+    : latestPdf?.snapshotId
     ?? revision?.snapshot_id
     ?? bundle.editableEstimateSnapshot?.snapshotId
     ?? bundle.durableHistorySummary?.sourceSnapshotId
@@ -280,6 +285,7 @@ export function buildApprovedEstimateHistoryRecord(
     approvedEstimateId: bundle.draft.id,
     sourceDraftId: sourceDraftIdForApprovedHistoryRecord(bundle),
     sourceRevisionId,
+    sourceReleaseId: canonicalReleaseId || bundle.durableHistorySummary?.sourceReleaseId || null,
     sourceSnapshotId,
     createdAt: bundle.draft.approvedAt ?? bundle.draft.createdAt,
     updatedAt: bundle.draft.updatedAt ?? bundle.draft.approvedAt ?? bundle.draft.createdAt,
@@ -290,7 +296,9 @@ export function buildApprovedEstimateHistoryRecord(
     rowCount,
     materialRowsCount,
     workRowsCount,
-    pdfArtifactId: latestPdf?.id ?? null,
+    pdfArtifactId: typeof canonicalPdfEvent?.payload.artifactId === "string"
+      ? canonicalPdfEvent.payload.artifactId
+      : latestPdf?.id ?? null,
     buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
     status: consumerRepairApprovedHistoryRecordStatus(bundle.draft.status),
   };
@@ -329,231 +337,6 @@ function consumerRepairDraftPatchChanges(
   return Object.entries(patch).some(([key, value]) =>
     draft[key as keyof ConsumerRepairDraftBundle["draft"]] !== value
   );
-}
-
-function createEstimateDraftRevisionStateForConsumerBundle(input: {
-  draftId: string;
-  rawInput: string;
-  selectedWork?: ConsumerRepairSelectedWork | null;
-  city?: string | null;
-  currency?: string | null;
-  countryCode?: string | null;
-  createdAt?: string;
-  prebuiltExactDraft?: ConsumerRepairAiDraft | null;
-}): EstimateDraftRevisionState | null {
-  try {
-    const exactProfessionalDraft = input.prebuiltExactDraft?.items.length &&
-      input.prebuiltExactDraft.items.every((item) =>
-        item.sourceParameters?.professionalDomainFactoryV1 === true &&
-        item.sourceParameters?.domainId === "electrical_complete"
-      )
-      ? input.prebuiltExactDraft
-      : null;
-    const revision = exactProfessionalDraft
-      ? loadEstimateDraftRevisionFactory().createEstimateDraftRevision({
-          estimateDraftId: input.draftId,
-          rawInput: input.rawInput,
-          selectedTemplateId: input.selectedWork?.selectedWorkKey,
-          selectedTemplateName: input.selectedWork?.selectedWorkTitleRu,
-          selectedWorkKey: input.selectedWork?.selectedWorkKey,
-          city: input.city,
-          currency: input.currency,
-          countryCode: input.countryCode,
-          createdAt: input.createdAt,
-          prebuiltExactDraft: exactProfessionalDraft,
-        })
-      : loadAiEstimateRuntime().createDraft({
-      estimateDraftId: input.draftId,
-      rawInput: input.rawInput,
-      selectedTemplateId: input.selectedWork?.selectedWorkKey,
-      selectedTemplateName: input.selectedWork?.selectedWorkTitleRu,
-      selectedWorkKey: input.selectedWork?.selectedWorkKey,
-      city: input.city,
-      currency: input.currency,
-      countryCode: input.countryCode,
-      createdAt: input.createdAt,
-    }).revision;
-    return {
-      estimateDraftId: revision.estimateDraftId,
-      currentRevisionId: revision.revisionId,
-      revisions: [revision],
-      diffs: [],
-    };
-  } catch {
-    return null;
-  }
-}
-
-function _selectedWorkForRevisionStateRecovery(
-  bundle: ConsumerRepairDraftBundle,
-): ConsumerRepairSelectedWork | null {
-  const rowBoundWorkKey = bundle.items
-    .map((item) => item.sourceParameters?.requestedCatalogWorkId)
-    .find((value): value is string => typeof value === "string" && value.trim().length > 0)
-    ?.trim() ?? null;
-  const selectedWorkKey = bundle.draft.selectedWorkKey?.trim()
-    || bundle.structuredEstimatePayload?.workKey?.trim()
-    || rowBoundWorkKey;
-  if (!selectedWorkKey) return null;
-  const roadworksRegistration = roadworksWaveARegistration(selectedWorkKey);
-  const exactAsphaltRelatedProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedWorkKey);
-  const selectedWorkTitleRu = bundle.draft.selectedWorkTitleRu?.trim()
-    || roadworksRegistration?.professionalNameRu
-    || exactAsphaltRelatedProfile?.professionalNameRu
-    || bundle.draft.title?.trim()
-    || selectedWorkKey;
-  return {
-    selectedWorkKey,
-    selectedWorkTitleRu,
-    selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey?.trim()
-      || (roadworksRegistration
-        ? "roadworks"
-        : exactAsphaltRelatedProfile?.uiGroup === "DEMOLITION_WORKS"
-          ? "demolition"
-          : exactAsphaltRelatedProfile
-            ? "roadworks"
-            : bundle.draft.repairType),
-    selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu?.trim()
-      || (roadworksRegistration
-        ? "Дорожные работы"
-        : exactAsphaltRelatedProfile?.uiGroup === "DEMOLITION_WORKS"
-          ? "Демонтаж"
-          : exactAsphaltRelatedProfile
-            ? "Дорожные работы"
-            : bundle.draft.repairType),
-    selectedWorkRawInput: bundle.draft.selectedWorkRawInput?.trim()
-      || bundle.draft.problemText?.trim()
-      || selectedWorkTitleRu,
-    selectedWorkSource: "user_selected",
-    selectedWorkResolverReGuessed: false,
-  };
-}
-
-function userEnteredDraftSessionParameters(
-  rawInput: string,
-  confirmedAt: string,
-): Record<string, EstimateDraftSessionParameterValue> {
-  return Object.fromEntries(
-    Object.entries(
-      loadConsumerRepairDraftRevisionDependencies()
-        .extractWorkParamsFromInlinePrompt(rawInput),
-    ).map(([key, parameter]) => [
-      key,
-      {
-        value: parameter.value,
-        ...(parameter.canonicalUnit ? { unit: parameter.canonicalUnit } : {}),
-        origin: parameter.sourceText === "length_m * width_m"
-          ? "PROJECT_DERIVED" as const
-          : "USER_ENTERED" as const,
-        confirmedAt: parameter.requiresConfirmation ? null : confirmedAt,
-        sourceText: parameter.sourceText,
-        ...(parameter.requiresConfirmation ? { requiresConfirmation: true } : {}),
-        ...(parameter.sourceText === "length_m * width_m"
-          ? { derivedFrom: ["length_m", "width_m"] }
-          : {}),
-      },
-    ]),
-  );
-}
-
-function createSelectedWorkDraftSession(input: {
-  draftId: string;
-  selectedWork: ConsumerRepairSelectedWork | null;
-  fallbackCatalogWorkId?: string | null;
-  rawInput: string;
-  createdAt: string;
-  scopeRequired: boolean;
-  scopeRequirement?: EstimateDraftScopeRequirement | null;
-}): EstimateDraftSession {
-  const empty = createEstimateDraftSession({ draftId: input.draftId });
-  const catalogWorkId = input.selectedWork?.selectedWorkKey ?? input.fallbackCatalogWorkId?.trim() ?? "";
-  if (!catalogWorkId) return empty;
-  const exactAsphaltRelatedProfile = getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
-  const extractedParameters = userEnteredDraftSessionParameters(input.rawInput, input.createdAt);
-  const parameters = exactAsphaltRelatedProfile?.requiredParameters.includes("removal_area_m2") &&
-    extractedParameters.area_m2 &&
-    !extractedParameters.removal_area_m2
-    ? {
-      ...extractedParameters,
-      removal_area_m2: {
-        ...extractedParameters.area_m2,
-        sourceText: extractedParameters.area_m2.sourceText ?? "exact asphalt-related removal area",
-      },
-    }
-    : extractedParameters;
-  return selectEstimateDraftWork(empty, {
-    catalogWorkId,
-    canonicalWorkKey: exactAsphaltRelatedProfile?.canonicalWorkKey ?? catalogWorkId,
-    source: input.selectedWork ? "EXPLICIT_SELECTION" : "FREE_TEXT",
-    scopeRequired: input.scopeRequired,
-    scopeRequirement: input.scopeRequirement,
-    parameters,
-  });
-}
-
-function commitRuntimeRevisionDraftSession(input: {
-  session: EstimateDraftSession;
-  revision: EstimateDraftRevision;
-  createdAt: string;
-}): EstimateDraftSession {
-  if (
-    input.revision.status !== "draft_ready" ||
-    input.revision.missingInputs.length > 0 ||
-    input.revision.boq.rows.length === 0 ||
-    !input.session.workIntent
-  ) {
-    return input.session;
-  }
-  const identity = input.revision.resolvedIdentity;
-  const scoped = bindEstimateDraftScope(input.session, {
-    scopePresetId:
-      identity?.scopePresetId ??
-      identity?.calculationProfileId ??
-      input.revision.selectedTemplateId,
-    calculationStrategyId:
-      identity?.calculationStrategyId ??
-      `runtime-revision:${input.revision.professionalWorkId ?? input.revision.selectedTemplateId}`,
-    parameterSchemaVersion:
-      identity?.parameterSchemaVersion ??
-      identity?.parameterSchemaId ??
-      input.revision.workSpecificParameterSchemaId ??
-      "runtime-revision-parameter-schema:v1",
-    engineVersion: identity?.compilerVersion ?? "runtime-estimate-revision:v1",
-    requiredParameterAlternatives: [],
-  });
-  const parameterSession = setEstimateDraftParameters(
-    scoped,
-    estimateDraftSessionParametersFromRevisionParams(input.revision.params, input.createdAt),
-  );
-  const compiling = prepareEstimateCompile(parameterSession).session;
-  return commitEstimateCompileResult(compiling, {
-    draftId: input.session.draftId,
-    selectionEpoch: compiling.selectionEpoch,
-    contextHash: compiling.contextHash!,
-    revisionId: input.revision.revisionId,
-    scopePresetId: compiling.scopePresetId!,
-    parameterSchemaVersion: compiling.parameterSchemaVersion!,
-    calculationStrategyId: compiling.calculationStrategyId!,
-  });
-}
-
-function pendingRoadScopeSelectionFromSession(
-  session: EstimateDraftSession | null | undefined,
-): PendingRoadScopeSelectionV4 | null {
-  const requirement = session?.status === "SCOPE_REQUIRED"
-    ? session.scopeRequirement
-    : null;
-  if (!session || !requirement) return null;
-  return {
-    pendingIntentId: `draft-session:${session.draftId}:${session.selectionEpoch}`,
-    requestId: session.draftId,
-    originalUserText: requirement.originalUserText,
-    requestedCatalogWorkId: requirement.requestedCatalogWorkId,
-    offeredScopes: [...requirement.offeredScopePresetIds] as AsphaltScopeSelectionIdV5[],
-    resolverEvidence: [...requirement.resolverEvidence],
-    resolverVersion: requirement.resolverVersion,
-    createdAt: requirement.createdAt,
-  };
 }
 
 function itemTypeFromBoqRow(row: ProfessionalBoqRow): ConsumerRepairRequestItem["itemType"] {
@@ -740,170 +523,28 @@ export function createConsumerRepairRequestDraft(input: {
   aiDraft?: ConsumerRepairAiDraft | null;
   pendingRoadScopeSelection?: Omit<PendingRoadScopeSelectionV4, "requestId"> | null;
 }): ConsumerRepairDraftBundle {
-  const createStartedAt = Date.now();
-  const recordCanonicalElectricalCreateTiming = (stage: string): void => {
-    if (
-      typeof __DEV__ === "undefined" ||
-      !__DEV__ ||
-      (
-        input.aiDraft?.structuredEstimatePayload?.workKey !==
-          ELECTRICAL_CANONICAL_WORK_KEY &&
-        input.selectedWork?.selectedWorkKey !== ELECTRICAL_CANONICAL_WORK_KEY &&
-        input.aiDraft?.selectedWork?.selectedWorkKey !==
-          ELECTRICAL_CANONICAL_WORK_KEY
-      )
-    ) {
-      return;
-    }
-    logger.info("RikCanonicalElectricalBundleCreate", JSON.stringify({
-      stage,
-      elapsedMs: Date.now() - createStartedAt,
-    }));
-  };
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
   assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
+  if (input.pendingRoadScopeSelection || input.aiDraft?.runtimeEstimateDraftRevision) {
+    canonicalBackendRequired("legacy_consumer_request_compile");
+  }
   const selectedWork = input.selectedWork ?? input.aiDraft?.selectedWork ?? null;
   const draft = createDraftRecord({ ...input, selectedWork });
-  recordCanonicalElectricalCreateTiming("DRAFT_RECORD_READY");
   const items = (input.aiDraft?.items ?? []).map((item) =>
-    createConsumerRepairRequestItem({
-      requestDraftId: draft.id,
-      ...item,
-    }),
+    createConsumerRepairRequestItem({ requestDraftId: draft.id, ...item }),
   );
-  recordCanonicalElectricalCreateTiming("ITEMS_READY");
-  const marketplaceLink = createConsumerMarketplaceLink(draft.id);
-  const isAsphaltV4 = selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4 ||
-    input.aiDraft?.repairType === ASPHALT_WORK_ID_V4;
-  const hasCanonicalStructuredEstimate = Boolean(input.aiDraft?.structuredEstimatePayload);
-  const canonicalElectricalState =
-    input.aiDraft?.structuredEstimatePayload?.workKey === ELECTRICAL_CANONICAL_WORK_KEY ||
-      selectedWork?.selectedWorkKey === ELECTRICAL_CANONICAL_WORK_KEY
-      ? createCanonicalElectricalEstimateState({
-          draftId: draft.id,
-          rawInput: draft.problemText ?? "",
-          items,
-          createdAt: draft.createdAt,
-        })
-      : null;
-  recordCanonicalElectricalCreateTiming("CANONICAL_STATE_READY");
-  // A structured estimate already owns the canonical BOQ and the editable
-  // EstimateRevisionState is created from these exact request items below.
-  // Re-running the legacy AI runtime here would compile the same estimate a
-  // second time during synchronous Android persistence.
-  const runtimeEstimateDraftRevision = input.aiDraft?.runtimeEstimateDraftRevision ?? null;
-  const runtimeEstimateDraftRevisionState: EstimateDraftRevisionState | null =
-    runtimeEstimateDraftRevision
-      ? {
-          estimateDraftId: runtimeEstimateDraftRevision.estimateDraftId,
-          currentRevisionId: runtimeEstimateDraftRevision.revisionId,
-          revisions: [runtimeEstimateDraftRevision],
-          diffs: [],
-        }
-      : null;
-  const estimateDraftRevisionState = canonicalElectricalState?.estimateDraftRevisionState ??
-    runtimeEstimateDraftRevisionState ??
-    ((items.length > 0 || isAsphaltV4) &&
-    !hasCanonicalStructuredEstimate
-    ? createEstimateDraftRevisionStateForConsumerBundle({
-        draftId: draft.id,
-        rawInput: draft.problemText ?? "",
-        selectedWork,
-        city: draft.city,
-        currency: items.find((item) => item.currency)?.currency ?? "KGS",
-        countryCode: "KG",
-        createdAt: draft.createdAt,
-        prebuiltExactDraft: input.aiDraft,
-      })
-    : null);
-  recordCanonicalElectricalCreateTiming("REVISION_STATE_READY");
-  const initialRevision = estimateDraftRevisionState?.revisions.find(
-    (revision) => revision.revisionId === estimateDraftRevisionState.currentRevisionId,
-  ) ?? null;
-  const initialRevisionRowByCode = new Map(
-    initialRevision?.boq.rows.map((row) => [row.rowId, row]) ?? [],
-  );
-  const revisionBoundItems = runtimeEstimateDraftRevision && initialRevision && !canonicalElectricalState
-    ? createConsumerRepairItemsFromDraftRevision(draft.id, initialRevision)
-    : canonicalElectricalState && initialRevision
-    ? items.map((item) => {
-        const rowCode = String(item.sourceParameters?.rowCode ?? "");
-        const revisionRow = initialRevisionRowByCode.get(rowCode);
-        if (!revisionRow) return item;
-        return {
-          ...item,
-          sourceParameters: {
-            ...(item.sourceParameters ?? {}),
-            includedInProcurement: revisionRow.includedInProcurement,
-            estimateDraftRevisionId: initialRevision.revisionId,
-            estimateDraftPreviousRevisionId: initialRevision.previousRevisionId,
-            estimateDraftSource: initialRevision.source,
-            estimateDraftSelectedTemplateId:
-              initialRevision.selectedTemplateId,
-          },
-        };
-      })
-    : items;
-  const projectedCanonicalParameterSession = initialRevision
-    ? projectEstimateDraftRevisionToCanonicalSession({
-        revision: initialRevision,
-        draftId: draft.id,
-        createdAt: draft.createdAt,
-      })
-    : null;
-  const selectedWorkDraftSession = createSelectedWorkDraftSession({
-        draftId: draft.id,
-        selectedWork,
-        fallbackCatalogWorkId: input.pendingRoadScopeSelection?.requestedCatalogWorkId,
-        rawInput: draft.problemText ?? "",
-        createdAt: draft.createdAt,
-        scopeRequired: Boolean(input.pendingRoadScopeSelection),
-        scopeRequirement: input.pendingRoadScopeSelection
-          ? {
-              originalUserText: input.pendingRoadScopeSelection.originalUserText,
-              requestedCatalogWorkId: input.pendingRoadScopeSelection.requestedCatalogWorkId,
-              offeredScopePresetIds: [...input.pendingRoadScopeSelection.offeredScopes],
-              resolverEvidence: [...input.pendingRoadScopeSelection.resolverEvidence],
-              resolverVersion: input.pendingRoadScopeSelection.resolverVersion,
-              createdAt: input.pendingRoadScopeSelection.createdAt,
-            }
-          : null,
-      });
-  const estimateDraftSession = canonicalElectricalState?.estimateDraftSession ??
-    (
-      runtimeEstimateDraftRevision && !input.pendingRoadScopeSelection
-        ? commitRuntimeRevisionDraftSession({
-            session: selectedWorkDraftSession,
-            revision: runtimeEstimateDraftRevision,
-            createdAt: draft.createdAt,
-          })
-        : selectedWorkDraftSession
-    );
-  recordCanonicalElectricalCreateTiming("SESSIONS_READY");
-  const projectedDraftSessionCanonicalParameters = estimateDraftSession
-    ? projectEstimateDraftSessionToCanonicalSession({
-        session: estimateDraftSession,
-        createdAt: draft.createdAt,
-      })
-    : null;
   const bundle: ConsumerRepairDraftBundle = {
     draft,
-    items: revisionBoundItems,
+    items,
     media: [],
     pdfs: [],
-    estimateDraftRevisionState,
-    estimateDraftSession,
-    canonicalParameterSession:
-      canonicalElectricalState?.canonicalParameterSession ??
-      projectedCanonicalParameterSession ??
-      projectedDraftSessionCanonicalParameters,
-    electricalCircuitSchedule:
-      canonicalElectricalState?.electricalCircuitSchedule ??
-      input.aiDraft?.electricalCircuitSchedule ??
-      null,
+    estimateDraftRevisionState: null,
+    estimateDraftSession: null,
+    canonicalParameterSession: null,
+    electricalCircuitSchedule: input.aiDraft?.electricalCircuitSchedule ?? null,
     structuredEstimatePayload: input.aiDraft?.structuredEstimatePayload ?? null,
     projectExecutionDrafts: [],
-    marketplaceLink,
+    marketplaceLink: createConsumerMarketplaceLink(draft.id),
     events: [
       createConsumerRepairEvent({
         requestDraftId: draft.id,
@@ -911,23 +552,103 @@ export function createConsumerRepairRequestDraft(input: {
         actorType: "consumer",
         payload: {
           consumer_only: true,
+          canonical_backend_revision_id:
+            items[0]?.sourceParameters?.canonicalBackendRevisionId ?? null,
+          canonical_backend_release_id:
+            items[0]?.sourceParameters?.canonicalBackendReleaseId ?? null,
           selectedWorkKey: selectedWork?.selectedWorkKey,
           selectedWorkSource: selectedWork?.selectedWorkSource,
         },
       }),
     ],
-    // Compatibility view only. EstimateDraftSession owns this state.
-    pendingRoadScopeSelection: pendingRoadScopeSelectionFromSession(estimateDraftSession),
+    pendingRoadScopeSelection: null,
   };
-  recordCanonicalElectricalCreateTiming("BUNDLE_READY");
-  const revisionReadyBundle =
-    items.length > 0 || isAsphaltV4 || canonicalElectricalState
-      ? ensureConsumerRepairBundleEstimateRevisionState(bundle)
-      : bundle;
-  recordCanonicalElectricalCreateTiming("REVISION_PROJECTION_READY");
-  const saved = saveConsumerRepairBundle(revisionReadyBundle);
-  recordCanonicalElectricalCreateTiming("DURABLE_SAVE_READY");
-  return saved;
+  return saveConsumerRepairBundle(bundle);
+}
+
+export function upsertConsumerRepairCanonicalBackendDraft(input: {
+  requestDraftId?: string | null;
+  consumerUserId: string;
+  problemText?: string | null;
+  city?: string | null;
+  aiDraft: ConsumerRepairAiDraft;
+}): ConsumerRepairDraftBundle {
+  const existing = input.requestDraftId
+    ? findConsumerRepairBundle(input.requestDraftId)
+    : null;
+  if (!existing || existing.draft.status !== "draft") {
+    return createConsumerRepairRequestDraft({
+      consumerUserId: input.consumerUserId,
+      problemText: input.problemText,
+      city: input.city ?? existing?.draft.city,
+      addressText: existing?.draft.addressText,
+      preferredTimeText: existing?.draft.preferredTimeText,
+      contactPhone: existing?.draft.contactPhone,
+      selectedWork: input.aiDraft.selectedWork,
+      aiDraft: input.aiDraft,
+    });
+  }
+  if (existing.draft.consumerUserId !== input.consumerUserId) {
+    throw new ConsumerRepairValidationError([{
+      code: "OWNER_MISMATCH",
+      messageRu: "Изменить backend-смету может только владелец заявки.",
+      field: "consumerUserId",
+    }]);
+  }
+  const selectedWork = input.aiDraft.selectedWork;
+  const items = input.aiDraft.items.map((item) => createConsumerRepairRequestItem({
+    requestDraftId: existing.draft.id,
+    ...item,
+  }));
+  const previousBinding = items.length
+    ? canonicalBackendBindingForItems(existing.items)
+    : null;
+  const nextBinding = canonicalBackendBindingForItems(items);
+  if (!nextBinding) return canonicalBackendRequired("canonical_backend_revision_identity");
+  const now = new Date().toISOString();
+  const next = withEvent({
+    ...existing,
+    draft: {
+      ...existing.draft,
+      title: selectedWork?.selectedWorkTitleRu ?? existing.draft.title,
+      problemText: input.problemText ?? existing.draft.problemText,
+      repairType: selectedWork?.selectedWorkKey ?? existing.draft.repairType,
+      selectedCatalogWorkId: selectedWork?.selectedCatalogWorkId ?? existing.draft.selectedCatalogWorkId,
+      selectedWorkKey: selectedWork?.selectedWorkKey ?? existing.draft.selectedWorkKey,
+      selectedWorkTitleRu: selectedWork?.selectedWorkTitleRu ?? existing.draft.selectedWorkTitleRu,
+      selectedWorkCategoryKey: selectedWork?.selectedWorkCategoryKey ?? existing.draft.selectedWorkCategoryKey,
+      selectedWorkCategoryTitleRu: selectedWork?.selectedWorkCategoryTitleRu ?? existing.draft.selectedWorkCategoryTitleRu,
+      selectedWorkRawInput: selectedWork?.selectedWorkRawInput ?? existing.draft.selectedWorkRawInput,
+      selectedWorkSource: selectedWork?.selectedWorkSource ?? existing.draft.selectedWorkSource,
+      selectedWorkResolverReGuessed: selectedWork?.selectedWorkResolverReGuessed ?? existing.draft.selectedWorkResolverReGuessed,
+      updatedAt: now,
+      marketplaceReadyAt: null,
+      marketplaceValidationErrors: [],
+    },
+    items,
+    pdfs: [],
+    estimateRevisionState: undefined,
+    editableEstimateSnapshot: undefined,
+    estimateDraftRevisionState: null,
+    estimateDraftSession: null,
+    canonicalParameterSession: null,
+    structuredEstimatePayload: input.aiDraft.structuredEstimatePayload ?? null,
+    electricalCircuitSchedule: input.aiDraft.electricalCircuitSchedule ?? null,
+    projectExecutionDrafts: [],
+    marketplaceLink: createConsumerMarketplaceLink(existing.draft.id),
+  }, createConsumerRepairEvent({
+    requestDraftId: existing.draft.id,
+    eventType: "canonical_backend_revision_replaced_draft_snapshot",
+    actorType: "consumer",
+    actorUserId: input.consumerUserId,
+    payload: {
+      previousRevisionId: previousBinding?.revisionId ?? null,
+      previousReleaseId: previousBinding?.releaseId ?? null,
+      revisionId: nextBinding.revisionId,
+      releaseId: nextBinding.releaseId,
+    },
+  }));
+  return saveConsumerRepairBundle(next);
 }
 
 export function selectConsumerRepairRoadScopeV4(input: {
@@ -937,207 +658,9 @@ export function selectConsumerRepairRoadScopeV4(input: {
   createdAt?: string;
   expectedRevisionId?: string | null;
 }): ConsumerRepairDraftBundle {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
-  if (!bundle) throw new Error(`CONSUMER_REPAIR_DRAFT_NOT_FOUND:${input.requestDraftId}`);
-  if (bundle.draft.consumerUserId !== input.userId) throw new Error("CONSUMER_REPAIR_OWNER_MISMATCH");
-  if (!isRoadScopeIdV4(input.selectedScope)) throw new Error("ROAD_SCOPE_ID_INVALID");
-  const state = bundle.estimateDraftRevisionState ?? null;
-  const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId) ?? null;
-  const selectedScopeAlreadyBound =
-    current?.roadScopeBinding?.selectedRoadScope === input.selectedScope;
-  const replaceUnderexpandedImplicitFullRoad =
-    selectedScopeAlreadyBound &&
-    input.selectedScope === "FULL_ROAD_INFRASTRUCTURE" &&
-    current.boq.rows.length < 500;
-  if (selectedScopeAlreadyBound && !replaceUnderexpandedImplicitFullRoad) {
-    if (bundle.items.length === current.boq.rows.length) return bundle;
-    return saveConsumerRepairBundle({
-      ...bundle,
-      items: createConsumerRepairItemsFromDraftRevision(bundle.draft.id, current),
-    });
-  }
-  if (
-    !replaceUnderexpandedImplicitFullRoad &&
-    Object.hasOwn(input, "expectedRevisionId") &&
-    (current?.revisionId ?? null) !== input.expectedRevisionId
-  ) {
-    throw new Error("ROAD_SCOPE_CONCURRENT_CONFLICT");
-  }
-  const pending =
-    pendingRoadScopeSelectionFromSession(bundle.estimateDraftSession) ??
-    bundle.pendingRoadScopeSelection;
-  if (!pending && !current?.roadScopeBinding) throw new Error("ROAD_SCOPE_PENDING_INTENT_MISSING");
-  const createdAt = input.createdAt ?? new Date().toISOString();
-  let compilingSession: EstimateDraftSession | null = null;
-  if (pending) {
-    const sourceSession = bundle.estimateDraftSession ?? createSelectedWorkDraftSession({
-      draftId: bundle.draft.id,
-      selectedWork: bundle.draft.selectedWorkKey
-        ? {
-          selectedWorkKey: bundle.draft.selectedWorkKey,
-          selectedWorkTitleRu:
-            bundle.draft.selectedWorkTitleRu ??
-            bundle.draft.title ??
-            ASPHALT_PROFESSIONAL_NAME_RU_V4,
-          selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey ?? "roadworks",
-          selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu ?? "Дорожные работы",
-          selectedWorkRawInput: pending.originalUserText,
-          selectedWorkSource: "user_selected",
-          selectedWorkResolverReGuessed: false,
-        }
-        : null,
-      fallbackCatalogWorkId: pending.requestedCatalogWorkId,
-      rawInput: pending.originalUserText,
-      createdAt: pending.createdAt,
-      scopeRequired: true,
-      scopeRequirement: {
-        originalUserText: pending.originalUserText,
-        requestedCatalogWorkId: pending.requestedCatalogWorkId,
-        offeredScopePresetIds: [...pending.offeredScopes],
-        resolverEvidence: [...pending.resolverEvidence],
-        resolverVersion: pending.resolverVersion,
-        createdAt: pending.createdAt,
-      },
-    });
-    const registeredProfile =
-      loadConsumerRepairDraftRevisionDependencies().getRegisteredEstimateWorkProfile(
-      sourceSession.workIntent?.canonicalWorkKey ?? pending.requestedCatalogWorkId,
-    );
-    const registeredScope = registeredProfile?.scopePresets.find(
-      (scope) => scope.scopePresetId === input.selectedScope,
-    );
-    if (!registeredScope) {
-      throw new Error("ESTIMATE_SCOPE_PROFILE_NOT_REGISTERED");
-    }
-    const scopedSession = selectScope(sourceSession, {
-      scopePresetId: registeredScope.scopePresetId,
-      calculationStrategyId: registeredScope.calculationStrategyId,
-      parameterSchemaVersion: registeredScope.parameterSchemaVersion,
-      engineVersion: registeredScope.engineVersion,
-      requiredParameterAlternatives: registeredScope.requiredParameterAlternatives.map((alternative) => ({
-        alternativeId: alternative.alternativeId,
-        parameterKeys: [...alternative.parameterKeys],
-      })),
-    });
-    if (scopedSession.status !== "READY_TO_COMPILE") {
-      return saveConsumerRepairBundle(withEvent({
-        ...bundle,
-        estimateDraftSession: scopedSession,
-        canonicalParameterSession:
-          projectEstimateDraftSessionToCanonicalSession({
-            session: scopedSession,
-            createdAt,
-            previousSession: bundle.canonicalParameterSession,
-          }),
-        pendingRoadScopeSelection: pendingRoadScopeSelectionFromSession(scopedSession),
-        draft: updateDraftRecord(bundle.draft, {
-          missingData: ["Укажите площадь либо подтверждённые длину и ширину."],
-        }),
-      }, createConsumerRepairEvent({
-        requestDraftId: bundle.draft.id,
-        eventType: "estimate_parameters_required",
-        actorType: "system",
-        actorUserId: input.userId,
-        payload: {
-          selectedScope: input.selectedScope,
-          selectionEpoch: scopedSession.selectionEpoch,
-        },
-      })));
-    }
-    compilingSession = prepareEstimateCompile(scopedSession).session;
-  }
-  let revision: EstimateDraftRevision;
-  try {
-    revision =
-      loadConsumerRepairDraftRevisionDependencies().createInitialEstimateDraftRevision({
-      estimateDraftId: bundle.draft.id,
-      previousRevisionId: replaceUnderexpandedImplicitFullRoad ? null : current?.revisionId ?? null,
-      rawInput: pending?.originalUserText ?? current?.roadScopeBinding?.originalUserText ?? bundle.draft.problemText ?? "",
-      selectedWorkKey: pending?.requestedCatalogWorkId || ASPHALT_WORK_ID_V4,
-      selectedTemplateId: ASPHALT_WORK_ID_V4,
-      source: current && !replaceUnderexpandedImplicitFullRoad ? "template_change" : "initial_prompt",
-      revisionIndex: replaceUnderexpandedImplicitFullRoad ? 1 : (state?.revisions.length ?? 0) + 1,
-      createdAt,
-      paramOverrides: {
-        selectedRoadScope: { value: input.selectedScope, source: "user_input", lastChangedAt: createdAt },
-      },
-    });
-  } catch (error) {
-    if (compilingSession) {
-      saveConsumerRepairBundle({
-        ...bundle,
-        estimateDraftSession: failEstimateCompile(
-          compilingSession,
-          error instanceof Error ? error.message : "estimate_compile_failed",
-        ),
-      });
-    }
-    throw error;
-  }
-  const pricedRevision = preserveConsumerManualPricesInDraftRevision(bundle, revision);
-  const committedSession = compilingSession?.contextHash
-    ? commitEstimateCompileResult(compilingSession, {
-      draftId: bundle.draft.id,
-      selectionEpoch: compilingSession.selectionEpoch,
-      contextHash: compilingSession.contextHash,
-      revisionId: pricedRevision.revisionId,
-      scopePresetId: compilingSession.scopePresetId!,
-      parameterSchemaVersion: compilingSession.parameterSchemaVersion!,
-      calculationStrategyId: compilingSession.calculationStrategyId!,
-    })
-    : bundle.estimateDraftSession ?? null;
-  const nextState: EstimateDraftRevisionState = {
-    estimateDraftId: bundle.draft.id,
-    currentRevisionId: pricedRevision.revisionId,
-    revisions: replaceUnderexpandedImplicitFullRoad
-      ? [pricedRevision]
-      : [...(state?.revisions ?? []), pricedRevision],
-    diffs: replaceUnderexpandedImplicitFullRoad ? [] : [...(state?.diffs ?? [])],
-  };
-  const next: ConsumerRepairDraftBundle = {
-    ...bundle,
-    draft: updateDraftRecord(bundle.draft, {
-      problemText: revision.rawInput,
-      title: ASPHALT_PROFESSIONAL_NAME_RU_V4,
-      repairType: ASPHALT_WORK_ID_V4,
-      selectedWorkKey: ASPHALT_WORK_ID_V4,
-      selectedWorkTitleRu: ASPHALT_PROFESSIONAL_NAME_RU_V4,
-      selectedWorkCategoryKey: "road_construction",
-      selectedWorkCategoryTitleRu: "Дорожные работы",
-      selectedWorkRawInput: revision.rawInput,
-      selectedWorkSource: "user_selected",
-      selectedWorkResolverReGuessed: false,
-      aiSummaryRu: `${ASPHALT_PROFESSIONAL_NAME_RU_V4}: ${revision.quantityBasis?.area_m2.toLocaleString("ru-RU") ?? "—"} м²; строк BOQ ${revision.boq.rows.length}.`,
-      missingData: revision.missingInputs.map((item) => item.label),
-    }),
-    items: createConsumerRepairItemsFromDraftRevision(bundle.draft.id, pricedRevision),
-    estimateDraftRevisionState: nextState,
-    estimateDraftSession: committedSession,
-    canonicalParameterSession:
-      projectEstimateDraftRevisionToCanonicalSession({
-        revision: pricedRevision,
-        draftId: bundle.draft.id,
-        createdAt,
-        previousSession: bundle.canonicalParameterSession,
-      }),
-    pendingRoadScopeSelection: null,
-  };
-  return saveConsumerRepairBundle(withEvent(next, createConsumerRepairEvent({
-    requestDraftId: bundle.draft.id,
-    eventType: "road_scope_selected",
-    actorType: "consumer",
-    actorUserId: input.userId,
-    payload: {
-      selectedScope: input.selectedScope,
-      selectionEpoch: committedSession?.selectionEpoch ?? null,
-      contextHash: committedSession?.contextHash ?? null,
-      pendingIntentId: pending?.pendingIntentId ?? null,
-      sourceRevisionId: current?.revisionId ?? null,
-      revisionId: revision.revisionId,
-    },
-  })));
+  void input;
+  return canonicalBackendRequired("legacy_road_scope_compile");
 }
-
 export function saveConsumerRepairProjectExecutionDraft(input: {
   requestDraftId: string;
   projectExecutionDraft: ProjectExecutionDraft;
@@ -1207,194 +730,6 @@ export function updateConsumerRepairRequestDraft(input: {
   return saveConsumerRepairBundle(next);
 }
 
-function parseCanonicalElectricalPatchValue(input: {
-  paramKey: string;
-  rawValue: string;
-}): ElectricalCanonicalParameterValue {
-  const definition = ELECTRICAL_CANONICAL_PARAMETER_SCHEMA.definitions.find(
-    (candidate) => candidate.parameterId === input.paramKey,
-  );
-  if (!definition) {
-    throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_NOT_REGISTERED:${input.paramKey}`);
-  }
-  const raw = input.rawValue.trim();
-  if (definition.valueType === "number") {
-    const value = Number(raw.replace(/\s+/g, "").replace(",", "."));
-    if (!Number.isFinite(value)) {
-      throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_NUMBER_INVALID:${input.paramKey}`);
-    }
-    if (definition.validation.min != null && value < definition.validation.min) {
-      throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_BELOW_MIN:${input.paramKey}`);
-    }
-    if (definition.validation.max != null && value > definition.validation.max) {
-      throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_ABOVE_MAX:${input.paramKey}`);
-    }
-    if (definition.validation.integer && !Number.isInteger(value)) {
-      throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_INTEGER_REQUIRED:${input.paramKey}`);
-    }
-    return value;
-  }
-  if (definition.valueType === "boolean") {
-    if (/^(?:true|1|yes|да)$/iu.test(raw)) return true;
-    if (/^(?:false|0|no|нет)$/iu.test(raw)) return false;
-    throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_BOOLEAN_INVALID:${input.paramKey}`);
-  }
-  if (!raw) throw new Error(`CANONICAL_ELECTRICAL_PARAMETER_TEXT_REQUIRED:${input.paramKey}`);
-  return raw;
-}
-
-function applyCanonicalElectricalParameterPatches(input: {
-  bundle: ConsumerRepairDraftBundle;
-  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
-  userId: string;
-  createdAt: string;
-  eventType: "estimate_params_recalculated" | "estimate_params_batch_recalculated";
-}): ConsumerRepairDraftBundle {
-  const state = input.bundle.estimateDraftRevisionState;
-  const currentRevision = state?.revisions.find(
-    (revision) => revision.revisionId === state.currentRevisionId,
-  );
-  if (!state || !currentRevision || !input.bundle.canonicalParameterSession) {
-    throw new Error("CANONICAL_ELECTRICAL_REVISION_STATE_MISSING");
-  }
-  const overrides = canonicalElectricalOverridesFromBundle(input.bundle);
-  for (const patch of input.patches) {
-    const key = patch.paramKey as ElectricalCanonicalParameterKey;
-    if (patch.operation === "remove_param") {
-      delete overrides[key];
-      continue;
-    }
-    overrides[key] = parseCanonicalElectricalPatchValue({
-      paramKey: patch.paramKey,
-      rawValue: patch.rawValue,
-    });
-  }
-  const selectedWork = input.bundle.draft.selectedWorkKey &&
-      input.bundle.draft.selectedWorkTitleRu
-    ? {
-        selectedWorkKey: input.bundle.draft.selectedWorkKey,
-        selectedWorkTitleRu: input.bundle.draft.selectedWorkTitleRu,
-        selectedWorkCategoryKey:
-          input.bundle.draft.selectedWorkCategoryKey ?? "electrical",
-        selectedWorkCategoryTitleRu:
-          input.bundle.draft.selectedWorkCategoryTitleRu ?? "Электромонтажные работы",
-        selectedWorkRawInput:
-          input.bundle.draft.selectedWorkRawInput ??
-          input.bundle.draft.problemText ??
-          "",
-        selectedWorkSource: "user_selected" as const,
-        selectedWorkResolverReGuessed: false as const,
-      }
-    : null;
-  const compiledDraft = buildCanonicalElectricalConsumerRepairAiDraft({
-    text: input.bundle.draft.problemText ?? "",
-    countryCode: "KG",
-    city: input.bundle.draft.city ?? "Bishkek",
-    currency: input.bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-    selectedWork,
-    parameterOverrides: overrides,
-  });
-  const provisionalItems = compiledDraft.items.map((item) =>
-    createConsumerRepairRequestItem({
-      requestDraftId: input.bundle.draft.id,
-      ...item,
-    }),
-  );
-  const compiledState = createCanonicalElectricalEstimateState({
-    draftId: input.bundle.draft.id,
-    rawInput: input.bundle.draft.problemText ?? "",
-    items: provisionalItems,
-    createdAt: input.createdAt,
-    revisionIndex: state.revisions.length + 1,
-    previousRevisionId: currentRevision.revisionId,
-    overrides,
-    previousCanonicalSession: input.bundle.canonicalParameterSession,
-  });
-  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(
-    input.bundle,
-    compiledState.revision,
-  );
-  const diff = diffCanonicalElectricalRevisions(
-    currentRevision,
-    recalculatedRevision,
-  );
-  const nextState: EstimateDraftRevisionState = {
-    estimateDraftId: state.estimateDraftId,
-    currentRevisionId: recalculatedRevision.revisionId,
-    revisions: [...state.revisions, recalculatedRevision],
-    diffs: [...state.diffs, diff],
-  };
-  const items = createConsumerRepairItemsFromDraftRevision(
-    input.bundle.draft.id,
-    recalculatedRevision,
-  );
-  const nextBundleBase: ConsumerRepairDraftBundle = {
-    ...input.bundle,
-    draft: updateDraftRecord(input.bundle.draft, {
-      aiSummaryRu:
-        `${input.bundle.draft.selectedWorkTitleRu ?? "Электромонтаж"}: ` +
-        `пересчитано по canonical revision ${nextState.revisions.length}; ` +
-        `изменено строк ${diff.changedRowsCount}.`,
-      missingData: [
-        ...recalculatedRevision.missingInputs.map((item) => item.label),
-        ...recalculatedRevision.assumptions.map((assumption) => assumption.reason),
-      ],
-    }),
-    items,
-    pdfs: archivePdfsForStaleDraftRevision(
-      input.bundle,
-      recalculatedRevision.revisionId,
-    ),
-    structuredEstimatePayload: compiledDraft.structuredEstimatePayload ?? null,
-    estimateDraftRevisionState: nextState,
-    estimateDraftSession: compiledState.estimateDraftSession,
-    canonicalParameterSession: compiledState.canonicalParameterSession,
-    electricalCircuitSchedule: compiledState.electricalCircuitSchedule,
-  };
-  const nextBundleWithSnapshot = {
-    ...nextBundleBase,
-    editableEstimateSnapshot:
-      buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
-  };
-  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
-    previousBundle: input.bundle,
-    nextBundle: nextBundleWithSnapshot,
-    event_type: "AI_RECALCULATED",
-    source: "AI_RECALCULATED",
-    actor_id: input.userId,
-    before_value: currentRevision.revisionId,
-    after_value: recalculatedRevision.revisionId,
-    reason_ru:
-      "Canonical electrical parameters изменены пользователем; BOQ и итоги пересчитаны одной ревизией.",
-  });
-  const reopened = reopenApprovedEstimateForContentEdit({
-    bundle: withSnapshot,
-    actorUserId: input.userId,
-    sourceEventType: input.eventType,
-  });
-  return saveConsumerRepairBundle(withEvent(
-    reopened,
-    createConsumerRepairEvent({
-      requestDraftId: input.bundle.draft.id,
-      eventType: input.eventType,
-      actorType: "consumer",
-      actorUserId: input.userId,
-      payload: {
-        changedParamKeys: input.patches.map((patch) => patch.paramKey),
-        patchCount: input.patches.length,
-        revisionId: recalculatedRevision.revisionId,
-        previousRevisionId: currentRevision.revisionId,
-        changedRows: diff.changedRowsCount,
-        canonicalParameterFingerprint:
-          compiledState.canonicalParameterSession.fingerprint,
-        calculationVersion:
-          compiledState.canonicalParameterSession.calculationVersion,
-        pdfStatus: "stale",
-      },
-    }),
-  ));
-}
-
 export function applyConsumerRepairDraftRevisionParamPatch(input: {
   requestDraftId: string;
   operation: UserParamPatchOperation;
@@ -1403,160 +738,8 @@ export function applyConsumerRepairDraftRevisionParamPatch(input: {
   userId?: string;
   createdAt?: string;
 }): ConsumerRepairDraftBundle {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
-  const userId = input.userId ?? bundle.draft.consumerUserId;
-  if (userId !== bundle.draft.consumerUserId) {
-    throw new ConsumerRepairValidationError([
-      {
-        code: "OWNER_MISMATCH",
-        messageRu: "Изменить параметры сметы может только владелец заявки.",
-        field: "userId",
-      },
-    ]);
-  }
-  if (
-    bundle.canonicalParameterSession?.canonicalWorkKey ===
-      ELECTRICAL_CANONICAL_WORK_KEY
-  ) {
-    return applyCanonicalElectricalParameterPatches({
-      bundle,
-      patches: [{
-        operation: input.operation,
-        paramKey: input.paramKey.trim(),
-        rawValue: input.rawValue.trim(),
-      }],
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_recalculated",
-    });
-  }
-
-  const initialRegisteredProfessionalRevision =
-    applyInitialRegisteredProfessionalDomainParameterBatch({
-      bundle,
-      patches: [{
-        operation: input.operation,
-        paramKey: input.paramKey.trim(),
-        rawValue: input.rawValue.trim(),
-      }],
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_recalculated",
-    });
-  if (initialRegisteredProfessionalRevision) {
-    return initialRegisteredProfessionalRevision;
-  }
-
-  const initialExactAsphaltRelatedRevision =
-    applyInitialExactAsphaltRelatedParameterBatch({
-      bundle,
-      patches: [{
-        operation: input.operation,
-        paramKey: input.paramKey.trim(),
-        rawValue: input.rawValue.trim(),
-      }],
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_recalculated",
-    });
-  if (initialExactAsphaltRelatedRevision) {
-    return initialExactAsphaltRelatedRevision;
-  }
-
-  const { canonicalBundle, state } =
-    resolveConsumerRepairCalculationStateForMutation(bundle);
-  const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
-  if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
-  const runtime = loadAiEstimateRuntime();
-  const result = runtime.applyParameterOverride({
-    revision: currentRevision,
-    operation: input.operation,
-    paramKey: input.paramKey,
-    rawValue: input.rawValue,
-    createdAt: input.createdAt,
-    revisionIndex: state.revisions.length + 1,
-  });
-  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(canonicalBundle, result.revision);
-  const nextState: EstimateDraftRevisionState = {
-    estimateDraftId: state.estimateDraftId,
-    currentRevisionId: recalculatedRevision.revisionId,
-    revisions: [...state.revisions, recalculatedRevision],
-    diffs: [...state.diffs, result.diff],
-  };
-  const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
-  if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
-  const items = createConsumerRepairItemsFromDraftRevision(canonicalBundle.draft.id, nextRevision);
-  const nextBundleBase: ConsumerRepairDraftBundle = {
-    ...canonicalBundle,
-    draft: updateDraftRecord(canonicalBundle.draft, {
-      problemText: nextRevision.rawInput,
-      title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
-      repairType: bundle.draft.repairType,
-      aiSummaryRu: `${bundle.draft.selectedWorkTitleRu ?? nextRevision.matchedFamily}: пересчитано по ревизии ${nextState.revisions.length}; строк BOQ ${nextRevision.boq.rows.length}.`,
-      missingData: [
-        ...nextRevision.missingInputs.map((item) => item.label),
-        ...nextRevision.assumptions
-          .filter((assumption) => !assumption.replacedByUserInput)
-          .map((assumption) => assumption.reason),
-      ],
-      selectedWorkKey: nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
-        hasRoadworksWaveARegistration(nextRevision.matchedFamily)
-        ? nextRevision.matchedFamily
-        : nextRevision.selectedTemplateId,
-      selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
-      selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
-      selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
-      selectedWorkRawInput: nextRevision.rawInput,
-      selectedWorkSource: bundle.draft.selectedWorkSource,
-      selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
-    }),
-    items,
-    pdfs: archivePdfsForStaleDraftRevision(canonicalBundle, nextRevision.revisionId),
-    estimateDraftRevisionState: nextState,
-    canonicalParameterSession:
-      projectEstimateDraftRevisionToCanonicalSession({
-        revision: nextRevision,
-        draftId: bundle.draft.id,
-        createdAt: input.createdAt ?? new Date().toISOString(),
-        previousSession: canonicalBundle.canonicalParameterSession,
-      }) ?? canonicalBundle.canonicalParameterSession,
-  };
-  const nextBundleWithSnapshot = {
-    ...nextBundleBase,
-    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
-  };
-  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
-    previousBundle: canonicalBundle,
-    nextBundle: nextBundleWithSnapshot,
-    event_type: "AI_RECALCULATED",
-    source: "AI_RECALCULATED",
-    actor_id: userId,
-    before_value: currentRevision.revisionId,
-    after_value: nextRevision.revisionId,
-    reason_ru: "Параметры сметы изменены пользователем, BOQ пересчитан.",
-  });
-  const reopened = reopenApprovedEstimateForContentEdit({
-    bundle: withSnapshot,
-    actorUserId: userId,
-    sourceEventType: "estimate_params_recalculated",
-  });
-  return saveConsumerRepairBundle(withEvent(
-    reopened,
-    createConsumerRepairEvent({
-      requestDraftId: input.requestDraftId,
-      eventType: "estimate_params_recalculated",
-      actorType: "consumer",
-      actorUserId: userId,
-      payload: {
-        operation: input.operation,
-        paramKey: input.paramKey,
-        revisionId: nextRevision.revisionId,
-        previousRevisionId: currentRevision.revisionId,
-        changedRows: nextState.diffs[nextState.diffs.length - 1]?.changedRowsCount ?? 0,
-      },
-    }),
-  ));
+  void input;
+  return canonicalBackendRequired("legacy_single_parameter_recalculate");
 }
 
 export type ConsumerRepairDraftRevisionParamBatchPatch = {
@@ -1565,915 +748,14 @@ export type ConsumerRepairDraftRevisionParamBatchPatch = {
   rawValue: string;
 };
 
-function assertSafeDraftRevisionBatchResult(input: {
-  previousRevision: EstimateDraftRevision;
-  nextRevision: EstimateDraftRevision;
-  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
-}): void {
-  const failures = [
-    input.nextRevision.selectedTemplateId === input.previousRevision.selectedTemplateId
-      ? ""
-      : "selected_template_changed",
-    input.nextRevision.matchedFamily === input.previousRevision.matchedFamily
-      ? ""
-      : "matched_family_changed",
-    input.previousRevision.boq.rows.length === 0 || input.nextRevision.boq.rows.length > 0
-      ? ""
-      : "boq_rows_empty_after_batch",
-    ...input.nextRevision.boq.rows.map((row) =>
-      Number.isFinite(row.quantity) && row.quantity >= 0 && row.unit.trim()
-        ? ""
-        : `invalid_row_quantity_or_unit:${row.rowId}`
-    ),
-    ...input.patches.map((patch) =>
-      patch.operation === "remove_param" || input.nextRevision.params[patch.paramKey]
-        ? ""
-        : `patched_param_missing:${patch.paramKey}`
-    ),
-  ].filter(Boolean);
-
-  if (failures.length === 0) return;
-  throw new ConsumerRepairValidationError([
-    {
-      code: "ESTIMATE_REVISION_BATCH_REJECTED",
-      messageRu: `Пересчет отклонен: новая ревизия не прошла проверку. Старая смета сохранена без изменений. Причина: ${failures.join(", ")}`,
-      field: "estimateDraftRevisionState",
-    },
-  ]);
-}
-
-function canonicalParameterPatchError(
-  code: string,
-  paramKey: string,
-): ConsumerRepairValidationError {
-  return new ConsumerRepairValidationError([{
-    code: "ESTIMATE_PARAMETERS_REQUIRED",
-    messageRu: `Параметр «${paramKey}» содержит недопустимое значение. Смета не изменена.`,
-    field: `${paramKey}:${code}`,
-  }]);
-}
-
-function parseCanonicalParameterPatchValue(
-  parameter: CanonicalParameter | CanonicalParameterDefinition,
-  rawValue: string,
-): number | string | boolean {
-  const raw = rawValue.trim();
-  let value: number | string | boolean;
-  if (parameter.valueType === "number") {
-    const parsed = Number(raw.replace(/\s+/g, "").replace(",", "."));
-    if (!Number.isFinite(parsed)) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NUMBER_INVALID", parameter.parameterId);
-    }
-    value = parsed;
-  } else if (parameter.valueType === "boolean") {
-    if (/^(?:true|1|yes|да)$/iu.test(raw)) value = true;
-    else if (/^(?:false|0|no|нет)$/iu.test(raw)) value = false;
-    else throw canonicalParameterPatchError("CANONICAL_PARAMETER_BOOLEAN_INVALID", parameter.parameterId);
-  } else {
-    if (!raw) throw canonicalParameterPatchError("CANONICAL_PARAMETER_TEXT_REQUIRED", parameter.parameterId);
-    value = raw;
-  }
-
-  const validation = parameter.validation;
-  if (typeof value === "number") {
-    if (validation.min != null && value < validation.min) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_BELOW_MIN", parameter.parameterId);
-    }
-    if (validation.max != null && value > validation.max) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_ABOVE_MAX", parameter.parameterId);
-    }
-    if (validation.integer && !Number.isInteger(value)) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_INTEGER_REQUIRED", parameter.parameterId);
-    }
-  }
-  if (
-    parameter.allowedValues.length > 0 &&
-    !parameter.allowedValues.some((candidate) => candidate.value === value)
-  ) {
-    throw canonicalParameterPatchError("CANONICAL_PARAMETER_ALLOWED_VALUE_REQUIRED", parameter.parameterId);
-  }
-  return value;
-}
-
-function estimateDraftSessionParametersFromRevisionParams(
-  params: EstimateDraftRevision["params"],
-  createdAt: string,
-): Record<string, EstimateDraftSessionParameterValue> {
-  return Object.fromEntries(Object.entries(params).map(([key, parameter]) => [
-    key,
-    {
-      value: parameter.value,
-      ...(parameter.canonicalUnit ? { unit: parameter.canonicalUnit } : {}),
-      origin: parameter.source === "default_assumption"
-        ? "PROJECT_DERIVED" as const
-        : "USER_ENTERED" as const,
-      confirmedAt: parameter.source === "default_assumption" ? null : createdAt,
-      sourceText: parameter.sourceText,
-      ...(parameter.source === "derived" ? { derivedFrom: ["length_m", "width_m"] } : {}),
-    },
-  ]));
-}
-
-function canonicalParameterDefinitionVisible(
-  definition: CanonicalParameterDefinition,
-  values: Readonly<Record<string, EstimateDraftRevision["params"][string]>>,
-): boolean {
-  const condition = definition.visibilityCondition;
-  if (condition.kind === "ALWAYS") return true;
-  if (condition.kind === "PARAMETER_EQUALS") {
-    return values[condition.parameterId]?.value === condition.value;
-  }
-  return condition.conditions.some(
-    (candidate) => values[candidate.parameterId]?.value === candidate.value,
-  );
-}
-
-function applyInitialRegisteredProfessionalDomainParameterBatch(input: {
-  bundle: ConsumerRepairDraftBundle;
-  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
-  userId: string;
-  createdAt: string;
-  eventType: "estimate_params_recalculated" | "estimate_params_batch_recalculated";
-}): ConsumerRepairDraftBundle | null {
-  if (input.bundle.estimateDraftRevisionState) return null;
-  const canonicalSession = input.bundle.canonicalParameterSession;
-  if (!canonicalSession) return null;
-  const selectedCatalogWorkId =
-    input.bundle.draft.selectedCatalogWorkId ??
-    input.bundle.draft.selectedWorkKey ??
-    canonicalSession.canonicalWorkKey;
-  const selection = loadRegisteredProfessionalEstimateDomainsV1()
-    .resolveRegisteredProfessionalEstimateSelectionV1(selectedCatalogWorkId);
-  if (!selection || selection.work_key !== canonicalSession.canonicalWorkKey) return null;
-
-  const schema = selection.canonical_parameter_schema;
-  const params: Record<string, EstimateDraftRevision["params"][string]> = {};
-  for (const parameter of canonicalSession.parameters) {
-    if (parameter.value == null || !parameter.valid || parameter.source === "MISSING") continue;
-    params[parameter.parameterId] = {
-      value: parameter.value,
-      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
-      source: parameter.source === "ASSUMED" ? "default_assumption" : "user_input",
-      sourceText: parameter.sourceText ?? `canonical-session:${parameter.parameterId}`,
-      lastChangedAt: input.createdAt,
-    };
-  }
-  for (const patch of input.patches) {
-    const parameter = schema.definitions.find(
-      (candidate) => candidate.parameterId === patch.paramKey,
-    );
-    if (!parameter) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NOT_REGISTERED", patch.paramKey);
-    }
-    if (patch.operation === "remove_param") {
-      delete params[patch.paramKey];
-      continue;
-    }
-    params[patch.paramKey] = {
-      value: parseCanonicalParameterPatchValue(parameter, patch.rawValue),
-      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
-      source: "user_input",
-      sourceText: patch.rawValue,
-      lastChangedAt: input.createdAt,
-    };
-  }
-
-  const visibleRequiredIds = schema.definitions
-    .filter((definition) => definition.requiredLevel === "BLOCKING_REQUIRED")
-    .filter((definition) => canonicalParameterDefinitionVisible(definition, params))
-    .map((definition) => definition.parameterId);
-  const alternativeIds = new Set(
-    schema.requiredAlternatives.flatMap((alternative) => alternative.parameterIds),
-  );
-  const commonRequiredIds = visibleRequiredIds.filter((id) => !alternativeIds.has(id));
-  const requiredParameterAlternatives = schema.requiredAlternatives.length > 0
-    ? schema.requiredAlternatives.map((alternative) => ({
-      alternativeId: alternative.alternativeId,
-      parameterKeys: [...new Set([...commonRequiredIds, ...alternative.parameterIds])],
-    }))
-    : [{
-      alternativeId: `${selection.work_key}:all-visible-required`,
-      parameterKeys: commonRequiredIds,
-    }];
-  const sourceSession =
-    input.bundle.estimateDraftSession?.workIntent?.catalogWorkId === selection.catalog_id
-      ? input.bundle.estimateDraftSession
-      : selectEstimateDraftWork(
-        createEstimateDraftSession({ draftId: input.bundle.draft.id }),
-        {
-          catalogWorkId: selection.catalog_id,
-          canonicalWorkKey: selection.work_key,
-          source: "EXPLICIT_SELECTION",
-          scopeRequired: false,
-        },
-      );
-  const scopedSession = bindEstimateDraftScope(sourceSession, {
-    scopePresetId: String(params.estimate_scope_mode?.value ?? selection.template_id),
-    calculationStrategyId: selection.calculation_strategy_id,
-    parameterSchemaVersion: schema.schemaVersion,
-    engineVersion: selection.engine_version,
-    requiredParameterAlternatives,
-  });
-  const candidateParameterSession = setEstimateDraftParameters(
-    scopedSession,
-    estimateDraftSessionParametersFromRevisionParams(params, input.createdAt),
-  );
-  const candidateCanonicalSession =
-    projectEstimateDraftSessionToCanonicalSession({
-      session: candidateParameterSession,
-      createdAt: input.createdAt,
-      previousSession: canonicalSession,
-    }) ?? canonicalSession;
-  if (
-    candidateParameterSession.status !== "READY_TO_COMPILE" ||
-    candidateCanonicalSession.blockingMissingParameterIds.length > 0
-  ) {
-    const missingLabels = candidateCanonicalSession.parameters
-      .filter((parameter) =>
-        candidateCanonicalSession.blockingMissingParameterIds.includes(parameter.parameterId)
-      )
-      .map((parameter) => parameter.label);
-    return saveConsumerRepairBundle(withEvent({
-      ...input.bundle,
-      draft: updateDraftRecord(input.bundle.draft, {
-        missingData: missingLabels,
-        aiSummaryRu: missingLabels.length > 0
-          ? `\u0414\u043b\u044f \u0440\u0430\u0441\u0447\u0451\u0442\u0430 \u043d\u0443\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c: ${missingLabels.join(", ")}.`
-          : "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b, \u043d\u043e \u0440\u0430\u0441\u0447\u0451\u0442 \u0435\u0449\u0451 \u043d\u0435 \u0433\u043e\u0442\u043e\u0432.",
-      }),
-      estimateDraftSession: candidateParameterSession,
-      canonicalParameterSession: candidateCanonicalSession,
-    }, createConsumerRepairEvent({
-      requestDraftId: input.bundle.draft.id,
-      eventType: "estimate_parameters_required",
-      actorType: "consumer",
-      actorUserId: input.userId,
-      payload: {
-        changedParamKeys: input.patches.map((patch) => patch.paramKey),
-        conditionalParametersRevealed: candidateCanonicalSession.blockingMissingParameterIds,
-        revisionId: null,
-        rowsAfter: 0,
-      },
-    })));
-  }
-
-  let revision: EstimateDraftRevision;
-  try {
-    revision = loadAiEstimateRuntime().createDraft({
-      estimateDraftId: input.bundle.draft.id,
-      rawInput:
-        input.bundle.draft.problemText ??
-        input.bundle.draft.selectedWorkRawInput ??
-        selection.title_ru,
-      selectedWorkKey: selection.catalog_id,
-      selectedTemplateId: selection.template_id,
-      selectedTemplateName: selection.title_ru,
-      city: input.bundle.draft.city,
-      currency: input.bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-      countryCode: "KG",
-      paramOverrides: params,
-      createdAt: input.createdAt,
-    }).revision;
-  } catch (error) {
-    const cause = error instanceof Error ? error.message : "unknown";
-    logger.error("consumer-repair-professional-domain-apply-compile-failed", {
-      requestDraftId: input.bundle.draft.id,
-      selectedCatalogWorkId: selection.catalog_id,
-      workKey: selection.work_key,
-      cause,
-    });
-    throw new ConsumerRepairValidationError([{
-      code: "ESTIMATE_PARAMETERS_REQUIRED",
-      messageRu:
-        "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043c\u0435\u0442\u0443 \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430\u043c. \u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d \u0431\u0435\u0437 \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u043e\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438.",
-      field: `params:${cause}`,
-    }]);
-  }
-
-  const failures = [
-    revision.estimateDraftId === input.bundle.draft.id ? "" : "draft_identity_changed",
-    revision.professionalWorkId === selection.work_key ? "" : "exact_operation_changed",
-    revision.resolvedIdentity?.requestedCatalogWorkId === selection.catalog_id ? "" : "catalog_identity_changed",
-    revision.boq.rows.length > 0 ? "" : "boq_rows_missing",
-    revision.status === "draft_ready" ? "" : `revision_not_ready:${revision.status}`,
-    revision.missingInputs.length === 0 ? "" : `missing_inputs:${revision.missingInputs.length}`,
-  ].filter(Boolean);
-  if (failures.length > 0) {
-    throw new ConsumerRepairValidationError([{
-      code: "ESTIMATE_PARAMETERS_REQUIRED",
-      messageRu: `\u0421\u043c\u0435\u0442\u0430 \u043d\u0435 \u0441\u043e\u0437\u0434\u0430\u043d\u0430: ${failures.join(", ")}.`,
-      field: "params",
-    }]);
-  }
-
-  const parameterSession = setEstimateDraftParameters(
-    scopedSession,
-    estimateDraftSessionParametersFromRevisionParams(revision.params, input.createdAt),
-  );
-  const compilingSession = prepareEstimateCompile(parameterSession).session;
-  const committedSession = commitEstimateCompileResult(compilingSession, {
-    draftId: input.bundle.draft.id,
-    selectionEpoch: compilingSession.selectionEpoch,
-    contextHash: compilingSession.contextHash!,
-    revisionId: revision.revisionId,
-    scopePresetId: compilingSession.scopePresetId!,
-    parameterSchemaVersion: compilingSession.parameterSchemaVersion!,
-    calculationStrategyId: compilingSession.calculationStrategyId!,
-  });
-  if (committedSession.status !== "REVIEW") {
-    throw new Error("ESTIMATE_INITIAL_COMPILE_COMMIT_REJECTED");
-  }
-
-  const revisionState: EstimateDraftRevisionState = {
-    estimateDraftId: input.bundle.draft.id,
-    currentRevisionId: revision.revisionId,
-    revisions: [revision],
-    diffs: [],
-  };
-  const nextBase: ConsumerRepairDraftBundle = {
-    ...input.bundle,
-    draft: updateDraftRecord(input.bundle.draft, {
-      problemText: revision.rawInput,
-      title: selection.title_ru,
-      repairType: selection.work_key,
-      selectedCatalogWorkId: selection.catalog_id,
-      selectedWorkKey: selection.work_key,
-      selectedWorkTitleRu: selection.title_ru,
-      selectedWorkCategoryKey: selection.category_key,
-      selectedWorkCategoryTitleRu: selection.category_title_ru,
-      selectedWorkRawInput: revision.rawInput,
-      selectedWorkSource: "user_selected",
-      selectedWorkResolverReGuessed: false,
-      aiSummaryRu: `${selection.title_ru}: \u0441\u0442\u0440\u043e\u043a BOQ ${revision.boq.rows.length}.`,
-      missingData: [],
-    }),
-    items: createConsumerRepairItemsFromDraftRevision(input.bundle.draft.id, revision),
-    pdfs: archivePdfsForStaleDraftRevision(input.bundle, revision.revisionId),
-    estimateDraftRevisionState: revisionState,
-    estimateDraftSession: committedSession,
-    canonicalParameterSession:
-      projectEstimateDraftRevisionToCanonicalSession({
-        revision,
-        draftId: input.bundle.draft.id,
-        createdAt: input.createdAt,
-        previousSession: canonicalSession,
-      }) ?? candidateCanonicalSession,
-    pendingRoadScopeSelection: null,
-  };
-  const withSnapshot: ConsumerRepairDraftBundle = {
-    ...nextBase,
-    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBase),
-  };
-  const canonicalBundle = ensureConsumerRepairBundleEstimateRevisionState(withSnapshot);
-  return saveConsumerRepairBundle(withEvent(
-    canonicalBundle,
-    createConsumerRepairEvent({
-      requestDraftId: input.bundle.draft.id,
-      eventType: input.eventType,
-      actorType: "consumer",
-      actorUserId: input.userId,
-      payload: {
-        initialRevisionCreated: true,
-        changedParamKeys: input.patches.map((patch) => patch.paramKey),
-        patchCount: input.patches.length,
-        revisionId: revision.revisionId,
-        previousRevisionId: null,
-        rowsBefore: 0,
-        rowsAfter: revision.boq.rows.length,
-        pdfStatus: "not_generated",
-      },
-    }),
-  ));
-}
-
-function applyInitialExactAsphaltRelatedParameterBatch(input: {
-  bundle: ConsumerRepairDraftBundle;
-  patches: ConsumerRepairDraftRevisionParamBatchPatch[];
-  userId: string;
-  createdAt: string;
-  eventType: "estimate_params_recalculated" | "estimate_params_batch_recalculated";
-}): ConsumerRepairDraftBundle | null {
-  if (input.bundle.estimateDraftRevisionState) return null;
-  const canonicalSession = input.bundle.canonicalParameterSession;
-  if (!canonicalSession) return null;
-  const selectedCatalogWorkId =
-    input.bundle.draft.selectedCatalogWorkId ??
-    input.bundle.draft.selectedWorkKey ??
-    canonicalSession.canonicalWorkKey;
-  const profile = getAsphaltRelatedProfileByCatalogRecordIdV4(selectedCatalogWorkId);
-  if (!profile || profile.canonicalWorkKey !== canonicalSession.canonicalWorkKey) return null;
-
-  const params: Record<string, EstimateDraftRevision["params"][string]> = {};
-  for (const parameter of canonicalSession.parameters) {
-    if (
-      parameter.value == null ||
-      !parameter.valid ||
-      parameter.source === "MISSING"
-    ) {
-      continue;
-    }
-    const deterministicGeometry = parameter.source === "ASSUMED" &&
-      parameter.sourceText === "length_m * width_m";
-    params[parameter.parameterId] = {
-      value: parameter.value,
-      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
-      source: deterministicGeometry
-        ? "derived"
-        : parameter.source === "ASSUMED"
-          ? "default_assumption"
-          : "user_input",
-      sourceText: parameter.sourceText ?? `canonical-session:${parameter.parameterId}`,
-      lastChangedAt: input.createdAt,
-    };
-  }
-
-  const exactParameterSchema = profile.canonicalWorkKey === ASPHALT_WORK_ID_V4
-    ? ASPHALT_RESOURCE_LEVEL_CANONICAL_PARAMETER_SCHEMA
-    : REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(profile.canonicalWorkKey);
-  for (const patch of input.patches) {
-    // A batch may set a trigger and its newly visible dependent field in one
-    // Apply command. Resolve that field from the authoritative schema even if
-    // it was absent from the pre-click visible-session projection.
-    const parameter = canonicalSession.parameters.find(
-      (candidate) => candidate.parameterId === patch.paramKey,
-    ) ?? exactParameterSchema?.definitions.find(
-      (candidate) => candidate.parameterId === patch.paramKey,
-    );
-    if (!parameter) {
-      throw canonicalParameterPatchError("CANONICAL_PARAMETER_NOT_REGISTERED", patch.paramKey);
-    }
-    if (patch.operation === "remove_param") {
-      delete params[patch.paramKey];
-      continue;
-    }
-    params[patch.paramKey] = {
-      value: parseCanonicalParameterPatchValue(parameter, patch.rawValue),
-      ...(parameter.unit ? { canonicalUnit: parameter.unit } : {}),
-      source: "user_input",
-      sourceText: patch.rawValue,
-      lastChangedAt: input.createdAt,
-    };
-  }
-
-  const profileParameterKeys = new Set(asphaltRelatedParameterKeysForProfileV4(profile));
-  const conditionallyRequiredParameterKeys = [
-    ...profile.requiredParameters,
-    ...(params.haul_required?.value === true
-      ? ["haul_distance_km", "truck_payload_t"].filter((key) => profileParameterKeys.has(key))
-      : []),
-    ...(params.removal_extent?.value === "PARTIAL"
-      ? ["total_area_m2", "removal_share"]
-      : []),
-    ...(params.work_scope?.value === "DEMOLITION_AND_REINSTATEMENT"
-      ? ["reinstatement_depth_mm", "new_asphalt_density_t_m3"]
-      : []),
-    ...(params.tack_coat_required?.value === true ? ["tack_coat_rate_l_m2"] : []),
-    ...(params.binder_layer_required?.value === true
-      ? ["binder_layer_thickness_mm", "binder_mix_type"]
-      : []),
-    ...(params.base_construction_required?.value === true
-      ? ["base_layer_thickness_mm", "base_material_type"]
-      : []),
-    ...(params.curb_required?.value === true ? ["curb_length_m", "curb_type"] : []),
-    ...(params.drainage_required?.value === true
-      ? ["drainage_length_m", "drainage_type"]
-      : []),
-    ...(params.marking_required?.value === true ? ["marking_area_m2"] : []),
-    ...(params.milling_required?.value === true
-      ? ["milling_depth_mm", "number_of_passes"]
-      : []),
-    ...(params.boundary_cut_required?.value === true ? ["boundary_cut_length_m"] : []),
-  ];
-  const exactRequiredKeys = [...new Set(conditionallyRequiredParameterKeys)]
-    .filter((key) => profileParameterKeys.has(key));
-  const geometryAlternatives = profileParameterKeys.has("area_m2") &&
-    profileParameterKeys.has("length_m") &&
-    profileParameterKeys.has("width_m")
-    ? [
-      {
-        alternativeId: `${profile.canonicalWorkKey}:area`,
-        parameterKeys: [...exactRequiredKeys.filter((key) => !["area_m2", "length_m", "width_m"].includes(key)), "area_m2"],
-      },
-      {
-        alternativeId: `${profile.canonicalWorkKey}:length-width`,
-        parameterKeys: [...exactRequiredKeys.filter((key) => !["area_m2", "length_m", "width_m"].includes(key)), "length_m", "width_m"],
-      },
-    ]
-    : [{
-      alternativeId: `${profile.canonicalWorkKey}:all-required`,
-      parameterKeys: exactRequiredKeys,
-    }];
-  const sourceSession =
-    input.bundle.estimateDraftSession?.workIntent?.canonicalWorkKey === profile.canonicalWorkKey
-      ? input.bundle.estimateDraftSession
-      : selectEstimateDraftWork(
-        createEstimateDraftSession({ draftId: input.bundle.draft.id }),
-        {
-          catalogWorkId: selectedCatalogWorkId,
-          canonicalWorkKey: profile.canonicalWorkKey,
-          source: "EXPLICIT_SELECTION",
-          scopeRequired: false,
-        },
-      );
-  const scopedSession = bindEstimateDraftScope(sourceSession, {
-    scopePresetId: profile.calculationProfileId,
-    calculationStrategyId: profile.calculationStrategyId,
-    parameterSchemaVersion: profile.parameterSchemaId,
-    engineVersion: profile.formulaGraphVersion,
-    requiredParameterAlternatives: geometryAlternatives,
-  });
-  const candidateParameterSession = setEstimateDraftParameters(
-    scopedSession,
-    estimateDraftSessionParametersFromRevisionParams(params, input.createdAt),
-  );
-  const candidateCanonicalSession =
-    projectEstimateDraftSessionToCanonicalSession({
-      session: candidateParameterSession,
-      createdAt: input.createdAt,
-      previousSession: canonicalSession,
-    }) ?? canonicalSession;
-  if (
-    candidateParameterSession.status !== "READY_TO_COMPILE" ||
-    candidateCanonicalSession.blockingMissingParameterIds.length > 0
-  ) {
-    const missingLabels = candidateCanonicalSession.parameters
-      .filter((parameter) =>
-        candidateCanonicalSession.blockingMissingParameterIds.includes(parameter.parameterId)
-      )
-      .map((parameter) => parameter.label);
-    const next = withEvent({
-      ...input.bundle,
-      draft: updateDraftRecord(input.bundle.draft, {
-        missingData: missingLabels,
-        aiSummaryRu: missingLabels.length > 0
-          ? `Точная операция сохранена. Для расчёта нужно уточнить: ${missingLabels.join(", ")}.`
-          : "Параметры сохранены, но расчёт не сформирован. Повторите применение; исходные значения не потеряны.",
-      }),
-      estimateDraftSession: candidateParameterSession,
-      canonicalParameterSession: candidateCanonicalSession,
-    }, createConsumerRepairEvent({
-      requestDraftId: input.bundle.draft.id,
-      eventType: "estimate_parameters_required",
-      actorType: "consumer",
-      actorUserId: input.userId,
-      payload: {
-        changedParamKeys: input.patches.map((patch) => patch.paramKey),
-        conditionalParametersRevealed: candidateCanonicalSession.blockingMissingParameterIds,
-        revisionId: null,
-        rowsAfter: 0,
-      },
-    }));
-    return saveConsumerRepairBundle(next);
-  }
-
-  const runtime = loadAiEstimateRuntime();
-  let revision: EstimateDraftRevision;
-  try {
-    revision = runtime.createDraft({
-      estimateDraftId: input.bundle.draft.id,
-      rawInput:
-        input.bundle.draft.problemText ??
-        input.bundle.draft.selectedWorkRawInput ??
-        profile.professionalNameRu,
-      selectedWorkKey: selectedCatalogWorkId,
-      selectedTemplateId: selectedCatalogWorkId,
-      selectedTemplateName:
-        input.bundle.draft.selectedWorkTitleRu ?? profile.professionalNameRu,
-      city: input.bundle.draft.city,
-      currency: input.bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-      countryCode: "KG",
-      paramOverrides: params,
-      createdAt: input.createdAt,
-    }).revision;
-  } catch (error) {
-    const cause = error instanceof Error ? error.message : "unknown";
-    logger.error("consumer-repair-asphalt-apply-compile-failed", {
-      requestDraftId: input.bundle.draft.id,
-      selectedCatalogWorkId,
-      canonicalWorkKey: profile.canonicalWorkKey,
-      cause,
-    });
-    if (
-      cause.startsWith("NEEDS_REQUIRED_INPUTS") ||
-      cause.startsWith("NORMATIVE_SOURCE_GAP")
-    ) {
-      throw new ConsumerRepairValidationError([{
-        code: "ESTIMATE_PARAMETERS_REQUIRED",
-        messageRu: "Для расчёта не хватает обязательных исходных данных. Черновик сохранён без частичной сметы.",
-        field: `params:${cause}`,
-      }]);
-    }
-    throw error;
-  }
-
-  const failures = [
-    revision.estimateDraftId === input.bundle.draft.id ? "" : "draft_identity_changed",
-    revision.professionalWorkId === profile.canonicalWorkKey ? "" : "exact_operation_changed",
-    revision.boq.rows.length > 0 ? "" : "boq_rows_missing",
-    revision.status === "draft_ready" ? "" : `revision_not_ready:${revision.status}`,
-    ...profile.requiredParameters.map((key) => revision.params[key] ? "" : `required_parameter_missing:${key}`),
-    ...input.patches.map((patch) =>
-      patch.operation === "remove_param" || revision.params[patch.paramKey]
-        ? ""
-        : `patched_parameter_missing:${patch.paramKey}`
-    ),
-  ].filter(Boolean);
-  if (failures.length > 0) {
-    throw new ConsumerRepairValidationError([{
-      code: "ESTIMATE_PARAMETERS_REQUIRED",
-      messageRu: `Смета ещё не готова к расчёту. Исходный черновик не изменён: ${failures.join(", ")}.`,
-      field: "params",
-    }]);
-  }
-
-  const parameterSession = setEstimateDraftParameters(
-    scopedSession,
-    estimateDraftSessionParametersFromRevisionParams(revision.params, input.createdAt),
-  );
-  if (parameterSession.status !== "READY_TO_COMPILE") {
-    throw new ConsumerRepairValidationError([{
-      code: "ESTIMATE_PARAMETERS_REQUIRED",
-      messageRu: "Не все обязательные параметры подтверждены. Исходный черновик не изменён.",
-      field: "params",
-    }]);
-  }
-  const compilingSession = prepareEstimateCompile(parameterSession).session;
-  const committedSession = commitEstimateCompileResult(compilingSession, {
-    draftId: input.bundle.draft.id,
-    selectionEpoch: compilingSession.selectionEpoch,
-    contextHash: compilingSession.contextHash!,
-    revisionId: revision.revisionId,
-    scopePresetId: compilingSession.scopePresetId!,
-    parameterSchemaVersion: compilingSession.parameterSchemaVersion!,
-    calculationStrategyId: compilingSession.calculationStrategyId!,
-  });
-  if (committedSession.status !== "REVIEW") {
-    throw new Error("ESTIMATE_INITIAL_COMPILE_COMMIT_REJECTED");
-  }
-
-  const revisionState: EstimateDraftRevisionState = {
-    estimateDraftId: input.bundle.draft.id,
-    currentRevisionId: revision.revisionId,
-    revisions: [revision],
-    diffs: [],
-  };
-  const nextBase: ConsumerRepairDraftBundle = {
-    ...input.bundle,
-    draft: updateDraftRecord(input.bundle.draft, {
-      problemText: revision.rawInput,
-      title: profile.professionalNameRu,
-      repairType: profile.canonicalWorkKey,
-      selectedCatalogWorkId,
-      selectedWorkKey: profile.canonicalWorkKey,
-      selectedWorkTitleRu: profile.professionalNameRu,
-      selectedWorkRawInput: revision.rawInput,
-      selectedWorkSource: "user_selected",
-      selectedWorkResolverReGuessed: false,
-      aiSummaryRu: `${profile.professionalNameRu}: строк BOQ ${revision.boq.rows.length}.`,
-      missingData: [
-        ...revision.missingInputs.map((item) => item.label),
-        ...revision.assumptions
-          .filter((assumption) => !assumption.replacedByUserInput)
-          .map((assumption) => assumption.reason),
-      ],
-    }),
-    items: createConsumerRepairItemsFromDraftRevision(input.bundle.draft.id, revision),
-    pdfs: archivePdfsForStaleDraftRevision(input.bundle, revision.revisionId),
-    estimateDraftRevisionState: revisionState,
-    estimateDraftSession: committedSession,
-    canonicalParameterSession:
-      projectEstimateDraftRevisionToCanonicalSession({
-        revision,
-        draftId: input.bundle.draft.id,
-        createdAt: input.createdAt,
-        previousSession: canonicalSession,
-      }) ?? canonicalSession,
-    pendingRoadScopeSelection: null,
-  };
-  const withSnapshot: ConsumerRepairDraftBundle = {
-    ...nextBase,
-    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBase),
-  };
-  const canonicalBundle = ensureConsumerRepairBundleEstimateRevisionState(withSnapshot);
-  return saveConsumerRepairBundle(withEvent(
-    canonicalBundle,
-    createConsumerRepairEvent({
-      requestDraftId: input.bundle.draft.id,
-      eventType: input.eventType,
-      actorType: "consumer",
-      actorUserId: input.userId,
-      payload: {
-        initialRevisionCreated: true,
-        changedParamKeys: input.patches.map((patch) => patch.paramKey),
-        patchCount: input.patches.length,
-        revisionId: revision.revisionId,
-        previousRevisionId: null,
-        rowsBefore: 0,
-        rowsAfter: revision.boq.rows.length,
-        pdfStatus: "not_generated",
-      },
-    }),
-  ));
-}
-
 export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   requestDraftId: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   userId?: string;
   createdAt?: string;
 }): ConsumerRepairDraftBundle {
-  const cleanPatches = input.patches
-    .map((patch) => ({
-      ...patch,
-      paramKey: patch.paramKey.trim(),
-      rawValue: patch.rawValue.trim(),
-    }))
-    .filter((patch) => patch.paramKey.length > 0);
-  if (cleanPatches.length === 0) {
-    throw new ConsumerRepairValidationError([
-      {
-        code: "ESTIMATE_PARAM_BATCH_EMPTY",
-        messageRu: "Нет изменений параметров для применения.",
-        field: "params",
-      },
-    ]);
-  }
-
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
-  const userId = input.userId ?? bundle.draft.consumerUserId;
-  if (userId !== bundle.draft.consumerUserId) {
-    throw new ConsumerRepairValidationError([
-      {
-        code: "OWNER_MISMATCH",
-        messageRu: "Изменить параметры сметы может только владелец заявки.",
-        field: "userId",
-      },
-    ]);
-  }
-  if (
-    bundle.canonicalParameterSession?.canonicalWorkKey ===
-      ELECTRICAL_CANONICAL_WORK_KEY
-  ) {
-    return applyCanonicalElectricalParameterPatches({
-      bundle,
-      patches: cleanPatches,
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_batch_recalculated",
-    });
-  }
-
-  const initialRegisteredProfessionalRevision =
-    applyInitialRegisteredProfessionalDomainParameterBatch({
-      bundle,
-      patches: cleanPatches,
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_batch_recalculated",
-    });
-  if (initialRegisteredProfessionalRevision) {
-    return initialRegisteredProfessionalRevision;
-  }
-
-  const initialExactAsphaltRelatedRevision =
-    applyInitialExactAsphaltRelatedParameterBatch({
-      bundle,
-      patches: cleanPatches,
-      userId,
-      createdAt: input.createdAt ?? new Date().toISOString(),
-      eventType: "estimate_params_batch_recalculated",
-    });
-  if (initialExactAsphaltRelatedRevision) {
-    return initialExactAsphaltRelatedRevision;
-  }
-
-  const { canonicalBundle, state } =
-    resolveConsumerRepairCalculationStateForMutation(bundle);
-  const currentRevision = state.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
-  if (!currentRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${state.currentRevisionId}`);
-
-  const runtime = loadAiEstimateRuntime();
-  const result = runtime.applyParameterBatchOverride({
-    revision: currentRevision,
-    patches: cleanPatches,
-    createdAt: input.createdAt,
-    revisionIndex: state.revisions.length + 1,
-  });
-  assertSafeDraftRevisionBatchResult({
-    previousRevision: currentRevision,
-    nextRevision: result.revision,
-    patches: cleanPatches,
-  });
-
-  const recalculatedRevision = preserveConsumerManualPricesInDraftRevision(canonicalBundle, result.revision);
-  const nextState: EstimateDraftRevisionState = {
-    estimateDraftId: state.estimateDraftId,
-    currentRevisionId: recalculatedRevision.revisionId,
-    revisions: [...state.revisions, recalculatedRevision],
-    diffs: [...state.diffs, result.diff],
-  };
-  const nextRevision = nextState.revisions.find((revision) => revision.revisionId === nextState.currentRevisionId);
-  if (!nextRevision) throw new Error(`CONSUMER_REPAIR_ESTIMATE_DRAFT_REVISION_MISSING:${nextState.currentRevisionId}`);
-  const items = createConsumerRepairItemsFromDraftRevision(canonicalBundle.draft.id, nextRevision);
-  const manualPriceCountBefore = canonicalBundle.items.filter((item) =>
-    item.unitPrice != null && (
-      item.priceEditedByConsumer === true ||
-      item.priceSource === "user" ||
-      item.priceStatus === "USER_PRICE_OVERRIDE" ||
-      item.priceStatus === "USER_ENTERED_PRICE"
-    )
-  ).length;
-  const manualPriceCountAfter = items.filter((item) => item.unitPrice != null).length;
-  if (manualPriceCountAfter < manualPriceCountBefore) {
-    throw new Error(
-      `CONSUMER_REPAIR_MANUAL_PRICE_LOSS_BLOCKED:${manualPriceCountBefore}:${manualPriceCountAfter}` +
-      `:${currentRevision.boq.rows.length}:${result.revision.boq.rows.length}`,
-    );
-  }
-  const changedParamKeys = result.diff.changedParams.map((param) => param.key);
-  const registeredProfessionalSelection = loadRegisteredProfessionalEstimateDomainsV1()
-    .resolveRegisteredProfessionalEstimateSelectionV1(
-      nextRevision.resolvedIdentity?.requestedCatalogWorkId ??
-      nextRevision.professionalWorkId ??
-      nextRevision.selectedTemplateId,
-    );
-  const nextBundleBase: ConsumerRepairDraftBundle = {
-    ...canonicalBundle,
-    draft: updateDraftRecord(canonicalBundle.draft, {
-      problemText: nextRevision.rawInput,
-      title: bundle.draft.selectedWorkTitleRu ?? bundle.draft.title,
-      repairType: bundle.draft.repairType,
-      aiSummaryRu: `${bundle.draft.selectedWorkTitleRu ?? nextRevision.matchedFamily}: пересчитано по ревизии ${nextState.revisions.length}; изменено параметров ${changedParamKeys.length}; строк BOQ ${nextRevision.boq.rows.length}.`,
-      missingData: [
-        ...nextRevision.missingInputs.map((item) => item.label),
-        ...nextRevision.assumptions
-          .filter((assumption) => !assumption.replacedByUserInput)
-          .map((assumption) => assumption.reason),
-      ],
-      selectedCatalogWorkId: registeredProfessionalSelection?.catalog_id ??
-        canonicalBundle.draft.selectedCatalogWorkId,
-      selectedWorkKey: registeredProfessionalSelection?.work_key ??
-        (nextRevision.matchedFamily === ASPHALT_WORK_ID_V4 ||
-        hasRoadworksWaveARegistration(nextRevision.matchedFamily)
-        ? nextRevision.matchedFamily
-        : nextRevision.selectedTemplateId),
-      selectedWorkTitleRu: bundle.draft.selectedWorkTitleRu,
-      selectedWorkCategoryKey: bundle.draft.selectedWorkCategoryKey,
-      selectedWorkCategoryTitleRu: bundle.draft.selectedWorkCategoryTitleRu,
-      selectedWorkRawInput: nextRevision.rawInput,
-      selectedWorkSource: bundle.draft.selectedWorkSource,
-      selectedWorkResolverReGuessed: bundle.draft.selectedWorkResolverReGuessed,
-    }),
-    items,
-    pdfs: archivePdfsForStaleDraftRevision(canonicalBundle, nextRevision.revisionId),
-    estimateDraftRevisionState: nextState,
-    canonicalParameterSession:
-      projectEstimateDraftRevisionToCanonicalSession({
-        revision: nextRevision,
-        draftId: bundle.draft.id,
-        createdAt: input.createdAt ?? new Date().toISOString(),
-        previousSession: canonicalBundle.canonicalParameterSession,
-      }) ?? canonicalBundle.canonicalParameterSession,
-  };
-  const nextBundleWithSnapshot = {
-    ...nextBundleBase,
-    editableEstimateSnapshot: buildEditableEstimateSnapshotFromConsumerRepairBundle(nextBundleBase),
-  };
-  const withSnapshot = appendConsumerRepairEstimateRevisionFromSnapshot({
-    previousBundle: canonicalBundle,
-    nextBundle: nextBundleWithSnapshot,
-    event_type: "AI_RECALCULATED",
-    source: "AI_RECALCULATED",
-    actor_id: userId,
-    before_value: currentRevision.revisionId,
-    after_value: nextRevision.revisionId,
-    reason_ru: "Параметры сметы пакетно изменены пользователем, BOQ пересчитан одной ревизией.",
-  });
-  const reopened = reopenApprovedEstimateForContentEdit({
-    bundle: withSnapshot,
-    actorUserId: userId,
-    sourceEventType: "estimate_params_batch_recalculated",
-  });
-  return saveConsumerRepairBundle(withEvent(
-    reopened,
-    createConsumerRepairEvent({
-      requestDraftId: input.requestDraftId,
-      eventType: "estimate_params_batch_recalculated",
-      actorType: "consumer",
-      actorUserId: userId,
-      payload: {
-        changedParamKeys,
-        patchCount: cleanPatches.length,
-        revisionId: nextRevision.revisionId,
-        previousRevisionId: currentRevision.revisionId,
-        rowsBefore: currentRevision.boq.rows.length,
-        rowsAfter: nextRevision.boq.rows.length,
-        changedRows: result.diff.changedRowsCount,
-        pdfStatus: "stale",
-      },
-    }),
-  ));
+  void input;
+  return canonicalBackendRequired("legacy_parameter_batch_recalculate");
 }
 
 export function addConsumerRepairRequestItem(input: {
@@ -2833,6 +1115,13 @@ export function approveConsumerRepairRequestDraft(input: {
   requestDraftId: string;
   userId?: string;
   generatedAt?: string;
+  canonicalArtifact?: {
+    artifactId: string;
+    revisionId: string;
+    releaseId: string;
+    status: "ready";
+    sha256: string | null;
+  };
 }): ConsumerRepairDraftBundle {
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
@@ -2858,112 +1147,57 @@ export function approveConsumerRepairRequestDraft(input: {
     throw new ConsumerRepairValidationError(validation.errors);
   }
 
-  const existingPdf = bundle.pdfs.find((pdf) =>
-    pdf.pdfStatus === "generated" && consumerRepairPdfStorageObjectExists(pdf.storageBucket, pdf.storageKey),
-  );
-  const existingPdfIsFresh = existingPdf
-    && (!bundle.draft.updatedAt || existingPdf.createdAt >= bundle.draft.updatedAt);
-  if (bundle.draft.status === "consumer_approved" && existingPdfIsFresh) {
-    return cloneConsumerRepairValue(bundle);
-  }
-
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
-  const draft = approveDraftRecord(bundle.draft);
-  const frozen = freezeConsumerRepairEstimateRevision({
-    bundle: { ...bundle, draft },
-    actor_id: userId,
-    created_at: draft.approvedAt ?? input.generatedAt,
-  });
-  const canonicalPdfBundle = { ...frozen, draft };
-  const pdf = loadConsumerRepairPdfService().generateConsumerRepairRequestPdf({
-    draft,
-    items: frozen.items,
-    media: frozen.media,
-    supplement: canonicalParameterPdfSupplement(canonicalPdfBundle),
-    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(canonicalPdfBundle, "pdf_generation"),
-    generatedAt: input.generatedAt,
-  });
-  const bound = bindConsumerRepairEstimateRevisionPdf({
-    bundle: frozen,
-    pdf_id: pdf.id,
-    actor_id: userId,
-    created_at: pdf.createdAt,
-  });
-  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
-  recordEstimateTelemetryEvent({
-    event_name: "estimate_approved",
-    route: "/request",
-    platform: "unknown",
-    request_id: input.requestDraftId,
-    estimate_id: draft.repairType,
-    payload: {
-      pdf_id: revisionPdf.id,
-      revision_id: revisionPdf.revisionId,
-      item_count: frozen.items.length,
-    },
-  });
-  return saveConsumerRepairBundle(withEvent(
-    {
-      ...bound.bundle,
-      draft,
-      pdfs: [revisionPdf, ...bound.bundle.pdfs],
-    },
-    createConsumerRepairEvent({
+  const canonicalBinding = canonicalBackendBindingForItems(bundle.items);
+  if (canonicalBinding) {
+    const artifact = input.canonicalArtifact;
+    if (
+      !artifact || artifact.status !== "ready" || !artifact.artifactId.trim() ||
+      artifact.revisionId !== canonicalBinding.revisionId ||
+      artifact.releaseId !== canonicalBinding.releaseId
+    ) {
+      throw new ConsumerRepairValidationError([{
+        code: "ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED",
+        messageRu: "Перед утверждением нужен готовый backend PDF той же revision и release.",
+        field: "canonicalArtifact",
+      }]);
+    }
+    if (bundle.draft.status === "consumer_approved") return cloneConsumerRepairValue(bundle);
+    assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
+    const draft = approveDraftRecord(bundle.draft);
+    recordEstimateTelemetryEvent({
+      event_name: "estimate_approved",
+      route: "/request",
+      platform: "unknown",
+      request_id: input.requestDraftId,
+      estimate_id: canonicalBinding.revisionId,
+      payload: {
+        pdf_id: artifact.artifactId,
+        revision_id: canonicalBinding.revisionId,
+        release_id: canonicalBinding.releaseId,
+        sha256: artifact.sha256,
+        item_count: bundle.items.length,
+      },
+    });
+    return saveConsumerRepairBundle(withEvent({ ...bundle, draft }, createConsumerRepairEvent({
       requestDraftId: input.requestDraftId,
-      eventType: "consumer_approved_pdf_generated",
-      actorType: "consumer",
-      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
-    }),
-  ));
-}
-
-export function ensureConsumerRepairRequestPdfAvailable(input: {
-  requestDraftId: string;
-  userId?: string;
-  pdfId?: string;
-  generatedAt?: string;
-}): ConsumerRepairDraftBundle {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
-  const pdf = input.pdfId
-    ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
-    : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
-  if (pdf && consumerRepairPdfStorageObjectExists(pdf.storageBucket, pdf.storageKey)) {
-    return bundle;
-  }
-  if (bundle.items.length < 1) {
-    throw new Error("PDF недоступен: нет snapshot для восстановления.");
-  }
-  const userId = input.userId ?? bundle.draft.consumerUserId;
-  const regeneratedPdf =
-    loadConsumerRepairPdfService().generateConsumerRepairRequestPdf({
-    draft: bundle.draft,
-    items: bundle.items,
-    media: bundle.media,
-    supplement: canonicalParameterPdfSupplement(bundle),
-    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation"),
-    generatedAt: input.generatedAt,
-  });
-  const bound = bindConsumerRepairEstimateRevisionPdf({
-    bundle,
-    pdf_id: regeneratedPdf.id,
-    actor_id: userId,
-    created_at: regeneratedPdf.createdAt,
-  });
-  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(regeneratedPdf, bound.binding);
-  return savePreparedConsumerRepairBundle(withEvent(
-    {
-      ...bound.bundle,
-      pdfs: [revisionPdf, ...bound.bundle.pdfs.filter((candidate) => candidate.id !== revisionPdf.id)],
-    },
-    createConsumerRepairEvent({
-      requestDraftId: input.requestDraftId,
-      eventType: "consumer_history_pdf_regenerated_from_snapshot",
+      eventType: "consumer_approved_canonical_backend_pdf",
       actorType: "consumer",
       actorUserId: userId,
-      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId },
-    }),
-  ));
+      payload: {
+        artifactId: artifact.artifactId,
+        revisionId: canonicalBinding.revisionId,
+        releaseId: canonicalBinding.releaseId,
+        sha256: artifact.sha256,
+      },
+    })));
+  }
+
+  throw new ConsumerRepairValidationError([{
+    code: "ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED",
+    messageRu:
+      "Для утверждения legacy-сметы сначала создайте явную backend child revision и получите PDF той же revision и release. Исходная revision не изменена.",
+    field: "canonicalArtifact",
+  }]);
 }
 
 export function createConsumerRepairDraftFromHistorySnapshot(input: {
@@ -3059,127 +1293,7 @@ export function listConsumerRepairRequestHistory(
   return listConsumerRepairBundlesForUser(consumerUserId, {
     ...options,
     limit: options.limit ?? 20,
-  }).map(migrateLegacyElectrical42RowDraft);
-}
-
-function isLegacyElectrical42RowDraft(
-  bundle: ConsumerRepairDraftBundle,
-): boolean {
-  if (
-    bundle.draft.status !== "draft" ||
-    bundle.items.length !== 42
-  ) {
-    return false;
-  }
-  const electricalIdentity = [
-    bundle.draft.problemText,
-    bundle.draft.selectedWorkKey,
-    bundle.draft.selectedWorkTitleRu,
-    bundle.draft.repairType,
-  ].some((value) =>
-    /(?:электр|кабел|розет|выключ|electrical|wiring|cable)/iu.test(
-      String(value ?? ""),
-    )
-  );
-  if (!electricalIdentity) return false;
-  const normalizedTitles = new Set(
-    bundle.items.map((item) => item.titleRu.trim().toLocaleLowerCase("ru-RU")),
-  );
-  return (
-    normalizedTitles.has("кабель") &&
-    normalizedTitles.has("кабельные линии") &&
-    normalizedTitles.has("кабель силовой")
-  );
-}
-
-function migrateLegacyElectrical42RowDraft(
-  bundle: ConsumerRepairDraftBundle,
-): ConsumerRepairDraftBundle {
-  if (!isLegacyElectrical42RowDraft(bundle)) return bundle;
-  const rawInput = bundle.draft.problemText?.trim() ?? "";
-  const selectedWork: ConsumerRepairSelectedWork = {
-    selectedCatalogWorkId:
-      bundle.draft.selectedCatalogWorkId ??
-      bundle.draft.selectedWorkKey ??
-      ELECTRICAL_CANONICAL_WORK_KEY,
-    selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
-    selectedWorkTitleRu: "Электромонтаж",
-    selectedWorkCategoryKey: "electrical",
-    selectedWorkCategoryTitleRu: "Электромонтажные работы",
-    selectedWorkRawInput: rawInput,
-    selectedWorkSource: bundle.draft.selectedWorkSource ?? "user_selected",
-    selectedWorkResolverReGuessed: false,
-  };
-  const aiDraft = buildCanonicalElectricalConsumerRepairAiDraft({
-    text: rawInput,
-    countryCode: "KG",
-    city: bundle.draft.city ?? "Bishkek",
-    currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-    selectedWork,
   });
-  const items = aiDraft.items.map((item) =>
-    createConsumerRepairRequestItem({
-      requestDraftId: bundle.draft.id,
-      ...item,
-    }),
-  );
-  const canonicalState = createCanonicalElectricalEstimateState({
-    draftId: bundle.draft.id,
-    rawInput,
-    items,
-    createdAt: new Date().toISOString(),
-  });
-  const migrated: ConsumerRepairDraftBundle = {
-    ...bundle,
-    draft: {
-      ...updateDraftRecord(bundle.draft, {
-        title: aiDraft.titleRu,
-        selectedCatalogWorkId: selectedWork.selectedCatalogWorkId,
-        selectedWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
-        selectedWorkTitleRu: selectedWork.selectedWorkTitleRu,
-        selectedWorkCategoryKey: selectedWork.selectedWorkCategoryKey,
-        selectedWorkCategoryTitleRu: selectedWork.selectedWorkCategoryTitleRu,
-        selectedWorkRawInput: rawInput,
-        selectedWorkSource: selectedWork.selectedWorkSource,
-        selectedWorkResolverReGuessed: false,
-        aiSummaryRu: aiDraft.summaryRu,
-        missingData: aiDraft.missingData,
-      }),
-      repairType: aiDraft.repairType,
-    },
-    items,
-    pdfs: bundle.pdfs.map((pdf) => ({
-      ...pdf,
-      pdfStatus: "archived" as const,
-    })),
-    durableHistorySummary: null,
-    editableEstimateSnapshot: null,
-    estimateRevisionState: null,
-    estimateDraftRevisionState:
-      canonicalState.estimateDraftRevisionState,
-    estimateDraftSession: canonicalState.estimateDraftSession,
-    canonicalParameterSession: canonicalState.canonicalParameterSession,
-    electricalCircuitSchedule: canonicalState.electricalCircuitSchedule,
-    structuredEstimatePayload: aiDraft.structuredEstimatePayload ?? null,
-    projectExecutionDrafts: [],
-    pendingRoadScopeSelection: null,
-    events: [
-      ...bundle.events,
-      createConsumerRepairEvent({
-        requestDraftId: bundle.draft.id,
-        eventType: "legacy_electrical_42_row_draft_invalidated",
-        actorType: "system",
-        payload: {
-          previousRowCount: 42,
-          canonicalWorkKey: ELECTRICAL_CANONICAL_WORK_KEY,
-          reason: "legacy_hidden_quantities_and_unverified_prices",
-        },
-      }),
-    ],
-  };
-  return saveConsumerRepairBundle(
-    ensureConsumerRepairBundleEstimateRevisionState(migrated),
-  );
 }
 
 export function listConsumerRepairApprovedHistory(
@@ -3225,49 +1339,6 @@ export function listApprovedEstimateHistoryRecords(
 
 export function getConsumerRepairRequest(requestDraftId: string): ConsumerRepairDraftBundle {
   return getConsumerRepairBundle(requestDraftId);
-}
-
-function canonicalParameterPdfSupplement(
-  bundle: ConsumerRepairDraftBundle,
-  supplement?: ConsumerRepairPdfSupplement,
-): ConsumerRepairPdfSupplement | undefined {
-  const session = bundle.canonicalParameterSession;
-  if (!session) return supplement;
-  const currentRevisionId =
-    bundle.estimateDraftRevisionState?.currentRevisionId ?? session.revisionId;
-  const parameterLines = session.parameters.map((parameter) => {
-    const value = parameter.value == null
-      ? "не указано"
-      : typeof parameter.value === "boolean"
-        ? parameter.value ? "Да" : "Нет"
-        : String(parameter.value);
-    return [
-      `${parameter.label}: ${value}${parameter.unit ? ` ${parameter.unit}` : ""}`,
-      `источник ${parameter.source}`,
-    ].join("; ");
-  });
-  const missingQuestions = session.parameters
-    .filter((parameter) => parameter.source === "MISSING")
-    .map((parameter) => `Уточните параметр «${parameter.label}».`);
-  return {
-    ...supplement,
-    estimateAssumptions: [
-      ...(supplement?.estimateAssumptions ?? []),
-      `Версия расчёта: ${session.calculationVersion}`,
-      `Ревизия расчёта: ${currentRevisionId}`,
-      `Статус параметров: ${session.status}`,
-      ...parameterLines,
-    ],
-    clarifyingQuestions: [
-      ...(supplement?.clarifyingQuestions ?? []),
-      ...missingQuestions,
-    ],
-    sourceLabels: [
-      ...(supplement?.sourceLabels ?? []),
-      `Схема параметров: ${session.schemaId} ${session.schemaVersion}`,
-      `Отпечаток параметров: ${session.fingerprint}`,
-    ],
-  };
 }
 
 export function archiveConsumerRepairApprovedHistoryRecord(input: {
@@ -3343,73 +1414,6 @@ export function deleteConsumerRepairRequestDraft(input: {
     ]);
   }
   deleteConsumerRepairBundle(input.requestDraftId);
-}
-
-export function getConsumerRepairRequestPdf(input: {
-  requestDraftId: string;
-  pdfId?: string;
-}): ConsumerRepairPdfOpenResult {
-  const bundle = ensureConsumerRepairRequestPdfAvailable(input);
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
-  const pdf = input.pdfId
-    ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
-    : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
-  if (!pdf) throw new Error("Consumer repair request PDF not found.");
-  return loadConsumerRepairPdfService().openConsumerRepairRequestPdf({
-    requestId: input.requestDraftId,
-    pdf,
-    ownerUserId: bundle.draft.consumerUserId,
-    companyId: bundle.draft.orgId,
-    currency: bundle.items.find((item) => item.currency)?.currency ?? "KGS",
-  });
-}
-
-export function generateConsumerRepairRequestPdfForDraft(input: {
-  requestDraftId: string;
-  userId?: string;
-  supplement?: ConsumerRepairPdfSupplement;
-  generatedAt?: string;
-}): ConsumerRepairDraftBundle {
-  const bundle = getConsumerRepairBundle(input.requestDraftId);
-  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "generate_pdf" });
-  const userId = input.userId ?? bundle.draft.consumerUserId;
-  if (userId !== bundle.draft.consumerUserId) {
-    throw new ConsumerRepairValidationError([
-      {
-        code: "OWNER_MISMATCH",
-        messageRu: "PDF доступен только владельцу заявки.",
-        field: "userId",
-      },
-    ]);
-  }
-  const pdf = loadConsumerRepairPdfService().generateConsumerRepairRequestPdf({
-    draft: bundle.draft,
-    items: bundle.items,
-    media: bundle.media,
-    supplement: canonicalParameterPdfSupplement(bundle, input.supplement),
-    canonicalPayload: buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation"),
-    generatedAt: input.generatedAt,
-  });
-  const bound = bindConsumerRepairEstimateRevisionPdf({
-    bundle,
-    pdf_id: pdf.id,
-    actor_id: userId,
-    created_at: pdf.createdAt,
-  });
-  const revisionPdf = attachConsumerRepairPdfRevisionMetadata(pdf, bound.binding);
-  return saveConsumerRepairBundle(withEvent(
-    {
-      ...bound.bundle,
-      pdfs: [revisionPdf, ...bound.bundle.pdfs],
-    },
-    createConsumerRepairEvent({
-      requestDraftId: input.requestDraftId,
-      eventType: "consumer_pdf_generated_without_marketplace_send",
-      actorType: "consumer",
-      actorUserId: userId,
-      payload: { pdfId: revisionPdf.id, revisionId: revisionPdf.revisionId, marketplaceSend: false },
-    }),
-  ));
 }
 
 export function __resetConsumerRepairRequestStoreForTests(): void {

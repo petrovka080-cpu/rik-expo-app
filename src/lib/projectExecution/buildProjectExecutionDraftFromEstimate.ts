@@ -1,9 +1,11 @@
 import {
-  buildStructuredEstimateCatalogBinding,
   stableStructuredEstimateHash,
-  type StructuredEstimatePayload,
-  type StructuredEstimateRow,
-} from "../estimateStructuredPipeline";
+} from "../estimateStructuredPipeline/buildStructuredEstimatePayload";
+import { buildStructuredEstimateCatalogBinding } from "../estimateStructuredPipeline/structuredEstimateCatalogBinding";
+import type {
+  StructuredEstimatePayload,
+  StructuredEstimateRow,
+} from "../estimateStructuredPipeline/structuredEstimateTypes";
 import {
   assertVisibleEstimateLabel,
   toVisibleEstimateLabel,

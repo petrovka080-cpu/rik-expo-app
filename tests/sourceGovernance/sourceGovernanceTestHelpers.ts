@@ -1,12 +1,5 @@
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  compareConsumerRepairPayloadParity,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  validateConsumerRepairPayloadSourceGovernance,
-  __resetConsumerRepairRequestStoreForTests,
-} from "../../src/lib/consumerRequests";
+import { buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, validateConsumerRepairPayloadSourceGovernance, __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import {
   calculateGlobalConstructionEstimateSync,
 } from "../../src/lib/ai/globalEstimate/globalEstimateCalculator";

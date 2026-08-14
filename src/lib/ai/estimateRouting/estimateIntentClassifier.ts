@@ -1,4 +1,5 @@
-import { GLOBAL_WORK_CATEGORIES, resolveGlobalWorkType, type GlobalWorkCategory } from "../globalEstimate";
+import { GLOBAL_WORK_CATEGORIES, resolveGlobalWorkType } from "../globalEstimate/globalWorkTypeResolver";
+import type { GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
 import { extractEstimatePrompt } from "./estimatePromptExtractor";
 import type { EstimateIntentRoute } from "./estimateRoutingTypes";
 

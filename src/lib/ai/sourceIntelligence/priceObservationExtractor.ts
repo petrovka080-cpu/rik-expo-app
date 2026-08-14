@@ -1,3 +1,3 @@
-import { extractGlobalExternalPriceObservation } from "../globalEstimate";
+import { extractGlobalExternalPriceObservation } from "../globalEstimate/externalSources/globalExternalPriceObservationExtractor";
 
 export const extractBuiltInAiPriceObservation = extractGlobalExternalPriceObservation;

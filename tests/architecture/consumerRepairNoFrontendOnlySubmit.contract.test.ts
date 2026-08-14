@@ -12,7 +12,8 @@ describe("consumer repair no frontend-only submit architecture", () => {
     expect(screen).toContain("sendConsumerRepairHistoryToMarketplaceFromScreen({");
     expect(screenActions).toContain("sendConsumerRepairRequestToMarketplace({");
     expect(screen).not.toMatch(/marketplaceDemandId\s*:\s*|status\s*:\s*["']sent_to_marketplace["']/);
-    expect(marketplaceService).toContain("validateConsumerRepairRequestForMarketplace(input.requestDraftId, input.userId)");
+    expect(marketplaceService).toContain("validateConsumerRepairRequestForMarketplace(");
+    expect(marketplaceService).toContain("input.canonicalArtifact");
     expect(marketplaceService).toContain("marketplace_send_blocked");
     expect(marketplaceService).toContain("throw new ConsumerRepairValidationError");
   });

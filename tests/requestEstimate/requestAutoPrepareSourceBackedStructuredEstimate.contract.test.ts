@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
   __resetConsumerRepairRequestStoreForTests,

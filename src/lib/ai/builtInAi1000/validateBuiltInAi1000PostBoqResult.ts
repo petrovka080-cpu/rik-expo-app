@@ -1,30 +1,12 @@
 import { answerBuiltInAi, type BuiltInAiAnswer } from "../builtInAi";
 import {
-  validateEstimateBoqDepth,
-  validateProfessionalEstimateFormulaQuality,
-  type GlobalEstimateResult,
-  type SourceBackedEstimateRow,
-} from "../globalEstimate";
+  validateEstimateBoqDepth, validateProfessionalEstimateFormulaQuality, type GlobalEstimateResult, type SourceBackedEstimateRow, } from "../globalEstimate";
 import { bindEstimateRowsToCatalogItems } from "../globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems";
 import type { EstimateCatalogBindingResult } from "../globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
 import type { CatalogItemForEstimate } from "../../catalog/catalogItemTypes";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  addConsumerRepairRequestCatalogItem,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  compareConsumerRepairPayloadParity,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  selectConsumerRepairRequestItemCatalogCandidate,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
-  updateConsumerRepairRequestItemQuantity,
-  validateConsumerRepairPayloadSourceGovernance,
-} from "../../consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft, updateConsumerRepairRequestItemQuantity, validateConsumerRepairPayloadSourceGovernance } from "../../consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../consumerRequests/consumerRequestGlobalEstimateIntegration";
 import type {
   ConsumerRepairCanonicalDraftPayload,
   ConsumerRepairPayloadParityResult,

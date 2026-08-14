@@ -6,5 +6,5 @@ export type AiEstimatePluginInput = {
 
 export type AiEstimatePlugin = {
   readonly pluginId: "ai_estimate";
-  run(input: AiEstimatePluginInput): AiRunResult;
+  run(input: AiEstimatePluginInput): Promise<AiRunResult>;
 };

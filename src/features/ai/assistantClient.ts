@@ -9,7 +9,8 @@ import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAss
 import type { AiScreenMagicPack } from "./screenMagic/aiScreenMagicTypes";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
 import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
-import { answerBuiltInAi } from "../../lib/ai/builtInAi";
+import { createAiEstimatePlugin } from "../../lib/aiPlatform/plugins/estimate/AiEstimatePlugin";
+import { classifyCanonicalEstimateIntent } from "../../lib/estimate/backendPlatform/canonicalEstimateIntent";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import {
   isServerAiModelProviderAvailable,
@@ -119,17 +120,20 @@ export async function sendAssistantMessage(options: {
     userId,
   } = options;
   const model = getAssistantModel();
-  const builtInAi = answerBuiltInAi({
-    text: message,
-    screenContext: context,
-    route: context === "request" ? "/request" : "/ai",
-    role,
-    userId,
-    countryCode: "KG",
-    cityOrRegion: "Bishkek",
-  });
-  if (builtInAi.handled) {
-    return sanitizeAssistantUserFacingCopy(builtInAi.answerTextRu);
+  const estimateIntent = classifyCanonicalEstimateIntent(message);
+  if (estimateIntent) {
+    const canonical = await createAiEstimatePlugin().run({ runInput: {
+      flowId: `assistant-client-${Date.now()}`,
+      userId: userId ?? undefined,
+      role: role === "foreman" || role === "director" || role === "buyer" ? role : "consumer",
+      surface: "estimate",
+      intent: estimateIntent,
+      userText: message,
+      mode: "draft_only",
+      sourceSha: "canonical-estimate-backend-r2",
+      runtimeVersion: "ai-platform-kernel-v1",
+    } });
+    return sanitizeAssistantUserFacingCopy(canonical.userVisibleAnswerRu ?? "Backend сметы не вернул результат.");
   }
 
   const answerFirst = answerAlwaysOnExternalKnowledgeQuestion({

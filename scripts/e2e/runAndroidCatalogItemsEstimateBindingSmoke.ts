@@ -3,13 +3,8 @@ import path from "node:path";
 
 import { writeAllScreensEnterpriseArtifacts } from "./allScreensEnterpriseRuntimeAcceptance.shared";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  createConsumerRepairRequestDraft,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  selectConsumerRepairRequestItemCatalogCandidate,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import {
   calculateGlobalConstructionEstimateSync,
 } from "../../src/lib/ai/globalEstimate/globalEstimateCalculator";

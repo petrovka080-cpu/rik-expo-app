@@ -5,29 +5,13 @@ import { spawnSync } from "node:child_process";
 import { runRequestEstimateCatalogBoqReleaseNoHacksAudit } from "../audit/runRequestEstimateCatalogBoqReleaseNoHacksAudit";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import {
-  calculateGlobalConstructionEstimateSync,
-  validateEstimateBoqDepth,
-  validateProfessionalEstimateFormulaQuality,
-} from "../../src/lib/ai/globalEstimate";
+  calculateGlobalConstructionEstimateSync, validateEstimateBoqDepth, validateProfessionalEstimateFormulaQuality, } from "../../src/lib/ai/globalEstimate";
 import { bindEstimateRowsToCatalogItems } from "../../src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems";
 import type { SourceBackedEstimateRow } from "../../src/lib/ai/globalEstimate/globalEstimateTypes";
 import type { CatalogItemForEstimate } from "../../src/lib/catalog/catalogItemTypes";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  addConsumerRepairRequestCatalogItem,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  compareConsumerRepairPayloadParity,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  selectConsumerRepairRequestItemCatalogCandidate,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
-  validateConsumerRepairPayloadSourceGovernance,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, addConsumerRepairRequestCatalogItem, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft, validateConsumerRepairPayloadSourceGovernance } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { releaseVerifyBlockingDirtyFiles } from "./releaseVerifyDirtyScope";
 
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");

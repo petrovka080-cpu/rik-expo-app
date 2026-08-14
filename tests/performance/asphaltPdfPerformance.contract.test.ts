@@ -3,7 +3,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { execFileSync } from "node:child_process";
 
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
   ensureConsumerRepairRequestPdfAvailable,

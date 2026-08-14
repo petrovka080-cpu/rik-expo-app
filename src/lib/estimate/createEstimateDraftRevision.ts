@@ -36,6 +36,9 @@ import { ROAD_SCOPE_RESOLVER_VERSION_V4 } from "./v4/asphalt/roadScopeTruthV4";
 import { isExactAsphaltRelatedConsumerDraftV4 } from "./v4/asphalt/asphaltRelatedProductionBindingV4";
 import { MULTI_DOMAIN_REFERENCE_PASSPORTS_V4 } from "./v4/multiDomainReferencePassportsV4";
 import { estimateDeterministicHash } from "./estimateDeterministicHash";
+import { resolvedEstimateIdentityChecksum } from "./resolvedEstimateIdentityChecksum";
+
+export { resolvedEstimateIdentityChecksum } from "./resolvedEstimateIdentityChecksum";
 
 function loadProfessionalWorkPassportBuilder() {
   return require(
@@ -959,20 +962,6 @@ function sourceBindingVersions(
   return [...bindings.entries()]
     .map(([sourceId, version]) => ({ sourceId, version }))
     .sort((left, right) => left.sourceId.localeCompare(right.sourceId));
-}
-
-export function resolvedEstimateIdentityChecksum(
-  identity: Omit<EstimateResolvedIdentity, "checksum">,
-): string {
-  return estimateDeterministicHash({
-    ...identity,
-    resolvedParameters: Object.fromEntries(
-      Object.entries(identity.resolvedParameters)
-        .sort(([left], [right]) => left.localeCompare(right)),
-    ),
-    sourceBindingVersions: [...identity.sourceBindingVersions]
-      .sort((left, right) => left.sourceId.localeCompare(right.sourceId)),
-  });
 }
 
 function usesCanonicalCapitalRenovationCalculator(rows: readonly ProfessionalBoqRow[]): boolean {

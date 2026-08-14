@@ -1,7 +1,7 @@
 import {
   buildConsumerRepairSelectedWorkDraftBundle,
   saveProjectExecutionDraftForRequest,
-} from "../../src/features/consumerRepair/requestEstimateScreenActions";
+} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
   __resetConsumerRepairRequestStoreForTests,

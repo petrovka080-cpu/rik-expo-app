@@ -315,6 +315,7 @@ export type ConsumerRepairDurableHistorySummary = {
   totalPrice: number | null;
   currency: string | null;
   sourceRevisionId: string;
+  sourceReleaseId?: string | null;
   sourceSnapshotId: string;
   rowsHash: string | null;
   totalsHash: string | null;
@@ -329,6 +330,7 @@ export type ApprovedEstimateHistoryRecord = {
   approvedEstimateId: string;
   sourceDraftId: string;
   sourceRevisionId: string;
+  sourceReleaseId?: string | null;
   sourceSnapshotId: string;
   createdAt: string;
   updatedAt: string;
@@ -422,7 +424,8 @@ export type ConsumerRequestValidationErrorCode =
   | "ESTIMATE_EXACT_PROFESSIONAL_OWNER_REQUIRED"
   | "ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED"
   | "ESTIMATE_CANONICAL_SESSION_STALE"
-  | "ESTIMATE_DRAFT_SESSION_STALE";
+  | "ESTIMATE_DRAFT_SESSION_STALE"
+  | "CANONICAL_ESTIMATE_BACKEND_REQUIRED";
 
 export type ConsumerRequestValidationErrorItem = {
   code: ConsumerRequestValidationErrorCode;

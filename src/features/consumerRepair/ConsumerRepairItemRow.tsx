@@ -4,10 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
-import {
-  consumerRepairRequestItemTypeLabel,
-  type ConsumerRepairRequestItem,
-} from "../../lib/consumerRequests";
+import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -27,6 +24,13 @@ type Props = {
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButton?: boolean;
 };
+
+function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
+  if (item.itemType === "work") return "Работа";
+  if (item.itemType === "material") return "Материал";
+  if (item.itemType === "service") return "Оборудование / доставка";
+  return "Позиция";
+}
 
 function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.itemType !== "material") return null;

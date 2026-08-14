@@ -3,19 +3,10 @@ import path from "node:path";
 
 import { SELECTED_WORK_ENTERPRISE_1000_CASES, SELECTED_WORK_ENTERPRISE_1000_WAVE } from "./selectedWorkEnterprise1000Cases";
 import {
-  buildGlobalEstimateInputWithSelectedWork,
-  buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-  type GlobalSelectedWorkBinding,
-} from "../../src/lib/ai/globalEstimate";
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+  buildGlobalEstimateInputWithSelectedWork, buildGlobalSelectedWorkBinding, calculateGlobalConstructionEstimateSync, type GlobalSelectedWorkBinding, } from "../../src/lib/ai/globalEstimate";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,

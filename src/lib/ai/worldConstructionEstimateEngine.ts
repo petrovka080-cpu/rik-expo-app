@@ -1,14 +1,16 @@
 import {
   formatGlobalCurrency,
   formatGlobalNumber,
-  type EstimateRowSourceEvidence,
-  type GlobalEstimateInput,
-  type GlobalEstimateResult,
-  type GlobalEstimateSectionType,
-  type GlobalTaxMode,
-  type GlobalUnitInput,
-  type SourceBackedEstimateRow,
-} from "./globalEstimate";
+} from "./globalEstimate/globalLocalizationCore";
+import type {
+  EstimateRowSourceEvidence,
+  GlobalEstimateInput,
+  GlobalEstimateResult,
+  GlobalEstimateSectionType,
+  GlobalTaxMode,
+  GlobalUnitInput,
+  SourceBackedEstimateRow,
+} from "./globalEstimate/globalEstimateTypes";
 import { resolveLocalEstimatePolicy } from "./localEstimatePolicy";
 import {
   compileProfessionalBoqFromPrimitives,

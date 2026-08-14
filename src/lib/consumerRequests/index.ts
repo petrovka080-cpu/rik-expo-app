@@ -1,12 +1,6 @@
-import {
-  asphaltProfessionalCategoryFromSourceParametersV4,
-  asphaltProfessionalCategoryPresentationV4,
-} from "../estimate/v4/asphalt/asphaltProfessionalPresentationV4";
 import type { ConsumerRepairRequestItem } from "./consumerRequestTypes";
 
 export function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
-  const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
-  if (asphaltCategory) return asphaltProfessionalCategoryPresentationV4(asphaltCategory).itemLabelRu;
   if (item.itemType === "work") return "Работа";
   if (item.itemType === "material") return "Материал";
   if (item.itemType === "service") return "Оборудование / доставка";
@@ -55,26 +49,6 @@ export {
   consumerRepairPdfStorageObjectExists,
   getConsumerRepairPdfStorageObject,
 } from "./consumerRequestPdfStorage";
-export { buildConsumerRepairPdfSummary, generateConsumerRepairRequestPdf } from "./consumerRequestPdfService";
-export {
-  validateConsumerRepairRequestForApprove,
-  validateConsumerRepairRequestForMarketplace,
-} from "./consumerRequestValidationService";
-export {
-  bindConsumerRepairEstimateRevisionHistory,
-  ensureConsumerRepairBundleEstimateRevisionState,
-  restoreConsumerRepairEstimateRevision,
-} from "./consumerRequestEditableEstimateSnapshot";
-export {
-  assertConsumerRepairGlobalEstimateDraftSafe,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createGlobalEstimateB2cDraftTrace,
-} from "./consumerRequestGlobalEstimateIntegration";
-export { buildCanonicalElectricalConsumerRepairAiDraft } from "../estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft";
-export {
-  replayApprovedEstimateHistoryRecords,
-  type ApprovedEstimateHistoryReplayResult,
-} from "./replayApprovedEstimateHistory";
 export {
   archiveConsumerRepairApprovedHistoryRecord,
   buildApprovedEstimateHistoryRecord,
@@ -91,10 +65,7 @@ export {
   createConsumerRepairDraftFromHistorySnapshot,
   createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
-  ensureConsumerRepairRequestPdfAvailable,
-  generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
-  getConsumerRepairRequestPdf,
   initializeConsumerRepairTransactionalDurableStorage,
   listApprovedEstimateHistoryRecords,
   listConsumerRepairApprovedHistory,
@@ -108,12 +79,15 @@ export {
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   updateConsumerRepairRequestItemUnitPrice,
+  upsertConsumerRepairCanonicalBackendDraft,
   type ConsumerRepairApprovedHistoryPage,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "./consumerRequestService";
 export {
-  createConsumerRepairDraftFromGlobalEstimate,
-} from "./consumerRequestEstimateApplicationService";
+  ensureConsumerRepairRequestPdfAvailable,
+  generateConsumerRepairRequestPdfForDraft,
+  getConsumerRepairRequestPdf,
+} from "./consumerRequestLegacyPdfMigrationReader";
 export type {
   ApprovedEstimateHistoryRecord,
   ConsumerMarketplaceLink,

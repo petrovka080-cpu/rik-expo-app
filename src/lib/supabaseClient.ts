@@ -396,20 +396,7 @@ const isLocalDeveloperFullAccessAuthBypass = (() => {
     return false;
   }
 })();
-const isProofRunnerSupabaseAuthPersistenceBypass = (() => {
-  if (!isWeb) return false;
-  if (!isTruthyRuntimeFlag(runtimeProcess?.env?.EXPO_PUBLIC_PROOF_RUNNER_DISABLE_SUPABASE_AUTH_PERSISTENCE)) {
-    return false;
-  }
-  try {
-    const host = window.location?.hostname?.trim().toLowerCase();
-    return host === "localhost" || host === "127.0.0.1" || host === "::1";
-  } catch {
-    return false;
-  }
-})();
-const shouldBypassSupabaseAuthPersistence =
-  isLocalDeveloperFullAccessAuthBypass || isProofRunnerSupabaseAuthPersistenceBypass;
+const shouldBypassSupabaseAuthPersistence = isLocalDeveloperFullAccessAuthBypass;
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,

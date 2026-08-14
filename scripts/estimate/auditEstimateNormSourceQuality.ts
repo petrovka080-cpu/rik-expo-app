@@ -1,33 +1,14 @@
 import { execFileSync } from "node:child_process";
 import {
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+  mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, } from "node:fs";
 import path from "node:path";
 import goldenMatrixRaw from "../../data/estimate-golden-cases/extended-100-work-cases.json";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
 import {
-  buildEstimateNormKnowledgeBaseSnapshot,
-  certifyAllEstimateNormBindings10000,
-  compileProductionExpandedEstimate10000,
-  getProductionExpandedTemplate10000,
-  isProfessionalNormPackSourceId,
-  NORM_WORK_TAXONOMY_GROUPS,
-  PRODUCTION_WORK_DEFINITIONS_10000,
-  resolveNormWorkGroupForCategory,
-  validateAllProductionTemplatesExtended10000,
-  type EstimateNormItem,
-  type EstimateNormWorkGroupKey,
-  type ProductionWorkDefinition,
-} from "../../src/lib/ai/estimateTemplate10000";
+  buildEstimateNormKnowledgeBaseSnapshot, certifyAllEstimateNormBindings10000, compileProductionExpandedEstimate10000, getProductionExpandedTemplate10000, isProfessionalNormPackSourceId, NORM_WORK_TAXONOMY_GROUPS, PRODUCTION_WORK_DEFINITIONS_10000, resolveNormWorkGroupForCategory, validateAllProductionTemplatesExtended10000, type EstimateNormItem, type EstimateNormWorkGroupKey, type ProductionWorkDefinition, } from "../../src/lib/ai/estimateTemplate10000";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairRequestDraft,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
 

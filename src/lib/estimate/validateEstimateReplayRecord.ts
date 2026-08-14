@@ -3,7 +3,7 @@ import type {
   EstimateReplayRecordValidation,
 } from "./replayableEstimateCoreContract";
 import { AI_ESTIMATE_REPLAYABLE_CORE_SCHEMA } from "./replayableEstimateCoreContract";
-import { resolvedEstimateIdentityChecksum } from "./createEstimateDraftRevision";
+import { resolvedEstimateIdentityChecksum } from "./resolvedEstimateIdentityChecksum";
 
 export function validateEstimateReplayRecord(record: EstimateReplayRecord): EstimateReplayRecordValidation {
   const { checksum: resolvedChecksum, ...resolvedIdentity } = record.resolved_identity;

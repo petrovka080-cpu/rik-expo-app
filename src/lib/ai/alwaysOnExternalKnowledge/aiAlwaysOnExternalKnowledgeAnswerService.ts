@@ -1,11 +1,6 @@
-import {
-  buildConstructionEstimateAnswer,
-  composeConstructionEstimateAnswerRu,
-  guardConstructionEstimateAnswerFirst,
-  resolveAiQuestionKnowledgeMode,
-  resolveConstructionWorkType,
-} from "../estimateEngine";
-import type { AiQuestionKnowledgeMode } from "../estimateEngine";
+import { resolveAiQuestionKnowledgeMode } from "../estimateEngine/estimateIntentResolver";
+import { resolveConstructionWorkType } from "../estimateEngine/constructionWorkTypeResolver";
+import type { AiQuestionKnowledgeMode } from "../estimateEngine/estimateTypes";
 import { AI_ALWAYS_ON_EXTERNAL_KNOWLEDGE_POLICY } from "./aiAlwaysOnExternalKnowledgePolicy";
 import type {
   AiAlwaysOnExternalKnowledgeAnswer,
@@ -16,9 +11,8 @@ import type {
 function modeToRealAnswerMode(mode: AiQuestionKnowledgeMode): AiRealAnswerMode {
   switch (mode) {
     case "public_construction_estimate":
-      return "construction_estimate_table";
     case "public_material_calculation":
-      return "material_consumption_table";
+      return "canonical_estimate_backend_handoff";
     case "public_supplier_search":
     case "public_market_price":
       return "supplier_market_search";
@@ -199,17 +193,13 @@ function composeAccountingReference(questionRu: string): string {
   ].join("\n");
 }
 
-function buildEstimateAnswer(input: AiAlwaysOnExternalKnowledgeInput, mode: AiQuestionKnowledgeMode): AiAlwaysOnExternalKnowledgeAnswer {
-  const estimate = buildConstructionEstimateAnswer(input.questionRu);
-  const answerTextRu = composeConstructionEstimateAnswerRu(estimate);
-  const guard = guardConstructionEstimateAnswerFirst(estimate, answerTextRu);
+function buildEstimateAnswer(_input: AiAlwaysOnExternalKnowledgeInput, mode: AiQuestionKnowledgeMode): AiAlwaysOnExternalKnowledgeAnswer {
   return {
     handled: true,
     questionMode: mode,
     realAnswerMode: modeToRealAnswerMode(mode),
-    answerTextRu,
-    estimate,
-    guard,
+    answerTextRu: "Откройте канонический редактор сметы: catalog_id, параметры, расчёт, revision, PDF и закупка выполняются на backend.",
+    guard: { passed: true },
     sourceSummaryHiddenByDefault: true,
     externalKnowledgeAvailable: AI_ALWAYS_ON_EXTERNAL_KNOWLEDGE_POLICY.externalKnowledgeAvailableAllScreens,
   };

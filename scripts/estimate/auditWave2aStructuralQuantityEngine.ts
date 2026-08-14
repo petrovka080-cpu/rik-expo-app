@@ -13,7 +13,7 @@ import {
   PROFESSIONAL_NORM_PACK_GROUPS,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
 } from "../../src/lib/ai/estimateTemplate10000";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
 import { runCertifyAllEstimateNormBindings } from "./certifyAllEstimateNormBindings";
 

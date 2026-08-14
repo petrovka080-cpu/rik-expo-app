@@ -1,5 +1,5 @@
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 import {
   RoadworksWaveAProductionRegistry,

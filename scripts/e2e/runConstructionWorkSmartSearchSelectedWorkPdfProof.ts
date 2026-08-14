@@ -1,20 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import {
-  buildGlobalEstimateInputWithSelectedWork,
-  buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-} from "../../src/lib/ai/globalEstimate";
+import { buildGlobalEstimateInputWithSelectedWork, buildGlobalSelectedWorkBinding, calculateGlobalConstructionEstimateSync, } from "../../src/lib/ai/globalEstimate";
 import { BUILT_IN_AI_1000_ESTIMATE_CASES } from "../../src/lib/ai/builtInAi1000/builtInAi1000ConstructionCases";
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairPdfStorageObject,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import { estimatePdfInputToBytes, extractEstimatePdfText } from "../../src/lib/estimatePdf";
 
 const WAVE = "S_CONSTRUCTION_WORK_SMART_SEARCH_SELECTED_WORK_BINDING_CLOSEOUT_POINT_OF_NO_RETURN";

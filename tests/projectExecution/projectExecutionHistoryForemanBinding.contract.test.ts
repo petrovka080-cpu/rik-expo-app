@@ -1,10 +1,5 @@
-import {
-  __resetConsumerRepairRequestStoreForTests,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairRequestDraft,
-  saveConsumerRepairProjectExecutionDraft,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft, saveConsumerRepairProjectExecutionDraft, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildProjectExecutionBindingPayloads } from "../../src/lib/projectExecution";
 import { buildProjectExecutionFixture } from "./projectExecutionTestHelpers";
 

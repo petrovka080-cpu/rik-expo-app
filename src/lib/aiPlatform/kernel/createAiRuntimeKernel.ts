@@ -85,7 +85,7 @@ export function createAiRuntimeKernel(options: CreateAiRuntimeKernelOptions = {}
         };
       } else if (input.surface === "estimate") {
         result = {
-          ...estimatePlugin.run({ runInput: input }),
+          ...await estimatePlugin.run({ runInput: input }),
           toolPlan,
         };
       } else if (input.mode === "approval_required") {

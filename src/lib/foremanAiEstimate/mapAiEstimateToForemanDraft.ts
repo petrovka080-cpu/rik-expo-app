@@ -1,10 +1,12 @@
-import type { GlobalEstimateResult } from "../ai/globalEstimate";
+import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import {
   buildStructuredEstimatePayload,
   stableStructuredEstimateHash,
-  type StructuredEstimatePayload,
-  type StructuredEstimateRow,
-} from "../estimateStructuredPipeline";
+} from "../estimateStructuredPipeline/buildStructuredEstimatePayload";
+import type {
+  StructuredEstimatePayload,
+  StructuredEstimateRow,
+} from "../estimateStructuredPipeline/structuredEstimateTypes";
 import {
   classifyForemanEstimateSection,
   resolveForemanEstimatePriceStatus,
@@ -47,6 +49,7 @@ const buildForemanAiNote = (params: {
   context: ForemanEstimateContext;
   estimateId: string;
   estimateRevisionId: string;
+  estimateReleaseId: string | null;
   buyerProcurementEligible: boolean;
 }): string => {
   const contextText = [
@@ -62,6 +65,7 @@ const buildForemanAiNote = (params: {
     source: FOREMAN_AI_ESTIMATE_SOURCE,
     estimateId: params.estimateId,
     estimateRevisionId: params.estimateRevisionId,
+    estimateReleaseId: params.estimateReleaseId,
     rowId: params.row.rowId,
     sectionType: params.row.sectionType,
     includedInProcurement: params.row.includedInProcurement,
@@ -78,6 +82,7 @@ const toForemanDraftEstimateRow = (params: {
   context: ForemanEstimateContext;
   estimateId: string;
   estimateRevisionId: string;
+  estimateReleaseId: string | null;
   payloadFingerprint: string;
 }): ForemanDraftEstimateRow => {
   const section = classifyForemanEstimateSection(params.row);
@@ -94,6 +99,7 @@ const toForemanDraftEstimateRow = (params: {
     context: params.context,
     estimateId: params.estimateId,
     estimateRevisionId: params.estimateRevisionId,
+    estimateReleaseId: params.estimateReleaseId,
     buyerProcurementEligible,
   });
 
@@ -102,6 +108,7 @@ const toForemanDraftEstimateRow = (params: {
     approvalStatus: "draft",
     estimateId: params.estimateId,
     estimateRevisionId: params.estimateRevisionId,
+    estimateReleaseId: params.estimateReleaseId,
     payloadFingerprint: params.payloadFingerprint,
     rowId: params.row.rowId,
     rowNumber: params.row.rowNumber,
@@ -138,11 +145,18 @@ const toRequestDraftLine = (row: ForemanDraftEstimateRow): ForemanRequestDraftLi
     price: Number.isFinite(Number(row.unitPrice)) ? Number(row.unitPrice) : null,
     errorLabel: row.visibleName,
     meta: {
-      note: buildForemanAiEstimateVisibleContextNote(row.context),
+      note: [
+        buildForemanAiEstimateVisibleContextNote(row.context),
+        `canonical revision ${row.estimateRevisionId}`,
+        row.estimateReleaseId ? `release ${row.estimateReleaseId}` : "legacy release unbound",
+      ].filter(Boolean).join(" · "),
       app_code: null,
       kind: row.requestDraftKind,
       name_human: row.visibleName,
       uom: row.unit,
+      estimate_revision_id: row.estimateRevisionId,
+      estimate_release_id: row.estimateReleaseId,
+      estimate_source_row_id: row.rowId,
     },
   };
 };
@@ -156,18 +170,24 @@ export function mapAiEstimateToForemanDraft(input: {
   estimate: GlobalEstimateResult | StructuredEstimatePayload;
   context: ForemanEstimateContext;
   estimateRevisionId?: string | null;
+  estimateReleaseId?: string | null;
 }): ForemanAiEstimateDraftMapping {
   const payload = normalizePayload(input.estimate);
   const payloadFingerprint = payload.fingerprint || stableStructuredEstimateHash(payload.rows);
   const estimateRevisionId =
     trim(input.estimateRevisionId) ||
     `foreman-ai-${payload.estimateId}-${payloadFingerprint}`;
+  const estimateReleaseId = trim(input.estimateReleaseId) || trim(
+    payload.rows.find((row) => row.sourceParameters?.canonicalBackendReleaseId)
+      ?.sourceParameters?.canonicalBackendReleaseId,
+  ) || null;
   const rows = payload.rows.map((row) =>
     toForemanDraftEstimateRow({
       row,
       context: input.context,
       estimateId: payload.estimateId,
       estimateRevisionId,
+      estimateReleaseId,
       payloadFingerprint,
     }),
   );
@@ -186,6 +206,7 @@ export function mapAiEstimateToForemanDraft(input: {
     payload,
     payloadFingerprint,
     estimateRevisionId,
+    estimateReleaseId,
     rows,
     requestDraftLines,
     buyerPreviewRows,

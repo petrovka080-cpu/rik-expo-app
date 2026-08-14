@@ -30,6 +30,14 @@ function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
   return bundle.items.length || bundle.durableHistorySummary?.rowCount || 0;
 }
 
+function canonicalBinding(bundle: ConsumerRepairDraftBundle): { revisionId: string; releaseId: string } | null {
+  const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId
+    ?? bundle.durableHistorySummary?.sourceRevisionId ?? "").trim();
+  const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId
+    ?? bundle.durableHistorySummary?.sourceReleaseId ?? "").trim();
+  return revisionId && releaseId ? { revisionId, releaseId } : null;
+}
+
 export function ConsumerRepairHistory({
   approvedHistoryPage,
   selectedHistoryId,
@@ -184,6 +192,7 @@ function ApprovedHistoryInlineSummary({
 }): React.ReactElement | null {
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
+  const canonical = canonicalBinding(bundle);
   const previewItems: RequestEstimateViewModel["sections"][number]["items"] = [];
   for (const section of viewModel.sections) {
     for (const item of section.items) {
@@ -204,6 +213,11 @@ function ApprovedHistoryInlineSummary({
           Итого: {viewModel.totalLabel} · {historyRowCount(bundle)} позиций
         </Text>
       </View>
+      {canonical ? (
+        <Text style={styles.selectedMeta} testID="consumer-repair-history-selected-release-id">
+          revision {canonical.revisionId} / release {canonical.releaseId}
+        </Text>
+      ) : null}
       {previewItems.length > 0 ? (
         <View style={styles.selectedPreview} testID="consumer-repair-history-selected-preview">
           {previewItems.map((item) => (
@@ -269,12 +283,38 @@ function ApprovedHistorySnapshot({
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
+  const canonical = canonicalBinding(bundle);
+  const canonicalPdf = bundle.events.find((event) =>
+    event.eventType === "consumer_approved_canonical_backend_pdf" &&
+    event.payload.revisionId === canonical?.revisionId &&
+    event.payload.releaseId === canonical?.releaseId,
+  );
+  const canonicalProcurement = bundle.events.find((event) =>
+    event.eventType === "sent_to_marketplace" &&
+    event.payload.canonicalRevisionId === canonical?.revisionId &&
+    event.payload.canonicalReleaseId === canonical?.releaseId,
+  );
 
   return (
     <View style={styles.snapshot} testID="consumer-repair-history-readonly-snapshot">
       <Text style={styles.snapshotKicker}>Только просмотр</Text>
       <Text style={styles.snapshotTitle}>{viewModel.summary || viewModel.title}</Text>
       <Text style={styles.snapshotMeta}>Итого: {viewModel.totalLabel}</Text>
+      {canonical ? (
+        <Text style={styles.snapshotMeta} testID="consumer-repair-history-snapshot-release-id">
+          revision {canonical.revisionId} / release {canonical.releaseId}
+        </Text>
+      ) : null}
+      {canonicalPdf ? (
+        <Text style={styles.snapshotMeta} testID="consumer-repair-history-backend-pdf-artifact">
+          PDF artifact: {String(canonicalPdf.payload.artifactId)} / release {canonical?.releaseId}
+        </Text>
+      ) : null}
+      {canonicalProcurement ? (
+        <Text style={styles.snapshotMeta} testID="consumer-repair-history-backend-procurement-artifact">
+          Procurement artifact: {String(canonicalProcurement.payload.procurementArtifactId)} / release {canonical?.releaseId}
+        </Text>
+      ) : null}
       {latestPdf?.revisionId ? (
         <Text style={styles.snapshotMeta}>PDF revision: {latestPdf.revisionId}</Text>
       ) : null}

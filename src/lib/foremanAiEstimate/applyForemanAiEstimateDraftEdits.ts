@@ -31,6 +31,7 @@ const refreshNote = (row: ForemanDraftEstimateRow): string => {
     source: row.source,
     estimateId: row.estimateId,
     estimateRevisionId: row.estimateRevisionId,
+    estimateReleaseId: row.estimateReleaseId,
     rowId: row.rowId,
     sectionType: row.structuredRow.sectionType,
     includedInProcurement: row.includedInProcurement,
@@ -52,11 +53,18 @@ const toRequestDraftLine = (row: ForemanDraftEstimateRow): ForemanRequestDraftLi
     price: Number.isFinite(Number(row.unitPrice)) ? Number(row.unitPrice) : null,
     errorLabel: row.visibleName,
     meta: {
-      note: buildForemanAiEstimateVisibleContextNote(row.context),
+      note: [
+        buildForemanAiEstimateVisibleContextNote(row.context),
+        `canonical revision ${row.estimateRevisionId}`,
+        row.estimateReleaseId ? `release ${row.estimateReleaseId}` : "legacy release unbound",
+      ].filter(Boolean).join(" · "),
       app_code: null,
       kind: row.requestDraftKind,
       name_human: row.visibleName,
       uom: row.unit,
+      estimate_revision_id: row.estimateRevisionId,
+      estimate_release_id: row.estimateReleaseId,
+      estimate_source_row_id: row.rowId,
     },
   };
 };

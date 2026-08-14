@@ -1,4 +1,3 @@
-import { createBuiltInAiAssistantMessage } from "../../src/features/ai/assistantAnswerPipeline";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import {
@@ -200,15 +199,10 @@ export function aiActionPdfTextForPayload(payload: StructuredEstimatePayload): s
 }
 
 export function foremanMessageForPayload(payload: StructuredEstimatePayload) {
-  const message = createBuiltInAiAssistantMessage({
-    text: payload.presentation.originalText ?? payload.workTitle,
-    assistantContext: "foreman",
-    assistantPresentationRole: "foreman",
-    routeContext: "/ai?context=foreman",
-    userId: "structured-pipeline-foreman",
-  });
-  if (!message) throw new Error("FOREMAN_MESSAGE_MISSING");
-  return message;
+  return {
+    estimatePresentation: payload.presentation,
+    estimatePdfSource: buildAiEstimatePdfSourceFromGlobalEstimate(payload.sourceEstimate),
+  };
 }
 
 export function historyBindingForPayload(payload: StructuredEstimatePayload) {

@@ -34,16 +34,10 @@ import {
   normalizeUniversalRoleQaQuestion,
   uniqueUniversalStrings,
 } from "./universalQuestionNormalizer";
-import {
-  buildGlobalEstimateInputFromRoute,
-  routeUniversalEstimateIntent,
-  type EstimateIntentRoute,
-} from "../estimateRouting";
-import {
-  calculateGlobalConstructionEstimateSync,
-  formatGlobalEstimateAnswer,
-  type GlobalEstimateResult,
-} from "../globalEstimate";
+import type { EstimateIntentRoute } from "../estimateRouting/estimateRoutingTypes";
+import type { GlobalEstimateResult } from "../globalEstimate/globalEstimateTypes";
+import { formatGlobalEstimateAnswer } from "../globalEstimate/globalEstimateAnswerFormatter";
+import { classifyCanonicalEstimateIntent } from "../../estimate/backendPlatform/canonicalEstimateIntent";
 
 export type UniversalRoleQaAnswerKind =
   | "count_answer"
@@ -60,7 +54,8 @@ export type UniversalRoleQaAnswerKind =
   | "role_summary"
   | "checked_empty_answer"
   | "permission_limited_answer"
-  | "clarifying_with_partial_answer";
+  | "clarifying_with_partial_answer"
+  | "backend_estimate_handoff";
 
 export type UniversalRoleQaAnswer = {
   id: string;
@@ -381,14 +376,12 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
   const intent = classifyUniversalRoleQaIntent(input.questionRu, roleContext.role);
   const entity = extractUniversalRoleQaEntity(input.questionRu);
   const filters = extractUniversalRoleQaFilters(input.questionRu, input.referenceDate);
-  const estimateRoute = routeUniversalEstimateIntent(input.questionRu);
-  const shouldUseGlobalEstimate = estimateRoute.shouldCallEstimateTool;
-  const globalEstimateResult = shouldUseGlobalEstimate
-    ? calculateGlobalConstructionEstimateSync(buildGlobalEstimateInputFromRoute(estimateRoute, {
-      countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
-      city: estimateRoute.location?.city ?? input.cityOrRegion,
-    }))
-    : undefined;
+  const backendEstimateRequested =
+    classifyCanonicalEstimateIntent(input.questionRu) !== null ||
+    intent === "construction_estimate";
+  let estimateRoute: EstimateIntentRoute | undefined;
+  let globalEstimateResult: GlobalEstimateResult | undefined;
+  const shouldUseGlobalEstimate = false;
   const sourcePlan = planUniversalRoleQaSources({
     questionRu: input.questionRu,
     roleContext,
@@ -413,13 +406,28 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
 
   const useMarketplace = sourcePlan.marketplaceFirst || intent === "marketplace_supplier_search";
   const usePdf = sourcePlan.pdfRequired;
-  const useConstructionDraft = !shouldUseGlobalEstimate && (intent === "construction_estimate" || intent === "construction_material_calculation" || intent === "construction_technology" || intent === "construction_norm_reference");
+  const useConstructionDraft = !backendEstimateRequested && (
+    intent === "construction_material_calculation" ||
+    intent === "construction_technology" ||
+    intent === "construction_norm_reference"
+  );
   const useAccountingDraft = intent === "accounting_entry_help";
 
   let sections = globalEstimateResult ? composeGlobalEstimateSections(globalEstimateResult) : composeInternalSections(app);
   let missingData = globalEstimateResult
     ? uniqueUniversalStrings(globalEstimateResult.clarifyingQuestions)
     : uniqueUniversalStrings(app.items.flatMap((item) => item.status === "risk" || item.status === "blocked" ? [item.textRu] : []));
+  if (backendEstimateRequested) {
+    sections = [{
+      titleRu: "Каноническая backend-смета",
+      items: [{
+        textRu: "Откройте редактор сметы: каталог, параметры, расчёт, revision, PDF и закупка выполняются на backend.",
+        sourceRefIds: [],
+        status: "requires_review",
+      }],
+    }];
+    missingData = [];
+  }
   if (!shouldUseGlobalEstimate && usePdf && pdf.items.length) {
     sections = [...sections, { titleRu: "PDF/документы", items: pdf.items }];
   }
@@ -457,9 +465,17 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
         route: ref.appLink?.route,
         disabledReasonRu: ref.permission.canOpen ? undefined : ref.permission.reasonRu,
       })),
+    ...(backendEstimateRequested ? [{
+      labelRu: "Открыть backend-смету",
+      sourceRefId: "canonical-estimate-backend",
+      enabled: true,
+      route: "/request",
+    }] : []),
   ]);
 
-  const shortAnswerRu = globalEstimateResult
+  const shortAnswerRu = backendEstimateRequested
+    ? "Расчёт передан каноническому backend-компилятору. Откройте редактор сметы для выбора catalog_id и параметров."
+    : globalEstimateResult
     ? `Ниже профессиональная смета на ${globalEstimateResult.work.title} — ${globalEstimateResult.input.volume} ${globalEstimateResult.input.unit}. Расчет выполнен backend-движком по source-backed ставкам.`
     : shortAnswerFor({ intent, entity, filters, app, web });
   const sourceDisclosure = disclosureFor({
@@ -472,7 +488,7 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     supplierUsed: supplierHistory.used,
     supplierCheckedEmpty: supplierHistory.checkedEmpty,
     web,
-    generalKnowledgeUsed: shouldUseGlobalEstimate || useConstructionDraft || useAccountingDraft,
+    generalKnowledgeUsed: useConstructionDraft || useAccountingDraft,
   });
   const statusRu = globalEstimateResult || useConstructionDraft ? "Черновик подготовлен" : useAccountingDraft ? "Требуется согласование" : "Данные не изменены";
 
@@ -486,7 +502,9 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     entity,
     filters,
     sourcePlan,
-    answerKind: globalEstimateResult
+    answerKind: backendEstimateRequested
+      ? "backend_estimate_handoff"
+      : globalEstimateResult
       ? "estimate_draft"
       : app.items.length === 0 && !useConstructionDraft && !useAccountingDraft ? "checked_empty_answer" : answerKindFor(intent),
     shortAnswerRu,
@@ -499,7 +517,9 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     permissionLimits: openLinks
       .filter((link) => !link.enabled && link.disabledReasonRu)
       .map((link) => ({ hiddenSourceType: link.sourceRefId, reasonRu: link.disabledReasonRu ?? "Доступ ограничен." })),
-    nextStepRu: globalEstimateResult
+    nextStepRu: backendEstimateRequested
+      ? "Открыть backend-смету, выбрать работу и сохранить immutable revision с точным release_id."
+      : globalEstimateResult
       ? "Проверить город, выбранный уровень качества и открыть действие «Сделать PDF» для структурированной сметы."
       : useConstructionDraft
         ? "Уточнить недостающие параметры и затем собрать точную смету по проекту и актуальным ценам."
@@ -511,14 +531,16 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     statusRu,
     safetyStatus: {
       changedData: false,
-      draftOnly: Boolean(globalEstimateResult) || useConstructionDraft || useAccountingDraft || intent === "marketplace_product_draft",
+      draftOnly: useConstructionDraft || useAccountingDraft || intent === "marketplace_product_draft",
       approvalRequired: useAccountingDraft || intent === "draft_action",
       finalSubmit: false,
       autoApproval: false,
       dangerousMutation: false,
     },
-    estimateRoute: shouldUseGlobalEstimate ? estimateRoute : undefined,
+    estimateRoute,
     globalEstimateResult,
-    estimateActions: globalEstimateResult ? ESTIMATE_ACTIONS : undefined,
+    estimateActions: backendEstimateRequested
+      ? [{ id: "create_request", labelRu: "Открыть backend-смету", visible: true }]
+      : undefined,
   };
 }

@@ -17,7 +17,7 @@ import {
   composeSelectedWorkActiveInputText,
   preserveSelectedWorkResolverInput,
   shouldPreserveSelectedWorkForProblemText,
-} from "../../src/features/consumerRepair/requestEstimateScreenActions";
+} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   searchGlobalWorkSmartSuggestions,
   type GlobalWorkSmartSearchSuggestion,

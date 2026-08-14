@@ -6,7 +6,7 @@ import { createSnapshotFromDraftRevision } from "../../src/features/estimates/cr
 import { renderPdfFromDraftRevision } from "../../src/features/pdf/renderPdfFromDraftRevision";
 import { createBuyerHandoffFromDraftRevision } from "../../src/features/procurement/createBuyerHandoffFromDraftRevision";
 import type { ApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
-import { replayApprovedEstimateHistoryRecords } from "../../src/lib/consumerRequests";
+import { replayApprovedEstimateHistoryRecords } from "../../src/lib/consumerRequests/replayApprovedEstimateHistory";
 import { buildEstimateReplayRecord } from "../../src/lib/estimate/buildEstimateReplayRecord";
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
 import { replayForemanEstimateProof } from "../../src/lib/foreman";

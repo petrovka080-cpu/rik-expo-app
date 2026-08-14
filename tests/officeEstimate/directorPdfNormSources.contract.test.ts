@@ -1,9 +1,7 @@
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairRequestDraft,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 
 describe("director PDF norm sources", () => {

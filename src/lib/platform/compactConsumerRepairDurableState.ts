@@ -477,6 +477,18 @@ export function buildConsumerRepairDurableHistorySummary(
   const latestPdf = latestGeneratedPdf(bundle);
   const revision = currentRevisionSnapshot(bundle);
   const metrics = bundleRowMetrics(bundle);
+  const candidateCanonicalRevisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId
+    ?? bundle.durableHistorySummary?.sourceRevisionId ?? "").trim();
+  const canonicalReleaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId
+    ?? bundle.durableHistorySummary?.sourceReleaseId ?? "").trim();
+  const canonicalRevisionId = canonicalReleaseId ? candidateCanonicalRevisionId : "";
+  const canonicalPdfEvent = canonicalRevisionId && canonicalReleaseId
+    ? bundle.events.find((event) =>
+      event.eventType === "consumer_approved_canonical_backend_pdf" &&
+      event.payload.revisionId === canonicalRevisionId &&
+      event.payload.releaseId === canonicalReleaseId,
+    )
+    : null;
   return {
     schemaVersion: CONSUMER_REPAIR_DURABLE_HISTORY_SUMMARY_SCHEMA,
     rowCount: metrics.rowCount,
@@ -484,12 +496,15 @@ export function buildConsumerRepairDurableHistorySummary(
     workRowsCount: metrics.workRowsCount,
     totalPrice: metrics.totalPrice,
     currency: metrics.currency,
-    sourceRevisionId: bundle.estimateRevisionState?.current_revision_id
+    sourceRevisionId: (canonicalRevisionId || bundle.estimateRevisionState?.current_revision_id)
       ?? bundle.estimateDraftRevisionState?.currentRevisionId
       ?? latestPdf?.revisionId
       ?? bundle.durableHistorySummary?.sourceRevisionId
       ?? bundle.draft.id,
-    sourceSnapshotId: latestPdf?.snapshotId
+    sourceReleaseId: canonicalReleaseId || bundle.durableHistorySummary?.sourceReleaseId || null,
+    sourceSnapshotId: canonicalRevisionId
+      ? `canonical-backend:${canonicalRevisionId}`
+      : latestPdf?.snapshotId
       ?? revision?.snapshot_id
       ?? bundle.editableEstimateSnapshot?.snapshotId
       ?? bundle.durableHistorySummary?.sourceSnapshotId
@@ -507,7 +522,9 @@ export function buildConsumerRepairDurableHistorySummary(
       ?? bundle.editableEstimateSnapshot?.hash
       ?? bundle.durableHistorySummary?.fullSnapshotHash
       ?? null,
-    pdfArtifactId: latestPdf?.id ?? bundle.durableHistorySummary?.pdfArtifactId ?? null,
+    pdfArtifactId: typeof canonicalPdfEvent?.payload.artifactId === "string"
+      ? canonicalPdfEvent.payload.artifactId
+      : latestPdf?.id ?? bundle.durableHistorySummary?.pdfArtifactId ?? null,
     buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId
       ?? bundle.durableHistorySummary?.buyerHandoffId
       ?? null,

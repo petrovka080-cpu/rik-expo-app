@@ -3,27 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
-  SELECTED_WORK_ENTERPRISE_1000_CASES,
-  SELECTED_WORK_ENTERPRISE_1000_EXCLUDED_ALIAS_REDIRECT_WORK_KEYS,
-  SELECTED_WORK_ENTERPRISE_1000_EXCLUDED_PRODUCT_SEARCH_WORK_KEYS,
-  SELECTED_WORK_ENTERPRISE_1000_GREEN_STATUS,
-  SELECTED_WORK_ENTERPRISE_1000_SCENARIO_COUNTS,
-  SELECTED_WORK_ENTERPRISE_1000_WAVE,
-  type SelectedWorkEnterprise1000Case,
-} from "./selectedWorkEnterprise1000Cases";
+  SELECTED_WORK_ENTERPRISE_1000_CASES, SELECTED_WORK_ENTERPRISE_1000_EXCLUDED_ALIAS_REDIRECT_WORK_KEYS, SELECTED_WORK_ENTERPRISE_1000_EXCLUDED_PRODUCT_SEARCH_WORK_KEYS, SELECTED_WORK_ENTERPRISE_1000_GREEN_STATUS, SELECTED_WORK_ENTERPRISE_1000_SCENARIO_COUNTS, SELECTED_WORK_ENTERPRISE_1000_WAVE, type SelectedWorkEnterprise1000Case, } from "./selectedWorkEnterprise1000Cases";
 import {
-  buildGlobalEstimateInputWithSelectedWork,
-  buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-  searchGlobalWorkSmartSuggestions,
-  type GlobalSelectedWorkBinding,
-} from "../../src/lib/ai/globalEstimate";
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+  buildGlobalEstimateInputWithSelectedWork, buildGlobalSelectedWorkBinding, calculateGlobalConstructionEstimateSync, searchGlobalWorkSmartSuggestions, type GlobalSelectedWorkBinding, } from "../../src/lib/ai/globalEstimate";
+import { __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,

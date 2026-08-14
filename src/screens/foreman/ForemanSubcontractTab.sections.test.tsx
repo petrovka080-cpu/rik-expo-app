@@ -475,6 +475,7 @@ const makeAiEstimateDraftMappingFixture = (
     },
     payloadFingerprint: "screen-routing-fingerprint",
     estimateRevisionId: "screen-routing-revision",
+    estimateReleaseId: "screen-routing-release",
     rows: [],
     requestDraftLines: [],
     buyerPreviewRows: [],

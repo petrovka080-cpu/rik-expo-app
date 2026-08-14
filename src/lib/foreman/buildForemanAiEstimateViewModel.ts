@@ -3,8 +3,8 @@ import {
   validateSharedAiEstimateViewModel,
   type SharedAiEstimateViewModel,
 } from "../ai/estimatePresentation";
-import type { GlobalEstimateResult } from "../ai/globalEstimate";
-import type { StructuredEstimatePayload } from "../estimateStructuredPipeline";
+import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
+import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import {
   mapAiEstimateToForemanDraft,
   mapApprovedForemanDraftToBuyerRows,

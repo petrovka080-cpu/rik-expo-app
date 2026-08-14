@@ -2,7 +2,7 @@ import React from "react";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairDraftPanel } from "../../src/features/consumerRepair/ConsumerRepairDraftPanel";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
 import { RoadworksWaveAProductionRegistry } from "../../src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding";
 

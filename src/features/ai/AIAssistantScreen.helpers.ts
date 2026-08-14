@@ -43,7 +43,9 @@ export const recordAssistantScreenFallback = (
 export function createAssistantScreenMessage(
   role: AssistantMessage["role"],
   content: string,
-  extras: Partial<Pick<AssistantMessage, "estimatePdfSource" | "estimatePresentation" | "actions">> = {},
+  extras: Partial<Pick<AssistantMessage,
+    "estimatePdfSource" | "estimatePresentation" | "actions" |
+    "canonicalEstimateRevisionId" | "canonicalEstimateReleaseId">> = {},
 ): AssistantMessage {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

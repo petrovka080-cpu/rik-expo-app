@@ -4,16 +4,8 @@ import { execFileSync } from "node:child_process";
 
 import { runCatalogItemsGlobalEstimateBindingAudit } from "../audit/runCatalogItemsGlobalEstimateBindingAudit";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  sendConsumerRepairRequestToMarketplace,
-  selectConsumerRepairRequestItemCatalogItem,
-  updateConsumerRepairRequestDraft,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, sendConsumerRepairRequestToMarketplace, selectConsumerRepairRequestItemCatalogItem, updateConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,

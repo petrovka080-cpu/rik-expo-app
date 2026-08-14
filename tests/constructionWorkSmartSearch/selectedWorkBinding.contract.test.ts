@@ -1,21 +1,8 @@
-import {
-  buildGlobalEstimateInputWithSelectedWork,
-  buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-  GLOBAL_WORK_CATEGORIES,
-  GLOBAL_WORK_TYPE_DEFINITIONS,
-  searchGlobalWorkSmartSuggestions,
-  type GlobalSelectedWorkBinding,
-} from "../../src/lib/ai/globalEstimate";
+import { buildGlobalEstimateInputWithSelectedWork, buildGlobalSelectedWorkBinding, calculateGlobalConstructionEstimateSync, GLOBAL_WORK_CATEGORIES, GLOBAL_WORK_TYPE_DEFINITIONS, searchGlobalWorkSmartSuggestions, type GlobalSelectedWorkBinding, } from "../../src/lib/ai/globalEstimate";
 import { BUILT_IN_AI_1000_ESTIMATE_CASES } from "../../src/lib/ai/builtInAi1000/builtInAi1000ConstructionCases";
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairPdfStorageObject,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import { extractEstimatePdfText } from "../../src/lib/estimatePdf";
 import {
   buildStructuredEstimateCatalogBinding,

@@ -1,4 +1,4 @@
-import type { AiQuestionKnowledgeMode, ConstructionEstimateAnswer } from "../estimateEngine";
+import type { AiQuestionKnowledgeMode, ConstructionEstimateAnswer } from "../estimateEngine/estimateTypes";
 import type { AiAnswerFirstGuardResult } from "../estimateEngine/estimateAnswerFirstGuard";
 
 export type AiRealAnswerMode =
@@ -9,7 +9,8 @@ export type AiRealAnswerMode =
   | "material_consumption_table"
   | "supplier_market_search"
   | "accounting_reference_answer"
-  | "technology_checklist_answer";
+  | "technology_checklist_answer"
+  | "canonical_estimate_backend_handoff";
 
 export type AiAlwaysOnExternalKnowledgeInput = {
   questionRu: string;

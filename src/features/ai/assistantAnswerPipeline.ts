@@ -1,15 +1,7 @@
 import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
-import { answerBuiltInAi } from "../../lib/ai/builtInAi";
-import {
-  buildAiEstimatePdfActions,
-  buildAiEstimatePdfSourceFromConstructionEstimate,
-  buildAiEstimatePdfSourceFromGlobalEstimate,
-} from "../../lib/ai/estimatePdf";
-import {
-  buildEstimatePresentationViewModel,
-  buildStructuredEstimatePayload,
-} from "../../lib/estimateStructuredPipeline";
+import { createAiEstimatePlugin } from "../../lib/aiPlatform/plugins/estimate/AiEstimatePlugin";
 import { resolveAiLiveScreenId } from "../../lib/ai/liveScreenCopilot";
+import { classifyCanonicalEstimateIntent } from "../../lib/estimate/backendPlatform/canonicalEstimateIntent";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
@@ -22,36 +14,44 @@ type AssistantAnswerInput = {
   userId: string | null;
 };
 
-export function createBuiltInAiAssistantMessage(input: AssistantAnswerInput): AssistantMessage | null {
-  const builtInAi = answerBuiltInAi({
-    text: input.text,
-    screenContext: input.assistantContext,
-    route: input.routeContext || "/ai",
-    role: input.assistantPresentationRole,
-    userId: input.userId,
-    countryCode: "KG",
-    cityOrRegion: "Bishkek",
-  });
-  if (!builtInAi.handled) return null;
+function platformRole(role: AssistantRole) {
+  if (role === "foreman" || role === "director" || role === "buyer") return role;
+  return "consumer" as const;
+}
 
-  const estimate = builtInAi.toolResult.estimate;
-  const estimatePdfSource = estimate
-    ? buildAiEstimatePdfSourceFromGlobalEstimate(estimate, {
-        userId: input.userId ?? undefined,
-      })
-    : undefined;
-  const structuredPayload = estimate ? buildStructuredEstimatePayload(estimate, { source: "foreman" }) : undefined;
-  const estimatePresentation = structuredPayload ? buildEstimatePresentationViewModel(structuredPayload) : undefined;
+function canonicalIdentity(draft: unknown): { revisionId: string; releaseId: string } | null {
+  if (!draft || typeof draft !== "object" || Array.isArray(draft)) return null;
+  const revision = (draft as { revision?: unknown }).revision;
+  if (!revision || typeof revision !== "object" || Array.isArray(revision)) return null;
+  const revisionId = String((revision as { revisionId?: unknown }).revisionId ?? "").trim();
+  const releaseId = String((revision as { releaseId?: unknown }).releaseId ?? "").trim();
+  return revisionId && releaseId ? { revisionId, releaseId } : null;
+}
+
+export async function createBuiltInAiAssistantMessage(input: AssistantAnswerInput): Promise<AssistantMessage | null> {
+  const intent = classifyCanonicalEstimateIntent(input.text);
+  if (!intent) return null;
+  const result = await createAiEstimatePlugin().run({
+    runInput: {
+      flowId: `assistant-estimate-${Date.now()}`,
+      userId: input.userId ?? undefined,
+      role: platformRole(input.assistantPresentationRole),
+      surface: "estimate",
+      intent,
+      userText: input.text,
+      mode: "draft_only",
+      sourceSha: "canonical-estimate-backend-r2",
+      runtimeVersion: "ai-platform-kernel-v1",
+    },
+  });
+  const identity = canonicalIdentity(result.draft);
   return createMessage(
     "assistant",
-    sanitizeAssistantUserFacingCopy(builtInAi.answerTextRu),
-    estimatePdfSource
-      ? {
-          estimatePdfSource,
-          estimatePresentation,
-          actions: buildAiEstimatePdfActions(estimatePdfSource),
-        }
-      : {},
+    sanitizeAssistantUserFacingCopy(result.userVisibleAnswerRu ?? "Backend сметы не вернул результат."),
+    identity ? {
+      canonicalEstimateRevisionId: identity.revisionId,
+      canonicalEstimateReleaseId: identity.releaseId,
+    } : {},
   );
 }
 
@@ -66,20 +66,5 @@ export function createExternalKnowledgeAssistantMessage(input: AssistantAnswerIn
     currency: "KGS",
   });
   if (!result.handled || !result.answerTextRu) return null;
-
-  const estimatePdfSource = result.estimate
-    ? buildAiEstimatePdfSourceFromConstructionEstimate(result.estimate, {
-        userId: input.userId ?? undefined,
-      })
-    : undefined;
-  return createMessage(
-    "assistant",
-    sanitizeAssistantUserFacingCopy(result.answerTextRu),
-    estimatePdfSource
-      ? {
-          estimatePdfSource,
-          actions: buildAiEstimatePdfActions(estimatePdfSource),
-        }
-      : {},
-  );
+  return createMessage("assistant", sanitizeAssistantUserFacingCopy(result.answerTextRu));
 }

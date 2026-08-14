@@ -9,8 +9,31 @@ import {
   type ConsumerRepairRequestScreenProps,
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
+import { migrateExistingEstimatesToCanonicalBackend } from "../../lib/estimate/backendPlatform/migrateExistingCanonicalEstimates";
+import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
+import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
+import { upsertConsumerRepairCanonicalBackendDraft } from "../../lib/consumerRequests/consumerRequestService";
+import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
+import { currentUserId } from "../../lib/supabaseClient";
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
+let canonicalBackendMigrationStarted = false;
+
+function startCanonicalBackendMigrationOnce(): void {
+  if (canonicalBackendMigrationStarted) return;
+  canonicalBackendMigrationStarted = true;
+  void migrateExistingEstimatesToCanonicalBackend().then((result) => {
+    console.info("[canonical-estimate] legacy revision ingress complete", result);
+  }).catch((error: unknown) => {
+    // Server and local ledgers are idempotent. Authentication/network failures
+    // therefore remain safe to retry on the next application session.
+    canonicalBackendMigrationStarted = false;
+    console.warn("[canonical-estimate] legacy revision ingress deferred", {
+      code: error instanceof Error ? error.message : String(error),
+    });
+  });
+}
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
@@ -54,14 +77,42 @@ async function runBoundedDurableHydration(
 export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenProps): React.ReactElement {
   const [durableStatus, setDurableStatus] =
     React.useState<DurableHydrationStatus>("loading");
+  const [authResolved, setAuthResolved] = React.useState(Boolean(props.consumerUserId?.trim()));
+  const [resolvedConsumerUserId, setResolvedConsumerUserId] = React.useState<string | null>(
+    props.consumerUserId?.trim() || null,
+  );
   const hydrationAttemptRef = React.useRef(0);
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
+  const [canonicalComposerVisible, setCanonicalComposerVisible] = React.useState(false);
+  const [canonicalPrompt, setCanonicalPrompt] = React.useState(props.initialProblemText ?? "");
+  const [canonicalInitialRevisionId, setCanonicalInitialRevisionId] = React.useState<string | null>(null);
+  const [canonicalTargetDraftId, setCanonicalTargetDraftId] = React.useState<string | null>(null);
   const freshBuildKey = shouldAutoPrepareInitialConsumerRepairRequest(props) &&
     props.initialProblemText?.trim() &&
     !props.initialDraftId?.trim()
     ? props.launchId?.trim() || props.launchFingerprint?.trim() || props.initialProblemText.trim()
     : null;
   const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    const explicit = props.consumerUserId?.trim();
+    if (explicit) {
+      setResolvedConsumerUserId(explicit);
+      setAuthResolved(true);
+      return;
+    }
+    let active = true;
+    setAuthResolved(false);
+    void currentUserId().then((userId) => {
+      if (!active) return;
+      setResolvedConsumerUserId(userId?.trim() || null);
+      setAuthResolved(true);
+    }, () => {
+      if (!active) return;
+      setResolvedConsumerUserId(null);
+      setAuthResolved(true);
+    });
+    return () => { active = false; };
+  }, [props.consumerUserId]);
   const hydrate = React.useCallback(() => {
     const attempt = hydrationAttemptRef.current + 1;
     hydrationAttemptRef.current = attempt;
@@ -71,6 +122,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       if (outcome.status === "ready") {
         screenRef.current?.refreshAfterDurableHydration();
         setDurableStatus("ready");
+        startCanonicalBackendMigrationOnce();
         return;
       }
       setDurableStatus("recovery");
@@ -80,6 +132,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           if (hydrationAttemptRef.current !== attempt) return;
           screenRef.current?.refreshAfterDurableHydration();
           setDurableStatus("ready");
+          startCanonicalBackendMigrationOnce();
         },
         () => {
           // The recovery action remains available for a terminal storage error.
@@ -88,6 +141,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     });
   }, [props.initialDraftId]);
   React.useEffect(() => {
+    if (!authResolved || !resolvedConsumerUserId) return;
     // Native effects can run before the controller's queued initial build.
     // Wait for its explicit persisted/settled signal instead of racing a fixed
     // timer against a cold Hermes module graph and a large durable history.
@@ -96,7 +150,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     return () => {
       hydrationAttemptRef.current += 1;
     };
-  }, [freshBuildKey, hydrate, settledFreshBuildKey]);
+  }, [authResolved, freshBuildKey, hydrate, resolvedConsumerUserId, settledFreshBuildKey]);
   const photoCapture = useConsumerRepairPhotoCaptureController({
     onStatusMessage: (statusMessage) => screenRef.current?.setPhotoCaptureStatusMessage(statusMessage),
     onMaterialPhotoCaptured: (result) => {
@@ -105,23 +159,60 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   });
   const durableHydrationPending = durableStatus === "loading" &&
     !shouldDeferInitialHistoryLoad(props);
+  const acceptCanonicalDraft = React.useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
+    if (!resolvedConsumerUserId) return;
+    const includedRows = mapping.payload.rows.filter((row) => row.includedInEstimate !== false);
+    const payload = {
+      ...mapping.payload,
+      rows: includedRows,
+      sections: mapping.payload.sections.map((section) => ({
+        ...section,
+        rows: section.rows.filter((row) => row.includedInEstimate !== false),
+      })).filter((section) => section.rows.length > 0),
+    };
+    const bundle = upsertConsumerRepairCanonicalBackendDraft({
+      requestDraftId: canonicalTargetDraftId,
+      consumerUserId: resolvedConsumerUserId,
+      problemText: canonicalPrompt || mapping.payload.inputText,
+      city: "Bishkek",
+      aiDraft: buildStructuredEstimateRequestDraft(payload),
+    });
+    screenRef.current?.acceptCanonicalBackendDraft(bundle);
+    setCanonicalComposerVisible(false);
+    setCanonicalInitialRevisionId(null);
+    setCanonicalTargetDraftId(null);
+  }, [canonicalPrompt, canonicalTargetDraftId, resolvedConsumerUserId]);
+  const authUnavailable = authResolved && !resolvedConsumerUserId;
   return (
     <View style={styles.root}>
-      {durableHydrationPending ? (
+      {!authResolved ? (
+        <View testID="consumer-repair-auth-hydration-gate" style={styles.exactDraftHydrationGate} />
+      ) : authUnavailable ? (
+        <View testID="consumer-repair-auth-required" style={styles.storageNotice}>
+          <Text style={styles.storageNoticeText}>Для сметы требуется авторизованная сессия.</Text>
+        </View>
+      ) : durableHydrationPending ? (
         <View testID="consumer-repair-exact-draft-hydration-gate" style={styles.exactDraftHydrationGate} />
       ) : (
         <ConsumerRepairRequestScreenController
           key={requestEstimateControllerWorkspaceKey(props)}
           ref={screenRef}
           {...props}
+          consumerUserId={resolvedConsumerUserId!}
           onInitialLaunchBuildSettled={() => {
             if (freshBuildKey) setSettledFreshBuildKey(freshBuildKey);
+          }}
+          onOpenCanonicalEstimate={(problemText, revisionId, requestDraftId) => {
+            setCanonicalPrompt(problemText);
+            setCanonicalInitialRevisionId(revisionId?.trim() || null);
+            setCanonicalTargetDraftId(requestDraftId?.trim() || null);
+            setCanonicalComposerVisible(true);
           }}
           onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
           MobilePhotoCaptureFlowNode={photoCapture.flow}
         />
       )}
-      {durableStatus === "loading" ? (
+      {authResolved && resolvedConsumerUserId && durableStatus === "loading" ? (
         <View
           accessibilityLiveRegion="polite"
           style={styles.storageNotice}
@@ -132,7 +223,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           </Text>
         </View>
       ) : null}
-      {durableStatus === "recovery" ? (
+      {authResolved && resolvedConsumerUserId && durableStatus === "recovery" ? (
         <View
           accessibilityLiveRegion="polite"
           style={[styles.storageNotice, styles.storageRecovery]}
@@ -151,6 +242,32 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           </Pressable>
         </View>
       ) : null}
+      {resolvedConsumerUserId ? <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          setCanonicalPrompt(props.initialProblemText ?? "");
+          setCanonicalInitialRevisionId(null);
+          setCanonicalTargetDraftId(null);
+          setCanonicalComposerVisible(true);
+        }}
+        style={styles.canonicalEstimateButton}
+        testID="consumer-repair-open-canonical-estimate"
+      >
+        <Text style={styles.canonicalEstimateButtonText}>Backend-смета</Text>
+      </Pressable> : null}
+      {resolvedConsumerUserId && canonicalComposerVisible ? <ProfessionalEstimateComposer
+        visible
+        mode="consumer"
+        context={{ objectName: "Заявка на ремонт", levelName: "", systemName: "", zoneName: "", sourceScreen: "foreman_materials" }}
+        initialText={canonicalPrompt}
+        initialRevisionId={canonicalInitialRevisionId}
+        onClose={() => {
+          setCanonicalComposerVisible(false);
+          setCanonicalInitialRevisionId(null);
+          setCanonicalTargetDraftId(null);
+        }}
+        onDraftCreated={acceptCanonicalDraft}
+      /> : null}
     </View>
   );
 }
@@ -196,6 +313,21 @@ const styles = StyleSheet.create({
   storageTryAgainText: {
     color: "#FFFFFF",
     fontSize: 12,
+    fontWeight: "900",
+  },
+  canonicalEstimateButton: {
+    position: "absolute",
+    right: 16,
+    bottom: APP_LAYOUT.floatingAiButtonWithStickyActionOffsetPx + 68,
+    zIndex: 25,
+    borderRadius: 22,
+    backgroundColor: "#14532D",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  canonicalEstimateButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
     fontWeight: "900",
   },
 });

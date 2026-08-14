@@ -13,7 +13,7 @@ import {
   type ProductionTemplateExtendedValidationSummary,
 } from "../../src/lib/ai/estimateTemplate10000";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate/globalEstimateTypes";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import {
   __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,

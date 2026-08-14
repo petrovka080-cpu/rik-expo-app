@@ -11,8 +11,7 @@ import type {
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
-import { resolvedEstimateIdentityChecksum } from "../estimate/createEstimateDraftRevision";
-import { getRoadworksWaveAProductionRegistration } from "../estimate/v4/roadworks";
+import { resolvedEstimateIdentityChecksum } from "../estimate/resolvedEstimateIdentityChecksum";
 import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
 
 export const EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION =
@@ -28,6 +27,10 @@ function strings(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === "string")
     : [];
+}
+
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 function calculationRowType(row: EditableEstimateRow): ProfessionalBoqRow["rowType"] {
@@ -104,11 +107,24 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
     canonicalRevision.selected_work_key,
     bundle.draft.selectedWorkKey,
   ].find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim();
-  const registration = getRoadworksWaveAProductionRegistration(workKey);
   const parameterSnapshot = record(source.parameterSnapshot);
   const parameterMetadata = record(source.roadworksWaveAParameterMetadata);
-  if (!workKey || !registration || !parameterSnapshot || !parameterMetadata) return null;
-  const selectedTemplateId = sourceRow?.templateId?.trim() || registration.templateId;
+  const passportId = nonEmptyString(source.professionalEstimatePassportId)
+    ?? nonEmptyString(source.semanticOwner);
+  const calculationProfileId = nonEmptyString(source.calculationProfileId);
+  const canonicalModelId = nonEmptyString(source.canonicalModelId);
+  const canonicalModelVersion = nonEmptyString(source.canonicalModelVersion);
+  const migrationVersion = nonEmptyString(source.migrationVersion)
+    ?? nonEmptyString(source.parameterSchemaVersion);
+  const parameterSchemaId = nonEmptyString(source.parameterSchemaId);
+  if (
+    !workKey || !parameterSnapshot || !parameterMetadata || !passportId ||
+    !calculationProfileId || !canonicalModelId || !canonicalModelVersion ||
+    !migrationVersion || !parameterSchemaId
+  ) return null;
+  const selectedTemplateId = sourceRow?.templateId?.trim()
+    || nonEmptyString(source.inlineWorkPromptTemplateId);
+  if (!selectedTemplateId) return null;
 
   const assumptionKeys = new Set(strings(source.assumptionKeys));
   const createdAt = canonicalRevision.created_at;
@@ -124,7 +140,7 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
         : {}),
       source: assumptionKeys.has(key) ? "default_assumption" : "user_input",
       sourceText: assumptionKeys.has(key)
-        ? `${String(metadata.defaultSourceId ?? "roadworks-wave-a-versioned-defaults")}:${String(metadata.defaultSourceVersion ?? registration.migrationVersion)}`
+        ? `${String(metadata.defaultSourceId ?? "roadworks-wave-a-versioned-defaults")}:${String(metadata.defaultSourceVersion ?? migrationVersion)}`
         : EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION,
       lastChangedAt: createdAt,
     };
@@ -157,34 +173,34 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
   }
   const formulaGraphVersion = typeof source.formulaGraphId === "string"
     ? source.formulaGraphId
-    : registration.formulaGraphId;
+    : migrationVersion;
   const identityWithoutChecksum = {
     requestedCatalogWorkId: workKey,
     passportId: typeof source.professionalEstimatePassportId === "string"
       ? source.professionalEstimatePassportId
-      : registration.professionalPassport.passportId,
+      : passportId,
     passportVersion: typeof source.professionalEstimatePassportVersion === "string"
       ? source.professionalEstimatePassportVersion
-      : registration.professionalPassport.version,
-    parameterSchemaId: registration.parameterSchemaId,
-    parameterSchemaVersion: registration.migrationVersion,
-    calculationStrategyId: registration.calculationProfileId,
-    calculationProfileId: registration.calculationProfileId,
+      : migrationVersion,
+    parameterSchemaId,
+    parameterSchemaVersion: migrationVersion,
+    calculationStrategyId: calculationProfileId,
+    calculationProfileId,
     calculationProfileVersion: typeof source.calculationProfileVersion === "string"
       ? source.calculationProfileVersion
-      : registration.migrationVersion,
-    canonicalModelId: registration.canonicalModelId,
-    canonicalModelVersion: registration.passport.canonicalModelVersion,
-    selectedScope: registration.scopeProfile,
-    scopePresetId: registration.scopePresetId,
+      : migrationVersion,
+    canonicalModelId,
+    canonicalModelVersion,
+    selectedScope: nonEmptyString(source.scopeProfile),
+    scopePresetId: nonEmptyString(source.scopePresetId),
     resolvedParameters: params,
     formulaGraphVersion,
-    normativeCompositionId: registration.normativeCompositionId,
-    semanticFingerprint: registration.semanticFingerprint,
+    normativeCompositionId: nonEmptyString(source.normativeCompositionId) ?? undefined,
+    semanticFingerprint: nonEmptyString(source.semanticFingerprint) ?? undefined,
     compilerVersion: EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION,
     sourceBindingVersions: [],
-    semanticOwner: registration.professionalPassport.passportId,
-    originalPrompt: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? registration.professionalNameRu,
+    semanticOwner: passportId,
+    originalPrompt: bundle.draft.selectedWorkRawInput ?? bundle.draft.problemText ?? workKey,
     legacyFallbackUsed: false,
     fallbackReason: null,
     projectionOwner: "estimate_draft_revision" as const,
@@ -216,7 +232,7 @@ export function migrateExactRoadworksCalculationStateFromCanonicalSnapshot(
           assumptionIds: [...assumptionKeys],
         }
       : null,
-    workSpecificParameterSchemaId: registration.parameterSchemaId,
+    workSpecificParameterSchemaId: parameterSchemaId,
     workSpecificParameterSignature: Object.keys(parameterMetadata),
     applicableBoqSignature: stableEstimateRevisionHash(rows.map((row) => [row.rowId, row.quantity, row.unit])),
     legacyRowsCount: 0,

@@ -1,5 +1,5 @@
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 
 describe("request estimate norm trace", () => {
   it("keeps norm id, source and version in request structured rows and draft items", () => {

@@ -2,7 +2,7 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   selectConsumerRepairRoadScopeV4,
 } from "../../src/lib/consumerRequests";
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 
 function pendingBundle() {
   return buildConsumerRepairSelectedWorkDraftBundle({

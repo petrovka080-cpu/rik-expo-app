@@ -12,11 +12,8 @@ import {
   calculateGlobalConstructionEstimateSync,
   type GlobalSelectedWorkBinding,
 } from "../../src/lib/ai/globalEstimate";
-import {
-  createConsumerRepairDraftFromGlobalEstimate,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,

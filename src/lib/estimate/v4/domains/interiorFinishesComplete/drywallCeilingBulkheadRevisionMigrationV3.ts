@@ -1,4 +1,4 @@
-import { resolvedEstimateIdentityChecksum } from "../../../createEstimateDraftRevision";
+import { resolvedEstimateIdentityChecksum } from "../../../resolvedEstimateIdentityChecksum";
 import type { EstimateDraftRevision, EstimateResolvedIdentity } from "../../../estimateDraftRevisionContract";
 import {
   DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3,

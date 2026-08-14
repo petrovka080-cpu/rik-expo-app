@@ -22,6 +22,7 @@ export function mapApprovedForemanDraftToBuyerRows(
       note: buildForemanAiEstimateVisibleContextNote(row.context),
       estimateId: row.estimateId,
       estimateRevisionId: row.estimateRevisionId,
+      estimateReleaseId: row.estimateReleaseId,
       sourceRowId: row.rowId,
       unitPrice: row.unitPrice,
       total: row.total,

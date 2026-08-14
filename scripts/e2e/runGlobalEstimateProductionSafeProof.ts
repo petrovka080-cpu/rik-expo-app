@@ -1,37 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { GLOBAL_ESTIMATE_PRODUCTION_SAFE_GREEN_STATUS, GLOBAL_ESTIMATE_PRODUCTION_SAFE_WAVE, assertGlobalEstimateFeatureFlagsDefaultOff, assertGlobalEstimateResultSafe, assertGlobalEstimateTraceRedacted, assertNoPriceOrTaxWithoutBackendResult, buildGlobalEstimateRollbackPlan, createGlobalEstimateProductionTraceEvent, formatGlobalEstimateBackendUnavailableAnswer, resolveGlobalEstimateFeatureFlags, runGlobalEstimateAiChatRuntime, validateGlobalEstimateMigrationSafety, type GlobalEstimateInput, type GlobalEstimateProductionTraceEvent, } from "../../src/lib/ai/globalEstimate";
 import {
-  GLOBAL_ESTIMATE_PRODUCTION_SAFE_GREEN_STATUS,
-  GLOBAL_ESTIMATE_PRODUCTION_SAFE_WAVE,
-  assertGlobalEstimateFeatureFlagsDefaultOff,
-  assertGlobalEstimateResultSafe,
-  assertGlobalEstimateTraceRedacted,
-  assertNoPriceOrTaxWithoutBackendResult,
-  buildGlobalEstimateRollbackPlan,
-  createGlobalEstimateProductionTraceEvent,
-  formatGlobalEstimateBackendUnavailableAnswer,
-  resolveGlobalEstimateFeatureFlags,
-  runGlobalEstimateAiChatRuntime,
-  validateGlobalEstimateMigrationSafety,
-  type GlobalEstimateInput,
-  type GlobalEstimateProductionTraceEvent,
-} from "../../src/lib/ai/globalEstimate";
-import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  assertConsumerRepairGlobalEstimateDraftSafe,
-  attachConsumerRepairMedia,
-  createConsumerRepairDraftFromGlobalEstimate,
-  createGlobalEstimateB2cDraftTrace,
-  getConsumerRepairRequestPdf,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
-  updateConsumerRepairRequestItemQuantity,
-  validateConsumerRepairRequestForMarketplace,
-  type ConsumerRepairDraftBundle,
-  type ConsumerRepairValidationError,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, getConsumerRepairRequestPdf, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft, updateConsumerRepairRequestItemQuantity, type ConsumerRepairDraftBundle, type ConsumerRepairValidationError } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
+import { assertConsumerRepairGlobalEstimateDraftSafe, createGlobalEstimateB2cDraftTrace } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { validateConsumerRepairRequestForMarketplace } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 
 const ARTIFACT_PREFIX = "S_GLOBAL_ESTIMATE_PRODUCTION_SAFE";
 const artifactDir = path.join(process.cwd(), "artifacts");

@@ -20,6 +20,7 @@ type SessionBoundaryCleaners = {
   clearGeneratedPdfViewerSessionCache: () => void;
   clearConsumerRepairPdfWebObjectUrls: () => void;
   clearWebPdfPreviewCacheForSessionBoundary: () => Promise<void>;
+  clearCanonicalEstimatePrivateOfflineState: () => Promise<void>;
   clearPdfRunnerSessionState: () => void;
   clearCurrentSessionRoleCache: () => void;
   clearRealtimeSessionState: () => void;
@@ -40,6 +41,8 @@ function loadSessionBoundaryCleaners(): SessionBoundaryCleaners {
     require("../documents/pdfDocumentSessions") as typeof import("../documents/pdfDocumentSessions");
   const { clearWebPdfPreviewCacheForSessionBoundary } =
     require("../documents/pdfWebPreviewCache") as typeof import("../documents/pdfWebPreviewCache");
+  const { clearCanonicalEstimatePrivateOfflineState } =
+    require("../estimate/backendPlatform/canonicalEstimateOfflineCache") as typeof import("../estimate/backendPlatform/canonicalEstimateOfflineCache");
   const { clearPooledWebPdfFrames } =
     require("../pdf/pdfViewerWebFramePool") as typeof import("../pdf/pdfViewerWebFramePool");
   const { clearGeneratedPdfViewerSessionCache } =
@@ -73,6 +76,7 @@ function loadSessionBoundaryCleaners(): SessionBoundaryCleaners {
     clearGeneratedPdfViewerSessionCache,
     clearConsumerRepairPdfWebObjectUrls,
     clearWebPdfPreviewCacheForSessionBoundary,
+    clearCanonicalEstimatePrivateOfflineState,
     clearPdfRunnerSessionState,
     clearCurrentSessionRoleCache,
     clearRealtimeSessionState,
@@ -142,6 +146,11 @@ export async function resetSessionBoundary(reason: string): Promise<void> {
   // --- Async cache purge ---
   try {
     await cleaners.clearWebPdfPreviewCacheForSessionBoundary();
+  } catch (purgeError) {
+    recordSessionBoundaryPurgeFailure(reason, purgeError);
+  }
+  try {
+    await cleaners.clearCanonicalEstimatePrivateOfflineState();
   } catch (purgeError) {
     recordSessionBoundaryPurgeFailure(reason, purgeError);
   }

@@ -1,7 +1,7 @@
 import {
   buildConsumerRepairExactCatalogLaunchSelectedWork,
   buildConsumerRepairSelectedWorkDraftBundle,
-} from "../../src/features/consumerRepair/requestEstimateScreenActions";
+} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 
 describe("request exact-catalog launch selection", () => {
   test("preserves an existing Roadworks V4 exact owner", () => {

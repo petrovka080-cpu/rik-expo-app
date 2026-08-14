@@ -33,9 +33,9 @@ import {
 } from "../../lib/estimate/v4/asphalt";
 import { buildProjectExecutionDraftFromRevision } from "../../lib/projectExecution";
 import {
-  buildConsumerRepairSelectedWorkDraftBundle,
   saveProjectExecutionDraftForRequest,
-} from "./requestEstimateScreenActions";
+  buildConsumerRepairSelectedWorkDraftBundle,
+} from "./requestEstimateLegacyTestActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
 const FORBIDDEN_GENERIC_KEYS = new Set([

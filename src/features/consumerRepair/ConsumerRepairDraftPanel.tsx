@@ -7,7 +7,6 @@ import type {
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
-import { getRegisteredEstimateWorkProfile } from "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles";
 import {
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
@@ -75,25 +74,20 @@ export function ConsumerRepairDraftPanel({
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
   const estimateDraftSession = bundle?.estimateDraftSession ?? null;
-  const registeredWorkProfile = getRegisteredEstimateWorkProfile(
-    estimateDraftSession?.workIntent?.canonicalWorkKey ??
-    bundle?.pendingRoadScopeSelection?.requestedCatalogWorkId ??
-    "",
-  );
   const offeredScopeIds = new Set(
     estimateDraftSession?.scopeRequirement?.offeredScopePresetIds ??
     bundle?.pendingRoadScopeSelection?.offeredScopes ??
     [],
   );
-  const offeredScopeOptions = registeredWorkProfile?.scopePresets.filter((scope) =>
-    offeredScopeIds.has(scope.scopePresetId)
-  ) ?? [];
-  const selectedScopeOption = registeredWorkProfile?.scopePresets.find(
-    (scope) => scope.scopePresetId === estimateDraftSession?.scopePresetId,
-  ) ?? null;
+  const offeredScopeOptions = [...offeredScopeIds].map((scopePresetId) => ({
+    scopePresetId,
+    labelRu: "Открыть вариант в backend-редакторе",
+  }));
+  const selectedScopeOption = estimateDraftSession?.scopePresetId
+    ? { scopePresetId: estimateDraftSession.scopePresetId, labelRu: "Вариант сохранён в revision" }
+    : null;
   const blocksActiveEstimate =
     estimateDraftSession != null &&
-    registeredWorkProfile != null &&
     bundle?.canonicalParameterSession == null &&
     // A source-backed structured payload already owns a compiled BOQ. The
     // legacy DraftSession created for compatibility has no bound scope and can
@@ -123,6 +117,8 @@ export function ConsumerRepairDraftPanel({
   const editableHistorySummary = buildConsumerRepairEditableHistorySummary(
     bundle?.estimateRevisionState,
   );
+  const canonicalRevisionId = String(bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
+  const canonicalReleaseId = String(bundle?.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -135,6 +131,11 @@ export function ConsumerRepairDraftPanel({
               : "Позиции пока пустые"}
         </Text>
       </View>
+      {canonicalRevisionId && canonicalReleaseId ? (
+        <Text style={styles.status} testID="consumer-repair-draft-release-id">
+          Backend revision {canonicalRevisionId} / release {canonicalReleaseId}
+        </Text>
+      ) : null}
       {selectedCatalogWorkId ? (
         <View
           accessible={false}

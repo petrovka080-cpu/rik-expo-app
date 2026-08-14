@@ -16,6 +16,14 @@ function formatDate(value: string): string {
   return value.slice(0, 10).split("-").reverse().join(".");
 }
 
+function canonicalBinding(bundle: ConsumerRepairDraftBundle): { revisionId: string; releaseId: string } | null {
+  const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId
+    ?? bundle.durableHistorySummary?.sourceRevisionId ?? "").trim();
+  const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId
+    ?? bundle.durableHistorySummary?.sourceReleaseId ?? "").trim();
+  return revisionId && releaseId ? { revisionId, releaseId } : null;
+}
+
 export function ConsumerRepairPdfRow({
   bundle,
   selected,
@@ -24,6 +32,7 @@ export function ConsumerRepairPdfRow({
   onToggleHistorySnapshot,
 }: Props): React.ReactElement {
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
+  const canonical = canonicalBinding(bundle);
   const status = bundle.draft.status === "consumer_approved"
     ? "утверждена"
     : bundle.draft.status === "sent_to_marketplace"
@@ -40,7 +49,7 @@ export function ConsumerRepairPdfRow({
   return (
     <View style={[styles.row, selected ? styles.rowSelected : null]} testID="consumer-repair-history-row">
       <View style={styles.icon}>
-        <Ionicons name={latestPdf ? "document-text" : "create-outline"} size={18} color="#2563EB" />
+        <Ionicons name={latestPdf || canonical ? "document-text" : "create-outline"} size={18} color="#2563EB" />
       </View>
       <Pressable
         accessibilityRole="button"
@@ -52,7 +61,12 @@ export function ConsumerRepairPdfRow({
         <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Смета"}</Text>
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
       </Pressable>
-      {latestPdf ? (
+      {canonical ? (
+        <Text style={styles.canonicalMeta} testID="consumer-repair-history-release-id">
+          revision {canonical.revisionId} · release {canonical.releaseId}
+        </Text>
+      ) : null}
+      {latestPdf || canonical ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Открыть PDF"
@@ -110,6 +124,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: "#64748B",
     fontSize: 12,
+    fontWeight: "700",
+  },
+  canonicalMeta: {
+    maxWidth: 260,
+    color: "#475569",
+    fontSize: 10,
     fontWeight: "700",
   },
   button: {

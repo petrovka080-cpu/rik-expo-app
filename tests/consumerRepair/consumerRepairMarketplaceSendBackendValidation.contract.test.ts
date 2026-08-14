@@ -1,10 +1,5 @@
-import {
-  __resetConsumerRepairRequestStoreForTests,
-  getConsumerRepairRequest,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
-  validateConsumerRepairRequestForMarketplace,
-} from "../../src/lib/consumerRequests";
+import { __resetConsumerRepairRequestStoreForTests, getConsumerRepairRequest, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { validateConsumerRepairRequestForMarketplace } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,

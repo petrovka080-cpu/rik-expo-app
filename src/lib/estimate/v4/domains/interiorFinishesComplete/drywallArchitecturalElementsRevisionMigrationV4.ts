@@ -1,4 +1,4 @@
-import { resolvedEstimateIdentityChecksum } from "../../../createEstimateDraftRevision";
+import { resolvedEstimateIdentityChecksum } from "../../../resolvedEstimateIdentityChecksum";
 import type { EstimateDraftRevision, EstimateResolvedIdentity } from "../../../estimateDraftRevisionContract";
 import {
   DRYWALL_ARCHITECTURAL_ELEMENT_PROFESSIONAL_CATALOG_IDS_V4,

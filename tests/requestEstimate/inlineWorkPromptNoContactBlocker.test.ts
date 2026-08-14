@@ -1,4 +1,4 @@
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 
 describe("inline work prompt no contact blocker", () => {
   it("builds preliminary estimate without city, address or phone", () => {

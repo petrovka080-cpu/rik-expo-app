@@ -1,4 +1,4 @@
-import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildRequestEstimateTopProofText } from "../../src/features/consumerRepair/ConsumerRepairRequestChrome";
 import {
   buildRequestEstimateViewModel,

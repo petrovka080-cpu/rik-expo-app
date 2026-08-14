@@ -1,11 +1,10 @@
 import {
   buildGlobalEstimateInputWithSelectedWork,
   buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-  formatEstimateUnitLabel,
-  type GlobalEstimateInput,
-  type SourceBackedEstimateRow,
-} from "../globalEstimate";
+} from "../globalEstimate/globalWorkSmartSearch";
+import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
+import { formatEstimateUnitLabel } from "../globalEstimate/formatEstimateUnitLabel";
+import type { GlobalEstimateInput, SourceBackedEstimateRow } from "../globalEstimate/globalEstimateTypes";
 import { normalizeRuText } from "../../text/encoding";
 import type { EstimatePdfViewModel } from "../../estimatePdf";
 import {

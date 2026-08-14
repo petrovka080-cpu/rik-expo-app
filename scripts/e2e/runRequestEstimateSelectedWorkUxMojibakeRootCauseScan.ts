@@ -12,14 +12,8 @@ import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,
 } from "../../src/features/consumerRepair/buildRequestEstimatePayload";
-import {
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairPdfStorageObject,
-  listConsumerRepairRequestHistory,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, listConsumerRepairRequestHistory, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import { extractEstimatePdfText } from "../../src/lib/estimatePdf";
 import {
   isWeakGenericVisibleEstimateLabel,

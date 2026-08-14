@@ -1,4 +1,4 @@
-import { resolveGlobalTaxRule } from "../globalEstimate";
+import { resolveGlobalTaxRule } from "../globalEstimate/globalTaxRuleService";
 import type { GlobalLocalContext } from "./globalLocalContextTypes";
 import type { LocalTaxPolicy } from "./taxPolicyTypes";
 

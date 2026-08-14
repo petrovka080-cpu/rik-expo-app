@@ -2,15 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  compareConsumerRepairPayloadParity,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  validateConsumerRepairPayloadSourceGovernance,
-  __resetConsumerRepairRequestStoreForTests,
-} from "../../src/lib/consumerRequests";
+import { buildConsumerRepairCanonicalDraftPayload, compareConsumerRepairPayloadParity, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, validateConsumerRepairPayloadSourceGovernance, __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { calculateGlobalConstructionEstimateSync } from "../../src/lib/ai/globalEstimate/globalEstimateCalculator";
 import {
   mapEstimateRowEvidenceToRateSourceEvidence,

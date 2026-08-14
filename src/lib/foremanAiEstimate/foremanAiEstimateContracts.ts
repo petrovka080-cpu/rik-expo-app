@@ -1,4 +1,4 @@
-import type { GlobalEstimateConfidence } from "../ai/globalEstimate";
+import type { GlobalEstimateConfidence } from "../ai/globalEstimate/globalEstimateTypes";
 import type {
   StructuredEstimatePayload,
   StructuredEstimateRow,
@@ -42,6 +42,7 @@ export type ForemanDraftEstimateRow = {
   approvalStatus: ForemanApprovalStatus;
   estimateId: string;
   estimateRevisionId: string;
+  estimateReleaseId: string | null;
   payloadFingerprint: string;
   rowId: string;
   rowNumber: string;
@@ -77,6 +78,9 @@ export type ForemanRequestDraftLine = {
     kind?: string | null;
     name_human?: string | null;
     uom?: string | null;
+    estimate_revision_id?: string | null;
+    estimate_release_id?: string | null;
+    estimate_source_row_id?: string | null;
   };
 };
 
@@ -87,6 +91,7 @@ export type ForemanAiEstimateDraftMapping = {
   payload: StructuredEstimatePayload;
   payloadFingerprint: string;
   estimateRevisionId: string;
+  estimateReleaseId: string | null;
   rows: ForemanDraftEstimateRow[];
   requestDraftLines: ForemanRequestDraftLine[];
   buyerPreviewRows: ForemanDraftEstimateRow[];
@@ -118,6 +123,7 @@ export type ForemanBuyerProcurementRow = {
   note: string | null;
   estimateId: string;
   estimateRevisionId: string;
+  estimateReleaseId: string | null;
   sourceRowId: string;
   unitPrice: number | null;
   total: number | null;

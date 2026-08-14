@@ -5,11 +5,8 @@ import {
   addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
   createConsumerRepairRequestDraft,
-  ensureConsumerRepairRequestPdfAvailable,
-  getConsumerRepairRequestPdf,
   listConsumerRepairApprovedHistory,
   listConsumerRepairRequestHistory,
-  saveConsumerRepairProjectExecutionDraft,
   selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   type ConsumerRepairApprovedHistoryPage,
@@ -19,9 +16,7 @@ import {
   sendConsumerRepairRequestToMarketplace,
 } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import type {
-  ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
-  ConsumerRepairPdfOpenResult,
   ConsumerRepairRequestItem,
   ConsumerRepairSelectedWork,
   ConsumerRequestValidationErrorItem,
@@ -34,132 +29,8 @@ import type { GlobalWorkCategory } from "../../lib/ai/globalEstimate/globalEstim
 import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplateFromPrompt";
 import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
-import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
-import type {
-  buildConsumerRepairDraftFromAiEstimateRuntime as BuildConsumerRepairDraftFromAiEstimateRuntime,
-  buildConsumerRepairDraftFromExactRoadworksWaveARuntime as BuildConsumerRepairDraftFromExactRoadworksWaveARuntime,
-  isExactAsphaltRelatedConsumerDraftV4 as IsExactAsphaltRelatedConsumerDraftV4,
-} from "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
-import { ASPHALT_WORK_ID_V4 } from "../../lib/estimate/v4/asphalt/asphaltV4Constants";
-import {
-  ROAD_SCOPE_RESOLVER_VERSION_V4,
-  asphaltScopeSelectionQuestionForIntentV5,
-  resolveRoadEstimateScopeV4,
-} from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
-import type {
-  buildConsumerRepairAiDraft as BuildConsumerRepairAiDraft,
-  buildDirectConsumerRepairOpenWorldAiDraft as BuildDirectConsumerRepairOpenWorldAiDraft,
-} from "./consumerRepairAiAdapter";
-import {
-  resolveDirectConsumerRepairOpenWorldOwner,
-  shouldUseDirectConsumerRepairOpenWorldDraft,
-} from "../../lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
-
-type ConsumerRepairAiDraftBuilder = typeof BuildConsumerRepairAiDraft;
-type DirectConsumerRepairOpenWorldAiDraftBuilder = typeof BuildDirectConsumerRepairOpenWorldAiDraft;
-type ConsumerRepairRuntimeDraftBuilder = typeof BuildConsumerRepairDraftFromAiEstimateRuntime;
-type ConsumerRepairExactRoadworksRuntimeDraftBuilder =
-  typeof BuildConsumerRepairDraftFromExactRoadworksWaveARuntime;
-type ConsumerRepairExactAsphaltRelatedDraftPredicate =
-  typeof IsExactAsphaltRelatedConsumerDraftV4;
-
-function recordConsumerRepairEstimateBuildTiming(
-  stage: string,
-  startedAt: number,
-): void {
-  if (typeof __DEV__ === "undefined" || !__DEV__) return;
-  console.info("[RikEstimateBuild]", JSON.stringify({
-    stage,
-    elapsedMs: Date.now() - startedAt,
-  }));
-}
-
-/* eslint-disable @typescript-eslint/no-require-imports -- synchronous lazy loaders keep heavy estimate runtimes out of request-route startup */
-function loadGlobalWorkSmartSearch() {
-  return require(
-    "../../lib/ai/globalEstimate/globalWorkSmartSearch"
-  ) as typeof import("../../lib/ai/globalEstimate/globalWorkSmartSearch");
-}
-
-function loadMultiDomainReferenceV4() {
-  return {
-    ...require(
-      "../../lib/estimate/v4/multiDomainReferenceNlpV4"
-    ) as typeof import("../../lib/estimate/v4/multiDomainReferenceNlpV4"),
-    ...require(
-      "../../lib/estimate/v4/multiDomainReferencePassportsV4"
-    ) as typeof import("../../lib/estimate/v4/multiDomainReferencePassportsV4"),
-  };
-}
-
-function loadAsphaltRelatedSemanticRegistryV4() {
-  return require(
-    "../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4"
-  ) as typeof import("../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4");
-}
-
-function loadRegisteredProfessionalEstimateDomainsV1() {
-  return require(
-    "../../lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1"
-  ) as typeof import("../../lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1");
-}
-
-function loadProfessionalWorkPassport() {
-  return require(
-    "../../lib/estimate/buildProfessionalWorkPassport"
-  ) as typeof import("../../lib/estimate/buildProfessionalWorkPassport");
-}
-
-function loadProjectExecutionDraftBuilders() {
-  return require(
-    "../../lib/projectExecution"
-  ) as typeof import("../../lib/projectExecution");
-}
-
-function loadConsumerRepairAiDraftBuilder(): ConsumerRepairAiDraftBuilder {
-  const adapter = require("./consumerRepairAiAdapter") as {
-    buildConsumerRepairAiDraft: ConsumerRepairAiDraftBuilder;
-  };
-  return adapter.buildConsumerRepairAiDraft;
-}
-
-function loadDirectConsumerRepairOpenWorldAiDraftBuilder(): DirectConsumerRepairOpenWorldAiDraftBuilder {
-  const adapter = require("./consumerRepairAiAdapter") as {
-    buildDirectConsumerRepairOpenWorldAiDraft: DirectConsumerRepairOpenWorldAiDraftBuilder;
-  };
-  return adapter.buildDirectConsumerRepairOpenWorldAiDraft;
-}
-
-function loadRegisteredEstimateWorkProfiles() {
-  return require(
-    "../../lib/estimate/workProfiles/registeredEstimateWorkProfiles"
-  ) as typeof import("../../lib/estimate/workProfiles/registeredEstimateWorkProfiles");
-}
-
-function loadRoadworksWaveAProductionBinding() {
-  return require(
-    "../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding"
-  ) as typeof import("../../lib/estimate/v4/roadworks/roadworksWaveAProductionBinding");
-}
-function loadConsumerRepairRuntimeDraftBuilders(): {
-  buildConsumerRepairDraftFromAiEstimateRuntime: ConsumerRepairRuntimeDraftBuilder;
-  buildConsumerRepairDraftFromExactRoadworksWaveARuntime: ConsumerRepairExactRoadworksRuntimeDraftBuilder;
-  isExactAsphaltRelatedConsumerDraftV4: ConsumerRepairExactAsphaltRelatedDraftPredicate;
-} {
-  const runtime = require(
-    "../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"
-  ) as typeof import("../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime");
-  return runtime;
-}
-/* eslint-enable @typescript-eslint/no-require-imports */
-
-export type ConsumerRepairProjectExecutionAction =
-  | "create_project"
-  | "send_to_procurement"
-  | "open_material_list";
-
 export type ConsumerRepairParamEditState = {
   key: string;
   operation: UserParamPatchOperation;
@@ -189,11 +60,6 @@ export type ConsumerRepairRequestScreenState = {
   editingParam: ConsumerRepairParamEditState;
 };
 
-export type ConsumerRepairRequestPdfLoader = (input: {
-  requestDraftId: string;
-  pdfId?: string;
-}) => ConsumerRepairPdfOpenResult;
-
 export function buildEmptyConsumerRepairApprovedHistoryPage(
   limit = 20,
 ): ConsumerRepairApprovedHistoryPage {
@@ -209,92 +75,25 @@ export function buildEmptyConsumerRepairApprovedHistoryPage(
   };
 }
 
-export type ConsumerRepairPdfViewerNavigation = {
-  params: Awaited<ReturnType<typeof buildGeneratedPdfViewerRouteParams>>;
-  statusMessage: string;
-};
-
-export type ConsumerRepairRequestPdfNavigationBuilder = (
-  requestDraftId: string,
-) => Promise<ConsumerRepairPdfViewerNavigation>;
-
-export async function buildConsumerRepairRequestPdfViewerNavigation(
-  requestDraftId: string,
-  loadPdf?: ConsumerRepairRequestPdfLoader,
-): Promise<ConsumerRepairPdfViewerNavigation> {
-  const pdf = loadPdf ? loadPdf({ requestDraftId }) : getConsumerRepairRequestPdf({ requestDraftId });
-  const params = await buildGeneratedPdfViewerRouteParams({
-    uri: pdf.signedUrl,
-    title: pdf.titleRu,
-    fileName: `${pdf.pdfId}.pdf`,
-    accessKind: "signed-url",
-    documentType: "request",
-    originModule: "reports",
-    source: "generated",
-    entityId: pdf.requestId,
-    cacheKey: `consumer-repair-pdf:${pdf.pdfId}`,
-    cacheIdentity: {
-      tenantId: pdf.tenantId,
-      companyId: pdf.companyId,
-      userId: pdf.ownerUserId,
-      sessionBoundaryId: pdf.sessionBoundaryId,
-      revisionId: pdf.revisionId,
-      snapshotHash: pdf.snapshotHash,
-      rendererVersion: pdf.rendererVersion,
-      locale: pdf.locale,
-      currency: pdf.currency,
-    },
-  });
-
-  return {
-    params,
-    statusMessage: `PDF открыт: ${pdf.titleRu}.`,
-  };
-}
-
-export function getConsumerRepairPdfUnavailableStatusMessage(error: unknown): string | null {
-  if (error instanceof ConsumerRepairValidationError) return null;
-  return error instanceof Error ? error.message : "PDF недоступен.";
-}
-
-export async function openConsumerRepairRequestPdfFromScreen(params: {
-  requestDraftId?: string;
-  buildNavigation: ConsumerRepairRequestPdfNavigationBuilder;
-  pushPdfViewer: (params: ConsumerRepairPdfViewerNavigation["params"]) => void;
-  setStatusMessage: (statusMessage: string | null) => void;
-  handleValidationError: (error: unknown) => void;
-}): Promise<void> {
-  const draftId = params.requestDraftId;
-  if (!draftId) return;
-
-  try {
-    const navigation = await params.buildNavigation(draftId);
-    params.pushPdfViewer(navigation.params);
-    params.setStatusMessage(navigation.statusMessage);
-  } catch (error) {
-    if (error instanceof ConsumerRepairValidationError) {
-      params.handleValidationError(error);
-      return;
-    }
-    params.setStatusMessage(getConsumerRepairPdfUnavailableStatusMessage(error));
-  }
-}
-
 export function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
   requestDraftId: string;
   userId: string;
+  canonicalArtifact: {
+    artifactId: string;
+    revisionId: string;
+    releaseId: string;
+    status: "ready";
+    sha256: string | null;
+  };
 }): Pick<
   ConsumerRepairRequestScreenState,
   "history" | "approvedHistoryPage" | "selectedHistoryId" | "validationErrors" | "statusMessage"
 > {
-  ensureConsumerRepairRequestPdfAvailable({
-    requestDraftId: input.requestDraftId,
-    userId: input.userId,
-  });
   sendConsumerRepairRequestToMarketplace({
     requestDraftId: input.requestDraftId,
     userId: input.userId,
     idempotencyKey: `consumer-marketplace:${input.requestDraftId}`,
+    canonicalArtifact: input.canonicalArtifact,
   });
   return {
     history: listConsumerRepairRequestHistory(input.userId),
@@ -545,27 +344,12 @@ export function buildConsumerRepairExactCatalogLaunchSelectedWork(input: {
 }): GlobalSelectedWorkBinding {
   const catalogWorkId = input.catalogWorkId.trim();
   const rawInput = input.rawInput.trim();
-  const roadworks = loadRoadworksWaveAProductionBinding()
-    .RoadworksWaveAProductionRegistry
-    .find((entry) => entry.workId === catalogWorkId || entry.templateId === catalogWorkId);
-  const asphaltRelated = loadAsphaltRelatedSemanticRegistryV4()
-    .getAsphaltRelatedProfileByCatalogRecordIdV4(catalogWorkId);
-  const registeredProfessional = loadRegisteredProfessionalEstimateDomainsV1()
-    .resolveRegisteredProfessionalEstimateSelectionV1(catalogWorkId);
-  if (!roadworks && !asphaltRelated && !registeredProfessional) {
-    throw new Error(`UNSUPPORTED_EXACT_WORK_KEY:${catalogWorkId || "empty"}`);
-  }
-  const demolition = asphaltRelated?.uiGroup === "DEMOLITION_WORKS";
+  if (!catalogWorkId) throw new Error("CANONICAL_CATALOG_ID_REQUIRED");
   return {
-    selectedWorkKey: registeredProfessional?.work_key ?? catalogWorkId,
-    selectedTitleRu:
-      roadworks?.professionalNameRu
-      ?? asphaltRelated?.professionalNameRu
-      ?? registeredProfessional?.title_ru
-      ?? catalogWorkId,
-    selectedCategoryKey: registeredProfessional?.category_key ?? (demolition ? "demolition" : "roadworks"),
-    selectedCategoryTitleRu: registeredProfessional?.category_title_ru ??
-      (demolition ? "Демонтаж" : "Дорожные работы"),
+    selectedWorkKey: catalogWorkId,
+    selectedTitleRu: catalogWorkId,
+    selectedCategoryKey: "other",
+    selectedCategoryTitleRu: "Canonical backend",
     rawInput,
     source: "user_selected",
     resolverReGuessed: false,
@@ -615,34 +399,22 @@ export function refreshSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
   if (!selectedWork) return null;
-  const nextRawInput = rawInput || selectedWork.rawInput;
-  try {
-    return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
-      selectedWorkKey: selectedWork.selectedWorkKey,
-      rawInput: nextRawInput,
-    });
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === `UNKNOWN_SELECTED_WORK_KEY:${selectedWork.selectedWorkKey}`
-    ) {
-      return {
-        ...selectedWork,
-        rawInput: nextRawInput,
-      };
-    }
-    throw error;
-  }
+  return { ...selectedWork, rawInput: rawInput || selectedWork.rawInput };
 }
 
 export function buildSelectedWorkFromSuggestion(
   suggestion: GlobalWorkSmartSearchSuggestion,
   rawInput: string,
 ): GlobalSelectedWorkBinding {
-  return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
+  return {
     selectedWorkKey: suggestion.workKey,
+    selectedTitleRu: suggestion.titleRu,
+    selectedCategoryKey: suggestion.categoryKey,
+    selectedCategoryTitleRu: suggestion.categoryTitleRu,
     rawInput,
-  });
+    source: "user_selected",
+    resolverReGuessed: false,
+  };
 }
 
 export function composeSelectedTemplateCandidateActiveInputText(candidate: InlineWorkTemplateCandidate): string {
@@ -654,10 +426,15 @@ export function buildSelectedWorkFromTemplateCandidate(
   candidate: InlineWorkTemplateCandidate,
   rawInput: string,
 ): GlobalSelectedWorkBinding {
-  return loadGlobalWorkSmartSearch().buildGlobalSelectedWorkBinding({
+  return {
     selectedWorkKey: candidate.workKey?.trim() || candidate.family,
+    selectedTitleRu: candidate.templateName,
+    selectedCategoryKey: "other",
+    selectedCategoryTitleRu: candidate.family,
     rawInput,
-  });
+    source: "user_selected",
+    resolverReGuessed: false,
+  };
 }
 
 function normalizeEditableWorkText(value: string): string {
@@ -692,39 +469,8 @@ export function preserveSelectedWorkResolverInput(
 export function buildMultiDomainReferenceSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
-  const {
-    routeMultiDomainReferencePromptV4,
-    MULTI_DOMAIN_REFERENCE_PASSPORTS_V4,
-  } = loadMultiDomainReferenceV4();
-  const routed = routeMultiDomainReferencePromptV4(rawInput);
-  if (routed.kind !== "MATCH" || routed.catalogWorkId === "asphalt_pavement") return null;
-  const passport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find(
-    (item) => item.catalogWorkId === routed.catalogWorkId,
-  );
-  if (!passport) return null;
-  const categoryByGroup: Record<string, GlobalWorkCategory> = {
-    preparation_demolition: "demolition",
-    earthworks: "other",
-    foundations: "foundation",
-    concrete: "concrete",
-    masonry: "masonry",
-    interior_finishes: "plastering",
-    roofing: "roofing",
-    water_supply: "plumbing",
-    sewerage: "plumbing",
-    electrical_low_current: "electrical",
-    heating: "heating_hvac",
-  };
-  const selectedCategoryKey = categoryByGroup[passport.group] ?? "other";
-  return {
-    selectedWorkKey: passport.professionalEstimatePassportId,
-    selectedTitleRu: passport.professionalNameRu,
-    selectedCategoryKey,
-    selectedCategoryTitleRu: passport.group,
-    rawInput: rawInput.trim(),
-    source: "user_selected",
-    resolverReGuessed: false,
-  };
+  void rawInput;
+  return null;
 }
 
 export function shouldPreserveSelectedWorkForProblemText(
@@ -742,95 +488,9 @@ export function searchConsumerRepairWorkSuggestions(
   query: string,
   selectedWork: GlobalSelectedWorkBinding | null,
 ): GlobalWorkSmartSearchSuggestion[] {
-  if (selectedWork || !shouldShowConsumerRepairWorkSuggestions(query)) return [];
-  return loadGlobalWorkSmartSearch().searchGlobalWorkSmartSuggestions({
-    query,
-    limit: 8,
-  });
-}
-
-function draftHasPricedRows(draft: ConsumerRepairAiDraft | null): boolean {
-  return Boolean(draft?.items.some((item) =>
-    item.unitPrice != null &&
-    item.priceSource !== "missing"
-  ));
-}
-
-function draftHasPassportBackedNaturalLanguageRows(draft: ConsumerRepairAiDraft | null): boolean {
-  return Boolean(draft?.items.some((item) =>
-    item.sourceParameters?.passportBackedNaturalLanguageIngress === true
-  ));
-}
-
-function runtimeDraftReadyForRequestAutoPrepare(
-  draft: ConsumerRepairAiDraft | null,
-): draft is ConsumerRepairAiDraft {
-  if (!draft) return false;
-  if (
-    draft.items.length > 0 &&
-    draft.items.every((item) => item.sourceParameters?.asphaltRelatedV4 === true)
-  ) return true;
-  if (
-    draft.repairType === ASPHALT_WORK_ID_V4 ||
-    draft.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
-  ) return true;
-  if (draft.items.length === 0) return false;
-  if (draft.structuredEstimatePayload) return true;
-  if (draftHasPricedRows(draft)) return true;
-  return draftHasPassportBackedNaturalLanguageRows(draft);
-}
-
-function runtimeDraftWinsAgainstFallback(
-  draft: ConsumerRepairAiDraft | null,
-  fallbackDraft: ConsumerRepairAiDraft,
-): draft is ConsumerRepairAiDraft {
-  if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
-  // A shallow priced catalog match must never replace a work-specific
-  // structured estimate resolved from the same natural-language request.
-  if (fallbackDraft.structuredEstimatePayload && !draft.structuredEstimatePayload) return false;
-  if (draft.structuredEstimatePayload) return true;
-  if (draftHasPricedRows(draft)) return true;
-  if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
-  return !fallbackDraft.structuredEstimatePayload && !draftHasPricedRows(fallbackDraft);
-}
-
-function normalizePassportPromptText(value: string | null | undefined): string {
-  return String(value ?? "")
-    .toLocaleLowerCase("ru-RU")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function selectedTemplateIdFromDraft(draft: ConsumerRepairAiDraft | null): string | null {
-  return draft?.selectedWork?.selectedWorkKey?.trim() ||
-    draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ||
-    null;
-}
-
-function isExactPassportBackedNaturalLanguageDraft(
-  draft: ConsumerRepairAiDraft | null,
-  problemText: string,
-): draft is ConsumerRepairAiDraft {
-  if (!runtimeDraftReadyForRequestAutoPrepare(draft)) return false;
-  if (draft.items.length < 20) return false;
-  if (!draftHasPassportBackedNaturalLanguageRows(draft)) return false;
-  const passport = loadProfessionalWorkPassport().buildProfessionalWorkPassport(
-    selectedTemplateIdFromDraft(draft) ?? "",
-  );
-  if (!passport) return false;
-  const prompt = normalizePassportPromptText(problemText);
-  const passportName = normalizePassportPromptText(passport.localizedNameRu);
-  return passportName.length > 0 && prompt.includes(passportName);
-}
-
-function isMultiDomainReferenceV4Draft(
-  draft: ConsumerRepairAiDraft | null,
-): draft is ConsumerRepairAiDraft {
-  return Boolean(
-    draft?.selectedWork?.selectedWorkKey &&
-    draft.items.length > 0 &&
-    draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
-  );
+  void query;
+  void selectedWork;
+  return [];
 }
 
 export function buildConsumerRepairSelectedWorkEditableField(params: {
@@ -871,271 +531,6 @@ export function buildConsumerRepairSelectedWorkEditableField(params: {
       )
     : fallback;
   return refreshed ? toConsumerRepairSelectedWork(refreshed) : null;
-}
-
-export function buildConsumerRepairSelectedWorkDraftBundle(params: {
-  consumerUserId: string;
-  problemText: string;
-  repairType: string;
-  city: string;
-  addressText: string;
-  preferredTimeText: string;
-  contactPhone: string;
-  selectedWork: GlobalSelectedWorkBinding | null;
-}): {
-  bundle: ConsumerRepairDraftBundle;
-  selectedWork: GlobalSelectedWorkBinding | null;
-  aiDraft: ReturnType<ConsumerRepairAiDraftBuilder>;
-} {
-  const buildStartedAt = Date.now();
-  const nextProblemText = params.problemText.trim();
-  // A catalog selection replaces the visible input with its professional
-  // title. Preserve the original natural query for runtime routing; otherwise
-  // the build step silently compiles the legacy catalog model.
-  const resolverInput = params.selectedWork?.rawInput.trim() || nextProblemText;
-  const selectedWork = refreshSelectedWorkBinding(params.selectedWork, resolverInput);
-  recordConsumerRepairEstimateBuildTiming("SELECTED_WORK_READY", buildStartedAt);
-  const consumerSelectedWork = selectedWork ? toConsumerRepairSelectedWork(selectedWork) : null;
-  const registeredProfessionalSelection = selectedWork?.selectedWorkKey
-    ? loadRegisteredProfessionalEstimateDomainsV1()
-      .resolveRegisteredProfessionalEstimateSelectionV1(selectedWork.selectedWorkKey)
-    : null;
-  const roadScopeResolution = resolveRoadEstimateScopeV4({
-    originalText: resolverInput,
-    requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? "",
-  });
-  const scopeSelectionQuestion = asphaltScopeSelectionQuestionForIntentV5(resolverInput);
-  recordConsumerRepairEstimateBuildTiming("ROAD_SCOPE_READY", buildStartedAt);
-  const roadworksWaveA = loadRoadworksWaveAProductionBinding();
-  recordConsumerRepairEstimateBuildTiming("ROADWORKS_MODULE_READY", buildStartedAt);
-  const resolvedRoadworksWaveAProduction = roadworksWaveA.buildRoadworksWaveAProductionDraft({
-    rawInput: resolverInput,
-    selectedWorkKey: selectedWork?.selectedWorkKey,
-    selectedTemplateId: selectedWork?.selectedWorkKey,
-    selectedTemplateName: selectedWork?.selectedTitleRu,
-    city: params.city || undefined,
-    currency: "KGS",
-  });
-  recordConsumerRepairEstimateBuildTiming("ROADWORKS_DRAFT_READY", buildStartedAt);
-  const exactRoadworksWaveASelection = roadworksWaveA.resolveExactRoadworksWaveAProductionWork({
-      selectedWorkKey: selectedWork?.selectedWorkKey,
-      selectedTemplateId: selectedWork?.selectedWorkKey,
-      rawInput: resolverInput,
-    });
-  // Exact catalog identity always wins. A conversational single-operation
-  // match may own an otherwise non-road request, but it must not repaint a
-  // recognized broad parking/road scope merely because that scope mentions an
-  // accessory operation (for example "без водоотвода" or a full road "с
-  // водоотводом").
-  const exactRoadworksWaveAProduction = exactRoadworksWaveASelection ||
-      roadScopeResolution.resolverStatus === "NOT_ROAD"
-    ? resolvedRoadworksWaveAProduction
-    : null;
-  const explicitRoadworksWaveAReadiness = roadworksWaveA.getRoadworksWaveAResolutionReadiness(
-    exactRoadworksWaveASelection,
-  );
-  const exactAsphaltRelatedSelection = selectedWork?.selectedWorkKey
-    ? loadAsphaltRelatedSemanticRegistryV4().getAsphaltRelatedProfileByCatalogRecordIdV4(
-      selectedWork.selectedWorkKey,
-    )
-    : null;
-  const exactAsphaltConcreteScopeSelection =
-    exactAsphaltRelatedSelection?.canonicalWorkKey === ASPHALT_WORK_ID_V4;
-  recordConsumerRepairEstimateBuildTiming("ROADWORKS_SELECTION_READY", buildStartedAt);
-  const scopeSelectionDraft: ConsumerRepairAiDraft | null =
-    roadScopeResolution.resolverStatus === "NEEDS_SCOPE_SELECTION" &&
-      !registeredProfessionalSelection &&
-      (!exactAsphaltRelatedSelection || exactAsphaltConcreteScopeSelection) &&
-      explicitRoadworksWaveAReadiness !== "CALCULATION_READY" &&
-      explicitRoadworksWaveAReadiness !== "NEEDS_REQUIRED_INPUTS"
-      ? {
-        titleRu: scopeSelectionQuestion.question,
-        summaryRu: "Выберите состав дорожных работ до создания расчёта.",
-        repairType: "road_construction",
-        selectedWork: consumerSelectedWork ?? undefined,
-        dangerousDiyBlocked: false,
-        missingData: scopeSelectionQuestion.options.map((option) => option.label),
-        items: [],
-      }
-      : null;
-  const registeredSelectedProfile = selectedWork?.selectedWorkKey
-    ? loadRegisteredEstimateWorkProfiles().getRegisteredEstimateWorkProfile(
-        selectedWork.selectedWorkKey,
-      )
-    : null;
-  const selectedCanonicalElectrical =
-    registeredSelectedProfile?.canonicalWorkKey === "electrical_area_installation";
-  const directOpenWorldOwner =
-    resolveDirectConsumerRepairOpenWorldOwner(resolverInput);
-  const directOpenWorldDraft = Boolean(
-    !scopeSelectionDraft &&
-    (
-      !params.selectedWork ||
-      selectedCanonicalElectrical ||
-      directOpenWorldOwner === "electrical"
-    ) &&
-    roadScopeResolution.resolverStatus === "NOT_ROAD" &&
-    shouldUseDirectConsumerRepairOpenWorldDraft(resolverInput) &&
-    !loadMultiDomainReferenceV4().isExactMultiDomainReferencePromptV4(
-      resolverInput,
-    ),
-  );
-  recordConsumerRepairEstimateBuildTiming("RUNTIME_ROUTING_READY", buildStartedAt);
-  const runtimeDraft = scopeSelectionDraft || directOpenWorldDraft || registeredProfessionalSelection
-    ? null
-    : (() => {
-      const runtimeBuilders = loadConsumerRepairRuntimeDraftBuilders();
-      recordConsumerRepairEstimateBuildTiming("RUNTIME_MODULE_READY", buildStartedAt);
-      const runtimeInput = {
-        rawInput: resolverInput,
-        selectedWorkKey: selectedWork?.selectedWorkKey,
-        selectedTemplateId: selectedWork?.selectedWorkKey,
-        selectedTemplateName: selectedWork?.selectedTitleRu,
-        city: params.city || undefined,
-        currency: "KGS",
-      };
-      return exactRoadworksWaveAProduction
-        ? runtimeBuilders.buildConsumerRepairDraftFromExactRoadworksWaveARuntime(
-          runtimeInput,
-          exactRoadworksWaveAProduction.draft,
-        )
-        : runtimeBuilders.buildConsumerRepairDraftFromAiEstimateRuntime(runtimeInput);
-    })();
-  recordConsumerRepairEstimateBuildTiming("RUNTIME_DRAFT_READY", buildStartedAt);
-  const roadworksWaveARuntimeDraft = runtimeDraft?.selectedWork?.selectedWorkKey
-    ? roadworksWaveA.getRoadworksWaveAProductionRegistration(runtimeDraft.selectedWork.selectedWorkKey)
-    : null;
-  const exactAsphaltRelatedRuntimeDraft =
-    loadConsumerRepairRuntimeDraftBuilders().isExactAsphaltRelatedConsumerDraftV4(runtimeDraft);
-  const registeredProfessionalParameterCollectionDraft = registeredProfessionalSelection
-    ? loadRegisteredProfessionalEstimateDomainsV1()
-      .buildRegisteredProfessionalEstimateParameterCollectionDraftV1({
-        selection: registeredProfessionalSelection,
-        raw_input: resolverInput,
-      })
-    : null;
-  const aiDraft = scopeSelectionDraft ?? registeredProfessionalParameterCollectionDraft ?? (directOpenWorldDraft
-    ? (() => {
-      const buildDirectConsumerRepairOpenWorldAiDraft =
-        loadDirectConsumerRepairOpenWorldAiDraftBuilder();
-      recordConsumerRepairEstimateBuildTiming("DIRECT_FALLBACK_MODULE_READY", buildStartedAt);
-      const directDraft = buildDirectConsumerRepairOpenWorldAiDraft(resolverInput, {
-        city: params.city || undefined,
-        selectedWorkKey: selectedWork?.selectedWorkKey,
-        selectedWork: consumerSelectedWork,
-      });
-      recordConsumerRepairEstimateBuildTiming("DIRECT_FALLBACK_DRAFT_READY", buildStartedAt);
-      return directDraft;
-    })()
-    : roadworksWaveARuntimeDraft
-    ? runtimeDraft!
-    : exactAsphaltRelatedRuntimeDraft
-    ? runtimeDraft!
-    : runtimeDraft?.selectedWork?.selectedWorkKey === ASPHALT_WORK_ID_V4
-    ? runtimeDraft
-    : isMultiDomainReferenceV4Draft(runtimeDraft)
-      ? runtimeDraft
-    : isExactPassportBackedNaturalLanguageDraft(runtimeDraft, resolverInput)
-      ? runtimeDraft
-    : (() => {
-      const buildConsumerRepairAiDraft = loadConsumerRepairAiDraftBuilder();
-      recordConsumerRepairEstimateBuildTiming("FALLBACK_MODULE_READY", buildStartedAt);
-      const fallbackAiDraft = buildConsumerRepairAiDraft(resolverInput, {
-        city: params.city || undefined,
-        selectedWorkKey: selectedWork?.selectedWorkKey,
-        selectedWork: consumerSelectedWork,
-      });
-      return runtimeDraft && runtimeDraftWinsAgainstFallback(runtimeDraft, fallbackAiDraft)
-        ? runtimeDraft
-        : fallbackAiDraft;
-    })());
-  recordConsumerRepairEstimateBuildTiming("DRAFT_SELECTED", buildStartedAt);
-  const selectedWorkForDraft = aiDraft.items.length > 0 &&
-    aiDraft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
-    ? consumerSelectedWork ?? aiDraft.selectedWork
-    : aiDraft.selectedWork ?? consumerSelectedWork;
-  const bundle = createConsumerRepairRequestDraft({
-    consumerUserId: params.consumerUserId,
-    problemText: nextProblemText,
-    repairType: aiDraft.repairType || selectedWork?.selectedCategoryKey || params.repairType,
-    city: params.city || null,
-    addressText: params.addressText || null,
-    preferredTimeText: params.preferredTimeText || null,
-    contactPhone: params.contactPhone || null,
-    selectedWork: selectedWorkForDraft,
-    aiDraft,
-    pendingRoadScopeSelection: scopeSelectionDraft
-      ? {
-        pendingIntentId: `road-scope:${encodeURIComponent(resolverInput)}:${selectedWork?.selectedWorkKey ?? "natural-input"}`,
-        originalUserText: resolverInput,
-        requestedCatalogWorkId: selectedWork?.selectedWorkKey ?? ASPHALT_WORK_ID_V4,
-        offeredScopes: scopeSelectionQuestion.options.map((option) => option.scopeId),
-        resolverEvidence: [...roadScopeResolution.evidence],
-        resolverVersion: ROAD_SCOPE_RESOLVER_VERSION_V4,
-        createdAt: new Date().toISOString(),
-      }
-      : null,
-  });
-  recordConsumerRepairEstimateBuildTiming("BUNDLE_PERSISTED", buildStartedAt);
-  return { bundle, selectedWork, aiDraft };
-}
-
-function projectExecutionStatusMessage(action: ConsumerRepairProjectExecutionAction): string {
-  if (action === "create_project") return "\u041f\u0440\u043e\u0435\u043a\u0442 \u0441\u043e\u0437\u0434\u0430\u043d \u0438\u0437 \u0441\u043c\u0435\u0442\u044b.";
-  if (action === "send_to_procurement") return "\u0421\u043f\u0438\u0441\u043e\u043a \u0437\u0430\u043a\u0443\u043f\u043a\u0438 \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043b\u0435\u043d.";
-  return "\u0421\u043f\u0438\u0441\u043e\u043a \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u043e\u0432 \u043e\u0442\u043a\u0440\u044b\u0442.";
-}
-
-export function saveProjectExecutionDraftForRequest(input: {
-  action: ConsumerRepairProjectExecutionAction;
-  bundle: ConsumerRepairDraftBundle;
-  userId: string;
-}): {
-  bundle: ConsumerRepairDraftBundle;
-  statusMessage: string;
-} {
-  const {
-    buildProjectExecutionDraftFromEstimate,
-    buildProjectExecutionDraftFromRevision,
-  } = loadProjectExecutionDraftBuilders();
-  const payload = input.bundle.structuredEstimatePayload;
-  const revisionState = input.bundle.estimateDraftRevisionState;
-  const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId) ?? null;
-  const projectExecutionDraft = revision && revision.boq.rows.length > 0
-    ? buildProjectExecutionDraftFromRevision(revision, {
-          source: "request_estimate",
-          countryCode: payload?.locale.countryCode ?? "KG",
-          cityOrRegion:
-            payload?.locale.city ??
-            payload?.locale.stateOrRegion ??
-            input.bundle.draft.city ??
-            undefined,
-          generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
-          sourceRequestId: input.bundle.draft.id,
-        })
-    : payload
-      ? buildProjectExecutionDraftFromEstimate(payload, {
-          source: "request_estimate",
-          countryCode: payload.locale.countryCode,
-          cityOrRegion: payload.locale.city ?? payload.locale.stateOrRegion,
-          generatedAt: input.bundle.draft.updatedAt ?? input.bundle.draft.createdAt,
-          sourceRequestId: input.bundle.draft.id,
-        })
-      : null;
-  if (!projectExecutionDraft) {
-    return {
-      bundle: input.bundle,
-      statusMessage: "Сначала заполните критические параметры и получите измеримые позиции сметы.",
-    };
-  }
-  return {
-    bundle: saveConsumerRepairProjectExecutionDraft({
-      requestDraftId: input.bundle.draft.id,
-      userId: input.userId,
-      projectExecutionDraft,
-    }),
-    statusMessage: projectExecutionStatusMessage(input.action),
-  };
 }
 
 export type ConsumerRepairDraftEditableFields = {

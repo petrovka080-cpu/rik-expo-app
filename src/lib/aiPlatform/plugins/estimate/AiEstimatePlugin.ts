@@ -1,54 +1,103 @@
-import { createAiEstimateRuntime } from "../../../estimate/runtime/createAiEstimateRuntime";
-import { buildAiEstimateMissingInputQuestions } from "../../../estimate/buildAiEstimateMissingInputQuestions";
+import {
+  compileCanonicalEstimateAndLoad,
+  getCanonicalEstimateCatalogItem,
+  getCanonicalEstimateRevision,
+  searchCanonicalEstimateCatalog,
+} from "../../../estimate/backendPlatform/canonicalEstimateClient";
+import type { CanonicalEstimateCatalogItem } from "../../../estimate/backendPlatform/contracts";
+import type { AiRunResult } from "../../kernel/AiRuntimeKernelContract";
 import type { AiEstimatePlugin } from "./AiEstimatePluginContract";
 
+function defaultParameters(catalog: CanonicalEstimateCatalogItem) {
+  const missing: string[] = [];
+  const parameters: Record<string, string | number | boolean> = {};
+  for (const definition of catalog.parameterSchema) {
+    if (definition.defaultValue == null) {
+      if (definition.required) missing.push(definition.titleRu);
+      continue;
+    }
+    if (typeof definition.defaultValue === "string" || typeof definition.defaultValue === "number" || typeof definition.defaultValue === "boolean") {
+      parameters[definition.parameterId] = definition.defaultValue;
+    }
+  }
+  return { parameters, missing };
+}
+
+function failed(flowId: string, error: unknown): AiRunResult {
+  return {
+    flowId,
+    status: "failed",
+    userVisibleAnswerRu: error instanceof Error ? error.message : "Backend сметы временно недоступен.",
+  };
+}
+
 export function createAiEstimatePlugin(): AiEstimatePlugin {
-  const runtime = createAiEstimateRuntime();
   return {
     pluginId: "ai_estimate",
-    run(input) {
-      if (input.runInput.mode === "safe_read") {
-        return {
-          flowId: input.runInput.flowId,
-          status: "completed",
-          userVisibleAnswerRu: "\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0441\u043c\u0435\u0442\u044b \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430 \u0447\u0435\u0440\u0435\u0437 AI runtime.",
-        };
-      }
-      if (input.runInput.mode === "forbidden") {
-        return {
-          flowId: input.runInput.flowId,
-          status: "forbidden",
-          userVisibleAnswerRu: "\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435 AI \u0437\u0430\u043f\u0440\u0435\u0449\u0435\u043d\u043e \u043f\u043e \u043f\u043e\u043b\u0438\u0442\u0438\u043a\u0435.",
-        };
-      }
-      const draft = runtime.createDraft({
-        estimateDraftId: input.runInput.contextRef?.estimateId ?? input.runInput.flowId,
-        rawInput: input.runInput.userText || input.runInput.intent,
-        createdAt: "2026-07-10T00:00:00.000Z",
-      });
-      const passport = runtime.buildParameterPassport({ revision: draft.revision });
-      const missingQuestions = buildAiEstimateMissingInputQuestions({
-        revision: draft.revision,
-        maxQuestions: 5,
-      });
-      const userText = input.runInput.userText ?? "";
-      const preliminaryInputNeedsClarification = /цены?\s+нет|предварительн/i.test(userText);
-      const missingPrompt = missingQuestions && missingQuestions.questions.length > 0
-        ? ` Нужно уточнить исходные данные для профессиональной сметы. ${missingQuestions.questions.map((question) => question.questionRu).join(" ")}`
-        : preliminaryInputNeedsClarification
-          ? " Нужно уточнить исходные данные для профессиональной сметы."
-        : "";
-      return {
-        flowId: input.runInput.flowId,
-        status: input.runInput.mode === "approval_required" ? "needs_approval" : "completed",
-        userVisibleAnswerRu: `Черновик сметы собран через единый AI runtime.${missingPrompt}`,
-        draft: {
-          revisionId: draft.revision.revisionId,
-          estimateDraftId: draft.revision.estimateDraftId,
-          rowCount: draft.revision.boq.rows.length,
-          parameterCardsCount: passport.cards.length,
-        },
+    async run(input) {
+      const runInput = input.runInput;
+      if (runInput.mode === "forbidden") return {
+        flowId: runInput.flowId,
+        status: "forbidden",
+        userVisibleAnswerRu: "Действие AI запрещено по политике.",
       };
+      try {
+        if (runInput.mode === "safe_read") {
+          if (!runInput.contextRef?.revisionId) return {
+            flowId: runInput.flowId,
+            status: "needs_more_input",
+            userVisibleAnswerRu: "Укажите backend revision_id сметы, которую нужно открыть.",
+          };
+          const revision = await getCanonicalEstimateRevision(runInput.contextRef.revisionId);
+          return {
+            flowId: runInput.flowId,
+            status: "completed",
+            userVisibleAnswerRu: `Открыта immutable revision ${revision.revisionId}, release ${revision.releaseId}.`,
+            draft: { backendCanonical: true, revision },
+          };
+        }
+        const query = String(runInput.userText ?? runInput.intent).trim();
+        const search = await searchCanonicalEstimateCatalog({ query, limit: 6 });
+        const exact = search.items.filter((item) => item.titleRu.trim().toLocaleLowerCase("ru") === query.toLocaleLowerCase("ru"));
+        if (exact.length !== 1) return {
+          flowId: runInput.flowId,
+          status: "needs_more_input",
+          userVisibleAnswerRu: search.items.length
+            ? `Выберите точную работу backend-каталога: ${search.items.map((item) => item.titleRu).join("; ")}.`
+            : "Работа не найдена в canonical backend-каталоге. Уточните вид работ.",
+          draft: { backendCanonical: true, admitted: false, suggestions: search.items },
+        };
+        const catalog = await getCanonicalEstimateCatalogItem(exact[0].catalogId);
+        const defaults = defaultParameters(catalog);
+        if (defaults.missing.length) return {
+          flowId: runInput.flowId,
+          status: "needs_more_input",
+          userVisibleAnswerRu: `Заполните параметры: ${defaults.missing.slice(0, 8).join("; ")}.`,
+          draft: { backendCanonical: true, admitted: false, catalog, missingParameters: defaults.missing },
+        };
+        if (runInput.mode === "approval_required") return {
+          flowId: runInput.flowId,
+          status: "needs_approval",
+          userVisibleAnswerRu: `Подтвердите создание backend revision для ${catalog.titleRu}, release ${catalog.releaseId}.`,
+          draft: { backendCanonical: true, admitted: false, catalogId: catalog.catalogId, parameters: defaults.parameters },
+        };
+        const result = await compileCanonicalEstimateAndLoad({
+          request: {
+            idempotencyKey: `ai-plugin-${runInput.flowId}-${catalog.catalogId}`.slice(0, 200),
+            catalogId: catalog.catalogId,
+            parameters: defaults.parameters,
+            currencyCode: "KGS",
+          },
+        });
+        return {
+          flowId: runInput.flowId,
+          status: "completed",
+          userVisibleAnswerRu: `Создана backend revision ${result.revision.revisionId}, release ${result.revision.releaseId}.`,
+          draft: { backendCanonical: true, revision: result.revision, rows: result.rows },
+        };
+      } catch (error) {
+        return failed(runInput.flowId, error);
+      }
     },
   };
 }

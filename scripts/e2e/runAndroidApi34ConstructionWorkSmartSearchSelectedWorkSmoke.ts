@@ -1,19 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import {
-  buildGlobalEstimateInputWithSelectedWork,
-  buildGlobalSelectedWorkBinding,
-  calculateGlobalConstructionEstimateSync,
-} from "../../src/lib/ai/globalEstimate";
-import {
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { buildGlobalEstimateInputWithSelectedWork, buildGlobalSelectedWorkBinding, calculateGlobalConstructionEstimateSync, } from "../../src/lib/ai/globalEstimate";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,

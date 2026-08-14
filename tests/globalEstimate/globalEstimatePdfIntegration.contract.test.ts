@@ -1,12 +1,8 @@
 import { buildGlobalEstimateFixture } from "./globalEstimateTestHarness";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  buildConsumerRepairPdfSummary,
-  createConsumerRepairDraftFromGlobalEstimate,
-  getConsumerRepairRequestPdf,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, getConsumerRepairRequestPdf } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
+import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 
 describe("global estimate PDF integration contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());

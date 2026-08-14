@@ -104,7 +104,7 @@ describe("consumer repair durable storage startup UI", () => {
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ConsumerRepairRequestScreen />);
+      renderer = TestRenderer.create(<ConsumerRepairRequestScreen consumerUserId="consumer-test-user" />);
     });
 
     expect(renderer.root.findAllByProps({ testID: "consumer-repair-screen" })).toHaveLength(0);
@@ -156,7 +156,7 @@ describe("consumer repair durable storage startup UI", () => {
 
     await act(async () => {
       renderer = TestRenderer.create(
-        <ConsumerRepairRequestScreen initialDraftId="consumer_draft_transactional" />,
+        <ConsumerRepairRequestScreen consumerUserId="consumer-test-user" initialDraftId="consumer_draft_transactional" />,
       );
     });
 
@@ -186,7 +186,7 @@ describe("consumer repair durable storage startup UI", () => {
     let renderer!: TestRenderer.ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ConsumerRepairRequestScreen />);
+      renderer = TestRenderer.create(<ConsumerRepairRequestScreen consumerUserId="consumer-test-user" />);
     });
     await act(async () => {
       jest.advanceTimersByTime(3_001);
@@ -218,6 +218,7 @@ describe("consumer repair durable storage startup UI", () => {
     await act(async () => {
       renderer = TestRenderer.create(
         <ConsumerRepairRequestScreen
+          consumerUserId="consumer-test-user"
           initialProblemText="Новая точная асфальтовая работа"
           autoPrepare
         />,
@@ -254,6 +255,7 @@ describe("consumer repair durable storage startup UI", () => {
     await act(async () => {
       renderer = TestRenderer.create(
         <ConsumerRepairRequestScreen
+          consumerUserId="consumer-test-user"
           initialProblemText={prompt}
           launchId="request-estimate:probe-launch"
           launchFingerprint="probe-fingerprint"
@@ -266,6 +268,7 @@ describe("consumer repair durable storage startup UI", () => {
     await act(async () => {
       renderer.update(
         <ConsumerRepairRequestScreen
+          consumerUserId="consumer-test-user"
           initialProblemText={prompt}
           launchId="request-estimate:auto-launch"
           launchFingerprint="auto-fingerprint"

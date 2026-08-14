@@ -1,3 +1,3 @@
-import { queueGlobalEstimateSourceRefresh } from "../globalEstimate";
+import { queueGlobalEstimateSourceRefresh } from "../globalEstimate/externalSources/globalExternalSourceRefreshQueue";
 
 export const queueBuiltInAiSourceRefresh = queueGlobalEstimateSourceRefresh;

@@ -4,7 +4,7 @@ import { recalculateEstimateDraftRevisionBatch } from "../../src/lib/estimate/re
 import {
   buildConsumerRepairExactCatalogLaunchSelectedWork,
   buildConsumerRepairSelectedWorkDraftBundle,
-} from "../../src/features/consumerRepair/requestEstimateScreenActions";
+} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
   applyConsumerRepairDraftRevisionParamBatchPatch,

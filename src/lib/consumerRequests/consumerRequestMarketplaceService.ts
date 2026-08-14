@@ -39,8 +39,19 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   requestDraftId: string;
   userId: string;
   idempotencyKey?: string | null;
+  canonicalArtifact?: {
+    artifactId: string;
+    revisionId: string;
+    releaseId: string;
+    status: "ready";
+    sha256: string | null;
+  } | null;
 }): ConsumerRepairDraftBundle {
-  const validation = validateConsumerRepairRequestForMarketplace(input.requestDraftId, input.userId);
+  const validation = validateConsumerRepairRequestForMarketplace(
+    input.requestDraftId,
+    input.userId,
+    input.canonicalArtifact,
+  );
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const now = new Date().toISOString();
 
@@ -98,12 +109,16 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   if (!marketplaceDemandId) {
     throw new Error("CONSUMER_REPAIR_MARKETPLACE_DEMAND_ID_MISSING");
   }
-  const revisionBound = bindConsumerRepairEstimateRevisionRequest({
-    bundle,
-    request_payload_id: marketplaceDemandId,
-    actor_id: input.userId,
-    created_at: now,
-  });
+  const canonicalRevisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
+  const canonicalReleaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
+  const revisionBound = canonicalRevisionId && canonicalReleaseId
+    ? bundle
+    : bindConsumerRepairEstimateRevisionRequest({
+      bundle,
+      request_payload_id: marketplaceDemandId,
+      actor_id: input.userId,
+      created_at: now,
+    });
   recordEstimateTelemetryEvent({
     event_name: "marketplace_handoff_created",
     route: "marketplace",
@@ -114,6 +129,9 @@ export function sendConsumerRepairRequestToMarketplace(input: {
       marketplace_demand_id: marketplaceDemandId,
       item_count: bundle.items.length,
       idempotency_key_present: Boolean(input.idempotencyKey),
+      canonical_revision_id: canonicalRevisionId || null,
+      canonical_release_id: canonicalReleaseId || null,
+      procurement_artifact_id: input.canonicalArtifact?.artifactId ?? null,
     },
   });
 
@@ -137,6 +155,10 @@ export function sendConsumerRepairRequestToMarketplace(input: {
         payload: {
           marketplaceDemandId: marketplaceLink.marketplaceDemandId,
           idempotencyKey: marketplaceLink.idempotencyKey,
+          canonicalRevisionId: canonicalRevisionId || null,
+          canonicalReleaseId: canonicalReleaseId || null,
+          procurementArtifactId: input.canonicalArtifact?.artifactId ?? null,
+          procurementArtifactSha256: input.canonicalArtifact?.sha256 ?? null,
         },
       }),
     ],

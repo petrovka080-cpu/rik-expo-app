@@ -1,7 +1,7 @@
 import { createSnapshotFromDraftRevision } from "../../features/estimates/createSnapshotFromDraftRevision";
 import { renderPdfFromDraftRevision } from "../../features/pdf/renderPdfFromDraftRevision";
 import { createBuyerHandoffFromDraftRevision } from "../../features/procurement/createBuyerHandoffFromDraftRevision";
-import { buildForemanAiEstimateEntry } from "../foreman";
+import { buildForemanAiEstimateEntry } from "../foreman/buildForemanAiEstimateEntry";
 import { compareEstimateDraftRevisions } from "./compareEstimateDraftRevisions";
 import { createEstimateDraftRevision } from "./createEstimateDraftRevision";
 import type { EstimateLineageSeal, EstimateLineageValidation, EstimateArtifactLineageRef } from "./estimateLineageContract";

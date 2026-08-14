@@ -1,16 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  createConsumerRepairRequestDraft,
-  getConsumerRepairRequest,
-  listConsumerRepairRequestHistory,
-  sendConsumerRepairRequestToMarketplace,
-  validateConsumerRepairRequestForMarketplace,
-} from "../../src/lib/consumerRequests";
+import { __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, createConsumerRepairRequestDraft, getConsumerRepairRequest, listConsumerRepairRequestHistory, sendConsumerRepairRequestToMarketplace } from "../../src/lib/consumerRequests";
+import { validateConsumerRepairRequestForMarketplace } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 
 const PREFIX = "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K";

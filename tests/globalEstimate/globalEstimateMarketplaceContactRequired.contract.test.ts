@@ -1,13 +1,8 @@
 import { buildGlobalEstimateFixture } from "./globalEstimateTestHarness";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
-  createConsumerRepairDraftFromGlobalEstimate,
-  sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
-  validateConsumerRepairRequestForMarketplace,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, sendConsumerRepairRequestToMarketplace, updateConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
+import { validateConsumerRepairRequestForMarketplace } from "../../src/lib/consumerRequests/consumerRequestValidationService";
 
 describe("global estimate marketplace contact contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());

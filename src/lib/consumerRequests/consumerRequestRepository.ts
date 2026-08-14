@@ -809,17 +809,40 @@ export function hasUnhydratedTransactionalConsumerRepairBundles(): boolean {
   );
 }
 
+function isCanonicalBackendOwnedBundle(bundle: ConsumerRepairDraftBundle): boolean {
+  if (bundle.items.length === 0) return false;
+  const revisionIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim(),
+  ));
+  const releaseIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim(),
+  ));
+  return revisionIds.size === 1 && releaseIds.size === 1 &&
+    !revisionIds.has("") && !releaseIds.has("");
+}
+
 export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
   hydrateConsumerRepairRequestStore();
   const parameterCollectionOnly = bundle.items.length === 0 &&
     bundle.estimateDraftRevisionState == null &&
     bundle.estimateRevisionState == null &&
     bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
+  const canonicalBackendOwned = isCanonicalBackendOwnedBundle(bundle);
   // A fail-closed parameter session is a request/session artifact, not an
   // estimate. Creating an empty editable snapshot or immutable compatibility
   // revision here would be a partial estimate mutation before P0 is complete.
   const normalized = normalizeEstimateDraftSessionCompatibilityView(
-    parameterCollectionOnly
+    canonicalBackendOwned
+      ? {
+        ...bundle,
+        editableEstimateSnapshot: undefined,
+        estimateRevisionState: undefined,
+        estimateDraftRevisionState: null,
+        estimateDraftSession: null,
+        canonicalParameterSession: null,
+        pendingRoadScopeSelection: null,
+      }
+      : parameterCollectionOnly
       ? { ...bundle, editableEstimateSnapshot: null }
       : ensureConsumerRepairBundleEstimateRevisionState(
         ensureConsumerRepairBundleEditableEstimateSnapshot(bundle),
@@ -982,6 +1005,22 @@ export function listConsumerRepairBundlesForUser(
       bundle,
       history_entry_id: `consumer_repair_history:${bundle.draft.id}`,
     })));
+}
+
+/**
+ * One-time backend cutover ingress. Call only after transactional hydration has
+ * drained; unlike the UI history query this deliberately has no page ceiling.
+ * The returned values are clones, so migration cannot mutate local history.
+ */
+export function listAllConsumerRepairBundlesForBackendMigration(
+  consumerUserId: string,
+): ConsumerRepairDraftBundle[] {
+  hydrateConsumerRepairRequestStore();
+  return Array.from(store.bundles.values())
+    .filter((bundle) => bundle.draft.consumerUserId === consumerUserId)
+    .filter((bundle) => bundle.draft.status !== "deleted_by_user")
+    .sort((a, b) => a.draft.createdAt.localeCompare(b.draft.createdAt))
+    .map((bundle) => cloneConsumerRepairValue(bundle));
 }
 
 export function countConsumerRepairBundlesForUser(

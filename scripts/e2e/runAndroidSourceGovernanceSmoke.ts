@@ -3,15 +3,8 @@ import path from "node:path";
 
 import { writeAllScreensEnterpriseArtifacts } from "./allScreensEnterpriseRuntimeAcceptance.shared";
 import {
-  __resetConsumerRepairRequestStoreForTests,
-  buildConsumerRepairAiDraftFromGlobalEstimate,
-  buildConsumerRepairCanonicalDraftPayload,
-  createConsumerRepairRequestDraft,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairRequestPdf,
-  selectConsumerRepairRequestItemCatalogCandidate,
-  validateConsumerRepairPayloadSourceGovernance,
-} from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, buildConsumerRepairCanonicalDraftPayload, createConsumerRepairRequestDraft, generateConsumerRepairRequestPdfForDraft, getConsumerRepairRequestPdf, selectConsumerRepairRequestItemCatalogCandidate, validateConsumerRepairPayloadSourceGovernance } from "../../src/lib/consumerRequests";
+import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { calculateGlobalConstructionEstimateSync } from "../../src/lib/ai/globalEstimate/globalEstimateCalculator";
 import { bindEstimateRowsToCatalogItems } from "../../src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems";
 import type { CatalogItemForEstimate } from "../../src/lib/catalog/catalogItemTypes";

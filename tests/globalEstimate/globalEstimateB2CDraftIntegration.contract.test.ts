@@ -1,9 +1,7 @@
 import { buildGlobalEstimateFixture } from "./globalEstimateTestHarness";
-import {
-  assertConsumerRepairGlobalEstimateDraftSafe,
-  createConsumerRepairDraftFromGlobalEstimate,
-  __resetConsumerRepairRequestStoreForTests,
-} from "../../src/lib/consumerRequests";
+import { __resetConsumerRepairRequestStoreForTests } from "../../src/lib/consumerRequests";
+import { assertConsumerRepairGlobalEstimateDraftSafe } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 
 describe("global estimate B2C draft integration contract", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());

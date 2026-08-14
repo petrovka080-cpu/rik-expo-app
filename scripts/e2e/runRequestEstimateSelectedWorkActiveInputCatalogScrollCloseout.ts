@@ -9,13 +9,8 @@ import {
   calculateGlobalConstructionEstimateSync,
   type GlobalSelectedWorkBinding,
 } from "../../src/lib/ai/globalEstimate";
-import {
-  createConsumerRepairDraftFromGlobalEstimate,
-  generateConsumerRepairRequestPdfForDraft,
-  getConsumerRepairPdfStorageObject,
-  __resetConsumerRepairRequestStoreForTests,
-  type ConsumerRepairSelectedWork,
-} from "../../src/lib/consumerRequests";
+import { generateConsumerRepairRequestPdfForDraft, getConsumerRepairPdfStorageObject, __resetConsumerRepairRequestStoreForTests, type ConsumerRepairSelectedWork } from "../../src/lib/consumerRequests";
+import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import {
   buildRequestEstimateDraftFromConsumerBundle,
   buildRequestEstimatePayloadSet,

@@ -242,7 +242,7 @@ export default function AIAssistantScreen({
       setInput("");
       setLoading(true);
       try {
-        const builtInAiMessage = createBuiltInAiAssistantMessage({
+        const builtInAiMessage = await createBuiltInAiAssistantMessage({
           text,
           assistantContext,
           routeContext,

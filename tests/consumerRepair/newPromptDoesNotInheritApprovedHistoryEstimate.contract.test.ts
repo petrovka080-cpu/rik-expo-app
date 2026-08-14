@@ -5,7 +5,7 @@ import {
 import {
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildConsumerRepairSelectedWorkDraftBundle,
-} from "../../src/features/consumerRepair/requestEstimateScreenActions";
+} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
   createApprovedConsumerRepairRequest,
