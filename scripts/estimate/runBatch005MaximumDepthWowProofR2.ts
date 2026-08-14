@@ -38,6 +38,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 }));
 const output = path.resolve(args.output ?? ".release-runtime/batch005-r2-wow-proof");
 const CAPTURED_AT = "2026-08-14T00:00:00.000+06:00";
+const ANDROID_ACCEPTANCE_CONSUMER_USER_ID = "consumer-demo-user";
 
 function ratedVoltageForIdentity(catalogId: string): number {
   const match = catalogId.match(/(?:^|[_:-])(\d+)(?:kv)(?:[_:-]|$)/iu);
@@ -138,7 +139,7 @@ async function main(): Promise<void> {
 
   const createStartedAt = performance.now();
   let bundle = createConsumerRepairRequestDraft({
-    consumerUserId: "consumer-user-local",
+    consumerUserId: ANDROID_ACCEPTANCE_CONSUMER_USER_ID,
     problemText: inventory.localized_name_ru,
     repairType: inventory.work_key,
     city: "Бишкек",
@@ -360,6 +361,7 @@ async function main(): Promise<void> {
   writeDeterministic(output, "ANDROID_ASYNC_STORAGE_SEED.json", stableJson({
     schemaVersion: "Batch005AndroidAsyncStorageSeedR2",
     draftId: bundle.draft.id,
+    consumerUserId: bundle.draft.consumerUserId,
     catalogId: inventory.catalog_id,
     rows: bundle.items.length,
     keyValues: [...memory.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => ({ key, value })),

@@ -11,12 +11,8 @@ import {
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
-import {
-  REGISTERED_CANONICAL_PARAMETER_SCHEMAS,
-  createCanonicalParameterSession,
-  type CanonicalParameterSeed,
-  type CanonicalParameterSession,
-  type CanonicalParameterValue,
+import type {
+  CanonicalParameterSession,
 } from "../../lib/estimate/canonicalParameters";
 import { buildCanonicalParameterCards } from "../../lib/estimate/runtime/buildCanonicalParameterCards";
 import type {
@@ -26,6 +22,7 @@ import type {
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
+import { buildConsumerRepairCanonicalSessionPreview } from "./consumerRepairCanonicalSessionPreview";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
@@ -575,43 +572,9 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
   };
 
   private editableCanonicalParameterSession(): CanonicalParameterSession | null {
-    const session = this.props.canonicalParameterSession ?? null;
-    if (!session) return null;
-    const schema = REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getBySchemaId(session.schemaId) ??
-      REGISTERED_CANONICAL_PARAMETER_SCHEMAS.getByCanonicalWorkKey(session.canonicalWorkKey);
-    if (!schema) return session;
-    const currentById = new Map(session.parameters.map((parameter) => [parameter.parameterId, parameter]));
-    const seeds: CanonicalParameterSeed[] = schema.definitions.flatMap((definition) => {
-      const hasDraftValue = Object.prototype.hasOwnProperty.call(this.state.draftValues, definition.parameterId);
-      const rawValue = hasDraftValue
-        ? this.state.draftValues[definition.parameterId]
-        : currentById.get(definition.parameterId)?.value;
-      if (rawValue == null || String(rawValue).trim() === "") return [];
-      let value: CanonicalParameterValue;
-      if (definition.valueType === "number") {
-        const parsed = Number(String(rawValue).replace(",", "."));
-        if (!Number.isFinite(parsed)) return [];
-        value = parsed;
-      } else if (definition.valueType === "boolean") {
-        value = rawValue === true || String(rawValue) === "true";
-      } else {
-        value = String(rawValue);
-      }
-      return [{
-        parameterId: definition.parameterId,
-        value,
-        source: "USER_EXPLICIT" as const,
-        confidence: 1,
-        sourceText: hasDraftValue ? "pending-user-edit" : currentById.get(definition.parameterId)?.sourceText,
-      }];
-    });
-    return createCanonicalParameterSession({
-      schema,
-      draftId: session.draftId,
-      revisionId: session.revisionId,
-      seeds,
-      createdAt: session.updatedAt,
-      previousSession: session,
+    return buildConsumerRepairCanonicalSessionPreview({
+      session: this.props.canonicalParameterSession ?? null,
+      draftValues: this.state.draftValues,
     });
   }
 
