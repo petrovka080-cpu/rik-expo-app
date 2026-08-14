@@ -1,15 +1,28 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { stableJson, writeDeterministic } from "./postM1ReadmissionR2Core";
+import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import {
+  __resetConsumerRepairRequestStoreForTests,
+  createConsumerRepairRequestDraft,
+  ensureConsumerRepairRequestPdfAvailable,
+} from "../../src/lib/consumerRequests";
 import type { ProfessionalDomainParameterDefinitionV1 } from "../../src/lib/estimate/v4/domainFactory";
 import { compileProfessionalEstimateDomainV1, constructionNormativeRegistryV1 } from "../../src/lib/estimate/v4/domainFactory";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
   ELECTRICAL_DOMAIN_INVENTORY,
+  auditElectricalProductionAgainstIndependentExpectedV2,
   buildElectricalProductionDraftV1,
   electricalCompleteDomainFactory,
   electricalMaximumResourceCandidatesForV2,
 } from "../../src/lib/estimate/v4/domains/electricalComplete";
+import {
+  createDurableEnvelope,
+  parseDurableEnvelopeBundle,
+  serializeRevisionBundle,
+} from "../../src/lib/platform/estimateRevisionDurableStore.contract";
+import { buildProjectExecutionDraftFromRevision } from "../../src/lib/projectExecution/buildProjectExecutionDraftFromRevision";
 
 const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
   const [key, ...value] = argument.replace(/^--/u, "").split("=");
@@ -17,6 +30,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 }));
 const shardCount = Math.max(1, Number(args["shard-count"] ?? 1));
 const shardIndex = Math.max(0, Number(args["shard-index"] ?? 0));
+const allShards = args["all-shards"] === "true";
 if (!Number.isInteger(shardCount) || !Number.isInteger(shardIndex) || shardIndex >= shardCount) throw new Error("BATCH005_RUNTIME_SHARD_ARGUMENT_RED");
 
 function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE"): string | number | boolean {
@@ -59,8 +73,9 @@ function parameterValues(catalogId: string, scope: "MINIMAL_EXPLICIT_SCOPE" | "F
   }));
 }
 
-const selected = ELECTRICAL_DOMAIN_INVENTORY.filter((_, index) => index % shardCount === shardIndex);
+const selected = ELECTRICAL_DOMAIN_INVENTORY.filter((_, index) => allShards || index % shardCount === shardIndex);
 const results = selected.map((inventory) => {
+  __resetConsumerRepairRequestStoreForTests();
   const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
   if (!technology) throw new Error(`BATCH005_RUNTIME_TECHNOLOGY_MISSING:${inventory.catalog_id}`);
   const commonRequest = {
@@ -100,6 +115,10 @@ const results = selected.map((inventory) => {
   });
   if (!production.draft || production.compile_result.status !== "COMPILED" || !production.compile_result.compilation) throw new Error(`BATCH005_RUNTIME_FULL_RED:${inventory.catalog_id}:${production.compile_result.blockers.join("|")}`);
   const expected = electricalMaximumResourceCandidatesForV2(inventory);
+  const independentAdmission = auditElectricalProductionAgainstIndependentExpectedV2(inventory, expected);
+  if (independentAdmission.verdict !== "GREEN_INDEPENDENT_EXPECTED_SCOPE_ADMISSION" || independentAdmission.production_reconciliations.length !== expected.length) {
+    throw new Error(`BATCH005_RUNTIME_INDEPENDENT_EXPECTED_SCOPE_RED:${inventory.catalog_id}:${independentAdmission.issues.map((issue) => issue.code).join("|")}`);
+  }
   const rows = production.compile_result.compilation.compiled_rows;
   const cold = JSON.parse(JSON.stringify(production.draft)) as typeof production.draft;
   if (rows.length !== expected.length || cold.items.length !== rows.length) throw new Error(`BATCH005_RUNTIME_ROW_DENOMINATOR_RED:${inventory.catalog_id}`);
@@ -109,31 +128,105 @@ const results = selected.map((inventory) => {
   if (cold.items.some((item) => !item.sourceParameters?.smartEstimateProjectionV2 || !item.sourceParameters?.rowCode)) throw new Error(`BATCH005_RUNTIME_WOW_PROJECTION_RED:${inventory.catalog_id}`);
   const procurementRows = rows.filter((row) => row.procurement_eligible).length;
   if (cold.items.filter((item) => item.sourceParameters?.includedInProcurement === true).length !== procurementRows) throw new Error(`BATCH005_RUNTIME_PROCUREMENT_RED:${inventory.catalog_id}`);
+
+  let runtimeBundle = createConsumerRepairRequestDraft({
+    consumerUserId: "consumer-user-local",
+    problemText: inventory.localized_name_ru,
+    repairType: inventory.work_key,
+    city: "Бишкек",
+    selectedWork: production.draft.selectedWork,
+    aiDraft: production.draft,
+  });
+  if (runtimeBundle.items.length !== rows.length) throw new Error(`BATCH005_RUNTIME_CREATE_ROW_LOSS:${inventory.catalog_id}`);
+  const webView = buildRequestEstimateViewModel(runtimeBundle);
+  const webRows = webView?.sections.reduce((sum, section) => sum + section.items.length, 0) ?? 0;
+  if (!webView || webRows !== rows.length) throw new Error(`BATCH005_RUNTIME_WEB_ROW_LOSS:${inventory.catalog_id}:${webRows}`);
+  runtimeBundle = ensureConsumerRepairRequestPdfAvailable({
+    requestDraftId: runtimeBundle.draft.id,
+    userId: runtimeBundle.draft.consumerUserId,
+    generatedAt: "2026-08-14T00:00:00.000+06:00",
+  });
+  if (!runtimeBundle.pdfs.some((pdf) => pdf.pdfStatus === "generated")) throw new Error(`BATCH005_RUNTIME_PDF_RED:${inventory.catalog_id}`);
+  const currentRevision = runtimeBundle.estimateDraftRevisionState?.revisions.find((revision) =>
+    revision.revisionId === runtimeBundle.estimateDraftRevisionState?.currentRevisionId
+  );
+  if (!currentRevision) throw new Error(`BATCH005_RUNTIME_REVISION_MISSING:${inventory.catalog_id}`);
+  const procurement = buildProjectExecutionDraftFromRevision(currentRevision, {
+    source: "request_estimate",
+    countryCode: "KG",
+    cityOrRegion: runtimeBundle.draft.city ?? "Бишкек",
+    generatedAt: "2026-08-14T00:00:00.000+06:00",
+    sourceRequestId: runtimeBundle.draft.id,
+  });
+  if (procurement.procurementItems.length !== procurementRows) throw new Error(`BATCH005_RUNTIME_PROCUREMENT_PROJECTION_RED:${inventory.catalog_id}:${procurement.procurementItems.length}:${procurementRows}`);
+  const serialized = serializeRevisionBundle(runtimeBundle);
+  const persistedBytes = Buffer.byteLength(serialized.serializedBundle, "utf8");
+  const envelope = createDurableEnvelope({
+    key: runtimeBundle.draft.id,
+    version: serialized.version,
+    previousVersion: null,
+    checksum: serialized.checksum,
+    serializedBundle: serialized.serializedBundle,
+  });
+  const reopened = parseDurableEnvelopeBundle(envelope, runtimeBundle.draft.id);
+  if (!reopened || reopened.items.length !== rows.length) throw new Error(`BATCH005_RUNTIME_DURABLE_REOPEN_RED:${inventory.catalog_id}`);
+  const historyRevisions = runtimeBundle.estimateRevisionState?.revisions.length ?? 0;
+  const reopenedHistoryRevisions = reopened.estimateRevisionState?.revisions.length ?? 0;
+  if (historyRevisions < 1 || reopenedHistoryRevisions !== historyRevisions) throw new Error(`BATCH005_RUNTIME_HISTORY_REOPEN_RED:${inventory.catalog_id}:${historyRevisions}:${reopenedHistoryRevisions}`);
   return {
     catalogId: inventory.catalog_id,
     rows: rows.length,
     minimalRows: minimal.compilation.compiled_rows.length,
-    durableRows: cold.items.length,
-    pdfRows: cold.items.length,
-    procurementRows,
+    durableRows: reopened.items.length,
+    webRows,
+    pdfRows: runtimeBundle.items.length,
+    pdfGenerated: true,
+    procurementRows: procurement.procurementItems.length,
+    persistedBytes,
+    historyRevisions,
+    reopenedHistoryRevisions,
     informationalTypedChildRows: rows.filter((row) => row.cost_ownership === "informational_output").length,
+    independentlyReconciledRows: independentAdmission.production_reconciliations.length,
     verdict: "GREEN",
   };
 });
 
-const report = {
-  schemaVersion: "Batch005MaximumDepthRuntimeShardR1",
-  shardCount,
-  shardIndex,
-  works: results.length,
-  catalogIds: results.map((result) => result.catalogId),
-  rows: results.reduce((sum, result) => sum + result.rows, 0),
-  results,
-  verdict: "GREEN_RUNTIME_SHARD",
-};
-if (args.output) {
-  const output = path.resolve(args.output);
-  mkdirSync(path.dirname(output), { recursive: true });
-  writeDeterministic(path.dirname(output), path.basename(output), stableJson(report));
+const inventoryIndexByCatalogId = new Map(ELECTRICAL_DOMAIN_INVENTORY.map((inventory, index) => [inventory.catalog_id, index]));
+function reportFor(index: number) {
+  const shardResults = results.filter((result) => inventoryIndexByCatalogId.get(result.catalogId)! % shardCount === index);
+  return {
+    schemaVersion: "Batch005MaximumDepthRuntimeShardR1",
+    shardCount,
+    shardIndex: index,
+    works: shardResults.length,
+    catalogIds: shardResults.map((result) => result.catalogId),
+    rows: shardResults.reduce((sum, result) => sum + result.rows, 0),
+    results: shardResults,
+    verdict: "GREEN_RUNTIME_SHARD",
+  };
 }
-process.stdout.write(stableJson({ shardCount, shardIndex, works: report.works, rows: report.rows, verdict: report.verdict }));
+
+if (allShards) {
+  if (!args["output-dir"]) throw new Error("BATCH005_RUNTIME_ALL_SHARDS_OUTPUT_DIR_MISSING");
+  const outputDir = path.resolve(args["output-dir"]);
+  mkdirSync(outputDir, { recursive: true });
+  const reports = Array.from({ length: shardCount }, (_, index) => reportFor(index));
+  for (const report of reports) {
+    writeDeterministic(outputDir, `runtime-shard-${report.shardIndex}.json`, stableJson(report));
+  }
+  process.stdout.write(stableJson({
+    shardCount,
+    shardsWritten: reports.length,
+    works: reports.reduce((sum, report) => sum + report.works, 0),
+    rows: reports.reduce((sum, report) => sum + report.rows, 0),
+    verdict: reports.every((report) => report.verdict === "GREEN_RUNTIME_SHARD") ? "GREEN_RUNTIME_ALL_SHARDS" : "RED",
+  }));
+} else {
+  const report = reportFor(shardIndex);
+  if (args.output) {
+    const output = path.resolve(args.output);
+    mkdirSync(path.dirname(output), { recursive: true });
+    writeDeterministic(path.dirname(output), path.basename(output), stableJson(report));
+  }
+  process.stdout.write(stableJson({ shardCount, shardIndex, works: report.works, rows: report.rows, verdict: report.verdict }));
+}

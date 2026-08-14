@@ -94,7 +94,8 @@ export type ProfessionalResourceGraphNodeV3 = {
     | "CIVIL"
     | "STRUCTURAL"
     | "FIRE_LIFE_SAFETY"
-    | "ICT_CONTROLS";
+    | "ICT_CONTROLS"
+    | "HVAC_HEATING";
   resource_class: string;
   dependency_ids: readonly string[];
   non_cost_dependencies_only: boolean;

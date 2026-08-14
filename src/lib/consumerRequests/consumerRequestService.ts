@@ -125,6 +125,11 @@ function loadAiEstimateRuntime() {
   return runtimeModule.createAiEstimateRuntime();
 }
 
+function loadEstimateDraftRevisionFactory() {
+  return require("../estimate/createEstimateDraftRevision") as
+    typeof import("../estimate/createEstimateDraftRevision");
+}
+
 function loadConsumerRepairPdfService() {
   return require(
     "./consumerRequestPdfService"
@@ -334,10 +339,30 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
   currency?: string | null;
   countryCode?: string | null;
   createdAt?: string;
+  prebuiltExactDraft?: ConsumerRepairAiDraft | null;
 }): EstimateDraftRevisionState | null {
   try {
-    const runtime = loadAiEstimateRuntime();
-    const { revision } = runtime.createDraft({
+    const exactProfessionalDraft = input.prebuiltExactDraft?.items.length &&
+      input.prebuiltExactDraft.items.every((item) =>
+        item.sourceParameters?.professionalDomainFactoryV1 === true &&
+        item.sourceParameters?.domainId === "electrical_complete"
+      )
+      ? input.prebuiltExactDraft
+      : null;
+    const revision = exactProfessionalDraft
+      ? loadEstimateDraftRevisionFactory().createEstimateDraftRevision({
+          estimateDraftId: input.draftId,
+          rawInput: input.rawInput,
+          selectedTemplateId: input.selectedWork?.selectedWorkKey,
+          selectedTemplateName: input.selectedWork?.selectedWorkTitleRu,
+          selectedWorkKey: input.selectedWork?.selectedWorkKey,
+          city: input.city,
+          currency: input.currency,
+          countryCode: input.countryCode,
+          createdAt: input.createdAt,
+          prebuiltExactDraft: exactProfessionalDraft,
+        })
+      : loadAiEstimateRuntime().createDraft({
       estimateDraftId: input.draftId,
       rawInput: input.rawInput,
       selectedTemplateId: input.selectedWork?.selectedWorkKey,
@@ -347,7 +372,7 @@ function createEstimateDraftRevisionStateForConsumerBundle(input: {
       currency: input.currency,
       countryCode: input.countryCode,
       createdAt: input.createdAt,
-    });
+    }).revision;
     return {
       estimateDraftId: revision.estimateDraftId,
       currentRevisionId: revision.revisionId,
@@ -788,6 +813,7 @@ export function createConsumerRepairRequestDraft(input: {
         currency: items.find((item) => item.currency)?.currency ?? "KGS",
         countryCode: "KG",
         createdAt: draft.createdAt,
+        prebuiltExactDraft: input.aiDraft,
       })
     : null);
   recordCanonicalElectricalCreateTiming("REVISION_STATE_READY");

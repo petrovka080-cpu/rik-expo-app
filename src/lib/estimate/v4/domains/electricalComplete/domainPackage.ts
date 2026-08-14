@@ -75,7 +75,7 @@ function candidateFormulaSpecV2(candidate: ElectricalMaximumResourceCandidateV2)
     output_unit_id: candidate.unit_id,
     calculate: (values) => values.route_length_m,
   };
-  if (["cable_power", "cable_control"].includes(candidate.candidate_id)) return {
+  if (["cable_power", "cable_vvg", "cable_control"].includes(candidate.candidate_id)) return {
     expression: "cable_route_length_m + vertical_rise_m + termination_allowance_m",
     input_parameter_ids: ["cable_route_length_m", "vertical_rise_m", "termination_allowance_m"],
     output_unit_id: candidate.unit_id,
@@ -233,6 +233,7 @@ function typedChildBoundary(candidate: ElectricalMaximumResourceCandidateV2) {
   if (candidate.owner === "STRUCTURAL_TYPED_CHILD") return "STRUCTURAL" as const;
   if (candidate.owner === "FIRE_TYPED_CHILD") return "FIRE_LIFE_SAFETY" as const;
   if (candidate.owner === "CONTROLS_TYPED_CHILD") return "ICT_CONTROLS" as const;
+  if (candidate.owner === "HVAC_TYPED_CHILD") return "HVAC_HEATING" as const;
   return "ELECTRICAL" as const;
 }
 

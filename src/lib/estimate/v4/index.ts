@@ -12,3 +12,4 @@ export * from "./domainFactory";
 export * from "./domains/interiorFinishesWave1";
 export * from "./domains/registeredProfessionalEstimateDomainsV1";
 export * from "./asphalt";
+export * from "./professionalDepth/professionalDepthReferenceContractV2";

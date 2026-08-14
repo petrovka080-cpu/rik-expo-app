@@ -1,5 +1,3 @@
-import type { ConsumerRepairAiDraft, ConsumerRepairItemType } from "../../../../consumerRequests/consumerRequestTypes";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../../buildEstimateFromInlineWorkPrompt";
 import {
   compileProfessionalEstimateDomainV1,
   constructionNormativeRegistryV1,
@@ -12,6 +10,70 @@ import { electricalCompleteDomainFactory } from "./domainPackage";
 import { ELECTRICAL_COMPLETE_DOMAIN_ID, ELECTRICAL_DOMAIN_INVENTORY, type ElectricalDomainInventoryRow } from "./inventory";
 
 export const ELECTRICAL_PRODUCTION_BINDING_VERSION = "electrical-complete-production-binding:v2" as const;
+
+type ElectricalInlineBuildInputV1 = {
+  rawInput: string;
+  selectedTemplateId?: string | null;
+  selectedWorkKey?: string | null;
+  selectedTemplateName?: string | null;
+  city?: string | null;
+  currency?: string | null;
+  countryCode?: string | null;
+  paramOverrides?: Record<string, { value: unknown; source?: string | null }>;
+};
+
+type ElectricalProductionItemTypeV1 = "work" | "material" | "service" | "document" | "other";
+type ElectricalProductionDraftItemV1 = {
+  itemType: ElectricalProductionItemTypeV1;
+  titleRu: string;
+  quantity: number;
+  unit: string;
+  unitLabel: string;
+  unitPrice: number | null;
+  currency: string;
+  source: "reference_price_book";
+  category: string;
+  sourceId: string | null;
+  sourceLabel: string | null;
+  formulaId: string;
+  quantityFormula: string;
+  calculationTrace: string;
+  sourceParameters: Record<string, unknown>;
+  templateId: string;
+  templateVersion: string;
+  normSourceId: string | null;
+  normSourceTitle: string;
+  normVersion: string;
+  normReviewStatus: "applicable";
+  priceStatus: "PRICE_MISSING" | "REFERENCE_PRICE_ESTIMATE";
+  priceSource: "missing" | "reference_price_book";
+  priceSourceId: string | null;
+  priceSourceLabel: string | null;
+  costConfidence: "high";
+  confidence: "high";
+  addedBy: "system";
+  materialKey: string | null;
+  rateKey: string;
+};
+type ElectricalProductionDraftV1 = {
+  titleRu: string;
+  summaryRu: string;
+  repairType: string;
+  selectedWork: {
+    selectedCatalogWorkId: string;
+    selectedWorkKey: string;
+    selectedWorkTitleRu: string;
+    selectedWorkCategoryKey: string;
+    selectedWorkCategoryTitleRu: string;
+    selectedWorkRawInput: string;
+    selectedWorkSource: "user_selected";
+    selectedWorkResolverReGuessed: false;
+  };
+  items: ElectricalProductionDraftItemV1[];
+  missingData: string[];
+  safetyMessageRu: string;
+  dangerousDiyBlocked: false;
+};
 
 export type ElectricalProductionDraftInput = {
   catalog_id: string;
@@ -27,7 +89,7 @@ export type ElectricalProductionDraftInput = {
 export type ElectricalProductionDraftResult = {
   inventory: ElectricalDomainInventoryRow;
   compile_result: ProfessionalDomainCompileResultV1;
-  draft: ConsumerRepairAiDraft | null;
+  draft: ElectricalProductionDraftV1 | null;
 };
 
 export type ElectricalInlineProductionResult = {
@@ -37,7 +99,7 @@ export type ElectricalInlineProductionResult = {
   production: ElectricalProductionDraftResult | null;
 };
 
-function itemType(category: string): ConsumerRepairItemType {
+function itemType(category: string): ElectricalProductionItemTypeV1 {
   if (category === "material") return "material";
   if (category === "labor" || category === "work") return "work";
   if (category === "documentation") return "document";
@@ -67,8 +129,16 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
   if (!technology || !schema) throw new Error(`ELECTRICAL_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
-  const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
-    itemType: itemType(row.category),
+  const items: ElectricalProductionDraftItemV1[] = compilation.compiled_rows.map((row) => {
+    const informationalOutput = row.cost_ownership === "informational_output";
+    const rowParameterSnapshot = Object.fromEntries(
+      Object.keys(row.formula_input_values).map((parameterId) => [
+        parameterId,
+        parameterSnapshot[parameterId],
+      ]),
+    );
+    return {
+      itemType: itemType(row.category),
     titleRu: row.title_ru,
     quantity: row.quantity,
     unit: row.unit_id,
@@ -102,7 +172,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       priceRouteV3: row.price_route_v3,
       priceBasisReference: row.price_basis_reference,
       priceBasisDate: row.price_basis_date,
-      parameterSnapshot,
+      parameterSnapshot: rowParameterSnapshot,
       smartEstimateProjectionV2: {
         progressiveDisclosure: true,
         stage: row.section,
@@ -130,16 +200,19 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     normSourceTitle: row.normative_source_ids.join(", "),
     normVersion: compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
-    priceStatus: row.cost_ownership === "informational_output" ? "PRICE_MISSING" : "USER_ENTERED_PRICE",
-    priceSource: "user",
-    priceSourceId: row.price_source_id,
-    priceSourceLabel: `${row.price_basis_reference} (${row.price_basis_date})`,
+    priceStatus: informationalOutput ? "PRICE_MISSING" : "REFERENCE_PRICE_ESTIMATE",
+    priceSource: informationalOutput ? "missing" : "reference_price_book",
+    priceSourceId: informationalOutput ? null : row.price_source_id,
+    priceSourceLabel: informationalOutput || !row.price_basis_reference
+      ? null
+      : `${row.price_basis_reference} (${row.price_basis_date})`,
     costConfidence: "high",
     confidence: "high",
     addedBy: "system",
     materialKey: row.category === "material" ? row.semantic_owner : null,
     rateKey: row.cost_owner_id,
-  }));
+    };
+  });
   return {
     inventory,
     compile_result: compileResult,
@@ -165,13 +238,13 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
   };
 }
 
-function conditionMatches(condition: ProfessionalDomainParameterSchemaV1["parameters"][number]["required_when"], supplied: NonNullable<BuildEstimateFromInlineWorkPromptInput["paramOverrides"]>): boolean {
+function conditionMatches(condition: ProfessionalDomainParameterSchemaV1["parameters"][number]["required_when"], supplied: NonNullable<ElectricalInlineBuildInputV1["paramOverrides"]>): boolean {
   if (condition.kind === "ALWAYS") return true;
   if (condition.kind === "EQUALS") return supplied[condition.parameter_id]?.value === condition.value;
   return condition.conditions.some((item) => supplied[item.parameter_id]?.value === item.value);
 }
 
-function missingParameterIds(schema: ProfessionalDomainParameterSchemaV1, supplied: NonNullable<BuildEstimateFromInlineWorkPromptInput["paramOverrides"]>): string[] {
+function missingParameterIds(schema: ProfessionalDomainParameterSchemaV1, supplied: NonNullable<ElectricalInlineBuildInputV1["paramOverrides"]>): string[] {
   const full = supplied.estimate_scope_mode?.value === "FULL_APPLICABLE_SCOPE";
   const missing = schema.parameters
     .filter((parameter) => parameter.priority === "P0" || (full && parameter.priority === "P1"))
@@ -188,7 +261,7 @@ function sourceTypeForParameter(parameterId: string): ProfessionalParameterValue
   return "USER_EXPLICIT";
 }
 
-export function buildElectricalFromInlineInputV1(input: BuildEstimateFromInlineWorkPromptInput): ElectricalInlineProductionResult {
+export function buildElectricalFromInlineInputV1(input: ElectricalInlineBuildInputV1): ElectricalInlineProductionResult {
   const identities = [input.selectedWorkKey, input.selectedTemplateId].filter((identity): identity is string => typeof identity === "string" && identity.trim().length > 0).map((identity) => identity.trim());
   const inventory = ELECTRICAL_DOMAIN_INVENTORY.find((candidate) => identities.includes(candidate.catalog_id) || identities.includes(candidate.work_key) || identities.includes(candidate.template_id) || identities.includes(`domain-passport:${candidate.catalog_id}:v1`)) ?? null;
   if (!inventory) return { exact_match: false, inventory: null, missing_parameter_ids: [], production: null };
@@ -245,7 +318,7 @@ export function buildElectricalFromInlineInputV1(input: BuildEstimateFromInlineW
   };
 }
 
-export function isElectricalProductionDraftV1(draft: ConsumerRepairAiDraft | null): boolean {
+export function isElectricalProductionDraftV1(draft: ElectricalProductionDraftV1 | null): boolean {
   return Boolean(draft?.items.length && draft.items.every((item) =>
     item.sourceParameters?.professionalDomainFactoryV1 === true &&
     item.sourceParameters?.domainId === ELECTRICAL_COMPLETE_DOMAIN_ID));

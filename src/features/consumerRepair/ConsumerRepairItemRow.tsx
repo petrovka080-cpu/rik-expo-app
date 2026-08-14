@@ -14,6 +14,7 @@ import {
   type ConsumerRepairQuantityChangeMeta,
   type ConsumerRepairQuantityEditSource,
 } from "./consumerRepairQuantityEditTrace";
+import { buildRequestEstimateProfessionalRowEvidence } from "./requestEstimateViewModel";
 
 type Props = {
   item: ConsumerRepairRequestItem;
@@ -133,11 +134,17 @@ function ConsumerRepairItemRowComponent({
   );
   const itemKindLabel = React.useMemo(() => consumerRepairRequestItemTypeLabel(item), [item]);
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
+  const professionalEvidence = React.useMemo(
+    () => buildRequestEstimateProfessionalRowEvidence(item),
+    [item],
+  );
   const itemQuantityText = formatInputNumber(item.quantity);
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
   const [quantityText, setQuantityText] = React.useState(itemQuantityText);
+  const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
   React.useEffect(() => {
     setQuantityText(itemQuantityText);
+    setProfessionalEvidenceOpen(false);
   }, [item.id, itemQuantityText]);
   const commitQuantityText = React.useCallback((nextValue: string, source: ConsumerRepairQuantityEditSource = "direct_input") => {
     const previousQuantity = item.quantity ?? null;
@@ -261,6 +268,40 @@ function ConsumerRepairItemRowComponent({
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
           </Text>
+        ) : null}
+        {professionalEvidence ? (
+          <View style={styles.traceWrap}>
+            <Pressable
+              accessibilityLabel="\u041e\u0431\u044a\u044f\u0441\u043d\u0435\u043d\u0438\u0435 \u0444\u043e\u0440\u043c\u0443\u043b\u044b, \u043d\u043e\u0440\u043c\u044b \u0438 \u0446\u0435\u043d\u044b"
+              accessibilityRole="button"
+              accessibilityState={{ expanded: professionalEvidenceOpen }}
+              onPress={() => setProfessionalEvidenceOpen((value) => !value)}
+              style={styles.traceButton}
+              testID={`consumer-repair-item-professional-proof-${item.id}`}
+            >
+              <Ionicons
+                name={professionalEvidenceOpen ? "chevron-up" : "chevron-down"}
+                size={14}
+                color="#7C2D12"
+              />
+              <Text style={styles.traceButtonText}>
+                {"\u041f\u043e\u0447\u0435\u043c\u0443 \u044d\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0430 \u0432 \u0441\u043c\u0435\u0442\u0435"}
+              </Text>
+            </Pressable>
+            {professionalEvidenceOpen ? (
+              <View
+                style={styles.traceBox}
+                testID={`consumer-repair-item-professional-proof-detail-${item.id}`}
+              >
+                <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text>
+                {professionalEvidence.parameterLabel ? (
+                  <Text style={styles.traceLine}>{professionalEvidence.parameterLabel}</Text>
+                ) : null}
+                <Text style={styles.traceLine}>{professionalEvidence.normativeLabel}</Text>
+                <Text style={styles.traceLine}>{professionalEvidence.priceLabel}</Text>
+              </View>
+            ) : null}
+          </View>
         ) : null}
         {showPhotoButton && item.itemType === "material" ? (
           <Pressable

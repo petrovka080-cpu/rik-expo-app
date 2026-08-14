@@ -51,6 +51,7 @@ export type RequestEstimateSectionId =
   | "equipment"
   | "logistics"
   | "other"
+  | `professional_${string}`
   | AsphaltProfessionalSectionIdV4
   | `capital_${CapitalRenovationGroupId}`;
 
@@ -123,6 +124,13 @@ export type RequestEstimateViewModel = {
   revisionApprovedLabel?: string | null;
 };
 
+export type RequestEstimateProfessionalRowEvidence = {
+  formulaLabel: string;
+  parameterLabel: string | null;
+  normativeLabel: string;
+  priceLabel: string;
+};
+
 const PROFESSIONAL_PREVIEW_ROW_LIMIT = 6;
 
 const RAW_PUBLIC_TEXT_RE =
@@ -154,6 +162,76 @@ export function sanitizeRequestEstimatePublicText(value: string | null | undefin
   return safe || fallback;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value != null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function professionalParameterTitle(parameterId: string): string {
+  const exact: Readonly<Record<string, string>> = {
+    work_included: "\u0432\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+    estimate_scope_mode: "\u0433\u0440\u0430\u043d\u0438\u0446\u044b \u0441\u043c\u0435\u0442\u044b",
+    rated_voltage_v: "\u043d\u043e\u043c\u0438\u043d\u0430\u043b\u044c\u043d\u043e\u0435 \u043d\u0430\u043f\u0440\u044f\u0436\u0435\u043d\u0438\u0435, \u0412",
+    phase_count: "\u0447\u0438\u0441\u043b\u043e \u0444\u0430\u0437",
+    earthing_system: "\u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0437\u0430\u0437\u0435\u043c\u043b\u0435\u043d\u0438\u044f",
+    installation_environment: "\u0443\u0441\u043b\u043e\u0432\u0438\u044f \u043c\u043e\u043d\u0442\u0430\u0436\u0430",
+    product_specification_id: "\u0441\u043f\u0435\u0446\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u044f \u0438\u0437\u0434\u0435\u043b\u0438\u044f",
+  };
+  if (exact[parameterId]) return exact[parameterId];
+  return parameterId
+    .replace(/_m2\b/gu, ", \u043c\u00b2")
+    .replace(/_m3\b/gu, ", \u043c\u00b3")
+    .replace(/_mm\b/gu, ", \u043c\u043c")
+    .replace(/_kw\b/gu, ", \u043a\u0412\u0442")
+    .replace(/_v\b/gu, ", \u0412")
+    .replace(/_m\b/gu, ", \u043c")
+    .replace(/_count\b/gu, " \u2014 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e")
+    .replace(/_/gu, " ");
+}
+
+export function buildRequestEstimateProfessionalRowEvidence(
+  item: ConsumerRepairRequestItem,
+): RequestEstimateProfessionalRowEvidence | null {
+  const projection = asRecord(item.sourceParameters?.smartEstimateProjectionV2);
+  if (!projection) return null;
+
+  const formula = sanitizeRequestEstimatePublicText(item.quantityFormula, "\u0440\u0430\u0441\u0447\u0451\u0442 \u043f\u043e \u043f\u0440\u043e\u0435\u043a\u0442\u043d\u044b\u043c \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430\u043c");
+  const quantity = item.quantity == null
+    ? "\u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0438\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0434\u0430\u043d\u043d\u044b\u0445"
+    : formatQuantityValue(item.quantity, item.unitLabel || item.unit);
+  const dependencies = Array.isArray(projection.parameterDependencies)
+    ? projection.parameterDependencies.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    : [];
+  const parameterLabel = dependencies.length > 0
+    ? `${"\u0412\u043b\u0438\u044f\u044e\u0442 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b"}: ${dependencies.map(professionalParameterTitle).join(", ")}.`
+    : null;
+
+  const normativeTrace = Array.isArray(item.sourceParameters?.normativeRowTraceV3)
+    ? item.sourceParameters.normativeRowTraceV3.map(asRecord).find((value): value is Record<string, unknown> => value != null)
+    : null;
+  const documentCode = typeof normativeTrace?.document_code === "string" ? normativeTrace.document_code : "";
+  const exactLocator = typeof normativeTrace?.exact_locator === "string" ? normativeTrace.exact_locator : "";
+  const normSource = sanitizeRequestEstimatePublicText(item.normSourceTitle || documentCode, "\u043f\u0440\u0438\u043c\u0435\u043d\u0438\u043c\u044b\u0439 \u043d\u043e\u0440\u043c\u0430\u0442\u0438\u0432\u043d\u044b\u0439 \u043c\u0430\u0440\u0448\u0440\u0443\u0442");
+  const locator = sanitizeRequestEstimatePublicText(exactLocator);
+
+  const priceRoute = asRecord(item.sourceParameters?.priceRouteV3);
+  const informational = priceRoute?.kind === "NOT_APPLICABLE_INFORMATIONAL_OUTPUT";
+  const sourceLabel = sanitizeRequestEstimatePublicText(item.priceSourceLabel || item.sourceLabel);
+  const priceLabel = informational
+    ? "\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043d\u0435 \u0434\u0443\u0431\u043b\u0438\u0440\u0443\u0435\u0442\u0441\u044f: \u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u0435\u0440\u0435\u0434\u0430\u043d\u0430 \u043f\u0440\u043e\u0444\u0438\u043b\u044c\u043d\u043e\u043c\u0443 \u0432\u043b\u0430\u0434\u0435\u043b\u044c\u0446\u0443."
+    : item.unitPrice == null
+      ? "\u0426\u0435\u043d\u0430 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0433\u043e \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430."
+      : `${"\u0426\u0435\u043d\u0430 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443"}: ${formatEstimateMoney(item.unitPrice, item.currency)}${sourceLabel ? `. ${"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a"}: ${sourceLabel}` : ""}.`;
+
+  return {
+    formulaLabel: `${"\u0420\u0430\u0441\u0447\u0451\u0442 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430"}: ${formula}. ${"\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442"}: ${quantity}.`,
+    parameterLabel,
+    normativeLabel: `${"\u041d\u043e\u0440\u043c\u0430"}: ${normSource}${locator ? `; ${"\u0442\u043e\u0447\u043d\u0430\u044f \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0430"}: ${locator}` : ""}.`,
+    priceLabel,
+  };
+}
+
 function publicRequestEstimateTitle(value: string | null | undefined): string {
   const normalized = sanitizeRequestEstimatePublicText(value, "\u0421\u043c\u0435\u0442\u0430");
   const cleaned = normalized
@@ -171,6 +249,11 @@ function capitalRenovationGroupId(item: ConsumerRepairRequestItem): CapitalRenov
 }
 
 function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionViewModel["id"] {
+  const smartProjection = item.sourceParameters?.smartEstimateProjectionV2;
+  if (smartProjection && typeof smartProjection === "object") {
+    const stage = (smartProjection as { stage?: unknown }).stage;
+    if (typeof stage === "string" && stage.trim()) return `professional_${encodeURIComponent(stage.trim())}`;
+  }
   const capitalGroup = capitalRenovationGroupId(item);
   if (capitalGroup) return `capital_${capitalGroup}`;
   const asphaltCategory = asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters);
@@ -183,6 +266,7 @@ function itemSection(item: ConsumerRepairRequestItem): RequestEstimateSectionVie
 }
 
 function sectionTitle(id: RequestEstimateSectionViewModel["id"]): string {
+  if (id.startsWith("professional_")) return decodeURIComponent(id.replace(/^professional_/u, ""));
   if (id.startsWith("capital_")) {
     const groupId = id.replace(/^capital_/, "") as CapitalRenovationGroupId;
     return CAPITAL_RENOVATION_GROUP_TITLES[groupId] ?? "\u0420\u0430\u0437\u0434\u0435\u043b \u0441\u043c\u0435\u0442\u044b";
@@ -796,7 +880,11 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   const hasAsphaltProfessionalSections = bundle.items.some((item) =>
     asphaltProfessionalCategoryFromSourceParametersV4(item.sourceParameters) !== null
   );
-  const sectionIds: RequestEstimateSectionViewModel["id"][] = hasCapitalRenovationCalculator
+  const hasSmartEstimateV2 = bundle.items.some((item) => item.sourceParameters?.smartEstimateProjectionV2 != null);
+  const smartStageIds = [...new Set(bundle.items.map(itemSection).filter((id) => id.startsWith("professional_")))];
+  const sectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
+    ? smartStageIds
+    : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : hasAsphaltProfessionalSections
       ? [...ASPHALT_PROFESSIONAL_SECTION_ORDER_V4]

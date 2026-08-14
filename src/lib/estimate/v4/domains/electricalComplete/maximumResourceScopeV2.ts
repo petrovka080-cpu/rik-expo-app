@@ -55,6 +55,24 @@ const KG_SAFE = "KG_ELECTRICAL_SAFETY_2023";
 const KG_ACCEPT = "KG_ELECTRICAL_ACCEPTANCE_2023";
 const EAEU_LV = "EAEU_TR_TS_004_2011";
 
+const PRODUCTION_NORMATIVE_SOURCE_OVERRIDES_V2: Readonly<Record<string, string>> = Object.freeze({
+  core_product_schedule_review: EAEU_LV,
+  core_existing_network_identification: KG_SAFE,
+  tool_insulated_hand: KG_SAFE,
+  measure_voltage_detector: KG_SAFE,
+  panel_calc_fault_current: KG_ACCEPT,
+  panel_calc_selectivity: KG_ACCEPT,
+  op_replace_isolate: KG_SAFE,
+  op_replace_test: KG_ACCEPT,
+  ohl_test_clearance: KG_ACCEPT,
+  substation_transformer: EAEU_LV,
+  lighting_driver: EAEU_LV,
+  device_back_box: EAEU_LV,
+  ups_rectifier: EAEU_LV,
+  ups_inverter: EAEU_LV,
+  ups_static_bypass: EAEU_LV,
+});
+
 function r(seed: Seed): ElectricalMaximumResourceCandidateV2 {
   return {
     minimal: false,
@@ -210,7 +228,7 @@ const CORE_FULL = Object.freeze([
 ]);
 
 const CORE_COMPACT = Object.freeze([
-  ...CORE_DESIGN.slice(0, 3), ...CORE_SURVEY.slice(0, 5), ...CORE_TOOLS.slice(0, 7),
+  ...CORE_DESIGN.slice(0, 3), ...CORE_SURVEY.slice(0, 5), ...CORE_TOOLS.slice(0, 7), CORE_TOOLS[8],
   ...CORE_LOGISTICS, ...CORE_HSE.slice(0, 6), ...CORE_QA.slice(0, 7),
   ...CORE_WASTE.slice(0, 3), ...CORE_DOCUMENTS.slice(0, 9),
 ]);
@@ -673,12 +691,10 @@ const UPS_STORAGE = Object.freeze([
     ["warning_label", "Предупреждающая маркировка батарейной системы"],
   ]),
   ...CABLE,
-  ...rows("ups_interface", "Typed-child interfaces", "subcontract_service", "service", "TYPED_CHILD_INTERFACES", [
-    ["ventilation", "Передача HVAC-владельцу тепловыделений и требований вентиляции"],
-    ["fire", "Передача Fire-владельцу характеристик батарейной опасности"],
-    ["floor", "Передача Structural-владельцу точечных и распределённых нагрузок"],
-    ["controls", "Передача Controls-владельцу точек мониторинга"],
-  ], { owner: "CONTROLS_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости смежной системы." }),
+  r({ candidate_id: "ups_interface_ventilation", title_ru: "Передача HVAC-владельцу тепловыделений и требований вентиляции", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "HVAC_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости HVAC." }),
+  r({ candidate_id: "ups_interface_fire", title_ru: "Передача Fire-владельцу характеристик батарейной опасности", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "FIRE_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Fire." }),
+  r({ candidate_id: "ups_interface_floor", title_ru: "Передача Structural-владельцу точечных и распределённых нагрузок", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "STRUCTURAL_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Structural." }),
+  r({ candidate_id: "ups_interface_controls", title_ru: "Передача Controls-владельцу точек мониторинга", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "CONTROLS_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Controls." }),
   ...rows("ups_engineering", "Расчёты резервного питания", "subcontract_service", "service", "SPECIAL_SERVICES_COORDINATION", [
     ["critical_load", "Расчёт критической нагрузки"], ["demand", "Расчёт расчётной мощности UPS"],
     ["redundancy", "Проверка требуемой резервируемости"], ["autonomy", "Расчёт требуемой автономии"],
@@ -749,13 +765,11 @@ const SUBSTATION = Object.freeze([
     ["aux_transformer", "Трансформатор собственных нужд"], ["emergency_lighting", "Аварийное освещение помещения РУ"],
     ["space_heater", "Антиконденсатный обогрев ячейки"], ["socket_service", "Сервисная розетка обслуживания"],
   ]),
-  ...rows("substation_interface", "Typed-child interfaces", "subcontract_service", "service", "TYPED_CHILD_INTERFACES", [
-    ["foundation", "Передача Structural-владельцу нагрузок и анкерного плана"],
-    ["oil_containment", "Передача Civil-владельцу объёма маслоприёмного устройства"],
-    ["ventilation", "Передача HVAC-владельцу тепловыделений и воздухообмена"],
-    ["fire", "Передача Fire-владельцу сценариев и пожарной нагрузки"],
-    ["controls", "Передача Controls-владельцу диспетчерских точек"],
-  ], { owner: "STRUCTURAL_TYPED_CHILD", applicability: "Информационная interface-строка без повторной стоимости смежного владельца." }),
+  r({ candidate_id: "substation_interface_foundation", title_ru: "Передача Structural-владельцу нагрузок и анкерного плана", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "STRUCTURAL_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Structural." }),
+  r({ candidate_id: "substation_interface_oil_containment", title_ru: "Передача Civil-владельцу объёма маслоприёмного устройства", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "CIVIL_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Civil." }),
+  r({ candidate_id: "substation_interface_ventilation", title_ru: "Передача HVAC-владельцу тепловыделений и воздухообмена", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "HVAC_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости HVAC." }),
+  r({ candidate_id: "substation_interface_fire", title_ru: "Передача Fire-владельцу сценариев и пожарной нагрузки", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "FIRE_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Fire." }),
+  r({ candidate_id: "substation_interface_controls", title_ru: "Передача Controls-владельцу диспетчерских точек", section_ru: "Typed-child interfaces", category: "subcontract_service", unit_id: "service", completeness_slot_v2: "TYPED_CHILD_INTERFACES", owner: "CONTROLS_TYPED_CHILD", applicability: "Информационный interface без повторной стоимости Controls." }),
   ...rows("substation_work", "Монтаж подстанции", "labor", "man_hour", "INSTALL_REPAIR_OPERATIONS", [
     ["delivery_acceptance", "Приёмка тяжёлого оборудования по транспортным индикаторам"], ["unpack", "Контролируемая распаковка оборудования"],
     ["rigging_plan", "Реализация утверждённого плана такелажа"], ["transformer_position", "Позиционирование силового трансформатора"],
@@ -888,7 +902,8 @@ function familyRows(family: string): readonly ElectricalMaximumResourceCandidate
   if (DEVICE_FAMILIES.has(family)) return SMALL_DEVICE;
   if (LIGHTING_FAMILIES.has(family)) return LIGHTING;
   if (PANEL_FAMILIES.has(family)) return PANEL;
-  if (family === "grounding_system" || family === "lightning_protection") return GROUNDING;
+  if (family === "grounding_system") return GROUNDING.filter((item) => !item.candidate_id.startsWith("lightning_"));
+  if (family === "lightning_protection") return GROUNDING;
   if (EXTERNAL_FAMILIES.has(family)) return EXTERNAL_NETWORK;
   if (POLE_FAMILIES.has(family)) return OVERHEAD_LINE;
   if (family === "relay_protection_automation") return RZA;
@@ -904,7 +919,7 @@ function baseOperationFamilyRows(row: ElectricalDomainInventoryRow): readonly El
   if (row.operation_class === "MARK") return family.filter((item) => ["MARKING_WARNINGS", "RECORDS_DRAWINGS_PROTOCOLS", "INTERNAL_WIRING_TERMINALS"].includes(item.completeness_slot_v2)).slice(0, 14);
   if (row.operation_class === "TEST") return family.filter((item) => item.category === "testing" || item.completeness_slot_v2 === "MEASUREMENT_CALIBRATION" || item.completeness_slot_v2 === "PROTECTION_SELECTIVITY");
   if (row.operation_class === "COMMISSION") return family.filter((item) => item.category === "testing" || item.category === "documentation" || item.completeness_slot_v2 === "PROTECTION_SELECTIVITY");
-  if (row.operation_class === "CONNECT") return family.filter((item) => ["TERMINATIONS_JOINTS", "GLANDS_SEALS_PENETRATIONS", "INTERNAL_WIRING_TERMINALS", "EARTHING_BONDING", "INSTALL_REPAIR_OPERATIONS", "ELECTRICAL_TESTS"].includes(item.completeness_slot_v2));
+  if (row.operation_class === "CONNECT") return family.filter((item) => item.candidate_id === "lighting_safety_wire" || ["TERMINATIONS_JOINTS", "GLANDS_SEALS_PENETRATIONS", "INTERNAL_WIRING_TERMINALS", "EARTHING_BONDING", "INSTALL_REPAIR_OPERATIONS", "ELECTRICAL_TESTS"].includes(item.completeness_slot_v2));
   if (row.operation_class === "LAY") return family.filter((item) => ["PRIMARY_EQUIPMENT", "CABLES_CONDUCTORS", "CONTAINMENT", "SUPPORTS_EMBEDMENTS", "FASTENERS", "INSTALL_REPAIR_OPERATIONS", "RIGGING_MACHINERY", "MARKING_WARNINGS"].includes(item.completeness_slot_v2));
   return family;
 }
@@ -913,6 +928,44 @@ function deduplicate(values: readonly ElectricalMaximumResourceCandidateV2[]): E
   const result = new Map<string, ElectricalMaximumResourceCandidateV2>();
   for (const value of values) if (!result.has(value.candidate_id)) result.set(value.candidate_id, value);
   return [...result.values()];
+}
+
+function identitySpecificCandidateV2(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximumResourceCandidateV2): ElectricalMaximumResourceCandidateV2 {
+  const operationIdentityCandidate: Readonly<Record<string, string>> = Object.freeze({
+    PREPARE: "op_prepare_document",
+    INSTALL: "op_install_accept",
+    LAY: "op_lay_route",
+    CONNECT: "op_connect_identify",
+    MARK: "op_mark_schedule",
+    TEST: "op_test_program",
+    COMMISSION: "op_commission_program",
+    REPLACE: "op_replace_diagnose",
+  });
+  if (candidate.candidate_id === operationIdentityCandidate[row.operation_class]) {
+    const familyIdentity = row.electrical_family.replace(/[^a-z0-9]+/giu, "_").replace(/^_+|_+$/gu, "").toLocaleLowerCase("en-US");
+    return {
+      ...candidate,
+      candidate_id: `${candidate.candidate_id}_${familyIdentity}`,
+      title_ru: `${candidate.title_ru} — exact ${row.electrical_family}`,
+      applicability: `${candidate.applicability} Exact operation object: ${row.electrical_family}.`,
+    };
+  }
+  const replacements: Readonly<Record<string, Readonly<Record<string, string>>>> = Object.freeze({
+    BREAKER: { protection_device: "protection_breaker_device" },
+    RCD: { protection_device: "protection_rcd_device" },
+    SOCKET: { device_mechanism: "device_socket_mechanism" },
+    SWITCH: { device_mechanism: "device_switch_mechanism" },
+    LED_STRIP: { lighting_luminaire: "lighting_led_strip_system" },
+    VVG_CABLE: { cable_power: "cable_vvg" },
+  });
+  const candidateId = replacements[row.electrical_family]?.[candidate.candidate_id];
+  if (!candidateId) return candidate;
+  return {
+    ...candidate,
+    candidate_id: candidateId,
+    title_ru: `${candidate.title_ru} — exact ${row.electrical_family}`,
+    applicability: `${candidate.applicability} Exact physical identity: ${row.electrical_family}.`,
+  };
 }
 
 export function electricalComplexityClassV2(row: ElectricalDomainInventoryRow): ElectricalComplexityClassV2 {
@@ -935,7 +988,13 @@ export function electricalMaximumResourceCandidatesForV2(row: ElectricalDomainIn
   const family = expanded ? familyRows(row.electrical_family) : baseOperationFamilyRows(row);
   const operation = expanded ? [] : (OPERATION_ROWS[row.operation_class] ?? []);
   const core = expanded || row.operation_class === "REPLACE" ? CORE_FULL : CORE_COMPACT;
-  return Object.freeze(deduplicate([...core, ...operation, ...family]));
+  return Object.freeze(deduplicate([...core, ...operation, ...family]).map((rawCandidate) => {
+    const candidate = identitySpecificCandidateV2(row, rawCandidate);
+    return {
+      ...candidate,
+      normative_source_id: PRODUCTION_NORMATIVE_SOURCE_OVERRIDES_V2[candidate.candidate_id] ?? candidate.normative_source_id,
+    };
+  }));
 }
 
 export type ElectricalCandidateDispositionV2 =

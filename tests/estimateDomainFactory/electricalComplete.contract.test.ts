@@ -123,7 +123,9 @@ describe("Full Electrical professional domain", () => {
         expect(result.compilation?.hidden_quantity_defaults).toBe(0);
         expect(rows.every((row) => row.quantity > 0 && (row.cost_ownership === "informational_output" || (row.unit_price ?? 0) > 0))).toBe(true);
         expect(rows.every((row) => row.formula_expression.length > 0 && row.normative_trace_v3.length === 1)).toBe(true);
-        expect(rows.every((row) => row.price_route_v3?.kind === "RUNTIME_VALIDATED_INPUT")).toBe(true);
+        expect(rows.every((row) => row.cost_ownership === "informational_output"
+          ? row.price_route_v3?.kind === "NOT_APPLICABLE_INFORMATIONAL_OUTPUT"
+          : row.price_route_v3?.kind === "RUNTIME_VALIDATED_INPUT")).toBe(true);
         expect(rows.every((row) => row.resource_graph_node_v3?.graph_version === "ProfessionalResourceGraphV3")).toBe(true);
         expect(new Set(rows.map((row) => row.semantic_owner)).size).toBe(rows.length);
         if (scope === "FULL_APPLICABLE_SCOPE") {
@@ -194,7 +196,10 @@ describe("Full Electrical professional domain", () => {
       const compiledRows = production.compile_result.compilation?.compiled_rows ?? [];
       expect(cold.items).toHaveLength(compiledRows.length);
       expect(cold.items.map((item) => item.sourceParameters?.rowCode)).toEqual(compiledRows.map((row) => row.row_id));
-      expect(cold.items.every((item) => item.formulaId && item.normSourceId && ["USER_ENTERED_PRICE", "PRICE_MISSING"].includes(item.priceStatus ?? ""))).toBe(true);
+      expect(cold.items.every((item) => item.formulaId && item.normSourceId && ["REFERENCE_PRICE_ESTIMATE", "PRICE_MISSING"].includes(item.priceStatus ?? ""))).toBe(true);
+      expect(cold.items.every((item) => item.priceStatus === "PRICE_MISSING"
+        ? item.priceSource === "missing" && item.priceSourceId == null
+        : item.priceSource === "reference_price_book" && Boolean(item.priceSourceId))).toBe(true);
       const pdfProjection = cold.items.map((item) => [item.titleRu, item.quantity, item.unit, item.unitPrice]);
       expect(pdfProjection).toHaveLength(cold.items.length);
       const procurementProjection = cold.items.filter((item) => item.sourceParameters?.includedInProcurement === true);
