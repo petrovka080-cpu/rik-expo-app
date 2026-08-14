@@ -7,6 +7,7 @@ import {
 import type { ProfessionalDomainParameterDefinitionV1 } from "../../domainFactory";
 import { electricalCompleteDomainFactory } from "./domainPackage";
 import { ELECTRICAL_COMPLETE_RECORD_COUNT, ELECTRICAL_DOMAIN_INVENTORY } from "./inventory";
+import { electricalParameterNormativeSourceV2 } from "./parameterProfileV2";
 
 function valueType(parameter: ProfessionalDomainParameterDefinitionV1): CanonicalParameterValueType {
   if (parameter.input_type === "number") return "number";
@@ -39,7 +40,7 @@ function definition(parameter: ProfessionalDomainParameterDefinitionV1, index: n
       : (parameter.choices ?? []).map((choice) => ({ value: choice.value, label: choice.label_ru })),
     affectsRows: [...parameter.formula_consumers],
     affectsFormula: [...parameter.formula_consumers],
-    normativeSource: null,
+    normativeSource: electricalParameterNormativeSourceV2(parameter.parameter_id),
     displayOrder: index + 1,
   };
 }

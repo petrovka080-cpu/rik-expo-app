@@ -11,7 +11,7 @@ import type { ProfessionalEstimateScopeModeV4, ProfessionalParameterValueV4 } fr
 import { electricalCompleteDomainFactory } from "./domainPackage";
 import { ELECTRICAL_COMPLETE_DOMAIN_ID, ELECTRICAL_DOMAIN_INVENTORY, type ElectricalDomainInventoryRow } from "./inventory";
 
-export const ELECTRICAL_PRODUCTION_BINDING_VERSION = "electrical-complete-production-binding:v1" as const;
+export const ELECTRICAL_PRODUCTION_BINDING_VERSION = "electrical-complete-production-binding:v2" as const;
 
 export type ElectricalProductionDraftInput = {
   catalog_id: string;
@@ -94,15 +94,27 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       electricalFamily: inventory.electrical_family,
       scopeCapability: inventory.scope_capability,
       scopeMode: input.scope_mode,
-      individualElectricalEstimateResourcePassportV1: `${inventory.canonical_technology_id}:individual-electrical-estimate-resource-passport:v1`,
-      normBoundElectricalParameterSchemaV1: schema.schema_id,
-      formulaGraphV1: { formulaId: row.formula_id, expression: row.formula_expression, inputValues: row.formula_input_values, outputUnit: row.unit_id },
+      individualElectricalEstimateResourcePassportV2: `${inventory.canonical_technology_id}:individual-electrical-estimate-resource-passport:v2`,
+      normBoundElectricalParameterSchemaV2: schema.schema_id,
+      formulaGraphV2: { formulaId: row.formula_id, expression: row.formula_expression, inputValues: row.formula_input_values, outputUnit: row.unit_id },
       resourceGraphV3: row.resource_graph_node_v3,
       normativeRowTraceV3: row.normative_trace_v3,
       priceRouteV3: row.price_route_v3,
       priceBasisReference: row.price_basis_reference,
       priceBasisDate: row.price_basis_date,
       parameterSnapshot,
+      smartEstimateProjectionV2: {
+        progressiveDisclosure: true,
+        stage: row.section,
+        category: row.category,
+        initiallyCollapsed: compilation.compiled_rows.length > 90,
+        rowReachable: true,
+        formulaExplanation: row.calculation_trace,
+        normativeExplanation: row.normative_trace_v3,
+        priceExplanation: row.price_route_v3,
+        parameterDependencies: Object.keys(row.formula_input_values),
+        parameterToCostDelta: row.cost_ownership === "informational_output" ? "NOT_APPLICABLE_TYPED_CHILD" : "quantity_delta * verified_unit_price",
+      },
       projectAssemblyId: compilation.project_assembly_id,
       childRevisionId: row.child_revision_id,
       rowCode: row.row_id,
@@ -118,7 +130,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     normSourceTitle: row.normative_source_ids.join(", "),
     normVersion: compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
-    priceStatus: "USER_ENTERED_PRICE",
+    priceStatus: row.cost_ownership === "informational_output" ? "PRICE_MISSING" : "USER_ENTERED_PRICE",
     priceSource: "user",
     priceSourceId: row.price_source_id,
     priceSourceLabel: `${row.price_basis_reference} (${row.price_basis_date})`,

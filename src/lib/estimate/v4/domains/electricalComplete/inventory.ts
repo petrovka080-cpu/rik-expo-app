@@ -3,7 +3,7 @@ import type { ProfessionalCatalogBindingV1 } from "../../domainFactory";
 import { buildGlobalCatalogInventoryV1, type GlobalCatalogInventoryRowV1 } from "../../domainFactory/globalCatalogInventoryV1";
 
 export const ELECTRICAL_COMPLETE_DOMAIN_ID = "electrical_complete" as const;
-export const ELECTRICAL_COMPLETE_DOMAIN_VERSION = "1.0.0" as const;
+export const ELECTRICAL_COMPLETE_DOMAIN_VERSION = "2.0.0" as const;
 export const ELECTRICAL_COMPLETE_RECORD_COUNT = 605 as const;
 export const ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT = 605 as const;
 export const ELECTRICAL_COMPLETE_ALIAS_COUNT = 0 as const;
@@ -155,4 +155,3 @@ if (ELECTRICAL_REVIEWED_EXCLUSIONS.length !== ELECTRICAL_REVIEWED_EXCLUSION_COUN
 
 export const ELECTRICAL_DOMAIN_INVENTORY_HASH = estimateDeterministicHash(ELECTRICAL_DOMAIN_INVENTORY);
 export const ELECTRICAL_REVIEWED_EXCLUSIONS_HASH = estimateDeterministicHash(ELECTRICAL_REVIEWED_EXCLUSIONS);
-

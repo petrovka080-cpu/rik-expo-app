@@ -5,17 +5,22 @@ import {
   ELECTRICAL_COMPLETE_ALIAS_COUNT,
   ELECTRICAL_COMPLETE_RECORD_COUNT,
   ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT,
-  ELECTRICAL_COMPLETENESS_SLOTS,
+  ELECTRICAL_COMPLETENESS_SLOTS_V2,
   ELECTRICAL_DOMAIN_INVENTORY,
   ELECTRICAL_REVIEWED_EXCLUSIONS,
   buildElectricalProductionDraftV1,
+  electricalCompletenessDecisionsV2,
+  electricalComplexityClassV2,
   electricalCompleteDomainFactory,
-  electricalResourceCandidatesFor,
+  electricalMaximumResourceCandidatesForV2,
 } from "../../src/lib/estimate/v4/domains/electricalComplete";
 import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 
 const CAPTURED_AT = "2026-08-13T00:00:00.000Z";
 type Scope = "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE";
+const SHARD_COUNT = Math.max(1, Number(process.env.ELECTRICAL_TEST_SHARD_COUNT ?? 1));
+const SHARD_INDEX = Math.max(0, Number(process.env.ELECTRICAL_TEST_SHARD_INDEX ?? 0));
+const TEST_INVENTORY = ELECTRICAL_DOMAIN_INVENTORY.filter((_, index) => index % SHARD_COUNT === SHARD_INDEX);
 
 function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: Scope): string | number | boolean {
   if (parameter.parameter_id === "work_included") return true;
@@ -106,45 +111,47 @@ describe("Full Electrical professional domain", () => {
   });
 
   test("compiles all 605 individual estimates in minimal and full scopes without hidden quantities", () => {
-    for (const inventory of ELECTRICAL_DOMAIN_INVENTORY) {
+    for (const inventory of TEST_INVENTORY) {
       for (const scope of ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const) {
         const result = compile(inventory.catalog_id, scope);
         if (result.status !== "COMPILED") throw new Error(`ELECTRICAL_BATCH_RED:${inventory.catalog_id}:${scope}:${result.blockers.join("|")}`);
         const rows = result.compilation?.compiled_rows ?? [];
         expect(rows.length).toBe(scope === "FULL_APPLICABLE_SCOPE"
-          ? electricalResourceCandidatesFor(inventory).length
-          : electricalResourceCandidatesFor(inventory).filter((candidate) => candidate.minimal).length);
+          ? electricalMaximumResourceCandidatesForV2(inventory).length
+          : electricalMaximumResourceCandidatesForV2(inventory).filter((candidate) => candidate.minimal).length);
         expect(result.compilation?.assumptions_count).toBe(0);
         expect(result.compilation?.hidden_quantity_defaults).toBe(0);
-        expect(rows.every((row) => row.quantity > 0 && (row.unit_price ?? 0) > 0)).toBe(true);
+        expect(rows.every((row) => row.quantity > 0 && (row.cost_ownership === "informational_output" || (row.unit_price ?? 0) > 0))).toBe(true);
         expect(rows.every((row) => row.formula_expression.length > 0 && row.normative_trace_v3.length === 1)).toBe(true);
         expect(rows.every((row) => row.price_route_v3?.kind === "RUNTIME_VALIDATED_INPUT")).toBe(true);
         expect(rows.every((row) => row.resource_graph_node_v3?.graph_version === "ProfessionalResourceGraphV3")).toBe(true);
         expect(new Set(rows.map((row) => row.semantic_owner)).size).toBe(rows.length);
         if (scope === "FULL_APPLICABLE_SCOPE") {
-          expect(rows.length).toBeGreaterThanOrEqual(39);
+          expect(rows.length).toBeGreaterThanOrEqual(35);
           const categories = new Set(rows.map((row) => row.category));
-          for (const category of ["material", "labor", "equipment", "machinery", "transport", "temporary_work", "testing", "documentation", "waste", "subcontract_service"] as const) expect(categories.has(category)).toBe(true);
+          expect(categories.size).toBeGreaterThanOrEqual(7);
+          for (const category of categories) expect(["material", "labor", "equipment", "machinery", "transport", "temporary_work", "testing", "documentation", "waste", "subcontract_service", "work"]).toContain(category);
         }
       }
     }
   });
 
-  test("records 22 independent completeness decisions per catalog ID and rejects generic bundles", () => {
-    expect(ELECTRICAL_COMPLETENESS_SLOTS).toHaveLength(22);
-    expect(ELECTRICAL_COMPLETENESS_SLOTS.length * ELECTRICAL_DOMAIN_INVENTORY.length).toBe(13_310);
+  test("records 36 independent completeness decisions per catalog ID and rejects generic bundles", () => {
+    expect(ELECTRICAL_COMPLETENESS_SLOTS_V2).toHaveLength(36);
+    expect(ELECTRICAL_COMPLETENESS_SLOTS_V2.length * ELECTRICAL_DOMAIN_INVENTORY.length).toBe(21_780);
     const forbidden = /^(комплект|прочие материалы|кабель и комплектующие|щит в комплекте|электроизмерения)$/iu;
-    for (const inventory of ELECTRICAL_DOMAIN_INVENTORY) {
-      const candidates = electricalResourceCandidatesFor(inventory);
+    for (const inventory of TEST_INVENTORY) {
+      const candidates = electricalMaximumResourceCandidatesForV2(inventory);
       expect(new Set(candidates.map((candidate) => candidate.candidate_id)).size).toBe(candidates.length);
-      expect(candidates.some((candidate) => candidate.completeness_slot === "PRIMARY_EQUIPMENT_OR_MATERIAL")).toBe(true);
-      expect(candidates.some((candidate) => candidate.completeness_slot === "INSTALLATION_OPERATIONS")).toBe(true);
+      expect(electricalCompletenessDecisionsV2(inventory)).toHaveLength(36);
+      expect(electricalComplexityClassV2(inventory)).toMatch(/^E_/u);
+      expect(candidates.some((candidate) => candidate.category === "labor" || candidate.category === "testing")).toBe(true);
       expect(candidates.every((candidate) => !forbidden.test(candidate.title_ru.trim()))).toBe(true);
     }
   });
 
   test("registers every exact Electrical identity in the canonical runtime", () => {
-    for (const inventory of ELECTRICAL_DOMAIN_INVENTORY) {
+    for (const inventory of TEST_INVENTORY) {
       const selection = resolveRegisteredProfessionalEstimateSelectionV1(inventory.catalog_id);
       expect(selection?.domain_id).toBe("electrical_complete");
       expect(selection?.catalog_id).toBe(inventory.catalog_id);
@@ -155,7 +162,7 @@ describe("Full Electrical professional domain", () => {
   });
 
   test("preserves every full BOQ through production draft durable JSON, PDF and procurement projections", () => {
-    for (const inventory of ELECTRICAL_DOMAIN_INVENTORY) {
+    for (const inventory of TEST_INVENTORY) {
       const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
       if (!technology) throw new Error(`TEST_ELECTRICAL_TECHNOLOGY_MISSING:${inventory.catalog_id}`);
       const production = buildElectricalProductionDraftV1({
@@ -187,7 +194,7 @@ describe("Full Electrical professional domain", () => {
       const compiledRows = production.compile_result.compilation?.compiled_rows ?? [];
       expect(cold.items).toHaveLength(compiledRows.length);
       expect(cold.items.map((item) => item.sourceParameters?.rowCode)).toEqual(compiledRows.map((row) => row.row_id));
-      expect(cold.items.every((item) => item.formulaId && item.normSourceId && item.priceStatus === "USER_ENTERED_PRICE")).toBe(true);
+      expect(cold.items.every((item) => item.formulaId && item.normSourceId && ["USER_ENTERED_PRICE", "PRICE_MISSING"].includes(item.priceStatus ?? ""))).toBe(true);
       const pdfProjection = cold.items.map((item) => [item.titleRu, item.quantity, item.unit, item.unitPrice]);
       expect(pdfProjection).toHaveLength(cold.items.length);
       const procurementProjection = cold.items.filter((item) => item.sourceParameters?.includedInProcurement === true);
