@@ -10,6 +10,8 @@ import { electricalCompleteDomainFactory } from "./domainPackage";
 import { ELECTRICAL_COMPLETE_DOMAIN_ID, ELECTRICAL_DOMAIN_INVENTORY, type ElectricalDomainInventoryRow } from "./inventory";
 
 export const ELECTRICAL_PRODUCTION_BINDING_VERSION = "electrical-complete-production-binding:v2" as const;
+export const ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1 = "N_A_WITH_REASON:OPEN_OFFICIAL_KRERM_08_RATE_TABLE_NOT_PUBLISHED_USE_CUSTOMER_APPROVED_INDIVIDUAL_NORM_PER_KRERM_GUIDANCE_1_6_1_7" as const;
+export const ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1 = "N_A_WITH_REASON:EXACT_KRERP_01_RATE_NOT_APPLICABLE_TO_GENERIC_FIXTURE_USE_CUSTOMER_APPROVED_INDIVIDUAL_RATE_PER_KRERP_GUIDANCE_5_5_1_5_5_5" as const;
 
 type ElectricalInlineBuildInputV1 = {
   rawInput: string;
@@ -110,9 +112,28 @@ function primitiveParameterSnapshot(values: Readonly<Record<string, Professional
   return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.value]));
 }
 
+function assertExactNormativeRateResolution(sourceId: string, value: unknown, exactCode: RegExp): void {
+  const text = typeof value === "string" ? value.trim() : "";
+  const justifiedNotApplicable = /^N_A_WITH_REASON:.{40,}$/u.test(text);
+  if (!exactCode.test(text) && !justifiedNotApplicable) {
+    throw new Error(`ELECTRICAL_NORMATIVE_RATE_RESOLUTION_RED:${sourceId}:${text || "MISSING"}`);
+  }
+}
+
 export function buildElectricalProductionDraftV1(input: ElectricalProductionDraftInput): ElectricalProductionDraftResult {
   const inventory = ELECTRICAL_DOMAIN_INVENTORY.find((candidate) => candidate.catalog_id === input.catalog_id && candidate.work_key === input.work_key);
   if (!inventory) throw new Error(`ELECTRICAL_EXACT_BINDING_NOT_FOUND:${input.catalog_id}:${input.work_key}`);
+  const rateCodes = input.normative_request.rate_code_by_source_id ?? {};
+  assertExactNormativeRateResolution(
+    "KG_KRERM_08_2015_ELECTRICAL",
+    rateCodes.KG_KRERM_08_2015_ELECTRICAL,
+    /^(?:КРЕРм\s+)?08-\d{2}-\d{3}-\d{2}$/u,
+  );
+  assertExactNormativeRateResolution(
+    "KG_KRERP_01_2015_ELECTRICAL",
+    rateCodes.KG_KRERP_01_2015_ELECTRICAL,
+    /^(?:КРЕРп\s+)?01-\d{2}-\d{3}-\d{2}$/u,
+  );
   const compileResult = compileProfessionalEstimateDomainV1(electricalCompleteDomainFactory, constructionNormativeRegistryV1, {
     catalog_id: input.catalog_id,
     work_key: input.work_key,

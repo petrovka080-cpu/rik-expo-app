@@ -15,6 +15,8 @@ import {
 import type { ProfessionalDomainParameterDefinitionV1 } from "../../src/lib/estimate/v4/domainFactory";
 import {
   ELECTRICAL_DOMAIN_INVENTORY,
+  ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+  ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
   buildElectricalProductionDraftV1,
   electricalComplexityClassV2,
   electricalCompleteDomainFactory,
@@ -37,19 +39,24 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 const output = path.resolve(args.output ?? ".release-runtime/batch005-r2-wow-proof");
 const CAPTURED_AT = "2026-08-14T00:00:00.000+06:00";
 
-function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string): string | number | boolean {
+function ratedVoltageForIdentity(catalogId: string): number {
+  const match = catalogId.match(/(?:^|[_:-])(\d+)(?:kv)(?:[_:-]|$)/iu);
+  return match ? Number(match[1]) * 1_000 : 10_000;
+}
+
+function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, catalogId: string): string | number | boolean {
   if (parameter.parameter_id === "work_included") return true;
   if (parameter.parameter_id === "estimate_scope_mode") return "FULL_APPLICABLE_SCOPE";
   if (parameter.parameter_id === "scope_capability") return scopeCapability;
   if (parameter.parameter_id === "funding_source") return "PRIVATE_RECOMMENDED";
   if (parameter.parameter_id === "project_type") return "ELECTRICAL_SUBSTATION_PROJECT";
-  if (parameter.parameter_id === "rated_voltage_v") return 10_000;
+  if (parameter.parameter_id === "rated_voltage_v") return ratedVoltageForIdentity(catalogId);
   if (parameter.parameter_id === "phase_count") return 3;
   if (parameter.parameter_id === "earthing_system") return "TN-S";
   if (parameter.parameter_id === "installation_environment") return "OUTDOOR";
   if (parameter.parameter_id === "product_specification_id") return "PROJECT-SUBSTATION-SPEC-001";
-  if (parameter.parameter_id === "exact_krerm_rate_code") return "KRERM-08-PROJECT-VERIFIED";
-  if (parameter.parameter_id === "exact_krerp_rate_code") return "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON";
+  if (parameter.parameter_id === "exact_krerm_rate_code") return ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1;
+  if (parameter.parameter_id === "exact_krerp_rate_code") return ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1;
   if (parameter.parameter_id === "price_basis_reference") return "VERIFIED-SUPPLIER-QUOTE-2026-08-14";
   if (parameter.parameter_id === "price_basis_date") return "2026-08-14";
   if (parameter.parameter_id === "transformer_rating_kva") return 1_000;
@@ -66,7 +73,7 @@ function parameterValues(catalogId: string): Readonly<Record<string, Professiona
   const schema = electricalCompleteDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!binding || !technology || !schema) throw new Error(`BATCH005_WOW_SCHEMA_MISSING:${catalogId}`);
   return Object.fromEntries(schema.parameters.map((parameter) => [parameter.parameter_id, {
-    value: rawValue(parameter, binding.scope_capability),
+    value: rawValue(parameter, binding.scope_capability, catalogId),
     unit_id: parameter.unit_id,
     source_type: parameter.parameter_id.startsWith("unit_price_")
       ? "USER_EXPLICIT"
@@ -115,8 +122,8 @@ async function main(): Promise<void> {
       material_system: technology.material_system,
       operation_class: technology.operation_class,
       rate_code_by_source_id: {
-        KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
-        KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+        KG_KRERM_08_2015_ELECTRICAL: ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+        KG_KRERP_01_2015_ELECTRICAL: ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
       },
     },
     raw_input: inventory.localized_name_ru,

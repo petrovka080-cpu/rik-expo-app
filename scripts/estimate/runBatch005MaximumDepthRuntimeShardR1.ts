@@ -12,6 +12,8 @@ import { compileProfessionalEstimateDomainV1, constructionNormativeRegistryV1 } 
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
   ELECTRICAL_DOMAIN_INVENTORY,
+  ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+  ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
   auditElectricalProductionAgainstIndependentExpectedV2,
   buildElectricalProductionDraftV1,
   electricalCompleteDomainFactory,
@@ -33,19 +35,24 @@ const shardIndex = Math.max(0, Number(args["shard-index"] ?? 0));
 const allShards = args["all-shards"] === "true";
 if (!Number.isInteger(shardCount) || !Number.isInteger(shardIndex) || shardIndex >= shardCount) throw new Error("BATCH005_RUNTIME_SHARD_ARGUMENT_RED");
 
-function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE"): string | number | boolean {
+function ratedVoltageForIdentity(catalogId: string): number {
+  const match = catalogId.match(/(?:^|[_:-])(\d+)(?:kv)(?:[_:-]|$)/iu);
+  return match ? Number(match[1]) * 1_000 : 400;
+}
+
+function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE", catalogId: string): string | number | boolean {
   if (parameter.parameter_id === "work_included") return true;
   if (parameter.parameter_id === "estimate_scope_mode") return scope;
   if (parameter.parameter_id === "scope_capability") return scopeCapability;
   if (parameter.parameter_id === "funding_source") return "PRIVATE_RECOMMENDED";
   if (parameter.parameter_id === "project_type") return "ELECTRICAL_PROJECT";
-  if (parameter.parameter_id === "rated_voltage_v") return 400;
+  if (parameter.parameter_id === "rated_voltage_v") return ratedVoltageForIdentity(catalogId);
   if (parameter.parameter_id === "phase_count") return 3;
   if (parameter.parameter_id === "earthing_system") return "TN-S";
   if (parameter.parameter_id === "installation_environment") return "PROJECT_SPECIFIED";
   if (parameter.parameter_id === "product_specification_id") return "PROJECT-ELECTRICAL-SPEC-V2";
-  if (parameter.parameter_id === "exact_krerm_rate_code") return "KRERM-08-PROJECT-VERIFIED";
-  if (parameter.parameter_id === "exact_krerp_rate_code") return "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON";
+  if (parameter.parameter_id === "exact_krerm_rate_code") return ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1;
+  if (parameter.parameter_id === "exact_krerp_rate_code") return ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1;
   if (parameter.parameter_id === "price_basis_reference") return "VERIFIED-SUPPLIER-QUOTE-2026-08-14";
   if (parameter.parameter_id === "price_basis_date") return "2026-08-14";
   if (parameter.input_type === "choice") return parameter.choices?.[0]?.value ?? "PROJECT_SPECIFIED";
@@ -62,7 +69,7 @@ function parameterValues(catalogId: string, scope: "MINIMAL_EXPLICIT_SCOPE" | "F
   return Object.fromEntries(schema.parameters.flatMap((parameter) => {
     if (scope === "MINIMAL_EXPLICIT_SCOPE" && parameter.priority === "P1") return [];
     return [[parameter.parameter_id, {
-      value: rawValue(parameter, binding.scope_capability, scope),
+      value: rawValue(parameter, binding.scope_capability, scope, catalogId),
       unit_id: parameter.unit_id,
       source_type: parameter.parameter_id.includes("product") ? "MATERIAL_PASSPORT" : parameter.parameter_id.includes("rate_code") || parameter.parameter_id.includes("project") ? "PROJECT_DOCUMENT" : "USER_EXPLICIT",
       source_id: `batch005-v2-runtime:${catalogId}:${parameter.parameter_id}`,
@@ -93,8 +100,8 @@ const results = selected.map((inventory) => {
       material_system: technology.material_system,
       operation_class: technology.operation_class,
       rate_code_by_source_id: {
-        KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
-        KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+        KG_KRERM_08_2015_ELECTRICAL: ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+        KG_KRERP_01_2015_ELECTRICAL: ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
       },
     },
   };

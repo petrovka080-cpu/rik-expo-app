@@ -220,12 +220,60 @@ function formula(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximum
 }
 
 function exactLocator(candidate: ElectricalMaximumResourceCandidateV2): string {
-  if (candidate.normative_source_id === "KG_KRERM_08_2015_ELECTRICAL") return "КРЕРм 08-2015; точный шифр из PROJECT_INPUT exact_krerm_rate_code";
-  if (candidate.normative_source_id === "KG_KRERP_01_2015_ELECTRICAL") return "КРЕРп 01-2015; точный шифр из PROJECT_INPUT exact_krerp_rate_code";
-  if (candidate.normative_source_id === "EAEU_TR_TS_004_2011") return "ТР ТС 004/2011, статья 4 и приложение; применимость подтверждается паспортом и документом соответствия изделия";
-  if (candidate.normative_source_id === "KG_ELECTRICAL_SAFETY_2023") return "Правила техники безопасности при эксплуатации электроустановок, приказ № 01-13/157 от 03.08.2023; применимый организационный/технический раздел ППР";
-  if (candidate.normative_source_id === "KG_FIRE_SAFETY_RULES_2025") return "Правила пожарной безопасности в Кыргызской Республике, постановление № 251 от 13.05.2025; применимый раздел проекта огнезаделки";
-  return "Правила приёмки законченных строительством распределительных электрических сетей 0,38–10 кВ, приказ № 01-13/69 от 22.03.2023; программа и протокол испытания";
+  if (candidate.normative_source_id === "KG_KRERM_08_2015_ELECTRICAL") {
+    return "Указания по применению КРЕРм-2015, пп. 1.6–1.7 и 2.5–2.6; exact_krerm_rate_code содержит точный шифр КРЕРм 08 либо утверждённую заказчиком индивидуальную норму N_A_WITH_REASON";
+  }
+  if (candidate.normative_source_id === "KG_KRERP_01_2015_ELECTRICAL") {
+    return "Указания по применению КРЕРп-2015, пп. 1.9–1.10 и 5.5.1–5.5.5; exact_krerp_rate_code содержит точный шифр КРЕРп 01 либо утверждённую индивидуальную расценку N_A_WITH_REASON";
+  }
+  if (candidate.normative_source_id === "EAEU_TR_TS_004_2011") {
+    return "ТР ТС 004/2011, статья 4 и приложение; применимость подтверждается диапазоном напряжения, паспортом и документом соответствия конкретного изделия";
+  }
+  if (candidate.normative_source_id === "KG_ELECTRICAL_SAFETY_2023") {
+    if (/(?:voltage_detector|lockout_tagout|isolation_and_diagnosis)/u.test(candidate.candidate_id)) {
+      return "Правила техники безопасности при эксплуатации электроустановок, приказ № 01-13/157 от 03.08.2023, п. 55 и § 20 п. 158: отключение, заземление и проверка отсутствия напряжения поверенным указателем";
+    }
+    if (candidate.category === "equipment" || candidate.category === "machinery") {
+      return "Правила техники безопасности при эксплуатации электроустановок, приказ № 01-13/157 от 03.08.2023, пп. 3–4: испытанные средства защиты, инструмент и машины";
+    }
+    return "Правила техники безопасности при эксплуатации электроустановок, приказ № 01-13/157 от 03.08.2023, пп. 34 и 55: технологическая карта/ППР и ответственность за безопасную подготовку рабочего места";
+  }
+  if (candidate.normative_source_id === "KG_FIRE_SAFETY_RULES_2025") {
+    return "Правила пожарной безопасности в Кыргызской Республике, постановление № 251 от 13.05.2025; точный раздел проекта огнезаделки и паспорт сертифицированной системы, Fire typed-child без Electrical cost duplication";
+  }
+  if (candidate.category === "documentation") {
+    return "Правила приёмки законченных строительством распределительных электрических сетей 0,38–10 кВ, приказ № 01-13/69 от 22.03.2023, пп. 15 и 20–22: исполнительные документы, акты, протоколы и передача комиссии";
+  }
+  if (candidate.category === "testing") {
+    return "Правила приёмки законченных строительством распределительных электрических сетей 0,38–10 кВ, приказ № 01-13/69 от 22.03.2023, пп. 4, 14, 20 и 22: испытания, рабочая и приёмочная комиссии";
+  }
+  return "Правила приёмки законченных строительством распределительных электрических сетей 0,38–10 кВ, приказ № 01-13/69 от 22.03.2023, пп. 4, 14 и 22: соответствие проекту, проверка рабочей комиссией и итоговая приёмка";
+}
+
+function normativeDocumentCode(candidate: ElectricalMaximumResourceCandidateV2): string {
+  if (candidate.normative_source_id === "KG_KRERM_08_2015_ELECTRICAL") return "Указания по применению КРЕРм-2015 / КРЕРм 08-2015";
+  if (candidate.normative_source_id === "KG_KRERP_01_2015_ELECTRICAL") return "Указания по применению КРЕРп-2015 / КРЕРп 01-2015";
+  if (candidate.normative_source_id === "EAEU_TR_TS_004_2011") return "ТР ТС 004/2011";
+  if (candidate.normative_source_id === "KG_ELECTRICAL_SAFETY_2023") return "Приказ Минэнерго КР № 01-13/157 от 03.08.2023";
+  if (candidate.normative_source_id === "KG_FIRE_SAFETY_RULES_2025") return "Постановление Кабинета Министров КР № 251 от 13.05.2025";
+  return "Приказ Минэнерго КР № 01-13/69 от 22.03.2023";
+}
+
+function normativeEdition(candidate: ElectricalMaximumResourceCandidateV2): string {
+  if (candidate.normative_source_id === "KG_ELECTRICAL_SAFETY_2023") return "официальная редакция ЦБД КР editionId=1273326";
+  if (candidate.normative_source_id === "KG_ELECTRICAL_ACCEPTANCE_2023") return "официальная редакция ЦБД КР editionId=1241467";
+  if (candidate.normative_source_id === "EAEU_TR_TS_004_2011") return "редакция с изменениями Решения Совета ЕЭК № 90 от 10.06.2022";
+  return "официальная публикация Минстроя КР, проверена 2026-08-14";
+}
+
+function normativeApplicability(candidate: ElectricalMaximumResourceCandidateV2): string {
+  if (candidate.normative_source_id === "EAEU_TR_TS_004_2011") {
+    return `${candidate.applicability} ТР ТС 004/2011 применяется только при rated_voltage_v 50–1000 V AC или 75–1500 V DC; вне диапазона обязателен явный N_A_WITH_REASON и проектный стандарт/паспорт высоковольтного изделия.`;
+  }
+  if (candidate.normative_source_id === "KG_ELECTRICAL_ACCEPTANCE_2023") {
+    return `${candidate.applicability} Приказ № 01-13/69 применяется только к распределительным сетям 0,38–10 кВ; свыше 10 кВ обязателен явный N_A_WITH_REASON и проектная программа испытаний/приёмки.`;
+  }
+  return candidate.applicability;
 }
 
 function typedChildBoundary(candidate: ElectricalMaximumResourceCandidateV2) {
@@ -255,15 +303,15 @@ function boqRow(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximumR
     procurement_eligible: candidate.owner === "ELECTRICAL" && ["material", "equipment", "machinery", "transport", "waste", "temporary_work"].includes(candidate.category),
     normative_trace_v3: [{
       source_id: candidate.normative_source_id,
-      document_code: candidate.normative_source_id,
-      edition: "official-current-verified-2026-08-13",
+      document_code: normativeDocumentCode(candidate),
+      edition: normativeEdition(candidate),
       exact_locator: exactLocator(candidate),
       source_role: candidate.normative_source_id.includes("KRERM") || candidate.normative_source_id.includes("KRERP")
         ? "QUANTITY_NORM"
         : candidate.category === "testing"
           ? "QUALITY_ACCEPTANCE"
           : "WORK_EXECUTION",
-      applicability: candidate.applicability,
+      applicability: normativeApplicability(candidate),
       foreign_mandatory_for_kg: false,
     }],
     price_route_v3: candidate.owner === "ELECTRICAL" ? {

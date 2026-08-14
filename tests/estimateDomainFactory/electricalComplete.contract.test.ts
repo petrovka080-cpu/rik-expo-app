@@ -7,6 +7,8 @@ import {
   ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT,
   ELECTRICAL_COMPLETENESS_SLOTS_V2,
   ELECTRICAL_DOMAIN_INVENTORY,
+  ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+  ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
   ELECTRICAL_REVIEWED_EXCLUSIONS,
   buildElectricalProductionDraftV1,
   electricalCompletenessDecisionsV2,
@@ -22,19 +24,24 @@ const SHARD_COUNT = Math.max(1, Number(process.env.ELECTRICAL_TEST_SHARD_COUNT ?
 const SHARD_INDEX = Math.max(0, Number(process.env.ELECTRICAL_TEST_SHARD_INDEX ?? 0));
 const TEST_INVENTORY = ELECTRICAL_DOMAIN_INVENTORY.filter((_, index) => index % SHARD_COUNT === SHARD_INDEX);
 
-function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: Scope): string | number | boolean {
+function ratedVoltageForIdentity(catalogId: string): number {
+  const match = catalogId.match(/(?:^|[_:-])(\d+)(?:kv)(?:[_:-]|$)/iu);
+  return match ? Number(match[1]) * 1_000 : 400;
+}
+
+function rawValue(parameter: ProfessionalDomainParameterDefinitionV1, scopeCapability: string, scope: Scope, catalogId: string): string | number | boolean {
   if (parameter.parameter_id === "work_included") return true;
   if (parameter.parameter_id === "estimate_scope_mode") return scope;
   if (parameter.parameter_id === "scope_capability") return scopeCapability;
   if (parameter.parameter_id === "funding_source") return "PRIVATE_RECOMMENDED";
   if (parameter.parameter_id === "project_type") return "ELECTRICAL_PROJECT";
-  if (parameter.parameter_id === "rated_voltage_v") return 400;
+  if (parameter.parameter_id === "rated_voltage_v") return ratedVoltageForIdentity(catalogId);
   if (parameter.parameter_id === "phase_count") return 3;
   if (parameter.parameter_id === "earthing_system") return "TN-S";
   if (parameter.parameter_id === "installation_environment") return "PROJECT_SPECIFIED";
   if (parameter.parameter_id === "product_specification_id") return "PROJECT-ELECTRICAL-SPEC-001";
-  if (parameter.parameter_id === "exact_krerm_rate_code") return "KRERM-08-PROJECT-VERIFIED";
-  if (parameter.parameter_id === "exact_krerp_rate_code") return "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON";
+  if (parameter.parameter_id === "exact_krerm_rate_code") return ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1;
+  if (parameter.parameter_id === "exact_krerp_rate_code") return ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1;
   if (parameter.parameter_id === "price_basis_reference") return "SUPPLIER-QUOTATION-2026-08-13";
   if (parameter.parameter_id === "price_basis_date") return "2026-08-13";
   if (parameter.input_type === "choice") return parameter.choices?.[0]?.value ?? "PROJECT_SPECIFIED";
@@ -58,7 +65,7 @@ function parameterValues(catalogId: string, scope: Scope): Readonly<Record<strin
           ? "PROJECT_DOCUMENT"
           : "USER_EXPLICIT";
     return [[parameter.parameter_id, {
-      value: rawValue(parameter, binding.scope_capability, scope),
+      value: rawValue(parameter, binding.scope_capability, scope, catalogId),
       unit_id: parameter.unit_id,
       source_type: sourceType,
       source_id: `electrical-complete-fixture:${catalogId}:${parameter.parameter_id}`,
@@ -90,8 +97,8 @@ function compile(catalogId: string, scope: Scope) {
       material_system: technology.material_system,
       operation_class: technology.operation_class,
       rate_code_by_source_id: {
-        KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
-        KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+        KG_KRERM_08_2015_ELECTRICAL: ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+        KG_KRERP_01_2015_ELECTRICAL: ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
       },
     },
   });
@@ -163,6 +170,49 @@ describe("Full Electrical professional domain", () => {
     }
   });
 
+  test("binds explicit kV catalog identities to matching rated-voltage proof inputs", () => {
+    const highVoltage = ELECTRICAL_DOMAIN_INVENTORY.find((inventory) => /110kv/iu.test(inventory.catalog_id));
+    const mediumVoltage = ELECTRICAL_DOMAIN_INVENTORY.find((inventory) => /35kv/iu.test(inventory.catalog_id));
+    if (!highVoltage || !mediumVoltage) throw new Error("TEST_ELECTRICAL_VOLTAGE_IDENTITIES_MISSING");
+    expect(parameterValues(highVoltage.catalog_id, "FULL_APPLICABLE_SCOPE").rated_voltage_v?.value).toBe(110_000);
+    expect(parameterValues(mediumVoltage.catalog_id, "FULL_APPLICABLE_SCOPE").rated_voltage_v?.value).toBe(35_000);
+    const compiled = compile(highVoltage.catalog_id, "FULL_APPLICABLE_SCOPE");
+    const conditionalTraces = compiled.compilation?.compiled_rows.flatMap((row) => row.normative_trace_v3)
+      .filter((trace) => ["EAEU_TR_TS_004_2011", "KG_ELECTRICAL_ACCEPTANCE_2023"].includes(trace.source_id)) ?? [];
+    expect(conditionalTraces.length).toBeGreaterThan(0);
+    expect(conditionalTraces.every((trace) => trace.applicability.includes("N_A_WITH_REASON"))).toBe(true);
+  });
+
+  test("rejects generic rate verification markers that are neither exact codes nor justified individual norms", () => {
+    const inventory = ELECTRICAL_DOMAIN_INVENTORY[0];
+    const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    if (!technology) throw new Error(`TEST_ELECTRICAL_TECHNOLOGY_MISSING:${inventory.catalog_id}`);
+    expect(() => buildElectricalProductionDraftV1({
+      catalog_id: inventory.catalog_id,
+      work_key: inventory.work_key,
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parent_revision_id: null,
+      parameter_values: parameterValues(inventory.catalog_id, "FULL_APPLICABLE_SCOPE"),
+      normative_request: {
+        country: "KG",
+        region: "Bishkek",
+        funding_source: "PRIVATE_RECOMMENDED",
+        project_type: "ELECTRICAL_PROJECT",
+        construction_state: "NEW",
+        contract_basis: [],
+        effective_date: "2026-08-14",
+        material_system: technology.material_system,
+        operation_class: technology.operation_class,
+        rate_code_by_source_id: {
+          KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
+          KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+        },
+      },
+      raw_input: inventory.localized_name_ru,
+      currency: "KGS",
+    })).toThrow("ELECTRICAL_NORMATIVE_RATE_RESOLUTION_RED");
+  });
+
   test("preserves every full BOQ through production draft durable JSON, PDF and procurement projections", () => {
     for (const inventory of TEST_INVENTORY) {
       const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
@@ -184,8 +234,8 @@ describe("Full Electrical professional domain", () => {
           material_system: technology.material_system,
           operation_class: technology.operation_class,
           rate_code_by_source_id: {
-            KG_KRERM_08_2015_ELECTRICAL: "KRERM-08-PROJECT-VERIFIED",
-            KG_KRERP_01_2015_ELECTRICAL: "KRERP-01-PROJECT-VERIFIED-OR-N_A_WITH_REASON",
+            KG_KRERM_08_2015_ELECTRICAL: ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+            KG_KRERP_01_2015_ELECTRICAL: ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
           },
         },
         raw_input: inventory.localized_name_ru,
