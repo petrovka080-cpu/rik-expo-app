@@ -15,12 +15,6 @@ import {
   buildInteriorFinishesFromInlineInputV1,
 } from "./interiorFinishesComplete";
 import {
-  WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS,
-  WATER_SEWER_COMPLETE_DOMAIN_ID,
-  WATER_SEWER_DOMAIN_INVENTORY,
-  buildWaterSewerFromInlineInputV1,
-} from "./waterSupplySewerageComplete";
-import {
   HVAC_CANONICAL_PARAMETER_SCHEMAS,
   HVAC_COMPLETE_DOMAIN_ID,
   HVAC_DOMAIN_INVENTORY,
@@ -65,36 +59,27 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const waterSewerInventory = interiorInventory ? undefined : WATER_SEWER_DOMAIN_INVENTORY.find((candidate) =>
+  const electricalInventory = interiorInventory ? undefined : ELECTRICAL_DOMAIN_INVENTORY.find((candidate) =>
     exactIdentity === candidate.catalog_id ||
     exactIdentity === candidate.work_key ||
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const electricalInventory = interiorInventory || waterSewerInventory ? undefined : ELECTRICAL_DOMAIN_INVENTORY.find((candidate) =>
+  const hvacInventory = interiorInventory || electricalInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
     exactIdentity === candidate.catalog_id ||
     exactIdentity === candidate.work_key ||
     exactIdentity === candidate.template_id ||
     exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
   );
-  const hvacInventory = interiorInventory || waterSewerInventory || electricalInventory ? undefined : HVAC_DOMAIN_INVENTORY.find((candidate) =>
-    exactIdentity === candidate.catalog_id ||
-    exactIdentity === candidate.work_key ||
-    exactIdentity === candidate.template_id ||
-    exactIdentity === `domain-passport:${candidate.catalog_id}:v1`
-  );
-  const inventory = interiorInventory ?? waterSewerInventory ?? electricalInventory ?? hvacInventory;
+  const inventory = interiorInventory ?? electricalInventory ?? hvacInventory;
   if (!inventory) return null;
-  const waterSewer = Boolean(waterSewerInventory);
   const electrical = Boolean(electricalInventory);
   const hvac = Boolean(hvacInventory);
   const canonicalParameterSchema = (electrical
     ? ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS
     : hvac
     ? HVAC_CANONICAL_PARAMETER_SCHEMAS
-    : waterSewer
-      ? WATER_SEWER_CANONICAL_PARAMETER_SCHEMAS
-      : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
+    : INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS).find(
       (schema) => schema.canonicalWorkKey === inventory.work_key,
     );
   if (!canonicalParameterSchema) {
@@ -105,21 +90,17 @@ export function resolveRegisteredProfessionalEstimateSelectionV1(
       ? ELECTRICAL_COMPLETE_DOMAIN_ID
       : hvac
       ? HVAC_COMPLETE_DOMAIN_ID
-      : waterSewer
-        ? WATER_SEWER_COMPLETE_DOMAIN_ID
-        : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+      : INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,
     template_id: `domain-passport:${inventory.catalog_id}:v1`,
     title_ru: inventory.localized_name_ru,
-    category_key: electrical ? "electrical" : hvac ? "heating_hvac" : waterSewer ? "plumbing" : registeredInteriorCategoryKey(inventory.source_domain_id),
+    category_key: electrical ? "electrical" : hvac ? "heating_hvac" : registeredInteriorCategoryKey(inventory.source_domain_id),
     category_title_ru: electrical
       ? "Электромонтажные работы"
       : hvac
       ? "Отопление, вентиляция и кондиционирование"
-      : waterSewer
-        ? "Водоснабжение и канализация"
-        : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+      : "\u0412\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u043e\u0442\u0434\u0435\u043b\u043e\u0447\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
     canonical_parameter_schema: canonicalParameterSchema,
     calculation_strategy_id: canonicalParameterSchema.calculationVersion,
     engine_version: REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1,
@@ -160,7 +141,5 @@ export function buildRegisteredProfessionalEstimateFromInlineInputV1(
   if (interior.exact_match) return interior;
   const electrical = buildElectricalFromInlineInputV1(input);
   if (electrical.exact_match) return electrical;
-  const waterSewer = buildWaterSewerFromInlineInputV1(input);
-  if (waterSewer.exact_match) return waterSewer;
   return buildHvacFromInlineInputV1(input);
 }

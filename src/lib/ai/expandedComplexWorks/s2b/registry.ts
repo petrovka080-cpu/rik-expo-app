@@ -8,15 +8,13 @@ import { S2B_BRIDGES_TUNNELS_RETAINING_DOMAIN_PACKS } from "./domains/bridgesTun
 import { S2B_ELECTRICAL_ENERGY_DOMAIN_PACKS } from "./domains/electricalEnergy";
 import { S2B_ROADS_DOMAIN_PACKS } from "./domains/roads";
 import { S2B_VENTILATION_PIPELINES_BOILERS_DOMAIN_PACKS } from "./domains/ventilationPipelinesBoilers";
-import { S2B_WATER_SEWER_STORM_DOMAIN_PACKS } from "./domains/waterSewerStorm";
 import { S2B_WELLS_RENEWABLES_DOMAIN_PACKS } from "./domains/wellsRenewables";
 import type { S2BComponent, S2BDomainPack, S2BExpandedRowFactory, S2BWave2Kind } from "./types";
 import { S2B_PROFESSIONAL_MIN_ROWS } from "./types";
 import { assertS2BDomainPack } from "./validators";
 
-const PACKS: Record<S2BWave2Kind, S2BDomainPack> = {
+const PACKS: Partial<Record<S2BWave2Kind, S2BDomainPack>> = {
   ...S2B_ROADS_DOMAIN_PACKS,
-  ...S2B_WATER_SEWER_STORM_DOMAIN_PACKS,
   ...S2B_BRIDGES_TUNNELS_RETAINING_DOMAIN_PACKS,
   ...S2B_ELECTRICAL_ENERGY_DOMAIN_PACKS,
   ...S2B_VENTILATION_PIPELINES_BOILERS_DOMAIN_PACKS,
@@ -125,21 +123,20 @@ export function s2bWave2KindForFamily(family: ExpandedComplexWorkFamilyDefinitio
     if (/retaining|gabion/.test(id)) return "retaining_wall";
     return "bridge";
   }
-  if (family.categoryGroup === "water_supply") {
-    if (/well|borehole/.test(id)) return "well";
-    return "water";
-  }
-  if (family.categoryGroup === "sewer_wastewater") {
-    if (/stormwater|rainwater|drainage_channel/.test(id)) return "stormwater";
-    return "sewer";
-  }
-  if (family.categoryGroup === "hydraulic") return "hydraulic";
+  // Water, sewerage, drainage, hydraulic-water facilities and their external
+  // connections are backend-owned after BATCH-006. Returning a client S2B
+  // kind here would make the retired embedded compiler reachable again.
+  if (
+    family.categoryGroup === "water_supply" ||
+    family.categoryGroup === "sewer_wastewater" ||
+    family.categoryGroup === "hydraulic" ||
+    family.categoryGroup === "utility_connections"
+  ) return null;
   if (family.categoryGroup === "electrical_infrastructure") {
     if (/substation|switchgear|transformer/.test(id)) return "substation";
     if (/lighting/.test(id)) return "lighting";
     return "electrical";
   }
-  if (family.categoryGroup === "utility_connections") return "external_networks";
   if (family.categoryGroup === "gas_heat_pipelines") {
     if (/technological|process|industrial/.test(id)) return "pipeline";
     return "pipeline";
@@ -175,6 +172,7 @@ export function ensureS2BProfessionalDepth(input: {
   if (!kind) return null;
 
   const pack = PACKS[kind];
+  if (!pack) throw new Error(`S2B_DOMAIN_PACK_NOT_REGISTERED:${kind}`);
   assertS2BDomainPack(kind, pack);
   const { key: baseKey, value: baseValue } = depthBase(input.parameters);
   const rows = [...input.rows];

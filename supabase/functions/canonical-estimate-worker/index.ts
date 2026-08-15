@@ -6,6 +6,7 @@ import {
   evaluateFormulaGraph,
   type FormulaAst,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph.ts";
+import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints.ts";
 import { renderPdfBytes } from "../_shared/canonicalPdf.ts";
 
 const WORKER_VERSION = "canonical-estimate-compiler.r2";
@@ -172,38 +173,6 @@ function evaluateCondition(ast: Record<string, unknown>, parameters: Record<stri
   throw Object.assign(new Error("unsupported inclusion AST"), { code: "INVALID_INCLUSION_GRAPH" });
 }
 
-function validateParameters(definitions: Array<Record<string, unknown>>, values: Record<string, unknown>) {
-  const accepted = new Set(definitions.map((definition) => String(definition.parameter_id)));
-  const unknown = Object.keys(values).filter((key) => !accepted.has(key));
-  if (unknown.length > 0) throw Object.assign(new Error("unknown estimate parameters"), { code: "PARAMETER_VALIDATION_FAILED" });
-
-  for (const definition of definitions) {
-    const id = String(definition.parameter_id);
-    const constraints = (definition.constraints_json ?? {}) as Record<string, unknown>;
-    const value = values[id] ?? definition.default_value;
-    if (value == null) {
-      if (definition.required) throw Object.assign(new Error(`missing parameter ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-      continue;
-    }
-    const type = String(definition.value_type);
-    if (type === "boolean" && typeof value !== "boolean") throw Object.assign(new Error(`invalid boolean ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    if ((type === "decimal" || type === "integer") && !/^[+-]?\d+(?:\.\d+)?$/.test(String(value))) {
-      throw Object.assign(new Error(`invalid number ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if (type === "integer" && !Number.isInteger(Number(value))) throw Object.assign(new Error(`invalid integer ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    if (type === "enum" && Array.isArray(constraints.values) && !constraints.values.includes(value)) {
-      throw Object.assign(new Error(`invalid enum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if ((type === "decimal" || type === "integer") && constraints.min != null && Number(value) < Number(constraints.min)) {
-      throw Object.assign(new Error(`parameter below minimum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if ((type === "decimal" || type === "integer") && constraints.max != null && Number(value) > Number(constraints.max)) {
-      throw Object.assign(new Error(`parameter above maximum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    values[id] = value;
-  }
-}
-
 async function loadPriceItems(admin: AdminClient, snapshotIds: string[]) {
   const prices = new Map<string, Record<string, unknown>>();
   if (snapshotIds.length === 0) return prices;
@@ -251,8 +220,10 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("resource graph row limit exceeded"), { code: "DEFINITION_LIMIT_EXCEEDED" });
   }
 
-  const parameters = { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>;
-  validateParameters(parameterResult.data ?? [], parameters);
+  const parameters = validateCanonicalEstimateParameters(
+    parameterResult.data ?? [],
+    { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>,
+  );
   const numericParameters = Object.fromEntries(
     Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string"),
   ) as Record<string, string | number>;

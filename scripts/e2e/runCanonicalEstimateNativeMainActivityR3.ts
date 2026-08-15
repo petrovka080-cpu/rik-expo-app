@@ -7,8 +7,8 @@ const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const MAIN_ACTIVITY = `${PACKAGE_NAME}/.MainActivity`;
 const DEVICE_ID = process.env.E2E_ANDROID_DEVICE_ID ?? "emulator-5554";
 const EXPECTED_API = "34";
-const EXPECTED_CATALOG_ID = "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1";
-const SEARCH_TEXT = "водоотвод для асфальтового покрытия в стандартной зоне";
+const EXPECTED_CATALOG_ID = argument("catalog-id", "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1");
+const SEARCH_TEXT = argument("search-text", "водоотвод для асфальтового покрытия в стандартной зоне");
 const POLL_MS = 1_000;
 
 type CommandResult = { ok: boolean; output: string; status: number | null };
@@ -220,6 +220,47 @@ function capture(output: string, name: string, snapshot: UiSnapshot): { png: str
   return { png, xml };
 }
 
+function inspectInstalledNativeBundle(packagePath: string, output: string): Record<string, unknown> {
+  const remoteApk = packagePath.replace(/^package:/, "").split(/\r?\n/)[0];
+  const localApk = resolve(output, "installed-mainactivity-base.apk");
+  const pulled = adb(["pull", remoteApk, localApk], 120_000);
+  if (!pulled.ok) return { apk: localApk, bundles: 0, error: pulled.output, status: "RED" };
+  try {
+    const listing = execFileSync("tar", ["-tf", localApk], { encoding: "utf8", timeout: 60_000 });
+    const bundles = listing.split(/\r?\n/).filter((entry) => /(?:^|\/)(?:index\.android\.bundle|[^/]+\.(?:bundle|js))$/i.test(entry));
+    const ownerTokens = ["waterSupplySewerageComplete", "waterSewerStorm", "WATER_SEWER_COMPLETE_DOMAIN"];
+    const compilerTokens = [
+      "evaluateFormulaGraph", "calculateGlobalConstructionEstimate", "calculateGlobalConstructionEstimateSync",
+      "compileProductionExpandedEstimate10000", "buildProfessionalExpandedGlobalEstimate", "productionFormulaDsl",
+    ];
+    const corpusTokens = ["batch006-water-backend-r3.r5", "WATER_BACKEND_BOQ_ROW_LEDGER", "WATER_R5_OBLIGATION_UNIVERSE_845"];
+    const tokens = [...new Set([...ownerTokens, ...compilerTokens, ...corpusTokens])];
+    const counts = Object.fromEntries(tokens.map((token) => [token, 0]));
+    let bytes = 0;
+    for (const entry of bundles) {
+      const body = execFileSync("tar", ["-xOf", localApk, entry], { encoding: "buffer", timeout: 120_000 });
+      bytes += body.length;
+      const text = body.toString("utf8");
+      for (const token of tokens) counts[token] += text.split(token).length - 1;
+    }
+    const tokenCount = (items: string[]) => items.reduce((sum, token) => sum + counts[token], 0);
+    const proof = {
+      apk: localApk,
+      apkSha256: createHash("sha256").update(readFileSync(localApk)).digest("hex"),
+      bundles,
+      bundleBytes: bytes,
+      counts,
+      FRONTEND_WATER_OWNER: tokenCount(ownerTokens),
+      CLIENT_WATER_COMPILER_REACHABILITY: tokenCount(compilerTokens),
+      WATER_CORPUS_IN_NATIVE_BUNDLE: tokenCount(corpusTokens),
+    };
+    return { ...proof, status: bundles.length > 0 && proof.FRONTEND_WATER_OWNER === 0
+      && proof.CLIENT_WATER_COMPILER_REACHABILITY === 0 && proof.WATER_CORPUS_IN_NATIVE_BUNDLE === 0 ? "GREEN" : "RED" };
+  } catch (error) {
+    return { apk: localApk, bundles: 0, error: error instanceof Error ? error.message : String(error), status: "RED" };
+  }
+}
+
 async function main(): Promise<void> {
   const releaseId = argument("release-id");
   const expectedHead = argument("expected-head");
@@ -236,6 +277,10 @@ async function main(): Promise<void> {
   if (api !== EXPECTED_API) blockers.push(`ANDROID_API_EXPECTED_34_RECEIVED_${api || "missing"}`);
   const packagePath = adb(["shell", "pm", "path", PACKAGE_NAME], 10_000).output.trim();
   if (!packagePath.startsWith("package:")) blockers.push("NATIVE_PACKAGE_NOT_INSTALLED");
+  const bundleReachability = packagePath.startsWith("package:")
+    ? inspectInstalledNativeBundle(packagePath, output)
+    : { status: "RED", FRONTEND_WATER_OWNER: -1, CLIENT_WATER_COMPILER_REACHABILITY: -1, WATER_CORPUS_IN_NATIVE_BUNDLE: -1 };
+  if (bundleReachability.status !== "GREEN") blockers.push("NATIVE_PRODUCTION_BUNDLE_REACHABILITY_RED");
   adb(["shell", "am", "force-stop", PACKAGE_NAME], 10_000);
   const launch = launchRequest();
   if (!launch.ok || !launch.output.includes(`Activity: ${MAIN_ACTIVITY}`)) blockers.push("EXACT_MAINACTIVITY_LAUNCH_FAILED");
@@ -305,6 +350,7 @@ async function main(): Promise<void> {
       chromeUserAgentRows: chromeRequests.length,
       authorizationPresentOnAll: nativeRequests.every((row) => row.authorizationPresent),
     },
+    productionBundleReachability: bundleReachability,
     ui: {
       promptIngressAutoOpened,
       promptIngressDisposition: promptIngressAutoOpened
@@ -322,6 +368,12 @@ async function main(): Promise<void> {
   };
   const reportPath = resolve(output, "NATIVE_ANDROID_API34_MAINACTIVITY_BACKEND_CUTOVER_PROOF.json");
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  writeFileSync(resolve(output, "NATIVE_PRODUCTION_BUNDLE_REACHABILITY_PROOF.json"), `${JSON.stringify({
+    schemaVersion: "native-production-bundle-reachability-proof.r5",
+    generatedAt: report.generatedAt,
+    source: report.source,
+    ...bundleReachability,
+  }, null, 2)}\n`, "utf8");
   process.stdout.write(`${JSON.stringify({ status: report.status, reportPath, releaseId, nativeRequests: nativeRequests.length, blockers }, null, 2)}\n`);
   if (blockers.length) process.exitCode = 1;
 }

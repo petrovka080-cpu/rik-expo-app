@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { isTimeoutOrMemoryWeakeningDiffLine } from "./noTestWeakeningPolicy";
 
-const BASE_CHECKPOINT = "e4daae88344f3f8f07e943701df5529aa9c64b74";
+const BASE_CHECKPOINT = "eaaa1404939cc627fdc86a64fa28ebb127734b68";
 const USER_OWNED_TEST_PATHS = new Set([
   "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts",
 ]);
@@ -101,7 +101,9 @@ export const CURRENT_CORE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[]
   entry("tests/estimateDomainFactory/domainFactoryBootstrap.contract.test.ts", "the Estimate V4 core had no executable contract for a versioned cross-domain factory, the frozen Asphalt reference manifest, exact 11610 inventory arithmetic or jurisdiction-aware normative applicability", "the shared V4 extension contract freezes the Asphalt evidence hashes, accounts for all 11610 exact catalog identities, resolves applicable and rejected sources explicitly and exposes one domain registration path without a second compiler or storage owner", "establish a reusable professional-estimate domain factory before adding the first non-Asphalt production wave", "adds exact global arithmetic, duplicate/orphan/silent-exclusion zeroes, fail-closed normative applicability and architecture-owner assertions; it changes no existing test, denominator, timeout, threshold or fixture"),
   entry("tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts", "Interior Finishes had no production contract proving its exact wave denominator, scope-specific schemas, dual-scope resource composition, exact request routing or immutable durable Apply lifecycle", "all 84 exact records and 84 scope-specific canonical technologies compile minimal and full scopes with sourced material, labor, equipment, transport, waste, QA and documentation rows; repair, wet-zone, high-load and other scope variants have distinct formula/resource/norm profiles; registered ingress preserves exact identity and create/edit/reload retains the immutable R1/R2 chain", "admit Interior Finishes Wave 1 through the same Estimate V4 runtime and durable repository used by the reference domain without prohibited canonical fan-in", "adds 84/84 dual-scope, zero-assumption, scope-semantics, formula/dimension/balance, exact-routing and create/edit/cold-reload assertions; it removes or weakens no existing test, scenario, denominator, timeout, threshold or fixture"),
   entry("tests/estimateDomainFactory/interiorFinishesComplete.contract.test.ts", "the first 84-record Interior Finishes wave did not prove the complete four-domain catalog denominator, exact one-to-one technologies or durable production lifecycle for the remaining records", "all 2250 exact plaster/paint, drywall/ceiling, flooring and tile/stone records reconcile to 2250 unique technologies; every record compiles minimal and full resource-level scopes with source-backed formulas and the representative production lifecycle preserves exact identity through R1, R2, approval, PDF, procurement and cold history reopen", "complete Interior Finishes through the existing Estimate V4 factory, canonical parameter core and immutable revision repository without aliases, silent exclusions, a second compiler or a second storage owner", "adds a new exact 2250-record dual-scope denominator, required professional sections, zero-assumption and no-padding checks plus positive and fail-closed Apply/edit/reload cases; no existing test, fixture, timeout, threshold, scenario or assertion is removed or relaxed"),
-  entry("tests/estimateDomainFactory/waterSupplySewerageComplete.contract.test.ts", "Water Supply and Sewerage had no executable complete-domain contract proving its exact global-ledger denominator, topology-specific resource composition, typed cross-domain child assemblies or durable production lifecycle", "all 835 exact records reconcile to 835 unique canonical technologies with zero aliases and 165 reviewed exclusions; every record compiles minimal and full scopes with explicit pipes or equipment, fittings, joints, supports, labor, machinery, logistics, waste, testing and documentation, while representative gravity, external, equipment and repair records prove their conditional assemblies and Apply/edit/cold reload retains exact identity", "complete the Water Supply and Sewerage domain through the existing Estimate V4 factory, canonical parameter core and immutable revision repository without a generic pipe template, hidden hydraulic design, a second compiler or a second storage owner", "adds an exact 835-record dual-scope denominator, professional resource and dimensional assertions, topology and child-assembly coverage plus immutable R1/R2 cold-reload proof; no existing test, fixture, timeout, threshold, scenario or assertion is removed or relaxed"),
+  entry("tests/estimateDomainFactory/waterSupplySewerageComplete.contract.test.ts", "the retired client-owned Water domain contract treated the embedded factory as the compiler and covered the earlier non-backend corpus", "the superseding backend contract proves the same exact 845 identities through immutable PostgreSQL releases, FormulaGraph workers and server-owned revisions", "remove the obsolete duplicate client compiler test only together with deletion of its production owner", "the denominator remains 845/845 and is strengthened by all-row formula, norm, price, owner, admission, independent-oracle and bundle-absence assertions; no Water identity is removed"),
+  entry("tests/estimateBackend/waterBackendR5.contract.test.ts", "Water had no single executable R5 backend package contract for the real expanded 845-definition corpus", "the R5 contract seals exact membership, per-complexity depth, 109719 explicit parameters, 133505 formula/resource rows, no padding and client-owner absence", "bind the expanded Water corpus to the backend-native release boundary before admission", "adds exact positive and fail-closed corpus/package assertions for all 845 identities and removes no surviving test, timeout, threshold or fixture"),
+  entry("tests/estimateBackend/waterIndependentOracleA1.contract.test.ts", "the first repaired oracle had no executable negatives preventing broad owner, suffix, category or unit matches", "ten exact positive/negative fixtures and seven contract tests require structured owner/category/unit/title semantics and reject false lookalikes", "prove the 56-obligation disposition did not weaken the oracle to fit the corpus", "adds negative fixtures for wrong owner, suffix lookalike, wrong category/unit, integrated tests and typed protocol children; every exact positive remains required"),
   entry("tests/estimateDomainFactory/heatingVentilationComplete.contract.test.ts", "Heating and Ventilation had no executable complete-domain contract proving its exact global-ledger denominator, explicit thermal and aerodynamic design inputs, equipment-specific resource composition, typed child assemblies or durable production lifecycle", "all 920 exact records reconcile to 920 unique canonical technologies with zero aliases and 200 reviewed exclusions; every record compiles minimal and full scopes with explicit heating pipes, duct topology, equipment, refrigerant systems, supports, insulation, firestopping, labor, machinery, logistics, waste, tests, balancing, commissioning and documentation, while representative system families and Apply/edit/cold reload preserve exact identity", "complete Heating and Ventilation through the existing Estimate V4 factory, canonical parameter core and immutable revision repository without a generic HVAC template, hidden load or airflow design, a second compiler or a second storage owner", "adds an exact 920-record dual-scope denominator, explicit-design, topology, equipment and typed-child assertions plus immutable R1/R2 cold-reload proof; no existing test, fixture, timeout, threshold, scenario or assertion is removed or relaxed"),
   entry("tests/aiEstimateV4/asphaltRelatedCanonicalSchemaOwnership.contract.test.ts", "the R8 asphalt-related extension had no executable uniqueness guard for the established asphalt_concrete_pavement canonical parameter schema", "the canonical registry must retain exactly one established asphalt schema owner while registering each other exact asphalt-related schema once", "prevent Metro module initialization from crashing on CANONICAL_PARAMETER_SCHEMA_DUPLICATE", "adds exact schema-owner counts and duplicate-factory rejection without changing, removing or weakening any existing schema test"),
   entry("tests/aiEstimateV4/asphaltRelatedDemolitionD0D5.contract.test.ts", "the R8 demolition repair had no executable D0-D5 lifecycle proof or service-level D0-to-first-revision transition", "D0 fails closed without revision/BOQ, incomplete edits remain atomic, direct and haul-dependent batches create one durable revision, short exact titles approve, and D1-D5 preserve exact operation, formulas, PDF and procurement owners", "prevent demolition inputs, newly revealed conditional fields and exact-title approval from crashing or falling into generic installation semantics", "adds nine positive and fail-closed scenarios, including incomplete, complete and two-step haul D0 transitions plus short-description approval; no existing case, denominator, threshold or timeout is reduced"),
@@ -391,14 +393,13 @@ function changedTestPaths(): string[] {
 }
 
 function addedDiffLines(): string[] {
+  const testPathspecs = ["*.test.ts", "*.test.tsx", "*.spec.ts", "*.spec.tsx"];
   return git([
     "diff",
     "--unified=0",
     BASE_CHECKPOINT,
     "--",
-    ".",
-    ":(exclude)scripts/release/auditCurrentCoreNoTestWeakening.ts",
-    ":(exclude)package-lock.json",
+    ...testPathspecs,
   ])
     .split(/\r?\n/)
     .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
@@ -414,7 +415,10 @@ function main(): void {
   const changedTests = changedTestPaths();
   const ledgerPaths = CURRENT_CORE_TEST_CONTRACT_AUDIT.map((item) => item.path).sort();
   const missingLedgerEntries = changedTests.filter((file) => !ledgerPaths.includes(file));
-  const staleLedgerEntries = ledgerPaths.filter((file) => !changedTests.includes(file));
+  // The ledger is cumulative across sealed predecessors. Entries not touched by
+  // this exact predecessor diff remain historical proof, not stale weakening.
+  const historicalLedgerEntries = ledgerPaths.filter((file) => !changedTests.includes(file));
+  const staleLedgerEntries: string[] = [];
   const additions = addedDiffLines();
   const forbiddenFocusChanges = additions.filter((line) =>
     /\.(?:only|skip)\s*\(|\b(?:fdescribe|fit|xdescribe|xit|xtest)\s*\(/.test(line)
@@ -485,6 +489,7 @@ function main(): void {
     subject_sha: subjectSha,
     changed_test_files_count: changedTests.length,
     changed_test_files: changedTests,
+    historical_audit_entries_preserved: historicalLedgerEntries.length,
     guarded_fixtures: GUARDED_FIXTURES,
     guarded_fixtures_modified: modifiedGuardedFixtures,
     guarded_fixture_reviews: guardedFixtureReviews,

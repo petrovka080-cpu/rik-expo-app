@@ -6,6 +6,7 @@ import { Client } from "pg";
 import { chromium } from "playwright";
 
 import { evaluateFormulaGraph, type FormulaAst } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
+import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints";
 
 const API_VERSION = "2026-08-14.r2";
 const COMPILER_VERSION = "canonical-estimate-local-runtime.r2";
@@ -14,6 +15,7 @@ const TEST_ORGANIZATION_ID = process.env.CANONICAL_ESTIMATE_TEST_ORGANIZATION_ID
   ?? "22222222-2222-4222-8222-222222222222";
 const TARGET_RELEASE_ID = String(process.env.CANONICAL_ESTIMATE_TARGET_RELEASE_ID ?? "").trim();
 const ADMISSION_RUN_ID = String(process.env.CANONICAL_ESTIMATE_ADMISSION_RUN_ID ?? "").trim();
+const ADMISSION_DOMAIN_ID = String(process.env.CANONICAL_ESTIMATE_ADMISSION_DOMAIN_ID ?? "").trim();
 const PORT = Number(process.env.CANONICAL_ESTIMATE_LOCAL_PORT ?? 8765);
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/master11610_r1";
@@ -125,38 +127,6 @@ function evaluateCondition(ast: JsonRecord, parameters: JsonRecord): boolean {
   throw Object.assign(new Error("unsupported inclusion AST"), { code: "INVALID_INCLUSION_GRAPH" });
 }
 
-function validateParameters(definitions: JsonRecord[], input: JsonRecord): JsonRecord {
-  const values = { ...input };
-  const accepted = new Set(definitions.map((definition) => String(definition.parameter_id)));
-  if (Object.keys(values).some((key) => !accepted.has(key))) throw Object.assign(new Error("unknown estimate parameters"), { code: "PARAMETER_VALIDATION_FAILED" });
-  for (const definition of definitions) {
-    const id = String(definition.parameter_id);
-    const constraints = (definition.constraints_json ?? {}) as JsonRecord;
-    const value = values[id] ?? definition.default_value;
-    if (value == null) {
-      if (definition.required) throw Object.assign(new Error(`missing parameter ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-      continue;
-    }
-    const valueType = String(definition.value_type);
-    if (valueType === "boolean" && typeof value !== "boolean") throw Object.assign(new Error(`invalid boolean ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    if ((valueType === "decimal" || valueType === "integer") && !/^[+-]?\d+(?:\.\d+)?$/.test(String(value))) {
-      throw Object.assign(new Error(`invalid number ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if (valueType === "integer" && !Number.isInteger(Number(value))) throw Object.assign(new Error(`invalid integer ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    if (valueType === "enum" && Array.isArray(constraints.values) && !constraints.values.includes(value)) {
-      throw Object.assign(new Error(`invalid enum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if ((valueType === "decimal" || valueType === "integer") && constraints.min != null && Number(value) < Number(constraints.min)) {
-      throw Object.assign(new Error(`parameter below minimum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    if ((valueType === "decimal" || valueType === "integer") && constraints.max != null && Number(value) > Number(constraints.max)) {
-      throw Object.assign(new Error(`parameter above maximum ${id}`), { code: "PARAMETER_VALIDATION_FAILED" });
-    }
-    values[id] = value;
-  }
-  return values;
-}
-
 async function withClient<T>(operation: (client: Client) => Promise<T>): Promise<T> {
   const client = new Client({ connectionString: DATABASE_URL, application_name: "canonical-estimate-local-runtime-r1" });
   await client.connect();
@@ -190,17 +160,32 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
       let created;
       if (TARGET_RELEASE_ID) {
         if (!ADMISSION_RUN_ID) throw new Error("CANONICAL_ESTIMATE_ADMISSION_RUN_ID_REQUIRED");
-        created = await client.query(`select * from public.estimate_create_release_admission_job_v2($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)`, [
-          TARGET_RELEASE_ID,
-          ADMISSION_RUN_ID,
-          OWNER_ID,
-          TEST_ORGANIZATION_ID,
-          idempotencyKey,
-          operation,
-          catalogId,
-          parentRevisionId || null,
-          JSON.stringify(inputPayload),
-        ]);
+        if (ADMISSION_DOMAIN_ID) {
+          created = await client.query(`select * from public.estimate_create_release_admission_job_v3($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)`, [
+            TARGET_RELEASE_ID,
+            ADMISSION_DOMAIN_ID,
+            ADMISSION_RUN_ID,
+            OWNER_ID,
+            TEST_ORGANIZATION_ID,
+            idempotencyKey,
+            operation,
+            catalogId,
+            parentRevisionId || null,
+            JSON.stringify(inputPayload),
+          ]);
+        } else {
+          created = await client.query(`select * from public.estimate_create_release_admission_job_v2($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)`, [
+            TARGET_RELEASE_ID,
+            ADMISSION_RUN_ID,
+            OWNER_ID,
+            TEST_ORGANIZATION_ID,
+            idempotencyKey,
+            operation,
+            catalogId,
+            parentRevisionId || null,
+            JSON.stringify(inputPayload),
+          ]);
+        }
       } else {
         await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
         created = await client.query(`select * from public.estimate_create_compile_job_v1($1,$2,$3,$4,$5,$6::jsonb)`, [
@@ -353,7 +338,7 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
   if (!definition) throw Object.assign(new Error("definition not found"), { code: "DEFINITION_LOAD_FAILED" });
   const parameterDefinitions = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
-  const parameters = validateParameters(parameterDefinitions, (payload.parameters ?? {}) as JsonRecord);
+  const parameters = validateCanonicalEstimateParameters(parameterDefinitions, (payload.parameters ?? {}) as JsonRecord);
   const numericParameters = Object.fromEntries(Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
   const formulas = (await client.query("select formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1", [definition.id])).rows;
   const formulaById = new Map(formulas.map((formula) => [formula.formula_id, formula]));
@@ -877,7 +862,11 @@ const server = createServer((request, response) => {
     });
   }
   void route(request, response).catch((error: { code?: string; httpStatus?: number; message?: string }) => {
-    send(response, Number(error.httpStatus ?? 500), { error: { code: String(error.code ?? "INTERNAL_ERROR"), message: String(error.message ?? "local canonical backend failed"), retryable: false } });
+    const databaseCode = String(error.code ?? "");
+    const conflict = databaseCode === "23505";
+    const httpStatus = Number(error.httpStatus ?? (conflict ? 409 : 500));
+    const code = conflict ? "IDEMPOTENCY_PAYLOAD_CONFLICT" : String(error.code ?? "INTERNAL_ERROR");
+    send(response, httpStatus, { error: { code, message: String(error.message ?? "local canonical backend failed"), retryable: false } });
   });
 });
 

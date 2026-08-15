@@ -6,8 +6,8 @@ import { chromium } from "playwright";
 
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
-const EXPECTED_CATALOG_ID = "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1";
-const SEARCH_TEXT = "водоотвод для асфальтового покрытия в стандартной зоне";
+const EXPECTED_CATALOG_ID = argument("catalog-id", "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1");
+const SEARCH_TEXT = argument("search-text", "водоотвод для асфальтового покрытия в стандартной зоне");
 
 function argument(name: string, fallback = ""): string {
   const prefix = `--${name}=`;
@@ -55,7 +55,13 @@ function files(directory: string): string[] {
 }
 
 function productionReachability(bundleRoot: string) {
-  const forbidden = [
+  const frontendOwnerTokens = ["waterSupplySewerageComplete", "waterSewerStorm", "WATER_SEWER_COMPLETE_DOMAIN"];
+  const clientCompilerTokens = [
+    "evaluateFormulaGraph", "calculateGlobalConstructionEstimate", "calculateGlobalConstructionEstimateSync",
+    "compileProductionExpandedEstimate10000", "buildProfessionalExpandedGlobalEstimate", "productionFormulaDsl",
+  ];
+  const waterCorpusTokens = ["batch006-water-backend-r3.r5", "WATER_BACKEND_BOQ_ROW_LEDGER", "WATER_R5_OBLIGATION_UNIVERSE_845"];
+  const forbidden = [...new Set([
     "buildConsumerRepairSelectedWorkDraftBundle",
     "requestEstimateLegacyTestActions",
     "consumerRequestLegacyPdfMigrationReader",
@@ -71,10 +77,16 @@ function productionReachability(bundleRoot: string) {
     "calculateGlobalConstructionEstimateSync",
     "buildProfessionalExpandedGlobalEstimate",
     "productionFormulaDsl",
+    "waterSupplySewerageComplete",
+    "waterSewerStorm",
+    "WATER_SEWER_COMPLETE_DOMAIN",
     "dev-bearer",
     "r2-disposable-test-tenant",
     "EXPO_PUBLIC_PROOF_RUNNER",
-  ];
+    ...frontendOwnerTokens,
+    ...clientCompilerTokens,
+    ...waterCorpusTokens,
+  ])];
   const javascript = files(bundleRoot).filter((path) => /\.(?:js|mjs)$/i.test(path));
   const counts = Object.fromEntries(forbidden.map((token) => [token, 0]));
   let totalBytes = 0;
@@ -84,7 +96,17 @@ function productionReachability(bundleRoot: string) {
     for (const token of forbidden) counts[token] += body.split(token).length - 1;
   }
   const violations = Object.entries(counts).filter(([, count]) => count !== 0).map(([token, count]) => ({ token, count }));
-  return { javascriptFiles: javascript.length, totalBytes, counts, violations, legacyReachability: violations.length };
+  const tokenCount = (tokens: string[]) => tokens.reduce((sum, token) => sum + counts[token], 0);
+  return {
+    javascriptFiles: javascript.length,
+    totalBytes,
+    counts,
+    violations,
+    legacyReachability: violations.length,
+    FRONTEND_WATER_OWNER: tokenCount(frontendOwnerTokens),
+    CLIENT_WATER_COMPILER_REACHABILITY: tokenCount(clientCompilerTokens),
+    WATER_CORPUS_IN_WEB_BUNDLE: tokenCount(waterCorpusTokens),
+  };
 }
 
 async function main(): Promise<void> {
@@ -170,6 +192,9 @@ async function main(): Promise<void> {
     await page.screenshot({ path: screenshot, fullPage: true });
     const reachability = productionReachability(bundleRoot);
     if (reachability.legacyReachability !== 0) blockers.push(`PRODUCTION_LEGACY_REACHABILITY_${reachability.legacyReachability}`);
+    if (reachability.FRONTEND_WATER_OWNER !== 0) blockers.push(`FRONTEND_WATER_OWNER_${reachability.FRONTEND_WATER_OWNER}`);
+    if (reachability.CLIENT_WATER_COMPILER_REACHABILITY !== 0) blockers.push(`CLIENT_WATER_COMPILER_REACHABILITY_${reachability.CLIENT_WATER_COMPILER_REACHABILITY}`);
+    if (reachability.WATER_CORPUS_IN_WEB_BUNDLE !== 0) blockers.push(`WATER_CORPUS_IN_WEB_BUNDLE_${reachability.WATER_CORPUS_IN_WEB_BUNDLE}`);
     if (pageErrors.length) blockers.push(`WEB_PAGE_ERRORS_${pageErrors.length}`);
     const proof = {
       schemaVersion: "web-backend-cutover-proof.r3",
