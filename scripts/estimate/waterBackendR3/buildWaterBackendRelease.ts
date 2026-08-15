@@ -338,10 +338,10 @@ async function main(): Promise<void> {
     allArtifactsSha256Verified: true,
     status: "GREEN",
   });
-  writeEvidenceJsonl("A2_07_WATER_BACKEND_PROFESSIONAL_PASSPORT_INDEX.jsonl", passportIndex);
-  writeEvidenceJsonl("A2_07_WATER_BACKEND_PARAMETER_SCHEMA_INDEX.jsonl", parameterIndex);
-  writeEvidenceJsonl("A2_07_WATER_BACKEND_BOQ_ROW_LEDGER.jsonl", rowLedger);
-  writeEvidenceJsonl("A2_07_WATER_ROW_FORMULA_NORM_PRICE_TRACE.jsonl", trace);
+  await writeLines(join(EVIDENCE_ROOT, "A2_07_WATER_BACKEND_PROFESSIONAL_PASSPORT_INDEX.jsonl"), passportIndex);
+  await writeLines(join(EVIDENCE_ROOT, "A2_07_WATER_BACKEND_PARAMETER_SCHEMA_INDEX.jsonl"), parameterIndex);
+  await writeLines(join(EVIDENCE_ROOT, "A2_07_WATER_BACKEND_BOQ_ROW_LEDGER.jsonl"), rowLedger);
+  await writeLines(join(EVIDENCE_ROOT, "A2_07_WATER_ROW_FORMULA_NORM_PRICE_TRACE.jsonl"), trace);
   writeEvidenceJson("A2_07_SOURCE_FINGERPRINT.json", sourceFingerprint);
 
   process.stdout.write(`${JSON.stringify({
