@@ -186,7 +186,7 @@ async function main(): Promise<void> {
     actual: {
       definitions: definitions.length,
       globalDefinitions: definitions.filter((definition) => definition.work.namespace === "global").length,
-      externalDefinitions: definitions.filter((definition) => definition.work.namespace === "external").length,
+      externalDefinitions: definitions.filter((definition) => definition.work.namespace === "external_reference").length,
       parameters: parameterCount,
       formulas: rowCount,
       resources: rowCount,

@@ -105,7 +105,7 @@ function chooseCases(classification: Json[], lowDepthIds: Set<string>): Json[] {
     selected.push(row);
     seen.add(String(row.catalog_id));
   };
-  classification.filter((row) => row.namespace === "external")
+  classification.filter((row) => row.namespace === "external_reference")
     .sort((left, right) => String(left.catalog_id).localeCompare(String(right.catalog_id))).forEach(add);
   [...lowDepthIds].sort().slice(0, 15).forEach((id) => add(byId.get(id)));
   for (const complexity of ["L1", "L2", "L3", "L4", "L5"]) {
@@ -115,7 +115,7 @@ function chooseCases(classification: Json[], lowDepthIds: Set<string>): Json[] {
       .forEach((row) => { if (selected.length < 50) add(row); });
   }
   if (selected.length !== 50 || seen.size !== 50
-    || selected.filter((row) => row.namespace === "external").length !== 29
+    || selected.filter((row) => row.namespace === "external_reference").length !== 29
     || selected.filter((row) => lowDepthIds.has(String(row.catalog_id))).length < 15) {
     throw new Error(`WATER_WOW_50_SELECTION_RED:${selected.length}:${seen.size}`);
   }

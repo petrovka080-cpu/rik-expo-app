@@ -106,7 +106,7 @@ function categoryDisposition(category, identity) {
   const operation = String(identity.operation);
   const family = identity.family ? String(identity.family) : "";
   const catalogId = String(identity.catalogId);
-  const external = identity.namespace === "external";
+  const external = identity.namespace === "external_reference";
   const frozenCategory = {
     PRIMARY_MATERIALS: "materials",
     DIRECT_LABOUR: "labour",
@@ -185,7 +185,7 @@ function main() {
       operation: /sampling|inspection|detection/.test(family) ? "DETAILED_BOQ_FROM_DRAWINGS" : "PRELIMINARY_OR_DETAILED_BOQ",
       complexity,
       technology,
-      namespace: "external",
+      namespace: "external_reference",
       baselineRows: 0,
       baselineParameters: 0,
       baselineCategories: [],
@@ -291,7 +291,7 @@ function main() {
       { fixture: "BASE_FILTER_IS_NOT_FACILITY_COMMISSIONING", expectedDisposition: "NOT_APPLICABLE_WITH_ENGINEERING_REASON", actual: categoryDisposition("COMMISSIONING", { family: "", system: "FILTER", operation: "CONNECT", technology: "PUMP", namespace: "global", baselineCategories: [] }).disposition },
       { fixture: "A2_FULL_TREATMENT_SCOPE_REQUIRES_TEMPORARY_ISOLATION_DESPITE_A1_TRUNCATION", expectedDisposition: "APPLICABLE_WITH_ROWS", actual: categoryDisposition("TEMPORARY_WORKS", { family: "aeration_tanks", operation: "AS_BUILT_ESTIMATE", technology: "TREATMENT", namespace: "global", baselineCategories: [{ category: "temporary-works", rowCount: 0, reason: "A1_TRUNCATED_SCOPE" }] }).disposition },
       { fixture: "FROZEN_POSITIVE_OWNER_INTERFACE_STAYS_APPLICABLE", expectedDisposition: "APPLICABLE_WITH_ROWS", actual: categoryDisposition("TYPED_CHILD_SCOPES", { family: "aeration_tanks", operation: "TENDER_BOQ", technology: "TREATMENT", namespace: "global", baselineCategories: [{ category: "owner-interfaces", rowCount: 24, reason: "EXACT_ROWS=24" }] }).disposition },
-      { fixture: "NEW_EXTERNAL_TREATMENT_SAFETY_REQUIRED", expectedDisposition: "APPLICABLE_WITH_ROWS", actual: categoryDisposition("SAFETY_CONFINED_SPACE", { family: "reverse_osmosis_treatment", operation: "PRELIMINARY_OR_DETAILED_BOQ", technology: "TREATMENT", namespace: "external", baselineCategories: [] }).disposition },
+      { fixture: "NEW_EXTERNAL_TREATMENT_SAFETY_REQUIRED", expectedDisposition: "APPLICABLE_WITH_ROWS", actual: categoryDisposition("SAFETY_CONFINED_SPACE", { family: "reverse_osmosis_treatment", operation: "PRELIMINARY_OR_DETAILED_BOQ", technology: "TREATMENT", namespace: "external_reference", baselineCategories: [] }).disposition },
       { fixture: "CORROSION_PROTECTION_IS_NOT_HSE_OR_CONFINED_SPACE", expectedDisposition: "NOT_APPLICABLE_WITH_ENGINEERING_REASON", actual: categoryDisposition("SAFETY_CONFINED_SPACE", { catalogId: "plumbing_interior_water_pipe_route_standard", family: "", operation: "ROUTE", technology: "INTERNAL_PRESSURE", namespace: "global", baselineCategories: [{ category: "safety-environment", rowCount: 10, reason: "LEGACY_OVERBROAD_PROTECTION_MATCH" }] }).disposition },
       { fixture: "NULL_BASE_FAMILY_MUST_NOT_STRINGIFY_TO_TRUTHY_OWNER", expectedDisposition: "NOT_APPLICABLE_WITH_ENGINEERING_REASON", actual: categoryDisposition("SAFETY_CONFINED_SPACE", { catalogId: "plumbing_interior_bath_connect_standard", family: null, operation: "CONNECT", technology: "FIXTURE", namespace: "global", baselineCategories: [] }).disposition },
     ].map((row) => ({ ...row, status: row.actual === (row.expectedTechnology ?? row.expectedDisposition) ? "GREEN" : "RED", fixtureHash: sha256(row) }));

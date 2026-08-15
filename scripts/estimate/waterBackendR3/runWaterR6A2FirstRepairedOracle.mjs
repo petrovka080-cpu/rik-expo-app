@@ -174,7 +174,7 @@ async function main() {
     || row.norm_locators_added.length !== row.rows_added);
   if (lowDepth.length !== 360 || lowFailures.length) failures.push(`LOW_DEPTH_REPAIR_EVIDENCE_RED:${lowDepth.length}:${lowFailures.length}`);
   if (definitions.length !== 874 || expected.length !== 874 || perId.length !== 874) failures.push("DEFINITION_DENOMINATOR_RED");
-  if (definitions.filter((row) => row.namespace === "global").length !== 845 || definitions.filter((row) => row.namespace === "external").length !== 29) failures.push("NAMESPACE_DENOMINATOR_RED");
+  if (definitions.filter((row) => row.namespace === "global").length !== 845 || definitions.filter((row) => row.namespace === "external_reference").length !== 29) failures.push("NAMESPACE_DENOMINATOR_RED");
   if (parameterArtifact.count !== 180_755 || rowArtifact.count !== 232_011) failures.push("TARGET_TOTALS_RED");
   if (antiTemplate.status !== "GREEN" || antiTemplate.paddingRows !== 0 || antiTemplate.exactDuplicateDefinitionSemanticSignatures !== 0) failures.push("ANTI_TEMPLATE_RED");
   if (ownerOverlap.status !== "GREEN" || ownerOverlap.ownerOverlap !== 0) failures.push("OWNER_OVERLAP_RED");
@@ -192,7 +192,7 @@ async function main() {
     actual: {
       definitions: definitions.length,
       globalDefinitions: definitions.filter((row) => row.namespace === "global").length,
-      externalDefinitions: definitions.filter((row) => row.namespace === "external").length,
+      externalDefinitions: definitions.filter((row) => row.namespace === "external_reference").length,
       parameters: parameterArtifact.count,
       formulas: formulaIds.size,
       resources: rowIds.size,

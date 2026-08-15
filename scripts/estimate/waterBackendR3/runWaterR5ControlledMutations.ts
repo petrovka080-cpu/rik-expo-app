@@ -77,7 +77,7 @@ function main(): void {
   mkdirSync(EVIDENCE, { recursive: true });
   const definitions = buildWaterBackendDefinitions();
   const global = definitions.filter((definition) => definition.work.namespace === "global");
-  const external = definitions.filter((definition) => definition.work.namespace === "external");
+  const external = definitions.filter((definition) => definition.work.namespace === "external_reference");
   const representatives = [
     ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L1").slice(0, 4),
     ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L2").slice(0, 4),
@@ -119,7 +119,7 @@ function main(): void {
     representativeDefinitions: representatives.map((definition) => definition.work.catalogId),
     representativeNamespaces: {
       global: representatives.filter((definition) => definition.work.namespace === "global").length,
-      external: representatives.filter((definition) => definition.work.namespace === "external").length,
+      external: representatives.filter((definition) => definition.work.namespace === "external_reference").length,
     },
     mutationClasses: MUTATORS.map((mutator) => mutator.id),
     minimumRequired: requiredMutations,

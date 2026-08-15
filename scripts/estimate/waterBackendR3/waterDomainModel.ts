@@ -122,7 +122,7 @@ export type WaterResource = {
 export type WaterDefinition = {
   work: {
     catalogId: string;
-    namespace: "global" | "external";
+    namespace: "global" | "external_reference";
     domain: typeof WATER_BACKEND_DOMAIN;
     sourceIdentity: string;
     workKey: string;
@@ -1104,7 +1104,7 @@ export function buildWaterBackendDefinitions(): WaterDefinition[] {
     return {
       work: {
         catalogId: row.catalog_id,
-        namespace: externalA2 ? "external" : "global",
+        namespace: externalA2 ? "external_reference" : "global",
         domain: WATER_BACKEND_DOMAIN,
         sourceIdentity: row.catalog_id,
         workKey: row.work_key,

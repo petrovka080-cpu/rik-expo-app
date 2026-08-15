@@ -458,7 +458,7 @@ async function main(): Promise<void> {
   const inventory = buildGlobalCatalogInventoryV1();
   const definitions = buildWaterBackendDefinitions();
   const globalDefinitions = definitions.filter((definition) => definition.work.namespace === "global");
-  const externalDefinitions = definitions.filter((definition) => definition.work.namespace === "external");
+  const externalDefinitions = definitions.filter((definition) => definition.work.namespace === "external_reference");
   const waterIds = new Set(globalDefinitions.map((definition) => definition.work.catalogId));
   const classification = inventory.rows.map((row) => classifyInventory(row, waterIds));
   const classificationCounts = Object.fromEntries([...new Set(classification.map((row) => row.classification))].sort().map((name) => [name, classification.filter((row) => row.classification === name).length]));

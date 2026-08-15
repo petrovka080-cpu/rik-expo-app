@@ -227,7 +227,7 @@ async function main() {
     actual: {
       definitions: definitions.length,
       globalDefinitions: definitions.filter((row) => row.namespace === "global").length,
-      externalDefinitions: definitions.filter((row) => row.namespace === "external").length,
+      externalDefinitions: definitions.filter((row) => row.namespace === "external_reference").length,
       parameters: parameterArtifact.rows,
       formulas: seenFormulas.size,
       resources: seenRows.size,

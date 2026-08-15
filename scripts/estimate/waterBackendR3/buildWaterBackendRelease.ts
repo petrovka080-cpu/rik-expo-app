@@ -155,7 +155,7 @@ async function main(): Promise<void> {
   const waterCounts = {
     definitions: definitions.length,
     globalDefinitions: definitions.filter((definition) => definition.work.namespace === "global").length,
-    externalDefinitions: definitions.filter((definition) => definition.work.namespace === "external").length,
+    externalDefinitions: definitions.filter((definition) => definition.work.namespace === "external_reference").length,
     parameters: waterParameters.length,
     formulas: waterFormulas.length,
     resources: waterResources.length,
