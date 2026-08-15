@@ -269,6 +269,7 @@ async function createArtifactJob(body: JsonRecord, revisionId: string, kind: "pd
 }
 
 let draining = false;
+let drainRequested = false;
 let retryDrainTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleRetryDrain(delayMs: number): void {
@@ -280,55 +281,65 @@ function scheduleRetryDrain(delayMs: number): void {
 }
 
 async function drainJobs(): Promise<void> {
-  if (draining) return;
+  if (draining) {
+    drainRequested = true;
+    return;
+  }
   draining = true;
   try {
-    await withClient(async (client) => {
-      while (true) {
-        const workerId = `local-runtime:${randomUUID()}`;
-        const claimed = await client.query("select * from public.estimate_claim_compile_jobs_v1($1,4,120)", [workerId]);
-        if (claimed.rows.length === 0) break;
-        for (const job of claimed.rows) {
-          try {
-            if (job.operation === "legacy_revision_migration") await migrateLegacyClaimedJob(client, workerId, job as JsonRecord);
-            else if (job.operation === "pdf" || job.operation === "procurement") await buildArtifactClaimedJob(client, workerId, job as JsonRecord);
-            else await compileClaimedJob(client, workerId, job as JsonRecord);
-          }
-          catch (error) {
-            const code = typeof error === "object" && error && "code" in error ? String((error as { code: unknown }).code) : "COMPILER_FAILED";
-            const message = error instanceof Error ? error.message : String(error);
-            const retryable = (code === "40001" && !message.startsWith("optimistic revision conflict:"))
-              || ["40P01", "55P03"].includes(code)
-              || code.endsWith("_LOAD_FAILED")
-              || code.endsWith("_STORAGE_FAILED")
-              || code === "REVISION_COMMIT_RETRYABLE";
-            const retryDelaySeconds = Math.min(300, 2 ** Math.min(Number(job.attempt ?? 1), 8));
-            await client.query(
-              "select public.estimate_fail_compile_job_v2($1,$2,$3,$4::jsonb,$5,$6)",
-              [
-                job.id,
-                workerId,
-                code.slice(0, 100),
-                JSON.stringify({ compilerVersion: COMPILER_VERSION, retryable }),
-                retryable,
-                retryDelaySeconds,
-              ],
-            );
+    do {
+      drainRequested = false;
+      await withClient(async (client) => {
+        while (true) {
+          const workerId = `local-runtime:${randomUUID()}`;
+          const claimed = await client.query("select * from public.estimate_claim_compile_jobs_v1($1,4,120)", [workerId]);
+          if (claimed.rows.length === 0) break;
+          for (const job of claimed.rows) {
+            try {
+              if (job.operation === "legacy_revision_migration") await migrateLegacyClaimedJob(client, workerId, job as JsonRecord);
+              else if (job.operation === "pdf" || job.operation === "procurement") await buildArtifactClaimedJob(client, workerId, job as JsonRecord);
+              else await compileClaimedJob(client, workerId, job as JsonRecord);
+            }
+            catch (error) {
+              const code = typeof error === "object" && error && "code" in error ? String((error as { code: unknown }).code) : "COMPILER_FAILED";
+              const message = error instanceof Error ? error.message : String(error);
+              const retryable = (code === "40001" && !message.startsWith("optimistic revision conflict:"))
+                || ["40P01", "55P03"].includes(code)
+                || code.endsWith("_LOAD_FAILED")
+                || code.endsWith("_STORAGE_FAILED")
+                || code === "REVISION_COMMIT_RETRYABLE";
+              const retryDelaySeconds = Math.min(300, 2 ** Math.min(Number(job.attempt ?? 1), 8));
+              await client.query(
+                "select public.estimate_fail_compile_job_v2($1,$2,$3,$4::jsonb,$5,$6)",
+                [
+                  job.id,
+                  workerId,
+                  code.slice(0, 100),
+                  JSON.stringify({ compilerVersion: COMPILER_VERSION, retryable }),
+                  retryable,
+                  retryDelaySeconds,
+                ],
+              );
+            }
           }
         }
-      }
-      const retry = await client.query(`
-        select ceil(extract(epoch from (min(available_at) - now())) * 1000)::integer delay_ms
-          from public.estimate_compile_job where status='retry_wait'
-      `);
-      const rawRetryDelayMs = retry.rows[0]?.delay_ms;
-      if (rawRetryDelayMs != null) {
-        const retryDelayMs = Number(rawRetryDelayMs);
-        if (Number.isFinite(retryDelayMs)) scheduleRetryDrain(retryDelayMs + 100);
-      }
-    });
+        const retry = await client.query(`
+          select ceil(extract(epoch from (min(available_at) - now())) * 1000)::integer delay_ms
+            from public.estimate_compile_job where status='retry_wait'
+        `);
+        const rawRetryDelayMs = retry.rows[0]?.delay_ms;
+        if (rawRetryDelayMs != null) {
+          const retryDelayMs = Number(rawRetryDelayMs);
+          if (Number.isFinite(retryDelayMs)) scheduleRetryDrain(retryDelayMs + 100);
+        }
+      });
+    } while (drainRequested);
   } finally {
     draining = false;
+    if (drainRequested) {
+      drainRequested = false;
+      setImmediate(() => { void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
+    }
   }
 }
 

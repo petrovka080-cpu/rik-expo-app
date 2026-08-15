@@ -90,6 +90,9 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(composer).toContain('testID="canonical-estimate-recalculate-top"');
     expect(composer).toContain('testID="canonical-estimate-expand-parameters"');
     expect(localGateway).toContain("catalog_id ilike");
+    expect(localGateway).toContain("let drainRequested = false");
+    expect(localGateway).toContain("drainRequested = true");
+    expect(localGateway).toContain("while (drainRequested)");
     expect(edgeGateway).toContain("catalog_id.ilike");
   });
 
