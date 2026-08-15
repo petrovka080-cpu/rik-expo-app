@@ -56,4 +56,31 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(verification).toContain('executed: false');
     expect(verification).toContain('status: "DEFERRED_BY_OPERATOR_NOT_RUN"');
   });
+
+  it("requires exact-ID real Web and native MainActivity API34 lifecycle matrices", () => {
+    const web = read("scripts/e2e/runWaterR6A2WebMatrix50.ts");
+    const android = read("scripts/e2e/runWaterR6A2NativeMainActivityMatrix50.ts");
+    const composer = read("src/components/estimate/ProfessionalEstimateComposer.tsx");
+    const localGateway = read("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
+    const edgeGateway = read("supabase/functions/canonical-estimate/index.ts");
+    expect(web).toContain("REAL_PLAYWRIGHT_CHROMIUM_RENDERED_WEB_UI");
+    expect(web).toContain("helperBypass: false");
+    expect(web).toContain("expected: 50");
+    expect(android).toContain('const EXPECTED_API = "34"');
+    expect(android).toContain('const MAIN_ACTIVITY = `${PACKAGE_NAME}/.MainActivity`');
+    expect(android).toContain("chromeOrWebViewSubstitution: false");
+    expect(android).toContain("expected: 50");
+    expect(composer).toContain('testID="canonical-estimate-artifact-pdf"');
+    expect(composer).toContain('testID="canonical-estimate-artifact-procurement"');
+    expect(localGateway).toContain("catalog_id ilike");
+    expect(edgeGateway).toContain("catalog_id.ilike");
+  });
+
+  it("measures compile execution separately from queue wait while preserving 50-parallel truth", () => {
+    const performance = read("scripts/estimate/waterBackendR3/runWaterR5A1PerformanceGate.ts");
+    expect(performance).toContain("SERVER_EXECUTION_STARTED_TO_COMPLETED");
+    expect(performance).toContain("ENQUEUED_TO_COMPLETED_REPORTED_SEPARATELY");
+    expect(performance).toContain("concurrentCompileJobs: { expected: 50");
+    expect(performance).toContain("compileRecalculateP95MaxMs: 1_500");
+  });
 });

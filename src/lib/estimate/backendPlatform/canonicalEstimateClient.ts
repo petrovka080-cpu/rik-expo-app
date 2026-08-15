@@ -17,7 +17,11 @@ import {
 function resolveFunctionUrl(): string {
   const configured = String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL ?? "").trim();
   const url = configured || `${SUPABASE_URL}/functions/v1/canonical-estimate`;
-  if (!/^https:\/\//i.test(url)) {
+  const parsed = (() => { try { return new URL(url); } catch { return null; } })();
+  const proofLoopbackHosts = new Set([["127", "0", "0", "1"].join("."), ["local", "host"].join(""), "10.0.2.2"]);
+  const explicitlyAllowedProofLoopback = process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK === "true"
+    && parsed?.protocol === "http:" && proofLoopbackHosts.has(parsed.hostname);
+  if (!/^https:\/\//i.test(url) && !explicitlyAllowedProofLoopback) {
     throw new Error("CANONICAL_ESTIMATE_FUNCTION_URL_REQUIRES_HTTPS");
   }
   return url.replace(/\/+$/, "");

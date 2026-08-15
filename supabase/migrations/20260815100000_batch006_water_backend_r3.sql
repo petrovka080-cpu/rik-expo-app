@@ -561,7 +561,7 @@ begin
   insert into public.estimate_program_event (
     event_kind, event_key, catalog_id, denominator_delta, queue_delta, payload
   )
-  select 'admission', 'batch006-water-r5:' || catalog_id, catalog_id, 0, -1,
+  select 'admission', 'batch006-water-r6-a2:' || catalog_id, catalog_id, 0, -1,
     jsonb_build_object(
       'releaseId', v_target.id,
       'predecessorReleaseId', v_predecessor.id,
@@ -584,7 +584,7 @@ begin
     state_before, state_after, admitted_catalog_id_set_sha256, newly_admitted_count,
     admission_proof_sha256, independent_audit_sha256
   ) values (
-    'batch006-water-r5:' || v_target.id::text, v_target.id, v_predecessor.id,
+    'batch006-water-r6-a2:' || v_target.id::text, v_target.id, v_predecessor.id,
     v_state.program_state_version, v_state.program_state_version + 1,
     v_state.state_sha256, v_next_hash, v_state_before, v_state_after,
     p_admitted_catalog_id_set_sha256, p_expected_newly_admitted,

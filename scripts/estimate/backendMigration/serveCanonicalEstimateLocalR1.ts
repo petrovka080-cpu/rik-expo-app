@@ -826,7 +826,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? 30) || 30));
     const items = await withClient(async (client) => (await client.query(`
       select catalog_id,namespace,domain,work_key,title_ru from public.estimate_work_identity
-      where retired_at is null and ($1='' or domain=$1) and ($2='' or title_ru ilike '%' || $2 || '%')
+       where retired_at is null and ($1='' or domain=$1)
+         and ($2='' or title_ru ilike '%' || $2 || '%' or catalog_id ilike '%' || $2 || '%')
       order by catalog_id limit $3
     `, [domain, query, limit])).rows);
     return send(response, 200, { apiVersion: API_VERSION, items: items.map((item) => ({ catalogId: item.catalog_id, namespace: item.namespace, domain: item.domain, workKey: item.work_key, titleRu: item.title_ru })) });

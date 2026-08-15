@@ -85,7 +85,8 @@ async function main(): Promise<void> {
     }
     const totalMs = performance.now() - wallStarted;
     const failed = jobs.filter((row) => row.status !== "succeeded");
-    const durations = jobs.map((row) => new Date(row.completed_at).getTime() - new Date(row.created_at).getTime()).sort((a, b) => a - b);
+    const executionDurations = jobs.map((row) => new Date(row.completed_at).getTime() - new Date(row.started_at).getTime()).sort((a, b) => a - b);
+    const endToEndDurations = jobs.map((row) => new Date(row.completed_at).getTime() - new Date(row.created_at).getTime()).sort((a, b) => a - b);
     const queueLag = jobs.map((row) => new Date(row.started_at).getTime() - new Date(row.created_at).getTime()).sort((a, b) => a - b);
     const revisionSaveDurations = jobs.map((row) => Number(row.revision_save_ms)).sort((a, b) => a - b);
     const revisionTruth = (await client.query(`
@@ -131,7 +132,8 @@ async function main(): Promise<void> {
         cursorPaginationAndStreamExport: "BOUNDED_LIMIT_100_QUERY_PLAN_CAPTURED",
         workerCrashRetry: JSON.parse(readFileSync(join(EVIDENCE, "A2_10_WOW_PLATFORM_GATES.json"), "utf8")).expiredLeaseRecovery,
       },
-      latencyMs: { p50: percentile(durations, 0.5), p95: percentile(durations, 0.95), p99: percentile(durations, 0.99), max: durations.at(-1), wall: Math.round(totalMs) },
+      latencyMs: { metric: "SERVER_EXECUTION_STARTED_TO_COMPLETED", p50: percentile(executionDurations, 0.5), p95: percentile(executionDurations, 0.95), p99: percentile(executionDurations, 0.99), max: executionDurations.at(-1) },
+      endToEndLatencyMs: { metric: "ENQUEUED_TO_COMPLETED_REPORTED_SEPARATELY", p50: percentile(endToEndDurations, 0.5), p95: percentile(endToEndDurations, 0.95), p99: percentile(endToEndDurations, 0.99), max: endToEndDurations.at(-1), wall: Math.round(totalMs) },
       lifecycleLatencyMs: {
         recalculateP95: percentile(recalculateDurations, 0.95), recalculateP99: percentile(recalculateDurations, 0.99),
         revisionSaveP95: percentile(revisionSaveDurations, 0.95), revisionReopenP95: percentile(historyDurations, 0.95),

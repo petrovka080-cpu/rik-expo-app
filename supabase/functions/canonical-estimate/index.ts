@@ -523,7 +523,10 @@ async function searchCatalog(request: Request, requester: ReturnType<typeof crea
     .order("catalog_id", { ascending: true })
     .limit(limit);
   if (domain) selection = selection.eq("domain", domain);
-  if (query) selection = selection.ilike("title_ru", `%${query.replace(/[%_]/g, "\\$&")}%`);
+  if (query) {
+    const escaped = query.replace(/[%_,]/g, "\\$&");
+    selection = selection.or(`title_ru.ilike.%${escaped}%,catalog_id.ilike.%${escaped}%`);
+  }
   const { data, error } = await selection;
   if (error) normalizeDbError(error);
   return {
