@@ -71,6 +71,7 @@ type PendingMigration = {
   rowOverrides: Record<string, CanonicalEstimateRowOverride>;
   customRows: CanonicalEstimateCustomRow[];
 };
+type ArtifactLink = { signedUrl: string; revisionId: string; releaseId: string };
 
 function estimateRowKeyExtractor(row: ForemanDraftEstimateRow): string {
   return row.rowId;
@@ -138,9 +139,11 @@ export default function ProfessionalEstimateComposer({
   const [pendingMigration, setPendingMigration] = useState<PendingMigration | null>(null);
   const [history, setHistory] = useState<CanonicalEstimateRevisionView[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [showAllParameters, setShowAllParameters] = useState(false);
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogRows, setCatalogRows] = useState<CatalogQuickItem[]>([]);
   const [artifactMessage, setArtifactMessage] = useState("");
+  const [artifactLinks, setArtifactLinks] = useState<Partial<Record<"pdf" | "procurement", ArtifactLink>>>({});
 
   const contextText = useMemo(() => buildContextText(context), [context]);
   useEffect(() => {
@@ -216,6 +219,7 @@ export default function ProfessionalEstimateComposer({
     setParameterInputs(Object.fromEntries(Object.entries(next.revision.parameters).map(([key, value]) => [key, String(value)])));
     setPendingMigration(null);
     setArtifactMessage("");
+    setArtifactLinks({});
   };
 
   const loadHistory = async (catalogId: string) => {
@@ -267,6 +271,7 @@ export default function ProfessionalEstimateComposer({
       setMapping(null);
       setBundle(null);
       setHistory([]);
+      setShowAllParameters(false);
     }
   };
 
@@ -278,6 +283,7 @@ export default function ProfessionalEstimateComposer({
       setText(catalog.titleRu);
       setSelectedCatalog(catalog);
       setCatalogSuggestions([]);
+      setShowAllParameters(false);
       setParameterInputs(Object.fromEntries(catalog.parameterSchema.map((parameter) => [
         parameter.parameterId,
         parameter.defaultValue == null ? "" : String(parameter.defaultValue),
@@ -538,11 +544,32 @@ export default function ProfessionalEstimateComposer({
       });
       if (artifact.releaseId !== bundle.revision.releaseId) throw new Error("Artifact release_id не совпадает с revision.");
       setArtifactMessage(`${kind.toUpperCase()}: release ${artifact.releaseId} · sha256 ${artifact.sha256 ?? "pending"}`);
-      if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
+      if (artifact.signedUrl) setArtifactLinks((previous) => ({
+        ...previous,
+        [kind]: {
+          signedUrl: artifact.signedUrl,
+          revisionId: bundle.revision.revisionId,
+          releaseId: artifact.releaseId,
+        },
+      }));
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : String(nextError));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOpenArtifact = async (kind: "pdf" | "procurement") => {
+    const artifact = artifactLinks[kind];
+    if (!artifact || !bundle) return;
+    if (artifact.revisionId !== bundle.revision.revisionId || artifact.releaseId !== bundle.revision.releaseId) {
+      setError("Artifact link belongs to another immutable revision.");
+      return;
+    }
+    try {
+      await Linking.openURL(artifact.signedUrl);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : String(nextError));
     }
   };
 
@@ -629,16 +656,29 @@ export default function ProfessionalEstimateComposer({
               <TextInput testID="foreman-ai-estimate-input" value={text} onChangeText={handleTextChange} placeholder={TEXT.inputPlaceholder} multiline style={styles.input} editable={!loading && !saving} />
               {catalogLoading ? <ActivityIndicator /> : null}
               {catalogSuggestions.length ? <View style={styles.workSuggestionsPanel} testID="foreman-ai-estimate-work-suggestions"><Text style={styles.panelTitle}>{TEXT.workSuggestionTitle}</Text><View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <Pressable key={suggestion.catalogId} testID={`foreman-ai-estimate-work-suggestion-${index + 1}`} onPress={() => handleSelectWorkSuggestion(suggestion)} style={styles.workSuggestionButton}><Text style={styles.workSuggestionName} numberOfLines={1}>{suggestion.titleRu}</Text><Text style={styles.workSuggestionMeta} numberOfLines={1}>{suggestion.domain} · {suggestion.catalogId}</Text></Pressable>)}</View></View> : null}
+              {history[0] ? <Pressable testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`} disabled={loading} onPress={() => handleOpenHistoryRevision(history[0])} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Latest backend revision · {history[0].revisionId}</Text></Pressable> : null}
+              {bundle ? <View testID="canonical-estimate-native-quick-actions" style={styles.catalogPanel}>
+                <Text testID="canonical-estimate-release-id-top" style={styles.catalogHint}>release: {bundle.revision.releaseId}</Text>
+                <Text testID="canonical-estimate-row-count-top" style={styles.catalogHint}>{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
+                <View style={styles.rowActions}>
+                  <Pressable testID="canonical-estimate-recalculate-top" disabled={loading || saving} onPress={handleGenerate} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Recalculate</Text></Pressable>
+                  <Pressable testID="canonical-estimate-artifact-pdf-top" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>PDF</Text></Pressable>
+                  <Pressable testID="canonical-estimate-artifact-procurement-top" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Закупка</Text></Pressable>
+                  {artifactLinks.pdf ? <Pressable testID="canonical-estimate-open-artifact-pdf-top" disabled={saving} onPress={() => handleOpenArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Open PDF</Text></Pressable> : null}
+                  {artifactLinks.procurement ? <Pressable testID="canonical-estimate-open-artifact-procurement-top" disabled={saving} onPress={() => handleOpenArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Open procurement</Text></Pressable> : null}
+                </View>
+              </View> : null}
               {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-parameter-form">
                 <Text style={styles.panelTitle}>{TEXT.parametersTitle}</Text>
                 <Text style={styles.catalogHint}>{selectedCatalog.titleRu} · active release {selectedCatalog.releaseId} · definition v{selectedCatalog.definitionVersion}</Text>
-                {selectedCatalog.parameterSchema.map((parameter) => {
+                {selectedCatalog.parameterSchema.slice(0, showAllParameters ? undefined : 8).map((parameter) => {
                   const values = parameterValues(parameter);
                   return <View key={parameter.parameterId} style={styles.editCell}>
                     <Text style={styles.fieldLabel}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${parameter.unitId}` : ""}</Text>
                     {values.length > 0 && values.length <= 12 ? <View style={styles.rowActions}>{values.map((value) => <Pressable key={value} testID={`canonical-estimate-parameter-${parameter.ordinal}-${value}`} onPress={() => setParameterInputs((previous) => ({ ...previous, [parameter.parameterId]: value }))} style={[styles.toggleButton, parameterInputs[parameter.parameterId] === value && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{value}</Text></Pressable>)}</View> : <TextInput testID={`canonical-estimate-parameter-${parameter.ordinal}`} value={parameterInputs[parameter.parameterId] ?? ""} onChangeText={(value) => setParameterInputs((previous) => ({ ...previous, [parameter.parameterId]: value }))} placeholder={parameter.parameterId} keyboardType={parameter.valueType === "decimal" || parameter.valueType === "integer" ? "decimal-pad" : "default"} editable={!loading && !saving} style={styles.fieldInput} />}
                   </View>;
                 })}
+                {selectedCatalog.parameterSchema.length > 8 ? <Pressable testID="canonical-estimate-expand-parameters" onPress={() => setShowAllParameters((current) => !current)} style={styles.toggleButton}><Text style={styles.toggleButtonText}>{showAllParameters ? "Collapse parameters" : `Show all ${selectedCatalog.parameterSchema.length} parameters`}</Text></Pressable> : null}
               </View> : null}
               <Pressable testID="foreman-ai-estimate-generate" onPress={handleGenerate} disabled={loading || saving || !selectedCatalog} style={[styles.button, styles.secondaryButton, (loading || saving || !selectedCatalog) && styles.disabledButton]}>{loading ? <ActivityIndicator /> : <Text style={styles.secondaryButtonText}>{bundle ? "Пересчитать child revision" : TEXT.generate}</Text>}</Pressable>
               {activeAbort ? <Pressable testID="canonical-estimate-cancel" onPress={handleCancelJob} style={styles.removeButton}><Text style={styles.removeButtonText}>Отменить server job</Text></Pressable> : null}
@@ -659,7 +699,7 @@ export default function ProfessionalEstimateComposer({
               <View style={styles.catalogRows}>{catalogRows.map((item) => <View key={item.rik_code} style={styles.catalogRow}><View style={styles.catalogRowText}><Text style={styles.catalogName}>{displayNameOfCatalogItem(item)}</Text><Text style={styles.catalogMeta}>{item.rik_code} · {item.uom_code ?? "unit"}</Text></View><Pressable onPress={() => handleAddCatalogRow(item)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{TEXT.add}</Text></Pressable></View>)}</View>
             </View> : null}
             {bundle ? <View style={styles.rowActions} testID="canonical-estimate-artifact-actions"><Pressable testID="canonical-estimate-artifact-pdf" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>PDF</Text></Pressable><Pressable testID="canonical-estimate-artifact-procurement" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Закупка</Text></Pressable>{artifactMessage ? <Text style={styles.catalogHint}>{artifactMessage}</Text> : null}</View> : null}
-            {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-history"><Text style={styles.panelTitle}>История backend revisions</Text>{historyLoading ? <ActivityIndicator /> : history.map((revision) => <Pressable key={revision.revisionId} onPress={() => handleOpenHistoryRevision(revision)} style={styles.workSuggestionButton}><Text style={styles.workSuggestionName}>Revision {revision.revisionNumber} · release {revision.releaseId}</Text><Text style={styles.workSuggestionMeta}>{revision.revisionId} · {revision.createdAt}</Text></Pressable>)}</View> : null}
+            {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-history"><Text style={styles.panelTitle}>История backend revisions</Text>{historyLoading ? <ActivityIndicator /> : history.map((revision) => <Pressable key={revision.revisionId} testID={`canonical-estimate-history-revision-${revision.revisionNumber}-${revision.revisionId}`} onPress={() => handleOpenHistoryRevision(revision)} style={styles.workSuggestionButton}><Text style={styles.workSuggestionName}>Revision {revision.revisionNumber} · release {revision.releaseId}</Text><Text style={styles.workSuggestionMeta}>{revision.revisionId} · {revision.createdAt}</Text></Pressable>)}</View> : null}
           </>}
         />
 

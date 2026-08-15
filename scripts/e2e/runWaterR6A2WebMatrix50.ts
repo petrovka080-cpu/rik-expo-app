@@ -93,23 +93,39 @@ function changedNumericValue(value: string): string {
   return String(Math.round((numeric + delta) * 1_000_000) / 1_000_000);
 }
 
-async function selectExactCatalog(page: Page, catalogId: string): Promise<void> {
+async function selectExactCatalog(page: Page, catalogId: string, backendWowRevisionId: string, releaseId: string): Promise<{ backendWow: Json; latest: Json }> {
   const input = page.getByTestId("foreman-ai-estimate-input");
   await input.scrollIntoViewIfNeeded();
   await input.fill(catalogId);
   const suggestion = page.locator('[data-testid^="foreman-ai-estimate-work-suggestion-"]').filter({ hasText: catalogId }).first();
   await suggestion.waitFor({ state: "visible", timeout: 30_000 });
+  const historyPromise = page.waitForResponse((response) => response.request().method() === "GET"
+    && response.url().includes(`/revisions?catalogId=${encodeURIComponent(catalogId)}`)
+    && response.status() === 200, { timeout: 60_000 });
   await suggestion.click();
+  const history = await responseJson(await historyPromise);
   await page.getByTestId("canonical-estimate-parameter-form").waitFor({ state: "visible", timeout: 30_000 });
+  const revisions = Array.isArray(history.revisions) ? history.revisions as Json[] : [];
+  const backendWow = revisions.find((entry) => entry.revisionId === backendWowRevisionId);
+  const latest = revisions.filter((entry) => entry.releaseId === releaseId)
+    .sort((left, right) => Number(right.revisionNumber) - Number(left.revisionNumber))[0];
+  if (!backendWow) throw new Error(`WEB_MATRIX_BACKEND_WOW_LINEAGE_MISSING:${catalogId}:${backendWowRevisionId}`);
+  if (!latest) throw new Error(`WEB_MATRIX_LATEST_RELEASE_REVISION_MISSING:${catalogId}:${releaseId}`);
+  return { backendWow, latest };
 }
 
-async function openHistoryRevision(page: Page, revisionId: string): Promise<Json> {
-  const responsePromise = page.waitForResponse((response) => response.request().method() === "GET"
-    && response.url().endsWith(`/revisions/${revisionId}`) && response.status() === 200, { timeout: 60_000 });
-  const entry = page.getByText(revisionId, { exact: false }).first();
+async function openHistoryRevision(page: Page, revision: Json): Promise<Json> {
+  const rowPagePromise = page.waitForResponse((response) => response.request().method() === "GET"
+    && new URL(response.url()).pathname.endsWith(`/revisions/${revision.revisionId}/rows`)
+    && response.status() === 200, { timeout: 60_000 });
+  const entry = page.getByTestId("canonical-estimate-history")
+    .getByText(String(revision.revisionId), { exact: false }).first();
   await entry.waitFor({ state: "visible", timeout: 60_000 });
   await entry.click();
-  return responseJson(await responsePromise);
+  await rowPagePromise;
+  await page.getByTestId("canonical-estimate-release-id").filter({ hasText: String(revision.releaseId) })
+    .waitFor({ state: "visible", timeout: 60_000 });
+  return revision;
 }
 
 async function buildArtifact(page: Page, revisionId: string, kind: "pdf" | "procurement"): Promise<Json> {
@@ -169,9 +185,9 @@ async function main(): Promise<void> {
       const item = wow[index];
       const started = Date.now();
       const blockers: string[] = [];
-      await selectExactCatalog(page, item.catalog_id);
-      const parent = await openHistoryRevision(page, item.child_revision_id);
-      if (parent.releaseId !== releaseId || parent.revisionId !== item.child_revision_id) blockers.push("PARENT_IDENTITY_MISMATCH");
+      const history = await selectExactCatalog(page, item.catalog_id, item.child_revision_id, releaseId);
+      const parent = await openHistoryRevision(page, history.latest);
+      if (history.backendWow.releaseId !== releaseId || parent.releaseId !== releaseId) blockers.push("PARENT_IDENTITY_MISMATCH");
 
       const parameter = page.getByTestId("canonical-estimate-parameter-0");
       await parameter.scrollIntoViewIfNeeded();
@@ -187,14 +203,14 @@ async function main(): Promise<void> {
       await page.getByTestId("foreman-ai-estimate-generate").click();
       const accepted = await responseJson(await acceptedPromise);
       const child = await responseJson(await childPromise);
-      if (child.releaseId !== releaseId || child.parentRevisionId !== item.child_revision_id
+      if (child.releaseId !== releaseId || child.parentRevisionId !== parent.revisionId
         || !child.revisionId || child.checksumSha256 === parent.checksumSha256) blockers.push("CHILD_REVISION_PARITY_RED");
       await page.getByTestId("canonical-estimate-release-id").waitFor({ state: "visible", timeout: 60_000 });
       const releaseText = await page.getByTestId("canonical-estimate-release-id").innerText();
       if (!releaseText.includes(releaseId)) blockers.push("VISIBLE_RELEASE_ID_RED");
 
-      const reopened = await openHistoryRevision(page, String(child.revisionId));
-      if (reopened.checksumSha256 !== child.checksumSha256 || reopened.parentRevisionId !== item.child_revision_id) blockers.push("HISTORY_REOPEN_RED");
+      const reopened = await openHistoryRevision(page, child);
+      if (reopened.checksumSha256 !== child.checksumSha256 || reopened.parentRevisionId !== parent.revisionId) blockers.push("HISTORY_REOPEN_RED");
       const pdf = await buildArtifact(page, String(child.revisionId), "pdf");
       const procurement = await buildArtifact(page, String(child.revisionId), "procurement");
       if (pdf.releaseId !== releaseId || procurement.releaseId !== releaseId) blockers.push("ARTIFACT_RELEASE_PARITY_RED");
@@ -206,6 +222,7 @@ async function main(): Promise<void> {
         case: index + 1,
         catalogId: item.catalog_id,
         backendWowParentRevisionId: item.child_revision_id,
+        webParentRevisionId: parent.revisionId,
         webChildRevisionId: child.revisionId,
         releaseId: child.releaseId,
         parameterEdit: { ordinal: 0, before: beforeValue, after: afterValue },
@@ -221,7 +238,7 @@ async function main(): Promise<void> {
         blockers,
         status: blockers.length === 0 ? "GREEN" : "RED",
       });
-      process.stdout.write(`[${new Date().toISOString()}] Water Web ${index + 1}/50 ${item.catalog_id} ${rows.at(-1)!.status}\n`);
+      process.stdout.write(`[${new Date().toISOString()}] Water Web ${index + 1}/50 ${item.catalog_id} ${rows.at(-1)!.status}${blockers.length ? ` ${blockers.join(",")}` : ""}\n`);
     }
   } finally {
     await browser.close();
@@ -243,7 +260,7 @@ async function main(): Promise<void> {
     executed: rows.length,
     green: rows.filter((row) => row.status === "GREEN").length,
     distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
-    lifecycle: { openExactBackendRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50 },
+    lifecycle: { backendWowHistoryLineage: 50, openLatestExactRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50 },
     productionBundleReachability: reachability,
     consoleErrors,
     pageErrors,

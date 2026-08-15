@@ -296,7 +296,10 @@ async function drainJobs(): Promise<void> {
           }
           catch (error) {
             const code = typeof error === "object" && error && "code" in error ? String((error as { code: unknown }).code) : "COMPILER_FAILED";
-            const retryable = code.endsWith("_LOAD_FAILED")
+            const message = error instanceof Error ? error.message : String(error);
+            const retryable = (code === "40001" && !message.startsWith("optimistic revision conflict:"))
+              || ["40P01", "55P03"].includes(code)
+              || code.endsWith("_LOAD_FAILED")
               || code.endsWith("_STORAGE_FAILED")
               || code === "REVISION_COMMIT_RETRYABLE";
             const retryDelaySeconds = Math.min(300, 2 ** Math.min(Number(job.attempt ?? 1), 8));

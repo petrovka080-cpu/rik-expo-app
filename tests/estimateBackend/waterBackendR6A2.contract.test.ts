@@ -70,10 +70,29 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(android).toContain('const MAIN_ACTIVITY = `${PACKAGE_NAME}/.MainActivity`');
     expect(android).toContain("chromeOrWebViewSubstitution: false");
     expect(android).toContain("expected: 50");
+    expect(android).toContain("observed === value");
+    expect(android).toContain('row.method === "POST"');
+    expect(android).toContain("EXACT_CHILD_RETRY_REENTRY_FAILED");
     expect(composer).toContain('testID="canonical-estimate-artifact-pdf"');
     expect(composer).toContain('testID="canonical-estimate-artifact-procurement"');
+    expect(composer).toContain('testID="canonical-estimate-open-artifact-pdf-top"');
+    expect(composer).toContain('testID="canonical-estimate-open-artifact-procurement-top"');
+    expect(composer).not.toContain("if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl)");
+    expect(composer).toContain('testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`}');
+    expect(composer).toContain('testID="canonical-estimate-recalculate-top"');
+    expect(composer).toContain('testID="canonical-estimate-expand-parameters"');
     expect(localGateway).toContain("catalog_id ilike");
     expect(edgeGateway).toContain("catalog_id.ilike");
+  });
+
+  it("keeps local Android cleartext proof isolated from the production release manifest", () => {
+    const gradle = read("android/app/build.gradle");
+    const productionManifest = read("android/app/src/main/AndroidManifest.xml");
+    const proofManifest = read("android/app/src/waterProof/AndroidManifest.xml");
+    expect(gradle).toContain("waterProof");
+    expect(gradle).toContain("initWith release");
+    expect(productionManifest).not.toContain("usesCleartextTraffic");
+    expect(proofManifest).toContain('android:usesCleartextTraffic="true"');
   });
 
   it("measures compile execution separately from queue wait while preserving 50-parallel truth", () => {

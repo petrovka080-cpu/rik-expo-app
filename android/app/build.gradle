@@ -149,6 +149,14 @@ android {
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }
+        waterProof {
+            initWith release
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+        }
+    }
+    sourceSets {
+        waterProof.manifest.srcFile 'src/waterProof/AndroidManifest.xml'
     }
     packagingOptions {
         jniLibs {

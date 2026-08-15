@@ -95,6 +95,10 @@ function findById(snapshot: UiSnapshot, id: string): UiNode | null {
   return snapshot.nodes.find((node) => hasId(node, id)) ?? null;
 }
 
+function findByIdPrefix(snapshot: UiSnapshot, prefix: string): UiNode | null {
+  return snapshot.nodes.find((node) => node.resourceId.includes(prefix) || node.contentDesc.startsWith(prefix)) ?? null;
+}
+
 function findByText(snapshot: UiSnapshot, text: string): UiNode | null {
   return snapshot.nodes.find((node) => node.text.includes(text) || node.contentDesc.includes(text)) ?? null;
 }
@@ -141,21 +145,36 @@ async function tapById(id: string, maxSwipes = 28): Promise<boolean> {
   return Boolean(found.node && tap(found.node));
 }
 
+async function tapByIdPrefix(prefix: string, maxSwipes = 28): Promise<boolean> {
+  const found = await findScrollable((snapshot) => findByIdPrefix(snapshot, prefix), maxSwipes);
+  return Boolean(found.node && tap(found.node));
+}
+
 async function tapByText(text: string, maxSwipes = 28): Promise<boolean> {
   const found = await findScrollable((snapshot) => findByText(snapshot, text), maxSwipes);
   return Boolean(found.node && tap(found.node));
 }
 
 async function replaceInput(id: string, value: string): Promise<{ ok: boolean; before: string }> {
-  const found = await findScrollable((snapshot) => findById(snapshot, id), 28);
-  if (!found.node || !tap(found.node)) return { ok: false, before: "" };
-  const before = found.node.text;
-  await delay(150);
-  const selected = adb(["shell", "input", "keycombination", "113", "29"], 10_000);
-  const typed = adb(["shell", "input", "text", value], 20_000);
-  adb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5_000);
-  await delay(350);
-  return { ok: selected.ok && typed.ok, before };
+  let before = "";
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const found = await findScrollable((snapshot) => findById(snapshot, id), 28);
+    if (!found.node || !tap(found.node)) continue;
+    if (attempt === 0) before = found.node.text;
+    await delay(200);
+    if (attempt === 0) {
+      adb(["shell", "input", "keycombination", "113", "29"], 10_000);
+      adb(["shell", "input", "keyevent", "KEYCODE_DEL"], 5_000);
+    } else {
+      adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END", ...Array(160).fill("KEYCODE_DEL")], 20_000);
+    }
+    const typed = adb(["shell", "input", "text", value], 20_000);
+    adb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5_000);
+    await delay(500);
+    const observed = findById(dumpUi(), id)?.text ?? "";
+    if (typed.ok && observed === value) return { ok: true, before };
+  }
+  return { ok: false, before };
 }
 
 async function waitForId(id: string, timeoutMs: number): Promise<UiSnapshot> {
@@ -166,6 +185,39 @@ async function waitForId(id: string, timeoutMs: number): Promise<UiSnapshot> {
     snapshot = dumpUi();
   }
   return snapshot;
+}
+
+async function ensureComposerOpen(): Promise<boolean> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    let snapshot = dumpUi();
+    if (findById(snapshot, "professional-estimate-composer")) return true;
+    if (!findById(snapshot, "consumer-repair-screen")) return false;
+    if (await tapById("consumer-repair-open-canonical-estimate", 8)) {
+      snapshot = await waitForId("professional-estimate-composer", 15_000);
+      if (findById(snapshot, "professional-estimate-composer")) return true;
+    }
+    // Android can resume an intermediate request editor after an external file viewer.
+    // Its header back control has no stable accessibility id, but this matrix is fixed to
+    // the declared 1080x2400 API-34 device. Return to the request route before retrying.
+    adb(["shell", "input", "tap", "96", "118"], 10_000);
+    await delay(1_200);
+  }
+  return false;
+}
+
+async function reopenExactLatestRevision(catalogId: string, revisionId: string): Promise<boolean> {
+  if (!await ensureComposerOpen()) return false;
+  if (!(await replaceInput("foreman-ai-estimate-input", catalogId)).ok) return false;
+  const suggestion = await waitForId("foreman-ai-estimate-work-suggestion-1", 45_000);
+  const suggestionNode = findById(suggestion, "foreman-ai-estimate-work-suggestion-1");
+  if (!suggestionNode || !suggestion.text.includes(catalogId) || !tap(suggestionNode)) return false;
+  const form = await waitForId("canonical-estimate-parameter-form", 45_000);
+  if (!findById(form, "canonical-estimate-parameter-form")) return false;
+  if (!await tapById(`canonical-estimate-open-latest-revision-${revisionId}`, 8)) return false;
+  const quickActions = await waitForId("canonical-estimate-native-quick-actions", 60_000);
+  if (!findById(quickActions, "canonical-estimate-native-quick-actions")) return false;
+  await delay(1_000);
+  return true;
 }
 
 function readAudit(path: string): AuditRow[] {
@@ -214,7 +266,7 @@ function inspectInstalledNativeBundle(packagePath: string, output: string): Json
   const pulled = adb(["pull", remoteApk, localApk], 120_000);
   if (!pulled.ok) return { apk: localApk, error: pulled.output, status: "RED" };
   try {
-    const listing = execFileSync("tar", ["-tf", localApk], { encoding: "utf8", timeout: 60_000 });
+    const listing = execFileSync("tar", ["-tf", localApk], { encoding: "utf8", timeout: 60_000, maxBuffer: 32 * 1024 * 1024 });
     const bundles = listing.split(/\r?\n/).filter((entry) => /(?:^|\/)(?:index\.android\.bundle|[^/]+\.(?:bundle|js))$/i.test(entry));
     const ownerTokens = ["waterSupplySewerageComplete", "waterSewerStorm", "WATER_SEWER_COMPLETE_DOMAIN"];
     const compilerTokens = ["evaluateFormulaGraph", "calculateGlobalConstructionEstimate", "calculateGlobalConstructionEstimateSync", "compileProductionExpandedEstimate10000", "buildProfessionalExpandedGlobalEstimate", "productionFormulaDsl"];
@@ -223,7 +275,7 @@ function inspectInstalledNativeBundle(packagePath: string, output: string): Json
     const counts = Object.fromEntries(tokens.map((token) => [token, 0]));
     let bundleBytes = 0;
     for (const entry of bundles) {
-      const bytes = execFileSync("tar", ["-xOf", localApk, entry], { encoding: "buffer", timeout: 120_000 });
+      const bytes = execFileSync("tar", ["-xOf", localApk, entry], { encoding: "buffer", timeout: 120_000, maxBuffer: 64 * 1024 * 1024 });
       bundleBytes += bytes.length;
       const body = bytes.toString("utf8");
       for (const token of tokens) counts[token] += body.split(token).length - 1;
@@ -247,13 +299,29 @@ function inspectInstalledNativeBundle(packagePath: string, output: string): Json
 }
 
 async function returnToMainActivity(): Promise<{ ok: boolean; line: string }> {
-  for (let attempt = 0; attempt < 4; attempt += 1) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     const state = resumedMainActivity();
-    if (state.ok) return state;
-    adb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5_000);
-    await delay(500);
+    if (state.ok) {
+      await delay(1_200);
+      return resumedMainActivity();
+    }
+    if (state.line.includes("org.chromium.chrome.browser.app.download.home.DownloadActivity")) {
+      // Chrome's download home consumes Back on some API-34 transitions. Its close
+      // control is stable on the declared 1080x2400 proof device.
+      adb(["shell", "input", "tap", "1000", "210"], 10_000);
+    } else {
+      adb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5_000);
+    }
+    await delay(1_200);
   }
-  return resumedMainActivity();
+  adb(["shell", "am", "start", "-W", "-n", MAIN_ACTIVITY], 60_000);
+  const deadline = Date.now() + 60_000;
+  let state = resumedMainActivity();
+  while (!state.ok && Date.now() < deadline) {
+    await delay(1_000);
+    state = resumedMainActivity();
+  }
+  return state;
 }
 
 async function main(): Promise<void> {
@@ -284,7 +352,7 @@ async function main(): Promise<void> {
 
   adb(["shell", "am", "force-stop", PACKAGE_NAME], 10_000);
   const launchUrl = `rik:///request?launchId=water-r6-a2-native-${Date.now()}`;
-  const launch = adb(["shell", "am", "start", "-W", "-n", MAIN_ACTIVITY, "-a", "android.intent.action.VIEW", "-d", launchUrl], 30_000);
+  const launch = adb(["shell", "am", "start", "-W", "-n", MAIN_ACTIVITY, "-a", "android.intent.action.VIEW", "-d", launchUrl], 60_000);
   if (!launch.ok || !launch.output.includes(`Activity: ${MAIN_ACTIVITY}`)) blockers.push("EXACT_MAINACTIVITY_LAUNCH_FAILED");
   let snapshot = await waitForId("consumer-repair-screen", 90_000);
   if (!findById(snapshot, "consumer-repair-screen")) blockers.push("AUTHENTICATED_REQUEST_ROUTE_NOT_VISIBLE");
@@ -297,15 +365,23 @@ async function main(): Promise<void> {
     const item = wow[index];
     const started = Date.now();
     const caseBlockers: string[] = [];
+    if (!await ensureComposerOpen()) caseBlockers.push("COMPOSER_REENTRY_FAILED");
     const search = await replaceInput("foreman-ai-estimate-input", item.catalog_id);
     if (!search.ok) caseBlockers.push("CATALOG_SEARCH_INPUT_FAILED");
     snapshot = await waitForId("foreman-ai-estimate-work-suggestion-1", 45_000);
     if (!snapshot.text.includes(item.catalog_id) || !tap(findById(snapshot, "foreman-ai-estimate-work-suggestion-1")!)) caseBlockers.push("EXACT_CATALOG_SUGGESTION_FAILED");
     snapshot = await waitForId("canonical-estimate-parameter-form", 45_000);
     if (!findById(snapshot, "canonical-estimate-parameter-form")) caseBlockers.push("PARAMETER_FORM_NOT_VISIBLE");
-    if (!await tapByText(item.child_revision_id, 36)) caseBlockers.push("WOW_PARENT_HISTORY_OPEN_FAILED");
-    snapshot = await waitForId("canonical-estimate-release-id", 60_000);
-    const releaseNode = findById(snapshot, "canonical-estimate-release-id");
+    const auditBeforeParent = readAudit(auditLog).length;
+    if (!await tapByIdPrefix("canonical-estimate-open-latest-revision-", 8)) caseBlockers.push("LATEST_HISTORY_PARENT_OPEN_FAILED");
+    let audit = await waitForAudit(auditLog, auditBeforeParent, (row) => row.method === "GET"
+      && /^\/canonical-estimate\/revisions\/[0-9a-f-]{36}\/rows\?/i.test(String(row.path)) && row.status === 200, 90_000);
+    const parentRows = audit.slice(auditBeforeParent).filter((row) => row.method === "GET"
+      && /^\/canonical-estimate\/revisions\/[0-9a-f-]{36}\/rows\?/i.test(String(row.path)) && row.status === 200);
+    const parentRevisionId = String(parentRows[0]?.path ?? "").match(/\/revisions\/([0-9a-f-]{36})\/rows/i)?.[1] ?? "";
+    if (!/^[0-9a-f-]{36}$/i.test(parentRevisionId)) caseBlockers.push("LATEST_HISTORY_PARENT_ID_NOT_OBSERVED");
+    snapshot = await waitForId("canonical-estimate-release-id-top", 60_000);
+    const releaseNode = findById(snapshot, "canonical-estimate-release-id-top");
     if (!releaseNode?.text.includes(releaseId)) caseBlockers.push("PARENT_RELEASE_VISIBLE_RED");
 
     const parameterFound = await findScrollable((current) => findById(current, "canonical-estimate-parameter-0"), 36);
@@ -318,39 +394,94 @@ async function main(): Promise<void> {
     }
 
     const auditBeforeRecalc = readAudit(auditLog).length;
-    if (!await tapById("foreman-ai-estimate-generate", 36)) caseBlockers.push("RECALCULATE_ACTION_MISSING");
-    let audit = await waitForAudit(auditLog, auditBeforeRecalc, (row) => row.method === "POST" && row.path?.endsWith("/jobs/recalculate") === true, 120_000);
+    if (!await tapById("canonical-estimate-recalculate-top", 8)) caseBlockers.push("RECALCULATE_ACTION_MISSING");
+    audit = await waitForAudit(auditLog, auditBeforeRecalc, (row) => row.method === "POST" && row.path?.endsWith("/jobs/recalculate") === true, 120_000);
     const recalcRows = audit.slice(auditBeforeRecalc);
     if (!recalcRows.some((row) => row.method === "POST" && row.path?.endsWith("/jobs/recalculate") && row.status === 202)) caseBlockers.push("RECALCULATE_REQUEST_NOT_OBSERVED");
     audit = await waitForAudit(auditLog, auditBeforeRecalc, (row) => row.method === "GET"
       && /^\/canonical-estimate\/revisions\/[0-9a-f-]{36}$/i.test(String(row.path))
-      && !String(row.path).endsWith(item.child_revision_id), 150_000);
+      && !String(row.path).endsWith(parentRevisionId), 150_000);
     const revisionGets = audit.slice(auditBeforeRecalc).filter((row) => row.method === "GET"
       && /^\/canonical-estimate\/revisions\/[0-9a-f-]{36}$/i.test(String(row.path))
-      && !String(row.path).endsWith(item.child_revision_id));
+      && !String(row.path).endsWith(parentRevisionId));
     const childRevisionId = String(revisionGets.at(-1)?.path ?? "").split("/").at(-1) ?? "";
     if (!/^[0-9a-f-]{36}$/i.test(childRevisionId)) caseBlockers.push("CHILD_REVISION_NOT_OBSERVED");
-    snapshot = await waitForId("canonical-estimate-release-id", 60_000);
-    if (!findById(snapshot, "canonical-estimate-release-id")?.text.includes(releaseId)) caseBlockers.push("CHILD_RELEASE_VISIBLE_RED");
-    const rowCountText = (await findScrollable((current) => findById(current, "foreman-ai-estimate-row-count"), 24)).node?.text ?? "";
-    if (childRevisionId && !await tapByText(childRevisionId, 36)) caseBlockers.push("CHILD_HISTORY_REOPEN_FAILED");
+    snapshot = await waitForId("canonical-estimate-release-id-top", 60_000);
+    if (!findById(snapshot, "canonical-estimate-release-id-top")?.text.includes(releaseId)) caseBlockers.push("CHILD_RELEASE_VISIBLE_RED");
+    const rowCountText = findById(snapshot, "canonical-estimate-row-count-top")?.text ?? "";
+    await waitForAudit(auditLog, auditBeforeRecalc, (row) => row.method === "GET"
+      && row.path?.startsWith(`/canonical-estimate/revisions?catalogId=${encodeURIComponent(item.catalog_id)}`) === true
+      && row.status === 200, 90_000);
+    const auditBeforeReopen = readAudit(auditLog).length;
+    if (childRevisionId && !await tapById(`canonical-estimate-open-latest-revision-${childRevisionId}`, 8)) caseBlockers.push("CHILD_HISTORY_REOPEN_FAILED");
+    const reopenedAudit = await waitForAudit(auditLog, auditBeforeReopen, (row) => row.method === "GET"
+      && row.path?.includes(`/revisions/${childRevisionId}/rows?`) === true && row.status === 200, 90_000);
+    if (!reopenedAudit.slice(auditBeforeReopen).some((row) => row.method === "GET"
+      && row.path?.includes(`/revisions/${childRevisionId}/rows?`) === true && row.status === 200)) caseBlockers.push("CHILD_HISTORY_ROWS_NOT_OBSERVED");
 
     const artifactEvidence: Json = {};
     for (const kind of ["pdf", "procurement"] as const) {
-      const auditBeforeArtifact = readAudit(auditLog).length;
-      if (!await tapById(`canonical-estimate-artifact-${kind}`, 36)) {
+      const actionId = `canonical-estimate-artifact-${kind}-top`;
+      const artifactPath = `/revisions/${childRevisionId}/artifacts/${kind}`;
+      const actionSnapshot = dumpUi();
+      if (!findById(actionSnapshot, actionId)
+        && !(await reopenExactLatestRevision(item.catalog_id, childRevisionId))) {
+        caseBlockers.push(`${kind.toUpperCase()}_EXACT_CHILD_REENTRY_FAILED`);
+        continue;
+      }
+      let auditBeforeArtifact = readAudit(auditLog).length;
+      if (!await tapById(actionId, 8)) {
         caseBlockers.push(`${kind.toUpperCase()}_UI_ACTION_MISSING`);
         continue;
       }
-      const artifactPath = `/revisions/${childRevisionId}/artifacts/${kind}`;
-      const artifactAudit = await waitForAudit(auditLog, auditBeforeArtifact, (row) => row.method === "GET"
+      let artifactAudit = await waitForAudit(auditLog, auditBeforeArtifact, (row) => row.method === "POST"
+        && row.path?.endsWith(artifactPath) === true && row.status === 202, 12_000);
+      if (!artifactAudit.slice(auditBeforeArtifact).some((row) => row.method === "POST"
+        && row.path?.endsWith(artifactPath) === true && row.status === 202)) {
+        if (!await reopenExactLatestRevision(item.catalog_id, childRevisionId)) {
+          caseBlockers.push(`${kind.toUpperCase()}_EXACT_CHILD_RETRY_REENTRY_FAILED`);
+          continue;
+        }
+        auditBeforeArtifact = readAudit(auditLog).length;
+        if (!await tapById(actionId, 8)) {
+          caseBlockers.push(`${kind.toUpperCase()}_UI_ACTION_RETRY_MISSING`);
+          continue;
+        }
+      }
+      artifactAudit = await waitForAudit(auditLog, auditBeforeArtifact, (row) => row.method === "GET"
         && row.path?.endsWith(artifactPath) === true && row.status === 200, 150_000);
       const observed = artifactAudit.slice(auditBeforeArtifact).filter((row) => row.path?.endsWith(artifactPath));
       if (!observed.some((row) => row.method === "POST" && row.status === 202)
         || !observed.some((row) => row.method === "GET" && row.status === 200)) caseBlockers.push(`${kind.toUpperCase()}_REQUEST_SEQUENCE_RED`);
-      const activity = await returnToMainActivity();
-      if (!activity.ok) caseBlockers.push(`${kind.toUpperCase()}_MAINACTIVITY_RETURN_RED`);
-      artifactEvidence[kind] = { path: artifactPath, rows: observed, mainActivityAfterExternalViewer: activity };
+      const activity = resumedMainActivity();
+      if (!activity.ok) caseBlockers.push(`${kind.toUpperCase()}_NATIVE_GENERATION_LEFT_MAINACTIVITY`);
+      artifactEvidence[kind] = { path: artifactPath, rows: observed, mainActivityAfterNativeGeneration: activity };
+    }
+
+    const viewerKind = index === 0 ? "pdf" : index === 1 ? "procurement" : null;
+    if (viewerKind) {
+      const viewerActionId = `canonical-estimate-open-artifact-${viewerKind}-top`;
+      const viewerReady = await waitForId(viewerActionId, 30_000);
+      if (!findById(viewerReady, viewerActionId)) {
+        caseBlockers.push(`${viewerKind.toUpperCase()}_EXPLICIT_VIEWER_ACTION_MISSING`);
+      } else {
+        const auditBeforeViewer = readAudit(auditLog).length;
+        if (!await tapById(viewerActionId, 8)) {
+          caseBlockers.push(`${viewerKind.toUpperCase()}_EXPLICIT_VIEWER_TAP_FAILED`);
+        } else {
+          const viewerAudit = await waitForAudit(auditLog, auditBeforeViewer, (row) => row.method === "GET"
+            && row.path?.startsWith("/canonical-estimate/artifact-files/") === true
+            && /Chrome|Chromium/i.test(String(row.userAgent ?? "")) && row.status === 200, 60_000);
+          const viewerRows = viewerAudit.slice(auditBeforeViewer).filter((row) => row.method === "GET"
+            && row.path?.startsWith("/canonical-estimate/artifact-files/") === true);
+          if (!viewerRows.some((row) => /Chrome|Chromium/i.test(String(row.userAgent ?? "")) && row.status === 200)) {
+            caseBlockers.push(`${viewerKind.toUpperCase()}_EXTERNAL_VIEWER_GET_RED`);
+          }
+          const activity = await returnToMainActivity();
+          if (!activity.ok) caseBlockers.push(`${viewerKind.toUpperCase()}_EXTERNAL_VIEWER_RETURN_RED`);
+          artifactEvidence.externalViewer = { kind: viewerKind, rows: viewerRows, mainActivityAfterExternalViewer: activity };
+        }
+      }
     }
 
     if ((index + 1) % 10 === 0 || index === wow.length - 1) {
@@ -361,6 +492,7 @@ async function main(): Promise<void> {
       case: index + 1,
       catalogId: item.catalog_id,
       backendWowParentRevisionId: item.child_revision_id,
+      androidParentRevisionId: parentRevisionId,
       androidChildRevisionId: childRevisionId,
       releaseId,
       parameterEdit: { ordinal: 0, before: beforeValue, after: afterValue },
@@ -397,7 +529,7 @@ async function main(): Promise<void> {
     executed: rows.length,
     green: rows.filter((row) => row.status === "GREEN").length,
     distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
-    lifecycle: { openExactBackendRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50 },
+    lifecycle: { backendWowReference: 50, openLatestExactRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50, explicitExternalViewerProofs: 2 },
     realMainActivity: true,
     api34: apiLevel === "34",
     browserEmulation: false,
