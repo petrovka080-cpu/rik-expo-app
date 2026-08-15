@@ -9,6 +9,8 @@ const A1 = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence
 const A2 = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
 const LOWER_BOUND = Object.freeze({ L1: 40, L2: 100, L3: 200, L4: 400, L5: 700 });
 const PREDECESSOR = "eaaa1404939cc627fdc86a64fa28ebb127734b68";
+const ORACLE_PRE_REPAIR_COMMIT = "549876d1f28c1990355d1c376f094101f9e2dc17";
+const ORACLE_SOURCE_PATH = "scripts/estimate/waterBackendR3/buildWaterR6A2IndependentExpectedScope.mjs";
 
 // This list is deliberately owned by the independent oracle.  This module does
 // not import waterDomainModel, waterR5ProfessionalModel or any generated package.
@@ -280,6 +282,15 @@ function main() {
     nextAction: "RUN_A2_REAL_CONTENT_SET_DIFF_AND_INDIVIDUAL_REPAIR_EVIDENCE",
   });
   const preRepairSource = join(A2, "A2_03_ORACLE_SOURCE_PRE_REPAIR.mjs");
+  const historicalSource = spawnSync(
+    "git",
+    ["show", `${ORACLE_PRE_REPAIR_COMMIT}:${ORACLE_SOURCE_PATH}`],
+    { cwd: ROOT, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+  );
+  if (historicalSource.status !== 0 || !historicalSource.stdout) {
+    throw new Error(`ORACLE_PRE_REPAIR_SOURCE_UNAVAILABLE:${historicalSource.stderr || historicalSource.status}`);
+  }
+  atomicWrite("A2_03_ORACLE_SOURCE_PRE_REPAIR.mjs", historicalSource.stdout);
   if (readFileSync(preRepairSource, "utf8")) {
     const currentSource = fileURLToPath(import.meta.url);
     const postRepairSource = join(A2, "A2_03_ORACLE_SOURCE_POST_REPAIR.mjs");
@@ -302,9 +313,9 @@ function main() {
       preSourceSha256: sha256(readFileSync(preRepairSource)),
       postSourceSha256: sha256(readFileSync(currentSource)),
       changeReasons: [
-        "Expanded-family technology must be determined by exact family before a noisy legacy system label.",
-        "Per-ID category applicability must preserve frozen A1 exact category dispositions instead of applying one aggregate technology rule.",
-        "New external identities use explicit static engineering rules and cannot reduce the 845 global denominator.",
+        "The pre-repair oracle used the legacy external namespace and therefore failed the canonical external_reference identity contract.",
+        "The repaired oracle applies external_reference consistently to category disposition, generated identities, and the negative fixture.",
+        "The namespace repair changes no production corpus rows and cannot reduce the frozen 845 global denominator.",
       ],
       denominatorBefore: 874,
       denominatorAfter: identities.length,

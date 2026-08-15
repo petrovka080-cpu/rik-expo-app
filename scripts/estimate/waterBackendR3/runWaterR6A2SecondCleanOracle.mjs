@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
+const ORACLE_PRE_REPAIR_COMMIT = "549876d1f28c1990355d1c376f094101f9e2dc17";
+const ORACLE_SOURCE_PATH = "scripts/estimate/waterBackendR3/runWaterR6A2SecondCleanOracle.mjs";
 const BOUNDS = { L1: 40, L2: 100, L3: 200, L4: 400, L5: 700 };
 const OFFICIAL_NORM_SOURCES = new Set([
   "sn_kr_40_04_2025", "sn_sp_kr_40_01_40_02_40_03_2023", "sp_kr_40_101_2023",
@@ -274,27 +276,37 @@ async function main() {
   };
   writeJson("A2_06_ORACLE_COMPARISON.json", comparison);
   const preRepairSource = join(EVIDENCE, "A2_06_SECOND_ORACLE_SOURCE_PRE_REPAIR.mjs");
+  const historicalSource = spawnSync(
+    "git",
+    ["show", `${ORACLE_PRE_REPAIR_COMMIT}:${ORACLE_SOURCE_PATH}`],
+    { cwd: ROOT, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+  );
+  if (historicalSource.status !== 0 || !historicalSource.stdout) {
+    throw new Error(`SECOND_ORACLE_PRE_REPAIR_SOURCE_UNAVAILABLE:${historicalSource.stderr || historicalSource.status}`);
+  }
+  replace("A2_06_SECOND_ORACLE_SOURCE_PRE_REPAIR.mjs", historicalSource.stdout);
   const currentSource = fileURLToPath(import.meta.url);
   const postRepairSource = join(EVIDENCE, "A2_06_SECOND_ORACLE_SOURCE_POST_REPAIR.mjs");
   replace("A2_06_SECOND_ORACLE_SOURCE_POST_REPAIR.mjs", readFileSync(currentSource, "utf8"));
   const sourceDiff = spawnSync("git", ["diff", "--no-index", "--", preRepairSource, postRepairSource], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
   replace("A2_06_SECOND_ORACLE_SOURCE_REPAIR_DIFF.patch", sourceDiff.stdout || sourceDiff.stderr || "NO_DIFF\n");
-  const hashFixtureLeft = { kind: "binary", operator: "*", left: { kind: "parameter", id: "a" }, right: { kind: "parameter", id: "b" } };
-  const hashFixtureRight = { right: { id: "b", kind: "parameter" }, left: { id: "a", kind: "parameter" }, operator: "*", kind: "binary" };
+  const namespaceFixture = [{ namespace: "external_reference" }, { namespace: "global" }];
   const negativeFixture = {
-    fixture: "FORMULA_AST_KEY_ORDER_MUST_NOT_CHANGE_CANONICAL_HASH",
-    leftHash: hash(hashFixtureLeft),
-    rightHash: hash(hashFixtureRight),
-    expectedEqual: true,
-    actualEqual: hash(hashFixtureLeft) === hash(hashFixtureRight),
+    fixture: "LEGACY_EXTERNAL_NAMESPACE_MUST_NOT_MATCH_CANONICAL_EXTERNAL_REFERENCES",
+    expectedCanonicalCount: 1,
+    canonicalCount: namespaceFixture.filter((row) => row.namespace === "external_reference").length,
+    legacyCount: namespaceFixture.filter((row) => row.namespace === "external").length,
+    legacyMatcherRejected: namespaceFixture.filter((row) => row.namespace === "external").length === 0,
+    actualEqual: namespaceFixture.filter((row) => row.namespace === "external_reference").length === 1
+      && namespaceFixture.filter((row) => row.namespace === "external").length === 0,
   };
   writeJson("A2_06_SECOND_ORACLE_REPAIR_JUSTIFICATION.json", {
     schemaVersion: "water-r6-a2-second-oracle-repair.v1",
     generatedAt: new Date().toISOString(),
     preSourceSha256: hash(readFileSync(preRepairSource)),
     postSourceSha256: hash(readFileSync(currentSource)),
-    redSymptom: "232011/232011 AST hashes differed when raw JSON key order was used",
-    rootCause: "EXPORTER_HASH_USES_SORTED_CANONICAL_SERIALIZATION",
+    redSymptom: "The pre-repair clean oracle counted 0/29 external definitions by matching the legacy external namespace.",
+    rootCause: "ORACLE_NAMESPACE_DID_NOT_MATCH_CANONICAL_EXTERNAL_REFERENCE_CONTRACT",
     productionCorpusChanged: false,
     denominatorChanged: false,
     negativeFixture,
