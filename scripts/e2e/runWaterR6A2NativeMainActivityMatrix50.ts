@@ -168,11 +168,36 @@ async function replaceInput(id: string, value: string): Promise<{ ok: boolean; b
     } else {
       adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END", ...Array(160).fill("KEYCODE_DEL")], 20_000);
     }
-    const typed = adb(["shell", "input", "text", value], 20_000);
+    // A single Android `input text` call can silently lose the tail of a long
+    // catalog id when React Native publishes search results while key events are
+    // still being delivered. Type bounded chunks and prove every exact prefix;
+    // this keeps long L3-L5 ids strict instead of accepting a fuzzy suggestion.
+    const chunks = value.match(/[\s\S]{1,32}/g) ?? [];
+    let typedOk = chunks.length > 0;
+    let typedLength = 0;
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+      const chunk = chunks[chunkIndex]!;
+      const typed = adb(["shell", "input", "text", chunk], 20_000);
+      typedLength += chunk.length;
+      await delay(350);
+      const partialSnapshot = dumpUi();
+      const partialNode = findById(partialSnapshot, id);
+      const expectedPrefix = value.slice(0, typedLength);
+      if (!typed.ok || partialNode?.text !== expectedPrefix) {
+        typedOk = false;
+        break;
+      }
+      if (chunkIndex < chunks.length - 1) {
+        if (!tap(partialNode) || !adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], 5_000).ok) {
+          typedOk = false;
+          break;
+        }
+      }
+    }
     adb(["shell", "input", "keyevent", "KEYCODE_BACK"], 5_000);
     await delay(500);
     const observed = findById(dumpUi(), id)?.text ?? "";
-    if (typed.ok && observed === value) return { ok: true, before };
+    if (typedOk && observed === value) return { ok: true, before };
   }
   return { ok: false, before };
 }

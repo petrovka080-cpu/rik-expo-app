@@ -79,6 +79,8 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(android).toContain("chromeOrWebViewSubstitution: false");
     expect(android).toContain("expected: 50");
     expect(android).toContain("observed === value");
+    expect(android).toContain('value.match(/[\\s\\S]{1,32}/g)');
+    expect(android).toContain("partialNode?.text !== expectedPrefix");
     expect(android).toContain('row.method === "POST"');
     expect(android).toContain("EXACT_CHILD_RETRY_REENTRY_FAILED");
     expect(composer).toContain('testID="canonical-estimate-artifact-pdf"');
