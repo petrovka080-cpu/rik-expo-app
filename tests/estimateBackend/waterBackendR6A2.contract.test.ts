@@ -50,6 +50,14 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(admission).toContain("EXPECTED_WATER_ROWS");
   });
 
+  it("keeps the explicit rollback safe on a pristine predecessor clone", () => {
+    const rollback = read("supabase/rollback/20260815100000_batch006_water_backend_r3.down.sql");
+    expect(rollback).toContain("to_regclass('public.estimate_professional_passport') is not null");
+    expect(rollback).toContain("to_regclass('public.estimate_domain_release_admission_seal') is not null");
+    expect(rollback).toContain("drop column if exists water_domain_complete");
+    expect(rollback).not.toContain("or exists (select 1 from public.estimate_professional_passport)");
+  });
+
   it("records the operator-deferred Full Jest state without pretending it ran", () => {
     const verification = read("scripts/estimate/waterBackendR3/runWaterR5VerificationGate.ts");
     expect(verification).toContain("FULL_JEST=DEFERRED_BY_OPERATOR_NOT_RUN");
