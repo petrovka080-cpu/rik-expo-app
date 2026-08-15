@@ -233,7 +233,7 @@ function inspectInstalledNativeBundle(packagePath: string, output: string): Reco
       "evaluateFormulaGraph", "calculateGlobalConstructionEstimate", "calculateGlobalConstructionEstimateSync",
       "compileProductionExpandedEstimate10000", "buildProfessionalExpandedGlobalEstimate", "productionFormulaDsl",
     ];
-    const corpusTokens = ["batch006-water-backend-r3.r5", "WATER_BACKEND_BOQ_ROW_LEDGER", "WATER_R5_OBLIGATION_UNIVERSE_845"];
+    const corpusTokens = ["batch006-water-backend-r3.r5", "batch006-water-backend-r3.r6-a2", "WATER_BACKEND_BOQ_ROW_LEDGER", "A2_07_WATER_BACKEND_BOQ_ROW_LEDGER"];
     const tokens = [...new Set([...ownerTokens, ...compilerTokens, ...corpusTokens])];
     const counts = Object.fromEntries(tokens.map((token) => [token, 0]));
     let bytes = 0;
@@ -369,7 +369,7 @@ async function main(): Promise<void> {
   const reportPath = resolve(output, "NATIVE_ANDROID_API34_MAINACTIVITY_BACKEND_CUTOVER_PROOF.json");
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   writeFileSync(resolve(output, "NATIVE_PRODUCTION_BUNDLE_REACHABILITY_PROOF.json"), `${JSON.stringify({
-    schemaVersion: "native-production-bundle-reachability-proof.r5",
+    schemaVersion: "native-production-bundle-reachability-proof.r6-a2",
     generatedAt: report.generatedAt,
     source: report.source,
     ...bundleReachability,

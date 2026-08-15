@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 type Json = Record<string, any>;
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
+const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
 
 function stable(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -19,15 +19,15 @@ function sha256(value: string): string {
 }
 
 function main(): void {
-  const a = JSON.parse(readFileSync(join(EVIDENCE, "A16_REPLAY_A", "REPLAY_SUMMARY.json"), "utf8")) as Json;
-  const b = JSON.parse(readFileSync(join(EVIDENCE, "A16_REPLAY_B", "REPLAY_SUMMARY.json"), "utf8")) as Json;
+  const a = JSON.parse(readFileSync(join(EVIDENCE, "A2_13_REPLAY_A", "REPLAY_SUMMARY.json"), "utf8")) as Json;
+  const b = JSON.parse(readFileSync(join(EVIDENCE, "A2_13_REPLAY_B", "REPLAY_SUMMARY.json"), "utf8")) as Json;
   const fields = ["releaseId", "sourceHead", "sourceTree", "sourceFingerprintSha256", "manifestSha256", "sourcePackageSha256", "cardinalities", "normalizedDatabaseDigests", "oracleSemanticSha256", "admissionSemanticSha256", "wowSemanticSha256", "proposedQueue"];
   const comparisons = Object.fromEntries(fields.map((field) => [field, { a: a[field], b: b[field], equal: stable(a[field]) === stable(b[field]) }]));
   const predecessorEqual = stable(a.predecessor.before) === stable(a.predecessor.after)
     && stable(b.predecessor.before) === stable(b.predecessor.after)
     && stable(a.predecessor.before) === stable(b.predecessor.before);
   const report = {
-    schemaVersion: "water-r5-a1-replay-comparison.v1",
+    schemaVersion: "water-r6-a2-replay-comparison.v1",
     generatedAt: new Date().toISOString(),
     replay: "2/2",
     databases: [a.database, b.database],
@@ -48,9 +48,9 @@ function main(): void {
     || Object.values(comparisons).some((row: any) => !row.equal) || !report.replayPackageByteEqual
     || report.replayPredecessorDiff !== 0 || report.replayProposedQueueDiff !== 0) {
     report.status = "RED";
-    throw new Error(`WATER_A1_REPLAY_COMPARISON_RED:${stable(report)}`);
+    throw new Error(`WATER_R6_A2_REPLAY_COMPARISON_RED:${stable(report)}`);
   }
-  writeFileSync(join(EVIDENCE, "A16_REPLAY_COMPARISON.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  writeFileSync(join(EVIDENCE, "A2_13_REPLAY_COMPARISON.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   process.stdout.write(`${JSON.stringify(report)}\n`);
 }
 

@@ -437,6 +437,7 @@ declare
   v_state_before jsonb;
   v_state_after jsonb;
   v_counts record;
+  v_domain_definition_count integer;
   v_admitted_ids text[];
   v_computed_id_hash text;
   v_next_hash text;
@@ -483,13 +484,19 @@ begin
     raise exception using errcode = '55000', message = 'water successor release cardinality mismatch';
   end if;
 
+  select count(*)::integer into v_domain_definition_count
+  from public.estimate_definition_version v
+  join public.estimate_work_identity w on w.catalog_id = v.catalog_id
+  where v.release_id = p_release_id and w.domain = 'water_supply_sewerage';
+
   select array_agg(v.catalog_id order by v.catalog_id) into v_admitted_ids
   from public.estimate_definition_version v
   join public.estimate_work_identity w on w.catalog_id = v.catalog_id
   where v.release_id = p_release_id and w.domain = 'water_supply_sewerage' and w.denominator_eligible;
   v_computed_id_hash := encode(extensions.digest(convert_to(array_to_string(v_admitted_ids, E'\n'), 'UTF8'), 'sha256'), 'hex');
   if coalesce(array_length(v_admitted_ids, 1), 0) <> p_expected_newly_admitted
-    or p_expected_newly_admitted <> v_seal.definition_count
+    or v_domain_definition_count <> v_seal.definition_count
+    or v_domain_definition_count < p_expected_newly_admitted
     or v_computed_id_hash <> p_admitted_catalog_id_set_sha256 then
     raise exception using errcode = '55000', message = 'water admitted ID set mismatch';
   end if;

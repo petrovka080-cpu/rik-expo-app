@@ -8,14 +8,16 @@ import { evaluateFormulaGraph, type FormulaAst } from "../../../src/lib/estimate
 import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints";
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
-const PACKAGE_MANIFEST = JSON.parse(readFileSync(join(ROOT, ".release-runtime", "batch006-water-backend-r3", "02-backend-release", "manifest.json"), "utf8")) as JsonRecord;
+const EVIDENCE_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
+const PACKAGE_ROOT = resolve(process.env.BATCH006_PACKAGE_ROOT ?? join(ROOT, ".release-runtime", "batch006-water-backend-r3", "03-r6-a2-release-a"));
+const PACKAGE_MANIFEST = JSON.parse(readFileSync(join(PACKAGE_ROOT, "manifest.json"), "utf8")) as JsonRecord;
 const DATABASE_URL = process.env.BATCH006_DATABASE_URL ?? "";
 if (!DATABASE_URL) throw new Error("BATCH006_DATABASE_URL_REQUIRED");
 const EXPECTED_DATABASE = process.env.BATCH006_EXPECTED_DATABASE_NAME;
 if (!EXPECTED_DATABASE || decodeURIComponent(new URL(DATABASE_URL).pathname.replace(/^\//, "")) !== EXPECTED_DATABASE
-  || !/^batch006_water_r5_a1_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
+  || !/^batch006_water_r6_a2_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
 const RELEASE_ID = process.env.BATCH006_RELEASE_ID ?? String(PACKAGE_MANIFEST.releaseId);
+const EXPECTED_DEFINITIONS = Number((PACKAGE_MANIFEST.waterDelta as JsonRecord).definitions);
 
 type JsonRecord = Record<string, unknown>;
 type Parameter = {
@@ -211,7 +213,7 @@ async function main(): Promise<void> {
       where v.release_id=$1 and w.domain='water_supply_sewerage'
       order by v.catalog_id
     `, [RELEASE_ID])).rows;
-    if (definitions.length !== 845) throw new Error(`WATER_SCENARIO_DEFINITION_COUNT_RED:${definitions.length}`);
+    if (definitions.length !== EXPECTED_DEFINITIONS) throw new Error(`WATER_SCENARIO_DEFINITION_COUNT_RED:${definitions.length}:${EXPECTED_DEFINITIONS}`);
     const scenarioRows: JsonRecord[] = [];
     const summaryRows: JsonRecord[] = [];
     const globallyReached = new Set<string>();
@@ -325,7 +327,7 @@ async function main(): Promise<void> {
         mutually_exclusive_simultaneous: 0,
         status: "GREEN",
       });
-      if ((definitionIndex + 1) % 100 === 0) process.stderr.write(`[batch006-scenarios] ${definitionIndex + 1}/845\n`);
+      if ((definitionIndex + 1) % 100 === 0) process.stderr.write(`[batch006-scenarios] ${definitionIndex + 1}/${EXPECTED_DEFINITIONS}\n`);
     }
     if (invalidParameterCombinations !== 0 || mutuallyExclusiveSimultaneous !== 0 || globallyReached.size !== totalResources) {
       throw new Error(`WATER_SCENARIO_GLOBAL_RED:${JSON.stringify({ invalidParameterCombinations, mutuallyExclusiveSimultaneous, reached: globallyReached.size, totalResources })}`);
@@ -333,7 +335,7 @@ async function main(): Promise<void> {
     writeFileSync(join(EVIDENCE_ROOT, "WATER_CONSTRAINT_AWARE_SCENARIOS.jsonl"), `${scenarioRows.map((row) => JSON.stringify(row)).join("\n")}\n`, "utf8");
     writeFileSync(join(EVIDENCE_ROOT, "WATER_CONSTRAINT_AWARE_SCENARIO_SUMMARY.jsonl"), `${summaryRows.map((row) => JSON.stringify(row)).join("\n")}\n`, "utf8");
     const summary = {
-      schemaVersion: "water-constraint-aware-mass-admission-scenarios.r5",
+      schemaVersion: "water-constraint-aware-mass-admission-scenarios.r6-a2",
       releaseId: RELEASE_ID,
       definitions: definitions.length,
       scenarios: scenarioRows.length,

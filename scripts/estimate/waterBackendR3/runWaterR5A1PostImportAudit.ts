@@ -8,8 +8,8 @@ type Json = Record<string, any>;
 
 const ROOT = resolve(__dirname, "../../..");
 const RUNTIME = join(ROOT, ".release-runtime", "batch006-water-backend-r3");
-const EVIDENCE = join(RUNTIME, "evidence-a1");
-const PACKAGE = join(RUNTIME, "02-backend-release");
+const EVIDENCE = join(RUNTIME, "evidence-a2");
+const PACKAGE = resolve(process.env.BATCH006_PACKAGE_ROOT ?? join(RUNTIME, "03-r6-a2-release-a"));
 const DATABASE_URL = process.env.BATCH006_DATABASE_URL;
 const EXPECTED_DATABASE = process.env.BATCH006_EXPECTED_DATABASE_NAME;
 
@@ -36,20 +36,19 @@ function readJson(path: string): Json {
 async function main(): Promise<void> {
   if (!DATABASE_URL) throw new Error("BATCH006_DATABASE_URL_REQUIRED");
   const selected = decodeURIComponent(new URL(DATABASE_URL).pathname.replace(/^\//, ""));
-  if (!EXPECTED_DATABASE || selected !== EXPECTED_DATABASE || !/^batch006_water_r5_a1_[ab]$/.test(selected)) {
+  if (!EXPECTED_DATABASE || selected !== EXPECTED_DATABASE || !/^batch006_water_r6_a2_[ab]$/.test(selected)) {
     throw new Error(`BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED:${selected}:${EXPECTED_DATABASE ?? "MISSING"}`);
   }
   const manifestPath = join(PACKAGE, "manifest.json");
   const manifestBytes = readFileSync(manifestPath);
   const manifest = JSON.parse(manifestBytes.toString("utf8")) as Json;
-  const first = readJson(join(EVIDENCE, "A3_FIRST_INDEPENDENT_AUDIT.json"));
-  const second = readJson(join(EVIDENCE, "A3_SECOND_CLEAN_AUDIT.json"));
-  const pair = readJson(join(EVIDENCE, "A3_ORACLE_PAIR_COMPARISON.json"));
-  const content = readJson(join(EVIDENCE, "A6_CONTENT_GREEN_TOKEN.json"));
-  const massPath = resolve(argument("mass-proof", join(EVIDENCE, "WATER_MASS_ADMISSION_PROOF.json")));
+  const first = readJson(join(EVIDENCE, "A2_06_FIRST_REPAIRED_ORACLE.json"));
+  const second = readJson(join(EVIDENCE, "A2_06_SECOND_CLEAN_ORACLE.json"));
+  const pair = readJson(join(EVIDENCE, "A2_06_ORACLE_COMPARISON.json"));
+  const massPath = resolve(argument("mass-proof", join(EVIDENCE, "A2_09_WATER_MASS_ADMISSION_PROOF.json")));
   const mass = readJson(massPath);
-  const output = resolve(argument("output", join(EVIDENCE, "A7_POST_IMPORT_ORACLE.json")));
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "batch006-water-r5-a1-post-import-oracle" });
+  const output = resolve(argument("output", join(EVIDENCE, "A2_09_POST_IMPORT_ORACLE.json")));
+  const client = new Client({ connectionString: DATABASE_URL, application_name: "batch006-water-r6-a2-post-import-oracle" });
   await client.connect();
   try {
     const identity = (await client.query(`
@@ -105,7 +104,7 @@ async function main(): Promise<void> {
       from public.estimate_revision where release_id=$1
     `, [manifest.releaseId])).rows[0] as Json;
     const report = {
-      schemaVersion: "water-r5-a1-post-import-independent-audit.v1",
+      schemaVersion: "water-r6-a2-post-import-independent-audit.v1",
       generatedAt: new Date().toISOString(),
       database: selected,
       disposable: true,
@@ -120,11 +119,12 @@ async function main(): Promise<void> {
         firstStatus: first.status,
         secondStatus: second.status,
         pairStatus: pair.status,
-        contentStatus: content.status,
-        firstSemanticSha256: first.semanticVerdictSha256,
-        secondSemanticSha256: second.semanticVerdictSha256,
-        unresolved: Number(first.unresolvedDispositions) + Number(second.unresolved),
-        productionImports: Number(first.oracleProductionImports) + Number(second.oracleProductionImports),
+        comparisonStatus: pair.status,
+        firstSourceSha256: first.oracleSourceSha256,
+        secondSourceSha256: second.oracleSourceSha256,
+        independentSources: first.oracleSourceSha256 !== second.oracleSourceSha256,
+        unresolved: Number(first.failureCount) + Number(second.failureCount) + Number(pair.mismatchCount),
+        productionImports: Number(first.productionBuilderImports) + Number(second.productionBuilderImports),
       },
       identity,
       counts,
@@ -154,14 +154,16 @@ async function main(): Promise<void> {
     if (identity?.database !== selected || identity?.id !== manifest.releaseId || identity?.status !== "prepared"
       || Number(identity.schema_version) !== 5 || identity.source_manifest_sha256 !== manifest.manifestSha256
       || identity.source_package_sha256 !== manifest.sourcePackageSha256
-      || Number(counts.water_definitions) !== 845 || Number(counts.water_parameters) !== manifest.waterDelta.parameters
+      || Number(counts.water_definitions) !== manifest.waterDelta.definitions || Number(counts.water_parameters) !== manifest.waterDelta.parameters
       || Number(counts.water_formulas) !== manifest.waterDelta.formulas || Number(counts.water_resources) !== manifest.waterDelta.resources
       || ["invalid_row_hash", "missing_normative_trace", "missing_price_route", "wrong_owner", "duplicate_rows", "missing_normalized_norm", "missing_normalized_price"].some((key) => Number(counts[key]) !== 0)
-      || report.oracle.firstStatus !== "GREEN" || report.oracle.secondStatus !== "GREEN" || report.oracle.pairStatus !== "GREEN"
-      || report.oracle.contentStatus !== "GREEN" || report.oracle.firstSemanticSha256 !== report.oracle.secondSemanticSha256
+      || report.oracle.firstStatus !== "GREEN_FIRST_REPAIRED_INDEPENDENT_ORACLE"
+      || report.oracle.secondStatus !== "GREEN_SECOND_CLEAN_INDEPENDENT_ORACLE"
+      || report.oracle.pairStatus !== "GREEN_TWO_INDEPENDENT_ORACLES" || !report.oracle.independentSources
       || report.oracle.unresolved !== 0 || report.oracle.productionImports !== 0
       || mass.status !== "GREEN" || mass.releaseId !== manifest.releaseId
-      || Number(mass.serverCompile?.green) !== 845 || Number(mass.serverRecalculate?.green) !== 845
+      || Number(mass.serverCompile?.green) !== manifest.waterDelta.definitions
+      || Number(mass.serverRecalculate?.green) !== manifest.waterDelta.definitions
       || Number(mass.resourceBranchCoverage?.reached) !== manifest.waterDelta.resources
       || Number(mass.invalidParameterCombinations) !== 0 || Number(mass.mutuallyExclusiveSimultaneous) !== 0
       || Number(mass.doubleCount) !== 0 || Number(mass.duplicateRevisions) !== 0 || Number(mass.unreachableRows) !== 0
@@ -169,7 +171,7 @@ async function main(): Promise<void> {
       || Number(jobTruth.jobs) !== Number(jobTruth.distinct_idempotency_keys)
       || Number(revisions.revisions) !== Number(revisions.distinct_revisions) || Number(revisions.wrong_release) !== 0) {
       report.status = "RED";
-      throw new Error(`WATER_A1_POST_IMPORT_ORACLE_RED:${stable(report)}`);
+      throw new Error(`WATER_R6_A2_POST_IMPORT_ORACLE_RED:${stable(report)}`);
     }
     mkdirSync(dirname(output), { recursive: true });
     writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`, "utf8");

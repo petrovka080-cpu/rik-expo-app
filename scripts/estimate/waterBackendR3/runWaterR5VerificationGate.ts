@@ -3,12 +3,11 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-type Gate = "typecheck" | "focused" | "security" | "full-jest-1" | "full-jest-2";
+type Gate = "typecheck" | "focused" | "security" | "full-jest-deferred";
 type Json = Record<string, unknown>;
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
-const FULL_JEST_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "full-jest-a1");
+const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
 
 function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
@@ -45,13 +44,13 @@ function overlayArgs(): string[] {
 
 function gateFromArgs(): Gate {
   const value = process.argv.find((arg) => arg.startsWith("--gate="))?.slice("--gate=".length);
-  if (!value || !["typecheck", "focused", "security", "full-jest-1", "full-jest-2"].includes(value)) {
-    throw new Error("WATER_R5_VERIFICATION_GATE_REQUIRED");
+  if (!value || !["typecheck", "focused", "security", "full-jest-deferred"].includes(value)) {
+    throw new Error("WATER_R6_A2_VERIFICATION_GATE_REQUIRED");
   }
   return value as Gate;
 }
 
-function commandFor(gate: Gate): { command: string; args: string[]; timeout: number; outputDir?: string } {
+function commandFor(gate: Exclude<Gate, "full-jest-deferred">): { command: string; args: string[]; timeout: number } {
   if (gate === "typecheck") {
     return { command: process.execPath, args: [join(ROOT, "scripts/typecheck/runTypecheckShards.mjs")], timeout: 30 * 60_000 };
   }
@@ -61,8 +60,7 @@ function commandFor(gate: Gate): { command: string; args: string[]; timeout: num
       command: process.execPath,
       args: [jest,
         "tests/estimateBackend/canonicalBackendR3.contract.test.ts",
-        "tests/estimateBackend/waterBackendR5.contract.test.ts",
-        "tests/estimateBackend/waterIndependentOracleA1.contract.test.ts",
+        "tests/estimateBackend/waterBackendR6A2.contract.test.ts",
         "src/lib/estimate/backendPlatform/formulaGraph.test.ts",
         "src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation.test.ts",
         "src/lib/estimate/backendPlatform/canonicalEstimateOfflineCache.test.ts",
@@ -85,24 +83,35 @@ function commandFor(gate: Gate): { command: string; args: string[]; timeout: num
       timeout: 30 * 60_000,
     };
   }
-  const pass = gate.endsWith("1") ? "pass-1" : "pass-2";
-  const outputDir = join(FULL_JEST_ROOT, pass);
-  return {
-    command: process.execPath,
-    args: [join(ROOT, "node_modules/tsx/dist/cli.mjs"), join(ROOT, "scripts/release/runDeterministicShardedFullJest.ts"),
-      "--shards=32", "--concurrency=2", "--microbatch-files=20", `--output-dir=${outputDir}`, ...overlayArgs()],
-    timeout: 4 * 60 * 60_000,
-    outputDir,
-  };
+  throw new Error(`WATER_R6_A2_UNSUPPORTED_EXECUTED_GATE:${gate}`);
 }
 
 function main(): void {
   mkdirSync(EVIDENCE, { recursive: true });
   const gate = gateFromArgs();
   const identityBefore = sourceFingerprint();
-  const manifest = JSON.parse(readFileSync(join(ROOT, ".release-runtime/batch006-water-backend-r3/02-backend-release/manifest.json"), "utf8")) as Json;
+  const packageRoot = resolve(process.env.BATCH006_PACKAGE_ROOT ?? join(ROOT, ".release-runtime/batch006-water-backend-r3/03-r6-a2-release-a"));
+  const manifest = JSON.parse(readFileSync(join(packageRoot, "manifest.json"), "utf8")) as Json;
   if ((manifest.sourceGit as Json).worktreeSourceFingerprintSha256 !== identityBefore.sha256) {
-    throw new Error(`WATER_R5_SOURCE_FINGERPRINT_DRIFT:${gate}`);
+    throw new Error(`WATER_R6_A2_SOURCE_FINGERPRINT_DRIFT:${gate}`);
+  }
+  if (gate === "full-jest-deferred") {
+    const report = {
+      schemaVersion: "water-r6-a2-verification-gate.v1",
+      gate,
+      releaseId: manifest.releaseId,
+      head: git(["rev-parse", "HEAD"]),
+      tree: git(["rev-parse", "HEAD^{tree}"]),
+      sourceFingerprintBefore: identityBefore,
+      sourceFingerprintAfter: identityBefore,
+      sourceUnchanged: true,
+      operatorDirective: "FULL_JEST=DEFERRED_BY_OPERATOR_NOT_RUN",
+      executed: false,
+      status: "DEFERRED_BY_OPERATOR_NOT_RUN",
+    };
+    writeFileSync(join(EVIDENCE, "A2_12_VERIFICATION_FULL_JEST_DEFERRED.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+    process.stdout.write(`${JSON.stringify(report)}\n`);
+    return;
   }
   const command = commandFor(gate);
   const startedAt = new Date().toISOString();
@@ -119,7 +128,7 @@ function main(): void {
   const stdout = result.stdout ?? "";
   const stderr = `${result.stderr ?? ""}${result.error ? `\n${result.error.message}` : ""}`;
   const report = {
-    schemaVersion: "water-r5-verification-gate.v1",
+    schemaVersion: "water-r6-a2-verification-gate.v1",
     gate,
     releaseId: manifest.releaseId,
     sourceFingerprintBefore: identityBefore,
@@ -132,7 +141,6 @@ function main(): void {
     durationMs: Date.now() - started,
     command: [command.command, ...command.args.filter((arg) => !arg.startsWith("--allow-overlay="))],
     allowedOverlayCount: command.args.filter((arg) => arg.startsWith("--allow-overlay=")).length,
-    outputDir: command.outputDir ?? null,
     exitCode: result.status,
     signal: result.signal,
     stdoutSha256: sha256(stdout),
@@ -141,7 +149,7 @@ function main(): void {
     stderrTail: stderr.slice(-12_000),
     status: result.status === 0 && identityAfter.sha256 === identityBefore.sha256 ? "GREEN" : "RED",
   };
-  writeFileSync(join(EVIDENCE, `WATER_R5_VERIFICATION_${gate.toUpperCase().replace(/-/g, "_")}.json`), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  writeFileSync(join(EVIDENCE, `A2_12_VERIFICATION_${gate.toUpperCase().replace(/-/g, "_")}.json`), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   process.stdout.write(`${JSON.stringify(report)}\n`);
   if (report.status !== "GREEN") process.exitCode = 1;
 }

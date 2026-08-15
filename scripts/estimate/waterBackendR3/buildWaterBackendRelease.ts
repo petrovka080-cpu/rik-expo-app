@@ -9,6 +9,8 @@ import { once } from "node:events";
 import {
   WATER_BACKEND_CONTENT_VERSION,
   WATER_BACKEND_DOMAIN,
+  WATER_BACKEND_GLOBAL_CATALOG_IDS,
+  WATER_BACKEND_A2_EXTERNAL_IDS,
   WATER_BACKEND_EXPECTED_CATALOG_IDS,
   WATER_OFFICIAL_SOURCES,
   buildWaterBackendDefinitions,
@@ -18,8 +20,8 @@ import {
 const ROOT = resolve(__dirname, "../../..");
 const DEFAULT_PREDECESSOR_ROOT = resolve(ROOT, "../rik-expo-app-master11610-backend-r1");
 const RUNTIME_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3");
-const EVIDENCE_ROOT = join(RUNTIME_ROOT, "evidence-a1");
-const PACKAGE_ROOT = resolve(argument("package-root", join(RUNTIME_ROOT, "02-backend-release")));
+const EVIDENCE_ROOT = join(RUNTIME_ROOT, "evidence-a2");
+const PACKAGE_ROOT = resolve(argument("package-root", join(RUNTIME_ROOT, "03-r6-a2-release-a")));
 const OFFICIAL_CACHE = join(RUNTIME_ROOT, "official-source-cache");
 
 type FileProof = { file: string; rows: number; bytes: number; sha256: string };
@@ -123,6 +125,7 @@ function writeEvidenceJsonl(name: string, values: readonly unknown[]): void {
 }
 
 async function main(): Promise<void> {
+  if (git(["status", "--porcelain"])) throw new Error("WATER_R6_A2_SOURCE_FREEZE_REQUIRES_CLEAN_WORKTREE");
   const predecessorRoot = resolve(argument("predecessor-root", DEFAULT_PREDECESSOR_ROOT));
   const predecessorPackage = resolve(argument(
     "predecessor-package",
@@ -151,6 +154,8 @@ async function main(): Promise<void> {
   const waterResources = definitions.flatMap((definition) => definition.resources) as JsonRecord[];
   const waterCounts = {
     definitions: definitions.length,
+    globalDefinitions: definitions.filter((definition) => definition.work.namespace === "global").length,
+    externalDefinitions: definitions.filter((definition) => definition.work.namespace === "external").length,
     parameters: waterParameters.length,
     formulas: waterFormulas.length,
     resources: waterResources.length,
@@ -159,6 +164,8 @@ async function main(): Promise<void> {
   };
   if (
     waterCounts.definitions !== WATER_BACKEND_EXPECTED_CATALOG_IDS ||
+    waterCounts.globalDefinitions !== WATER_BACKEND_GLOBAL_CATALOG_IDS ||
+    waterCounts.externalDefinitions !== WATER_BACKEND_A2_EXTERNAL_IDS ||
     waterCounts.formulas !== waterCounts.resources || waterCounts.minimumRowsPerDefinition < 10
   ) throw new Error(`WATER_CONTENT_CARDINALITY_RED:${JSON.stringify(waterCounts)}`);
 
@@ -185,8 +192,8 @@ async function main(): Promise<void> {
 
   const actual = {
     works: 1_168 + waterCounts.definitions,
-    globalWorks: 1_160 + waterCounts.definitions,
-    externalReferences: 8,
+    globalWorks: 1_160 + waterCounts.globalDefinitions,
+    externalReferences: 8 + waterCounts.externalDefinitions,
     parameters: 138_425 + waterCounts.parameters,
     formulas: 101_416 + waterCounts.formulas,
     resources: 101_416 + waterCounts.resources,
@@ -205,8 +212,11 @@ async function main(): Promise<void> {
     fileByName.get("resources.jsonl")?.rows !== actual.resources
   ) throw new Error(`CUMULATIVE_PACKAGE_ROW_COUNT_RED:${JSON.stringify({ files, actual })}`);
 
-  const membershipPath = join(EVIDENCE_ROOT, "GLOBAL_11610_WATER_DOMAIN_MEMBERSHIP.jsonl");
+  const membershipPath = join(EVIDENCE_ROOT, "A2_01_GLOBAL_11610_WATER_CLASSIFICATION.jsonl");
   const membershipSha256 = sha256(readFileSync(membershipPath));
+  const admittedCatalogIdSetSha256 = sha256(definitions
+    .filter((definition) => definition.work.namespace === "global")
+    .map((definition) => definition.work.catalogId).sort().join("\n"));
   const sourceFingerprint = trackedSourceFingerprint();
   const contentIdentity = sha256(stableJson({
     predecessorManifestSha256: predecessorManifest.manifestSha256,
@@ -217,9 +227,9 @@ async function main(): Promise<void> {
     sourceFingerprintSha256: sourceFingerprint.sha256,
   }));
   const releaseId = uuidFromSha256(contentIdentity);
-  const releaseKey = `batch006-water-backend-r3-${contentIdentity.slice(0, 16)}`;
+  const releaseKey = `batch006-water-r6-a2-${contentIdentity.slice(0, 16)}`;
   const sourcePackageSha256 = sha256(stableJson({
-    schemaVersion: "batch006-water-backend-release.r5",
+    schemaVersion: "batch006-water-backend-release.r6-a2",
     releaseId,
     releaseKey,
     parentReleaseId: predecessorManifest.releaseId,
@@ -228,7 +238,7 @@ async function main(): Promise<void> {
     contentIdentity,
   }));
   const manifestWithoutHash = {
-    schemaVersion: "batch006-water-backend-release.r5",
+    schemaVersion: "batch006-water-backend-release.r6-a2",
     contentVersion: WATER_BACKEND_CONTENT_VERSION,
     releaseId,
     releaseKey,
@@ -242,7 +252,7 @@ async function main(): Promise<void> {
     actual,
     waterDelta: {
       ...waterCounts,
-      admittedCatalogIdSetSha256: "b57a55ecfba7f11273d45173c4b4554481990898e50abec7edf3cfa477db760b",
+      admittedCatalogIdSetSha256,
       membershipEvidenceSha256: membershipSha256,
       aliases: 0,
       paddingRows: 0,
@@ -252,10 +262,12 @@ async function main(): Promise<void> {
       denominator: 11_610,
       admittedBefore: 1_160,
       remainingBefore: 10_450,
-      newlyAdmittedWater: waterCounts.definitions,
-      admittedAfter: 1_160 + waterCounts.definitions,
-      remainingAfter: 10_450 - waterCounts.definitions,
-      externalBeforeAfter: 8,
+      newlyAdmittedWater: waterCounts.globalDefinitions,
+      newlyAddedExternalWater: waterCounts.externalDefinitions,
+      admittedAfter: 1_160 + waterCounts.globalDefinitions,
+      remainingAfter: 10_450 - waterCounts.globalDefinitions,
+      externalBefore: 8,
+      externalAfter: 8 + waterCounts.externalDefinitions,
       queueMutationDuringImport: 0,
       batch007Started: false,
     },
@@ -316,22 +328,24 @@ async function main(): Promise<void> {
     padding_row: false,
     trace_sha256: sha256(stableJson({ resource, formula: formulaById.get(String(resource.formulaId)) })),
   }));
-  writeEvidenceJson("WATER_BACKEND_DEFINITION_RELEASE_MANIFEST.json", manifest);
-  writeEvidenceJson("WATER_OFFICIAL_SOURCE_REGISTRY.json", {
-    schemaVersion: "water-official-source-registry.r5",
+  writeEvidenceJson("A2_07_WATER_BACKEND_DEFINITION_RELEASE_MANIFEST.json", manifest);
+  writeEvidenceJson("A2_04_OFFICIAL_SOURCE_REVERIFICATION.json", {
+    schemaVersion: "water-official-source-registry.r6-a2",
+    verifiedAt: "2026-08-15",
+    verificationMethod: "OFFICIAL_MINSTROY_PAGE_AND_BYTE_PRESERVED_LOCAL_ARTIFACT_SHA256",
     sources: WATER_OFFICIAL_SOURCES,
     sourceCount: WATER_OFFICIAL_SOURCES.length,
     allArtifactsSha256Verified: true,
     status: "GREEN",
   });
-  writeEvidenceJsonl("WATER_BACKEND_PROFESSIONAL_PASSPORT_INDEX.jsonl", passportIndex);
-  writeEvidenceJsonl("WATER_BACKEND_PARAMETER_SCHEMA_INDEX.jsonl", parameterIndex);
-  writeEvidenceJsonl("WATER_BACKEND_BOQ_ROW_LEDGER.jsonl", rowLedger);
-  writeEvidenceJsonl("WATER_ROW_FORMULA_NORM_PRICE_TRACE.jsonl", trace);
-  writeEvidenceJson("CURRENT_BATCH006_R5_SOURCE_FINGERPRINT.json", sourceFingerprint);
+  writeEvidenceJsonl("A2_07_WATER_BACKEND_PROFESSIONAL_PASSPORT_INDEX.jsonl", passportIndex);
+  writeEvidenceJsonl("A2_07_WATER_BACKEND_PARAMETER_SCHEMA_INDEX.jsonl", parameterIndex);
+  writeEvidenceJsonl("A2_07_WATER_BACKEND_BOQ_ROW_LEDGER.jsonl", rowLedger);
+  writeEvidenceJsonl("A2_07_WATER_ROW_FORMULA_NORM_PRICE_TRACE.jsonl", trace);
+  writeEvidenceJson("A2_07_SOURCE_FINGERPRINT.json", sourceFingerprint);
 
   process.stdout.write(`${JSON.stringify({
-    status: "GREEN_W1_W4_PACKAGE_BUILT",
+    status: "GREEN_R6_A2_IMMUTABLE_PACKAGE_BUILT",
     releaseId,
     releaseKey,
     manifestSha256: manifest.manifestSha256,

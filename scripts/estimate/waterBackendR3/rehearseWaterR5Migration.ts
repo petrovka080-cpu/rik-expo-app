@@ -5,14 +5,14 @@ import { join, resolve } from "node:path";
 import { Client } from "pg";
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
+const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
 const UP = join(ROOT, "supabase/migrations/20260815100000_batch006_water_backend_r3.sql");
 const DOWN = join(ROOT, "supabase/rollback/20260815100000_batch006_water_backend_r3.down.sql");
 const DATABASE_URL = process.env.BATCH006_DATABASE_URL ?? "";
 if (!DATABASE_URL) throw new Error("BATCH006_DATABASE_URL_REQUIRED");
 const EXPECTED_DATABASE = process.env.BATCH006_EXPECTED_DATABASE_NAME;
 if (!EXPECTED_DATABASE || decodeURIComponent(new URL(DATABASE_URL).pathname.replace(/^\//, "")) !== EXPECTED_DATABASE
-  || !/^batch006_water_r5_a1_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
+  || !/^batch006_water_r6_a2_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
 
 function sha256(value: Buffer): string {
   return createHash("sha256").update(value).digest("hex");
@@ -65,7 +65,7 @@ async function main(): Promise<void> {
       && Number(after.r5_releases) === 0 && Number(after.predecessor_definitions) === 1_168
       && Number(after.predecessor_resources) === 101_416 ? "GREEN" : "RED";
     const report = {
-      schemaVersion: "water-r5-explicit-migration-rehearsal.v1",
+      schemaVersion: "water-r6-a2-explicit-migration-rehearsal.v1",
       database: new URL(DATABASE_URL).pathname.replace(/^\//, ""),
       disposableBytePreservingClone: true,
       migrationUpSha256: sha256(readFileSync(UP)),
@@ -80,8 +80,7 @@ async function main(): Promise<void> {
       productionDeployed: false,
       status,
     };
-    writeFileSync(join(EVIDENCE, "WATER_R5_EXPLICIT_MIGRATION_REHEARSAL.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
-    writeFileSync(join(EVIDENCE, "A7_MIGRATION_REPLAY.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+    writeFileSync(join(EVIDENCE, "A2_08_EXPLICIT_MIGRATION_REHEARSAL.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
     process.stdout.write(`${JSON.stringify(report)}\n`);
     if (status !== "GREEN") process.exitCode = 1;
   } finally {

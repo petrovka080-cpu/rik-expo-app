@@ -11,9 +11,44 @@ import {
 import { WATER_BACKEND_EXPANDED_OWNED_FAMILIES } from "./waterOwnedFamilies";
 import { buildWaterR5ProfessionalPlan } from "./waterR5ProfessionalModel";
 
-export const WATER_BACKEND_CONTENT_VERSION = "batch006-water-backend-r3.r5.2026-08-15" as const;
+export const WATER_BACKEND_CONTENT_VERSION = "batch006-water-backend-r3.r6-a2.2026-08-15" as const;
 export const WATER_BACKEND_DOMAIN = "water_supply_sewerage" as const;
-export const WATER_BACKEND_EXPECTED_CATALOG_IDS = 845 as const;
+export const WATER_BACKEND_GLOBAL_CATALOG_IDS = 845 as const;
+
+export const WATER_A2_EXTERNAL_DEFINITION_SPECS = Object.freeze([
+  { family: "dhw_recirculation_balancing", titleRu: "Балансировка внутренней рециркуляции горячей воды", operation: "TENDER_BOQ" },
+  { family: "backflow_prevention_assembly", titleRu: "Узел защиты питьевого водопровода от обратного потока", operation: "TENDER_BOQ" },
+  { family: "siphonic_rainwater_system", titleRu: "Сифонная система внутреннего дождевого водоотвода", operation: "TENDER_BOQ" },
+  { family: "greywater_reuse_network", titleRu: "Сеть сбора и повторного использования серой воды", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "reclaimed_water_irrigation_network", titleRu: "Непитьевая сеть очищенной воды для полива", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "vacuum_sewer_network", titleRu: "Вакуумная канализационная сеть", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "hdd_pipeline_crossing", titleRu: "Переход водопровода или канализации методом ГНБ", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "microtunnel_pipeline_crossing", titleRu: "Микротоннельный переход трубопровода", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "pipe_jacking_crossing", titleRu: "Переход трубопровода продавливанием", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "cipp_sewer_relining", titleRu: "Бестраншейная санация канализации рукавом CIPP", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "pipe_bursting_replacement", titleRu: "Бестраншейная замена трубопровода разрушением старой трубы", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "temporary_network_bypass", titleRu: "Временный байпас действующей водопроводной или канализационной сети", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "emergency_pipeline_repair", titleRu: "Аварийное локальное восстановление водопровода или канализации", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "grease_interceptor_system", titleRu: "Локальная система отделения жиров из сточных вод", operation: "PRELIMINARY_BOQ" },
+  { family: "oil_water_separator_system", titleRu: "Система отделения нефтепродуктов из ливневых и производственных стоков", operation: "PRELIMINARY_BOQ" },
+  { family: "reverse_osmosis_treatment", titleRu: "Установка мембранной очистки обратным осмосом", operation: "PRELIMINARY_BOQ" },
+  { family: "membrane_bioreactor", titleRu: "Мембранный биореактор очистки сточных вод", operation: "PRELIMINARY_BOQ" },
+  { family: "uv_disinfection", titleRu: "Ультрафиолетовое обеззараживание воды или стоков", operation: "PRELIMINARY_BOQ" },
+  { family: "ozone_disinfection", titleRu: "Озонирование и контактное обеззараживание воды", operation: "PRELIMINARY_BOQ" },
+  { family: "industrial_wastewater_pretreatment", titleRu: "Локальная предварительная очистка производственных сточных вод", operation: "PRELIMINARY_BOQ" },
+  { family: "anaerobic_sludge_digestion", titleRu: "Анаэробное сбраживание осадка сточных вод", operation: "PRELIMINARY_BOQ" },
+  { family: "sludge_drying_beds", titleRu: "Иловые площадки естественного обезвоживания осадка", operation: "PRELIMINARY_BOQ" },
+  { family: "deiron_manganese_removal", titleRu: "Обезжелезивание и удаление марганца из воды", operation: "PRELIMINARY_BOQ" },
+  { family: "water_softening", titleRu: "Установка умягчения воды", operation: "PRELIMINARY_BOQ" },
+  { family: "rainwater_harvesting_treatment", titleRu: "Сбор, очистка и повторное использование дождевой воды", operation: "PRELIMINARY_BOQ" },
+  { family: "cctv_sewer_inspection", titleRu: "Телевизионная диагностика канализационного трубопровода", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "acoustic_leak_detection", titleRu: "Акустический поиск утечек водопроводной сети", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "water_quality_sampling", titleRu: "Отбор и лабораторный контроль проб питьевой воды", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+  { family: "wastewater_quality_sampling", titleRu: "Отбор и лабораторный контроль проб сточных вод", operation: "DETAILED_BOQ_FROM_DRAWINGS" },
+] as const);
+
+export const WATER_BACKEND_A2_EXTERNAL_IDS = WATER_A2_EXTERNAL_DEFINITION_SPECS.length;
+export const WATER_BACKEND_EXPECTED_CATALOG_IDS = WATER_BACKEND_GLOBAL_CATALOG_IDS + WATER_BACKEND_A2_EXTERNAL_IDS;
 
 export type JsonRecord = Record<string, unknown>;
 export type WaterTechnologyKind =
@@ -36,6 +71,7 @@ export type WaterProfile = {
   networkLocation: "INTERNAL" | "EXTERNAL" | "FACILITY";
   pressureMode: "PRESSURE" | "GRAVITY" | "ATMOSPHERIC" | "MIXED";
   fluid: "POTABLE_WATER" | "TECHNICAL_WATER" | "DOMESTIC_WASTEWATER" | "STORMWATER" | "SLUDGE";
+  fluidSelection: "FIXED_BY_WORK_IDENTITY" | "ENGINEERING_INPUT_REQUIRED";
   materialVariants: readonly string[];
   primaryNormSourceId: string;
   primaryNormLocator: string;
@@ -86,12 +122,12 @@ export type WaterResource = {
 export type WaterDefinition = {
   work: {
     catalogId: string;
-    namespace: "global";
+    namespace: "global" | "external";
     domain: typeof WATER_BACKEND_DOMAIN;
     sourceIdentity: string;
     workKey: string;
     titleRu: string;
-    denominatorEligible: true;
+    denominatorEligible: boolean;
     definitionVersion: 1;
     passport: JsonRecord;
     applicability: JsonRecord;
@@ -269,10 +305,19 @@ const OWNED_EXPANDED = new Set<string>([
 const EXTERNAL_PRESSURE = new Set([
   "distribution_pipeline", "house_connection_water", "pressure_pipeline", "pressure_sewer_pipeline",
   "settlement_water_network", "site_water_connection", "village_water_supply",
+  "greywater_reuse_network", "reclaimed_water_irrigation_network", "vacuum_sewer_network",
+  "hdd_pipeline_crossing", "pipe_bursting_replacement", "temporary_network_bypass",
+]);
+const TECHNICAL_WATER_PRESSURE = new Set([
+  "greywater_reuse_network", "reclaimed_water_irrigation_network",
+]);
+const PROJECT_FLUID_PRESSURE = new Set([
+  "hdd_pipeline_crossing", "pipe_bursting_replacement", "temporary_network_bypass",
 ]);
 const EXTERNAL_GRAVITY = new Set([
   "gravity_sewer_collector", "outfall_structure", "site_sewer_connection", "stormwater_drainage",
   "village_sewer_network",
+  "microtunnel_pipeline_crossing", "pipe_jacking_crossing", "cipp_sewer_relining", "emergency_pipeline_repair",
 ]);
 const CHAMBER = new Set([
   "inspection_chambers", "inspection_wells", "manholes", "rainwater_inlets", "valves_chambers", "water_meter_chambers",
@@ -281,11 +326,24 @@ const PUMP = new Set(["booster_pumping_station", "pumping_station", "sewer_pumpi
 const TREATMENT = new Set([
   "aeration_tanks", "chlorination_station", "filtration_station", "septic_treatment_facility",
   "sewage_treatment_tanks", "sludge_dewatering", "wastewater_treatment_plant", "water_treatment_plant",
+  "grease_interceptor_system", "oil_water_separator_system", "reverse_osmosis_treatment", "membrane_bioreactor",
+  "uv_disinfection", "ozone_disinfection", "industrial_wastewater_pretreatment", "anaerobic_sludge_digestion",
+  "sludge_drying_beds", "deiron_manganese_removal", "water_softening", "rainwater_harvesting_treatment",
 ]);
+const POTABLE_WATER_TREATMENT = new Set([
+  "chlorination_station", "filtration_station", "water_treatment_plant",
+  "reverse_osmosis_treatment", "ozone_disinfection", "deiron_manganese_removal", "water_softening",
+]);
+const PROJECT_FLUID_TREATMENT = new Set(["uv_disinfection"]);
 const STORAGE = new Set([
   "borehole_water_supply", "reservoir_clean_water", "water_intake", "water_reservoir", "water_tower", "well_construction",
 ]);
-const TESTING = new Set(["flushing_disinfection", "pressure_testing_disinfection"]);
+const TESTING = new Set([
+  "flushing_disinfection", "pressure_testing_disinfection", "cctv_sewer_inspection",
+  "acoustic_leak_detection", "water_quality_sampling", "wastewater_quality_sampling",
+]);
+const INTERNAL_A2_PRESSURE = new Set(["dhw_recirculation_balancing", "backflow_prevention_assembly"]);
+const INTERNAL_A2_GRAVITY = new Set(["siphonic_rainwater_system"]);
 
 function family(row: GlobalCatalogInventoryRowV1): string | null {
   return row.domain_id.startsWith("expanded:") ? row.domain_id.slice("expanded:".length) : null;
@@ -300,6 +358,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
       networkLocation: "EXTERNAL" as const,
       pressureMode: "GRAVITY" as const,
       fluid: "DOMESTIC_WASTEWATER" as const,
+      fluidSelection: "FIXED_BY_WORK_IDENTITY" as const,
       materialVariants: ["PVC_SN8", "PP_CORRUGATED", "RC_PIPE"] as const,
       primaryNormSourceId: "kg_krer23_2015",
       primaryNormLocator: "tables:23-01-001_to_23-01-020;technical_part:sections_1_and_2",
@@ -307,22 +366,66 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
       requiredStages: ["SURVEY", "INSTALLATION", "TESTING", "DOCUMENTATION"],
       optionalStages: ["EARTHWORKS", "TRENCHLESS", "RESTORATION", "CCTV"],
     };
+    if (INTERNAL_A2_PRESSURE.has(expanded)) {
+      return {
+        ...base,
+        kind: "INTERNAL_PRESSURE",
+        networkLocation: "INTERNAL",
+        pressureMode: "PRESSURE",
+        fluid: "POTABLE_WATER",
+        materialVariants: ["PROJECT_APPROVED_METAL", "PROJECT_APPROVED_POLYMER", "FACTORY_ASSEMBLY"],
+        primaryNormSourceId: "kg_krer16_2015",
+        primaryNormLocator: "tables:16-02-001_to_16-05-005;project_selection_required",
+        priceSourceId: "kg_price_book21_2015",
+      };
+    }
+    if (INTERNAL_A2_GRAVITY.has(expanded)) {
+      return {
+        ...base,
+        kind: "INTERNAL_GRAVITY",
+        networkLocation: "INTERNAL",
+        pressureMode: "GRAVITY",
+        fluid: "STORMWATER",
+        materialVariants: ["SIPHONIC_HDPE", "PROJECT_APPROVED_METAL", "FACTORY_OUTLET_SYSTEM"],
+        primaryNormSourceId: "kg_krer16_2015",
+        primaryNormLocator: "tables:16-04-001_to_16-04-004;project_hydraulic_selection_required",
+        priceSourceId: "kg_price_book16_2015",
+      };
+    }
     if (expanded === "drainage_channel" || expanded === "drainage_prism") {
       return { ...base, kind: "DRAINAGE", fluid: "STORMWATER", materialVariants: ["PRECAST_CONCRETE", "POLYMER_CONCRETE", "GEOCOMPOSITE"] };
     }
     if (EXTERNAL_PRESSURE.has(expanded)) {
+      const projectFluid = PROJECT_FLUID_PRESSURE.has(expanded);
       return {
         ...base,
         kind: "EXTERNAL_PRESSURE",
         pressureMode: "PRESSURE",
-        fluid: expanded.includes("sewer") ? "DOMESTIC_WASTEWATER" : "POTABLE_WATER",
+        fluid: expanded.includes("sewer")
+          ? "DOMESTIC_WASTEWATER"
+          : TECHNICAL_WATER_PRESSURE.has(expanded) || projectFluid
+            ? "TECHNICAL_WATER"
+            : "POTABLE_WATER",
+        fluidSelection: projectFluid ? "ENGINEERING_INPUT_REQUIRED" : "FIXED_BY_WORK_IDENTITY",
         materialVariants: ["PE100_SDR17", "DUCTILE_IRON", "STEEL_COATED"],
         primaryNormSourceId: "kg_krer22_2015",
         primaryNormLocator: "tables:22-01-001_to_22-04-003;technical_part:sections_1_and_2",
         priceSourceId: "kg_price_book16_2015",
       };
     }
-    if (EXTERNAL_GRAVITY.has(expanded)) return { ...base, kind: "EXTERNAL_GRAVITY", fluid: expanded.includes("storm") || expanded.includes("outfall") ? "STORMWATER" : "DOMESTIC_WASTEWATER" };
+    if (EXTERNAL_GRAVITY.has(expanded)) {
+      const projectFluid = expanded === "emergency_pipeline_repair";
+      return {
+        ...base,
+        kind: "EXTERNAL_GRAVITY",
+        fluid: projectFluid
+          ? "TECHNICAL_WATER"
+          : expanded.includes("storm") || expanded.includes("outfall")
+            ? "STORMWATER"
+            : "DOMESTIC_WASTEWATER",
+        fluidSelection: projectFluid ? "ENGINEERING_INPUT_REQUIRED" : "FIXED_BY_WORK_IDENTITY",
+      };
+    }
     if (CHAMBER.has(expanded)) {
       return {
         ...base,
@@ -348,6 +451,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
       };
     }
     if (TREATMENT.has(expanded)) {
+      const projectFluid = PROJECT_FLUID_TREATMENT.has(expanded);
       return {
         ...base,
         kind: "TREATMENT",
@@ -355,7 +459,12 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
         outputUnitId: "item",
         networkLocation: "FACILITY",
         pressureMode: "MIXED",
-        fluid: expanded.includes("water_treatment") || expanded.includes("chlorination") || expanded.includes("filtration") ? "POTABLE_WATER" : "DOMESTIC_WASTEWATER",
+        fluid: POTABLE_WATER_TREATMENT.has(expanded)
+          ? "POTABLE_WATER"
+          : expanded === "rainwater_harvesting_treatment" || projectFluid
+            ? "TECHNICAL_WATER"
+            : "DOMESTIC_WASTEWATER",
+        fluidSelection: projectFluid ? "ENGINEERING_INPUT_REQUIRED" : "FIXED_BY_WORK_IDENTITY",
         materialVariants: ["FACTORY_PACKAGE", "SITE_ASSEMBLED_STEEL", "REINFORCED_CONCRETE_PROCESS_UNIT"],
         primaryNormSourceId: "kg_krerp09_2015",
         primaryNormLocator: "collection:09;water_supply_and_sewerage_facilities:commissioning_tables",
@@ -395,6 +504,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
     return {
       kind: "FIXTURE", outputParameterId: "component_count", outputUnitId: "item", networkLocation: "INTERNAL",
       pressureMode: system === "TOILET" ? "MIXED" : "PRESSURE", fluid: system === "TOILET" ? "DOMESTIC_WASTEWATER" : "POTABLE_WATER",
+      fluidSelection: "FIXED_BY_WORK_IDENTITY",
       materialVariants: ["PROJECT_FIXTURE_STANDARD", "PROJECT_FIXTURE_ACCESSIBLE", "PROJECT_FIXTURE_HEAVY_DUTY"],
       primaryNormSourceId: "kg_krer17_2015", primaryNormLocator: "tables:17-01-001_to_17-01-009;technical_part:clauses_1.0_to_1.8",
       priceSourceId: "kg_price_book21_2015", requiredStages: ["ACCEPTANCE", "INSTALLATION", "CONNECTION", "TESTING", "DOCUMENTATION"],
@@ -405,6 +515,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
     return {
       kind: "INTERNAL_GRAVITY", outputParameterId: "route_length_m", outputUnitId: "m", networkLocation: "INTERNAL",
       pressureMode: "GRAVITY", fluid: "DOMESTIC_WASTEWATER", materialVariants: ["PVC_INTERNAL", "PP_LOW_NOISE", "CAST_IRON_SML"],
+      fluidSelection: "FIXED_BY_WORK_IDENTITY",
       primaryNormSourceId: "kg_krer16_2015", primaryNormLocator: "tables:16-04-001_to_16-04-005;technical_part:clauses_1.1_and_2.1_to_2.5",
       priceSourceId: "kg_price_book16_2015", requiredStages: ["ROUTE", "SUPPORTS", "JOINTS", "FLOW_TEST", "DOCUMENTATION"],
       optionalStages: ["ACOUSTIC_INSULATION", "PENETRATIONS", "CCTV", "DEMOLITION"],
@@ -416,6 +527,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
       pressureMode: "PRESSURE", fluid: "POTABLE_WATER", materialVariants: system === "PPR_PIPE"
         ? ["PPR_PN20", "PPR_FIBER_REINFORCED", "PPR_ALUMINIUM_REINFORCED"]
         : system === "PND_PIPE" ? ["PE100_SDR17", "PE100_SDR11", "PE_RT"] : ["GALVANIZED_STEEL", "COPPER", "MULTILAYER_PEX_AL_PEX"],
+      fluidSelection: "FIXED_BY_WORK_IDENTITY",
       primaryNormSourceId: "kg_krer16_2015", primaryNormLocator: "tables:16-02-001_to_16-03-002;technical_part:clauses_1.1_and_2.1_to_2.5",
       priceSourceId: "kg_price_book16_2015", requiredStages: ["ROUTE", "SUPPORTS", "JOINTS", "PRESSURE_TEST", "FLUSHING", "DOCUMENTATION"],
       optionalStages: ["THERMAL_INSULATION", "PENETRATIONS", "DISINFECTION", "DEMOLITION"],
@@ -425,6 +537,7 @@ function profileFor(row: GlobalCatalogInventoryRowV1): WaterProfile {
     return {
       kind: "PUMP", outputParameterId: "component_count", outputUnitId: "item", networkLocation: "INTERNAL",
       pressureMode: "PRESSURE", fluid: "POTABLE_WATER", materialVariants: [`${system}_PROJECT_DUTY`, `${system}_DUTY_STANDBY`, `${system}_HIGH_EFFICIENCY`],
+      fluidSelection: "FIXED_BY_WORK_IDENTITY",
       primaryNormSourceId: system === "METER" ? "kg_krer17_2015" : "kg_krer16_2015",
       primaryNormLocator: system === "METER" ? "tables:17-01-003_to_17-01-009;project_duty_selection_required" : "tables:16-05-001_to_16-05-005;project_duty_selection_required",
       priceSourceId: system === "PUMP" ? "kg_price_book19_2015" : "kg_price_book21_2015",
@@ -810,6 +923,10 @@ function r5ContentFor(row: GlobalCatalogInventoryRowV1, profile: WaterProfile): 
         componentKey: obligation.componentKey,
         componentRole: obligation.componentRole,
         actionKey: obligation.actionKey,
+        resourceCode: `WATER-R6-${obligation.componentRole}-${obligation.componentKey}-${obligation.actionKey}`,
+        dimensionSignature: `${compiled.source}->${obligation.unitId}`,
+        applicabilityConditionId: `condition:${row.catalog_id}:${obligation.componentKey}`,
+        stageId: obligation.section,
         quantityBasis: compiled.source,
         parameterSources: compiled.inputParameterIds,
         inclusionAst: obligation.condition,
@@ -858,6 +975,15 @@ function r5ContentFor(row: GlobalCatalogInventoryRowV1, profile: WaterProfile): 
           currency: "KGS",
         },
         engineeringInputPolicy: "EXPLICIT_PROJECT_OR_SIGNED_NORM_INPUT",
+        inputRequiredState: "ENGINEERING_INPUT_REQUIRED",
+        normValueOrInputRule: "OFFICIAL_RATE_RESOURCE_OR_EXPLICIT_PROJECT_INPUT_REQUIRED",
+        wasteRule: obligation.rowType === "waste" ? "MEASURED_WASTE_STREAM_AND_APPROVED_ROUTE" : "NOT_A_WASTE_ROW",
+        priceRegion: "KG",
+        priceDate: "PRICE_INPUT_REQUIRED",
+        priceStatus: "PRICE_INPUT_REQUIRED",
+        procurementCategory: obligation.procurementEligible ? obligation.componentRole : "NON_PROCUREMENT_SERVICE_OR_OWNER_TRANSFER",
+        supplierSpecification: obligation.procurementEligible ? "PROJECT_APPROVED_SPECIFICATION_REQUIRED" : "NOT_APPLICABLE",
+        revisionPolicy: "IMMUTABLE_SERVER_REVISION",
         outputRounding: "ROUND_HALF_UP_9",
         paddingRow: false,
         miscellaneousPercentageRow: false,
@@ -867,15 +993,51 @@ function r5ContentFor(row: GlobalCatalogInventoryRowV1, profile: WaterProfile): 
   return { parameters, formulas, resources, plan };
 }
 
+function buildA2ExternalRows(): GlobalCatalogInventoryRowV1[] {
+  return WATER_A2_EXTERNAL_DEFINITION_SPECS.map((spec) => {
+    const catalogId = `water-a2:${spec.family}`;
+    const base = {
+      catalog_id: catalogId,
+      work_key: `water_a2_${spec.family}`,
+      title_ru: spec.titleRu,
+      catalog_group: "water_external_a2",
+      domain_id: `expanded:${spec.family}`,
+      operation_class: spec.operation,
+      construction_method: "PROJECT_LEVEL_PROJECTION",
+      primary_material_or_system: spec.family.toLocaleUpperCase("en-US"),
+      output_dimension: "PROJECT_DEFINED",
+      new_repair_demolition_state: spec.family.includes("repair") || spec.family.includes("relining") || spec.family.includes("bursting") ? "REPAIR" : "NEW",
+      scope_capabilities: [spec.operation],
+      candidate_canonical_technology_id: `canonical-technology:water-a2:${spec.family}`,
+      alias_candidate_of: null,
+      existing_passport_id: null,
+      existing_schema_id: null,
+      existing_formula_pack_id: null,
+      existing_normative_profile_id: null,
+      current_readiness: "CLASSIFIED",
+      current_blockers: ["project_location", "drawings_or_specification", "engineering_input_required", "price_input_required"],
+      classification_evidence: [
+        `origin=DISCOVERED_WATER_GAP_A2`,
+        `family=${spec.family}`,
+        "counts_toward_global_queue=false",
+      ],
+      source_hash: sha256(`water-a2-source:${spec.family}`),
+    };
+    return { ...base, row_hash: sha256(base) } as GlobalCatalogInventoryRowV1;
+  });
+}
+
 export function buildWaterBackendDefinitions(): WaterDefinition[] {
   const inventory = buildGlobalCatalogInventoryV1();
-  const rows = inventory.rows
+  const globalRows = inventory.rows
     .filter((row) => row.domain_id === "plumbing" || (family(row) !== null && OWNED_EXPANDED.has(family(row)!)))
     .sort((left, right) => left.catalog_id.localeCompare(right.catalog_id));
-  if (rows.length !== WATER_BACKEND_EXPECTED_CATALOG_IDS || new Set(rows.map((row) => row.catalog_id)).size !== rows.length) {
-    throw new Error(`WATER_BACKEND_ID_SET_MISMATCH:${rows.length}`);
+  const rows = [...globalRows, ...buildA2ExternalRows()].sort((left, right) => left.catalog_id.localeCompare(right.catalog_id));
+  if (globalRows.length !== WATER_BACKEND_GLOBAL_CATALOG_IDS || rows.length !== WATER_BACKEND_EXPECTED_CATALOG_IDS || new Set(rows.map((row) => row.catalog_id)).size !== rows.length) {
+    throw new Error(`WATER_BACKEND_ID_SET_MISMATCH:${globalRows.length}:${rows.length}`);
   }
   const definitions = rows.map((row): WaterDefinition => {
+    const externalA2 = row.catalog_id.startsWith("water-a2:");
     const profile = profileFor(row);
     const { parameters, formulas, resources, plan } = r5ContentFor(row, profile);
     const usedParameters = new Set([
@@ -942,19 +1104,21 @@ export function buildWaterBackendDefinitions(): WaterDefinition[] {
     return {
       work: {
         catalogId: row.catalog_id,
-        namespace: "global",
+        namespace: externalA2 ? "external" : "global",
         domain: WATER_BACKEND_DOMAIN,
         sourceIdentity: row.catalog_id,
         workKey: row.work_key,
         titleRu: row.title_ru,
-        denominatorEligible: true,
+        denominatorEligible: !externalA2,
         definitionVersion: 1,
         passport,
         applicability: {
           country: "KG",
           networkLocation: profile.networkLocation,
           pressureMode: profile.pressureMode,
-          fluid: profile.fluid,
+          fluid: profile.fluidSelection === "ENGINEERING_INPUT_REQUIRED" ? "ENGINEERING_INPUT_REQUIRED" : profile.fluid,
+          fluidCandidateClass: profile.fluid,
+          fluidSelection: profile.fluidSelection,
           complexityClass: plan.complexity,
           estimateMaturity: plan.estimateMaturity,
           sourceDomainId: row.domain_id,
@@ -967,6 +1131,8 @@ export function buildWaterBackendDefinitions(): WaterDefinition[] {
           globalInventoryRowHash: row.row_hash,
           originalClientR2Status: "SUPERSEDED_DO_NOT_EXECUTE",
           backendOwner: true,
+          origin: externalA2 ? "DISCOVERED_WATER_GAP_A2" : "GLOBAL_11610",
+          countsTowardGlobalQueue: !externalA2,
         },
       },
       parameters,

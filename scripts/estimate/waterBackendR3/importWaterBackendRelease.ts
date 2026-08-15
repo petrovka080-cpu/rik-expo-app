@@ -6,13 +6,13 @@ import { createInterface } from "node:readline";
 import { Client, type ClientConfig } from "pg";
 
 const ROOT = resolve(__dirname, "../../..");
-const DEFAULT_PACKAGE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "02-backend-release");
-const IMPORTER_VERSION = "batch006-water-backend-importer.r5";
+const DEFAULT_PACKAGE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "03-r6-a2-release-a");
+const IMPORTER_VERSION = "batch006-water-backend-importer.r6-a2";
 
 type JsonRecord = Record<string, unknown>;
 type FileProof = { file: string; rows: number; bytes: number; sha256: string };
 type Manifest = {
-  schemaVersion: "batch006-water-backend-release.r5";
+  schemaVersion: "batch006-water-backend-release.r6-a2";
   releaseId: string;
   releaseKey: string;
   definitionSchemaVersion: 5;
@@ -22,12 +22,14 @@ type Manifest = {
     byDomain: Record<string, { works: number; resources: number }>;
   };
   waterDelta: {
-    definitions: number; parameters: number; formulas: number; resources: number;
+    definitions: number; globalDefinitions: number; externalDefinitions: number;
+    parameters: number; formulas: number; resources: number;
     admittedCatalogIdSetSha256: string; paddingRows: number; frontendDefinitionOwner: number;
   };
   programControl: {
     denominator: number; admittedBefore: number; remainingBefore: number; newlyAdmittedWater: number;
-    admittedAfter: number; remainingAfter: number; externalBeforeAfter: number; queueMutationDuringImport: number;
+    newlyAddedExternalWater: number; admittedAfter: number; remainingAfter: number;
+    externalBefore: number; externalAfter: number; queueMutationDuringImport: number;
   };
   sourceGit: { head: string; tree: string; worktreeSourceFingerprintSha256: string };
   officialSources: Array<{
@@ -78,20 +80,24 @@ async function verifyPackage(packageRoot: string): Promise<Manifest> {
   if (!existsSync(manifestPath)) throw new Error(`WATER_MANIFEST_NOT_FOUND:${manifestPath}`);
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
   const { manifestSha256, ...withoutHash } = manifest;
-  if (manifest.schemaVersion !== "batch006-water-backend-release.r5" || manifest.definitionSchemaVersion !== 5
+  if (manifest.schemaVersion !== "batch006-water-backend-release.r6-a2" || manifest.definitionSchemaVersion !== 5
     || sha256(withoutHash) !== manifestSha256) throw new Error("WATER_MANIFEST_IDENTITY_RED");
   if (
-    manifest.actual.works !== 2_013 || manifest.actual.globalWorks !== 2_005 || manifest.actual.externalReferences !== 8 ||
-    manifest.waterDelta.definitions !== 845 || manifest.waterDelta.parameters < 1 ||
-    manifest.waterDelta.formulas < 1 || manifest.waterDelta.formulas !== manifest.waterDelta.resources ||
+    manifest.actual.works !== 2_042 || manifest.actual.globalWorks !== 2_005 || manifest.actual.externalReferences !== 37 ||
+    manifest.actual.parameters !== 319_180 || manifest.actual.formulas !== 333_427 || manifest.actual.resources !== 333_427 ||
+    manifest.waterDelta.definitions !== 874 || manifest.waterDelta.globalDefinitions !== 845 ||
+    manifest.waterDelta.externalDefinitions !== 29 || manifest.waterDelta.parameters !== 180_755 ||
+    manifest.waterDelta.formulas !== 232_011 || manifest.waterDelta.resources !== 232_011 ||
     manifest.actual.parameters !== 138_425 + manifest.waterDelta.parameters ||
     manifest.actual.formulas !== 101_416 + manifest.waterDelta.formulas ||
     manifest.actual.resources !== 101_416 + manifest.waterDelta.resources ||
     manifest.waterDelta.paddingRows !== 0 || manifest.waterDelta.frontendDefinitionOwner !== 0 ||
     manifest.programControl.denominator !== 11_610 || manifest.programControl.admittedBefore !== 1_160 ||
     manifest.programControl.remainingBefore !== 10_450 || manifest.programControl.newlyAdmittedWater !== 845 ||
+    manifest.programControl.newlyAddedExternalWater !== 29 ||
     manifest.programControl.admittedAfter !== 2_005 || manifest.programControl.remainingAfter !== 9_605 ||
-    manifest.programControl.externalBeforeAfter !== 8 || manifest.programControl.queueMutationDuringImport !== 0
+    manifest.programControl.externalBefore !== 8 || manifest.programControl.externalAfter !== 37 ||
+    manifest.programControl.queueMutationDuringImport !== 0
   ) throw new Error("WATER_MANIFEST_EXACT_CARDINALITY_RED");
   for (const expected of manifest.files) {
     const path = join(packageRoot, expected.file);
@@ -120,7 +126,7 @@ function databaseConfig(): ClientConfig {
   if (/prod/i.test(`${url.hostname}${url.pathname}`)) throw new Error("BATCH006_PRODUCTION_IMPORT_FORBIDDEN");
   const database = decodeURIComponent(url.pathname.replace(/^\//, ""));
   const expected = process.env.BATCH006_EXPECTED_DATABASE_NAME;
-  if (!expected || database !== expected || !/^batch006_water_r5_a1_[ab]$/.test(database)) {
+  if (!expected || database !== expected || !/^batch006_water_r6_a2_[ab]$/.test(database)) {
     throw new Error(`BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED:${database}:${expected ?? "MISSING"}`);
   }
   return { connectionString, application_name: IMPORTER_VERSION, statement_timeout: 300_000 };
@@ -152,9 +158,9 @@ async function assertProgramControl(client: Client, manifest: Manifest): Promise
   if (!state || Number(state.denominator_total) !== manifest.programControl.denominator
     || Number(state.admitted_global_count) !== manifest.programControl.admittedBefore
     || Number(state.queue_remaining) !== manifest.programControl.remainingBefore
-    || Number(state.external_reference_count) !== manifest.programControl.externalBeforeAfter
+    || Number(state.external_reference_count) !== manifest.programControl.externalBefore
     || state.batch006_started !== false || state.water_domain_complete !== false
-    || Number(state.water_domain_remaining) !== manifest.waterDelta.definitions
+    || Number(state.water_domain_remaining) !== manifest.waterDelta.globalDefinitions
     || state.global_content_complete !== false || state.batch007_selected !== false
     || state.batch007_execution_started !== false
     || !/^[0-9a-f]{64}$/.test(String(state.state_sha256))) {
@@ -415,22 +421,25 @@ async function importPackage(client: Client, packageRoot: string, manifest: Mani
       where v.release_id=$1
     `, [manifest.releaseId])).rows[0];
     if (Number(namespaceCounts.global_count) !== manifest.actual.globalWorks
-      || Number(namespaceCounts.external_count) !== 8 || Number(namespaceCounts.water_count) !== 845) {
+      || Number(namespaceCounts.external_count) !== manifest.actual.externalReferences
+      || Number(namespaceCounts.water_count) !== manifest.waterDelta.definitions) {
       throw new Error(`WATER_DATABASE_NAMESPACE_RED:${JSON.stringify(namespaceCounts)}`);
     }
     await client.query("update public.estimate_definition_release set status='prepared',sealed_at=now() where id=$1 and status='draft'", [manifest.releaseId]);
     await client.query(`
       insert into public.estimate_migration_import (
         import_key,release_id,domain,package_sha256,work_count,external_count,resource_row_count,status,source_lineage,imported_at
-      ) values ($1,$2,'water_supply_sewerage',$3,$4,0,$5,'imported',$6::jsonb,now())
+      ) values ($1,$2,'water_supply_sewerage',$3,$4,$5,$6,'imported',$7::jsonb,now())
     `, [manifest.releaseKey, manifest.releaseId, manifest.manifestSha256, manifest.waterDelta.definitions,
-      manifest.waterDelta.resources, JSON.stringify({ parentRelease: manifest.parentRelease, sourcePackageSha256: manifest.sourcePackageSha256,
+      manifest.waterDelta.externalDefinitions, manifest.waterDelta.resources,
+      JSON.stringify({ parentRelease: manifest.parentRelease, sourcePackageSha256: manifest.sourcePackageSha256,
         waterIdSetSha256: manifest.waterDelta.admittedCatalogIdSetSha256 })]);
     await client.query(`
       insert into public.estimate_program_event (event_kind,event_key,denominator_delta,queue_delta,payload)
       values ('migration',$1,0,0,$2::jsonb)
     `, [`${manifest.releaseKey}:prepared-import`, JSON.stringify({ releaseId: manifest.releaseId, parentReleaseId: manifest.parentRelease.releaseId,
-      waterDefinitions: manifest.waterDelta.definitions, queueMutation: 0, productionDeployed: false })]);
+      waterDefinitions: manifest.waterDelta.definitions, globalWaterDefinitions: manifest.waterDelta.globalDefinitions,
+      externalWaterDefinitions: manifest.waterDelta.externalDefinitions, queueMutation: 0, productionDeployed: false })]);
     await assertProgramControl(client, manifest);
     await client.query("commit");
     return { mode: "import", releaseId: manifest.releaseId, releaseStatus: "prepared", counts, namespaceCounts };
@@ -443,7 +452,7 @@ async function importPackage(client: Client, packageRoot: string, manifest: Mani
 async function main(): Promise<void> {
   const packageRoot = resolve(argument("package", DEFAULT_PACKAGE));
   const manifest = await verifyPackage(packageRoot);
-  const evidenceOutput = resolve(argument("evidence-output", join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1", "A7_IMPORT_REPORT.json")));
+  const evidenceOutput = resolve(argument("evidence-output", join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2", "A2_08_IMPORT_REPORT.json")));
   if (hasFlag("dry-run")) {
     process.stdout.write(`${JSON.stringify({ mode: "dry_run", packageRoot, releaseId: manifest.releaseId,
       manifestSha256: manifest.manifestSha256, actual: manifest.actual, waterDelta: manifest.waterDelta })}\n`);
@@ -454,7 +463,7 @@ async function main(): Promise<void> {
   try {
     const result = await importPackage(client, packageRoot, manifest);
     const report = {
-      schemaVersion: "water-r5-a1-atomic-import-report.v1",
+      schemaVersion: "water-r6-a2-atomic-import-report.v1",
       generatedAt: new Date().toISOString(),
       database: new URL((databaseConfig().connectionString as string)).pathname.replace(/^\//, ""),
       releaseId: manifest.releaseId,

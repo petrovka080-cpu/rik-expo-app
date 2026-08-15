@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { buildWaterBackendDefinitions, type JsonRecord, type WaterDefinition } from "./waterDomainModel";
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
+const EVIDENCE = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
 
 function sha256(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -13,7 +13,7 @@ function sha256(value: unknown): string {
 
 function assertDefinition(definition: WaterDefinition): void {
   const complexity = String((definition.work.passport.professionalObligations as JsonRecord).complexityClass);
-  const minimum: Readonly<Record<string, number>> = { L1: 20, L2: 70, L3: 50, L4: 100, L5: 280 };
+  const minimum: Readonly<Record<string, number>> = { L1: 20, L2: 70, L3: 200, L4: 400, L5: 700 };
   if (definition.resources.length < minimum[complexity]) throw new Error("DEPTH");
   if (definition.formulas.length !== definition.resources.length) throw new Error("FORMULA_CARDINALITY");
   if (new Set(definition.resources.map((row) => row.rowId)).size !== definition.resources.length) throw new Error("DUPLICATE_ROW");
@@ -76,14 +76,19 @@ const MUTATORS: readonly Mutator[] = [
 function main(): void {
   mkdirSync(EVIDENCE, { recursive: true });
   const definitions = buildWaterBackendDefinitions();
+  const global = definitions.filter((definition) => definition.work.namespace === "global");
+  const external = definitions.filter((definition) => definition.work.namespace === "external");
   const representatives = [
-    ...definitions.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L1").slice(0, 2),
-    ...definitions.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L2").slice(0, 2),
-    ...definitions.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L3").slice(0, 2),
-    ...definitions.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L4").slice(0, 2),
-    ...definitions.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L5").slice(0, 2),
+    ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L1").slice(0, 4),
+    ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L2").slice(0, 4),
+    ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L3").slice(0, 4),
+    ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L4").slice(0, 4),
+    ...global.filter((definition) => String((definition.work.passport.professionalObligations as JsonRecord).complexityClass) === "L5").slice(0, 2),
+    ...external.slice(0, 10),
   ];
-  if (representatives.length !== 10 || MUTATORS.length !== 16) throw new Error("WATER_R5_MUTATION_MATRIX_SHAPE_RED");
+  const requiredMutations = Math.max(400, Math.ceil(definitions.length * 0.5));
+  if (representatives.length !== 28 || MUTATORS.length !== 16
+    || representatives.length * MUTATORS.length < requiredMutations) throw new Error("WATER_R6_A2_MUTATION_MATRIX_SHAPE_RED");
   const results: JsonRecord[] = [];
   for (const definition of representatives) {
     assertDefinition(definition);
@@ -110,20 +115,25 @@ function main(): void {
   }
   const killed = results.filter((result) => result.killed === true).length;
   const report = {
-    schemaVersion: "water-r5-controlled-mutation-report.v1",
+    schemaVersion: "water-r6-a2-controlled-mutation-report.v1",
     representativeDefinitions: representatives.map((definition) => definition.work.catalogId),
+    representativeNamespaces: {
+      global: representatives.filter((definition) => definition.work.namespace === "global").length,
+      external: representatives.filter((definition) => definition.work.namespace === "external").length,
+    },
     mutationClasses: MUTATORS.map((mutator) => mutator.id),
-    expected: 160,
+    minimumRequired: requiredMutations,
+    expected: representatives.length * MUTATORS.length,
     executed: results.length,
     killed,
     survived: results.length - killed,
     matrixSha256: sha256(results),
-    status: results.length === 160 && killed === 160 ? "GREEN" : "RED",
+    status: results.length >= requiredMutations && killed === results.length ? "GREEN" : "RED",
   };
-  writeFileSync(join(EVIDENCE, "WATER_R5_CONTROLLED_MUTATIONS_160.jsonl"), `${results.map((result) => JSON.stringify(result)).join("\n")}\n`, "utf8");
-  writeFileSync(join(EVIDENCE, "WATER_R5_CONTROLLED_MUTATION_REPORT.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  writeFileSync(join(EVIDENCE, "A2_12_CONTROLLED_MUTATIONS.jsonl"), `${results.map((result) => JSON.stringify(result)).join("\n")}\n`, "utf8");
+  writeFileSync(join(EVIDENCE, "A2_12_CONTROLLED_MUTATION_REPORT.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   process.stdout.write(`${JSON.stringify(report)}\n`);
-  if (report.status !== "GREEN") throw new Error(`WATER_R5_MUTATIONS_RED:${JSON.stringify(report)}`);
+  if (report.status !== "GREEN") throw new Error(`WATER_R6_A2_MUTATIONS_RED:${JSON.stringify(report)}`);
 }
 
 main();

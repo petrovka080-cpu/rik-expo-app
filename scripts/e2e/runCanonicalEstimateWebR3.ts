@@ -60,7 +60,7 @@ function productionReachability(bundleRoot: string) {
     "evaluateFormulaGraph", "calculateGlobalConstructionEstimate", "calculateGlobalConstructionEstimateSync",
     "compileProductionExpandedEstimate10000", "buildProfessionalExpandedGlobalEstimate", "productionFormulaDsl",
   ];
-  const waterCorpusTokens = ["batch006-water-backend-r3.r5", "WATER_BACKEND_BOQ_ROW_LEDGER", "WATER_R5_OBLIGATION_UNIVERSE_845"];
+  const waterCorpusTokens = ["batch006-water-backend-r3.r5", "batch006-water-backend-r3.r6-a2", "WATER_BACKEND_BOQ_ROW_LEDGER", "A2_07_WATER_BACKEND_BOQ_ROW_LEDGER"];
   const forbidden = [...new Set([
     "buildConsumerRepairSelectedWorkDraftBundle",
     "requestEstimateLegacyTestActions",

@@ -8,16 +8,18 @@ import { Client } from "pg";
 import { evaluateFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 
 const ROOT = resolve(__dirname, "../../..");
-const EVIDENCE_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a1");
-const PACKAGE_MANIFEST_PATH = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "02-backend-release", "manifest.json");
+const EVIDENCE_ROOT = join(ROOT, ".release-runtime", "batch006-water-backend-r3", "evidence-a2");
+const PACKAGE_ROOT = resolve(process.env.BATCH006_PACKAGE_ROOT ?? join(ROOT, ".release-runtime", "batch006-water-backend-r3", "03-r6-a2-release-a"));
+const PACKAGE_MANIFEST_PATH = join(PACKAGE_ROOT, "manifest.json");
 const PACKAGE_MANIFEST = JSON.parse(readFileSync(PACKAGE_MANIFEST_PATH, "utf8")) as JsonRecord;
 const SCENARIO_PATH = join(EVIDENCE_ROOT, "WATER_CONSTRAINT_AWARE_SCENARIOS.jsonl");
 const DATABASE_URL = process.env.BATCH006_DATABASE_URL ?? "";
 if (!DATABASE_URL) throw new Error("BATCH006_DATABASE_URL_REQUIRED");
 const EXPECTED_DATABASE = process.env.BATCH006_EXPECTED_DATABASE_NAME;
 if (!EXPECTED_DATABASE || decodeURIComponent(new URL(DATABASE_URL).pathname.replace(/^\//, "")) !== EXPECTED_DATABASE
-  || !/^batch006_water_r5_a1_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
+  || !/^batch006_water_r6_a2_[ab]$/.test(EXPECTED_DATABASE)) throw new Error("BATCH006_EXACT_DISPOSABLE_DATABASE_REQUIRED");
 const RELEASE_ID = String(process.env.BATCH006_RELEASE_ID ?? PACKAGE_MANIFEST.releaseId);
+const EXPECTED_DEFINITIONS = Number((PACKAGE_MANIFEST.waterDelta as JsonRecord).definitions);
 const EXPECTED_WATER_ROWS = Number((PACKAGE_MANIFEST.waterDelta as JsonRecord).resources);
 const API_ROOT = String(process.env.BATCH006_API_ROOT ?? "http://127.0.0.1:8776/canonical-estimate").replace(/\/$/, "");
 const TOKEN = process.env.BATCH006_TEST_TOKEN ?? "batch006-disposable-water-tenant";
@@ -123,7 +125,7 @@ async function enqueue(
     const batch = requests.slice(offset, offset + ENQUEUE_BATCH);
     const accepted = await concurrentMap(batch, HTTP_CONCURRENCY, async (request) => {
       const response = await post(`/jobs/${request.operation}`, {
-        idempotencyKey: `batch006-r5-${sha256(`${RELEASE_ID}:${request.operation}:${request.scenario.scenario_id}`).slice(0, 48)}`,
+        idempotencyKey: `batch006-r6-a2-${sha256(`${RELEASE_ID}:${request.operation}:${request.scenario.scenario_id}`).slice(0, 48)}`,
         catalogId: request.scenario.catalog_id,
         parentRevisionId: request.parentRevisionId,
         parameters: request.scenario.parameter_set,
@@ -146,7 +148,7 @@ async function enqueue(
       });
     }
     writeFileSync(CHECKPOINT_PATH, `${JSON.stringify({
-      schemaVersion: "water-admission-resume-checkpoint.r5",
+      schemaVersion: "water-admission-resume-checkpoint.r6-a2",
       releaseId: RELEASE_ID,
       sourceManifestSha256: PACKAGE_MANIFEST.manifestSha256,
       label,
@@ -212,10 +214,10 @@ function writeJsonl(name: string, rows: readonly JsonRecord[]): void {
 async function main(): Promise<void> {
   mkdirSync(EVIDENCE_ROOT, { recursive: true });
   const grouped = await readScenarios();
-  if (grouped.size !== 845) throw new Error(`WATER_SERVER_SCENARIO_DEFINITION_RED:${grouped.size}`);
+  if (grouped.size !== EXPECTED_DEFINITIONS) throw new Error(`WATER_SERVER_SCENARIO_DEFINITION_RED:${grouped.size}:${EXPECTED_DEFINITIONS}`);
   const totalPlanned = [...grouped.values()].reduce((sum, scenarios) => sum + scenarios.length, 0);
-  if (totalPlanned < 1_690) throw new Error(`WATER_SERVER_SCENARIO_COUNT_IMPLAUSIBLE:${totalPlanned}`);
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "batch006-water-server-mass-admission-r3" });
+  if (totalPlanned < EXPECTED_DEFINITIONS * 2) throw new Error(`WATER_SERVER_SCENARIO_COUNT_IMPLAUSIBLE:${totalPlanned}`);
+  const client = new Client({ connectionString: DATABASE_URL, application_name: "batch006-water-server-mass-admission-r6-a2" });
   await client.connect();
   try {
     const release = (await client.query("select id,status,source_manifest_sha256,source_package_sha256 from public.estimate_definition_release where id=$1", [RELEASE_ID])).rows[0];
@@ -288,7 +290,7 @@ async function main(): Promise<void> {
              count(*) filter (where status='running' and lease_expires_at < now())::integer as expired_running,
              count(*) filter (where lease_owner is not null or lease_expires_at is not null)::integer as live_leases
       from public.estimate_compile_job
-      where target_release_id=$1 and idempotency_key like 'batch006-r5-%'
+      where target_release_id=$1 and idempotency_key like 'batch006-r6-a2-%'
     `, [RELEASE_ID])).rows[0] as JsonRecord;
     const revisionProjection = (await client.query(`
       select count(*)::integer as rows,
@@ -296,11 +298,11 @@ async function main(): Promise<void> {
       from public.estimate_revision_row rr
       where rr.revision_id in (
         select result_revision_id from public.estimate_compile_job
-        where target_release_id=$1 and idempotency_key like 'batch006-r5-%' and result_revision_id is not null
+        where target_release_id=$1 and idempotency_key like 'batch006-r6-a2-%' and result_revision_id is not null
       )
     `, [RELEASE_ID])).rows[0] as JsonRecord;
     const summary = {
-      schemaVersion: "water-server-mass-admission-proof.r5",
+      schemaVersion: "water-server-mass-admission-proof.r6-a2",
       generatedAt: new Date().toISOString(),
       releaseId: RELEASE_ID,
       isolation: {
@@ -310,8 +312,8 @@ async function main(): Promise<void> {
         organizationId: "22222222-2222-4222-8222-222222222222",
         productionData: false,
       },
-      serverCompile: { expected: 845, green: compileCatalogs.size },
-      serverRecalculate: { expected: 845, green: recalculateCatalogs.size },
+      serverCompile: { expected: EXPECTED_DEFINITIONS, green: compileCatalogs.size },
+      serverRecalculate: { expected: EXPECTED_DEFINITIONS, green: recalculateCatalogs.size },
       scenarios: { expected: totalPlanned, executed: all.length, green: parity.length - red.length },
       resourceBranchCoverage: { expected: EXPECTED_WATER_ROWS, reached: reachedRows.size },
       persistentLedger: ledger,
@@ -324,21 +326,20 @@ async function main(): Promise<void> {
       duplicateRevisionRows: Number(revisionProjection.rows) - Number(revisionProjection.distinct_revision_rows),
       unreachableRows: EXPECTED_WATER_ROWS - reachedRows.size,
       parityRed: red.length,
-      status: compileCatalogs.size === 845 && recalculateCatalogs.size === 845
+      status: compileCatalogs.size === EXPECTED_DEFINITIONS && recalculateCatalogs.size === EXPECTED_DEFINITIONS
         && all.length === totalPlanned && red.length === 0 && reachedRows.size === EXPECTED_WATER_ROWS
         && Number(ledger.jobs) === totalPlanned && Number(ledger.idempotency_keys) === totalPlanned
         && Number(ledger.result_revisions) === totalPlanned && Number(ledger.distinct_result_revisions) === totalPlanned
         && Number(ledger.running) === 0 && Number(ledger.expired_running) === 0 && Number(ledger.live_leases) === 0
         && Number(revisionProjection.rows) === Number(revisionProjection.distinct_revision_rows) ? "GREEN" : "RED",
     };
-    writeJsonl("WATER_SERVER_SCENARIO_PARITY.jsonl", parity);
-    writeJsonl("WATER_SERVER_PER_ID_ADMISSION_MATRIX.jsonl", matrixByCatalog);
-    writeJsonl("WATER_SERVER_COMPILE_845_MATRIX.jsonl", compile.map((scenario) => ({
+    writeJsonl("A2_09_WATER_SERVER_SCENARIO_PARITY.jsonl", parity);
+    writeJsonl("A2_09_WATER_SERVER_PER_ID_ADMISSION_MATRIX.jsonl", matrixByCatalog);
+    writeJsonl("A2_09_WATER_SERVER_COMPILE_MATRIX.jsonl", compile.map((scenario) => ({
       catalog_id: scenario.catalog_id, scenario_id: scenario.scenario_id, job_id: scenario.jobId,
       revision_id: scenario.revisionId, release_id: RELEASE_ID, output_hash: scenario.output_hash, status: "GREEN",
     })));
-    writeFileSync(join(EVIDENCE_ROOT, "WATER_MASS_ADMISSION_PROOF.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
-    writeFileSync(join(EVIDENCE_ROOT, "A7_SERVER_ADMISSION.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+    writeFileSync(join(EVIDENCE_ROOT, "A2_09_WATER_MASS_ADMISSION_PROOF.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
     process.stdout.write(`${JSON.stringify(summary)}\n`);
     if (summary.status !== "GREEN") process.exitCode = 1;
   } finally {

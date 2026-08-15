@@ -531,6 +531,347 @@ const TESTING_SCOPE_COMPONENTS: readonly Component[] = [
   c("release_to_service", "Акт допуска системы в эксплуатацию", "DOCUMENT", "set", 1),
 ];
 
+// A2 expands factual construction scope.  These are named physical components and
+// operations which were absent from the R5 component universes; none is a row-count
+// filler.  Applicability remains explicit at the component level and every component
+// is decomposed through the role-specific action contract below.
+const A2_EXTERNAL_NETWORK_COMPONENTS: readonly Component[] = [
+  c("route_geodetic_control", "Геодезический контроль оси и отметок трассы", "TEST", "test", 1),
+  c("utility_owner_permit", "Разрешение владельцев пересекаемых коммуникаций", "DOCUMENT", "set", 1),
+  c("traffic_and_pedestrian_bypass", "Временная схема движения и безопасный проход", "CIVIL_INTERFACE", "set", 1, false),
+  c("temporary_water_or_sewer_bypass", "Временный байпас действующей сети", "PROCESS", "m", 1, false),
+  c("trench_edge_barrier", "Инвентарное ограждение и бортовая защита траншеи", "MATERIAL", "m", 1),
+  c("confined_space_entry_set", "Комплект допуска и спасения для ограниченного пространства", "EQUIPMENT", "set", 1, false),
+  c("groundwater_monitoring_point", "Контрольная точка уровня грунтовых вод", "TEST", "test", 1, false),
+  c("excavated_soil_separation", "Раздельное складирование пригодного и непригодного грунта", "PROCESS", "m3", 1),
+  c("surplus_soil_haul", "Вывоз избыточного грунта по подтверждённому маршруту", "LOGISTICS", "m3", 1, false),
+  c("pipe_zone_selected_fill", "Отобранный материал обсыпки трубной зоны", "MATERIAL", "m3", 1),
+  c("pipe_zone_hand_compaction", "Ручное уплотнение пазух трубной зоны", "PROCESS", "m3", 1),
+  c("backfill_density_test", "Испытание плотности обратной засыпки", "TEST", "test", 1),
+  c("pipe_end_protection", "Защита и герметизация открытых концов труб", "MATERIAL", "item", 1),
+  c("joint_preparation_consumables", "Расходные материалы подготовки соединений", "MATERIAL", "set", 1),
+  c("joint_alignment_control", "Контроль соосности и зазора соединений", "TEST", "test", 1),
+  c("joint_traceability_record", "Журнал прослеживаемости каждого соединения", "DOCUMENT", "set", 1),
+  c("thrust_restraint_set", "Комплект восприятия продольных усилий", "MATERIAL", "item", 1, false),
+  c("valve_operability_test", "Проверка хода и герметичности арматуры", "TEST", "test", 1, false),
+  c("air_valve_assembly", "Узел впуска и выпуска воздуха", "VALVE", "item", 1, false),
+  c("washout_assembly", "Промывной и опорожняющий узел", "VALVE", "item", 1, false),
+  c("detectable_warning_tape", "Сигнальная лента с трассопоисковым элементом", "MATERIAL", "m", 1),
+  c("pipeline_marker_post", "Опознавательный столбик и табличка трассы", "MATERIAL", "item", 1),
+  c("internal_pipe_cleaning", "Очистка внутренней поверхности перед вводом", "PROCESS", "m", 1),
+  c("controlled_filling_and_venting", "Контролируемое заполнение с выпуском воздуха", "PROCESS", "m", 1),
+  c("test_water_collection", "Сбор использованной испытательной воды", "PROCESS", "m3", 1),
+  c("test_water_quality_route", "Контроль и разрешённый маршрут отвода испытательной воды", "DOCUMENT", "set", 1),
+  c("final_route_walkdown", "Итоговый обход трассы с перечнем замечаний", "TEST", "test", 1),
+  c("asset_register_entry", "Запись координат и атрибутов сети в реестр активов", "DOCUMENT", "set", 1),
+];
+
+const A2_CHAMBER_COMPONENTS: readonly Component[] = [
+  c("chamber_excavation_acceptance", "Приёмка котлована камеры по отметкам и грунтам", "TEST", "test", 1),
+  c("chamber_working_space", "Рабочее пространство и временное крепление котлована", "CIVIL_INTERFACE", "m3", 1),
+  c("foundation_bearing_test", "Контроль несущей способности основания", "TEST", "test", 1),
+  c("levelling_course", "Выравнивающий слой основания камеры", "MATERIAL", "m3", 1),
+  c("base_waterproofing_interface", "Приёмка гидроизоляции основания", "CIVIL_INTERFACE", "m2", 1),
+  c("wall_joint_waterstop", "Гидрошпонка рабочего шва стен", "MATERIAL", "m", 1, false),
+  c("pipe_puddle_flange", "Герметичный фланец прохода трубы через стену", "FITTING", "item", 1),
+  c("flexible_wall_connector", "Гибкий стеновой соединитель", "FITTING", "item", 1, false),
+  c("benching_finish", "Формирование лотка и банкетки", "PROCESS", "item", 1),
+  c("internal_corrosion_lining", "Внутренняя коррозионностойкая облицовка", "MATERIAL", "m2", 1, false),
+  c("external_protective_coating", "Наружное защитное покрытие камеры", "MATERIAL", "m2", 1),
+  c("access_ladder", "Стационарная лестница доступа", "EQUIPMENT", "item", 1),
+  c("fall_arrest_socket", "Гнездо переносного устройства защиты от падения", "EQUIPMENT", "item", 1, false),
+  c("ventilation_riser", "Вентиляционный стояк камеры", "MATERIAL", "item", 1, false),
+  c("gas_test_before_entry", "Газоанализ перед входом в камеру", "TEST", "test", 1),
+  c("cover_frame_bedding", "Посадка рамы люка на безусадочный состав", "MATERIAL", "item", 1),
+  c("cover_level_adjustment", "Регулировка отметки люка под покрытие", "PROCESS", "item", 1),
+  c("chamber_drainage_sump", "Приямок для безопасного удаления воды", "MATERIAL", "item", 1, false),
+  c("chamber_cleaning", "Очистка камеры после монтажных работ", "PROCESS", "item", 1),
+  c("watertightness_test", "Испытание камеры на водонепроницаемость", "TEST", "test", 1),
+  c("confined_space_rescue_plan", "План спасения из ограниченного пространства", "DOCUMENT", "set", 1),
+  c("chamber_asset_tag", "Долговечная маркировка камеры и оборудования", "MATERIAL", "item", 1),
+  c("chamber_as_built_survey", "Исполнительная съёмка камеры и подключений", "DOCUMENT", "set", 1),
+  c("chamber_maintenance_clearance", "Проверка габаритов обслуживания", "TEST", "test", 1),
+];
+
+const A2_PUMP_FACILITY_COMPONENTS: readonly Component[] = [
+  c("pump_duty_selection_record", "Ведомость расчётной рабочей точки насосов", "DOCUMENT", "set", 1),
+  c("hydraulic_transient_review", "Проверка переходных гидравлических режимов", "DOCUMENT", "set", 1),
+  c("suction_bell_or_inlet", "Входной патрубок или всасывающий раструб", "EQUIPMENT", "item", 1),
+  c("suction_isolation_valve", "Запорная арматура на всасывании", "VALVE", "item", 1),
+  c("discharge_isolation_valve", "Запорная арматура на напоре", "VALVE", "item", 1),
+  c("discharge_check_valve", "Обратная арматура на напоре", "VALVE", "item", 1),
+  c("dismantling_joint", "Демонтажная вставка насосной обвязки", "FITTING", "item", 1),
+  c("flexible_connector", "Гибкая вставка для ограничения передачи вибрации", "FITTING", "item", 1, false),
+  c("suction_pressure_gauge", "Измерение давления на всасывании", "EQUIPMENT", "item", 1),
+  c("discharge_pressure_gauge", "Измерение давления на напоре", "EQUIPMENT", "item", 1),
+  c("flow_meter_spool", "Расходомерный участок насосной", "EQUIPMENT", "item", 1),
+  c("minimum_flow_return", "Линия минимального расхода", "MATERIAL", "m", 1, false),
+  c("surge_relief_valve", "Противоударная сбросная арматура", "VALVE", "item", 1, false),
+  c("priming_system", "Система заполнения и удаления воздуха", "EQUIPMENT", "set", 1, false),
+  c("seal_flush_system", "Система промывки уплотнений", "EQUIPMENT", "set", 1, false),
+  c("bearing_temperature_sensor", "Датчик температуры подшипников", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("winding_temperature_sensor", "Датчик температуры обмоток", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("vibration_sensor", "Датчик вибрации агрегата", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("local_control_station", "Местный пост управления", "ELECTRICAL_INTERFACE", "item", 1),
+  c("emergency_stop_station", "Аварийный пост останова", "ELECTRICAL_INTERFACE", "item", 1),
+  c("level_control_instrument", "Прибор контроля уровня", "ELECTRICAL_INTERFACE", "item", 1),
+  c("high_level_alarm", "Независимая аварийная сигнализация высокого уровня", "ELECTRICAL_INTERFACE", "item", 1),
+  c("dry_run_protection", "Защита насоса от сухого хода", "ELECTRICAL_INTERFACE", "set", 1),
+  c("cable_entry_seal", "Герметизация кабельных вводов", "MATERIAL", "item", 1),
+  c("equipment_earthing_bond", "Задание на защитное уравнивание потенциалов", "ELECTRICAL_INTERFACE", "item", 1),
+  c("lifting_beam", "Съёмная траверса для обслуживания насосов", "EQUIPMENT", "item", 1, false),
+  c("lifting_chain", "Сертифицированная грузовая цепь", "EQUIPMENT", "item", 1, false),
+  c("maintenance_platform", "Площадка обслуживания насосного оборудования", "CIVIL_INTERFACE", "item", 1, false),
+  c("floor_drain_system", "Система удаления дренажных проливов", "PROCESS", "set", 1),
+  c("sump_pump", "Дренажный насос помещения", "EQUIPMENT", "item", 1, false),
+  c("ventilation_duty_boundary", "Задание на вентиляцию и удаление влажности", "CIVIL_INTERFACE", "set", 1),
+  c("odor_control_boundary", "Задание на удаление запахов", "CIVIL_INTERFACE", "set", 1, false),
+  c("portable_gas_detector", "Переносной газоанализатор", "EQUIPMENT", "item", 1, false),
+  c("washdown_hose_point", "Точка технической воды для мойки", "EQUIPMENT", "item", 1),
+  c("equipment_nameplate", "Эксплуатационная маркировка агрегатов", "MATERIAL", "item", 1),
+  c("lubricant_and_service_fluid", "Пусковой комплект смазочных и сервисных жидкостей", "MATERIAL", "set", 1),
+  c("factory_test_certificate", "Протокол заводских испытаний оборудования", "DOCUMENT", "set", 1),
+  c("alignment_record", "Протокол центровки агрегата", "DOCUMENT", "set", 1),
+  c("rotation_check", "Проверка направления вращения", "TEST", "test", 1),
+  c("no_load_run", "Индивидуальное испытание без нагрузки", "TEST", "test", 1),
+  c("duty_point_test", "Испытание в расчётной рабочей точке", "TEST", "test", 1),
+  c("standby_changeover_test", "Испытание автоматического ввода резерва насосов", "TEST", "test", 1),
+  c("power_failure_recovery_test", "Испытание восстановления после потери питания", "TEST", "test", 1),
+  c("alarm_cause_effect_test", "Испытание матрицы причин и следствий", "TEST", "test", 1),
+  c("noise_and_vibration_test", "Контроль шума и вибрации", "TEST", "test", 1),
+  c("pump_curve_verification", "Сверка фактической характеристики с паспортом", "TEST", "test", 1),
+  c("operator_training", "Обучение эксплуатационного персонала", "DOCUMENT", "set", 1),
+  c("critical_spares_set", "Комплект согласованных критических запасных частей", "EQUIPMENT", "set", 1),
+  c("maintenance_tools_set", "Специальный инструмент обслуживания", "EQUIPMENT", "set", 1),
+  c("operation_maintenance_manual", "Руководство по эксплуатации и обслуживанию", "DOCUMENT", "set", 1),
+  c("pump_station_performance_report", "Итоговый отчёт комплексного опробования", "DOCUMENT", "set", 1),
+];
+
+const A2_STORAGE_COMPONENTS: readonly Component[] = [
+  c("storage_capacity_basis", "Расчётное основание полезного и аварийного объёма", "DOCUMENT", "set", 1),
+  c("inlet_diffuser", "Распределитель входящего потока", "EQUIPMENT", "item", 1),
+  c("outlet_bellmouth", "Водозаборный раструб выходной линии", "EQUIPMENT", "item", 1),
+  c("overflow_weir", "Переливное устройство с контролируемой отметкой", "EQUIPMENT", "item", 1),
+  c("overflow_screen", "Защитная сетка перелива", "EQUIPMENT", "item", 1),
+  c("drain_sump", "Приямок полного опорожнения", "PROCESS", "item", 1),
+  c("scour_line", "Линия промывки и опорожнения", "MATERIAL", "m", 1),
+  c("inlet_isolation", "Запорная арматура входной линии", "VALVE", "item", 1),
+  c("outlet_isolation", "Запорная арматура выходной линии", "VALVE", "item", 1),
+  c("overflow_isolation_guard", "Защита перелива от ошибочного перекрытия", "DOCUMENT", "set", 1),
+  c("sampling_tap", "Санитарная точка отбора проб", "FITTING", "item", 1),
+  c("level_transmitter", "Непрерывное измерение уровня", "ELECTRICAL_INTERFACE", "item", 1),
+  c("independent_high_level_switch", "Независимый сигнализатор высокого уровня", "ELECTRICAL_INTERFACE", "item", 1),
+  c("independent_low_level_switch", "Независимый сигнализатор низкого уровня", "ELECTRICAL_INTERFACE", "item", 1),
+  c("vent_insect_screen", "Вентиляция с сеткой от насекомых", "EQUIPMENT", "item", 1),
+  c("access_hatch", "Герметичный люк санитарного доступа", "EQUIPMENT", "item", 1),
+  c("internal_access_ladder", "Лестница внутреннего доступа", "EQUIPMENT", "item", 1),
+  c("fall_arrest_anchor", "Анкер страховочной системы", "EQUIPMENT", "item", 1),
+  c("roof_drainage_boundary", "Граница отвода атмосферной воды с покрытия", "CIVIL_INTERFACE", "set", 1, false),
+  c("internal_hygienic_lining", "Внутреннее покрытие для контакта с водой", "MATERIAL", "m2", 1),
+  c("external_corrosion_coating", "Наружная антикоррозионная защита", "MATERIAL", "m2", 1),
+  c("joint_waterstop", "Гидроизоляция конструкционных швов", "MATERIAL", "m", 1),
+  c("penetration_seal_system", "Герметизация трубных проходов", "FITTING", "item", 1),
+  c("sanitary_separation_check", "Контроль санитарной изоляции резервуара", "TEST", "test", 1),
+  c("cleaning_access_equipment", "Комплект безопасного доступа для очистки", "EQUIPMENT", "set", 1),
+  c("initial_debris_removal", "Удаление строительного мусора и пыли", "PROCESS", "m2", 1),
+  c("detergent_cleaning", "Мойка внутренних поверхностей", "PROCESS", "m2", 1),
+  c("disinfection_solution", "Приготовление и нанесение дезинфицирующего раствора", "PROCESS", "m2", 1),
+  c("disinfection_contact_control", "Контроль концентрации и времени контакта", "TEST", "test", 1),
+  c("neutralization_and_drain", "Нейтрализация и разрешённый отвод промывной воды", "PROCESS", "m3", 1),
+  c("watertightness_filling", "Поэтапное наполнение для испытания", "PROCESS", "m3", 1),
+  c("level_drop_monitoring", "Наблюдение за изменением уровня при испытании", "TEST", "test", 1),
+  c("external_leak_inspection", "Осмотр конструкций на фильтрацию", "TEST", "test", 1),
+  c("post_disinfection_sampling", "Отбор проб после дезинфекции", "TEST", "test", 1),
+  c("microbiological_clearance", "Микробиологический допуск воды", "TEST", "test", 1),
+  c("turnover_simulation", "Проверка обмена воды без застойных зон", "TEST", "test", 1),
+  c("valve_sequence_test", "Испытание эксплуатационной последовательности арматуры", "TEST", "test", 1),
+  c("alarm_function_test", "Испытание уровневой сигнализации", "TEST", "test", 1),
+  c("confined_space_plan", "План работ и спасения в ограниченном пространстве", "DOCUMENT", "set", 1),
+  c("coating_dft_report", "Протокол толщины защитного покрытия", "DOCUMENT", "set", 1),
+  c("holiday_detection_report", "Протокол сплошности защитного покрытия", "DOCUMENT", "set", 1),
+  c("water_test_certificate", "Протокол качества воды перед вводом", "DOCUMENT", "set", 1),
+  c("storage_cleaning_schedule", "Регламент периодической очистки", "DOCUMENT", "set", 1),
+  c("storage_asset_register", "Паспорт и запись резервуара в реестре активов", "DOCUMENT", "set", 1),
+  c("storage_critical_spares", "Комплект запасных уплотнений и элементов арматуры", "EQUIPMENT", "set", 1),
+];
+
+const A2_TREATMENT_COMPONENTS: readonly Component[] = [
+  c("process_design_basis", "Расчётное основание технологической схемы", "DOCUMENT", "set", 1),
+  c("process_hazard_and_safe_isolation_plan", "План анализа технологических опасностей и безопасной изоляции", "DOCUMENT", "set", 1),
+  c("confined_space_applicability_and_rescue_boundary", "Оценка применимости ограниченных пространств и граница спасательных мероприятий", "DOCUMENT", "set", 1),
+  c("process_safety_spill_response_kit", "Комплект локализации проливов и первичного аварийного реагирования", "EQUIPMENT", "set", 1, false),
+  c("influent_sampling_plan", "План представительного отбора исходной воды", "DOCUMENT", "set", 1),
+  c("effluent_acceptance_plan", "План подтверждения качества очищенной воды", "DOCUMENT", "set", 1),
+  c("chemical_compatibility_review", "Проверка совместимости реагентов и материалов", "DOCUMENT", "set", 1),
+  c("chemical_delivery_connection", "Безопасный узел приёма реагента", "EQUIPMENT", "item", 1, false),
+  c("chemical_bund_drain", "Контролируемый дренаж поддона реагентов", "PROCESS", "item", 1, false),
+  c("emergency_shower_boundary", "Задание на аварийный душ и промывку глаз", "CIVIL_INTERFACE", "set", 1, false),
+  c("process_drain_header", "Система технологического дренажа", "MATERIAL", "m", 1),
+  c("sample_return_or_disposal", "Возврат либо безопасный отвод проб", "PROCESS", "m", 1),
+  c("clean_in_place_connection", "Узел подключения безразборной мойки", "FITTING", "item", 1, false),
+  c("commissioning_water_balance", "Пусковой водный баланс сооружения", "DOCUMENT", "set", 1),
+  c("commissioning_waste_route", "Маршрут пусковых вод, осадка и реагентов", "DOCUMENT", "set", 1),
+  c("operator_process_training", "Технологическое обучение операторов", "DOCUMENT", "set", 1),
+  c("process_critical_spares", "Комплект критических запасных частей процесса", "EQUIPMENT", "set", 1),
+];
+
+const A2_DRAINAGE_COMPONENTS: readonly Component[] = [
+  c("catchment_boundary_review", "Проверка границы водосбора и точек поступления", "DOCUMENT", "set", 1),
+  c("outlet_capacity_review", "Проверка пропускной способности выпуска", "DOCUMENT", "set", 1),
+  c("longitudinal_grade_control", "Геодезический контроль продольного уклона", "TEST", "test", 1),
+  c("crossfall_control", "Контроль поперечного профиля дренажного элемента", "TEST", "test", 1),
+  c("separation_geotextile_overlap", "Нахлёст и фиксация разделительного геотекстиля", "MATERIAL", "m2", 1),
+  c("graded_filter_fraction", "Фильтрующий материал подтверждённого зернового состава", "MATERIAL", "m3", 1),
+  c("filter_contamination_protection", "Защита фильтра от загрязнения при устройстве", "MATERIAL", "m2", 1),
+  c("perforated_drain_pipe", "Перфорированная дренажная труба", "MATERIAL", "m", 1),
+  c("drain_pipe_joint", "Соединение дренажных труб", "FITTING", "item", 1),
+  c("drain_cleanout", "Точка промывки и прочистки дренажа", "EQUIPMENT", "item", 1),
+  c("silt_trap", "Пескоуловитель или иловая корзина", "EQUIPMENT", "item", 1, false),
+  c("non_return_outlet", "Защита выпуска от обратного подтопления", "VALVE", "item", 1, false),
+  c("erosion_control_mat", "Противоэрозионная защита откоса и выпуска", "MATERIAL", "m2", 1),
+  c("temporary_flow_diversion", "Временное отведение поверхностного стока", "PROCESS", "m", 1, false),
+  c("sediment_control_barrier", "Временный барьер удержания наносов", "MATERIAL", "m", 1),
+  c("excavated_sediment_handling", "Сбор и обращение с извлечённым наносом", "PROCESS", "m3", 1),
+  c("drain_flushing", "Промывка смонтированного дренажа", "TEST", "test", 1),
+  c("flow_path_test", "Испытание непрерывности пути стока", "TEST", "test", 1),
+  c("outlet_observation", "Наблюдение выпуска при контрольном проливе", "TEST", "test", 1),
+  c("drainage_maintenance_map", "Схема доступа и периодической очистки", "DOCUMENT", "set", 1),
+  c("drainage_asset_register", "Исполнительный реестр дренажных элементов", "DOCUMENT", "set", 1),
+  ...A2_EXTERNAL_NETWORK_COMPONENTS,
+];
+
+const A2_TESTING_COMPONENTS: readonly Component[] = [
+  c("approved_test_method", "Утверждённая программа и методика испытаний", "DOCUMENT", "set", 1),
+  c("test_section_schedule", "Ведомость границ испытательных участков", "DOCUMENT", "set", 1),
+  c("isolation_confirmation", "Подтверждение изоляции испытательного участка", "TEST", "test", 1),
+  c("temporary_restraint_check", "Проверка временных упоров и креплений", "TEST", "test", 1),
+  c("calibration_certificate_set", "Действующие свидетельства поверки приборов", "DOCUMENT", "set", 1),
+  c("data_logger", "Регистратор давления и температуры", "EQUIPMENT", "item", 1),
+  c("ambient_temperature_record", "Запись температуры среды и испытательной воды", "TEST", "test", 1),
+  c("fill_rate_control", "Контроль скорости заполнения", "TEST", "test", 1),
+  c("stabilization_period", "Выдержка до начала измерительного периода", "PROCESS", "test", 1),
+  c("pressure_increment_control", "Ступенчатое повышение испытательного давления", "TEST", "test", 1),
+  c("joint_visual_survey", "Сплошной осмотр доступных соединений", "TEST", "test", 1),
+  c("makeup_water_measurement", "Измерение добавленной воды", "TEST", "test", 1),
+  c("pressure_decay_assessment", "Оценка изменения давления", "TEST", "test", 1),
+  c("controlled_depressurization", "Контролируемое снижение давления", "PROCESS", "test", 1),
+  c("test_medium_sampling", "Отбор проб испытательной среды перед отводом", "TEST", "test", 1),
+  c("test_medium_neutralization", "Нейтрализация испытательной среды при необходимости", "PROCESS", "m3", 1, false),
+  c("test_medium_disposal_manifest", "Документированный маршрут отвода испытательной среды", "DOCUMENT", "set", 1),
+  c("defect_location_record", "Ведомость выявленных дефектов с координатами", "DOCUMENT", "set", 1),
+  c("repair_retest_trace", "Прослеживаемость ремонта и повторного испытания", "DOCUMENT", "set", 1),
+  c("client_witness_record", "Протокол присутствия ответственных представителей", "DOCUMENT", "set", 1),
+  c("signed_test_certificate", "Подписанный акт испытания участка", "DOCUMENT", "set", 1),
+  c("release_for_backfill", "Разрешение на закрытие скрываемого участка", "DOCUMENT", "set", 1),
+  c("release_for_service", "Разрешение на ввод испытанной системы", "DOCUMENT", "set", 1),
+  ...A2_EXTERNAL_NETWORK_COMPONENTS,
+];
+
+const A2_INTERNAL_EQUIPMENT_SUPPLEMENT: readonly Component[] = [
+  c("equipment_inlet_isolation", "Запорная арматура перед оборудованием", "VALVE", "item", 1),
+  c("equipment_outlet_isolation", "Запорная арматура после оборудования", "VALVE", "item", 1),
+  c("equipment_dismantling_joint", "Разъёмное соединение для обслуживания", "FITTING", "item", 1),
+  c("equipment_flexible_connector", "Гибкая вставка подключения оборудования", "FITTING", "item", 1, false),
+  c("equipment_drain_connection", "Контролируемый дренаж оборудования", "FITTING", "item", 1),
+  c("equipment_pressure_test_point", "Контрольная точка измерения давления", "EQUIPMENT", "item", 1),
+  c("equipment_identification_plate", "Эксплуатационная табличка оборудования", "MATERIAL", "item", 1),
+  c("equipment_service_spares", "Комплект уплотнений для первого обслуживания", "EQUIPMENT", "set", 1),
+];
+
+const A2_FIXTURE_SUPPLEMENT: readonly Component[] = [
+  c("fixture_service_stop_pair", "Сервисные запорные краны подключения прибора", "FITTING", "item", 1, false),
+];
+
+const A2_CHAMBER_SUPPLEMENT: readonly Component[] = [
+  c("chamber_entry_permit", "Оформление допуска в ограниченное пространство", "DOCUMENT", "set", 1),
+  c("chamber_tripod_recovery", "Переносной комплект эвакуации из камеры", "EQUIPMENT", "set", 1),
+  c("chamber_atmosphere_log", "Журнал непрерывного контроля атмосферы", "DOCUMENT", "set", 1),
+];
+
+const A2_PUMP_SUPPLEMENT: readonly Component[] = [
+  c("suction_pipe_support", "Опора всасывающего трубопровода", "MATERIAL", "item", 1),
+  c("discharge_pipe_support", "Опора напорного трубопровода", "MATERIAL", "item", 1),
+  c("suction_eccentric_reducer", "Эксцентрический переход на всасывании", "FITTING", "item", 1),
+  c("discharge_concentric_reducer", "Концентрический переход на напоре", "FITTING", "item", 1),
+  c("pump_base_grout", "Безусадочная подливка опорной рамы", "MATERIAL", "m3", 1),
+  c("anchor_bolt_tension_record", "Контроль затяжки фундаментных болтов", "TEST", "test", 1),
+  c("coupling_guard", "Защитный кожух муфты", "EQUIPMENT", "item", 1),
+  c("mechanical_seal_leak_collection", "Сбор утечек торцевого уплотнения", "PROCESS", "set", 1, false),
+  c("bearing_lubrication_point", "Точка безопасной смазки подшипников", "EQUIPMENT", "item", 1),
+  c("motor_space_heater_boundary", "Задание на противоконденсатный подогрев двигателя", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("motor_terminal_temperature", "Контроль температуры клеммного соединения", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("variable_speed_drive_boundary", "Задание на частотное управление", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("pump_run_time_meter", "Счётчик наработки агрегата", "ELECTRICAL_INTERFACE", "item", 1),
+  c("pump_start_counter", "Счётчик пусков агрегата", "ELECTRICAL_INTERFACE", "item", 1),
+  c("remote_status_points", "Перечень дистанционных состояний и аварий", "ELECTRICAL_INTERFACE", "set", 1),
+  c("drainage_high_level_alarm", "Сигнализация высокого уровня в дренажном приямке", "ELECTRICAL_INTERFACE", "item", 1, false),
+  c("washdown_water_isolation", "Запорная арматура линии технической мойки", "VALVE", "item", 1),
+  c("floor_non_slip_finish_boundary", "Приёмка нескользкого покрытия зоны обслуживания", "CIVIL_INTERFACE", "m2", 1),
+  c("safe_access_walkdown", "Контроль безопасного доступа к точкам обслуживания", "TEST", "test", 1),
+  c("final_fastener_torque_log", "Итоговый журнал моментов затяжки", "DOCUMENT", "set", 1),
+];
+
+const A2_STORAGE_SUPPLEMENT: readonly Component[] = [
+  c("inlet_pipe_support", "Опора входного трубопровода", "MATERIAL", "item", 1),
+  c("outlet_pipe_support", "Опора выходного трубопровода", "MATERIAL", "item", 1),
+  c("overflow_pipe_support", "Опора переливного трубопровода", "MATERIAL", "item", 1),
+  c("drain_pipe_support", "Опора дренажного трубопровода", "MATERIAL", "item", 1),
+  c("inlet_dismantling_joint", "Демонтажная вставка входной линии", "FITTING", "item", 1),
+  c("outlet_dismantling_joint", "Демонтажная вставка выходной линии", "FITTING", "item", 1),
+  c("overflow_air_gap", "Контролируемый воздушный разрыв перелива", "FITTING", "item", 1),
+  c("drain_non_return_protection", "Защита дренажа от обратного потока", "VALVE", "item", 1),
+  c("roof_access_guardrail", "Ограждение безопасного доступа на покрытие", "EQUIPMENT", "m", 1, false),
+  c("hatch_lock_and_seal", "Санитарный замок и пломба люка", "EQUIPMENT", "item", 1),
+  c("bird_and_vermin_screen", "Защита вентиляции и перелива от животных", "MATERIAL", "item", 1),
+  c("internal_light_boundary", "Задание на безопасное освещение осмотра", "ELECTRICAL_INTERFACE", "set", 1, false),
+  c("external_level_indicator", "Независимая местная индикация уровня", "EQUIPMENT", "item", 1),
+  c("inlet_flow_measurement", "Узел измерения поступающего расхода", "EQUIPMENT", "item", 1, false),
+  c("outlet_flow_measurement", "Узел измерения отпуска воды", "EQUIPMENT", "item", 1, false),
+  c("turnover_alarm_logic", "Задание на контроль нормативного водообмена", "ELECTRICAL_INTERFACE", "set", 1, false),
+  c("sanitary_zone_signage", "Маркировка режима санитарной охраны", "MATERIAL", "set", 1),
+  c("access_control_boundary", "Задание на контроль несанкционированного доступа", "CIVIL_INTERFACE", "set", 1, false),
+  c("emergency_overflow_route", "Подтверждение маршрута аварийного перелива", "DOCUMENT", "set", 1),
+  c("storage_shutdown_sequence", "Инструкция безопасного вывода секции в ремонт", "DOCUMENT", "set", 1),
+];
+
+const A2_TESTING_SUPPLEMENT: readonly Component[] = [
+  c("test_exclusion_zone", "Ограждение опасной зоны испытания", "MATERIAL", "m", 1),
+  c("emergency_depressurization_plan", "План аварийного сброса давления", "DOCUMENT", "set", 1),
+  c("instrument_serial_number_log", "Журнал заводских номеров приборов", "DOCUMENT", "set", 1),
+];
+
+const A2_MISSING_FAMILY_COMPONENTS: Readonly<Record<string, readonly Component[]>> = Object.freeze({
+  dhw_recirculation_balancing: [c("balancing_valve", "Балансировочный клапан рециркуляции", "VALVE", "item", 1), c("return_temperature_point", "Точка контроля температуры обратной линии", "EQUIPMENT", "item", 1), c("thermal_balance_protocol", "Протокол тепловой балансировки", "TEST", "test", 1)],
+  backflow_prevention_assembly: [c("upstream_isolation", "Входная запорная арматура узла", "VALVE", "item", 1), c("backflow_preventer", "Сертифицированное устройство защиты от обратного потока", "EQUIPMENT", "item", 1), c("relief_discharge_route", "Безопасный видимый отвод сброса", "PROCESS", "m", 1), c("certified_function_test", "Сертифицированное функциональное испытание узла", "TEST", "test", 1)],
+  siphonic_rainwater_system: [c("siphonic_roof_outlet", "Сифонная кровельная воронка", "EQUIPMENT", "item", 1), c("anti_vortex_plate", "Противовихревая вставка", "EQUIPMENT", "item", 1), c("full_bore_hydraulic_test", "Испытание расчётного сплошного потока", "TEST", "test", 1)],
+  greywater_reuse_network: [c("greywater_collection_header", "Коллектор серой воды", "MATERIAL", "m", 1), c("non_potable_identification", "Постоянная маркировка непитьевой воды", "MATERIAL", "m", 1), c("cross_connection_test", "Проверка отсутствия перекрёстных соединений", "TEST", "test", 1)],
+  reclaimed_water_irrigation_network: [c("reclaimed_water_header", "Трубопровод очищенной воды", "MATERIAL", "m", 1), c("irrigation_boundary_backflow", "Защита границы поливной системы от обратного потока", "VALVE", "item", 1), c("non_potable_outlet_tag", "Маркировка непитьевых выпусков", "MATERIAL", "item", 1)],
+  vacuum_sewer_network: [c("vacuum_interface_valve", "Вакуумный интерфейсный клапан", "EQUIPMENT", "item", 1), c("vacuum_collection_main", "Вакуумный сборный трубопровод", "MATERIAL", "m", 1), c("vacuum_tightness_test", "Испытание вакуумной герметичности", "TEST", "test", 1)],
+  hdd_pipeline_crossing: [c("hdd_pilot_bore", "Пилотная скважина ГНБ", "PROCESS", "m", 1), c("hdd_reaming_pass", "Расширение скважины", "PROCESS", "m", 1), c("hdd_drilling_fluid_recovery", "Сбор и обращение с буровым раствором", "DEMOLITION", "m3", 1), c("hdd_pullback", "Протяжка рабочей плети", "PROCESS", "m", 1)],
+  microtunnel_pipeline_crossing: [c("launch_shaft_interface", "Граница стартовой шахты", "CIVIL_INTERFACE", "item", 1), c("microtunnel_boring_machine", "Микротоннельный проходческий комплекс", "EQUIPMENT", "set", 1), c("jacking_pipe", "Домкратная труба микротоннеля", "MATERIAL", "m", 1), c("slurry_separation", "Разделение и обращение с пульпой", "PROCESS", "m3", 1)],
+  pipe_jacking_crossing: [c("jacking_frame", "Домкратная рама", "EQUIPMENT", "set", 1), c("jacking_pipe_section", "Секция продавливаемой трубы", "MATERIAL", "m", 1), c("jacking_force_monitor", "Контроль усилия продавливания", "TEST", "test", 1)],
+  cipp_sewer_relining: [c("host_pipe_cleaning", "Механическая очистка восстанавливаемой трубы", "PROCESS", "m", 1), c("cipp_liner", "Полимерный рукав проектной конструкции", "MATERIAL", "m", 1), c("liner_curing", "Контролируемое отверждение рукава", "PROCESS", "m", 1), c("lateral_reopening", "Роботизированное открытие присоединений", "PROCESS", "item", 1)],
+  pipe_bursting_replacement: [c("bursting_head", "Разрушающая головка", "EQUIPMENT", "item", 1), c("pulling_rods", "Комплект тяговых штанг", "EQUIPMENT", "set", 1), c("replacement_pipe_string", "Новая трубная плеть", "MATERIAL", "m", 1), c("old_pipe_fragment_control", "Контроль обращения с фрагментами старой трубы", "DEMOLITION", "m", 1)],
+  temporary_network_bypass: [c("temporary_bypass_pipe", "Временный трубопровод байпаса", "MATERIAL", "m", 1), c("temporary_pump", "Временная перекачивающая установка", "EQUIPMENT", "item", 1), c("bypass_monitoring", "Круглосуточный контроль временной схемы", "TEST", "test", 1)],
+  emergency_pipeline_repair: [c("leak_isolation", "Локализация аварийного участка", "PROCESS", "item", 1), c("repair_clamp_or_spool", "Ремонтный хомут или вставка", "FITTING", "item", 1), c("emergency_water_handling", "Сбор и безопасный отвод аварийной воды", "PROCESS", "m3", 1), c("repair_integrity_test", "Испытание отремонтированного участка", "TEST", "test", 1)],
+  grease_interceptor_system: [c("grease_interceptor", "Жироуловитель расчётной производительности", "EQUIPMENT", "item", 1), c("grease_removal_connection", "Соединение для удаления накопленного жира", "FITTING", "item", 1), c("odor_tight_cover", "Газоплотная крышка обслуживания", "EQUIPMENT", "item", 1)],
+  oil_water_separator_system: [c("coalescing_separator", "Коалесцентный нефтесепаратор", "EQUIPMENT", "item", 1), c("automatic_closure", "Автоматическое запорное устройство", "VALVE", "item", 1), c("oil_storage_alarm", "Сигнализация накопленного нефтепродукта", "ELECTRICAL_INTERFACE", "item", 1)],
+  reverse_osmosis_treatment: [c("cartridge_prefilter", "Картриджный предфильтр", "EQUIPMENT", "item", 1), c("high_pressure_pump", "Насос высокого давления", "EQUIPMENT", "item", 1), c("membrane_pressure_vessel", "Мембранный корпус", "EQUIPMENT", "item", 1), c("concentrate_disposal_route", "Подтверждённый маршрут концентрата", "DEMOLITION", "m3", 1)],
+  membrane_bioreactor: [c("bioreactor_basin", "Биореактор", "PROCESS", "item", 1), c("membrane_cassette", "Мембранная кассета", "EQUIPMENT", "item", 1), c("membrane_air_scour", "Система воздушной очистки мембран", "EQUIPMENT", "set", 1), c("permeate_pump", "Насос пермеата", "EQUIPMENT", "item", 1)],
+  uv_disinfection: [c("uv_reactor", "УФ-реактор", "EQUIPMENT", "item", 1), c("uv_intensity_sensor", "Датчик интенсивности излучения", "EQUIPMENT", "item", 1), c("lamp_cleaning_system", "Система очистки защитных чехлов ламп", "EQUIPMENT", "set", 1)],
+  ozone_disinfection: [c("ozone_generator", "Генератор озона", "EQUIPMENT", "item", 1), c("ozone_contact_unit", "Контактная камера озонирования", "PROCESS", "item", 1), c("offgas_destructor", "Деструктор остаточного озона", "EQUIPMENT", "item", 1), c("ozone_safety_monitor", "Контроль озона в воздухе рабочей зоны", "EQUIPMENT", "item", 1)],
+  industrial_wastewater_pretreatment: [c("equalization_tank", "Усреднитель производственных стоков", "PROCESS", "item", 1), c("ph_correction_skid", "Установка коррекции pH", "EQUIPMENT", "item", 1), c("contaminant_specific_separator", "Сепаратор специфического загрязнения", "EQUIPMENT", "item", 1)],
+  anaerobic_sludge_digestion: [c("digester_vessel", "Метантенк", "PROCESS", "item", 1), c("sludge_heating_loop", "Контур подогрева осадка", "EQUIPMENT", "set", 1), c("biogas_collection_boundary", "Граница сбора и безопасного отвода биогаза", "CIVIL_INTERFACE", "set", 1)],
+  sludge_drying_beds: [c("drainage_underbed", "Дренаж иловой площадки", "MATERIAL", "m", 1), c("graded_filter_bed", "Многослойная фильтрующая загрузка", "MATERIAL", "m3", 1), c("dried_sludge_removal", "Удаление обезвоженного осадка", "DEMOLITION", "m3", 1)],
+  deiron_manganese_removal: [c("oxidation_contact_unit", "Узел окисления железа и марганца", "PROCESS", "item", 1), c("catalytic_filter_media", "Каталитическая фильтрующая загрузка", "MATERIAL", "kg", 1), c("backwash_waste_route", "Маршрут промывных вод", "DEMOLITION", "m3", 1)],
+  water_softening: [c("ion_exchange_vessel", "Ионообменный фильтр", "EQUIPMENT", "item", 1), c("brine_makeup_tank", "Бак приготовления регенерационного раствора", "EQUIPMENT", "item", 1), c("regeneration_waste_route", "Маршрут регенерационных стоков", "DEMOLITION", "m3", 1)],
+  rainwater_harvesting_treatment: [c("first_flush_diverter", "Устройство отвода первого загрязнённого стока", "EQUIPMENT", "item", 1), c("rainwater_filter", "Фильтр дождевой воды", "EQUIPMENT", "item", 1), c("non_potable_storage", "Резервуар обработанной непитьевой воды", "EQUIPMENT", "item", 1)],
+  cctv_sewer_inspection: [c("inspection_camera", "Самоходная телевизионная камера", "EQUIPMENT", "item", 1), c("distance_encoder", "Система измерения пройденного расстояния", "EQUIPMENT", "item", 1), c("coded_defect_report", "Кодированный отчёт дефектов с координатами", "DOCUMENT", "set", 1)],
+  acoustic_leak_detection: [c("correlator_set", "Корреляционный комплект поиска утечек", "EQUIPMENT", "set", 1), c("acoustic_logger", "Регистратор акустического сигнала", "EQUIPMENT", "item", 1), c("verified_leak_location", "Инструментальная проверка места утечки", "TEST", "test", 1)],
+  water_quality_sampling: [c("sterile_sampling_bottle", "Стерильная тара для проб питьевой воды", "MATERIAL", "item", 1), c("cold_chain_container", "Термоконтейнер сохранения проб", "EQUIPMENT", "item", 1), c("chain_of_custody", "Документированная цепочка передачи проб", "DOCUMENT", "set", 1)],
+  wastewater_quality_sampling: [c("composite_sampler", "Автоматический составной пробоотборник", "EQUIPMENT", "item", 1), c("preservation_reagent", "Реагент консервации пробы", "MATERIAL", "set", 1), c("chain_of_custody", "Документированная цепочка передачи проб", "DOCUMENT", "set", 1)],
+});
+
 const FAMILY_ADDITIONS: Readonly<Record<string, readonly Component[]>> = Object.freeze({
   aeration_tanks: [c("aeration_basin", "Аэротенк", "PROCESS", "item", 1), c("anoxic_zone", "Аноксидная зона", "PROCESS", "item", 3, false), c("aeration_grid", "Аэрационная решётка", "EQUIPMENT", "set", 2), c("mixed_liquor_recycle", "Рециркуляция иловой смеси", "EQUIPMENT", "set", 3)],
   booster_pumping_station: [c("pressure_vessel", "Мембранный напорный бак", "EQUIPMENT", "item", 2), c("pressure_switch", "Реле давления", "ELECTRICAL_INTERFACE", "item", 3), c("minimum_flow_bypass", "Линия минимального расхода", "MATERIAL", "m", 3)],
@@ -589,25 +930,27 @@ function maturity(row: GlobalCatalogInventoryRowV1): EstimateMaturity {
 }
 
 function componentDetailLimit(value: EstimateMaturity): 1 | 2 | 3 | 4 {
-  if (value === "ROM_CONCEPT") return 2;
-  if (value === "PRELIMINARY_BOQ" || value === "TENDER_BOQ") return 3;
+  // A2 requires the complete physical obligation universe even when quantities are
+  // INPUT_REQUIRED.  Maturity controls applicability and input status, not deletion
+  // of real resources from the professional passport.
   return 4;
 }
 
 function actionDetailLimit(value: EstimateMaturity): 1 | 2 | 3 | 4 {
-  if (value === "ROM_CONCEPT") return 2;
-  if (value === "PRELIMINARY_BOQ") return 3;
   return 4;
 }
 
 function expandedBase(profile: R5ProfileView): readonly Component[] {
-  if (profile.kind === "CHAMBER") return CHAMBER_COMPONENTS;
-  if (profile.kind === "PUMP") return PUMP_FACILITY_COMPONENTS;
-  if (profile.kind === "TREATMENT") return TREATMENT_FACILITY_COMPONENTS;
-  if (profile.kind === "STORAGE") return STORAGE_FACILITY_COMPONENTS;
-  if (profile.kind === "DRAINAGE") return DRAINAGE_COMPONENTS;
-  if (profile.kind === "TESTING") return TESTING_SCOPE_COMPONENTS;
-  return EXTERNAL_NETWORK_COMPONENTS;
+  if (profile.kind === "INTERNAL_PRESSURE" || profile.kind === "INTERNAL_GRAVITY") {
+    return [...INTERNAL_NETWORK_COMPONENTS, ...A2_INTERNAL_EQUIPMENT_SUPPLEMENT, ...TEST_COMPONENTS];
+  }
+  if (profile.kind === "CHAMBER") return [...CHAMBER_COMPONENTS, ...A2_CHAMBER_COMPONENTS, ...A2_CHAMBER_SUPPLEMENT];
+  if (profile.kind === "PUMP") return [...PUMP_FACILITY_COMPONENTS, ...A2_PUMP_FACILITY_COMPONENTS, ...A2_PUMP_SUPPLEMENT];
+  if (profile.kind === "TREATMENT") return [...TREATMENT_FACILITY_COMPONENTS, ...A2_TREATMENT_COMPONENTS];
+  if (profile.kind === "STORAGE") return [...STORAGE_FACILITY_COMPONENTS, ...A2_STORAGE_COMPONENTS, ...A2_STORAGE_SUPPLEMENT];
+  if (profile.kind === "DRAINAGE") return [...DRAINAGE_COMPONENTS, ...A2_DRAINAGE_COMPONENTS];
+  if (profile.kind === "TESTING") return [...TESTING_SCOPE_COMPONENTS, ...A2_TESTING_COMPONENTS, ...A2_TESTING_SUPPLEMENT];
+  return [...EXTERNAL_NETWORK_COMPONENTS, ...A2_EXTERNAL_NETWORK_COMPONENTS];
 }
 
 function plumbingComponents(row: GlobalCatalogInventoryRowV1): readonly Component[] {
@@ -619,10 +962,10 @@ function plumbingComponents(row: GlobalCatalogInventoryRowV1): readonly Componen
   if (row.operation_class === "PRESSURE_TEST") return [...TEST_COMPONENTS, ...identityComponents, ...scope];
   if (row.operation_class === "SEAL") return [...SEAL_COMPONENTS, ...identityComponents, ...scope];
   const shared = ["BATH", "MIXER", "SHOWER", "SINK", "TOILET"].includes(system)
-    ? FIXTURE_COMPONENTS
+    ? [...FIXTURE_COMPONENTS, ...A2_FIXTURE_SUPPLEMENT]
     : ["PPR_PIPE", "PND_PIPE", "WATER_PIPE", "RISER", "SEWER"].includes(system)
       ? INTERNAL_NETWORK_COMPONENTS
-      : INTERNAL_EQUIPMENT_COMPONENTS;
+      : [...INTERNAL_EQUIPMENT_COMPONENTS, ...A2_INTERNAL_EQUIPMENT_SUPPLEMENT];
   const base = [...shared, ...systemComponents, ...scope];
   if (row.operation_class === "CONNECT") {
     return [...CONNECTION_COMPONENTS, ...base.filter((component) => component.detailLevel <= 2 && ["FITTING", "VALVE", "TEST", "DOCUMENT", "CIVIL_INTERFACE", "LOGISTICS"].includes(component.role)), ...identityComponents];
@@ -650,8 +993,8 @@ function plumbingComponents(row: GlobalCatalogInventoryRowV1): readonly Componen
 }
 
 function plumbingDetailLimit(row: GlobalCatalogInventoryRowV1): 1 | 2 | 3 | 4 {
-  if (["PREPARE", "PRESSURE_TEST", "SEAL", "CONNECT"].includes(row.operation_class)) return 2;
-  if (["INSTALL", "ROUTE"].includes(row.operation_class)) return row.scope_capabilities.includes("high_load") ? 4 : 3;
+  // R6 keeps every factually applicable component and represents uncertainty with
+  // typed inputs/conditions instead of dropping lower-detail obligations.
   return 4;
 }
 
@@ -694,6 +1037,7 @@ function input(
     constraints: {
       ...constraints,
       engineeringInputPolicy: "EXPLICIT_PROJECT_OR_SIGNED_NORM_INPUT",
+      missingInputState: "ENGINEERING_INPUT_REQUIRED",
       hiddenEngineeringDefault: false,
     },
   };
@@ -863,7 +1207,9 @@ export function buildWaterR5ProfessionalPlan(row: GlobalCatalogInventoryRowV1, p
   const expandedFamily = family(row);
   const limit = expandedFamily ? componentDetailLimit(estimateMaturity) : plumbingDetailLimit(row);
   const actionDepth = expandedFamily ? actionDetailLimit(estimateMaturity) : plumbingDetailLimit(row);
-  const familyComponents = expandedFamily ? FAMILY_ADDITIONS[expandedFamily] ?? [] : [];
+  const familyComponents = expandedFamily
+    ? [...(FAMILY_ADDITIONS[expandedFamily] ?? []), ...(A2_MISSING_FAMILY_COMPONENTS[expandedFamily] ?? [])]
+    : [];
   const maturityComponent = expandedFamily ? [
     estimateMaturity === "ROM_CONCEPT"
       ? c("rom_basis_record", "Ведомость исходных допущений концептуальной оценки", "DOCUMENT", "set", 1)
