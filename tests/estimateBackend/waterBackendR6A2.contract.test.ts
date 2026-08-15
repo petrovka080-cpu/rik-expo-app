@@ -115,4 +115,16 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(performance).toContain("concurrentCompileJobs: { expected: 50");
     expect(performance).toContain("compileRecalculateP95MaxMs: 1_500");
   });
+
+  it("compares replay WOW lifecycle semantics without runtime-generated artifact bytes", () => {
+    const seal = read("scripts/estimate/waterBackendR3/sealWaterR5A1Replay.ts");
+    const compare = read("scripts/estimate/waterBackendR3/compareWaterR5A1Replays.ts");
+    expect(seal).not.toContain("pdfBytes: row.pdf.bytes");
+    expect(seal).toContain("immutableParentRejected: row.immutable_parent_rejected");
+    expect(seal).toContain("parentChecksumPreserved: row.parent_checksum_before === row.parent_checksum_after");
+    expect(seal).toContain("childParentExact: row.child_parent_exact");
+    expect(seal).toContain("pdfReleaseId: row.pdf.releaseId");
+    expect(seal).toContain("procurementReleaseId: row.procurement.releaseId");
+    expect(compare).toContain('"wowSemanticSha256"');
+  });
 });

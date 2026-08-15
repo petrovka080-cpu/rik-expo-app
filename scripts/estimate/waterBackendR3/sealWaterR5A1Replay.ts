@@ -51,7 +51,19 @@ function main(): void {
   });
   const wowCases = readFileSync(join(EVIDENCE, "A2_10_WOW_50_CASES.jsonl"), "utf8").split(/\r?\n/).filter(Boolean).map((line) => {
     const row = JSON.parse(line) as Json;
-    return { catalogId: row.catalog_id, complexity: row.complexity_class, parentRows: row.parent_rows, childRows: row.child_rows, pdfBytes: row.pdf.bytes, procurementRows: row.procurement.rows, status: row.status };
+    return {
+      catalogId: row.catalog_id,
+      complexity: row.complexity_class,
+      parentRows: row.parent_rows,
+      childRows: row.child_rows,
+      immutableParentRejected: row.immutable_parent_rejected,
+      parentChecksumPreserved: row.parent_checksum_before === row.parent_checksum_after,
+      childParentExact: row.child_parent_exact,
+      pdfReleaseId: row.pdf.releaseId,
+      procurementReleaseId: row.procurement.releaseId,
+      procurementRows: row.procurement.rows,
+      status: row.status,
+    };
   });
   if (admission.status !== "GREEN" || oracle.status !== "GREEN" || wow.status !== "GREEN"
     || admission.releaseId !== manifest.releaseId || oracle.releaseId !== manifest.releaseId || wow.releaseId !== manifest.releaseId
