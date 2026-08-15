@@ -75,7 +75,7 @@ async function main(): Promise<void> {
         (select count(*)::integer from water_rows where row_sha256 !~ '^[0-9a-f]{64}$') invalid_row_hash,
         (select count(*)::integer from water_rows where jsonb_array_length(coalesce(source_metadata->'normativeTrace','[]'::jsonb))=0) missing_normative_trace,
         (select count(*)::integer from water_rows where source_metadata->'priceRoute' is null) missing_price_route,
-        (select count(*)::integer from water_rows where semantic_owner is null or semantic_owner not like 'water:%') wrong_owner,
+        (select count(*)::integer from water_rows where semantic_owner is null or (semantic_owner not like 'water:%' and semantic_owner not like 'typed-child:%')) wrong_owner,
         (select count(*)-count(distinct (catalog_id,row_id)) from water_rows)::integer duplicate_rows,
         (select count(*)::integer from water_rows s where not exists(select 1 from public.estimate_work_normative_binding b where b.resource_spec_id=s.id)) missing_normalized_norm,
         (select count(*)::integer from water_rows s where not exists(select 1 from public.estimate_resource_price_route_binding b where b.resource_spec_id=s.id)) missing_normalized_price
