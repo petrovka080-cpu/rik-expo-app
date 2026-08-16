@@ -6,6 +6,7 @@ import {
   evaluateFormulaGraph,
   type FormulaAst,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph.ts";
+import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph.ts";
 import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints.ts";
 import { renderPdfBytes } from "../_shared/canonicalPdf.ts";
 
@@ -156,23 +157,6 @@ async function secretMatches(request: Request): Promise<boolean> {
   return difference === 0;
 }
 
-function evaluateCondition(ast: Record<string, unknown>, parameters: Record<string, unknown>): boolean {
-  const kind = String(ast?.kind ?? "");
-  if (kind === "literal") return ast.value === true;
-  if (kind === "parameter") return parameters[String(ast.id ?? "")] === true;
-  if (kind === "not") return !evaluateCondition(ast.operand as Record<string, unknown>, parameters);
-  if (kind === "and" || kind === "or") {
-    const operands = Array.isArray(ast.operands) ? ast.operands : [];
-    return kind === "and"
-      ? operands.every((entry) => evaluateCondition(entry as Record<string, unknown>, parameters))
-      : operands.some((entry) => evaluateCondition(entry as Record<string, unknown>, parameters));
-  }
-  if (kind === "equals") {
-    return parameters[String(ast.parameterId ?? "")] === ast.value;
-  }
-  throw Object.assign(new Error("unsupported inclusion AST"), { code: "INVALID_INCLUSION_GRAPH" });
-}
-
 async function loadPriceItems(admin: AdminClient, snapshotIds: string[]) {
   const prices = new Map<string, Record<string, unknown>>();
   if (snapshotIds.length === 0) return prices;
@@ -259,7 +243,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     }
   };
   for (const resource of (resourceResult.data ?? []) as ResourceSpec[]) {
-    if (!evaluateCondition(resource.inclusion_ast, parameters)) continue;
+    if (!evaluateInclusionGraph(resource.inclusion_ast, parameters)) continue;
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw Object.assign(new Error("formula graph reference missing"), { code: "DEFINITION_INTEGRITY_FAILED" });
     const calculatedQuantity = evaluateFormulaGraph(formula.ast as FormulaAst, numericParameters);

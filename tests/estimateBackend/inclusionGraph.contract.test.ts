@@ -1,0 +1,37 @@
+import {
+  InclusionGraphEvaluationError,
+  evaluateInclusionGraph,
+} from "../../src/lib/estimate/backendPlatform/inclusionGraph";
+
+describe("canonical backend InclusionGraph", () => {
+  const parameters = { enabled: true, quantity: 2, mode: "repair", disabled: false };
+
+  it("evaluates the HVAC R4 conditions representation and numeric comparisons", () => {
+    expect(evaluateInclusionGraph({
+      kind: "and",
+      conditions: [
+        { kind: "equals", parameterId: "enabled", value: true },
+        { kind: "greater_than", parameterId: "quantity", value: 0 },
+      ],
+    }, parameters)).toBe(true);
+    expect(evaluateInclusionGraph({ kind: "less_than_or_equal", parameterId: "quantity", value: 2 }, parameters)).toBe(true);
+  });
+
+  it("keeps the predecessor operands representation compatible", () => {
+    expect(evaluateInclusionGraph({
+      kind: "or",
+      operands: [
+        { kind: "parameter", id: "disabled" },
+        { kind: "in", parameterId: "mode", values: ["install", "repair"] },
+      ],
+    }, parameters)).toBe(true);
+  });
+
+  it.each([
+    [{ kind: "greater_than", parameterId: "missing", value: 0 }],
+    [{ kind: "and", conditions: [] }],
+    [{ kind: "unknown", parameterId: "quantity", value: 0 }],
+  ])("fails closed for malformed or unsupported graphs %#", (ast) => {
+    expect(() => evaluateInclusionGraph(ast, parameters)).toThrow(InclusionGraphEvaluationError);
+  });
+});

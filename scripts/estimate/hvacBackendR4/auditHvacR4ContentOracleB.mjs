@@ -1,24 +1,30 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { createReadStream, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 const ROOT = resolve(process.cwd());
 const EVIDENCE = join(ROOT, ".release-runtime", "batch007-hvac-r4", "evidence");
 const FIXED_AT = "2026-08-16T06:40:00.000Z";
-const EXPECTED_CORPUS = "a101c978551ac49f684b67e1d5878fa43d050620a8d9470d7a3d8dc4cd150147";
-const EXPECTED = Object.freeze({ H: 920, F: 294, P: 122162, G: 325532, R: 325532 });
+const EXPECTED_CORPUS = "4ebcced9a7eda71bdc94431743229a4faff79a750a7736bded6c80c207a4f625";
+const EXPECTED = Object.freeze({ H: 1012, H_GLOBAL: 920, H_EXTERNAL: 92, H_A2_NON_DEMOLITION: 88, F: 324, P: 132173, G: 353575, R: 353575 });
+const RUN = process.argv.find((value) => value.startsWith("--run="))?.slice("--run=".length) ?? "1";
 const OFFICIAL_PRICE_BOOKS = new Set(["kg_price_book22_2015", "kg_price_book23_2015"]);
 const COMPLEX_LEVELS = new Set(["L3", "L4", "L5"]);
+const COMPLEX_FLOOR = Object.freeze({ L3: 250, L4: 500, L5: 1000 });
 const COMPLEX_CATEGORY_RULES = Object.freeze({
   PROJECTION: ["MATERIAL", "CONSTRUCTION_WORK", "MACHINE", "LOGISTICS", "TESTING", "DOCUMENTATION", "WASTE", "TYPED_CHILD_INTERFACE", "TEMPORARY_WORK", "TOOL_OR_EQUIPMENT", "SPECIAL_SERVICE", "TAB_COMMISSIONING"],
   PHYSICAL: ["MATERIAL", "CONSTRUCTION_WORK", "LOGISTICS", "TESTING", "DOCUMENTATION", "WASTE", "TYPED_CHILD_INTERFACE"],
-  TAB: ["TESTING", "DOCUMENTATION", "TYPED_CHILD_INTERFACE", "TOOL_OR_EQUIPMENT", "SPECIAL_SERVICE", "TAB_COMMISSIONING"],
+  TAB: ["TESTING", "DOCUMENTATION", "TYPED_CHILD_INTERFACE", "TOOL_OR_EQUIPMENT", "SPECIAL_SERVICE"],
+  TEST_SERVICE: ["TESTING", "DOCUMENTATION", "TYPED_CHILD_INTERFACE", "TOOL_OR_EQUIPMENT", "SPECIAL_SERVICE"],
   PREPARATION: ["DOCUMENTATION", "TYPED_CHILD_INTERFACE", "SPECIAL_SERVICE", "TEMPORARY_WORK"],
+  DEMOLITION: ["CONSTRUCTION_WORK", "MACHINE", "LOGISTICS", "TESTING", "DOCUMENTATION", "WASTE", "TYPED_CHILD_INTERFACE", "SPECIAL_SERVICE", "TEMPORARY_WORK"],
 });
 const OPERATION_COMPONENT_PROOF = Object.freeze({
   BALANCE: ["balancing_measurement_plan", "balancing_final_reading", "balancing_result_protocol"],
   COMMISSION: ["commissioning_sequence_of_operation", "commissioning_control_sequence_test", "commissioning_handover_record"],
+  DEMOLITION: ["demolition_existing_asset_survey", "demolition_isolation_and_permit_plan", "demolition_asset_material_segregation", "demolition_asset_closeout_register"],
   INSTALL: ["installation_setting_out", "installation_hold_point_register"],
   REPAIR: ["repair_defect_survey", "repair_parts_schedule", "repair_post_assembly_test", "repair_defect_closeout"],
   REPLACE: ["replacement_isolation_and_drain", "replaced_asset_segregation", "replacement_asset_schedule", "replacement_recommissioning", "replacement_asset_register_update"],
@@ -31,12 +37,22 @@ const OPERATION_COMPONENT_PROOF = Object.freeze({
 });
 
 function assertExact(condition, code) { if (!condition) throw new Error(code); }
+assertExact(["1", "2"].includes(RUN), `ORACLE_B_RUN_RED:${RUN}`);
 function stable(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
   return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(",")}}`;
 }
 function sha(value) { return createHash("sha256").update(typeof value === "string" || Buffer.isBuffer(value) ? value : stable(value)).digest("hex"); }
+function sourceFingerprint() {
+  const paths = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", "src", "app", "supabase", "android", "scripts", "tests", "App.tsx", "app.json", "app.config.ts", "babel.config.js", "metro.config.js", "package.json", "package-lock.json", "tsconfig.json"], { cwd: ROOT, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })
+    .trim().split(/\r?\n/).filter((path) => path && existsSync(join(ROOT, path))).sort();
+  const entries = paths.map((path) => {
+    const bytes = readFileSync(join(ROOT, path));
+    return { path: path.replaceAll("\\", "/"), bytes: bytes.length, sha256: sha(bytes) };
+  });
+  return { files: entries.length, sha256: sha(entries) };
+}
 async function* jsonl(relativePath) {
   const lines = createInterface({ input: createReadStream(join(EVIDENCE, relativePath), { encoding: "utf8" }), crlfDelay: Infinity });
   for await (const line of lines) if (line) yield JSON.parse(line);
@@ -70,7 +86,9 @@ function formulaDimension(formula, units) {
 function complexRequiredCategories(operation) {
   if (["ROM_CONCEPT", "PRELIMINARY_BOQ", "DETAILED_BOQ_FROM_DRAWINGS", "TENDER_BOQ", "AS_BUILT_ESTIMATE"].includes(operation)) return COMPLEX_CATEGORY_RULES.PROJECTION;
   if (["BALANCE", "COMMISSION"].includes(operation)) return COMPLEX_CATEGORY_RULES.TAB;
+  if (["PRESSURE_TEST", "FLUSH", "DIAGNOSTIC", "RECOMMISSION", "RECOVERY", "CALIBRATE", "CONSERVE", "DECONSERVE"].includes(operation)) return COMPLEX_CATEGORY_RULES.TEST_SERVICE;
   if (operation === "PREPARE") return COMPLEX_CATEGORY_RULES.PREPARATION;
+  if (operation === "DEMOLITION") return COMPLEX_CATEGORY_RULES.DEMOLITION;
   return COMPLEX_CATEGORY_RULES.PHYSICAL;
 }
 
@@ -83,13 +101,13 @@ async function main() {
   const content = JSON.parse(readFileSync(join(EVIDENCE, "05-content", "HVAC_CONTENT_SUMMARY.json"), "utf8"));
   assertExact(content.corpusSetSha256 === EXPECTED_CORPUS && content.packageCreated === false && content.admissionStarted === false, "ORACLE_B_CONTENT_FREEZE_OR_ORDER_RED");
   const official = JSON.parse(readFileSync(join(EVIDENCE, "03-norms", "OFFICIAL_SOURCE_SNAPSHOT_SUMMARY.json"), "utf8"));
-  assertExact(official.status === "GREEN" && official.sources === 12 && official.pageHttp200 === 12 && official.pdfHttp200 === 12 && official.pdfMagicValid === 12, "ORACLE_B_OFFICIAL_SOURCE_SNAPSHOT_RED");
+  assertExact(official.status === "GREEN" && official.sources === 18 && official.pageHttp200 === 18 && official.pdfHttp200 === 18 && official.pdfMagicValid === 18, "ORACLE_B_OFFICIAL_SOURCE_SNAPSHOT_RED");
   const officialIds = new Set();
   for await (const row of jsonl("03-norms/OFFICIAL_SOURCE_SNAPSHOTS.jsonl")) {
     assertExact(row.status === "GREEN_OFFICIAL_PAGE_AND_PDF_SNAPSHOT" && row.pageSha256 && row.pdfSha256 && row.pdfMagic === "%PDF-", `ORACLE_B_OFFICIAL_SOURCE_ROW_RED:${row.sourceId}`);
     officialIds.add(row.sourceId);
   }
-  assertExact(officialIds.size === 12, "ORACLE_B_OFFICIAL_SOURCE_ID_COUNT_RED");
+  assertExact(officialIds.size === 18, "ORACLE_B_OFFICIAL_SOURCE_ID_COUNT_RED");
 
   const familyUniverse = JSON.parse(readFileSync(join(EVIDENCE, "01-discovery", "HVAC_FAMILY_UNIVERSE.json"), "utf8"));
   assertExact(familyUniverse.H_final === EXPECTED.H && familyUniverse.F_final === EXPECTED.F && familyUniverse.old146Regression.length === 146, "ORACLE_B_FAMILY_UNIVERSE_RED");
@@ -103,7 +121,26 @@ async function main() {
     works.set(row.catalogId, row);
     perId.set(row.catalogId, { catalog_id: row.catalogId, family: row.passport.familyKey, operation: row.passport.exactWorkIdentity.operationClass, complexity: row.passport.complexityClass, parameters: 0, formulas: 0, resources: 0, categories: new Set(), stages: new Set(), components: new Set(), normSources: new Set(), priceSources: new Set(), signatureParts: [] });
   }
+  assertExact([...works.values()].filter((row) => row.namespace === "global" && row.denominatorEligible === true).length === EXPECTED.H_GLOBAL, "ORACLE_B_GLOBAL_WORK_COUNT_RED");
+  assertExact([...works.values()].filter((row) => row.namespace === "external_reference" && row.denominatorEligible === false).length === EXPECTED.H_EXTERNAL, "ORACLE_B_EXTERNAL_WORK_COUNT_RED");
   assertExact(works.size === EXPECTED.H && new Set([...works.values()].map((row) => row.passport.familyKey)).size === EXPECTED.F, "ORACLE_B_WORK_OR_FAMILY_COUNT_RED");
+
+  // Different code path from Oracle A: group the A2 ledger by disposition and
+  // compare its exact external-ID set with the frozen work corpus.
+  const ledgerDispositionCounts = new Map();
+  const a2LedgerIds = new Set();
+  const ledgerSources = new Set();
+  let ledgerRows = 0;
+  for await (const row of jsonl("A2/A2_03_NORMATIVE_WORK_IDENTITY_GAP_LEDGER.jsonl")) {
+    ledgerRows += 1;
+    count(ledgerDispositionCounts, row.mapping_status);
+    ledgerSources.add(row.source_id);
+    if (row.mapping_status === "ADD_EXTERNAL_NON_DEMOLITION") a2LedgerIds.add(row.new_external_catalog_id);
+    assertExact(row.mapping_status !== "UNRESOLVED" && Boolean(row.row_semantic_sha256), "ORACLE_B_GAP_LEDGER_UNRESOLVED_OR_UNSIGNED");
+  }
+  const corpusA2Ids = new Set([...works].filter(([id, row]) => id.startsWith("external-hvac:a2:") && row.namespace === "external_reference").map(([id]) => id));
+  assertExact(ledgerRows === 129 && ledgerSources.size === 18 && a2LedgerIds.size === EXPECTED.H_A2_NON_DEMOLITION, "ORACLE_B_GAP_LEDGER_CARDINALITY_RED");
+  assertExact(corpusA2Ids.size === a2LedgerIds.size && [...a2LedgerIds].every((id) => corpusA2Ids.has(id)), "ORACLE_B_A2_LEDGER_CORPUS_SET_RED");
 
   const parameterUnitsByCatalog = new Map();
   const parameterIdsByCatalog = new Map();
@@ -189,6 +226,7 @@ async function main() {
   let complexCategoryFailures = 0;
   let operationScopeFailures = 0;
   let countParityFailures = 0;
+  let shallowComplexFailures = 0;
   for (const proof of perId.values()) {
     const work = works.get(proof.catalog_id);
     if (proof.parameters !== work.passport.professionalObligations.parameterCount || proof.formulas !== work.passport.professionalObligations.formulaCount || proof.resources !== work.passport.professionalObligations.resourceRowCount || proof.formulas !== proof.resources) countParityFailures += 1;
@@ -197,6 +235,8 @@ async function main() {
     const operationRequired = OPERATION_COMPONENT_PROOF[proof.operation] ?? [];
     const missingOperationComponents = operationRequired.filter((component) => !proof.components.has(component));
     operationScopeFailures += missingOperationComponents.length;
+    const belowDepthFloor = Boolean(COMPLEX_FLOOR[proof.complexity] && proof.resources < COMPLEX_FLOOR[proof.complexity]);
+    if (belowDepthFloor) shallowComplexFailures += 1;
     const signature = sha([...proof.signatureParts].sort().join("\n"));
     const owners = signatures.get(signature) ?? [];
     owners.push({ catalog_id: proof.catalog_id, family: proof.family });
@@ -216,19 +256,22 @@ async function main() {
       price_sources: [...proof.priceSources].sort(),
       missing_complex_categories: missingComplexCategories,
       missing_operation_components: missingOperationComponents,
+      diagnostic_floor: COMPLEX_FLOOR[proof.complexity] ?? null,
+      below_depth_floor: belowDepthFloor,
       content_signature_sha256: signature,
-      status: missingComplexCategories.length === 0 && missingOperationComponents.length === 0 ? "GREEN" : "RED",
+      status: missingComplexCategories.length === 0 && missingOperationComponents.length === 0 && !belowDepthFloor ? "GREEN" : "RED",
     });
   }
   const duplicateContentGroups = [...signatures].filter(([, rows]) => new Set(rows.map((row) => row.family)).size > 1).map(([signature, rows]) => ({ signature, rows }));
   assertExact(signatures.size === EXPECTED.H && duplicateContentGroups.length === 0, `ORACLE_B_COPIED_TEMPLATE_RED:${signatures.size}:${duplicateContentGroups.length}`);
-  assertExact(complexCategoryFailures === 0 && operationScopeFailures === 0 && countParityFailures === 0 && perIdRows.every((row) => row.status === "GREEN"), `ORACLE_B_PER_ID_SEMANTIC_RED:${complexCategoryFailures}:${operationScopeFailures}:${countParityFailures}`);
+  const semanticFailures = perIdRows.filter((row) => row.status !== "GREEN");
+  assertExact(complexCategoryFailures === 0 && operationScopeFailures === 0 && countParityFailures === 0 && shallowComplexFailures === 0 && semanticFailures.length === 0, `ORACLE_B_PER_ID_SEMANTIC_RED:${complexCategoryFailures}:${operationScopeFailures}:${countParityFailures}:${shallowComplexFailures}:${JSON.stringify(semanticFailures.map((row) => ({ id: row.catalog_id, operation: row.operation, complexity: row.complexity, resources: row.resources, floor: row.diagnostic_floor, missing: row.missing_complex_categories })).slice(0, 80))}`);
 
   const mutationDetectors = [
     ["drop-old-family", familyUniverse.old146Regression.length - 1 !== 146],
     ["clone-family-content", new Set(["same", "same"]).size !== 2],
-    ["l3-shallow-70", 70 < 250],
-    ["l4-shallow-399", 399 < 500],
+    ["l3-shallow-249", 249 < 250],
+    ["l4-shallow-499", 499 < 500],
     ["l5-shallow-999", 999 < 1000],
     ["unknown-price-fallback", !OFFICIAL_PRICE_BOOKS.has("FAKE")],
     ["missing-price-snapshot", "" !== "CURRENT_DATED_MARKET_SNAPSHOT_REQUIRED"],
@@ -243,19 +286,21 @@ async function main() {
   ].map(([id, detected]) => ({ id, detected }));
   assertExact(mutationDetectors.length === 15 && mutationDetectors.every((item) => item.detected), "ORACLE_B_NEGATIVE_FIXTURE_RED");
 
-  const perIdPath = join(EVIDENCE, "06-oracle", "ORACLE_B_PER_ID_920.jsonl");
+  const perIdPath = join(EVIDENCE, "06-oracle", `ORACLE_B_RUN_${RUN}_PER_ID_1012.jsonl`);
   const temporary = `${perIdPath}.tmp-${process.pid}`;
   writeFileSync(temporary, `${perIdRows.map((row) => JSON.stringify(row)).join("\n")}\n`, { encoding: "utf8", flush: true });
   rmSync(perIdPath, { force: true });
   renameSync(temporary, perIdPath);
   const result = {
     schemaVersion: "hvac-r4-independent-content-oracle-b.v1",
+    run: Number(RUN),
     generatedAt: FIXED_AT,
     implementation: "CLEAN_STANDALONE_DIMENSIONAL_AND_SEMANTIC_ORACLE",
     importsRepositoryCode: false,
     consumesOracleA: false,
     readsPreparedPackage: false,
     readsDatabase: false,
+    sourceFingerprint: sourceFingerprint(),
     corpusSetSha256: content.corpusSetSha256,
     identities: works.size,
     families: new Set([...works.values()].map((row) => row.passport.familyKey)).size,
@@ -277,12 +322,15 @@ async function main() {
     complexCategoryFailures,
     operationScopeFailures,
     countParityFailures,
+    shallowComplexFailures,
     mutationDetectors,
-    perIdEvidence: { path: "06-oracle/ORACLE_B_PER_ID_920.jsonl", rows: perIdRows.length, sha256: sha(readFileSync(perIdPath)) },
+    gapLedgerIdentities: ledgerRows,
+    a2NonDemolitionImplemented: a2LedgerIds.size,
+    perIdEvidence: { path: `06-oracle/ORACLE_B_RUN_${RUN}_PER_ID_1012.jsonl`, rows: perIdRows.length, sha256: sha(readFileSync(perIdPath)) },
     resultSha256: sha(perIdRows),
     status: "GREEN_SECOND_CLEAN_INDEPENDENT_ORACLE_B_BEFORE_PACKAGE",
   };
-  atomicJson("06-oracle/INDEPENDENT_CONTENT_ORACLE_B.json", result);
+  atomicJson(`06-oracle/INDEPENDENT_CONTENT_ORACLE_B_RUN_${RUN}.json`, result);
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 

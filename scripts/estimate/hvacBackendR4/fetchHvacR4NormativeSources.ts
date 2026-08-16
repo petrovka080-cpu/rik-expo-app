@@ -14,7 +14,7 @@ import {
   writeJson,
 } from "./support";
 
-const SNAPSHOT_AT = "2026-08-16T05:10:00.000Z";
+const SNAPSHOT_AT = "2026-08-16T07:35:00.000Z";
 
 function htmlText(html: string): string {
   return html

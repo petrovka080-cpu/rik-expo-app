@@ -1,13 +1,16 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { createReadStream, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 const ROOT = resolve(process.cwd());
 const EVIDENCE = join(ROOT, ".release-runtime", "batch007-hvac-r4", "evidence");
 const FIXED_AT = "2026-08-16T06:15:00.000Z";
-const EXPECTED = Object.freeze({ definitions: 920, families: 294, parameters: 122162, formulas: 325532, resources: 325532, validScenarios: 5827, invalidScenarios: 7261 });
+const EXPECTED = Object.freeze({ definitions: 1012, globalDefinitions: 920, externalDefinitions: 92, a2NonDemolitionDefinitions: 88, families: 324, parameters: 132173, formulas: 353575, resources: 353575, validScenarios: 6553, invalidScenarios: 8163 });
 const COMPLEX_FLOOR = Object.freeze({ L3: 250, L4: 500, L5: 1000 });
+const RUN = process.argv.find((value) => value.startsWith("--run="))?.slice("--run=".length) ?? "1";
+assertExact(["1", "2"].includes(RUN), `ORACLE_A_RUN_RED:${RUN}`);
 
 function fail(code) { throw new Error(code); }
 function assertExact(value, code) { if (!value) fail(code); }
@@ -17,6 +20,15 @@ function stable(value) {
   return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(",")}}`;
 }
 function semanticSha(value) { return createHash("sha256").update(stable(value)).digest("hex"); }
+function sourceFingerprint() {
+  const paths = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", "src", "app", "supabase", "android", "scripts", "tests", "App.tsx", "app.json", "app.config.ts", "babel.config.js", "metro.config.js", "package.json", "package-lock.json", "tsconfig.json"], { cwd: ROOT, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })
+    .trim().split(/\r?\n/).filter((path) => path && existsSync(join(ROOT, path))).sort();
+  const entries = paths.map((path) => {
+    const bytes = readFileSync(join(ROOT, path));
+    return { path: path.replaceAll("\\", "/"), bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") };
+  });
+  return { files: entries.length, sha256: semanticSha(entries) };
+}
 function atomicJson(relativePath, value) {
   const path = join(EVIDENCE, relativePath);
   mkdirSync(dirname(path), { recursive: true });
@@ -52,9 +64,20 @@ async function main() {
   const works = await readJsonl("05-content/corpus/HVAC_WORK_DEFINITIONS.jsonl");
   const workById = new Map(works.map((row) => [row.catalogId, row]));
   assertExact(works.length === EXPECTED.definitions && workById.size === EXPECTED.definitions, "ORACLE_A_WORK_CARDINALITY_RED");
-  assertExact(works.every((row) => row.namespace === "global" && row.denominatorEligible === true && row.domain === "hvac_heat_supply"), "ORACLE_A_WORK_OWNER_OR_NAMESPACE_RED");
+  assertExact(works.filter((row) => row.namespace === "global" && row.denominatorEligible === true).length === EXPECTED.globalDefinitions, "ORACLE_A_GLOBAL_WORK_COUNT_RED");
+  assertExact(works.filter((row) => row.namespace === "external_reference" && row.denominatorEligible === false).length === EXPECTED.externalDefinitions, "ORACLE_A_EXTERNAL_WORK_COUNT_RED");
+  assertExact(works.every((row) => row.domain === "hvac_heat_supply"), "ORACLE_A_WORK_OWNER_OR_NAMESPACE_RED");
   assertExact(new Set(works.map((row) => row.passport.familyKey)).size === EXPECTED.families, "ORACLE_A_FAMILY_CARDINALITY_RED");
   assertExact(works.every((row) => row.sourceMetadata.backendOwner === "HVAC_HEAT_SUPPLY_BACKEND" && row.passport.quantityContract.formulaGraphOwner === "BACKEND_ONLY" && row.passport.quantityContract.resourceGraphOwner === "BACKEND_ONLY"), "ORACLE_A_BACKEND_OWNER_RED");
+
+  // A2 normative identities are audited from the frozen ledger, not from builder code.
+  const gapLedger = await readJsonl("A2/A2_03_NORMATIVE_WORK_IDENTITY_GAP_LEDGER.jsonl");
+  const a2Additions = gapLedger.filter((row) => row.mapping_status === "ADD_EXTERNAL_NON_DEMOLITION");
+  const ledgerSourceIds = new Set(gapLedger.map((row) => row.source_id));
+  assertExact(gapLedger.length === 129 && ledgerSourceIds.size === 18, `ORACLE_A_GAP_LEDGER_CARDINALITY_RED:${gapLedger.length}:${ledgerSourceIds.size}`);
+  assertExact(a2Additions.length === EXPECTED.a2NonDemolitionDefinitions
+    && a2Additions.every((row) => row.new_external_catalog_id && workById.has(row.new_external_catalog_id)), "ORACLE_A_A2_NON_DEMOLITION_IMPLEMENTATION_RED");
+  assertExact(gapLedger.every((row) => row.mapping_status !== "UNRESOLVED" && row.row_semantic_sha256), "ORACLE_A_GAP_LEDGER_UNRESOLVED_OR_UNSIGNED");
 
   const parameterIds = new Map();
   const parameterUnits = new Map();
@@ -208,13 +231,14 @@ async function main() {
   ];
   assertExact(negativeFixtures.every((fixture) => fixture.detected), "ORACLE_A_NEGATIVE_FIXTURE_FALSE_MATCH");
 
-  const perIdPath = join(EVIDENCE, "06-oracle", "ORACLE_A_PER_ID_920.jsonl");
+  const perIdPath = join(EVIDENCE, "06-oracle", `ORACLE_A_RUN_${RUN}_PER_ID_1012.jsonl`);
   const temporary = `${perIdPath}.tmp-${process.pid}`;
   writeFileSync(temporary, `${perId.map((row) => JSON.stringify(row)).join("\n")}\n`, { encoding: "utf8", flush: true });
   rmSync(perIdPath, { force: true });
   renameSync(temporary, perIdPath);
   const result = {
     schemaVersion: "hvac-r4-independent-content-oracle-a.v1",
+    run: Number(RUN),
     generatedAt: FIXED_AT,
     implementation: "NODE_STANDARD_LIBRARY_STREAMING_SPEC_ORACLE",
     forbiddenProductionImports: forbiddenImports,
@@ -223,6 +247,7 @@ async function main() {
     importsResourceGraph: false,
     readsPreparedPackage: false,
     readsDatabase: false,
+    sourceFingerprint: sourceFingerprint(),
     identities: perId.length,
     families: new Set(works.map((row) => row.passport.familyKey)).size,
     parameters,
@@ -244,12 +269,14 @@ async function main() {
     nativeDoubleCount,
     frontendOwners,
     negativeFixtures,
-    perIdEvidence: { path: "06-oracle/ORACLE_A_PER_ID_920.jsonl", rows: perId.length, sha256: createHash("sha256").update(readFileSync(perIdPath)).digest("hex") },
+    gapLedgerIdentities: gapLedger.length,
+    a2NonDemolitionImplemented: a2Additions.length,
+    perIdEvidence: { path: `06-oracle/ORACLE_A_RUN_${RUN}_PER_ID_1012.jsonl`, rows: perId.length, sha256: createHash("sha256").update(readFileSync(perIdPath)).digest("hex") },
     inputCorpusSetSha256: contentSummary.corpusSetSha256,
     oracleResultSha256: semanticSha(perId),
     status: "GREEN_INDEPENDENT_ORACLE_A_BEFORE_PACKAGE",
   };
-  atomicJson("06-oracle/INDEPENDENT_CONTENT_ORACLE_A.json", result);
+  atomicJson(`06-oracle/INDEPENDENT_CONTENT_ORACLE_A_RUN_${RUN}.json`, result);
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 

@@ -179,13 +179,24 @@ const OPERATION_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
   BALANCE: "Балансировка",
   COMMISSION: "Пусконаладка",
   CONNECT: "Подключение",
+  CALIBRATE: "Калибровка и диагностика",
+  CONSERVE: "Консервация",
+  DECONSERVE: "Расконсервация",
+  DEMOLITION: "Декомиссия и демонтаж",
+  DIAGNOSTIC: "Диагностика и измерения",
+  DIAGNOSTIC_REPAIR: "Диагностика и ремонт",
+  FLUSH: "Промывка или очистка",
   INSTALL: "Монтаж",
   INSULATE: "Изоляция",
   PREPARE: "Подготовка",
+  PRESSURE_TEST: "Испытание на прочность и герметичность",
+  RECOMMISSION: "Повторная пусконаладка",
+  RECOVERY: "Контролируемое извлечение рабочей среды",
   REPAIR: "Ремонт",
   REPLACE: "Замена",
   ROUTE: "Прокладка трассы",
   SEAL: "Герметизация",
+  SERVICE: "Самостоятельная сервисная работа",
   AS_BUILT_ESTIMATE: "Исполнительный ресурсный расчёт",
   DETAILED_BOQ_FROM_DRAWINGS: "Детальная ведомость по проектным чертежам",
   PRELIMINARY_BOQ: "Предварительная ресурсная ведомость",
@@ -225,5 +236,7 @@ export function hvacQuantityParameter(profileData: HvacTechnologyProfile): {
 }
 
 export function hvacIsRepair(row: HvacDomainInventoryRow): boolean {
-  return row.new_repair_demolition_state === "REPAIR" || ["REPAIR", "REPLACE"].includes(row.operation_class);
+  return row.new_repair_demolition_state === "REPAIR"
+    || row.new_repair_demolition_state === "DEMOLITION"
+    || ["REPAIR", "REPLACE", "DEMOLITION"].includes(row.operation_class);
 }

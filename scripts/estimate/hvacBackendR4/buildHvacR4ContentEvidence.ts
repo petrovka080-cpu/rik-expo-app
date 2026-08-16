@@ -19,6 +19,9 @@ import {
   buildAllHvacPassports,
   hvacComplexity,
   hvacFamilyKey,
+  HVAC_R4_EXTERNAL_A2_NON_DEMOLITION_INVENTORY,
+  HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY,
+  HVAC_R4_EXTERNAL_INVENTORY,
   type HvacPassport,
 } from "./hvacR4Model";
 import {
@@ -44,6 +47,8 @@ const R3_SPEC_PATH = "C:\\Users\\User\\Downloads\\BATCH007_FULL_HEATING_VENTILAT
 const R3_SPEC_SHA256 = "3b2af8c82d813f01df30dcfd032736a25b3b1fb2663d76e9ccf39f62966ee5fb";
 const PREDECESSOR_WORKS_PATH = "C:\\dev\\rik-expo-app-batch006-water-backend-r3\\.release-runtime\\batch006-water-backend-r3\\03-r6-a2-release-b\\works.jsonl";
 const PREDECESSOR_WORKS_SHA256 = "0cce21bbae781f01d664b098c24a8acbb2aae45f584ca60caf53f1dc80ceb1da";
+// Binding A1 fixes the diagnostic RED floors at 250/500/1000 for L3/L4/L5.
+// They are audit detectors only; physical obligations are frozen in the model first.
 const DEPTH_FLOOR: Readonly<Record<string, number>> = Object.freeze({ L1: 60, L2: 120, L3: 250, L4: 500, L5: 1_000 });
 const DEPTH_CEILING: Readonly<Record<string, number>> = Object.freeze({ L1: 150, L2: 300, L3: 700, L4: 1_500, L5: 5_000 });
 
@@ -111,13 +116,16 @@ function parseOld146(): Array<{ ordinal: number; title: string }> {
 }
 
 function compactWork(inventory: HvacDomainInventoryRow, passport: HvacPassport): Json {
+  const external = HVAC_R4_EXTERNAL_INVENTORY.some((row) => row.catalog_id === inventory.catalog_id);
   return {
     catalogId: inventory.catalog_id,
+    sourceIdentity: inventory.catalog_id,
+    workKey: inventory.work_key,
     definitionVersion: 1,
     titleRu: inventory.display_title_ru,
     domain: BATCH007_DOMAIN_ID,
-    namespace: "global",
-    denominatorEligible: true,
+    namespace: external ? "external_reference" : "global",
+    denominatorEligible: !external,
     passport: {
       passportId: `hvac-professional-passport:${inventory.catalog_id}:r4`,
       passportVersion: "batch007-hvac-r4.2026-08-16",
@@ -169,13 +177,18 @@ function compactWork(inventory: HvacDomainInventoryRow, passport: HvacPassport):
       exactCatalogIdRequired: true,
     },
     sourceMetadata: {
-      origin: "GLOBAL_11610",
+      origin: external ? "HVAC_EXTERNAL_CANONICAL_EXTENSION" : "GLOBAL_11610",
       backendOwner: "HVAC_HEAT_SUPPLY_BACKEND",
       sourceVersion: BATCH007_SCHEMA_VERSION,
       sourceCommit: BATCH007_PREDECESSOR_COMMIT,
       sourceTree: BATCH007_PREDECESSOR_TREE,
       sourceInventoryHash: inventory.source_inventory_hash,
-      countsTowardGlobalQueue: true,
+      countsTowardGlobalQueue: !external,
+      externalExtensionReason: external
+        ? HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY.some((row) => row.catalog_id === inventory.catalog_id)
+          ? "A1_REQUIRED_PRIMARY_DEMOLITION_SCOPE_MISSING_FROM_GLOBAL_11610"
+          : "A2_NORMATIVE_GAP_EXACT_NON_DEMOLITION_WORK_IDENTITY_MISSING_FROM_GLOBAL_11610"
+        : null,
       r3Status: "SUPERSEDED_DO_NOT_EXECUTE",
     },
   };
@@ -192,11 +205,19 @@ async function main(): Promise<void> {
   const global = buildGlobalCatalogInventoryV1();
   const passports = buildAllHvacPassports();
   const passportById = new Map(passports.map((passport) => [passport.catalogId, passport]));
-  const inventoryById = new Map(HVAC_DOMAIN_INVENTORY.map((row) => [row.catalog_id, row]));
+  const acceptedInventory = [...HVAC_DOMAIN_INVENTORY, ...HVAC_R4_EXTERNAL_INVENTORY];
+  const inventoryById = new Map(acceptedInventory.map((row) => [row.catalog_id, row]));
+  const globalHvacIds = new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.catalog_id));
+  const externalHvacIds = new Set(HVAC_R4_EXTERNAL_INVENTORY.map((row) => row.catalog_id));
   const hvacIds = new Set(inventoryById.keys());
   const exclusionById = new Map(HVAC_REVIEWED_EXCLUSIONS.map((row) => [row.catalog_id, row]));
   assertExact(global.rows.length === 11_610 && global.catalog_total === 11_610, "HVAC_GLOBAL_11610_RED");
-  assertExact(passports.length === HVAC_COMPLETE_RECORD_COUNT && hvacIds.size === HVAC_COMPLETE_RECORD_COUNT, "HVAC_H_FINAL_RED");
+  assertExact(globalHvacIds.size === HVAC_COMPLETE_RECORD_COUNT, "HVAC_H_GLOBAL_RED");
+  assertExact(HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY.length === 4
+    && HVAC_R4_EXTERNAL_A2_NON_DEMOLITION_INVENTORY.length === 88
+    && externalHvacIds.size === 92
+    && passports.length === HVAC_COMPLETE_RECORD_COUNT + externalHvacIds.size
+    && hvacIds.size === passports.length, "HVAC_H_TOTAL_RED");
 
   const client = new Client({ connectionString: DATABASE_URL, application_name: "batch007-hvac-r4-content" });
   await client.connect();
@@ -225,11 +246,11 @@ async function main(): Promise<void> {
     return exact;
   }));
   assertExact(predecessorWorks.length === 2_042 && predecessorGlobalWorks.length === 2_005 && predecessorIds.size === 2_005, `HVAC_PREDECESSOR_ID_SET_RED:${predecessorWorks.length}:${predecessorGlobalWorks.length}:${predecessorIds.size}`);
-  const overlap = [...hvacIds].filter((id) => predecessorIds.has(id));
+  const overlap = [...globalHvacIds].filter((id) => predecessorIds.has(id));
   assertExact(overlap.length === 0, `HVAC_PREDECESSOR_OVERLAP_RED:${overlap.length}`);
 
   const classifications = global.rows.map((row) => {
-    const hvac = inventoryById.get(row.catalog_id);
+    const hvac = HVAC_DOMAIN_INVENTORY.find((candidate) => candidate.catalog_id === row.catalog_id);
     const excluded = exclusionById.get(row.catalog_id);
     const disposition = hvac ? "HVAC_OWNER" : predecessorIds.has(row.catalog_id) ? "PREDECESSOR_OWNER_PRESERVED" : "FUTURE_BATCH_OWNER";
     return {
@@ -258,8 +279,9 @@ async function main(): Promise<void> {
     };
   });
   const classificationFile = await writeJsonlStreaming("01-discovery/GLOBAL_LEDGER_11610.jsonl", classifications);
-  const hvacIdentityRows = HVAC_DOMAIN_INVENTORY.map((row) => {
+  const hvacIdentityRows = acceptedInventory.map((row) => {
     const passport = passportById.get(row.catalog_id)!;
+    const external = externalHvacIds.has(row.catalog_id);
     return {
       catalog_id: row.catalog_id,
       canonical_title: row.display_title_ru,
@@ -271,10 +293,11 @@ async function main(): Promise<void> {
       medium: passport.profile.medium_or_air_system,
       complexity_class: passport.complexity,
       source_domain_id: row.source_domain_id,
-      namespace: "global",
-      denominator_eligible: true,
+      namespace: external ? "external_reference" : "global",
+      denominator_eligible: !external,
       predecessor_overlap: false,
-      classification: "HVAC_OWNER",
+      classification: external ? "HVAC_EXTERNAL_CANONICAL_EXTENSION" : "HVAC_OWNER",
+      queue_effect: external ? 0 : -1,
       identitySha256: semanticSha256(row),
     };
   });
@@ -299,7 +322,7 @@ async function main(): Promise<void> {
 
   const old146 = parseOld146().map((old) => {
     const classes = oldFamilyClassHints(old.title);
-    const candidates = HVAC_DOMAIN_INVENTORY.filter((row) => classes.includes(hvacTechnologyProfile(row).technology_class));
+    const candidates = acceptedInventory.filter((row) => classes.includes(hvacTechnologyProfile(row).technology_class));
     const successorFamilies = [...new Set(candidates.map(hvacFamilyKey))].sort();
     assertExact(candidates.length > 0 && successorFamilies.length > 0, `HVAC_OLD_FAMILY_DISAPPEARED:${old.ordinal}`);
     return {
@@ -320,6 +343,9 @@ async function main(): Promise<void> {
   writeJson("01-discovery/HVAC_FAMILY_UNIVERSE.json", {
     schemaVersion: "hvac-r4-family-universe.v1",
     generatedAt: BATCH007_FIXED_AT,
+    H_global: globalHvacIds.size,
+    H_external: externalHvacIds.size,
+    H_total: hvacIds.size,
     H_final: hvacIds.size,
     F_final: familyRows.length,
     oldR3Minimum: 146,
@@ -347,9 +373,9 @@ async function main(): Promise<void> {
   const titleKeywordIds = new Set(global.rows.filter((row) => /отоп|вентил|кондиц|тепл|холод|чиллер|котел|радиатор|воздуховод/i.test(row.title_ru)).map((row) => row.catalog_id));
   writeJson("01-discovery/KEYWORD_FALSE_NEGATIVE_AUDIT.json", {
     schemaVersion: "hvac-r4-keyword-false-negative-audit.v1",
-    hvacIdentities: hvacIds.size,
-    keywordMatchedHvac: [...hvacIds].filter((id) => titleKeywordIds.has(id)).length,
-    keywordMissedButCanonicalClassifierFound: [...hvacIds].filter((id) => !titleKeywordIds.has(id)).sort(),
+    hvacIdentities: globalHvacIds.size,
+    keywordMatchedHvac: [...globalHvacIds].filter((id) => titleKeywordIds.has(id)).length,
+    keywordMissedButCanonicalClassifierFound: [...globalHvacIds].filter((id) => !titleKeywordIds.has(id)).sort(),
     classifierReliesOnKeywordsOnly: false,
     missedByFinalClassifier: 0,
     status: "GREEN",
@@ -357,7 +383,7 @@ async function main(): Promise<void> {
   writeJson("01-discovery/KEYWORD_FALSE_POSITIVE_AUDIT.json", {
     schemaVersion: "hvac-r4-keyword-false-positive-audit.v1",
     keywordMatches: titleKeywordIds.size,
-    keywordMatchesOutsideHvacOwner: [...titleKeywordIds].filter((id) => !hvacIds.has(id)).sort(),
+    keywordMatchesOutsideHvacOwner: [...titleKeywordIds].filter((id) => !globalHvacIds.has(id)).sort(),
     falsePositiveAdmitted: 0,
     status: "GREEN",
   });
@@ -371,13 +397,16 @@ async function main(): Promise<void> {
     status: "GREEN",
   });
   const dispositions = Object.fromEntries([...new Set(classifications.map((row) => row.disposition))].sort().map((name) => [name, classifications.filter((row) => row.disposition === name).length]));
-  assertExact((dispositions.HVAC_OWNER ?? 0) === 920 && (dispositions.PREDECESSOR_OWNER_PRESERVED ?? 0) === 2_005 && (dispositions.FUTURE_BATCH_OWNER ?? 0) === 8_685, `HVAC_DISPOSITION_ARITHMETIC_RED:${JSON.stringify(dispositions)}`);
+  assertExact((dispositions.HVAC_OWNER ?? 0) === HVAC_COMPLETE_RECORD_COUNT && (dispositions.PREDECESSOR_OWNER_PRESERVED ?? 0) === 2_005 && (dispositions.FUTURE_BATCH_OWNER ?? 0) === 8_685, `HVAC_DISPOSITION_ARITHMETIC_RED:${JSON.stringify(dispositions)}`);
   writeJson("01-discovery/DISCOVERY_SUMMARY.json", {
     schemaVersion: "hvac-r4-discovery-summary.v1",
     generatedAt: BATCH007_FIXED_AT,
     GLOBAL_LEDGER: `${classifications.length}/11610`,
-    HVAC_RELATED_IDENTITIES_CLASSIFIED: `${hvacIds.size}/${hvacIds.size}`,
+    HVAC_RELATED_IDENTITIES_CLASSIFIED: `${globalHvacIds.size}/${globalHvacIds.size}`,
     HVAC_FAMILY_UNIVERSE_COVERAGE: `${familyRows.length}/${familyRows.length}`,
+    H_global: globalHvacIds.size,
+    H_external: externalHvacIds.size,
+    H_total: hvacIds.size,
     H_final: hvacIds.size,
     F_final: familyRows.length,
     dispositions,
@@ -392,6 +421,8 @@ async function main(): Promise<void> {
     globalInventoryHash: global.inventory_hash,
     globalLedgerFile: classificationFile,
     hvacIdentityFile: identityFile,
+    exactGlobalHvacIdSetSha256: sha256([...globalHvacIds].sort().join("\n")),
+    exactExternalHvacIdSetSha256: sha256([...externalHvacIds].sort().join("\n")),
     exactHvacIdSetSha256: sha256([...hvacIds].sort().join("\n")),
     status: "GREEN",
   });
@@ -567,6 +598,9 @@ async function main(): Promise<void> {
   writeJson("05-content/HVAC_CONTENT_SUMMARY.json", {
     schemaVersion: "hvac-r4-content-summary.v1",
     generatedAt: BATCH007_FIXED_AT,
+    H_global: globalHvacIds.size,
+    H_external: externalHvacIds.size,
+    H_total: passports.length,
     H_final: passports.length,
     F_final: familyRows.length,
     P_final: totals.parameters,
@@ -603,6 +637,9 @@ async function main(): Promise<void> {
     phase: "W5_CONTENT_FROZEN_AWAITING_ORACLE_A_B",
     lastCompletedCheckpoint: "W5_CONTENT_AND_DEPTH_GREEN",
     H_final: passports.length,
+    H_global: globalHvacIds.size,
+    H_external: externalHvacIds.size,
+    H_total: passports.length,
     F_final: familyRows.length,
     P_final: totals.parameters,
     G_final: totals.formulas,

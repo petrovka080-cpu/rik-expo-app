@@ -10,6 +10,10 @@ import {
   type HvacTechnologyProfile,
 } from "../../../src/lib/estimate/v4/domains/heatingVentilationComplete";
 import { semanticSha256 } from "./support";
+import {
+  HVAC_A2_EXTERNAL_NON_DEMOLITION_SPECS,
+  hvacA2SpecForCatalogId,
+} from "./hvacR4NormativeGapA2";
 
 export type HvacComplexity = "L1" | "L2" | "L3" | "L4" | "L5";
 export type HvacComponentKind =
@@ -517,6 +521,7 @@ const SYSTEM_IDENTITY_COMPONENTS: Readonly<Record<string, readonly HvacComponent
 const OPERATION_SCOPE_COMPONENTS: Readonly<Record<string, readonly HvacComponent[]>> = Object.freeze({
   BALANCE: componentLines(`TEMPORARY|balancing_measurement_plan|план точек и последовательности балансировки|service\nINSTRUMENT|balancing_verified_instrument|поверенный прибор балансировки|item\nTEST|balancing_initial_reading|исходное измерение до регулировки|test\nTEST|balancing_final_reading|итоговое измерение после регулировки|test\nDOCUMENT|balancing_result_protocol|протокол фактических результатов балансировки|document`),
   COMMISSION: componentLines(`DOCUMENT|commissioning_sequence_of_operation|проверенная последовательность работы системы|document\nTEST|commissioning_pre_functional_check|предпусковая функциональная проверка|test\nTEST|commissioning_control_sequence_test|испытание последовательностей локального управления|test\nTEST|commissioning_performance_test|функциональное испытание производительности|test\nDOCUMENT|commissioning_handover_record|акт пусконаладки и передачи|document`),
+  DEMOLITION: componentLines(`TEMPORARY|demolition_existing_asset_survey|индивидуальное обследование существующего HVAC актива до демонтажа|service\nDOCUMENT|demolition_isolation_and_permit_plan|план изоляции энергоносителей и наряд-допуск на демонтаж|document\nTEMPORARY|demolition_protection_and_access_plan|защита смежных конструкций и безопасный доступ при демонтаже|service\nWASTE|demolition_asset_material_segregation|раздельный учёт демонтированного оборудования и материалов|kg\nWASTE|demolition_hazardous_material_route|типизированный маршрут опасных материалов при подтверждённой применимости|kg\nDOCUMENT|demolition_asset_closeout_register|реестр демонтированных tags, массы, маршрута передачи и закрытия interfaces|document`),
   INSTALL: componentLines(`TEMPORARY|installation_setting_out|разбивка и привязка мест монтажа|service\nDOCUMENT|installation_hold_point_register|реестр hold points монтажа|document`),
   REPAIR: componentLines(`TEMPORARY|repair_defect_survey|индивидуальная дефектация ремонтируемого узла|service\nMATERIAL|repair_parts_schedule|ведомость фактически заменяемых деталей без придуманного состава|item\nTEST|repair_post_assembly_test|повторное испытание после ремонта|test\nDOCUMENT|repair_defect_closeout|закрытие дефектной ведомости|document`),
   REPLACE: componentLines(`TEMPORARY|replacement_isolation_and_drain|изоляция, дренирование или recovery перед заменой|service\nWASTE|replaced_asset_segregation|сортировка заменяемого оборудования и материалов|kg\nEQUIPMENT|replacement_asset_schedule|ведомость нового заменяющего актива проектного выбора|item\nTEST|replacement_recommissioning|повторная пусконаладка после замены|test\nDOCUMENT|replacement_asset_register_update|обновление реестра активов после замены|document`),
@@ -768,6 +773,31 @@ const STANDARD_ACTIVITIES = [
   activity("as_built_record", "DOCUMENT", "DOCUMENTATION", "DOCUMENTATION", "document", "Исполнительная запись:", "FIXED"),
 ];
 
+const DEMOLITION_ACTIVITIES = Object.freeze([
+  activity("shutdown_isolation", "ISOLATE", "DECOMMISSION_AND_ISOLATION", "CONSTRUCTION_WORK", "work", "Остановка и подтверждённая изоляция:", "LABOR"),
+  activity("service_disconnection", "DISCONNECT", "DECOMMISSION_AND_ISOLATION", "CONSTRUCTION_WORK", "work", "Отсоединение в границах HVAC owner:", "LABOR"),
+  activity("contained_recovery", "RECOVER", "DECOMMISSION_AND_ISOLATION", "SPECIAL_SERVICE", "service", "Контролируемое извлечение фактически присутствующей рабочей среды:", "FIXED"),
+  activity("dismantling", "DEMOLISH", "DEMOLITION", "CONSTRUCTION_WORK", "work", "Поэлементный демонтаж:", "LABOR"),
+  activity("dismantling_machine", "DEMOLISH", "DEMOLITION", "MACHINE", "equipment", "Механизация безопасного демонтажа при подтверждённой применимости:", "MACHINE"),
+]);
+const DEMOLITION_PHYSICAL_KINDS = new Set<HvacComponentKind>(["PIPE", "DUCT", "EQUIPMENT", "VALVE", "INSTRUMENT", "MATERIAL", "SUPPORT"]);
+
+const SPECIAL_OPERATION_ACTIVITIES: Readonly<Record<string, readonly HvacActivity[]>> = Object.freeze({
+  PRESSURE_TEST: [activity("exact_pressure_test", "PRESSURE_TEST", "TESTING", "TESTING", "testing", "Испытательная операция:", "TEST")],
+  FLUSH: [activity("exact_flush_clean", "FLUSH", "FLUSHING_AND_CLEANING", "SPECIAL_SERVICE", "service", "Промывка или очистка:", "QUANTITY")],
+  DIAGNOSTIC: [activity("exact_diagnostics", "DIAGNOSE", "DIAGNOSTICS", "TESTING", "testing", "Диагностическое измерение:", "TEST")],
+  DIAGNOSTIC_REPAIR: [
+    activity("exact_diagnostics", "DIAGNOSE", "DIAGNOSTICS", "TESTING", "testing", "Диагностическое измерение:", "TEST"),
+    activity("exact_repair", "REPAIR", "REPAIR", "CONSTRUCTION_WORK", "work", "Подтверждённый ремонт:", "LABOR"),
+  ],
+  RECOMMISSION: [activity("exact_recommission", "RECOMMISSION", "TAB_COMMISSIONING", "TAB_COMMISSIONING", "commissioning", "Повторная пусконаладка:", "TEST")],
+  SERVICE: [activity("exact_service", "SERVICE", "SERVICE", "SPECIAL_SERVICE", "service", "Самостоятельная сервисная операция:", "LABOR")],
+  RECOVERY: [activity("exact_recovery", "RECOVER", "CONTROLLED_MEDIA_RECOVERY", "WASTE", "waste", "Контролируемое извлечение рабочей среды:", "WASTE")],
+  CALIBRATE: [activity("exact_calibration", "CALIBRATE", "CALIBRATION", "TESTING", "testing", "Калибровка as-found/as-left:", "TEST")],
+  CONSERVE: [activity("exact_conservation", "CONSERVE", "PRESERVATION", "SPECIAL_SERVICE", "service", "Консервация:", "LABOR")],
+  DECONSERVE: [activity("exact_deconservation", "DECONSERVE", "PRESERVATION", "SPECIAL_SERVICE", "service", "Расконсервация:", "LABOR")],
+});
+
 const ACTIVITIES_BY_KIND: Readonly<Record<HvacComponentKind, readonly HvacActivity[]>> = Object.freeze({
   PIPE: STANDARD_ACTIVITIES,
   DUCT: [...STANDARD_ACTIVITIES, activity("sealing", "SEAL", "INSTALLATION", "CONSTRUCTION_WORK", "work", "Герметизация:", "LABOR")],
@@ -824,6 +854,17 @@ const OPERATION_ALLOWED_ACTIONS: Readonly<Record<string, ReadonlySet<string>>> =
   COMMISSION: new Set(["DESIGN", "INSPECT", "TEST", "COMMISSION", "DOCUMENT", "INTERFACE"]),
   INSULATE: new Set(["DESIGN", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "SEAL", "TEST", "DOCUMENT", "WASTE", "INTERFACE"]),
   CONNECT: new Set(["DESIGN", "SUBMITTAL", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "CONNECT", "TEST", "COMMISSION", "DOCUMENT", "WASTE", "INTERFACE"]),
+  PRESSURE_TEST: new Set(["DESIGN", "INSPECT", "TEST", "PRESSURE_TEST", "DOCUMENT", "INTERFACE", "SAFETY", "TEMPORARY"]),
+  FLUSH: new Set(["DESIGN", "SUPPLY", "DELIVERY", "INSPECT", "CONNECT", "TEST", "FLUSH", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY", "TEMPORARY"]),
+  DIAGNOSTIC: new Set(["DESIGN", "INSPECT", "TEST", "DIAGNOSE", "DOCUMENT", "INTERFACE", "SAFETY", "SURVEY"]),
+  DIAGNOSTIC_REPAIR: new Set(["DESIGN", "SUBMITTAL", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "CONNECT", "TEST", "DIAGNOSE", "REPAIR", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY"]),
+  RECOMMISSION: new Set(["DESIGN", "INSPECT", "TEST", "COMMISSION", "RECOMMISSION", "DOCUMENT", "INTERFACE"]),
+  SERVICE: new Set(["DESIGN", "SUBMITTAL", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "CONNECT", "TEST", "SERVICE", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY"]),
+  RECOVERY: new Set(["DESIGN", "INSPECT", "ISOLATE", "DISCONNECT", "RECOVER", "TEST", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY"]),
+  CALIBRATE: new Set(["DESIGN", "INSPECT", "TEST", "CALIBRATE", "DOCUMENT", "INTERFACE"]),
+  CONSERVE: new Set(["DESIGN", "INSPECT", "ISOLATE", "CONSERVE", "TEST", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY", "TEMPORARY"]),
+  DECONSERVE: new Set(["DESIGN", "INSPECT", "DECONSERVE", "TEST", "COMMISSION", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY", "TEMPORARY"]),
+  DEMOLITION: new Set(["DESIGN", "INSPECT", "ISOLATE", "DISCONNECT", "RECOVER", "DEMOLISH", "RIGGING", "TEST", "DOCUMENT", "WASTE", "INTERFACE", "SAFETY", "SURVEY", "TEMPORARY"]),
 });
 
 const DESIGN_INPUTS_BY_CLASS: Readonly<Record<HvacTechnologyClass, readonly string[]>> = Object.freeze({
@@ -856,6 +897,8 @@ export function hvacFamilyKey(inventory: HvacDomainInventoryRow): string {
 }
 
 export function hvacComplexity(inventory: HvacDomainInventoryRow): HvacComplexity {
+  const a2Spec = hvacA2SpecForCatalogId(inventory.catalog_id);
+  if (a2Spec) return a2Spec.complexity;
   const profile = hvacTechnologyProfile(inventory);
   const expanded = inventory.source_domain_id.startsWith("expanded:")
     ? inventory.source_domain_id.slice("expanded:".length)
@@ -906,6 +949,7 @@ function uniqueComponents(items: readonly HvacComponent[]): HvacComponent[] {
 export function hvacComponents(inventory: HvacDomainInventoryRow): HvacComponent[] {
   const profile = hvacTechnologyProfile(inventory);
   const complexity = hvacComplexity(inventory);
+  const a2Spec = hvacA2SpecForCatalogId(inventory.catalog_id);
   const expanded = inventory.source_domain_id.startsWith("expanded:")
     ? inventory.source_domain_id.slice("expanded:".length)
     : null;
@@ -916,14 +960,18 @@ export function hvacComponents(inventory: HvacDomainInventoryRow): HvacComponent
       : COMMON_COMPONENTS;
   const components = [
     ...common,
-    ...COMPONENTS_BY_CLASS[profile.technology_class],
-    ...(SPECIFIC_COMPONENTS[inventory.primary_material_or_system] ?? []),
-    ...(SYSTEM_IDENTITY_COMPONENTS[inventory.primary_material_or_system] ?? []),
+    ...(a2Spec
+      ? componentLines(a2Spec.components.join("\n"))
+      : [
+        ...COMPONENTS_BY_CLASS[profile.technology_class],
+        ...(SPECIFIC_COMPONENTS[inventory.primary_material_or_system] ?? []),
+        ...(SYSTEM_IDENTITY_COMPONENTS[inventory.primary_material_or_system] ?? []),
+      ]),
     ...(OPERATION_SCOPE_COMPONENTS[inventory.operation_class] ?? []),
     ...(PROJECTION_SCOPE_COMPONENTS[inventory.operation_class] ?? []),
     ...(CONTEXT_COMPONENTS[inventory.scope_capability] ?? []),
     ...(expanded ? EXPANDED_COMPONENTS[expanded] ?? [] : []),
-    ...(expanded && ["L3", "L4", "L5"].includes(complexity) ? EXPANDED_PROJECT_COMPONENTS : []),
+    ...((expanded || a2Spec) && ["L3", "L4", "L5"].includes(complexity) ? EXPANDED_PROJECT_COMPONENTS : []),
   ];
   return uniqueComponents(components);
 }
@@ -932,11 +980,17 @@ function actionsFor(inventory: HvacDomainInventoryRow, component: HvacComponent)
   const allowed = OPERATION_ALLOWED_ACTIONS[inventory.operation_class];
   const complexity = hvacComplexity(inventory);
   const complexityAllowed = complexity === "L1"
-    ? new Set(["DESIGN", "SUPPLY", "INSTALL", "CONNECT", "TEST", "DOCUMENT", "INTERFACE", "SAFETY", "SURVEY", "WASTE"])
+    ? new Set(["DESIGN", "SUPPLY", "INSTALL", "CONNECT", "TEST", "DOCUMENT", "INTERFACE", "SAFETY", "SURVEY", "WASTE", "PRESSURE_TEST", "FLUSH", "DIAGNOSE", "REPAIR", "RECOMMISSION", "SERVICE", "RECOVER", "CALIBRATE", "CONSERVE", "DECONSERVE"])
     : complexity === "L2"
-      ? new Set(["DESIGN", "SUBMITTAL", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "CONNECT", "TEST", "COMMISSION", "DOCUMENT", "INTERFACE", "SAFETY", "SURVEY", "WASTE"])
+      ? new Set(["DESIGN", "SUBMITTAL", "SUPPLY", "DELIVERY", "INSPECT", "INSTALL", "CONNECT", "TEST", "COMMISSION", "DOCUMENT", "INTERFACE", "SAFETY", "SURVEY", "WASTE", "PRESSURE_TEST", "FLUSH", "DIAGNOSE", "REPAIR", "RECOMMISSION", "SERVICE", "RECOVER", "CALIBRATE", "CONSERVE", "DECONSERVE"])
       : null;
-  const activities = ACTIVITIES_BY_KIND[component.kind];
+  const baseActivities = inventory.operation_class === "DEMOLITION" && DEMOLITION_PHYSICAL_KINDS.has(component.kind)
+    ? [...ACTIVITIES_BY_KIND[component.kind], ...DEMOLITION_ACTIVITIES]
+    : ACTIVITIES_BY_KIND[component.kind];
+  const specialActivities = SPECIAL_OPERATION_ACTIVITIES[inventory.operation_class] ?? [];
+  const activities = specialActivities.length > 0 && ["PIPE", "DUCT", "EQUIPMENT", "VALVE", "INSTRUMENT", "TEST", "WASTE", "TEMPORARY"].includes(component.kind)
+    ? [...baseActivities, ...specialActivities]
+    : baseActivities;
   return activities.filter((item) =>
     (!allowed || allowed.has(item.action)) &&
     (!complexityAllowed || complexityAllowed.has(item.action)));
@@ -1012,7 +1066,28 @@ function formulaFor(
   };
 }
 
-function normativeRoute(profile: HvacTechnologyProfile, activityItem: HvacActivity): { sourceId: string; locator: string; role: string } {
+function designInputsFor(inventory: HvacDomainInventoryRow): readonly string[] {
+  const profile = hvacTechnologyProfile(inventory);
+  const a2Spec = hvacA2SpecForCatalogId(inventory.catalog_id);
+  return Object.freeze([...new Set([
+    ...DESIGN_INPUTS_BY_CLASS[profile.technology_class],
+    ...(a2Spec?.requiredInputs ?? []),
+  ])].sort());
+}
+
+function normativeRoute(inventory: HvacDomainInventoryRow, profile: HvacTechnologyProfile, activityItem: HvacActivity): { sourceId: string; locator: string; role: string } {
+  const a2Spec = hvacA2SpecForCatalogId(inventory.catalog_id);
+  if (a2Spec) {
+    return {
+      sourceId: a2Spec.sourceId,
+      locator: `${a2Spec.sourceTable}; ${a2Spec.sourceItem}; source page ${a2Spec.sourcePage}`,
+      role: activityItem.action === "COMMISSION" || activityItem.action === "RECOMMISSION"
+        ? "COMMISSIONING_REQUIREMENT"
+        : a2Spec.sourceId === "sn_kr_41_04_2022"
+          ? "DESIGN_INSTALL_TEST_REQUIREMENT_AND_INDIVIDUAL_RATE_INPUT_ROUTE"
+          : "RESOURCE_RATE_OR_TECHNICAL_SCOPE",
+    };
+  }
   if (activityItem.category === "TAB_COMMISSIONING" || activityItem.action === "COMMISSION") {
     if (profile.technology_class === "REFRIGERANT_SYSTEM") return { sourceId: "kg_krerp06_2015", locator: "Technical part and applicable commissioning table for refrigeration/compressor installation; exact equipment selection required", role: "COMMISSIONING_REQUIREMENT" };
     if (["HYDRONIC_EQUIPMENT", "OUTDOOR_HEAT_NETWORK", "HEATING_PIPE_NETWORK"].includes(profile.technology_class)) return { sourceId: "kg_krerp07_2015", locator: "Technical part and applicable heat-power equipment commissioning table; exact equipment selection required", role: "COMMISSIONING_REQUIREMENT" };
@@ -1045,7 +1120,7 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
       const rowId = `hvac-r4:${normalizedKey(inventory.catalog_id)}:${rowKey}`;
       const formula = formulaFor(inventory.catalog_id, rowKey, component, activityItem);
       formula.inputParameterIds.forEach((id) => addConsumer(id, rowId));
-      const normative = normativeRoute(profile, activityItem);
+      const normative = normativeRoute(inventory, profile, activityItem);
       const priceRoute = component.kind === "INTERFACE"
         ? "CHILD_OWNER_ESTIMATE"
         : activityItem.procurementEligible || ["MATERIAL", "TOOL_OR_EQUIPMENT"].includes(activityItem.category)
@@ -1138,7 +1213,7 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
           ownerBoundary: component.kind === "INTERFACE" ? {
             child_owner: component.key.replace(/_boundary$/, "").toLocaleUpperCase("en-US"),
             child_scope_key: component.key,
-            handoff_inputs: DESIGN_INPUTS_BY_CLASS[profile.technology_class],
+            handoff_inputs: designInputsFor(inventory),
             handoff_outputs: ["child_revision_id", "accepted_quantity_basis"],
             quantity_basis: "system_count",
             exclusion_reason: "Explicit typed-child prevents HVAC double counting",
@@ -1156,7 +1231,7 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
     ["system_count", "Количество проектных систем", "integer", "system", "PROJECT_INPUT_REQUIRED"],
     ["delivery_distance_km", "Проверенное расстояние доставки", "decimal", "km", "PROJECT_INPUT_REQUIRED"],
   ];
-  for (const input of DESIGN_INPUTS_BY_CLASS[profile.technology_class]) {
+  for (const input of designInputsFor(inventory)) {
     generalParameters.push([input, input.replaceAll("_", " "), input.includes("reference") || input.includes("material") || input.includes("class") || input.includes("type") || input.includes("profile") ? "text" : "decimal", null, `${input.toLocaleUpperCase("en-US")}_REQUIRED`]);
   }
   let parameterOrdinal = 0;
@@ -1200,7 +1275,7 @@ export function buildHvacPassport(inventory: HvacDomainInventoryRow): HvacPasspo
   const complexity = hvacComplexity(inventory);
   const components = hvacComponents(inventory);
   const { parameters, formulas, resources } = buildRows(inventory, components);
-  const engineeringInputs = DESIGN_INPUTS_BY_CLASS[profile.technology_class].map((parameterId) => ({
+  const engineeringInputs = designInputsFor(inventory).map((parameterId) => ({
     parameterId,
     statusWhenMissing: `${parameterId.toLocaleUpperCase("en-US")}_REQUIRED`,
     consumerRole: ["airflow", "load", "capacity", "diameter", "refrigerant", "temperature", "pressure", "selection", "dimensions"].some((token) => parameterId.includes(token))
@@ -1226,11 +1301,162 @@ export function buildHvacPassport(inventory: HvacDomainInventoryRow): HvacPasspo
   return { ...withoutHash, passportSha256: semanticSha256(withoutHash) };
 }
 
+const HVAC_EXTERNAL_DEMOLITION_SPECS = Object.freeze([
+  {
+    catalogId: "external-hvac:heating-pipe-network-demolition:r4",
+    titleRu: "Декомиссия и демонтаж трубопроводов отопления",
+    technologyClass: "HEATING_PIPE_NETWORK" as HvacTechnologyClass,
+  },
+  {
+    catalogId: "external-hvac:duct-network-demolition:r4",
+    titleRu: "Декомиссия и демонтаж сети воздуховодов",
+    technologyClass: "DUCT_NETWORK" as HvacTechnologyClass,
+  },
+  {
+    catalogId: "external-hvac:air-handling-equipment-demolition:r4",
+    titleRu: "Декомиссия и демонтаж приточно-вытяжной установки",
+    technologyClass: "AIR_HANDLING_EQUIPMENT" as HvacTechnologyClass,
+  },
+  {
+    catalogId: "external-hvac:chiller-refrigerant-system-demolition:r4",
+    titleRu: "Декомиссия, recovery хладагента и демонтаж chiller-контура",
+    technologyClass: "REFRIGERANT_SYSTEM" as HvacTechnologyClass,
+  },
+]);
+
+function buildExternalDemolitionInventory(): readonly HvacDomainInventoryRow[] {
+  return Object.freeze(HVAC_EXTERNAL_DEMOLITION_SPECS.map((spec) => {
+    const prototype = HVAC_DOMAIN_INVENTORY.find((candidate) =>
+      hvacTechnologyProfile(candidate).technology_class === spec.technologyClass
+      && candidate.scope_capability === "standard");
+    if (!prototype) throw new Error(`HVAC_EXTERNAL_DEMOLITION_PROTOTYPE_MISSING:${spec.technologyClass}`);
+    const workKey = spec.catalogId.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
+    const withoutInventoryHash = {
+      ...prototype,
+      catalog_id: spec.catalogId,
+      work_key: workKey,
+      title_ru: spec.titleRu,
+      catalog_group: "expanded_complex_1610" as const,
+      operation_class: "DEMOLITION",
+      new_repair_demolition_state: "DEMOLITION" as const,
+      scope_capabilities: ["existing_asset_controlled_demolition"],
+      candidate_canonical_technology_id: `hvac-external-technology:${workKey}`,
+      alias_candidate_of: null,
+      existing_passport_id: null,
+      existing_schema_id: null,
+      existing_formula_pack_id: null,
+      existing_normative_profile_id: null,
+      current_readiness: "DOMAIN_GREEN" as const,
+      current_blockers: [],
+      classification_evidence: [
+        "A1_SECTION_23_PRIMARY_DEMOLITION_MATRIX",
+        "MISSING_FROM_GLOBAL_11610_EXTERNAL_CANONICAL_EXTENSION",
+        `TECHNOLOGY_CLASS=${spec.technologyClass}`,
+      ],
+      source_hash: semanticSha256({ catalogId: spec.catalogId, kind: "HVAC_EXTERNAL_DEMOLITION_SOURCE" }),
+      row_hash: semanticSha256({ catalogId: spec.catalogId, operation: "DEMOLITION", technologyClass: spec.technologyClass }),
+      scope_capability: "existing_asset_controlled_demolition",
+      canonical_technology_id: `hvac_heat_supply:external-technology:${workKey}`,
+      display_title_ru: spec.titleRu,
+      localized_name_ru: spec.titleRu,
+      template_id: `domain-passport:${spec.catalogId}:r4`,
+      work_type: "demolition",
+      record_role: "PRIMARY" as const,
+      equivalence_group_id: null,
+    };
+    return {
+      ...withoutInventoryHash,
+      source_inventory_hash: semanticSha256(withoutInventoryHash),
+    } as HvacDomainInventoryRow;
+  }).sort((left, right) => left.catalog_id.localeCompare(right.catalog_id)));
+}
+
+function buildExternalA2NonDemolitionInventory(): readonly HvacDomainInventoryRow[] {
+  return Object.freeze(HVAC_A2_EXTERNAL_NON_DEMOLITION_SPECS.map((spec) => {
+    const prototype = HVAC_DOMAIN_INVENTORY.find((candidate) =>
+      candidate.primary_material_or_system === spec.prototypeMaterial
+      && hvacTechnologyProfile(candidate).technology_class === spec.technologyClass
+      && candidate.scope_capability === "standard")
+      ?? HVAC_DOMAIN_INVENTORY.find((candidate) =>
+        candidate.primary_material_or_system === spec.prototypeMaterial
+        && hvacTechnologyProfile(candidate).technology_class === spec.technologyClass)
+      ?? HVAC_DOMAIN_INVENTORY.find((candidate) =>
+        hvacTechnologyProfile(candidate).technology_class === spec.technologyClass);
+    if (!prototype) throw new Error(`HVAC_A2_EXTERNAL_PROTOTYPE_MISSING:${spec.catalogId}:${spec.technologyClass}`);
+    const workKey = spec.catalogId.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
+    const repairLike = ["REPAIR", "DIAGNOSTIC_REPAIR", "SERVICE", "FLUSH", "RECOMMISSION", "CONSERVE", "DECONSERVE"].includes(spec.operationClass);
+    const withoutInventoryHash = {
+      ...prototype,
+      catalog_id: spec.catalogId,
+      work_key: workKey,
+      title_ru: spec.titleRu,
+      catalog_group: "expanded_complex_1610" as const,
+      operation_class: spec.operationClass,
+      new_repair_demolition_state: repairLike ? "REPAIR" as const : "NEW" as const,
+      scope_capabilities: ["a2_normative_external_exact"],
+      candidate_canonical_technology_id: `hvac-a2-external-technology:${workKey}`,
+      alias_candidate_of: null,
+      existing_passport_id: null,
+      existing_schema_id: null,
+      existing_formula_pack_id: null,
+      existing_normative_profile_id: null,
+      current_readiness: "DOMAIN_GREEN" as const,
+      current_blockers: [],
+      classification_evidence: [
+        "A2_TABLE_BY_TABLE_NORMATIVE_GAP_LEDGER",
+        "MISSING_FROM_GLOBAL_11610_EXTERNAL_CANONICAL_EXTENSION",
+        `SOURCE_ID=${spec.sourceId}`,
+        `TABLE=${spec.sourceTable}`,
+        `ITEM=${spec.sourceItem}`,
+        `TECHNOLOGY_CLASS=${spec.technologyClass}`,
+        `OPERATION_CLASS=${spec.operationClass}`,
+        "COUNTS_TOWARD_GLOBAL_QUEUE=false",
+      ],
+      source_hash: semanticSha256({
+        catalogId: spec.catalogId,
+        sourceId: spec.sourceId,
+        sourceTable: spec.sourceTable,
+        sourceItem: spec.sourceItem,
+        kind: "HVAC_A2_EXTERNAL_NORMATIVE_SOURCE",
+      }),
+      row_hash: semanticSha256({
+        catalogId: spec.catalogId,
+        operation: spec.operationClass,
+        technologyClass: spec.technologyClass,
+        components: spec.components,
+        requiredInputs: spec.requiredInputs,
+      }),
+      scope_capability: "a2_normative_external_exact",
+      canonical_technology_id: `hvac_heat_supply:a2-external-technology:${workKey}`,
+      display_title_ru: spec.titleRu,
+      localized_name_ru: spec.titleRu,
+      template_id: `domain-passport:${spec.catalogId}:a2-r4`,
+      work_type: spec.operationClass.toLocaleLowerCase("en-US"),
+      record_role: "PRIMARY" as const,
+      equivalence_group_id: null,
+      source_identity: `${spec.sourceId}:${spec.sourceTable}:${spec.sourceItem}`,
+      revision_lineage: "BATCH007_R4_A2_INITIAL_EXTERNAL_REVISION",
+      counts_toward_global_queue: false,
+    };
+    return {
+      ...withoutInventoryHash,
+      source_inventory_hash: semanticSha256(withoutInventoryHash),
+    } as HvacDomainInventoryRow;
+  }).sort((left, right) => left.catalog_id.localeCompare(right.catalog_id)));
+}
+
+export const HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY = buildExternalDemolitionInventory();
+export const HVAC_R4_EXTERNAL_A2_NON_DEMOLITION_INVENTORY = buildExternalA2NonDemolitionInventory();
+export const HVAC_R4_EXTERNAL_INVENTORY = Object.freeze([
+  ...HVAC_R4_EXTERNAL_DEMOLITION_INVENTORY,
+  ...HVAC_R4_EXTERNAL_A2_NON_DEMOLITION_INVENTORY,
+].sort((left, right) => left.catalog_id.localeCompare(right.catalog_id)));
+
 let cachedPassports: readonly HvacPassport[] | null = null;
 
 export function buildAllHvacPassports(): readonly HvacPassport[] {
   if (!cachedPassports) {
-    cachedPassports = Object.freeze(HVAC_DOMAIN_INVENTORY.map(buildHvacPassport)
+    cachedPassports = Object.freeze([...HVAC_DOMAIN_INVENTORY, ...HVAC_R4_EXTERNAL_INVENTORY].map(buildHvacPassport)
       .sort((left, right) => left.catalogId.localeCompare(right.catalogId)));
   }
   return cachedPassports;
@@ -1249,4 +1475,10 @@ export const HVAC_R4_OFFICIAL_SOURCES = Object.freeze([
   { sourceId: "kg_krerp07_2015", documentCode: "КРЕРп №7", titleRu: "Теплоэнергетическое оборудование", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/410/show", status: "ACTIVE_RATE_BASE_INPUT_SELECTION_REQUIRED", role: "COMMISSIONING_REQUIREMENT" },
   { sourceId: "kg_price_book22_2015", documentCode: "Книга 22", titleRu: "Материалы и изделия для систем теплоснабжения", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/273/show", status: "ACTIVE_PRICE_REFERENCE_CURRENT_SNAPSHOT_REQUIRED", role: "MATERIAL_PRICE_REFERENCE" },
   { sourceId: "kg_price_book23_2015", documentCode: "Книга 23", titleRu: "Материалы и изделия для систем вентиляции и кондиционирования", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/275/show", status: "ACTIVE_PRICE_REFERENCE_CURRENT_SNAPSHOT_REQUIRED", role: "MATERIAL_PRICE_REFERENCE" },
+  { sourceId: "kg_krerr65_2015", documentCode: "КРЕРр №65", titleRu: "Внутренние санитарно-технические работы (Книга 2, сборник 65)", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/415/show", status: "ACTIVE_RATE_BASE_INPUT_SELECTION_REQUIRED", role: "REPAIR_RESOURCE_RATE" },
+  { sourceId: "kg_krer_application_2015", documentCode: "Указания КРЕР-2015", titleRu: "Указания по применению КРЕР на строительные и специальные строительные работы", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/359/show", status: "ACTIVE_APPLICATION_INSTRUCTION", role: "RATE_APPLICATION_INSTRUCTION" },
+  { sourceId: "kg_krerm_application_2015", documentCode: "Указания КРЕРм-2015", titleRu: "Указания по применению КРЕР на монтаж оборудования", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/353/show", status: "ACTIVE_APPLICATION_INSTRUCTION", role: "RATE_APPLICATION_INSTRUCTION" },
+  { sourceId: "kg_krerp_application_2015", documentCode: "Указания КРЕРп-2015", titleRu: "Указания по применению КРЕР на пусконаладочные работы", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/357/show", status: "ACTIVE_APPLICATION_INSTRUCTION", role: "RATE_APPLICATION_INSTRUCTION" },
+  { sourceId: "kg_krerr_application_2015", documentCode: "Указания КРЕРр-2015", titleRu: "Указания по применению КРЕР на ремонтно-строительные работы", authority: "Министерство строительства Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/358/show", status: "ACTIVE_APPLICATION_INSTRUCTION", role: "RATE_APPLICATION_INSTRUCTION" },
+  { sourceId: "kg_order_52_npa_2022", documentCode: "Приказ №52-нпа от 28.04.2022", titleRu: "Изменения к общим указаниям и национальным сборникам", authority: "Госстрой Кыргызской Республики", officialUrl: "https://minstroy.gov.kg/ru/kyzmat/60/show", status: "AMENDMENT_APPLICABILITY_REVIEW_REQUIRED", role: "AMENDMENT" },
 ]);
