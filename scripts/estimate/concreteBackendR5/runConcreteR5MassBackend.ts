@@ -139,7 +139,7 @@ async function main(): Promise<void> {
   try {
     const release = (await client.query(`select id::text,status,source_manifest_sha256,source_package_sha256 from public.estimate_definition_release where id=$1`, [manifest.releaseId])).rows[0];
     assertExact(release?.status === "prepared" && release.source_manifest_sha256 === manifest.manifestSha256 && release.source_package_sha256 === manifest.sourcePackageSha256, "CONCRETE_MASS_BACKEND_RELEASE_RED");
-    const rows = (await client.query(`select v.catalog_id,v.passport->>'complexity' complexity,p.parameter_id,p.ordinal,p.value_type,p.required,p.constraints_json,(select count(*) from public.estimate_resource_spec s where s.definition_version_id=v.id)::integer expected_rows from public.estimate_definition_version v join public.estimate_work_identity w on w.catalog_id=v.catalog_id and w.domain='concrete' join public.estimate_parameter_definition p on p.definition_version_id=v.id where v.release_id=$1 order by v.catalog_id,p.ordinal`, [manifest.releaseId])).rows as Json[];
+    const rows = (await client.query(`select v.catalog_id,v.passport->>'complexityClass' complexity,p.parameter_id,p.ordinal,p.value_type,p.required,p.constraints_json,(select count(*) from public.estimate_resource_spec s where s.definition_version_id=v.id)::integer expected_rows from public.estimate_definition_version v join public.estimate_work_identity w on w.catalog_id=v.catalog_id and w.domain='concrete' join public.estimate_parameter_definition p on p.definition_version_id=v.id where v.release_id=$1 order by v.catalog_id,p.ordinal`, [manifest.releaseId])).rows as Json[];
     const grouped = new Map<string, Definition>();
     for (const row of rows) {
       let definition = grouped.get(row.catalog_id);

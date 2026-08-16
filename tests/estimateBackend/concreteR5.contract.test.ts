@@ -63,6 +63,7 @@ describe("BATCH-008 Concrete R5 exact domain contracts", () => {
     expect(mass).toContain("27_213");
     expect(mass).toContain("DEFINITION_SHARD = 10");
     expect(mass).toContain("estimate_cleanup_release_admission_runtime_v3");
+    expect(mass).toContain("passport->>'complexityClass'");
     expect(frozen).toContain("externalDemolition === 10");
     expect(frozen).toContain("externalNonDemolition === 15");
     expect(clients).toContain("selectionEquality: \"50/50\"");
