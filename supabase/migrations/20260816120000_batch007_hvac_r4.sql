@@ -4,6 +4,20 @@
 
 begin;
 
+-- BATCH-007 introduces typed backend-native HVAC rows. Preserve every
+-- predecessor value and admit only the six semantic row types used by the
+-- frozen HVAC corpus.
+alter table public.estimate_resource_spec
+  drop constraint estimate_resource_spec_row_type_check;
+
+alter table public.estimate_resource_spec
+  add constraint estimate_resource_spec_row_type_check check (
+    row_type in (
+      'material', 'labor', 'equipment', 'service', 'waste', 'other',
+      'document', 'interface', 'transport', 'work', 'testing', 'commissioning'
+    )
+  );
+
 alter table public.estimate_program_control_state
   add column hvac_domain_complete boolean not null default false,
   add column hvac_domain_remaining integer not null default 920,
