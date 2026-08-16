@@ -98,7 +98,7 @@ function invalidParameters(definition: Definition, variant: number): Json {
       break;
     }
     default:
-      delete parameters[row.parameter_id];
+      parameters.work_included = "not-a-boolean";
       parameters.__unknown_concrete_parameter = 1;
   }
   return parameters;
