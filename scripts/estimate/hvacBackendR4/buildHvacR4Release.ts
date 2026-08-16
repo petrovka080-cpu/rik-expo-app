@@ -102,13 +102,13 @@ async function concatenate(packageRoot: string, file: string, inputs: string[]):
   return { file, rows, bytes, sha256: digest.digest("hex") };
 }
 
-async function writeJsonl(packageRoot: string, file: string, rows: Iterable<any>): Promise<FileProof> {
+async function writeJsonl(packageRoot: string, file: string, rows: Iterable<any> | AsyncIterable<any>): Promise<FileProof> {
   const path = join(packageRoot, file);
   const output = createWriteStream(path, { flags: "wx", encoding: "utf8" });
   const digest = createHash("sha256");
   let count = 0;
   let bytes = 0;
-  for (const row of rows) {
+  for await (const row of rows) {
     const line = `${stable(row)}\n`;
     digest.update(line);
     bytes += Buffer.byteLength(line);
@@ -125,6 +125,29 @@ async function readJsonl(path: string): Promise<Json[]> {
   const input = createInterface({ input: createReadStream(path, "utf8"), crlfDelay: Infinity });
   for await (const line of input) if (line.trim()) rows.push(JSON.parse(line));
   return rows;
+}
+
+async function* successorWorks(predecessorPath: string, hvacPath: string): AsyncGenerator<Json> {
+  const predecessor = createInterface({ input: createReadStream(predecessorPath, "utf8"), crlfDelay: Infinity });
+  for await (const line of predecessor) {
+    if (!line.trim()) continue;
+    const work = JSON.parse(line) as Json;
+    const definitionVersion = Number(work.definitionVersion);
+    if (!Number.isInteger(definitionVersion) || definitionVersion < 1) {
+      throw new Error(`HVAC_PREDECESSOR_DEFINITION_VERSION_RED:${work.catalogId}:${work.definitionVersion}`);
+    }
+    yield {
+      ...work,
+      definitionVersion: definitionVersion + 1,
+      sourceMetadata: {
+        ...(work.sourceMetadata ?? {}),
+        carriedForwardFromRelease: EXPECTED_PREDECESSOR.releaseId,
+        carryForwardContract: "SEMANTICALLY_IDENTICAL_CONTENT_NEW_IMMUTABLE_DEFINITION_VERSION",
+      },
+    };
+  }
+  const hvac = createInterface({ input: createReadStream(hvacPath, "utf8"), crlfDelay: Infinity });
+  for await (const line of hvac) if (line.trim()) yield JSON.parse(line) as Json;
 }
 
 function assertContentPreconditions(): { oracleA: Json; oracleB: Json; summary: Json; gap: Json; oracle2x2: Json; mutations: Json; contentGate: Json } {
@@ -164,7 +187,10 @@ async function main(): Promise<void> {
 
   const corpus = join(EVIDENCE, "05-content", "corpus");
   const files: FileProof[] = [];
-  files.push(await concatenate(packageRoot, "works.jsonl", [join(predecessorRoot, "works.jsonl"), join(corpus, "HVAC_WORK_DEFINITIONS.jsonl")]));
+  files.push(await writeJsonl(packageRoot, "works.jsonl", successorWorks(
+    join(predecessorRoot, "works.jsonl"),
+    join(corpus, "HVAC_WORK_DEFINITIONS.jsonl"),
+  )));
   files.push(await concatenate(packageRoot, "parameters.jsonl", [join(predecessorRoot, "parameters.jsonl"), join(corpus, "HVAC_PARAMETER_DEFINITIONS.jsonl")]));
   files.push(await concatenate(packageRoot, "formulas.jsonl", [join(predecessorRoot, "formulas.jsonl"), join(corpus, "HVAC_FORMULA_GRAPHS.jsonl")]));
   files.push(await concatenate(packageRoot, "resources.jsonl", [join(predecessorRoot, "resources.jsonl"), join(corpus, "HVAC_RESOURCE_ROWS.jsonl")]));
