@@ -30,7 +30,7 @@ if (process.argv.includes("--capture-dirty")) {
   const oracleB = readJson<Json>(join(evidenceRoot, "06-oracle", "CONTENT_ORACLE_B.json"));
   const mutations = readJson<Json>(join(evidenceRoot, "12-mutations", "MUTATION_SUMMARY.json"));
   const focused = readJson<Json>(join(evidenceRoot, "00-preflight", "IMPACTED_TEST_MATRIX.json"));
-  assertExact(content.corpusSha256 === "0831283feb1eedf14fde7bca2e659366c771edc5e583b7855a8937075009dd89" && oracleA.status === "GREEN_ORACLE_A" && oracleB.status === "GREEN_ORACLE_B" && mutations.killed === 1_767 && focused.status === "GREEN", "CONCRETE_SOURCE_FREEZE_GATE_RED");
+  assertExact(content.corpusSha256 === "52e12ca58ddf4e2817c26b8c837d7f911d6cecd3a8b1ac54a04b359b9973ccc8" && oracleA.status === "GREEN_ORACLE_A" && oracleB.status === "GREEN_ORACLE_B" && mutations.killed === 1_767 && focused.status === "GREEN", "CONCRETE_SOURCE_FREEZE_GATE_RED");
   const report = { schemaVersion: "batch008-concrete-r5-source-freeze.v1", head, tree, predecessorCommit: BATCH008_PREDECESSOR_COMMIT, predecessorTree: BATCH008_PREDECESSOR_TREE, predecessorAncestor: true, trackedFiles: entries.length, sourceFingerprintSha256: semanticSha256(entries), corpusSha256: content.corpusSha256, oracleA: oracleA.oracleDigest, oracleB: oracleB.oracleDigest, mutations: "1767/1767", impactedTests: `${focused.passed}/${focused.selected}`, fullJest: "DEFERRED_BY_OPERATOR_NOT_RUN", postFreezeSourceChangesAllowed: false, status: "GREEN" };
   writeJson("00-preflight/SOURCE_FREEZE.json", report);
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

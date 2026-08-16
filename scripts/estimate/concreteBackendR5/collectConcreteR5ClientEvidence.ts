@@ -22,7 +22,7 @@ const webIds = ids(web.cases, "catalogId");
 const androidIds = ids(android.cases, "catalogId");
 const frozenIds = ids(frozen.cases, "catalogId");
 assertExact(JSON.stringify(backendIds) === JSON.stringify(webIds) && JSON.stringify(backendIds) === JSON.stringify(androidIds) && JSON.stringify(backendIds) === JSON.stringify(frozenIds), "CONCRETE_CLIENT_SELECTION_PARITY_RED");
-const forbidden = ["CONCRETE_WORK_DEFINITIONS", "CONCRETE_PARAMETER_DEFINITIONS", "CONCRETE_RESOURCE_ROWS", "0831283feb1eedf14fde7bca2e659366c771edc5e583b7855a8937075009dd89", "batch008-concrete-r5-release.v1", "buildConcretePassport"];
+const forbidden = ["CONCRETE_WORK_DEFINITIONS", "CONCRETE_PARAMETER_DEFINITIONS", "CONCRETE_RESOURCE_ROWS", "52e12ca58ddf4e2817c26b8c837d7f911d6cecd3a8b1ac54a04b359b9973ccc8", "batch008-concrete-r5-release.v1", "buildConcretePassport"];
 const bundleProof = { files: 0, bytes: 0, hits: [] as Json[] };
 for (const path of files(bundleRoot).filter((path) => /\.(?:js|mjs|map|json)$/iu.test(path))) {
   const body = readFileSync(path);

@@ -18,7 +18,7 @@ const EXPECTED_PREDECESSOR = Object.freeze({
   works: 3_054, globalWorks: 2_925, externalReferences: 129, parameters: 451_353, formulas: 687_002, resources: 687_002,
 });
 const CONCRETE = Object.freeze({ definitions: 1_218, global: 830, external: 388, demolition: 22, nonDemolition: 366, parameters: 389_314, formulas: 470_016, resources: 470_016, scenarios: 27_213, families: 406, F: 1_707, mutations: 1_767 });
-const CORPUS_SHA256 = "0831283feb1eedf14fde7bca2e659366c771edc5e583b7855a8937075009dd89";
+const CORPUS_SHA256 = "52e12ca58ddf4e2817c26b8c837d7f911d6cecd3a8b1ac54a04b359b9973ccc8";
 const FIXED_AT = "2026-08-16T18:30:00.000Z";
 
 function argument(name: string, fallback: string): string {

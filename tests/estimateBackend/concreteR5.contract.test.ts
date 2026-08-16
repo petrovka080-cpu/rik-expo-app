@@ -20,7 +20,17 @@ describe("BATCH-008 Concrete R5 exact domain contracts", () => {
     expect(release).toContain("global: 830");
     expect(release).toContain("external: 388");
     expect(release).toContain("scenarios: 27_213");
-    expect(release).toContain("0831283feb1eedf14fde7bca2e659366c771edc5e583b7855a8937075009dd89");
+    expect(release).toContain("52e12ca58ddf4e2817c26b8c837d7f911d6cecd3a8b1ac54a04b359b9973ccc8");
+  });
+
+  it("uses only row types accepted by the persistent backend schema", () => {
+    const model = read("scripts/estimate/concreteBackendR5/concreteR5Model.ts");
+    expect(model).toContain('"equipment", "MACHINE"');
+    expect(model).toContain('"testing", "TEST"');
+    expect(model).toContain('"transport", "LOGISTICS"');
+    expect(model).not.toContain('"machine", "MACHINE"');
+    expect(model).not.toContain('"test", "TEST"');
+    expect(model).not.toContain('"logistics", "LOGISTICS"');
   });
 
   it("imports transactionally without early activation or queue mutation", () => {
