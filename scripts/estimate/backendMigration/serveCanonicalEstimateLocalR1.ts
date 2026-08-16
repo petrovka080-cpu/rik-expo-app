@@ -6,6 +6,7 @@ import { Client } from "pg";
 import { chromium } from "playwright";
 
 import { evaluateFormulaGraph, type FormulaAst } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
+import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph";
 import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints";
 
 const API_VERSION = "2026-08-14.r2";
@@ -110,21 +111,6 @@ async function readBody(request: IncomingMessage): Promise<JsonRecord> {
   const parsed = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("request body must be an object");
   return parsed as JsonRecord;
-}
-
-function evaluateCondition(ast: JsonRecord, parameters: JsonRecord): boolean {
-  const kind = String(ast?.kind ?? "");
-  if (kind === "literal") return ast.value === true;
-  if (kind === "parameter") return parameters[String(ast.id ?? "")] === true;
-  if (kind === "not") return !evaluateCondition(ast.operand as JsonRecord, parameters);
-  if (kind === "and" || kind === "or") {
-    const operands = Array.isArray(ast.operands) ? ast.operands : [];
-    return kind === "and"
-      ? operands.every((entry) => evaluateCondition(entry as JsonRecord, parameters))
-      : operands.some((entry) => evaluateCondition(entry as JsonRecord, parameters));
-  }
-  if (kind === "equals") return parameters[String(ast.parameterId ?? "")] === ast.value;
-  throw Object.assign(new Error("unsupported inclusion AST"), { code: "INVALID_INCLUSION_GRAPH" });
 }
 
 async function withClient<T>(operation: (client: Client) => Promise<T>): Promise<T> {
@@ -377,7 +363,7 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
     }, {});
   };
   for (const resource of resources) {
-    if (!evaluateCondition(resource.inclusion_ast as JsonRecord, parameters)) continue;
+    if (!evaluateInclusionGraph(resource.inclusion_ast as JsonRecord, parameters)) continue;
     const formula = formulaById.get(resource.formula_id);
     if (!formula) throw Object.assign(new Error("formula missing"), { code: "DEFINITION_INTEGRITY_FAILED" });
     const calculatedQuantity = evaluateFormulaGraph(formula.ast as FormulaAst, numericParameters);

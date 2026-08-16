@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import {
   InclusionGraphEvaluationError,
   evaluateInclusionGraph,
@@ -33,5 +35,12 @@ describe("canonical backend InclusionGraph", () => {
     [{ kind: "unknown", parameterId: "quantity", value: 0 }],
   ])("fails closed for malformed or unsupported graphs %#", (ast) => {
     expect(() => evaluateInclusionGraph(ast, parameters)).toThrow(InclusionGraphEvaluationError);
+  });
+
+  it("routes the local HTTP runtime through the same shared fail-closed evaluator as the canonical worker", () => {
+    const source = readFileSync("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts", "utf8");
+    expect(source).toContain('import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph"');
+    expect(source).toContain("evaluateInclusionGraph(resource.inclusion_ast as JsonRecord, parameters)");
+    expect(source).not.toContain("function evaluateCondition(");
   });
 });
