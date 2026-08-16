@@ -97,7 +97,9 @@ function invalidParameters(definition: Definition, variant: number): Json {
       if (enumeration) parameters[enumeration.parameter_id] = "__INVALID__"; else parameters[row.parameter_id] = {};
       break;
     }
-    default: parameters.__unknown_concrete_parameter = 1;
+    default:
+      delete parameters[row.parameter_id];
+      parameters.__unknown_concrete_parameter = 1;
   }
   return parameters;
 }
