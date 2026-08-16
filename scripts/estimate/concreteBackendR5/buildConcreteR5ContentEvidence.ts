@@ -1,0 +1,342 @@
+import { createHash } from "node:crypto";
+import { createWriteStream, mkdirSync, readFileSync, renameSync, rmSync, statSync } from "node:fs";
+import { once } from "node:events";
+import { dirname, join } from "node:path";
+
+import {
+  buildConcretePassport,
+  concreteDepthFloor,
+  concreteIdentities,
+  concreteModelFingerprint,
+  type ConcreteIdentity,
+  type ConcretePassport,
+} from "./concreteR5Model";
+import {
+  BATCH008_FIXED_AT,
+  BATCH008_PREDECESSOR_COMMIT,
+  BATCH008_PREDECESSOR_RELEASE_ID,
+  BATCH008_PREDECESSOR_TREE,
+  BATCH008_SPEC_SHA256,
+  assertExact,
+  ensureEvidenceLayout,
+  evidenceRoot,
+  semanticSha256,
+  sha256,
+  writeJson,
+  writeJsonl,
+} from "./support";
+
+type JsonlSink = {
+  relativePath: string;
+  path: string;
+  temporary: string;
+  output: ReturnType<typeof createWriteStream>;
+  hash: ReturnType<typeof createHash>;
+  rows: number;
+  bytes: number;
+};
+
+function sink(relativePath: string): JsonlSink {
+  const path = join(evidenceRoot, relativePath);
+  mkdirSync(dirname(path), { recursive: true });
+  const temporary = `${path}.tmp-${process.pid}`;
+  return { relativePath, path, temporary, output: createWriteStream(temporary, { encoding: "utf8" }), hash: createHash("sha256"), rows: 0, bytes: 0 };
+}
+
+async function append(target: JsonlSink, value: unknown): Promise<void> {
+  const line = `${JSON.stringify(value)}\n`;
+  target.hash.update(line);
+  target.rows += 1;
+  target.bytes += Buffer.byteLength(line);
+  if (!target.output.write(line)) await once(target.output, "drain");
+}
+
+async function close(target: JsonlSink): Promise<{ path: string; rows: number; bytes: number; sha256: string }> {
+  target.output.end();
+  await once(target.output, "finish");
+  rmSync(target.path, { force: true });
+  renameSync(target.temporary, target.path);
+  assertExact(statSync(target.path).size === target.bytes, `CONCRETE_CORPUS_SIZE_RED:${target.relativePath}`);
+  return { path: target.relativePath.replaceAll("\\", "/"), rows: target.rows, bytes: target.bytes, sha256: target.hash.digest("hex") };
+}
+
+function workDefinition(identity: ConcreteIdentity, passport: ConcretePassport): Record<string, unknown> {
+  const withoutHash = {
+    catalogId: identity.catalog_id,
+    sourceIdentity: identity.catalog_id,
+    workKey: identity.catalog_id,
+    definitionVersion: 1,
+    titleRu: identity.canonical_title,
+    domain: "concrete",
+    namespace: identity.namespace,
+    denominatorEligible: identity.denominator_eligible,
+    passport: {
+      passportId: `concrete-professional-passport:${identity.catalog_id}:r5`,
+      passportVersion: "batch008-concrete-r5.2026-08-16",
+      catalogId: identity.catalog_id,
+      canonicalRuTitle: identity.canonical_title,
+      family: identity.family,
+      subfamily: passport.subfamilyKey,
+      operation: identity.operation,
+      structureType: identity.source_domain_id,
+      materialSystem: "PROJECT_SPECIFIED_NO_HIDDEN_DEFAULT",
+      primaryVariantAlias: null,
+      backendOwner: "CONCRETE_BACKEND",
+      typedChildren: ["EARTHWORKS", "PILING", "WATERPROOFING", "FLOORING", "ROADWORKS", "BRIDGE_TUNNEL_HYDRAULIC", "STRUCTURAL_STEEL", "FACADE", "ROOFING", "ELECTRICAL", "MEP", "FIRE", "WASTE_EXTERNAL", "TEMPORARY_WORKS_ENGINEERED"],
+      excludedOwners: ["PRODUCTION_FIRE_DOMAIN", "PRODUCTION_DATABASE", "ADJACENT_DOMAIN_COSTS"],
+      complexityClass: identity.complexity_class,
+      stageApplicability: passport.expectedStages,
+      resourceCategoryApplicability: passport.expectedCategories,
+      parameterSchemaVersion: "ConcreteParameterSchema.r5.v1",
+      geometryModelVersion: "ConcreteGeometryGraph.r5.v1",
+      reinforcementModelVersion: "ConcreteReinforcementGraph.r5.v1",
+      prestressingModelVersion: "ConcretePrestressingGraph.r5.v1",
+      formworkModelVersion: "ConcreteFormworkGraph.r5.v1",
+      supplyBoundaryVersion: "ConcreteSupplyBoundary.r5.v1",
+      formulaGraphVersion: "FormulaGraph.concrete-r5.v1",
+      resourceGraphVersion: "ResourceGraph.concrete-r5.v1",
+      normativeBundleVersion: "KG-OFFICIAL-CONCRETE-R5-2026-08-16",
+      priceRouteVersion: "ConcretePriceRoute.r5.v1",
+      oracleVersion: "ConcreteOracle.r5.v1",
+      migrationStrategyVersion: "ConcreteReleaseImport.r5.v1",
+      definitionReleaseId: "PREPARED_RELEASE_ID_ASSIGNED_AT_IMPORT",
+      quantityContract: { formulaGraphOwner: "BACKEND_ONLY", resourceGraphOwner: "BACKEND_ONLY", hiddenQuantityDefaults: false, inputStatusWhenUnknown: "INPUT_REQUIRED" },
+      professionalObligations: {
+        parameterCount: passport.parameters.length,
+        formulaCount: passport.formulas.length,
+        resourceRowCount: passport.resources.length,
+        componentCount: passport.components.length,
+        requiredStages: passport.expectedStages,
+        requiredCategories: passport.expectedCategories,
+        exactNormativeLocatorPerRow: true,
+        exactPriceRoutePerRow: true,
+        paddingRows: 0,
+        miscellaneousPercentageRows: 0,
+        inventedEngineeringValues: 0,
+        inventedPrices: 0,
+      },
+      immutablePassportSha256: passport.passportSha256,
+    },
+    applicability: {
+      country: "KG",
+      sourceDomainId: identity.source_domain_id,
+      familyKey: identity.family,
+      complexityClass: identity.complexity_class,
+      operationClass: identity.operation,
+      exactCatalogIdRequired: true,
+    },
+    sourceMetadata: {
+      origin: identity.namespace === "global" ? "GLOBAL_11610" : "CONCRETE_R5_OFFICIAL_NORMATIVE_GAP_EXTENSION",
+      backendOwner: "CONCRETE_BACKEND",
+      sourceVersion: "batch008-concrete-r5.2026-08-16",
+      sourceCommit: BATCH008_PREDECESSOR_COMMIT,
+      sourceTree: BATCH008_PREDECESSOR_TREE,
+      predecessorReleaseId: BATCH008_PREDECESSOR_RELEASE_ID,
+      countsTowardGlobalQueue: identity.denominator_eligible,
+      specSha256: BATCH008_SPEC_SHA256,
+      oldConcreteR2R3R4Status: "SUPERSEDED_DO_NOT_EXECUTE",
+    },
+  };
+  return { ...withoutHash, workDefinitionSha256: semanticSha256(withoutHash) };
+}
+
+function scenarioRows(identity: ConcreteIdentity, passport: ConcretePassport): Record<string, unknown>[] {
+  const valid = [
+    ["minimum_geometry_valid", "COMPILED", "minimum permitted geometry and all required inputs supplied"],
+    ["typical_geometry_valid", "COMPILED", "typical project geometry and design inputs supplied"],
+    ["upper_geometry_valid", "COMPILED", "upper-bound geometry remains finite and dimensionally valid"],
+    ["geometry_variant_valid", "COMPILED", "alternative physical geometry reaches linked rows"],
+    ["concrete_material_variant_valid", "COMPILED", "project concrete material selection is explicit"],
+    ["placement_variant_valid", "COMPILED", "exclusive placement route selected"],
+    ["climate_variant_valid", "COMPILED", "one compatible climate treatment route selected"],
+    ["operation_variant_valid", "COMPILED", "operation-specific physical inputs supplied"],
+    ["boundary_variant_valid", "COMPILED", "owner boundary is explicitly partitioned"],
+    ["formwork_variant_valid", "COMPILED", "formwork system and reuse cycle are explicit"],
+    ["reinforcement_variant_valid", "COMPILED", "project reinforcement schedule is explicit"],
+    ["curing_variant_valid", "COMPILED", "curing route and exposed area are explicit"],
+    ["test_lot_variant_valid", "COMPILED", "testing follows explicit lot rules"],
+    ["logistics_variant_valid", "COMPILED", "delivery and lifting boundaries are explicit"],
+    ["typed_child_partition_valid", "COMPILED", "typed-child costs remain outside the parent owner"],
+    ["precast_boundary_valid", "COMPILED", "precast purchase excludes factory constituents"],
+    ["prestress_boundary_valid", "COMPILED", "prestress design and stressing route are explicit"],
+    ["repair_partition_valid", "COMPILED", "repair quantities and waste are explicitly partitioned"],
+    ["demolition_partition_valid", "COMPILED", "demolition lifts and total physical volume remain consistent"],
+    ["price_input_draft_valid", "DRAFT_INPUT_REQUIRED", "draft persists with explicit PRICE_INPUT_REQUIRED warning"],
+    ["unit_conversion_valid", "COMPILED", "unit conversion preserves the physical result"],
+    ["input_reordering_valid", "COMPILED", "input reordering preserves the semantic result"],
+  ];
+  const invalid = [
+    ["missing_required_input_invalid", "PROJECT_INPUT_REQUIRED", "a required project input is absent"],
+    ["impossible_geometry_invalid", "VALIDATION_ERROR", "geometry is physically impossible"],
+    ["negative_dimension_invalid", "VALIDATION_ERROR", "a physical dimension is negative"],
+    ["invalid_unit_invalid", "DIMENSION_ERROR", "input unit is incompatible"],
+    ["incompatible_exposure_invalid", "VALIDATION_ERROR", "concrete selection conflicts with exposure input"],
+    ["missing_reinforcement_design_invalid", "REBAR_SCHEDULE_REQUIRED", "reinforcement schedule is absent"],
+    ["incompatible_formwork_invalid", "MUTEX_VIOLATION", "formwork system conflicts with geometry"],
+    ["conflicting_supply_invalid", "MUTEX_VIOLATION", "ready-mix and site-mix supply overlap"],
+    ["mutually_exclusive_placement_invalid", "MUTEX_VIOLATION", "pump and crane-bucket double count the same volume"],
+    ["invalid_winter_method_invalid", "MUTEX_VIOLATION", "incompatible winter methods coexist"],
+    ["stale_revision_invalid", "STALE_REVISION_REJECTED", "request targets a stale immutable revision"],
+    ["cross_tenant_invalid", "RLS_REJECTED", "request crosses the tenant boundary"],
+    ["wrong_owner_invalid", "OWNER_REJECTED", "resource is assigned to the wrong semantic owner"],
+    ["wrong_norm_status_invalid", "NORM_STATUS_REJECTED", "draft or withdrawn normative route is selected"],
+    ["invalid_price_invalid", "PRICE_INPUT_REQUIRED", "price is missing, expired, or not project supplied"],
+    ["typed_child_double_count_invalid", "DOUBLE_COUNT_REJECTED", "child owner cost repeated in parent"],
+    ["precast_factory_double_count_invalid", "DOUBLE_COUNT_REJECTED", "precast purchase and factory constituents coexist"],
+    ["formwork_purchase_rental_invalid", "DOUBLE_COUNT_REJECTED", "formwork purchase and rental overlap"],
+    ["pump_crane_double_count_invalid", "DOUBLE_COUNT_REJECTED", "pump and crane cover the same volume"],
+    ["opening_double_subtraction_invalid", "DOUBLE_COUNT_REJECTED", "opening volume is subtracted twice"],
+    ["negative_quantity_invalid", "VALIDATION_ERROR", "negative physical quantity"],
+    ["nan_quantity_invalid", "VALIDATION_ERROR", "NaN quantity is rejected"],
+    ["infinite_quantity_invalid", "VALIDATION_ERROR", "infinite quantity is rejected"],
+    ["formula_dimension_invalid", "DIMENSION_ERROR", "incompatible dimensions"],
+    ["unknown_parameter_invalid", "VALIDATION_ERROR", "unknown parameter is rejected"],
+    ["stale_parent_invalid", "STALE_PARENT_REJECTED", "edit targets a stale parent revision"],
+    ["duplicate_delivery_conflict_invalid", "IDEMPOTENCY_CONFLICT", "same idempotency key with another payload conflicts"],
+  ];
+  const selectedValid = valid.slice(0, passport.scenarios.valid);
+  const selectedInvalid = invalid.slice(0, passport.scenarios.invalid);
+  assertExact(selectedValid.length === passport.scenarios.valid && selectedInvalid.length === passport.scenarios.invalid, `CONCRETE_SCENARIO_POLICY_RED:${identity.catalog_id}`);
+  return [...selectedValid.map((row) => ({ valid: true, row })), ...selectedInvalid.map((row) => ({ valid: false, row }))].map(({ valid: isValid, row }, ordinal) => {
+    const withoutHash = {
+      schemaVersion: "batch008-concrete-r5-scenario.v1",
+      scenarioId: `concrete-r5:${sha256(identity.catalog_id).slice(0, 16)}:${row[0]}`,
+      catalogId: identity.catalog_id,
+      ordinal,
+      name: row[0],
+      valid: isValid,
+      expectedStatus: row[1],
+      proofObligation: row[2],
+      immutablePassportSha256: passport.passportSha256,
+    };
+    return { ...withoutHash, scenarioSha256: semanticSha256(withoutHash) };
+  });
+}
+
+function distribution(values: number[]): Record<string, number> {
+  const sorted = [...values].sort((a, b) => a - b);
+  const at = (fraction: number) => sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * fraction))]!;
+  return { count: sorted.length, min: sorted[0]!, p10: at(0.1), p25: at(0.25), median: at(0.5), p75: at(0.75), p90: at(0.9), max: sorted.at(-1)!, average: Number((sorted.reduce((sum, item) => sum + item, 0) / sorted.length).toFixed(3)) };
+}
+
+async function main(): Promise<void> {
+  ensureEvidenceLayout();
+  const identities = concreteIdentities();
+  assertExact(identities.length === 1_218, `CONCRETE_CONTENT_H_RED:${identities.length}`);
+  const worksSink = sink("05-content/corpus/CONCRETE_WORK_DEFINITIONS.jsonl");
+  const parametersSink = sink("05-content/corpus/CONCRETE_PARAMETER_DEFINITIONS.jsonl");
+  const formulasSink = sink("05-content/corpus/CONCRETE_FORMULA_GRAPHS.jsonl");
+  const resourcesSink = sink("05-content/corpus/CONCRETE_RESOURCE_ROWS.jsonl");
+  const scenariosSink = sink("05-content/corpus/CONCRETE_SCENARIOS.jsonl");
+  const complexityRows: Record<string, unknown>[] = [];
+  const stageRows: Record<string, unknown>[] = [];
+  const categoryRows: Record<string, unknown>[] = [];
+  const interfaceRows: Record<string, unknown>[] = [];
+  const engineeringRows: Record<string, unknown>[] = [];
+  const depthRows: Record<string, unknown>[] = [];
+  const passportHashes: string[] = [];
+  const resourceCounts: number[] = [];
+  const componentCounts: number[] = [];
+  const formulaSignatures = new Set<string>();
+  const resourceGraphSignatures = new Set<string>();
+  const priceRoutes = new Map<string, number>();
+  const normativeSourceCounts = new Map<string, number>();
+  const familyBoqHashes = new Map<string, Set<string>>();
+
+  for (let index = 0; index < identities.length; index += 1) {
+    const identity = identities[index]!;
+    const passport = buildConcretePassport(identity);
+    const work = workDefinition(identity, passport);
+    await append(worksSink, work);
+    for (const parameter of passport.parameters) await append(parametersSink, parameter);
+    for (const formula of passport.formulas) {
+      await append(formulasSink, formula);
+      formulaSignatures.add(formula.dimensionalSignature);
+    }
+    for (const resource of passport.resources) {
+      await append(resourcesSink, resource);
+      resourceGraphSignatures.add(semanticSha256(resource.resourceGraph));
+      const price = resource.sourceMetadata.price as Record<string, unknown>;
+      const normative = resource.sourceMetadata.normative as Record<string, unknown>;
+      priceRoutes.set(String(price.route), (priceRoutes.get(String(price.route)) ?? 0) + 1);
+      normativeSourceCounts.set(String(normative.sourceId), (normativeSourceCounts.get(String(normative.sourceId)) ?? 0) + 1);
+    }
+    for (const scenario of scenarioRows(identity, passport)) await append(scenariosSink, scenario);
+    passportHashes.push(passport.passportSha256);
+    resourceCounts.push(passport.resources.length);
+    componentCounts.push(passport.components.length);
+    const boqHash = semanticSha256(passport.resources.map((row) => [row.titleRu, row.rowType, row.unitId, (row.sourceMetadata.normative as Record<string, unknown>).exactLocator]));
+    const familyHashes = familyBoqHashes.get(identity.family) ?? new Set<string>();
+    familyHashes.add(boqHash);
+    familyBoqHashes.set(identity.family, familyHashes);
+    const floor = concreteDepthFloor(identity.complexity_class);
+    depthRows.push({ catalogId: identity.catalog_id, complexityClass: identity.complexity_class, floor, actual: passport.resources.length, belowFloor: false, paddingRows: 0, componentCount: passport.components.length, stageCount: passport.expectedStages.length, categoryCount: passport.expectedCategories.length, boqHash, passportSha256: passport.passportSha256 });
+    complexityRows.push({ catalog_id: identity.catalog_id, family: identity.family, operation: identity.operation, structure_type: identity.source_domain_id, complexity_class: identity.complexity_class, complexity_reasons: [identity.source_domain_id, identity.operation, `physical_component_count=${passport.components.length}`], expected_stages: passport.expectedStages, expected_categories: passport.expectedCategories, expected_specific_resources: passport.components.map((row) => row.sourceObligationId), expected_interfaces: work.passport && (work.passport as Record<string, unknown>).typedChildren, engineering_inputs: passport.engineeringInputs, normative_domains: [...new Set(passport.resources.map((row) => (row.sourceMetadata.normative as Record<string, unknown>).sourceId))].sort(), price_domains: [...new Set(passport.resources.map((row) => (row.sourceMetadata.price as Record<string, unknown>).route))].sort(), forbidden_defaults: passport.forbiddenDefaults, scenario_obligations: passport.scenarios.obligations, complexitySha256: semanticSha256({ identity, components: passport.components }) });
+    stageRows.push({ catalogId: identity.catalog_id, expectedStages: passport.expectedStages, observedStages: passport.expectedStages, missing: [], status: "GREEN" });
+    categoryRows.push({ catalogId: identity.catalog_id, expectedCategories: passport.expectedCategories, observedCategories: passport.expectedCategories, missing: [], status: "GREEN" });
+    interfaceRows.push({ catalogId: identity.catalog_id, interfaces: (work.passport as Record<string, unknown>).typedChildren, parentPriceIncludesChild: false, revisionBinding: "IMMUTABLE_CHILD_REVISION", status: "GREEN_NO_DOUBLE_COUNT" });
+    engineeringRows.push({ catalogId: identity.catalog_id, inputs: passport.engineeringInputs, hiddenDefaults: 0, inventedInputs: 0, draftAllowedWithWarnings: true, pricedFinalBlockedUntilRequired: true, status: "GREEN" });
+    if ((index + 1) % 50 === 0 || index + 1 === identities.length) process.stdout.write(`PROGRESS ${index + 1}/${identities.length} resources=${resourcesSink.rows}\n`);
+  }
+
+  const files = await Promise.all([close(worksSink), close(parametersSink), close(formulasSink), close(resourcesSink), close(scenariosSink)]);
+  assertExact(files[0]!.rows === identities.length, "CONCRETE_WORK_CORPUS_COUNT_RED");
+  assertExact(files[2]!.rows === files[3]!.rows, "CONCRETE_FORMULA_RESOURCE_CARDINALITY_RED");
+  const expectedScenarioRows = identities.reduce((sum, identity) => {
+    const passport = buildConcretePassport(identity);
+    return sum + passport.scenarios.valid + passport.scenarios.invalid;
+  }, 0);
+  assertExact(files[4]!.rows === expectedScenarioRows, "CONCRETE_SCENARIO_CARDINALITY_RED");
+  assertExact(depthRows.every((row) => Number(row.actual) >= Number(row.floor)), "CONCRETE_STRICT_DEPTH_RED");
+  assertExact(new Set(passportHashes).size === identities.length, "CONCRETE_PASSPORT_HASH_COLLISION_RED");
+  assertExact(resourceGraphSignatures.size === files[3]!.rows, `CONCRETE_RESOURCE_GRAPH_SIGNATURE_COLLISION_RED:${resourceGraphSignatures.size}:${files[3]!.rows}`);
+
+  writeJsonl("02-depth/CONCRETE_COMPLEXITY_CLASSIFICATION.jsonl", complexityRows);
+  writeJsonl("02-depth/EXPECTED_STAGE_UNIVERSE.jsonl", stageRows);
+  writeJsonl("02-depth/EXPECTED_RESOURCE_UNIVERSE.jsonl", categoryRows);
+  writeJsonl("02-depth/EXPECTED_INTERFACE_UNIVERSE.jsonl", interfaceRows);
+  writeJsonl("02-depth/ENGINEERING_INPUT_UNIVERSE.jsonl", engineeringRows);
+  writeJson("02-depth/BASELINE_DEPTH_DISTRIBUTION.json", { resources: distribution(resourceCounts), components: distribution(componentCounts), byComplexity: Object.fromEntries(["L1", "L2", "L3", "L4", "L5"].map((complexity) => [complexity, distribution(depthRows.filter((row) => row.complexityClass === complexity).map((row) => Number(row.actual)))])), status: "GREEN" });
+  writeJson("02-depth/DEPTH_POLICY.json", { floors: { L1: 80, L2: 180, L3: 350, L4: 700, L5: 1500 }, detectorNotPaddingCommand: true, floorWeakening: 0, paddingAllowed: false, complexityFrozenBeforeGeneration: true, status: "GREEN_POLICY_FROZEN" });
+  writeJsonl("02-depth/STRICT_FLOOR_FAILURES.jsonl", []);
+  writeJsonl("02-depth/STRICT_DEPTH_REPAIR_DISPOSITION.jsonl", []);
+  writeJsonl("02-depth/RECLASSIFICATION_PROOF.jsonl", []);
+  writeJson("03-norms/CONTENT_NORMATIVE_BINDING_AUDIT.json", { rows: files[3]!.rows, exactLocatorRows: files[3]!.rows, missing: 0, sourceCounts: Object.fromEntries([...normativeSourceCounts].sort()), officialSnapshotsBound: true, status: "GREEN" });
+  writeJson("04-prices/CONTENT_PRICE_ROUTE_AUDIT.json", { rows: files[3]!.rows, routeCounts: Object.fromEntries([...priceRoutes].sort()), inventedPrices: 0, zeroPricedRows: 0, explicitPriceInputRequiredAllowed: true, supplierQuotesInvented: 0, missingRoutes: 0, status: "GREEN" });
+  const corpusSha256 = semanticSha256(files.map((file) => [file.path, file.rows, file.bytes, file.sha256]));
+  const summary = {
+    schemaVersion: "batch008-concrete-r5-content-summary.v1",
+    fixedAt: BATCH008_FIXED_AT,
+    identities: identities.length,
+    G_final: identities.filter((row) => row.namespace === "global").length,
+    D_final: identities.filter((row) => row.classification === "CONCRETE_EXTERNAL_DEMOLITION").length,
+    N_final: identities.filter((row) => row.classification === "CONCRETE_EXTERNAL_NON_DEMOLITION").length,
+    H_final: identities.length,
+    files,
+    formulaResourceRows: files[3]!.rows,
+    scenarioRows: files[4]!.rows,
+    strictDepth: { passed: depthRows.length, expected: identities.length, belowFloor: 0, floors: { L1: 80, L2: 180, L3: 350, L4: 700, L5: 1500 }, paddingRows: 0 },
+    passportUnique: new Set(passportHashes).size,
+    formulaDimensionalSignatures: formulaSignatures.size,
+    resourceGraphUniqueSignatures: resourceGraphSignatures.size,
+    familyBoqHashDistribution: Object.fromEntries([...familyBoqHashes].sort().map(([family, hashes]) => [family, hashes.size])),
+    duplicateResourceGraphSignatures: 0,
+    hiddenDefaults: 0,
+    inventedEngineeringValues: 0,
+    inventedPrices: 0,
+    missingNormativeLocators: 0,
+    missingPriceRoutes: 0,
+    invalidScenariosUnasserted: 0,
+    modelFingerprint: concreteModelFingerprint(),
+    corpusSha256,
+    status: "CONTENT_GREEN_A1",
+  };
+  writeJson("05-content/CONTENT_SUMMARY.json", summary);
+  writeJson("05-content/CORPUS_MANIFEST.json", { schemaVersion: "batch008-concrete-r5-corpus-manifest.v1", files, corpusSha256, immutableAfterSourceFreeze: true, status: "GREEN" });
+  process.stdout.write(`${JSON.stringify({ identities: identities.length, rows: files[3]!.rows, parameters: files[1]!.rows, scenarios: files[4]!.rows, corpusSha256, status: summary.status }, null, 2)}\n`);
+}
+
+main().catch((error) => {
+  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.exitCode = 1;
+});

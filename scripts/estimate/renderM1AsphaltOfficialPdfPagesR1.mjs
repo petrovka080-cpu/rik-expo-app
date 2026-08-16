@@ -43,7 +43,13 @@ const require = createRequire(import.meta.url);
 const { createCanvas } = require(canvasModule);
 const pdfBuffer = readFileSync(sourcePdf);
 const pdfSha256 = sha256(pdfBuffer);
-const document = await getDocument({ data: new Uint8Array(pdfBuffer), useSystemFonts: false }).promise;
+const pdfjsPackageRoot = path.resolve(path.dirname(pdfjsModule), "..", "..");
+const document = await getDocument({
+  data: new Uint8Array(pdfBuffer),
+  useSystemFonts: false,
+  wasmUrl: pathToFileURL(`${path.join(pdfjsPackageRoot, "wasm")}${path.sep}`).href,
+  standardFontDataUrl: pathToFileURL(`${path.join(pdfjsPackageRoot, "standard_fonts")}${path.sep}`).href,
+}).promise;
 const lastPage = lastPageArgument ?? document.numPages;
 invariant(Number.isInteger(lastPage) && lastPage <= document.numPages && lastPage >= firstPage, "LAST_PAGE_INVALID");
 

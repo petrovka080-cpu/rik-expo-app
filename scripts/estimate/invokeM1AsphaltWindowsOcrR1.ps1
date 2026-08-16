@@ -31,7 +31,7 @@ function Invoke-Await {
 }
 
 function Get-TextSha256 {
-  param([Parameter(Mandatory = $true)][string]$Text)
+  param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Text)
   $bytes = [Text.UTF8Encoding]::new($false).GetBytes($Text)
   $sha = [Security.Cryptography.SHA256]::Create()
   try {
