@@ -39,6 +39,9 @@ describe("BATCH-008 Concrete R5 exact domain contracts", () => {
     expect(importer).toContain("releaseStatus: row.release_status");
     expect(importer).toContain("queueMutation: 0");
     expect(importer).toContain("concrete_domain_remaining");
+    expect(importer).toContain("when 'OFFICIAL_MATERIAL_BOOK' then 'catalog'");
+    expect(importer).toContain("when 'OFFICIAL_RESOURCE_RATE' then 'normative'");
+    expect(importer).toContain("when 'CHILD_OWNER_ESTIMATE' then 'fallback'");
   });
 
   it("activates and rebases exactly once with an idempotent read-only retry", () => {
