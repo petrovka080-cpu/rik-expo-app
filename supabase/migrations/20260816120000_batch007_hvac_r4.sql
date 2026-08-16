@@ -135,8 +135,8 @@ begin
   perform pg_advisory_xact_lock(hashtextextended('estimate-hvac-r4-release-activation-and-queue-rebase', 0));
   select * into v_target from public.estimate_definition_release where id = p_release_id for update;
   select * into v_predecessor from public.estimate_definition_release where status = 'active' for update;
-  select * into v_seal from public.estimate_domain_release_admission_seal
-    where release_id = p_release_id and domain_id = 'hvac_heat_supply';
+  select s.* into v_seal from public.estimate_domain_release_admission_seal as s
+    where s.release_id = p_release_id and s.domain_id = 'hvac_heat_supply';
   select * into v_state from public.estimate_program_control_state where singleton = true for update;
 
   if v_target.id is null or v_target.status <> 'prepared' or v_target.schema_version <> 5
