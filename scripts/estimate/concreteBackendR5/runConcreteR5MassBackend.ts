@@ -18,6 +18,7 @@ const LABEL = String(process.env.BATCH008_REPLAY_LABEL ?? "A").toUpperCase();
 const CONCURRENCY = 8;
 const BATCH = 80;
 const DEFINITION_SHARD = 10;
+const VACUUM_EVERY_SHARDS = 10;
 const TOTAL_SCENARIOS = 27_213;
 const OWNER = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION = "22222222-2222-4222-8222-222222222222";
@@ -98,9 +99,13 @@ function invalidParameters(definition: Definition, variant: number): Json {
       break;
     }
     default:
-      parameters.work_included = "not-a-boolean";
+      parameters[definition.params.find((item) => ["decimal", "integer"].includes(item.value_type))!.parameter_id] = -1;
       parameters.__unknown_concrete_parameter = 1;
   }
+  // Every variant also violates the proven required-parameter invariant. The
+  // secondary mutations above retain five distinct validation paths, while
+  // this deletion prevents domain-valid negative values from being accepted.
+  delete parameters[row.parameter_id];
   return parameters;
 }
 
@@ -189,12 +194,19 @@ async function main(): Promise<void> {
       const cleanup = (await client.query(`select * from public.estimate_cleanup_release_admission_runtime_v3($1,$2,$3)`, [manifest.releaseId, OWNER, ORGANIZATION])).rows[0];
       const residue = (await client.query(`select (select count(*) from public.estimate_compile_job where target_release_id=$1)::integer jobs,(select count(*) from public.estimate_revision where release_id=$1)::integer revisions`, [manifest.releaseId])).rows[0];
       assertExact(Number(cleanup.residue) === 0 && Number(residue.jobs) === 0 && Number(residue.revisions) === 0, `CONCRETE_MASS_SHARD_CLEANUP_RED:${offset}`);
-      cleanupShards.push({ offset, definitions: shard.length, valid: shardValid.length, invalid: shardInvalid.length, reached: Number(shardCoverage.reached), projectedRows: Number(shardCoverage.projected_rows), cleanup, residue, status: "GREEN" });
+      const shardNumber = offset / DEFINITION_SHARD + 1;
+      const maintenance = shardNumber % VACUUM_EVERY_SHARDS === 0 || offset + shard.length === definitions.length;
+      if (maintenance) {
+        for (const table of ["estimate_revision_row", "estimate_revision_row_price", "estimate_revision_artifact", "estimate_revision", "estimate_compile_job"]) {
+          await client.query(`vacuum (analyze) public.${table}`);
+        }
+      }
+      cleanupShards.push({ offset, definitions: shard.length, valid: shardValid.length, invalid: shardInvalid.length, reached: Number(shardCoverage.reached), projectedRows: Number(shardCoverage.projected_rows), cleanup, residue, maintenanceVacuum: maintenance, status: "GREEN" });
       process.stdout.write(`[${new Date().toISOString()}] ${shardLabel} GREEN cleanup residue=0\n`);
     }
     const allValid = [...compiled, ...recalculated];
     const ledgers = { jobs: allValid.length + invalid.length, succeeded: allValid.length, failed: invalid.length, running: 0, live_leases: 0, distinct_keys: allValid.length + invalid.length, result_revisions: allValid.length, distinct_revisions: allValid.length, cleanupShards: cleanupShards.length, runtimeJobsAfter: 0, runtimeRevisionsAfter: 0 };
-    const branch = (await client.query(`select count(distinct s.id)::integer resources,count(distinct f.id)::integer formulas from public.estimate_definition_version v join public.estimate_work_identity w on w.catalog_id=v.catalog_id and w.domain='concrete' join public.estimate_resource_spec s on s.definition_version_id=v.id join public.estimate_formula_graph f on f.definition_version_id=v.id and f.formula_id=s.formula_id where v.release_id=$1`, [manifest.releaseId])).rows[0];
+    const branch = (await client.query(`select count(distinct s.id)::integer resources,count(distinct(f.definition_version_id,f.formula_id))::integer formulas from public.estimate_definition_version v join public.estimate_work_identity w on w.catalog_id=v.catalog_id and w.domain='concrete' join public.estimate_resource_spec s on s.definition_version_id=v.id join public.estimate_formula_graph f on f.definition_version_id=v.id and f.formula_id=s.formula_id where v.release_id=$1`, [manifest.releaseId])).rows[0];
     const queue = (await client.query(`select denominator_total,admitted_global_count,queue_remaining,external_reference_count,(select count(*) from public.estimate_program_event where event_kind='admission' and event_key like 'batch008-concrete-r5:%')::integer admission_events from public.estimate_program_control_state where singleton=true`)).rows[0];
     const validExpected = definitions.reduce((sum, row) => sum + VALID[row.complexity], 0);
     const invalidExpected = definitions.reduce((sum, row) => sum + INVALID[row.complexity], 0);
