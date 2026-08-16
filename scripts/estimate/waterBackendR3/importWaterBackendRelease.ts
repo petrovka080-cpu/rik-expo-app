@@ -29,7 +29,8 @@ type Manifest = {
   programControl: {
     denominator: number; admittedBefore: number; remainingBefore: number; newlyAdmittedWater: number;
     newlyAddedExternalWater: number; admittedAfter: number; remainingAfter: number;
-    externalBefore: number; externalAfter: number; queueMutationDuringImport: number;
+    externalQueueBefore: number; externalQueueAfter: number; backendExternalReferencesAfter: number;
+    queueMutationDuringImport: number;
   };
   sourceGit: { head: string; tree: string; worktreeSourceFingerprintSha256: string };
   officialSources: Array<{
@@ -96,7 +97,8 @@ async function verifyPackage(packageRoot: string): Promise<Manifest> {
     manifest.programControl.remainingBefore !== 10_450 || manifest.programControl.newlyAdmittedWater !== 845 ||
     manifest.programControl.newlyAddedExternalWater !== 29 ||
     manifest.programControl.admittedAfter !== 2_005 || manifest.programControl.remainingAfter !== 9_605 ||
-    manifest.programControl.externalBefore !== 8 || manifest.programControl.externalAfter !== 37 ||
+    manifest.programControl.externalQueueBefore !== 8 || manifest.programControl.externalQueueAfter !== 8 ||
+    manifest.programControl.backendExternalReferencesAfter !== 37 ||
     manifest.programControl.queueMutationDuringImport !== 0
   ) throw new Error("WATER_MANIFEST_EXACT_CARDINALITY_RED");
   for (const expected of manifest.files) {
@@ -158,7 +160,7 @@ async function assertProgramControl(client: Client, manifest: Manifest): Promise
   if (!state || Number(state.denominator_total) !== manifest.programControl.denominator
     || Number(state.admitted_global_count) !== manifest.programControl.admittedBefore
     || Number(state.queue_remaining) !== manifest.programControl.remainingBefore
-    || Number(state.external_reference_count) !== manifest.programControl.externalBefore
+    || Number(state.external_reference_count) !== manifest.programControl.externalQueueBefore
     || state.batch006_started !== false || state.water_domain_complete !== false
     || Number(state.water_domain_remaining) !== manifest.waterDelta.globalDefinitions
     || state.global_content_complete !== false || state.batch007_selected !== false

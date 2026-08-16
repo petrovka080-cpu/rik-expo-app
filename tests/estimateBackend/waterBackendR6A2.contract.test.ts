@@ -127,4 +127,18 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(seal).toContain("procurementReleaseId: row.procurement.releaseId");
     expect(compare).toContain('"wowSemanticSha256"');
   });
+
+  it("keeps new external definitions separate from the global program queue", () => {
+    const builder = read("scripts/estimate/waterBackendR3/buildWaterBackendRelease.ts");
+    const importer = read("scripts/estimate/waterBackendR3/importWaterBackendRelease.ts");
+    const seal = read("scripts/estimate/waterBackendR3/sealWaterR5A1Replay.ts");
+    for (const source of [builder, importer, seal]) {
+      expect(source).toContain("externalQueueAfter");
+      expect(source).toContain("backendExternalReferencesAfter");
+    }
+    expect(builder).toContain("externalQueueAfter: 8");
+    expect(builder).toContain("backendExternalReferencesAfter: 8 + waterCounts.externalDefinitions");
+    expect(seal).toContain("externalQueueAfter: 8");
+    expect(seal).toContain("backendExternalReferencesAfter: 37");
+  });
 });
