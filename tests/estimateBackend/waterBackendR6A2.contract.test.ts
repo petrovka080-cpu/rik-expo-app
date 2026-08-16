@@ -58,6 +58,14 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(rollback).not.toContain("or exists (select 1 from public.estimate_professional_passport)");
   });
 
+  it("qualifies the activation compare-and-swap columns against PL/pgSQL output parameters", () => {
+    const migration = read("supabase/migrations/20260815100000_batch006_water_backend_r3.sql");
+    expect(migration).toContain("update public.estimate_program_control_state as control_state");
+    expect(migration).toContain("program_state_version = control_state.program_state_version + 1");
+    expect(migration).toContain("control_state.program_state_version = v_state.program_state_version");
+    expect(migration).not.toContain("program_state_version = program_state_version + 1");
+  });
+
   it("records the operator-deferred Full Jest state without pretending it ran", () => {
     const verification = read("scripts/estimate/waterBackendR3/runWaterR5VerificationGate.ts");
     expect(verification).toContain("FULL_JEST=DEFERRED_BY_OPERATOR_NOT_RUN");

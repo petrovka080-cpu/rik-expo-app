@@ -534,21 +534,21 @@ begin
     'batch007ExecutionStarted', false,
     'programStateVersion', v_state.program_state_version + 1
   ))::text, 'UTF8'), 'sha256'), 'hex');
-  update public.estimate_program_control_state
-  set admitted_global_count = admitted_global_count + p_expected_newly_admitted,
-      queue_remaining = queue_remaining - p_expected_newly_admitted,
+  update public.estimate_program_control_state as control_state
+  set admitted_global_count = control_state.admitted_global_count + p_expected_newly_admitted,
+      queue_remaining = control_state.queue_remaining - p_expected_newly_admitted,
       batch006_started = true,
       water_domain_complete = true,
       water_domain_remaining = 0,
       global_content_complete = false,
       batch007_selected = false,
       batch007_execution_started = false,
-      program_state_version = program_state_version + 1,
+      program_state_version = control_state.program_state_version + 1,
       state_sha256 = v_next_hash,
       updated_at = now()
-  where singleton = true
-    and program_state_version = v_state.program_state_version
-    and state_sha256 = v_state.state_sha256;
+  where control_state.singleton = true
+    and control_state.program_state_version = v_state.program_state_version
+    and control_state.state_sha256 = v_state.state_sha256;
   if not found then raise exception using errcode = '40001', message = 'program control compare-and-swap conflict'; end if;
 
   select to_jsonb(s) into v_state_after from public.estimate_program_control_state s where s.singleton = true;
