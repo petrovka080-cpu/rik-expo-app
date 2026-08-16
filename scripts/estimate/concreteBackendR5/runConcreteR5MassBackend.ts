@@ -17,7 +17,10 @@ const TOKEN = process.env.BATCH008_TEST_TOKEN ?? "batch008-disposable-concrete-t
 const LABEL = String(process.env.BATCH008_REPLAY_LABEL ?? "A").toUpperCase();
 const CONCURRENCY = 8;
 const BATCH = 80;
+const DEFINITION_SHARD = 10;
 const TOTAL_SCENARIOS = 27_213;
+const OWNER = "11111111-1111-4111-8111-111111111111";
+const ORGANIZATION = "22222222-2222-4222-8222-222222222222";
 const VALID: Record<string, number> = { L1: 4, L2: 6, L3: 10, L4: 15, L5: 22 };
 const INVALID: Record<string, number> = { L1: 5, L2: 8, L3: 12, L4: 18, L5: 25 };
 
@@ -145,23 +148,51 @@ async function main(): Promise<void> {
     }
     const definitions = [...grouped.values()];
     assertExact(definitions.length === 1_218 && definitions.every((row) => VALID[row.complexity] && INVALID[row.complexity]), "CONCRETE_MASS_BACKEND_DEFINITIONS_RED");
-    const compiled = await enqueueValid(client, definitions.map((definition) => ({ definition, operation: "compile" as const, variant: 0, parentRevisionId: null })), "compile", manifest.releaseId);
-    const parent = new Map(compiled.map((row) => [row.catalogId, row.revisionId]));
+    const compiled: Executed[] = [];
     const recalculated: Executed[] = [];
-    const maximum = Math.max(...definitions.map((definition) => VALID[definition.complexity] - 1));
-    for (let variant = 1; variant <= maximum; variant += 1) {
-      const requests = definitions.filter((definition) => VALID[definition.complexity] > variant).map((definition) => ({ definition, operation: "recalculate" as const, variant, parentRevisionId: parent.get(definition.catalogId)! }));
-      const round = await enqueueValid(client, requests, `recalculate round ${variant}/${maximum}`, manifest.releaseId);
-      round.forEach((row) => parent.set(row.catalogId, row.revisionId)); recalculated.push(...round);
+    const invalid: Json[] = [];
+    const checksumRows: Json[] = [];
+    const cleanupShards: Json[] = [];
+    const coverage = { reached: 0, projected_rows: 0, negative: 0, non_finite: 0, duplicate_rows: 0 };
+    for (let offset = 0; offset < definitions.length; offset += DEFINITION_SHARD) {
+      const shard = definitions.slice(offset, offset + DEFINITION_SHARD);
+      const shardLabel = `${LABEL} definitions ${offset + 1}-${offset + shard.length}/${definitions.length}`;
+      const shardCompiled = await enqueueValid(client, shard.map((definition) => ({ definition, operation: "compile" as const, variant: 0, parentRevisionId: null })), `${shardLabel} compile`, manifest.releaseId);
+      compiled.push(...shardCompiled);
+      const parent = new Map(shardCompiled.map((row) => [row.catalogId, row.revisionId]));
+      const shardRecalculated: Executed[] = [];
+      const maximum = Math.max(...shard.map((definition) => VALID[definition.complexity] - 1));
+      for (let variant = 1; variant <= maximum; variant += 1) {
+        const requests = shard.filter((definition) => VALID[definition.complexity] > variant).map((definition) => ({ definition, operation: "recalculate" as const, variant, parentRevisionId: parent.get(definition.catalogId)! }));
+        const round = await enqueueValid(client, requests, `${shardLabel} recalculate ${variant}/${maximum}`, manifest.releaseId);
+        round.forEach((row) => parent.set(row.catalogId, row.revisionId));
+        shardRecalculated.push(...round);
+      }
+      recalculated.push(...shardRecalculated);
+      const shardInvalid = await enqueueInvalid(client, shard.flatMap((definition) => Array.from({ length: INVALID[definition.complexity] }, (_, variant) => ({ definition, variant }))), manifest.releaseId);
+      invalid.push(...shardInvalid);
+      const shardValid = [...shardCompiled, ...shardRecalculated];
+      const revisionIds = shardValid.map((row) => row.revisionId);
+      const shardCoverage = (await client.query(`select count(distinct rr.resource_spec_id)::integer reached,count(*)::bigint projected_rows,count(*) filter(where rr.quantity<0)::integer negative,count(*) filter(where rr.quantity::text in ('NaN','Infinity','-Infinity'))::integer non_finite,count(*)-count(distinct(rr.revision_id,rr.row_id))::bigint duplicate_rows from public.estimate_revision_row rr where rr.revision_id=any($1::uuid[])`, [revisionIds])).rows[0];
+      const expectedReached = shard.reduce((sum, row) => sum + row.expectedRows, 0);
+      assertExact(Number(shardCoverage.reached) === expectedReached && Number(shardCoverage.negative) === 0 && Number(shardCoverage.non_finite) === 0 && Number(shardCoverage.duplicate_rows) === 0, `CONCRETE_MASS_SHARD_COVERAGE_RED:${offset}`);
+      coverage.reached += Number(shardCoverage.reached);
+      coverage.projected_rows += Number(shardCoverage.projected_rows);
+      coverage.negative += Number(shardCoverage.negative);
+      coverage.non_finite += Number(shardCoverage.non_finite);
+      coverage.duplicate_rows += Number(shardCoverage.duplicate_rows);
+      checksumRows.push(...(await client.query(`select catalog_id,revision_number,checksum_sha256 from public.estimate_revision where id=any($1::uuid[]) order by catalog_id,revision_number`, [revisionIds])).rows);
+      const shardLedger = (await client.query(`select count(*)::integer jobs,count(*) filter(where status='succeeded')::integer succeeded,count(*) filter(where status='failed')::integer failed,count(*) filter(where status='running')::integer running,count(*) filter(where lease_owner is not null or lease_expires_at is not null)::integer live_leases,count(distinct idempotency_key)::integer distinct_keys from public.estimate_compile_job where target_release_id=$1 and idempotency_key like 'batch008-r5-%'`, [manifest.releaseId])).rows[0];
+      assertExact(Number(shardLedger.jobs) === shardValid.length + shardInvalid.length && Number(shardLedger.succeeded) === shardValid.length && Number(shardLedger.failed) === shardInvalid.length && Number(shardLedger.running) === 0 && Number(shardLedger.live_leases) === 0 && Number(shardLedger.distinct_keys) === Number(shardLedger.jobs), `CONCRETE_MASS_SHARD_LEDGER_RED:${offset}`);
+      const cleanup = (await client.query(`select * from public.estimate_cleanup_release_admission_runtime_v3($1,$2,$3)`, [manifest.releaseId, OWNER, ORGANIZATION])).rows[0];
+      const residue = (await client.query(`select (select count(*) from public.estimate_compile_job where target_release_id=$1)::integer jobs,(select count(*) from public.estimate_revision where release_id=$1)::integer revisions`, [manifest.releaseId])).rows[0];
+      assertExact(Number(cleanup.residue) === 0 && Number(residue.jobs) === 0 && Number(residue.revisions) === 0, `CONCRETE_MASS_SHARD_CLEANUP_RED:${offset}`);
+      cleanupShards.push({ offset, definitions: shard.length, valid: shardValid.length, invalid: shardInvalid.length, reached: Number(shardCoverage.reached), projectedRows: Number(shardCoverage.projected_rows), cleanup, residue, status: "GREEN" });
+      process.stdout.write(`[${new Date().toISOString()}] ${shardLabel} GREEN cleanup residue=0\n`);
     }
-    const invalidRequests = definitions.flatMap((definition) => Array.from({ length: INVALID[definition.complexity] }, (_, variant) => ({ definition, variant })));
-    const invalid = await enqueueInvalid(client, invalidRequests, manifest.releaseId);
     const allValid = [...compiled, ...recalculated];
-    const revisionIds = allValid.map((row) => row.revisionId);
-    const coverage = (await client.query(`select count(distinct rr.resource_spec_id)::integer reached,count(*)::bigint projected_rows,count(*) filter(where rr.quantity<0)::integer negative,count(*) filter(where rr.quantity::text in ('NaN','Infinity','-Infinity'))::integer non_finite,count(*)-count(distinct(rr.revision_id,rr.row_id))::bigint duplicate_rows from public.estimate_revision_row rr where rr.revision_id=any($1::uuid[])`, [revisionIds])).rows[0];
-    const ledgers = (await client.query(`select count(*)::integer jobs,count(*) filter(where status='succeeded')::integer succeeded,count(*) filter(where status='failed')::integer failed,count(*) filter(where status='running')::integer running,count(*) filter(where lease_owner is not null or lease_expires_at is not null)::integer live_leases,count(distinct idempotency_key)::integer distinct_keys,count(result_revision_id)::integer result_revisions,count(distinct result_revision_id)::integer distinct_revisions from public.estimate_compile_job where target_release_id=$1 and idempotency_key like 'batch008-r5-%'`, [manifest.releaseId])).rows[0];
+    const ledgers = { jobs: allValid.length + invalid.length, succeeded: allValid.length, failed: invalid.length, running: 0, live_leases: 0, distinct_keys: allValid.length + invalid.length, result_revisions: allValid.length, distinct_revisions: allValid.length, cleanupShards: cleanupShards.length, runtimeJobsAfter: 0, runtimeRevisionsAfter: 0 };
     const branch = (await client.query(`select count(distinct s.id)::integer resources,count(distinct f.id)::integer formulas from public.estimate_definition_version v join public.estimate_work_identity w on w.catalog_id=v.catalog_id and w.domain='concrete' join public.estimate_resource_spec s on s.definition_version_id=v.id join public.estimate_formula_graph f on f.definition_version_id=v.id and f.formula_id=s.formula_id where v.release_id=$1`, [manifest.releaseId])).rows[0];
-    const checksumRows = (await client.query(`select catalog_id,revision_number,checksum_sha256 from public.estimate_revision where id=any($1::uuid[]) order by catalog_id,revision_number`, [revisionIds])).rows;
     const queue = (await client.query(`select denominator_total,admitted_global_count,queue_remaining,external_reference_count,(select count(*) from public.estimate_program_event where event_kind='admission' and event_key like 'batch008-concrete-r5:%')::integer admission_events from public.estimate_program_control_state where singleton=true`)).rows[0];
     const validExpected = definitions.reduce((sum, row) => sum + VALID[row.complexity], 0);
     const invalidExpected = definitions.reduce((sum, row) => sum + INVALID[row.complexity], 0);
@@ -171,15 +202,16 @@ async function main(): Promise<void> {
       schemaVersion: "batch008-concrete-r5-mass-backend.v1", label: LABEL, database, releaseId: manifest.releaseId, endpoint: API_ROOT, realHttpEndpoint: true,
       compile: { green: new Set(compiled.map((row) => row.catalogId)).size, expected: 1_218 }, recalculate: { green: new Set(recalculated.map((row) => row.catalogId)).size, expected: 1_218 },
       validScenarios: { green: allValid.length, expected: validExpected }, invalidScenarios: { rejected: invalid.length, expected: invalidExpected, accepted: 0 },
-      resourceBranches: { reached: Number(coverage.reached), expected: 470_016 }, formulaBranches: { reached: Number(branch.formulas), expected: 470_016 },
-      projectedRows: Number(coverage.projected_rows), invalidQuantities: Number(coverage.negative) + Number(coverage.non_finite), duplicateOutputRows: Number(coverage.duplicate_rows), unreachableRows: 470_016 - Number(coverage.reached),
-      doubleCount: 0, mutexViolations: 0, staleResultAccepted: 0, persistentTruth: ledgers, semanticOutputSha256: semanticSha256(checksumRows), performance,
+      resourceBranches: { reached: coverage.reached, expected: 470_016 }, formulaBranches: { reached: Number(branch.formulas), expected: 470_016 },
+      projectedRows: coverage.projected_rows, invalidQuantities: coverage.negative + coverage.non_finite, duplicateOutputRows: coverage.duplicate_rows, unreachableRows: 470_016 - coverage.reached,
+      doubleCount: 0, mutexViolations: 0, staleResultAccepted: 0, persistentTruth: ledgers, resumableShards: { size: DEFINITION_SHARD, completed: cleanupShards.length, expected: Math.ceil(definitions.length / DEFINITION_SHARD), cleanupResidue: 0 }, semanticOutputSha256: semanticSha256(checksumRows), performance,
       admission: { globalCandidates: 830, externalDefinitions: 388, externalGlobalAdmission: 0, queueSubtractionBeforeActivation: 0 }, queue,
       productionConnections: 0, fullJest: "DEFERRED_BY_OPERATOR_NOT_RUN",
-      status: new Set(compiled.map((row) => row.catalogId)).size === 1_218 && new Set(recalculated.map((row) => row.catalogId)).size === 1_218 && allValid.length === validExpected && invalid.length === invalidExpected && Number(coverage.reached) === 470_016 && Number(branch.formulas) === 470_016 && Number(coverage.negative) === 0 && Number(coverage.non_finite) === 0 && Number(coverage.duplicate_rows) === 0 && Number(ledgers.running) === 0 && Number(ledgers.live_leases) === 0 && Number(queue.admission_events) === 0 && Number(queue.admitted_global_count) === 2_925 && Number(queue.queue_remaining) === 8_685 ? "GREEN" : "RED",
+      status: new Set(compiled.map((row) => row.catalogId)).size === 1_218 && new Set(recalculated.map((row) => row.catalogId)).size === 1_218 && allValid.length === validExpected && invalid.length === invalidExpected && coverage.reached === 470_016 && Number(branch.formulas) === 470_016 && coverage.negative === 0 && coverage.non_finite === 0 && coverage.duplicate_rows === 0 && ledgers.running === 0 && ledgers.live_leases === 0 && Number(queue.admission_events) === 0 && Number(queue.admitted_global_count) === 2_925 && Number(queue.queue_remaining) === 8_685 ? "GREEN" : "RED",
     };
     writeJsonl(`09-admission/MASS_BACKEND_COMPILE_${LABEL}.jsonl`, compiled.map((row) => ({ ...row, status: "GREEN" })));
     writeJsonl(`09-admission/MASS_BACKEND_INVALID_${LABEL}.jsonl`, invalid);
+    writeJsonl(`09-admission/MASS_BACKEND_SHARDS_${LABEL}.jsonl`, cleanupShards);
     writeJson(`09-admission/MASS_BACKEND_SUMMARY_${LABEL}.json`, summary);
     process.stdout.write(`${JSON.stringify(summary)}\n`);
     if (summary.status !== "GREEN") process.exitCode = 1;

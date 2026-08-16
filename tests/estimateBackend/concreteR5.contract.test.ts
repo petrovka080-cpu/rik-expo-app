@@ -58,6 +58,8 @@ describe("BATCH-008 Concrete R5 exact domain contracts", () => {
     const clients = read("scripts/estimate/concreteBackendR5/collectConcreteR5ClientEvidence.ts");
     expect(mass).toContain("470_016");
     expect(mass).toContain("27_213");
+    expect(mass).toContain("DEFINITION_SHARD = 10");
+    expect(mass).toContain("estimate_cleanup_release_admission_runtime_v3");
     expect(frozen).toContain("externalDemolition === 10");
     expect(frozen).toContain("externalNonDemolition === 15");
     expect(clients).toContain("selectionEquality: \"50/50\"");
