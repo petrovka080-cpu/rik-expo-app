@@ -13,7 +13,8 @@ const SPEC_PATH = resolve(
 const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
-const CANDIDATE_RELEASE_ID = "a7dca174-3ad5-552b-aa4c-fc28979a56ef";
+const CANDIDATE_RELEASE_ID = "34a707dc-954c-547d-ba88-27c15dba58d7";
+const LAMINATE_CATALOG_ID = "flooring_interior_laminate_install_large_area";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const SEARCH_PACKAGE = resolve(".release-runtime/p0-estimate-truth-remediation-r2/package-a");
@@ -23,9 +24,18 @@ const ADJUDICATION_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence
 const ADJUDICATION_PATH = join(ADJUDICATION_ROOT, "CATALOG_ADJUDICATION_LEDGER.jsonl");
 const ADJUDICATION_SUMMARY_PATH = join(ADJUDICATION_ROOT, "CATALOG_ADJUDICATION_SUMMARY.json");
 const OUTPUT_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence/09-search");
-const OUTPUT_PATH = join(OUTPUT_ROOT, "R58_ADJUDICATED_SEARCH_CANDIDATE_12270.json");
+const OUTPUT_PATH = join(OUTPUT_ROOT, "R58_ADJUDICATED_SEARCH_CANDIDATE_12270_LAMINATE_SUCCESSOR.json");
 const DELTA_PATH = join(OUTPUT_ROOT, "R58_SEARCH_TITLE_ORACLE_BEFORE_AFTER.json");
 const REPAIR_QUEUE_PATH = join(OUTPUT_ROOT, "R58_SEARCH_REPAIR_QUEUE.jsonl");
+const LAMINATE_PROMOTION_PATH = join(
+  ADJUDICATION_ROOT, "R58_LAMINATE_FORWARD_PROMOTION.json",
+);
+const LAMINATE_BACKEND_LEDGER_PATH = resolve(
+  ".release-runtime/p0-one-monolith-r58/evidence/06-backend/BATCH001_008_BACKEND_ADMISSION_4272_PROBE_4059ffd4.jsonl",
+);
+const LAMINATE_BACKEND_SUMMARY_PATH = resolve(
+  ".release-runtime/p0-one-monolith-r58/evidence/06-backend/BATCH001_008_BACKEND_ADMISSION_4272_PROBE_4059ffd4.json",
+);
 const EXPECTED_ORACLE = Object.freeze({ "ла": 3_523, "ро": 3_293, "со": 1_107, "др": 600 });
 
 function invariant(value: unknown, code: string): asserts value {
@@ -148,6 +158,32 @@ async function main(): Promise<void> {
   const adjudicationBySource = new Map(adjudications.map((row) => [String(row.source_catalog_id), row]));
   invariant(adjudications.length === 11_610 && adjudicationBySource.size === 11_610,
     "R58_SEARCH_ADJUDICATION_DENOMINATOR");
+  const laminatePromotionContents = readFileSync(LAMINATE_PROMOTION_PATH,"utf8");
+  const laminatePromotion = JSON.parse(laminatePromotionContents) as Json;
+  const laminateBackendLedgerContents = readFileSync(LAMINATE_BACKEND_LEDGER_PATH,"utf8");
+  const laminateBackendLedger = laminateBackendLedgerContents.split(/\r?\n/u).filter(Boolean)
+    .map((line) => JSON.parse(line) as Json);
+  const laminateBackendSummary = JSON.parse(readFileSync(LAMINATE_BACKEND_SUMMARY_PATH,"utf8")) as Json;
+  invariant(laminatePromotion.specSha256 === SPEC_SHA256
+    && laminatePromotion.candidateReleaseId === CANDIDATE_RELEASE_ID
+    && laminatePromotion.catalogId === LAMINATE_CATALOG_ID
+    && laminatePromotion.businessSemanticsUnchanged === true
+    && Object.values(laminatePromotion.parity ?? {}).every(Boolean),
+  "R58_SEARCH_LAMINATE_PROMOTION_PROOF_RED");
+  invariant(laminateBackendLedger.length === 1
+    && laminateBackendLedger[0]?.catalogId === LAMINATE_CATALOG_ID
+    && laminateBackendLedger[0]?.status === "GREEN"
+    && laminateBackendLedger[0]?.history?.immutableParentLink === true
+    && laminateBackendLedger[0]?.artifacts?.pdf?.status === "ready"
+    && laminateBackendLedger[0]?.artifacts?.procurement?.status === "ready"
+    && laminateBackendSummary.status === "GREEN_R58_CUMULATIVE_BACKEND_PROBE_CLEANED",
+  "R58_SEARCH_LAMINATE_BACKEND_PROOF_RED");
+  const laminatePromotionSha256 = shaObject({
+    priorAdjudicationSha256:adjudicationBySource.get(LAMINATE_CATALOG_ID)?.adjudication_sha256,
+    promotionEvidenceSha256:sha256(laminatePromotionContents),
+    backendLedgerSha256:sha256(laminateBackendLedgerContents),
+    backendSummarySha256:sha256(readFileSync(LAMINATE_BACKEND_SUMMARY_PATH)),
+  });
 
   const groups = readJsonl(join(SEARCH_ROOT, "groups.jsonl"));
   const sourceDocuments = readJsonl(join(SEARCH_ROOT, "search-documents.jsonl"));
@@ -183,7 +219,7 @@ async function main(): Promise<void> {
     await client.end();
     throw error;
   }
-  invariant(candidateDefinitions.length === 4_272, "R58_SEARCH_CANDIDATE_DEFINITION_COUNT");
+  invariant(candidateDefinitions.length === 4_273, "R58_SEARCH_CANDIDATE_DEFINITION_COUNT");
   const definitionByCatalog = new Map(candidateDefinitions.map((row) => [String(row.catalog_id), row]));
 
   const documents = sourceDocuments.map((sourceDocument) => {
@@ -202,13 +238,16 @@ async function main(): Promise<void> {
       sourceId = sourceCatalogId(sourceDocument);
       const decision = adjudicationBySource.get(sourceId);
       invariant(decision, `R58_SEARCH_DECISION_MISSING:${sourceId}`);
-      adjudicationClass = String(decision.classification);
-      adjudicationSha = String(decision.adjudication_sha256);
+      const laminatePromotionApplied = sourceId === LAMINATE_CATALOG_ID;
+      adjudicationClass = laminatePromotionApplied ? "EFFECTIVE_WORK" : String(decision.classification);
+      adjudicationSha = laminatePromotionApplied ? laminatePromotionSha256 : String(decision.adjudication_sha256);
       displayName = visibleName(decision);
       if (adjudicationClass === "EFFECTIVE_WORK") {
         selectable = true;
         publicationState = "ADMITTED_BACKEND";
-        definitionVersionId = String(decision.definition_version_id);
+        definitionVersionId = laminatePromotionApplied
+          ? String(definitionByCatalog.get(String(sourceDocument.catalog_id))?.definition_version_id ?? "")
+          : String(decision.definition_version_id);
         definitionReleaseId = CANDIDATE_RELEASE_ID;
         shortScopeRu = `Расчётная работа: ${displayName}. Исходная смета и уточнение выполняются одним canonical backend.`;
         invariant(definitionByCatalog.get(String(sourceDocument.catalog_id))?.definition_version_id === definitionVersionId,
@@ -275,6 +314,12 @@ async function main(): Promise<void> {
         r58_adjudication_sha256: adjudicationSha,
         r58_candidate_release_id: definitionReleaseId,
         r58_batch009_definition_source: false,
+        ...(sourceId === LAMINATE_CATALOG_ID ? {
+          r58_forward_promotion_sha256:laminatePromotionSha256,
+          r58_prior_adjudication_classification:String(adjudicationBySource.get(sourceId)?.classification),
+          r58_forward_adjudication_classification:"EFFECTIVE_WORK",
+          r58_backend_gate_status:"GREEN",
+        } : {}),
       },
     };
     delete body.document_sha256;
@@ -288,10 +333,10 @@ async function main(): Promise<void> {
     "R58_SEARCH_DOCUMENT_ID_DUPLICATE");
   const classCounts = Object.fromEntries([...new Set(documents.map((row) => row.adjudication_class))]
     .sort().map((classification) => [classification, documents.filter((row) => row.adjudication_class === classification).length]));
-  invariant(classCounts.EFFECTIVE_WORK === 3_355 && classCounts.DUPLICATE === 400
-    && classCounts.QUARANTINED === 7_855 && classCounts.EXTERNAL_REFERENCE === 660,
+  invariant(classCounts.EFFECTIVE_WORK === 3_356 && classCounts.DUPLICATE === 400
+    && classCounts.QUARANTINED === 7_854 && classCounts.EXTERNAL_REFERENCE === 660,
   `R58_SEARCH_CLASS_COUNTS:${JSON.stringify(classCounts)}`);
-  invariant(documents.filter((row) => row.selectable).length === 3_355
+  invariant(documents.filter((row) => row.selectable).length === 3_356
     && documents.filter((row) => row.selectable && !row.definition_version_id).length === 0,
   "R58_SEARCH_SELECTABLE_GATE_RED");
   invariant(documents.filter((row) => row.adjudication_class === "DUPLICATE" && !row.canonical_target_catalog_id).length === 0,
@@ -310,6 +355,7 @@ async function main(): Promise<void> {
   const snapshotSha256 = shaObject({
     specSha256: SPEC_SHA256,
     adjudicationSha256: adjudicationSummary.immutableEvidence.ledger.sha256,
+    laminatePromotionSha256,
     documents: documents.map((row) => row.document_sha256),
     groups: groups.map((row) => row.group_sha256),
     memberships: memberships.map((row) => row.independent_disposition),
@@ -380,7 +426,8 @@ async function main(): Promise<void> {
           definitionReleaseId: CANDIDATE_RELEASE_ID,
           adjudicationLedgerSha256: adjudicationSummary.immutableEvidence.ledger.sha256,
           classifications: classCounts,
-          effectiveWork: 3_355,
+          effectiveWork: 3_356,
+          laminatePromotionSha256,
           batch009Active: false,
           stagingOnly: true,
           runtime8081Switched: false,
@@ -478,7 +525,7 @@ async function main(): Promise<void> {
   await client.end();
   invariant(observed.adjudications === 11_610 && observed.documents === 12_270
     && observed.groups === 4_318 && observed.memberships === 12_270 && observed.relations === 2_236
-    && observed.selectable === 3_355 && observed.orphan_redirects === 0
+    && observed.selectable === 3_356 && observed.orphan_redirects === 0
     && observed.selectable_without_definition === 0 && observed.active_search_releases === 0,
   `R58_SEARCH_IMPORT_OBSERVED_RED:${JSON.stringify(observed)}`);
 
