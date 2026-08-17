@@ -1,4 +1,4 @@
--- P0 ONE MONOLITH R5.7: logical cumulative release without copying accepted model rows.
+-- P0 ONE MONOLITH R5.8: logical cumulative release without copying accepted model rows.
 -- Historical r54 object suffixes are retained for forward-only compatibility.
 
 begin;
@@ -77,11 +77,19 @@ set search_path = ''
 as $$
 declare
   v_resource public.estimate_resource_spec%rowtype;
+  v_cumulative_release boolean := false;
 begin
+  select exists(
+    select 1
+    from public.estimate_revision revision
+    join public.estimate_cumulative_manifest_entry manifest
+      on manifest.release_id=revision.release_id
+    where revision.id=new.revision_id
+  ) into v_cumulative_release;
   if new.resource_spec_id is not null then
     select * into strict v_resource from public.estimate_resource_spec where id=new.resource_spec_id;
     new.semantic_owner := public.estimate_effective_semantic_owner_r54(v_resource.row_id,v_resource.semantic_owner);
-    if new.semantic_owner is null then
+    if v_cumulative_release and new.semantic_owner is null then
       raise exception using errcode='23502',message='revision resource semantic owner is missing';
     end if;
     new.physical_row_type := v_resource.row_type;
@@ -90,7 +98,7 @@ begin
       coalesce(new.calculation_trace->>'rowId',new.id::text),
       new.calculation_trace->>'semanticOwner'
     );
-    if new.semantic_owner is null then
+    if v_cumulative_release and new.semantic_owner is null then
       raise exception using errcode='23502',message='revision trace semantic owner is missing';
     end if;
     new.physical_row_type := nullif(trim(new.calculation_trace->>'physicalRowType'),'');

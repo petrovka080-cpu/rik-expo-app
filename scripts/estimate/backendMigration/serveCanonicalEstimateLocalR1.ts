@@ -17,6 +17,7 @@ const TEST_ORGANIZATION_ID = process.env.CANONICAL_ESTIMATE_TEST_ORGANIZATION_ID
 const TARGET_RELEASE_ID = String(process.env.CANONICAL_ESTIMATE_TARGET_RELEASE_ID ?? "").trim();
 const ADMISSION_RUN_ID = String(process.env.CANONICAL_ESTIMATE_ADMISSION_RUN_ID ?? "").trim();
 const ADMISSION_DOMAIN_ID = String(process.env.CANONICAL_ESTIMATE_ADMISSION_DOMAIN_ID ?? "").trim();
+const CUMULATIVE_MANIFEST_MODE = String(process.env.CANONICAL_ESTIMATE_CUMULATIVE_MANIFEST ?? "").trim() === "true";
 const PORT = Number(process.env.CANONICAL_ESTIMATE_LOCAL_PORT ?? 8765);
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/master11610_r1";
@@ -209,7 +210,19 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
       let created;
       if (TARGET_RELEASE_ID) {
         if (!ADMISSION_RUN_ID) throw new Error("CANONICAL_ESTIMATE_ADMISSION_RUN_ID_REQUIRED");
-        if (ADMISSION_DOMAIN_ID) {
+        if (CUMULATIVE_MANIFEST_MODE) {
+          created = await client.query(`select * from public.estimate_create_cumulative_admission_job_r54($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)`, [
+            TARGET_RELEASE_ID,
+            ADMISSION_RUN_ID,
+            OWNER_ID,
+            TEST_ORGANIZATION_ID,
+            idempotencyKey,
+            operation,
+            catalogId,
+            parentRevisionId || null,
+            JSON.stringify(inputPayload),
+          ]);
+        } else if (ADMISSION_DOMAIN_ID) {
           created = await client.query(`select * from public.estimate_create_release_admission_job_v3($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)`, [
             TARGET_RELEASE_ID,
             ADMISSION_DOMAIN_ID,
@@ -237,7 +250,10 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
         }
       } else {
         await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
-        created = await client.query(`select * from public.estimate_create_compile_job_v1($1,$2,$3,$4,$5,$6::jsonb)`, [
+        const createFunction = CUMULATIVE_MANIFEST_MODE
+          ? "estimate_create_compile_job_r58"
+          : "estimate_create_compile_job_v1";
+        created = await client.query(`select * from public.${createFunction}($1,$2,$3,$4,$5,$6::jsonb)`, [
           idempotencyKey,
           operation,
           catalogId,
@@ -416,32 +432,59 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
 
 async function compileClaimedJob(client: Client, workerId: string, job: JsonRecord): Promise<void> {
   const definition = (await client.query(`
-    select v.id from public.estimate_definition_version v
-    join public.estimate_definition_release r on r.id=v.release_id
-    where r.id=$2 and (r.status='active' or (r.status='prepared' and $3::boolean)) and v.catalog_id=$1
+    select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
+      coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values
+    from public.estimate_definition_release release
+    cross join lateral (
+      select direct.id,false cumulative_manifest,null::uuid approved_template_baseline_id,0 priority
+      from public.estimate_definition_version direct
+      where direct.release_id=release.id and direct.catalog_id=$1
+      union all
+      select inherited.id,true cumulative_manifest,manifest.approved_template_baseline_id,1 priority
+      from public.estimate_cumulative_manifest_entry manifest
+      join public.estimate_definition_version inherited on inherited.id=manifest.definition_version_id
+      where manifest.release_id=release.id and manifest.catalog_id=$1
+        and manifest.baseline_ready and manifest.scenario_ready
+    ) effective
+    left join public.estimate_approved_template_baseline baseline
+      on baseline.id=effective.approved_template_baseline_id
+    where release.id=$2
+      and (release.status='active' or (release.status='prepared' and $3::boolean))
+    order by effective.priority
+    limit 1
   `, [job.catalog_id, job.target_release_id, (job.input_payload as JsonRecord)?.releaseAdmission === true])).rows[0];
   if (!definition) throw Object.assign(new Error("definition not found"), { code: "DEFINITION_LOAD_FAILED" });
   const parameterDefinitions = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
-  let confirmedParameters: JsonRecord = {};
+  const baselineParameters = (definition.baseline_input_values ?? {}) as JsonRecord;
+  const submittedParameters = (payload.parameters ?? {}) as JsonRecord;
+  let confirmedParameters: JsonRecord = { ...baselineParameters };
+  let inheritedUserParameters: JsonRecord = {};
   if (job.operation === "recalculate") {
     const parent = (await client.query(
-      "select release_id,catalog_id,input_parameters from public.estimate_revision where id=$1",
+      "select release_id,catalog_id,input_parameters,amendment_contract from public.estimate_revision where id=$1",
       [job.parent_revision_id],
     )).rows[0];
     if (!parent || parent.catalog_id !== job.catalog_id) {
       throw Object.assign(new Error("parent revision parameter source unavailable"), { code: "PARENT_REVISION_INVALID" });
     }
-    if (parent.release_id === job.target_release_id) confirmedParameters = parent.input_parameters ?? {};
+    if (parent.release_id === job.target_release_id) {
+      confirmedParameters = { ...baselineParameters, ...(parent.input_parameters ?? {}) };
+      inheritedUserParameters = parent.amendment_contract?.parameterSources?.userParameters ?? {};
+    }
   }
   const parameters = validateCanonicalEstimateParameters(
     parameterDefinitions,
-    (payload.parameters ?? {}) as JsonRecord,
+    submittedParameters,
     {
       confirmedParameters,
       baselineContext: { catalogId: String(job.catalog_id) },
     },
   );
+  const effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
+  const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)
+    .filter(([parameterId, value]) => !(parameterId in effectiveUserParameters)
+      && stableJson(parameters[parameterId]) === stableJson(value)));
   const numericParameters = Object.fromEntries(Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
   const formulas = (await client.query("select formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1", [definition.id])).rows;
   const formulaById = new Map(formulas.map((formula) => [formula.formula_id, formula]));
@@ -614,13 +657,23 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
     rows: rows.map((row) => ({ rowId: row.row_id, rowSha256: row.row_sha256 })),
     compilerVersion: COMPILER_VERSION,
   };
-  await client.query("select public.estimate_commit_compile_job_v1($1,$2,$3::jsonb,$4::jsonb)", [job.id, workerId, JSON.stringify({
+  const commitFunction = definition.cumulative_manifest === true
+    ? "estimate_commit_cumulative_compile_job_r58"
+    : "estimate_commit_compile_job_v1";
+  await client.query(`select public.${commitFunction}($1,$2,$3::jsonb,$4::jsonb)`, [job.id, workerId, JSON.stringify({
     rowCount: rows.length,
     currencyCode,
     totals,
     checksumSha256: sha256(revisionProjection),
     compilerVersion: COMPILER_VERSION,
     migrationSource: null,
+    resolvedParameters: parameters,
+    parameterSources: {
+      approvedTemplateBaselineId: definition.approved_template_baseline_id,
+      baselineAssumptions,
+      userParameters: effectiveUserParameters,
+      parentRevisionId: job.parent_revision_id,
+    },
   }), JSON.stringify(rows)]);
 }
 

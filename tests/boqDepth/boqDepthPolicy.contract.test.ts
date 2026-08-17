@@ -9,7 +9,7 @@ import {
 } from "../../src/lib/ai/globalEstimate";
 import { estimateForWorkKey, stripFoundationEstimate } from "./boqDepthTestHelpers";
 
-describe("R5.7 BOQ composition policy", () => {
+describe("R5.8 BOQ composition policy", () => {
   it("keeps legacy compatibility fields disabled and never defines row quotas", () => {
     expect(ESTIMATE_BOQ_MINIMUM_ROWS).toEqual({
       local_operation: 0,

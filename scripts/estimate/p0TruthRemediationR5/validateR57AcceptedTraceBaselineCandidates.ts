@@ -263,6 +263,11 @@ function validateOne(input: {
   }
   const blankOwners = included.filter((resource) => !String(resource.semantic_owner ?? "").trim());
   if (blankOwners.length > 0) blockers.push(`blank_semantic_owners:${blankOwners.length}`);
+  const duplicateSemanticOwners = [...new Set(included
+    .map((resource) => String(resource.semantic_owner ?? "").trim())
+    .filter(Boolean)
+    .filter((owner, index, all) => all.indexOf(owner) !== index))];
+  if (duplicateSemanticOwners.length > 0) blockers.push(`duplicate_semantic_owners:${duplicateSemanticOwners.length}`);
   const localCostRows = included.filter((resource) => resource.source_metadata?.priceStatus !== "CHILD_OWNER"
     && resource.source_metadata?.priceRoute !== "CHILD_OWNER_ESTIMATE");
   const duplicateCostOwners = [...new Set(localCostRows.map((resource) => String(resource.cost_owner_id ?? "").trim()).filter(Boolean)
@@ -383,6 +388,7 @@ function validateOne(input: {
       included_resource_rows: included.length,
       excluded_resource_rows: resources.length - included.length,
       blank_semantic_owner_rows: blankOwners.length,
+      duplicate_semantic_owner_ids: duplicateSemanticOwners,
       duplicate_cost_owner_ids: duplicateCostOwners,
       provenance_less_default_ids: missingTraceDefaults,
       blockers: uniqueBlockers,
