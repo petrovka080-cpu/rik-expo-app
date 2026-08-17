@@ -259,7 +259,8 @@ async function main(): Promise<void> {
       .filter((blocker: string) => blocker.startsWith("parameter_without_resource_consumer:"))
       .map((blocker: string) => blocker.slice("parameter_without_resource_consumer:".length)),
   )]));
-  invariant([...unusedByCatalog.values()].reduce((sum, values) => sum + values.size, 0) === 561,
+  const traceVisibleUnusedParameters = [...unusedByCatalog.values()].reduce((sum, values) => sum + values.size, 0);
+  invariant(traceVisibleUnusedParameters === 561,
     "R58_ASPHALT_13_UNUSED_PARAMETER_DENOMINATOR");
 
   const client = new Client({
@@ -352,9 +353,13 @@ async function main(): Promise<void> {
         `, [definition.id])).rows as Json[];
         invariant(parameters.length > 0 && formulas.length === resources.length && resources.length > 0,
           `R58_ASPHALT_13_CHILD_COUNTS:${definition.catalog_id}`);
-        const unused = unusedByCatalog.get(String(definition.catalog_id)) ?? new Set<string>();
-        invariant([...unused].every((id) => parameters.some((parameter) => parameter.parameter_id === id)),
+        const traceVisibleUnused = unusedByCatalog.get(String(definition.catalog_id)) ?? new Set<string>();
+        invariant([...traceVisibleUnused].every((id) => parameters.some((parameter) => parameter.parameter_id === id)),
           `R58_ASPHALT_13_UNUSED_PARAMETER_MISSING:${definition.catalog_id}`);
+        const unused = new Set(parameters.filter((parameter) => parameterConsumers(parameter, formulas, resources).rows.length === 0)
+          .map((parameter) => String(parameter.parameter_id)));
+        invariant([...traceVisibleUnused].every((id) => unused.has(id)),
+          `R58_ASPHALT_13_TRACE_UNUSED_NOT_GRAPH_UNUSED:${definition.catalog_id}`);
         const retainedParameters = parameters.filter((parameter) => !unused.has(String(parameter.parameter_id)));
         invariant(retainedParameters.length > 0
           && retainedParameters.every((parameter) => parameterConsumers(parameter, formulas, resources).rows.length > 0),
@@ -566,10 +571,10 @@ async function main(): Promise<void> {
         changedSemanticRows += semanticChanged;
         removedParameters += unused.size;
       }
-      invariant(records.length === 13 && removedParameters === 561 && changedSemanticRows === 66,
-        `R58_ASPHALT_13_DENOMINATOR:${records.length}/13:${removedParameters}/561:${changedSemanticRows}/66`);
-      invariant(records.reduce((sum, row) => sum + row.parametersAfter, 0) === 471,
-        "R58_ASPHALT_13_RETAINED_PARAMETER_DENOMINATOR");
+      const retainedApplicableParameters = records.reduce((sum, row) => sum + row.parametersAfter, 0);
+      invariant(records.length === 13 && removedParameters >= traceVisibleUnusedParameters && changedSemanticRows === 66
+        && removedParameters + retainedApplicableParameters === 1_032,
+      `R58_ASPHALT_13_DENOMINATOR:${records.length}/13:${removedParameters}:TRACE_MIN_${traceVisibleUnusedParameters}:${changedSemanticRows}/66`);
       invariant(records.reduce((sum, row) => sum + row.priceBindingsBefore - row.priceBindingsAfter, 0) === 2,
         "R58_ASPHALT_13_NONPAYABLE_PRICE_BINDING_DENOMINATOR");
       const counts = (await client.query(`
@@ -590,7 +595,7 @@ async function main(): Promise<void> {
           records: records.map((row) => row.afterComputationalSha256) }),
         JSON.stringify({ r58AsphaltCompileRedRepair13: {
           contract: CONTRACT, specSha256: SPEC_SHA256, definitions: 13,
-          removedUnusedParameters: removedParameters, retainedApplicableParameters: 471,
+          traceVisibleUnusedParameters, removedUnusedParameters: removedParameters, retainedApplicableParameters,
           repairedSemanticOwnerRows: changedSemanticRows, haulControlRowsMadeNonPayable: 2,
           activeReleaseSwitched: false, searchCutover: false, runtime8081Switched: false,
         } }),
@@ -618,7 +623,8 @@ async function main(): Promise<void> {
     definitions: 13,
     changedSemanticOwnerRows: idempotent ? 0 : changedSemanticRows,
     removedUnusedParameters: idempotent ? 0 : removedParameters,
-    retainedApplicableParameters: 471,
+    traceVisibleUnusedParameters,
+    retainedApplicableParameters: idempotent ? null : records.reduce((sum, row) => sum + row.parametersAfter, 0),
     haulControlRowsMadeNonPayable: 2,
     localDuplicateCostOwnersAfter: 0,
     ledgerPath: idempotent ? null : ledgerPath,
