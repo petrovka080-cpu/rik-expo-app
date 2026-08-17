@@ -213,14 +213,16 @@ function buildBaseline(source: Json, definitionId: string, releaseId: string): J
   };
 }
 
-async function insertSourceData(client: Client, source: Json, definitionId: string): Promise<void> {
+async function insertSourceData(client: Client, source: Json, definitionId: string,
+  approvedTemplateBaselineId: string): Promise<void> {
   for (const row of source.parameters as Json[]) {
     await client.query(`insert into public.estimate_parameter_definition(
       definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
       default_value,constraints_json,truth_metadata,approved_template_baseline_id
-    ) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,null)`, [
+    ) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11)`, [
       definitionId,row.parameter_id,row.ordinal,row.value_type,row.unit_id,row.title_ru,row.required,
       JSON.stringify(row.default_value),JSON.stringify(row.constraints_json),JSON.stringify(row.truth_metadata),
+      approvedTemplateBaselineId,
     ]);
   }
   for (const row of source.formulas as Json[]) {
@@ -402,7 +404,6 @@ async function main(): Promise<void> {
       ) values($1,$2,$3,1,$4::jsonb,$5::jsonb,$6,$7::jsonb)`, [definitionId,releaseId,CATALOG_ID,
         JSON.stringify(source.definition.passport),JSON.stringify(source.definition.applicability),
         source.definition.definition_sha256,JSON.stringify(source.definition.source_metadata)]);
-      await insertSourceData(targetClient,source,definitionId);
       await targetClient.query(`insert into public.estimate_approved_template_baseline(
         id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,
         parameter_schema_sha256,input_values,input_classification,uom_by_parameter,formula_consumer_ids,
@@ -418,6 +419,7 @@ async function main(): Promise<void> {
         JSON.stringify(baseline.guideProvenanceRu),JSON.stringify(baseline.proposalSourceRefs),
         JSON.stringify(baseline.validationScenarioRefs),baseline.acceptanceEvidenceSha256,releaseId,
       ]);
+      await insertSourceData(targetClient,source,definitionId,baseline.id);
       await targetClient.query(`insert into public.estimate_cumulative_manifest_entry(
         release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
         publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,definition_hash,entry_sha256
