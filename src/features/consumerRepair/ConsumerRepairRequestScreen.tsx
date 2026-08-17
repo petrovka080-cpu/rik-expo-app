@@ -1276,6 +1276,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       "Пакет параметров применяется одной новой immutable revision в каноническом backend-редакторе.",
     );
   };
+  private refineCanonicalParameters = () => {
+    this.openCanonicalBackendEditor(
+      this.state.bundle,
+      "Параметры уточняются в единственном canonical backend; сохранение создаст новую immutable revision.",
+    );
+  };
   private openProcurement = async () => {
     const current = this.state.bundle;
     if (!current) return;
@@ -1619,6 +1625,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
         onLoadMoreWorkSuggestions={this.loadMoreCanonicalWorkSuggestions}
         onOpenProcurement={this.openProcurement}
+        onRefineCanonicalParameters={this.refineCanonicalParameters}
         onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
         onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}
         onRemove={this.removeItem} onAddManual={this.addManualItem} onAddCustom={this.addCustomItem}

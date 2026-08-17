@@ -70,6 +70,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   showPdfAction?: boolean;
   onMakePdf?: () => void;
   onOpenProcurement?: () => void;
+  onRefineCanonicalParameters?: () => void;
 };
 
 type ProgressivePanelState = {
@@ -254,6 +255,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       showPdfAction,
       onMakePdf,
       onOpenProcurement,
+      onRefineCanonicalParameters,
       onDecrease,
       onIncrease,
       onQuantityChange,
@@ -306,12 +308,12 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
         <Pressable
           accessibilityRole="button"
-          onPress={this.toggleParameters}
+          onPress={onRefineCanonicalParameters ?? this.toggleParameters}
           style={[styles.actionButton, styles.primaryButton]}
           testID="request-estimate-parameters-toggle"
         >
-          <Ionicons name={parametersOpen ? "chevron-up" : "options-outline"} size={16} color="#FFFFFF" />
-          <Text style={styles.primaryButtonText}>{parametersOpen ? "Скрыть параметры" : "Уточнить параметры"}</Text>
+          <Ionicons name={!onRefineCanonicalParameters && parametersOpen ? "chevron-up" : "options-outline"} size={16} color="#FFFFFF" />
+          <Text style={styles.primaryButtonText}>{!onRefineCanonicalParameters && parametersOpen ? "Скрыть параметры" : "Уточнить параметры"}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"

@@ -27,6 +27,7 @@ type Props = {
   showPdfAction?: boolean;
   onMakePdf?: () => void;
   onOpenProcurement?: () => void;
+  onRefineCanonicalParameters?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -55,6 +56,7 @@ export function ConsumerRepairDraftPanel({
   showPdfAction,
   onMakePdf,
   onOpenProcurement,
+  onRefineCanonicalParameters,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -232,6 +234,7 @@ export function ConsumerRepairDraftPanel({
           showPdfAction={showPdfAction}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
+          onRefineCanonicalParameters={onRefineCanonicalParameters}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}

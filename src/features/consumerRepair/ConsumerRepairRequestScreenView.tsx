@@ -80,6 +80,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onLoadMoreWorkSuggestions: () => void;
   onMakePdf: () => void;
   onOpenProcurement: () => void;
+  onRefineCanonicalParameters: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -127,6 +128,7 @@ export function ConsumerRepairRequestScreenView({
   onLoadMoreWorkSuggestions,
   onMakePdf,
   onOpenProcurement,
+  onRefineCanonicalParameters,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -227,6 +229,7 @@ export function ConsumerRepairRequestScreenView({
           onPrepareDraft={onPrepareDraft}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
+          onRefineCanonicalParameters={onRefineCanonicalParameters}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}

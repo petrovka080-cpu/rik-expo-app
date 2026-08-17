@@ -224,6 +224,7 @@ type ContentProps = {
   onPrepareDraft: () => void;
   onMakePdf: () => void;
   onOpenProcurement: () => void;
+  onRefineCanonicalParameters?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
@@ -292,6 +293,7 @@ export function ConsumerRepairRequestContent({
   onPrepareDraft,
   onMakePdf,
   onOpenProcurement,
+  onRefineCanonicalParameters,
   onDecrease,
   onIncrease,
   onQuantityChange,
@@ -340,6 +342,7 @@ export function ConsumerRepairRequestContent({
       showPdfAction={showPdfAction}
       onMakePdf={onMakePdf}
       onOpenProcurement={onOpenProcurement}
+      onRefineCanonicalParameters={onRefineCanonicalParameters}
       onDecrease={onDecrease}
       onIncrease={onIncrease}
       onQuantityChange={onQuantityChange}

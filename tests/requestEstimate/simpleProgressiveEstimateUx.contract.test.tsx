@@ -32,7 +32,7 @@ function visibleText(tree: JsonTree): string {
     .join("\n");
 }
 
-function renderWaterSupplyPanel() {
+function renderWaterSupplyPanel(options: { onRefineCanonicalParameters?: () => void } = {}) {
   __resetConsumerRepairRequestStoreForTests();
   const prompt = "водоснабжение села 5 км труба ПНД 110 водонапорная башня 25 м3";
   const aiDraft = buildConsumerRepairAiDraft(prompt, { currency: "KGS", city: "Бишкек" });
@@ -63,6 +63,7 @@ function renderWaterSupplyPanel() {
         onOpenPhotoForEstimateItem={noop}
         onAddCustom={noop}
         onOpenCatalog={noop}
+        onRefineCanonicalParameters={options.onRefineCanonicalParameters}
       />,
     );
   });
@@ -98,5 +99,17 @@ describe("simple progressive estimate UX", () => {
 
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-positions-panel")).toBe(0);
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-items-editor")).toBe(0);
+  });
+
+  it("routes the primary refine action directly to the canonical editor when one owns the revision", () => {
+    const onRefineCanonicalParameters = jest.fn();
+    const renderer = renderWaterSupplyPanel({ onRefineCanonicalParameters });
+
+    act(() => {
+      renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress();
+    });
+
+    expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(0);
   });
 });
