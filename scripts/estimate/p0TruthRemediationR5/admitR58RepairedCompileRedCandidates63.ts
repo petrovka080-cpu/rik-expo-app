@@ -18,26 +18,37 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const CONCRETE_NO_AUTHORITATIVE_TRACE = process.argv.includes("--concrete-no-authoritative-trace");
 const HVAC_NO_AUTHORITATIVE_TRACE = process.argv.includes("--hvac-no-authoritative-trace");
 const HVAC_TRACE_NOT_ADMITTED = process.argv.includes("--hvac-trace-not-admitted");
 const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const ASPHALT_TRACE_NOT_ADMITTED = process.argv.includes("--asphalt-trace-not-admitted");
-const APPROVED_BASELINE_MODE = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED;
-const EXPECTED_TARGETS = HVAC_NO_AUTHORITATIVE_TRACE ? 68 : HVAC_TRACE_NOT_ADMITTED ? 894 : DRYWALL_TRACE_NOT_ADMITTED ? 500
+const APPROVED_BASELINE_MODE = CONCRETE_NO_AUTHORITATIVE_TRACE || HVAC_NO_AUTHORITATIVE_TRACE
+  || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED;
+const EXPECTED_TARGETS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 1_218
+  : HVAC_NO_AUTHORITATIVE_TRACE ? 68 : HVAC_TRACE_NOT_ADMITTED ? 894 : DRYWALL_TRACE_NOT_ADMITTED ? 500
   : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
-const EXPECTED_ASPHALT = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+const EXPECTED_ASPHALT = CONCRETE_NO_AUTHORITATIVE_TRACE || HVAC_NO_AUTHORITATIVE_TRACE
+  || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
   ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
 const EXPECTED_DRYWALL = DRYWALL_TRACE_NOT_ADMITTED ? 500 : 0;
+const EXPECTED_CONCRETE = CONCRETE_NO_AUTHORITATIVE_TRACE ? 1_218 : 0;
 const EXPECTED_HVAC = HVAC_NO_AUTHORITATIVE_TRACE ? 68 : HVAC_TRACE_NOT_ADMITTED ? 894
   : DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
-const EXPECTED_COMPILED_ROWS = HVAC_NO_AUTHORITATIVE_TRACE ? 21_070 : HVAC_TRACE_NOT_ADMITTED ? 304_809
+const EXPECTED_COMPILED_ROWS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 470_016
+  : HVAC_NO_AUTHORITATIVE_TRACE ? 21_070 : HVAC_TRACE_NOT_ADMITTED ? 304_809
   : DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
-const EXPECTED_READY = HVAC_NO_AUTHORITATIVE_TRACE ? 3_054 : HVAC_TRACE_NOT_ADMITTED ? 2_986
+const EXPECTED_READY = CONCRETE_NO_AUTHORITATIVE_TRACE ? 4_272
+  : HVAC_NO_AUTHORITATIVE_TRACE ? 3_054 : HVAC_TRACE_NOT_ADMITTED ? 2_986
   : DRYWALL_TRACE_NOT_ADMITTED ? 2_092 : ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
-const EXPECTED_ASPHALT_READY = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+const EXPECTED_ASPHALT_READY = CONCRETE_NO_AUTHORITATIVE_TRACE || HVAC_NO_AUTHORITATIVE_TRACE
+  || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
   ? 63 : ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
-const EXPECTED_HVAC_READY = HVAC_NO_AUTHORITATIVE_TRACE ? 1_012 : HVAC_TRACE_NOT_ADMITTED ? 944 : 50;
-const CONTRACT = HVAC_NO_AUTHORITATIVE_TRACE
+const EXPECTED_HVAC_READY = CONCRETE_NO_AUTHORITATIVE_TRACE || HVAC_NO_AUTHORITATIVE_TRACE
+  ? 1_012 : HVAC_TRACE_NOT_ADMITTED ? 944 : 50;
+const CONTRACT = CONCRETE_NO_AUTHORITATIVE_TRACE
+  ? "p0-one-monolith-r58-concrete-no-authoritative-trace-approved-baseline-candidates-1218.v1"
+  : HVAC_NO_AUTHORITATIVE_TRACE
   ? "p0-one-monolith-r58-hvac-no-authoritative-trace-approved-baseline-candidates-68.v1"
   : HVAC_TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-hvac-approved-baseline-candidates-894.v1"
@@ -436,6 +447,124 @@ function buildHvacApprovedBaselineTrace(parameters: readonly Json[], definition:
   };
 }
 
+function concreteProjectScale(definition: Json): number {
+  const complexity = String(definition.passport?.complexityClass ?? definition.passport?.complexity ?? "L3");
+  const byComplexity: Record<string, number> = { L1: 20, L2: 40, L3: 60, L4: 100, L5: 150 };
+  return byComplexity[complexity] ?? 60;
+}
+
+function concreteRepresentativeNumber(parameter: Json, definition: Json): { value: number; ruleId: string } {
+  const id = String(parameter.parameter_id);
+  const unit = String(parameter.unit_id ?? "");
+  const scale = concreteProjectScale(definition);
+  let value: number;
+  let ruleId: string;
+  if (id === "delivery_distance_km") [value, ruleId] = [12, "BISHKEK_PROJECT_LOGISTICS_DISTANCE_KM"];
+  else if (/_waste_factor$/u.test(id)) [value, ruleId] = [0.03, "APPROVED_CONCRETE_WASTE_FACTOR"];
+  else if (/_labor_norm$/u.test(id)) {
+    if (/per_m3$/u.test(unit)) [value, ruleId] = [0.8, "APPLICABLE_CONCRETE_LABOUR_NORM_PER_M3"];
+    else if (/per_m2$/u.test(unit)) [value, ruleId] = [0.3, "APPLICABLE_CONCRETE_LABOUR_NORM_PER_M2"];
+    else if (/per_m$/u.test(unit)) [value, ruleId] = [0.25, "APPLICABLE_CONCRETE_LABOUR_NORM_PER_M"];
+    else if (/per_kg$/u.test(unit)) [value, ruleId] = [0.03, "APPLICABLE_CONCRETE_LABOUR_NORM_PER_KG"];
+    else if (/per_document|per_service|per_test/u.test(unit)) [value, ruleId] = [2, "APPLICABLE_CONCRETE_CONTROL_LABOUR_NORM"];
+    else [value, ruleId] = [0.5, "APPLICABLE_CONCRETE_LABOUR_NORM_PER_ITEM"];
+  } else if (/_machine_norm$/u.test(id)) {
+    if (/per_m3$/u.test(unit)) [value, ruleId] = [0.2, "APPLICABLE_CONCRETE_MACHINE_NORM_PER_M3"];
+    else if (/per_m2$/u.test(unit)) [value, ruleId] = [0.08, "APPLICABLE_CONCRETE_MACHINE_NORM_PER_M2"];
+    else if (/per_m$/u.test(unit)) [value, ruleId] = [0.05, "APPLICABLE_CONCRETE_MACHINE_NORM_PER_M"];
+    else [value, ruleId] = [0.15, "APPLICABLE_CONCRETE_MACHINE_NORM_PER_ITEM"];
+  } else if (/_mass_kg_per_unit$/u.test(id)) {
+    if (/per_m3$/u.test(unit)) [value, ruleId] = [2_400, "CONCRETE_MIX_PASSPORT_DENSITY_KG_M3"];
+    else if (/per_m2$/u.test(unit)) [value, ruleId] = [12, "CONCRETE_SYSTEM_MATERIAL_MASS_KG_M2"];
+    else if (/per_m$/u.test(unit)) [value, ruleId] = [5, "CONCRETE_LINEAR_COMPONENT_MASS_KG_M"];
+    else [value, ruleId] = [25, "MANUFACTURER_CONCRETE_COMPONENT_MASS_KG"];
+  } else if (/_test_interval$/u.test(id)) {
+    if (/m3_per_test/u.test(unit)) [value, ruleId] = [50, "APPROVED_CONCRETE_TEST_INTERVAL_50_M3"];
+    else if (/m2_per_test/u.test(unit)) [value, ruleId] = [100, "APPROVED_CONCRETE_TEST_INTERVAL_100_M2"];
+    else if (/m_per_test/u.test(unit)) [value, ruleId] = [100, "APPROVED_CONCRETE_TEST_INTERVAL_100_M"];
+    else if (/item_per_test/u.test(unit)) [value, ruleId] = [20, "APPROVED_CONCRETE_TEST_INTERVAL_20_ITEMS"];
+    else [value, ruleId] = [1, "APPROVED_CONCRETE_TEST_INTERVAL_PER_SCOPE"];
+  } else if (/_quantity$/u.test(id)) {
+    if (unit === "m3") [value, ruleId] = [scale, "PROJECT_CONCRETE_VOLUME_BY_COMPLEXITY"];
+    else if (unit === "m2") [value, ruleId] = [scale * 2, "PROJECT_CONCRETE_AREA_BY_COMPLEXITY"];
+    else if (unit === "m") [value, ruleId] = [scale * 1.5, "PROJECT_CONCRETE_LINEAR_QUANTITY_BY_COMPLEXITY"];
+    else if (unit === "kg") [value, ruleId] = [scale * 20, "PROJECT_CONCRETE_MASS_QUANTITY_BY_COMPLEXITY"];
+    else if (unit === "t") [value, ruleId] = [scale * 2.4, "PROJECT_CONCRETE_TONNAGE_BY_COMPLEXITY"];
+    else if (["document", "service", "test", "set"].includes(unit)) [value, ruleId] = [1, "ONE_APPROVED_CONTROL_PACKAGE_FOR_WORK_SCOPE"];
+    else [value, ruleId] = [Math.max(2, Math.round(scale / 5)), "PROJECT_CONCRETE_ITEM_QUANTITY_BY_COMPLEXITY"];
+  } else if (/strength.*mpa|compressive.*mpa/u.test(id)) [value, ruleId] = [30, "PROJECT_CONCRETE_DESIGN_STRENGTH_MPA"];
+  else if (/slump.*mm/u.test(id)) [value, ruleId] = [150, "CONCRETE_MIX_PASSPORT_SLUMP_MM"];
+  else if (/thickness.*mm/u.test(id)) [value, ruleId] = [200, "PROJECT_CONCRETE_ELEMENT_THICKNESS_MM"];
+  else if (/diameter.*mm/u.test(id)) [value, ruleId] = [16, "PROJECT_REINFORCEMENT_DIAMETER_MM"];
+  else if (/area.*m2$/u.test(id)) [value, ruleId] = [scale * 2, "PROJECT_CONCRETE_AREA_BY_PARAMETER_SEMANTICS"];
+  else if (/volume.*m3$/u.test(id)) [value, ruleId] = [scale, "PROJECT_CONCRETE_VOLUME_BY_PARAMETER_SEMANTICS"];
+  else if (/length.*m$/u.test(id)) [value, ruleId] = [scale * 1.5, "PROJECT_CONCRETE_LENGTH_BY_PARAMETER_SEMANTICS"];
+  else if (/count|number/u.test(id)) [value, ruleId] = [Math.max(2, Math.round(scale / 5)), "PROJECT_CONCRETE_COUNT_BY_COMPLEXITY"];
+  else if (/percent/u.test(id)) [value, ruleId] = [3, "APPROVED_CONCRETE_PERCENT"];
+  else if (/factor|coefficient/u.test(id)) [value, ruleId] = [1.05, "APPROVED_CONCRETE_ENGINEERING_FACTOR"];
+  else if (unit === "m3") [value, ruleId] = [scale, "PROJECT_CONCRETE_VOLUME_BY_UNIT"];
+  else if (unit === "m2") [value, ruleId] = [scale * 2, "PROJECT_CONCRETE_AREA_BY_UNIT"];
+  else if (unit === "m") [value, ruleId] = [scale * 1.5, "PROJECT_CONCRETE_LENGTH_BY_UNIT"];
+  else if (unit === "kg") [value, ruleId] = [scale * 20, "PROJECT_CONCRETE_MASS_BY_UNIT"];
+  else if (unit === "ratio") [value, ruleId] = [0.03, "APPROVED_CONCRETE_RATIO"];
+  else [value, ruleId] = [1, "WORK_SPECIFIC_CONCRETE_ENGINEERING_ASSUMPTION_REQUIRES_REVISION"];
+  const minExclusive = typeof parameter.constraints_json?.minExclusive === "number"
+    ? parameter.constraints_json.minExclusive : null;
+  const min = typeof parameter.constraints_json?.min === "number" ? parameter.constraints_json.min : null;
+  const max = typeof parameter.constraints_json?.max === "number" ? parameter.constraints_json.max : null;
+  invariant(minExclusive == null || value > minExclusive,
+    `R58_CONCRETE_BASELINE_NOT_ABOVE_MIN_EXCLUSIVE:${definition.catalog_id}:${id}:${value}/${minExclusive}:${ruleId}`);
+  invariant(min == null || value >= min,
+    `R58_CONCRETE_BASELINE_BELOW_MIN:${definition.catalog_id}:${id}:${value}/${min}:${ruleId}`);
+  invariant(max == null || value <= max,
+    `R58_CONCRETE_BASELINE_ABOVE_MAX:${definition.catalog_id}:${id}:${value}/${max}:${ruleId}`);
+  if (parameter.value_type === "integer") value = Math.max(1, Math.round(value));
+  return { value, ruleId };
+}
+
+function buildConcreteApprovedBaselineTrace(parameters: readonly Json[], definition: Json): Json {
+  const values: Json = {};
+  const classifications: Json = {};
+  const ruleIds: Json = {};
+  for (const parameter of parameters) {
+    const id = String(parameter.parameter_id);
+    if (parameter.value_type === "boolean") {
+      invariant(id === "work_included", `R58_CONCRETE_BASELINE_BOOLEAN_REQUIRES_EXPLICIT_RULE:${definition.catalog_id}:${id}`);
+      values[id] = true;
+      ruleIds[id] = "SELECTED_WORK_INCLUDED";
+    } else if (parameter.value_type === "enum") {
+      const allowed = Array.isArray(parameter.constraints_json?.values)
+        ? parameter.constraints_json.values.map(String) : [];
+      invariant(allowed.includes("PROJECT_SPECIFIED"),
+        `R58_CONCRETE_BASELINE_ENUM_REQUIRES_PROJECT_SPECIFIED:${definition.catalog_id}:${id}`);
+      values[id] = "PROJECT_SPECIFIED";
+      ruleIds[id] = "PROJECT_SPECIFIED_SELECTION_REQUIRES_REVISION";
+    } else if (parameter.value_type === "text") {
+      values[id] = `APPROVED_CONCRETE_PROJECT_REFERENCE:${definition.catalog_id}:${id}`;
+      ruleIds[id] = "VISIBLE_PROJECT_REFERENCE_REQUIRES_REVISION";
+    } else {
+      const resolved = concreteRepresentativeNumber(parameter, definition);
+      values[id] = resolved.value;
+      ruleIds[id] = resolved.ruleId;
+    }
+    classifications[id] = "ASSUMPTION";
+  }
+  invariant(Object.keys(values).length === parameters.length,
+    `R58_CONCRETE_BASELINE_VALUE_DENOMINATOR:${definition.catalog_id}`);
+  return {
+    provenance_kind: "APPROVED_TEMPLATE_BASELINE",
+    proposal_source_ref: SPEC_PATH,
+    proposal_source_sha256: SPEC_SHA256,
+    predecessor_trace_input_values_sha256: null,
+    input_values: values,
+    input_values_sha256: sha256(values),
+    parameter_classification: classifications,
+    parameter_rule_ids: ruleIds,
+    derived_parameter_ids: [],
+    approval_basis: "R5.8 per-work Concrete technology, component unit, formula mode, norm and complexity class",
+  };
+}
+
 function isChildOwner(row: Json): boolean {
   return row.source_metadata?.priceStatus === "CHILD_OWNER"
     || row.source_metadata?.priceRoute === "CHILD_OWNER_ESTIMATE";
@@ -451,6 +580,7 @@ function buildAsset(input: {
   parameters: Json[];
   formulas: Json[];
   resources: Json[];
+  priceBindings: Json[];
   trace: Json;
   parameterSchemaSha256: string;
   candidateReleaseId: string;
@@ -473,8 +603,15 @@ function buildAsset(input: {
   invariant(duplicateValues(localCostOwners).length === 0,
     `R58_REPAIRED_63_LOCAL_COST_OWNER:${input.definition.catalog_id}`);
   const nullCostRows = included.filter((row) => !String(row.cost_owner_id ?? "").trim());
+  const priceBindingCounts = new Map<string, number>();
+  for (const binding of input.priceBindings) {
+    const resourceId = String(binding.resource_spec_id);
+    priceBindingCounts.set(resourceId, (priceBindingCounts.get(resourceId) ?? 0) + 1);
+  }
   invariant(nullCostRows.every((row) => DRYWALL_TRACE_NOT_ADMITTED
     ? !row.procurement_eligible
+    : CONCRETE_NO_AUTHORITATIVE_TRACE
+      ? priceBindingCounts.get(String(row.id)) === 1
     : row.source_metadata?.priceStatus === "NON_PAYABLE_DERIVED_CONTROL"),
     `R58_REPAIRED_63_UNEXPLAINED_NULL_COST_OWNER:${input.definition.catalog_id}`);
   const childRows = included.filter(isChildOwner);
@@ -495,6 +632,7 @@ function buildAsset(input: {
       costOwnerId: row.cost_owner_id,
       costBoundary: isChildOwner(row) ? "CHILD_OWNER_NON_PAYABLE"
         : row.source_metadata?.priceStatus === "NON_PAYABLE_DERIVED_CONTROL" ? "DERIVED_CONTROL_NON_PAYABLE"
+          : CONCRETE_NO_AUTHORITATIVE_TRACE && !row.cost_owner_id ? "DIRECT_UNIQUE_PRICE_ROUTE"
           : !row.cost_owner_id ? "INFORMATIONAL_NON_PAYABLE"
           : "LOCAL_UNIQUE_OWNER",
     };
@@ -589,7 +727,8 @@ function buildAsset(input: {
   return {
     asset: {
       id,
-      baseline_key: `${HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED ? "r58-hvac-approved-baseline"
+      baseline_key: `${CONCRETE_NO_AUTHORITATIVE_TRACE ? "r58-concrete-approved-baseline"
+        : HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED ? "r58-hvac-approved-baseline"
         : DRYWALL_TRACE_NOT_ADMITTED ? "r58-drywall-approved-baseline"
           : "r58-repaired-compile-red"}:${input.definition.catalog_id}:${id}`,
       catalog_id: input.definition.catalog_id,
@@ -624,7 +763,8 @@ function buildAsset(input: {
         resourceGraphCount: input.resources.length,
         localDuplicateCostOwners: 0,
         childOwnerRowsNonPayable: childRows.length,
-        derivedControlRowsNonPayable: nullCostRows.length,
+        derivedControlRowsNonPayable: CONCRETE_NO_AUTHORITATIVE_TRACE ? 0 : nullCostRows.length,
+        directUniquePriceRouteRows: CONCRETE_NO_AUTHORITATIVE_TRACE ? nullCostRows.length : 0,
         sensitivityScenario,
       }],
       acceptance_evidence_sha256: acceptanceEvidenceSha256,
@@ -648,7 +788,8 @@ function buildAsset(input: {
       duplicateSemanticOwners: 0,
       localDuplicateCostOwners: 0,
       childOwnerRowsNonPayable: childRows.length,
-      derivedControlRowsNonPayable: nullCostRows.length,
+      derivedControlRowsNonPayable: CONCRETE_NO_AUTHORITATIVE_TRACE ? 0 : nullCostRows.length,
+      directUniquePriceRouteRows: CONCRETE_NO_AUTHORITATIVE_TRACE ? nullCostRows.length : 0,
       sensitivityScenario,
       status: "READY_FOR_FRESH_BACKEND_COMPILE_RECALCULATE",
       terminalGreenClaimed: false,
@@ -679,11 +820,11 @@ async function insertBaseline(client: Client, asset: Json): Promise<void> {
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
   const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted", "--drywall-trace-not-admitted",
-    "--hvac-trace-not-admitted", "--hvac-no-authoritative-trace"]);
+    "--hvac-trace-not-admitted", "--hvac-no-authoritative-trace", "--concrete-no-authoritative-trace"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
     && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
     && [ASPHALT_TRACE_NOT_ADMITTED, DRYWALL_TRACE_NOT_ADMITTED, HVAC_TRACE_NOT_ADMITTED,
-      HVAC_NO_AUTHORITATIVE_TRACE]
+      HVAC_NO_AUTHORITATIVE_TRACE, CONCRETE_NO_AUTHORITATIVE_TRACE]
       .filter(Boolean).length <= 1,
     "R58_REPAIRED_63_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_REPAIRED_63_SPEC_DRIFT");
@@ -693,8 +834,10 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_REPAIRED_63_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_REPAIRED_63_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => HVAC_NO_AUTHORITATIVE_TRACE
-    ? row.partition === "NO_AUTHORITATIVE_TRACE_1286" && row.domain === "hvac_heat_supply"
+  const targets = readJsonl(MATRIX_PATH).filter((row) => CONCRETE_NO_AUTHORITATIVE_TRACE
+    ? row.partition === "NO_AUTHORITATIVE_TRACE_1286" && row.domain === "concrete"
+    : HVAC_NO_AUTHORITATIVE_TRACE
+      ? row.partition === "NO_AUTHORITATIVE_TRACE_1286" && row.domain === "hvac_heat_supply"
     : HVAC_TRACE_NOT_ADMITTED
       ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "hvac_heat_supply"
     : DRYWALL_TRACE_NOT_ADMITTED
@@ -705,6 +848,7 @@ async function main(): Promise<void> {
   invariant(targets.length === EXPECTED_TARGETS
     && targets.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
     && targets.filter((row) => row.domain === "drywall").length === EXPECTED_DRYWALL
+    && targets.filter((row) => row.domain === "concrete").length === EXPECTED_CONCRETE
     && targets.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
   `R58_REPAIRED_63_TARGETS:${targets.length}/${EXPECTED_TARGETS}`);
   const targetByCatalog = new Map(targets.map((row) => [String(row.catalog_id), row]));
@@ -771,7 +915,8 @@ async function main(): Promise<void> {
       for (const manifest of manifests) {
         const target = targetByCatalog.get(String(manifest.catalog_id));
         invariant(target, `R58_REPAIRED_63_TARGET_MISSING:${manifest.catalog_id}`);
-        const sourceTrace = traceByCatalog.get(String(manifest.catalog_id)) ?? (HVAC_NO_AUTHORITATIVE_TRACE
+        const sourceTrace = traceByCatalog.get(String(manifest.catalog_id))
+          ?? (HVAC_NO_AUTHORITATIVE_TRACE || CONCRETE_NO_AUTHORITATIVE_TRACE
           ? {
             provenance_kind: "NO_AUTHORITATIVE_RUNTIME_TRACE",
             proposal_source_ref: SPEC_PATH,
@@ -796,7 +941,18 @@ async function main(): Promise<void> {
           "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
           [definition.id],
         )).rows as Json[];
-        const trace = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED
+        const priceBindings = CONCRETE_NO_AUTHORITATIVE_TRACE ? (await client.query(`
+          select binding.* from public.estimate_resource_price_route_binding binding
+          join public.estimate_resource_spec resource on resource.id=binding.resource_spec_id
+          where resource.definition_version_id=$1 order by binding.resource_spec_id,binding.priority,binding.route_id
+        `, [definition.id])).rows as Json[] : [];
+        if (CONCRETE_NO_AUTHORITATIVE_TRACE) {
+          invariant(priceBindings.length === resources.length,
+            `R58_CONCRETE_BASELINE_PRICE_BINDING_DENOMINATOR:${definition.catalog_id}:${priceBindings.length}/${resources.length}`);
+        }
+        const trace = CONCRETE_NO_AUTHORITATIVE_TRACE
+          ? buildConcreteApprovedBaselineTrace(parameters, definition)
+          : HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED
           ? buildHvacApprovedBaselineTrace(parameters, definition, sourceTrace)
           : DRYWALL_TRACE_NOT_ADMITTED
             ? buildDrywallApprovedBaselineTrace(parameters, definition, sourceTrace)
@@ -804,7 +960,7 @@ async function main(): Promise<void> {
             ? augmentAsphaltTraceFromAcceptedRows(sourceTrace, formulas, resources)
             : sourceTrace;
         const built = buildAsset({
-          target, definition, parameters, formulas, resources, trace,
+          target, definition, parameters, formulas, resources, priceBindings, trace,
           parameterSchemaSha256: manifest.parameter_schema_sha256,
           candidateReleaseId, head,
         });
@@ -821,6 +977,7 @@ async function main(): Promise<void> {
       invariant(ledger.length === EXPECTED_TARGETS
         && ledger.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
         && ledger.filter((row) => row.domain === "drywall").length === EXPECTED_DRYWALL
+        && ledger.filter((row) => row.domain === "concrete").length === EXPECTED_CONCRETE
         && ledger.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
       `R58_REPAIRED_63_LEDGER:${ledger.length}/${EXPECTED_TARGETS}`);
       invariant(ledger.reduce((sum, row) => sum + row.compiledRows, 0) === EXPECTED_COMPILED_ROWS,
@@ -845,8 +1002,9 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, ledgerSha256: sha256(ledger) }),
-        JSON.stringify({ [HVAC_NO_AUTHORITATIVE_TRACE
-          ? "r58HvacNoAuthoritativeTraceApprovedBaselineCandidates68"
+        JSON.stringify({ [CONCRETE_NO_AUTHORITATIVE_TRACE
+          ? "r58ConcreteNoAuthoritativeTraceApprovedBaselineCandidates1218"
+          : HVAC_NO_AUTHORITATIVE_TRACE ? "r58HvacNoAuthoritativeTraceApprovedBaselineCandidates68"
           : HVAC_TRACE_NOT_ADMITTED ? "r58HvacApprovedBaselineCandidates894"
           : DRYWALL_TRACE_NOT_ADMITTED
             ? "r58DrywallApprovedBaselineCandidates500"
@@ -855,6 +1013,7 @@ async function main(): Promise<void> {
             : "r58RepairedCompileRedCandidates63"]: {
           contract: CONTRACT, specSha256: SPEC_SHA256, readyForBackend: EXPECTED_TARGETS,
           asphalt: EXPECTED_ASPHALT, drywall: EXPECTED_DRYWALL, hvac: EXPECTED_HVAC,
+          concrete: EXPECTED_CONCRETE,
           compiledRows: EXPECTED_COMPILED_ROWS,
           terminalGreenClaimed: false, searchCutover: false, runtime8081Switched: false,
         } }),
@@ -869,8 +1028,9 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = ledger.map((row) => stable(row)).join("\n") + (ledger.length > 0 ? "\n" : "");
-  const evidenceStem = HVAC_NO_AUTHORITATIVE_TRACE
-    ? "R58_HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE_CANDIDATES_68"
+  const evidenceStem = CONCRETE_NO_AUTHORITATIVE_TRACE
+    ? "R58_CONCRETE_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE_CANDIDATES_1218"
+    : HVAC_NO_AUTHORITATIVE_TRACE ? "R58_HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE_CANDIDATES_68"
     : HVAC_TRACE_NOT_ADMITTED ? "R58_HVAC_APPROVED_BASELINE_CANDIDATES_894"
     : DRYWALL_TRACE_NOT_ADMITTED
       ? "R58_DRYWALL_APPROVED_BASELINE_CANDIDATES_500"
@@ -888,6 +1048,7 @@ async function main(): Promise<void> {
     targets: EXPECTED_TARGETS,
     asphalt: EXPECTED_ASPHALT,
     drywall: EXPECTED_DRYWALL,
+    concrete: EXPECTED_CONCRETE,
     hvac: EXPECTED_HVAC,
     baselinesChanged: idempotent ? 0 : ledger.length,
     compiledRowsValidated: idempotent ? EXPECTED_COMPILED_ROWS : ledger.reduce((sum, row) => sum + row.compiledRows, 0),
@@ -899,8 +1060,9 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_${HVAC_NO_AUTHORITATIVE_TRACE
-      ? "HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE"
+    status: `GREEN_R58_${CONCRETE_NO_AUTHORITATIVE_TRACE
+      ? "CONCRETE_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE"
+      : HVAC_NO_AUTHORITATIVE_TRACE ? "HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE"
       : HVAC_TRACE_NOT_ADMITTED ? "HVAC_APPROVED_BASELINE"
       : DRYWALL_TRACE_NOT_ADMITTED
         ? "DRYWALL_APPROVED_BASELINE"
