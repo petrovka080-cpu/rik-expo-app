@@ -932,9 +932,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     } catch (error) {
       const code = error instanceof Error ? error.message : String(error);
       this.setState({
-        statusMessage: code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
-          ? "Backend не содержит обязательной исходной модели этой работы. Пустая смета и вымышленные значения запрещены."
-          : "Не удалось сформировать исходную backend-смету. Второй пустой экран не открыт; ошибка зафиксирована.",
+        statusMessage: code.startsWith("CANONICAL_BACKEND_DEFINITION_MISSING:")
+          ? "Работа найдена в поиске, но её расчётная backend-модель ещё не загружена. Смета не создана: вымышленные материалы и ложная сумма запрещены."
+          : code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
+            ? "Backend не содержит обязательной исходной модели этой работы. Пустая смета и вымышленные значения запрещены."
+            : "Не удалось сформировать исходную backend-смету. Второй пустой экран не открыт; ошибка зафиксирована.",
       });
     } finally {
       this.canonicalBaselineCompileInFlight = false;

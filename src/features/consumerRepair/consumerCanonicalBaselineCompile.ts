@@ -4,10 +4,15 @@ import {
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
-import type {
-  CanonicalEstimateCatalogItem,
-  CanonicalEstimateParameterInputValue,
+import {
+  CanonicalEstimateApiError,
+  type CanonicalEstimateCatalogItem,
+  type CanonicalEstimateParameterInputValue,
 } from "../../lib/estimate/backendPlatform/contracts";
+/*
+ * This module is deliberately backend-only: it may derive typed inputs from
+ * the user's prompt, but it never compiles a fallback estimate on the client.
+ */
 import {
   mapAiEstimateToForemanDraft,
   verifyForemanAiEstimatePayloadParity,
@@ -17,12 +22,21 @@ import {
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 
 function extractUserQuantity(prompt: string): UserQuantity | null {
-  const match = /\b(\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|м2|м²|м3|м³|м|кг|тонн(?:а|ы)?|т)\b/iu.exec(prompt);
+  const normalizedPrompt = prompt
+    .replace(/м²/giu, "м2")
+    .replace(/м³/giu, "м3")
+    .replace(/(?:кв\.?\s*|квадратн(?:ый|ая|ое|ые|ого|ой|ую|ых|ым|ыми)?\s+)метр(?:а|ов)?/giu, "м2")
+    .replace(/(?:куб\.?\s*|кубическ(?:ий|ая|ое|ие|ого|ой|ую|их|им|ими)?\s+)метр(?:а|ов)?/giu, "м3");
+  const match = /\b(\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|м2|м3|м|кг|тонн(?:а|ы)?|т)\b/iu.exec(normalizedPrompt);
   if (!match) return null;
-  const rawUnit = match[2].toLocaleLowerCase("ru-RU").replace("²", "2").replace("³", "3");
+  const rawUnit = match[2]
+    .toLocaleLowerCase("ru-RU")
+    .replace("²", "2")
+    .replace("³", "3")
+    .replace(/[.\s]+/gu, "");
   const unit = /^шт|^штук/u.test(rawUnit) ? "pcs"
-    : rawUnit === "м2" ? "m2"
-      : rawUnit === "м3" ? "m3"
+    : rawUnit === "м2" || rawUnit.startsWith("кв") || rawUnit.startsWith("квадратн") ? "m2"
+      : rawUnit === "м3" || rawUnit.startsWith("куб") || rawUnit.startsWith("кубическ") ? "m3"
         : rawUnit === "м" ? "m"
           : rawUnit === "кг" ? "kg"
             : rawUnit === "т" || rawUnit.startsWith("тонн") ? "t"
@@ -82,7 +96,12 @@ export async function compileConsumerCanonicalBaseline(input: {
   catalogId: string;
   prompt: string;
 }): Promise<ForemanAiEstimateDraftMapping> {
-  const catalog = await getCanonicalEstimateCatalogItem(input.catalogId);
+  const catalog = await getCanonicalEstimateCatalogItem(input.catalogId).catch((error: unknown) => {
+    if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
+      throw new Error(`CANONICAL_BACKEND_DEFINITION_MISSING:${input.catalogId}`);
+    }
+    throw error;
+  });
   const parameters = buildCanonicalBaselineInputs({ catalog, prompt: input.prompt });
   const compiled = await compileCanonicalEstimateAndLoad({
     request: {
