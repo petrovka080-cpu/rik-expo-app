@@ -406,13 +406,18 @@ async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Pr
     const parameter = spec.parameters[ordinal]!;
     const truth = { semantic_parameter_key: `${spec.catalogId}:${parameter.id}`, visibility_role: "USER_INPUT",
       description_ru: parameter.description, default_policy: "DISCLOSED_PRELIMINARY_BASELINE",
+      value_source_role: "VISIBLE_BASELINE_ASSUMPTION", baseline_assumption_id: `${spec.catalogId}:${parameter.id}`,
       formula_consumers: baseline.formulaConsumers[parameter.id], resource_branch_consumers: baseline.resourceConsumers[parameter.id],
       validation_rules: [stableJson(parameter.constraints ?? {})], conflicts_with: [],
       guide: { guide_kind: "PROJECT_OR_TDS_RULE", guide_short_ru: parameter.guide,
         source_role: "PROJECT_DOCUMENTATION", source_document: spec.standardTitle, source_locator: spec.standardUrl,
         canonical_unit: parameter.unit ?? "dimensionless", guide_validation_policy: "INFORMATION_ONLY",
         verified_at: "2026-08-17" }, provenance: { owner: "backend", contract: CONTRACT,
-        approvedTemplateBaselineId: baseline.id, sourceReleaseId: releaseId } };
+        baselineOwner: "approved-template-baseline:r54", sourceCatalogId: spec.catalogId,
+        sourceReleaseId: releaseId, sourceDefinitionVersionId: definitionId,
+        sourceParameterSchemaId: baseline.parameterSchemaSha256,
+        approvedTemplateBaselineId: baseline.id, acceptanceEvidenceSha256: baseline.acceptanceEvidenceSha256,
+        approvedTemplateBinding: { contract: CONTRACT, businessSemanticsChanged: false } } };
     await client.query(`insert into public.estimate_parameter_definition(
       definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,default_value,
       constraints_json,truth_metadata,approved_template_baseline_id
