@@ -51,6 +51,14 @@ function optionNumber(name: string, fallback: number): number {
 
 const SHARD_SIZE = optionNumber("--shard-size", DEFAULT_SHARD_SIZE);
 const LIMIT = optionNumber("--limit", PROBE ? 2 : EXPECTED_TOTAL);
+const VACUUM_EVERY_SHARDS = 10;
+const RUNTIME_TABLES = [
+  "estimate_revision_row",
+  "estimate_revision_row_price",
+  "estimate_revision_artifact",
+  "estimate_revision",
+  "estimate_compile_job",
+] as const;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -561,6 +569,13 @@ async function main(): Promise<void> {
       invariant(definitions.length === shardIds.length, `R58_BACKEND_SHARD_LOAD:${definitions.length}/${shardIds.length}`);
       const ledger = await processShard(client, definitions, head);
       const cleanup = await cleanupRuntime(client);
+      const shardNumber = offset / SHARD_SIZE + 1;
+      const maintenanceVacuum = shardNumber % VACUUM_EVERY_SHARDS === 0
+        || offset + shardIds.length === pendingCatalogIds.length;
+      if (maintenanceVacuum) {
+        for (const table of RUNTIME_TABLES) await client.query(`vacuum (analyze) public.${table}`);
+      }
+      cleanup.maintenanceVacuum = maintenanceVacuum;
       for (const row of ledger) {
         row.cleanup = cleanup;
         appendFileSync(ledgerPath, `${JSON.stringify(row)}\n`, "utf8");
