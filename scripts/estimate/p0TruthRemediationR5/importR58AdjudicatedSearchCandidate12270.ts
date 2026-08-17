@@ -400,7 +400,7 @@ async function main(): Promise<void> {
       const existingHashSet = (await client.query(
         "select encode(extensions.digest(convert_to(string_agg(adjudication_sha256,E'\\n' order by source_catalog_id),'UTF8'),'sha256'),'hex') hash from public.estimate_catalog_adjudication_r58",
       )).rows[0].hash;
-      const expectedHashSet = sha256(`${adjudications.map((row) => row.adjudication_sha256).join("\n")}\n`);
+      const expectedHashSet = sha256(adjudications.map((row) => row.adjudication_sha256).join("\n"));
       invariant(existingHashSet === expectedHashSet, "R58_SEARCH_EXISTING_ADJUDICATION_HASH_DRIFT");
     }
 
