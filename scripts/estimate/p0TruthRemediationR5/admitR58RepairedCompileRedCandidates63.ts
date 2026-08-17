@@ -395,7 +395,7 @@ function buildAsset(input: {
   let sensitivityScenario: Json | null = null;
   if (DRYWALL_TRACE_NOT_ADMITTED) {
     const sensitivityParameter = input.parameters.find((parameter) => {
-      if (!['decimal', 'integer'].includes(String(parameter.value_type))) return false;
+      if (!parameter.required || !['decimal', 'integer'].includes(String(parameter.value_type))) return false;
       const parameterId = String(parameter.parameter_id);
       return input.formulas.some((formula) => String(formula.expression_source).replace(/\s+/gu, "") === parameterId);
     });
