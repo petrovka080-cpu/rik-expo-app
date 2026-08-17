@@ -14,7 +14,17 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
-const CONTRACT = "p0-one-monolith-r58-hvac-semantic-owner-repair-50.v1";
+const TRACE_NOT_ADMITTED = process.argv.includes("--trace-not-admitted");
+const EXPECTED_DEFINITIONS = TRACE_NOT_ADMITTED ? 894 : 50;
+const EXPECTED_CHANGED_ROWS = TRACE_NOT_ADMITTED ? 24_180 : 3_084;
+const EXPECTED_CHILD_COST_GROUPS = TRACE_NOT_ADMITTED ? 4_030 : 514;
+const EXPECTED_SUCCESSOR_ENTRIES = TRACE_NOT_ADMITTED ? 1_507 : 62;
+const CONTRACT = TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-hvac-trace-not-admitted-owner-repair-894.v1"
+  : "p0-one-monolith-r58-hvac-semantic-owner-repair-50.v1";
+const SUCCESSOR_METADATA_KEY = TRACE_NOT_ADMITTED
+  ? "r58HvacTraceNotAdmittedSuccessor"
+  : "r58HvacSemanticOwnerSuccessor";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const MATRIX_PATH = resolve(
@@ -232,7 +242,9 @@ function isChildOwner(row: Json): boolean {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  invariant(process.argv.length === 2 || (process.argv.length === 3 && apply),
+  const allowedArgs = new Set(["--apply", "--trace-not-admitted"]);
+  invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
     "R58_HVAC_50_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_HVAC_50_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -241,17 +253,23 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_HVAC_50_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_HVAC_50_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === "COMPILE_RED_937"
+  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === (TRACE_NOT_ADMITTED
+    ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937")
     && row.domain === "hvac_heat_supply");
-  invariant(targets.length === 50 && new Set(targets.map((row) => row.catalog_id)).size === 50,
-    `R58_HVAC_50_TARGETS:${targets.length}/50`);
-  invariant(targets.every((row) => row.current_validation_blockers?.length === 1
-    && /^duplicate_semantic_owners:\d+$/u.test(row.current_validation_blockers[0])),
-  "R58_HVAC_50_BLOCKER_DRIFT");
+  invariant(targets.length === EXPECTED_DEFINITIONS
+    && new Set(targets.map((row) => row.catalog_id)).size === EXPECTED_DEFINITIONS,
+  `R58_HVAC_50_TARGETS:${targets.length}/${EXPECTED_DEFINITIONS}`);
+  if (!TRACE_NOT_ADMITTED) {
+    invariant(targets.every((row) => row.current_validation_blockers?.length === 1
+      && /^duplicate_semantic_owners:\d+$/u.test(row.current_validation_blockers[0])),
+    "R58_HVAC_50_BLOCKER_DRIFT");
+  }
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: apply ? "r58-hvac-owner-repair-50-apply" : "r58-hvac-owner-repair-50-dry-run",
+    application_name: apply
+      ? `r58-hvac-owner-repair-${EXPECTED_DEFINITIONS}-apply`
+      : `r58-hvac-owner-repair-${EXPECTED_DEFINITIONS}-dry-run`,
   });
   await client.connect();
   const records: Json[] = [];
@@ -276,11 +294,13 @@ async function main(): Promise<void> {
       join public.estimate_definition_version version on version.id=manifest.definition_version_id
       where manifest.release_id=$1 and manifest.catalog_id=any($2::text[]) order by manifest.catalog_id
     `, [candidateReleaseId, targetCatalogIds])).rows as Json[];
-    invariant(manifests.length === 50, `R58_HVAC_50_MANIFESTS:${manifests.length}/50`);
+    invariant(manifests.length === EXPECTED_DEFINITIONS,
+      `R58_HVAC_50_MANIFESTS:${manifests.length}/${EXPECTED_DEFINITIONS}`);
     const successors = manifests.filter((row) => row.definition_release_id === candidateReleaseId
-      && row.definition_source_metadata?.r58HvacSemanticOwnerSuccessor?.contract === CONTRACT);
+      && row.definition_source_metadata?.[SUCCESSOR_METADATA_KEY]?.contract === CONTRACT);
     if (successors.length > 0) {
-      invariant(successors.length === 50, `R58_HVAC_50_PARTIAL_IDEMPOTENCY:${successors.length}/50`);
+      invariant(successors.length === EXPECTED_DEFINITIONS,
+        `R58_HVAC_50_PARTIAL_IDEMPOTENCY:${successors.length}/${EXPECTED_DEFINITIONS}`);
       const ids = successors.map((row) => row.definition_version_id);
       const duplicateOwners = Number((await client.query(`
         select count(*)::int value from (
@@ -428,7 +448,7 @@ async function main(): Promise<void> {
           successorDefinitionId, candidateReleaseId, definition.catalog_id, successorVersion,
           definition.passport, definition.applicability, definitionSha256, {
             ...(definition.source_metadata ?? {}),
-            r58HvacSemanticOwnerSuccessor: {
+            [SUCCESSOR_METADATA_KEY]: {
               contract: CONTRACT, specSha256: SPEC_SHA256,
               predecessorDefinitionVersionId: definition.id,
               predecessorDefinitionSha256: definition.definition_sha256,
@@ -521,9 +541,10 @@ async function main(): Promise<void> {
         });
         changedRows += changed.length;
       }
-      invariant(records.length === 50 && changedRows === 3_084,
-        `R58_HVAC_50_DENOMINATOR:${records.length}/50:${changedRows}/3084`);
-      invariant(records.reduce((sum, row) => sum + row.childCostBoundaryGroupsPreserved, 0) === 514,
+      invariant(records.length === EXPECTED_DEFINITIONS && changedRows === EXPECTED_CHANGED_ROWS,
+        `R58_HVAC_50_DENOMINATOR:${records.length}/${EXPECTED_DEFINITIONS}:${changedRows}/${EXPECTED_CHANGED_ROWS}`);
+      invariant(records.reduce((sum, row) => sum + row.childCostBoundaryGroupsPreserved, 0)
+        === EXPECTED_CHILD_COST_GROUPS,
         "R58_HVAC_50_CHILD_COST_BOUNDARY_GROUPS");
       const counts = (await client.query(`
         select
@@ -532,17 +553,19 @@ async function main(): Promise<void> {
           (select count(*)::int from public.estimate_definition_version where release_id=$1) direct_definitions,
           (select count(*)::int from public.estimate_definition_release where status='active') active_releases
       `, [candidateReleaseId])).rows[0] as Json;
-      invariant(counts.manifest_rows === 4_272 && counts.successor_entries === 62
-        && counts.direct_definitions === 62 && counts.active_releases === 1,
+      invariant(counts.manifest_rows === 4_272 && counts.successor_entries === EXPECTED_SUCCESSOR_ENTRIES
+        && counts.direct_definitions === EXPECTED_SUCCESSOR_ENTRIES && counts.active_releases === 1,
       `R58_HVAC_50_CANDIDATE_COUNTS:${stable(counts)}`);
       await client.query(`update public.estimate_definition_release set
         source_commit=$2,source_tree=$3,source_package_sha256=$4,
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, changedRows, records: records.map((row) => row.afterContentSha256) }),
-        JSON.stringify({ r58HvacSemanticOwnerRepair50: {
-          contract: CONTRACT, specSha256: SPEC_SHA256, definitions: 50,
-          repairedRows: changedRows, childCostBoundaryGroupsPreserved: 514,
+        JSON.stringify({ [TRACE_NOT_ADMITTED
+          ? "r58HvacTraceNotAdmittedOwnerRepair894"
+          : "r58HvacSemanticOwnerRepair50"]: {
+          contract: CONTRACT, specSha256: SPEC_SHA256, definitions: EXPECTED_DEFINITIONS,
+          repairedRows: changedRows, childCostBoundaryGroupsPreserved: EXPECTED_CHILD_COST_GROUPS,
           activeReleaseSwitched: false, searchCutover: false, runtime8081Switched: false,
         } }),
       ]);
@@ -556,9 +579,10 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = records.map((row) => stable(row)).join("\n") + (records.length > 0 ? "\n" : "");
-  const ledgerPath = resolve(OUTPUT_ROOT, apply
-    ? "R58_HVAC_SEMANTIC_OWNER_REPAIR_50_APPLY.jsonl"
-    : "R58_HVAC_SEMANTIC_OWNER_REPAIR_50_DRY_RUN.jsonl");
+  const evidenceStem = TRACE_NOT_ADMITTED
+    ? "R58_HVAC_TRACE_NOT_ADMITTED_OWNER_REPAIR_894"
+    : "R58_HVAC_SEMANTIC_OWNER_REPAIR_50";
+  const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
     schemaVersion: CONTRACT,
     capturedAt: new Date().toISOString(),
@@ -566,9 +590,9 @@ async function main(): Promise<void> {
     mode: idempotent ? "IDEMPOTENCY_NO_WRITE" : apply ? "APPLY" : "DRY_RUN_ROLLBACK",
     source: { branch, head, tree },
     candidateReleaseId,
-    definitions: 50,
+    definitions: EXPECTED_DEFINITIONS,
     changedRows: idempotent ? 0 : changedRows,
-    childCostBoundaryGroupsPreserved: 514,
+    childCostBoundaryGroupsPreserved: EXPECTED_CHILD_COST_GROUPS,
     localDuplicateCostOwners: 0,
     ledgerPath: idempotent ? null : ledgerPath,
     ledgerSha256: idempotent ? null : sha256(ledgerText),
@@ -576,17 +600,12 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: idempotent
-      ? "GREEN_R58_HVAC_SEMANTIC_OWNER_REPAIR_50_IDEMPOTENT_0"
-      : apply
-        ? "GREEN_R58_HVAC_SEMANTIC_OWNER_REPAIR_50_50_ROWS_3084_APPLIED"
-        : "GREEN_R58_HVAC_SEMANTIC_OWNER_REPAIR_50_50_ROWS_3084_DRY_RUN_ROLLED_BACK",
+    status: `GREEN_R58_HVAC_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_" : ""}SEMANTIC_OWNER_REPAIR_${EXPECTED_DEFINITIONS}_${
+      idempotent ? "IDEMPOTENT_0" : apply ? `ROWS_${EXPECTED_CHANGED_ROWS}_APPLIED`
+        : `ROWS_${EXPECTED_CHANGED_ROWS}_DRY_RUN_ROLLED_BACK`}`,
   };
-  const summaryPath = resolve(OUTPUT_ROOT, idempotent
-    ? "R58_HVAC_SEMANTIC_OWNER_REPAIR_50_IDEMPOTENCY.json"
-    : apply
-      ? "R58_HVAC_SEMANTIC_OWNER_REPAIR_50_APPLY.json"
-      : "R58_HVAC_SEMANTIC_OWNER_REPAIR_50_DRY_RUN.json");
+  const summaryPath = resolve(OUTPUT_ROOT,
+    `${evidenceStem}_${idempotent ? "IDEMPOTENCY" : apply ? "APPLY" : "DRY_RUN"}.json`);
   mkdirSync(dirname(summaryPath), { recursive: true });
   if (!idempotent) writeFileSync(ledgerPath, ledgerText, "utf8");
   writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
