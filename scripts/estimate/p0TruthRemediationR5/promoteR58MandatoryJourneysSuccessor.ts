@@ -473,7 +473,7 @@ async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Pr
     const routeId = uuid(`${CONTRACT}:price-route:${spec.catalogId}:${resource.id}`);
     await client.query(`insert into public.estimate_price_route(
       id,route_key,currency_code,region_code,priority,source_kind,metadata,active
-    ) values($1,$2,'KGS','KG-B',1,'manual_supplier_confirmation',$3::jsonb,true)`, [routeId,
+    ) values($1,$2,'KGS','KG-B',1,'manual',$3::jsonb,true)`, [routeId,
       `${CONTRACT}:${spec.catalogId}:${resource.id}`, JSON.stringify({ priceState: "PRICE_REQUIRED", artificialPriceForbidden: true })]);
     await client.query(`insert into public.estimate_resource_price_route_binding(resource_spec_id,route_id,price_key,priority)
       values($1,$2,$3,1)`, [resourceId, routeId, `${spec.catalogId}:${resource.id}`]);
