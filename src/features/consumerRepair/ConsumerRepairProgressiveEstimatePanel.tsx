@@ -11,11 +11,13 @@ import {
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
-import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type {
   CanonicalParameterSession,
 } from "../../lib/estimate/canonicalParameters";
-import { buildCanonicalParameterCards } from "../../lib/estimatePresentation/buildCanonicalParameterCards";
+import {
+  buildCanonicalParameterCards,
+  buildRevisionParameterCards,
+} from "../../lib/estimatePresentation/buildCanonicalParameterCards";
 import type {
   EstimateDraftRevision,
   EstimateDraftRevisionDiff,
@@ -181,12 +183,6 @@ function buildAssumptionParameterCards(
     .filter((card): card is AiEstimateParameterCard => Boolean(card));
 }
 
-function buildStoredRevisionParameterCards(
-  revision: EstimateDraftRevision | null,
-): AiEstimateParameterCard[] {
-  return buildAiEstimateParameterCards({ revision, includeMissing: true });
-}
-
 function artifactStatus(revision: EstimateDraftRevision | null): string | null {
   if (!revision) return null;
   return revision.artifacts.artifactsValidForRevisionId === revision.revisionId
@@ -204,7 +200,7 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
     revision: input.revision,
   });
   if (canonicalCards.length > 0) return canonicalCards;
-  const storedCards = buildStoredRevisionParameterCards(input.revision);
+  const storedCards = buildRevisionParameterCards(input.revision);
   const existingKeys = new Set(storedCards.map((card) => card.key));
   return input.revision?.professionalWorkId === LEGACY_ASPHALT_WORK_ID ||
     input.revision?.matchedFamily === LEGACY_ASPHALT_WORK_ID

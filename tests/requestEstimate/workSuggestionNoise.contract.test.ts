@@ -12,6 +12,8 @@ import type {
 function item(catalogId: string, canonicalNameRu: string): CanonicalEstimateSearchItem {
   return {
     catalogId,
+    definitionVersionId: "22222222-2222-2222-2222-222222222222",
+    definitionReleaseId: "33333333-3333-3333-3333-333333333333",
     canonicalNameRu,
     groupId: "masonry",
     groupNameRu: "Кладка",
@@ -26,6 +28,8 @@ function item(catalogId: string, canonicalNameRu: string): CanonicalEstimateSear
     primaryUom: "m2",
     publicationState: "ADMITTED_BACKEND",
     catalogOrigin: "GLOBAL",
+    adjudicationClass: "EFFECTIVE_WORK",
+    estimateReady: true,
     shortScopeRu: canonicalNameRu,
     keyDistinguishingParameters: [],
     requiredInputsCount: 1,
@@ -52,15 +56,27 @@ function page(items: CanonicalEstimateSearchItem[], nextCursor: string | null): 
     groupRelationVersion: "r4",
     rankingContractVersion: "T1-T6-r4",
     resultSetSha256: "b".repeat(64),
+    rawQuery: "ла",
     normalizedQuery: "ла",
+    searchText: "ла",
+    searchMode: "PHRASE",
+    searchTokens: ["ла"],
+    parsedQuantity: null,
+    parsedUnit: null,
     filters: {},
-    literalTotalCount: 3523,
-    globalLiteralTotalCount: 3485,
-    externalLiteralTotalCount: 38,
+    scope: "WORKS",
+    resultLevel: "LITERAL",
+    literalTotalCount: 1225,
+    inventoryLiteralTotalCount: 3678,
+    globalLiteralTotalCount: 1225,
+    externalLiteralTotalCount: 0,
+    groupTotalCount: 0,
+    fuzzyTotalCount: 0,
     suggestionTotalCount: 0,
     shownCount: items.length,
     items,
     nextCursor,
+    durationMs: 10,
   };
 }
 
@@ -92,7 +108,7 @@ describe("request estimate work suggestion visibility", () => {
       append: true,
     });
 
-    expect(first.literalTotalCount).toBe(3523);
+    expect(first.literalTotalCount).toBe(1225);
     expect(second.suggestions.map((entry) => entry.workKey)).toEqual(["work-1", "work-2"]);
     expect(second.shownCount).toBe(2);
     expect(emptyConsumerRepairCanonicalWorkSearchState().suggestions).toEqual([]);

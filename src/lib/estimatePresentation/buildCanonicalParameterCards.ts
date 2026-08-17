@@ -1,5 +1,6 @@
 import type { AiEstimateParameterCard } from "../estimate/aiEstimateParameterCardContract";
 import { aiEstimateRuUnitForParameter } from "../estimate/aiEstimateRuParameterDictionary";
+import { buildAiEstimateParameterCards } from "../estimate/buildAiEstimateParameterCards";
 import type { EstimateDraftRevision } from "../estimate/estimateDraftRevisionContract";
 import type {
   CanonicalParameter,
@@ -12,6 +13,13 @@ const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze(
   crushed_layers: "crushed_layer_count",
   asphalt_layers: "asphalt_layer_count",
 });
+
+/** Presentation-owned adapter for persisted revisions; feature UI never imports the calculation layer. */
+export function buildRevisionParameterCards(
+  revision: EstimateDraftRevision | null,
+): AiEstimateParameterCard[] {
+  return buildAiEstimateParameterCards({ revision, includeMissing: true });
+}
 
 function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null): {
   guideShortRu: string;
