@@ -34,6 +34,17 @@ type OfflineStorageFailureParams = {
 const trimText = (value: unknown) => String(value ?? "").trim();
 const OFFLINE_STORAGE_WARNING_RATE_LIMIT_MS = 60_000;
 const offlineStorageWarningBuckets = new Map<string, number>();
+const quotaRecoveryMemory = new Map<string, string>();
+const QUOTA_RECOVERABLE_COMPACT_KEYS = new Set([
+  "offline_mutation_queue_v2",
+  "foreman_durable_draft_store_v2",
+]);
+
+function isQuotaExceededError(error: unknown): boolean {
+  const summary = getErrorSummary(error);
+  return summary.errorClass === "QuotaExceededError"
+    || /quota|storage.*exceed/iu.test(summary.errorMessage);
+}
 
 function shouldEmitOfflineStorageWarning(bucket: string, nowMs = Date.now()): boolean {
   const previous = offlineStorageWarningBuckets.get(bucket) ?? 0;
@@ -144,7 +155,7 @@ export const createDefaultOfflineStorage = (): OfflineStorageAdapter => ({
     const webLocalStorage = getWebLocalStorage();
     if (webLocalStorage) {
       try {
-        return webLocalStorage.getItem(key);
+        return webLocalStorage.getItem(key) ?? quotaRecoveryMemory.get(key) ?? null;
       } catch (error) {
         reportOfflineStorageFailure({
           error,
@@ -180,7 +191,31 @@ export const createDefaultOfflineStorage = (): OfflineStorageAdapter => ({
     if (webLocalStorage) {
       try {
         webLocalStorage.setItem(key, value);
+        quotaRecoveryMemory.delete(key);
       } catch (error) {
+        if (QUOTA_RECOVERABLE_COMPACT_KEYS.has(key) && isQuotaExceededError(error)) {
+          quotaRecoveryMemory.set(key, value);
+          try {
+            // Replacing a legacy oversized value can fail before the browser
+            // releases the bytes owned by that same key. The current compact
+            // payload remains available in memory until the atomic retry wins.
+            webLocalStorage.removeItem(key);
+            webLocalStorage.setItem(key, value);
+            quotaRecoveryMemory.delete(key);
+            return;
+          } catch (recoveryError) {
+            reportOfflineStorageFailure({
+              error: recoveryError,
+              event: "write_failed",
+              scope: "offlineStorage.write",
+              key,
+              sourceKind: "web_local_storage",
+              errorStage: "write",
+              kind: "degraded_fallback",
+            });
+            return;
+          }
+        }
         reportOfflineStorageFailure({
           error,
           event: "write_failed",
@@ -208,6 +243,7 @@ export const createDefaultOfflineStorage = (): OfflineStorageAdapter => ({
     }
   },
   async removeItem(key) {
+    quotaRecoveryMemory.delete(key);
     const webLocalStorage = getWebLocalStorage();
     if (webLocalStorage) {
       try {

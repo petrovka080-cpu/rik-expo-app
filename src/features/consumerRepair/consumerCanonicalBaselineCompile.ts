@@ -20,6 +20,10 @@ import {
 } from "../../lib/foremanAiEstimate";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
+type CanonicalBaselinePlan = {
+  parameters: Record<string, CanonicalEstimateParameterInputValue>;
+  assumptions: string[];
+};
 
 function extractUserQuantity(prompt: string): UserQuantity | null {
   const normalizedPrompt = prompt
@@ -56,20 +60,122 @@ function parameterAcceptsQuantity(
   return quantity.unit != null && unit === quantity.unit;
 }
 
-export function buildCanonicalBaselineInputs(input: {
+function allowedValues(parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]): unknown[] {
+  const raw = parameter.constraints.values
+    ?? parameter.constraints.allowedValues
+    ?? parameter.constraints.enum;
+  return Array.isArray(raw) ? raw : [];
+}
+
+function boundedPositiveNumber(
+  parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
+): string {
+  const minimum = parameter.constraints.min == null ? null : Number(parameter.constraints.min);
+  const minimumExclusive = parameter.constraints.minExclusive == null
+    ? null
+    : Number(parameter.constraints.minExclusive);
+  const maximum = parameter.constraints.max == null ? null : Number(parameter.constraints.max);
+  let value = 1;
+  if (Number.isFinite(minimum) && value < Number(minimum)) value = Number(minimum);
+  if (Number.isFinite(minimumExclusive) && value <= Number(minimumExclusive)) {
+    value = Number(minimumExclusive) + (parameter.valueType === "integer" ? 1 : 0.01);
+  }
+  if (Number.isFinite(maximum) && value > Number(maximum)) value = Number(maximum);
+  if (parameter.valueType === "integer") value = Math.ceil(value);
+  return String(value);
+}
+
+function baselineValue(
+  parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
+): CanonicalEstimateParameterInputValue | undefined {
+  if (parameter.defaultValue != null) {
+    return parameter.defaultValue as CanonicalEstimateParameterInputValue;
+  }
+  if (parameter.valueType === "boolean") return true;
+  if (parameter.valueType === "enum") {
+    const first = allowedValues(parameter)[0];
+    return first == null ? undefined : String(first);
+  }
+  if (parameter.valueType === "decimal" || parameter.valueType === "integer") {
+    return boundedPositiveNumber(parameter);
+  }
+  if (parameter.valueType === "text") return "1";
+  if (parameter.valueType === "array_object") return [];
+  return undefined;
+}
+
+function conditionMatches(
+  raw: unknown,
+  values: Record<string, CanonicalEstimateParameterInputValue>,
+): boolean {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
+  const condition = raw as Record<string, unknown>;
+  return typeof condition.parameterId === "string"
+    && values[condition.parameterId] === condition.equals;
+}
+
+function normalizeCrossFieldBaseline(
+  catalog: CanonicalEstimateCatalogItem,
+  values: Record<string, CanonicalEstimateParameterInputValue>,
+): void {
+  const enabledBooleanGroups = new Set<string>();
+  for (const parameter of catalog.parameterSchema) {
+    const group = parameter.constraints.mutuallyExclusiveBooleanGroup;
+    if (parameter.valueType !== "boolean" || group == null) continue;
+    const key = String(group);
+    if (enabledBooleanGroups.has(key)) values[parameter.parameterId] = false;
+    else enabledBooleanGroups.add(key);
+  }
+  for (let pass = 0; pass < 4; pass += 1) {
+    for (const parameter of catalog.parameterSchema) {
+      if (conditionMatches(parameter.constraints.forbiddenWhen, values) && !parameter.required) {
+        delete values[parameter.parameterId];
+        continue;
+      }
+      if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") continue;
+      const current = Number(values[parameter.parameterId]);
+      if (!Number.isFinite(current)) continue;
+      let next = current;
+      for (const [constraint, adjustment] of [
+        ["greaterThanOrEqualParameter", 0],
+        ["greaterThanParameter", parameter.valueType === "integer" ? 1 : 0.01],
+      ] as const) {
+        const peerId = parameter.constraints[constraint];
+        const peer = peerId == null ? Number.NaN : Number(values[String(peerId)]);
+        if (Number.isFinite(peer)) next = Math.max(next, peer + adjustment);
+      }
+      for (const [constraint, adjustment] of [
+        ["lessThanOrEqualParameter", 0],
+        ["lessThanParameter", parameter.valueType === "integer" ? 1 : 0.01],
+      ] as const) {
+        const peerId = parameter.constraints[constraint];
+        const peer = peerId == null ? Number.NaN : Number(values[String(peerId)]);
+        if (Number.isFinite(peer)) next = Math.min(next, peer - adjustment);
+      }
+      values[parameter.parameterId] = String(parameter.valueType === "integer" ? Math.trunc(next) : next);
+    }
+  }
+}
+
+export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
-}): Record<string, CanonicalEstimateParameterInputValue> {
+}): CanonicalBaselinePlan {
   const rawInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const parameter of input.catalog.parameterSchema) {
-    if (parameter.defaultValue == null) continue;
-    rawInputs[parameter.parameterId] = parameter.defaultValue as CanonicalEstimateParameterInputValue;
+    const value = baselineValue(parameter);
+    if (value !== undefined) rawInputs[parameter.parameterId] = value;
   }
   const userQuantity = extractUserQuantity(input.prompt);
+  let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const target = input.catalog.parameterSchema.find((parameter) => parameterAcceptsQuantity(parameter, userQuantity));
-    if (target) rawInputs[target.parameterId] = userQuantity.value;
+    if (target) {
+      rawInputs[target.parameterId] = userQuantity.value;
+      userQuantityParameterId = target.parameterId;
+    }
   }
+  normalizeCrossFieldBaseline(input.catalog, rawInputs);
   const validation = validateCanonicalEstimateParameterInputs({
     schema: input.catalog.parameterSchema,
     rawInputs,
@@ -80,7 +186,25 @@ export function buildCanonicalBaselineInputs(input: {
       .map((issue) => issue.parameterId);
     throw new Error(`CANONICAL_BASELINE_CONTRACT_MISSING:${[...new Set(missing)].join(",") || validation.issues.map((issue) => issue.code).join(",")}`);
   }
-  return validation.parameters;
+  const assumptions = input.catalog.parameterSchema
+    .filter((parameter) => parameter.visibilityRole !== "INTERNAL_ONLY")
+    .filter((parameter) => parameter.parameterId !== userQuantityParameterId)
+    .filter((parameter) => validation.parameters[parameter.parameterId] != null)
+    .map((parameter) => `${parameter.titleRu}: ${String(validation.parameters[parameter.parameterId])}${parameter.unitId ? ` ${parameter.unitId}` : ""}`);
+  return {
+    parameters: validation.parameters,
+    assumptions: [
+      "Исходная смета рассчитана по явно показанным базовым допущениям; их необходимо проверить перед договором.",
+      ...assumptions,
+    ],
+  };
+}
+
+export function buildCanonicalBaselineInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> {
+  return buildCanonicalBaselinePlan(input).parameters;
 }
 
 function stableId(value: string): string {
@@ -102,7 +226,8 @@ export async function compileConsumerCanonicalBaseline(input: {
     }
     throw error;
   });
-  const parameters = buildCanonicalBaselineInputs({ catalog, prompt: input.prompt });
+  const baseline = buildCanonicalBaselinePlan({ catalog, prompt: input.prompt });
+  const parameters = baseline.parameters;
   const compiled = await compileCanonicalEstimateAndLoad({
     request: {
       idempotencyKey: `consumer-baseline-${stableId(`${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
@@ -116,6 +241,7 @@ export async function compileConsumerCanonicalBaseline(input: {
     revision: compiled.revision,
     rows: compiled.rows,
     inputText: input.prompt,
+    assumptions: baseline.assumptions,
   });
   const mapping = mapAiEstimateToForemanDraft({
     estimate,

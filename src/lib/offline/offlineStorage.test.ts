@@ -176,6 +176,30 @@ describe("offlineStorage", () => {
     expect(getPlatformObservabilityEvents()).toEqual([]);
   });
 
+  it("replaces an oversized legacy compactable web value after quota failure", async () => {
+    let current: string | null = "legacy-oversized-payload";
+    let attempts = 0;
+    const localStorage = buildLocalStorage({
+      getItem: jest.fn(() => current),
+      setItem: jest.fn((_key: string, value: string) => {
+        attempts += 1;
+        if (attempts === 1) throw new DOMException("quota exceeded", "QuotaExceededError");
+        current = value;
+      }),
+      removeItem: jest.fn(() => { current = null; }),
+    });
+    setLocalStorage(localStorage);
+    const storage = createDefaultOfflineStorage();
+
+    await expect(storage.setItem("foreman_durable_draft_store_v2", "compact-current-payload"))
+      .resolves.toBeUndefined();
+    await expect(storage.getItem("foreman_durable_draft_store_v2"))
+      .resolves.toBe("compact-current-payload");
+    expect(localStorage.removeItem).toHaveBeenCalledWith("foreman_durable_draft_store_v2");
+    expect(localStorage.setItem).toHaveBeenCalledTimes(2);
+    expect(getPlatformObservabilityEvents()).toEqual([]);
+  });
+
   it("keeps the default async storage loader quiet under Jest", async () => {
     configureOfflineStorageTestHarness();
     asyncStorage.setItem.mockResolvedValue();

@@ -39,6 +39,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   revision: CanonicalEstimateRevisionView;
   rows: CanonicalEstimateRevisionRowView[];
   inputText?: string;
+  assumptions?: string[];
 }): StructuredEstimatePayload {
   const sectionOrder: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
   const currency = input.revision.currencyCode;
@@ -136,7 +137,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       confidence: "high" as const,
       displayLine: `KG · ${currency}`,
     },
-    assumptions: [],
+    assumptions: input.assumptions ?? [],
     sections: sections.map((section) => ({ ...section, rows: presentationRows.filter((row) => row.sectionType === section.type) })),
     rows: presentationRows,
     totals,
@@ -156,7 +157,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     },
     work: { workKey: input.catalog.workKey, title: input.catalog.titleRu, category: input.catalog.domain },
     input: { volume: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", originalText: input.inputText },
-    assumptions: [], sections: [], tax, totals, regionalRisks: [], costIncreaseFactors: [],
+    assumptions: input.assumptions ?? [], sections: [], tax, totals, regionalRisks: [], costIncreaseFactors: [],
     clarifyingQuestions: [], sources: [], confidence: "high", requiresReview: false,
   } as unknown as GlobalEstimateResult;
   const fingerprint = input.revision.checksumSha256 || stableStructuredEstimateHash(rows);
@@ -172,7 +173,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     locale: sourceEstimate.locale,
     sourceEstimate,
     classification: { status: "accepted", workKey: input.catalog.workKey, domainKey: input.catalog.domain, titleRu: input.catalog.titleRu, confidence: 1, evidence: [] },
-    quantity: { status: "accepted", quantity: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", measurementKind: "backend_formula_graph", assumptions: [] },
+    quantity: { status: "accepted", quantity: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", measurementKind: "backend_formula_graph", assumptions: input.assumptions ?? [] },
     boq: {
       sections,
       totals: {
@@ -187,7 +188,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     presentation,
     pdf: { rows: presentation.rows, tableFormat: true, noMojibakeRequired: true },
     catalogBinding: { searchLabels: rows.map((row) => ({ rowId: row.rowId, visibleQueryRu: row.visibleName, internalKeyVisible: false as const })) },
-    assumptions: [], clarifications: [], risks: [], sections, rows, totals, tax, fingerprint,
+    assumptions: input.assumptions ?? [], clarifications: [], risks: [], sections, rows, totals, tax, fingerprint,
     visiblePolicy: { noInternalKeysVisible: true, noGenericRowsVisible: true, controlRowsAreNotPaidItems: true, uiPdfSameRows: true },
     fakeGreenClaimed: false,
   };

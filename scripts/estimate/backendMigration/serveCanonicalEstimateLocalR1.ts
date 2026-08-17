@@ -20,6 +20,9 @@ const ADMISSION_DOMAIN_ID = String(process.env.CANONICAL_ESTIMATE_ADMISSION_DOMA
 const PORT = Number(process.env.CANONICAL_ESTIMATE_LOCAL_PORT ?? 8765);
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/master11610_r1";
+const SEARCH_DATABASE_URL = process.env.CANONICAL_ESTIMATE_SEARCH_DATABASE_URL
+  ?? DATABASE_URL;
+const MODEL_DATABASE_URLS = [...new Set([DATABASE_URL, SEARCH_DATABASE_URL])];
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_ROWS = 2_000;
 const ARTIFACT_ROOT = resolve(".release-runtime/master11610-backend-canonical-r1/05-runtime/local-artifacts");
@@ -117,10 +120,65 @@ async function readBody(request: IncomingMessage): Promise<JsonRecord> {
   return parsed as JsonRecord;
 }
 
-async function withClient<T>(operation: (client: Client) => Promise<T>): Promise<T> {
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "canonical-estimate-local-runtime-r1" });
+async function withDatabaseClient<T>(
+  connectionString: string,
+  operation: (client: Client) => Promise<T>,
+): Promise<T> {
+  const client = new Client({ connectionString, application_name: "canonical-estimate-local-runtime-r1" });
   await client.connect();
   try { return await operation(client); } finally { await client.end(); }
+}
+
+async function withClient<T>(operation: (client: Client) => Promise<T>): Promise<T> {
+  return withDatabaseClient(DATABASE_URL, operation);
+}
+
+async function withSearchClient<T>(operation: (client: Client) => Promise<T>): Promise<T> {
+  return withDatabaseClient(SEARCH_DATABASE_URL, operation);
+}
+
+async function modelDatabaseUrlForCatalog(catalogId: string): Promise<string> {
+  for (const connectionString of MODEL_DATABASE_URLS) {
+    const found = await withDatabaseClient(connectionString, async (client) => Boolean((await client.query(`
+      select 1 from public.estimate_definition_version v
+      join public.estimate_definition_release r on r.id=v.release_id
+      where r.status='active' and v.catalog_id=$1 limit 1
+    `, [catalogId])).rowCount));
+    if (found) return connectionString;
+  }
+  return DATABASE_URL;
+}
+
+async function findAcrossModelDatabases<T>(
+  operation: (client: Client) => Promise<T | null | undefined>,
+): Promise<T | null> {
+  for (const connectionString of MODEL_DATABASE_URLS) {
+    const value = await withDatabaseClient(connectionString, operation);
+    if (value != null) return value;
+  }
+  return null;
+}
+
+async function modelDatabaseUrlForJob(jobId: string): Promise<string> {
+  for (const connectionString of MODEL_DATABASE_URLS) {
+    const found = await withDatabaseClient(connectionString, async (client) => Boolean((await client.query(
+      "select 1 from public.estimate_compile_job where id=$1 and owner_user_id=$2",
+      [jobId, OWNER_ID],
+    )).rowCount));
+    if (found) return connectionString;
+  }
+  return DATABASE_URL;
+}
+
+async function modelDatabaseUrlForRevision(revisionId: string): Promise<string> {
+  for (const connectionString of MODEL_DATABASE_URLS) {
+    const found = await withDatabaseClient(connectionString, async (client) => Boolean((await client.query(
+      "select 1 from public.estimate_revision where id=$1 and owner_user_id=$2",
+      [revisionId, OWNER_ID],
+    )).rowCount));
+    if (found) return connectionString;
+  }
+  return DATABASE_URL;
 }
 
 async function createJob(body: JsonRecord, operation: "compile" | "recalculate") {
@@ -133,7 +191,8 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
   const parameters = body.parameters;
   if (!parameters || typeof parameters !== "object" || Array.isArray(parameters)) throw Object.assign(new Error("parameters must be an object"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
   const parentRevisionId = operation === "recalculate" ? String(body.parentRevisionId ?? "") : null;
-  const result = await withClient(async (client) => {
+  const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
+  const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
     await client.query("begin");
     try {
       const inputPayload = {
@@ -194,7 +253,7 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
       throw error;
     }
   });
-  setImmediate(() => { void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
+  setImmediate(() => { void drainJobs(modelDatabaseUrl).catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
   return { apiVersion: API_VERSION, jobId: result.job_id, status: result.job_status, created: result.created, pollAfterMs: 250 };
 }
 
@@ -242,7 +301,8 @@ async function createLegacyJob(body: JsonRecord) {
 async function createArtifactJob(body: JsonRecord, revisionId: string, kind: "pdf" | "procurement") {
   const idempotencyKey = String(body.idempotencyKey ?? "").trim();
   if (!idempotencyKey) throw Object.assign(new Error("idempotencyKey is required"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
-  const result = await withClient(async (client) => {
+  const modelDatabaseUrl = await modelDatabaseUrlForRevision(revisionId);
+  const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
     await client.query("begin");
     try {
       await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
@@ -254,32 +314,46 @@ async function createArtifactJob(body: JsonRecord, revisionId: string, kind: "pd
       throw error;
     }
   });
-  if (result.job_id) setImmediate(() => { void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
+  if (result.job_id) setImmediate(() => { void drainJobs(modelDatabaseUrl).catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
   return { apiVersion: API_VERSION, jobId: result.job_id, artifactId: result.artifact_id, status: result.job_status, artifactStatus: result.artifact_status, created: result.created, pollAfterMs: 250 };
 }
 
-let draining = false;
-let drainRequested = false;
-let retryDrainTimer: ReturnType<typeof setTimeout> | null = null;
+type DrainState = {
+  draining: boolean;
+  drainRequested: boolean;
+  retryDrainTimer: ReturnType<typeof setTimeout> | null;
+};
 
-function scheduleRetryDrain(delayMs: number): void {
-  if (retryDrainTimer != null) return;
-  retryDrainTimer = setTimeout(() => {
-    retryDrainTimer = null;
-    void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`));
+const drainStates = new Map<string, DrainState>();
+
+function drainState(connectionString: string): DrainState {
+  const existing = drainStates.get(connectionString);
+  if (existing) return existing;
+  const created: DrainState = { draining: false, drainRequested: false, retryDrainTimer: null };
+  drainStates.set(connectionString, created);
+  return created;
+}
+
+function scheduleRetryDrain(delayMs: number, connectionString = DATABASE_URL): void {
+  const state = drainState(connectionString);
+  if (state.retryDrainTimer != null) return;
+  state.retryDrainTimer = setTimeout(() => {
+    state.retryDrainTimer = null;
+    void drainJobs(connectionString).catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`));
   }, Math.max(100, delayMs));
 }
 
-async function drainJobs(): Promise<void> {
-  if (draining) {
-    drainRequested = true;
+async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
+  const state = drainState(connectionString);
+  if (state.draining) {
+    state.drainRequested = true;
     return;
   }
-  draining = true;
+  state.draining = true;
   try {
     do {
-      drainRequested = false;
-      await withClient(async (client) => {
+      state.drainRequested = false;
+      await withDatabaseClient(connectionString, async (client) => {
         while (true) {
           const workerId = `local-runtime:${randomUUID()}`;
           const claimed = await client.query("select * from public.estimate_claim_compile_jobs_v1($1,4,120)", [workerId]);
@@ -327,15 +401,15 @@ async function drainJobs(): Promise<void> {
         const rawRetryDelayMs = retry.rows[0]?.delay_ms;
         if (rawRetryDelayMs != null) {
           const retryDelayMs = Number(rawRetryDelayMs);
-          if (Number.isFinite(retryDelayMs)) scheduleRetryDrain(retryDelayMs + 100);
+          if (Number.isFinite(retryDelayMs)) scheduleRetryDrain(retryDelayMs + 100, connectionString);
         }
       });
-    } while (drainRequested);
+    } while (state.drainRequested);
   } finally {
-    draining = false;
-    if (drainRequested) {
-      drainRequested = false;
-      setImmediate(() => { void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
+    state.draining = false;
+    if (state.drainRequested) {
+      state.drainRequested = false;
+      setImmediate(() => { void drainJobs(connectionString).catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`)); });
     }
   }
 }
@@ -774,7 +848,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     if (url.searchParams.get("token") !== "local-dev-signed-artifact-r1") {
       throw Object.assign(new Error("artifact signature invalid"), { code: "AUTH_REQUIRED", httpStatus: 401 });
     }
-    const artifact = await withClient(async (client) => (await client.query(`
+    const artifact = await findAcrossModelDatabases(async (client) => (await client.query(`
       select a.* from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
       where a.id=$1 and a.status='ready' and r.owner_user_id=$2
     `, [path[1], OWNER_ID])).rows[0]);
@@ -786,22 +860,28 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   }
   if (!request.headers.authorization) throw Object.assign(new Error("authentication required"), { code: "AUTH_REQUIRED", httpStatus: 401 });
   if (request.method === "GET" && path.length === 1 && path[0] === "runtime-manifest") {
-    const database = await withClient(async (client) => {
+    const modelDatabase = await withClient(async (client) => {
       const definitionRelease = (await client.query(`
         select id,status,source_manifest_sha256 from public.estimate_definition_release
         where status='active' order by activated_at desc nulls last,created_at desc limit 1
       `)).rows[0] ?? null;
+      const counts = (await client.query(`select
+        (select count(*)::integer from public.estimate_definition_version d join public.estimate_definition_release r on r.id=d.release_id where r.status='active') active_definitions
+      `)).rows[0];
+      return { definitionRelease, counts };
+    });
+    const searchDatabase = await withSearchClient(async (client) => {
       const searchRelease = (await client.query(`
         select id,status,snapshot_sha256,taxonomy_version,group_relation_version,ranking_contract_version
         from public.estimate_search_index_release where status='active' limit 1
       `)).rows[0] ?? null;
       const counts = (await client.query(`select
-        (select count(*)::integer from public.estimate_definition_version d join public.estimate_definition_release r on r.id=d.release_id where r.status='active') active_definitions,
         (select count(*)::integer from public.estimate_search_document d join public.estimate_search_index_release r on r.id=d.search_release_id where r.status='active') active_search_documents
       `)).rows[0];
-      return { definitionRelease, searchRelease, counts };
+      return { searchRelease, counts };
     });
     const parsedDatabaseUrl = new URL(DATABASE_URL);
+    const parsedSearchDatabaseUrl = new URL(SEARCH_DATABASE_URL);
     return send(response, 200, {
       schemaVersion: "p0-estimate-truth-remediation-r4.5-runtime-manifest.v1",
       runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
@@ -818,10 +898,15 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         name: parsedDatabaseUrl.pathname.replace(/^\//, ""),
         searchOnly: false,
       },
-      definitionRelease: database.definitionRelease,
-      searchRelease: database.searchRelease,
-      activeDefinitionCount: Number(database.counts?.active_definitions ?? 0),
-      activeSearchDocumentCount: Number(database.counts?.active_search_documents ?? 0),
+      searchDatabase: {
+        host: parsedSearchDatabaseUrl.hostname,
+        port: parsedSearchDatabaseUrl.port,
+        name: parsedSearchDatabaseUrl.pathname.replace(/^\//, ""),
+      },
+      definitionRelease: modelDatabase.definitionRelease,
+      searchRelease: searchDatabase.searchRelease,
+      activeDefinitionCount: Number(modelDatabase.counts?.active_definitions ?? 0),
+      activeSearchDocumentCount: Number(searchDatabase.counts?.active_search_documents ?? 0),
     });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "search" && path[1] === "catalog") {
@@ -831,7 +916,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
     const cursor = searchCursor(url.searchParams.get("cursor"));
     const filters = Object.fromEntries([["domain_id", String(url.searchParams.get("domain") ?? "").trim()], ["group_id", String(url.searchParams.get("groupId") ?? "").trim()], ["operation_kind", String(url.searchParams.get("operationKind") ?? "").trim()]].filter((entry) => entry[1]));
-    const result = await withClient(async (client) => {
+    const result = await withSearchClient(async (client) => {
       const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
       if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
       if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Повторите запрос."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
@@ -850,7 +935,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const groupId = decodeURIComponent(path[2]);
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
     const cursor = searchCursor(url.searchParams.get("cursor"));
-    const result = await withClient(async (client) => {
+    const result = await withSearchClient(async (client) => {
       const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
       if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
       if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Откройте группу заново."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
@@ -866,7 +951,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   }
   if (request.method === "GET" && path.length === 4 && path[0] === "search" && path[1] === "catalog" && path[3] === "relations") {
     const catalogId = decodeURIComponent(path[2]);
-    const result = await withClient(async (client) => {
+    const result = await withSearchClient(async (client) => {
       const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
       if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
       const rows = (await client.query(`select r.*,d.canonical_name_ru target_name_ru from public.estimate_search_typed_relation r join public.estimate_search_document d on d.search_release_id=r.search_release_id and d.catalog_id=r.target_catalog_id where r.search_release_id=$1 and r.source_catalog_id=$2 order by r.relationship_type,r.target_catalog_id`, [release.id, catalogId])).rows;
@@ -876,7 +961,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   }
   if (request.method === "POST" && path.length === 1 && path[0] === "drafts") {
     const body = await readBody(request) as Record<string, any>;
-    const result = await withClient(async (client) => {
+    const result = await withSearchClient(async (client) => {
       const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
       if (!release || (body.searchIndexReleaseId && body.searchIndexReleaseId !== release.id)) throw Object.assign(new Error("stale search snapshot"), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
       const selected = Array.isArray(body.selectedCatalogIds) ? [...new Set(body.selectedCatalogIds.map(String))] : [];
@@ -889,13 +974,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     return send(response, 201, { apiVersion: API_VERSION, draft: localDraftView(result) });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "drafts") {
-    const draft = await withClient(async (client) => (await client.query("select * from public.estimate_draft where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
+    const draft = await withSearchClient(async (client) => (await client.query("select * from public.estimate_draft where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
     if (!draft) throw Object.assign(new Error("draft not found"), { code: "NOT_FOUND", httpStatus: 404 });
     return send(response, 200, { apiVersion: API_VERSION, draft: localDraftView(draft) });
   }
   if (request.method === "POST" && path.length === 3 && path[0] === "drafts" && path[2] === "events") {
     const body = await readBody(request) as Record<string, any>;
-    const draft = await withClient(async (client) => {
+    const draft = await withSearchClient(async (client) => {
       await client.query("begin");
       try {
         await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
@@ -910,12 +995,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   if (request.method === "POST" && path.join("/") === "jobs/recalculate") return send(response, 202, await createJob(await readBody(request), "recalculate"));
   if (request.method === "POST" && path.join("/") === "migrations/legacy-revisions") return send(response, 202, await createLegacyJob(await readBody(request)));
   if (request.method === "GET" && path.length === 2 && path[0] === "jobs") {
-    const job = await withClient(async (client) => (await client.query("select * from public.estimate_compile_job where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
+    const job = await findAcrossModelDatabases(async (client) => (await client.query("select * from public.estimate_compile_job where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
     if (!job) throw Object.assign(new Error("job not found"), { code: "NOT_FOUND", httpStatus: 404 });
     return send(response, 200, { apiVersion: API_VERSION, jobId: job.id, operation: job.operation, status: job.status, stage: job.stage, progress: job.progress, attempt: job.attempt, resultRevisionId: job.result_revision_id, errorCode: job.error_code, createdAt: job.created_at, updatedAt: job.updated_at });
   }
   if (request.method === "POST" && path.length === 3 && path[0] === "jobs" && path[2] === "cancel") {
-    const cancelled = await withClient(async (client) => {
+    const modelDatabaseUrl = await modelDatabaseUrlForJob(path[1]);
+    const cancelled = await withDatabaseClient(modelDatabaseUrl, async (client) => {
       await client.query("begin");
       try {
         await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
@@ -935,7 +1021,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? 30) || 30));
     const before = url.searchParams.get("cursor") == null ? null : Number(url.searchParams.get("cursor"));
     if (!catalogId || (before != null && (!Number.isSafeInteger(before) || before <= 0))) throw Object.assign(new Error("invalid revision history query"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
-    const revisions = await withClient(async (client) => (await client.query(`
+    const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
+    const revisions = await withDatabaseClient(modelDatabaseUrl, async (client) => (await client.query(`
       select * from public.estimate_revision where owner_user_id=$1 and catalog_id=$2
         and ($3::integer is null or revision_number<$3) order by revision_number desc limit $4
     `, [OWNER_ID, catalogId, before, limit + 1])).rows);
@@ -959,14 +1046,15 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "revisions") {
-    const revision = await withClient(async (client) => (await client.query("select * from public.estimate_revision where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
+    const revision = await findAcrossModelDatabases(async (client) => (await client.query("select * from public.estimate_revision where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
     if (!revision) throw Object.assign(new Error("revision not found"), { code: "NOT_FOUND", httpStatus: 404 });
     return send(response, 200, { apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id, releaseId: revision.release_id, catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status, currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals, rowCount: revision.row_count, checksumSha256: revision.checksum_sha256, compilerVersion: revision.compiler_version, definitionVersion: revision.definition_version ?? null, compilerOwner: revision.compiler_owner ?? "backend", parameterSchemaHash: revision.parameter_schema_hash ?? null, inputHash: revision.input_hash ?? null, outputHash: revision.output_hash ?? revision.checksum_sha256, createdAt: revision.created_at });
   }
   if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "rows") {
     const after = cursorAfter(url.searchParams.get("cursor"));
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit") ?? 100) || 100));
-    const rows = await withClient(async (client) => (await client.query(`
+    const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
+    const rows = await withDatabaseClient(modelDatabaseUrl, async (client) => (await client.query(`
       select rr.* from public.estimate_revision_row rr
       join public.estimate_revision r on r.id=rr.revision_id
       where rr.revision_id=$1 and r.owner_user_id=$2 and rr.ordinal>$3 order by rr.ordinal limit $4
@@ -978,7 +1066,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const kind = path[3] as "pdf" | "procurement";
     if (request.method === "POST") return send(response, 202, await createArtifactJob(await readBody(request), path[1], kind));
     if (request.method === "GET") {
-      const artifact = await withClient(async (client) => (await client.query(`
+      const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
+      const artifact = await withDatabaseClient(modelDatabaseUrl, async (client) => (await client.query(`
         select a.*,r.release_id,r.checksum_sha256 revision_checksum_sha256
         from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
         where a.revision_id=$1 and a.artifact_kind=$2 and r.owner_user_id=$3
@@ -1001,7 +1090,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "catalog") {
     const catalogId = decodeURIComponent(path[1]);
-    const item = await withClient(async (client) => {
+    const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
+    const item = await withDatabaseClient(modelDatabaseUrl, async (client) => {
       const identity = (await client.query("select * from public.estimate_work_identity where catalog_id=$1 and retired_at is null", [catalogId])).rows[0];
       const definition = (await client.query(`select v.* from public.estimate_definition_version v join public.estimate_definition_release r on r.id=v.release_id where (($2::uuid is not null and r.id=$2) or ($2::uuid is null and r.status='active')) and v.catalog_id=$1`, [catalogId, TARGET_RELEASE_ID || null])).rows[0];
       if (!identity || !definition) return null;
@@ -1070,6 +1160,9 @@ const server = createServer((request, response) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   const database = (() => { try { return new URL(DATABASE_URL).pathname.replace(/^\//, ""); } catch { return "invalid"; } })();
-  process.stdout.write(JSON.stringify({ status: "READY", port: PORT, database, ownerId: OWNER_ID, targetReleaseId: TARGET_RELEASE_ID || null }) + "\n");
-  void drainJobs().catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`));
+  const searchDatabase = (() => { try { return new URL(SEARCH_DATABASE_URL).pathname.replace(/^\//, ""); } catch { return "invalid"; } })();
+  process.stdout.write(JSON.stringify({ status: "READY", port: PORT, database, searchDatabase, ownerId: OWNER_ID, targetReleaseId: TARGET_RELEASE_ID || null }) + "\n");
+  for (const connectionString of MODEL_DATABASE_URLS) {
+    void drainJobs(connectionString).catch((error) => process.stderr.write(`[canonical-local-worker] ${String(error)}\n`));
+  }
 });
