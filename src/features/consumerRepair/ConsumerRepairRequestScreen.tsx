@@ -2,7 +2,7 @@ import React from "react";
 import { router } from "expo-router";
 import { Linking, Text, TextInput, View } from "react-native";
 import {
-  applyConsumerRepairDraftRevisionParamBatchPatch, applyConsumerRepairDraftRevisionParamPatch, approveConsumerRepairRequestDraft,
+  approveConsumerRepairRequestDraft,
   buildApprovedEstimateHistoryRecord,
   commitPreparedConsumerRepairRequestBundle,
   deleteConsumerRepairRequestDraft,
@@ -17,8 +17,6 @@ import type {
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests/consumerRequestTypes";
 import {
-  awaitConsumerRepairBundleDurableCommit,
-  findConsumerRepairBundle,
   hydrateNextTransactionalConsumerRepairHistoryPage,
 } from "../../lib/consumerRequests/consumerRequestRepository";
 import type { GlobalWorkSmartSearchSuggestion } from "../../lib/ai/globalEstimate/globalWorkSmartSearch";
@@ -63,22 +61,12 @@ import {
   shouldPreserveSelectedWorkForProblemText, shouldShowConsumerRepairWorkSuggestions, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
+import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 const QUANTITY_EDIT_SAVING_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f.";
 const QUANTITY_EDIT_SAVED_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430.";
 const QUANTITY_EDIT_SAVE_FAILED_MESSAGE =
   "\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f. \u041f\u0440\u0430\u0432\u043a\u0430 \u0432\u0438\u0434\u043d\u0430, \u043d\u043e \u0435\u0449\u0435 \u043d\u0435 \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u0430.";
-
-function canonicalBackendBinding(bundle: ConsumerRepairDraftBundle | null): { revisionId: string; releaseId: string } | null {
-  for (const item of bundle?.items ?? []) {
-    const revisionId = String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
-    const releaseId = String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
-    if (revisionId && releaseId) return { revisionId, releaseId };
-  }
-  const revisionId = String(bundle?.durableHistorySummary?.sourceRevisionId ?? "").trim();
-  const releaseId = String(bundle?.durableHistorySummary?.sourceReleaseId ?? "").trim();
-  return revisionId && releaseId ? { revisionId, releaseId } : null;
-}
 
 function roundMoney(value: number): number {
   return Math.round(value * 100) / 100;
@@ -266,7 +254,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private pendingDurableQuantityCommitId = 0;
   private canonicalBaselineCompileInFlight = false;
   private approvalCommitInFlight = false;
-  private parameterApplyInFlight = false;
   private durableHistoryLoadInFlight = false;
   private canonicalWorkSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private canonicalWorkSearchAbortController: AbortController | null = null;
@@ -851,7 +838,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     statusMessage = "Изменение выполняется в каноническом backend-редакторе.",
   ): boolean {
     if (!bundle) return false;
-    const binding = canonicalBackendBinding(bundle);
+    const binding = consumerRepairCanonicalBackendBinding(bundle);
     this.props.onOpenCanonicalEstimate(
       bundle.draft.problemText?.trim() || this.state.problemText.trim() || bundle.draft.title || "Смета",
       binding?.revisionId ?? null,
@@ -978,7 +965,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
-      const canonical = canonicalBackendBinding(synced);
+      const canonical = consumerRepairCanonicalBackendBinding(synced);
       if (!canonical) {
         this.openCanonicalBackendEditor(synced, "Перед утверждением перенесите смету в canonical backend.");
         return;
@@ -1054,7 +1041,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private completePdfOpen = async () => {
     try {
       const current = this.ensureDraftBundle();
-      const canonical = canonicalBackendBinding(current);
+      const canonical = consumerRepairCanonicalBackendBinding(current);
       if (canonical) {
         const artifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
@@ -1095,7 +1082,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       ? this.findKnownHistoryBundle(requestDraftId) ?? (this.state.bundle?.draft.id === requestDraftId ? this.state.bundle : null)
       : this.state.bundle;
     const historyRecord = requestDraftId ? this.findKnownHistoryRecord(requestDraftId) : null;
-    const canonical = canonicalBackendBinding(requestedBundle ?? null) ?? (
+    const canonical = consumerRepairCanonicalBackendBinding(requestedBundle ?? null) ?? (
       historyRecord?.sourceRevisionId && historyRecord.sourceReleaseId
         ? { revisionId: historyRecord.sourceRevisionId, releaseId: historyRecord.sourceReleaseId }
         : null
@@ -1148,7 +1135,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     try {
       const source = this.findKnownHistoryBundle(requestDraftId);
       const record = this.findKnownHistoryRecord(requestDraftId);
-      const binding = canonicalBackendBinding(source) ?? (
+      const binding = consumerRepairCanonicalBackendBinding(source) ?? (
         record?.sourceRevisionId && record.sourceReleaseId
           ? { revisionId: record.sourceRevisionId, releaseId: record.sourceReleaseId }
           : null
@@ -1188,7 +1175,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private sendHistoryToMarket = async (requestDraftId: string) => {
     try {
       const source = this.findKnownHistoryBundle(requestDraftId);
-      const canonical = canonicalBackendBinding(source);
+      const canonical = consumerRepairCanonicalBackendBinding(source);
       if (!source) throw new Error("CONSUMER_REPAIR_HISTORY_NOT_FOUND");
       if (!canonical) {
         this.openCanonicalBackendEditor(source, "Для закупки сначала перенесите эту смету в canonical backend.");
@@ -1273,179 +1260,27 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.updateCurrentBundle(bundle);
   };
-  private applyParamPatch = async (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
+  private applyParamPatch = async (_operation: UserParamPatchOperation, _paramKey: string, _rawValue: string) => {
     const current = this.state.bundle;
     if (!current) return;
-    if (this.openCanonicalBackendEditor(current)) return;
-    const patches: ConsumerRepairDraftRevisionParamBatchPatch[] = [{ operation, paramKey, rawValue }];
-    const previousRevisionCount = current.estimateDraftRevisionState?.revisions.length ?? 0;
-    const expectedCatalogId = current.draft.selectedCatalogWorkId ?? null;
-    const expectedWorkKey =
-      current.canonicalParameterSession?.canonicalWorkKey ??
-      current.draft.selectedWorkKey ??
-      null;
-    try {
-      const bundle = applyConsumerRepairDraftRevisionParamPatch({
-        requestDraftId: current.draft.id,
-        operation,
-        paramKey,
-        rawValue,
-        userId: this.props.consumerUserId,
-      });
-      if (!bundle.estimateDraftRevisionState) {
-        const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
-        this.updateCurrentBundle(
-          bundle,
-          missingCount > 0
-            ? `Параметр сохранён. Для расчёта осталось уточнить: ${missingCount}.`
-            : "Параметр сохранён, но ревизия сметы не сформирована. Повторите применение; введённые данные сохранены.",
-        );
-        return;
-      }
-      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1; // single-parameter apply
-      const revisionState = bundle.estimateDraftRevisionState;
-      const revision = revisionState.revisions.find(
-        (candidate) => candidate.revisionId === revisionState.currentRevisionId,
-      );
-      const invariantFailures = [
-        revisionCount === previousRevisionCount + 1 ? "" : `revision_count:${previousRevisionCount}->${revisionCount}`,
-        revision ? "" : "current_revision_missing",
-        revision && revision.boq.rows.length > 0 ? "" : "empty_boq",
-        expectedCatalogId == null || bundle.draft.selectedCatalogWorkId === expectedCatalogId
-          ? ""
-          : `catalog_identity:${expectedCatalogId}->${bundle.draft.selectedCatalogWorkId ?? "missing"}`,
-        expectedWorkKey == null || revision?.professionalWorkId === expectedWorkKey
-          ? ""
-          : `work_identity:${expectedWorkKey}->${revision?.professionalWorkId ?? "missing"}`,
-      ].filter(Boolean);
-      if (invariantFailures.length > 0) {
-        throw new Error(`CONSUMER_REPAIR_PARAMETER_APPLY_INVARIANT_FAILED:${invariantFailures.join("|")}`);
-      }
-      await awaitConsumerRepairBundleDurableCommit({
-        requestDraftId: bundle.draft.id,
-        expectedStatus: bundle.draft.status,
-        expectedRevisionId: revisionState.currentRevisionId,
-      });
-      const reopened = findConsumerRepairBundle(bundle.draft.id);
-      if (
-        !reopened ||
-        reopened.estimateDraftRevisionState?.currentRevisionId !== revisionState.currentRevisionId
-      ) {
-        throw new Error("CONSUMER_REPAIR_PARAMETER_APPLY_REOPEN_REVISION_MISMATCH");
-      }
-      this.updateCurrentBundle(
-        reopened,
-        `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
-      );
-      return;
-    } catch (error) {
-      if (error instanceof ConsumerRepairValidationError) {
-        this.handleValidationError(error);
-      } else {
-        logger.error(
-          "ConsumerRepairSingleParameterApply",
-          error instanceof Error ? error.message : String(error),
-        );
-        this.setState({
-          statusMessage: "Не удалось сформировать или надёжно сохранить смету. Параметр не подтверждён — повторите применение.",
-        });
-      }
-    }
+    this.openCanonicalBackendEditor(
+      current,
+      "Параметры изменяются и сохраняются только в каноническом backend-редакторе.",
+    );
   };
-  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
-    if (this.parameterApplyInFlight) return;
+  private applyParamBatch = async (_patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
     const current = this.state.bundle;
     if (!current) return;
-    if (this.openCanonicalBackendEditor(current)) return;
-    this.parameterApplyInFlight = true;
-    const previousRevisionCount = current.estimateDraftRevisionState?.revisions.length ?? 0;
-    const expectedCatalogId = current.draft.selectedCatalogWorkId ?? null;
-    const expectedWorkKey =
-      current.canonicalParameterSession?.canonicalWorkKey ??
-      current.draft.selectedWorkKey ??
-      null;
-    logger.info("ConsumerRepairParameterApply", JSON.stringify({
-      stage: "started",
-      requestDraftId: current.draft.id,
-      patchCount: patches.length,
-      previousRevisionCount,
-    }));
-    this.setState({
-      statusMessage: "Применяем параметры и надёжно сохраняем новую ревизию сметы…",
-    });
-    try {
-      const bundle = applyConsumerRepairDraftRevisionParamBatchPatch({
-        requestDraftId: current.draft.id,
-        patches,
-        userId: this.props.consumerUserId,
-      });
-      if (!bundle.estimateDraftRevisionState) {
-        const missingCount = bundle.canonicalParameterSession?.blockingMissingParameterIds.length ?? 0;
-        this.updateCurrentBundle(
-          bundle,
-          missingCount > 0
-            ? `Параметры сохранены. Для расчёта осталось уточнить: ${missingCount}.`
-            : "Параметры сохранены, но ревизия сметы не сформирована. Повторите применение; введённые данные сохранены.",
-        );
-        return;
-      }
-      const revisionCount = bundle.estimateDraftRevisionState?.revisions.length ?? 1;
-      const revisionState = bundle.estimateDraftRevisionState;
-      const revision = revisionState.revisions.find(
-        (candidate) => candidate.revisionId === revisionState.currentRevisionId,
-      );
-      const invariantFailures = [
-        revisionCount === previousRevisionCount + 1 ? "" : `revision_count:${previousRevisionCount}->${revisionCount}`,
-        revision ? "" : "current_revision_missing",
-        revision && revision.boq.rows.length > 0 ? "" : "empty_boq",
-        expectedCatalogId == null || bundle.draft.selectedCatalogWorkId === expectedCatalogId
-          ? ""
-          : `catalog_identity:${expectedCatalogId}->${bundle.draft.selectedCatalogWorkId ?? "missing"}`,
-        expectedWorkKey == null || revision?.professionalWorkId === expectedWorkKey
-          ? ""
-          : `work_identity:${expectedWorkKey}->${revision?.professionalWorkId ?? "missing"}`,
-      ].filter(Boolean);
-      if (invariantFailures.length > 0) {
-        throw new Error(`CONSUMER_REPAIR_PARAMETER_APPLY_INVARIANT_FAILED:${invariantFailures.join("|")}`);
-      }
-      await awaitConsumerRepairBundleDurableCommit({
-        requestDraftId: bundle.draft.id,
-        expectedStatus: bundle.draft.status,
-        expectedRevisionId: revisionState.currentRevisionId,
-      });
-      const reopened = findConsumerRepairBundle(bundle.draft.id);
-      if (
-        !reopened ||
-        reopened.estimateDraftRevisionState?.currentRevisionId !== revisionState.currentRevisionId
-      ) {
-        throw new Error("CONSUMER_REPAIR_PARAMETER_APPLY_REOPEN_REVISION_MISMATCH");
-      }
-      this.updateCurrentBundle(
-        reopened,
-        `Параметры применены. Смета сформирована и сохранена: R${revisionCount}. Изменено параметров: ${patches.length}. PDF и пакет закупки нужно пересоздать.`,
-      );
-      return;
-    } catch (error) {
-      if (error instanceof ConsumerRepairValidationError) {
-        this.handleValidationError(error);
-      } else {
-        logger.error(
-          "ConsumerRepairParameterApply",
-          error instanceof Error ? error.message : String(error),
-        );
-        this.setState({
-          statusMessage: "Не удалось сформировать или надёжно сохранить смету. Параметры не подтверждены — повторите применение.",
-        });
-      }
-    } finally {
-      this.parameterApplyInFlight = false;
-    }
+    this.openCanonicalBackendEditor(
+      current,
+      "Пакет параметров применяется одной новой immutable revision в каноническом backend-редакторе.",
+    );
   };
   private openProcurement = async () => {
     const current = this.state.bundle;
     if (!current) return;
     try {
-      const canonical = canonicalBackendBinding(current);
+      const canonical = consumerRepairCanonicalBackendBinding(current);
       if (canonical) {
         const artifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
@@ -1500,7 +1335,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private openPhotoRecognition(targetItemId?: string) {
     let bundle = this.ensureDraftBundle();
-    if (canonicalBackendBinding(bundle) && this.openCanonicalBackendEditor(bundle)) return;
+    if (consumerRepairCanonicalBackendBinding(bundle) && this.openCanonicalBackendEditor(bundle)) return;
     let targetItem = targetItemId
       ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
       : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;

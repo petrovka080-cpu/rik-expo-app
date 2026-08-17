@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 type Props = {
   bundle: ConsumerRepairDraftBundle;
@@ -16,14 +17,6 @@ function formatDate(value: string): string {
   return value.slice(0, 10).split("-").reverse().join(".");
 }
 
-function canonicalBinding(bundle: ConsumerRepairDraftBundle): { revisionId: string; releaseId: string } | null {
-  const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId
-    ?? bundle.durableHistorySummary?.sourceRevisionId ?? "").trim();
-  const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId
-    ?? bundle.durableHistorySummary?.sourceReleaseId ?? "").trim();
-  return revisionId && releaseId ? { revisionId, releaseId } : null;
-}
-
 export function ConsumerRepairPdfRow({
   bundle,
   selected,
@@ -32,7 +25,7 @@ export function ConsumerRepairPdfRow({
   onToggleHistorySnapshot,
 }: Props): React.ReactElement {
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
-  const canonical = canonicalBinding(bundle);
+  const canonical = primaryConsumerRepairCanonicalBackendBinding(bundle);
   const status = bundle.draft.status === "consumer_approved"
     ? "утверждена"
     : bundle.draft.status === "sent_to_marketplace"

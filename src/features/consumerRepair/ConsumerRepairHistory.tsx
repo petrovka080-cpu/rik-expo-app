@@ -11,6 +11,7 @@ import type {
 import { hasUnhydratedTransactionalConsumerRepairBundles } from "../../lib/consumerRequests/consumerRequestRepository";
 import { ConsumerRepairPdfRow } from "./ConsumerRepairPdfRow";
 import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./requestEstimateViewModel";
+import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 type Props = {
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
@@ -33,14 +34,6 @@ const approvedHistoryListKeyExtractor = (item: ApprovedHistoryListItem): string 
 
 function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
   return bundle.items.length || bundle.durableHistorySummary?.rowCount || 0;
-}
-
-function canonicalBinding(bundle: ConsumerRepairDraftBundle): { revisionId: string; releaseId: string } | null {
-  const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId
-    ?? bundle.durableHistorySummary?.sourceRevisionId ?? "").trim();
-  const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId
-    ?? bundle.durableHistorySummary?.sourceReleaseId ?? "").trim();
-  return revisionId && releaseId ? { revisionId, releaseId } : null;
 }
 
 export function ConsumerRepairHistory({
@@ -267,7 +260,7 @@ function ApprovedHistoryInlineSummary({
 }): React.ReactElement | null {
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
-  const canonical = canonicalBinding(bundle);
+  const canonical = primaryConsumerRepairCanonicalBackendBinding(bundle);
   const previewItems: RequestEstimateViewModel["sections"][number]["items"] = [];
   for (const section of viewModel.sections) {
     for (const item of section.items) {
@@ -358,7 +351,7 @@ function ApprovedHistorySnapshot({
   const viewModel = buildRequestEstimateViewModel(bundle);
   if (!viewModel) return null;
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
-  const canonical = canonicalBinding(bundle);
+  const canonical = primaryConsumerRepairCanonicalBackendBinding(bundle);
   const canonicalPdf = bundle.events.find((event) =>
     event.eventType === "consumer_approved_canonical_backend_pdf" &&
     event.payload.revisionId === canonical?.revisionId &&

@@ -15,6 +15,10 @@ import { buildConsumerRepairEditableHistorySummary } from "./consumerRepairEdita
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
+import {
+  consumerRepairRevisionUsesGenericFallback,
+  primaryConsumerRepairCanonicalBackendBinding,
+} from "./consumerRepairBackendOwnership";
 
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
@@ -106,19 +110,14 @@ export function ConsumerRepairDraftPanel({
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
   const selectedCatalogWorkId = bundle?.draft.selectedCatalogWorkId?.trim() ?? "";
   const canonicalProfessionalWorkId = currentRevision?.professionalWorkId?.trim() ?? "";
-  const exactSelectionUsedGenericFallback = Boolean(
-    currentRevision?.boq.rows.some((row) =>
-      row.sourceParameters?.exactSelectionGenericFallbackUsed === true
-    ),
-  );
+  const exactSelectionUsedGenericFallback = consumerRepairRevisionUsesGenericFallback(currentRevision);
   const hasProcurementRows = Boolean(
     currentRevision?.boq.rows.some((row) => row.includedInProcurement),
   );
   const editableHistorySummary = buildConsumerRepairEditableHistorySummary(
     bundle?.estimateRevisionState,
   );
-  const canonicalRevisionId = String(bundle?.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "").trim();
-  const canonicalReleaseId = String(bundle?.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
+  const canonical = bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -131,9 +130,9 @@ export function ConsumerRepairDraftPanel({
               : "Позиции пока пустые"}
         </Text>
       </View>
-      {canonicalRevisionId && canonicalReleaseId ? (
+      {canonical ? (
         <Text style={styles.status} testID="consumer-repair-draft-release-id">
-          Backend revision {canonicalRevisionId} / release {canonicalReleaseId}
+          Backend revision {canonical.revisionId} / release {canonical.releaseId}
         </Text>
       ) : null}
       {selectedCatalogWorkId ? (
