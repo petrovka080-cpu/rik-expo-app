@@ -214,8 +214,8 @@ async function main(): Promise<void> {
         case when to_regclass('public.estimate_search_document') is null then 0
           else (select count(*)::int from public.estimate_search_document) end search_documents
     `, [candidate.id])).rows[0] as Json;
-    invariant(runtime.manifest_total === 4_272 && runtime.ready === 2_986
-      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 1_507,
+    invariant(runtime.manifest_total === 4_272 && runtime.ready === 3_054
+      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 2_793,
     `R58_PENDING_TRACE_AUDIT_CANDIDATE_COUNTS:${stable(runtime)}`);
     invariant(runtime.active_release_id === ACTIVE_RELEASE_ID && runtime.active_release_count === 1
       && runtime.batch009_rows === 0 && runtime.search_documents === 0,
@@ -339,6 +339,12 @@ async function main(): Promise<void> {
         }
         const semanticRepairRows = [...semanticOwnerCounts.entries()]
           .filter(([owner, count]) => !owner || count > 1).reduce((sum, [, count]) => sum + count, 0);
+        const nullCostRows = definitionResources.filter((row) => !String(row.cost_owner_id ?? "").trim());
+        const nullCostRouteCounts = new Map<string, number>();
+        for (const resource of nullCostRows) {
+          const route = `${resource.price_status ?? "NO_STATUS"}|${resource.price_route ?? "NO_ROUTE"}`;
+          nullCostRouteCounts.set(route, (nullCostRouteCounts.get(route) ?? 0) + 1);
+        }
         const parameterById = new Map(definitionParameters.map((row) => [String(row.parameter_id), row]));
         for (const parameterId of missing) {
           const parameter = parameterById.get(parameterId)!;
@@ -373,6 +379,9 @@ async function main(): Promise<void> {
           semanticRepairRows,
           localDuplicateCostGroups: [...localCostOwnerCounts.values()].filter((count) => count > 1).length,
           childCostBoundaryGroups: [...childCostOwnerCounts.values()].filter((count) => count > 1).length,
+          nullCostRows: nullCostRows.length,
+          nullCostProcurementRows: nullCostRows.filter((row) => row.procurement_eligible).length,
+          nullCostRouteCounts: Object.fromEntries([...nullCostRouteCounts.entries()].sort()),
           derivedFromAcceptedQuantity: recovery.derived.size,
           acceptedRowValues: [...values.values()].filter((entry) => entry.size === 1).length,
           externalTracePresent: Boolean(external),
@@ -397,6 +406,14 @@ async function main(): Promise<void> {
       semanticRepairRows: rows.reduce((sum, row) => sum + row.semanticRepairRows, 0),
       localDuplicateCostGroups: rows.reduce((sum, row) => sum + row.localDuplicateCostGroups, 0),
       childCostBoundaryGroups: rows.reduce((sum, row) => sum + row.childCostBoundaryGroups, 0),
+      nullCostRows: rows.reduce((sum, row) => sum + row.nullCostRows, 0),
+      nullCostProcurementRows: rows.reduce((sum, row) => sum + row.nullCostProcurementRows, 0),
+      nullCostRouteCounts: rows.reduce((output: Json, row) => {
+        for (const [route, count] of Object.entries(row.nullCostRouteCounts ?? {})) {
+          output[route] = Number(output[route] ?? 0) + Number(count);
+        }
+        return output;
+      }, {}),
       derivedFromAcceptedQuantity: rows.reduce((sum, row) => sum + row.derivedFromAcceptedQuantity, 0),
       externalTraceDefinitions: rows.filter((row) => row.externalTracePresent).length,
     });
