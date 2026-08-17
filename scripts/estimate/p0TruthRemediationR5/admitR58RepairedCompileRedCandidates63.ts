@@ -668,50 +668,73 @@ function buildAsset(input: {
   const compileFingerprint = sha256(compiledRows);
   let sensitivityScenario: Json | null = null;
   if (APPROVED_BASELINE_MODE) {
-    const sensitivityParameter = input.parameters.find((parameter) => {
-      if (!parameter.required || !['decimal', 'integer'].includes(String(parameter.value_type))) return false;
-      const parameterId = String(parameter.parameter_id);
-      return input.formulas.some((formula) => String(formula.expression_source).replace(/\s+/gu, "") === parameterId);
-    });
-    invariant(sensitivityParameter, `R58_DRYWALL_BASELINE_SENSITIVITY_PARAMETER:${input.definition.catalog_id}`);
-    const sensitivityId = String(sensitivityParameter.parameter_id);
-    const sensitivityValues = { ...normalized.values,
-      [sensitivityId]: sensitivityParameter.value_type === "integer"
-        ? Number(normalized.values[sensitivityId]) + 1
-        : Number(normalized.values[sensitivityId]) * 1.1 };
-    const sensitivityResolved = validateCanonicalEstimateParameters(input.parameters, sensitivityValues, {
-      baselineContext: { catalogId: String(input.definition.catalog_id) },
-    });
-    const sensitivityNumeric = Object.fromEntries(Object.entries(sensitivityResolved)
-      .filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
-    const sensitivityRows = input.resources
-      .filter((row) => evaluateInclusionGraph(row.inclusion_ast as Json, sensitivityResolved))
-      .map((row) => {
-        const formula = formulaById.get(String(row.formula_id))!;
-        return [row.row_id, Number(evaluateFormulaGraph(formula.ast as FormulaAst, sensitivityNumeric))];
+    const baselineCompiledRowsSha256 = sha256(compiledRows.map((row) => [row.rowId, row.quantity]));
+    const sensitivityCandidates = input.parameters
+      .filter((parameter) => parameter.required && ['decimal', 'integer'].includes(String(parameter.value_type)))
+      .sort((left, right) => {
+        const directlyConsumed = (parameter: typeof left): number => {
+          const parameterId = String(parameter.parameter_id);
+          return input.formulas.some((formula) => String(formula.expression_source).replace(/\s+/gu, "") === parameterId)
+            ? 1
+            : 0;
+        };
+        return directlyConsumed(right) - directlyConsumed(left);
       });
-    invariant(sensitivityRows.length > 0 && sha256(sensitivityRows) !== sha256(compiledRows.map((row) => [row.rowId, row.quantity])),
-      `R58_DRYWALL_BASELINE_SENSITIVITY_NO_EFFECT:${input.definition.catalog_id}:${sensitivityId}`);
-    const missingValues = { ...normalized.values };
-    delete missingValues[sensitivityId];
-    let missingRejected = false;
-    try {
-      validateCanonicalEstimateParameters(input.parameters, missingValues, {
-        baselineContext: { catalogId: String(input.definition.catalog_id) },
-      });
-    } catch {
-      missingRejected = true;
+    for (const sensitivityParameter of sensitivityCandidates) {
+      const sensitivityId = String(sensitivityParameter.parameter_id);
+      const baselineValue = Number(normalized.values[sensitivityId]);
+      if (!Number.isFinite(baselineValue)) continue;
+      const changedValues = sensitivityParameter.value_type === "integer"
+        ? [baselineValue + 1, baselineValue - 1]
+        : [baselineValue === 0 ? 1 : baselineValue * 1.1, baselineValue === 0 ? -1 : baselineValue * 0.9,
+          baselineValue + 1, baselineValue - 1];
+      for (const changedValue of [...new Set(changedValues)].filter((value) => value !== baselineValue)) {
+        try {
+          const sensitivityValues = { ...normalized.values, [sensitivityId]: changedValue };
+          const sensitivityResolved = validateCanonicalEstimateParameters(input.parameters, sensitivityValues, {
+            baselineContext: { catalogId: String(input.definition.catalog_id) },
+          });
+          const sensitivityNumeric = Object.fromEntries(Object.entries(sensitivityResolved)
+            .filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
+          const sensitivityRows = input.resources
+            .filter((row) => evaluateInclusionGraph(row.inclusion_ast as Json, sensitivityResolved))
+            .map((row) => {
+              const formula = formulaById.get(String(row.formula_id));
+              invariant(formula, `R58_APPROVED_BASELINE_SENSITIVITY_FORMULA:${input.definition.catalog_id}:${row.row_id}`);
+              const quantity = Number(evaluateFormulaGraph(formula.ast as FormulaAst, sensitivityNumeric));
+              invariant(Number.isFinite(quantity) && quantity >= 0,
+                `R58_APPROVED_BASELINE_SENSITIVITY_QUANTITY:${input.definition.catalog_id}:${row.row_id}:${quantity}`);
+              return [row.row_id, quantity];
+            });
+          if (sensitivityRows.length === 0 || sha256(sensitivityRows) === baselineCompiledRowsSha256) continue;
+          const missingValues = { ...normalized.values };
+          delete missingValues[sensitivityId];
+          let missingRejected = false;
+          try {
+            validateCanonicalEstimateParameters(input.parameters, missingValues, {
+              baselineContext: { catalogId: String(input.definition.catalog_id) },
+            });
+          } catch {
+            missingRejected = true;
+          }
+          if (!missingRejected) continue;
+          sensitivityScenario = {
+            parameterId: sensitivityId,
+            baselineValue: normalized.values[sensitivityId],
+            changedValue,
+            baselineCompiledRowsSha256,
+            changedCompiledRowsSha256: sha256(sensitivityRows),
+            changedValueAffectsCompilation: true,
+            missingRequiredValueRejected: true,
+          };
+          break;
+        } catch {
+          // A bounded perturbation may violate a parameter or formula constraint. Try the next value/input.
+        }
+      }
+      if (sensitivityScenario) break;
     }
-    invariant(missingRejected, `R58_DRYWALL_BASELINE_MISSING_NOT_REJECTED:${input.definition.catalog_id}:${sensitivityId}`);
-    sensitivityScenario = {
-      parameterId: sensitivityId,
-      baselineValue: normalized.values[sensitivityId],
-      changedValue: sensitivityValues[sensitivityId],
-      baselineCompiledRowsSha256: sha256(compiledRows.map((row) => [row.rowId, row.quantity])),
-      changedCompiledRowsSha256: sha256(sensitivityRows),
-      changedValueAffectsCompilation: true,
-      missingRequiredValueRejected: true,
-    };
+    invariant(sensitivityScenario, `R58_APPROVED_BASELINE_SENSITIVITY_PARAMETER:${input.definition.catalog_id}`);
   }
   const acceptanceEvidenceSha256 = sha256({
     contract: CONTRACT,
