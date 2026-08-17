@@ -26,7 +26,8 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
-const TARGET_RELEASE_ID = "a7dca174-3ad5-552b-aa4c-fc28979a56ef";
+const TARGET_RELEASE_ID = process.env.R58_TARGET_RELEASE_ID
+  ?? "a7dca174-3ad5-552b-aa4c-fc28979a56ef";
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
@@ -34,7 +35,8 @@ const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
 const API_ROOT = String(process.env.R58_CANONICAL_API_ROOT
   ?? "http://127.0.0.1:8777/canonical-estimate").replace(/\/+$/u, "");
 const AUTHORIZATION = "Bearer local-r58-cumulative-proof";
-const EXPECTED_TOTAL = 4_272;
+const EXPECTED_TOTAL = Number(process.env.R58_EXPECTED_TOTAL ?? "4272");
+const TARGET_CATALOG_ID = String(process.env.R58_TARGET_CATALOG_ID ?? "").trim();
 const DEFAULT_SHARD_SIZE = 10;
 const ARTIFACT_ROOT = resolve(".release-runtime/master11610-backend-canonical-r1/05-runtime/local-artifacts");
 const OUTPUT_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence/06-backend");
@@ -558,7 +560,8 @@ async function main(): Promise<void> {
     }
 
     const catalogIds = (await client.query(`select catalog_id from public.estimate_cumulative_manifest_entry
-      where release_id=$1 order by catalog_id`, [TARGET_RELEASE_ID])).rows.map((row) => String(row.catalog_id));
+      where release_id=$1 and ($2='' or catalog_id=$2) order by catalog_id`,
+    [TARGET_RELEASE_ID,TARGET_CATALOG_ID])).rows.map((row) => String(row.catalog_id));
     invariant(catalogIds.length === EXPECTED_TOTAL && new Set(catalogIds).size === EXPECTED_TOTAL,
       `R58_BACKEND_DENOMINATOR:${catalogIds.length}/${new Set(catalogIds).size}`);
     const pendingCatalogIds = catalogIds.filter((catalogId) => !completed.has(catalogId)).slice(0, LIMIT);
