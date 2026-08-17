@@ -18,7 +18,16 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
-const CONTRACT = "p0-one-monolith-r58-repaired-compile-red-candidates-63.v1";
+const ASPHALT_TRACE_NOT_ADMITTED = process.argv.includes("--asphalt-trace-not-admitted");
+const EXPECTED_TARGETS = ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
+const EXPECTED_ASPHALT = ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
+const EXPECTED_HVAC = ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
+const EXPECTED_COMPILED_ROWS = ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
+const EXPECTED_READY = ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
+const EXPECTED_ASPHALT_READY = ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
+const CONTRACT = ASPHALT_TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-asphalt-trace-not-admitted-candidates-38.v1"
+  : "p0-one-monolith-r58-repaired-compile-red-candidates-63.v1";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const R57_ROOT = resolve(".release-runtime/p0-one-monolith-r57/evidence/05-baseline");
@@ -106,6 +115,62 @@ function normalizeTraceValues(parameters: readonly Json[], raw: Json): { values:
   return { values, normalizations };
 }
 
+function augmentAsphaltTraceFromAcceptedRows(trace: Json, formulas: readonly Json[], resources: readonly Json[]): Json {
+  const values = { ...(trace.input_values ?? {}) } as Json;
+  const sourceRows: Json[] = [];
+  const derivedParameterIds = new Set<string>();
+  const formulaById = new Map(formulas.map((row) => [String(row.formula_id), row]));
+  for (const row of resources) {
+    const accepted = row.source_metadata?.acceptedTrace;
+    const formulaValues = accepted?.source_parameters?.formulaInputValues;
+    if (formulaValues && typeof formulaValues === "object" && !Array.isArray(formulaValues)) {
+      for (const [parameterId, value] of Object.entries(formulaValues)) {
+        invariant(!(parameterId in values) || stable(values[parameterId]) === stable(value),
+          `R58_REPAIRED_63_ACCEPTED_ROW_TRACE_CONFLICT:${row.row_id}:${parameterId}`);
+        values[parameterId] = value;
+      }
+      sourceRows.push({ rowId: row.row_id, rowSha256: row.row_sha256,
+        inputValuesSha256: sha256(formulaValues) });
+    }
+  }
+  if (!("mix_t" in values)) {
+    const source = resources.find((row) => {
+      const formula = formulaById.get(String(row.formula_id));
+      return String(formula?.expression_source ?? "").replace(/\s+/gu, "") === "mix_t"
+        && Number.isFinite(Number(row.source_metadata?.acceptedTrace?.quantity));
+    });
+    if (source) {
+      values.mix_t = Number(source.source_metadata.acceptedTrace.quantity);
+      derivedParameterIds.add("mix_t");
+      sourceRows.push({ rowId: source.row_id, rowSha256: source.row_sha256,
+        derivedParameterId: "mix_t", derivation: "accepted row quantity where formula is exactly mix_t" });
+    }
+  }
+  if (!("removed_t" in values) && Number(values.haul_distance_km) > 0) {
+    const source = resources.find((row) => {
+      const formula = formulaById.get(String(row.formula_id));
+      const expression = String(formula?.expression_source ?? "").replace(/\s+/gu, "");
+      return ["removed_t*haul_distance_km", "haul_distance_km*removed_t"].includes(expression)
+        && Number.isFinite(Number(row.source_metadata?.acceptedTrace?.quantity));
+    });
+    if (source) {
+      values.removed_t = Number(source.source_metadata.acceptedTrace.quantity) / Number(values.haul_distance_km);
+      derivedParameterIds.add("removed_t");
+      sourceRows.push({ rowId: source.row_id, rowSha256: source.row_sha256,
+        derivedParameterId: "removed_t",
+        derivation: "accepted transport quantity divided by accepted haul_distance_km" });
+    }
+  }
+  return {
+    ...trace,
+    input_values: values,
+    input_values_sha256: sha256(values),
+    accepted_row_trace_supplement: sourceRows,
+    accepted_row_trace_supplement_sha256: sha256(sourceRows),
+    derived_parameter_ids: [...derivedParameterIds].sort(),
+  };
+}
+
 function isChildOwner(row: Json): boolean {
   return row.source_metadata?.priceStatus === "CHILD_OWNER"
     || row.source_metadata?.priceRoute === "CHILD_OWNER_ESTIMATE";
@@ -169,6 +234,7 @@ function buildAsset(input: {
   const inputIds = Object.keys(normalized.values).sort();
   const parameterById = new Map(input.parameters.map((row) => [String(row.parameter_id), row]));
   const classifications: Json = {};
+  const derivedParameterIds = new Set((input.trace.derived_parameter_ids ?? []).map(String));
   const uom: Json = {};
   const formulaConsumers: Json = {};
   const resourceConsumers: Json = {};
@@ -184,7 +250,7 @@ function buildAsset(input: {
     invariant(Array.isArray(formulaIds) && Array.isArray(rowIds) && rowIds.length > 0
       && Array.isArray(sources) && text.length > 0 && !text.includes("�"),
     `R58_REPAIRED_63_PARAMETER_PROVENANCE:${input.definition.catalog_id}:${parameterId}`);
-    classifications[parameterId] = "ASSUMPTION";
+    classifications[parameterId] = derivedParameterIds.has(parameterId) ? "DERIVED" : "ASSUMPTION";
     uom[parameterId] = parameter.unit_id == null ? null : String(parameter.unit_id);
     formulaConsumers[parameterId] = formulaIds;
     resourceConsumers[parameterId] = rowIds;
@@ -225,6 +291,8 @@ function buildAsset(input: {
         sha256: input.trace.proposal_source_sha256,
         inputValuesSha256: input.trace.input_values_sha256,
         enumAliasNormalizations: normalized.normalizations,
+        acceptedRowTraceSupplementSha256: input.trace.accepted_row_trace_supplement_sha256 ?? null,
+        acceptedRowTraceSupplement: input.trace.accepted_row_trace_supplement ?? [],
       }],
       validation_scenario_refs: [{
         kind: "R58_CURRENT_HEAD_REPAIRED_CANONICAL_VALIDATION",
@@ -287,7 +355,9 @@ async function insertBaseline(client: Client, asset: Json): Promise<void> {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  invariant(process.argv.length === 2 || (process.argv.length === 3 && apply),
+  const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted"]);
+  invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
     "R58_REPAIRED_63_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_REPAIRED_63_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -296,18 +366,21 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_REPAIRED_63_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_REPAIRED_63_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === "COMPILE_RED_937"
-    && row.domain !== "water_supply_sewerage");
-  invariant(targets.length === 63
-    && targets.filter((row) => row.domain === "asphalt").length === 13
-    && targets.filter((row) => row.domain === "hvac_heat_supply").length === 50,
-  `R58_REPAIRED_63_TARGETS:${targets.length}/63`);
+  const targets = readJsonl(MATRIX_PATH).filter((row) => ASPHALT_TRACE_NOT_ADMITTED
+    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "asphalt"
+    : row.partition === "COMPILE_RED_937" && row.domain !== "water_supply_sewerage");
+  invariant(targets.length === EXPECTED_TARGETS
+    && targets.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
+    && targets.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
+  `R58_REPAIRED_63_TARGETS:${targets.length}/${EXPECTED_TARGETS}`);
   const targetByCatalog = new Map(targets.map((row) => [String(row.catalog_id), row]));
   const traceByCatalog = new Map(readJsonl(TRACE_PATH).map((row) => [String(row.catalog_id), row]));
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: apply ? "r58-repaired-63-apply" : "r58-repaired-63-dry-run",
+    application_name: apply
+      ? `r58-repaired-${EXPECTED_TARGETS}-apply`
+      : `r58-repaired-${EXPECTED_TARGETS}-dry-run`,
   });
   await client.connect();
   const ledger: Json[] = [];
@@ -342,16 +415,19 @@ async function main(): Promise<void> {
         version.release_id,version.source_metadata
       order by manifest.catalog_id
     `, [candidateReleaseId, [...targetByCatalog.keys()]])).rows as Json[];
-    invariant(manifests.length === 63, `R58_REPAIRED_63_MANIFESTS:${manifests.length}/63`);
+    invariant(manifests.length === EXPECTED_TARGETS,
+      `R58_REPAIRED_63_MANIFESTS:${manifests.length}/${EXPECTED_TARGETS}`);
     const alreadyReady = manifests.filter((row) => row.baseline_ready && row.scenario_ready
       && row.approved_template_baseline_id != null);
     if (alreadyReady.length > 0) {
-      invariant(alreadyReady.length === 63, `R58_REPAIRED_63_PARTIAL_IDEMPOTENCY:${alreadyReady.length}/63`);
+      invariant(alreadyReady.length === EXPECTED_TARGETS,
+        `R58_REPAIRED_63_PARTIAL_IDEMPOTENCY:${alreadyReady.length}/${EXPECTED_TARGETS}`);
       const count = Number((await client.query(
         "select count(*)::int value from public.estimate_approved_template_baseline where accepted_release_id=$1 and catalog_id=any($2::text[])",
         [candidateReleaseId, [...targetByCatalog.keys()]],
       )).rows[0]?.value ?? -1);
-      invariant(count === 63, `R58_REPAIRED_63_IDEMPOTENCY_BASELINES:${count}/63`);
+      invariant(count === EXPECTED_TARGETS,
+        `R58_REPAIRED_63_IDEMPOTENCY_BASELINES:${count}/${EXPECTED_TARGETS}`);
       idempotent = true;
       await client.query("rollback");
     } else {
@@ -361,8 +437,8 @@ async function main(): Promise<void> {
       for (const manifest of manifests) {
         const target = targetByCatalog.get(String(manifest.catalog_id));
         invariant(target, `R58_REPAIRED_63_TARGET_MISSING:${manifest.catalog_id}`);
-        const trace = traceByCatalog.get(String(manifest.catalog_id));
-        invariant(trace, `R58_REPAIRED_63_TRACE_MISSING:${manifest.catalog_id}`);
+        const sourceTrace = traceByCatalog.get(String(manifest.catalog_id));
+        invariant(sourceTrace, `R58_REPAIRED_63_TRACE_MISSING:${manifest.catalog_id}`);
         const definition = (await client.query(
           "select * from public.estimate_definition_version where id=$1", [manifest.definition_version_id],
         )).rows[0] as Json;
@@ -378,6 +454,9 @@ async function main(): Promise<void> {
           "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
           [definition.id],
         )).rows as Json[];
+        const trace = ASPHALT_TRACE_NOT_ADMITTED
+          ? augmentAsphaltTraceFromAcceptedRows(sourceTrace, formulas, resources)
+          : sourceTrace;
         const built = buildAsset({
           target, definition, parameters, formulas, resources, trace,
           parameterSchemaSha256: manifest.parameter_schema_sha256,
@@ -393,16 +472,12 @@ async function main(): Promise<void> {
         ]);
         ledger.push(built.ledger);
       }
-      invariant(ledger.length === 63
-        && ledger.filter((row) => row.domain === "asphalt").length === 13
-        && ledger.filter((row) => row.domain === "hvac_heat_supply").length === 50,
-      `R58_REPAIRED_63_LEDGER:${ledger.length}/63`);
-      invariant(ledger.filter((row) => row.domain === "asphalt")
-        .reduce((sum, row) => sum + row.compiledRows, 0) === 401,
-      "R58_REPAIRED_63_ASPHALT_COMPILED_ROWS");
-      invariant(ledger.filter((row) => row.domain === "hvac_heat_supply")
-        .reduce((sum, row) => sum + row.compiledRows, 0) === 27_696,
-      "R58_REPAIRED_63_HVAC_COMPILED_ROWS");
+      invariant(ledger.length === EXPECTED_TARGETS
+        && ledger.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
+        && ledger.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
+      `R58_REPAIRED_63_LEDGER:${ledger.length}/${EXPECTED_TARGETS}`);
+      invariant(ledger.reduce((sum, row) => sum + row.compiledRows, 0) === EXPECTED_COMPILED_ROWS,
+        "R58_REPAIRED_63_COMPILED_ROWS");
       const counts = (await client.query(`
         select
           count(*) filter(where baseline_ready and scenario_ready and approved_template_baseline_id is not null)::int ready,
@@ -411,7 +486,7 @@ async function main(): Promise<void> {
           count(*) filter(where upper(source_batch) like 'BATCH009%')::int batch009_rows
         from public.estimate_cumulative_manifest_entry where release_id=$1
       `, [candidateReleaseId])).rows[0] as Json;
-      invariant(counts.ready === 1_554 && counts.asphalt_ready === 25
+      invariant(counts.ready === EXPECTED_READY && counts.asphalt_ready === EXPECTED_ASPHALT_READY
         && counts.hvac_ready === 50 && counts.batch009_rows === 0,
       `R58_REPAIRED_63_COUNTS:${stable(counts)}`);
       invariant(Number((await client.query(
@@ -423,9 +498,11 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, ledgerSha256: sha256(ledger) }),
-        JSON.stringify({ r58RepairedCompileRedCandidates63: {
-          contract: CONTRACT, specSha256: SPEC_SHA256, readyForBackend: 63,
-          asphalt: 13, hvac: 50, compiledRows: 28_097,
+        JSON.stringify({ [ASPHALT_TRACE_NOT_ADMITTED
+          ? "r58AsphaltTraceNotAdmittedCandidates38"
+          : "r58RepairedCompileRedCandidates63"]: {
+          contract: CONTRACT, specSha256: SPEC_SHA256, readyForBackend: EXPECTED_TARGETS,
+          asphalt: EXPECTED_ASPHALT, hvac: EXPECTED_HVAC, compiledRows: EXPECTED_COMPILED_ROWS,
           terminalGreenClaimed: false, searchCutover: false, runtime8081Switched: false,
         } }),
       ]);
@@ -439,9 +516,10 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = ledger.map((row) => stable(row)).join("\n") + (ledger.length > 0 ? "\n" : "");
-  const ledgerPath = resolve(OUTPUT_ROOT, apply
-    ? "R58_REPAIRED_COMPILE_RED_CANDIDATES_63_APPLY.jsonl"
-    : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63_DRY_RUN.jsonl");
+  const evidenceStem = ASPHALT_TRACE_NOT_ADMITTED
+    ? "R58_ASPHALT_TRACE_NOT_ADMITTED_CANDIDATES_38"
+    : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63";
+  const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
     schemaVersion: CONTRACT,
     capturedAt: new Date().toISOString(),
@@ -449,11 +527,11 @@ async function main(): Promise<void> {
     mode: idempotent ? "IDEMPOTENCY_NO_WRITE" : apply ? "APPLY" : "DRY_RUN_ROLLBACK",
     source: { branch, head, tree },
     candidateReleaseId,
-    targets: 63,
-    asphalt: 13,
-    hvac: 50,
+    targets: EXPECTED_TARGETS,
+    asphalt: EXPECTED_ASPHALT,
+    hvac: EXPECTED_HVAC,
     baselinesChanged: idempotent ? 0 : ledger.length,
-    compiledRowsValidated: idempotent ? 28_097 : ledger.reduce((sum, row) => sum + row.compiledRows, 0),
+    compiledRowsValidated: idempotent ? EXPECTED_COMPILED_ROWS : ledger.reduce((sum, row) => sum + row.compiledRows, 0),
     ledgerPath: idempotent ? null : ledgerPath,
     ledgerSha256: idempotent ? null : sha256(ledgerText),
     readyForBackendGate: true,
@@ -462,17 +540,13 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: idempotent
-      ? "GREEN_R58_REPAIRED_COMPILE_RED_CANDIDATES_63_IDEMPOTENT_0"
-      : apply
-        ? "GREEN_R58_REPAIRED_COMPILE_RED_CANDIDATES_63_63_APPLIED_NOT_TERMINAL"
-        : "GREEN_R58_REPAIRED_COMPILE_RED_CANDIDATES_63_63_DRY_RUN_ROLLED_BACK",
+    status: `GREEN_R58_${ASPHALT_TRACE_NOT_ADMITTED
+      ? "ASPHALT_TRACE_NOT_ADMITTED"
+      : "REPAIRED_COMPILE_RED"}_CANDIDATES_${EXPECTED_TARGETS}_${
+      idempotent ? "IDEMPOTENT_0" : apply ? "APPLIED_NOT_TERMINAL" : "DRY_RUN_ROLLED_BACK"}`,
   };
-  const summaryPath = resolve(OUTPUT_ROOT, idempotent
-    ? "R58_REPAIRED_COMPILE_RED_CANDIDATES_63_IDEMPOTENCY.json"
-    : apply
-      ? "R58_REPAIRED_COMPILE_RED_CANDIDATES_63_APPLY.json"
-      : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63_DRY_RUN.json");
+  const summaryPath = resolve(OUTPUT_ROOT,
+    `${evidenceStem}_${idempotent ? "IDEMPOTENCY" : apply ? "APPLY" : "DRY_RUN"}.json`);
   mkdirSync(dirname(summaryPath), { recursive: true });
   if (!idempotent) writeFileSync(ledgerPath, ledgerText, "utf8");
   writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
