@@ -3,7 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { dirname, resolve } from "node:path";
 import { Client } from "pg";
-import { chromium } from "playwright";
+import { chromium, type Browser } from "playwright";
 
 import { evaluateFormulaGraph, type FormulaAst } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph";
@@ -32,6 +32,7 @@ const R45_RUNTIME_STARTED_AT = new Date().toISOString();
 const R45_RUNTIME_SOURCE_HEAD = String(process.env.R45_RUNTIME_SOURCE_HEAD ?? "UNSET").trim();
 const R45_RUNTIME_SOURCE_TREE = String(process.env.R45_RUNTIME_SOURCE_TREE ?? "UNSET").trim();
 const R45_RUNTIME_SPEC_SHA256 = String(process.env.R45_RUNTIME_SPEC_SHA256 ?? "e834a50c139189432dc4c20eb59b51a2507b4bb3f857e094b38376b6b5bda860").trim();
+let artifactBrowserPromise: Promise<Browser> | null = null;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -804,6 +805,11 @@ function artifactFilePath(storageKey: string): string {
   return filePath;
 }
 
+function artifactBrowser(): Promise<Browser> {
+  artifactBrowserPromise ??= chromium.launch({ headless: true });
+  return artifactBrowserPromise;
+}
+
 async function buildArtifactClaimedJob(client: Client, workerId: string, job: JsonRecord): Promise<void> {
   const revisionId = String(job.parent_revision_id ?? "");
   const revision = (await client.query("select * from public.estimate_revision where id=$1", [revisionId])).rows[0];
@@ -831,13 +837,13 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
     renderer = "canonical-procurement-local.r2";
   } else {
     const body = rows.map((row) => `<tr><td>${row.ordinal + 1}</td><td>${String(row.title_ru).replace(/[<>&]/g, "")}</td><td>${row.unit_id}</td><td>${row.quantity ?? "—"}</td><td>${row.amount ?? "—"}</td></tr>`).join("");
-    const browser = await chromium.launch({ headless: true });
+    const browser = await artifactBrowser();
+    const page = await browser.newPage();
     try {
-      const page = await browser.newPage();
-      await page.setContent(`<!doctype html><meta charset="utf-8"><style>@page{size:A4;margin:14mm}body{font-family:Arial}table{width:100%;border-collapse:collapse;font-size:10px}td,th{border:1px solid #ccc;padding:4px}</style><h1>Каноническая смета</h1><p>Ревизия ${revisionId} · release ${revision.release_id}</p><table>${body}</table>`);
+      await page.setContent(`<!doctype html><html lang="ru"><meta charset="utf-8"><style>@page{size:A4;margin:14mm}body{font-family:Arial}table{width:100%;border-collapse:collapse;font-size:10px}td,th{border:1px solid #ccc;padding:4px}</style><h1>Каноническая смета</h1><p>Ревизия ${revisionId} · release ${revision.release_id}</p><table>${body}</table></html>`);
       bytes = await page.pdf({ format: "A4", printBackground: true });
     } finally {
-      await browser.close();
+      await page.close();
     }
     contentType = "application/pdf";
     extension = "pdf";
