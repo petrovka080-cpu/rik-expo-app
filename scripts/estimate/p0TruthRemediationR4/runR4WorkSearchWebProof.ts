@@ -17,6 +17,7 @@ type SearchEnvelope = {
 const ROOT = resolve(__dirname, "../../..");
 const EVIDENCE_ROOT = resolve(ROOT, ".release-runtime/p0-estimate-truth-remediation-r4/evidence/04-search/runtime");
 const WEB_URL = String(process.env.R4_WEB_PROOF_URL ?? "http://127.0.0.1:8082").replace(/\/+$/, "");
+const BACKEND_URL = String(process.env.R4_CANONICAL_API_ROOT ?? "http://127.0.0.1:8765/canonical-estimate").replace(/\/+$/, "");
 
 function loadDotEnv(path: string): Record<string, string> {
   const output: Record<string, string> = {};
@@ -39,7 +40,7 @@ function required(value: string | undefined, name: string): string {
 }
 
 function isSearchResponse(response: Response): boolean {
-  return response.url().startsWith("http://127.0.0.1:8765/canonical-estimate/search/catalog?");
+  return response.url().startsWith(`${BACKEND_URL}/search/catalog?`);
 }
 
 async function waitForSearch(page: Page, action: () => Promise<void>): Promise<SearchEnvelope> {
@@ -78,6 +79,19 @@ async function main(): Promise<void> {
     await page.waitForURL((url) => !url.pathname.includes("/auth/login"), { timeout: 60_000 });
 
     await page.goto(`${WEB_URL}/request`, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    const runtimeManifest = await page.evaluate(async () => {
+      const runtime = globalThis as typeof globalThis & {
+        __RIK_R45_RUNTIME_MANIFEST_READY__?: Promise<Record<string, unknown>>;
+      };
+      return await runtime.__RIK_R45_RUNTIME_MANIFEST_READY__;
+    });
+    if (!runtimeManifest || runtimeManifest.sourceHead !== process.env.R4_EXPECTED_SOURCE_HEAD
+      || runtimeManifest.sourceTree !== process.env.R4_EXPECTED_SOURCE_TREE
+      || runtimeManifest.backendUrl !== BACKEND_URL
+      || runtimeManifest.bundleHashStatus !== "READY"
+      || runtimeManifest.backendManifestStatus !== "READY") {
+      throw new Error(`R45_WEB_RUNTIME_MANIFEST_MISMATCH:${JSON.stringify(runtimeManifest)}`);
+    }
     const input = page.getByTestId("consumer-repair-problem-input");
     await input.waitFor({ state: "visible", timeout: 60_000 });
     const first = await waitForSearch(page, () => input.fill("ла"));
@@ -111,7 +125,8 @@ async function main(): Promise<void> {
       status: "GREEN_DIRECTED_WEB_RUNTIME",
       recordedAt: new Date().toISOString(),
       webUrl: WEB_URL,
-      backendUrl: "http://127.0.0.1:8765/canonical-estimate",
+      backendUrl: BACKEND_URL,
+      runtimeManifest,
       query: "ла",
       expectedContinuousSubstring: true,
       literalTotalCount: first.literalTotalCount,
