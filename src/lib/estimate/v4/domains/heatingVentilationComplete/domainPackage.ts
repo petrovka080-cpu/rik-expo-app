@@ -66,7 +66,7 @@ function parameter(
     visible_when: condition,
     required_when: condition,
     formula_consumers,
-    source_ownership: ["USER_EXPLICIT", "PROJECT_DOCUMENT", "MATERIAL_PASSPORT", "APPLICABLE_NORM"],
+    source_ownership: ["USER_EXPLICIT", "PROJECT_DOCUMENT", "MATERIAL_PASSPORT", "APPLICABLE_NORM", "VISIBLE_BASELINE_ASSUMPTION"],
   };
 }
 

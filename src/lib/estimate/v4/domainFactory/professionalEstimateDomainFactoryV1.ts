@@ -263,8 +263,21 @@ function schemaBlockers(
   schema: ProfessionalDomainParameterSchemaV1,
   values: Readonly<Record<string, ProfessionalParameterValueV4>>,
 ): string[] {
+  const quantityParameterIds = new Set(schema.quantity_alternatives.flat());
+  const activeQuantityAlternative = schema.quantity_alternatives.find((alternative) =>
+    alternative.every((parameterId) => {
+      const value = values[parameterId]?.value;
+      return value != null && !(typeof value === "string" && value.trim().length === 0);
+    }),
+  );
+  const activeQuantityParameterIds = new Set(activeQuantityAlternative ?? []);
   const blockers = schema.parameters
     .filter((parameter) => parameter.priority === "P0" && conditionMatches(parameter.required_when, values))
+    .filter((parameter) => !quantityParameterIds.has(parameter.parameter_id) ||
+      activeQuantityParameterIds.has(parameter.parameter_id))
+    .filter((parameter) => !parameter.parameter_id.startsWith("unit_price_") &&
+      parameter.parameter_id !== "price_basis_reference" &&
+      parameter.parameter_id !== "price_basis_date")
     .filter((parameter) => {
       const value = values[parameter.parameter_id]?.value;
       return value == null || (typeof value === "string" && value.trim().length === 0);
@@ -445,7 +458,9 @@ export function compileProfessionalEstimateDomainV1(
   };
   const emptyCompilation = compilation.requirements.length === 0 && compilation.compiled_rows.length === 0;
   const compilationBlockers = [
-    ...compilation.requirements.map((item) => `${item.code}:${item.parameter_id}`),
+    ...compilation.requirements
+      .filter((item) => item.code !== "PRICE_INPUT_REQUIRED" && item.code !== "PRICE_SOURCE_REQUIRED")
+      .map((item) => `${item.code}:${item.parameter_id}`),
     ...(emptyCompilation ? ["EMPTY_PROFESSIONAL_BOQ"] : []),
   ];
   const withoutHash = {

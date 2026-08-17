@@ -33,6 +33,8 @@ import { applyProfessionalBoqRuntimeContract } from "../../professionalBoqAssump
 import { resolveAsphaltM1NormativeBindingV1 } from "../asphalt/asphaltM1NormativeBindingsV1";
 
 export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.3";
+export const ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION =
+  "roadworks-wave-a-visible-baseline:r5.2:2026-08-17.v1";
 
 export type RoadworksWaveAProductionRegistration = RoadworksWaveAInventoryItem & {
   migrationVersion: typeof ROADWORKS_WAVE_A_MIGRATION_VERSION;
@@ -352,7 +354,12 @@ export function extractRoadworksWaveAProductionInputs(
   return {
     values: values as RoadworksWaveAInputs,
     assumptions: orderedAssumptions,
-    blockingAssumptions: orderedAssumptions.filter((key) => tierByKey.get(key) === "P0"),
+    // Every applicable key has an explicit, versioned domain default in
+    // DEFAULT_ROADWORKS_WAVE_A_INPUTS. Missing user input therefore remains a
+    // visible assumption, but it cannot suppress the baseline estimate.
+    blockingAssumptions: orderedAssumptions.filter((key) =>
+      tierByKey.get(key) === "P0" && DEFAULT_ROADWORKS_WAVE_A_INPUTS[key] == null
+    ),
   };
 }
 
@@ -525,6 +532,10 @@ export function buildRoadworksWaveAProductionDraft(
         scopeProfile: registration.scopeProfile,
         parameterSnapshot: rowIndex === 0 ? exactParameterSnapshot : undefined,
         assumptionKeys: rowIndex === 0 ? parameters.assumptions : undefined,
+        unresolvedParameterKeys: rowIndex === 0 ? parameters.blockingAssumptions : undefined,
+        baselineAssumptionVersion: rowIndex === 0
+          ? ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION
+          : undefined,
         roadworksWaveAParameterMetadata: rowIndex === 0
           ? Object.fromEntries(
             registration.parameterDefinitions.map((definition) => {
@@ -535,7 +546,9 @@ export function buildRoadworksWaveAProductionDraft(
                 requiredFor: definition.tier === "P0" ? "contract_ready" : "better_accuracy",
                 defaultValue: DEFAULT_ROADWORKS_WAVE_A_INPUTS[definition.key],
                 defaultSourceId: "roadworks-wave-a-versioned-defaults",
-                defaultSourceVersion: ROADWORKS_WAVE_A_MIGRATION_VERSION,
+                defaultSourceVersion: ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION,
+                defaultSourceType: "VISIBLE_BASELINE_ASSUMPTION",
+                defaultReasonRu: `Видимое базовое допущение Roadworks Wave A для параметра «${presentation.labelRu}»; проверьте перед договором.`,
               }];
             }),
           )

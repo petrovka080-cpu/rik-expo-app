@@ -12,7 +12,8 @@ export type ProfessionalValueSourceTypeV4 =
   | "LAB_RESULT"
   | "MATERIAL_PASSPORT"
   | "APPLICABLE_NORM"
-  | "VERIFIED_RATEBOOK";
+  | "VERIFIED_RATEBOOK"
+  | "VISIBLE_BASELINE_ASSUMPTION";
 
 export type ProfessionalParameterValueV4 = {
   value: string | number | boolean;
@@ -253,7 +254,8 @@ function assertTraceableValue(parameterId: string, value: ProfessionalParameterV
 
 /**
  * Neutral Estimate V4 extension point for typed child passports. It compiles
- * only explicit project/norm values and never supplies a quantity default.
+ * only supplied project/norm values or explicitly identified visible baseline
+ * assumptions and never invents an untracked quantity default.
  */
 export function compileProfessionalProjectAssemblyV4(
   request: ProfessionalProjectAssemblyRequestV4,
@@ -341,17 +343,22 @@ export function compileProfessionalProjectAssemblyV4(
       if (row.price_route_v3?.kind === "RUNTIME_VALIDATED_INPUT") {
         const priceValue = request.parameter_values[row.price_route_v3.unit_price_parameter_id];
         unitPrice = numericValue(priceValue);
-        if (unitPrice == null || unitPrice <= row.price_route_v3.minimum_exclusive) {
-          throw new Error(`PROFESSIONAL_PRICE_INPUT_INVALID:${row.row_id}:${row.price_route_v3.unit_price_parameter_id}`);
-        }
         const referenceValue = request.parameter_values[row.price_route_v3.price_basis_reference_parameter_id];
         const dateValue = request.parameter_values[row.price_route_v3.price_basis_date_parameter_id];
         priceBasisReference = String(referenceValue?.value ?? "").trim() || null;
         priceBasisDate = String(dateValue?.value ?? "").trim() || null;
-        if (!priceBasisReference || !priceBasisDate) {
-          throw new Error(`PROFESSIONAL_PRICE_PROVENANCE_INVALID:${row.row_id}`);
+        if (unitPrice == null || unitPrice <= row.price_route_v3.minimum_exclusive ||
+          !priceBasisReference || !priceBasisDate) {
+          // A preliminary quantity BOQ must survive without an invented price.
+          // The typed PRICE_* requirements remain in the compilation and block
+          // contract totals, while the row stays visible with PRICE_MISSING.
+          unitPrice = null;
+          priceBasisReference = null;
+          priceBasisDate = null;
+          priceSourceId = null;
+        } else {
+          priceSourceId = priceValue?.source_id ?? null;
         }
-        priceSourceId = priceValue?.source_id ?? null;
       }
       compiledRows.push({
         parent_project_revision_id: request.parent_revision_id,

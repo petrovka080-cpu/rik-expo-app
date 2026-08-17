@@ -39,7 +39,8 @@ export type AiEstimateParameterCard = {
   provenanceRu?: string;
   choices?: { value: string; labelRu: string }[];
   guideShortRu?: string;
-  guideKind?: "PROJECT_DEFINED" | "MEASUREMENT_RULE" | "ENUM_DECISION_RULE" | "DERIVED_VALUE_RULE" | "NO_NUMERIC_NORM" | "NORMATIVE_RANGE";
+  guideKind?: "PROJECT_DEFINED" | "MEASUREMENT_RULE" | "ENUM_DECISION_RULE" | "DERIVED_VALUE_RULE" | "NO_NUMERIC_NORM" | "NORMATIVE_RANGE" |
+    "PROJECT_REQUIRED" | "VALIDATION_RANGE" | "MANUFACTURER_GUIDANCE" | "REFERENCE_GUIDANCE" | "USER_PROVIDED" | "DERIVED";
   guideDetailsRu?: string[];
   structuredGroup?: {
     itemLabelRu: string;

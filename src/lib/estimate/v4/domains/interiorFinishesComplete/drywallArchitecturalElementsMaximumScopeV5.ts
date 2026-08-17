@@ -4,7 +4,7 @@ import type {
   DrywallArchitecturalElementOperationV4,
   DrywallArchitecturalElementProfessionalPackagePartsV4,
   DrywallArchitecturalElementVariantV4,
-} from "./drywallArchitecturalElementsProfessionalV4";
+} from "./drywallArchitecturalElementsContractV4";
 import {
   drywallFlatCeilingExpectedCandidatesV6,
   type DrywallFlatCeilingOperationV6,

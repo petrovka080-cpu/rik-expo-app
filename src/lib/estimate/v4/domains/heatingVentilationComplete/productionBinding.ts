@@ -21,6 +21,11 @@ import {
   HVAC_DOMAIN_INVENTORY,
   type HvacDomainInventoryRow,
 } from "./inventory";
+import {
+  PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1,
+  buildProfessionalDomainVisibleBaselineV1,
+  professionalDomainVisibleParameterMetadataV1,
+} from "../professionalDomainVisibleBaselineV1";
 
 export const HVAC_PRODUCTION_BINDING_VERSION =
   "heating-ventilation-production-binding:v1" as const;
@@ -101,7 +106,22 @@ export function buildHvacProductionDraftV1(
   const schema = hvacDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`HVAC_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const passportId = `domain-passport:${input.catalog_id}:v1`;
+  const requestedCatalogWorkId = input.catalog_id.startsWith("expanded-template:")
+    ? input.catalog_id.slice("expanded-template:".length)
+    : inventory.template_id;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
+  const assumptionKeys = Object.entries(input.parameter_values)
+    .filter(([, value]) => value.source_type === "VISIBLE_BASELINE_ASSUMPTION")
+    .map(([key]) => key)
+    .sort();
+  const explicitParameterKeys = Object.entries(input.parameter_values)
+    .filter(([, value]) => value.source_type !== "VISIBLE_BASELINE_ASSUMPTION")
+    .map(([key]) => key)
+    .sort();
+  const parameterMetadata = Object.fromEntries(schema.parameters.map((parameter) => [
+    parameter.parameter_id,
+    professionalDomainVisibleParameterMetadataV1(parameter, input.parameter_values[parameter.parameter_id]),
+  ]));
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
   const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
     itemType: itemType(row.category),
@@ -125,6 +145,7 @@ export function buildHvacProductionDraftV1(
       domainVersion: hvacDomainFactory.package.manifest.domain_version,
       domainPackageHash: hvacDomainFactory.package_hash,
       catalogId: input.catalog_id,
+      requestedCatalogWorkId,
       workKey: input.work_key,
       canonicalTechnologyId: inventory.canonical_technology_id,
       scopeCapability: inventory.scope_capability,
@@ -132,7 +153,12 @@ export function buildHvacProductionDraftV1(
       parameterSchemaId: `canonical:${schema.schema_id}:${input.catalog_id}`,
       parameterSchemaVersion: schema.schema_version,
       parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
+      professionalDomainParameterMetadata: parameterMetadata,
       parameterSnapshot,
+      assumptionKeys,
+      explicitParameterKeys,
+      parameterSourceTypes: Object.fromEntries(Object.entries(input.parameter_values).map(([key, value]) => [key, value.source_type])),
+      professionalDomainVisibleBaselineVersion: PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1,
       projectAssemblyId: compilation.project_assembly_id,
       childRevisionId: row.child_revision_id,
       semanticOwner: row.semantic_owner,
@@ -143,6 +169,7 @@ export function buildHvacProductionDraftV1(
       costOwnerId: row.cost_owner_id,
       includedInProcurement: row.procurement_eligible,
       professionalBoqCategory: row.category,
+      professionalResourceGraphV3: row.resource_graph_node_v3,
     },
     templateId: passportId,
     templateVersion: hvacDomainFactory.package.manifest.domain_version,
@@ -168,7 +195,7 @@ export function buildHvacProductionDraftV1(
       summaryRu: `${inventory.localized_name_ru}: профессиональная ресурсная ведомость ${input.scope_mode}; строк BOQ ${items.length}.`,
       repairType: input.work_key,
       selectedWork: {
-        selectedCatalogWorkId: input.catalog_id,
+        selectedCatalogWorkId: requestedCatalogWorkId,
         selectedWorkKey: input.work_key,
         selectedWorkTitleRu: inventory.localized_name_ru,
         selectedWorkCategoryKey: "heating_hvac",
@@ -256,23 +283,15 @@ export function buildHvacFromInlineInputV1(
   const technology = hvacDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
   const schema = hvacDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`HVAC_INLINE_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
-  const supplied = input.paramOverrides ?? {};
-  const missing = missingParameterIds(schema, supplied);
-  if (missing.length > 0) return { exact_match: true, inventory, missing_parameter_ids: missing, production: null };
-  const parameterValues = Object.fromEntries(schema.parameters.flatMap((parameter) => {
-    const suppliedValue = supplied[parameter.parameter_id]?.value;
-    if (suppliedValue == null || String(suppliedValue).trim() === "") return [];
-    const sourceType = sourceTypeForParameter(parameter.parameter_id);
-    return [[parameter.parameter_id, {
-      value: suppliedValue as string | number | boolean,
-      unit_id: parameter.unit_id,
-      source_type: sourceType,
-      source_id: `inline-exact:${inventory.catalog_id}:${parameter.parameter_id}:${String(supplied[parameter.parameter_id]?.source ?? sourceType)}`,
-      captured_at: new Date().toISOString(),
-      confidence: "high" as const,
-      applicability: `Exact user/project value for ${inventory.catalog_id}`,
-    } satisfies ProfessionalParameterValueV4]];
-  }));
+  const baseline = buildProfessionalDomainVisibleBaselineV1({
+    schema,
+    catalogId: inventory.catalog_id,
+    workKey: inventory.work_key,
+    scopeCapability: inventory.scope_capability,
+    rawInput: input.rawInput,
+    supplied: input.paramOverrides,
+  });
+  const parameterValues = baseline.parameter_values;
   const scopeMode = parameterValues.estimate_scope_mode?.value;
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") {
     throw new Error(`HVAC_INLINE_SCOPE_INVALID:${String(scopeMode)}`);

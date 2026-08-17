@@ -44,6 +44,14 @@ function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
   inputKinds: Map<string, AiEstimateParameterInputKind>;
   choices: Map<string, { value: string; labelRu: string }[]>;
   requiredFor: Map<string, "contract_ready" | "better_accuracy" | "safety_review">;
+  formulaConsumers: Map<string, string[]>;
+  sourceOwnership: Map<string, string[]>;
+  guides: Map<string, {
+    guideShortRu: string;
+    guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
+    guideDetailsRu: string[];
+    provenanceRu: string;
+  }>;
   roadworksWaveAParameterKeys: Set<string>;
   professionalDomainParameterKeys: Set<string>;
 } {
@@ -52,6 +60,14 @@ function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
   const inputKinds = new Map<string, AiEstimateParameterInputKind>();
   const choices = new Map<string, { value: string; labelRu: string }[]>();
   const requiredFor = new Map<string, "contract_ready" | "better_accuracy" | "safety_review">();
+  const formulaConsumers = new Map<string, string[]>();
+  const sourceOwnership = new Map<string, string[]>();
+  const guides = new Map<string, {
+    guideShortRu: string;
+    guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
+    guideDetailsRu: string[];
+    provenanceRu: string;
+  }>();
   const roadworksWaveAParameterKeys = new Set<string>();
   const professionalDomainParameterKeys = new Set<string>();
   for (const row of revision.boq.rows) {
@@ -81,6 +97,31 @@ function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
       if (metadata.requiredFor === "contract_ready" || metadata.requiredFor === "better_accuracy" || metadata.requiredFor === "safety_review") {
         requiredFor.set(key, metadata.requiredFor);
       }
+      const metadataFormulaConsumers = Array.isArray(metadata.formulaConsumers)
+        ? metadata.formulaConsumers.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+        : [];
+      const metadataSourceOwnership = Array.isArray(metadata.sourceOwnership)
+        ? metadata.sourceOwnership.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+        : [];
+      if (metadataFormulaConsumers.length > 0) formulaConsumers.set(key, metadataFormulaConsumers);
+      if (metadataSourceOwnership.length > 0) sourceOwnership.set(key, metadataSourceOwnership);
+      const guideShortRu = typeof metadata.guideShortRu === "string" ? metadata.guideShortRu.trim() : "";
+      const guideKind = typeof metadata.guideKind === "string"
+        ? metadata.guideKind as NonNullable<AiEstimateParameterCard["guideKind"]>
+        : null;
+      const guideDetailsRu = Array.isArray(metadata.guideDetailsRu)
+        ? metadata.guideDetailsRu.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+        : [];
+      const provenanceRu = typeof metadata.defaultReasonRu === "string" && metadata.defaultReasonRu.trim()
+        ? metadata.defaultReasonRu.trim()
+        : typeof metadata.sourceId === "string" && metadata.sourceId.trim()
+          ? `Источник значения: ${metadata.sourceId.trim()}`
+          : metadataSourceOwnership.length > 0
+            ? `Источники и владельцы: ${metadataSourceOwnership.join(", ")}`
+            : "";
+      if (guideShortRu && guideKind && guideDetailsRu.length > 0 && provenanceRu) {
+        guides.set(key, { guideShortRu, guideKind, guideDetailsRu, provenanceRu });
+      }
       if (Array.isArray(metadata.choices)) {
         const normalized = metadata.choices.flatMap((choice) => {
           if (!choice || typeof choice !== "object" || Array.isArray(choice)) return [];
@@ -94,7 +135,18 @@ function collectRuntimeParameterMetadata(revision: EstimateDraftRevision): {
       }
     }
   }
-  return { labels, units, inputKinds, choices, requiredFor, roadworksWaveAParameterKeys, professionalDomainParameterKeys };
+  return {
+    labels,
+    units,
+    inputKinds,
+    choices,
+    requiredFor,
+    formulaConsumers,
+    sourceOwnership,
+    guides,
+    roadworksWaveAParameterKeys,
+    professionalDomainParameterKeys,
+  };
 }
 
 type AsphaltClarificationQuestion = NonNullable<EstimateDraftRevision["professionalClarification"]>["critical_required"][number];
@@ -391,7 +443,7 @@ function syntheticField(
     source: "professional_suggestion",
     affectsRowIds: affectedRowIds,
     affectsRowTitlesRu: rowTitles(revision, affectedRowIds),
-    formulaRefs: [],
+    formulaRefs: runtimeMetadata.formulaConsumers.get(key) ?? [],
     aliasesRu: [],
     suggestWhenMissing: true,
     priority: 90,
@@ -541,6 +593,13 @@ export function buildAiEstimateParameterCards(input: {
     const affectsRowIds = traceRowIds.length > 0 ? traceRowIds : sourceParamRowIds.length > 0 ? sourceParamRowIds : field.affectsRowIds;
     const unitRu = aiEstimateRuUnitForParameter(key, param?.canonicalUnit ?? field.unit);
     const source = cardSource(param);
+    const runtimeGuide = runtimeMetadata.guides.get(key);
+    const formulaRefs = field.formulaRefs.length > 0
+      ? field.formulaRefs
+      : runtimeMetadata.formulaConsumers.get(key) ?? affectsRowIds.flatMap((rowId) => {
+        const row = revision.trace.rows.find((candidate) => candidate.rowId === rowId);
+        return row?.formulaId ? [row.formulaId] : [];
+      });
     const labelRu = contextualLabel(revision, key, field.labelRu);
     const revisionMissing = revision.missingInputs.find((item) => item.key === key);
     const asphaltMetadata = asphaltV4 ? asphaltV4CardMetadata(key) : null;
@@ -567,7 +626,7 @@ export function buildAiEstimateParameterCards(input: {
           : "для точного расчета",
       affectsRowIds,
       affectsRowTitlesRu: affectsRowIds.length > 0 ? rowTitles(revision, affectsRowIds).slice(0, 12) : field.affectsRowTitlesRu,
-      formulaRefs: field.formulaRefs,
+      formulaRefs,
       clarificationTier: question?.required_tier ?? (revisionMissing?.requiredFor === "contract_ready" ? "critical" : revisionMissing ? "recommended" : undefined),
       clarificationControl: question?.control ?? asphaltMetadata?.control,
       whyItMattersRu: question?.why_it_matters_ru ?? asphaltMetadata?.whyItMattersRu,
@@ -575,8 +634,11 @@ export function buildAiEstimateParameterCards(input: {
       exampleRu: question?.example_ru ?? asphaltMetadata?.exampleRu,
       changesInEstimateRu: question?.changes_in_estimate_ru,
       missingValueConsequenceRu: question?.missing_value_consequence_ru ?? asphaltMetadata?.missingValueConsequenceRu,
-      provenanceRu: question?.current_value_source_ru,
+      provenanceRu: question?.current_value_source_ru ?? runtimeGuide?.provenanceRu,
       choices: question?.choices.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })) ?? asphaltMetadata?.choices ?? runtimeChoices,
+      guideShortRu: runtimeGuide?.guideShortRu,
+      guideKind: runtimeGuide?.guideKind,
+      guideDetailsRu: runtimeGuide?.guideDetailsRu,
     }];
   });
 

@@ -13,7 +13,7 @@ import type {
 } from "./estimateDraftRevisionContract";
 import type { ConsumerRepairAiDraft } from "../consumerRequests/consumerRequestTypes";
 import type { InlineWorkPromptExtractedParam } from "../ai/extractWorkParamsFromInlinePrompt";
-import type { InlineWorkPromptParseResult } from "../ai/parseInlineWorkEstimatePrompt";
+import type { InlineWorkPromptParseResult } from "../ai/inlineWorkPromptContract";
 import { attachProfessionalMaterialQuantityLines } from "./professionalMaterialQuantityCalculator";
 import {
   buildAiEstimateMissingInputs,
@@ -332,10 +332,6 @@ function mergeCalculatorInputParams(
     if (!isPrimitiveParamValue(value) || !(key in roadworksWaveAMetadata)) continue;
     const existing = merged[key];
     if (roadworksWaveAAssumptionKeys.has(key)) {
-      if (roadworksWaveAMetadata[key]?.tier === "P0") {
-        if (!existing || existing.source === "default_assumption" || existing.source === "derived") delete merged[key];
-        continue;
-      }
       if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
       const unit = roadworksWaveAMetadata[key]?.unit;
       merged[key] = {
@@ -377,7 +373,15 @@ function mergeCalculatorInputParams(
     if (!isPrimitiveParamValue(value) || !(key in asphaltRelatedMetadata)) continue;
     const existing = merged[key];
     if (asphaltRelatedAssumptionKeys.has(key)) {
-      if (!existing || existing.source === "default_assumption" || existing.source === "derived") delete merged[key];
+      if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
+      const unit = asphaltRelatedMetadata[key]?.unit;
+      merged[key] = {
+        value,
+        canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
+        source: "default_assumption",
+        sourceText: `${asphaltRelatedMetadata[key]?.defaultSourceId ?? "asphalt-related-visible-baseline"}:${asphaltRelatedMetadata[key]?.defaultSourceVersion ?? "unknown"}`,
+        lastChangedAt: now,
+      };
       continue;
     }
     if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
@@ -387,6 +391,52 @@ function mergeCalculatorInputParams(
       canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
       source: "user_input",
       sourceText: "asphalt_related_exact_explicit_input",
+      lastChangedAt: now,
+    };
+  }
+  const professionalDomainSource = rows.find(
+    (row) => row.sourceParameters?.professionalDomainFactoryV1 === true,
+  )?.sourceParameters;
+  const professionalDomainSnapshot = professionalDomainSource?.parameterSnapshot &&
+    typeof professionalDomainSource.parameterSnapshot === "object" &&
+    !Array.isArray(professionalDomainSource.parameterSnapshot)
+    ? professionalDomainSource.parameterSnapshot as Record<string, unknown>
+    : {};
+  const professionalDomainSourceTypes = professionalDomainSource?.parameterSourceTypes &&
+    typeof professionalDomainSource.parameterSourceTypes === "object" &&
+    !Array.isArray(professionalDomainSource.parameterSourceTypes)
+    ? professionalDomainSource.parameterSourceTypes as Record<string, unknown>
+    : {};
+  const professionalDomainAssumptionKeys = new Set(
+    Array.isArray(professionalDomainSource?.assumptionKeys)
+      ? professionalDomainSource.assumptionKeys.filter((key): key is string => typeof key === "string")
+      : [],
+  );
+  const professionalDomainMetadata = professionalDomainSource?.professionalDomainParameterMetadata &&
+    typeof professionalDomainSource.professionalDomainParameterMetadata === "object" &&
+    !Array.isArray(professionalDomainSource.professionalDomainParameterMetadata)
+    ? professionalDomainSource.professionalDomainParameterMetadata as Record<string, Record<string, unknown>>
+    : {};
+  for (const [key, value] of Object.entries(professionalDomainSnapshot)) {
+    if (!isPrimitiveParamValue(value) || !(key in professionalDomainMetadata)) continue;
+    const existing = merged[key];
+    if (existing && existing.source !== "default_assumption" && existing.source !== "derived") continue;
+    const unit = professionalDomainMetadata[key]?.unit;
+    const sourceType = professionalDomainSourceTypes[key];
+    const assumption = professionalDomainAssumptionKeys.has(key) || sourceType === "VISIBLE_BASELINE_ASSUMPTION";
+    merged[key] = {
+      value,
+      canonicalUnit: typeof unit === "string" ? unit : aiEstimateCanonicalUnitForParameter(key),
+      source: assumption
+        ? "default_assumption"
+        : sourceType === "SURVEY_MEASUREMENT"
+          ? "derived"
+          : "user_input",
+      sourceText: typeof professionalDomainMetadata[key]?.sourceId === "string"
+        ? professionalDomainMetadata[key].sourceId as string
+        : assumption
+          ? "registered-professional-visible-baseline:v1"
+          : "registered_professional_exact_input",
       lastChangedAt: now,
     };
   }
@@ -639,6 +689,14 @@ function runtimeParameterLabels(rows: readonly ProfessionalBoqRow[]): ReadonlyMa
         if (typeof label === "string" && label.trim()) labels.set(key, label.trim());
       }
     }
+    const professionalDomainMetadata = row.sourceParameters?.professionalDomainParameterMetadata;
+    if (professionalDomainMetadata && typeof professionalDomainMetadata === "object" && !Array.isArray(professionalDomainMetadata)) {
+      for (const [key, raw] of Object.entries(professionalDomainMetadata)) {
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+        const label = (raw as Record<string, unknown>).labelRu;
+        if (typeof label === "string" && label.trim()) labels.set(key, label.trim());
+      }
+    }
     const asphaltRelatedMetadata = row.sourceParameters?.asphaltRelatedParameterMetadata;
     if (!asphaltRelatedMetadata || typeof asphaltRelatedMetadata !== "object" || Array.isArray(asphaltRelatedMetadata)) continue;
     for (const [key, raw] of Object.entries(asphaltRelatedMetadata)) {
@@ -655,6 +713,7 @@ function roadworksWaveARevisionContext(rows: readonly ProfessionalBoqRow[]): {
   parameterSchemaId: string;
   parameterKeys: string[];
   assumptionKeys: string[];
+  unresolvedParameterKeys: string[];
   metadata: Record<string, Record<string, unknown>>;
 } | null {
   const source = rows.find((row) => row.sourceParameters?.roadworksWaveA === true)?.sourceParameters;
@@ -673,8 +732,11 @@ function roadworksWaveARevisionContext(rows: readonly ProfessionalBoqRow[]): {
   const assumptionKeys = Array.isArray(source.assumptionKeys)
     ? source.assumptionKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
     : [];
+  const unresolvedParameterKeys = Array.isArray(source.unresolvedParameterKeys)
+    ? source.unresolvedParameterKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
+    : [];
   return workKey && parameterSchemaId && parameterKeys.length > 0
-    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, metadata }
+    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, unresolvedParameterKeys, metadata }
     : null;
 }
 
@@ -683,6 +745,7 @@ function asphaltRelatedRevisionContext(rows: readonly ProfessionalBoqRow[]): {
   parameterSchemaId: string;
   parameterKeys: string[];
   assumptionKeys: string[];
+  unresolvedParameterKeys: string[];
   metadata: Record<string, Record<string, unknown>>;
   readiness: string;
 } | null {
@@ -703,8 +766,11 @@ function asphaltRelatedRevisionContext(rows: readonly ProfessionalBoqRow[]): {
   const assumptionKeys = Array.isArray(source.assumptionKeys)
     ? source.assumptionKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
     : [];
+  const unresolvedParameterKeys = Array.isArray(source.unresolvedParameterKeys)
+    ? source.unresolvedParameterKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
+    : [];
   return workKey && parameterSchemaId && parameterKeys.length > 0
-    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, metadata, readiness }
+    ? { workKey, parameterSchemaId, parameterKeys, assumptionKeys, unresolvedParameterKeys, metadata, readiness }
     : null;
 }
 
@@ -714,6 +780,8 @@ function professionalDomainRevisionContext(rows: readonly ProfessionalBoqRow[]):
   canonicalTechnologyId: string;
   parameterSchemaId: string;
   parameterKeys: string[];
+  assumptionKeys: string[];
+  metadata: Record<string, Record<string, unknown>>;
   projectAssemblyId: string;
 } | null {
   const source = rows.find((row) => row.sourceParameters?.professionalDomainFactoryV1 === true)?.sourceParameters;
@@ -726,15 +794,23 @@ function professionalDomainRevisionContext(rows: readonly ProfessionalBoqRow[]):
   const parameterKeys = Array.isArray(source.parameterKeys)
     ? source.parameterKeys.filter((key): key is string => typeof key === "string" && key.trim().length > 0)
     : [];
+  const assumptionKeys = Array.isArray(source.assumptionKeys)
+    ? source.assumptionKeys.filter((key): key is string => typeof key === "string" && parameterKeys.includes(key))
+    : [];
+  const metadata = source.professionalDomainParameterMetadata &&
+    typeof source.professionalDomainParameterMetadata === "object" &&
+    !Array.isArray(source.professionalDomainParameterMetadata)
+    ? source.professionalDomainParameterMetadata as Record<string, Record<string, unknown>>
+    : {};
   return workKey && catalogId && canonicalTechnologyId && parameterSchemaId && projectAssemblyId && parameterKeys.length > 0
-    ? { workKey, catalogId, canonicalTechnologyId, parameterSchemaId, parameterKeys, projectAssemblyId }
+    ? { workKey, catalogId, canonicalTechnologyId, parameterSchemaId, parameterKeys, assumptionKeys, metadata, projectAssemblyId }
     : null;
 }
 
 function missingInputsFromAsphaltRelated(
   context: NonNullable<ReturnType<typeof asphaltRelatedRevisionContext>>,
 ): EstimateDraftRevision["missingInputs"] {
-  return context.assumptionKeys.map((key) => ({
+  return context.unresolvedParameterKeys.map((key) => ({
     key,
     label: typeof context.metadata[key]?.labelRu === "string"
       ? context.metadata[key].labelRu as string
@@ -747,7 +823,7 @@ function missingInputsFromAsphaltRelated(
 function missingInputsFromRoadworksWaveA(
   context: NonNullable<ReturnType<typeof roadworksWaveARevisionContext>>,
 ): EstimateDraftRevision["missingInputs"] {
-  return context.assumptionKeys.filter((key) => context.metadata[key]?.tier === "P0").map((key) => ({
+  return context.unresolvedParameterKeys.map((key) => ({
     key,
     label: typeof context.metadata[key]?.labelRu === "string"
       ? context.metadata[key].labelRu as string
@@ -1109,6 +1185,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   }
   const matched = result.parseResult.matchedTemplate;
   const draftTemplateId = result.draft?.items.find((item) => item.templateId?.trim())?.templateId?.trim() ?? "";
+  const draftCatalogId = result.draft?.items
+    .map((item) => item.sourceParameters?.catalogId)
+    .find((value): value is string => typeof value === "string" && value.trim().length > 0)
+    ?.trim() ?? "";
   const exactAsphaltRelatedConsumerDraft = usesExactAsphaltRelatedConsumerDraft(result.draft);
   const isAsphaltV4Draft = !exactAsphaltRelatedConsumerDraft && (draftTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
     Boolean(result.v4ClarificationExperience) ||
@@ -1134,7 +1214,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     ? buildProfessionalWorkPassportIfApplicable(requestedTemplateId)
     : null;
   const selectedTemplateId = exactProfessionalDomainConsumerDraft
-    ? draftTemplateId || requestedTemplateId
+    ? requestedTemplateId || draftCatalogId || draftTemplateId
     : requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
@@ -1262,10 +1342,38 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
   }
   if (asphaltRelatedContext) {
     for (const key of asphaltRelatedContext.assumptionKeys) {
+      const assumedParam = params[key];
+      const usesVersionedDefault = assumedParam?.source === "default_assumption";
+      assumptionsByKey.set(key, {
+        key,
+        value: usesVersionedDefault ? assumedParam.value : null,
+        reason: usesVersionedDefault
+          ? String(asphaltRelatedContext.metadata[key]?.defaultReasonRu ?? `Versioned Asphalt baseline: ${assumedParam.sourceText ?? "asphalt-related-visible-baseline"}`)
+          : `Required exact asphalt-related input is not confirmed: ${asphaltRelatedContext.metadata[key]?.labelRu ?? key}`,
+        replacedByUserInput: false,
+        visibleToUser: true,
+      });
+    }
+    for (const key of asphaltRelatedContext.unresolvedParameterKeys) {
       assumptionsByKey.set(key, {
         key,
         value: null,
         reason: `Required exact asphalt-related input is not confirmed: ${asphaltRelatedContext.metadata[key]?.labelRu ?? key}`,
+        replacedByUserInput: false,
+        visibleToUser: true,
+      });
+    }
+  }
+  if (professionalDomainContext) {
+    for (const key of professionalDomainContext.assumptionKeys) {
+      const assumedParam = params[key];
+      if (assumedParam?.source !== "default_assumption") continue;
+      assumptionsByKey.set(key, {
+        key,
+        value: assumedParam.value,
+        reason: typeof professionalDomainContext.metadata[key]?.defaultReasonRu === "string"
+          ? professionalDomainContext.metadata[key].defaultReasonRu as string
+          : `Visible registered-domain baseline: ${assumedParam.sourceText ?? "registered-professional-visible-baseline:v1"}`,
         replacedByUserInput: false,
         visibleToUser: true,
       });

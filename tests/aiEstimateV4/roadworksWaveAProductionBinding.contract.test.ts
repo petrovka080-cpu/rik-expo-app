@@ -306,7 +306,7 @@ describe("RoadworksWaveAProductionBindingContract", () => {
     expect(parameterEdits).toBe(35);
   });
 
-  test("keeps every exact request conditional until its P0 and applicability inputs are explicit", () => {
+  test("builds every exact request from visible versioned baseline assumptions", () => {
     for (const item of RoadworksWaveAProductionRegistry) {
       const result = buildEstimateFromInlineWorkPrompt({
         rawInput: item.professionalNameRu,
@@ -314,25 +314,23 @@ describe("RoadworksWaveAProductionBindingContract", () => {
         selectedTemplateId: item.templateId,
       });
       expect(result.draft?.selectedWork?.selectedWorkKey).toBe(item.workId);
-      expect(result.draft?.items).toHaveLength(1);
-      expect(result.draft?.items[0]).toMatchObject({
-        category: "document",
-        unitPrice: null,
-        priceStatus: "PRICE_MISSING",
-      });
-      expect(result.draft?.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(false);
-      expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("NEEDS_REQUIRED_INPUTS");
-      expect(result.draft?.items[0]?.sourceParameters?.includedInProcurement).toBe(false);
+      expect(result.draft?.items.length).toBeGreaterThan(1);
+      expect(result.draft?.items[0]?.sourceParameters?.executableAsphaltProfile).toBe(true);
+      expect(result.draft?.items[0]?.sourceParameters?.domainResolutionReadiness).toBe("CALCULATION_READY");
       expect(result.draft?.items[0]?.sourceParameters?.assumptionKeys).toEqual(item.parameterSchema);
-      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).toEqual(
-        expect.arrayContaining(
-          p0ParameterKeys(item.workId).map((key) => `required_input_missing:${key}`),
-        ),
+      expect(result.draft?.items[0]?.sourceParameters?.unresolvedParameterKeys).toEqual([]);
+      expect(result.draft?.items[0]?.sourceParameters?.applicabilityBlockers).not.toEqual(
+        expect.arrayContaining(p0ParameterKeys(item.workId).map((key) => `required_input_missing:${key}`)),
       );
+      expect(Object.values(
+        result.draft?.items[0]?.sourceParameters?.roadworksWaveAParameterMetadata ?? {},
+      ).every((raw) => (
+        raw as Record<string, unknown>
+      ).defaultSourceType === "VISIBLE_BASELINE_ASSUMPTION")).toBe(true);
     }
   });
 
-  test("asks only exact P0 inputs and auto-composes all 35 with versioned P1/P2 defaults", () => {
+  test("shows all baseline assumptions and preserves exact P0 replacement semantics", () => {
     let composed = 0;
     for (const [index, item] of RoadworksWaveAProductionRegistry.entries()) {
       const runtime = createAiEstimateRuntime();
@@ -349,17 +347,19 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(initial.revision.workSpecificParameterSchemaId).toBe(item.parameterSchemaId);
       expect(initial.revision.workSpecificParameterSignature).toEqual(item.parameterSchema);
       const p0Keys = p0ParameterKeys(item.workId);
-      const assumedDefaultKeys = item.parameterDefinitions
-        .filter((definition) => definition.tier !== "P0")
-        .map((definition) => definition.key);
-      expect(initial.revision.missingInputs.map((input) => input.key).sort()).toEqual([...p0Keys].sort());
-      expect(missingCards.map((card) => card.key).sort()).toEqual([...p0Keys].sort());
-      expect(missingCards.every((card) => card.requiredFor === "contract_ready")).toBe(true);
-      expect(missingCards.every((card) => !/[a-z]+_[a-z0-9_]+/i.test(card.labelRu))).toBe(true);
+      const assumedDefaultKeys = item.parameterDefinitions.map((definition) => definition.key);
+      expect(initial.revision.missingInputs).toEqual([]);
+      expect(missingCards).toEqual([]);
+      expect(initial.revision.boq.rows.length).toBeGreaterThan(1);
       for (const key of assumedDefaultKeys) {
         expect(initial.revision.params[key]).toMatchObject({
           value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
           source: "default_assumption",
+        });
+        expect(initial.revision.assumptions.find((assumption) => assumption.key === key)).toMatchObject({
+          value: DEFAULT_ROADWORKS_WAVE_A_INPUTS[key],
+          visibleToUser: true,
+          replacedByUserInput: false,
         });
       }
 
@@ -378,9 +378,10 @@ describe("RoadworksWaveAProductionBindingContract", () => {
       expect(completed.revision.missingInputs).toEqual([]);
       expect(runtime.buildParameterPassport({ revision: completed.revision }).cards.filter((card) => card.missing)).toEqual([]);
       expect(completed.revision.boq.rows.length).toBeGreaterThan(1);
-      for (const key of assumedDefaultKeys) {
+      for (const key of assumedDefaultKeys.filter((key) => !p0Keys.includes(key))) {
         expect(completed.revision.params[key]?.source).toBe("default_assumption");
       }
+      for (const key of p0Keys) expect(completed.revision.params[key]?.source).toBe("user_input");
       expect(completed.revision.boq.rows.every((row) =>
         row.sourceParameters?.selectedWorkId === item.workId &&
         row.sourceParameters?.executableAsphaltProfile === true &&

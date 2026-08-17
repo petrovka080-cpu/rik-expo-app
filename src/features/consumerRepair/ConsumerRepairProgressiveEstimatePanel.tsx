@@ -11,6 +11,7 @@ import {
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
+import { buildAiEstimateParameterCards } from "../../lib/estimate/buildAiEstimateParameterCards";
 import type {
   CanonicalParameterSession,
 } from "../../lib/estimate/canonicalParameters";
@@ -183,52 +184,7 @@ function buildAssumptionParameterCards(
 function buildStoredRevisionParameterCards(
   revision: EstimateDraftRevision | null,
 ): AiEstimateParameterCard[] {
-  if (!revision) return [];
-  const missingByKey = new Map(revision.missingInputs.map((item) => [item.key, item]));
-  const keys = new Set([...Object.keys(revision.params), ...missingByKey.keys()]);
-  return [...keys].map((key) => {
-    const parameter = revision.params[key];
-    const missing = missingByKey.get(key);
-    const trace = revision.trace.params.find((item) => item.key === key);
-    const value = parameter?.value ?? null;
-    const unit = parameter?.canonicalUnit;
-    const displayValueRu = value == null
-      ? "Нужно уточнить"
-      : typeof value === "boolean"
-        ? value ? "Да" : "Нет"
-        : `${value}${unit ? ` ${aiEstimateRuUnitForParameter(key, unit)}` : ""}`;
-    return {
-      key,
-      labelRu: aiEstimateRuLabelForParameter(key, missing?.label ?? key),
-      value,
-      displayValueRu,
-      unitRu: aiEstimateRuUnitForParameter(key, unit),
-      source: parameter?.source === "edited_by_user"
-        ? "manual_override"
-        : parameter?.source === "user_input"
-          ? "user_prompt"
-          : parameter?.source === "derived"
-            ? "formula_derived"
-            : parameter ? "catalog_default" : "schema_missing",
-      sourceLabelRu: parameter?.sourceText ?? (parameter ? "Сохранено в revision" : "Нужно уточнить"),
-      inputKind: typeof value === "number" ? "number" : typeof value === "boolean" ? "boolean" : "text",
-      editable: true,
-      clickAction: "open_parameter_editor",
-      noStepperControls: true,
-      missing: !parameter,
-      requiredFor: missing?.requiredFor ?? "better_accuracy",
-      requiredForLabelRu: missing?.blocksPreliminaryEstimate
-        ? "для начала расчёта"
-        : "для повышения точности",
-      affectsRowIds: trace?.affectsRowIds ?? [],
-      affectsRowTitlesRu: [],
-      formulaRefs: (trace?.affectsRowIds ?? []).flatMap((rowId) => {
-        const rowTrace = revision.trace.rows.find((item) => item.rowId === rowId);
-        return rowTrace?.formulaId ? [rowTrace.formulaId] : [];
-      }),
-      whyItMattersRu: missing?.label,
-    };
-  });
+  return buildAiEstimateParameterCards({ revision, includeMissing: true });
 }
 
 function artifactStatus(revision: EstimateDraftRevision | null): string | null {

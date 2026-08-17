@@ -1151,9 +1151,28 @@ function buildExactRegisteredProfessionalDomainParseResult(input: {
 export function buildEstimateFromInlineWorkPrompt(
   input: BuildEstimateFromInlineWorkPromptInput,
 ): InlineWorkPromptEstimateBuildResult {
-  const exactRegisteredDomain = loadRegisteredProfessionalEstimateDomainDraftBuilder()
-    .buildRegisteredProfessionalEstimateFromInlineInputV1(input);
-  if (exactRegisteredDomain.exact_match && exactRegisteredDomain.inventory) {
+  const explicitExactId = input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim() || "";
+  const exactRouting = loadAsphaltRelatedExactRoutingV4()
+    .resolveAsphaltRelatedExactRoutingV4(explicitExactId);
+  if (exactRouting.status === "UNSUPPORTED_EXACT_WORK_KEY") {
+    return {
+      parseResult: buildUnsupportedExactWorkParseResult(input.rawInput, exactRouting.requestedId),
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "UNSUPPORTED_EXACT_WORK_KEY",
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
+      v4ClarificationExperience: null,
+      roadScopeResolution: null,
+    };
+  }
+  // Exact Asphalt registrations have a single established owner. Do not let
+  // the broader registered-domain inventory intercept the same catalog ID.
+  const exactRegisteredDomain = exactRouting.status === "NOT_ASPHALT_RELATED"
+    ? loadRegisteredProfessionalEstimateDomainDraftBuilder()
+      .buildRegisteredProfessionalEstimateFromInlineInputV1(input)
+    : null;
+  if (exactRegisteredDomain?.exact_match && exactRegisteredDomain.inventory) {
     const parseResult = buildExactRegisteredProfessionalDomainParseResult({
       rawInput: input.rawInput,
       catalogId: exactRegisteredDomain.inventory.catalog_id,
@@ -1170,21 +1189,6 @@ export function buildEstimateFromInlineWorkPrompt(
       blockingReason: draft?.items.length ? undefined : "NEEDS_REQUIRED_INPUTS",
       pdfMappingValid: Boolean(draft?.items.length),
       buyerHandoffMappingValid: Boolean(draft?.items.some((item) => item.itemType !== "work")),
-      v4ClarificationExperience: null,
-      roadScopeResolution: null,
-    };
-  }
-  const explicitExactId = input.selectedWorkKey?.trim() || input.selectedTemplateId?.trim() || "";
-  const exactRouting = loadAsphaltRelatedExactRoutingV4()
-    .resolveAsphaltRelatedExactRoutingV4(explicitExactId);
-  if (exactRouting.status === "UNSUPPORTED_EXACT_WORK_KEY") {
-    return {
-      parseResult: buildUnsupportedExactWorkParseResult(input.rawInput, exactRouting.requestedId),
-      draft: null,
-      canBuildPreliminaryEstimate: false,
-      blockingReason: "UNSUPPORTED_EXACT_WORK_KEY",
-      pdfMappingValid: false,
-      buyerHandoffMappingValid: false,
       v4ClarificationExperience: null,
       roadScopeResolution: null,
     };

@@ -8,6 +8,11 @@ import {
 import type { ProfessionalEstimateScopeModeV4, ProfessionalParameterValueV4 } from "../../professionalProjectAssemblyV4";
 import { electricalCompleteDomainFactory } from "./domainPackage";
 import { ELECTRICAL_COMPLETE_DOMAIN_ID, ELECTRICAL_DOMAIN_INVENTORY, type ElectricalDomainInventoryRow } from "./inventory";
+import {
+  PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1,
+  buildProfessionalDomainVisibleBaselineV1,
+  professionalDomainVisibleParameterMetadataV1,
+} from "../professionalDomainVisibleBaselineV1";
 
 export const ELECTRICAL_PRODUCTION_BINDING_VERSION = "electrical-complete-production-binding:v2" as const;
 export const ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1 = "N_A_WITH_REASON:OPEN_OFFICIAL_KRERM_08_RATE_TABLE_NOT_PUBLISHED_USE_CUSTOMER_APPROVED_INDIVIDUAL_NORM_PER_KRERM_GUIDANCE_1_6_1_7" as const;
@@ -51,7 +56,7 @@ type ElectricalProductionDraftItemV1 = {
   priceSource: "missing" | "reference_price_book";
   priceSourceId: string | null;
   priceSourceLabel: string | null;
-  costConfidence: "high";
+  costConfidence: "high" | "missing";
   confidence: "high";
   addedBy: "system";
   materialKey: string | null;
@@ -149,7 +154,22 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
   const schema = electricalCompleteDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`ELECTRICAL_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
+  const requestedCatalogWorkId = input.catalog_id.startsWith("expanded-template:")
+    ? input.catalog_id.slice("expanded-template:".length)
+    : inventory.template_id;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
+  const assumptionKeys = Object.entries(input.parameter_values)
+    .filter(([, value]) => value.source_type === "VISIBLE_BASELINE_ASSUMPTION")
+    .map(([key]) => key)
+    .sort();
+  const explicitParameterKeys = Object.entries(input.parameter_values)
+    .filter(([, value]) => value.source_type !== "VISIBLE_BASELINE_ASSUMPTION")
+    .map(([key]) => key)
+    .sort();
+  const parameterMetadata = Object.fromEntries(schema.parameters.map((parameter) => [
+    parameter.parameter_id,
+    professionalDomainVisibleParameterMetadataV1(parameter, input.parameter_values[parameter.parameter_id]),
+  ]));
   const items: ElectricalProductionDraftItemV1[] = compilation.compiled_rows.map((row) => {
     const informationalOutput = row.cost_ownership === "informational_output";
     const rowParameterSnapshot = Object.fromEntries(
@@ -180,6 +200,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       domainVersion: electricalCompleteDomainFactory.package.manifest.domain_version,
       domainPackageHash: electricalCompleteDomainFactory.package_hash,
       catalogId: input.catalog_id,
+      requestedCatalogWorkId,
       workKey: input.work_key,
       canonicalTechnologyId: inventory.canonical_technology_id,
       electricalFamily: inventory.electrical_family,
@@ -193,7 +214,16 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       priceRouteV3: row.price_route_v3,
       priceBasisReference: row.price_basis_reference,
       priceBasisDate: row.price_basis_date,
-      parameterSnapshot: rowParameterSnapshot,
+      parameterSchemaId: `canonical:${schema.schema_id}:${input.catalog_id}`,
+      parameterSchemaVersion: schema.schema_version,
+      parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
+      professionalDomainParameterMetadata: parameterMetadata,
+      parameterSnapshot,
+      rowParameterSnapshot,
+      assumptionKeys,
+      explicitParameterKeys,
+      parameterSourceTypes: Object.fromEntries(Object.entries(input.parameter_values).map(([key, value]) => [key, value.source_type])),
+      professionalDomainVisibleBaselineVersion: PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1,
       smartEstimateProjectionV2: {
         progressiveDisclosure: true,
         stage: row.section,
@@ -221,13 +251,13 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     normSourceTitle: row.normative_source_ids.join(", "),
     normVersion: compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
-    priceStatus: informationalOutput ? "PRICE_MISSING" : "REFERENCE_PRICE_ESTIMATE",
-    priceSource: informationalOutput ? "missing" : "reference_price_book",
-    priceSourceId: informationalOutput ? null : row.price_source_id,
+    priceStatus: informationalOutput || row.unit_price == null ? "PRICE_MISSING" : "REFERENCE_PRICE_ESTIMATE",
+    priceSource: informationalOutput || row.unit_price == null ? "missing" : "reference_price_book",
+    priceSourceId: informationalOutput || row.unit_price == null ? null : row.price_source_id,
     priceSourceLabel: informationalOutput || !row.price_basis_reference
       ? null
       : `${row.price_basis_reference} (${row.price_basis_date})`,
-    costConfidence: "high",
+    costConfidence: row.unit_price == null ? "missing" : "high",
     confidence: "high",
     addedBy: "system",
     materialKey: row.category === "material" ? row.semantic_owner : null,
@@ -242,7 +272,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       summaryRu: `${inventory.localized_name_ru}: индивидуальная профессиональная электротехническая смета ${input.scope_mode}; строк BOQ ${items.length}.`,
       repairType: input.work_key,
       selectedWork: {
-        selectedCatalogWorkId: input.catalog_id,
+        selectedCatalogWorkId: requestedCatalogWorkId,
         selectedWorkKey: input.work_key,
         selectedWorkTitleRu: inventory.localized_name_ru,
         selectedWorkCategoryKey: "electrical",
@@ -289,23 +319,15 @@ export function buildElectricalFromInlineInputV1(input: ElectricalInlineBuildInp
   const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
   const schema = electricalCompleteDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`ELECTRICAL_INLINE_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
-  const supplied = input.paramOverrides ?? {};
-  const missing = missingParameterIds(schema, supplied);
-  if (missing.length > 0) return { exact_match: true, inventory, missing_parameter_ids: missing, production: null };
-  const parameterValues = Object.fromEntries(schema.parameters.flatMap((parameter) => {
-    const value = supplied[parameter.parameter_id]?.value;
-    if (value == null || String(value).trim() === "") return [];
-    const sourceType = sourceTypeForParameter(parameter.parameter_id);
-    return [[parameter.parameter_id, {
-      value: value as string | number | boolean,
-      unit_id: parameter.unit_id,
-      source_type: sourceType,
-      source_id: `inline-exact:${inventory.catalog_id}:${parameter.parameter_id}:${String(supplied[parameter.parameter_id]?.source ?? sourceType)}`,
-      captured_at: new Date().toISOString(),
-      confidence: "high" as const,
-      applicability: `Exact project/resource/price input for ${inventory.catalog_id}`,
-    } satisfies ProfessionalParameterValueV4]];
-  }));
+  const baseline = buildProfessionalDomainVisibleBaselineV1({
+    schema,
+    catalogId: inventory.catalog_id,
+    workKey: inventory.work_key,
+    scopeCapability: inventory.scope_capability,
+    rawInput: input.rawInput,
+    supplied: input.paramOverrides,
+  });
+  const parameterValues = baseline.parameter_values;
   const scopeMode = parameterValues.estimate_scope_mode?.value;
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") throw new Error(`ELECTRICAL_INLINE_SCOPE_INVALID:${String(scopeMode)}`);
   return {
