@@ -18,16 +18,27 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const HVAC_TRACE_NOT_ADMITTED = process.argv.includes("--hvac-trace-not-admitted");
 const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const ASPHALT_TRACE_NOT_ADMITTED = process.argv.includes("--asphalt-trace-not-admitted");
-const EXPECTED_TARGETS = DRYWALL_TRACE_NOT_ADMITTED ? 500 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
-const EXPECTED_ASPHALT = DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
+const APPROVED_BASELINE_MODE = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED;
+const EXPECTED_TARGETS = HVAC_TRACE_NOT_ADMITTED ? 894 : DRYWALL_TRACE_NOT_ADMITTED ? 500
+  : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
+const EXPECTED_ASPHALT = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+  ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
 const EXPECTED_DRYWALL = DRYWALL_TRACE_NOT_ADMITTED ? 500 : 0;
-const EXPECTED_HVAC = DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
-const EXPECTED_COMPILED_ROWS = DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
-const EXPECTED_READY = DRYWALL_TRACE_NOT_ADMITTED ? 2_092 : ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
-const EXPECTED_ASPHALT_READY = DRYWALL_TRACE_NOT_ADMITTED ? 63 : ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
-const CONTRACT = DRYWALL_TRACE_NOT_ADMITTED
+const EXPECTED_HVAC = HVAC_TRACE_NOT_ADMITTED ? 894
+  : DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
+const EXPECTED_COMPILED_ROWS = HVAC_TRACE_NOT_ADMITTED ? 304_809
+  : DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
+const EXPECTED_READY = HVAC_TRACE_NOT_ADMITTED ? 2_986
+  : DRYWALL_TRACE_NOT_ADMITTED ? 2_092 : ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
+const EXPECTED_ASPHALT_READY = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+  ? 63 : ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
+const EXPECTED_HVAC_READY = HVAC_TRACE_NOT_ADMITTED ? 944 : 50;
+const CONTRACT = HVAC_TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-hvac-approved-baseline-candidates-894.v1"
+  : DRYWALL_TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-drywall-approved-baseline-candidates-500.v1"
   : ASPHALT_TRACE_NOT_ADMITTED
     ? "p0-one-monolith-r58-asphalt-trace-not-admitted-candidates-38.v1"
@@ -302,6 +313,126 @@ function buildDrywallApprovedBaselineTrace(parameters: readonly Json[], definiti
   };
 }
 
+function hvacProjectScale(catalogId: string): number {
+  if (/industrial|plant|factory|district|tunnel|airport|hospital|data_center|server_room/u.test(catalogId)) return 200;
+  if (/house|building|central|warehouse|school|office|hotel/u.test(catalogId)) return 100;
+  if (/room|apartment|local|single/u.test(catalogId)) return 20;
+  return 60;
+}
+
+function hvacRepresentativeNumber(parameter: Json, catalogId: string): { value: number; ruleId: string } {
+  const id = String(parameter.parameter_id);
+  const unit = String(parameter.unit_id ?? "");
+  const scale = hvacProjectScale(catalogId);
+  let value: number;
+  let ruleId: string;
+  if (id === "system_count") [value, ruleId] = [scale >= 100 ? 2 : 1, "PROJECT_SYSTEM_COUNT_BY_WORK_SCALE"];
+  else if (id === "delivery_distance_km") [value, ruleId] = [12, "BISHKEK_PROJECT_LOGISTICS_DISTANCE_KM"];
+  else if (/_waste_factor$/u.test(id)) [value, ruleId] = [0.03, "APPROVED_HVAC_WASTE_FACTOR"];
+  else if (/_labor_norm$/u.test(id)) {
+    if (/per_m$/u.test(unit)) [value, ruleId] = [0.3, "APPLICABLE_HVAC_LABOUR_NORM_PER_METRE"];
+    else if (/per_m2$/u.test(unit)) [value, ruleId] = [0.25, "APPLICABLE_HVAC_LABOUR_NORM_PER_M2"];
+    else if (/per_kg$/u.test(unit)) [value, ruleId] = [0.05, "APPLICABLE_HVAC_LABOUR_NORM_PER_KG"];
+    else if (/per_system$/u.test(unit)) [value, ruleId] = [8, "APPLICABLE_HVAC_LABOUR_NORM_PER_SYSTEM"];
+    else if (/per_document|per_service|per_test/u.test(unit)) [value, ruleId] = [2, "APPLICABLE_HVAC_CONTROL_LABOUR_NORM"];
+    else [value, ruleId] = [0.5, "APPLICABLE_HVAC_LABOUR_NORM_PER_ITEM"];
+  } else if (/_machine_norm$/u.test(id)) {
+    if (/per_m$/u.test(unit)) [value, ruleId] = [0.08, "APPLICABLE_HVAC_MACHINE_NORM_PER_METRE"];
+    else if (/per_m2$/u.test(unit)) [value, ruleId] = [0.05, "APPLICABLE_HVAC_MACHINE_NORM_PER_M2"];
+    else if (/per_system$/u.test(unit)) [value, ruleId] = [2, "APPLICABLE_HVAC_MACHINE_NORM_PER_SYSTEM"];
+    else [value, ruleId] = [0.15, "APPLICABLE_HVAC_MACHINE_NORM_PER_ITEM"];
+  } else if (/_mass_kg_per_unit$/u.test(id)) {
+    if (/boiler|chiller|cooling_tower|air_handling|pump|fan|heat_exchanger|equipment/u.test(id)) {
+      [value, ruleId] = [500, "MANUFACTURER_EQUIPMENT_MASS_ASSUMPTION_KG"];
+    } else if (/pipe|duct|insulation|cable/u.test(id)) [value, ruleId] = [5, "MANUFACTURER_LINEAR_COMPONENT_MASS_KG"];
+    else if (/document|service|test|boundary/u.test(id)) [value, ruleId] = [0.1, "NON_MATERIAL_CONTROL_ROW_REFERENCE_MASS"];
+    else [value, ruleId] = [10, "MANUFACTURER_COMPONENT_MASS_KG"];
+  } else if (/_test_interval$/u.test(id)) {
+    if (/m_per_test/u.test(unit)) [value, ruleId] = [100, "APPROVED_HVAC_TEST_INTERVAL_100_M"];
+    else if (/item_per_test/u.test(unit)) [value, ruleId] = [10, "APPROVED_HVAC_TEST_INTERVAL_10_ITEMS"];
+    else [value, ruleId] = [1, "APPROVED_HVAC_TEST_INTERVAL_PER_SCOPE"];
+  } else if (/_quantity$/u.test(id)) {
+    if (unit === "m") [value, ruleId] = [scale, "PROJECT_HVAC_LINEAR_QUANTITY_BY_WORK_SCALE"];
+    else if (unit === "m2") [value, ruleId] = [scale * 0.8, "PROJECT_HVAC_AREA_QUANTITY_BY_WORK_SCALE"];
+    else if (unit === "kg") [value, ruleId] = [scale * 2, "PROJECT_HVAC_MASS_QUANTITY_BY_WORK_SCALE"];
+    else if (unit === "system") [value, ruleId] = [scale >= 100 ? 2 : 1, "PROJECT_HVAC_SYSTEM_QUANTITY"];
+    else if (["document", "service", "test"].includes(unit)) [value, ruleId] = [1, "ONE_APPROVED_CONTROL_PACKAGE_FOR_WORK_SCOPE"];
+    else [value, ruleId] = [Math.max(2, Math.round(scale / 10)), "PROJECT_HVAC_ITEM_QUANTITY_BY_WORK_SCALE"];
+  } else if (/design_supply_temperature_c$/u.test(id)) [value, ruleId] = [80, "PROJECT_HEATING_SUPPLY_TEMPERATURE_C"];
+  else if (/design_return_temperature_c$/u.test(id)) [value, ruleId] = [60, "PROJECT_HEATING_RETURN_TEMPERATURE_C"];
+  else if (/temperature_c$/u.test(id)) [value, ruleId] = [20, "PROJECT_DESIGN_TEMPERATURE_C"];
+  else if (/airflow.*m3_h|flow.*m3_h/u.test(id)) [value, ruleId] = [scale * 50, "PROJECT_DESIGN_FLOW_BY_WORK_SCALE"];
+  else if (/load_kw|capacity_kw|power_kw/u.test(id)) [value, ruleId] = [scale, "PROJECT_DESIGN_CAPACITY_BY_WORK_SCALE"];
+  else if (/pressure.*bar/u.test(id)) [value, ruleId] = [6, "PROJECT_DESIGN_PRESSURE_BAR"];
+  else if (/diameter.*mm/u.test(id)) [value, ruleId] = [50, "PROJECT_COMPONENT_DIAMETER_MM"];
+  else if (/length.*m$/u.test(id)) [value, ruleId] = [scale, "PROJECT_ROUTE_LENGTH_BY_WORK_SCALE"];
+  else if (/area.*m2$/u.test(id)) [value, ruleId] = [scale * 0.8, "PROJECT_AREA_BY_WORK_SCALE"];
+  else if (/count|quantity|number/u.test(id)) [value, ruleId] = [Math.max(2, Math.round(scale / 10)), "PROJECT_COUNT_BY_WORK_SCALE"];
+  else if (/percent/u.test(id)) [value, ruleId] = [5, "APPROVED_HVAC_PERCENT"];
+  else if (/factor|coefficient|efficiency/u.test(id)) [value, ruleId] = [0.9, "APPROVED_HVAC_ENGINEERING_FACTOR"];
+  else [value, ruleId] = [1, "WORK_SPECIFIC_HVAC_ENGINEERING_ASSUMPTION_REQUIRES_REVISION"];
+  const min = typeof parameter.constraints_json?.min === "number" ? parameter.constraints_json.min : null;
+  const max = typeof parameter.constraints_json?.max === "number" ? parameter.constraints_json.max : null;
+  invariant(min == null || value >= min,
+    `R58_HVAC_BASELINE_BELOW_MIN:${catalogId}:${id}:${value}/${min}:${ruleId}`);
+  invariant(max == null || value <= max,
+    `R58_HVAC_BASELINE_ABOVE_MAX:${catalogId}:${id}:${value}/${max}:${ruleId}`);
+  if (parameter.value_type === "integer") value = Math.max(1, Math.round(value));
+  return { value, ruleId };
+}
+
+function buildHvacApprovedBaselineTrace(parameters: readonly Json[], definition: Json, sourceTrace: Json): Json {
+  const values: Json = {};
+  const classifications: Json = {};
+  const ruleIds: Json = {};
+  const accepted = sourceTrace.input_values ?? {};
+  for (const parameter of parameters) {
+    const id = String(parameter.parameter_id);
+    if (Object.hasOwn(accepted, id)
+      && ["string", "number", "boolean"].includes(typeof accepted[id])) {
+      values[id] = accepted[id];
+      classifications[id] = "TRACE";
+      ruleIds[id] = "ACCEPTED_RUNTIME_TRACE_VALUE";
+    } else if (parameter.value_type === "boolean") {
+      invariant(id === "work_included", `R58_HVAC_BASELINE_BOOLEAN_REQUIRES_EXPLICIT_RULE:${definition.catalog_id}:${id}`);
+      values[id] = true;
+      classifications[id] = "ASSUMPTION";
+      ruleIds[id] = "SELECTED_WORK_INCLUDED";
+    } else if (parameter.value_type === "enum") {
+      const allowed = Array.isArray(parameter.constraints_json?.values)
+        ? parameter.constraints_json.values.map(String) : [];
+      invariant(allowed.includes("PROJECT_SPECIFIED"),
+        `R58_HVAC_BASELINE_ENUM_REQUIRES_PROJECT_SPECIFIED:${definition.catalog_id}:${id}`);
+      values[id] = "PROJECT_SPECIFIED";
+      classifications[id] = "ASSUMPTION";
+      ruleIds[id] = "PROJECT_SPECIFIED_SELECTION_REQUIRES_REVISION";
+    } else if (parameter.value_type === "text") {
+      values[id] = `APPROVED_HVAC_PROJECT_REFERENCE:${definition.catalog_id}:${id}`;
+      classifications[id] = "ASSUMPTION";
+      ruleIds[id] = "VISIBLE_PROJECT_REFERENCE_REQUIRES_REVISION";
+    } else {
+      const resolved = hvacRepresentativeNumber(parameter, String(definition.catalog_id));
+      values[id] = resolved.value;
+      classifications[id] = "ASSUMPTION";
+      ruleIds[id] = resolved.ruleId;
+    }
+  }
+  invariant(Object.keys(values).length === parameters.length,
+    `R58_HVAC_BASELINE_VALUE_DENOMINATOR:${definition.catalog_id}`);
+  return {
+    provenance_kind: "APPROVED_TEMPLATE_BASELINE",
+    proposal_source_ref: sourceTrace.proposal_source_ref,
+    proposal_source_sha256: sourceTrace.proposal_source_sha256,
+    predecessor_trace_input_values_sha256: sourceTrace.input_values_sha256,
+    input_values: values,
+    input_values_sha256: sha256(values),
+    parameter_classification: classifications,
+    parameter_rule_ids: ruleIds,
+    derived_parameter_ids: [],
+    approval_basis: "R5.8 per-work HVAC technology, component unit, formula mode, norm and catalog scale",
+  };
+}
+
 function isChildOwner(row: Json): boolean {
   return row.source_metadata?.priceStatus === "CHILD_OWNER"
     || row.source_metadata?.priceRoute === "CHILD_OWNER_ESTIMATE";
@@ -394,7 +525,7 @@ function buildAsset(input: {
   }
   const compileFingerprint = sha256(compiledRows);
   let sensitivityScenario: Json | null = null;
-  if (DRYWALL_TRACE_NOT_ADMITTED) {
+  if (APPROVED_BASELINE_MODE) {
     const sensitivityParameter = input.parameters.find((parameter) => {
       if (!parameter.required || !['decimal', 'integer'].includes(String(parameter.value_type))) return false;
       const parameterId = String(parameter.parameter_id);
@@ -455,7 +586,9 @@ function buildAsset(input: {
   return {
     asset: {
       id,
-      baseline_key: `${DRYWALL_TRACE_NOT_ADMITTED ? "r58-drywall-approved-baseline" : "r58-repaired-compile-red"}:${input.definition.catalog_id}:${id}`,
+      baseline_key: `${HVAC_TRACE_NOT_ADMITTED ? "r58-hvac-approved-baseline"
+        : DRYWALL_TRACE_NOT_ADMITTED ? "r58-drywall-approved-baseline"
+          : "r58-repaired-compile-red"}:${input.definition.catalog_id}:${id}`,
       catalog_id: input.definition.catalog_id,
       definition_version_id: input.definition.id,
       source_definition_version_id: input.target.definition_version_id,
@@ -542,10 +675,12 @@ async function insertBaseline(client: Client, asset: Json): Promise<void> {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted", "--drywall-trace-not-admitted"]);
+  const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted", "--drywall-trace-not-admitted",
+    "--hvac-trace-not-admitted"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
     && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
-    && !(ASPHALT_TRACE_NOT_ADMITTED && DRYWALL_TRACE_NOT_ADMITTED),
+    && [ASPHALT_TRACE_NOT_ADMITTED, DRYWALL_TRACE_NOT_ADMITTED, HVAC_TRACE_NOT_ADMITTED]
+      .filter(Boolean).length <= 1,
     "R58_REPAIRED_63_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_REPAIRED_63_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -554,8 +689,10 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_REPAIRED_63_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_REPAIRED_63_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => DRYWALL_TRACE_NOT_ADMITTED
-    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "drywall"
+  const targets = readJsonl(MATRIX_PATH).filter((row) => HVAC_TRACE_NOT_ADMITTED
+    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "hvac_heat_supply"
+    : DRYWALL_TRACE_NOT_ADMITTED
+      ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "drywall"
     : ASPHALT_TRACE_NOT_ADMITTED
       ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "asphalt"
       : row.partition === "COMPILE_RED_937" && row.domain !== "water_supply_sewerage");
@@ -645,8 +782,10 @@ async function main(): Promise<void> {
           "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
           [definition.id],
         )).rows as Json[];
-        const trace = DRYWALL_TRACE_NOT_ADMITTED
-          ? buildDrywallApprovedBaselineTrace(parameters, definition, sourceTrace)
+        const trace = HVAC_TRACE_NOT_ADMITTED
+          ? buildHvacApprovedBaselineTrace(parameters, definition, sourceTrace)
+          : DRYWALL_TRACE_NOT_ADMITTED
+            ? buildDrywallApprovedBaselineTrace(parameters, definition, sourceTrace)
           : ASPHALT_TRACE_NOT_ADMITTED
             ? augmentAsphaltTraceFromAcceptedRows(sourceTrace, formulas, resources)
             : sourceTrace;
@@ -681,7 +820,7 @@ async function main(): Promise<void> {
         from public.estimate_cumulative_manifest_entry where release_id=$1
       `, [candidateReleaseId])).rows[0] as Json;
       invariant(counts.ready === EXPECTED_READY && counts.asphalt_ready === EXPECTED_ASPHALT_READY
-        && counts.hvac_ready === 50 && counts.batch009_rows === 0,
+        && counts.hvac_ready === EXPECTED_HVAC_READY && counts.batch009_rows === 0,
       `R58_REPAIRED_63_COUNTS:${stable(counts)}`);
       invariant(Number((await client.query(
         "select count(*)::int value from public.estimate_definition_release where status='active' and id=$1",
@@ -692,8 +831,10 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, ledgerSha256: sha256(ledger) }),
-        JSON.stringify({ [DRYWALL_TRACE_NOT_ADMITTED
-          ? "r58DrywallApprovedBaselineCandidates500"
+        JSON.stringify({ [HVAC_TRACE_NOT_ADMITTED
+          ? "r58HvacApprovedBaselineCandidates894"
+          : DRYWALL_TRACE_NOT_ADMITTED
+            ? "r58DrywallApprovedBaselineCandidates500"
           : ASPHALT_TRACE_NOT_ADMITTED
             ? "r58AsphaltTraceNotAdmittedCandidates38"
             : "r58RepairedCompileRedCandidates63"]: {
@@ -713,8 +854,10 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = ledger.map((row) => stable(row)).join("\n") + (ledger.length > 0 ? "\n" : "");
-  const evidenceStem = DRYWALL_TRACE_NOT_ADMITTED
-    ? "R58_DRYWALL_APPROVED_BASELINE_CANDIDATES_500"
+  const evidenceStem = HVAC_TRACE_NOT_ADMITTED
+    ? "R58_HVAC_APPROVED_BASELINE_CANDIDATES_894"
+    : DRYWALL_TRACE_NOT_ADMITTED
+      ? "R58_DRYWALL_APPROVED_BASELINE_CANDIDATES_500"
     : ASPHALT_TRACE_NOT_ADMITTED
       ? "R58_ASPHALT_TRACE_NOT_ADMITTED_CANDIDATES_38"
       : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63";
@@ -740,8 +883,10 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_${DRYWALL_TRACE_NOT_ADMITTED
-      ? "DRYWALL_APPROVED_BASELINE"
+    status: `GREEN_R58_${HVAC_TRACE_NOT_ADMITTED
+      ? "HVAC_APPROVED_BASELINE"
+      : DRYWALL_TRACE_NOT_ADMITTED
+        ? "DRYWALL_APPROVED_BASELINE"
       : ASPHALT_TRACE_NOT_ADMITTED
         ? "ASPHALT_TRACE_NOT_ADMITTED"
         : "REPAIRED_COMPILE_RED"}_CANDIDATES_${EXPECTED_TARGETS}_${
