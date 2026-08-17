@@ -1032,7 +1032,8 @@ function fuzzySearchPage(rows:Record<string,any>[],query:string,after:string|nul
   const ranked=rows.flatMap<Record<string,any>>((row) => {
     const terms=[...new Set([row.normalized_canonical_name,...(row.normalized_search_terms ?? [])]
       .map(String).filter(Boolean))];
-    const best=queryTokens.map((queryToken) => terms.map((term) => ({term,
+    const best=queryTokens.map((queryToken) => terms
+      .filter((term)=>term.slice(0,2)===queryToken.slice(0,2)).map((term) => ({term,
       distance:levenshtein(queryToken,term)})).sort((left,right) => left.distance-right.distance
         || left.term.localeCompare(right.term,"ru"))[0]).filter(Boolean) as {term:string;distance:number}[];
     if(best.length!==queryTokens.length) return [];
@@ -1177,7 +1178,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
         where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
           and document.selectable and length(replace($2,' ',''))>2
-          and position(left($2,2) in document.normalized_search_blob)>0
+          and exists(select 1 from unnest(document.normalized_search_terms) term
+            where term like left($2,2)||'%')
           and (coalesce($3,'')='' or document.domain_id=$3)
           and (coalesce($4,'')='' or document.group_id=$4)
           and (coalesce($5,'')='' or document.operation_kind=$5)`,[release.id,intent.searchText,
