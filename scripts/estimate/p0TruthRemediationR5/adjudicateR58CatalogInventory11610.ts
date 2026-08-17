@@ -130,7 +130,13 @@ function stripModifier(workKey: string): string {
   return modifier === "record_specific" ? workKey : workKey.slice(0, -(modifier.length + 1));
 }
 
-function backendEvidence(): { summary: Json; rows: Map<string, Json>; summaryPath: string; ledgerPath: string } {
+function backendEvidence(): {
+  summary: Json;
+  rows: Map<string, Json>;
+  summaryPath: string;
+  ledgerPath: string;
+  ledgerFileSha256: string;
+} {
   const candidates = readdirSync(BACKEND_ROOT)
     .filter((name) => /^BATCH001_008_BACKEND_ADMISSION_4272_[0-9a-f]{8,40}\.json$/u.test(name))
     .map((name) => join(BACKEND_ROOT, name));
@@ -148,14 +154,20 @@ function backendEvidence(): { summary: Json; rows: Map<string, Json>; summaryPat
   const ledgerPath = resolve(String(chosen.summary.ledgerPath));
   invariant(existsSync(ledgerPath), "R58_ADJUDICATION_BACKEND_LEDGER_MISSING");
   const contents = readFileSync(ledgerPath, "utf8");
-  invariant(sha256(contents) === chosen.summary.ledgerSha256, "R58_ADJUDICATION_BACKEND_LEDGER_SHA_DRIFT");
   const lines = contents.split(/\r?\n/u).filter(Boolean).map((line) => JSON.parse(line) as Json);
+  invariant(shaObject(lines) === chosen.summary.ledgerSha256, "R58_ADJUDICATION_BACKEND_LEDGER_SHA_DRIFT");
   invariant(lines.length === EXPECTED.candidate, `R58_ADJUDICATION_BACKEND_LEDGER_COUNT:${lines.length}`);
   invariant(lines.every((row) => row.status === "GREEN" && row.failures?.length === 0),
     "R58_ADJUDICATION_BACKEND_LEDGER_HAS_RED");
   const rows = new Map(lines.map((row) => [String(row.catalogId), row]));
   invariant(rows.size === EXPECTED.candidate, "R58_ADJUDICATION_BACKEND_LEDGER_DUPLICATE");
-  return { summary: chosen.summary, rows, summaryPath: chosen.summaryPath, ledgerPath };
+  return {
+    summary: chosen.summary,
+    rows,
+    summaryPath: chosen.summaryPath,
+    ledgerPath,
+    ledgerFileSha256: sha256(contents),
+  };
 }
 
 function mapCandidateToInventory(candidate: Json, inventory: ReadonlyMap<string, Json>): string | null {
@@ -606,7 +618,12 @@ async function main(): Promise<void> {
       effectiveBackendProof: { path: EFFECTIVE_PATH, sha256: effectiveSha256, rows: effectiveProof.length },
       quarantineQueue: { path: QUARANTINE_PATH, sha256: quarantineSha256, rows: quarantineQueue.length },
       repairQueue: { path: REPAIR_QUEUE_PATH, sha256: repairQueueSha256, rows: 0 },
-      backend4272: { summary: backend.summaryPath, ledger: backend.ledgerPath, sha256: backend.summary.ledgerSha256 },
+      backend4272: {
+        summary: backend.summaryPath,
+        ledger: backend.ledgerPath,
+        semanticSha256: backend.summary.ledgerSha256,
+        fileSha256: backend.ledgerFileSha256,
+      },
     },
     activeReleaseSwitched: false,
     runtime8081Switched: false,
