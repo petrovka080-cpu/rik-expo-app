@@ -508,6 +508,7 @@ async function main(): Promise<void> {
     await client.query("commit");
   } catch (error) {
     await client.query("rollback").catch(() => undefined);
+    await client.end().catch(() => undefined);
     throw error;
   }
 
