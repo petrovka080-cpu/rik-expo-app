@@ -376,7 +376,7 @@ async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Pr
   const definitionSha256 = shaObject({ spec, parameterSchemaSha256: baseline.parameterSchemaSha256 });
   await client.query(`insert into public.estimate_work_identity(
     catalog_id,namespace,domain,source_identity,work_key,title_ru,denominator_eligible,canonical_owner,retired_at
-  ) values($1,'r58-real',$2,$3,$1,$4,true,'backend',null)`, [spec.catalogId, spec.domain, `${CONTRACT}:${spec.catalogId}`, spec.title]);
+  ) values($1,'global',$2,$3,$1,$4,true,'backend',null)`, [spec.catalogId, spec.domain, `${CONTRACT}:${spec.catalogId}`, spec.title]);
   await client.query(`insert into public.estimate_definition_version(
     id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,source_metadata
   ) values($1,$2,$3,1,$4::jsonb,$5::jsonb,$6,$7::jsonb)`, [definitionId, releaseId, spec.catalogId,
