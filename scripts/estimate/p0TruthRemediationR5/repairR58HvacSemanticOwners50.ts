@@ -98,13 +98,30 @@ function normativeSources(resources: readonly Json[]): string[] {
   return [...values].sort();
 }
 
+function collectDeclaredParameterIds(value: unknown, output = new Set<string>()): Set<string> {
+  if (Array.isArray(value)) {
+    for (const item of value) collectDeclaredParameterIds(item, output);
+    return output;
+  }
+  if (!value || typeof value !== "object") return output;
+  const object = value as Json;
+  if (object.kind === "parameter" && typeof object.id === "string") output.add(object.id);
+  if (typeof object.parameterId === "string") output.add(object.parameterId);
+  if (Array.isArray(object.parameterSources)) {
+    for (const id of object.parameterSources) if (typeof id === "string" && id.trim()) output.add(id);
+  }
+  for (const child of Object.values(object)) collectDeclaredParameterIds(child, output);
+  return output;
+}
+
 function parameterTruth(parameter: Json, definition: Json, formulas: readonly Json[], resources: readonly Json[]): Json {
   const parameterId = String(parameter.parameter_id);
   const formulaIds = formulas.filter((formula) => (formula.input_parameter_ids ?? []).includes(parameterId))
     .map((formula) => String(formula.formula_id)).sort();
   const formulaIdSet = new Set(formulaIds);
   let consumerRows = resources.filter((resource) => formulaIdSet.has(String(resource.formula_id))
-    || (resource.resource_graph?.parameterSources ?? []).includes(parameterId));
+    || collectDeclaredParameterIds(resource.inclusion_ast).has(parameterId)
+    || collectDeclaredParameterIds(resource.resource_graph).has(parameterId));
   if (parameterId === "estimate_scope_mode" && consumerRows.length === 0) consumerRows = [...resources];
   invariant(consumerRows.length > 0,
     `R58_HVAC_50_PARAMETER_WITHOUT_CONSUMER:${definition.catalog_id}:${parameterId}`);
