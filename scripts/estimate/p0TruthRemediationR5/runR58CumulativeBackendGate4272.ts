@@ -5,6 +5,8 @@ import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
 
+import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph";
+
 type Json = Record<string, any>;
 type Definition = {
   catalogId: string;
@@ -193,10 +195,7 @@ async function loadDefinitions(client: Client, catalogIds: readonly string[]): P
   const rows = (await client.query(`
     select manifest.catalog_id,manifest.definition_version_id::text,identity.domain,
       baseline.id::text baseline_id,baseline.input_values,baseline.formula_consumer_ids,
-      baseline.validation_scenario_refs,
-      coalesce((baseline.validation_scenario_refs->0->>'rowCount')::int,
-        (select count(*) from public.estimate_resource_spec resource
-          where resource.definition_version_id=manifest.definition_version_id)) baseline_row_count
+      baseline.validation_scenario_refs
     from public.estimate_cumulative_manifest_entry manifest
     join public.estimate_approved_template_baseline baseline
       on baseline.id=manifest.approved_template_baseline_id
@@ -205,6 +204,19 @@ async function loadDefinitions(client: Client, catalogIds: readonly string[]): P
     order by manifest.catalog_id
   `, [TARGET_RELEASE_ID, catalogIds])).rows as Json[];
   const definitionIds = rows.map((row) => String(row.definition_version_id));
+  const resources = definitionIds.length === 0 ? [] : (await client.query(`
+    select definition_version_id::text,row_id,inclusion_ast
+    from public.estimate_resource_spec
+    where definition_version_id=any($1::uuid[])
+    order by definition_version_id,ordinal,row_id
+  `, [definitionIds])).rows as Json[];
+  const resourcesByDefinition = new Map<string, Json[]>();
+  for (const resource of resources) {
+    const key = String(resource.definition_version_id);
+    const list = resourcesByDefinition.get(key) ?? [];
+    list.push(resource);
+    resourcesByDefinition.set(key,list);
+  }
   const parameters = definitionIds.length === 0 ? [] : (await client.query(`
     select definition_version_id::text,parameter_id,ordinal,value_type,required,constraints_json
     from public.estimate_parameter_definition
@@ -227,7 +239,8 @@ async function loadDefinitions(client: Client, catalogIds: readonly string[]): P
     values: row.input_values as Json,
     formulaConsumers: row.formula_consumer_ids as Json,
     validationScenarios: Array.isArray(row.validation_scenario_refs) ? row.validation_scenario_refs : [],
-    baselineRowCount: Number(row.baseline_row_count),
+    baselineRowCount: (resourcesByDefinition.get(String(row.definition_version_id)) ?? [])
+      .filter((resource) => evaluateInclusionGraph(resource.inclusion_ast as Json,row.input_values as Json)).length,
     numericParameters: parametersByDefinition.get(String(row.definition_version_id)) ?? [],
   }));
 }
