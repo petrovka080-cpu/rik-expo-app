@@ -18,25 +18,28 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const HVAC_NO_AUTHORITATIVE_TRACE = process.argv.includes("--hvac-no-authoritative-trace");
 const HVAC_TRACE_NOT_ADMITTED = process.argv.includes("--hvac-trace-not-admitted");
 const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const ASPHALT_TRACE_NOT_ADMITTED = process.argv.includes("--asphalt-trace-not-admitted");
-const APPROVED_BASELINE_MODE = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED;
-const EXPECTED_TARGETS = HVAC_TRACE_NOT_ADMITTED ? 894 : DRYWALL_TRACE_NOT_ADMITTED ? 500
+const APPROVED_BASELINE_MODE = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED;
+const EXPECTED_TARGETS = HVAC_NO_AUTHORITATIVE_TRACE ? 68 : HVAC_TRACE_NOT_ADMITTED ? 894 : DRYWALL_TRACE_NOT_ADMITTED ? 500
   : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
-const EXPECTED_ASPHALT = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+const EXPECTED_ASPHALT = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
   ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
 const EXPECTED_DRYWALL = DRYWALL_TRACE_NOT_ADMITTED ? 500 : 0;
-const EXPECTED_HVAC = HVAC_TRACE_NOT_ADMITTED ? 894
+const EXPECTED_HVAC = HVAC_NO_AUTHORITATIVE_TRACE ? 68 : HVAC_TRACE_NOT_ADMITTED ? 894
   : DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
-const EXPECTED_COMPILED_ROWS = HVAC_TRACE_NOT_ADMITTED ? 304_809
+const EXPECTED_COMPILED_ROWS = HVAC_NO_AUTHORITATIVE_TRACE ? 21_070 : HVAC_TRACE_NOT_ADMITTED ? 304_809
   : DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
-const EXPECTED_READY = HVAC_TRACE_NOT_ADMITTED ? 2_986
+const EXPECTED_READY = HVAC_NO_AUTHORITATIVE_TRACE ? 3_054 : HVAC_TRACE_NOT_ADMITTED ? 2_986
   : DRYWALL_TRACE_NOT_ADMITTED ? 2_092 : ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
-const EXPECTED_ASPHALT_READY = HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+const EXPECTED_ASPHALT_READY = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
   ? 63 : ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
-const EXPECTED_HVAC_READY = HVAC_TRACE_NOT_ADMITTED ? 944 : 50;
-const CONTRACT = HVAC_TRACE_NOT_ADMITTED
+const EXPECTED_HVAC_READY = HVAC_NO_AUTHORITATIVE_TRACE ? 1_012 : HVAC_TRACE_NOT_ADMITTED ? 944 : 50;
+const CONTRACT = HVAC_NO_AUTHORITATIVE_TRACE
+  ? "p0-one-monolith-r58-hvac-no-authoritative-trace-approved-baseline-candidates-68.v1"
+  : HVAC_TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-hvac-approved-baseline-candidates-894.v1"
   : DRYWALL_TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-drywall-approved-baseline-candidates-500.v1"
@@ -586,7 +589,7 @@ function buildAsset(input: {
   return {
     asset: {
       id,
-      baseline_key: `${HVAC_TRACE_NOT_ADMITTED ? "r58-hvac-approved-baseline"
+      baseline_key: `${HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED ? "r58-hvac-approved-baseline"
         : DRYWALL_TRACE_NOT_ADMITTED ? "r58-drywall-approved-baseline"
           : "r58-repaired-compile-red"}:${input.definition.catalog_id}:${id}`,
       catalog_id: input.definition.catalog_id,
@@ -676,10 +679,11 @@ async function insertBaseline(client: Client, asset: Json): Promise<void> {
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
   const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted", "--drywall-trace-not-admitted",
-    "--hvac-trace-not-admitted"]);
+    "--hvac-trace-not-admitted", "--hvac-no-authoritative-trace"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
     && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
-    && [ASPHALT_TRACE_NOT_ADMITTED, DRYWALL_TRACE_NOT_ADMITTED, HVAC_TRACE_NOT_ADMITTED]
+    && [ASPHALT_TRACE_NOT_ADMITTED, DRYWALL_TRACE_NOT_ADMITTED, HVAC_TRACE_NOT_ADMITTED,
+      HVAC_NO_AUTHORITATIVE_TRACE]
       .filter(Boolean).length <= 1,
     "R58_REPAIRED_63_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_REPAIRED_63_SPEC_DRIFT");
@@ -689,8 +693,10 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_REPAIRED_63_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_REPAIRED_63_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => HVAC_TRACE_NOT_ADMITTED
-    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "hvac_heat_supply"
+  const targets = readJsonl(MATRIX_PATH).filter((row) => HVAC_NO_AUTHORITATIVE_TRACE
+    ? row.partition === "NO_AUTHORITATIVE_TRACE_1286" && row.domain === "hvac_heat_supply"
+    : HVAC_TRACE_NOT_ADMITTED
+      ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "hvac_heat_supply"
     : DRYWALL_TRACE_NOT_ADMITTED
       ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "drywall"
     : ASPHALT_TRACE_NOT_ADMITTED
@@ -765,7 +771,15 @@ async function main(): Promise<void> {
       for (const manifest of manifests) {
         const target = targetByCatalog.get(String(manifest.catalog_id));
         invariant(target, `R58_REPAIRED_63_TARGET_MISSING:${manifest.catalog_id}`);
-        const sourceTrace = traceByCatalog.get(String(manifest.catalog_id));
+        const sourceTrace = traceByCatalog.get(String(manifest.catalog_id)) ?? (HVAC_NO_AUTHORITATIVE_TRACE
+          ? {
+            provenance_kind: "NO_AUTHORITATIVE_RUNTIME_TRACE",
+            proposal_source_ref: SPEC_PATH,
+            proposal_source_sha256: SPEC_SHA256,
+            input_values: {},
+            input_values_sha256: sha256({}),
+          }
+          : null);
         invariant(sourceTrace, `R58_REPAIRED_63_TRACE_MISSING:${manifest.catalog_id}`);
         const definition = (await client.query(
           "select * from public.estimate_definition_version where id=$1", [manifest.definition_version_id],
@@ -782,7 +796,7 @@ async function main(): Promise<void> {
           "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
           [definition.id],
         )).rows as Json[];
-        const trace = HVAC_TRACE_NOT_ADMITTED
+        const trace = HVAC_NO_AUTHORITATIVE_TRACE || HVAC_TRACE_NOT_ADMITTED
           ? buildHvacApprovedBaselineTrace(parameters, definition, sourceTrace)
           : DRYWALL_TRACE_NOT_ADMITTED
             ? buildDrywallApprovedBaselineTrace(parameters, definition, sourceTrace)
@@ -831,8 +845,9 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, ledgerSha256: sha256(ledger) }),
-        JSON.stringify({ [HVAC_TRACE_NOT_ADMITTED
-          ? "r58HvacApprovedBaselineCandidates894"
+        JSON.stringify({ [HVAC_NO_AUTHORITATIVE_TRACE
+          ? "r58HvacNoAuthoritativeTraceApprovedBaselineCandidates68"
+          : HVAC_TRACE_NOT_ADMITTED ? "r58HvacApprovedBaselineCandidates894"
           : DRYWALL_TRACE_NOT_ADMITTED
             ? "r58DrywallApprovedBaselineCandidates500"
           : ASPHALT_TRACE_NOT_ADMITTED
@@ -854,8 +869,9 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = ledger.map((row) => stable(row)).join("\n") + (ledger.length > 0 ? "\n" : "");
-  const evidenceStem = HVAC_TRACE_NOT_ADMITTED
-    ? "R58_HVAC_APPROVED_BASELINE_CANDIDATES_894"
+  const evidenceStem = HVAC_NO_AUTHORITATIVE_TRACE
+    ? "R58_HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE_CANDIDATES_68"
+    : HVAC_TRACE_NOT_ADMITTED ? "R58_HVAC_APPROVED_BASELINE_CANDIDATES_894"
     : DRYWALL_TRACE_NOT_ADMITTED
       ? "R58_DRYWALL_APPROVED_BASELINE_CANDIDATES_500"
     : ASPHALT_TRACE_NOT_ADMITTED
@@ -883,8 +899,9 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_${HVAC_TRACE_NOT_ADMITTED
-      ? "HVAC_APPROVED_BASELINE"
+    status: `GREEN_R58_${HVAC_NO_AUTHORITATIVE_TRACE
+      ? "HVAC_NO_AUTHORITATIVE_TRACE_APPROVED_BASELINE"
+      : HVAC_TRACE_NOT_ADMITTED ? "HVAC_APPROVED_BASELINE"
       : DRYWALL_TRACE_NOT_ADMITTED
         ? "DRYWALL_APPROVED_BASELINE"
       : ASPHALT_TRACE_NOT_ADMITTED
