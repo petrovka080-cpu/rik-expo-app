@@ -199,7 +199,7 @@ function drywallRepresentativeNumber(parameter: Json, catalogId: string): { valu
   else if (/(?:horizontal_face|work|protection|insulation|membrane)_area_m2$/u.test(id)) [value, ruleId] = [scale, "PROJECT_WORK_AREA_BY_CATALOG_VARIANT"];
   else if (/bulkhead_drop_height_m$|drop_height(?:_m)?$/u.test(id)) [value, ruleId] = [0.5, "PROJECT_BULKHEAD_DROP_HEIGHT_HALF_METRE"];
   else if (/board_layer_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_LAYER_BOARD_SYSTEM"];
-  else if (/joint_tape_run_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_JOINT_TAPE_RUNS"];
+  else if (/_run_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_MATERIAL_RUNS"];
   else if (/vertical_face_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_VERTICAL_BULKHEAD_FACES"];
   else if (/waste_percent$/u.test(id)) [value, ruleId] = [3, "APPROVED_DRYWALL_CUTTING_WASTE_PERCENT"];
   else if (/(?:waste|reserve|loss|flexible_track)_fraction$/u.test(id)) [value, ruleId] = [0.05, "APPROVED_MATERIAL_RESERVE_FRACTION"];
