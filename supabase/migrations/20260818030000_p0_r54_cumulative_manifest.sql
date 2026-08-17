@@ -1,4 +1,4 @@
--- P0 ONE MONOLITH R5.6: logical cumulative release without copying accepted model rows.
+-- P0 ONE MONOLITH R5.7: logical cumulative release without copying accepted model rows.
 -- Historical r54 object suffixes are retained for forward-only compatibility.
 
 begin;

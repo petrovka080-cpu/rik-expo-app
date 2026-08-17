@@ -7,10 +7,10 @@ import { Client } from "pg";
 
 type Json = Record<string, any>;
 
-const SPEC_SHA256 = "4bd245a1537da872dbc6ce6681c6571baeb146aa1123b5402e71bbec10050b62";
+const SPEC_SHA256 = "b86e460d194c98f56546bdcc50704a38fba6fc74c4de3d661d2e1221d6d2e76e";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
-const EVIDENCE_ROOT = resolve(".release-runtime/p0-one-monolith-r56/evidence/02-data-before");
+const EVIDENCE_ROOT = resolve(".release-runtime/p0-one-monolith-r57/evidence/02-data-before");
 const SCHEMA_DUMP_PATH = resolve(
   ".release-runtime/p0-one-monolith-r5/evidence/02-phase1a/canonical-backend-api/candidate/BATCH008_SCHEMA_ONLY_BEFORE.dump",
 );
@@ -147,7 +147,7 @@ async function main(): Promise<void> {
     invariant(fingerprints.every((row) => row.parameter_count > 0 && row.formula_count > 0 && row.resource_count > 0),
       "R54_BATCH008_EMPTY_DEFINITION_CHILD_SET");
     const rows = fingerprints.map((row) => ({
-      schemaVersion: "p0-one-monolith-r56-accepted-definition-fingerprint.v1",
+      schemaVersion: "p0-one-monolith-r57-accepted-definition-fingerprint.v1",
       specSha256: SPEC_SHA256,
       head,
       tree,
@@ -225,7 +225,7 @@ async function main(): Promise<void> {
     }, {})).sort((left, right) => String(left.domainId).localeCompare(String(right.domainId)));
     const baselineReadyDefinitions = rows.filter((row) => row.baselineReady).length;
     const manifest = {
-      schemaVersion: "p0-one-monolith-r56-batch001-008-baseline-census.v1",
+      schemaVersion: "p0-one-monolith-r57-batch001-008-baseline-census.v1",
       capturedAt: new Date().toISOString(),
       specSha256: SPEC_SHA256,
       head,
@@ -239,7 +239,7 @@ async function main(): Promise<void> {
       batch009InActiveManifest: 0,
       totals,
       domainDistribution,
-      authoritativeBaselineBeforeR56Admission: `${baselineReadyDefinitions}/4272`,
+      authoritativeBaselineBeforeR57Admission: `${baselineReadyDefinitions}/4272`,
       admissionRequired: 4_272 - baselineReadyDefinitions,
       semanticOwnerRepairRequired: totals.blankOwnerRows > 0 || totals.duplicateOwnerGroups > 0,
       sourceDatabaseWrites: 0,
@@ -264,7 +264,7 @@ async function main(): Promise<void> {
     })));
     const manifestPath = write("BATCH001_008_BASELINE_CENSUS_4272.json", manifest);
     const restorePath = write("DATABASE_SCHEMA_RESTORE_PROBE.json", {
-      schemaVersion: "p0-one-monolith-r56-schema-restore-probe.v1",
+      schemaVersion: "p0-one-monolith-r57-schema-restore-probe.v1",
       sourceDatabase: database.name,
       sourceDump: "BATCH008_SCHEMA_ONLY_BEFORE.dump",
       sourceDumpSha256: createHash("sha256").update(readFileSync(SCHEMA_DUMP_PATH)).digest("hex"),
