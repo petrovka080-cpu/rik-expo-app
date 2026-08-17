@@ -988,7 +988,7 @@ with tokens as materialized(
     concat_ws(E'\\u001f',lpad(filtered.tier::text,2,'0'),filtered.domain_id,
       filtered.system_id,filtered.work_family_id,filtered.resolved_catalog_id) stable_order_key
   from filtered where resolved_ordinal=1
-), summary as(
+), summary as materialized(
   select count(*)::bigint literal_total_count,
     count(*) filter(where catalog_origin='GLOBAL')::bigint global_literal_total_count,
     count(*) filter(where catalog_origin<>'GLOBAL')::bigint external_literal_total_count,
@@ -1012,40 +1012,47 @@ join public.estimate_search_group group_row
   on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
 order by page.stable_order_key`;
 
-const LOCAL_FUZZY_SEARCH_R58 = `
-with candidate as materialized(
-  select document.*,
-    greatest(extensions.similarity(document.normalized_canonical_name,$2),
-      extensions.similarity(document.normalized_search_blob,$2)) score
-  from public.estimate_search_document document
-  where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
-    and document.selectable and length(replace($2,' ',''))>2
-    and (document.normalized_canonical_name operator(extensions.%) $2
-      or document.normalized_search_blob operator(extensions.%) $2)
-    and (coalesce($3,'')='' or document.domain_id=$3)
-    and (coalesce($4,'')='' or document.group_id=$4)
-    and (coalesce($5,'')='' or document.operation_kind=$5)
-), ranked as materialized(
-  select candidate.*,
-    concat_ws(E'\\u001f','06',lpad((1000000-round(score*1000000))::text,7,'0'),catalog_id) stable_order_key
-  from candidate where score>=0.4
-), summary as(
-  select count(*)::bigint fuzzy_total_count,count(distinct group_id)::bigint group_total_count,
-    encode(extensions.digest(convert_to(coalesce(string_agg(
-      catalog_id||E'\\u001f'||score::text||E'\\u001f'||stable_order_key,
-      E'\\n' order by stable_order_key),''),'UTF8'),'sha256'),'hex') result_set_sha256
-  from ranked
-), page as(
-  select ranked.*,summary.* from ranked cross join summary
-  where $6::text is null or ranked.stable_order_key>$6
-  order by ranked.stable_order_key limit $7
-)
-select page.*,group_row.group_name_ru,page.catalog_id source_catalog_id,6 tier,$2 matched_term,
-  0::bigint literal_total_count,0::bigint global_literal_total_count,
-  0::bigint external_literal_total_count
-from page join public.estimate_search_group group_row
-  on group_row.search_release_id=page.search_release_id and group_row.group_id=page.group_id
-order by page.stable_order_key`;
+function levenshtein(left:string,right:string):number {
+  const prior=Array.from({length:right.length+1},(_,index)=>index);
+  for(let leftIndex=1;leftIndex<=left.length;leftIndex+=1){
+    let diagonal=prior[0]!;
+    prior[0]=leftIndex;
+    for(let rightIndex=1;rightIndex<=right.length;rightIndex+=1){
+      const above=prior[rightIndex]!;
+      prior[rightIndex]=Math.min(prior[rightIndex]!+1,prior[rightIndex-1]!+1,
+        diagonal+(left[leftIndex-1]===right[rightIndex-1] ? 0 : 1));
+      diagonal=above;
+    }
+  }
+  return prior[right.length]!;
+}
+
+function fuzzySearchPage(rows:Record<string,any>[],query:string,after:string|null,limit:number) {
+  const queryTokens=query.split(" ").filter(Boolean);
+  const ranked=rows.flatMap<Record<string,any>>((row) => {
+    const terms=[...new Set([row.normalized_canonical_name,...(row.normalized_search_terms ?? [])]
+      .map(String).filter(Boolean))];
+    const best=queryTokens.map((queryToken) => terms.map((term) => ({term,
+      distance:levenshtein(queryToken,term)})).sort((left,right) => left.distance-right.distance
+        || left.term.localeCompare(right.term,"ru"))[0]).filter(Boolean) as {term:string;distance:number}[];
+    if(best.length!==queryTokens.length) return [];
+    const maximumDistance=best.reduce((sum,item)=>sum+item.distance,0);
+    const allowedDistance=queryTokens.reduce((sum,token)=>sum+Math.max(1,Math.floor(token.length*0.34)),0);
+    if(maximumDistance>allowedDistance) return [];
+    const score=Math.max(0,1-maximumDistance/Math.max(1,queryTokens.join("").length));
+    const stableOrderKey=`06\u001f${String(Math.round((1-score)*1_000_000)).padStart(7,"0")}\u001f${row.catalog_id}`;
+    return [{...row,source_catalog_id:row.catalog_id,tier:6,matched_term:best.map((item)=>item.term).join(" | "),
+      stable_order_key:stableOrderKey,score} as Record<string,any>];
+  }).sort((left,right)=>String(left.stable_order_key).localeCompare(String(right.stable_order_key)));
+  const resultSetSha256=createHash("sha256").update(stableJson(ranked.map((row)=>[
+    row.catalog_id,row.score,row.stable_order_key]))).digest("hex");
+  const groupTotalCount=new Set(ranked.map((row)=>row.group_id)).size;
+  const page=ranked.filter((row)=>after==null || row.stable_order_key>after).slice(0,limit)
+    .map((row)=>({...row,fuzzy_total_count:ranked.length,group_total_count:groupTotalCount,
+      result_set_sha256:resultSetSha256,literal_total_count:0,global_literal_total_count:0,
+      external_literal_total_count:0}));
+  return page;
+}
 
 function localParameterGuideView(source: unknown) {
   if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
@@ -1157,9 +1164,25 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         cursor?.orderKey ?? null,scope,limit])).rows;
       let resultLevel:"LITERAL"|"FUZZY"="LITERAL";
       if (rows.length===0 && intent.mode==="PHRASE" && scope==="WORKS") {
-        rows=(await client.query(LOCAL_FUZZY_SEARCH_R58,[release.id,intent.searchText,
-          filters.domain_id ?? "",filters.group_id ?? "",filters.operation_kind ?? "",
-          cursor?.orderKey ?? null,limit])).rows;
+        const candidates=(await client.query(`select document.catalog_id,document.definition_version_id,
+          document.definition_release_id,document.canonical_name_ru,document.group_id,group_row.group_name_ru,
+          document.domain_id,document.system_id,document.subsystem_id,document.assembly_id,
+          document.work_family_id,document.element_type,document.operation_kind,document.technology_variant,
+          document.primary_uom,document.publication_state,document.catalog_origin,document.adjudication_class,
+          document.selectable,document.short_scope_ru,document.key_distinguishing_parameters,
+          document.required_inputs_count,document.clarification_fields,document.included_boundaries,
+          document.excluded_boundaries,document.normalized_canonical_name,document.normalized_search_terms
+        from public.estimate_search_document document
+        join public.estimate_search_group group_row
+          on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
+        where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
+          and document.selectable and length(replace($2,' ',''))>2
+          and position(left($2,2) in document.normalized_search_blob)>0
+          and (coalesce($3,'')='' or document.domain_id=$3)
+          and (coalesce($4,'')='' or document.group_id=$4)
+          and (coalesce($5,'')='' or document.operation_kind=$5)`,[release.id,intent.searchText,
+          filters.domain_id ?? "",filters.group_id ?? "",filters.operation_kind ?? ""])).rows;
+        rows=fuzzySearchPage(candidates,intent.searchText,cursor?.orderKey ?? null,limit);
         resultLevel="FUZZY";
       }
       const inventory = url.searchParams.get("auditInventory") === "true" ? (await client.query(`with tokens as(
