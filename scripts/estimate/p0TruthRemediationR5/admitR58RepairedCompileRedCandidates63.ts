@@ -391,7 +391,7 @@ function buildHvacApprovedBaselineTrace(parameters: readonly Json[], definition:
     if (Object.hasOwn(accepted, id)
       && ["string", "number", "boolean"].includes(typeof accepted[id])) {
       values[id] = accepted[id];
-      classifications[id] = "TRACE";
+      classifications[id] = "ASSUMPTION";
       ruleIds[id] = "ACCEPTED_RUNTIME_TRACE_VALUE";
     } else if (parameter.value_type === "boolean") {
       invariant(id === "work_included", `R58_HVAC_BASELINE_BOOLEAN_REQUIRES_EXPLICIT_RULE:${definition.catalog_id}:${id}`);
