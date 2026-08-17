@@ -83,6 +83,23 @@ function comparableParameter(row: Json): Json {
   };
 }
 
+function businessParameter(row: Json): Json {
+  return {
+    parameter_id: row.parameter_id, ordinal: row.ordinal, value_type: row.value_type,
+    unit_id: row.unit_id, title_ru: row.title_ru, required: row.required,
+    default_value: row.default_value, constraints_json: row.constraints_json,
+    truth: {
+      semantic_parameter_key: row.truth_metadata?.semantic_parameter_key,
+      description_ru: row.truth_metadata?.description_ru,
+      default_policy: row.truth_metadata?.default_policy,
+      guide: row.truth_metadata?.guide,
+      formula_consumers: row.truth_metadata?.formula_consumers,
+      validation_rules: row.truth_metadata?.validation_rules,
+      conflicts_with: row.truth_metadata?.conflicts_with,
+    },
+  };
+}
+
 function comparableFormula(row: Json): Json {
   return {
     formula_id: row.formula_id, output_unit_id: row.output_unit_id,
@@ -214,15 +231,36 @@ function buildBaseline(source: Json, definitionId: string, releaseId: string): J
 }
 
 async function insertSourceData(client: Client, source: Json, definitionId: string,
-  approvedTemplateBaselineId: string): Promise<void> {
+  releaseId: string, baseline: Json): Promise<void> {
   for (const row of source.parameters as Json[]) {
+    const truthMetadata = {
+      ...row.truth_metadata,
+      value_source_role: "VISIBLE_BASELINE_ASSUMPTION",
+      baseline_assumption_id: `r58-laminate:${row.parameter_id}`,
+      resource_branch_consumers: baseline.resourceConsumers[row.parameter_id],
+      provenance: {
+        ...(row.truth_metadata?.provenance ?? {}),
+        baselineOwner: "approved-template-baseline:r54",
+        sourceCatalogId: CATALOG_ID,
+        sourceReleaseId: releaseId,
+        sourceDefinitionVersionId: definitionId,
+        sourceParameterSchemaId: baseline.parameterSchemaSha256,
+        approvedTemplateBaselineId: baseline.id,
+        acceptanceEvidenceSha256: baseline.acceptanceEvidenceSha256,
+        approvedTemplateBinding: {
+          contract: CONTRACT,
+          historicalSourceDefinitionVersionId: source.definition.id,
+          businessSemanticsChanged: false,
+        },
+      },
+    };
     await client.query(`insert into public.estimate_parameter_definition(
       definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
       default_value,constraints_json,truth_metadata,approved_template_baseline_id
     ) values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10::jsonb,$11)`, [
       definitionId,row.parameter_id,row.ordinal,row.value_type,row.unit_id,row.title_ru,row.required,
-      JSON.stringify(row.default_value),JSON.stringify(row.constraints_json),JSON.stringify(row.truth_metadata),
-      approvedTemplateBaselineId,
+      JSON.stringify(row.default_value),JSON.stringify(row.constraints_json),JSON.stringify(truthMetadata),
+      baseline.id,
     ]);
   }
   for (const row of source.formulas as Json[]) {
@@ -419,7 +457,7 @@ async function main(): Promise<void> {
         JSON.stringify(baseline.guideProvenanceRu),JSON.stringify(baseline.proposalSourceRefs),
         JSON.stringify(baseline.validationScenarioRefs),baseline.acceptanceEvidenceSha256,releaseId,
       ]);
-      await insertSourceData(targetClient,source,definitionId,baseline.id);
+      await insertSourceData(targetClient,source,definitionId,releaseId,baseline);
       await targetClient.query(`insert into public.estimate_cumulative_manifest_entry(
         release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
         publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,definition_hash,entry_sha256
@@ -453,7 +491,7 @@ async function main(): Promise<void> {
       passport: shaObject(source.definition.passport) === shaObject(target.definition.passport),
       applicability: shaObject(source.definition.applicability) === shaObject(target.definition.applicability),
       sourceMetadata: shaObject(source.definition.source_metadata) === shaObject(target.definition.source_metadata),
-      parameters: shaObject(source.parameters.map(comparableParameter)) === shaObject(target.parameters.map(comparableParameter)),
+      parameters: shaObject(source.parameters.map(businessParameter)) === shaObject(target.parameters.map(businessParameter)),
       formulas: shaObject(source.formulas.map(comparableFormula)) === shaObject(target.formulas.map(comparableFormula)),
       resources: shaObject(source.resources.map(comparableResource)) === shaObject(target.resources.map(comparableResource)),
       normativeBindings: shaObject(source.normativeBindings) === shaObject(target.normativeBindings),
@@ -470,6 +508,7 @@ async function main(): Promise<void> {
         normativeBindings:11,priceRoutes:6},parity,
       businessSemanticsUnchanged:true,formulasUnchanged:true,quantitiesAndUnitsUnchanged:true,
       inclusionLogicUnchanged:true,normativeSourcesUnchanged:true,costOwnersUnchanged:true,
+      parameterAdmissionMetadataOnlyChanges:5,
       historicalR45LocalAcceptanceFlagRetained:true,r58PromotionAuthority:SPEC_SHA256,
       activeReleaseSwitched:false,searchCutover:false,runtime8081Switched:false,
       writesApplied:APPLY ? writesApplied : 0,idempotent,
