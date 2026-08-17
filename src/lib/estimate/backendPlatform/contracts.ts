@@ -304,8 +304,8 @@ export type CanonicalEstimateSearchMatchType =
 
 export type CanonicalEstimateSearchItem = {
   catalogId: string;
-  definitionVersionId: string;
-  definitionReleaseId: string;
+  definitionVersionId: string | null;
+  definitionReleaseId: string | null;
   canonicalNameRu: string;
   groupId: string;
   groupNameRu: string;

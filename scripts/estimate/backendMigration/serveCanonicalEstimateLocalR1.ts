@@ -1226,6 +1226,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           : matchTier===3 ? "T3_CANONICAL_PREFIX" : matchTier===4 ? "T4_TOKEN_PREFIX"
             : matchTier===5 ? "T5_NORMALIZED_SUBSTRING" : "T6_TYPO_TRANSLITERATION_SUGGESTION";
         const matchedAlias=matchTier===2 || matchTier===4;
+        const estimateReady=row.selectable===true && Boolean(row.definition_version_id)
+          && row.publication_state==="ADMITTED_BACKEND";
         return {catalogId:row.catalog_id,definitionVersionId:row.definition_version_id,
           definitionReleaseId:row.definition_release_id,canonicalNameRu:row.canonical_name_ru,
           groupId:row.group_id,groupNameRu:row.group_name_ru,domainId:row.domain_id,
@@ -1233,8 +1235,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           workFamilyId:row.work_family_id,elementType:row.element_type,operationKind:row.operation_kind,
           technologyVariant:row.technology_variant,primaryUom:row.primary_uom,
           publicationState:row.publication_state,catalogOrigin:row.catalog_origin,
-          adjudicationClass:row.adjudication_class,estimateReady:row.selectable===true
-            && Boolean(row.definition_version_id) && row.publication_state==="ADMITTED_BACKEND",
+          adjudicationClass:row.adjudication_class,estimateReady,
           shortScopeRu:row.short_scope_ru,keyDistinguishingParameters:row.key_distinguishing_parameters,
           requiredInputsCount:row.required_inputs_count,clarificationFields:row.clarification_fields,
           includedBoundaries:row.included_boundaries,excludedBoundaries:row.excluded_boundaries,
@@ -1247,7 +1248,11 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
                 : matchTier===4 ? "Буквальное вхождение в разрешённый синоним"
                   : matchTier===5 ? "Буквальное вхождение без ограничения первых 15 результатов"
                     : "Отдельная нечёткая подсказка; не смешана с literal-выдачей",
-          selectableMode:"PROFESSIONAL",nonselectableReasonRu:null};
+          selectableMode:estimateReady ? "PROFESSIONAL"
+            : row.adjudication_class==="EXTERNAL_REFERENCE" ? "PRELIMINARY" : "NONE",
+          nonselectableReasonRu:estimateReady ? null : row.adjudication_class==="EXTERNAL_REFERENCE"
+            ? "Справочная запись; не является selectable профессиональной работой."
+            : "Работа выведена из актуального каталога."};
       }),nextCursor:last && shownCount<(literalTotalCount+fuzzyTotalCount) ? Buffer.from(JSON.stringify({
         releaseId:result.release.id,snapshotSha256:result.release.snapshot_sha256,
         orderKey:last.stable_order_key,shown:shownCount})).toString("base64url") : null,
