@@ -21,6 +21,9 @@ const OUTPUT = resolve(
   ".release-runtime/p0-one-monolith-r58/evidence/06-backend/BATCH001_008_PREPARED_CANDIDATE_4272.json",
 );
 const APPLY = process.argv.includes("--apply");
+const ORIGINAL_PARAMETER_COUNT = 840_667;
+const REMOVED_UNUSED_PARAMETER_COUNT = 606 + 1_038 + 33_871 + 61_781;
+const EXPECTED_PARAMETER_COUNT = ORIGINAL_PARAMETER_COUNT - REMOVED_UNUSED_PARAMETER_COUNT;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -110,12 +113,12 @@ async function main(): Promise<void> {
       where manifest.release_id=$1
     `, [candidate.id])).rows[0] as Json;
     invariant(cumulative.definitions === 4_272
-      && Number(cumulative.parameters) === 840_667
+      && Number(cumulative.parameters) === EXPECTED_PARAMETER_COUNT
       && Number(cumulative.formulas) === 1_157_018
       && Number(cumulative.resources) === 1_157_018,
     `R58_PREPARE_CUMULATIVE_COUNTS:${JSON.stringify(cumulative)}`);
     invariant(candidate.definition_count === cumulative.definitions
-      && candidate.parameter_count === Number(cumulative.parameters)
+      && [ORIGINAL_PARAMETER_COUNT, EXPECTED_PARAMETER_COUNT].includes(Number(candidate.parameter_count))
       && candidate.formula_count === Number(cumulative.formulas)
       && candidate.resource_row_count === Number(cumulative.resources),
     "R58_PREPARE_RELEASE_COUNTS_DRIFT");
@@ -124,10 +127,11 @@ async function main(): Promise<void> {
     if (!alreadyPrepared) {
       await client.query(`update public.estimate_definition_release set
         status='prepared',sealed_at=now(),activated_at=null,source_commit=$2,source_tree=$3,
-        metadata=metadata || $4::jsonb where id=$1`, [
+        parameter_count=$4,metadata=metadata || $5::jsonb where id=$1`, [
         candidate.id,
         head,
         tree,
+        EXPECTED_PARAMETER_COUNT,
         JSON.stringify({
           lifecycle: "PREPARED_FOR_FRESH_4272_BACKEND_GATE_NOT_ACTIVE",
           r58CumulativePrepared4272: {
@@ -138,6 +142,14 @@ async function main(): Promise<void> {
             manifestReady: 4_272,
             successorEntries: 2_793,
             cumulative,
+            releaseCountCorrection: {
+              field: "parameter_count",
+              before: ORIGINAL_PARAMETER_COUNT,
+              after: EXPECTED_PARAMETER_COUNT,
+              removedUnusedParameters: REMOVED_UNUSED_PARAMETER_COUNT,
+              formulaCountChanged: false,
+              resourceRowCountChanged: false,
+            },
             activeReleaseSwitched: false,
             runtime8081Switched: false,
             searchCutover: false,
@@ -163,6 +175,12 @@ async function main(): Promise<void> {
       resultingStatus: "prepared",
       manifest,
       cumulative,
+      releaseCountCorrection: {
+        field: "parameter_count",
+        before: Number(candidate.parameter_count),
+        after: EXPECTED_PARAMETER_COUNT,
+        removedUnusedParameters: REMOVED_UNUSED_PARAMETER_COUNT,
+      },
       writesApplied: APPLY && !alreadyPrepared ? 1 : 0,
       idempotent: alreadyPrepared,
       activeReleaseSwitched: false,
