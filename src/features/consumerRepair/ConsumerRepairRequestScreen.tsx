@@ -33,7 +33,12 @@ import {
 } from "../../lib/navigation/requestEstimateLaunchLifecycle";
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
-import { buildCanonicalEstimateArtifact } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import {
+  buildCanonicalEstimateArtifact,
+  getCanonicalEstimateRevision,
+  searchCanonicalEstimateCatalog,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { CanonicalEstimateApiError } from "../../lib/estimate/backendPlatform/contracts";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -50,10 +55,11 @@ import {
   buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  emptyConsumerRepairCanonicalWorkSearchState, mergeConsumerRepairCanonicalWorkSearchPage,
   preserveSelectedWorkResolverInput,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
-  shouldPreserveSelectedWorkForProblemText, syncConsumerRepairDraftFromScreenState,
+  shouldPreserveSelectedWorkForProblemText, shouldShowConsumerRepairWorkSuggestions, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 
@@ -68,7 +74,9 @@ function canonicalBackendBinding(bundle: ConsumerRepairDraftBundle | null): { re
     const releaseId = String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim();
     if (revisionId && releaseId) return { revisionId, releaseId };
   }
-  return null;
+  const revisionId = String(bundle?.durableHistorySummary?.sourceRevisionId ?? "").trim();
+  const releaseId = String(bundle?.durableHistorySummary?.sourceReleaseId ?? "").trim();
+  return revisionId && releaseId ? { revisionId, releaseId } : null;
 }
 
 function roundMoney(value: number): number {
@@ -253,6 +261,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private approvalCommitInFlight = false;
   private parameterApplyInFlight = false;
   private durableHistoryLoadInFlight = false;
+  private canonicalWorkSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private canonicalWorkSearchAbortController: AbortController | null = null;
+  private canonicalWorkSearchRequestSerial = 0;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
@@ -264,6 +275,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     runAfterNextPaint(() => this.applyInitialLaunchFlow());
   }
   componentWillUnmount(): void {
+    this.cancelCanonicalWorkSearch();
     this.unsubscribeRuntimeLaunch?.();
     this.unsubscribeRuntimeLaunch = null;
   }
@@ -544,6 +556,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
       ?? null;
+  }
+  private findKnownHistoryRecord(requestDraftId: string) {
+    return this.state.approvedHistoryPage.records.find(
+      (record) => record.approvedEstimateId === requestDraftId,
+    ) ?? null;
   }
   private acknowledgeLaunchIntent(bundle: ConsumerRepairDraftBundle): void {
     const launchId = this.props.launchId?.trim();
@@ -1022,7 +1039,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const requestedBundle = requestDraftId
       ? this.findKnownHistoryBundle(requestDraftId) ?? (this.state.bundle?.draft.id === requestDraftId ? this.state.bundle : null)
       : this.state.bundle;
-    const canonical = canonicalBackendBinding(requestedBundle ?? null);
+    const historyRecord = requestDraftId ? this.findKnownHistoryRecord(requestDraftId) : null;
+    const canonical = canonicalBackendBinding(requestedBundle ?? null) ?? (
+      historyRecord?.sourceRevisionId && historyRecord.sourceReleaseId
+        ? { revisionId: historyRecord.sourceRevisionId, releaseId: historyRecord.sourceReleaseId }
+        : null
+    );
     if (canonical) {
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: canonical.revisionId,
@@ -1060,16 +1082,52 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     this.setState((prevState) => ({
       selectedHistoryId: prevState.selectedHistoryId === requestDraftId ? null : requestDraftId,
-      statusMessage: bundle ? "История открыта для просмотра." : prevState.statusMessage,
+      statusMessage: bundle
+        ? "История открыта для просмотра."
+        : this.findKnownHistoryRecord(requestDraftId)
+          ? "Локальный snapshot отсутствует. Историческая revision будет восстановлена через backend с проверкой доступа."
+          : prevState.statusMessage,
     }));
   };
-  private editHistoryDraft = (requestDraftId: string) => {
+  private editHistoryDraft = async (requestDraftId: string) => {
     try {
       const source = this.findKnownHistoryBundle(requestDraftId);
-      if (source && this.openCanonicalBackendEditor(source, "Историческая revision открыта в backend-редакторе без изменения оригинала.")) return;
-      this.setState({ statusMessage: "Историческая смета не найдена." });
+      const record = this.findKnownHistoryRecord(requestDraftId);
+      const binding = canonicalBackendBinding(source) ?? (
+        record?.sourceRevisionId && record.sourceReleaseId
+          ? { revisionId: record.sourceRevisionId, releaseId: record.sourceReleaseId }
+          : null
+      );
+      if (!binding) {
+        this.setState({
+          statusMessage: "Историческая revision не имеет canonical backend binding. Нужна явная read-only миграция; новая смета из текущего шаблона не создана.",
+        });
+        return;
+      }
+      this.setState({ statusMessage: "Восстанавливаем immutable revision через backend и проверяем доступ…" });
+      const revision = await getCanonicalEstimateRevision(binding.revisionId);
+      if (revision.releaseId !== binding.releaseId || revision.status === "failed") {
+        throw new Error("HISTORY_BACKEND_REVISION_IDENTITY_MISMATCH");
+      }
+      this.props.onOpenCanonicalEstimate(
+        source?.draft.problemText?.trim() || record?.prompt?.trim() || record?.title || "Историческая смета",
+        revision.revisionId,
+        source?.draft.id ?? record?.approvedEstimateId ?? requestDraftId,
+      );
+      this.setState({
+        statusMessage: "Историческая revision восстановлена через backend. Редактирование создаст child revision; оригинал останется неизменным.",
+      });
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerRepairValidationError) {
+        this.handleValidationError(error);
+        return;
+      }
+      const forbidden = error instanceof CanonicalEstimateApiError && ["ACCESS_DENIED", "NOT_FOUND"].includes(error.code);
+      this.setState({
+        statusMessage: forbidden
+          ? "Историческая revision недоступна или не найдена. Проверьте учётную запись и повторите восстановление; приложение не завершило работу аварийно."
+          : "Не удалось восстановить историческую revision. Повторите позже; исходная смета не изменена.",
+      });
     }
   };
   private sendHistoryToMarket = async (requestDraftId: string) => {
@@ -1448,6 +1506,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
   private createNew = () => {
+    this.cancelCanonicalWorkSearch();
     this.workSuggestionsEnabled = true;
     router.setParams({ draftId: "" });
     this.setState(buildNewConsumerRepairRequestState(
@@ -1463,6 +1522,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private selectWorkSuggestion = (suggestion: GlobalWorkSmartSearchSuggestion) => {
+    this.cancelCanonicalWorkSearch();
     const originalRawInput = this.state.problemText.trim();
     const referenceSelectedWork = buildMultiDomainReferenceSelectedWorkBinding(originalRawInput);
     const nextProblemText = referenceSelectedWork
@@ -1478,11 +1538,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       repairType: selectedWork.selectedCategoryKey,
       validationErrors: [],
       statusMessage: null,
+      canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState(),
     }, () => {
       focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
     });
   };
   private selectTemplateCandidate = (candidate: InlineWorkTemplateCandidate) => {
+    this.cancelCanonicalWorkSearch();
     const originalRawInput = this.state.problemText.trim();
     const nextProblemText = composeSelectedTemplateCandidateActiveInputText(candidate);
     const selectedWork = buildSelectedWorkFromTemplateCandidate(
@@ -1495,18 +1557,116 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       repairType: selectedWork.selectedCategoryKey,
       validationErrors: [],
       statusMessage: null,
+      canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState(),
     }, () => {
       focusConsumerRepairProblemInputAtEnd(this.problemInputRef, nextProblemText);
     });
   };
   private changeProblemText = (problemText: string) => {
     this.workSuggestionsEnabled = true;
+    const selectedWork = shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
+      ? this.state.selectedWork
+      : null;
     this.setState({
       problemText,
-      selectedWork: shouldPreserveSelectedWorkForProblemText(this.state.selectedWork, problemText)
-        ? this.state.selectedWork
-        : null,
+      selectedWork,
       validationErrors: [],
+      canonicalWorkSearch: selectedWork
+        ? emptyConsumerRepairCanonicalWorkSearchState()
+        : this.state.canonicalWorkSearch,
+    }, () => {
+      if (selectedWork) {
+        this.cancelCanonicalWorkSearch();
+        return;
+      }
+      this.scheduleCanonicalWorkSearch(problemText);
+    });
+  };
+  private cancelCanonicalWorkSearch = () => {
+    this.canonicalWorkSearchRequestSerial += 1;
+    if (this.canonicalWorkSearchTimer) clearTimeout(this.canonicalWorkSearchTimer);
+    this.canonicalWorkSearchTimer = null;
+    this.canonicalWorkSearchAbortController?.abort();
+    this.canonicalWorkSearchAbortController = null;
+  };
+  private scheduleCanonicalWorkSearch = (query: string) => {
+    this.cancelCanonicalWorkSearch();
+    if (!shouldShowConsumerRepairWorkSuggestions(query)) {
+      this.setState({ canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState() });
+      return;
+    }
+    const requestSerial = this.canonicalWorkSearchRequestSerial;
+    this.setState({
+      canonicalWorkSearch: {
+        ...emptyConsumerRepairCanonicalWorkSearchState(),
+        query,
+        loading: true,
+      },
+    });
+    this.canonicalWorkSearchTimer = setTimeout(() => {
+      this.canonicalWorkSearchTimer = null;
+      void this.loadCanonicalWorkSearchPage({ query, cursor: null, append: false, requestSerial });
+    }, 180);
+  };
+  private loadCanonicalWorkSearchPage = async (input: {
+    query: string;
+    cursor: string | null;
+    append: boolean;
+    requestSerial: number;
+  }) => {
+    const controller = new AbortController();
+    this.canonicalWorkSearchAbortController?.abort();
+    this.canonicalWorkSearchAbortController = controller;
+    if (input.append) {
+      this.setState((state) => ({
+        canonicalWorkSearch: { ...state.canonicalWorkSearch, loading: true, errorRu: null },
+      }));
+    }
+    try {
+      const page = await searchCanonicalEstimateCatalog({
+        query: input.query,
+        cursor: input.cursor,
+        pageSize: 100,
+        signal: controller.signal,
+      });
+      if (input.requestSerial !== this.canonicalWorkSearchRequestSerial || controller.signal.aborted) return;
+      this.setState((state) => ({
+        canonicalWorkSearch: mergeConsumerRepairCanonicalWorkSearchPage({
+          query: input.query,
+          page,
+          previous: state.canonicalWorkSearch,
+          append: input.append,
+        }),
+      }));
+    } catch (error) {
+      if (controller.signal.aborted || input.requestSerial !== this.canonicalWorkSearchRequestSerial) return;
+      const message = error instanceof CanonicalEstimateApiError
+        ? error.message
+        : "Не удалось получить полный список работ из canonical backend.";
+      this.setState((state) => ({
+        canonicalWorkSearch: {
+          ...state.canonicalWorkSearch,
+          query: input.query,
+          loading: false,
+          errorRu: message,
+        },
+      }));
+    } finally {
+      if (this.canonicalWorkSearchAbortController === controller) {
+        this.canonicalWorkSearchAbortController = null;
+      }
+    }
+  };
+  private loadMoreCanonicalWorkSuggestions = () => {
+    const search = this.state.canonicalWorkSearch;
+    if (search.loading || !search.nextCursor || !search.query) return;
+    this.cancelCanonicalWorkSearch();
+    const requestSerial = this.canonicalWorkSearchRequestSerial;
+    void this.loadCanonicalWorkSearchPage({
+      query: search.query,
+      cursor: search.nextCursor,
+      append: true,
+      requestSerial,
     });
   };
   private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
@@ -1566,6 +1726,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
         onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
         onSelectWorkSuggestion={this.selectWorkSuggestion} onSelectTemplateCandidate={this.selectTemplateCandidate} onMakePdf={this.makePdf}
+        onLoadMoreWorkSuggestions={this.loadMoreCanonicalWorkSuggestions}
         onOpenProcurement={this.openProcurement}
         onDecrease={this.decreaseItem} onIncrease={this.increaseItem}
         onQuantityChange={this.changeItemQuantity} onUnitPriceChange={this.changeItemUnitPrice}

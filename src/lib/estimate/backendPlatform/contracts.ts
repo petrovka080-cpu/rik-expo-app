@@ -10,11 +10,24 @@ export type EstimateJobStatus =
 
 export type EstimateArtifactKind = "pdf" | "procurement" | "xlsx" | "archive";
 
+export type CanonicalEstimateCompositeItem = {
+  itemId: string;
+  position: number;
+  version: number;
+  values: Record<string, string | number | boolean>;
+};
+
+export type CanonicalEstimateParameterInputValue =
+  | string
+  | number
+  | boolean
+  | CanonicalEstimateCompositeItem[];
+
 export type CanonicalEstimateCreateRequest = {
   idempotencyKey: string;
   catalogId: string;
   organizationId?: string | null;
-  parameters: Record<string, string | number | boolean>;
+  parameters: Record<string, CanonicalEstimateParameterInputValue>;
   currencyCode: string;
   priceSnapshotIds?: string[];
 };
@@ -146,7 +159,97 @@ export type CanonicalEstimateRevisionView = {
   rowCount: number;
   checksumSha256: string;
   compilerVersion: string;
+  /** Immutable backend truth lineage. Legacy R1 revisions can omit these fields. */
+  definitionVersion?: number | null;
+  compilerOwner?: "backend" | null;
+  parameterSchemaHash?: string | null;
+  inputHash?: string | null;
+  outputHash?: string | null;
   createdAt: string;
+};
+
+export type CanonicalEstimateParameterValueSourceRole =
+  | "USER_MEASURED"
+  | "PROJECT_DOCUMENTATION"
+  | "ENGINEERING_DESIGN"
+  | "SITE_SURVEY"
+  | "MANDATORY_NORM_VALUE"
+  | "NORM_REQUIRED_BUT_PROJECT_SELECTED"
+  | "MANUFACTURER_CONFIRMED"
+  | "BACKEND_DERIVED"
+  | "PRICE_INPUT";
+
+export type CanonicalEstimateParameterVisibilityRole =
+  | "USER_INPUT"
+  | "USER_DERIVED_READONLY"
+  | "INTERNAL_ONLY";
+
+export type CanonicalEstimateParameterGuideKind =
+  | "MANDATORY_NORM_VALUE"
+  | "NORMATIVE_RANGE"
+  | "PROJECT_DEFINED"
+  | "MANUFACTURER_RANGE"
+  | "MEASUREMENT_RULE"
+  | "ENUM_DECISION_RULE"
+  | "DERIVED_VALUE_RULE"
+  | "PRACTICE_REFERENCE"
+  | "NO_NUMERIC_NORM";
+
+export type CanonicalEstimateParameterGuide = {
+  guideKind: CanonicalEstimateParameterGuideKind;
+  guideShortRu: string;
+  guideMin?: string | number | null;
+  guideMax?: string | number | null;
+  guideTarget?: string | number | null;
+  minInclusive?: boolean | null;
+  maxInclusive?: boolean | null;
+  guideOptions?: Array<{ value: string; ruleRu: string }>;
+  canonicalUnit?: string | null;
+  displayUnit?: string | null;
+  guideBasis?: string | null;
+  precision?: number | null;
+  step?: string | number | null;
+  guideCondition?: string | null;
+  guideValidationPolicy: "MANDATORY_BLOCK" | "ADVISORY_REASON_REQUIRED" | "PROVENANCE_REQUIRED" | "INFORMATION_ONLY";
+  sourceRole: CanonicalEstimateParameterValueSourceRole;
+  sourceDocument?: string | null;
+  sourceEditionStatus?: string | null;
+  sourceLocator?: string | null;
+  guideVersion: string;
+  sourceSnapshotHash: string;
+  applicability: string;
+  exclusions?: string[];
+  verifiedAt: string;
+};
+
+export type CanonicalEstimateCompositeSubfield = {
+  subfieldId: string;
+  labelRu: string;
+  valueType: "decimal" | "integer" | "boolean" | "enum" | "text";
+  unitId: string | null;
+  required: boolean;
+  constraints: Record<string, unknown>;
+  guide: CanonicalEstimateParameterGuide;
+  formulaConsumers: string[];
+  resourceBranchConsumers: string[];
+};
+
+export type CanonicalEstimateCompositeItemSchema = {
+  itemLabelRu: string;
+  minimumItems?: number;
+  maximumItems?: number;
+  reorderable: boolean;
+  subfields: CanonicalEstimateCompositeSubfield[];
+};
+
+export type CanonicalEstimateParameterNormativeLink = {
+  sourceId: string;
+  documentTitleRu: string;
+  editionStatus: string;
+  locator: string;
+  applicabilityRu: string;
+  verifiedAt: string;
+  verifiedSource: string;
 };
 
 export type CanonicalEstimateRevisionRowView = {
@@ -186,6 +289,124 @@ export type CanonicalEstimateRevisionRowsPage = {
   nextCursor: string | null;
 };
 
+export type CanonicalEstimateSearchPublicationState =
+  | "ADMITTED_BACKEND"
+  | "PRELIMINARY_NOT_CANONICAL"
+  | "RETIRED";
+
+export type CanonicalEstimateSearchMatchType =
+  | "T1_EXACT"
+  | "T2_EXACT_ALIAS"
+  | "T3_CANONICAL_PREFIX"
+  | "T4_TOKEN_PREFIX"
+  | "T5_NORMALIZED_SUBSTRING"
+  | "T6_TYPO_TRANSLITERATION_SUGGESTION";
+
+export type CanonicalEstimateSearchItem = {
+  catalogId: string;
+  canonicalNameRu: string;
+  groupId: string;
+  groupNameRu: string;
+  domainId: string;
+  systemId: string;
+  subsystemId: string;
+  assemblyId: string;
+  workFamilyId: string;
+  elementType: string;
+  operationKind: string;
+  technologyVariant: string;
+  primaryUom: string;
+  publicationState: CanonicalEstimateSearchPublicationState;
+  catalogOrigin: "GLOBAL" | "EXTERNAL_D" | "EXTERNAL_N";
+  shortScopeRu: string;
+  keyDistinguishingParameters: unknown[];
+  requiredInputsCount: number;
+  clarificationFields: unknown[];
+  includedBoundaries: unknown[];
+  excludedBoundaries: unknown[];
+  replacementCatalogId: string | null;
+  matchTier: 1 | 2 | 3 | 4 | 5 | 6;
+  matchType: CanonicalEstimateSearchMatchType;
+  matchedTerm: string;
+  matchedField: string;
+  rankingReasonRu: string;
+  selectableMode: "PROFESSIONAL" | "PRELIMINARY" | "NONE";
+  nonselectableReasonRu: string | null;
+};
+
+export type CanonicalEstimateSearchPage = {
+  apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
+  searchIndexReleaseId: string;
+  searchIndexSnapshotSha256: string;
+  taxonomyVersion: string;
+  groupRelationVersion: string;
+  rankingContractVersion: string;
+  resultSetSha256: string;
+  normalizedQuery: string;
+  filters: Record<string, string>;
+  literalTotalCount: number;
+  globalLiteralTotalCount: number;
+  externalLiteralTotalCount: number;
+  suggestionTotalCount: number;
+  shownCount: number;
+  items: CanonicalEstimateSearchItem[];
+  nextCursor: string | null;
+};
+
+export type CanonicalEstimateSearchGroupPage = {
+  apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
+  searchIndexReleaseId: string;
+  searchIndexSnapshotSha256: string;
+  taxonomyVersion: string;
+  groupRelationVersion: string;
+  groupId: string;
+  groupNameRu: string;
+  totalCount: number;
+  shownCount: number;
+  items: Array<Pick<CanonicalEstimateSearchItem,
+    "catalogId" | "canonicalNameRu" | "publicationState" | "catalogOrigin" | "operationKind" | "technologyVariant">>;
+  nextCursor: string | null;
+};
+
+export type CanonicalEstimateTypedRelation = {
+  sourceCatalogId: string;
+  targetCatalogId: string;
+  targetCanonicalNameRu: string;
+  relationshipType: string;
+  direction: "OUTBOUND" | "INBOUND" | "BIDIRECTIONAL";
+  sourceLocator: string;
+  applicabilityPredicate: Record<string, unknown>;
+  requiredWhen: Record<string, unknown>;
+  mutuallyExclusiveWith: string[];
+  explanationRu: string;
+  relationSha256: string;
+};
+
+export type CanonicalEstimateDraftView = {
+  draftId: string;
+  status: "SEARCHING" | "DRAFT_INPUT_REQUIRED" | "READY_TO_COMPILE" | "COMPILED" | "ARCHIVED" | "DELETED";
+  title: string;
+  originalQuery: string;
+  normalizedQuery: string;
+  searchIndexReleaseId: string | null;
+  taxonomyVersion: string | null;
+  groupRelationVersion: string | null;
+  searchResultSetHash: string | null;
+  candidateSetHash: string | null;
+  selectedResultHash: string | null;
+  selectedCatalogIds: string[];
+  selectedWorkOrder: string[];
+  parameterSchemaVersions: Record<string, unknown>;
+  typedInputs: Record<string, unknown>;
+  unresolvedRequiredParameters: unknown[];
+  conflicts: unknown[];
+  latestRevisionId: string | null;
+  optimisticVersion: number;
+  lastDeviceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CanonicalEstimateCatalogItem = {
   catalogId: string;
   releaseId: string;
@@ -199,12 +420,30 @@ export type CanonicalEstimateCatalogItem = {
   parameterSchema: Array<{
     parameterId: string;
     ordinal: number;
-    valueType: "decimal" | "integer" | "boolean" | "enum" | "text";
+    valueType: "decimal" | "integer" | "boolean" | "enum" | "text" | "array_object";
     unitId: string | null;
     titleRu: string;
     required: boolean;
     defaultValue: unknown;
     constraints: Record<string, unknown>;
+    semanticParameterKey?: string;
+    visibilityRole?: CanonicalEstimateParameterVisibilityRole;
+    descriptionRu?: string;
+    requiredWhen?: string;
+    visibleWhen?: string;
+    allowedRangeOrOptions?: unknown;
+    defaultPolicy?: string;
+    valueSourceRole?: CanonicalEstimateParameterValueSourceRole;
+    guide?: CanonicalEstimateParameterGuide;
+    compositeItemSchema?: CanonicalEstimateCompositeItemSchema;
+    sharedInputBindingPolicy?: Record<string, unknown>;
+    derivedFrom?: string[];
+    normativeLinks?: CanonicalEstimateParameterNormativeLink[];
+    formulaConsumers?: string[];
+    resourceBranchConsumers?: string[];
+    validationRules?: string[];
+    conflictsWith?: string[];
+    provenance?: Record<string, unknown>;
   }>;
 };
 

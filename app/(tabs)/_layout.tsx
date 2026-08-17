@@ -288,16 +288,17 @@ export default function TabsLayout() {
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
   const pathnameText = String(pathname ?? "");
-  const showAssistantFab =
-    leafSegment !== "ai" &&
-    leafSegment !== "chat" &&
-    !isOfficeTabPath(pathnameText);
   const requestPathHasStickyAction =
     pathnameText === "/request" ||
     pathnameText === "/request/index" ||
     pathnameText === "/(tabs)/request" ||
     pathnameText === "/(tabs)/request/index" ||
     segments.some((segment) => String(segment) === "request");
+  const showAssistantFab =
+    leafSegment !== "ai" &&
+    leafSegment !== "chat" &&
+    !isOfficeTabPath(pathnameText) &&
+    !requestPathHasStickyAction;
   const routeOftenHasStickyAction =
     pathname === "/add" ||
     requestPathHasStickyAction ||

@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
 import type { GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate";
@@ -11,6 +11,15 @@ export type WorkTemplateSuggestionsProps = {
   legacyWorkSuggestions?: GlobalWorkSmartSearchSuggestion[];
   onSelectTemplateCandidate?: (candidate: InlineWorkTemplateCandidate) => void;
   onSelectLegacyWorkSuggestion?: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
+  literalTotalCount?: number;
+  globalLiteralTotalCount?: number;
+  externalLiteralTotalCount?: number;
+  suggestionTotalCount?: number;
+  shownCount?: number;
+  loading?: boolean;
+  errorRu?: string | null;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 };
 
 export function buildWorkTemplateSuggestionLabels(input: {
@@ -28,8 +37,17 @@ export function WorkTemplateSuggestions({
   legacyWorkSuggestions = [],
   onSelectTemplateCandidate,
   onSelectLegacyWorkSuggestion,
+  literalTotalCount = 0,
+  globalLiteralTotalCount = literalTotalCount,
+  externalLiteralTotalCount = 0,
+  suggestionTotalCount = 0,
+  shownCount = legacyWorkSuggestions.length,
+  loading = false,
+  errorRu = null,
+  hasMore = false,
+  onLoadMore,
 }: WorkTemplateSuggestionsProps): React.ReactElement | null {
-  if (candidateTemplates.length === 0 && legacyWorkSuggestions.length === 0) return null;
+  if (candidateTemplates.length === 0 && legacyWorkSuggestions.length === 0 && !loading && !errorRu) return null;
   return (
     <ScrollView
       style={styles.scroll}
@@ -39,6 +57,13 @@ export function WorkTemplateSuggestions({
       showsVerticalScrollIndicator
       testID="consumer-repair-work-suggestions"
     >
+      {literalTotalCount > 0 || suggestionTotalCount > 0 ? (
+        <View style={styles.summary} testID="consumer-repair-work-search-total">
+          <Text style={styles.summaryTitle}>Найдено буквально: {literalTotalCount}</Text>
+          <Text style={styles.summaryMeta}>Основной каталог: {globalLiteralTotalCount} · справочные: {externalLiteralTotalCount}</Text>
+          <Text style={styles.summaryMeta}>Показано: {shownCount}{suggestionTotalCount ? ` · отдельных подсказок: ${suggestionTotalCount}` : ""}</Text>
+        </View>
+      ) : null}
       {candidateTemplates.slice(0, WORK_TEMPLATE_SUGGESTION_MAX_ITEMS).map((candidate, index) => (
         <Pressable
           key={candidate.templateId}
@@ -55,7 +80,7 @@ export function WorkTemplateSuggestions({
           <Text style={styles.meta} numberOfLines={1}>{candidate.family} · {candidate.reason}</Text>
         </Pressable>
       ))}
-      {legacyWorkSuggestions.slice(0, 12).map((suggestion, index) => (
+      {legacyWorkSuggestions.map((suggestion, index) => (
         <Pressable
           key={suggestion.workKey}
           accessibilityRole="button"
@@ -68,6 +93,19 @@ export function WorkTemplateSuggestions({
           <Text style={styles.meta}>{suggestion.categoryTitleRu}</Text>
         </Pressable>
       ))}
+      {errorRu ? <Text style={styles.error} testID="consumer-repair-work-search-error">{errorRu}</Text> : null}
+      {loading ? <View style={styles.loading} testID="consumer-repair-work-search-loading"><ActivityIndicator /><Text style={styles.summaryMeta}>Ищем по полному каталогу…</Text></View> : null}
+      {hasMore && !loading ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Показать ещё работы. Сейчас показано ${shownCount} из ${literalTotalCount + suggestionTotalCount}`}
+          onPress={onLoadMore}
+          style={styles.loadMore}
+          testID="consumer-repair-work-search-load-more"
+        >
+          <Text style={styles.loadMoreText}>Показать ещё ({shownCount} из {literalTotalCount + suggestionTotalCount})</Text>
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
@@ -83,6 +121,23 @@ const styles = StyleSheet.create({
   content: {
     gap: 8,
     padding: 8,
+  },
+  summary: {
+    borderRadius: 8,
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    gap: 2,
+  },
+  summaryTitle: {
+    color: "#1E3A8A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  summaryMeta: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "700",
   },
   button: {
     minHeight: 50,
@@ -117,5 +172,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "800",
+  },
+  loading: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  error: {
+    color: "#B91C1C",
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "800",
+  },
+  loadMore: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#2563EB",
+    backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  loadMoreText: {
+    color: "#1D4ED8",
+    fontSize: 13,
+    fontWeight: "900",
   },
 });

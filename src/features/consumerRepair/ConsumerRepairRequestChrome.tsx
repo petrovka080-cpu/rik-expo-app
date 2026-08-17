@@ -193,6 +193,14 @@ type ContentProps = {
   contactPhone: string;
   selectedWork: GlobalSelectedWorkBinding | null;
   workSuggestions: GlobalWorkSmartSearchSuggestion[];
+  workSearchLiteralTotalCount: number;
+  workSearchGlobalLiteralTotalCount: number;
+  workSearchExternalLiteralTotalCount: number;
+  workSearchSuggestionTotalCount: number;
+  workSearchShownCount: number;
+  workSearchLoading: boolean;
+  workSearchErrorRu: string | null;
+  workSearchHasMore: boolean;
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   statusMessage: string | null;
@@ -212,6 +220,7 @@ type ContentProps = {
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
   onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
+  onLoadMoreWorkSuggestions: () => void;
   onPrepareDraft: () => void;
   onMakePdf: () => void;
   onOpenProcurement: () => void;
@@ -252,6 +261,14 @@ export function ConsumerRepairRequestContent({
   contactPhone,
   selectedWork,
   workSuggestions,
+  workSearchLiteralTotalCount,
+  workSearchGlobalLiteralTotalCount,
+  workSearchExternalLiteralTotalCount,
+  workSearchSuggestionTotalCount,
+  workSearchShownCount,
+  workSearchLoading,
+  workSearchErrorRu,
+  workSearchHasMore,
   bundle,
   aiAnswerRu,
   statusMessage,
@@ -271,6 +288,7 @@ export function ConsumerRepairRequestContent({
   onContactPhoneChange,
   onSelectWorkSuggestion,
   onSelectTemplateCandidate,
+  onLoadMoreWorkSuggestions,
   onPrepareDraft,
   onMakePdf,
   onOpenProcurement,
@@ -373,6 +391,14 @@ export function ConsumerRepairRequestContent({
           contactPhone={contactPhone}
           selectedWork={selectedWork}
           workSuggestions={workSuggestions}
+          workSearchLiteralTotalCount={workSearchLiteralTotalCount}
+          workSearchGlobalLiteralTotalCount={workSearchGlobalLiteralTotalCount}
+          workSearchExternalLiteralTotalCount={workSearchExternalLiteralTotalCount}
+          workSearchSuggestionTotalCount={workSearchSuggestionTotalCount}
+          workSearchShownCount={workSearchShownCount}
+          workSearchLoading={workSearchLoading}
+          workSearchErrorRu={workSearchErrorRu}
+          workSearchHasMore={workSearchHasMore}
           problemInputRef={problemInputRef}
           onProblemTextChange={onProblemTextChange}
           onCityChange={onCityChange}
@@ -381,6 +407,7 @@ export function ConsumerRepairRequestContent({
           onContactPhoneChange={onContactPhoneChange}
           onSelectWorkSuggestion={onSelectWorkSuggestion}
           onSelectTemplateCandidate={onSelectTemplateCandidate}
+          onLoadMoreWorkSuggestions={onLoadMoreWorkSuggestions}
           onPrepareDraft={onPrepareDraft}
         />
       ) : null}

@@ -33,6 +33,15 @@ type RequestFormCardProps = {
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
   onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
   onPrepareDraft?: () => void;
+  workSearchLiteralTotalCount: number;
+  workSearchGlobalLiteralTotalCount: number;
+  workSearchExternalLiteralTotalCount: number;
+  workSearchSuggestionTotalCount: number;
+  workSearchShownCount: number;
+  workSearchLoading: boolean;
+  workSearchErrorRu: string | null;
+  workSearchHasMore: boolean;
+  onLoadMoreWorkSuggestions: () => void;
 };
 
 type DeliveryFieldsProps = Pick<
@@ -244,6 +253,15 @@ export function ConsumerRepairRequestFormCard({
   onSelectWorkSuggestion,
   onSelectTemplateCandidate,
   onPrepareDraft,
+  workSearchLiteralTotalCount,
+  workSearchGlobalLiteralTotalCount,
+  workSearchExternalLiteralTotalCount,
+  workSearchSuggestionTotalCount,
+  workSearchShownCount,
+  workSearchLoading,
+  workSearchErrorRu,
+  workSearchHasMore,
+  onLoadMoreWorkSuggestions,
 }: RequestFormCardProps): React.ReactElement {
   return (
     <View pointerEvents="box-none" style={screenStyles.card}>
@@ -259,6 +277,15 @@ export function ConsumerRepairRequestFormCard({
         onBuildEstimate={onPrepareDraft}
         onSelectLegacyWorkSuggestion={onSelectWorkSuggestion}
         onSelectTemplateCandidate={onSelectTemplateCandidate}
+        workSearchLiteralTotalCount={workSearchLiteralTotalCount}
+        workSearchGlobalLiteralTotalCount={workSearchGlobalLiteralTotalCount}
+        workSearchExternalLiteralTotalCount={workSearchExternalLiteralTotalCount}
+        workSearchSuggestionTotalCount={workSearchSuggestionTotalCount}
+        workSearchShownCount={workSearchShownCount}
+        workSearchLoading={workSearchLoading}
+        workSearchErrorRu={workSearchErrorRu}
+        workSearchHasMore={workSearchHasMore}
+        onLoadMoreWorkSuggestions={onLoadMoreWorkSuggestions}
       />
       {!problemText.trim() && !selectedWork ? (
         <Text style={styles.emptyState} testID="request-ui-empty-state">

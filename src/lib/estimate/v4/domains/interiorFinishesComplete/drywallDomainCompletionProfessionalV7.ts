@@ -350,7 +350,7 @@ export function buildDrywallDomainCompletionProfessionalPackagePartsV7(inventory
     return {
       row_id: `${namespace}:row:${candidate.candidateId}`, section: `Drywall ${parsed.family} / ${parsed.operation}`, category: candidate.category,
       title_ru: candidate.titleRu, formula, cost_ownership: "priced_resource", cost_owner_id: `DRYWALL_DOMAIN_V7:${inventory.catalog_id}:${candidate.candidateId}`,
-      semantic_owner: owner, normative_source_ids: contract.normativeSourceIds,
+      semantic_owner: `${owner}:row:${candidate.candidateId}`, normative_source_ids: contract.normativeSourceIds,
       inclusion_condition: candidate.scope === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true",
       procurement_eligible: candidate.category === "material" || candidate.category === "transport",
       normative_trace_v3: normativeTrace(contract, candidate),

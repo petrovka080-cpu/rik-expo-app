@@ -6,6 +6,7 @@ export type ParamEditPopoverProps = {
   paramKey: string | null;
   label: string;
   initialValue?: string;
+  guideShortRu?: string;
   onSave: (rawValue: string) => void;
   onCancel: () => void;
 };
@@ -15,10 +16,12 @@ export function ParamEditPopover({
   paramKey,
   label,
   initialValue = "",
+  guideShortRu = "По проекту или обмеру: фиксированная числовая норма не установлена",
   onSave,
   onCancel,
 }: ParamEditPopoverProps): React.ReactElement | null {
   const [value, setValue] = React.useState(initialValue);
+  const [focused, setFocused] = React.useState(false);
 
   React.useEffect(() => {
     setValue(initialValue);
@@ -32,11 +35,16 @@ export function ParamEditPopover({
       <TextInput
         value={value}
         onChangeText={setValue}
-        placeholder={`Введите: ${label.toLocaleLowerCase("ru-RU")}`}
-        placeholderTextColor="#94A3B8"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={focused || value.trim() ? undefined : guideShortRu}
+        placeholderTextColor="#64748B"
+        accessibilityLabel={label}
+        accessibilityHint={guideShortRu}
         style={styles.input}
         testID="editable-param-popover-input"
       />
+      {focused || value.trim() ? <Text style={styles.guide}>{guideShortRu}</Text> : null}
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
@@ -84,6 +92,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
   },
+  guide: { alignSelf: "flex-start", color: "#475569", backgroundColor: "#E2E8F0", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, fontSize: 10, fontWeight: "800" },
   actions: {
     flexDirection: "row",
     flexWrap: "wrap",

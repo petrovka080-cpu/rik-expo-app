@@ -1,4 +1,5 @@
 import React from "react";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import type { TextInput } from "react-native";
 
 import { AppScreen } from "../../components/layout/AppScreen";
@@ -76,6 +77,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onContactPhoneChange: (value: string) => void;
   onSelectWorkSuggestion: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
   onSelectTemplateCandidate: (candidate: InlineWorkTemplateCandidate) => void;
+  onLoadMoreWorkSuggestions: () => void;
   onMakePdf: () => void;
   onOpenProcurement: () => void;
   onDecrease: (itemId: string) => void;
@@ -122,6 +124,7 @@ export function ConsumerRepairRequestScreenView({
   onContactPhoneChange,
   onSelectWorkSuggestion,
   onSelectTemplateCandidate,
+  onLoadMoreWorkSuggestions,
   onMakePdf,
   onOpenProcurement,
   onDecrease,
@@ -173,6 +176,11 @@ export function ConsumerRepairRequestScreenView({
     consumerRepairExactAsphaltApprovalErrors(renderModel.bundle).length > 0
   );
   return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.keyboardRoot}
+      testID="consumer-repair-keyboard-boundary"
+    >
     <AppScreen hasStickyAction style={styles.screen}>
       <AppScreenHeader
         title="Смета"
@@ -188,6 +196,14 @@ export function ConsumerRepairRequestScreenView({
           contactPhone={state.contactPhone}
           selectedWork={state.selectedWork}
           workSuggestions={renderModel.workSuggestions}
+          workSearchLiteralTotalCount={renderModel.canonicalWorkSearch.literalTotalCount}
+          workSearchGlobalLiteralTotalCount={renderModel.canonicalWorkSearch.globalLiteralTotalCount}
+          workSearchExternalLiteralTotalCount={renderModel.canonicalWorkSearch.externalLiteralTotalCount}
+          workSearchSuggestionTotalCount={renderModel.canonicalWorkSearch.suggestionTotalCount}
+          workSearchShownCount={renderModel.canonicalWorkSearch.shownCount}
+          workSearchLoading={renderModel.canonicalWorkSearch.loading}
+          workSearchErrorRu={renderModel.canonicalWorkSearch.errorRu}
+          workSearchHasMore={Boolean(renderModel.canonicalWorkSearch.nextCursor)}
           bundle={renderModel.bundle}
           aiAnswerRu={state.aiAnswerRu}
           statusMessage={state.statusMessage}
@@ -207,6 +223,7 @@ export function ConsumerRepairRequestScreenView({
           onContactPhoneChange={onContactPhoneChange}
           onSelectWorkSuggestion={onSelectWorkSuggestion}
           onSelectTemplateCandidate={onSelectTemplateCandidate}
+          onLoadMoreWorkSuggestions={onLoadMoreWorkSuggestions}
           onPrepareDraft={onPrepareDraft}
           onMakePdf={onMakePdf}
           onOpenProcurement={onOpenProcurement}
@@ -256,5 +273,6 @@ export function ConsumerRepairRequestScreenView({
         onPrepareDraft={onPrepareDraft}
       />
     </AppScreen>
+    </KeyboardAvoidingView>
   );
 }

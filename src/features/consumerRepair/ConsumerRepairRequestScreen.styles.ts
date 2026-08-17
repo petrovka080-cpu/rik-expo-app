@@ -3,6 +3,10 @@ import { StyleSheet } from "react-native";
 import { APP_LAYOUT } from "../../components/layout/appLayout";
 
 export const consumerRepairRequestScreenStyles = StyleSheet.create({
+  keyboardRoot: {
+    flex: 1,
+    minHeight: 0,
+  },
   screen: {
     backgroundColor: "#F8FAFC",
   },

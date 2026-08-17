@@ -35,6 +35,15 @@ export type WorkEstimatePromptFieldProps = {
   onBuildEstimate?: () => void;
   onSelectLegacyWorkSuggestion?: (suggestion: GlobalWorkSmartSearchSuggestion) => void;
   onSelectTemplateCandidate?: (candidate: InlineWorkTemplateCandidate) => void;
+  workSearchLiteralTotalCount?: number;
+  workSearchGlobalLiteralTotalCount?: number;
+  workSearchExternalLiteralTotalCount?: number;
+  workSearchSuggestionTotalCount?: number;
+  workSearchShownCount?: number;
+  workSearchLoading?: boolean;
+  workSearchErrorRu?: string | null;
+  workSearchHasMore?: boolean;
+  onLoadMoreWorkSuggestions?: () => void;
 };
 
 export function buildWorkEstimatePromptFieldState(input: {
@@ -134,6 +143,15 @@ export function WorkEstimatePromptField({
   onBuildEstimate,
   onSelectLegacyWorkSuggestion,
   onSelectTemplateCandidate,
+  workSearchLiteralTotalCount,
+  workSearchGlobalLiteralTotalCount,
+  workSearchExternalLiteralTotalCount,
+  workSearchSuggestionTotalCount,
+  workSearchShownCount,
+  workSearchLoading,
+  workSearchErrorRu,
+  workSearchHasMore,
+  onLoadMoreWorkSuggestions,
 }: WorkEstimatePromptFieldProps): React.ReactElement {
   const state = buildWorkEstimatePromptFieldState({ value, selectedWork, previousState, draft });
   const model = buildWorkEstimatePromptFieldViewModel({ state, draft });
@@ -164,6 +182,15 @@ export function WorkEstimatePromptField({
         legacyWorkSuggestions={selectedWork ? [] : legacyWorkSuggestions}
         onSelectTemplateCandidate={onSelectTemplateCandidate}
         onSelectLegacyWorkSuggestion={onSelectLegacyWorkSuggestion}
+        literalTotalCount={workSearchLiteralTotalCount}
+        globalLiteralTotalCount={workSearchGlobalLiteralTotalCount}
+        externalLiteralTotalCount={workSearchExternalLiteralTotalCount}
+        suggestionTotalCount={workSearchSuggestionTotalCount}
+        shownCount={workSearchShownCount}
+        loading={workSearchLoading}
+        errorRu={workSearchErrorRu}
+        hasMore={workSearchHasMore}
+        onLoadMore={onLoadMoreWorkSuggestions}
       />
       <ExtractedParamsChips params={state.parseResult.extractedParams} />
       {model.buildEstimateButtonVisible && onBuildEstimate ? (

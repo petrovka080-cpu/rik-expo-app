@@ -30,11 +30,49 @@ import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplate
 import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type {
+  CanonicalEstimateSearchItem,
+  CanonicalEstimateSearchPage,
+} from "../../lib/estimate/backendPlatform/contracts";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 export type ConsumerRepairParamEditState = {
   key: string;
   operation: UserParamPatchOperation;
 } | null;
+
+export type ConsumerRepairCanonicalWorkSearchState = {
+  query: string;
+  suggestions: GlobalWorkSmartSearchSuggestion[];
+  literalTotalCount: number;
+  globalLiteralTotalCount: number;
+  externalLiteralTotalCount: number;
+  suggestionTotalCount: number;
+  shownCount: number;
+  nextCursor: string | null;
+  searchIndexReleaseId: string | null;
+  searchIndexSnapshotSha256: string | null;
+  resultSetSha256: string | null;
+  loading: boolean;
+  errorRu: string | null;
+};
+
+export function emptyConsumerRepairCanonicalWorkSearchState(): ConsumerRepairCanonicalWorkSearchState {
+  return {
+    query: "",
+    suggestions: [],
+    literalTotalCount: 0,
+    globalLiteralTotalCount: 0,
+    externalLiteralTotalCount: 0,
+    suggestionTotalCount: 0,
+    shownCount: 0,
+    nextCursor: null,
+    searchIndexReleaseId: null,
+    searchIndexSnapshotSha256: null,
+    resultSetSha256: null,
+    loading: false,
+    errorRu: null,
+  };
+}
 
 export type ConsumerRepairRequestScreenState = {
   problemText: string;
@@ -58,6 +96,7 @@ export type ConsumerRepairRequestScreenState = {
   selectedWork: GlobalSelectedWorkBinding | null;
   selectedHistoryId: string | null;
   editingParam: ConsumerRepairParamEditState;
+  canonicalWorkSearch: ConsumerRepairCanonicalWorkSearchState;
 };
 
 export function buildEmptyConsumerRepairApprovedHistoryPage(
@@ -67,6 +106,7 @@ export function buildEmptyConsumerRepairApprovedHistoryPage(
   return {
     items: [],
     records: [],
+    unresolvedRecords: [],
     totalApprovedCount: 0,
     archivedApprovedCount: 0,
     nextCursorCreatedAt: null,
@@ -114,6 +154,7 @@ export function appendNextApprovedHistoryPage(
   const nextPage = loadPage(cursorCreatedAt, page.pageSize);
   const existingIds = new Set(page.items.map((bundle) => bundle.draft.id));
   const existingRecordIds = new Set(page.records.map((record) => record.approvedEstimateId));
+  const existingUnresolvedIds = new Set((page.unresolvedRecords ?? []).map((record) => record.approvedEstimateId));
   return {
     ...nextPage,
     items: [
@@ -123,6 +164,10 @@ export function appendNextApprovedHistoryPage(
     records: [
       ...page.records,
       ...nextPage.records.filter((record) => !existingRecordIds.has(record.approvedEstimateId)),
+    ],
+    unresolvedRecords: [
+      ...(page.unresolvedRecords ?? []),
+      ...(nextPage.unresolvedRecords ?? []).filter((record) => !existingUnresolvedIds.has(record.approvedEstimateId)),
     ],
   };
 }
@@ -234,6 +279,7 @@ export function buildInitialConsumerRepairRequestState(params: {
     selectedWork: null,
     selectedHistoryId: null,
     editingParam: null,
+    canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState(),
   };
 }
 
@@ -491,6 +537,97 @@ export function searchConsumerRepairWorkSuggestions(
   void query;
   void selectedWork;
   return [];
+}
+
+const CANONICAL_DOMAIN_CATEGORY: Readonly<Record<string, GlobalWorkCategory>> = {
+  asphalt: "roadworks",
+  roadworks: "roadworks",
+  concrete: "concrete",
+  drywall: "drywall",
+  electrical: "electrical",
+  water_supply_sewerage: "plumbing",
+  plumbing: "plumbing",
+  hvac_heat_supply: "heating_hvac",
+  heating_hvac: "heating_hvac",
+  fire: "other",
+  fire_life_safety: "other",
+};
+
+function canonicalPrimaryUomToGlobalUnit(
+  value: string,
+): GlobalWorkSmartSearchSuggestion["defaultMeasureUnit"] {
+  const unit = value.trim().toLocaleLowerCase("en").replace(/²/gu, "2").replace(/³/gu, "3");
+  if (["m2", "sq_m", "sqm"].includes(unit)) return "sq_m";
+  if (["m3", "cu_m"].includes(unit)) return "m3";
+  if (["m", "linear_m", "lm"].includes(unit)) return "linear_m";
+  if (["kg", "kilogram"].includes(unit)) return "kg";
+  if (["t", "ton", "tonne"].includes(unit)) return "ton";
+  if (["set", "компл"].includes(unit)) return "set";
+  if (["shift", "смена"].includes(unit)) return "shift";
+  return "pcs";
+}
+
+export function canonicalSearchItemToConsumerRepairSuggestion(
+  item: CanonicalEstimateSearchItem,
+): GlobalWorkSmartSearchSuggestion {
+  const categoryKey = CANONICAL_DOMAIN_CATEGORY[item.domainId] ?? "other";
+  return {
+    workKey: item.catalogId,
+    titleRu: item.canonicalNameRu,
+    categoryKey,
+    categoryTitleRu: item.groupNameRu,
+    defaultMeasureUnit: canonicalPrimaryUomToGlobalUnit(item.primaryUom),
+    score: Math.max(0, 1 - ((item.matchTier - 1) * 0.1)),
+    matchKind: item.matchTier === 1
+      ? "exact_title"
+      : item.matchTier === 2
+        ? "exact_alias"
+        : item.matchTier <= 5
+          ? "phrase"
+          : "token_overlap",
+    matchedTokens: item.matchedTerm ? [item.matchedTerm] : [],
+    visibleText: `${item.canonicalNameRu} · ${item.groupNameRu}`,
+  };
+}
+
+export function mergeConsumerRepairCanonicalWorkSearchPage(input: {
+  query: string;
+  page: CanonicalEstimateSearchPage;
+  previous?: ConsumerRepairCanonicalWorkSearchState | null;
+  append: boolean;
+}): ConsumerRepairCanonicalWorkSearchState {
+  const previous = input.append ? input.previous : null;
+  if (previous?.searchIndexReleaseId && previous.searchIndexReleaseId !== input.page.searchIndexReleaseId) {
+    throw new Error("CANONICAL_SEARCH_RELEASE_CHANGED_DURING_PAGINATION");
+  }
+  if (previous?.searchIndexSnapshotSha256 && previous.searchIndexSnapshotSha256 !== input.page.searchIndexSnapshotSha256) {
+    throw new Error("CANONICAL_SEARCH_SNAPSHOT_CHANGED_DURING_PAGINATION");
+  }
+  if (previous?.resultSetSha256 && previous.resultSetSha256 !== input.page.resultSetSha256) {
+    throw new Error("CANONICAL_SEARCH_RESULT_SET_CHANGED_DURING_PAGINATION");
+  }
+  const byCatalogId = new Map<string, GlobalWorkSmartSearchSuggestion>();
+  for (const suggestion of previous?.suggestions ?? []) byCatalogId.set(suggestion.workKey, suggestion);
+  for (const item of input.page.items) byCatalogId.set(item.catalogId, canonicalSearchItemToConsumerRepairSuggestion(item));
+  const suggestions = [...byCatalogId.values()];
+  if (suggestions.length !== (previous?.suggestions.length ?? 0) + input.page.items.length) {
+    throw new Error("CANONICAL_SEARCH_CURSOR_DUPLICATE");
+  }
+  return {
+    query: input.query,
+    suggestions,
+    literalTotalCount: input.page.literalTotalCount,
+    globalLiteralTotalCount: input.page.globalLiteralTotalCount,
+    externalLiteralTotalCount: input.page.externalLiteralTotalCount,
+    suggestionTotalCount: input.page.suggestionTotalCount,
+    shownCount: suggestions.length,
+    nextCursor: input.page.nextCursor,
+    searchIndexReleaseId: input.page.searchIndexReleaseId,
+    searchIndexSnapshotSha256: input.page.searchIndexSnapshotSha256,
+    resultSetSha256: input.page.resultSetSha256,
+    loading: false,
+    errorRu: null,
+  };
 }
 
 export function buildConsumerRepairSelectedWorkEditableField(params: {

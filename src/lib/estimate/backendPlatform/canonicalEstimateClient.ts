@@ -5,6 +5,7 @@ import {
   type CanonicalEstimateArtifactView,
   type CanonicalEstimateCatalogItem,
   type CanonicalEstimateCreateRequest,
+  type CanonicalEstimateDraftView,
   type CanonicalEstimateJobAccepted,
   type CanonicalEstimateJobView,
   type CanonicalEstimateLegacyRevisionRequest,
@@ -12,6 +13,9 @@ import {
   type CanonicalEstimateRevisionRowsPage,
   type CanonicalEstimateRevisionHistoryPage,
   type CanonicalEstimateRevisionView,
+  type CanonicalEstimateSearchGroupPage,
+  type CanonicalEstimateSearchPage,
+  type CanonicalEstimateTypedRelation,
 } from "./contracts";
 
 function resolveFunctionUrl(): string {
@@ -94,15 +98,109 @@ async function invoke<T>(path: string, options: {
 export function searchCanonicalEstimateCatalog(input: {
   query: string;
   domain?: string | null;
-  limit?: number;
+  groupId?: string | null;
+  operationKind?: string | null;
+  cursor?: string | null;
+  pageSize?: number;
   signal?: AbortSignal | null;
 }) {
-  const params = new URLSearchParams({ query: input.query, limit: String(input.limit ?? 30) });
+  const params = new URLSearchParams({ query: input.query, pageSize: String(input.pageSize ?? 50) });
   if (input.domain) params.set("domain", input.domain);
-  return invoke<{ items: Array<Omit<CanonicalEstimateCatalogItem, "definitionVersion" | "parameterSchema">> }>(
-    `catalog?${params.toString()}`,
+  if (input.groupId) params.set("groupId", input.groupId);
+  if (input.operationKind) params.set("operationKind", input.operationKind);
+  if (input.cursor) params.set("cursor", input.cursor);
+  return invoke<CanonicalEstimateSearchPage>(
+    `search/catalog?${params.toString()}`,
     { signal: input.signal, requestClass: "lightweight_lookup" },
   );
+}
+
+export function listCanonicalEstimateSearchGroup(input: {
+  groupId: string;
+  cursor?: string | null;
+  pageSize?: number;
+  signal?: AbortSignal | null;
+}) {
+  const params = new URLSearchParams({ pageSize: String(input.pageSize ?? 50) });
+  if (input.cursor) params.set("cursor", input.cursor);
+  return invoke<CanonicalEstimateSearchGroupPage>(
+    `search/groups/${encodeURIComponent(input.groupId)}?${params.toString()}`,
+    { signal: input.signal, requestClass: "lightweight_lookup" },
+  );
+}
+
+export function listCanonicalEstimateTypedRelations(catalogId: string, signal?: AbortSignal | null) {
+  return invoke<{
+    apiVersion: string;
+    searchIndexReleaseId: string;
+    groupRelationVersion: string;
+    items: CanonicalEstimateTypedRelation[];
+  }>(`search/catalog/${encodeURIComponent(catalogId)}/relations`, {
+    signal,
+    requestClass: "lightweight_lookup",
+  });
+}
+
+export async function createCanonicalEstimateDraft(input: {
+  originalQuery: string;
+  title?: string;
+  searchIndexReleaseId: string;
+  searchResultSetHash: string;
+  searchFilters?: Record<string, string>;
+  selectedCatalogIds?: string[];
+  deviceId?: string | null;
+  signal?: AbortSignal | null;
+}) {
+  const result = await invoke<{ apiVersion: string; draft: CanonicalEstimateDraftView }>("drafts", {
+    method: "POST",
+    body: {
+      originalQuery: input.originalQuery,
+      title: input.title,
+      searchIndexReleaseId: input.searchIndexReleaseId,
+      searchResultSetHash: input.searchResultSetHash,
+      searchFilters: input.searchFilters ?? {},
+      selectedCatalogIds: input.selectedCatalogIds ?? [],
+      deviceId: input.deviceId ?? null,
+    },
+    signal: input.signal,
+    requestClass: "mutation_request",
+  });
+  return result.draft;
+}
+
+export async function getCanonicalEstimateDraft(draftId: string, signal?: AbortSignal | null) {
+  const result = await invoke<{ apiVersion: string; draft: CanonicalEstimateDraftView }>(
+    `drafts/${encodeURIComponent(draftId)}`,
+    { signal, requestClass: "ui_scope_load" },
+  );
+  return result.draft;
+}
+
+export async function applyCanonicalEstimateDraftEvent(input: {
+  draftId: string;
+  idempotencyKey: string;
+  baseOptimisticVersion: number;
+  eventKind: string;
+  patch: Record<string, unknown>;
+  deviceId?: string | null;
+  signal?: AbortSignal | null;
+}) {
+  const result = await invoke<{ apiVersion: string; draft: CanonicalEstimateDraftView }>(
+    `drafts/${encodeURIComponent(input.draftId)}/events`,
+    {
+      method: "POST",
+      body: {
+        idempotencyKey: input.idempotencyKey,
+        baseOptimisticVersion: input.baseOptimisticVersion,
+        eventKind: input.eventKind,
+        patch: input.patch,
+        deviceId: input.deviceId ?? null,
+      },
+      signal: input.signal,
+      requestClass: "mutation_request",
+    },
+  );
+  return result.draft;
 }
 
 export async function getCanonicalEstimateCatalogItem(catalogId: string, signal?: AbortSignal | null) {

@@ -464,6 +464,7 @@ type ParameterDisclosurePanelState = {
   draftSignature: string;
   validationErrors: Record<string, string>;
   explicitlyConfirmedMissingValues: Record<string, true>;
+  expandedGuideDetails: Record<string, true>;
 };
 
 export function isConsumerRepairParameterExplicitlyDirty(input: {
@@ -485,14 +486,73 @@ type InlineParamEditorProps = {
   error?: string;
   hint?: string;
   choices?: { value: string; labelRu: string }[];
+  guideShortRu: string;
+  structuredGroup?: AiEstimateParameterCard["structuredGroup"];
   clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
 };
 
-class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
+type InlineCompositeItem = {
+  itemId: string;
+  position: number;
+  values: Record<string, string>;
+};
+
+export class InlineParamEditor extends React.PureComponent<InlineParamEditorProps, { focusedControlId: string | null }> {
+  state = { focusedControlId: null as string | null };
+
+  private compositeItems(): InlineCompositeItem[] {
+    if (!this.props.structuredGroup || !this.props.value.trim()) return [];
+    try {
+      const parsed = JSON.parse(this.props.value);
+      return Array.isArray(parsed) ? parsed.filter((item): item is InlineCompositeItem =>
+        Boolean(item) && typeof item === "object" && typeof item.itemId === "string"
+        && Boolean(item.values) && typeof item.values === "object" && !Array.isArray(item.values)) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private commitComposite(items: InlineCompositeItem[]): void {
+    this.props.onChange(this.props.paramKey, JSON.stringify(items.map((item, position) => ({ ...item, position }))));
+  }
+
+  private addCompositeItem = (): void => {
+    const group = this.props.structuredGroup;
+    if (!group) return;
+    const items = this.compositeItems();
+    if (items.length >= group.maximumItems) return;
+    this.commitComposite([...items, {
+      itemId: `item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      position: items.length,
+      values: Object.fromEntries(group.fields.map((field) => [field.key, ""])),
+    }]);
+  };
+
+  private updateCompositeField = (itemId: string, fieldKey: string, value: string): void => {
+    this.commitComposite(this.compositeItems().map((item) => item.itemId === itemId
+      ? { ...item, values: { ...item.values, [fieldKey]: value } }
+      : item));
+  };
+
+  private deleteCompositeItem = (itemId: string): void => {
+    this.commitComposite(this.compositeItems().filter((item) => item.itemId !== itemId));
+  };
+
+  private moveCompositeItem = (itemId: string, direction: -1 | 1): void => {
+    const items = [...this.compositeItems()];
+    const from = items.findIndex((item) => item.itemId === itemId);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= items.length) return;
+    [items[from], items[to]] = [items[to], items[from]];
+    this.commitComposite(items);
+  };
+
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, clarificationControl, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, guideShortRu, structuredGroup, clarificationControl, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
+    const inputGuideAsCaption = this.state.focusedControlId === paramKey || value.trim().length > 0;
+    const compositeItems = this.compositeItems();
 
     return (
       <View style={styles.inlineParamEditor} testID={`editable-param-inline-editor-${paramKey}`}>
@@ -501,7 +561,46 @@ class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
             <Text style={styles.inlineParamEditorTitle}>{label}</Text>
             {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
           </View>
-          {clarificationControl === "file_upload" ? (
+          {structuredGroup ? (
+            <View style={styles.typedCompositeEditor} testID={`typed-composite-editor-${paramKey}`}>
+              <Text style={styles.inlineParamUnit}>Количество: {compositeItems.length} · вычисляется автоматически</Text>
+              {compositeItems.map((item, itemIndex) => (
+                <View key={item.itemId} style={styles.typedCompositeItem}>
+                  <View style={styles.inlineParamEditorHeader}>
+                    <Text style={styles.inlineParamEditorTitle}>{structuredGroup.itemLabelRu} {itemIndex + 1}</Text>
+                    <View style={styles.batchActions}>
+                      <Pressable disabled={itemIndex === 0} onPress={() => this.moveCompositeItem(item.itemId, -1)} style={styles.compactMoveButton}><Text>↑</Text></Pressable>
+                      <Pressable disabled={itemIndex === compositeItems.length - 1} onPress={() => this.moveCompositeItem(item.itemId, 1)} style={styles.compactMoveButton}><Text>↓</Text></Pressable>
+                      <Pressable onPress={() => this.deleteCompositeItem(item.itemId)} style={styles.inlineParamDangerButton}><Text style={styles.inlineParamDangerText}>Удалить</Text></Pressable>
+                    </View>
+                  </View>
+                  {structuredGroup.fields.map((field) => {
+                    const focusId = `${item.itemId}:${field.key}`;
+                    const fieldValue = item.values[field.key] ?? "";
+                    const showCaption = this.state.focusedControlId === focusId || fieldValue.trim().length > 0 || field.choices.length > 0;
+                    return <View key={field.key} style={styles.typedCompositeField}>
+                      <Text style={styles.inlineParamEditorTitle}>{field.labelRu}{field.required ? " *" : ""}</Text>
+                      {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
+                        value={fieldValue}
+                        onChangeText={(nextValue) => this.updateCompositeField(item.itemId, field.key, nextValue)}
+                        onFocus={() => this.setState({ focusedControlId: focusId })}
+                        onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === focusId ? null : state.focusedControlId }))}
+                        keyboardType={field.inputKind === "number" ? "decimal-pad" : "default"}
+                        placeholder={showCaption ? undefined : field.guideShortRu}
+                        placeholderTextColor="#64748B"
+                        accessibilityLabel={field.labelRu}
+                        accessibilityHint={`${field.guideShortRu}${field.unitRu ? `, ${field.unitRu}` : ""}`}
+                        style={styles.inlineParamInput}
+                      />}
+                      {showCaption ? <Text style={styles.inlineGuideChip}>{field.guideShortRu}</Text> : null}
+                      {field.unitRu ? <Text style={styles.inlineParamUnit}>{field.unitRu}</Text> : null}
+                    </View>;
+                  })}
+                </View>
+              ))}
+              <Pressable disabled={compositeItems.length >= structuredGroup.maximumItems} onPress={this.addCompositeItem} style={styles.inlineParamButton}><Text style={styles.inlineParamButtonText}>Добавить: {structuredGroup.itemLabelRu}</Text></Pressable>
+            </View>
+          ) : clarificationControl === "file_upload" ? (
             <View style={styles.batchActions}>
               <Pressable
                 accessibilityRole="button"
@@ -537,13 +636,18 @@ class InlineParamEditor extends React.PureComponent<InlineParamEditorProps> {
             <TextInput
               value={value}
               onChangeText={(nextValue) => onChange(paramKey, nextValue)}
+              onFocus={() => this.setState({ focusedControlId: paramKey })}
+              onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === paramKey ? null : state.focusedControlId }))}
               keyboardType={keyboardType}
-              placeholder={`Введите: ${label.toLocaleLowerCase("ru-RU")}`}
-              placeholderTextColor="#94A3B8"
+              placeholder={inputGuideAsCaption ? undefined : guideShortRu}
+              placeholderTextColor="#64748B"
+              accessibilityLabel={label}
+              accessibilityHint={`${guideShortRu}${unitLabel ? `, ${unitLabel}` : ""}`}
               style={styles.inlineParamInput}
               testID="editable-param-popover-input"
             />
           )}
+          {!structuredGroup && (inputGuideAsCaption || (choices?.length ?? 0) > 0) ? <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>{guideShortRu}</Text> : null}
           {unitLabel ? <Text style={styles.inlineParamUnit}>{unitLabel}</Text> : null}
           {hint ? (
             <Text style={styles.parameterMeta} testID={`editable-param-validation-hint-${paramKey}`}>
@@ -572,6 +676,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     draftSignature: "",
     validationErrors: {},
     explicitlyConfirmedMissingValues: {},
+    expandedGuideDetails: {},
   };
 
   componentDidMount(): void {
@@ -665,10 +770,22 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
 
   private changeDraftValue = (paramKey: string, rawValue: string): void => {
     const card = this.buildCards().find((candidate) => candidate.key === paramKey);
+    let derivedCount: number | null = null;
+    if (card?.derivedCountParameterKey && card.structuredGroup) {
+      try {
+        const parsed = JSON.parse(rawValue);
+        derivedCount = Array.isArray(parsed) ? parsed.length : null;
+      } catch {
+        derivedCount = null;
+      }
+    }
     this.setState((state) => ({
       draftValues: {
         ...state.draftValues,
         [paramKey]: rawValue,
+        ...(card?.derivedCountParameterKey && derivedCount != null
+          ? { [card.derivedCountParameterKey]: String(derivedCount) }
+          : {}),
       },
       validationErrors: {
         ...state.validationErrors,
@@ -678,6 +795,15 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
         ? { ...state.explicitlyConfirmedMissingValues, [paramKey]: true }
         : state.explicitlyConfirmedMissingValues,
     }));
+  };
+
+  private toggleGuideDetails = (paramKey: string): void => {
+    this.setState((state) => {
+      const next = { ...state.expandedGuideDetails };
+      if (next[paramKey]) delete next[paramKey];
+      else next[paramKey] = true;
+      return { expandedGuideDetails: next };
+    });
   };
 
   private cancelDraftChanges = (): void => {
@@ -717,7 +843,10 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           (max != null && parsed > max) ||
           (integer === true && !Number.isInteger(parsed))
         ) {
-          validationErrors[key] = `${canonicalParameter.label}: норматив ввода по расчётному паспорту — ${rule}.`;
+          const ruleOwner = canonicalParameter.normativeSource
+            ? "нормативный диапазон"
+            : "правило проверки ввода";
+          validationErrors[key] = `${canonicalParameter.label}: ${ruleOwner} — ${rule}.`;
           continue;
         }
       }
@@ -770,7 +899,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       (parameter) => parameter.parameterId === card.key,
     );
     const validationHint = canonicalParameter?.valueType === "number"
-      ? `Норматив ввода по расчётному паспорту: ${canonicalNumericInputRule({
+      ? `${canonicalParameter.normativeSource ? "Нормативный диапазон" : "Правило проверки ввода"}: ${canonicalNumericInputRule({
         ...canonicalParameter.validation,
         unit: card.unitRu,
       })}.`
@@ -779,6 +908,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     // an explicit user override in the next revision and must use the same
     // atomic batch path as every other parameter.
     const editableInPlace = paramEditorEnabled;
+    const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
 
     return (
       <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
@@ -786,12 +916,6 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           <View style={styles.parameterCopy} testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}>
             <Text style={styles.parameterLabel}>{card.labelRu}</Text>
             <Text style={styles.parameterMeta}>{meta}</Text>
-            {card.missing && card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
-            {card.missing && card.exampleRu ? <Text style={styles.parameterMeta}>{card.exampleRu}</Text> : null}
-            {card.missing && card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
-            {card.missing && card.missingValueConsequenceRu ? (
-              <Text style={styles.parameterMeta}>Если пропустить: {card.missingValueConsequenceRu}</Text>
-            ) : null}
           </View>
           {card.missing ? (
             <Text style={styles.requiredBadge}>{actionLabel}</Text>
@@ -808,10 +932,21 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
             error={this.state.validationErrors[card.key]}
             hint={validationHint}
             choices={card.choices}
+            guideShortRu={card.guideShortRu ?? "По проекту или обмеру: фиксированная числовая норма не установлена"}
+            structuredGroup={card.structuredGroup}
             clarificationControl={card.clarificationControl}
             onChange={this.changeDraftValue}
           />
         ) : null}
+        <Pressable accessibilityRole="button" onPress={() => this.toggleGuideDetails(card.key)} style={styles.guideDetailsButton} testID={`editable-param-guide-details-${card.key}`}>
+          <Text style={styles.guideDetailsButtonText}>{guideExpanded ? "Скрыть подробности" : "Подробнее о норме"}</Text>
+        </Pressable>
+        {guideExpanded ? <View style={styles.guideDetailsPanel}>
+          {(card.guideDetailsRu ?? []).map((line, index) => <Text key={`${card.key}:guide:${index}`} style={styles.parameterMeta}>{line}</Text>)}
+          {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
+          {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
+          {card.missingValueConsequenceRu ? <Text style={styles.parameterMeta}>Если пропустить: {card.missingValueConsequenceRu}</Text> : null}
+        </View> : null}
       </View>
     );
   }
@@ -1356,6 +1491,57 @@ const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 12,
     fontWeight: "900",
+  },
+  inlineGuideChip: {
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+    borderRadius: 6,
+    backgroundColor: "#E2E8F0",
+    color: "#475569",
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "800",
+  },
+  typedCompositeEditor: { gap: 8 },
+  typedCompositeItem: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#94A3B8",
+    backgroundColor: "#FFFFFF",
+    padding: 9,
+    gap: 8,
+  },
+  typedCompositeField: { gap: 5 },
+  compactMoveButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  inlineParamDangerButton: {
+    minHeight: 34,
+    borderRadius: 8,
+    backgroundColor: "#FEE2E2",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+  },
+  inlineParamDangerText: { color: "#991B1B", fontSize: 11, fontWeight: "900" },
+  guideDetailsButton: { alignSelf: "flex-start", paddingVertical: 5 },
+  guideDetailsButtonText: { color: "#0F766E", fontSize: 11, fontWeight: "900" },
+  guideDetailsPanel: {
+    borderLeftWidth: 2,
+    borderLeftColor: "#5EEAD4",
+    backgroundColor: "#F0FDFA",
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    gap: 3,
   },
   showMoreButton: {
     minHeight: 34,

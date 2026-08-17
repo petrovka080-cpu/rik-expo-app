@@ -5,6 +5,82 @@ import type {
   CanonicalParameter,
   CanonicalParameterSession,
 } from "../estimate/canonicalParameters/canonicalParameterCore";
+import { getAsphaltParameterV4 } from "../estimate/v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
+import type { WorkSpecificParameterV4 } from "../estimate/v4/professionalEstimateV4Contract";
+
+const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze({
+  crushed_layers: "crushed_layer_count",
+  asphalt_layers: "asphalt_layer_count",
+});
+
+function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null): {
+  guideShortRu: string;
+  guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
+  guideDetailsRu: string[];
+} {
+  const unit = aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
+  const source = parameter.normativeSource;
+  const applicability = asphalt?.applicability_condition ?? "always";
+  const affected = [...parameter.affectsFormula, ...parameter.affectsRows].join(", ") || "только паспорт параметров";
+  let guideShortRu: string;
+  let guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
+  if (asphalt?.structured_group) {
+    guideShortRu = `Добавьте каждый ${asphalt.structured_group.item_label_ru.toLocaleLowerCase("ru-RU")} отдельно; количество рассчитывается автоматически`;
+    guideKind = "DERIVED_VALUE_RULE";
+  } else if (parameter.allowedValues.length > 0 || parameter.valueType === "boolean") {
+    guideShortRu = `Правило выбора: ${parameter.description}`;
+    guideKind = "ENUM_DECISION_RULE";
+  } else if (source && parameter.validation.min != null && parameter.validation.max != null) {
+    guideShortRu = `Нормативный диапазон: ${parameter.validation.min}–${parameter.validation.max}${unit ? ` ${unit}` : ""}`;
+    guideKind = "NORMATIVE_RANGE";
+  } else if (parameter.parameterId.includes("compaction_factor")) {
+    guideShortRu = `По проекту/КРЕР: введите подтверждённый коэффициент${unit ? `, ${unit}` : ""}`;
+    guideKind = "PROJECT_DEFINED";
+  } else if (parameter.parameterId.includes("waste_percent")) {
+    guideShortRu = `По проекту/методике: введите подтверждённый технологический запас${unit ? `, ${unit}` : ""}`;
+    guideKind = "PROJECT_DEFINED";
+  } else if (parameter.valueType === "number") {
+    guideShortRu = `По проекту или обмеру: фиксированная числовая норма не установлена${unit ? `, ${unit}` : ""}`;
+    guideKind = "MEASUREMENT_RULE";
+  } else {
+    guideShortRu = "По проекту: фиксированная числовая норма не установлена";
+    guideKind = "NO_NUMERIC_NORM";
+  }
+  return {
+    guideShortRu,
+    guideKind,
+    guideDetailsRu: [
+      `Почему нужен параметр: ${parameter.description}`,
+      source
+        ? `Нормативный документ: ${source.document}; редакция ${source.revision}; точный locator ${source.locator}.`
+        : "Источник значения: проект, обмер, изготовитель или инженерное решение; универсальный числовой норматив не заявлен.",
+      source ? `Source snapshot: ${source.sourceHash}; проверено ${source.checkedAt}.` : "Число не подставляется автоматически и требует provenance пользователя.",
+      `Применимость: ${applicability}.`,
+      `Изменяемые формулы/строки: ${affected}.`,
+    ],
+  };
+}
+
+function structuredGroupForParameter(asphalt: WorkSpecificParameterV4 | null): AiEstimateParameterCard["structuredGroup"] {
+  const group = asphalt?.structured_group;
+  if (!group) return undefined;
+  return {
+    itemLabelRu: group.item_label_ru,
+    minimumItems: group.minimum_items,
+    maximumItems: group.maximum_items,
+    fields: group.fields.map((field) => ({
+      key: field.canonical_key,
+      labelRu: field.professional_name_ru,
+      inputKind: field.data_type === "number" ? "number" : field.choices.length > 0 ? "select" : "text",
+      unitRu: aiEstimateRuUnitForParameter(field.canonical_key, field.canonical_unit_id),
+      required: field.required,
+      choices: field.choices.map((choice) => ({ value: choice.value, labelRu: choice.label_ru })),
+      guideShortRu: field.data_type === "number"
+        ? `По проекту/паспорту: введите подтверждённое значение${field.canonical_unit_id ? `, ${aiEstimateRuUnitForParameter(field.canonical_key, field.canonical_unit_id)}` : ""}`
+        : `Правило выбора: ${field.user_help_ru}`,
+    })),
+  };
+}
 
 function cardSource(parameter: CanonicalParameter): AiEstimateParameterCard["source"] {
   if (parameter.source === "USER_EXPLICIT") return "manual_override";
@@ -58,7 +134,13 @@ export function buildCanonicalParameterCards(input: {
 }): AiEstimateParameterCard[] {
   if (!input.session) return [];
   const rowTitleById = new Map((input.revision?.boq.rows ?? []).map((row) => [row.rowId, row.titleRu]));
-  return input.session.parameters.map((parameter) => {
+  const visibleParameters = input.session.parameters.filter((parameter) => getAsphaltParameterV4(parameter.parameterId)?.internal_only !== true);
+  const derivedCountKeys = new Set(visibleParameters
+    .map((parameter) => COMPOSITE_DERIVED_COUNT[parameter.parameterId])
+    .filter((key): key is string => Boolean(key)));
+  return visibleParameters.filter((parameter) => !derivedCountKeys.has(parameter.parameterId)).map((parameter) => {
+    const asphalt = getAsphaltParameterV4(parameter.parameterId);
+    const guide = guideForParameter(parameter, asphalt);
     const affectedRowIds = input.revision?.trace.params.find(
       (candidate) => candidate.key === parameter.parameterId,
     )?.affectsRowIds ?? [...parameter.affectsRows];
@@ -103,6 +185,9 @@ export function buildCanonicalParameterCards(input: {
           ? "recommended"
           : "optional",
       choices,
+      ...guide,
+      structuredGroup: structuredGroupForParameter(asphalt),
+      derivedCountParameterKey: COMPOSITE_DERIVED_COUNT[parameter.parameterId],
     };
   });
 }

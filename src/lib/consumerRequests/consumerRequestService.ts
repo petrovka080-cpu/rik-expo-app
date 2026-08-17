@@ -215,6 +215,8 @@ export const CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES: ConsumerRepairStatus[] =
 export type ConsumerRepairApprovedHistoryPage = {
   items: ConsumerRepairDraftBundle[];
   records: ApprovedEstimateHistoryRecord[];
+  /** Durable ledger rows whose local snapshot is absent and must be recovered from backend. */
+  unresolvedRecords?: ApprovedEstimateHistoryRecord[];
   totalApprovedCount: number;
   archivedApprovedCount: number;
   nextCursorCreatedAt: string | null;
@@ -1316,9 +1318,11 @@ export function listConsumerRepairApprovedHistory(
     if (bundle.draft.consumerUserId !== consumerUserId) throw new Error("CONSUMER_REPAIR_LEDGER_OWNER_MISMATCH");
     return [{ record, bundle }];
   });
+  const resolvedIds = new Set(resolvedRecords.map(({ record }) => record.approvedEstimateId));
   return {
     items: resolvedRecords.map(({ bundle }) => bundle),
-    records: resolvedRecords.map(({ record }) => record),
+    records: ledgerPage.records,
+    unresolvedRecords: ledgerPage.records.filter((record) => !resolvedIds.has(record.approvedEstimateId)),
     totalApprovedCount: countConsumerRepairApprovedHistoryRecordsFromLedger(
       consumerUserId,
       CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,

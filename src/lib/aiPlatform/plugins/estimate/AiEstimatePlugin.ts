@@ -57,13 +57,16 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
           };
         }
         const query = String(runInput.userText ?? runInput.intent).trim();
-        const search = await searchCanonicalEstimateCatalog({ query, limit: 6 });
-        const exact = search.items.filter((item) => item.titleRu.trim().toLocaleLowerCase("ru") === query.toLocaleLowerCase("ru"));
+        const search = await searchCanonicalEstimateCatalog({ query, pageSize: 50 });
+        const exact = search.items.filter((item) =>
+          item.matchType === "T1_EXACT"
+          && item.canonicalNameRu.trim().toLocaleLowerCase("ru") === query.toLocaleLowerCase("ru")
+          && item.selectableMode === "PROFESSIONAL");
         if (exact.length !== 1) return {
           flowId: runInput.flowId,
           status: "needs_more_input",
           userVisibleAnswerRu: search.items.length
-            ? `Выберите точную работу backend-каталога: ${search.items.map((item) => item.titleRu).join("; ")}.`
+            ? `Выберите точную работу backend-каталога: ${search.items.map((item) => item.canonicalNameRu).join("; ")}.`
             : "Работа не найдена в canonical backend-каталоге. Уточните вид работ.",
           draft: { backendCanonical: true, admitted: false, suggestions: search.items },
         };

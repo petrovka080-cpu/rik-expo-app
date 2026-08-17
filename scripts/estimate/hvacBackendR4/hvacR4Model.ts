@@ -807,12 +807,7 @@ const ACTIVITIES_BY_KIND: Readonly<Record<HvacComponentKind, readonly HvacActivi
   MATERIAL: STANDARD_ACTIVITIES.filter((item) => !["commissioning", "installation_machine"].includes(item.key)),
   SUPPORT: STANDARD_ACTIVITIES.filter((item) => !["commissioning"].includes(item.key)),
   INTERFACE: [
-    activity("owner_scope", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Фиксация owner scope:", "FIXED"),
-    activity("handoff_inputs", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Передача входов:", "FIXED"),
-    activity("handoff_outputs", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Приём выходов:", "FIXED"),
-    activity("quantity_basis", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Согласование quantity basis:", "FIXED"),
-    activity("revision_binding", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Привязка revision:", "FIXED"),
-    activity("owner_signoff", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Подтверждение границы:", "FIXED"),
+    activity("owner_boundary", "INTERFACE", "TYPED_CHILD_INTERFACES", "TYPED_CHILD_INTERFACE", "interface", "Граница ответственности со смежным разделом:", "FIXED"),
   ],
   DOCUMENT: [
     activity("prepare", "DOCUMENT", "DOCUMENTATION", "DOCUMENTATION", "document", "Подготовка:", "FIXED"),
@@ -1173,7 +1168,7 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
         semanticOwner: component.kind === "INTERFACE"
           ? `typed-child:${component.key}`
           : `hvac:${familyKey}:${component.key}:${activityItem.key}`,
-        costOwnerId: component.kind === "INTERFACE" ? `child-owner:${component.key}` : `hvac-cost:${component.key}:${activityItem.key}`,
+        costOwnerId: component.kind === "INTERFACE" ? null : `hvac-cost:${component.key}:${activityItem.key}`,
         procurementEligible: activityItem.procurementEligible,
         sourceMetadata: {
           schemaVersion: "hvac-r4-resource-row.v1",

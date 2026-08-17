@@ -38,4 +38,22 @@ export type AiEstimateParameterCard = {
   missingValueConsequenceRu?: string;
   provenanceRu?: string;
   choices?: { value: string; labelRu: string }[];
+  guideShortRu?: string;
+  guideKind?: "PROJECT_DEFINED" | "MEASUREMENT_RULE" | "ENUM_DECISION_RULE" | "DERIVED_VALUE_RULE" | "NO_NUMERIC_NORM" | "NORMATIVE_RANGE";
+  guideDetailsRu?: string[];
+  structuredGroup?: {
+    itemLabelRu: string;
+    minimumItems: number;
+    maximumItems: number;
+    fields: {
+      key: string;
+      labelRu: string;
+      inputKind: AiEstimateParameterInputKind;
+      unitRu: string;
+      required: boolean;
+      choices: { value: string; labelRu: string }[];
+      guideShortRu: string;
+    }[];
+  };
+  derivedCountParameterKey?: string;
 };

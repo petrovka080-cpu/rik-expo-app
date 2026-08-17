@@ -1122,7 +1122,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallCeili
       formula: item.formula,
       cost_ownership: item.cost_ownership,
       cost_owner_id: `DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_V3:${contract.group}:${inventory.catalog_id}:${item.row_key}`,
-      semantic_owner: drywallCeilingBulkheadProfessionalOwnerIdV3(inventory.catalog_id),
+      semantic_owner: `${drywallCeilingBulkheadProfessionalOwnerIdV3(inventory.catalog_id)}:row:${item.row_key}`,
       normative_source_ids: [KG_SP_SOURCE_ID, KG_KRER_SOURCE_ID],
       inclusion_condition: item.scopes === "FULL_ONLY"
         ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE"

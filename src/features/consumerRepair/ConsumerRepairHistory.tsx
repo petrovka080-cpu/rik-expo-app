@@ -4,6 +4,7 @@ import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native
 
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type {
+  ApprovedEstimateHistoryRecord,
   ConsumerRepairApprovedHistoryPage,
   ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
@@ -23,8 +24,12 @@ type Props = {
   onLoadMoreHistory: () => void;
 };
 
-const approvedHistoryKeyExtractor = (bundle: ConsumerRepairDraftBundle): string =>
-  bundle.draft.id;
+type ApprovedHistoryListItem =
+  | { kind: "snapshot"; bundle: ConsumerRepairDraftBundle }
+  | { kind: "backend_recovery"; record: ApprovedEstimateHistoryRecord };
+
+const approvedHistoryListKeyExtractor = (item: ApprovedHistoryListItem): string =>
+  item.kind === "snapshot" ? item.bundle.draft.id : item.record.approvedEstimateId;
 
 function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
   return bundle.items.length || bundle.durableHistorySummary?.rowCount || 0;
@@ -51,14 +56,22 @@ export function ConsumerRepairHistory({
 }: Props): React.ReactElement {
   const [visible, setVisible] = React.useState(false);
   const approvedHistory = approvedHistoryPage.items;
+  const unresolvedRecords = approvedHistoryPage.unresolvedRecords ?? [];
+  const approvedHistoryList: ApprovedHistoryListItem[] = [
+    ...approvedHistory.map((bundle): ApprovedHistoryListItem => ({ kind: "snapshot", bundle })),
+    ...unresolvedRecords.map((record): ApprovedHistoryListItem => ({ kind: "backend_recovery", record })),
+  ];
   const approvedCount = approvedHistoryPage.totalApprovedCount;
-  const loadedCount = approvedHistory.length;
+  const loadedCount = approvedHistoryList.length;
   const remainingCount = Math.max(approvedCount - loadedCount, 0);
   const hasPendingDurableBundles = hasUnhydratedTransactionalConsumerRepairBundles();
   const hasMore = hasPendingDurableBundles
     || (Boolean(approvedHistoryPage.nextCursorCreatedAt) && loadedCount < approvedCount);
   const selectedApprovedBundle = selectedHistoryId
     ? approvedHistory.find((bundle) => bundle.draft.id === selectedHistoryId) ?? null
+    : null;
+  const selectedRecoveryRecord = selectedHistoryId
+    ? unresolvedRecords.find((record) => record.approvedEstimateId === selectedHistoryId) ?? null
     : null;
 
   return (
@@ -94,6 +107,15 @@ export function ConsumerRepairHistory({
           onSendHistoryToMarket={onSendHistoryToMarket}
         />
       ) : null}
+      {selectedRecoveryRecord ? (
+        <BackendRecoveryHistoryCard
+          record={selectedRecoveryRecord}
+          expanded
+          onOpenPdf={onOpenPdf}
+          onEditHistoryDraft={onEditHistoryDraft}
+          onToggleHistorySnapshot={onToggleHistorySnapshot}
+        />
+      ) : null}
       {visible ? (
         <Modal visible animationType="slide" transparent onRequestClose={() => setVisible(false)}>
           <View style={styles.overlay} testID="consumer-repair-history-modal">
@@ -116,31 +138,39 @@ export function ConsumerRepairHistory({
                 </Pressable>
               </View>
               <FlatList
-                data={approvedHistory}
-                keyExtractor={approvedHistoryKeyExtractor}
+                data={approvedHistoryList}
+                keyExtractor={approvedHistoryListKeyExtractor}
                 initialNumToRender={8}
                 maxToRenderPerBatch={8}
                 windowSize={7}
                 style={styles.historyScroller}
                 contentContainerStyle={styles.historyList}
-                renderItem={({ item: bundle }) => (
+                renderItem={({ item }) => item.kind === "snapshot" ? (
                   <>
                     <ConsumerRepairPdfRow
-                      bundle={bundle}
-                      selected={selectedHistoryId === bundle.draft.id}
+                      bundle={item.bundle}
+                      selected={selectedHistoryId === item.bundle.draft.id}
                       onOpenPdf={onOpenPdf}
                       onOpenDraft={onOpenDraft}
                       onToggleHistorySnapshot={onToggleHistorySnapshot}
                     />
-                    {selectedHistoryId === bundle.draft.id ? (
+                    {selectedHistoryId === item.bundle.draft.id ? (
                       <ApprovedHistorySnapshot
-                        bundle={bundle}
+                        bundle={item.bundle}
                         onOpenPdf={onOpenPdf}
                         onEditHistoryDraft={onEditHistoryDraft}
                         onSendHistoryToMarket={onSendHistoryToMarket}
                       />
                     ) : null}
                   </>
+                ) : (
+                  <BackendRecoveryHistoryCard
+                    record={item.record}
+                    expanded={selectedHistoryId === item.record.approvedEstimateId}
+                    onOpenPdf={onOpenPdf}
+                    onEditHistoryDraft={onEditHistoryDraft}
+                    onToggleHistorySnapshot={onToggleHistorySnapshot}
+                  />
                 )}
                 ListEmptyComponent={
                   approvedCount === 0 ? (
@@ -177,6 +207,51 @@ export function ConsumerRepairHistory({
       ) : null}
     </View>
   );
+}
+
+function BackendRecoveryHistoryCard({
+  record,
+  expanded,
+  onOpenPdf,
+  onEditHistoryDraft,
+  onToggleHistorySnapshot,
+}: {
+  record: ApprovedEstimateHistoryRecord;
+  expanded: boolean;
+  onOpenPdf: (requestDraftId: string) => void;
+  onEditHistoryDraft: (requestDraftId: string) => void;
+  onToggleHistorySnapshot: (requestDraftId: string) => void;
+}): React.ReactElement {
+  return <View style={styles.snapshot} testID="consumer-repair-history-backend-recovery">
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => onToggleHistorySnapshot(record.approvedEstimateId)}
+      testID={`consumer-repair-history-recovery-row-${record.approvedEstimateId}`}
+    >
+      <Text style={styles.snapshotKicker}>Локальный snapshot отсутствует · доступно восстановление backend</Text>
+      <Text style={styles.snapshotTitle}>{record.title}</Text>
+      <Text style={styles.snapshotMeta}>revision {record.sourceRevisionId}{record.sourceReleaseId ? ` / release ${record.sourceReleaseId}` : ""}</Text>
+      <Text style={styles.snapshotMeta}>{record.rowCount} позиций · оригинал остаётся неизменным</Text>
+    </Pressable>
+    {expanded ? <View style={styles.snapshotActions}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => onEditHistoryDraft(record.approvedEstimateId)}
+        style={styles.primaryActionButton}
+        testID="consumer-repair-history-recover-edit-revision"
+      >
+        <Text style={styles.primaryActionText}>Восстановить и редактировать child revision</Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => onOpenPdf(record.approvedEstimateId)}
+        style={styles.actionButton}
+        testID="consumer-repair-history-recover-open-pdf"
+      >
+        <Text style={styles.actionText}>PDF из backend</Text>
+      </Pressable>
+    </View> : null}
+  </View>;
 }
 
 function ApprovedHistoryInlineSummary({

@@ -717,6 +717,44 @@ function cursorAfter(raw: string | null): number {
   } catch { throw Object.assign(new Error("invalid rows cursor"), { code: "INVALID_CURSOR", httpStatus: 400 }); }
 }
 
+type LocalSearchCursor = { releaseId: string; snapshotSha256: string; orderKey: string; shown: number };
+
+function searchCursor(raw: string | null): LocalSearchCursor | null {
+  if (!raw) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+    if (!decoded || typeof decoded.releaseId !== "string" || typeof decoded.snapshotSha256 !== "string"
+      || typeof decoded.orderKey !== "string" || !Number.isSafeInteger(decoded.shown) || decoded.shown < 0) throw new Error("invalid");
+    return decoded;
+  } catch { throw Object.assign(new Error("invalid search cursor"), { code: "INVALID_CURSOR", httpStatus: 400 }); }
+}
+
+function normalizeSearchQuery(value: string): string {
+  return value.toLocaleLowerCase("ru").replace(/ё/gu, "е").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
+function localParameterGuideView(source: unknown) {
+  if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
+  const guide = source as Record<string, unknown>;
+  return {
+    guideKind: guide.guide_kind, guideShortRu: guide.guide_short_ru,
+    guideMin: guide.guide_min, guideMax: guide.guide_max, guideTarget: guide.guide_target,
+    minInclusive: guide.min_inclusive, maxInclusive: guide.max_inclusive,
+    guideOptions: guide.guide_options, canonicalUnit: guide.canonical_unit,
+    displayUnit: guide.display_unit, guideBasis: guide.guide_basis,
+    precision: guide.precision, step: guide.step, guideCondition: guide.guide_condition,
+    guideValidationPolicy: guide.guide_validation_policy, sourceRole: guide.source_role,
+    sourceDocument: guide.source_document, sourceEditionStatus: guide.source_edition_status,
+    sourceLocator: guide.source_locator, guideVersion: guide.guide_version,
+    sourceSnapshotHash: guide.source_snapshot_hash, applicability: guide.applicability,
+    exclusions: guide.exclusions, verifiedAt: guide.verified_at,
+  };
+}
+
+function localDraftView(row: Record<string, any>) {
+  return { draftId: row.id, status: row.status, title: row.title, originalQuery: row.original_query, normalizedQuery: row.normalized_query, searchIndexReleaseId: row.search_index_release_id, taxonomyVersion: row.taxonomy_version, groupRelationVersion: row.group_relation_version, searchResultSetHash: row.search_result_set_hash, candidateSetHash: row.candidate_set_hash, selectedResultHash: row.selected_result_hash, selectedCatalogIds: row.selected_catalog_ids, selectedWorkOrder: row.selected_work_order, parameterSchemaVersions: row.parameter_schema_versions, typedInputs: row.typed_inputs, unresolvedRequiredParameters: row.unresolved_required_parameters, conflicts: row.conflicts, latestRevisionId: row.latest_revision_id, optimisticVersion: Number(row.optimistic_version), lastDeviceId: row.last_device_id, createdAt: row.created_at, updatedAt: row.updated_at };
+}
+
 async function route(request: IncomingMessage, response: ServerResponse): Promise<void> {
   if (request.method === "OPTIONS") return send(response, 204, {});
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
@@ -736,6 +774,88 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     return;
   }
   if (!request.headers.authorization) throw Object.assign(new Error("authentication required"), { code: "AUTH_REQUIRED", httpStatus: 401 });
+  if (request.method === "GET" && path.length === 2 && path[0] === "search" && path[1] === "catalog") {
+    const query = String(url.searchParams.get("query") ?? "").trim().slice(0, 120);
+    const normalizedQuery = normalizeSearchQuery(query);
+    if ((normalizedQuery.match(/[\p{L}\p{N}]/gu) ?? []).length < 2) throw Object.assign(new Error("Введите не менее двух значимых символов."), { code: "SEARCH_MIN_SIGNIFICANT_CHARS", httpStatus: 400 });
+    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
+    const cursor = searchCursor(url.searchParams.get("cursor"));
+    const filters = Object.fromEntries([["domain_id", String(url.searchParams.get("domain") ?? "").trim()], ["group_id", String(url.searchParams.get("groupId") ?? "").trim()], ["operation_kind", String(url.searchParams.get("operationKind") ?? "").trim()]].filter((entry) => entry[1]));
+    const result = await withClient(async (client) => {
+      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
+      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Повторите запрос."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
+      const rows = (await client.query("select * from public.estimate_search_catalog_r2($1,$2::jsonb,$3,$4)", [query, JSON.stringify(filters), cursor?.orderKey ?? null, limit])).rows;
+      return { release, rows };
+    });
+    const literalTotalCount = Number(result.rows[0]?.literal_total_count ?? 0);
+    const globalLiteralTotalCount = Number(result.rows[0]?.global_literal_total_count ?? literalTotalCount);
+    const externalLiteralTotalCount = Number(result.rows[0]?.external_literal_total_count ?? 0);
+    const suggestionTotalCount = Number(result.rows[0]?.suggestion_total_count ?? 0);
+    const shownCount = (cursor?.shown ?? 0) + result.rows.length;
+    const last = result.rows[result.rows.length - 1];
+    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, searchIndexSnapshotSha256: result.release.snapshot_sha256, taxonomyVersion: result.release.taxonomy_version, groupRelationVersion: result.release.group_relation_version, rankingContractVersion: result.release.ranking_contract_version, resultSetSha256: result.rows[0]?.result_set_sha256 ?? createHash("sha256").update("[]").digest("hex"), normalizedQuery, filters, literalTotalCount, globalLiteralTotalCount, externalLiteralTotalCount, suggestionTotalCount, shownCount, items: result.rows.map((row: Record<string, any>) => ({ catalogId: row.catalog_id, canonicalNameRu: row.canonical_name_ru, groupId: row.group_id, groupNameRu: row.group_name_ru, domainId: row.domain_id, systemId: row.system_id, subsystemId: row.subsystem_id, assemblyId: row.assembly_id, workFamilyId: row.work_family_id, elementType: row.element_type, operationKind: row.operation_kind, technologyVariant: row.technology_variant, primaryUom: row.primary_uom, publicationState: row.publication_state, catalogOrigin: row.catalog_origin, shortScopeRu: row.short_scope_ru, keyDistinguishingParameters: row.key_distinguishing_parameters, requiredInputsCount: row.required_inputs_count, clarificationFields: row.clarification_fields, includedBoundaries: row.included_boundaries, excludedBoundaries: row.excluded_boundaries, replacementCatalogId: row.replacement_catalog_id, matchTier: row.match_tier, matchType: row.match_type, matchedTerm: row.matched_term, matchedField: row.matched_field, rankingReasonRu: row.ranking_reason_ru, selectableMode: row.publication_state === "ADMITTED_BACKEND" ? "PROFESSIONAL" : row.publication_state === "PRELIMINARY_NOT_CANONICAL" ? "PRELIMINARY" : "NONE", nonselectableReasonRu: row.publication_state === "RETIRED" ? "Работа выведена из актуального каталога." : null })), nextCursor: last && shownCount < literalTotalCount + suggestionTotalCount ? Buffer.from(JSON.stringify({ releaseId: result.release.id, snapshotSha256: result.release.snapshot_sha256, orderKey: last.order_key, shown: shownCount })).toString("base64url") : null });
+  }
+  if (request.method === "GET" && path.length === 3 && path[0] === "search" && path[1] === "groups") {
+    const groupId = decodeURIComponent(path[2]);
+    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
+    const cursor = searchCursor(url.searchParams.get("cursor"));
+    const result = await withClient(async (client) => {
+      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
+      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Откройте группу заново."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
+      const after = cursor ? Number(cursor.orderKey) : null;
+      const rows = (await client.query("select * from public.estimate_list_search_group_r2($1,$2,$3)", [groupId, after, limit])).rows;
+      return { release, rows };
+    });
+    if (!result.rows.length && !cursor) throw Object.assign(new Error("search group not found"), { code: "NOT_FOUND", httpStatus: 404 });
+    const totalCount = Number(result.rows[0]?.member_count ?? 0);
+    const shownCount = (cursor?.shown ?? 0) + result.rows.length;
+    const last = result.rows[result.rows.length - 1];
+    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, searchIndexSnapshotSha256: result.release.snapshot_sha256, taxonomyVersion: result.release.taxonomy_version, groupRelationVersion: result.release.group_relation_version, groupId, groupNameRu: result.rows[0]?.group_name_ru ?? "", totalCount, shownCount, items: result.rows.map((row: Record<string, any>) => ({ catalogId: row.catalog_id, canonicalNameRu: row.canonical_name_ru, publicationState: row.publication_state, catalogOrigin: row.catalog_origin, operationKind: row.operation_kind, technologyVariant: row.technology_variant })), nextCursor: last && shownCount < totalCount ? Buffer.from(JSON.stringify({ releaseId: result.release.id, snapshotSha256: result.release.snapshot_sha256, orderKey: String(last.ordinal), shown: shownCount })).toString("base64url") : null });
+  }
+  if (request.method === "GET" && path.length === 4 && path[0] === "search" && path[1] === "catalog" && path[3] === "relations") {
+    const catalogId = decodeURIComponent(path[2]);
+    const result = await withClient(async (client) => {
+      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
+      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      const rows = (await client.query(`select r.*,d.canonical_name_ru target_name_ru from public.estimate_search_typed_relation r join public.estimate_search_document d on d.search_release_id=r.search_release_id and d.catalog_id=r.target_catalog_id where r.search_release_id=$1 and r.source_catalog_id=$2 order by r.relationship_type,r.target_catalog_id`, [release.id, catalogId])).rows;
+      return { release, rows };
+    });
+    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, groupRelationVersion: result.release.group_relation_version, items: result.rows.map((row: Record<string, any>) => ({ sourceCatalogId: row.source_catalog_id, targetCatalogId: row.target_catalog_id, targetCanonicalNameRu: row.target_name_ru, relationshipType: row.relationship_type, direction: row.direction, sourceLocator: row.source_locator, applicabilityPredicate: row.applicability_predicate, requiredWhen: row.required_when, mutuallyExclusiveWith: row.mutually_exclusive_with, explanationRu: row.explanation_ru, relationSha256: row.relation_sha256 })) });
+  }
+  if (request.method === "POST" && path.length === 1 && path[0] === "drafts") {
+    const body = await readBody(request) as Record<string, any>;
+    const result = await withClient(async (client) => {
+      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
+      if (!release || (body.searchIndexReleaseId && body.searchIndexReleaseId !== release.id)) throw Object.assign(new Error("stale search snapshot"), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
+      const selected = Array.isArray(body.selectedCatalogIds) ? [...new Set(body.selectedCatalogIds.map(String))] : [];
+      if (selected.length) {
+        const known = Number((await client.query("select count(*) count from public.estimate_search_document where search_release_id=$1 and catalog_id=any($2::text[]) and publication_state<>'RETIRED'", [release.id, selected])).rows[0].count);
+        if (known !== selected.length) throw Object.assign(new Error("invalid search selection"), { code: "INVALID_SEARCH_SELECTION", httpStatus: 409 });
+      }
+      return (await client.query(`insert into public.estimate_draft(owner_user_id,status,title,original_query,normalized_query,search_filters,search_index_release_id,taxonomy_version,group_relation_version,search_result_set_hash,candidate_set_hash,selected_result_hash,selected_catalog_ids,selected_work_order,last_device_id) values($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$10,$11,$12,$12,$13) returning *`, [OWNER_ID, selected.length ? "DRAFT_INPUT_REQUIRED" : "SEARCHING", String(body.title ?? body.originalQuery ?? ""), String(body.originalQuery ?? ""), normalizeSearchQuery(String(body.originalQuery ?? "")), JSON.stringify(body.searchFilters ?? {}), release.id, release.taxonomy_version, release.group_relation_version, body.searchResultSetHash ?? null, selected.length ? sha256(selected) : null, selected, body.deviceId ?? null])).rows[0];
+    });
+    return send(response, 201, { apiVersion: API_VERSION, draft: localDraftView(result) });
+  }
+  if (request.method === "GET" && path.length === 2 && path[0] === "drafts") {
+    const draft = await withClient(async (client) => (await client.query("select * from public.estimate_draft where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
+    if (!draft) throw Object.assign(new Error("draft not found"), { code: "NOT_FOUND", httpStatus: 404 });
+    return send(response, 200, { apiVersion: API_VERSION, draft: localDraftView(draft) });
+  }
+  if (request.method === "POST" && path.length === 3 && path[0] === "drafts" && path[2] === "events") {
+    const body = await readBody(request) as Record<string, any>;
+    const draft = await withClient(async (client) => {
+      await client.query("begin");
+      try {
+        await client.query("select set_config('request.jwt.claim.sub',$1,true)", [OWNER_ID]);
+        const row = (await client.query("select public.estimate_apply_draft_event_r2($1,$2,$3,$4,$5::jsonb,$6) value", [path[1], body.idempotencyKey, body.baseOptimisticVersion, body.eventKind, JSON.stringify(body.patch ?? {}), body.deviceId ?? null])).rows[0]?.value;
+        await client.query("commit");
+        return row;
+      } catch (error) { await client.query("rollback"); throw error; }
+    });
+    return send(response, 200, { apiVersion: API_VERSION, draft: localDraftView(draft) });
+  }
   if (request.method === "POST" && path.join("/") === "jobs/compile") return send(response, 202, await createJob(await readBody(request), "compile"));
   if (request.method === "POST" && path.join("/") === "jobs/recalculate") return send(response, 202, await createJob(await readBody(request), "recalculate"));
   if (request.method === "POST" && path.join("/") === "migrations/legacy-revisions") return send(response, 202, await createLegacyJob(await readBody(request)));
@@ -777,7 +897,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status,
         currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals,
         rowCount: revision.row_count, checksumSha256: revision.checksum_sha256,
-        compilerVersion: revision.compiler_version, createdAt: revision.created_at,
+        compilerVersion: revision.compiler_version,
+        definitionVersion: revision.definition_version ?? null,
+        compilerOwner: revision.compiler_owner ?? "backend",
+        parameterSchemaHash: revision.parameter_schema_hash ?? null,
+        inputHash: revision.input_hash ?? null,
+        outputHash: revision.output_hash ?? revision.checksum_sha256,
+        createdAt: revision.created_at,
       })),
       nextCursor: revisions.length > limit ? String(page[page.length - 1].revision_number) : null,
     });
@@ -785,7 +911,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   if (request.method === "GET" && path.length === 2 && path[0] === "revisions") {
     const revision = await withClient(async (client) => (await client.query("select * from public.estimate_revision where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
     if (!revision) throw Object.assign(new Error("revision not found"), { code: "NOT_FOUND", httpStatus: 404 });
-    return send(response, 200, { apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id, releaseId: revision.release_id, catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status, currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals, rowCount: revision.row_count, checksumSha256: revision.checksum_sha256, compilerVersion: revision.compiler_version, createdAt: revision.created_at });
+    return send(response, 200, { apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id, releaseId: revision.release_id, catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status, currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals, rowCount: revision.row_count, checksumSha256: revision.checksum_sha256, compilerVersion: revision.compiler_version, definitionVersion: revision.definition_version ?? null, compilerOwner: revision.compiler_owner ?? "backend", parameterSchemaHash: revision.parameter_schema_hash ?? null, inputHash: revision.input_hash ?? null, outputHash: revision.output_hash ?? revision.checksum_sha256, createdAt: revision.created_at });
   }
   if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "rows") {
     const after = cursorAfter(url.searchParams.get("cursor"));
@@ -821,16 +947,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     }
   }
   if (request.method === "GET" && path.length === 1 && path[0] === "catalog") {
-    const query = String(url.searchParams.get("query") ?? "").trim().slice(0, 120);
-    const domain = String(url.searchParams.get("domain") ?? "").trim();
-    const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? 30) || 30));
-    const items = await withClient(async (client) => (await client.query(`
-      select catalog_id,namespace,domain,work_key,title_ru from public.estimate_work_identity
-       where retired_at is null and ($1='' or domain=$1)
-         and ($2='' or title_ru ilike '%' || $2 || '%' or catalog_id ilike '%' || $2 || '%')
-      order by catalog_id limit $3
-    `, [domain, query, limit])).rows);
-    return send(response, 200, { apiVersion: API_VERSION, items: items.map((item) => ({ catalogId: item.catalog_id, namespace: item.namespace, domain: item.domain, workKey: item.work_key, titleRu: item.title_ru })) });
+    return send(response, 410, { error: { code: "LEGACY_SEARCH_ROUTE_RETIRED", message: "use server-owned /search/catalog R2" } });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "catalog") {
     const catalogId = decodeURIComponent(path[1]);
@@ -839,7 +956,37 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       const definition = (await client.query(`select v.* from public.estimate_definition_version v join public.estimate_definition_release r on r.id=v.release_id where (($2::uuid is not null and r.id=$2) or ($2::uuid is null and r.status='active')) and v.catalog_id=$1`, [catalogId, TARGET_RELEASE_ID || null])).rows[0];
       if (!identity || !definition) return null;
       const parameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
-      return { catalogId: identity.catalog_id, releaseId: definition.release_id, namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key, titleRu: identity.title_ru, definitionVersion: definition.definition_version, applicability: definition.applicability, professionalMetadata: definition.source_metadata, parameterSchema: parameters.map((parameter) => ({ parameterId: parameter.parameter_id, ordinal: parameter.ordinal, valueType: parameter.value_type, unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required, defaultValue: parameter.default_value, constraints: parameter.constraints_json })) };
+      return { catalogId: identity.catalog_id, releaseId: definition.release_id, namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key, titleRu: identity.title_ru, definitionVersion: definition.definition_version, applicability: definition.applicability, professionalMetadata: definition.source_metadata, parameterSchema: parameters.map((parameter) => {
+        const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object" ? parameter.truth_metadata : {};
+        const composite = truth.composite_item_schema && typeof truth.composite_item_schema === "object"
+          ? truth.composite_item_schema as Record<string, any>
+          : null;
+        return {
+          parameterId: parameter.parameter_id, ordinal: parameter.ordinal, valueType: parameter.value_type,
+          unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required,
+          defaultValue: parameter.default_value, constraints: parameter.constraints_json,
+          semanticParameterKey: truth.semantic_parameter_key, visibilityRole: truth.visibility_role,
+          descriptionRu: truth.description_ru, requiredWhen: truth.required_when,
+          visibleWhen: truth.visible_when, allowedRangeOrOptions: truth.allowed_range_or_options,
+          defaultPolicy: truth.default_policy, valueSourceRole: truth.value_source_role,
+          guide: localParameterGuideView(truth.guide),
+          compositeItemSchema: composite ? {
+            itemLabelRu: composite.item_label_ru, minimumItems: composite.minimum_items,
+            maximumItems: composite.maximum_items, reorderable: composite.reorderable === true,
+            subfields: Array.isArray(composite.subfields) ? composite.subfields.map((subfield: Record<string, any>) => ({
+              subfieldId: subfield.subfield_id, labelRu: subfield.label_ru, valueType: subfield.value_type,
+              unitId: subfield.unit_id, required: subfield.required === true,
+              constraints: subfield.constraints ?? {}, guide: localParameterGuideView(subfield.guide),
+              formulaConsumers: subfield.formula_consumers ?? [],
+              resourceBranchConsumers: subfield.resource_branch_consumers ?? [],
+            })) : [],
+          } : undefined,
+          sharedInputBindingPolicy: truth.shared_input_binding_policy, derivedFrom: truth.derived_from,
+          normativeLinks: truth.normative_links, formulaConsumers: truth.formula_consumers,
+          resourceBranchConsumers: truth.resource_branch_consumers, validationRules: truth.validation_rules,
+          conflictsWith: truth.conflicts_with, provenance: truth.provenance,
+        };
+      }) };
     });
     if (!item) throw Object.assign(new Error("catalog item not found"), { code: "NOT_FOUND", httpStatus: 404 });
     return send(response, 200, { apiVersion: API_VERSION, item });

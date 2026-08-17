@@ -1,8 +1,5 @@
 import { buildConsumerRepairMarketplaceSendErrors } from "./ConsumerRepairMarketplaceSend";
-import {
-  searchConsumerRepairWorkSuggestions,
-  type ConsumerRepairRequestScreenState,
-} from "./requestEstimateScreenActions";
+import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 
 export function buildConsumerRepairRequestRenderModel(
   state: ConsumerRepairRequestScreenState,
@@ -32,6 +29,9 @@ export function buildConsumerRepairRequestRenderModel(
     marketplaceSendErrors,
     workSuggestions: options.includeWorkSuggestions === false
       ? []
-      : searchConsumerRepairWorkSuggestions(state.problemText, state.selectedWork),
+      : state.canonicalWorkSearch.suggestions,
+    canonicalWorkSearch: options.includeWorkSuggestions === false
+      ? { ...state.canonicalWorkSearch, suggestions: [], shownCount: 0, nextCursor: null }
+      : state.canonicalWorkSearch,
   };
 }

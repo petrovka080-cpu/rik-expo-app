@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   type ScrollViewProps,
@@ -19,6 +20,8 @@ export function AppScreenScroll({
   contentStyle,
   contentContainerStyle,
   keyboardShouldPersistTaps = "handled",
+  automaticallyAdjustKeyboardInsets = true,
+  keyboardDismissMode = Platform.OS === "ios" ? "interactive" : "on-drag",
   ...props
 }: AppScreenScrollProps) {
   return (
@@ -27,6 +30,8 @@ export function AppScreenScroll({
       style={[styles.scroll, props.style]}
       contentContainerStyle={[styles.content, contentStyle, contentContainerStyle]}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      automaticallyAdjustKeyboardInsets={automaticallyAdjustKeyboardInsets}
+      keyboardDismissMode={keyboardDismissMode}
       testID={props.testID ?? "app.screen-scroll"}
     >
       {children}
