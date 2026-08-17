@@ -134,6 +134,11 @@ function parameterTruth(parameter: Json, definition: Json, formulas: readonly Js
   const formulaIdSet = new Set(formulaIds);
   let consumerRows = resources.filter((resource) => formulaIdSet.has(String(resource.formula_id))
     || resourceParameterIds(resource).has(parameterId));
+  const resourceByRowId = new Map(resources.map((resource) => [String(resource.row_id), resource]));
+  for (const rowId of parameter.constraints_json?.consumers ?? []) {
+    const resource = resourceByRowId.get(String(rowId));
+    if (resource && !consumerRows.includes(resource)) consumerRows.push(resource);
+  }
   if (parameterId === "estimate_scope_mode" && consumerRows.length === 0) consumerRows = [...resources];
   invariant(consumerRows.length > 0,
     `R58_HVAC_50_PARAMETER_WITHOUT_CONSUMER:${definition.catalog_id}:${parameterId}`);
