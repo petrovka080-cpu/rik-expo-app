@@ -155,6 +155,79 @@ function contentProjection(row: Json, formula: Json): Json {
   };
 }
 
+function parameterSchemaProjection(row: Json): Json {
+  return {
+    parameterId: row.parameter_id,
+    ordinal: row.ordinal,
+    valueType: row.value_type,
+    unitId: row.unit_id,
+    titleRu: row.title_ru,
+    required: row.required,
+    defaultValue: row.default_value,
+    constraints: row.constraints_json,
+  };
+}
+
+function parameterTruth(
+  parameter: Json,
+  definition: Json,
+  formulas: readonly Json[],
+  resources: readonly Json[],
+): Json {
+  const formulaIds = formulas.filter((formula) => (formula.input_parameter_ids ?? []).includes(parameter.parameter_id))
+    .map((formula) => String(formula.formula_id)).sort();
+  const formulaSet = new Set(formulaIds);
+  const consumerRows = resources.filter((row) => formulaSet.has(String(row.formula_id)));
+  invariant(consumerRows.length > 0,
+    `R58_ASPHALT_PARAMETER_WITHOUT_RESOURCE_CONSUMER:${definition.catalog_id}:${parameter.parameter_id}`);
+  const sourceIds = [...new Set(consumerRows.flatMap(normativeSources))].sort();
+  invariant(sourceIds.length > 0,
+    `R58_ASPHALT_PARAMETER_WITHOUT_NORMATIVE_SOURCE:${definition.catalog_id}:${parameter.parameter_id}`);
+  const projectDefined = String(parameter.parameter_id).includes("productivity");
+  const unit = String(parameter.unit_id ?? "").trim();
+  return {
+    ...(parameter.truth_metadata ?? {}),
+    semantic_parameter_key: parameter.parameter_id,
+    visibility_role: "USER_INPUT",
+    value_source_role: "USER_INPUT_REQUIRED",
+    guide: {
+      guide_short_ru: projectDefined
+        ? `Укажите «${parameter.title_ru}» по утверждённому ППР или технологической карте${unit ? `, ${unit}` : ""}.`
+        : `Укажите фактическое значение «${parameter.title_ru}» по обмеру или проекту${unit ? `, ${unit}` : ""}.`,
+      guide_kind: projectDefined ? "PROJECT_DEFINED" : "MEASUREMENT_RULE",
+      source_role: projectDefined ? "APPROVED_METHOD_STATEMENT_OR_PROJECT" : "PROJECT_OR_SITE_MEASUREMENT",
+      guide_version: "P0_ONE_MONOLITH_R58_ASPHALT_INPUT_GUIDE_V1",
+      source_snapshot_hash: sha256({
+        catalogId: definition.catalog_id,
+        parameterId: parameter.parameter_id,
+        formulaIds,
+        consumerRows: consumerRows.map((row) => row.row_id),
+        normativeSourceIds: sourceIds,
+      }),
+      applicability: `Только для работы ${definition.catalog_id}; значение уточняет предварительную смету и создаёт новую revision.`,
+      verified_at: "2026-08-17",
+    },
+    formula_consumers: formulaIds,
+    resource_branch_consumers: consumerRows.map((row) => String(row.row_id)).sort(),
+    normative_links: sourceIds,
+    validation_rules: ["finite", "greater_than_zero"],
+    provenance: {
+      sourceCatalogId: definition.catalog_id,
+      sourceReleaseId: ACTIVE_RELEASE_ID,
+      sourceDefinitionVersionId: definition.id,
+      sourceParameterSchemaId: definition.source_metadata?.acceptedTrace?.parameter_schema_id
+        ?? `accepted-runtime-trace:${definition.catalog_id}`,
+      baselineOwner: "r58-user-input-no-hidden-default",
+    },
+    r58InputGuideRepair: {
+      contract: CONTRACT,
+      specSha256: SPEC_SHA256,
+      predecessorTruthMetadataSha256: sha256(parameter.truth_metadata ?? {}),
+      noDefaultIntroduced: parameter.default_value == null,
+    },
+  };
+}
+
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
   invariant(process.argv.length === 2 || (process.argv.length === 3 && apply),
@@ -281,6 +354,17 @@ async function main(): Promise<void> {
         invariant(duplicateValues(hiddenBefore).length === 0,
           `R58_ASPHALT_REPAIR_HIDDEN_DUPLICATE:${definition.catalog_id}`);
 
+        const successorParameters: Json[] = parameters.map((parameter) => ({
+          ...parameter,
+          truth_metadata: parameterTruth(parameter, definition, formulas, resources),
+          approved_template_baseline_id: null,
+        }));
+        const beforeParameterSchemaSha256 = sha256(parameters.map(parameterSchemaProjection));
+        const afterParameterSchemaSha256 = sha256(successorParameters.map(parameterSchemaProjection));
+        invariant(beforeParameterSchemaSha256 === afterParameterSchemaSha256
+          && successorParameters.every((parameter) => parameter.default_value == null),
+        `R58_ASPHALT_REPAIR_PARAMETER_SEMANTICS_DRIFT:${definition.catalog_id}`);
+
         const successorDefinitionId = deterministicUuid(`${CONTRACT}:${candidateReleaseId}:${definition.id}`);
         const resourceIdMap = new Map<string, string>();
         const repairedRows: Json[] = resources.map((row): Json => {
@@ -333,7 +417,9 @@ async function main(): Promise<void> {
         const definitionSha256 = sha256({
           contract: CONTRACT,
           predecessorDefinitionSha256: definition.definition_sha256,
-          parameterSchema: parameters.map((row) => [row.parameter_id, row.default_value, row.constraints_json, row.truth_metadata]),
+          parameterSchema: successorParameters.map((row) => [
+            row.parameter_id, row.default_value, row.constraints_json, row.truth_metadata,
+          ]),
           formulaGraph: formulas.map((row) => [row.formula_id, row.ast_sha256]),
           resourceTruthSha256,
         });
@@ -357,7 +443,7 @@ async function main(): Promise<void> {
         await insertBatches(client, "estimate_parameter_definition", [
           "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru",
           "required", "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
-        ], parameters.map((row) => [
+        ], successorParameters.map((row) => [
           successorDefinitionId, row.parameter_id, row.ordinal, row.value_type, row.unit_id, row.title_ru,
           row.required, row.default_value, row.constraints_json, row.truth_metadata, null,
         ]));
@@ -487,6 +573,11 @@ async function main(): Promise<void> {
           hiddenDuplicateFingerprintsAfter: duplicateValues(repairedRows.map((row) => hiddenDuplicateFingerprint(
             row, formulaById.get(String(row.formula_id))!,
           ))).length,
+          inputGuideRowsAdded: successorParameters.length,
+          defaultValuesIntroduced: successorParameters.filter((row) => row.default_value != null).length,
+          beforeParameterSchemaSha256,
+          afterParameterSchemaSha256,
+          parameterSchemaParity: beforeParameterSchemaSha256 === afterParameterSchemaSha256,
           beforeContentSha256,
           afterContentSha256,
           contentParity: beforeContentSha256 === afterContentSha256,
