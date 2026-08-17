@@ -6,16 +6,17 @@ import { Client } from "pg";
 
 type Json = Record<string, any>;
 
-const SPEC_SHA256 = "992fddec1b95f95fff14b17057a88246a6d8466252a7f7cf41d2174c054904b0";
-const API_ROOT = String(process.env.R54_CANONICAL_API_ROOT
+const SPEC_SHA256 = "4bd245a1537da872dbc6ce6681c6571baeb146aa1123b5402e71bbec10050b62";
+const API_ROOT = String(process.env.R56_CANONICAL_API_ROOT ?? process.env.R55_CANONICAL_API_ROOT ?? process.env.R54_CANONICAL_API_ROOT
   ?? "http://127.0.0.1:8777/canonical-estimate").replace(/\/+$/u, "");
-const DATABASE_URL = process.env.R54_CANDIDATE_DATABASE_URL
+const DATABASE_URL = process.env.R56_CANDIDATE_DATABASE_URL ?? process.env.R55_CANDIDATE_DATABASE_URL ?? process.env.R54_CANDIDATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/p0_r53_exact15_candidate";
+const TARGET_RELEASE_ID = String(process.env.R56_TARGET_RELEASE_ID ?? process.env.R55_TARGET_RELEASE_ID ?? "").trim();
 const FROZEN_IDS_PATH = resolve(
-  ".release-runtime/p0-one-monolith-r54/evidence/05-baseline/EXACT15_FROZEN_IDS.json",
+  ".release-runtime/p0-one-monolith-r56/evidence/05-baseline/EXACT15_FROZEN_IDS.json",
 );
 const OUTPUT_PATH = resolve(
-  ".release-runtime/p0-one-monolith-r54/evidence/05-baseline/EXACT15_BACKEND_ADMISSION_15_OF_15.json",
+  ".release-runtime/p0-one-monolith-r56/evidence/05-baseline/EXACT15_POST_REPAIR_FRESH_15_OF_15.json",
 );
 
 function invariant(value: unknown, code: string): asserts value {
@@ -93,7 +94,7 @@ async function loadMutationCandidates(client: Client, catalogId: string): Promis
     select p.*
     from public.estimate_parameter_definition p
     join public.estimate_definition_version v on v.id=p.definition_version_id
-    join public.estimate_definition_release r on r.id=v.release_id and r.status='active'
+    join public.estimate_definition_release r on r.id=v.release_id and r.id=$2 and r.status='prepared'
     where v.catalog_id=$1
       and p.value_type in ('decimal','integer')
       and p.default_value is not null
@@ -101,7 +102,7 @@ async function loadMutationCandidates(client: Client, catalogId: string): Promis
       and jsonb_typeof(p.truth_metadata->'resource_branch_consumers')='array'
       and jsonb_array_length(p.truth_metadata->'resource_branch_consumers')>0
     order by jsonb_array_length(p.truth_metadata->'resource_branch_consumers') desc,p.ordinal
-  `, [catalogId])).rows;
+  `, [catalogId, TARGET_RELEASE_ID])).rows;
 }
 
 async function artifactProof(revisionId: string, kind: "pdf" | "procurement"): Promise<Json> {
@@ -185,6 +186,11 @@ async function runCase(client: Client, catalogId: string): Promise<Json> {
     `R54_PDF_REVISION_HASH_MISMATCH:${catalogId}`);
   invariant(procurement.sourceRevisionChecksumSha256 === refinedRevision.checksumSha256,
     `R54_PROCUREMENT_REVISION_HASH_MISMATCH:${catalogId}`);
+  const reopenedRevision = await api(`revisions/${encodeURIComponent(refinedRevision.revisionId)}`);
+  const reopenedRows = await revisionRows(refinedRevision.revisionId);
+  invariant(reopenedRevision.checksumSha256 === refinedRevision.checksumSha256
+    && reopenedRows.length === refinedRows.length,
+  `R56_HISTORY_REOPEN_DRIFT:${catalogId}`);
 
   return {
     catalogId,
@@ -207,14 +213,22 @@ async function runCase(client: Client, catalogId: string): Promise<Json> {
       status: "GREEN",
     },
     artifacts: { pdf, procurement, status: "GREEN" },
+    historyReopen: {
+      revisionId: reopenedRevision.revisionId,
+      checksumSha256: reopenedRevision.checksumSha256,
+      rowCount: reopenedRows.length,
+      status: "GREEN",
+    },
     status: "GREEN",
   };
 }
 
 async function main(): Promise<void> {
+  invariant(/^[0-9a-f]{8}-[0-9a-f-]{27}$/iu.test(TARGET_RELEASE_ID), "R56_TARGET_PREPARED_RELEASE_ID_REQUIRED");
   const frozen = JSON.parse(readFileSync(FROZEN_IDS_PATH, "utf8")) as Json;
   invariant(frozen.specSha256 === SPEC_SHA256 && frozen.denominator === 15, "R54_EXACT15_FROZEN_IDENTITY_MISMATCH");
-  const retryCatalogIds = String(process.env.R54_EXACT15_RETRY_CATALOG_IDS ?? "")
+  const retryCatalogIds = String(process.env.R56_EXACT15_RETRY_CATALOG_IDS ?? process.env.R55_EXACT15_RETRY_CATALOG_IDS
+    ?? process.env.R54_EXACT15_RETRY_CATALOG_IDS ?? "")
     .split(",").map((value) => value.trim()).filter(Boolean);
   const frozenCatalogIds = frozen.catalogIds as string[];
   invariant(retryCatalogIds.every((catalogId) => frozenCatalogIds.includes(catalogId)), "R54_EXACT15_RETRY_ID_OUTSIDE_FROZEN_SET");
@@ -226,6 +240,12 @@ async function main(): Promise<void> {
   const attemptSet = new Set(attemptCatalogIds);
   const client = new Client({ connectionString: DATABASE_URL, application_name: "r54-exact15-backend-gate" });
   await client.connect();
+  const targetRelease = (await client.query(
+    "select status,definition_count from public.estimate_definition_release where id=$1",
+    [TARGET_RELEASE_ID],
+  )).rows[0] as Json | undefined;
+  invariant(targetRelease?.status === "prepared" && Number(targetRelease.definition_count) === 15,
+    `R56_TARGET_PREPARED_RELEASE_INVALID:${TARGET_RELEASE_ID}:${targetRelease?.status ?? "missing"}`);
   const startedAt = new Date().toISOString();
   const results: Json[] = (prior?.results ?? []).filter((result: Json) => !attemptSet.has(result.catalogId));
   const repairQueue: Json[] = (prior?.repairQueue ?? []).filter((result: Json) => !attemptSet.has(result.catalogId));
@@ -242,12 +262,13 @@ async function main(): Promise<void> {
   }
   results.sort((left, right) => frozenCatalogIds.indexOf(left.catalogId) - frozenCatalogIds.indexOf(right.catalogId));
   const evidence = {
-    schemaVersion: "p0-one-monolith-r54-exact15-backend-admission.v1",
+    schemaVersion: "p0-one-monolith-r56-exact15-backend-admission.v1",
     specSha256: SPEC_SHA256,
     startedAt,
     completedAt: new Date().toISOString(),
     apiRoot: API_ROOT,
     candidateDatabase: new URL(DATABASE_URL).pathname.replace(/^\//u, ""),
+    targetReleaseId: TARGET_RELEASE_ID,
     sourceDatabaseWrites: 0,
     active8081Cutover: false,
     denominator: 15,
@@ -256,6 +277,7 @@ async function main(): Promise<void> {
     exact15BackendCompile: `${results.filter((result) => result.compile?.status === "GREEN").length}/15`,
     exact15BackendRecalculate: `${results.filter((result) => result.recalculate?.status === "GREEN").length}/15`,
     exact15BackendArtifacts: `${results.filter((result) => result.artifacts?.status === "GREEN").length}/15`,
+    exact15BackendHistoryReopen: `${results.filter((result) => result.historyReopen?.status === "GREEN").length}/15`,
     repairQueue,
     results,
     status: results.length === 15 && repairQueue.length === 0 ? "GREEN" : "RED",
@@ -267,6 +289,7 @@ async function main(): Promise<void> {
     exact15BackendCompile: evidence.exact15BackendCompile,
     exact15BackendRecalculate: evidence.exact15BackendRecalculate,
     exact15BackendArtifacts: evidence.exact15BackendArtifacts,
+    exact15BackendHistoryReopen: evidence.exact15BackendHistoryReopen,
     repairQueue,
     evidencePath: OUTPUT_PATH,
   }, null, 2)}\n`);

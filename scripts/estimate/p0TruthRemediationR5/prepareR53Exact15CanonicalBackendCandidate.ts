@@ -9,14 +9,16 @@ import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/b
 
 type Json = Record<string, any>;
 
-const SPEC_SHA256 = "992fddec1b95f95fff14b17057a88246a6d8466252a7f7cf41d2174c054904b0";
-const SOURCE_URL = process.env.R53_SOURCE_DATABASE_URL
+const SPEC_SHA256 = "4bd245a1537da872dbc6ce6681c6571baeb146aa1123b5402e71bbec10050b62";
+const SOURCE_URL = process.env.R56_SOURCE_DATABASE_URL ?? process.env.R55_SOURCE_DATABASE_URL
+  ?? process.env.R53_SOURCE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
-const CANDIDATE_URL = process.env.R53_CANDIDATE_DATABASE_URL
+const CANDIDATE_URL = process.env.R56_CANDIDATE_DATABASE_URL ?? process.env.R55_CANDIDATE_DATABASE_URL
+  ?? process.env.R53_CANDIDATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/p0_r53_exact15_candidate";
 const STAGE = String(process.argv.find((value) => value.startsWith("--stage="))?.split("=")[1] ?? "");
 const EVIDENCE_ROOT = resolve(
-  ".release-runtime/p0-one-monolith-r54/evidence/05-baseline",
+  ".release-runtime/p0-one-monolith-r56/evidence/05-baseline",
 );
 const FIXED_VERIFIED_AT = "2026-08-17T00:00:00.000Z";
 const ACCEPTED_TRACE_BASELINE_VERSION = "accepted-batch-formula-graph-v3-baseline:r53";
@@ -43,6 +45,7 @@ const EXACT_15 = Object.freeze([
 
 const REQUESTED_BY_CATALOG = new Map(EXACT_15.map(([requested, catalog]) => [catalog, requested]));
 const CATALOG_IDS = EXACT_15.map(([, catalog]) => catalog);
+const CANDIDATE_DATABASE = new URL(CANDIDATE_URL).pathname.replace(/^\//u, "");
 
 function stable(value: unknown): string {
   if (value == null || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
@@ -213,7 +216,7 @@ async function seedHistoricalCandidate(): Promise<void> {
       schemaVersion: "p0-one-monolith-r53-exact15-candidate-seed.v1",
       specSha256: SPEC_SHA256,
       sourceDatabase: "batch009_fire_r5_a",
-      candidateDatabase: "p0_r53_exact15_candidate",
+      candidateDatabase: CANDIDATE_DATABASE,
       sourceMode: "READ_ONLY",
       sourceWrites: 0,
       cutover: false,
@@ -966,9 +969,9 @@ async function admitSuccessorDefinitions(): Promise<void> {
     const head = git("rev-parse", "HEAD");
     const tree = git("rev-parse", "HEAD^{tree}");
     const releaseId = randomUUID();
-    const releaseKey = `p0-r54-exact15-truth-${head.slice(0, 12)}`;
+    const releaseKey = `p0-r56-exact15-truth-${head.slice(0, 12)}`;
     const releaseManifest = {
-      schemaVersion: "p0-one-monolith-r54-exact15-release-manifest.v1",
+      schemaVersion: "p0-one-monolith-r56-exact15-release-manifest.v1",
       specSha256: SPEC_SHA256,
       head,
       tree,
@@ -1277,7 +1280,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
           row.input_parameter_ids, row.ast_sha256,
         ]));
         const ownerRepair = normalizeR54SemanticOwners(resources);
-        const successorResources = ownerRepair.resources.map((row) => ({
+        const successorResources: Json[] = ownerRepair.resources.map((row): Json => ({
           ...row,
           id: randomUUID(),
           definition_version_id: newDefinitionId,
@@ -1291,6 +1294,29 @@ async function admitSuccessorDefinitions(): Promise<void> {
           row.unit_id, row.formula_id, json(row.inclusion_ast), json(row.resource_graph), row.semantic_owner,
           row.cost_owner_id, row.procurement_eligible, json(row.source_metadata), row.row_sha256, row.created_at,
         ]), 75);
+        if (ownerRepair.defects.length > 0) {
+          const beforeSha256 = sha256(resources.map((row) => [row.row_id, row.semantic_owner, row.row_sha256]));
+          const afterSha256 = sha256(ownerRepair.resources.map((row) => [row.row_id, row.semantic_owner, row.row_sha256]));
+          const evidenceSha256 = sha256({
+            catalogId: historical.catalog_id,
+            predecessorDefinitionVersionId: oldDefinitionId,
+            successorDefinitionVersionId: newDefinitionId,
+            defects: ownerRepair.defects,
+            beforeSha256,
+            afterSha256,
+          });
+          await client.query(`insert into public.estimate_definition_defect_record(
+            id,defect_key,release_id,predecessor_release_id,catalog_id,predecessor_definition_version_id,
+            successor_definition_version_id,defect_class,root_cause_ru,affected_resources,before_sha256,
+            after_sha256,evidence_sha256,contract_version
+          ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$13,$14)`, [
+            randomUUID(), `r56-semantic-owner:${releaseId}:${historical.catalog_id}`, releaseId, parentReleaseId,
+            historical.catalog_id, oldDefinitionId, newDefinitionId, "R54_RESOURCE_SEMANTIC_OWNER_IDENTITY",
+            "Пустой владелец строки либо один boundary-owner был повторно назначен разным интерфейсным ролям; identity исправлена детерминированно по stable source row identity без изменения расчёта.",
+            json(ownerRepair.defects), beforeSha256, afterSha256, evidenceSha256,
+            "P0_ONE_MONOLITH_R56_DEFECT_LEDGER_V1",
+          ]);
+        }
         const afterFingerprint = semanticFingerprint(
           { ...historical, definition_version: definitionVersion },
           successorParameters,
@@ -1354,7 +1380,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
         });
       }
       await client.query(`update public.estimate_definition_release set
-        status='active', sealed_at=now(), activated_at=now(), parameter_count=$2,
+        status='prepared', sealed_at=now(), activated_at=null, parameter_count=$2,
         formula_count=$3, resource_row_count=$4
         where id=$1`, [releaseId, parameterCount, formulaCount, resourceCount]);
       await client.query("commit");
@@ -1364,11 +1390,11 @@ async function admitSuccessorDefinitions(): Promise<void> {
     }
 
     const evidence = {
-      schemaVersion: "p0-one-monolith-r54-exact15-canonical-admission.v1",
+      schemaVersion: "p0-one-monolith-r56-exact15-canonical-admission.v1",
       specSha256: SPEC_SHA256,
       head,
       tree,
-      candidateDatabase: "p0_r53_exact15_candidate",
+      candidateDatabase: CANDIDATE_DATABASE,
       releaseId,
       releaseKey,
       parentReleaseId,
@@ -1379,8 +1405,9 @@ async function admitSuccessorDefinitions(): Promise<void> {
       cutover: false,
       baselineOwners: [ACCEPTED_TRACE_BASELINE_VERSION, APPROVED_TEMPLATE_BASELINE_VERSION],
       counts: { definitions: admissions.length, parameters: parameterCount, formulas: formulaCount, resources: resourceCount },
+      candidateReleaseStatus: "prepared",
       admissions,
-      status: admissions.length === 15 ? "GREEN_EXACT15_CANONICAL_CANDIDATE_R54" : "RED",
+      status: admissions.length === 15 ? "GREEN_EXACT15_CANONICAL_CANDIDATE_R56" : "RED",
     };
     const path = writeEvidence("EXACT15_CANONICAL_ADMISSION.json", evidence);
     process.stdout.write(`${JSON.stringify({
@@ -1405,7 +1432,7 @@ async function verifyCandidate(): Promise<void> {
         p.parameter_count,p.default_count,p.accepted_trace_default_count,p.approved_template_default_count,
         p.guide_count,f.formula_count,s.resource_count,b.approved_template_asset_count
       from public.estimate_definition_version v
-      join public.estimate_definition_release r on r.id=v.release_id and r.status='active'
+      join public.estimate_definition_release r on r.id=v.release_id and r.status='prepared'
       cross join lateral (
         select count(*)::integer parameter_count,
           count(*) filter(where default_value is not null)::integer default_count,

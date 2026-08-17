@@ -7,11 +7,14 @@ import { Client } from "pg";
 
 type Json = Record<string, any>;
 
-const SPEC_SHA256 = "992fddec1b95f95fff14b17057a88246a6d8466252a7f7cf41d2174c054904b0";
-const DATABASE_URL = process.env.R54_CANDIDATE_DATABASE_URL
+const SPEC_SHA256 = "4bd245a1537da872dbc6ce6681c6571baeb146aa1123b5402e71bbec10050b62";
+const DATABASE_URL = process.env.R56_CANDIDATE_DATABASE_URL ?? process.env.R54_CANDIDATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/p0_r53_exact15_candidate";
 const OUTPUT_PATH = resolve(
-  ".release-runtime/p0-one-monolith-r54/evidence/05-baseline/EXACT15_SEMANTIC_OWNER_REPAIR.json",
+  ".release-runtime/p0-one-monolith-r56/evidence/07-boq/SEMANTIC_OWNER_REPAIR.json",
+);
+const IDEMPOTENCY_OUTPUT_PATH = resolve(
+  ".release-runtime/p0-one-monolith-r56/evidence/07-boq/SEMANTIC_OWNER_REPAIR_IDEMPOTENCY.json",
 );
 
 function stable(value: unknown): string {
@@ -129,7 +132,7 @@ function repairedParameter(row: Json, input: {
 async function main(): Promise<void> {
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
-  invariant(head.startsWith("691acb78"), `R54_REPAIR_WRONG_LINEAGE:${head}`);
+  execFileSync("git", ["merge-base", "--is-ancestor", "691acb78", head], { stdio: "ignore" });
   const client = new Client({ connectionString: DATABASE_URL, application_name: "r54-exact15-semantic-owner-repair" });
   await client.connect();
   const records: Json[] = [];
@@ -148,6 +151,57 @@ async function main(): Promise<void> {
       [predecessor.id],
     )).rows as Json[];
     invariant(definitions.length === 15, `R54_REPAIR_DEFINITION_DENOMINATOR:${definitions.length}/15`);
+
+    let idempotencyChangedRows = 0;
+    let idempotencyScannedRows = 0;
+    for (const definition of definitions) {
+      const resources = (await client.query(
+        "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
+        [definition.id],
+      )).rows as Json[];
+      idempotencyScannedRows += resources.length;
+      idempotencyChangedRows += normalizeOwners(resources).defects.length;
+    }
+    if (idempotencyChangedRows === 0) {
+      const invalidOwners = Number((await client.query(`
+        select count(*)::int invalid_count
+        from (
+          select definition_version_id,semantic_owner,count(*)
+          from public.estimate_resource_spec
+          where definition_version_id=any($1::uuid[])
+          group by definition_version_id,semantic_owner
+          having semantic_owner is null or btrim(semantic_owner)='' or count(*)>1
+        ) invalid
+      `, [definitions.map((row) => row.id)])).rows[0]?.invalid_count ?? -1);
+      invariant(invalidOwners === 0, `R56_REPAIR_IDEMPOTENCY_INVALID_OWNER_GROUPS:${invalidOwners}`);
+      await client.query("rollback");
+      const evidence = {
+        schemaVersion: "p0-one-monolith-r56-semantic-owner-repair-idempotency.v1",
+        specSha256: SPEC_SHA256,
+        capturedAt: new Date().toISOString(),
+        head,
+        tree,
+        candidateDatabase: new URL(DATABASE_URL).pathname.replace(/^\//u, ""),
+        activeReleaseBefore: predecessor.id,
+        activeReleaseAfter: predecessor.id,
+        definitionsScanned: definitions.length,
+        resourceRowsScanned: idempotencyScannedRows,
+        changedRows: 0,
+        newReleaseCreated: false,
+        invalidOwnerGroups: invalidOwners,
+        sourceDatabaseWrites: 0,
+        verdict: "GREEN_IDEMPOTENT_CHANGED_ROWS_0",
+      };
+      mkdirSync(dirname(IDEMPOTENCY_OUTPUT_PATH), { recursive: true });
+      writeFileSync(IDEMPOTENCY_OUTPUT_PATH, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+      process.stdout.write(`${JSON.stringify({
+        status: evidence.verdict,
+        releaseId: predecessor.id,
+        changedRows: 0,
+        evidencePath: IDEMPOTENCY_OUTPUT_PATH,
+      }, null, 2)}\n`);
+      return;
+    }
 
     const repairIdentity = { contract: "p0-one-monolith-r54-semantic-owner-repair.v1", head, tree, predecessorReleaseId };
     releaseId = uuidFromSha256(sha256({ ...repairIdentity, kind: "release" }));
