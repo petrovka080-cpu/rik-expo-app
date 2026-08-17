@@ -14,16 +14,20 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const NO_AUTHORITATIVE_TRACE = process.argv.includes("--no-authoritative-trace");
 const TRACE_NOT_ADMITTED = process.argv.includes("--trace-not-admitted");
-const EXPECTED_DEFINITIONS = TRACE_NOT_ADMITTED ? 894 : 50;
-const EXPECTED_CHANGED_ROWS = TRACE_NOT_ADMITTED ? 24_180 : 3_084;
-const EXPECTED_CHILD_COST_GROUPS = TRACE_NOT_ADMITTED ? 4_030 : 514;
-const EXPECTED_SUCCESSOR_ENTRIES = TRACE_NOT_ADMITTED ? 1_507 : 62;
-const CONTRACT = TRACE_NOT_ADMITTED
+const EXPECTED_DEFINITIONS = NO_AUTHORITATIVE_TRACE ? 68 : TRACE_NOT_ADMITTED ? 894 : 50;
+const EXPECTED_CHANGED_ROWS = NO_AUTHORITATIVE_TRACE ? 4_164 : TRACE_NOT_ADMITTED ? 24_180 : 3_084;
+const EXPECTED_CHILD_COST_GROUPS = NO_AUTHORITATIVE_TRACE ? 694 : TRACE_NOT_ADMITTED ? 4_030 : 514;
+const EXPECTED_SUCCESSOR_ENTRIES = NO_AUTHORITATIVE_TRACE ? 1_575 : TRACE_NOT_ADMITTED ? 1_507 : 62;
+const CONTRACT = NO_AUTHORITATIVE_TRACE
+  ? "p0-one-monolith-r58-hvac-no-authoritative-trace-owner-repair-68.v1"
+  : TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-hvac-trace-not-admitted-owner-repair-894.v1"
   : "p0-one-monolith-r58-hvac-semantic-owner-repair-50.v1";
-const SUCCESSOR_METADATA_KEY = TRACE_NOT_ADMITTED
-  ? "r58HvacTraceNotAdmittedSuccessor"
+const SUCCESSOR_METADATA_KEY = NO_AUTHORITATIVE_TRACE
+  ? "r58HvacNoAuthoritativeTraceSuccessor"
+  : TRACE_NOT_ADMITTED ? "r58HvacTraceNotAdmittedSuccessor"
   : "r58HvacSemanticOwnerSuccessor";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
@@ -242,9 +246,10 @@ function isChildOwner(row: Json): boolean {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  const allowedArgs = new Set(["--apply", "--trace-not-admitted"]);
+  const allowedArgs = new Set(["--apply", "--trace-not-admitted", "--no-authoritative-trace"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
-    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
+    && !(TRACE_NOT_ADMITTED && NO_AUTHORITATIVE_TRACE),
     "R58_HVAC_50_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_HVAC_50_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -253,13 +258,13 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_HVAC_50_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_HVAC_50_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === (TRACE_NOT_ADMITTED
-    ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937")
+  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === (NO_AUTHORITATIVE_TRACE
+    ? "NO_AUTHORITATIVE_TRACE_1286" : TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937")
     && row.domain === "hvac_heat_supply");
   invariant(targets.length === EXPECTED_DEFINITIONS
     && new Set(targets.map((row) => row.catalog_id)).size === EXPECTED_DEFINITIONS,
   `R58_HVAC_50_TARGETS:${targets.length}/${EXPECTED_DEFINITIONS}`);
-  if (!TRACE_NOT_ADMITTED) {
+  if (!TRACE_NOT_ADMITTED && !NO_AUTHORITATIVE_TRACE) {
     invariant(targets.every((row) => row.current_validation_blockers?.length === 1
       && /^duplicate_semantic_owners:\d+$/u.test(row.current_validation_blockers[0])),
     "R58_HVAC_50_BLOCKER_DRIFT");
@@ -561,8 +566,9 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, changedRows, records: records.map((row) => row.afterContentSha256) }),
-        JSON.stringify({ [TRACE_NOT_ADMITTED
-          ? "r58HvacTraceNotAdmittedOwnerRepair894"
+        JSON.stringify({ [NO_AUTHORITATIVE_TRACE
+          ? "r58HvacNoAuthoritativeTraceOwnerRepair68"
+          : TRACE_NOT_ADMITTED ? "r58HvacTraceNotAdmittedOwnerRepair894"
           : "r58HvacSemanticOwnerRepair50"]: {
           contract: CONTRACT, specSha256: SPEC_SHA256, definitions: EXPECTED_DEFINITIONS,
           repairedRows: changedRows, childCostBoundaryGroupsPreserved: EXPECTED_CHILD_COST_GROUPS,
@@ -579,8 +585,9 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = records.map((row) => stable(row)).join("\n") + (records.length > 0 ? "\n" : "");
-  const evidenceStem = TRACE_NOT_ADMITTED
-    ? "R58_HVAC_TRACE_NOT_ADMITTED_OWNER_REPAIR_894"
+  const evidenceStem = NO_AUTHORITATIVE_TRACE
+    ? "R58_HVAC_NO_AUTHORITATIVE_TRACE_OWNER_REPAIR_68"
+    : TRACE_NOT_ADMITTED ? "R58_HVAC_TRACE_NOT_ADMITTED_OWNER_REPAIR_894"
     : "R58_HVAC_SEMANTIC_OWNER_REPAIR_50";
   const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
@@ -600,7 +607,8 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_HVAC_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_" : ""}SEMANTIC_OWNER_REPAIR_${EXPECTED_DEFINITIONS}_${
+    status: `GREEN_R58_HVAC_${NO_AUTHORITATIVE_TRACE ? "NO_AUTHORITATIVE_TRACE_"
+      : TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_" : ""}SEMANTIC_OWNER_REPAIR_${EXPECTED_DEFINITIONS}_${
       idempotent ? "IDEMPOTENT_0" : apply ? `ROWS_${EXPECTED_CHANGED_ROWS}_APPLIED`
         : `ROWS_${EXPECTED_CHANGED_ROWS}_DRY_RUN_ROLLED_BACK`}`,
   };
