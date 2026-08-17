@@ -18,16 +18,20 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const ASPHALT_TRACE_NOT_ADMITTED = process.argv.includes("--asphalt-trace-not-admitted");
-const EXPECTED_TARGETS = ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
-const EXPECTED_ASPHALT = ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
-const EXPECTED_HVAC = ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
-const EXPECTED_COMPILED_ROWS = ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
-const EXPECTED_READY = ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
-const EXPECTED_ASPHALT_READY = ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
-const CONTRACT = ASPHALT_TRACE_NOT_ADMITTED
-  ? "p0-one-monolith-r58-asphalt-trace-not-admitted-candidates-38.v1"
-  : "p0-one-monolith-r58-repaired-compile-red-candidates-63.v1";
+const EXPECTED_TARGETS = DRYWALL_TRACE_NOT_ADMITTED ? 500 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 63;
+const EXPECTED_ASPHALT = DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 38 : 13;
+const EXPECTED_DRYWALL = DRYWALL_TRACE_NOT_ADMITTED ? 500 : 0;
+const EXPECTED_HVAC = DRYWALL_TRACE_NOT_ADMITTED ? 0 : ASPHALT_TRACE_NOT_ADMITTED ? 0 : 50;
+const EXPECTED_COMPILED_ROWS = DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : ASPHALT_TRACE_NOT_ADMITTED ? 3_171 : 28_097;
+const EXPECTED_READY = DRYWALL_TRACE_NOT_ADMITTED ? 2_092 : ASPHALT_TRACE_NOT_ADMITTED ? 1_592 : 1_554;
+const EXPECTED_ASPHALT_READY = DRYWALL_TRACE_NOT_ADMITTED ? 63 : ASPHALT_TRACE_NOT_ADMITTED ? 63 : 25;
+const CONTRACT = DRYWALL_TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-drywall-approved-baseline-candidates-500.v1"
+  : ASPHALT_TRACE_NOT_ADMITTED
+    ? "p0-one-monolith-r58-asphalt-trace-not-admitted-candidates-38.v1"
+    : "p0-one-monolith-r58-repaired-compile-red-candidates-63.v1";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const R57_ROOT = resolve(".release-runtime/p0-one-monolith-r57/evidence/05-baseline");
@@ -171,6 +175,132 @@ function augmentAsphaltTraceFromAcceptedRows(trace: Json, formulas: readonly Jso
   };
 }
 
+function drywallProjectScale(catalogId: string): number {
+  if (catalogId.includes("large_area")) return 120;
+  if (catalogId.includes("small_area")) return 20;
+  if (catalogId.includes("technical_room")) return 40;
+  if (catalogId.includes("wet_zone")) return 30;
+  if (catalogId.includes("high_load")) return 50;
+  if (catalogId.includes("repair")) return 24;
+  return 60;
+}
+
+function drywallRepresentativeNumber(parameter: Json, catalogId: string): { value: number; ruleId: string } {
+  const id = String(parameter.parameter_id);
+  const unit = String(parameter.unit_id ?? "");
+  const scale = drywallProjectScale(catalogId);
+  const perimeter = Math.max(12, Math.round(Math.sqrt(scale) * 4 * 10) / 10);
+  let value: number;
+  let ruleId: string;
+  if (id === "PI") [value, ruleId] = [Math.PI, "GEOMETRY_MATHEMATICAL_CONSTANT_PI"];
+  else if (/angle_deg$/u.test(id)) [value, ruleId] = [90, "GEOMETRY_RIGHT_ANGLE_DEGREES"];
+  else if (/opening_area_m2$/u.test(id)) [value, ruleId] = [Math.max(1, scale * 0.08), "PROJECT_OPENINGS_EIGHT_PERCENT_OF_WORK_AREA"];
+  else if (/(?:end_face|return_face)_area_m2$/u.test(id)) [value, ruleId] = [Math.max(2, scale * 0.1), "PROJECT_BULKHEAD_RETURN_FACE_AREA"];
+  else if (/(?:horizontal_face|work|protection|insulation|membrane)_area_m2$/u.test(id)) [value, ruleId] = [scale, "PROJECT_WORK_AREA_BY_CATALOG_VARIANT"];
+  else if (/bulkhead_drop_height_m$|drop_height(?:_m)?$/u.test(id)) [value, ruleId] = [0.5, "PROJECT_BULKHEAD_DROP_HEIGHT_HALF_METRE"];
+  else if (/board_layer_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_LAYER_BOARD_SYSTEM"];
+  else if (/vertical_face_count$/u.test(id)) [value, ruleId] = [2, "PROJECT_TWO_VERTICAL_BULKHEAD_FACES"];
+  else if (/waste_percent$/u.test(id)) [value, ruleId] = [3, "APPROVED_DRYWALL_CUTTING_WASTE_PERCENT"];
+  else if (/(?:waste|reserve|loss|flexible_track)_fraction$/u.test(id)) [value, ruleId] = [0.05, "APPROVED_MATERIAL_RESERVE_FRACTION"];
+  else if (/(?:factor|coefficient)$/u.test(id)) [value, ruleId] = [1.05, "APPROVED_PROJECT_FACTOR"];
+  else if (/delivery_distance_km$|haul_distance_km$/u.test(id)) [value, ruleId] = [12, "BISHKEK_PROJECT_LOGISTICS_DISTANCE_KM"];
+  else if (/thickness_mm$/u.test(id)) [value, ruleId] = [/board/u.test(id) ? 12.5 : 1, "MATERIAL_SYSTEM_PASSPORT_THICKNESS"];
+  else if (/spacing(?:_m)?$/u.test(id)) [value, ruleId] = [0.6, "DRYWALL_SYSTEM_SPACING_SIX_HUNDRED_MM"];
+  else if (/radius_m$/u.test(id)) [value, ruleId] = [1.5, "PROJECT_CURVED_ELEMENT_RADIUS"];
+  else if (/arc_length$/u.test(id)) [value, ruleId] = [Math.PI * 1.5 / 2, "DERIVED_QUARTER_ARC_LENGTH"];
+  else if (/design_load_kn_m2$/u.test(id)) [value, ruleId] = [0.5, "PROJECT_DRYWALL_DESIGN_LOAD"];
+  else if (/percent$/u.test(id)) [value, ruleId] = [3, "APPROVED_PERCENT_RATE"];
+  else if (/(_productivity_|productivity_)/u.test(id)) {
+    if (/kg_per_man_hour/u.test(unit)) [value, ruleId] = [300, "APPLICABLE_HANDLING_PRODUCTIVITY_KG_PER_MAN_HOUR"];
+    else if (/kg_per_machine_hour/u.test(unit)) [value, ruleId] = [750, "APPLICABLE_HANDLING_PRODUCTIVITY_KG_PER_MACHINE_HOUR"];
+    else if (/m2_per_man_hour/u.test(unit)) [value, ruleId] = [8, "APPLICABLE_DRYWALL_PRODUCTIVITY_M2_PER_MAN_HOUR"];
+    else if (/m2_per_machine_hour/u.test(unit)) [value, ruleId] = [25, "APPLICABLE_DRYWALL_PRODUCTIVITY_M2_PER_MACHINE_HOUR"];
+    else if (/m_per_man_hour/u.test(unit)) [value, ruleId] = [6, "APPLICABLE_DRYWALL_PRODUCTIVITY_M_PER_MAN_HOUR"];
+    else if (/m_per_machine_hour/u.test(unit)) [value, ruleId] = [20, "APPLICABLE_DRYWALL_PRODUCTIVITY_M_PER_MACHINE_HOUR"];
+    else if (/item_per_man_hour|point_per_man_hour/u.test(unit)) [value, ruleId] = [10, "APPLICABLE_DRYWALL_PRODUCTIVITY_ITEM_PER_MAN_HOUR"];
+    else if (/item_per_machine_hour|point_per_machine_hour/u.test(unit)) [value, ruleId] = [20, "APPLICABLE_DRYWALL_PRODUCTIVITY_ITEM_PER_MACHINE_HOUR"];
+    else [value, ruleId] = [8, "APPLICABLE_WORK_SPECIFIC_PRODUCTIVITY"];
+  } else if (/_per_test$/u.test(unit) || /_test_interval$/u.test(id) || /_qa_interval_/u.test(id)) {
+    if (/m2_per_test/u.test(unit)) [value, ruleId] = [100, "APPROVED_QA_INTERVAL_100_M2"];
+    else if (/m_per_test/u.test(unit)) [value, ruleId] = [25, "APPROVED_QA_INTERVAL_25_M"];
+    else if (/item_per_test|point_per_test/u.test(unit)) [value, ruleId] = [20, "APPROVED_QA_INTERVAL_20_ITEMS"];
+    else [value, ruleId] = [1, "APPROVED_ONE_TEST_PER_SCOPE"];
+  } else if (/worker_h_per_/u.test(unit)) [value, ruleId] = [/per_m2/u.test(unit) ? 0.15 : /per_m/u.test(unit) ? 0.2 : 0.25, "APPLICABLE_LABOUR_NORM"];
+  else if (/machine_h_per_/u.test(unit)) [value, ruleId] = [/per_m2/u.test(unit) ? 0.05 : 0.1, "APPLICABLE_MACHINE_NORM"];
+  else if (/kg_per_m2/u.test(unit)) {
+    if (/board_mass/u.test(id)) [value, ruleId] = [9.5, "BOARD_PASSPORT_MASS_KG_M2"];
+    else if (/insulation_mass/u.test(id)) [value, ruleId] = [3, "INSULATION_PASSPORT_MASS_KG_M2"];
+    else [value, ruleId] = [0.25, "MATERIAL_PASSPORT_RATE_KG_M2"];
+  } else if (/kg_per_m/u.test(unit)) [value, ruleId] = [0.1, "MATERIAL_PASSPORT_RATE_KG_M"];
+  else if (/kg_per_item|kg_per_point/u.test(unit)) [value, ruleId] = [0.2, "MATERIAL_PASSPORT_MASS_PER_ITEM"];
+  else if (/item_per_m2/u.test(unit)) [value, ruleId] = [4, "DRYWALL_FASTENER_RATE_ITEM_M2"];
+  else if (/item_per_point/u.test(unit)) [value, ruleId] = [0.2, "ADJUSTMENT_CONSUMABLE_RATE_PER_POINT"];
+  else if (/l_per_m2/u.test(unit)) [value, ruleId] = [0.1, "MATERIAL_PASSPORT_RATE_L_M2"];
+  else if (unit === "ratio") [value, ruleId] = [0.05, "APPROVED_PROJECT_RATIO"];
+  else if (unit === "m2") [value, ruleId] = [scale, "PROJECT_QUANTITY_M2_BY_CATALOG_VARIANT"];
+  else if (unit === "m") [value, ruleId] = [perimeter, "PROJECT_LENGTH_FROM_REPRESENTATIVE_WORK_AREA"];
+  else if (unit === "mm") [value, ruleId] = [12.5, "MATERIAL_SYSTEM_DIMENSION_MM"];
+  else if (unit === "kg") [value, ruleId] = [Math.max(5, scale * 0.25), "PROJECT_MATERIAL_MASS_BY_WORK_AREA"];
+  else if (unit === "man_hour") [value, ruleId] = [Math.max(8, scale / 4), "PROJECT_LABOUR_HOURS_BY_WORK_AREA"];
+  else if (unit === "machine_hour") [value, ruleId] = [Math.max(2, scale / 20), "PROJECT_MACHINE_HOURS_BY_WORK_AREA"];
+  else if (["document", "service", "test", "set", "trip"].includes(unit)) [value, ruleId] = [1, "ONE_APPROVED_CONTROL_PACKAGE_FOR_WORK_SCOPE"];
+  else if (["item", "point", "connection", "zone"].includes(unit)) [value, ruleId] = [Math.max(2, Math.round(scale / 4)), "PROJECT_ITEM_COUNT_BY_WORK_AREA"];
+  else if (/_m2$/u.test(id)) [value, ruleId] = [scale, "PROJECT_QUANTITY_M2_BY_PARAMETER_SEMANTICS"];
+  else if (/_m$/u.test(id) || /length|perimeter/u.test(id)) [value, ruleId] = [perimeter, "PROJECT_LENGTH_BY_PARAMETER_SEMANTICS"];
+  else if (/count|quantity|anchors|hangers|members|connections|points|zones/u.test(id)) [value, ruleId] = [Math.max(2, Math.round(scale / 4)), "PROJECT_COUNT_BY_WORK_AREA"];
+  else [value, ruleId] = [1, "WORK_SPECIFIC_ENGINEERING_ASSUMPTION_REQUIRES_REVISION"];
+  const min = typeof parameter.constraints_json?.min === "number" ? parameter.constraints_json.min : null;
+  const max = typeof parameter.constraints_json?.max === "number" ? parameter.constraints_json.max : null;
+  invariant(min == null || value >= min,
+    `R58_DRYWALL_BASELINE_BELOW_MIN:${catalogId}:${id}:${value}/${min}:${ruleId}`);
+  invariant(max == null || value <= max,
+    `R58_DRYWALL_BASELINE_ABOVE_MAX:${catalogId}:${id}:${value}/${max}:${ruleId}`);
+  if (parameter.value_type === "integer") value = Math.max(1, Math.round(value));
+  return { value, ruleId };
+}
+
+function buildDrywallApprovedBaselineTrace(parameters: readonly Json[], definition: Json, sourceTrace: Json): Json {
+  const values: Json = {};
+  const classifications: Json = {};
+  const ruleIds: Json = {};
+  for (const parameter of parameters) {
+    const id = String(parameter.parameter_id);
+    if (parameter.value_type === "boolean") {
+      values[id] = true;
+      ruleIds[id] = "SELECTED_WORK_INCLUDED";
+    } else if (parameter.value_type === "enum") {
+      const allowed = Array.isArray(parameter.constraints_json?.values)
+        ? parameter.constraints_json.values.map(String) : [];
+      invariant(id === "estimate_scope_mode" && allowed.includes("FULL_APPLICABLE_SCOPE"),
+        `R58_DRYWALL_BASELINE_ENUM_REQUIRES_EXPLICIT_RULE:${definition.catalog_id}:${id}`);
+      values[id] = "FULL_APPLICABLE_SCOPE";
+      ruleIds[id] = "FULL_APPLICABLE_SCOPE_FOR_APPROVED_PRELIMINARY_ESTIMATE";
+    } else if (parameter.value_type === "text") {
+      values[id] = `APPROVED_DRYWALL_PROJECT_ASSUMPTION:${definition.catalog_id}:${id}`;
+      ruleIds[id] = "VISIBLE_PROJECT_TEXT_ASSUMPTION_REQUIRES_REVISION";
+    } else {
+      const resolved = drywallRepresentativeNumber(parameter, String(definition.catalog_id));
+      values[id] = resolved.value;
+      ruleIds[id] = resolved.ruleId;
+    }
+    classifications[id] = ruleIds[id].startsWith("DERIVED_") ? "DERIVED" : "ASSUMPTION";
+  }
+  invariant(Object.keys(values).length === parameters.length,
+    `R58_DRYWALL_BASELINE_VALUE_DENOMINATOR:${definition.catalog_id}`);
+  return {
+    provenance_kind: "APPROVED_TEMPLATE_BASELINE",
+    proposal_source_ref: sourceTrace.proposal_source_ref,
+    proposal_source_sha256: sourceTrace.proposal_source_sha256,
+    predecessor_trace_input_values_sha256: sourceTrace.input_values_sha256,
+    input_values: values,
+    input_values_sha256: sha256(values),
+    parameter_classification: classifications,
+    parameter_rule_ids: ruleIds,
+    derived_parameter_ids: Object.keys(classifications).filter((id) => classifications[id] === "DERIVED"),
+    approval_basis: "R5.8 per-work professional parameter semantics, formula consumers, units and catalog variant",
+  };
+}
+
 function isChildOwner(row: Json): boolean {
   return row.source_metadata?.priceStatus === "CHILD_OWNER"
     || row.source_metadata?.priceRoute === "CHILD_OWNER_ESTIMATE";
@@ -208,7 +338,9 @@ function buildAsset(input: {
   invariant(duplicateValues(localCostOwners).length === 0,
     `R58_REPAIRED_63_LOCAL_COST_OWNER:${input.definition.catalog_id}`);
   const nullCostRows = included.filter((row) => !String(row.cost_owner_id ?? "").trim());
-  invariant(nullCostRows.every((row) => row.source_metadata?.priceStatus === "NON_PAYABLE_DERIVED_CONTROL"),
+  invariant(nullCostRows.every((row) => DRYWALL_TRACE_NOT_ADMITTED
+    ? !row.procurement_eligible
+    : row.source_metadata?.priceStatus === "NON_PAYABLE_DERIVED_CONTROL"),
     `R58_REPAIRED_63_UNEXPLAINED_NULL_COST_OWNER:${input.definition.catalog_id}`);
   const childRows = included.filter(isChildOwner);
   invariant(childRows.every((row) => !row.procurement_eligible),
@@ -228,6 +360,7 @@ function buildAsset(input: {
       costOwnerId: row.cost_owner_id,
       costBoundary: isChildOwner(row) ? "CHILD_OWNER_NON_PAYABLE"
         : row.source_metadata?.priceStatus === "NON_PAYABLE_DERIVED_CONTROL" ? "DERIVED_CONTROL_NON_PAYABLE"
+          : !row.cost_owner_id ? "INFORMATIONAL_NON_PAYABLE"
           : "LOCAL_UNIQUE_OWNER",
     };
   });
@@ -250,7 +383,8 @@ function buildAsset(input: {
     invariant(Array.isArray(formulaIds) && Array.isArray(rowIds) && rowIds.length > 0
       && Array.isArray(sources) && text.length > 0 && !text.includes("�"),
     `R58_REPAIRED_63_PARAMETER_PROVENANCE:${input.definition.catalog_id}:${parameterId}`);
-    classifications[parameterId] = derivedParameterIds.has(parameterId) ? "DERIVED" : "ASSUMPTION";
+    classifications[parameterId] = input.trace.parameter_classification?.[parameterId]
+      ?? (derivedParameterIds.has(parameterId) ? "DERIVED" : "ASSUMPTION");
     uom[parameterId] = parameter.unit_id == null ? null : String(parameter.unit_id);
     formulaConsumers[parameterId] = formulaIds;
     resourceConsumers[parameterId] = rowIds;
@@ -258,6 +392,53 @@ function buildAsset(input: {
     guides[parameterId] = text;
   }
   const compileFingerprint = sha256(compiledRows);
+  let sensitivityScenario: Json | null = null;
+  if (DRYWALL_TRACE_NOT_ADMITTED) {
+    const sensitivityParameter = input.parameters.find((parameter) => {
+      if (!['decimal', 'integer'].includes(String(parameter.value_type))) return false;
+      const parameterId = String(parameter.parameter_id);
+      return input.formulas.some((formula) => String(formula.expression_source).replace(/\s+/gu, "") === parameterId);
+    });
+    invariant(sensitivityParameter, `R58_DRYWALL_BASELINE_SENSITIVITY_PARAMETER:${input.definition.catalog_id}`);
+    const sensitivityId = String(sensitivityParameter.parameter_id);
+    const sensitivityValues = { ...normalized.values,
+      [sensitivityId]: sensitivityParameter.value_type === "integer"
+        ? Number(normalized.values[sensitivityId]) + 1
+        : Number(normalized.values[sensitivityId]) * 1.1 };
+    const sensitivityResolved = validateCanonicalEstimateParameters(input.parameters, sensitivityValues, {
+      baselineContext: { catalogId: String(input.definition.catalog_id) },
+    });
+    const sensitivityNumeric = Object.fromEntries(Object.entries(sensitivityResolved)
+      .filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
+    const sensitivityRows = input.resources
+      .filter((row) => evaluateInclusionGraph(row.inclusion_ast as Json, sensitivityResolved))
+      .map((row) => {
+        const formula = formulaById.get(String(row.formula_id))!;
+        return [row.row_id, Number(evaluateFormulaGraph(formula.ast as FormulaAst, sensitivityNumeric))];
+      });
+    invariant(sensitivityRows.length > 0 && sha256(sensitivityRows) !== sha256(compiledRows.map((row) => [row.rowId, row.quantity])),
+      `R58_DRYWALL_BASELINE_SENSITIVITY_NO_EFFECT:${input.definition.catalog_id}:${sensitivityId}`);
+    const missingValues = { ...normalized.values };
+    delete missingValues[sensitivityId];
+    let missingRejected = false;
+    try {
+      validateCanonicalEstimateParameters(input.parameters, missingValues, {
+        baselineContext: { catalogId: String(input.definition.catalog_id) },
+      });
+    } catch {
+      missingRejected = true;
+    }
+    invariant(missingRejected, `R58_DRYWALL_BASELINE_MISSING_NOT_REJECTED:${input.definition.catalog_id}:${sensitivityId}`);
+    sensitivityScenario = {
+      parameterId: sensitivityId,
+      baselineValue: normalized.values[sensitivityId],
+      changedValue: sensitivityValues[sensitivityId],
+      baselineCompiledRowsSha256: sha256(compiledRows.map((row) => [row.rowId, row.quantity])),
+      changedCompiledRowsSha256: sha256(sensitivityRows),
+      changedValueAffectsCompilation: true,
+      missingRequiredValueRejected: true,
+    };
+  }
   const acceptanceEvidenceSha256 = sha256({
     contract: CONTRACT,
     catalogId: input.definition.catalog_id,
@@ -273,7 +454,7 @@ function buildAsset(input: {
   return {
     asset: {
       id,
-      baseline_key: `r58-repaired-compile-red:${input.definition.catalog_id}:${id}`,
+      baseline_key: `${DRYWALL_TRACE_NOT_ADMITTED ? "r58-drywall-approved-baseline" : "r58-repaired-compile-red"}:${input.definition.catalog_id}:${id}`,
       catalog_id: input.definition.catalog_id,
       definition_version_id: input.definition.id,
       source_definition_version_id: input.target.definition_version_id,
@@ -291,6 +472,9 @@ function buildAsset(input: {
         sha256: input.trace.proposal_source_sha256,
         inputValuesSha256: input.trace.input_values_sha256,
         enumAliasNormalizations: normalized.normalizations,
+        parameterRuleIdsSha256: input.trace.parameter_rule_ids
+          ? sha256(input.trace.parameter_rule_ids) : null,
+        parameterRuleIds: input.trace.parameter_rule_ids ?? null,
         acceptedRowTraceSupplementSha256: input.trace.accepted_row_trace_supplement_sha256 ?? null,
         acceptedRowTraceSupplement: input.trace.accepted_row_trace_supplement ?? [],
       }],
@@ -304,6 +488,7 @@ function buildAsset(input: {
         localDuplicateCostOwners: 0,
         childOwnerRowsNonPayable: childRows.length,
         derivedControlRowsNonPayable: nullCostRows.length,
+        sensitivityScenario,
       }],
       acceptance_evidence_sha256: acceptanceEvidenceSha256,
       accepted_release_id: input.candidateReleaseId,
@@ -327,6 +512,7 @@ function buildAsset(input: {
       localDuplicateCostOwners: 0,
       childOwnerRowsNonPayable: childRows.length,
       derivedControlRowsNonPayable: nullCostRows.length,
+      sensitivityScenario,
       status: "READY_FOR_FRESH_BACKEND_COMPILE_RECALCULATE",
       terminalGreenClaimed: false,
     },
@@ -355,9 +541,10 @@ async function insertBaseline(client: Client, asset: Json): Promise<void> {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted"]);
+  const allowedArgs = new Set(["--apply", "--asphalt-trace-not-admitted", "--drywall-trace-not-admitted"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
-    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
+    && !(ASPHALT_TRACE_NOT_ADMITTED && DRYWALL_TRACE_NOT_ADMITTED),
     "R58_REPAIRED_63_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_REPAIRED_63_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -366,11 +553,14 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_REPAIRED_63_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_REPAIRED_63_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => ASPHALT_TRACE_NOT_ADMITTED
-    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "asphalt"
-    : row.partition === "COMPILE_RED_937" && row.domain !== "water_supply_sewerage");
+  const targets = readJsonl(MATRIX_PATH).filter((row) => DRYWALL_TRACE_NOT_ADMITTED
+    ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "drywall"
+    : ASPHALT_TRACE_NOT_ADMITTED
+      ? row.partition === "TRACE_NOT_ADMITTED_1432" && row.domain === "asphalt"
+      : row.partition === "COMPILE_RED_937" && row.domain !== "water_supply_sewerage");
   invariant(targets.length === EXPECTED_TARGETS
     && targets.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
+    && targets.filter((row) => row.domain === "drywall").length === EXPECTED_DRYWALL
     && targets.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
   `R58_REPAIRED_63_TARGETS:${targets.length}/${EXPECTED_TARGETS}`);
   const targetByCatalog = new Map(targets.map((row) => [String(row.catalog_id), row]));
@@ -454,9 +644,11 @@ async function main(): Promise<void> {
           "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal",
           [definition.id],
         )).rows as Json[];
-        const trace = ASPHALT_TRACE_NOT_ADMITTED
-          ? augmentAsphaltTraceFromAcceptedRows(sourceTrace, formulas, resources)
-          : sourceTrace;
+        const trace = DRYWALL_TRACE_NOT_ADMITTED
+          ? buildDrywallApprovedBaselineTrace(parameters, definition, sourceTrace)
+          : ASPHALT_TRACE_NOT_ADMITTED
+            ? augmentAsphaltTraceFromAcceptedRows(sourceTrace, formulas, resources)
+            : sourceTrace;
         const built = buildAsset({
           target, definition, parameters, formulas, resources, trace,
           parameterSchemaSha256: manifest.parameter_schema_sha256,
@@ -474,6 +666,7 @@ async function main(): Promise<void> {
       }
       invariant(ledger.length === EXPECTED_TARGETS
         && ledger.filter((row) => row.domain === "asphalt").length === EXPECTED_ASPHALT
+        && ledger.filter((row) => row.domain === "drywall").length === EXPECTED_DRYWALL
         && ledger.filter((row) => row.domain === "hvac_heat_supply").length === EXPECTED_HVAC,
       `R58_REPAIRED_63_LEDGER:${ledger.length}/${EXPECTED_TARGETS}`);
       invariant(ledger.reduce((sum, row) => sum + row.compiledRows, 0) === EXPECTED_COMPILED_ROWS,
@@ -498,11 +691,14 @@ async function main(): Promise<void> {
         metadata=metadata||$5::jsonb where id=$1 and status='draft' and sealed_at is null`, [
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, ledgerSha256: sha256(ledger) }),
-        JSON.stringify({ [ASPHALT_TRACE_NOT_ADMITTED
-          ? "r58AsphaltTraceNotAdmittedCandidates38"
-          : "r58RepairedCompileRedCandidates63"]: {
+        JSON.stringify({ [DRYWALL_TRACE_NOT_ADMITTED
+          ? "r58DrywallApprovedBaselineCandidates500"
+          : ASPHALT_TRACE_NOT_ADMITTED
+            ? "r58AsphaltTraceNotAdmittedCandidates38"
+            : "r58RepairedCompileRedCandidates63"]: {
           contract: CONTRACT, specSha256: SPEC_SHA256, readyForBackend: EXPECTED_TARGETS,
-          asphalt: EXPECTED_ASPHALT, hvac: EXPECTED_HVAC, compiledRows: EXPECTED_COMPILED_ROWS,
+          asphalt: EXPECTED_ASPHALT, drywall: EXPECTED_DRYWALL, hvac: EXPECTED_HVAC,
+          compiledRows: EXPECTED_COMPILED_ROWS,
           terminalGreenClaimed: false, searchCutover: false, runtime8081Switched: false,
         } }),
       ]);
@@ -516,9 +712,11 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = ledger.map((row) => stable(row)).join("\n") + (ledger.length > 0 ? "\n" : "");
-  const evidenceStem = ASPHALT_TRACE_NOT_ADMITTED
-    ? "R58_ASPHALT_TRACE_NOT_ADMITTED_CANDIDATES_38"
-    : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63";
+  const evidenceStem = DRYWALL_TRACE_NOT_ADMITTED
+    ? "R58_DRYWALL_APPROVED_BASELINE_CANDIDATES_500"
+    : ASPHALT_TRACE_NOT_ADMITTED
+      ? "R58_ASPHALT_TRACE_NOT_ADMITTED_CANDIDATES_38"
+      : "R58_REPAIRED_COMPILE_RED_CANDIDATES_63";
   const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
     schemaVersion: CONTRACT,
@@ -529,6 +727,7 @@ async function main(): Promise<void> {
     candidateReleaseId,
     targets: EXPECTED_TARGETS,
     asphalt: EXPECTED_ASPHALT,
+    drywall: EXPECTED_DRYWALL,
     hvac: EXPECTED_HVAC,
     baselinesChanged: idempotent ? 0 : ledger.length,
     compiledRowsValidated: idempotent ? EXPECTED_COMPILED_ROWS : ledger.reduce((sum, row) => sum + row.compiledRows, 0),
@@ -540,9 +739,11 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_${ASPHALT_TRACE_NOT_ADMITTED
-      ? "ASPHALT_TRACE_NOT_ADMITTED"
-      : "REPAIRED_COMPILE_RED"}_CANDIDATES_${EXPECTED_TARGETS}_${
+    status: `GREEN_R58_${DRYWALL_TRACE_NOT_ADMITTED
+      ? "DRYWALL_APPROVED_BASELINE"
+      : ASPHALT_TRACE_NOT_ADMITTED
+        ? "ASPHALT_TRACE_NOT_ADMITTED"
+        : "REPAIRED_COMPILE_RED"}_CANDIDATES_${EXPECTED_TARGETS}_${
       idempotent ? "IDEMPOTENT_0" : apply ? "APPLIED_NOT_TERMINAL" : "DRY_RUN_ROLLED_BACK"}`,
   };
   const summaryPath = resolve(OUTPUT_ROOT,
