@@ -119,7 +119,10 @@ function recoverLinearFormulaInputs(
       if (expected == null) continue;
       const formula = formulaById.get(String(resource.formula_id));
       if (!formula) continue;
-      const inputs = [...new Set((formula.input_parameter_ids ?? []).map(String))];
+      const inputs = [...new Set(
+        (Array.isArray(formula.input_parameter_ids) ? formula.input_parameter_ids : [])
+          .map((value) => String(value)),
+      )];
       const known: Record<string, number> = {};
       const missing: string[] = [];
       for (const id of inputs) {

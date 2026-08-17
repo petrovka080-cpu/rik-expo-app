@@ -12,15 +12,16 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-const SPEC_SHA256 = "5a8e16fb5e9695103fad7b7ea4a959a52edbc8d414583a8aee2d26e460ad22b6";
-const SUCCESSOR_CHECKPOINT = "f2dac926d1b34d61efdb3aeaa82bf5423358da78";
+const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
+const SPEC_PATH = "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md";
+const REQUIRED_ANCESTOR = "691acb78";
 const GATE_ROOT = path.join(
   ".release-runtime",
-  "p0-one-monolith-r5",
+  "p0-one-monolith-r58",
   "evidence",
-  "01A-platform-core-gate",
+  "10-platform-core",
 );
-const SHARD_TIMEOUT_MS = 900_000;
+const SHARD_TIMEOUT_MS = 1_200_000;
 const HEARTBEAT_MS = 15_000;
 
 const SHARDS = [
@@ -111,6 +112,9 @@ type ShardSummary = {
   repositoryDrift: boolean;
   databaseWriteCount: 0;
   databaseEnvironmentSanitized: boolean;
+  isolatedSuiteStarts: string[];
+  isolatedSuiteGreens: string[];
+  isolatedSuiteExecutionExact: boolean;
   blockers: string[];
 };
 
@@ -251,6 +255,13 @@ function databaseSafeEnvironment(): NodeJS.ProcessEnv {
 }
 
 function assertPlan(): { exactSuites: string[]; exactSuiteListSha256: string } {
+  if (!existsSync(SPEC_PATH) || sha256File(SPEC_PATH) !== SPEC_SHA256) {
+    throw new Error("R58_PLATFORM_CORE_SPEC_DRIFT");
+  }
+  execFileSync("git", ["merge-base", "--is-ancestor", REQUIRED_ANCESTOR, "HEAD"], {
+    windowsHide: true,
+    stdio: "ignore",
+  });
   const exactSuites = SHARDS.flatMap((shard) => [...shard.suites]);
   const unique = new Set(exactSuites);
   if (exactSuites.length !== 17 || unique.size !== 17) {
@@ -280,7 +291,7 @@ async function runShard(input: {
       previous.worktreeFingerprintAfter === worktreeFingerprintBefore &&
       previous.suiteListSha256 === stableListHash(input.shard.suites)
     ) {
-      process.stdout.write(`[R5.2] ${input.shard.id} resume=GREEN_SKIP pid=${previous.pid}\n`);
+      process.stdout.write(`[R5.8] ${input.shard.id} resume=GREEN_SKIP pid=${previous.pid}\n`);
       return previous;
     }
     const attemptDir = path.join(
@@ -292,7 +303,7 @@ async function runShard(input: {
     mkdirSync(path.dirname(attemptDir), { recursive: true });
     cpSync(shardDir, attemptDir, { recursive: true, errorOnExist: true });
     process.stdout.write(
-      `[R5.2] ${input.shard.id} archived=${attemptDir.replace(/\\/g, "/")}\n`,
+      `[R5.8] ${input.shard.id} archived=${attemptDir.replace(/\\/g, "/")}\n`,
     );
   }
 
@@ -307,9 +318,7 @@ async function runShard(input: {
   const stdoutFd = openSync(stdoutLog, "a");
   const stderrFd = openSync(stderrLog, "a");
   const args = [
-    path.join("node_modules", "jest", "bin", "jest.js"),
-    "--runInBand",
-    "--runTestsByPath",
+    path.join("scripts", "estimate", "runJestSuitesIsolated.mjs"),
     ...input.shard.suites,
   ];
   const startedAt = new Date();
@@ -345,7 +354,7 @@ async function runShard(input: {
   };
   captureTree("spawned");
   writeJson(path.join(shardDir, "launch.json"), {
-    schemaVersion: "p0-one-monolith-r5.2-platform-core-shard-launch.v1",
+    schemaVersion: "p0-one-monolith-r5.8-platform-core-shard-launch.v1",
     specSha256: SPEC_SHA256,
     runId: input.runId,
     shardId: input.shard.id,
@@ -361,7 +370,7 @@ async function runShard(input: {
     worktreeFingerprintBefore,
     databaseWritesAllowed: false,
   });
-  process.stdout.write(`[R5.2] ${input.shard.id} started pid=${pid} timeoutMs=${SHARD_TIMEOUT_MS}\n`);
+  process.stdout.write(`[R5.8] ${input.shard.id} started pid=${pid} timeoutMs=${SHARD_TIMEOUT_MS}\n`);
   child.stdout?.on("data", (chunk: Buffer) => {
     writeFileSync(stdoutFd, chunk);
     process.stdout.write(chunk);
@@ -382,7 +391,7 @@ async function runShard(input: {
       seenProcessCount: seen.size,
     };
     appendFileSync(heartbeatLog, `${JSON.stringify(record)}\n`, "utf8");
-    process.stdout.write(`[R5.2] ${input.shard.id} heartbeat pid=${pid} elapsedMs=${record.elapsedMs}\n`);
+    process.stdout.write(`[R5.8] ${input.shard.id} heartbeat pid=${pid} elapsedMs=${record.elapsedMs}\n`);
   }, HEARTBEAT_MS);
 
   const timeout = setTimeout(() => {
@@ -421,15 +430,23 @@ async function runShard(input: {
   const repositoryDrift = headAfter !== headBefore || treeAfter !== treeBefore ||
     worktreeFingerprintAfter !== worktreeFingerprintBefore;
   const exitCode = timedOut ? 124 : terminal.code ?? 1;
+  const stdoutText = readFileSync(stdoutLog, "utf8");
+  const isolatedSuiteStarts = [...stdoutText.matchAll(/^\[isolated-jest\] suite=(\S+) status=STARTED /gmu)]
+    .map((match) => match[1]);
+  const isolatedSuiteGreens = [...stdoutText.matchAll(/^\[isolated-jest\] suite=(\S+) status=GREEN /gmu)]
+    .map((match) => match[1]);
+  const isolatedSuiteExecutionExact = stableListHash(isolatedSuiteStarts) === stableListHash(input.shard.suites) &&
+    stableListHash(isolatedSuiteGreens) === stableListHash(input.shard.suites);
   const blockers = [
     exitCode === 0 ? "" : timedOut ? "SHARD_TIMEOUT" : `JEST_EXIT_${exitCode}`,
     repositoryDrift ? "REPOSITORY_DRIFT_DURING_SHARD" : "",
     orphanProcessIdentities.length > 0 ? `ORPHAN_PROCESS_COUNT_${orphanProcessIdentities.length}` : "",
+    isolatedSuiteExecutionExact ? "" : "ISOLATED_SUITE_EXECUTION_NOT_EXACT",
   ].filter(Boolean);
   const status: ShardSummary["status"] = timedOut ? "TIMEOUT" : blockers.length === 0 ? "GREEN" : "RED";
   const finishedAt = new Date();
   const summary: ShardSummary = {
-    schemaVersion: "p0-one-monolith-r5.2-platform-core-shard-result.v1",
+    schemaVersion: "p0-one-monolith-r5.8-platform-core-shard-result.v1",
     specSha256: SPEC_SHA256,
     runId: input.runId,
     shardId: input.shard.id,
@@ -438,7 +455,7 @@ async function runShard(input: {
     suiteCount: input.shard.suites.length,
     suiteListSha256: stableListHash(input.shard.suites),
     timeoutMs: SHARD_TIMEOUT_MS,
-    timeoutBasis: "original observed max suite 371269ms; 2x p99 plus cold-start/process-cleanup allowance, bounded below original 1800000ms monolith timeout",
+    timeoutBasis: "four fixed logical shards; every Jest suite runs in a fresh process with a 700000ms ceiling; 1200000ms logical-shard ceiling covers the measured 1033000ms worst shard plus cleanup while remaining below the rejected 1800000ms monolith timeout",
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     durationMs: Date.now() - startedMs,
@@ -468,10 +485,13 @@ async function runShard(input: {
     repositoryDrift,
     databaseWriteCount: 0,
     databaseEnvironmentSanitized: true,
+    isolatedSuiteStarts,
+    isolatedSuiteGreens,
+    isolatedSuiteExecutionExact,
     blockers,
   };
   writeJson(summaryFile, summary);
-  process.stdout.write(`[R5.2] ${input.shard.id} status=${status} exitCode=${exitCode} durationMs=${summary.durationMs}\n`);
+  process.stdout.write(`[R5.8] ${input.shard.id} status=${status} exitCode=${exitCode} durationMs=${summary.durationMs}\n`);
   return summary;
 }
 
@@ -499,12 +519,12 @@ function aggregate(input: {
     ...results.flatMap((result) => result.blockers.map((blocker) => `${result.shardId}:${blocker}`)),
   ].filter(Boolean);
   const summary = {
-    schemaVersion: "p0-one-monolith-r5.2-platform-core-gate-summary.v1",
+    schemaVersion: "p0-one-monolith-r5.8-platform-core-gate-summary.v1",
     specSha256: SPEC_SHA256,
-    successorCheckpoint: SUCCESSOR_CHECKPOINT,
+    requiredAncestor: REQUIRED_ANCESTOR,
     runId: input.runId,
     generatedAt: new Date().toISOString(),
-    finalStatus: green ? "GREEN_PLATFORM_CORE_PHASE_1A_17_OF_17" : "RED_PLATFORM_CORE_PHASE_1A",
+    finalStatus: green ? "GREEN_R58_PLATFORM_CORE_17_OF_17" : "RED_R58_PLATFORM_CORE",
     exactSuiteDenominator: 17,
     exactSuiteNumerator: green ? 17 : results.filter((result) => result.status === "GREEN").reduce((sum, result) => sum + result.suiteCount, 0),
     exactSuiteListSha256: input.exactSuiteListSha256,
@@ -524,6 +544,7 @@ function aggregate(input: {
       exitCode: result.exitCode,
       orphanProcessCount: result.orphanProcessCount,
       repositoryDrift: result.repositoryDrift,
+      isolatedSuiteExecutionExact: result.isolatedSuiteExecutionExact,
       stdoutSha256: result.stdoutSha256,
       stderrSha256: result.stderrSha256,
       heartbeatSha256: result.heartbeatSha256,
@@ -548,9 +569,9 @@ async function main(): Promise<void> {
   const runDir = path.join(GATE_ROOT, runId);
   mkdirSync(runDir, { recursive: true });
   writeJson(path.join(runDir, "SHARD_PLAN.json"), {
-    schemaVersion: "p0-one-monolith-r5.2-platform-core-shard-plan.v1",
+    schemaVersion: "p0-one-monolith-r5.8-platform-core-shard-plan.v1",
     specSha256: SPEC_SHA256,
-    successorCheckpoint: SUCCESSOR_CHECKPOINT,
+    requiredAncestor: REQUIRED_ANCESTOR,
     runId,
     exactSuiteDenominator: 17,
     exactSuiteListSha256: plan.exactSuiteListSha256,
