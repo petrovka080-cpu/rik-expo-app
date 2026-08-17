@@ -361,7 +361,7 @@ function baselineFor(spec: WorkSpec, definitionId: string, releaseId: string): J
     id: uuid(`${CONTRACT}:baseline:${spec.catalogId}`),
     key: `r58-mandatory:${sha256(spec.catalogId).slice(0, 20)}`,
     parameterSchemaSha256, inputValues,
-    inputClassification: Object.fromEntries(spec.parameters.map((row) => [row.id, "DISCLOSED_BASELINE_ASSUMPTION"])),
+    inputClassification: Object.fromEntries(spec.parameters.map((row) => [row.id, "ASSUMPTION"])),
     uomByParameter: Object.fromEntries(spec.parameters.map((row) => [row.id, row.unit ?? "dimensionless"])),
     formulaConsumers, resourceConsumers,
     normativeSourceIds: Object.fromEntries(spec.parameters.map((row) => [row.id, [spec.standard]])),
