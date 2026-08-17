@@ -397,11 +397,12 @@ async function main(): Promise<void> {
       });
     } else {
       invariant(existingAdjudication === 11_610, `R58_SEARCH_EXISTING_ADJUDICATION_COUNT:${existingAdjudication}`);
-      const existingHashSet = (await client.query(
-        "select encode(extensions.digest(convert_to(string_agg(adjudication_sha256,E'\\n' order by source_catalog_id),'UTF8'),'sha256'),'hex') hash from public.estimate_catalog_adjudication_r58",
-      )).rows[0].hash;
-      const expectedHashSet = sha256(adjudications.map((row) => row.adjudication_sha256).join("\n"));
-      invariant(existingHashSet === expectedHashSet, "R58_SEARCH_EXISTING_ADJUDICATION_HASH_DRIFT");
+      const existingRows = (await client.query(
+        "select source_catalog_id,adjudication_sha256 from public.estimate_catalog_adjudication_r58",
+      )).rows as Json[];
+      invariant(existingRows.length === adjudications.length && existingRows.every((row) =>
+        adjudicationBySource.get(String(row.source_catalog_id))?.adjudication_sha256 === row.adjudication_sha256),
+      "R58_SEARCH_EXISTING_ADJUDICATION_HASH_DRIFT");
     }
 
     const existingRelease = (await client.query(
