@@ -23,6 +23,7 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/master11610_r1";
 const SEARCH_DATABASE_URL = process.env.CANONICAL_ESTIMATE_SEARCH_DATABASE_URL
   ?? DATABASE_URL;
+const TARGET_SEARCH_RELEASE_ID = String(process.env.CANONICAL_ESTIMATE_TARGET_SEARCH_RELEASE_ID ?? "").trim();
 const MODEL_DATABASE_URLS = [...new Set([DATABASE_URL, SEARCH_DATABASE_URL])];
 const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_ROWS = 2_000;
@@ -70,7 +71,7 @@ function manualProvenance(value: unknown, field: string): JsonRecord {
   if (reason != null && (typeof reason !== "string" || reason.trim().length > 500)) {
     throw Object.assign(new Error(`invalid ${field} provenance reason`), { code: "ROW_AMENDMENT_INVALID" });
   }
-  return { kind: "manual", ...(reason == null ? {} : { reason: reason.trim() }) };
+  return { kind: "manual", ...(typeof reason === "string" ? { reason: reason.trim() } : {}) };
 }
 
 function roundDecimal(value: string, scale: number): string {
@@ -895,6 +896,157 @@ function normalizeSearchQuery(value: string): string {
   return value.toLocaleLowerCase("ru").replace(/ё/gu, "е").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
+type LocalSearchMode = "ANY" | "ALL" | "PHRASE";
+
+function parseSearchIntent(rawQuery: string, requestedMode: string | null, requestedTokens: string[]) {
+  const quantityPattern = /(?:^|\s)(\d{1,3}(?:[\s\u00a0]\d{3})+|\d+)(?:[,.](\d+))?\s*(кв\.?\s*м(?:етр(?:ов|а)?)?|квадратн(?:ых|ого|ые)?\s+метр(?:ов|а)?|м[²2]|шт(?:ук|ука|уки)?|штук(?:а|и)?|метр(?:ов|а|ы)?|тонн?(?:а|ы)?|кг|м|т)(?=\s|$)/iu;
+  const quantityMatch = quantityPattern.exec(rawQuery.normalize("NFC"));
+  const quantity = quantityMatch
+    ? Number(`${quantityMatch[1]!.replace(/[\s\u00a0]/gu, "")}.${quantityMatch[2] ?? "0"}`)
+    : null;
+  const rawUnit = String(quantityMatch?.[3] ?? "").toLocaleLowerCase("ru");
+  const unit = !quantityMatch ? null
+    : /^(?:кв|квадрат|м[²2])/u.test(rawUnit) ? "м²"
+      : /^(?:шт|штук)/u.test(rawUnit) ? "шт"
+        : /^(?:тон|т$)/u.test(rawUnit) ? "т"
+          : rawUnit === "кг" ? "кг" : "м";
+  const searchText = normalizeSearchQuery(quantityMatch
+    ? `${rawQuery.slice(0,quantityMatch.index)} ${rawQuery.slice(quantityMatch.index + quantityMatch[0].length)}`
+    : rawQuery);
+  const explicitMode = String(requestedMode ?? "").trim().toUpperCase();
+  const inferredMode:LocalSearchMode = /\s+или\s+/iu.test(searchText) ? "ANY" : "PHRASE";
+  const mode:LocalSearchMode = ["ANY","ALL","PHRASE"].includes(explicitMode)
+    ? explicitMode as LocalSearchMode : inferredMode;
+  const tokenSource = requestedTokens.length > 0 ? requestedTokens
+    : mode === "ANY" ? searchText.split(/\s+или\s+|\s*[,;|]\s*/iu)
+      : mode === "ALL" ? searchText.split(/\s+и\s+|\s*[,;|]\s*/iu)
+        : [searchText];
+  const tokens = [...new Set(tokenSource.map(normalizeSearchQuery)
+    .filter((token) => (token.match(/[\p{L}\p{N}]/gu) ?? []).length >= 2))];
+  return {rawQuery,searchText,quantity,unit,mode,tokens};
+}
+
+async function localSearchRelease(client:Client):Promise<Record<string,any>> {
+  const release = (await client.query(`select * from public.estimate_search_index_release
+    where (($1::uuid is not null and id=$1) or ($1::uuid is null and status='active'))
+    order by case when id=$1 then 0 else 1 end,activated_at desc nulls last,created_at desc limit 1`,
+  [TARGET_SEARCH_RELEASE_ID || null])).rows[0];
+  if (!release) throw Object.assign(new Error("active search release not found"), {code:"NOT_FOUND",httpStatus:404});
+  return release;
+}
+
+const LOCAL_LITERAL_SEARCH_R58 = `
+with tokens as materialized(
+  select distinct unnest($2::text[]) q
+), token_state as(
+  select count(*)::int token_count from tokens
+), source_hits as materialized(
+  select source.catalog_id source_catalog_id,
+    coalesce(source.canonical_target_catalog_id,source.catalog_id) resolved_catalog_id,
+    count(distinct token.q)::int matched_count,
+    bool_or(source.normalized_catalog_id=token.q or source.normalized_canonical_name=token.q) exact_name,
+    bool_or(token.q=any(source.normalized_aliases)) exact_alias,
+    bool_or(source.normalized_canonical_name like token.q||'%') prefix_name,
+    bool_or(position(token.q in source.normalized_canonical_name)>0) literal_name,
+    bool_or(exists(select 1 from unnest(source.normalized_aliases) alias
+      where position(token.q in alias)>0)) literal_alias,
+    string_agg(distinct token.q,' | ' order by token.q) matched_term
+  from public.estimate_search_document source
+  cross join tokens token
+  where source.search_release_id=$1
+    and case upper($8)
+      when 'REFERENCES' then source.adjudication_class='EXTERNAL_REFERENCE'
+      else source.adjudication_class='EFFECTIVE_WORK' and source.selectable
+        or source.adjudication_class in('ALIAS','DUPLICATE') and exists(
+          select 1 from public.estimate_search_document target
+          where target.search_release_id=source.search_release_id
+            and target.catalog_id=source.canonical_target_catalog_id
+            and target.adjudication_class='EFFECTIVE_WORK' and target.selectable)
+    end
+    and (position(token.q in source.normalized_canonical_name)>0
+      or exists(select 1 from unnest(source.normalized_aliases) alias where position(token.q in alias)>0))
+  group by source.catalog_id,source.canonical_target_catalog_id
+), accepted as materialized(
+  select hit.*,
+    case when hit.exact_name then 1 when hit.exact_alias then 2 when hit.prefix_name then 3
+      when hit.literal_alias and not hit.literal_name then 4 else 5 end tier
+  from source_hits hit cross join token_state state
+  where (upper($3)='ANY' and hit.matched_count>0)
+    or (upper($3)='ALL' and state.token_count>0 and hit.matched_count=state.token_count)
+    or (upper($3)='PHRASE' and state.token_count=1 and hit.matched_count=1)
+), filtered as materialized(
+  select hit.*,target.catalog_origin,target.group_id,target.domain_id,target.system_id,target.work_family_id,
+    row_number() over(partition by hit.resolved_catalog_id order by hit.tier,
+      hit.source_catalog_id=hit.resolved_catalog_id desc,hit.source_catalog_id) resolved_ordinal
+  from accepted hit
+  join public.estimate_search_document target
+    on target.search_release_id=$1 and target.catalog_id=hit.resolved_catalog_id
+  where (coalesce($4,'')='' or target.domain_id=$4)
+    and (coalesce($5,'')='' or target.group_id=$5)
+    and (coalesce($6,'')='' or target.operation_kind=$6)
+), deduplicated as materialized(
+  select filtered.*,
+    concat_ws(E'\\u001f',lpad(filtered.tier::text,2,'0'),filtered.domain_id,
+      filtered.system_id,filtered.work_family_id,filtered.resolved_catalog_id) stable_order_key
+  from filtered where resolved_ordinal=1
+), summary as(
+  select count(*)::bigint literal_total_count,
+    count(*) filter(where catalog_origin='GLOBAL')::bigint global_literal_total_count,
+    count(*) filter(where catalog_origin<>'GLOBAL')::bigint external_literal_total_count,
+    count(distinct group_id)::bigint group_total_count,
+    encode(extensions.digest(convert_to(coalesce(string_agg(
+      resolved_catalog_id||E'\\u001f'||tier::text||E'\\u001f'||stable_order_key,
+      E'\\n' order by stable_order_key),''),'UTF8'),'sha256'),'hex') result_set_sha256
+  from deduplicated
+), page as(
+  select hit.*,summary.* from deduplicated hit cross join summary
+  where $7::text is null or hit.stable_order_key>$7
+  order by hit.stable_order_key limit $9
+)
+select document.*,group_row.group_name_ru,page.source_catalog_id,page.tier,page.matched_term,
+  page.stable_order_key,page.literal_total_count,page.global_literal_total_count,
+  page.external_literal_total_count,page.group_total_count,page.result_set_sha256
+from page
+join public.estimate_search_document document
+  on document.search_release_id=$1 and document.catalog_id=page.resolved_catalog_id
+join public.estimate_search_group group_row
+  on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
+order by page.stable_order_key`;
+
+const LOCAL_FUZZY_SEARCH_R58 = `
+with candidate as materialized(
+  select document.*,
+    greatest(extensions.similarity(document.normalized_canonical_name,$2),
+      extensions.similarity(document.normalized_search_blob,$2)) score
+  from public.estimate_search_document document
+  where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
+    and document.selectable and length(replace($2,' ',''))>2
+    and (document.normalized_canonical_name % $2 or document.normalized_search_blob % $2)
+    and (coalesce($3,'')='' or document.domain_id=$3)
+    and (coalesce($4,'')='' or document.group_id=$4)
+    and (coalesce($5,'')='' or document.operation_kind=$5)
+), ranked as materialized(
+  select candidate.*,
+    concat_ws(E'\\u001f','06',lpad((1000000-round(score*1000000))::text,7,'0'),catalog_id) stable_order_key
+  from candidate where score>=0.4
+), summary as(
+  select count(*)::bigint fuzzy_total_count,count(distinct group_id)::bigint group_total_count,
+    encode(extensions.digest(convert_to(coalesce(string_agg(
+      catalog_id||E'\\u001f'||score::text||E'\\u001f'||stable_order_key,
+      E'\\n' order by stable_order_key),''),'UTF8'),'sha256'),'hex') result_set_sha256
+  from ranked
+), page as(
+  select ranked.*,summary.* from ranked cross join summary
+  where $6::text is null or ranked.stable_order_key>$6
+  order by ranked.stable_order_key limit $7
+)
+select page.*,group_row.group_name_ru,page.catalog_id source_catalog_id,6 tier,$2 matched_term,
+  0::bigint literal_total_count,0::bigint global_literal_total_count,
+  0::bigint external_literal_total_count
+from page join public.estimate_search_group group_row
+  on group_row.search_release_id=page.search_release_id and group_row.group_id=page.group_id
+order by page.stable_order_key`;
+
 function localParameterGuideView(source: unknown) {
   if (!source || typeof source !== "object" || Array.isArray(source)) return undefined;
   const guide = source as Record<string, unknown>;
@@ -950,8 +1102,10 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const searchDatabase = await withSearchClient(async (client) => {
       const searchRelease = (await client.query(`
         select id,status,snapshot_sha256,taxonomy_version,group_relation_version,ranking_contract_version
-        from public.estimate_search_index_release where status='active' limit 1
-      `)).rows[0] ?? null;
+        from public.estimate_search_index_release
+        where (($1::uuid is not null and id=$1) or ($1::uuid is null and status='active'))
+        order by case when id=$1 then 0 else 1 end,activated_at desc nulls last,created_at desc limit 1
+      `,[TARGET_SEARCH_RELEASE_ID || null])).rows[0] ?? null;
       const counts = (await client.query(`select
         (select count(*)::integer from public.estimate_search_document d join public.estimate_search_index_release r on r.id=d.search_release_id where r.status='active') active_search_documents
       `)).rows[0];
@@ -987,50 +1141,114 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     });
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "search" && path[1] === "catalog") {
-    const query = String(url.searchParams.get("query") ?? "").trim().slice(0, 120);
-    const normalizedQuery = normalizeSearchQuery(query);
-    if ((normalizedQuery.match(/[\p{L}\p{N}]/gu) ?? []).length < 2) throw Object.assign(new Error("Введите не менее двух значимых символов."), { code: "SEARCH_MIN_SIGNIFICANT_CHARS", httpStatus: 400 });
+    const startedAt = performance.now();
+    const query = String(url.searchParams.get("query") ?? "").trim().slice(0, 240);
+    const intent = parseSearchIntent(query,url.searchParams.get("mode"),url.searchParams.getAll("token"));
+    if (intent.tokens.length === 0) throw Object.assign(new Error("Введите не менее двух значимых символов."), { code: "SEARCH_MIN_SIGNIFICANT_CHARS", httpStatus: 400 });
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
     const cursor = searchCursor(url.searchParams.get("cursor"));
     const filters = Object.fromEntries([["domain_id", String(url.searchParams.get("domain") ?? "").trim()], ["group_id", String(url.searchParams.get("groupId") ?? "").trim()], ["operation_kind", String(url.searchParams.get("operationKind") ?? "").trim()]].filter((entry) => entry[1]));
+    const scope = String(url.searchParams.get("scope") ?? "WORKS").toUpperCase() === "REFERENCES" ? "REFERENCES" : "WORKS";
     const result = await withSearchClient(async (client) => {
-      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
-      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      const release = await localSearchRelease(client);
       if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Повторите запрос."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
-      const rows = (await client.query("select * from public.estimate_search_catalog_r2($1,$2::jsonb,$3,$4)", [query, JSON.stringify(filters), cursor?.orderKey ?? null, limit])).rows;
-      return { release, rows };
+      let rows = (await client.query(LOCAL_LITERAL_SEARCH_R58,[release.id,intent.tokens,intent.mode,
+        filters.domain_id ?? "",filters.group_id ?? "",filters.operation_kind ?? "",
+        cursor?.orderKey ?? null,scope,limit])).rows;
+      let resultLevel:"LITERAL"|"FUZZY"="LITERAL";
+      if (rows.length===0 && intent.mode==="PHRASE" && scope==="WORKS") {
+        rows=(await client.query(LOCAL_FUZZY_SEARCH_R58,[release.id,intent.searchText,
+          filters.domain_id ?? "",filters.group_id ?? "",filters.operation_kind ?? "",
+          cursor?.orderKey ?? null,limit])).rows;
+        resultLevel="FUZZY";
+      }
+      const inventory = (await client.query(`with tokens as(
+        select distinct unnest($2::text[]) q
+      ),hits as(
+        select document.catalog_id,count(distinct token.q)::int matched
+        from public.estimate_search_document document cross join tokens token
+        where document.search_release_id=$1 and (position(token.q in document.normalized_canonical_name)>0
+          or exists(select 1 from unnest(document.normalized_aliases) alias where position(token.q in alias)>0))
+        group by document.catalog_id
+      ) select count(*)::bigint inventory_literal_total_count from hits
+      cross join (select count(*)::int token_count from tokens) state
+      where (upper($3)='ANY' and hits.matched>0)
+        or (upper($3)='ALL' and state.token_count>0 and hits.matched=state.token_count)
+        or (upper($3)='PHRASE' and state.token_count=1 and hits.matched=1)`,
+      [release.id,intent.tokens,intent.mode])).rows[0];
+      return { release,rows,inventory,resultLevel };
     });
     const literalTotalCount = Number(result.rows[0]?.literal_total_count ?? 0);
     const globalLiteralTotalCount = Number(result.rows[0]?.global_literal_total_count ?? literalTotalCount);
     const externalLiteralTotalCount = Number(result.rows[0]?.external_literal_total_count ?? 0);
-    const suggestionTotalCount = Number(result.rows[0]?.suggestion_total_count ?? 0);
+    const groupTotalCount = Number(result.rows[0]?.group_total_count ?? 0);
+    const fuzzyTotalCount = Number(result.rows[0]?.fuzzy_total_count ?? 0);
     const shownCount = (cursor?.shown ?? 0) + result.rows.length;
     const last = result.rows[result.rows.length - 1];
-    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, searchIndexSnapshotSha256: result.release.snapshot_sha256, taxonomyVersion: result.release.taxonomy_version, groupRelationVersion: result.release.group_relation_version, rankingContractVersion: result.release.ranking_contract_version, resultSetSha256: result.rows[0]?.result_set_sha256 ?? createHash("sha256").update("[]").digest("hex"), normalizedQuery, filters, literalTotalCount, globalLiteralTotalCount, externalLiteralTotalCount, suggestionTotalCount, shownCount, items: result.rows.map((row: Record<string, any>) => ({ catalogId: row.catalog_id, canonicalNameRu: row.canonical_name_ru, groupId: row.group_id, groupNameRu: row.group_name_ru, domainId: row.domain_id, systemId: row.system_id, subsystemId: row.subsystem_id, assemblyId: row.assembly_id, workFamilyId: row.work_family_id, elementType: row.element_type, operationKind: row.operation_kind, technologyVariant: row.technology_variant, primaryUom: row.primary_uom, publicationState: row.publication_state, catalogOrigin: row.catalog_origin, shortScopeRu: row.short_scope_ru, keyDistinguishingParameters: row.key_distinguishing_parameters, requiredInputsCount: row.required_inputs_count, clarificationFields: row.clarification_fields, includedBoundaries: row.included_boundaries, excludedBoundaries: row.excluded_boundaries, replacementCatalogId: row.replacement_catalog_id, matchTier: row.match_tier, matchType: row.match_type, matchedTerm: row.matched_term, matchedField: row.matched_field, rankingReasonRu: row.ranking_reason_ru, selectableMode: row.publication_state === "ADMITTED_BACKEND" ? "PROFESSIONAL" : row.publication_state === "PRELIMINARY_NOT_CANONICAL" ? "PRELIMINARY" : "NONE", nonselectableReasonRu: row.publication_state === "RETIRED" ? "Работа выведена из актуального каталога." : null })), nextCursor: last && shownCount < literalTotalCount + suggestionTotalCount ? Buffer.from(JSON.stringify({ releaseId: result.release.id, snapshotSha256: result.release.snapshot_sha256, orderKey: last.order_key, shown: shownCount })).toString("base64url") : null });
+    return send(response,200,{apiVersion:API_VERSION,searchIndexReleaseId:result.release.id,
+      searchIndexReleaseStatus:result.release.status,searchIndexSnapshotSha256:result.release.snapshot_sha256,
+      taxonomyVersion:result.release.taxonomy_version,groupRelationVersion:result.release.group_relation_version,
+      rankingContractVersion:result.release.ranking_contract_version,
+      resultSetSha256:result.rows[0]?.result_set_sha256 ?? createHash("sha256").update("[]").digest("hex"),
+      rawQuery:intent.rawQuery,normalizedQuery:intent.searchText,searchText:intent.searchText,
+      searchMode:intent.mode,searchTokens:intent.tokens,parsedQuantity:intent.quantity,parsedUnit:intent.unit,
+      filters,scope,resultLevel:result.resultLevel,literalTotalCount,globalLiteralTotalCount,externalLiteralTotalCount,groupTotalCount,
+      inventoryLiteralTotalCount:Number(result.inventory?.inventory_literal_total_count ?? 0),
+      fuzzyTotalCount,suggestionTotalCount:fuzzyTotalCount,shownCount,
+      items:result.rows.map((row:Record<string,any>) => {
+        const matchTier=Number(row.tier) as 1|2|3|4|5|6;
+        const matchType=matchTier===1 ? "T1_EXACT" : matchTier===2 ? "T2_EXACT_ALIAS"
+          : matchTier===3 ? "T3_CANONICAL_PREFIX" : matchTier===4 ? "T4_TOKEN_PREFIX"
+            : matchTier===5 ? "T5_NORMALIZED_SUBSTRING" : "T6_TYPO_TRANSLITERATION_SUGGESTION";
+        const matchedAlias=matchTier===2 || matchTier===4;
+        return {catalogId:row.catalog_id,definitionVersionId:row.definition_version_id,
+          definitionReleaseId:row.definition_release_id,canonicalNameRu:row.canonical_name_ru,
+          groupId:row.group_id,groupNameRu:row.group_name_ru,domainId:row.domain_id,
+          systemId:row.system_id,subsystemId:row.subsystem_id,assemblyId:row.assembly_id,
+          workFamilyId:row.work_family_id,elementType:row.element_type,operationKind:row.operation_kind,
+          technologyVariant:row.technology_variant,primaryUom:row.primary_uom,
+          publicationState:row.publication_state,catalogOrigin:row.catalog_origin,
+          adjudicationClass:row.adjudication_class,estimateReady:row.selectable===true
+            && Boolean(row.definition_version_id) && row.publication_state==="ADMITTED_BACKEND",
+          shortScopeRu:row.short_scope_ru,keyDistinguishingParameters:row.key_distinguishing_parameters,
+          requiredInputsCount:row.required_inputs_count,clarificationFields:row.clarification_fields,
+          includedBoundaries:row.included_boundaries,excludedBoundaries:row.excluded_boundaries,
+          replacementCatalogId:row.source_catalog_id!==row.catalog_id ? row.catalog_id : null,
+          matchTier,matchType,matchedTerm:row.matched_term,
+          matchedField:matchTier===6 ? "fuzzy_name_or_alias" : matchedAlias ? "aliases" : "canonical_name_ru",
+          rankingReasonRu:matchTier===1 ? "Точное совпадение идентификатора или названия"
+            : matchTier===2 ? "Точный зарегистрированный синоним"
+              : matchTier===3 ? "Начало канонического названия"
+                : matchTier===4 ? "Буквальное вхождение в разрешённый синоним"
+                  : matchTier===5 ? "Буквальное вхождение без ограничения первых 15 результатов"
+                    : "Отдельная нечёткая подсказка; не смешана с literal-выдачей",
+          selectableMode:"PROFESSIONAL",nonselectableReasonRu:null};
+      }),nextCursor:last && shownCount<(literalTotalCount+fuzzyTotalCount) ? Buffer.from(JSON.stringify({
+        releaseId:result.release.id,snapshotSha256:result.release.snapshot_sha256,
+        orderKey:last.stable_order_key,shown:shownCount})).toString("base64url") : null,
+      durationMs:Number((performance.now()-startedAt).toFixed(3))});
   }
   if (request.method === "GET" && path.length === 3 && path[0] === "search" && path[1] === "groups") {
     const groupId = decodeURIComponent(path[2]);
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50));
     const cursor = searchCursor(url.searchParams.get("cursor"));
     const result = await withSearchClient(async (client) => {
-      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
-      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      const release = await localSearchRelease(client);
       if (cursor && (cursor.releaseId !== release.id || cursor.snapshotSha256 !== release.snapshot_sha256)) throw Object.assign(new Error("Поисковый индекс обновился. Откройте группу заново."), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
-      const after = cursor ? Number(cursor.orderKey) : null;
-      const rows = (await client.query("select * from public.estimate_list_search_group_r2($1,$2,$3)", [groupId, after, limit])).rows;
+      const rows = (await client.query("select * from public.estimate_list_search_group_r58($1,$2,$3,$4)",
+        [release.id,groupId,cursor?.orderKey ?? null,limit])).rows;
       return { release, rows };
     });
     if (!result.rows.length && !cursor) throw Object.assign(new Error("search group not found"), { code: "NOT_FOUND", httpStatus: 404 });
     const totalCount = Number(result.rows[0]?.member_count ?? 0);
     const shownCount = (cursor?.shown ?? 0) + result.rows.length;
     const last = result.rows[result.rows.length - 1];
-    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, searchIndexSnapshotSha256: result.release.snapshot_sha256, taxonomyVersion: result.release.taxonomy_version, groupRelationVersion: result.release.group_relation_version, groupId, groupNameRu: result.rows[0]?.group_name_ru ?? "", totalCount, shownCount, items: result.rows.map((row: Record<string, any>) => ({ catalogId: row.catalog_id, canonicalNameRu: row.canonical_name_ru, publicationState: row.publication_state, catalogOrigin: row.catalog_origin, operationKind: row.operation_kind, technologyVariant: row.technology_variant })), nextCursor: last && shownCount < totalCount ? Buffer.from(JSON.stringify({ releaseId: result.release.id, snapshotSha256: result.release.snapshot_sha256, orderKey: String(last.ordinal), shown: shownCount })).toString("base64url") : null });
+    return send(response, 200, { apiVersion: API_VERSION, searchIndexReleaseId: result.release.id, searchIndexSnapshotSha256: result.release.snapshot_sha256, taxonomyVersion: result.release.taxonomy_version, groupRelationVersion: result.release.group_relation_version, groupId, groupNameRu: result.rows[0]?.group_name_ru ?? "", totalCount, shownCount, items: result.rows.map((row: Record<string, any>) => ({ catalogId: row.catalog_id, canonicalNameRu: row.canonical_name_ru, publicationState: row.publication_state, catalogOrigin: row.catalog_origin, operationKind: row.operation_kind, technologyVariant: row.technology_variant })), nextCursor: last && shownCount < totalCount ? Buffer.from(JSON.stringify({ releaseId: result.release.id, snapshotSha256: result.release.snapshot_sha256, orderKey: String(last.catalog_id), shown: shownCount })).toString("base64url") : null });
   }
   if (request.method === "GET" && path.length === 4 && path[0] === "search" && path[1] === "catalog" && path[3] === "relations") {
     const catalogId = decodeURIComponent(path[2]);
     const result = await withSearchClient(async (client) => {
-      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
-      if (!release) throw Object.assign(new Error("active search release not found"), { code: "NOT_FOUND", httpStatus: 404 });
+      const release = await localSearchRelease(client);
       const rows = (await client.query(`select r.*,d.canonical_name_ru target_name_ru from public.estimate_search_typed_relation r join public.estimate_search_document d on d.search_release_id=r.search_release_id and d.catalog_id=r.target_catalog_id where r.search_release_id=$1 and r.source_catalog_id=$2 order by r.relationship_type,r.target_catalog_id`, [release.id, catalogId])).rows;
       return { release, rows };
     });
@@ -1039,11 +1257,11 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   if (request.method === "POST" && path.length === 1 && path[0] === "drafts") {
     const body = await readBody(request) as Record<string, any>;
     const result = await withSearchClient(async (client) => {
-      const release = (await client.query("select * from public.estimate_search_index_release where status='active'")).rows[0];
+      const release = await localSearchRelease(client);
       if (!release || (body.searchIndexReleaseId && body.searchIndexReleaseId !== release.id)) throw Object.assign(new Error("stale search snapshot"), { code: "STALE_SEARCH_SNAPSHOT", httpStatus: 409 });
       const selected = Array.isArray(body.selectedCatalogIds) ? [...new Set(body.selectedCatalogIds.map(String))] : [];
       if (selected.length) {
-        const known = Number((await client.query("select count(*) count from public.estimate_search_document where search_release_id=$1 and catalog_id=any($2::text[]) and publication_state<>'RETIRED'", [release.id, selected])).rows[0].count);
+        const known = Number((await client.query("select count(*) count from public.estimate_search_document where search_release_id=$1 and catalog_id=any($2::text[]) and adjudication_class='EFFECTIVE_WORK' and selectable and definition_version_id is not null", [release.id, selected])).rows[0].count);
         if (known !== selected.length) throw Object.assign(new Error("invalid search selection"), { code: "INVALID_SEARCH_SELECTION", httpStatus: 409 });
       }
       return (await client.query(`insert into public.estimate_draft(owner_user_id,status,title,original_query,normalized_query,search_filters,search_index_release_id,taxonomy_version,group_relation_version,search_result_set_hash,candidate_set_hash,selected_result_hash,selected_catalog_ids,selected_work_order,last_device_id) values($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$10,$11,$12,$12,$13) returning *`, [OWNER_ID, selected.length ? "DRAFT_INPUT_REQUIRED" : "SEARCHING", String(body.title ?? body.originalQuery ?? ""), String(body.originalQuery ?? ""), normalizeSearchQuery(String(body.originalQuery ?? "")), JSON.stringify(body.searchFilters ?? {}), release.id, release.taxonomy_version, release.group_relation_version, body.searchResultSetHash ?? null, selected.length ? sha256(selected) : null, selected, body.deviceId ?? null])).rows[0];

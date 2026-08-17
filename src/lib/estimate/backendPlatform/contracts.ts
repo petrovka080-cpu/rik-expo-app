@@ -304,6 +304,8 @@ export type CanonicalEstimateSearchMatchType =
 
 export type CanonicalEstimateSearchItem = {
   catalogId: string;
+  definitionVersionId: string;
+  definitionReleaseId: string;
   canonicalNameRu: string;
   groupId: string;
   groupNameRu: string;
@@ -318,6 +320,8 @@ export type CanonicalEstimateSearchItem = {
   primaryUom: string;
   publicationState: CanonicalEstimateSearchPublicationState;
   catalogOrigin: "GLOBAL" | "EXTERNAL_D" | "EXTERNAL_N";
+  adjudicationClass: "EFFECTIVE_WORK" | "ALIAS" | "DUPLICATE" | "EXTERNAL_REFERENCE";
+  estimateReady: boolean;
   shortScopeRu: string;
   keyDistinguishingParameters: unknown[];
   requiredInputsCount: number;
@@ -342,15 +346,27 @@ export type CanonicalEstimateSearchPage = {
   groupRelationVersion: string;
   rankingContractVersion: string;
   resultSetSha256: string;
+  rawQuery: string;
   normalizedQuery: string;
+  searchText: string;
+  searchMode: "ANY" | "ALL" | "PHRASE";
+  searchTokens: string[];
+  parsedQuantity: number | null;
+  parsedUnit: string | null;
   filters: Record<string, string>;
+  scope: "WORKS" | "REFERENCES";
+  resultLevel: "LITERAL" | "FUZZY";
   literalTotalCount: number;
+  inventoryLiteralTotalCount: number;
   globalLiteralTotalCount: number;
   externalLiteralTotalCount: number;
+  groupTotalCount: number;
+  fuzzyTotalCount: number;
   suggestionTotalCount: number;
   shownCount: number;
   items: CanonicalEstimateSearchItem[];
   nextCursor: string | null;
+  durationMs: number;
 };
 
 export type CanonicalEstimateSearchGroupPage = {

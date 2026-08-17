@@ -97,6 +97,9 @@ async function invoke<T>(path: string, options: {
 
 export function searchCanonicalEstimateCatalog(input: {
   query: string;
+  mode?: "ANY" | "ALL" | "PHRASE" | null;
+  tokens?: string[];
+  scope?: "WORKS" | "REFERENCES";
   domain?: string | null;
   groupId?: string | null;
   operationKind?: string | null;
@@ -105,6 +108,9 @@ export function searchCanonicalEstimateCatalog(input: {
   signal?: AbortSignal | null;
 }) {
   const params = new URLSearchParams({ query: input.query, pageSize: String(input.pageSize ?? 50) });
+  if (input.mode) params.set("mode",input.mode);
+  for (const token of input.tokens ?? []) params.append("token",token);
+  if (input.scope) params.set("scope",input.scope);
   if (input.domain) params.set("domain", input.domain);
   if (input.groupId) params.set("groupId", input.groupId);
   if (input.operationKind) params.set("operationKind", input.operationKind);

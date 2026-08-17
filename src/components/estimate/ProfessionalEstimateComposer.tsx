@@ -965,10 +965,15 @@ export default function ProfessionalEstimateComposer({
                 : null}
               {catalogLoading ? <ActivityIndicator /> : null}
               {catalogSearchPage ? <View style={styles.workSuggestionsPanel} testID="foreman-ai-estimate-work-suggestions">
-                <Text style={styles.panelTitle}>{TEXT.workSuggestionTitle}</Text>
+                <Text style={styles.panelTitle}>{catalogSearchPage.resultLevel === "FUZZY" ? "Другие названия (fuzzy)" : TEXT.workSuggestionTitle}</Text>
                 <Text style={styles.catalogHint} testID="canonical-estimate-search-total">
                   Найдено буквально: {catalogSearchPage.literalTotalCount}. Показано: {catalogSuggestions.length}. Подсказок: {catalogSearchPage.suggestionTotalCount}.
                 </Text>
+                <Text style={styles.catalogHint} testID="canonical-estimate-search-mode">
+                  Режим {catalogSearchPage.searchMode} · tokens: {catalogSearchPage.searchTokens.join(" · ")}
+                  {catalogSearchPage.parsedQuantity == null ? "" : ` · объём ${catalogSearchPage.parsedQuantity} ${catalogSearchPage.parsedUnit ?? ""}`}
+                </Text>
+                <Text style={styles.catalogHint}>Групп: {catalogSearchPage.groupTotalCount} · fuzzy: {catalogSearchPage.fuzzyTotalCount} · полный adjudicated inventory match: {catalogSearchPage.inventoryLiteralTotalCount}</Text>
                 <Text style={styles.catalogHint}>Индекс {catalogSearchPage.searchIndexReleaseId} · taxonomy {catalogSearchPage.taxonomyVersion}</Text>
                 <View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <Pressable
                   key={suggestion.catalogId}
