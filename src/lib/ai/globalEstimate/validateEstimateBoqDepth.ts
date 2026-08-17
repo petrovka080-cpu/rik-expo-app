@@ -205,7 +205,7 @@ export function validateEstimateBoqDepth(result: GlobalEstimateResult): Estimate
   const requireFullSectionEnvelope = complexityProfile.level !== "local_operation";
 
   const blockers: string[] = [];
-  if (actualRows < minimumRows) blockers.push(`BOQ_MEANINGFUL_DEPTH_TOO_SHORT:${actualRows}<${minimumRows}`);
+  if (actualRows === 0) blockers.push("BOQ_APPLICABLE_COMPOSITION_EMPTY");
   if (genericRows.length > 0) blockers.push(`BOQ_GENERIC_ROWS_FOUND:${compactList(genericRows)}`);
   if (artificialPaddingRows.length > 0) blockers.push(`BOQ_ARTIFICIAL_PADDING_ROWS_FOUND:${compactList(artificialPaddingRows)}`);
   if (duplicateSemanticSignatures.length > 0) blockers.push(`BOQ_DUPLICATE_ROWS_FOUND:${compactList(duplicateSemanticSignatures)}`);

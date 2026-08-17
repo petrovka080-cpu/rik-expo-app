@@ -15,11 +15,14 @@ export type ProfessionalEstimateComplexityProfile = {
 };
 
 export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = {
-  local_operation: 1,
-  full_professional: 46,
-  complex_professional: 100,
-  industrial_infrastructure: 200,
-  mega_project: 500,
+  // R5.7 abolished row-count quotas. These zeroes are retained only as a
+  // compatibility surface for historical evidence readers; no compiler or
+  // acceptance gate may use them to manufacture or admit BOQ rows.
+  local_operation: 0,
+  full_professional: 0,
+  complex_professional: 0,
+  industrial_infrastructure: 0,
+  mega_project: 0,
 };
 
 type EstimateComplexityInput = {
@@ -123,5 +126,6 @@ export function classifyEstimateBoqDepth(
 }
 
 export function minimumRowsForEstimate(result: EstimateComplexityInput): number {
-  return buildProfessionalEstimateComplexityProfile(result).minimumMeaningfulRows;
+  void result;
+  return 0;
 }

@@ -95,46 +95,8 @@ const IGNORED_FORMULA_KEYS = new Set([
   "included_in_procurement",
 ]);
 
-const UNIVERSAL_PROFESSIONAL_SUGGESTIONS: { key: string; priority: number; match?: RegExp }[] = [
-  { key: "length_m", priority: 30 },
-  { key: "width_m", priority: 31 },
-  { key: "height_m", priority: 32 },
-  { key: "ceiling_height_m", priority: 33, match: /apartment|house|interior|room|tile|floor|wall|ceiling|bathroom|kitchen|renovation|отдел|ремонт|квартир|дом|сануз|плит|стен|пол/i },
-  { key: "depth_mm", priority: 34 },
-  { key: "thickness_m", priority: 35 },
-  { key: "diameter_mm", priority: 36, match: /pipe|pipeline|water|sewer|gas|heat|drain|cable|бур|труб|вод|канал|газ|тепл|кабел/i },
-  { key: "count", priority: 37 },
-  { key: "bathrooms_count", priority: 38, match: /bathroom|tile|plumbing|renovation|сануз|ванн|душ|плит|сантех|ремонт/i },
-  { key: "electrical_points", priority: 39, match: /electric|power|cable|socket|электр|кабел|розет|выключ/i },
-  { key: "water_points", priority: 40, match: /water|plumbing|bathroom|kitchen|вод|сантех|сануз|кухн/i },
-  { key: "sewer_points", priority: 41, match: /sewer|plumbing|bathroom|канал|сантех|сануз/i },
-  { key: "roof_area_m2", priority: 42, match: /roof|кров|крыша/i },
-  { key: "insulation_thickness_mm", priority: 43, match: /insulat|утепл|фасад|roof|wall|кров|стен/i },
-  { key: "material_specification", priority: 44 },
-  { key: "site_access", priority: 45 },
-  { key: "work_complexity", priority: 46 },
-  { key: "project_location", priority: 60 },
-  { key: "drawings_or_specification", priority: 61 },
-];
-
 function unique<T>(values: readonly T[]): T[] {
   return [...new Set(values)];
-}
-
-function textForTemplate(input: {
-  templateId: string;
-  templateNameRu: string;
-  familyId: string;
-  category: string;
-  aliases: readonly string[];
-}): string {
-  return [
-    input.templateId,
-    input.templateNameRu,
-    input.familyId,
-    input.category,
-    ...input.aliases,
-  ].join(" ");
 }
 
 function fieldRequiredFor(param: WorkPassportParameter): AiEstimateParameterRequiredFor {
@@ -258,27 +220,6 @@ function buildField(input: {
   };
 }
 
-function professionalSuggestionFields(input: {
-  rows: readonly ProfessionalBoqRecipeRow[];
-  templateText: string;
-  existingKeys: Set<string>;
-}): AiEstimateParameterSchemaField[] {
-  const fields: AiEstimateParameterSchemaField[] = [];
-  for (const suggestion of UNIVERSAL_PROFESSIONAL_SUGGESTIONS) {
-    if (input.existingKeys.has(suggestion.key)) continue;
-    if (suggestion.match && !suggestion.match.test(input.templateText)) continue;
-    fields.push(buildField({
-      key: suggestion.key,
-      required: false,
-      requiredFor: suggestion.key === "drawings_or_specification" ? "contract_ready" : "better_accuracy",
-      source: "professional_suggestion",
-      rows: input.rows,
-      priority: suggestion.priority,
-    }));
-  }
-  return fields;
-}
-
 function formulaDependencyFields(input: {
   rows: readonly ProfessionalBoqRecipeRow[];
   formulaKeys: readonly string[];
@@ -370,19 +311,7 @@ export function buildAiEstimateParameterSchema(
     formulaKeys: extractFormulaKeys(rows),
     existingKeys,
   });
-  for (const field of formulaFields) existingKeys.add(field.key);
-  const suggestionFields = professionalSuggestionFields({
-    rows,
-    templateText: textForTemplate({
-      templateId: passport.templateId,
-      templateNameRu: passport.localizedNameRu,
-      familyId: passport.familyId,
-      category: passport.category,
-      aliases: passport.aliases,
-    }),
-    existingKeys,
-  });
-  const fields = sortFields([...passportFields, ...formulaFields, ...suggestionFields]);
+  const fields = sortFields([...passportFields, ...formulaFields]);
   const schema: AiEstimateParameterSchema = {
     templateId: passport.templateId,
     templateNameRu: passport.localizedNameRu,
