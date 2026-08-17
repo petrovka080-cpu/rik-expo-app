@@ -400,11 +400,12 @@ function buildAcceptedBaselineProjection(input: {
   const parameterSchemaVersion = `definition:${String(input.definition.definition_version)}`;
   const inclusionParameterIds = new Set<string>();
   for (const resource of input.resources) collectInclusionParameterIds(resource.inclusion_ast, inclusionParameterIds);
-  const requiredBaselineParameterIds = [...new Set([
-    ...formulaParameterIds,
-    ...inclusionParameterIds,
-    ...schemaRequiredParameterIds,
-  ])].sort();
+  const requiredBaselineParameterIds = [...new Set([...formulaParameterIds, ...inclusionParameterIds])].sort();
+  const unusedSchemaParameterIds = [...parameterById.keys()]
+    .filter((parameterId) => !formulaParameterIds.has(parameterId) && !inclusionParameterIds.has(parameterId))
+    .sort();
+  const unusedRequiredParameterIds = unusedSchemaParameterIds
+    .filter((parameterId) => schemaRequiredParameterIds.has(parameterId));
   const bindings = input.resources.flatMap((resource) => acceptedTraceBindings({
     definition: input.definition,
     resource,
@@ -466,6 +467,8 @@ function buildAcceptedBaselineProjection(input: {
     inclusionParameterIds: [...inclusionParameterIds].sort(),
     schemaRequiredParameterIds: [...schemaRequiredParameterIds].sort(),
     requiredBaselineParameterIds,
+    unusedSchemaParameterIds,
+    unusedRequiredParameterIds,
     acceptedParameterIds: Object.keys(defaults).sort(),
     acceptedBindings: bindings,
     defaults,
@@ -717,8 +720,11 @@ async function admitSuccessorDefinitions(): Promise<void> {
         const acceptedProvenance = acceptedProjection.acceptedProvenance as Json;
         const sourceParameterSchemaId = String(acceptedProjection.parameterSchemaId);
         const sourceParameterSchemaVersion = String(acceptedProjection.parameterSchemaVersion);
+        const consumerParameterIds = new Set((acceptedProjection.requiredBaselineParameterIds as string[]) ?? []);
+        const projectedParameters = parameters.filter((row) => consumerParameterIds.has(String(row.parameter_id)));
+        invariant(projectedParameters.length === consumerParameterIds.size, `R53_CONSUMER_PARAMETER_SCHEMA_INCOMPLETE:${historical.catalog_id}`);
 
-        const successorParameters = parameters.map((row) => {
+        const successorParameters = projectedParameters.map((row) => {
           const formulaIds = [...(formulaConsumers.get(row.parameter_id) ?? [])].sort();
           const branchIds = [...(inclusionConsumers.get(row.parameter_id) ?? [])].sort();
           const resourceIds = [...new Set([
@@ -811,7 +817,9 @@ async function admitSuccessorDefinitions(): Promise<void> {
           canonicalCatalogId: historical.catalog_id,
           baselineOwner: ACCEPTED_TRACE_BASELINE_VERSION,
           baselineWithoutUserInput: true,
+          sourceParameterCount: parameters.length,
           parameterCount: successorParameters.length,
+          removedUnusedParameterIds: acceptedProjection.unusedSchemaParameterIds,
         };
         const definitionSourceMetadata = {
           ...historical.source_metadata,
@@ -882,7 +890,8 @@ async function admitSuccessorDefinitions(): Promise<void> {
           formulas,
           successorResources,
         );
-        invariant(beforeFingerprint.parameters === afterFingerprint.parameters, `R53_PARAMETER_SCHEMA_DRIFT:${historical.catalog_id}`);
+        const projectedBeforeFingerprint = semanticFingerprint(historical, projectedParameters, formulas, resources);
+        invariant(projectedBeforeFingerprint.parameters === afterFingerprint.parameters, `R53_PARAMETER_SCHEMA_DRIFT:${historical.catalog_id}`);
         invariant(beforeFingerprint.formulas === afterFingerprint.formulas, `R53_FORMULA_DRIFT:${historical.catalog_id}`);
         invariant(beforeFingerprint.resources === afterFingerprint.resources, `R53_RESOURCE_DRIFT:${historical.catalog_id}`);
         parameterCount += successorParameters.length;
@@ -895,7 +904,9 @@ async function admitSuccessorDefinitions(): Promise<void> {
           successorDefinitionVersionId: newDefinitionId,
           definitionVersion,
           parameterSchemaId,
+          sourceParameterCount: parameters.length,
           parameterCount: successorParameters.length,
+          removedUnusedParameterIds: acceptedProjection.unusedSchemaParameterIds,
           baselineDefaultCount: successorParameters.filter((row) => row.default_value !== undefined).length,
           visibleGuideCount: successorParameters.filter((row) => row.truth_metadata.guide?.guide_short_ru).length,
           formulaConsumerParameterCount: successorParameters.filter((row) => row.truth_metadata.formula_consumers.length > 0).length,
@@ -903,6 +914,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
           formulaCount: formulas.length,
           resourceCount: resources.length,
           beforeFingerprint,
+          projectedBeforeFingerprint,
           afterFingerprint,
           parameterCards: successorParameters.map((row) => ({
             parameterId: row.parameter_id,
