@@ -14,27 +14,39 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const CONCRETE_NO_AUTHORITATIVE_TRACE = process.argv.includes("--concrete-no-authoritative-trace");
 const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const TRACE_NOT_ADMITTED = process.argv.includes("--trace-not-admitted");
-const TARGET_PARTITION = DRYWALL_TRACE_NOT_ADMITTED || TRACE_NOT_ADMITTED
-  ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937";
-const TARGET_DOMAIN = DRYWALL_TRACE_NOT_ADMITTED ? "drywall" : "asphalt";
-const EXPECTED_DEFINITIONS = DRYWALL_TRACE_NOT_ADMITTED ? 500 : TRACE_NOT_ADMITTED ? 38 : 13;
-const EXPECTED_PARAMETERS = DRYWALL_TRACE_NOT_ADMITTED ? 62_614 : TRACE_NOT_ADMITTED ? 4_090 : 1_032;
-const EXPECTED_UNUSED_PARAMETERS = DRYWALL_TRACE_NOT_ADMITTED ? 33_871 : TRACE_NOT_ADMITTED ? 1_038 : 606;
-const EXPECTED_SEMANTIC_REPAIRS = DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : TRACE_NOT_ADMITTED ? 478 : 66;
-const EXPECTED_COST_CONTROL_REPAIRS = DRYWALL_TRACE_NOT_ADMITTED ? 0 : TRACE_NOT_ADMITTED ? 74 : 2;
-const EXPECTED_SUCCESSOR_ENTRIES = DRYWALL_TRACE_NOT_ADMITTED ? 613 : TRACE_NOT_ADMITTED ? 113 : 75;
-const CONTRACT = DRYWALL_TRACE_NOT_ADMITTED
+const TARGET_PARTITION = CONCRETE_NO_AUTHORITATIVE_TRACE ? "NO_AUTHORITATIVE_TRACE_1286"
+  : DRYWALL_TRACE_NOT_ADMITTED || TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937";
+const TARGET_DOMAIN = CONCRETE_NO_AUTHORITATIVE_TRACE ? "concrete"
+  : DRYWALL_TRACE_NOT_ADMITTED ? "drywall" : "asphalt";
+const EXPECTED_DEFINITIONS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 1_218
+  : DRYWALL_TRACE_NOT_ADMITTED ? 500 : TRACE_NOT_ADMITTED ? 38 : 13;
+const EXPECTED_PARAMETERS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 389_314
+  : DRYWALL_TRACE_NOT_ADMITTED ? 62_614 : TRACE_NOT_ADMITTED ? 4_090 : 1_032;
+const EXPECTED_UNUSED_PARAMETERS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 61_781
+  : DRYWALL_TRACE_NOT_ADMITTED ? 33_871 : TRACE_NOT_ADMITTED ? 1_038 : 606;
+const EXPECTED_SEMANTIC_REPAIRS = CONCRETE_NO_AUTHORITATIVE_TRACE ? 0
+  : DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : TRACE_NOT_ADMITTED ? 478 : 66;
+const EXPECTED_COST_CONTROL_REPAIRS = CONCRETE_NO_AUTHORITATIVE_TRACE || DRYWALL_TRACE_NOT_ADMITTED
+  ? 0 : TRACE_NOT_ADMITTED ? 74 : 2;
+const EXPECTED_SUCCESSOR_ENTRIES = CONCRETE_NO_AUTHORITATIVE_TRACE ? 2_793
+  : DRYWALL_TRACE_NOT_ADMITTED ? 613 : TRACE_NOT_ADMITTED ? 113 : 75;
+const CONTRACT = CONCRETE_NO_AUTHORITATIVE_TRACE
+  ? "p0-one-monolith-r58-concrete-no-authoritative-trace-repair-1218.v1"
+  : DRYWALL_TRACE_NOT_ADMITTED
   ? "p0-one-monolith-r58-drywall-trace-not-admitted-repair-500.v1"
   : TRACE_NOT_ADMITTED
     ? "p0-one-monolith-r58-asphalt-trace-not-admitted-repair-38.v1"
     : "p0-one-monolith-r58-asphalt-compile-red-repair-13.v1";
-const SUCCESSOR_METADATA_KEY = DRYWALL_TRACE_NOT_ADMITTED
-  ? "r58DrywallTraceNotAdmittedSuccessor"
+const SUCCESSOR_METADATA_KEY = CONCRETE_NO_AUTHORITATIVE_TRACE
+  ? "r58ConcreteNoAuthoritativeTraceSuccessor"
+  : DRYWALL_TRACE_NOT_ADMITTED ? "r58DrywallTraceNotAdmittedSuccessor"
   : "r58AsphaltCompileRedSuccessor";
-const ROW_REPAIR_METADATA_KEY = DRYWALL_TRACE_NOT_ADMITTED
-  ? "r58DrywallTraceNotAdmittedRepair"
+const ROW_REPAIR_METADATA_KEY = CONCRETE_NO_AUTHORITATIVE_TRACE
+  ? "r58ConcreteNoAuthoritativeTraceRepair"
+  : DRYWALL_TRACE_NOT_ADMITTED ? "r58DrywallTraceNotAdmittedRepair"
   : "r58AsphaltCompileRedRepair";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
@@ -182,7 +194,9 @@ function parameterTruth(parameter: Json, definition: Json, formulas: readonly Js
       : "MEASUREMENT_RULE";
   const title = String(parameter.title_ru).trim();
   invariant(title && !title.includes("�"), `R58_ASPHALT_13_PARAMETER_TITLE:${definition.catalog_id}:${parameterId}`);
-  const guideShortRu = DRYWALL_TRACE_NOT_ADMITTED
+  const guideShortRu = CONCRETE_NO_AUTHORITATIVE_TRACE
+    ? `Укажите «${title}» по проекту, рабочим чертежам, обмеру, паспорту бетонной смеси или применимой норме. Параметр относится только к выбранной работе; уточнение создаёт новую точную revision.`
+    : DRYWALL_TRACE_NOT_ADMITTED
     ? `Укажите «${title}» по проекту, обмеру, паспорту материала или применимой норме. Параметр относится только к выбранной работе; уточнение создаёт новую точную revision.`
     : `Укажите «${title}» по проекту, обмеру, лабораторному заданию или утверждённой технологической карте. Параметр показан только потому, что влияет на выбранную работу; уточнение создаёт новую точную revision.`;
   return {
@@ -194,9 +208,11 @@ function parameterTruth(parameter: Json, definition: Json, formulas: readonly Js
       guide_short_ru: guideShortRu,
       guide_kind: guideKind,
       source_role: guideKind === "MEASUREMENT_RULE" ? "PROJECT_OR_SITE_MEASUREMENT" : "PROJECT_OR_APPROVED_METHOD_STATEMENT",
-      guide_version: DRYWALL_TRACE_NOT_ADMITTED
-        ? "P0_ONE_MONOLITH_R58_DRYWALL_INPUT_GUIDE_V1"
-        : "P0_ONE_MONOLITH_R58_ASPHALT_INPUT_GUIDE_V2",
+      guide_version: CONCRETE_NO_AUTHORITATIVE_TRACE
+        ? "P0_ONE_MONOLITH_R58_CONCRETE_INPUT_GUIDE_V1"
+        : DRYWALL_TRACE_NOT_ADMITTED
+          ? "P0_ONE_MONOLITH_R58_DRYWALL_INPUT_GUIDE_V1"
+          : "P0_ONE_MONOLITH_R58_ASPHALT_INPUT_GUIDE_V2",
       source_snapshot_hash: sha256({
         catalogId: definition.catalog_id,
         parameterId,
@@ -262,10 +278,12 @@ function hiddenDuplicateFingerprint(row: Json, formula: Json): string {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  const allowedArgs = new Set(["--apply", "--trace-not-admitted", "--drywall-trace-not-admitted"]);
+  const allowedArgs = new Set(["--apply", "--trace-not-admitted", "--drywall-trace-not-admitted",
+    "--concrete-no-authoritative-trace"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
     && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
-    && !(TRACE_NOT_ADMITTED && DRYWALL_TRACE_NOT_ADMITTED),
+    && [TRACE_NOT_ADMITTED, DRYWALL_TRACE_NOT_ADMITTED, CONCRETE_NO_AUTHORITATIVE_TRACE]
+      .filter(Boolean).length <= 1,
     "R58_ASPHALT_13_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_ASPHALT_13_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -285,7 +303,8 @@ async function main(): Promise<void> {
       .map((blocker: string) => blocker.slice("parameter_without_resource_consumer:".length)),
   )]));
   const traceVisibleUnusedParameters = [...unusedByCatalog.values()].reduce((sum, values) => sum + values.size, 0);
-  invariant(traceVisibleUnusedParameters === (TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED ? 0 : 561),
+  invariant(traceVisibleUnusedParameters === (TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED
+    || CONCRETE_NO_AUTHORITATIVE_TRACE ? 0 : 561),
     "R58_ASPHALT_13_UNUSED_PARAMETER_DENOMINATOR");
 
   const client = new Client({
@@ -404,7 +423,7 @@ async function main(): Promise<void> {
         const costOwnerCounts = new Map<string, number>();
         for (const row of resources) {
           const owner = String(row.semantic_owner ?? "").trim();
-          if (!DRYWALL_TRACE_NOT_ADMITTED) {
+          if (!DRYWALL_TRACE_NOT_ADMITTED && !CONCRETE_NO_AUTHORITATIVE_TRACE) {
             invariant(owner, `R58_ASPHALT_13_BLANK_OWNER:${definition.catalog_id}:${row.row_id}`);
           }
           ownerCounts.set(owner, (ownerCounts.get(owner) ?? 0) + 1);
@@ -647,8 +666,9 @@ async function main(): Promise<void> {
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, removedParameters, changedSemanticRows,
           records: records.map((row) => row.afterComputationalSha256) }),
-        JSON.stringify({ [DRYWALL_TRACE_NOT_ADMITTED
-          ? "r58DrywallTraceNotAdmittedRepair500"
+        JSON.stringify({ [CONCRETE_NO_AUTHORITATIVE_TRACE
+          ? "r58ConcreteNoAuthoritativeTraceRepair1218"
+          : DRYWALL_TRACE_NOT_ADMITTED ? "r58DrywallTraceNotAdmittedRepair500"
           : TRACE_NOT_ADMITTED ? "r58AsphaltTraceNotAdmittedRepair38" : "r58AsphaltCompileRedRepair13"]: {
           contract: CONTRACT, specSha256: SPEC_SHA256, definitions: EXPECTED_DEFINITIONS,
           traceVisibleUnusedParameters, removedUnusedParameters: removedParameters, retainedApplicableParameters,
@@ -667,8 +687,9 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = records.map((row) => stable(row)).join("\n") + (records.length > 0 ? "\n" : "");
-  const evidenceStem = DRYWALL_TRACE_NOT_ADMITTED
-    ? "R58_DRYWALL_TRACE_NOT_ADMITTED_REPAIR_500"
+  const evidenceStem = CONCRETE_NO_AUTHORITATIVE_TRACE
+    ? "R58_CONCRETE_NO_AUTHORITATIVE_TRACE_REPAIR_1218"
+    : DRYWALL_TRACE_NOT_ADMITTED ? "R58_DRYWALL_TRACE_NOT_ADMITTED_REPAIR_500"
     : TRACE_NOT_ADMITTED
       ? "R58_ASPHALT_TRACE_NOT_ADMITTED_REPAIR_38"
       : "R58_ASPHALT_COMPILE_RED_REPAIR_13";
@@ -693,7 +714,9 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_${DRYWALL_TRACE_NOT_ADMITTED ? "DRYWALL_TRACE_NOT_ADMITTED" : `ASPHALT_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED" : "COMPILE_RED"}`}_REPAIR_${EXPECTED_DEFINITIONS}_${
+    status: `GREEN_R58_${CONCRETE_NO_AUTHORITATIVE_TRACE ? "CONCRETE_NO_AUTHORITATIVE_TRACE"
+      : DRYWALL_TRACE_NOT_ADMITTED ? "DRYWALL_TRACE_NOT_ADMITTED"
+        : `ASPHALT_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED" : "COMPILE_RED"}`}_REPAIR_${EXPECTED_DEFINITIONS}_${
       idempotent ? "IDEMPOTENT_0" : apply ? "APPLIED" : "DRY_RUN_ROLLED_BACK"}`,
   };
   const summaryPath = resolve(OUTPUT_ROOT,
