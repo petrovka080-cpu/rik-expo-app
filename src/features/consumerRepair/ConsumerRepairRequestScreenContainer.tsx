@@ -15,7 +15,7 @@ import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructure
 import { upsertConsumerRepairCanonicalBackendDraft } from "../../lib/consumerRequests/consumerRequestService";
 import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
 import { currentUserId } from "../../lib/supabaseClient";
-import { APP_LAYOUT } from "../../components/layout/appLayout";
+import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCompile";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 let canonicalBackendMigrationStarted = false;
@@ -159,7 +159,11 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   });
   const durableHydrationPending = durableStatus === "loading" &&
     !shouldDeferInitialHistoryLoad(props);
-  const acceptCanonicalDraft = React.useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
+  const persistCanonicalDraft = React.useCallback(async (
+    mapping: ForemanAiEstimateDraftMapping,
+    problemText: string,
+    targetDraftId: string | null,
+  ) => {
     if (!resolvedConsumerUserId) return;
     const includedRows = mapping.payload.rows.filter((row) => row.includedInEstimate !== false);
     const payload = {
@@ -171,17 +175,20 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       })).filter((section) => section.rows.length > 0),
     };
     const bundle = upsertConsumerRepairCanonicalBackendDraft({
-      requestDraftId: canonicalTargetDraftId,
+      requestDraftId: targetDraftId,
       consumerUserId: resolvedConsumerUserId,
-      problemText: canonicalPrompt || mapping.payload.inputText,
+      problemText: problemText || mapping.payload.inputText,
       city: "Bishkek",
       aiDraft: buildStructuredEstimateRequestDraft(payload),
     });
     screenRef.current?.acceptCanonicalBackendDraft(bundle);
+  }, [resolvedConsumerUserId]);
+  const acceptCanonicalDraft = React.useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
+    await persistCanonicalDraft(mapping, canonicalPrompt, canonicalTargetDraftId);
     setCanonicalComposerVisible(false);
     setCanonicalInitialRevisionId(null);
     setCanonicalTargetDraftId(null);
-  }, [canonicalPrompt, canonicalTargetDraftId, resolvedConsumerUserId]);
+  }, [canonicalPrompt, canonicalTargetDraftId, persistCanonicalDraft]);
   const authUnavailable = authResolved && !resolvedConsumerUserId;
   return (
     <View style={styles.root}>
@@ -207,6 +214,10 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             setCanonicalInitialRevisionId(revisionId?.trim() || null);
             setCanonicalTargetDraftId(requestDraftId?.trim() || null);
             setCanonicalComposerVisible(true);
+          }}
+          onPrepareCanonicalEstimate={async (problemText, catalogId, requestDraftId) => {
+            const mapping = await compileConsumerCanonicalBaseline({ catalogId, prompt: problemText });
+            await persistCanonicalDraft(mapping, problemText, requestDraftId?.trim() || null);
           }}
           onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
           MobilePhotoCaptureFlowNode={photoCapture.flow}
@@ -242,19 +253,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           </Pressable>
         </View>
       ) : null}
-      {resolvedConsumerUserId ? <Pressable
-        accessibilityRole="button"
-        onPress={() => {
-          setCanonicalPrompt(props.initialProblemText ?? "");
-          setCanonicalInitialRevisionId(null);
-          setCanonicalTargetDraftId(null);
-          setCanonicalComposerVisible(true);
-        }}
-        style={styles.canonicalEstimateButton}
-        testID="consumer-repair-open-canonical-estimate"
-      >
-        <Text style={styles.canonicalEstimateButtonText}>Backend-смета</Text>
-      </Pressable> : null}
       {resolvedConsumerUserId && canonicalComposerVisible ? <ProfessionalEstimateComposer
         visible
         mode="consumer"
@@ -313,21 +311,6 @@ const styles = StyleSheet.create({
   storageTryAgainText: {
     color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: "900",
-  },
-  canonicalEstimateButton: {
-    position: "absolute",
-    right: 16,
-    bottom: APP_LAYOUT.floatingAiButtonWithStickyActionOffsetPx + 68,
-    zIndex: 25,
-    borderRadius: 22,
-    backgroundColor: "#14532D",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  canonicalEstimateButtonText: {
-    color: "#FFFFFF",
-    fontSize: 13,
     fontWeight: "900",
   },
 });

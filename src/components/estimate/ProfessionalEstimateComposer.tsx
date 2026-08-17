@@ -74,6 +74,7 @@ import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/b
 import { reconcilePendingCanonicalEstimateAdmissions } from "../../lib/estimate/backendPlatform/canonicalEstimateOutboxReconciler";
 import { currentUserId } from "../../lib/supabaseClient";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
+import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 
 type CatalogSuggestion = CanonicalEstimateSearchItem;
 type RevisionBundle = { revision: CanonicalEstimateRevisionView; rows: CanonicalEstimateRevisionRowView[] };
@@ -309,7 +310,7 @@ export default function ProfessionalEstimateComposer({
 
   useEffect(() => {
     if (!visible || selectedCatalog || selectedSearchIdentity) return;
-    const query = text.trim();
+    const query = canonicalWorkSearchQueryFromPrompt(text);
     if (significantSearchLength(query) < 2) {
       setCatalogSuggestions([]);
       setCatalogSearchPage(null);
@@ -425,7 +426,7 @@ export default function ProfessionalEstimateComposer({
 
   const handleLoadMoreWorkSuggestions = async () => {
     if (!catalogSearchPage?.nextCursor || catalogLoading) return;
-    const query = text.trim();
+    const query = canonicalWorkSearchQueryFromPrompt(text);
     const sequence = ++catalogRequestSequence.current;
     setCatalogLoading(true);
     try {

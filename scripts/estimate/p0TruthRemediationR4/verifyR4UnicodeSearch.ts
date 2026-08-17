@@ -60,7 +60,8 @@ async function writeJson(path: string, value: unknown): Promise<void> {
 async function main(): Promise<void> {
   const databaseUrl = process.env.R4_SEARCH_PROBE_DATABASE_URL ?? DEFAULT_DATABASE_URL;
   const parsed = new URL(databaseUrl);
-  if (!(["127.0.0.1", "localhost"].includes(parsed.hostname) && parsed.port === "55432" && parsed.pathname.startsWith("/p0_r4_"))) {
+  if (!(["127.0.0.1", "localhost"].includes(parsed.hostname) && parsed.port === "55432"
+    && (parsed.pathname.startsWith("/p0_r4_") || parsed.pathname === "/p0_r45_acceptance_full_20260817"))) {
     throw new Error("R4_SEARCH_PROBE_DATABASE_GUARD_REJECTED");
   }
   const outputRoot = resolve(process.argv[2] ?? ".release-runtime/p0-estimate-truth-remediation-r4/evidence");

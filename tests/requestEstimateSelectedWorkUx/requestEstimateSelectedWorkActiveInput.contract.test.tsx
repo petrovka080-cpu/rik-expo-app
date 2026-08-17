@@ -80,6 +80,14 @@ function renderForm(input: {
         contactPhone=""
         selectedWork={input.selectedWork}
         workSuggestions={input.workSuggestions ?? []}
+        workSearchLiteralTotalCount={0}
+        workSearchGlobalLiteralTotalCount={0}
+        workSearchExternalLiteralTotalCount={0}
+        workSearchSuggestionTotalCount={0}
+        workSearchShownCount={0}
+        workSearchLoading={false}
+        workSearchErrorRu={null}
+        workSearchHasMore={false}
         problemInputRef={React.createRef<TextInput>()}
         onProblemTextChange={noop}
         onCityChange={noop}
@@ -88,6 +96,7 @@ function renderForm(input: {
         onContactPhoneChange={noop}
         onSelectWorkSuggestion={noop}
         onSelectTemplateCandidate={input.onSelectTemplateCandidate ?? noop}
+        onLoadMoreWorkSuggestions={noop}
       />,
     );
   });

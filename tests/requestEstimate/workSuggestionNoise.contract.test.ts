@@ -65,10 +65,10 @@ function page(items: CanonicalEstimateSearchItem[], nextCursor: string | null): 
 }
 
 describe("request estimate work suggestion visibility", () => {
-  it("keeps smart suggestions out of full estimate prompts", () => {
+  it("routes a full estimate prompt through canonical work-intent search", () => {
     const prompt = "водоснабжение села 5 км труба ПЭ100 d110 траншея колодцы";
 
-    expect(shouldShowConsumerRepairWorkSuggestions(prompt)).toBe(false);
+    expect(shouldShowConsumerRepairWorkSuggestions(prompt)).toBe(true);
     expect(searchConsumerRepairWorkSuggestions(prompt, null)).toHaveLength(0);
   });
 

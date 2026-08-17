@@ -2,7 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { approveConsumerRepairRequestDraft, buildApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
-import { buildApprovedConsumerRepairWorkspaceClearedState } from "../../src/features/consumerRepair/requestEstimateScreenActions";
+import {
+  buildApprovedConsumerRepairWorkspaceClearedState,
+  emptyConsumerRepairCanonicalWorkSearchState,
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import { buildConsumerRepairRequestRenderModel } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel";
 import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
 
@@ -46,6 +49,7 @@ describe("capital renovation 98 PDF button state", () => {
       addressText: approved.draft.addressText ?? "",
       preferredTimeText: approved.draft.preferredTimeText ?? "",
       contactPhone: approved.draft.contactPhone ?? "",
+      canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState(),
       ...cleared,
     });
 

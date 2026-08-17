@@ -34,6 +34,7 @@ import type {
   CanonicalEstimateSearchItem,
   CanonicalEstimateSearchPage,
 } from "../../lib/estimate/backendPlatform/contracts";
+import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import { toVisibleEstimateLabel } from "../../lib/estimatePresentation/visibleEstimateLabelPolicy";
 export type ConsumerRepairParamEditState = {
   key: string;
@@ -489,20 +490,21 @@ function normalizeEditableWorkText(value: string): string {
 
 export function shouldShowConsumerRepairWorkSuggestions(query: string): boolean {
   const normalized = normalizeEditableWorkText(query);
-  if (normalized.length < 2) return false;
-
-  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
-  const looksLikeFullEstimatePrompt =
-    /[:;\n]/.test(query) ||
-    wordCount >= 6 ||
-    /\b\d+(?:[,.]\d+)?\s*(?:м2|м²|м3|м³|м|км|мм|см|шт|этаж(?:ей|а)?|квт|мвт|ква|dn\d+|d\d+)\b/iu.test(normalized);
-
-  return !looksLikeFullEstimatePrompt;
+  return normalized.length >= 2;
 }
 
 export function composeSelectedWorkActiveInputText(suggestion: GlobalWorkSmartSearchSuggestion): string {
   const title = suggestion.titleRu.trim() || suggestion.visibleText.trim();
   return title ? `${title} ` : "";
+}
+
+export function composeSelectedWorkProblemText(
+  suggestion: GlobalWorkSmartSearchSuggestion,
+  originalRawInput: string,
+): string {
+  const original = originalRawInput.trim();
+  if (original && canonicalWorkSearchQueryFromPrompt(original) !== original) return original;
+  return composeSelectedWorkActiveInputText(suggestion);
 }
 
 export function preserveSelectedWorkResolverInput(

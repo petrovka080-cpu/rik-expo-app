@@ -39,6 +39,7 @@ import {
   searchCanonicalEstimateCatalog,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { CanonicalEstimateApiError } from "../../lib/estimate/backendPlatform/contracts";
+import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import {
   createConsumerRepairQuantityEditOperationId,
   recordConsumerRepairQuantityEditStage,
@@ -51,10 +52,10 @@ import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
-  buildEstimateDraftSessionTransitionStatusMessage,
+  buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
   buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
-  composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkActiveInputText, focusConsumerRepairProblemInputAtEnd,
+  composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkProblemText, focusConsumerRepairProblemInputAtEnd,
   emptyConsumerRepairCanonicalWorkSearchState, mergeConsumerRepairCanonicalWorkSearchPage,
   preserveSelectedWorkResolverInput,
   parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
@@ -139,6 +140,11 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     revisionId?: string | null,
     requestDraftId?: string | null,
   ) => void;
+  onPrepareCanonicalEstimate: (
+    problemText: string,
+    catalogId: string,
+    requestDraftId?: string | null,
+  ) => Promise<void>;
   onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
   MobilePhotoCaptureFlowNode?: React.ReactElement | null;
 };
@@ -258,6 +264,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   } | null = null;
   private unsubscribeRuntimeLaunch: (() => void) | null = null;
   private pendingDurableQuantityCommitId = 0;
+  private canonicalBaselineCompileInFlight = false;
   private approvalCommitInFlight = false;
   private parameterApplyInFlight = false;
   private durableHistoryLoadInFlight = false;
@@ -853,7 +860,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({ statusMessage });
     return true;
   }
-  private prepareDraft = () => {
+  private prepareDraft = async () => {
+    if (this.canonicalBaselineCompileInFlight) return;
     const currentRevision =
       this.state.bundle?.estimateDraftRevisionState?.revisions.find(
         (revision) =>
@@ -880,12 +888,57 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
       return;
     }
-    const binding = canonicalBackendBinding(this.state.bundle);
-    this.props.onOpenCanonicalEstimate(
-      problemText,
-      binding?.revisionId ?? null,
-      this.state.bundle?.draft.id ?? null,
-    );
+    let selectedWork = this.state.selectedWork;
+    if (!selectedWork) {
+      try {
+        const searchQuery = canonicalWorkSearchQueryFromPrompt(problemText);
+        const page = this.state.canonicalWorkSearch.query === searchQuery
+          && !this.state.canonicalWorkSearch.loading
+          && this.state.canonicalWorkSearch.searchIndexReleaseId
+          ? null
+          : await searchCanonicalEstimateCatalog({ query: searchQuery, pageSize: 2 });
+        const literalTotalCount = page?.literalTotalCount ?? this.state.canonicalWorkSearch.literalTotalCount;
+        const suggestions = page?.items.map(canonicalSearchItemToConsumerRepairSuggestion)
+          ?? this.state.canonicalWorkSearch.suggestions;
+        const exact = suggestions[0];
+        if (literalTotalCount !== 1 || !exact || !["exact_title", "exact_alias"].includes(exact.matchKind)) {
+          this.scheduleCanonicalWorkSearch(problemText);
+          this.setState({
+            statusMessage: literalTotalCount > 1
+              ? `Найдено несколько работ: ${literalTotalCount}. Выберите точную работу из списка — группа целиком не компилируется.`
+              : "Точная работа не определена. Выберите работу из результатов поиска; пустой второй экран больше не открывается.",
+          });
+          return;
+        }
+        selectedWork = buildSelectedWorkFromSuggestion(exact, problemText);
+        this.setState({ selectedWork, repairType: selectedWork.selectedCategoryKey });
+      } catch (error) {
+        this.setState({
+          statusMessage: error instanceof CanonicalEstimateApiError
+            ? error.message
+            : "Не удалось определить точную работу в canonical backend.",
+        });
+        return;
+      }
+    }
+    this.canonicalBaselineCompileInFlight = true;
+    this.setState({ statusMessage: "Формируем исходную смету в backend…" });
+    try {
+      await this.props.onPrepareCanonicalEstimate(
+        problemText,
+        selectedWork.selectedWorkKey,
+        this.state.bundle?.draft.id ?? null,
+      );
+    } catch (error) {
+      const code = error instanceof Error ? error.message : String(error);
+      this.setState({
+        statusMessage: code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
+          ? "Backend не содержит обязательной исходной модели этой работы. Пустая смета и вымышленные значения запрещены."
+          : "Не удалось сформировать исходную backend-смету. Второй пустой экран не открыт; ошибка зафиксирована.",
+      });
+    } finally {
+      this.canonicalBaselineCompileInFlight = false;
+    }
   };
   private selectRoadScope = (selectedScope: string) => {
     const current = this.state.bundle;
@@ -1527,7 +1580,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const referenceSelectedWork = buildMultiDomainReferenceSelectedWorkBinding(originalRawInput);
     const nextProblemText = referenceSelectedWork
       ? `${referenceSelectedWork.selectedTitleRu} `
-      : composeSelectedWorkActiveInputText(suggestion);
+      : composeSelectedWorkProblemText(suggestion, originalRawInput);
     const selectedWork = referenceSelectedWork ?? buildSelectedWorkFromSuggestion(
       suggestion,
       preserveSelectedWorkResolverInput(originalRawInput, nextProblemText),
@@ -1591,7 +1644,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private scheduleCanonicalWorkSearch = (query: string) => {
     this.cancelCanonicalWorkSearch();
-    if (!shouldShowConsumerRepairWorkSuggestions(query)) {
+    const searchQuery = canonicalWorkSearchQueryFromPrompt(query);
+    if (!shouldShowConsumerRepairWorkSuggestions(searchQuery)) {
       this.setState({ canonicalWorkSearch: emptyConsumerRepairCanonicalWorkSearchState() });
       return;
     }
@@ -1599,13 +1653,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({
       canonicalWorkSearch: {
         ...emptyConsumerRepairCanonicalWorkSearchState(),
-        query,
+        query: searchQuery,
         loading: true,
       },
     });
     this.canonicalWorkSearchTimer = setTimeout(() => {
       this.canonicalWorkSearchTimer = null;
-      void this.loadCanonicalWorkSearchPage({ query, cursor: null, append: false, requestSerial });
+      void this.loadCanonicalWorkSearchPage({ query: searchQuery, cursor: null, append: false, requestSerial });
     }, 180);
   };
   private loadCanonicalWorkSearchPage = async (input: {

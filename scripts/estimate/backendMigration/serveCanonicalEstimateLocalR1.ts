@@ -24,6 +24,10 @@ const MAX_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_ROWS = 2_000;
 const ARTIFACT_ROOT = resolve(".release-runtime/master11610-backend-canonical-r1/05-runtime/local-artifacts");
 const REQUEST_AUDIT_LOG = String(process.env.CANONICAL_ESTIMATE_REQUEST_AUDIT_LOG ?? "").trim();
+const R45_RUNTIME_STARTED_AT = new Date().toISOString();
+const R45_RUNTIME_SOURCE_HEAD = String(process.env.R45_RUNTIME_SOURCE_HEAD ?? "UNSET").trim();
+const R45_RUNTIME_SOURCE_TREE = String(process.env.R45_RUNTIME_SOURCE_TREE ?? "UNSET").trim();
+const R45_RUNTIME_SPEC_SHA256 = String(process.env.R45_RUNTIME_SPEC_SHA256 ?? "e834a50c139189432dc4c20eb59b51a2507b4bb3f857e094b38376b6b5bda860").trim();
 
 type JsonRecord = Record<string, unknown>;
 
@@ -289,6 +293,13 @@ async function drainJobs(): Promise<void> {
             catch (error) {
               const code = typeof error === "object" && error && "code" in error ? String((error as { code: unknown }).code) : "COMPILER_FAILED";
               const message = error instanceof Error ? error.message : String(error);
+              process.stderr.write(`[canonical-local-worker-job-error] ${JSON.stringify({
+                jobId: job.id,
+                catalogId: job.catalog_id,
+                operation: job.operation,
+                code,
+                message,
+              })}\n`);
               const retryable = (code === "40001" && !message.startsWith("optimistic revision conflict:"))
                 || ["40P01", "55P03"].includes(code)
                 || code.endsWith("_LOAD_FAILED")
@@ -774,6 +785,45 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     return;
   }
   if (!request.headers.authorization) throw Object.assign(new Error("authentication required"), { code: "AUTH_REQUIRED", httpStatus: 401 });
+  if (request.method === "GET" && path.length === 1 && path[0] === "runtime-manifest") {
+    const database = await withClient(async (client) => {
+      const definitionRelease = (await client.query(`
+        select id,status,source_manifest_sha256 from public.estimate_definition_release
+        where status='active' order by activated_at desc nulls last,created_at desc limit 1
+      `)).rows[0] ?? null;
+      const searchRelease = (await client.query(`
+        select id,status,snapshot_sha256,taxonomy_version,group_relation_version,ranking_contract_version
+        from public.estimate_search_index_release where status='active' limit 1
+      `)).rows[0] ?? null;
+      const counts = (await client.query(`select
+        (select count(*)::integer from public.estimate_definition_version d join public.estimate_definition_release r on r.id=d.release_id where r.status='active') active_definitions,
+        (select count(*)::integer from public.estimate_search_document d join public.estimate_search_index_release r on r.id=d.search_release_id where r.status='active') active_search_documents
+      `)).rows[0];
+      return { definitionRelease, searchRelease, counts };
+    });
+    const parsedDatabaseUrl = new URL(DATABASE_URL);
+    return send(response, 200, {
+      schemaVersion: "p0-estimate-truth-remediation-r4.5-runtime-manifest.v1",
+      runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
+      processId: process.pid,
+      parentProcessId: process.ppid,
+      startedAt: R45_RUNTIME_STARTED_AT,
+      workingDirectory: process.cwd(),
+      sourceHead: R45_RUNTIME_SOURCE_HEAD,
+      sourceTree: R45_RUNTIME_SOURCE_TREE,
+      specSha256: R45_RUNTIME_SPEC_SHA256,
+      database: {
+        host: parsedDatabaseUrl.hostname,
+        port: parsedDatabaseUrl.port,
+        name: parsedDatabaseUrl.pathname.replace(/^\//, ""),
+        searchOnly: false,
+      },
+      definitionRelease: database.definitionRelease,
+      searchRelease: database.searchRelease,
+      activeDefinitionCount: Number(database.counts?.active_definitions ?? 0),
+      activeSearchDocumentCount: Number(database.counts?.active_search_documents ?? 0),
+    });
+  }
   if (request.method === "GET" && path.length === 2 && path[0] === "search" && path[1] === "catalog") {
     const query = String(url.searchParams.get("query") ?? "").trim().slice(0, 120);
     const normalizedQuery = normalizeSearchQuery(query);

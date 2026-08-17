@@ -66,6 +66,15 @@ function renderContent(currentBundle: ConsumerRepairDraftBundle) {
       contactPhone=""
       selectedWork={null}
       workSuggestions={[]}
+      workSearchLiteralTotalCount={0}
+      workSearchGlobalLiteralTotalCount={0}
+      workSearchExternalLiteralTotalCount={0}
+      workSearchSuggestionTotalCount={0}
+      workSearchShownCount={0}
+      workSearchLoading={false}
+      workSearchErrorRu={null}
+      workSearchHasMore={false}
+      onLoadMoreWorkSuggestions={noop}
       bundle={currentBundle}
       aiAnswerRu={null}
       statusMessage={null}
