@@ -114,14 +114,26 @@ function collectDeclaredParameterIds(value: unknown, output = new Set<string>())
   return output;
 }
 
+function resourceParameterIds(resource: Json): Set<string> {
+  const output = collectDeclaredParameterIds(resource.inclusion_ast);
+  collectDeclaredParameterIds(resource.resource_graph, output);
+  for (const values of [
+    resource.source_metadata?.formula?.inputParameterIds,
+    resource.source_metadata?.ownerBoundary?.handoff_inputs,
+  ]) {
+    if (!Array.isArray(values)) continue;
+    for (const id of values) if (typeof id === "string" && id.trim()) output.add(id);
+  }
+  return output;
+}
+
 function parameterTruth(parameter: Json, definition: Json, formulas: readonly Json[], resources: readonly Json[]): Json {
   const parameterId = String(parameter.parameter_id);
   const formulaIds = formulas.filter((formula) => (formula.input_parameter_ids ?? []).includes(parameterId))
     .map((formula) => String(formula.formula_id)).sort();
   const formulaIdSet = new Set(formulaIds);
   let consumerRows = resources.filter((resource) => formulaIdSet.has(String(resource.formula_id))
-    || collectDeclaredParameterIds(resource.inclusion_ast).has(parameterId)
-    || collectDeclaredParameterIds(resource.resource_graph).has(parameterId));
+    || resourceParameterIds(resource).has(parameterId));
   if (parameterId === "estimate_scope_mode" && consumerRows.length === 0) consumerRows = [...resources];
   invariant(consumerRows.length > 0,
     `R58_HVAC_50_PARAMETER_WITHOUT_CONSUMER:${definition.catalog_id}:${parameterId}`);
