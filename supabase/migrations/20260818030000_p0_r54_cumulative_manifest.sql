@@ -91,6 +91,11 @@ begin
     new.semantic_owner := public.estimate_effective_semantic_owner_r54(v_resource.row_id,v_resource.semantic_owner);
     if v_cumulative_release and new.semantic_owner is null then
       raise exception using errcode='23502',message='revision resource semantic owner is missing';
+    elsif not v_cumulative_release
+      and v_resource.source_metadata->>'truth_contract_version'='R3'
+      and new.semantic_owner is null then
+      -- Preserve the exact direct-release behavior until the atomic cutover.
+      raise exception using errcode='23514',message='R3 resource semantic_owner is required';
     end if;
     new.physical_row_type := v_resource.row_type;
   elsif jsonb_typeof(new.calculation_trace)='object' then

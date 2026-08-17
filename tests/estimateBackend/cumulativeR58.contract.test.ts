@@ -23,6 +23,8 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(manifestMigration).toContain("unique (release_id,definition_version_id)");
     expect(manifestMigration).toContain("approved_template_baseline_id uuid");
     expect(manifestMigration).toContain("m.definition_version_id=v.id");
+    expect(manifestMigration).toContain("v_resource.source_metadata->>'truth_contract_version'='R3'");
+    expect(manifestMigration).toContain("R3 resource semantic_owner is required");
     expect(manifestMigration).not.toMatch(/insert into public\.estimate_(?:parameter_definition|formula_graph|resource_spec)/i);
   });
 
