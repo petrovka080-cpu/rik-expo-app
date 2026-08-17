@@ -14,17 +14,28 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const DRYWALL_TRACE_NOT_ADMITTED = process.argv.includes("--drywall-trace-not-admitted");
 const TRACE_NOT_ADMITTED = process.argv.includes("--trace-not-admitted");
-const TARGET_PARTITION = TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937";
-const EXPECTED_DEFINITIONS = TRACE_NOT_ADMITTED ? 38 : 13;
-const EXPECTED_PARAMETERS = TRACE_NOT_ADMITTED ? 4_090 : 1_032;
-const EXPECTED_UNUSED_PARAMETERS = TRACE_NOT_ADMITTED ? 1_038 : 606;
-const EXPECTED_SEMANTIC_REPAIRS = TRACE_NOT_ADMITTED ? 478 : 66;
-const EXPECTED_COST_CONTROL_REPAIRS = TRACE_NOT_ADMITTED ? 74 : 2;
-const EXPECTED_SUCCESSOR_ENTRIES = TRACE_NOT_ADMITTED ? 113 : 75;
-const CONTRACT = TRACE_NOT_ADMITTED
-  ? "p0-one-monolith-r58-asphalt-trace-not-admitted-repair-38.v1"
-  : "p0-one-monolith-r58-asphalt-compile-red-repair-13.v1";
+const TARGET_PARTITION = DRYWALL_TRACE_NOT_ADMITTED || TRACE_NOT_ADMITTED
+  ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937";
+const TARGET_DOMAIN = DRYWALL_TRACE_NOT_ADMITTED ? "drywall" : "asphalt";
+const EXPECTED_DEFINITIONS = DRYWALL_TRACE_NOT_ADMITTED ? 500 : TRACE_NOT_ADMITTED ? 38 : 13;
+const EXPECTED_PARAMETERS = DRYWALL_TRACE_NOT_ADMITTED ? 62_614 : TRACE_NOT_ADMITTED ? 4_090 : 1_032;
+const EXPECTED_UNUSED_PARAMETERS = DRYWALL_TRACE_NOT_ADMITTED ? 33_871 : TRACE_NOT_ADMITTED ? 1_038 : 606;
+const EXPECTED_SEMANTIC_REPAIRS = DRYWALL_TRACE_NOT_ADMITTED ? 27_984 : TRACE_NOT_ADMITTED ? 478 : 66;
+const EXPECTED_COST_CONTROL_REPAIRS = DRYWALL_TRACE_NOT_ADMITTED ? 0 : TRACE_NOT_ADMITTED ? 74 : 2;
+const EXPECTED_SUCCESSOR_ENTRIES = DRYWALL_TRACE_NOT_ADMITTED ? 613 : TRACE_NOT_ADMITTED ? 113 : 75;
+const CONTRACT = DRYWALL_TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-drywall-trace-not-admitted-repair-500.v1"
+  : TRACE_NOT_ADMITTED
+    ? "p0-one-monolith-r58-asphalt-trace-not-admitted-repair-38.v1"
+    : "p0-one-monolith-r58-asphalt-compile-red-repair-13.v1";
+const SUCCESSOR_METADATA_KEY = DRYWALL_TRACE_NOT_ADMITTED
+  ? "r58DrywallTraceNotAdmittedSuccessor"
+  : "r58AsphaltCompileRedSuccessor";
+const ROW_REPAIR_METADATA_KEY = DRYWALL_TRACE_NOT_ADMITTED
+  ? "r58DrywallTraceNotAdmittedRepair"
+  : "r58AsphaltCompileRedRepair";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const MATRIX_PATH = resolve(
@@ -171,16 +182,21 @@ function parameterTruth(parameter: Json, definition: Json, formulas: readonly Js
       : "MEASUREMENT_RULE";
   const title = String(parameter.title_ru).trim();
   invariant(title && !title.includes("�"), `R58_ASPHALT_13_PARAMETER_TITLE:${definition.catalog_id}:${parameterId}`);
+  const guideShortRu = DRYWALL_TRACE_NOT_ADMITTED
+    ? `Укажите «${title}» по проекту, обмеру, паспорту материала или применимой норме. Параметр относится только к выбранной работе; уточнение создаёт новую точную revision.`
+    : `Укажите «${title}» по проекту, обмеру, лабораторному заданию или утверждённой технологической карте. Параметр показан только потому, что влияет на выбранную работу; уточнение создаёт новую точную revision.`;
   return {
     ...(parameter.truth_metadata ?? {}),
     semantic_parameter_key: parameterId,
     visibility_role: "USER_INPUT",
     value_source_role: "USER_INPUT_REQUIRED",
     guide: {
-      guide_short_ru: `Укажите «${title}» по проекту, обмеру, лабораторному заданию или утверждённой технологической карте. Параметр показан только потому, что влияет на выбранную работу; уточнение создаёт новую точную revision.`,
+      guide_short_ru: guideShortRu,
       guide_kind: guideKind,
       source_role: guideKind === "MEASUREMENT_RULE" ? "PROJECT_OR_SITE_MEASUREMENT" : "PROJECT_OR_APPROVED_METHOD_STATEMENT",
-      guide_version: "P0_ONE_MONOLITH_R58_ASPHALT_INPUT_GUIDE_V2",
+      guide_version: DRYWALL_TRACE_NOT_ADMITTED
+        ? "P0_ONE_MONOLITH_R58_DRYWALL_INPUT_GUIDE_V1"
+        : "P0_ONE_MONOLITH_R58_ASPHALT_INPUT_GUIDE_V2",
       source_snapshot_hash: sha256({
         catalogId: definition.catalog_id,
         parameterId,
@@ -199,7 +215,7 @@ function parameterTruth(parameter: Json, definition: Json, formulas: readonly Js
       sourceCatalogId: definition.catalog_id,
       sourceReleaseId: ACTIVE_RELEASE_ID,
       sourceDefinitionVersionId: definition.id,
-      sourceParameterSchemaId: `accepted-asphalt-trace:${definition.catalog_id}`,
+      sourceParameterSchemaId: `accepted-${TARGET_DOMAIN}-trace:${definition.catalog_id}`,
       baselineOwner: "r58-user-input-no-hidden-default",
     },
     r58InputGuideRepair: {
@@ -246,9 +262,10 @@ function hiddenDuplicateFingerprint(row: Json, formula: Json): string {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  const allowedArgs = new Set(["--apply", "--trace-not-admitted"]);
+  const allowedArgs = new Set(["--apply", "--trace-not-admitted", "--drywall-trace-not-admitted"]);
   invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
-    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length
+    && !(TRACE_NOT_ADMITTED && DRYWALL_TRACE_NOT_ADMITTED),
     "R58_ASPHALT_13_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_ASPHALT_13_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -258,7 +275,7 @@ async function main(): Promise<void> {
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_ASPHALT_13_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
   const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === TARGET_PARTITION
-    && row.domain === "asphalt");
+    && row.domain === TARGET_DOMAIN);
   invariant(targets.length === EXPECTED_DEFINITIONS
     && new Set(targets.map((row) => row.catalog_id)).size === EXPECTED_DEFINITIONS,
   `R58_ASPHALT_13_TARGETS:${targets.length}/${EXPECTED_DEFINITIONS}`);
@@ -268,7 +285,7 @@ async function main(): Promise<void> {
       .map((blocker: string) => blocker.slice("parameter_without_resource_consumer:".length)),
   )]));
   const traceVisibleUnusedParameters = [...unusedByCatalog.values()].reduce((sum, values) => sum + values.size, 0);
-  invariant(traceVisibleUnusedParameters === (TRACE_NOT_ADMITTED ? 0 : 561),
+  invariant(traceVisibleUnusedParameters === (TRACE_NOT_ADMITTED || DRYWALL_TRACE_NOT_ADMITTED ? 0 : 561),
     "R58_ASPHALT_13_UNUSED_PARAMETER_DENOMINATOR");
 
   const client = new Client({
@@ -305,7 +322,7 @@ async function main(): Promise<void> {
     invariant(manifests.length === EXPECTED_DEFINITIONS,
       `R58_ASPHALT_13_MANIFESTS:${manifests.length}/${EXPECTED_DEFINITIONS}`);
     const successors = manifests.filter((row) => row.definition_release_id === candidateReleaseId
-      && row.definition_source_metadata?.r58AsphaltCompileRedSuccessor?.contract === CONTRACT);
+      && row.definition_source_metadata?.[SUCCESSOR_METADATA_KEY]?.contract === CONTRACT);
     if (successors.length > 0) {
       invariant(successors.length === EXPECTED_DEFINITIONS,
         `R58_ASPHALT_13_PARTIAL_IDEMPOTENCY:${successors.length}/${EXPECTED_DEFINITIONS}`);
@@ -387,7 +404,9 @@ async function main(): Promise<void> {
         const costOwnerCounts = new Map<string, number>();
         for (const row of resources) {
           const owner = String(row.semantic_owner ?? "").trim();
-          invariant(owner, `R58_ASPHALT_13_BLANK_OWNER:${definition.catalog_id}:${row.row_id}`);
+          if (!DRYWALL_TRACE_NOT_ADMITTED) {
+            invariant(owner, `R58_ASPHALT_13_BLANK_OWNER:${definition.catalog_id}:${row.row_id}`);
+          }
           ownerCounts.set(owner, (ownerCounts.get(owner) ?? 0) + 1);
           const costOwner = String(row.cost_owner_id ?? "").trim();
           if (costOwner) costOwnerCounts.set(costOwner, (costOwnerCounts.get(costOwner) ?? 0) + 1);
@@ -410,9 +429,13 @@ async function main(): Promise<void> {
         const resourceIdMap = new Map<string, string>();
         const repairedRows: Json[] = resources.map((row): Json => {
           const oldOwner = String(row.semantic_owner).trim();
-          const duplicateOwner = (ownerCounts.get(oldOwner) ?? 0) > 1;
+          const duplicateOwner = !oldOwner || (ownerCounts.get(oldOwner) ?? 0) > 1;
           const role = String(row.row_id).split(":").at(-1);
-          const semanticOwner = duplicateOwner ? `${oldOwner}:role:${role}` : oldOwner;
+          const semanticOwner = duplicateOwner
+            ? DRYWALL_TRACE_NOT_ADMITTED
+              ? `r58:drywall:${definition.catalog_id}:row:${row.row_id}`
+              : `${oldOwner}:role:${role}`
+            : oldOwner;
           const costControl = duplicateCostOwners.has(String(row.cost_owner_id ?? "").trim())
             && COST_CONTROL_ROW_SUFFIX.test(String(row.row_id));
           const successorResourceId = deterministicUuid(`${CONTRACT}:${successorDefinitionId}:${row.row_id}`);
@@ -433,7 +456,7 @@ async function main(): Promise<void> {
               ? "DERIVED_TRANSPORT_CONTROL_NOT_PAYABLE"
               : "SHARED_SEMANTIC_OWNER_REPLACED_WITH_EXACT_ROW_ROLE_OWNER",
           };
-          metadata.r58AsphaltCompileRedRepair = { ...defect, specSha256: SPEC_SHA256 };
+          metadata[ROW_REPAIR_METADATA_KEY] = { ...defect, specSha256: SPEC_SHA256 };
           if (costControl) {
             metadata.priceStatus = "NON_PAYABLE_DERIVED_CONTROL";
             metadata.priceRoute = "NONE";
@@ -494,7 +517,7 @@ async function main(): Promise<void> {
           successorDefinitionId, candidateReleaseId, definition.catalog_id, successorVersion,
           definition.passport, definition.applicability, definitionSha256, {
             ...(definition.source_metadata ?? {}),
-            r58AsphaltCompileRedSuccessor: {
+            [SUCCESSOR_METADATA_KEY]: {
               contract: CONTRACT, specSha256: SPEC_SHA256,
               predecessorDefinitionVersionId: definition.id,
               predecessorDefinitionSha256: definition.definition_sha256,
@@ -555,7 +578,7 @@ async function main(): Promise<void> {
           ) values($1,$2,$3,$4,$5,$6,$7,'R54_RESOURCE_SEMANTIC_OWNER_IDENTITY',$8,$9::jsonb,$10,$11,$12,
             'P0_ONE_MONOLITH_R54_DEFECT_LEDGER_V1')`, [
             deterministicUuid(`${CONTRACT}:defect:${successorDefinitionId}`),
-            `r58-asphalt-compile-red-semantic-owner:${successorDefinitionId}`,
+            `r58-${TARGET_DOMAIN}-semantic-owner:${successorDefinitionId}`,
             candidateReleaseId, ACTIVE_RELEASE_ID, definition.catalog_id, definition.id, successorDefinitionId,
             "Разные технологические или контрольные строки ошибочно делили semantic_owner; identity разделена по неизменному row_id без изменения формул и количества.",
             JSON.stringify(changed.map((row) => row.defect)), beforeSha256, afterSha256, evidenceSha256,
@@ -621,7 +644,9 @@ async function main(): Promise<void> {
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, removedParameters, changedSemanticRows,
           records: records.map((row) => row.afterComputationalSha256) }),
-        JSON.stringify({ [TRACE_NOT_ADMITTED ? "r58AsphaltTraceNotAdmittedRepair38" : "r58AsphaltCompileRedRepair13"]: {
+        JSON.stringify({ [DRYWALL_TRACE_NOT_ADMITTED
+          ? "r58DrywallTraceNotAdmittedRepair500"
+          : TRACE_NOT_ADMITTED ? "r58AsphaltTraceNotAdmittedRepair38" : "r58AsphaltCompileRedRepair13"]: {
           contract: CONTRACT, specSha256: SPEC_SHA256, definitions: EXPECTED_DEFINITIONS,
           traceVisibleUnusedParameters, removedUnusedParameters: removedParameters, retainedApplicableParameters,
           repairedSemanticOwnerRows: changedSemanticRows,
@@ -639,9 +664,11 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = records.map((row) => stable(row)).join("\n") + (records.length > 0 ? "\n" : "");
-  const evidenceStem = TRACE_NOT_ADMITTED
-    ? "R58_ASPHALT_TRACE_NOT_ADMITTED_REPAIR_38"
-    : "R58_ASPHALT_COMPILE_RED_REPAIR_13";
+  const evidenceStem = DRYWALL_TRACE_NOT_ADMITTED
+    ? "R58_DRYWALL_TRACE_NOT_ADMITTED_REPAIR_500"
+    : TRACE_NOT_ADMITTED
+      ? "R58_ASPHALT_TRACE_NOT_ADMITTED_REPAIR_38"
+      : "R58_ASPHALT_COMPILE_RED_REPAIR_13";
   const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
     schemaVersion: CONTRACT,
@@ -663,7 +690,7 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: `GREEN_R58_ASPHALT_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED" : "COMPILE_RED"}_REPAIR_${EXPECTED_DEFINITIONS}_${
+    status: `GREEN_R58_${DRYWALL_TRACE_NOT_ADMITTED ? "DRYWALL_TRACE_NOT_ADMITTED" : `ASPHALT_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED" : "COMPILE_RED"}`}_REPAIR_${EXPECTED_DEFINITIONS}_${
       idempotent ? "IDEMPOTENT_0" : apply ? "APPLIED" : "DRY_RUN_ROLLED_BACK"}`,
   };
   const summaryPath = resolve(OUTPUT_ROOT,
