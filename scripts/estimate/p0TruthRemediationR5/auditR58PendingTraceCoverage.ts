@@ -205,8 +205,8 @@ async function main(): Promise<void> {
         case when to_regclass('public.estimate_search_document') is null then 0
           else (select count(*)::int from public.estimate_search_document) end search_documents
     `, [candidate.id])).rows[0] as Json;
-    invariant(runtime.manifest_total === 4_272 && runtime.ready === 1_592
-      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 113,
+    invariant(runtime.manifest_total === 4_272 && runtime.ready === 2_092
+      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 613,
     `R58_PENDING_TRACE_AUDIT_CANDIDATE_COUNTS:${stable(runtime)}`);
     invariant(runtime.active_release_id === ACTIVE_RELEASE_ID && runtime.active_release_count === 1
       && runtime.batch009_rows === 0 && runtime.search_documents === 0,
@@ -232,7 +232,9 @@ async function main(): Promise<void> {
         from public.estimate_formula_graph where definition_version_id=any($1::uuid[])
       `, [versionIds])).rows as Json[];
       const resources = (await client.query(`
-        select definition_version_id,row_id,formula_id,inclusion_ast,resource_graph,
+        select definition_version_id,row_id,formula_id,inclusion_ast,resource_graph,semantic_owner,cost_owner_id,
+          procurement_eligible,source_metadata #>> '{priceStatus}' price_status,
+          source_metadata #>> '{priceRoute}' price_route,
           source_metadata #> '{acceptedTrace,quantity}' accepted_quantity,
           source_metadata #> '{formula,inputParameterIds}' formula_input_parameter_ids,
           source_metadata #> '{ownerBoundary,handoff_inputs}' owner_handoff_parameter_ids
@@ -314,6 +316,20 @@ async function main(): Promise<void> {
         const resolved = usedDeclared.filter((id) => values.get(id)?.size === 1);
         const missing = requiredUsed.filter((id) => !values.has(id));
         const valuesOutsideSchema = [...values.keys()].filter((id) => !declared.has(id)).sort();
+        const semanticOwnerCounts = new Map<string, number>();
+        const localCostOwnerCounts = new Map<string, number>();
+        const childCostOwnerCounts = new Map<string, number>();
+        for (const resource of definitionResources) {
+          const owner = String(resource.semantic_owner ?? "").trim();
+          semanticOwnerCounts.set(owner, (semanticOwnerCounts.get(owner) ?? 0) + 1);
+          const costOwner = String(resource.cost_owner_id ?? "").trim();
+          if (!costOwner) continue;
+          const child = resource.price_status === "CHILD_OWNER" || resource.price_route === "CHILD_OWNER_ESTIMATE";
+          const counts = child ? childCostOwnerCounts : localCostOwnerCounts;
+          counts.set(costOwner, (counts.get(costOwner) ?? 0) + 1);
+        }
+        const semanticRepairRows = [...semanticOwnerCounts.entries()]
+          .filter(([owner, count]) => !owner || count > 1).reduce((sum, [, count]) => sum + count, 0);
         const parameterById = new Map(definitionParameters.map((row) => [String(row.parameter_id), row]));
         for (const parameterId of missing) {
           const parameter = parameterById.get(parameterId)!;
@@ -344,6 +360,10 @@ async function main(): Promise<void> {
           resolved: resolved.length,
           missing: missing.length,
           conflicts: conflicts.length,
+          resources: definitionResources.length,
+          semanticRepairRows,
+          localDuplicateCostGroups: [...localCostOwnerCounts.values()].filter((count) => count > 1).length,
+          childCostBoundaryGroups: [...childCostOwnerCounts.values()].filter((count) => count > 1).length,
           derivedFromAcceptedQuantity: recovery.derived.size,
           acceptedRowValues: [...values.values()].filter((entry) => entry.size === 1).length,
           externalTracePresent: Boolean(external),
@@ -364,6 +384,10 @@ async function main(): Promise<void> {
       resolved: rows.reduce((sum, row) => sum + row.resolved, 0),
       missing: rows.reduce((sum, row) => sum + row.missing, 0),
       conflicts: rows.reduce((sum, row) => sum + row.conflicts, 0),
+      resources: rows.reduce((sum, row) => sum + row.resources, 0),
+      semanticRepairRows: rows.reduce((sum, row) => sum + row.semanticRepairRows, 0),
+      localDuplicateCostGroups: rows.reduce((sum, row) => sum + row.localDuplicateCostGroups, 0),
+      childCostBoundaryGroups: rows.reduce((sum, row) => sum + row.childCostBoundaryGroups, 0),
       derivedFromAcceptedQuantity: rows.reduce((sum, row) => sum + row.derivedFromAcceptedQuantity, 0),
       externalTraceDefinitions: rows.filter((row) => row.externalTracePresent).length,
     });
