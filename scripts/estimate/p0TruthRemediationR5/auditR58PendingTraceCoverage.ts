@@ -16,6 +16,7 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
+const NO_AUTHORITATIVE_TRACE = process.argv.includes("--no-authoritative-trace");
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const MATRIX_PATH = resolve(
@@ -24,10 +25,13 @@ const MATRIX_PATH = resolve(
 const TRACE_PATH = resolve(
   ".release-runtime/p0-one-monolith-r57/evidence/05-baseline/BATCH001_008_ACCEPTED_RUNTIME_TRACE_INPUT_VALUES.jsonl",
 );
-const OUTPUT_PATH = resolve(
-  ".release-runtime/p0-one-monolith-r58/evidence/05-baseline/R58_PENDING_TRACE_COVERAGE_AUDIT.json",
-);
-const CONTRACT = "p0-one-monolith-r58-pending-trace-coverage-audit.v1";
+const OUTPUT_PATH = resolve(".release-runtime/p0-one-monolith-r58/evidence/05-baseline",
+  NO_AUTHORITATIVE_TRACE
+    ? "R58_NO_AUTHORITATIVE_TRACE_COVERAGE_AUDIT.json"
+    : "R58_PENDING_TRACE_COVERAGE_AUDIT.json");
+const CONTRACT = NO_AUTHORITATIVE_TRACE
+  ? "p0-one-monolith-r58-no-authoritative-trace-coverage-audit.v1"
+  : "p0-one-monolith-r58-pending-trace-coverage-audit.v1";
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -166,7 +170,8 @@ function recoverLinearFormulaInputs(
 }
 
 async function main(): Promise<void> {
-  invariant(process.argv.length === 2, "R58_PENDING_TRACE_AUDIT_USAGE_NO_ARGUMENTS");
+  invariant(process.argv.length === 2 || (process.argv.length === 3 && NO_AUTHORITATIVE_TRACE),
+    "R58_PENDING_TRACE_AUDIT_USAGE_OPTIONAL_NO_AUTHORITATIVE_TRACE");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_PENDING_TRACE_AUDIT_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
   const head = git(["rev-parse", "HEAD"]);
@@ -174,10 +179,14 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_PENDING_TRACE_AUDIT_BRANCH_DRIFT:${branch}`);
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
 
-  const targets = readJsonl(MATRIX_PATH).filter((row) =>
-    row.partition === "TRACE_NOT_ADMITTED_1432"
-    && (row.domain === "drywall" || row.domain === "hvac_heat_supply"));
-  invariant(targets.length === 1_394, `R58_PENDING_TRACE_AUDIT_TARGETS:${targets.length}/1394`);
+  const targets = readJsonl(MATRIX_PATH).filter((row) => NO_AUTHORITATIVE_TRACE
+    ? row.partition === "NO_AUTHORITATIVE_TRACE_1286"
+      && (row.domain === "concrete" || row.domain === "hvac_heat_supply")
+    : row.partition === "TRACE_NOT_ADMITTED_1432"
+      && (row.domain === "drywall" || row.domain === "hvac_heat_supply"));
+  const expectedTargets = NO_AUTHORITATIVE_TRACE ? 1_286 : 1_394;
+  invariant(targets.length === expectedTargets,
+    `R58_PENDING_TRACE_AUDIT_TARGETS:${targets.length}/${expectedTargets}`);
   const targetByVersion = new Map(targets.map((row) => [String(row.definition_version_id), row]));
   const traceByCatalog = new Map(readJsonl(TRACE_PATH).map((row) => [String(row.catalog_id), row]));
   const client = new Client({ connectionString: DATABASE_URL });
@@ -205,8 +214,8 @@ async function main(): Promise<void> {
         case when to_regclass('public.estimate_search_document') is null then 0
           else (select count(*)::int from public.estimate_search_document) end search_documents
     `, [candidate.id])).rows[0] as Json;
-    invariant(runtime.manifest_total === 4_272 && runtime.ready === 2_092
-      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 613,
+    invariant(runtime.manifest_total === 4_272 && runtime.ready === 2_986
+      && runtime.asphalt_ready === 63 && runtime.direct_definitions === 1_507,
     `R58_PENDING_TRACE_AUDIT_CANDIDATE_COUNTS:${stable(runtime)}`);
     invariant(runtime.active_release_id === ACTIVE_RELEASE_ID && runtime.active_release_count === 1
       && runtime.batch009_rows === 0 && runtime.search_documents === 0,
@@ -404,7 +413,8 @@ async function main(): Promise<void> {
       candidateReleaseId: candidate.id,
       runtime,
       aggregate: aggregate(definitionAudits),
-      byDomain: Object.fromEntries(["drywall", "hvac_heat_supply"].map((domain) => [
+      byDomain: Object.fromEntries((NO_AUTHORITATIVE_TRACE
+        ? ["concrete", "hvac_heat_supply"] : ["drywall", "hvac_heat_supply"]).map((domain) => [
         domain, aggregate(definitionAudits.filter((row) => row.domain === domain)),
       ])),
       missingFrequency: [...missingFrequency.entries()].sort((left, right) => right[1] - left[1]
