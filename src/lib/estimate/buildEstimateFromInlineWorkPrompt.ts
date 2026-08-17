@@ -778,16 +778,26 @@ function buildExpandedDraft(input: {
   };
 }
 
-function primaryQuantity(parseResult: InlineWorkPromptParseResult): number | undefined {
+type PrimaryQuantityBinding = {
+  key: "area_m2" | "length_m" | "volume_m3" | "count";
+  value: number;
+};
+
+function primaryQuantityBinding(parseResult: InlineWorkPromptParseResult): PrimaryQuantityBinding | undefined {
   const params = parseResult.extractedParams;
   const candidates = [
-    params.area_m2?.value,
-    params.length_m?.value,
-    params.volume_m3?.value,
-    params.count?.value,
+    { key: "area_m2", value: params.area_m2?.value },
+    { key: "length_m", value: params.length_m?.value },
+    { key: "volume_m3", value: params.volume_m3?.value },
+    { key: "count", value: params.count?.value },
   ];
-  const value = candidates.find((candidate): candidate is number => typeof candidate === "number" && Number.isFinite(candidate) && candidate > 0);
-  return value;
+  return candidates.find((candidate): candidate is PrimaryQuantityBinding =>
+    typeof candidate.value === "number" && Number.isFinite(candidate.value) && candidate.value > 0
+  );
+}
+
+function primaryQuantity(parseResult: InlineWorkPromptParseResult): number | undefined {
+  return primaryQuantityBinding(parseResult)?.value;
 }
 
 function buildProductionDraft(input: {
@@ -861,21 +871,31 @@ function buildProductionDraft(input: {
   };
 }
 
-function passportRuntimeQuantity(row: ProfessionalBoqRecipeRow, index: number, baseQuantity: number): number {
+function passportRuntimeQuantity(
+  row: ProfessionalBoqRecipeRow,
+  index: number,
+  baseQuantity: number,
+): { quantity: number; usesBaseQuantity: boolean } {
   const formulaEnvironment = { ...(row.formulaContext ?? {}), q: baseQuantity, baseQuantity };
   const calculated = evaluateAiEstimateQuantityFormula({
     formula: row.quantityFormula,
     env: formulaEnvironment,
   });
-  if (calculated.ok && calculated.value != null && calculated.value >= 0) return calculated.value;
+  if (calculated.ok && calculated.value != null && calculated.value >= 0) {
+    return {
+      quantity: calculated.value,
+      usesBaseQuantity: /(^|[^a-zA-Z0-9_])(q|baseQuantity)($|[^a-zA-Z0-9_])/.test(row.quantityFormula),
+    };
+  }
   const rawUnit = row.sourceUnit.toLowerCase();
-  if (rawUnit === "trip") return Math.max(1, Math.ceil(baseQuantity / 120));
-  if (rawUnit === "shift") return Math.max(1, Math.ceil(baseQuantity / 80));
-  if (rawUnit === "set") return Math.max(1, Math.ceil(baseQuantity / 10));
-  if (rawUnit === "pcs" || rawUnit === "piece") return Math.max(1, Math.ceil(baseQuantity / 10));
-  if (rawUnit === "kg") return Math.max(1, Math.round(baseQuantity * (4 + index % 5) * 100) / 100);
-  if (rawUnit === "ton" || rawUnit === "t") return Math.max(1, Math.round(baseQuantity / 20 * 100) / 100);
-  return Math.max(0.01, Math.round(baseQuantity * (1 + (index % 7) * 0.03) * 100) / 100);
+  const quantity = rawUnit === "trip" ? Math.max(1, Math.ceil(baseQuantity / 120))
+    : rawUnit === "shift" ? Math.max(1, Math.ceil(baseQuantity / 80))
+    : rawUnit === "set" ? Math.max(1, Math.ceil(baseQuantity / 10))
+    : rawUnit === "pcs" || rawUnit === "piece" ? Math.max(1, Math.ceil(baseQuantity / 10))
+    : rawUnit === "kg" ? Math.max(1, Math.round(baseQuantity * (4 + index % 5) * 100) / 100)
+    : rawUnit === "ton" || rawUnit === "t" ? Math.max(1, Math.round(baseQuantity / 20 * 100) / 100)
+    : Math.max(0.01, Math.round(baseQuantity * (1 + (index % 7) * 0.03) * 100) / 100);
+  return { quantity, usesBaseQuantity: true };
 }
 
 function buildPassportBackedDraft(input: {
@@ -890,7 +910,8 @@ function buildPassportBackedDraft(input: {
     ? input.professionalPassport
     : loadProfessionalWorkPassportBuilder().buildProfessionalWorkPassport(templateId);
   if (!passport) return null;
-  const baseQuantity = primaryQuantity(input.parseResult) ?? 1;
+  const baseQuantityBinding = primaryQuantityBinding(input.parseResult);
+  const baseQuantity = baseQuantityBinding?.value ?? 1;
   const selectedWork = input.selectedTemplateId
     ? selectedWorkForPassport(passport, input.parseResult.rawInput)
     : selectedWorkForInlineMatch(input.parseResult);
@@ -906,7 +927,8 @@ function buildPassportBackedDraft(input: {
     dangerousDiyBlocked: false,
     missingData: missingDataFromParse(input.parseResult),
     items: passport.boqRecipe.allRows.map((row, rowIndex) => {
-      const quantity = passportRuntimeQuantity(row, rowIndex, baseQuantity);
+      const runtimeQuantity = passportRuntimeQuantity(row, rowIndex, baseQuantity);
+      const quantity = runtimeQuantity.quantity;
       return {
         itemType: itemTypeForPassportRow(row),
         titleRu: row.titleRu,
@@ -929,6 +951,9 @@ function buildPassportBackedDraft(input: {
           inlineWorkPromptRowIndex: rowIndex,
           extractedParams: input.parseResult.extractedParams,
           formulaContext: row.formulaContext,
+          affectedBy: runtimeQuantity.usesBaseQuantity && baseQuantityBinding
+            ? [baseQuantityBinding.key]
+            : [],
           passportBackedNaturalLanguageIngress: true,
           templateId: passport.templateId,
           workKey: passport.workKey,
