@@ -428,7 +428,7 @@ async function main(): Promise<void> {
         const successorDefinitionId = deterministicUuid(`${CONTRACT}:${candidateReleaseId}:${definition.id}`);
         const resourceIdMap = new Map<string, string>();
         const repairedRows: Json[] = resources.map((row): Json => {
-          const oldOwner = String(row.semantic_owner).trim();
+          const oldOwner = String(row.semantic_owner ?? "").trim();
           const duplicateOwner = !oldOwner || (ownerCounts.get(oldOwner) ?? 0) > 1;
           const role = String(row.row_id).split(":").at(-1);
           const semanticOwner = duplicateOwner
