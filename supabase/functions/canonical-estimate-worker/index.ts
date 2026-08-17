@@ -193,7 +193,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   if (definitionError) throw Object.assign(new Error("definition load failed"), { code: "DEFINITION_LOAD_FAILED" });
 
   const [parameterResult, formulaResult, resourceResult] = await Promise.all([
-    admin.from("estimate_parameter_definition").select("parameter_id,value_type,required,default_value,constraints_json").eq("definition_version_id", definition.id).order("ordinal"),
+    admin.from("estimate_parameter_definition").select("parameter_id,value_type,required,default_value,constraints_json,truth_metadata").eq("definition_version_id", definition.id).order("ordinal"),
     admin.from("estimate_formula_graph").select("formula_id,ast,input_parameter_ids,ast_sha256").eq("definition_version_id", definition.id),
     admin.from("estimate_resource_spec").select("id,row_id,ordinal,section,category,title_ru,unit_id,formula_id,inclusion_ast,resource_graph,procurement_eligible,cost_owner_id,source_metadata,row_sha256").eq("definition_version_id", definition.id).order("ordinal").limit(MAX_RESOURCE_ROWS + 1),
   ]);
@@ -204,9 +204,25 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("resource graph row limit exceeded"), { code: "DEFINITION_LIMIT_EXCEEDED" });
   }
 
+  let confirmedParameters: Record<string, unknown> = {};
+  if (job.operation === "recalculate") {
+    const { data: parent, error: parentError } = await admin
+      .from("estimate_revision")
+      .select("release_id,catalog_id,input_parameters")
+      .eq("id", job.parent_revision_id)
+      .single();
+    if (parentError || parent.catalog_id !== job.catalog_id) {
+      throw Object.assign(new Error("parent revision parameter source unavailable"), { code: "PARENT_REVISION_INVALID" });
+    }
+    if (parent.release_id === release.id) confirmedParameters = parent.input_parameters ?? {};
+  }
   const parameters = validateCanonicalEstimateParameters(
     parameterResult.data ?? [],
     { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>,
+    {
+      confirmedParameters,
+      baselineContext: { catalogId: job.catalog_id },
+    },
   );
   const numericParameters = Object.fromEntries(
     Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string"),

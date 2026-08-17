@@ -4,9 +4,17 @@ export type CanonicalParameterDefinitionRecord = {
   required?: unknown;
   default_value?: unknown;
   constraints_json?: unknown;
+  truth_metadata?: unknown;
 };
 
 type JsonRecord = Record<string, unknown>;
+
+export type CanonicalParameterResolutionOptions = {
+  confirmedParameters?: JsonRecord;
+  baselineContext?: {
+    catalogId: string;
+  };
+};
 
 export class CanonicalParameterValidationError extends Error {
   readonly code = "PARAMETER_VALIDATION_FAILED" as const;
@@ -36,15 +44,82 @@ function finiteNumber(value: unknown, field: string): number {
   return Number(value);
 }
 
+function isRecord(value: unknown): value is JsonRecord {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function acceptedBaselineDefault(
+  definition: CanonicalParameterDefinitionRecord,
+  parameterId: string,
+  context: CanonicalParameterResolutionOptions["baselineContext"],
+): unknown {
+  const value = definition.default_value;
+  if (value == null) return value;
+  if (!isRecord(definition.truth_metadata) || Object.keys(definition.truth_metadata).length === 0) {
+    // Historical releases predate the truth contract. They remain readable,
+    // but this branch never labels them as an R5.3 accepted baseline.
+    return value;
+  }
+  const truth = definition.truth_metadata;
+  const provenance = truth.provenance;
+  const formulaConsumers = truth.formula_consumers;
+  const resourceConsumers = truth.resource_branch_consumers;
+  if (!context?.catalogId
+    || truth.value_source_role !== "VISIBLE_BASELINE_ASSUMPTION"
+    || typeof truth.baseline_assumption_id !== "string"
+    || !truth.baseline_assumption_id
+    || !isRecord(provenance)
+    || provenance.baselineOwner !== "accepted-batch-formula-graph-v3-baseline:r53"
+    || provenance.sourceCatalogId !== context.catalogId
+    || !Array.isArray(provenance.acceptedTraceBindings)
+    || provenance.acceptedTraceBindings.length === 0
+    || !Array.isArray(formulaConsumers)
+    || formulaConsumers.length === 0
+    || !Array.isArray(resourceConsumers)
+    || resourceConsumers.length === 0) {
+    return fail(`invalid accepted baseline provenance ${parameterId}`);
+  }
+  const valueFingerprint = JSON.stringify(value);
+  for (const rawBinding of provenance.acceptedTraceBindings) {
+    if (!isRecord(rawBinding)
+      || rawBinding.catalogId !== context.catalogId
+      || rawBinding.parameterId !== parameterId
+      || rawBinding.releaseId !== provenance.sourceReleaseId
+      || rawBinding.definitionVersionId !== provenance.sourceDefinitionVersionId
+      || rawBinding.definitionVersion !== provenance.sourceDefinitionVersion
+      || rawBinding.parameterSchemaId !== provenance.sourceParameterSchemaId
+      || rawBinding.parameterSchemaVersion !== provenance.sourceParameterSchemaVersion
+      || typeof rawBinding.traceId !== "string"
+      || !rawBinding.traceId
+      || typeof rawBinding.formulaId !== "string"
+      || !formulaConsumers.includes(rawBinding.formulaId)
+      || typeof rawBinding.resourceRowId !== "string"
+      || !resourceConsumers.includes(rawBinding.resourceRowId)
+      || !Array.isArray(rawBinding.normativeSourceIds)
+      || rawBinding.normativeSourceIds.length === 0
+      || typeof rawBinding.acceptedBatch !== "string"
+      || !/^BATCH00[1-8]$/u.test(rawBinding.acceptedBatch)
+      || JSON.stringify(rawBinding.value) !== valueFingerprint) {
+      return fail(`invalid accepted baseline binding ${parameterId}`);
+    }
+  }
+  return value;
+}
+
 export function validateCanonicalEstimateParameters(
   definitions: readonly CanonicalParameterDefinitionRecord[],
   input: JsonRecord,
+  options: CanonicalParameterResolutionOptions = {},
 ): JsonRecord {
   if (!input || typeof input !== "object" || Array.isArray(input)) return fail("parameters must be an object");
-  const values = { ...input };
   const byId = new Map(definitions.map((definition) => [String(definition.parameter_id ?? ""), definition]));
   const accepted = new Set(byId.keys());
-  const unknown = Object.keys(values).filter((key) => !accepted.has(key));
+  const confirmed = options.confirmedParameters ?? {};
+  if (!isRecord(confirmed)) return fail("confirmed parameters must be an object");
+  const unknownConfirmed = Object.keys(confirmed).filter((key) => !accepted.has(key));
+  if (unknownConfirmed.length) return fail(`unknown confirmed estimate parameters: ${unknownConfirmed.slice(0, 10).join(",")}`);
+  const values = { ...confirmed, ...input };
+  const unknown = Object.keys(input).filter((key) => !accepted.has(key));
   if (unknown.length) return fail(`unknown estimate parameters: ${unknown.slice(0, 10).join(",")}`);
 
   // Declared defaults are resolved before conditional rules. Numeric project
@@ -52,7 +127,9 @@ export function validateCanonicalEstimateParameters(
   for (const definition of definitions) {
     const id = String(definition.parameter_id ?? "");
     if (!id) return fail("parameter definition identity is empty");
-    if (values[id] == null && definition.default_value != null) values[id] = definition.default_value;
+    if (values[id] == null && definition.default_value != null) {
+      values[id] = acceptedBaselineDefault(definition, id, options.baselineContext);
+    }
   }
 
   for (const definition of definitions) {

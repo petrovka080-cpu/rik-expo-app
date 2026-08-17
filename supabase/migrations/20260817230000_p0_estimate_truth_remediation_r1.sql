@@ -62,6 +62,30 @@ alter table public.estimate_parameter_definition
   add constraint estimate_parameter_truth_metadata_r3_ck
   check (public.estimate_parameter_truth_metadata_valid_r3(value_type, truth_metadata)) not valid;
 
+-- Historical rows are preserved by NOT VALID. Every newly admitted non-null
+-- default must, however, be an exact accepted per-work baseline. This blocks
+-- min/midpoint/generic-dimension defaults at the database boundary.
+alter table public.estimate_parameter_definition
+  add constraint estimate_parameter_default_accepted_provenance_r53_ck
+  check (
+    default_value is null
+    or (
+      truth_metadata->>'value_source_role' = 'VISIBLE_BASELINE_ASSUMPTION'
+      and nullif(trim(truth_metadata->>'baseline_assumption_id'), '') is not null
+      and truth_metadata#>>'{provenance,baselineOwner}' = 'accepted-batch-formula-graph-v3-baseline:r53'
+      and nullif(trim(truth_metadata#>>'{provenance,sourceCatalogId}'), '') is not null
+      and nullif(trim(truth_metadata#>>'{provenance,sourceReleaseId}'), '') is not null
+      and nullif(trim(truth_metadata#>>'{provenance,sourceDefinitionVersionId}'), '') is not null
+      and nullif(trim(truth_metadata#>>'{provenance,sourceParameterSchemaId}'), '') is not null
+      and jsonb_typeof(truth_metadata#>'{provenance,acceptedTraceBindings}') = 'array'
+      and jsonb_array_length(truth_metadata#>'{provenance,acceptedTraceBindings}') > 0
+      and jsonb_typeof(truth_metadata->'formula_consumers') = 'array'
+      and jsonb_array_length(truth_metadata->'formula_consumers') > 0
+      and jsonb_typeof(truth_metadata->'resource_branch_consumers') = 'array'
+      and jsonb_array_length(truth_metadata->'resource_branch_consumers') > 0
+    )
+  ) not valid;
+
 alter table public.estimate_resource_spec
   add constraint estimate_resource_spec_r3_truth_ck check (
     source_metadata->>'truth_contract_version' <> 'R3'

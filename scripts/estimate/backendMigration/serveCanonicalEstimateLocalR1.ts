@@ -423,7 +423,25 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
   if (!definition) throw Object.assign(new Error("definition not found"), { code: "DEFINITION_LOAD_FAILED" });
   const parameterDefinitions = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
   const payload = (job.input_payload ?? {}) as JsonRecord;
-  const parameters = validateCanonicalEstimateParameters(parameterDefinitions, (payload.parameters ?? {}) as JsonRecord);
+  let confirmedParameters: JsonRecord = {};
+  if (job.operation === "recalculate") {
+    const parent = (await client.query(
+      "select release_id,catalog_id,input_parameters from public.estimate_revision where id=$1",
+      [job.parent_revision_id],
+    )).rows[0];
+    if (!parent || parent.catalog_id !== job.catalog_id) {
+      throw Object.assign(new Error("parent revision parameter source unavailable"), { code: "PARENT_REVISION_INVALID" });
+    }
+    if (parent.release_id === job.target_release_id) confirmedParameters = parent.input_parameters ?? {};
+  }
+  const parameters = validateCanonicalEstimateParameters(
+    parameterDefinitions,
+    (payload.parameters ?? {}) as JsonRecord,
+    {
+      confirmedParameters,
+      baselineContext: { catalogId: String(job.catalog_id) },
+    },
+  );
   const numericParameters = Object.fromEntries(Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string")) as Record<string, string | number>;
   const formulas = (await client.query("select formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=$1", [definition.id])).rows;
   const formulaById = new Map(formulas.map((formula) => [formula.formula_id, formula]));
