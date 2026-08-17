@@ -14,19 +14,24 @@ const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a9233
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const CANDIDATE_RELEASE_KEY = "p0-r58-cumulative-candidate-4cf42813";
-const CONTRACT = "p0-one-monolith-r58-asphalt-compile-red-repair-13.v1";
+const TRACE_NOT_ADMITTED = process.argv.includes("--trace-not-admitted");
+const TARGET_PARTITION = TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED_1432" : "COMPILE_RED_937";
+const EXPECTED_DEFINITIONS = TRACE_NOT_ADMITTED ? 38 : 13;
+const EXPECTED_PARAMETERS = TRACE_NOT_ADMITTED ? 4_090 : 1_032;
+const EXPECTED_UNUSED_PARAMETERS = TRACE_NOT_ADMITTED ? 1_038 : 606;
+const EXPECTED_SEMANTIC_REPAIRS = TRACE_NOT_ADMITTED ? 478 : 66;
+const EXPECTED_COST_CONTROL_REPAIRS = TRACE_NOT_ADMITTED ? 74 : 2;
+const EXPECTED_SUCCESSOR_ENTRIES = TRACE_NOT_ADMITTED ? 113 : 75;
+const CONTRACT = TRACE_NOT_ADMITTED
+  ? "p0-one-monolith-r58-asphalt-trace-not-admitted-repair-38.v1"
+  : "p0-one-monolith-r58-asphalt-compile-red-repair-13.v1";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const MATRIX_PATH = resolve(
   ".release-runtime/p0-one-monolith-r58/evidence/05-baseline/R58_4272_REPAIR_MATRIX.jsonl",
 );
 const OUTPUT_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence/07-boq");
-const HAUL_CATALOG_ID = "built-in-ai-1000:0705";
-const HAUL_PAYABLE_ROW_ID = "asphalt_milling:removal:haul_tkm";
-const HAUL_CONTROL_ROW_IDS = new Set([
-  "asphalt_milling:removal:haul_trips",
-  "asphalt_milling:removal:haul_truck_hours",
-]);
+const COST_CONTROL_ROW_SUFFIX = /(?:_trips|_truck_hours)$/iu;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -241,7 +246,9 @@ function hiddenDuplicateFingerprint(row: Json, formula: Json): string {
 
 async function main(): Promise<void> {
   const apply = process.argv.includes("--apply");
-  invariant(process.argv.length === 2 || (process.argv.length === 3 && apply),
+  const allowedArgs = new Set(["--apply", "--trace-not-admitted"]);
+  invariant(process.argv.slice(2).every((argument) => allowedArgs.has(argument))
+    && new Set(process.argv.slice(2)).size === process.argv.slice(2).length,
     "R58_ASPHALT_13_USAGE_ONLY_OPTIONAL_APPLY");
   invariant(sha256File(SPEC_PATH) === SPEC_SHA256, "R58_ASPHALT_13_SPEC_DRIFT");
   const branch = git(["branch", "--show-current"]);
@@ -250,27 +257,31 @@ async function main(): Promise<void> {
   invariant(branch === "codex/p0-one-monolith-r5", `R58_ASPHALT_13_BRANCH_DRIFT:${branch}`);
   invariant(git(["status", "--porcelain=v1"]) === "", "R58_ASPHALT_13_REQUIRES_CLEAN_HEAD");
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
-  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === "COMPILE_RED_937"
+  const targets = readJsonl(MATRIX_PATH).filter((row) => row.partition === TARGET_PARTITION
     && row.domain === "asphalt");
-  invariant(targets.length === 13 && new Set(targets.map((row) => row.catalog_id)).size === 13,
-    `R58_ASPHALT_13_TARGETS:${targets.length}/13`);
+  invariant(targets.length === EXPECTED_DEFINITIONS
+    && new Set(targets.map((row) => row.catalog_id)).size === EXPECTED_DEFINITIONS,
+  `R58_ASPHALT_13_TARGETS:${targets.length}/${EXPECTED_DEFINITIONS}`);
   const unusedByCatalog = new Map(targets.map((row) => [String(row.catalog_id), new Set<string>(
     (row.current_validation_blockers ?? [])
       .filter((blocker: string) => blocker.startsWith("parameter_without_resource_consumer:"))
       .map((blocker: string) => blocker.slice("parameter_without_resource_consumer:".length)),
   )]));
   const traceVisibleUnusedParameters = [...unusedByCatalog.values()].reduce((sum, values) => sum + values.size, 0);
-  invariant(traceVisibleUnusedParameters === 561,
+  invariant(traceVisibleUnusedParameters === (TRACE_NOT_ADMITTED ? 0 : 561),
     "R58_ASPHALT_13_UNUSED_PARAMETER_DENOMINATOR");
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: apply ? "r58-asphalt-13-apply" : "r58-asphalt-13-dry-run",
+    application_name: apply
+      ? `r58-asphalt-${EXPECTED_DEFINITIONS}-apply`
+      : `r58-asphalt-${EXPECTED_DEFINITIONS}-dry-run`,
   });
   await client.connect();
   const records: Json[] = [];
   let candidateReleaseId = "";
   let changedSemanticRows = 0;
+  let changedCostControlRows = 0;
   let removedParameters = 0;
   let idempotent = false;
   try {
@@ -291,11 +302,13 @@ async function main(): Promise<void> {
       join public.estimate_definition_version version on version.id=manifest.definition_version_id
       where manifest.release_id=$1 and manifest.catalog_id=any($2::text[]) order by manifest.catalog_id
     `, [candidateReleaseId, targetCatalogIds])).rows as Json[];
-    invariant(manifests.length === 13, `R58_ASPHALT_13_MANIFESTS:${manifests.length}/13`);
+    invariant(manifests.length === EXPECTED_DEFINITIONS,
+      `R58_ASPHALT_13_MANIFESTS:${manifests.length}/${EXPECTED_DEFINITIONS}`);
     const successors = manifests.filter((row) => row.definition_release_id === candidateReleaseId
       && row.definition_source_metadata?.r58AsphaltCompileRedSuccessor?.contract === CONTRACT);
     if (successors.length > 0) {
-      invariant(successors.length === 13, `R58_ASPHALT_13_PARTIAL_IDEMPOTENCY:${successors.length}/13`);
+      invariant(successors.length === EXPECTED_DEFINITIONS,
+        `R58_ASPHALT_13_PARTIAL_IDEMPOTENCY:${successors.length}/${EXPECTED_DEFINITIONS}`);
       const ids = successors.map((row) => row.definition_version_id);
       const invalid = (await client.query(`
         select
@@ -371,11 +384,23 @@ async function main(): Promise<void> {
         }
         const formulaById = new Map(formulas.map((row) => [String(row.formula_id), row]));
         const ownerCounts = new Map<string, number>();
+        const costOwnerCounts = new Map<string, number>();
         for (const row of resources) {
           const owner = String(row.semantic_owner ?? "").trim();
           invariant(owner, `R58_ASPHALT_13_BLANK_OWNER:${definition.catalog_id}:${row.row_id}`);
           ownerCounts.set(owner, (ownerCounts.get(owner) ?? 0) + 1);
+          const costOwner = String(row.cost_owner_id ?? "").trim();
+          if (costOwner) costOwnerCounts.set(costOwner, (costOwnerCounts.get(costOwner) ?? 0) + 1);
         }
+        const duplicateCostOwners = new Set([...costOwnerCounts]
+          .filter(([, count]) => count > 1).map(([owner]) => owner));
+        const expectedCostControlRows = resources.filter((row) =>
+          duplicateCostOwners.has(String(row.cost_owner_id ?? "").trim())
+          && COST_CONTROL_ROW_SUFFIX.test(String(row.row_id)));
+        invariant([...duplicateCostOwners].every((owner) => {
+          const group = resources.filter((row) => String(row.cost_owner_id ?? "").trim() === owner);
+          return group.filter((row) => COST_CONTROL_ROW_SUFFIX.test(String(row.row_id))).length === group.length - 1;
+        }), `R58_ASPHALT_13_COST_BOUNDARY_UNCLASSIFIED:${definition.catalog_id}`);
         const hiddenBefore = resources.map((row) => hiddenDuplicateFingerprint(
           row, formulaById.get(String(row.formula_id))!,
         ));
@@ -388,10 +413,11 @@ async function main(): Promise<void> {
           const duplicateOwner = (ownerCounts.get(oldOwner) ?? 0) > 1;
           const role = String(row.row_id).split(":").at(-1);
           const semanticOwner = duplicateOwner ? `${oldOwner}:role:${role}` : oldOwner;
-          const haulControl = definition.catalog_id === HAUL_CATALOG_ID && HAUL_CONTROL_ROW_IDS.has(String(row.row_id));
+          const costControl = duplicateCostOwners.has(String(row.cost_owner_id ?? "").trim())
+            && COST_CONTROL_ROW_SUFFIX.test(String(row.row_id));
           const successorResourceId = deterministicUuid(`${CONTRACT}:${successorDefinitionId}:${row.row_id}`);
           resourceIdMap.set(String(row.id), successorResourceId);
-          if (!duplicateOwner && !haulControl) {
+          if (!duplicateOwner && !costControl) {
             return { ...row, id: successorResourceId, definition_version_id: successorDefinitionId };
           }
           const metadata = structuredClone(row.source_metadata ?? {});
@@ -402,13 +428,13 @@ async function main(): Promise<void> {
             oldSemanticOwner: oldOwner,
             newSemanticOwner: semanticOwner,
             oldCostOwnerId: row.cost_owner_id,
-            newCostOwnerId: haulControl ? null : row.cost_owner_id,
-            repairReason: haulControl
-              ? "DERIVED_HAUL_CONTROL_NOT_PAYABLE"
+            newCostOwnerId: costControl ? null : row.cost_owner_id,
+            repairReason: costControl
+              ? "DERIVED_TRANSPORT_CONTROL_NOT_PAYABLE"
               : "SHARED_SEMANTIC_OWNER_REPLACED_WITH_EXACT_ROW_ROLE_OWNER",
           };
           metadata.r58AsphaltCompileRedRepair = { ...defect, specSha256: SPEC_SHA256 };
-          if (haulControl) {
+          if (costControl) {
             metadata.priceStatus = "NON_PAYABLE_DERIVED_CONTROL";
             metadata.priceRoute = "NONE";
           }
@@ -417,11 +443,11 @@ async function main(): Promise<void> {
             id: successorResourceId,
             definition_version_id: successorDefinitionId,
             semantic_owner: semanticOwner,
-            cost_owner_id: haulControl ? null : row.cost_owner_id,
+            cost_owner_id: costControl ? null : row.cost_owner_id,
             source_metadata: metadata,
             row_sha256: sha256({
               contract: CONTRACT, predecessorRowSha256: row.row_sha256,
-              rowId: row.row_id, semanticOwner, costOwnerId: haulControl ? null : row.cost_owner_id,
+              rowId: row.row_id, semanticOwner, costOwnerId: costControl ? null : row.cost_owner_id,
             }),
             defect,
           };
@@ -432,12 +458,9 @@ async function main(): Promise<void> {
         const nonblankCostOwners = repairedRows.map((row) => String(row.cost_owner_id ?? "").trim()).filter(Boolean);
         invariant(duplicateValues(nonblankCostOwners).length === 0,
           `R58_ASPHALT_13_COST_REPAIR:${definition.catalog_id}`);
-        if (definition.catalog_id === HAUL_CATALOG_ID) {
-          const payable = repairedRows.find((row) => row.row_id === HAUL_PAYABLE_ROW_ID);
-          invariant(payable?.cost_owner_id === "removal:haul"
-            && [...HAUL_CONTROL_ROW_IDS].every((rowId) => repairedRows.find((row) => row.row_id === rowId)?.cost_owner_id == null),
-          "R58_ASPHALT_13_HAUL_COST_BOUNDARY");
-        }
+        invariant(expectedCostControlRows.every((row) =>
+          repairedRows.find((candidate) => candidate.row_id === row.row_id)?.cost_owner_id == null),
+        `R58_ASPHALT_13_COST_CONTROL_BOUNDARY:${definition.catalog_id}`);
         const successorParameters: Json[] = retainedParameters.map((parameter) => ({
           ...parameter,
           truth_metadata: parameterTruth(parameter, definition, formulas, resources),
@@ -478,8 +501,8 @@ async function main(): Promise<void> {
               removedUnusedParameterIds: [...unused].sort(),
               repairedSemanticOwnerRows: repairedRows.filter((row) => row.defect
                 && row.defect.oldSemanticOwner !== row.defect.newSemanticOwner).length,
-              haulControlRowsMadeNonPayable: repairedRows.filter((row) => row.defect?.repairReason
-                === "DERIVED_HAUL_CONTROL_NOT_PAYABLE").length,
+              costControlRowsMadeNonPayable: repairedRows.filter((row) => row.defect?.repairReason
+                === "DERIVED_TRANSPORT_CONTROL_NOT_PAYABLE").length,
               beforeComputationalSha256, afterComputationalSha256,
             },
           },
@@ -512,19 +535,19 @@ async function main(): Promise<void> {
         ], normativeBindings.map((row) => [
           successorDefinitionId, resourceIdMap.get(String(row.resource_spec_id)), row.locator_id, row.applicability,
         ]));
-        const omittedPriceResourceIds = new Set(resources.filter((row) => definition.catalog_id === HAUL_CATALOG_ID
-          && HAUL_CONTROL_ROW_IDS.has(String(row.row_id))).map((row) => String(row.id)));
+        const omittedPriceResourceIds = new Set(expectedCostControlRows.map((row) => String(row.id)));
         const successorPriceBindings = priceBindings.filter((row) => !omittedPriceResourceIds.has(String(row.resource_spec_id)));
         await insertBatches(client, "estimate_resource_price_route_binding", [
           "resource_spec_id", "route_id", "price_key", "priority",
         ], successorPriceBindings.map((row) => [
           resourceIdMap.get(String(row.resource_spec_id)), row.route_id, row.price_key, row.priority,
         ]));
-        if (changed.some((row) => row.defect.oldSemanticOwner !== row.defect.newSemanticOwner)) {
+        if (changed.length > 0) {
           const semanticDefects = changed.filter((row) => row.defect.oldSemanticOwner !== row.defect.newSemanticOwner);
           const beforeSha256 = sha256(resources.map((row) => [row.row_id, row.semantic_owner, row.row_sha256]));
           const afterSha256 = sha256(repairedRows.map((row) => [row.row_id, row.semantic_owner, row.row_sha256]));
-          const evidenceSha256 = sha256({ definition: definition.catalog_id, semanticDefects, beforeSha256, afterSha256 });
+          const evidenceSha256 = sha256({ definition: definition.catalog_id, defects: changed.map((row) => row.defect),
+            beforeSha256, afterSha256 });
           await client.query(`insert into public.estimate_definition_defect_record(
             id,defect_key,release_id,predecessor_release_id,catalog_id,predecessor_definition_version_id,
             successor_definition_version_id,defect_class,root_cause_ru,affected_resources,before_sha256,
@@ -535,7 +558,7 @@ async function main(): Promise<void> {
             `r58-asphalt-compile-red-semantic-owner:${successorDefinitionId}`,
             candidateReleaseId, ACTIVE_RELEASE_ID, definition.catalog_id, definition.id, successorDefinitionId,
             "Разные технологические или контрольные строки ошибочно делили semantic_owner; identity разделена по неизменному row_id без изменения формул и количества.",
-            JSON.stringify(semanticDefects.map((row) => row.defect)), beforeSha256, afterSha256, evidenceSha256,
+            JSON.stringify(changed.map((row) => row.defect)), beforeSha256, afterSha256, evidenceSha256,
           ]);
         }
         await client.query(`update public.estimate_cumulative_manifest_entry set
@@ -559,8 +582,7 @@ async function main(): Promise<void> {
           resources: resources.length,
           repairedSemanticOwnerRows: semanticChanged,
           localDuplicateCostOwnersAfter: 0,
-          haulPayableRowId: definition.catalog_id === HAUL_CATALOG_ID ? HAUL_PAYABLE_ROW_ID : null,
-          haulControlRowsMadeNonPayable: definition.catalog_id === HAUL_CATALOG_ID ? [...HAUL_CONTROL_ROW_IDS] : [],
+          costControlRowsMadeNonPayable: expectedCostControlRows.map((row) => row.row_id).sort(),
           priceBindingsBefore: priceBindings.length,
           priceBindingsAfter: successorPriceBindings.length,
           normativeBindings: normativeBindings.length,
@@ -569,13 +591,19 @@ async function main(): Promise<void> {
           computationalParity: beforeComputationalSha256 === afterComputationalSha256,
         });
         changedSemanticRows += semanticChanged;
+        changedCostControlRows += expectedCostControlRows.length;
         removedParameters += unused.size;
       }
       const retainedApplicableParameters = records.reduce((sum, row) => sum + row.parametersAfter, 0);
-      invariant(records.length === 13 && removedParameters >= traceVisibleUnusedParameters && changedSemanticRows === 66
-        && removedParameters + retainedApplicableParameters === 1_032,
-      `R58_ASPHALT_13_DENOMINATOR:${records.length}/13:${removedParameters}:TRACE_MIN_${traceVisibleUnusedParameters}:${changedSemanticRows}/66`);
-      invariant(records.reduce((sum, row) => sum + row.priceBindingsBefore - row.priceBindingsAfter, 0) === 2,
+      invariant(records.length === EXPECTED_DEFINITIONS
+        && removedParameters === EXPECTED_UNUSED_PARAMETERS
+        && removedParameters >= traceVisibleUnusedParameters
+        && changedSemanticRows === EXPECTED_SEMANTIC_REPAIRS
+        && changedCostControlRows === EXPECTED_COST_CONTROL_REPAIRS
+        && removedParameters + retainedApplicableParameters === EXPECTED_PARAMETERS,
+      `R58_ASPHALT_13_DENOMINATOR:${records.length}/${EXPECTED_DEFINITIONS}:${removedParameters}/${EXPECTED_UNUSED_PARAMETERS}:TRACE_MIN_${traceVisibleUnusedParameters}:${changedSemanticRows}/${EXPECTED_SEMANTIC_REPAIRS}:${changedCostControlRows}/${EXPECTED_COST_CONTROL_REPAIRS}`);
+      invariant(records.reduce((sum, row) => sum + row.priceBindingsBefore - row.priceBindingsAfter, 0)
+        === EXPECTED_COST_CONTROL_REPAIRS,
         "R58_ASPHALT_13_NONPAYABLE_PRICE_BINDING_DENOMINATOR");
       const counts = (await client.query(`
         select
@@ -584,8 +612,8 @@ async function main(): Promise<void> {
           (select count(*)::int from public.estimate_definition_version where release_id=$1) direct_definitions,
           (select count(*)::int from public.estimate_definition_release where status='active') active_releases
       `, [candidateReleaseId])).rows[0] as Json;
-      invariant(counts.manifest_rows === 4_272 && counts.successor_entries === 75
-        && counts.direct_definitions === 75 && counts.active_releases === 1,
+      invariant(counts.manifest_rows === 4_272 && counts.successor_entries === EXPECTED_SUCCESSOR_ENTRIES
+        && counts.direct_definitions === EXPECTED_SUCCESSOR_ENTRIES && counts.active_releases === 1,
       `R58_ASPHALT_13_CANDIDATE_COUNTS:${stable(counts)}`);
       await client.query(`update public.estimate_definition_release set
         source_commit=$2,source_tree=$3,source_package_sha256=$4,
@@ -593,10 +621,11 @@ async function main(): Promise<void> {
         candidateReleaseId, head, tree,
         sha256({ contract: CONTRACT, head, tree, removedParameters, changedSemanticRows,
           records: records.map((row) => row.afterComputationalSha256) }),
-        JSON.stringify({ r58AsphaltCompileRedRepair13: {
-          contract: CONTRACT, specSha256: SPEC_SHA256, definitions: 13,
+        JSON.stringify({ [TRACE_NOT_ADMITTED ? "r58AsphaltTraceNotAdmittedRepair38" : "r58AsphaltCompileRedRepair13"]: {
+          contract: CONTRACT, specSha256: SPEC_SHA256, definitions: EXPECTED_DEFINITIONS,
           traceVisibleUnusedParameters, removedUnusedParameters: removedParameters, retainedApplicableParameters,
-          repairedSemanticOwnerRows: changedSemanticRows, haulControlRowsMadeNonPayable: 2,
+          repairedSemanticOwnerRows: changedSemanticRows,
+          costControlRowsMadeNonPayable: changedCostControlRows,
           activeReleaseSwitched: false, searchCutover: false, runtime8081Switched: false,
         } }),
       ]);
@@ -610,9 +639,10 @@ async function main(): Promise<void> {
   }
 
   const ledgerText = records.map((row) => stable(row)).join("\n") + (records.length > 0 ? "\n" : "");
-  const ledgerPath = resolve(OUTPUT_ROOT, apply
-    ? "R58_ASPHALT_COMPILE_RED_REPAIR_13_APPLY.jsonl"
-    : "R58_ASPHALT_COMPILE_RED_REPAIR_13_DRY_RUN.jsonl");
+  const evidenceStem = TRACE_NOT_ADMITTED
+    ? "R58_ASPHALT_TRACE_NOT_ADMITTED_REPAIR_38"
+    : "R58_ASPHALT_COMPILE_RED_REPAIR_13";
+  const ledgerPath = resolve(OUTPUT_ROOT, `${evidenceStem}_${apply ? "APPLY" : "DRY_RUN"}.jsonl`);
   const summary = {
     schemaVersion: CONTRACT,
     capturedAt: new Date().toISOString(),
@@ -620,12 +650,12 @@ async function main(): Promise<void> {
     mode: idempotent ? "IDEMPOTENCY_NO_WRITE" : apply ? "APPLY" : "DRY_RUN_ROLLBACK",
     source: { branch, head, tree },
     candidateReleaseId,
-    definitions: 13,
+    definitions: EXPECTED_DEFINITIONS,
     changedSemanticOwnerRows: idempotent ? 0 : changedSemanticRows,
+    costControlRowsMadeNonPayable: idempotent ? 0 : changedCostControlRows,
     removedUnusedParameters: idempotent ? 0 : removedParameters,
     traceVisibleUnusedParameters,
     retainedApplicableParameters: idempotent ? null : records.reduce((sum, row) => sum + row.parametersAfter, 0),
-    haulControlRowsMadeNonPayable: 2,
     localDuplicateCostOwnersAfter: 0,
     ledgerPath: idempotent ? null : ledgerPath,
     ledgerSha256: idempotent ? null : sha256(ledgerText),
@@ -633,17 +663,11 @@ async function main(): Promise<void> {
     searchCutover: false,
     runtime8081Switched: false,
     batch009Activated: false,
-    status: idempotent
-      ? "GREEN_R58_ASPHALT_COMPILE_RED_REPAIR_13_IDEMPOTENT_0"
-      : apply
-        ? "GREEN_R58_ASPHALT_COMPILE_RED_REPAIR_13_13_APPLIED"
-        : "GREEN_R58_ASPHALT_COMPILE_RED_REPAIR_13_13_DRY_RUN_ROLLED_BACK",
+    status: `GREEN_R58_ASPHALT_${TRACE_NOT_ADMITTED ? "TRACE_NOT_ADMITTED" : "COMPILE_RED"}_REPAIR_${EXPECTED_DEFINITIONS}_${
+      idempotent ? "IDEMPOTENT_0" : apply ? "APPLIED" : "DRY_RUN_ROLLED_BACK"}`,
   };
-  const summaryPath = resolve(OUTPUT_ROOT, idempotent
-    ? "R58_ASPHALT_COMPILE_RED_REPAIR_13_IDEMPOTENCY.json"
-    : apply
-      ? "R58_ASPHALT_COMPILE_RED_REPAIR_13_APPLY.json"
-      : "R58_ASPHALT_COMPILE_RED_REPAIR_13_DRY_RUN.json");
+  const summaryPath = resolve(OUTPUT_ROOT,
+    `${evidenceStem}_${idempotent ? "IDEMPOTENCY" : apply ? "APPLY" : "DRY_RUN"}.json`);
   mkdirSync(dirname(summaryPath), { recursive: true });
   if (!idempotent) writeFileSync(ledgerPath, ledgerText, "utf8");
   writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
