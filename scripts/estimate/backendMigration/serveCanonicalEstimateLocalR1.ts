@@ -948,8 +948,8 @@ with tokens as materialized(
     bool_or(token.q=any(source.normalized_aliases)) exact_alias,
     bool_or(source.normalized_canonical_name like token.q||'%') prefix_name,
     bool_or(position(token.q in source.normalized_canonical_name)>0) literal_name,
-    bool_or(exists(select 1 from unnest(source.normalized_aliases) alias
-      where position(token.q in alias)>0)) literal_alias,
+    bool_or(position(token.q in source.normalized_search_blob)>0
+      and position(token.q in source.normalized_canonical_name)=0) literal_alias,
     string_agg(distinct token.q,' | ' order by token.q) matched_term
   from public.estimate_search_document source
   cross join tokens token
@@ -963,8 +963,7 @@ with tokens as materialized(
             and target.catalog_id=source.canonical_target_catalog_id
             and target.adjudication_class='EFFECTIVE_WORK' and target.selectable)
     end
-    and (position(token.q in source.normalized_canonical_name)>0
-      or exists(select 1 from unnest(source.normalized_aliases) alias where position(token.q in alias)>0))
+    and position(token.q in source.normalized_search_blob)>0
   group by source.catalog_id,source.canonical_target_catalog_id
 ), accepted as materialized(
   select hit.*,
@@ -1021,7 +1020,8 @@ with candidate as materialized(
   from public.estimate_search_document document
   where document.search_release_id=$1 and document.adjudication_class='EFFECTIVE_WORK'
     and document.selectable and length(replace($2,' ',''))>2
-    and (document.normalized_canonical_name % $2 or document.normalized_search_blob % $2)
+    and (document.normalized_canonical_name operator(extensions.%) $2
+      or document.normalized_search_blob operator(extensions.%) $2)
     and (coalesce($3,'')='' or document.domain_id=$3)
     and (coalesce($4,'')='' or document.group_id=$4)
     and (coalesce($5,'')='' or document.operation_kind=$5)
@@ -1162,20 +1162,19 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           cursor?.orderKey ?? null,limit])).rows;
         resultLevel="FUZZY";
       }
-      const inventory = (await client.query(`with tokens as(
+      const inventory = url.searchParams.get("auditInventory") === "true" ? (await client.query(`with tokens as(
         select distinct unnest($2::text[]) q
       ),hits as(
         select document.catalog_id,count(distinct token.q)::int matched
         from public.estimate_search_document document cross join tokens token
-        where document.search_release_id=$1 and (position(token.q in document.normalized_canonical_name)>0
-          or exists(select 1 from unnest(document.normalized_aliases) alias where position(token.q in alias)>0))
+        where document.search_release_id=$1 and position(token.q in document.normalized_search_blob)>0
         group by document.catalog_id
       ) select count(*)::bigint inventory_literal_total_count from hits
       cross join (select count(*)::int token_count from tokens) state
       where (upper($3)='ANY' and hits.matched>0)
         or (upper($3)='ALL' and state.token_count>0 and hits.matched=state.token_count)
         or (upper($3)='PHRASE' and state.token_count=1 and hits.matched=1)`,
-      [release.id,intent.tokens,intent.mode])).rows[0];
+      [release.id,intent.tokens,intent.mode])).rows[0] : null;
       return { release,rows,inventory,resultLevel };
     });
     const literalTotalCount = Number(result.rows[0]?.literal_total_count ?? 0);
@@ -1193,7 +1192,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       rawQuery:intent.rawQuery,normalizedQuery:intent.searchText,searchText:intent.searchText,
       searchMode:intent.mode,searchTokens:intent.tokens,parsedQuantity:intent.quantity,parsedUnit:intent.unit,
       filters,scope,resultLevel:result.resultLevel,literalTotalCount,globalLiteralTotalCount,externalLiteralTotalCount,groupTotalCount,
-      inventoryLiteralTotalCount:Number(result.inventory?.inventory_literal_total_count ?? 0),
+      inventoryLiteralTotalCount:result.inventory == null ? null
+        : Number(result.inventory.inventory_literal_total_count ?? 0),
       fuzzyTotalCount,suggestionTotalCount:fuzzyTotalCount,shownCount,
       items:result.rows.map((row:Record<string,any>) => {
         const matchTier=Number(row.tier) as 1|2|3|4|5|6;

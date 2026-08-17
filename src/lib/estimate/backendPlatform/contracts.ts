@@ -357,7 +357,7 @@ export type CanonicalEstimateSearchPage = {
   scope: "WORKS" | "REFERENCES";
   resultLevel: "LITERAL" | "FUZZY";
   literalTotalCount: number;
-  inventoryLiteralTotalCount: number;
+  inventoryLiteralTotalCount: number | null;
   globalLiteralTotalCount: number;
   externalLiteralTotalCount: number;
   groupTotalCount: number;

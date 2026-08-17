@@ -973,7 +973,7 @@ export default function ProfessionalEstimateComposer({
                   Режим {catalogSearchPage.searchMode} · tokens: {catalogSearchPage.searchTokens.join(" · ")}
                   {catalogSearchPage.parsedQuantity == null ? "" : ` · объём ${catalogSearchPage.parsedQuantity} ${catalogSearchPage.parsedUnit ?? ""}`}
                 </Text>
-                <Text style={styles.catalogHint}>Групп: {catalogSearchPage.groupTotalCount} · fuzzy: {catalogSearchPage.fuzzyTotalCount} · полный adjudicated inventory match: {catalogSearchPage.inventoryLiteralTotalCount}</Text>
+                <Text style={styles.catalogHint}>Групп: {catalogSearchPage.groupTotalCount} · fuzzy: {catalogSearchPage.fuzzyTotalCount}</Text>
                 <Text style={styles.catalogHint}>Индекс {catalogSearchPage.searchIndexReleaseId} · taxonomy {catalogSearchPage.taxonomyVersion}</Text>
                 <View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <Pressable
                   key={suggestion.catalogId}
