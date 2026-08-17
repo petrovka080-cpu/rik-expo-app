@@ -533,13 +533,14 @@ async function main(): Promise<void> {
           id,defect_key,release_id,predecessor_release_id,catalog_id,predecessor_definition_version_id,
           successor_definition_version_id,defect_class,root_cause_ru,affected_resources,before_sha256,
           after_sha256,evidence_sha256,contract_version
-        ) values($1,$2,$3,$4,$5,$6,$7,'R54_RESOURCE_SEMANTIC_OWNER_IDENTITY',$8,$9,$10,$11,$12,
+        ) values($1,$2,$3,$4,$5,$6,$7,'R54_RESOURCE_SEMANTIC_OWNER_IDENTITY',$8,$9::jsonb,$10,$11,$12,
           'P0_ONE_MONOLITH_R54_DEFECT_LEDGER_V1')`, [
           deterministicUuid(`${CONTRACT}:defect:${successorDefinitionId}`),
           `r58-frozen-asphalt-semantic-owner:${successorDefinitionId}`,
           candidateReleaseId, ACTIVE_RELEASE_ID, definition.catalog_id, definition.id, successorDefinitionId,
           "Один паспортный semantic_owner ошибочно использовался всеми разными технологическими строками работы; границы строк восстановлены по неизменным row_id и cost_owner_id.",
-          repairedRows.map((row) => row.defect), beforeContentSha256, afterContentSha256, defectEvidenceSha256,
+          JSON.stringify(repairedRows.map((row) => row.defect)),
+          beforeContentSha256, afterContentSha256, defectEvidenceSha256,
         ]);
         await client.query(`update public.estimate_cumulative_manifest_entry set
           definition_version_id=$3,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
