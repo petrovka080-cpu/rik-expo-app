@@ -395,7 +395,7 @@ async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Pr
     normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
     acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version
   ) values($1,$2,$3,$4,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,
-    $12::jsonb,$13::jsonb,$14::jsonb,$15,$16,now(),null,'APPROVED_TEMPLATE_BASELINE_R58_REAL_WORK_V1')`, [
+    $12::jsonb,$13::jsonb,$14::jsonb,$15,$16,now(),null,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
     baseline.id, baseline.key, spec.catalogId, definitionId, baseline.parameterSchemaSha256,
     JSON.stringify(baseline.inputValues), JSON.stringify(baseline.inputClassification), JSON.stringify(baseline.uomByParameter),
     JSON.stringify(baseline.formulaConsumers), JSON.stringify(baseline.resourceConsumers), JSON.stringify(baseline.normativeSourceIds),
