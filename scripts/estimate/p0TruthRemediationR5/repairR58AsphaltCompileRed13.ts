@@ -476,8 +476,11 @@ async function main(): Promise<void> {
           };
         });
         const changed = repairedRows.filter((row) => row.defect);
-        invariant(duplicateValues(repairedRows.map((row) => String(row.semantic_owner))).length === 0,
-          `R58_ASPHALT_13_OWNER_REPAIR:${definition.catalog_id}`);
+        const duplicateSemanticOwnersAfter = duplicateValues(
+          repairedRows.map((row) => String(row.semantic_owner)),
+        );
+        invariant(duplicateSemanticOwnersAfter.length === 0,
+          `R58_ASPHALT_13_OWNER_REPAIR:${definition.catalog_id}:${duplicateSemanticOwnersAfter.slice(0, 3).join("|")}`);
         const nonblankCostOwners = repairedRows.map((row) => String(row.cost_owner_id ?? "").trim()).filter(Boolean);
         invariant(duplicateValues(nonblankCostOwners).length === 0,
           `R58_ASPHALT_13_COST_REPAIR:${definition.catalog_id}`);
