@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import { Client, type QueryResultRow } from "pg";
@@ -9,17 +9,19 @@ import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/b
 
 type Json = Record<string, any>;
 
-const SPEC_SHA256 = "1692ec051abcda1e4b973e1a3c9d053c22e17748ee5838d23f83d631f1b341b2";
+const SPEC_SHA256 = "992fddec1b95f95fff14b17057a88246a6d8466252a7f7cf41d2174c054904b0";
 const SOURCE_URL = process.env.R53_SOURCE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const CANDIDATE_URL = process.env.R53_CANDIDATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/p0_r53_exact15_candidate";
 const STAGE = String(process.argv.find((value) => value.startsWith("--stage="))?.split("=")[1] ?? "");
 const EVIDENCE_ROOT = resolve(
-  ".release-runtime/p0-one-monolith-r5/evidence/02-phase1a/canonical-backend-api/candidate",
+  ".release-runtime/p0-one-monolith-r54/evidence/05-baseline",
 );
 const FIXED_VERIFIED_AT = "2026-08-17T00:00:00.000Z";
 const ACCEPTED_TRACE_BASELINE_VERSION = "accepted-batch-formula-graph-v3-baseline:r53";
+const APPROVED_TEMPLATE_BASELINE_VERSION = "approved-template-baseline:r54";
+const APPROVED_TEMPLATE_CONTRACT_VERSION = "APPROVED_TEMPLATE_BASELINE_R54_V1";
 
 const EXACT_15 = Object.freeze([
   ["chimney_stack_tender_boq_expanded_complex_v1", "expanded-template:chimney_stack_tender_boq_expanded_complex_v1"],
@@ -67,6 +69,13 @@ function writeEvidence(name: string, value: unknown): string {
   const path = resolve(EVIDENCE_ROOT, name);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  return path;
+}
+
+function writeJsonlEvidence(name: string, rows: readonly unknown[]): string {
+  const path = resolve(EVIDENCE_ROOT, name);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, rows.map((row) => JSON.stringify(row)).join("\n") + (rows.length ? "\n" : ""), "utf8");
   return path;
 }
 
@@ -276,6 +285,199 @@ function withinConstraints(value: unknown, row: Json): boolean {
     && (constraints.max == null || number <= Number(constraints.max));
 }
 
+function uuidFromSha256(hash: string): string {
+  const normalized = `${hash.slice(0, 12)}4${hash.slice(13, 16)}8${hash.slice(17, 20)}${hash.slice(20, 32)}`;
+  return `${normalized.slice(0, 8)}-${normalized.slice(8, 12)}-${normalized.slice(12, 16)}-${normalized.slice(16, 20)}-${normalized.slice(20, 32)}`;
+}
+
+function approvedTemplateNumber(row: Json): number | null {
+  const id = String(row.parameter_id).toLocaleLowerCase("en-US");
+  const unit = String(row.unit_id ?? "").toLocaleLowerCase("en-US");
+  const candidates = [
+    ...(id === "pi" ? [Math.PI] : []),
+    ...(/angle_deg|degree/.test(id) || unit === "degree" ? [90] : []),
+    ...(/design_supply_temperature_c/.test(id) ? [80] : []),
+    ...(/design_return_temperature_c/.test(id) ? [60] : []),
+    ...(/temperature_c/.test(id) ? [20] : []),
+    ...(/percent/.test(id) || unit === "percent" ? [5] : []),
+    ...(/fraction|waste_factor/.test(id) || unit === "fraction" ? [0.05] : []),
+    ...(/area_m2/.test(id) || unit === "m2" ? [100] : []),
+    ...(/distance_km/.test(id) || unit === "km" ? [10] : []),
+    ...(/radius_m/.test(id) ? [2] : []),
+    ...(/height_m/.test(id) ? [3] : []),
+    ...(/width_m/.test(id) ? [5] : []),
+    ...(/length_m/.test(id) || unit === "m" ? [10] : []),
+    ...(/thickness/.test(id) && unit === "mm" ? [50] : []),
+    ...(/diameter/.test(id) && unit === "mm" ? [100] : []),
+    ...(/(?:quantity|count|item|point|test|document|service|record|interval)/.test(id) ? [1] : []),
+    ...(/(?:productivity|labor_norm|machine_norm|mass_kg|density|consumption|rate)/.test(id) ? [1] : []),
+    1,
+  ];
+  for (const candidate of candidates) {
+    const value = row.value_type === "integer" ? Math.round(candidate) : candidate;
+    if (withinConstraints(value, row)) return value;
+  }
+  return null;
+}
+
+function approvedTemplateValue(row: Json, definition: Json): unknown {
+  if (row.value_type === "decimal" || row.value_type === "integer") return approvedTemplateNumber(row);
+  if (row.value_type === "boolean") return row.parameter_id === "work_included";
+  if (row.value_type === "enum") {
+    const values = Array.isArray(row.constraints_json?.values) ? row.constraints_json.values : [];
+    const explicit = row.parameter_id === "estimate_scope_mode"
+      ? "MINIMAL_EXPLICIT_SCOPE"
+      : row.parameter_id === "funding_source"
+        ? "PRIVATE_RECOMMENDED"
+        : row.parameter_id === "scope_capability"
+          ? definition.passport?.scopeCapability
+          : values.includes("PROJECT_SPECIFIED")
+            ? "PROJECT_SPECIFIED"
+            : null;
+    return explicit != null && values.includes(explicit) ? explicit : null;
+  }
+  if (row.value_type === "text") {
+    if (row.parameter_id === "project_type") return "Предварительный частный проект";
+    if (row.parameter_id === "normative_rate_code") return "Применимую расценку необходимо уточнить по проекту";
+    return `Предварительное допущение ${definition.catalog_id}: ${row.parameter_id}`;
+  }
+  return null;
+}
+
+function approvedTemplateClassification(parameterId: string): "ASSUMPTION" | "DERIVED" {
+  return parameterId.toLocaleLowerCase("en-US") === "pi" ? "DERIVED" : "ASSUMPTION";
+}
+
+function buildApprovedTemplateBaseline(input: {
+  definition: Json;
+  parameters: readonly Json[];
+  formulas: readonly Json[];
+  resources: readonly Json[];
+  parameterSchemaId: string;
+  missingParameterIds: readonly string[];
+}): Json {
+  const parameterById = new Map(input.parameters.map((row) => [String(row.parameter_id), row]));
+  const formulaConsumers = new Map<string, Set<string>>();
+  const resourcesByFormula = new Map<string, Json[]>();
+  const resourceConsumers = new Map<string, Set<string>>();
+  for (const formula of input.formulas) {
+    for (const parameterId of formula.input_parameter_ids ?? []) {
+      const bucket = formulaConsumers.get(String(parameterId)) ?? new Set<string>();
+      bucket.add(String(formula.formula_id));
+      formulaConsumers.set(String(parameterId), bucket);
+    }
+  }
+  for (const resource of input.resources) {
+    const formulaRows = resourcesByFormula.get(String(resource.formula_id)) ?? [];
+    formulaRows.push(resource);
+    resourcesByFormula.set(String(resource.formula_id), formulaRows);
+    const inclusionIds = new Set<string>();
+    collectInclusionParameterIds(resource.inclusion_ast, inclusionIds);
+    for (const parameterId of inclusionIds) {
+      const bucket = resourceConsumers.get(parameterId) ?? new Set<string>();
+      bucket.add(String(resource.row_id));
+      resourceConsumers.set(parameterId, bucket);
+    }
+  }
+  for (const [parameterId, formulaIds] of formulaConsumers) {
+    const bucket = resourceConsumers.get(parameterId) ?? new Set<string>();
+    for (const formulaId of formulaIds) {
+      for (const resource of resourcesByFormula.get(formulaId) ?? []) bucket.add(String(resource.row_id));
+    }
+    resourceConsumers.set(parameterId, bucket);
+  }
+
+  const inputValues: Json = {};
+  const inputClassification: Json = {};
+  const uomByParameter: Json = {};
+  const formulaConsumerIds: Json = {};
+  const resourceConsumerRowIds: Json = {};
+  const normativeSourceIds: Json = {};
+  const guideProvenanceRu: Json = {};
+  const invalid: Json[] = [];
+  const allNormativeIds = new Set<string>();
+  for (const parameterId of input.missingParameterIds) {
+    const row = parameterById.get(parameterId);
+    if (!row) {
+      invalid.push({ parameterId, reason: "APPROVED_TEMPLATE_PARAMETER_NOT_IN_SCHEMA" });
+      continue;
+    }
+    const formulaIds = [...(formulaConsumers.get(parameterId) ?? [])].sort();
+    const resourceIds = [...(resourceConsumers.get(parameterId) ?? [])].sort();
+    const linkedResources = input.resources.filter((resource) => resourceIds.includes(String(resource.row_id)));
+    const normativeLinks: Json[] = [];
+    for (const resource of linkedResources) collectNormativeLinks(resource.source_metadata, normativeLinks);
+    const sourceIds = [...new Set(normativeLinks.map((link) => String(link.source_id ?? "")).filter(Boolean))].sort();
+    sourceIds.forEach((sourceId) => allNormativeIds.add(sourceId));
+    const value = approvedTemplateValue(row, input.definition);
+    if (value == null || !withinConstraints(value, row)) {
+      invalid.push({
+        parameterId,
+        reason: "NO_PRODUCTION_REPRESENTATIVE_APPROVED_TEMPLATE_VALUE",
+        valueType: row.value_type,
+        unitId: row.unit_id,
+        constraints: row.constraints_json,
+      });
+      continue;
+    }
+    if (resourceIds.length === 0) {
+      invalid.push({ parameterId, reason: "APPROVED_TEMPLATE_CONSUMER_BINDING_MISSING" });
+      continue;
+    }
+    const classification = approvedTemplateClassification(parameterId);
+    inputValues[parameterId] = value;
+    inputClassification[parameterId] = classification;
+    uomByParameter[parameterId] = row.unit_id ?? null;
+    formulaConsumerIds[parameterId] = formulaIds;
+    resourceConsumerRowIds[parameterId] = resourceIds;
+    normativeSourceIds[parameterId] = sourceIds;
+    guideProvenanceRu[parameterId] = classification === "DERIVED"
+      ? `Производная константа ${parameterId}; связана с exact formula graph выбранной работы.`
+      : `Видимое инженерное допущение для «${row.title_ru}» (${input.definition.catalog_id}); заменить проектным, обмерным или паспортным значением. Нормативные источники определяют применимость, но не выдаются за пользовательский факт.`;
+  }
+
+  const acceptanceCore = {
+    contractVersion: APPROVED_TEMPLATE_CONTRACT_VERSION,
+    catalogId: input.definition.catalog_id,
+    sourceReleaseId: input.definition.release_id,
+    sourceDefinitionVersionId: input.definition.id,
+    sourceDefinitionVersion: input.definition.definition_version,
+    sourceDefinitionSha256: input.definition.definition_sha256,
+    parameterSchemaSha256: input.parameterSchemaId,
+    inputValues,
+    inputClassification,
+    uomByParameter,
+    formulaConsumerIds,
+    resourceConsumerRowIds,
+    normativeSourceIds,
+    guideProvenanceRu,
+    proposalSourceRefs: [
+      `production-owner:professionalDomainVisibleBaselineV1@8238e41e:${input.definition.catalog_id}`,
+      `definition:${input.definition.id}:${input.definition.definition_sha256}`,
+      `formula-graph:${sha256(input.formulas.map((formula) => [formula.formula_id, formula.ast_sha256]))}`,
+      `resource-set:${sha256(input.resources.map((resource) => [resource.row_id, resource.row_sha256]))}`,
+      ...[...allNormativeIds].sort().map((sourceId) => `normative-source:${sourceId}`),
+    ],
+    validationScenarioRefs: [
+      `r54-semantic-preflight:${input.definition.catalog_id}:no-user-input`,
+      `r54-dependent-row-mutation:${input.definition.catalog_id}:pending-candidate-backend`,
+      `r54-deterministic-repeat:${input.definition.catalog_id}:pending-candidate-backend`,
+    ],
+    acceptedAt: FIXED_VERIFIED_AT,
+    supersedesBaselineId: null,
+  };
+  const acceptanceEvidenceSha256 = sha256(acceptanceCore);
+  const baselineId = uuidFromSha256(sha256({ acceptanceCore, acceptanceEvidenceSha256 }));
+  return {
+    ...acceptanceCore,
+    baselineId,
+    baselineKey: `r54-approved-template-${input.definition.catalog_id}-${baselineId}`,
+    acceptanceEvidenceSha256,
+    invalid,
+    ready: invalid.length === 0 && Object.keys(inputValues).length === input.missingParameterIds.length,
+  };
+}
+
 function guideFor(row: Json, normativeLinks: readonly Json[]): Json {
   const constraints = row.constraints_json ?? {};
   const firstNorm = normativeLinks[0] ?? {};
@@ -447,11 +649,43 @@ function buildAcceptedBaselineProjection(input: {
       acceptedProvenance[parameterId] = compatible;
     }
   }
+  const acceptedTraceMissingParameterIds = requiredBaselineParameterIds
+    .filter((parameterId) => defaults[parameterId] === undefined);
+  const approvedTemplateBaseline = acceptedTraceMissingParameterIds.length > 0
+    ? buildApprovedTemplateBaseline({
+      definition: input.definition,
+      parameters: input.parameters,
+      formulas: input.formulas,
+      resources: input.resources,
+      parameterSchemaId,
+      missingParameterIds: acceptedTraceMissingParameterIds,
+    })
+    : null;
+  const approvedProvenance: Json = {};
+  if (approvedTemplateBaseline?.ready === true) {
+    for (const [parameterId, value] of Object.entries(approvedTemplateBaseline.inputValues as Json)) {
+      defaults[parameterId] = value;
+      approvedProvenance[parameterId] = {
+        baselineId: approvedTemplateBaseline.baselineId,
+        catalogId: input.definition.catalog_id,
+        parameterId,
+        value,
+        inputClassification: approvedTemplateBaseline.inputClassification[parameterId],
+        definitionVersionId: input.definition.id,
+        parameterSchemaSha256: parameterSchemaId,
+        formulaConsumerIds: approvedTemplateBaseline.formulaConsumerIds[parameterId],
+        resourceConsumerRowIds: approvedTemplateBaseline.resourceConsumerRowIds[parameterId],
+        normativeSourceIds: approvedTemplateBaseline.normativeSourceIds[parameterId],
+        acceptanceEvidenceSha256: approvedTemplateBaseline.acceptanceEvidenceSha256,
+      };
+    }
+  }
   const missingParameterIds = requiredBaselineParameterIds.filter((parameterId) => defaults[parameterId] === undefined);
   const inventedPriceDefaults = Object.keys(defaults).filter((parameterId) => parameterId.startsWith("unit_price_"));
   const ready = missingParameterIds.length === 0
     && conflicts.length === 0
     && invalid.length === 0
+    && (approvedTemplateBaseline == null || approvedTemplateBaseline.ready === true)
     && inventedPriceDefaults.length === 0;
   return {
     catalogId: input.definition.catalog_id,
@@ -473,13 +707,20 @@ function buildAcceptedBaselineProjection(input: {
     acceptedBindings: bindings,
     defaults,
     acceptedProvenance,
+    approvedProvenance,
+    approvedTemplateBaseline,
+    acceptedTraceMissingParameterIds,
     missingParameterIds,
     conflicts,
     invalid,
     inventedFallbackCount: 0,
     inventedPriceDefaults,
     ready,
-    status: ready ? "GREEN_ACCEPTED_BASELINE" : "RED_ACCEPTED_BASELINE_INCOMPLETE",
+    status: ready
+      ? approvedTemplateBaseline == null
+        ? "GREEN_ACCEPTED_RUNTIME_TRACE_BASELINE"
+        : "GREEN_APPROVED_TEMPLATE_BASELINE"
+      : "RED_AUTHORITATIVE_BASELINE_INCOMPLETE",
   };
 }
 
@@ -524,8 +765,43 @@ async function acceptedBaselinePreflight(): Promise<Json> {
     }
     await client.query("commit");
     const ready = entries.filter((entry) => entry.ready).length;
+    const approvedAssets = entries.flatMap((entry) => entry.approvedTemplateBaseline ? [entry.approvedTemplateBaseline] : []);
+    const approvedManifestPath = writeJsonlEvidence("EXACT15_APPROVED_BASELINE_MANIFESTS.jsonl", approvedAssets);
+    const proposalValidationPath = writeJsonlEvidence("BASELINE_PROPOSAL_VALIDATION_RESULTS.jsonl", entries.map((entry) => ({
+      catalogId: entry.catalogId,
+      definitionVersionId: entry.definitionVersionId,
+      parameterSchemaSha256: entry.parameterSchemaId,
+      acceptedRuntimeTraceParameters: Object.keys(entry.acceptedProvenance ?? {}).length,
+      approvedTemplateParameters: Object.keys(entry.approvedProvenance ?? {}).length,
+      missingParameterIds: entry.missingParameterIds,
+      conflicts: entry.conflicts,
+      invalid: entry.invalid,
+      approvedTemplateInvalid: entry.approvedTemplateBaseline?.invalid ?? [],
+      inventedPriceDefaults: entry.inventedPriceDefaults,
+      status: entry.status,
+    })));
+    const acceptanceEvidencePath = writeJsonlEvidence("BASELINE_ACCEPTANCE_EVIDENCE.jsonl", approvedAssets.map((asset) => ({
+      baselineId: asset.baselineId,
+      catalogId: asset.catalogId,
+      sourceDefinitionVersionId: asset.sourceDefinitionVersionId,
+      parameterSchemaSha256: asset.parameterSchemaSha256,
+      acceptanceEvidenceSha256: asset.acceptanceEvidenceSha256,
+      inputCount: Object.keys(asset.inputValues ?? {}).length,
+      proposalSourceRefs: asset.proposalSourceRefs,
+      validationScenarioRefs: asset.validationScenarioRefs,
+      acceptedAt: asset.acceptedAt,
+      status: asset.ready ? "IMMUTABLE_ACCEPTED" : "RED_NOT_ACCEPTED",
+    })));
+    writeEvidence("EXACT15_FROZEN_IDS.json", {
+      schemaVersion: "p0-one-monolith-r54-exact15-frozen-ids.v1",
+      specSha256: SPEC_SHA256,
+      requestedIds: EXACT_15.map(([requested]) => requested),
+      catalogIds: CATALOG_IDS,
+      denominator: 15,
+      sha256: sha256(EXACT_15),
+    });
     const evidence = {
-      schemaVersion: "p0-one-monolith-r53-exact15-accepted-baseline-preflight.v1",
+      schemaVersion: "p0-one-monolith-r54-exact15-authoritative-baseline-preflight.v1",
       specSha256: SPEC_SHA256,
       sourceDatabase: "batch009_fire_r5_a",
       sourceMode: "READ_ONLY",
@@ -536,13 +812,18 @@ async function acceptedBaselinePreflight(): Promise<Json> {
       definitionsFound: definitions.length,
       ready,
       red: 15 - ready,
+      allowedProvenanceKinds: ["ACCEPTED_RUNTIME_TRACE", "APPROVED_TEMPLATE_BASELINE"],
       acceptedTraceContract: "acceptedTrace.formulaGraphV3.inputValues",
-      forbiddenSources: ["validation scenario", "constraints.min", "midpoint", "cross-work parameter", "invented norm", "invented price"],
+      approvedTemplateContract: APPROVED_TEMPLATE_CONTRACT_VERSION,
+      acceptedRuntimeTraceWorks: entries.filter((entry) => entry.approvedTemplateBaseline == null && entry.ready).length,
+      approvedTemplateWorks: approvedAssets.filter((asset) => asset.ready).length,
+      forbiddenSources: ["constraints.min-only", "midpoint", "first-enum", "cross-work parameter", "invented norm", "invented price", "test-only scenario"],
       inventedFallbackCount: 0,
+      evidenceFiles: { approvedManifestPath, proposalValidationPath, acceptanceEvidencePath },
       entries,
       status: definitions.length === 15 && ready === 15 ? "GREEN" : "RED",
     };
-    const path = writeEvidence("EXACT15_ACCEPTED_BASELINE_PREFLIGHT.json", evidence);
+    const path = writeEvidence("EXACT15_AUTHORITATIVE_BASELINE_PREFLIGHT.json", evidence);
     return { ...evidence, evidencePath: path, evidenceSha256: sha256(evidence) };
   } finally {
     await client.end();
@@ -594,11 +875,67 @@ function semanticFingerprint(definition: Json, parameters: readonly Json[], form
   };
 }
 
+function normalizeR54SemanticOwners(resources: readonly Json[]): { resources: Json[]; defects: Json[] } {
+  const ownerCounts = new Map<string, number>();
+  for (const row of resources) {
+    const owner = String(row.semantic_owner ?? "").trim();
+    if (owner) ownerCounts.set(owner, (ownerCounts.get(owner) ?? 0) + 1);
+  }
+  const defects: Json[] = [];
+  const normalized = resources.map((row) => {
+    const previousOwner = String(row.semantic_owner ?? "").trim();
+    if (previousOwner && (ownerCounts.get(previousOwner) ?? 0) === 1) return { ...row };
+    const reason = previousOwner ? "DUPLICATE_INTERFACE_ROLE_OWNER" : "MISSING_RESOURCE_ROW_OWNER";
+    const semanticOwner = previousOwner
+      ? `${previousOwner}:row:${sha256(row.row_id).slice(0, 16)}`
+      : `resource-row:${sha256(row.row_id).slice(0, 24)}`;
+    const defect = {
+      defectClass: "R54_RESOURCE_SEMANTIC_OWNER_IDENTITY",
+      reason,
+      rowId: row.row_id,
+      previousSemanticOwner: previousOwner || null,
+      semanticOwner,
+      previousRowSha256: row.row_sha256,
+    };
+    const rowSha256 = sha256({
+      contract: "p0-one-monolith-r54-semantic-owner-repair.v1",
+      previousRowSha256: row.row_sha256,
+      rowId: row.row_id,
+      semanticOwner,
+    });
+    defects.push({ ...defect, rowSha256 });
+    return {
+      ...row,
+      semantic_owner: semanticOwner,
+      row_sha256: rowSha256,
+      source_metadata: {
+        ...(row.source_metadata ?? {}),
+        r54SemanticOwnerRepair: { ...defect, rowSha256, specSha256: SPEC_SHA256 },
+      },
+    };
+  });
+  invariant(new Set(normalized.map((row) => String(row.semantic_owner ?? "").trim())).size === normalized.length,
+    "R54_RESOURCE_SEMANTIC_OWNER_REPAIR_NOT_UNIQUE");
+  invariant(normalized.every((row) => String(row.semantic_owner ?? "").trim().length > 0),
+    "R54_RESOURCE_SEMANTIC_OWNER_REPAIR_MISSING");
+  return { resources: normalized, defects };
+}
+
 async function admitSuccessorDefinitions(): Promise<void> {
   const acceptedPreflight = await acceptedBaselinePreflight();
   invariant(
     acceptedPreflight.status === "GREEN",
     `R53_ACCEPTED_BASELINE_PREFLIGHT_RED:${acceptedPreflight.ready}/15:${acceptedPreflight.evidencePath}`,
+  );
+  const approvedManifestPath = resolve(EVIDENCE_ROOT, "EXACT15_APPROVED_BASELINE_MANIFESTS.jsonl");
+  const acceptedAssets = readFileSync(approvedManifestPath, "utf8").trim().split(/\r?\n/u)
+    .filter(Boolean).map((line) => JSON.parse(line) as Json);
+  const projectedAssets = (acceptedPreflight.entries as Json[])
+    .flatMap((entry) => entry.approvedTemplateBaseline ? [entry.approvedTemplateBaseline] : []);
+  invariant(acceptedAssets.length === 14, `R54_APPROVED_TEMPLATE_DENOMINATOR:${acceptedAssets.length}/14`);
+  invariant(
+    sha256(acceptedAssets) === sha256(projectedAssets),
+    "R54_APPROVED_TEMPLATE_ACCEPTANCE_EVIDENCE_DRIFT",
   );
   const client = new Client({ connectionString: CANDIDATE_URL, application_name: "r53-exact15-candidate-admission" });
   await client.connect();
@@ -608,6 +945,11 @@ async function admitSuccessorDefinitions(): Promise<void> {
       where table_schema='public' and table_name='estimate_parameter_definition' and column_name='truth_metadata'
     ) present`);
     invariant(truthColumn.rows[0]?.present === true, "R53_ADMIT_REQUIRES_TRUTH_MIGRATION");
+    const approvedBaselineTable = await client.query(`select exists(
+      select 1 from information_schema.tables
+      where table_schema='public' and table_name='estimate_approved_template_baseline'
+    ) present`);
+    invariant(approvedBaselineTable.rows[0]?.present === true, "R54_ADMIT_REQUIRES_APPROVED_TEMPLATE_BASELINE_MIGRATION");
     const activeBefore = await client.query("select count(*)::integer count from public.estimate_definition_release where status='active'");
     invariant(activeBefore.rows[0]?.count === 0, "R53_CANDIDATE_ACTIVE_RELEASE_ALREADY_PRESENT");
     const historicalDefinitions = (await client.query(`
@@ -624,9 +966,9 @@ async function admitSuccessorDefinitions(): Promise<void> {
     const head = git("rev-parse", "HEAD");
     const tree = git("rev-parse", "HEAD^{tree}");
     const releaseId = randomUUID();
-    const releaseKey = `p0-r53-exact15-truth-${head.slice(0, 12)}`;
+    const releaseKey = `p0-r54-exact15-truth-${head.slice(0, 12)}`;
     const releaseManifest = {
-      schemaVersion: "p0-one-monolith-r53-exact15-release-manifest.v1",
+      schemaVersion: "p0-one-monolith-r54-exact15-release-manifest.v1",
       specSha256: SPEC_SHA256,
       head,
       tree,
@@ -649,7 +991,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
       ) values($1,$2,3,'draft',$3,$4,$5,15,0,$6::jsonb,$7,$5,0,0)`, [
         releaseId, releaseKey, head, tree, releaseManifestSha256, json({
           ...releaseManifest,
-          baselineOwner: ACCEPTED_TRACE_BASELINE_VERSION,
+          baselineOwners: [ACCEPTED_TRACE_BASELINE_VERSION, APPROVED_TEMPLATE_BASELINE_VERSION],
           batch009Activated: false,
           cutover: false,
         }), parentReleaseId,
@@ -718,6 +1060,8 @@ async function admitSuccessorDefinitions(): Promise<void> {
         invariant(acceptedProjection.ready === true, `R53_ACCEPTED_BASELINE_INCOMPLETE:${historical.catalog_id}`);
         const defaults = acceptedProjection.defaults as Json;
         const acceptedProvenance = acceptedProjection.acceptedProvenance as Json;
+        const approvedProvenance = acceptedProjection.approvedProvenance as Json;
+        const approvedTemplateBaseline = acceptedProjection.approvedTemplateBaseline as Json | null;
         const sourceParameterSchemaId = String(acceptedProjection.parameterSchemaId);
         const sourceParameterSchemaVersion = String(acceptedProjection.parameterSchemaVersion);
         const consumerParameterIds = new Set((acceptedProjection.requiredBaselineParameterIds as string[]) ?? []);
@@ -739,6 +1083,13 @@ async function admitSuccessorDefinitions(): Promise<void> {
           const uniqueNormativeLinks = [...new Map(normativeLinks.map((link) => [sha256(link), link])).values()];
           const defaultValue = defaults[row.parameter_id];
           const baselineBindings = acceptedProvenance[row.parameter_id] ?? [];
+          const approvedTemplateBinding = approvedProvenance[row.parameter_id] ?? null;
+          const baselineOwner = approvedTemplateBinding
+            ? APPROVED_TEMPLATE_BASELINE_VERSION
+            : ACCEPTED_TRACE_BASELINE_VERSION;
+          const approvedTemplateBaselineId = approvedTemplateBinding
+            ? String(approvedTemplateBaseline?.baselineId ?? "")
+            : null;
           const truthMetadata = {
             semantic_parameter_key: row.parameter_id,
             visibility_role: "USER_INPUT",
@@ -749,11 +1100,19 @@ async function admitSuccessorDefinitions(): Promise<void> {
             default_policy: defaultValue === undefined ? "USER_OR_EXACT_STAGE_INPUT" : "VISIBLE_PRELIMINARY_ASSUMPTION",
             baseline_assumption_id: defaultValue === undefined
               ? null
-              : `${ACCEPTED_TRACE_BASELINE_VERSION}:${historical.release_id}:${oldDefinitionId}:${row.parameter_id}`,
-            baseline_source_id: defaultValue === undefined ? null : `accepted-trace:${historical.catalog_id}:${row.parameter_id}`,
+              : approvedTemplateBinding
+                ? `${APPROVED_TEMPLATE_BASELINE_VERSION}:${approvedTemplateBaselineId}:${row.parameter_id}`
+                : `${ACCEPTED_TRACE_BASELINE_VERSION}:${historical.release_id}:${oldDefinitionId}:${row.parameter_id}`,
+            baseline_source_id: defaultValue === undefined
+              ? null
+              : approvedTemplateBinding
+                ? `approved-template:${approvedTemplateBaselineId}:${row.parameter_id}`
+                : `accepted-trace:${historical.catalog_id}:${row.parameter_id}`,
             baseline_reason_ru: defaultValue === undefined
               ? null
-              : "Значение перенесено из принятого exact formulaGraphV3 trace той же работы и той же definition version; пользовательское уточнение имеет приоритет.",
+              : approvedTemplateBinding
+                ? String(approvedTemplateBaseline?.guideProvenanceRu?.[row.parameter_id] ?? "Видимое индивидуальное инженерное допущение; пользовательское уточнение имеет приоритет.")
+                : "Значение перенесено из принятого exact formulaGraphV3 trace той же работы и той же definition version; пользовательское уточнение имеет приоритет.",
             value_source_role: defaultValue === undefined ? "USER_INPUT" : "VISIBLE_BASELINE_ASSUMPTION",
             guide: guideFor(row, uniqueNormativeLinks),
             shared_input_binding_policy: "EXACT_CATALOG_ID_ONLY",
@@ -772,8 +1131,14 @@ async function admitSuccessorDefinitions(): Promise<void> {
               sourceCatalogId: historical.catalog_id,
               sourceParameterSchemaId,
               sourceParameterSchemaVersion,
-              baselineOwner: ACCEPTED_TRACE_BASELINE_VERSION,
-              acceptedTraceBindings: baselineBindings,
+              baselineOwner,
+              ...(approvedTemplateBinding ? {
+                approvedTemplateBaselineId,
+                acceptanceEvidenceSha256: approvedTemplateBaseline?.acceptanceEvidenceSha256,
+                approvedTemplateBinding,
+              } : {
+                acceptedTraceBindings: baselineBindings,
+              }),
               specSha256: SPEC_SHA256,
             },
           };
@@ -782,6 +1147,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
             required: row.required,
             default_value: defaultValue,
             truth_metadata: truthMetadata,
+            approved_template_baseline_id: approvedTemplateBaselineId,
           };
         });
         validateCanonicalEstimateParameters(successorParameters, {}, {
@@ -815,7 +1181,10 @@ async function admitSuccessorDefinitions(): Promise<void> {
           sourceParameterSchemaVersion,
           requestedCatalogWorkId: REQUESTED_BY_CATALOG.get(historical.catalog_id),
           canonicalCatalogId: historical.catalog_id,
-          baselineOwner: ACCEPTED_TRACE_BASELINE_VERSION,
+          baselineOwners: approvedTemplateBaseline
+            ? [ACCEPTED_TRACE_BASELINE_VERSION, APPROVED_TEMPLATE_BASELINE_VERSION]
+            : [ACCEPTED_TRACE_BASELINE_VERSION],
+          approvedTemplateBaselineId: approvedTemplateBaseline?.baselineId ?? null,
           baselineWithoutUserInput: true,
           sourceParameterCount: parameters.length,
           parameterCount: successorParameters.length,
@@ -824,7 +1193,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
         const definitionSourceMetadata = {
           ...historical.source_metadata,
           truthRemediation: {
-            contractVersion: "p0-one-monolith-r53-exact15-definition.v1",
+            contractVersion: "p0-one-monolith-r54-exact15-definition.v1",
             sourceDefinitionVersionId: oldDefinitionId,
             sourceDefinitionHash: historical.definition_sha256,
             sourceReleaseId: historical.release_id,
@@ -859,13 +1228,46 @@ async function admitSuccessorDefinitions(): Promise<void> {
           newDefinitionId, releaseId, historical.catalog_id, definitionVersion, json(definitionPassport),
           json(historical.applicability), definitionHash, json(definitionSourceMetadata),
         ]);
+        if (approvedTemplateBaseline) {
+          await client.query(`insert into public.estimate_approved_template_baseline(
+            id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,
+            parameter_schema_sha256,input_values,input_classification,uom_by_parameter,
+            formula_consumer_ids,resource_consumer_row_ids,normative_source_ids,guide_provenance_ru,
+            proposal_source_refs,validation_scenario_refs,acceptance_evidence_sha256,
+            accepted_release_id,accepted_at,supersedes_baseline_id,contract_version
+          ) values(
+            $1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,
+            $13::jsonb,$14::jsonb,$15::jsonb,$16,$17,$18,$19,$20
+          )`, [
+            approvedTemplateBaseline.baselineId,
+            approvedTemplateBaseline.baselineKey,
+            historical.catalog_id,
+            newDefinitionId,
+            oldDefinitionId,
+            sourceParameterSchemaId,
+            json(approvedTemplateBaseline.inputValues),
+            json(approvedTemplateBaseline.inputClassification),
+            json(approvedTemplateBaseline.uomByParameter),
+            json(approvedTemplateBaseline.formulaConsumerIds),
+            json(approvedTemplateBaseline.resourceConsumerRowIds),
+            json(approvedTemplateBaseline.normativeSourceIds),
+            json(approvedTemplateBaseline.guideProvenanceRu),
+            json(approvedTemplateBaseline.proposalSourceRefs),
+            json(approvedTemplateBaseline.validationScenarioRefs),
+            approvedTemplateBaseline.acceptanceEvidenceSha256,
+            releaseId,
+            approvedTemplateBaseline.acceptedAt,
+            approvedTemplateBaseline.supersedesBaselineId,
+            APPROVED_TEMPLATE_CONTRACT_VERSION,
+          ]);
+        }
         await insertBatches(client, "estimate_parameter_definition", [
           "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru",
-          "required", "default_value", "constraints_json", "truth_metadata",
+          "required", "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
         ], successorParameters.map((row) => [
           newDefinitionId, row.parameter_id, row.ordinal, row.value_type, row.unit_id, row.title_ru,
           row.required, row.default_value === undefined ? null : json(row.default_value), json(row.constraints_json),
-          json(row.truth_metadata),
+          json(row.truth_metadata), row.approved_template_baseline_id,
         ]));
         await insertBatches(client, "estimate_formula_graph", [
           "definition_version_id", "formula_id", "output_unit_id", "expression_source", "ast",
@@ -874,7 +1276,12 @@ async function admitSuccessorDefinitions(): Promise<void> {
           newDefinitionId, row.formula_id, row.output_unit_id, row.expression_source, json(row.ast),
           row.input_parameter_ids, row.ast_sha256,
         ]));
-        const successorResources = resources.map((row) => ({ ...row, id: randomUUID(), definition_version_id: newDefinitionId }));
+        const ownerRepair = normalizeR54SemanticOwners(resources);
+        const successorResources = ownerRepair.resources.map((row) => ({
+          ...row,
+          id: randomUUID(),
+          definition_version_id: newDefinitionId,
+        }));
         await insertBatches(client, "estimate_resource_spec", [
           "id", "definition_version_id", "row_id", "ordinal", "section", "category", "title_ru", "row_type",
           "unit_id", "formula_id", "inclusion_ast", "resource_graph", "semantic_owner", "cost_owner_id",
@@ -893,7 +1300,13 @@ async function admitSuccessorDefinitions(): Promise<void> {
         const projectedBeforeFingerprint = semanticFingerprint(historical, projectedParameters, formulas, resources);
         invariant(projectedBeforeFingerprint.parameters === afterFingerprint.parameters, `R53_PARAMETER_SCHEMA_DRIFT:${historical.catalog_id}`);
         invariant(beforeFingerprint.formulas === afterFingerprint.formulas, `R53_FORMULA_DRIFT:${historical.catalog_id}`);
-        invariant(beforeFingerprint.resources === afterFingerprint.resources, `R53_RESOURCE_DRIFT:${historical.catalog_id}`);
+        const projectedResourceFingerprint = semanticFingerprint(
+          historical,
+          projectedParameters,
+          formulas,
+          ownerRepair.resources,
+        ).resources;
+        invariant(projectedResourceFingerprint === afterFingerprint.resources, `R54_RESOURCE_REPAIR_DRIFT:${historical.catalog_id}`);
         parameterCount += successorParameters.length;
         formulaCount += formulas.length;
         resourceCount += resources.length;
@@ -908,11 +1321,19 @@ async function admitSuccessorDefinitions(): Promise<void> {
           parameterCount: successorParameters.length,
           removedUnusedParameterIds: acceptedProjection.unusedSchemaParameterIds,
           baselineDefaultCount: successorParameters.filter((row) => row.default_value !== undefined).length,
+          acceptedRuntimeTraceDefaultCount: successorParameters.filter((row) =>
+            row.truth_metadata.provenance.baselineOwner === ACCEPTED_TRACE_BASELINE_VERSION).length,
+          approvedTemplateDefaultCount: successorParameters.filter((row) =>
+            row.truth_metadata.provenance.baselineOwner === APPROVED_TEMPLATE_BASELINE_VERSION).length,
+          approvedTemplateBaselineId: approvedTemplateBaseline?.baselineId ?? null,
+          approvedTemplateAcceptanceEvidenceSha256: approvedTemplateBaseline?.acceptanceEvidenceSha256 ?? null,
           visibleGuideCount: successorParameters.filter((row) => row.truth_metadata.guide?.guide_short_ru).length,
           formulaConsumerParameterCount: successorParameters.filter((row) => row.truth_metadata.formula_consumers.length > 0).length,
           resourceConsumerParameterCount: successorParameters.filter((row) => row.truth_metadata.resource_branch_consumers.length > 0).length,
           formulaCount: formulas.length,
           resourceCount: resources.length,
+          semanticOwnerRepairCount: ownerRepair.defects.length,
+          semanticOwnerRepairDefects: ownerRepair.defects,
           beforeFingerprint,
           projectedBeforeFingerprint,
           afterFingerprint,
@@ -943,7 +1364,7 @@ async function admitSuccessorDefinitions(): Promise<void> {
     }
 
     const evidence = {
-      schemaVersion: "p0-one-monolith-r53-exact15-canonical-admission.v1",
+      schemaVersion: "p0-one-monolith-r54-exact15-canonical-admission.v1",
       specSha256: SPEC_SHA256,
       head,
       tree,
@@ -956,10 +1377,10 @@ async function admitSuccessorDefinitions(): Promise<void> {
       sourceDatabaseWrites: 0,
       localhost8081Switched: false,
       cutover: false,
-      baselineOwner: ACCEPTED_TRACE_BASELINE_VERSION,
+      baselineOwners: [ACCEPTED_TRACE_BASELINE_VERSION, APPROVED_TEMPLATE_BASELINE_VERSION],
       counts: { definitions: admissions.length, parameters: parameterCount, formulas: formulaCount, resources: resourceCount },
       admissions,
-      status: admissions.length === 15 ? "GREEN_EXACT15_CANONICAL_CANDIDATE" : "RED",
+      status: admissions.length === 15 ? "GREEN_EXACT15_CANONICAL_CANDIDATE_R54" : "RED",
     };
     const path = writeEvidence("EXACT15_CANONICAL_ADMISSION.json", evidence);
     process.stdout.write(`${JSON.stringify({
@@ -981,30 +1402,47 @@ async function verifyCandidate(): Promise<void> {
   try {
     const rows = (await client.query(`
       select v.catalog_id,v.id definition_version_id,v.definition_version,v.passport,
-        count(distinct p.parameter_id)::integer parameter_count,
-        count(distinct p.parameter_id) filter(where p.default_value is not null)::integer default_count,
-        count(distinct p.parameter_id) filter(where nullif(p.truth_metadata->'guide'->>'guide_short_ru','') is not null)::integer guide_count,
-        count(distinct f.formula_id)::integer formula_count,
-        count(distinct s.row_id)::integer resource_count
+        p.parameter_count,p.default_count,p.accepted_trace_default_count,p.approved_template_default_count,
+        p.guide_count,f.formula_count,s.resource_count,b.approved_template_asset_count
       from public.estimate_definition_version v
       join public.estimate_definition_release r on r.id=v.release_id and r.status='active'
-      join public.estimate_parameter_definition p on p.definition_version_id=v.id
-      join public.estimate_formula_graph f on f.definition_version_id=v.id
-      join public.estimate_resource_spec s on s.definition_version_id=v.id
+      cross join lateral (
+        select count(*)::integer parameter_count,
+          count(*) filter(where default_value is not null)::integer default_count,
+          count(*) filter(where truth_metadata#>>'{provenance,baselineOwner}'='accepted-batch-formula-graph-v3-baseline:r53')::integer accepted_trace_default_count,
+          count(*) filter(where truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54')::integer approved_template_default_count,
+          count(*) filter(where nullif(truth_metadata->'guide'->>'guide_short_ru','') is not null)::integer guide_count
+        from public.estimate_parameter_definition where definition_version_id=v.id
+      ) p
+      cross join lateral (
+        select count(*)::integer formula_count from public.estimate_formula_graph where definition_version_id=v.id
+      ) f
+      cross join lateral (
+        select count(*)::integer resource_count from public.estimate_resource_spec where definition_version_id=v.id
+      ) s
+      cross join lateral (
+        select count(*)::integer approved_template_asset_count
+        from public.estimate_approved_template_baseline where definition_version_id=v.id
+      ) b
       where v.catalog_id=any($1::text[])
-      group by v.catalog_id,v.id,v.definition_version,v.passport
       order by v.catalog_id
     `, [CATALOG_IDS])).rows;
     const failures = rows.flatMap((row) => [
       ...(row.parameter_count <= 0 ? [`parameter:${row.catalog_id}`] : []),
-      ...(row.default_count <= 0 ? [`default:${row.catalog_id}`] : []),
+      ...(row.default_count !== row.parameter_count ? [`default:${row.catalog_id}:${row.default_count}/${row.parameter_count}`] : []),
+      ...(row.accepted_trace_default_count + row.approved_template_default_count !== row.parameter_count
+        ? [`provenance:${row.catalog_id}:${row.accepted_trace_default_count}+${row.approved_template_default_count}/${row.parameter_count}`]
+        : []),
+      ...(row.approved_template_default_count > 0 && row.approved_template_asset_count !== 1
+        ? [`approved_asset:${row.catalog_id}:${row.approved_template_asset_count}`]
+        : []),
       ...(row.guide_count !== row.parameter_count ? [`guide:${row.catalog_id}:${row.guide_count}/${row.parameter_count}`] : []),
       ...(row.formula_count <= 0 ? [`formula:${row.catalog_id}`] : []),
       ...(row.resource_count <= 0 ? [`resource:${row.catalog_id}`] : []),
       ...(row.passport?.baselineWithoutUserInput !== true ? [`passport_baseline:${row.catalog_id}`] : []),
     ]);
     const evidence = {
-      schemaVersion: "p0-one-monolith-r53-exact15-candidate-verification.v1",
+      schemaVersion: "p0-one-monolith-r54-exact15-candidate-verification.v1",
       count: rows.length,
       rows,
       failures,
@@ -1019,11 +1457,11 @@ async function verifyCandidate(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (STAGE === "baseline-preflight") return runAcceptedBaselinePreflight();
+  if (STAGE === "baseline-preflight" || STAGE === "baseline-propose") return runAcceptedBaselinePreflight();
   if (STAGE === "seed") return seedHistoricalCandidate();
   if (STAGE === "admit") return admitSuccessorDefinitions();
   if (STAGE === "verify") return verifyCandidate();
-  throw new Error("R53_STAGE_REQUIRED:baseline-preflight|seed|admit|verify");
+  throw new Error("R54_STAGE_REQUIRED:baseline-propose|baseline-preflight|seed|admit|verify");
 }
 
 main().catch((error) => {

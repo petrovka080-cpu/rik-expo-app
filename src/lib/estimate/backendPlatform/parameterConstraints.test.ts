@@ -5,6 +5,8 @@ import {
 } from "./parameterConstraints";
 
 const catalogId = "drywall_ceiling_interior_bulkhead_clad_small_area";
+const approvedBaselineId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const acceptanceEvidenceSha256 = "b".repeat(64);
 
 function acceptedDefinition(bindingPatch: Record<string, unknown> = {}): CanonicalParameterDefinitionRecord {
   return {
@@ -47,6 +49,48 @@ function acceptedDefinition(bindingPatch: Record<string, unknown> = {}): Canonic
   };
 }
 
+function approvedDefinition(bindingPatch: Record<string, unknown> = {}): CanonicalParameterDefinitionRecord {
+  return {
+    parameter_id: "quantity_m2",
+    value_type: "decimal",
+    required: true,
+    default_value: 5,
+    approved_template_baseline_id: approvedBaselineId,
+    constraints_json: { min: 1, max: 10 },
+    truth_metadata: {
+      value_source_role: "VISIBLE_BASELINE_ASSUMPTION",
+      baseline_assumption_id: `${approvedBaselineId}:quantity_m2`,
+      formula_consumers: ["formula:quantity"],
+      resource_branch_consumers: ["row:material"],
+      provenance: {
+        baselineOwner: "approved-template-baseline:r54",
+        sourceCatalogId: catalogId,
+        sourceReleaseId: "release-batch008",
+        sourceDefinitionVersionId: "definition-v5",
+        sourceDefinitionVersion: 5,
+        sourceParameterSchemaId: "schema-sha256",
+        sourceParameterSchemaVersion: "definition:5",
+        approvedTemplateBaselineId: approvedBaselineId,
+        acceptanceEvidenceSha256,
+        approvedTemplateBinding: {
+          baselineId: approvedBaselineId,
+          catalogId,
+          parameterId: "quantity_m2",
+          value: 5,
+          inputClassification: "ASSUMPTION",
+          definitionVersionId: "definition-v5",
+          parameterSchemaSha256: "schema-sha256",
+          formulaConsumerIds: ["formula:quantity"],
+          resourceConsumerRowIds: ["row:material"],
+          normativeSourceIds: [],
+          acceptanceEvidenceSha256,
+          ...bindingPatch,
+        },
+      },
+    },
+  };
+}
+
 describe("canonical backend parameter precedence", () => {
   it("uses the accepted per-work baseline when no refinement exists", () => {
     expect(validateCanonicalEstimateParameters([acceptedDefinition()], {}, {
@@ -81,5 +125,27 @@ describe("canonical backend parameter precedence", () => {
       confirmedParameters: { another_work_quantity: 7 },
       baselineContext: { catalogId },
     })).toThrow("unknown confirmed estimate parameters");
+  });
+
+  it("uses an immutable approved per-work template baseline", () => {
+    expect(validateCanonicalEstimateParameters([approvedDefinition()], {}, {
+      baselineContext: { catalogId },
+    })).toEqual({ quantity_m2: 5 });
+  });
+
+  it("rejects an approved template binding from another work", () => {
+    expect(() => validateCanonicalEstimateParameters([
+      approvedDefinition({ catalogId: "another-work" }),
+    ], {}, {
+      baselineContext: { catalogId },
+    })).toThrow("invalid approved template baseline binding");
+  });
+
+  it("rejects an approved value that is not the immutable asset value", () => {
+    expect(() => validateCanonicalEstimateParameters([
+      approvedDefinition({ value: 6 }),
+    ], {}, {
+      baselineContext: { catalogId },
+    })).toThrow("invalid approved template baseline binding");
   });
 });

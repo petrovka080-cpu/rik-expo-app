@@ -5,6 +5,7 @@ export type CanonicalParameterDefinitionRecord = {
   default_value?: unknown;
   constraints_json?: unknown;
   truth_metadata?: unknown;
+  approved_template_baseline_id?: unknown;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -69,17 +70,52 @@ function acceptedBaselineDefault(
     || typeof truth.baseline_assumption_id !== "string"
     || !truth.baseline_assumption_id
     || !isRecord(provenance)
-    || provenance.baselineOwner !== "accepted-batch-formula-graph-v3-baseline:r53"
     || provenance.sourceCatalogId !== context.catalogId
-    || !Array.isArray(provenance.acceptedTraceBindings)
-    || provenance.acceptedTraceBindings.length === 0
     || !Array.isArray(formulaConsumers)
-    || formulaConsumers.length === 0
     || !Array.isArray(resourceConsumers)
     || resourceConsumers.length === 0) {
     return fail(`invalid accepted baseline provenance ${parameterId}`);
   }
   const valueFingerprint = JSON.stringify(value);
+  if (provenance.baselineOwner === "approved-template-baseline:r54") {
+    const baselineId = definition.approved_template_baseline_id;
+    const binding = provenance.approvedTemplateBinding;
+    const classification = isRecord(binding) ? binding.inputClassification : null;
+    const bindingFormulaConsumers = isRecord(binding) ? binding.formulaConsumerIds : null;
+    const bindingResourceConsumers = isRecord(binding) ? binding.resourceConsumerRowIds : null;
+    const normativeSourceIds = isRecord(binding) ? binding.normativeSourceIds : null;
+    if (typeof baselineId !== "string"
+      || !baselineId
+      || provenance.approvedTemplateBaselineId !== baselineId
+      || typeof provenance.acceptanceEvidenceSha256 !== "string"
+      || !/^[0-9a-f]{64}$/.test(provenance.acceptanceEvidenceSha256)
+      || !isRecord(binding)
+      || binding.baselineId !== baselineId
+      || binding.catalogId !== context.catalogId
+      || binding.parameterId !== parameterId
+      || binding.definitionVersionId !== provenance.sourceDefinitionVersionId
+      || binding.parameterSchemaSha256 !== provenance.sourceParameterSchemaId
+      || binding.acceptanceEvidenceSha256 !== provenance.acceptanceEvidenceSha256
+      || !["ASSUMPTION", "NORMATIVE", "DERIVED"].includes(String(classification))
+      || !Array.isArray(bindingFormulaConsumers)
+      || !bindingFormulaConsumers.every((formulaId) => formulaConsumers.includes(formulaId))
+      || !formulaConsumers.every((formulaId) => bindingFormulaConsumers.includes(formulaId))
+      || !Array.isArray(bindingResourceConsumers)
+      || bindingResourceConsumers.length === 0
+      || !bindingResourceConsumers.every((rowId) => resourceConsumers.includes(rowId))
+      || !resourceConsumers.every((rowId) => bindingResourceConsumers.includes(rowId))
+      || !Array.isArray(normativeSourceIds)
+      || (classification === "NORMATIVE" && normativeSourceIds.length === 0)
+      || JSON.stringify(binding.value) !== valueFingerprint) {
+      return fail(`invalid approved template baseline binding ${parameterId}`);
+    }
+    return value;
+  }
+  if (provenance.baselineOwner !== "accepted-batch-formula-graph-v3-baseline:r53"
+    || !Array.isArray(provenance.acceptedTraceBindings)
+    || provenance.acceptedTraceBindings.length === 0) {
+    return fail(`invalid accepted baseline provenance ${parameterId}`);
+  }
   for (const rawBinding of provenance.acceptedTraceBindings) {
     if (!isRecord(rawBinding)
       || rawBinding.catalogId !== context.catalogId
