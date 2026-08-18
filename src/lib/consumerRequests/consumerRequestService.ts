@@ -67,6 +67,7 @@ import type {
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
+  ConsumerRepairEstimateAttachment,
   ConsumerRepairStatus,
   PendingRoadScopeSelectionV4,
 } from "./consumerRequestTypes";
@@ -1110,6 +1111,78 @@ export function attachConsumerRepairMedia(input: {
   return saveConsumerRepairBundle(withEvent(
     { ...bundle, media: [...bundle.media, media] },
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "media_attached", actorType: "consumer", payload: { mediaKind: input.mediaKind } }),
+  ));
+}
+
+export function attachConsumerRepairEstimateRowPhoto(input: {
+  requestDraftId: string;
+  ownerUserId: string;
+  revisionId: string;
+  releaseId: string;
+  requestItemId: string;
+  rowId: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  contentHash: string;
+  storageReference: string;
+  thumbnailReference?: string | null;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "attach_media" });
+  if (bundle.draft.consumerUserId !== input.ownerUserId) {
+    throw new Error("CONSUMER_ESTIMATE_PHOTO_OWNER_MISMATCH");
+  }
+  const item = bundle.items.find((candidate) => candidate.id === input.requestItemId);
+  const itemRowId = typeof item?.sourceParameters?.rowCode === "string"
+    ? item.sourceParameters.rowCode.trim()
+    : item?.id ?? "";
+  if (!item || itemRowId !== input.rowId) throw new Error("CONSUMER_ESTIMATE_PHOTO_ROW_MISMATCH");
+  const itemRevisionId = String(
+    item.sourceParameters?.canonicalBackendRevisionId ?? "",
+  ).trim();
+  const itemReleaseId = String(
+    item.sourceParameters?.canonicalBackendReleaseId ?? "",
+  ).trim();
+  if (
+    (itemRevisionId && itemRevisionId !== input.revisionId) ||
+    (itemReleaseId && itemReleaseId !== input.releaseId)
+  ) {
+    throw new Error("CONSUMER_ESTIMATE_PHOTO_REVISION_MISMATCH");
+  }
+  const attachment: ConsumerRepairEstimateAttachment = {
+    id: id("consumer_estimate_row_photo"),
+    ownerScope: "row",
+    estimateId: bundle.draft.id,
+    revisionId: input.revisionId,
+    rowId: input.rowId,
+    fileName: input.fileName,
+    mimeType: input.mimeType,
+    sizeBytes: input.sizeBytes,
+    contentHash: input.contentHash,
+    storageReference: input.storageReference,
+    thumbnailReference: input.thumbnailReference ?? null,
+    createdAt: new Date().toISOString(),
+    deleted: false,
+    privacy: bundle.draft.orgId ? "organization" : "private",
+    redacted: false,
+  };
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      estimateAttachments: [...(bundle.estimateAttachments ?? []), attachment],
+    },
+    createConsumerRepairEvent({
+      requestDraftId: bundle.draft.id,
+      eventType: "estimate_row_photo_attached",
+      actorType: "consumer",
+      actorUserId: input.ownerUserId,
+      payload: {
+        revisionId: input.revisionId,
+        rowId: input.rowId,
+        contentHash: input.contentHash,
+      },
+    }),
   ));
 }
 

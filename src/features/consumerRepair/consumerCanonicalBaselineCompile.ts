@@ -25,12 +25,12 @@ type CanonicalBaselinePlan = {
   assumptions: string[];
 };
 
-function extractUserQuantity(prompt: string): UserQuantity | null {
+export function extractUserQuantity(prompt: string): UserQuantity | null {
   const normalizedPrompt = prompt
     .replace(/м²/giu, "м2")
     .replace(/м³/giu, "м3")
-    .replace(/(?:кв\.?\s*|квадратн(?:ый|ая|ое|ые|ого|ой|ую|ых|ым|ыми)?\s+)метр(?:а|ов)?/giu, "м2")
-    .replace(/(?:куб\.?\s*|кубическ(?:ий|ая|ое|ие|ого|ой|ую|их|им|ими)?\s+)метр(?:а|ов)?/giu, "м3");
+    .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
+    .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
   const match = /\b(\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|м2|м3|м|кг|тонн(?:а|ы)?|т)\b/iu.exec(normalizedPrompt);
   if (!match) return null;
   const rawUnit = match[2]

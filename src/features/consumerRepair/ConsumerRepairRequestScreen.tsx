@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Linking, Text, TextInput, View } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
+  attachConsumerRepairEstimateRowPhoto,
   buildApprovedEstimateHistoryRecord,
   commitPreparedConsumerRepairRequestBundle,
   deleteConsumerRepairRequestDraft,
@@ -66,6 +67,12 @@ import {
 } from "./requestEstimateScreenActions";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
+import {
+  buildConsumerEstimateActionContext,
+  ConsumerEstimateActionContextError,
+  type ConsumerEstimateActionContext,
+  type ConsumerEstimateActionName,
+} from "./consumerEstimateActionRouter";
 
 const QUANTITY_EDIT_SAVING_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f.";
 const QUANTITY_EDIT_SAVED_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430.";
@@ -148,6 +155,11 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string;
     patches: ConsumerRepairDraftRevisionParamBatchPatch[];
   }) => Promise<CanonicalParameterSession>;
+  onSelectCanonicalCatalogItem: (input: {
+    context: ConsumerEstimateActionContext;
+    problemText: string;
+    catalogItem: CatalogItemPickerItem;
+  }) => Promise<void>;
   onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
   MobilePhotoCaptureFlowNode?: React.ReactElement | null;
 };
@@ -273,6 +285,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private canonicalWorkSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private canonicalWorkSearchAbortController: AbortController | null = null;
   private canonicalWorkSearchRequestSerial = 0;
+  private currentScrollPosition = 0;
+  private pendingCatalogActionContext: ConsumerEstimateActionContext | null = null;
   private problemInputRef = React.createRef<TextInput>();
   state: State = buildInitialControllerState(this.props);
   componentDidMount(): void {
@@ -625,6 +639,40 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return this.state.bundle;
   }
   setPhotoCaptureStatusMessage(statusMessage: string | null): void { this.setState({ statusMessage }); }
+  attachCapturedPhotoToLine(result: ConsumerRepairPhotoMaterialCaptureResult): void {
+    try {
+      const current = this.ensureDraftBundle();
+      if (current.draft.id !== result.draftId || result.purpose !== "line_attachment") {
+        throw new ConsumerEstimateActionContextError(
+          "Фото не сохранено: контекст строки изменился.",
+        );
+      }
+      const context = this.actionContext("openLinePhoto", current, result.targetItemId);
+      if (context.revisionId !== result.revisionId || context.lineId !== result.lineId) {
+        throw new ConsumerEstimateActionContextError(
+          "Фото не сохранено: выбрана другая версия или строка сметы.",
+        );
+      }
+      const fileName = result.asset.localUri.split(/[\\/]/u).pop()?.trim() || `${result.asset.captureId}.jpg`;
+      const bundle = attachConsumerRepairEstimateRowPhoto({
+        requestDraftId: context.draftId,
+        ownerUserId: context.ownerId,
+        revisionId: context.revisionId,
+        releaseId: context.releaseId,
+        requestItemId: result.targetItemId,
+        rowId: context.lineId!,
+        fileName,
+        mimeType: result.asset.mimeType,
+        sizeBytes: result.asset.byteSize,
+        contentHash: result.asset.contentSha256,
+        storageReference: result.storedImage.storagePath,
+        thumbnailReference: result.asset.localUri,
+      });
+      this.updateCurrentBundle(bundle, "Фото прикреплено к выбранной строке. Смета не пересчитывалась.");
+    } catch (error) {
+      this.handleActionContextError(error);
+    }
+  }
   async openMaterialCatalogFromCapturedPhoto(result: ConsumerRepairPhotoMaterialCaptureResult): Promise<void> {
     const bundleForPhoto =
       this.state.bundle?.draft.id === result.draftId
@@ -863,6 +911,29 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           : "PDF выбранной версии не удалось открыть. Другой документ не был открыт.",
     });
   };
+  private actionContext(
+    action: ConsumerEstimateActionName,
+    bundle: ConsumerRepairDraftBundle,
+    requestItemId?: string | null,
+  ): ConsumerEstimateActionContext {
+    return buildConsumerEstimateActionContext({
+      action,
+      bundle,
+      ownerId: this.props.consumerUserId,
+      requestItemId,
+      returnScrollPosition: this.currentScrollPosition,
+    });
+  }
+  private handleActionContextError(error: unknown): void {
+    this.setState({
+      statusMessage: error instanceof ConsumerEstimateActionContextError
+        ? error.message
+        : "Действие не выполнено: выбранная версия сметы не подтверждена.",
+    });
+  }
+  private rememberScrollPosition = (position: number): void => {
+    if (Number.isFinite(position)) this.currentScrollPosition = Math.max(0, position);
+  };
   private openCanonicalBackendEditor(
     bundle: ConsumerRepairDraftBundle | null = this.state.bundle,
     statusMessage = "Изменение выполняется в каноническом backend-редакторе.",
@@ -1000,19 +1071,20 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.openCanonicalBackendEditor(synced, "Перед утверждением перенесите смету в canonical backend.");
         return;
       }
-      const canonicalRevision = await getCanonicalEstimateRevision(canonical.revisionId);
       const canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
-          kind: "professional_pdf",
-          idempotencyKey: `consumer-approve-professional-pdf-${canonical.revisionId}`,
+          // Approval keeps the established backend archival artifact contract.
+          // The user-facing PDF button independently requests professional_pdf;
+          // approval must not be blocked by presentation-route rollout order.
+          kind: "pdf",
+          idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`,
         });
-      assertCanonicalEstimateArtifactIdentity({
-        artifact: canonicalArtifact,
-        revision: canonicalRevision,
-        expectedKind: "professional_pdf",
-        expectedCatalogId: synced.draft.selectedCatalogWorkId,
-        expectedRowCount: canonicalRevision.rowCount,
-      });
+      if (
+        canonicalArtifact.status !== "ready" ||
+        canonicalArtifact.kind !== "pdf" ||
+        canonicalArtifact.revisionId !== canonical.revisionId ||
+        canonicalArtifact.releaseId !== canonical.releaseId
+      ) throw new Error("CANONICAL_APPROVAL_PDF_NOT_READY_OR_REVISION_MISMATCH");
       const bundle = approveConsumerRepairRequestDraft({
         requestDraftId: synced.draft.id,
         userId: this.props.consumerUserId,
@@ -1075,19 +1147,27 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private completePdfOpen = async () => {
     try {
       const current = this.ensureDraftBundle();
-      const canonical = consumerRepairCanonicalBackendBinding(current);
-      if (canonical) {
-        const revision = await getCanonicalEstimateRevision(canonical.revisionId);
+      const context = this.actionContext("openProfessionalPdf", current);
+      {
+        const revision = await getCanonicalEstimateRevision(context.revisionId);
+        if (
+          revision.releaseId !== context.releaseId ||
+          (context.definitionId != null && revision.catalogId !== context.definitionId)
+        ) {
+          throw new ConsumerEstimateActionContextError(
+            "PDF не открыт: backend вернул другую версию или другую работу.",
+          );
+        }
         const artifact = await buildCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
+          revisionId: context.revisionId,
           kind: "professional_pdf",
-          idempotencyKey: `consumer-professional-pdf-${canonical.revisionId}`,
+          idempotencyKey: `consumer-professional-pdf-${context.revisionId}`,
         });
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,
           expectedKind: "professional_pdf",
-          expectedCatalogId: current.draft.selectedCatalogWorkId,
+          expectedCatalogId: context.definitionId ?? revision.catalogId,
           expectedRowCount: revision.rowCount,
         });
         if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
@@ -1102,7 +1182,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт." });
         return;
       }
-      this.openCanonicalBackendEditor(current, "Для PDF сначала перенесите эту смету в canonical backend.");
     } catch (error) {
       this.handleCanonicalArtifactOpenError(error);
     } finally {
@@ -1137,7 +1216,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : null
     );
     if (canonical) {
+      if (!requestedBundle) {
+        throw new ConsumerEstimateActionContextError(
+          "PDF не открыт: локальный контекст исторической версии отсутствует.",
+        );
+      }
+      const context = this.actionContext("openHistoryRevision", requestedBundle);
       const revision = await getCanonicalEstimateRevision(canonical.revisionId);
+      if (revision.revisionId !== context.revisionId || revision.releaseId !== context.releaseId) {
+        throw new ConsumerEstimateActionContextError("PDF не открыт: историческая версия не совпала.");
+      }
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: canonical.revisionId,
         kind: "professional_pdf",
@@ -1147,7 +1235,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         artifact,
         revision,
         expectedKind: "professional_pdf",
-        expectedCatalogId: requestedBundle?.draft.selectedCatalogWorkId,
+        expectedCatalogId: context.definitionId ?? revision.catalogId,
         expectedRowCount: revision.rowCount,
       });
       if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
@@ -1163,7 +1251,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return;
     }
     if (requestedBundle) {
-      this.openCanonicalBackendEditor(requestedBundle, "Для PDF сначала перенесите эту смету в canonical backend.");
+      throw new ConsumerEstimateActionContextError(
+        "PDF не открыт: у выбранной сметы нет подтверждённой backend-версии.",
+      );
     }
   };
   private openPdf = (requestDraftId?: string) => {
@@ -1366,8 +1456,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private refineCanonicalParameters = async () => {
     const current = this.state.bundle;
-    const binding = consumerRepairCanonicalBackendBinding(current);
-    if (!current || !binding) return;
+    if (!current) return;
+    let binding: ConsumerEstimateActionContext;
+    try {
+      binding = this.actionContext("openParameters", current);
+    } catch (error) {
+      this.handleActionContextError(error);
+      return;
+    }
     if (this.state.canonicalBackendParameterSession?.revisionId === binding.revisionId) {
       this.setState({ statusMessage: "Параметры открыты в текущей смете. Сохранение создаст новую дочернюю версию." });
       return;
@@ -1394,28 +1490,36 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.state.bundle;
     if (!current) return;
     try {
-      const canonical = consumerRepairCanonicalBackendBinding(current);
-      if (canonical) {
-        const revision = await getCanonicalEstimateRevision(canonical.revisionId);
+      const context = this.actionContext("openProcurement", current);
+      {
+        const revision = await getCanonicalEstimateRevision(context.revisionId);
+        if (
+          revision.releaseId !== context.releaseId ||
+          (context.definitionId != null && revision.catalogId !== context.definitionId)
+        ) {
+          throw new ConsumerEstimateActionContextError(
+            "Закупка не открыта: backend вернул другую версию или другую работу.",
+          );
+        }
         const artifact = await buildCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
+          revisionId: context.revisionId,
           kind: "procurement",
-          idempotencyKey: `consumer-procurement-${canonical.revisionId}`,
+          idempotencyKey: `consumer-procurement-${context.revisionId}`,
         });
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,
           expectedKind: "procurement",
-          expectedCatalogId: current.draft.selectedCatalogWorkId,
+          expectedCatalogId: context.definitionId ?? revision.catalogId,
           expectedRowCount: revision.rowCount,
         });
         if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
         this.setState({ statusMessage: "Закупка выбранной версии открыта." });
         return;
       }
-      this.openCanonicalBackendEditor(current, "Для закупки сначала перенесите эту смету в canonical backend.");
     } catch (error) {
-      this.handleValidationError(error);
+      if (error instanceof ConsumerEstimateActionContextError) this.handleActionContextError(error);
+      else this.handleValidationError(error);
     }
   };
   private openParamEditor = (operation: UserParamPatchOperation, paramKey: string) => {
@@ -1456,7 +1560,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private openPhotoRecognition(targetItemId?: string) {
     let bundle = this.ensureDraftBundle();
-    if (consumerRepairCanonicalBackendBinding(bundle) && this.openCanonicalBackendEditor(bundle)) return;
     let targetItem = targetItemId
       ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
       : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;
@@ -1480,6 +1583,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
       return;
     }
+    if (consumerRepairCanonicalBackendBinding(bundle)) {
+      try {
+        const context = this.actionContext("openLinePhoto", bundle, targetItem.id);
+        this.props.onOpenPhotoForMaterialRecognition({
+          userId: context.ownerId,
+          draftId: context.draftId,
+          targetItemId: targetItem.id,
+          revisionId: context.revisionId,
+          lineId: context.lineId!,
+          purpose: "line_attachment",
+          bundle,
+        });
+        return;
+      } catch (error) {
+        this.handleActionContextError(error);
+        return;
+      }
+    }
     this.props.onOpenPhotoForMaterialRecognition({
       userId: this.props.consumerUserId,
       draftId: bundle.draft.id,
@@ -1497,22 +1618,68 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private openCatalogForEstimateItem = (itemId: string) => {
     const current = this.ensureDraftBundle();
-    if (this.openCanonicalBackendEditor(current)) return;
     const item = current.items.find((candidate) => candidate.id === itemId);
+    if (!item) {
+      this.handleActionContextError(new ConsumerEstimateActionContextError(
+        "Каталог не открыт: выбранная строка отсутствует в смете.",
+      ));
+      return;
+    }
+    if (consumerRepairCanonicalBackendBinding(current)) {
+      try {
+        this.pendingCatalogActionContext = this.actionContext("openLineCatalog", current, itemId);
+      } catch (error) {
+        this.handleActionContextError(error);
+        return;
+      }
+    } else {
+      this.pendingCatalogActionContext = null;
+    }
     this.setState({
       catalogPickerVisible: true,
       catalogPickerTargetItemId: itemId,
       catalogPickerInitialQuery: item ? catalogInitialQueryForRequestItem(item) : undefined,
     });
   };
-  private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
+  private addCatalogItem = async (catalogItem: CatalogItemPickerItem) => {
     const current = this.ensureDraftBundle();
-    if (this.openCanonicalBackendEditor(current)) return;
+    if (consumerRepairCanonicalBackendBinding(current) && !this.pendingCatalogActionContext) {
+      this.handleActionContextError(new ConsumerEstimateActionContextError(
+        "Товар не выбран: контекст строки устарел. Откройте каталог ещё раз.",
+      ));
+      return;
+    }
+    const canonicalContext = this.pendingCatalogActionContext;
+    if (canonicalContext) {
+      this.setState({ statusMessage: "Сохраняем товар и создаём дочернюю версию сметы…" });
+      try {
+        await this.props.onSelectCanonicalCatalogItem({
+          context: canonicalContext,
+          problemText: current.draft.problemText || current.draft.title || "Смета",
+          catalogItem,
+        });
+        this.pendingCatalogActionContext = null;
+        this.setState({
+          catalogPickerVisible: false,
+          catalogPickerTargetItemId: null,
+          catalogPickerInitialQuery: undefined,
+          statusMessage: `Товар выбран для строки. Создана дочерняя версия сметы: ${catalogItem.name}.`,
+        });
+      } catch (error) {
+        this.setState({
+          statusMessage: error instanceof Error
+            ? error.message
+            : "Товар не выбран: backend не подтвердил дочернюю версию.",
+        });
+      }
+      return;
+    }
     const result = applyConsumerRepairCatalogItemSelection({
       current,
       catalogItem,
       targetItemId: this.state.catalogPickerTargetItemId,
     });
+    this.pendingCatalogActionContext = null;
     this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
     this.updateCurrentBundle(result.bundle, result.statusMessage);
   };
@@ -1681,7 +1848,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       requestSerial,
     });
   };
-  private closeCatalogPicker = () => this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  private closeCatalogPicker = () => {
+    this.pendingCatalogActionContext = null;
+    this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  };
   private loadMoreApprovedHistory = async () => {
     if (this.durableHistoryLoadInFlight) return;
     if (!this.historyLoaded) {
@@ -1769,6 +1939,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onSelectRoadScope={this.selectRoadScope}
         onOpenHistory={this.ensureHistoryLoaded}
         onLoadMoreHistory={this.loadMoreApprovedHistory}
+        onScrollPositionChange={this.rememberScrollPosition}
       />
     );
     return this.cachedScreenView;

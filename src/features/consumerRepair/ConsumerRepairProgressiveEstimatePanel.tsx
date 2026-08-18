@@ -12,6 +12,7 @@ import {
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import type { AiEstimateParameterCard } from "../../lib/estimate/aiEstimateParameterCardContract";
 import type {
+  CanonicalParameter,
   CanonicalParameterSession,
 } from "../../lib/estimate/canonicalParameters";
 import {
@@ -88,29 +89,64 @@ function pluralizeRu(count: number, one: string, few: string, many: string): str
   return many;
 }
 
-function canonicalNumericInputRule(input: {
+function compactRuNumber(value: number): string {
+  return new Intl.NumberFormat("ru-RU", {
+    maximumFractionDigits: 6,
+    useGrouping: false,
+  }).format(value);
+}
+
+export function canonicalNumericInputRule(input: {
   min?: number;
   max?: number;
   integer?: boolean;
   unit?: string;
 }): string {
   const unit = input.unit ? ` ${input.unit}` : "";
-  const minimum = input.min === Number.EPSILON
-    ? `больше 0${unit}`
-    : input.min != null
-      ? `${input.min.toLocaleString("ru-RU")}${unit}`
+  const validPair = input.min != null && input.max != null && input.max > input.min;
+  const minimum = input.min != null
+      ? `${compactRuNumber(Math.abs(input.min) <= Number.EPSILON * 8 ? 0 : input.min)}${unit}`
       : null;
   const maximum = input.max != null
-    ? `${input.max.toLocaleString("ru-RU")}${unit}`
+    ? `${compactRuNumber(input.max)}${unit}`
     : null;
-  const range = minimum && maximum
+  const range = validPair && minimum && maximum
     ? `от ${minimum} до ${maximum}`
     : minimum
-      ? input.min === Number.EPSILON ? minimum : `не меньше ${minimum}`
+      ? `не меньше ${minimum}`
       : maximum
         ? `не больше ${maximum}`
         : "числовое значение";
   return input.integer ? `${range}; только целое число` : range;
+}
+
+export function canonicalConsumerParameterPlaceholder(input: {
+  parameter: CanonicalParameter | null | undefined;
+  baselineDisplay: string;
+  guideShortRu?: string | null;
+}): string {
+  const validation = input.parameter?.validation;
+  const hasNormRange = Boolean(
+    input.parameter?.normativeSource &&
+    validation?.min != null &&
+    validation?.max != null &&
+    validation.max > validation.min
+  );
+  const norm = hasNormRange
+    ? `Норма: ${compactRuNumber(validation!.min!)}–${compactRuNumber(validation!.max!)}`
+    : null;
+  const guide = String(input.guideShortRu ?? "").toLocaleLowerCase("ru-RU");
+  const nonNumericGuide = guide.includes("обмер")
+    ? "По обмеру"
+    : guide.includes("техкарт")
+      ? "По техкарте"
+      : guide.includes("лаборатор")
+        ? "По лабораторному подбору"
+        : "По проекту";
+  if (input.parameter?.source === "ASSUMED" && input.baselineDisplay.trim()) {
+    return `Предварительно принято: ${input.baselineDisplay.trim()}${norm ? ` · ${norm.toLocaleLowerCase("ru-RU")}` : ""}`;
+  }
+  return norm ?? nonNumericGuide;
 }
 
 function missingParameterCount(revision: EstimateDraftRevision | null, fallback: number): number {
@@ -518,10 +554,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
     return (
       <View style={styles.inlineParamEditor} testID={`editable-param-inline-editor-${paramKey}`}>
         <View style={styles.inlineParamEditorBody} testID="editable-param-popover">
-          <View style={styles.inlineParamEditorHeader}>
-            <Text style={styles.inlineParamEditorTitle}>{label}</Text>
-            {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
-          </View>
+          {dirty ? <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>Изменено</Text> : null}
           {structuredGroup ? (
             <View style={styles.typedCompositeEditor} testID={`typed-composite-editor-${paramKey}`}>
               <Text style={styles.inlineParamUnit}>Количество: {compositeItems.length} · вычисляется автоматически</Text>
@@ -608,13 +641,6 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               testID="editable-param-popover-input"
             />
           )}
-          {!structuredGroup && (inputGuideAsCaption || (choices?.length ?? 0) > 0) ? <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>{guideShortRu}</Text> : null}
-          {unitLabel ? <Text style={styles.inlineParamUnit}>{unitLabel}</Text> : null}
-          {hint ? (
-            <Text style={styles.parameterMeta} testID={`editable-param-validation-hint-${paramKey}`}>
-              {hint}
-            </Text>
-          ) : null}
           {error ? (
             <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
               {error}
@@ -859,8 +885,14 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
       (parameter) => parameter.parameterId === card.key,
     );
-    const validationHint = canonicalParameter?.valueType === "number"
-      ? `${canonicalParameter.normativeSource ? "Нормативный диапазон" : "Правило проверки ввода"}: ${canonicalNumericInputRule({
+    const hasValidNormRange = Boolean(
+      canonicalParameter?.normativeSource &&
+      canonicalParameter.validation.min != null &&
+      canonicalParameter.validation.max != null &&
+      canonicalParameter.validation.max > canonicalParameter.validation.min
+    );
+    const validationHint = canonicalParameter?.valueType === "number" && hasValidNormRange
+      ? `Норма: ${canonicalNumericInputRule({
         ...canonicalParameter.validation,
         unit: card.unitRu,
       })}.`
@@ -870,39 +902,58 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
     // atomic batch path as every other parameter.
     const editableInPlace = paramEditorEnabled;
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
+    const acceptedBaseline = canonicalParameter?.source === "ASSUMED" && !isDirty;
+    const editorValue = acceptedBaseline ? "" : rawValue;
+    const placeholder = canonicalConsumerParameterPlaceholder({
+      parameter: canonicalParameter,
+      baselineDisplay: meta,
+      guideShortRu: card.guideShortRu,
+    });
 
     return (
       <View key={card.key} style={styles.parameterRow} testID={`editable-param-chip-${card.key}`}>
-        <View style={styles.parameterRowMain}>
-          <View style={styles.parameterCopy} testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}>
-            <Text style={styles.parameterLabel}>{card.labelRu}</Text>
-            <Text style={styles.parameterMeta}>{meta}</Text>
-          </View>
-          {card.missing ? (
-            <Text style={styles.requiredBadge}>{actionLabel}</Text>
-          ) : null}
+        <View style={styles.compactParameterLine}>
+          <Text
+            style={styles.parameterLabel}
+            testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}
+          >
+            {card.labelRu}{card.missing && actionLabel ? " *" : ""}
+          </Text>
+          {editableInPlace ? (
+            <InlineParamEditor
+              paramKey={card.key}
+              label={card.labelRu}
+              inputKind={card.inputKind}
+              value={editorValue}
+              unitLabel={card.unitRu}
+              dirty={isDirty}
+              error={this.state.validationErrors[card.key]}
+              hint={validationHint}
+              choices={card.choices}
+              guideShortRu={placeholder}
+              structuredGroup={card.structuredGroup}
+              clarificationControl={card.clarificationControl}
+              onChange={this.changeDraftValue}
+            />
+          ) : <Text style={styles.parameterMeta}>{meta}</Text>}
+          {card.unitRu ? <Text style={styles.compactParameterUnit}>{card.unitRu}</Text> : null}
+          <Pressable
+            accessibilityLabel={`Источник параметра: ${card.labelRu}`}
+            accessibilityRole="button"
+            onPress={() => this.toggleGuideDetails(card.key)}
+            style={styles.guideInfoButton}
+            testID={`editable-param-guide-details-${card.key}`}
+          >
+            <Text style={styles.guideInfoButtonText}>i</Text>
+          </Pressable>
         </View>
-        {editableInPlace ? (
-          <InlineParamEditor
-            paramKey={card.key}
-            label={card.labelRu}
-            inputKind={card.inputKind}
-            value={rawValue}
-            unitLabel={card.unitRu}
-            dirty={isDirty}
-            error={this.state.validationErrors[card.key]}
-            hint={validationHint}
-            choices={card.choices}
-            guideShortRu={card.guideShortRu ?? "По проекту или обмеру: фиксированная числовая норма не установлена"}
-            structuredGroup={card.structuredGroup}
-            clarificationControl={card.clarificationControl}
-            onChange={this.changeDraftValue}
-          />
-        ) : null}
-        <Pressable accessibilityRole="button" onPress={() => this.toggleGuideDetails(card.key)} style={styles.guideDetailsButton} testID={`editable-param-guide-details-${card.key}`}>
-          <Text style={styles.guideDetailsButtonText}>{guideExpanded ? "Скрыть подробности" : "Подробнее о норме"}</Text>
-        </Pressable>
         {guideExpanded ? <View style={styles.guideDetailsPanel}>
+          {validationHint ? <Text style={styles.parameterMeta}>{validationHint}</Text> : null}
+          {canonicalParameter?.normativeSource ? (
+            <Text style={styles.parameterMeta}>
+              {canonicalParameter.normativeSource.document} · {canonicalParameter.normativeSource.locator}
+            </Text>
+          ) : null}
           {(card.guideDetailsRu ?? []).map((line, index) => <Text key={`${card.key}:guide:${index}`} style={styles.parameterMeta}>{line}</Text>)}
           {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
           {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
@@ -1305,14 +1356,20 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   parameterRow: {
-    minHeight: 42,
-    gap: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
+    minHeight: 46,
+    gap: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 2,
+    paddingVertical: 6,
+  },
+  compactParameterLine: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
   },
   parameterRowMain: {
     minHeight: 32,
@@ -1331,6 +1388,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "900",
+    flexBasis: 170,
+    flexShrink: 1,
   },
   parameterMeta: {
     color: "#64748B",
@@ -1379,15 +1438,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   inlineParamEditor: {
-    width: "100%",
+    flex: 1,
+    minWidth: 150,
   },
   inlineParamEditorBody: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    padding: 10,
-    gap: 8,
+    gap: 4,
   },
   inlineParamEditorHeader: {
     flexDirection: "row",
@@ -1405,6 +1460,27 @@ const styles = StyleSheet.create({
     color: "#0F766E",
     fontSize: 10,
     lineHeight: 13,
+    fontWeight: "900",
+  },
+  compactParameterUnit: {
+    color: "#475569",
+    minWidth: 32,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "800",
+  },
+  guideInfoButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#94A3B8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  guideInfoButtonText: {
+    color: "#0F766E",
+    fontSize: 12,
     fontWeight: "900",
   },
   inlineParamInput: {

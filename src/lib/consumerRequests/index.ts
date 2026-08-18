@@ -60,6 +60,7 @@ export {
   applyConsumerRepairDraftRevisionParamPatch,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
+  attachConsumerRepairEstimateRowPhoto,
   commitPreparedConsumerRepairRequestBundle,
   CONSUMER_REPAIR_APPROVED_HISTORY_STATUSES,
   createConsumerRepairDraftFromHistorySnapshot,

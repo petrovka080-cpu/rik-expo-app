@@ -2,6 +2,7 @@ import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consu
 import {
   getCanonicalEstimateCatalogItem,
   getCanonicalEstimateRevision,
+  getAllCanonicalEstimateRevisionRows,
   recalculateCanonicalEstimateAndLoad,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
@@ -20,12 +21,50 @@ import {
 } from "../../lib/estimate/canonicalParameters";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
+  aiEstimateRuLabelForParameter,
+  hasHumanReadableAiEstimateParameterPassport,
+} from "../../lib/estimate/aiEstimateRuParameterDictionary";
+import {
   mapAiEstimateToForemanDraft,
   verifyForemanAiEstimatePayloadParity,
   type ForemanAiEstimateDraftMapping,
 } from "../../lib/foremanAiEstimate";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 
 type EditableSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
+
+const INTERNAL_PRESENTATION_PARAMETER = /(?:^|_)(?:compacted_volume|volume_m3|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|mass_t)(?:_|$)/iu;
+
+export function isConsumerMeaningfulCanonicalParameter(schema: EditableSchema): boolean {
+  if (schema.visibilityRole === "INTERNAL_ONLY" || schema.visibilityRole === "USER_DERIVED_READONLY") return false;
+  if (!hasHumanReadableAiEstimateParameterPassport(schema.parameterId, schema.titleRu)) return false;
+  if (INTERNAL_PRESENTATION_PARAMETER.test(schema.parameterId)) return false;
+  return Boolean(
+    schema.required ||
+    (schema.formulaConsumers?.length ?? 0) > 0 ||
+    (schema.resourceBranchConsumers?.length ?? 0) > 0
+  );
+}
+
+export function normalizedCanonicalNumericValidation(input: {
+  minimum: unknown;
+  maximum: unknown;
+  integer: boolean;
+}): { min?: number; max?: number; integer?: true } {
+  const rawMinimum = input.minimum == null ? Number.NaN : Number(input.minimum);
+  const rawMaximum = input.maximum == null ? Number.NaN : Number(input.maximum);
+  const minimum = Number.isFinite(rawMinimum) && Math.abs(rawMinimum) <= Number.EPSILON * 8
+    ? 0
+    : rawMinimum;
+  const maximum = rawMaximum;
+  const validPair = Number.isFinite(minimum) && Number.isFinite(maximum) && maximum > minimum;
+  return {
+    ...(validPair ? { min: minimum, max: maximum } : {}),
+    ...(!Number.isFinite(maximum) && Number.isFinite(minimum) ? { min: minimum } : {}),
+    ...(!Number.isFinite(minimum) && Number.isFinite(maximum) ? { max: maximum } : {}),
+    ...(input.integer ? { integer: true as const } : {}),
+  };
+}
 
 function allowedValues(schema: EditableSchema): unknown[] {
   const raw = schema.constraints.values
@@ -70,6 +109,10 @@ function buildParameter(input: {
   revision: CanonicalEstimateRevisionView;
   parent: CanonicalEstimateRevisionView | null;
 }): CanonicalParameter {
+  const labelRu = aiEstimateRuLabelForParameter(
+    input.schema.parameterId,
+    input.schema.titleRu,
+  );
   const value = scalarValue(input.schema, input.revision.parameters[input.schema.parameterId]);
   const source = parameterSource({
     schema: input.schema,
@@ -77,15 +120,18 @@ function buildParameter(input: {
     parentValue: input.parent?.parameters[input.schema.parameterId],
   });
   const choices = allowedValues(input.schema);
-  const minimum = Number(input.schema.constraints.min);
-  const maximum = Number(input.schema.constraints.max);
+  const numericValidation = normalizedCanonicalNumericValidation({
+    minimum: input.schema.constraints.min,
+    maximum: input.schema.constraints.max,
+    integer: input.schema.valueType === "integer",
+  });
   const normative = input.schema.normativeLinks?.[0];
   const guide = input.schema.guide;
   const requiredLevel = input.schema.required ? "CONTRACT_REQUIRED" as const : "OPTIONAL" as const;
   return {
     parameterId: input.schema.parameterId,
-    label: input.schema.titleRu,
-    description: input.schema.descriptionRu || guide?.guideShortRu || input.schema.titleRu,
+    label: labelRu,
+    description: input.schema.descriptionRu || guide?.guideShortRu || labelRu,
     value,
     valueType: input.schema.valueType === "decimal" || input.schema.valueType === "integer"
       ? "number"
@@ -94,9 +140,7 @@ function buildParameter(input: {
     requiredLevel,
     visibilityCondition: { kind: "ALWAYS" },
     validation: {
-      ...(Number.isFinite(minimum) ? { min: minimum } : {}),
-      ...(Number.isFinite(maximum) ? { max: maximum } : {}),
-      ...(input.schema.valueType === "integer" ? { integer: true } : {}),
+      ...numericValidation,
       ...(["text", "enum", "array_object"].includes(input.schema.valueType) && input.schema.required
         ? { nonEmpty: true }
         : {}),
@@ -136,7 +180,7 @@ export function buildConsumerCanonicalParameterSession(input: {
   draftId: string;
 }): CanonicalParameterSession {
   const parameters = input.catalog.parameterSchema
-    .filter((schema) => schema.visibilityRole !== "INTERNAL_ONLY" && schema.visibilityRole !== "USER_DERIVED_READONLY")
+    .filter(isConsumerMeaningfulCanonicalParameter)
     .map((schema) => buildParameter({ schema, revision: input.revision, parent: input.parent ?? null }));
   const blockingMissingParameterIds = parameters
     .filter((parameter) => parameter.requiredLevel === "BLOCKING_REQUIRED" && parameter.value == null)
@@ -277,4 +321,115 @@ export async function recalculateConsumerCanonicalEstimate(input: {
       draftId: input.draftId,
     }),
   };
+}
+
+export async function recalculateConsumerCanonicalCatalogSelection(input: {
+  revisionId: string;
+  problemText: string;
+  rowId: string;
+  catalogItem: CatalogItemPickerItem;
+}): Promise<ForemanAiEstimateDraftMapping> {
+  const revision = await getCanonicalEstimateRevision(input.revisionId);
+  const [catalog, rows] = await Promise.all([
+    getCanonicalEstimateCatalogItem(revision.catalogId),
+    getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
+  ]);
+  if (catalog.releaseId !== revision.releaseId) {
+    throw new CanonicalEstimateApiError("Товар не выбран: версия каталога не совпадает со сметой.", {
+      code: "REVISION_RELEASE_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const sourceRow = rows.find((row) => row.rowId === input.rowId);
+  if (!sourceRow) {
+    throw new CanonicalEstimateApiError("Товар не выбран: строка отсутствует в выбранной версии.", {
+      code: "ROW_REVISION_IDENTITY_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const selectedUnit = input.catalogItem.unit?.trim().toLocaleLowerCase("ru-RU");
+  const sourceUnit = sourceRow.unitId.trim().toLocaleLowerCase("ru-RU");
+  if (selectedUnit && selectedUnit !== sourceUnit) {
+    throw new CanonicalEstimateApiError("Товар не выбран: единица товара не совпадает с единицей строки.", {
+      code: "CATALOG_ITEM_UNIT_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const unitPrice = input.catalogItem.unitPrice == null ? null : Number(input.catalogItem.unitPrice);
+  if (unitPrice != null && (!Number.isFinite(unitPrice) || unitPrice < 0)) {
+    throw new CanonicalEstimateApiError("Товар не выбран: цена товара некорректна.", {
+      code: "CATALOG_ITEM_PRICE_INVALID",
+      httpStatus: 400,
+    });
+  }
+  const rowOverrides = {
+    ...revision.amendmentContract.rowOverrides,
+    [input.rowId]: {
+      ...(revision.amendmentContract.rowOverrides[input.rowId] ?? {}),
+      ...(unitPrice == null ? {} : { unitPrice }),
+      provenance: {
+        kind: "manual" as const,
+        reason: `market_catalog:${input.catalogItem.catalogItemId}:${input.catalogItem.sourceId}`.slice(0, 500),
+      },
+    },
+  };
+  const parameterValidation = validateCanonicalEstimateParameterInputs({
+    schema: catalog.parameterSchema,
+    rawInputs: revision.parameters,
+  });
+  if (!parameterValidation.ok) {
+    throw new CanonicalEstimateApiError("Товар не выбран: параметры родительской версии не прошли проверку.", {
+      code: "PARENT_PARAMETER_CONTRACT_INVALID",
+      httpStatus: 409,
+    });
+  }
+  const result = await recalculateCanonicalEstimateAndLoad({
+    request: {
+      idempotencyKey: `consumer-line-catalog-${estimateDeterministicHash({
+        parent: revision.revisionId,
+        rowId: input.rowId,
+        catalogItemId: input.catalogItem.catalogItemId,
+        sourceId: input.catalogItem.sourceId,
+        unitPrice,
+      })}`,
+      catalogId: revision.catalogId,
+      parentRevisionId: revision.revisionId,
+      parameters: parameterValidation.parameters,
+      currencyCode: revision.currencyCode,
+      rowOverrides,
+      customRows: revision.amendmentContract.customRows,
+    },
+  });
+  if (result.revision.parentRevisionId !== revision.revisionId) {
+    throw new CanonicalEstimateApiError("Товар не выбран: backend вернул неверную дочернюю версию.", {
+      code: "CHILD_REVISION_IDENTITY_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const estimate = adaptCanonicalRevisionToStructuredEstimate({
+    catalog,
+    revision: result.revision,
+    rows: result.rows,
+    inputText: input.problemText,
+  });
+  const mapping = mapAiEstimateToForemanDraft({
+    estimate,
+    context: {
+      objectName: "Заявка на ремонт",
+      levelName: "",
+      systemName: "",
+      zoneName: "",
+      sourceScreen: "foreman_materials",
+    },
+    estimateRevisionId: result.revision.revisionId,
+    estimateReleaseId: result.revision.releaseId,
+  });
+  const parity = verifyForemanAiEstimatePayloadParity(mapping);
+  if (!parity.ok || mapping.payload.rows.length !== result.revision.rowCount) {
+    throw new CanonicalEstimateApiError("Товар не выбран: нарушено соответствие строк дочерней версии.", {
+      code: "CANONICAL_CATALOG_SELECTION_PARITY_FAILED",
+      httpStatus: 409,
+    });
+  }
+  return mapping;
 }

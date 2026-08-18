@@ -16,6 +16,9 @@ export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
   userId: string;
   draftId: string;
   targetItemId: string;
+  revisionId?: string;
+  lineId?: string;
+  purpose?: "material_recognition" | "line_attachment";
   bundle: ConsumerRepairDraftBundle;
 };
 
@@ -25,6 +28,9 @@ export type ConsumerRepairPhotoMaterialCaptureResult = {
   scanId: string;
   asset: CapturedPhotoAsset;
   storedImage: PhotoMaterialStoredImage;
+  revisionId: string | null;
+  lineId: string;
+  purpose: "material_recognition" | "line_attachment";
 };
 
 type ConsumerRepairPhotoCaptureControllerInput = {
@@ -40,6 +46,9 @@ type ActivePhotoCapture = {
   targetItemId: string;
   targetRowId: string;
   kind: "PRODUCT_FRONT" | "OTHER";
+  revisionId: string | null;
+  lineId: string;
+  purpose: "material_recognition" | "line_attachment";
 };
 
 const LazyMobilePhotoCaptureFlow = React.lazy(async () => {
@@ -81,14 +90,50 @@ export function useConsumerRepairPhotoCaptureController({
     userId,
     draftId,
     targetItemId,
+    revisionId,
+    lineId,
+    purpose = "material_recognition",
     bundle,
   }: OpenConsumerRepairPhotoForMaterialRecognitionInput) => {
     try {
+      const exactLineId = lineId?.trim() || targetItemId;
+      if (purpose === "line_attachment") {
+        const item = bundle.items.find((candidate) => candidate.id === targetItemId);
+        const itemLineId = typeof item?.sourceParameters?.rowCode === "string"
+          ? item.sourceParameters.rowCode.trim()
+          : item?.id ?? "";
+        if (!item || itemLineId !== exactLineId) throw new Error("PHOTO_TARGET_ROW_NOT_FOUND");
+        const itemRevisionId = String(
+          item.sourceParameters?.canonicalBackendRevisionId ?? "",
+        ).trim();
+        if (
+          !revisionId?.trim() ||
+          (itemRevisionId && itemRevisionId !== revisionId)
+        ) {
+          throw new Error("PHOTO_TARGET_REVISION_MISMATCH");
+        }
+        setActiveCapture({
+          scanId: `estimate-line-photo:${revisionId}:${exactLineId}:${Date.now()}`,
+          draftId,
+          targetItemId,
+          targetRowId: exactLineId,
+          kind: "OTHER",
+          revisionId,
+          lineId: exactLineId,
+          purpose,
+        });
+        onStatusMessage(null);
+        return;
+      }
       const bundleWithRevision =
         ensureConsumerRepairBundleEstimateRevisionState(bundle);
       const currentRevision = getCurrentEstimateRevision(
         bundleWithRevision.estimateRevisionState!,
       );
+      const row = currentRevision.editable_estimate_snapshot.rows.find((candidate) =>
+        candidate.rowId === exactLineId || candidate.requestItemId === targetItemId
+      );
+      if (!row) throw new Error("PHOTO_TARGET_ROW_NOT_FOUND");
       const scanSession = createPhotoMaterialScanSession({
         userId,
         estimateId: currentRevision.estimate_id,
@@ -104,6 +149,9 @@ export function useConsumerRepairPhotoCaptureController({
         targetItemId,
         targetRowId: scanSession.targetRowId,
         kind: "PRODUCT_FRONT",
+        revisionId: revisionId?.trim() || null,
+        lineId: exactLineId,
+        purpose,
       });
       onStatusMessage(null);
     } catch (error) {
@@ -135,6 +183,9 @@ export function useConsumerRepairPhotoCaptureController({
               scanId: activeCapture.scanId,
               asset: result.asset,
               storedImage: result.storedImage,
+              revisionId: activeCapture.revisionId,
+              lineId: activeCapture.lineId,
+              purpose: activeCapture.purpose,
             });
             closePhotoCapture();
           }}

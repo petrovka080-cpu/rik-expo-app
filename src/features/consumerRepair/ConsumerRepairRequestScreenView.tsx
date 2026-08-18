@@ -111,6 +111,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onApproveDraft: () => void;
   onPrepareDraft: () => void;
   onSelectRoadScope: (scopePresetId: string) => void;
+  onScrollPositionChange: (position: number) => void;
 };
 
 export function ConsumerRepairRequestScreenView({
@@ -159,6 +160,7 @@ export function ConsumerRepairRequestScreenView({
   onApproveDraft,
   onPrepareDraft,
   onSelectRoadScope,
+  onScrollPositionChange,
 }: ConsumerRepairRequestScreenViewProps) {
   const currentDraftRevisionState =
     getConsumerRepairCalculationStateForReadOnlyDisplay(renderModel.bundle);
@@ -189,7 +191,12 @@ export function ConsumerRepairRequestScreenView({
         centerTitle
         right={<ConsumerRepairRequestHeaderMarketButton onPress={onGoToMarket} />}
       />
-      <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
+      <AppScreenScroll
+        contentStyle={styles.content}
+        onScroll={(event) => onScrollPositionChange(event.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
+        testID="consumer-repair-screen"
+      >
         <ConsumerRepairRequestContent
           problemText={state.problemText}
           city={state.city}

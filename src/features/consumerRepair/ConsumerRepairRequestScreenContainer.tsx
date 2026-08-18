@@ -18,8 +18,10 @@ import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCom
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
 import {
   loadConsumerCanonicalParameterSession,
+  recalculateConsumerCanonicalCatalogSelection,
   recalculateConsumerCanonicalEstimate,
 } from "./consumerCanonicalParameterEditor";
+import { applyConsumerRepairCatalogItemSelection } from "./requestEstimateScreenActions";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 
@@ -155,6 +157,10 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   const photoCapture = useConsumerRepairPhotoCaptureController({
     onStatusMessage: (statusMessage) => screenRef.current?.setPhotoCaptureStatusMessage(statusMessage),
     onMaterialPhotoCaptured: (result) => {
+      if (result.purpose === "line_attachment") {
+        screenRef.current?.attachCapturedPhotoToLine(result);
+        return;
+      }
       void screenRef.current?.openMaterialCatalogFromCapturedPhoto(result);
     },
   });
@@ -166,21 +172,15 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     targetDraftId: string | null,
   ) => {
     if (!resolvedConsumerUserId) return;
-    const includedRows = mapping.payload.rows.filter((row) => row.includedInEstimate !== false);
-    const payload = {
-      ...mapping.payload,
-      rows: includedRows,
-      sections: mapping.payload.sections.map((section) => ({
-        ...section,
-        rows: section.rows.filter((row) => row.includedInEstimate !== false),
-      })).filter((section) => section.rows.length > 0),
-    };
     const bundle = upsertConsumerRepairCanonicalBackendDraft({
       requestDraftId: targetDraftId,
       consumerUserId: resolvedConsumerUserId,
       problemText: problemText || mapping.payload.inputText,
       city: "Bishkek",
-      aiDraft: buildStructuredEstimateRequestDraft(payload),
+      // Preserve the complete immutable backend projection. Excluded rows keep
+      // their disposition in the UI model; filtering them here made one
+      // revision report different row counts in UI, history, PDF and backend.
+      aiDraft: buildStructuredEstimateRequestDraft(mapping.payload),
     });
     screenRef.current?.acceptCanonicalBackendDraft(bundle);
     return bundle;
@@ -232,6 +232,26 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             });
             await persistCanonicalDraft(result.mapping, problemText, requestDraftId);
             return result.session;
+          }}
+          onSelectCanonicalCatalogItem={async ({ context, problemText, catalogItem }) => {
+            const mapping = await recalculateConsumerCanonicalCatalogSelection({
+              revisionId: context.revisionId,
+              problemText,
+              rowId: context.lineId!,
+              catalogItem,
+            });
+            const childBundle = await persistCanonicalDraft(mapping, problemText, context.draftId);
+            if (!childBundle) throw new Error("CATALOG_CHILD_DRAFT_NOT_PERSISTED");
+            const childItem = childBundle.items.find((item) =>
+              item.sourceParameters?.rowCode === context.lineId
+            );
+            if (!childItem) throw new Error("CATALOG_CHILD_ROW_NOT_FOUND");
+            const selected = applyConsumerRepairCatalogItemSelection({
+              current: childBundle,
+              catalogItem,
+              targetItemId: childItem.id,
+            });
+            screenRef.current?.acceptCanonicalBackendDraft(selected.bundle);
           }}
           onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
           MobilePhotoCaptureFlowNode={photoCapture.flow}

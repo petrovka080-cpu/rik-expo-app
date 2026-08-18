@@ -18,7 +18,7 @@ type AdminClient = ReturnType<typeof createClient>;
 
 type ClaimedJob = {
   id: string;
-  operation: "compile" | "recalculate" | "pdf" | "procurement" | "legacy_revision_migration";
+  operation: "compile" | "recalculate" | "pdf" | "professional_pdf" | "procurement" | "legacy_revision_migration";
   catalog_id: string;
   parent_revision_id: string | null;
   target_release_id: string;
@@ -139,6 +139,47 @@ function escapeHtml(value: unknown): string {
     .replace(/>/g, "&gt;")
     .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function professionalQuantity(value: unknown): string {
+  if (value == null || value === "") return "—";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "—";
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(numeric);
+}
+
+function professionalMoney(value: unknown, currencyCode: unknown): string {
+  if (value == null || value === "") return "уточнить";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "уточнить";
+  const currency = String(currencyCode ?? "KGS") === "KGS" ? "сом" : String(currencyCode ?? "");
+  return `${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric)} ${currency}`.trim();
+}
+
+function professionalUnit(row: Record<string, unknown>): string {
+  const calculationTrace = row.calculation_trace && typeof row.calculation_trace === "object"
+    ? row.calculation_trace as Record<string, unknown>
+    : {};
+  const displayUnit = String(calculationTrace.displayUnitRu ?? "").trim();
+  if (displayUnit) return displayUnit;
+  const unit = String(row.unit_id ?? "").trim();
+  const localized: Record<string, string> = {
+    set: "компл.", item: "шт.", pcs: "шт.", man_hour: "чел.-ч",
+    machine_hour: "маш.-ч", t_km: "т·км", kg: "кг", t: "т", m: "м", m2: "м²", m3: "м³",
+  };
+  if (unit !== "test") return localized[unit] ?? unit;
+  const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
+  if (/при[её]м|контрол|провер/u.test(semanticOwner)) return "проверка";
+  return "испыт.";
+}
+
+function professionalSection(row: Record<string, unknown>): string {
+  const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
+  if (/material|waste/u.test(identity)) return "Материалы";
+  if (/equipment|machine|machinery/u.test(identity)) return "Машины и оборудование";
+  if (/delivery|transport|logistic/u.test(identity)) return "Логистика";
+  if (/test|quality|control/u.test(identity)) return "Испытания и контроль";
+  return "Работы и услуги";
 }
 
 async function secretMatches(request: Request): Promise<boolean> {
@@ -642,12 +683,12 @@ async function compileLegacyRevisionJob(admin: AdminClient, workerId: string, jo
 }
 
 async function buildArtifactJob(admin: AdminClient, workerId: string, job: ClaimedJob): Promise<string> {
-  if (!job.parent_revision_id || (job.operation !== "pdf" && job.operation !== "procurement")) {
+  if (!job.parent_revision_id || !["pdf", "professional_pdf", "procurement"].includes(job.operation)) {
     throw Object.assign(new Error("invalid artifact job"), { code: "ARTIFACT_JOB_INVALID" });
   }
   const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError }] = await Promise.all([
     admin.from("estimate_revision")
-      .select("id,release_id,catalog_id,revision_number,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,created_at")
+      .select("id,release_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,created_at")
       .eq("id", job.parent_revision_id).single(),
     admin.from("estimate_revision_row")
       .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
@@ -707,6 +748,47 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     contentType = "application/json; charset=utf-8";
     extension = "json";
     renderer = "canonical-procurement-projection.r2";
+  } else if (job.operation === "professional_pdf") {
+    const { data: identity, error: identityError } = await admin
+      .from("estimate_work_identity")
+      .select("title_ru")
+      .eq("catalog_id", revision.catalog_id)
+      .maybeSingle();
+    if (identityError) {
+      throw Object.assign(new Error("professional artifact identity load failed"), { code: "ARTIFACT_IDENTITY_LOAD_FAILED" });
+    }
+    const groups = new Map<string, Record<string, unknown>[]>();
+    for (const row of rows) {
+      const section = professionalSection(row);
+      groups.set(section, [...(groups.get(section) ?? []), row]);
+    }
+    const sections = [...groups.entries()].map(([section, sectionRows]) => `
+      <section><h2>${escapeHtml(section)}</h2><table>
+        <thead><tr><th>№</th><th>Позиция</th><th>Ед.</th><th>Количество</th><th>Цена</th><th>Сумма</th></tr></thead>
+        <tbody>${sectionRows.map((row) => `<tr><td>${Number(row.ordinal) + 1}</td><td>${escapeHtml(row.title_ru)}</td><td>${escapeHtml(professionalUnit(row))}</td><td>${professionalQuantity(row.quantity)}</td><td>${professionalMoney(row.unit_price, row.currency_code ?? revision.currency_code)}</td><td>${professionalMoney(row.amount, row.currency_code ?? revision.currency_code)}</td></tr>`).join("")}</tbody>
+      </table></section>`).join("");
+    const pricedRows = rows.filter((row) => row.unit_price != null).length;
+    const createdDate = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(new Date(revision.created_at));
+    const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
+      @page{size:A4;margin:18mm 14mm 18mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;font-size:10px;line-height:1.35}
+      header{border-bottom:3px solid #176b45;padding-bottom:12px;margin-bottom:16px}h1{font-size:24px;margin:0 0 7px;color:#10253d}h2{font-size:14px;color:#176b45;margin:18px 0 7px}
+      .subtitle{font-size:14px;font-weight:700}.meta,.notice{color:#526174}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.summary div{background:#eef7f2;border-radius:6px;padding:9px}
+      table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#e7edf4;text-align:left}td,th{border:1px solid #cbd4df;padding:5px;vertical-align:top}th:nth-child(1){width:6%}th:nth-child(3){width:10%}th:nth-child(4){width:13%}th:nth-child(5),th:nth-child(6){width:14%}
+      tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
+      footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}.page:after{content:counter(page)}
+    </style></head><body>
+      <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeHtml(identity?.title_ru ?? "Строительно-монтажные работы")}</div><div class="meta">Сформировано ${escapeHtml(createdDate)} из сохранённой версии сметы</div></header>
+      <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalMoney(revision.totals?.amount, revision.currency_code)}</div></div>
+      ${sections}
+      <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
+      <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
+      <footer>Профессиональная смета · страница <span class="page"></span></footer>
+    </body></html>`;
+    const rendered = await renderPdfBytes(html);
+    bytes = rendered.pdfBytes;
+    contentType = "application/pdf";
+    extension = "pdf";
+    renderer = "canonical-professional-pdf.r3";
   } else {
     const tableRows = rows.map((row) => {
       const normative = Array.isArray(row.normative_trace)
@@ -752,8 +834,12 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
       sha256: artifactSha256,
       metadata: {
         renderer,
+        ...(job.operation === "professional_pdf" ? { templateVersion: "professional-estimate-pdf:3" } : {}),
         sourceRevisionChecksumSha256: revision.checksum_sha256,
         sourceReleaseId: revision.release_id,
+        sourceCatalogId: revision.catalog_id,
+        sourceOwnerUserId: revision.owner_user_id,
+        sourceOrganizationId: revision.organization_id ?? null,
         projectedRowCount: rows.length,
         selectedProcurementRowCount: job.operation === "procurement" ? selectedProcurementRows.length : null,
         includesExcludedDisposition: true,

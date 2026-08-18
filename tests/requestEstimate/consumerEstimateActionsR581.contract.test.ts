@@ -1,0 +1,156 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import {
+  buildConsumerEstimateActionContext,
+  ConsumerEstimateActionContextError,
+} from "../../src/features/consumerRepair/consumerEstimateActionRouter";
+import { extractUserQuantity } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {
+  isConsumerMeaningfulCanonicalParameter,
+  normalizedCanonicalNumericValidation,
+} from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
+import { canonicalConsumerParameterPlaceholder } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
+import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
+
+const root = path.resolve(__dirname, "../..");
+const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
+
+function canonicalBundle(): ConsumerRepairDraftBundle {
+  return {
+    draft: {
+      id: "consumer_draft_msy7qou1_douawj",
+      consumerUserId: "consumer-1",
+      orgId: "company-1",
+      repairType: "parking",
+      selectedCatalogWorkId: "built-in-ai-1000:0702",
+      status: "draft",
+      missingData: [],
+      createdAt: "2026-08-18T00:00:00.000Z",
+    },
+    items: [{
+      id: "request-item-50",
+      requestDraftId: "consumer_draft_msy7qou1_douawj",
+      itemType: "material",
+      titleRu: "Щебень 20–40 мм",
+      quantity: 500,
+      unit: "m3",
+      currency: "KGS",
+      source: "ai_suggested",
+      sourceParameters: {
+        rowCode: "base_crushed_stone_20_40",
+        canonicalBackendRevisionId: "23590f0c-9a5d-4481-b8ed-1019772ff1cb",
+        canonicalBackendReleaseId: "94443669-8f5b-5cc7-b364-2f8e9f9e3506",
+      },
+      editableByConsumer: true,
+      createdAt: "2026-08-18T00:00:00.000Z",
+    }],
+    media: [],
+    pdfs: [],
+    projectExecutionDrafts: [],
+    marketplaceLink: {
+      id: "market-1",
+      requestDraftId: "consumer_draft_msy7qou1_douawj",
+      status: "not_sent",
+      createdAt: "2026-08-18T00:00:00.000Z",
+    },
+    events: [],
+  } as ConsumerRepairDraftBundle;
+}
+
+describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
+  it("recognizes the exact typoed 500 square metre request", () => {
+    expect(extractUserQuantity("Асфальтирование парковки 500 кв метрово")).toEqual({
+      value: "500",
+      unit: "m2",
+    });
+    for (const prompt of ["500 м²", "500 м2", "500 кв. м", "500 квадратных метров", "500 кв метров"]) {
+      expect(extractUserQuantity(prompt)).toEqual({ value: "500", unit: "m2" });
+    }
+  });
+
+  it("routes a line action only with exact immutable identity and return position", () => {
+    const context = buildConsumerEstimateActionContext({
+      action: "openLinePhoto",
+      bundle: canonicalBundle(),
+      ownerId: "consumer-1",
+      requestItemId: "request-item-50",
+      returnScrollPosition: 812,
+    });
+    expect(context).toMatchObject({
+      revisionId: "23590f0c-9a5d-4481-b8ed-1019772ff1cb",
+      releaseId: "94443669-8f5b-5cc7-b364-2f8e9f9e3506",
+      definitionId: "built-in-ai-1000:0702",
+      lineId: "base_crushed_stone_20_40",
+      requestItemId: "request-item-50",
+      ownerId: "consumer-1",
+      companyId: "company-1",
+      returnScrollPosition: 812,
+    });
+    expect(() => buildConsumerEstimateActionContext({
+      action: "openLineCatalog",
+      bundle: canonicalBundle(),
+      ownerId: "another-user",
+      requestItemId: "request-item-50",
+    })).toThrow(ConsumerEstimateActionContextError);
+  });
+
+  it("hides formula internals and rejects corrupted numeric ranges", () => {
+    const internal = {
+      parameterId: "sand_compacted_volume_m3",
+      titleRu: "sand_compacted_volume_m3",
+      visibilityRole: "USER_INPUT",
+      required: false,
+      formulaConsumers: ["f1"],
+      resourceBranchConsumers: [],
+    } as never;
+    const area = {
+      parameterId: "area_m2",
+      titleRu: "Площадь покрытия",
+      visibilityRole: "USER_INPUT",
+      required: true,
+      formulaConsumers: ["area"],
+      resourceBranchConsumers: ["asphalt"],
+    } as never;
+    expect(isConsumerMeaningfulCanonicalParameter(internal)).toBe(false);
+    expect(isConsumerMeaningfulCanonicalParameter(area)).toBe(true);
+    expect(normalizedCanonicalNumericValidation({ minimum: Number.EPSILON, maximum: 0, integer: false })).toEqual({});
+    expect(normalizedCanonicalNumericValidation({ minimum: 1, maximum: 0, integer: false })).toEqual({});
+    expect(normalizedCanonicalNumericValidation({ minimum: 40, maximum: 60, integer: false })).toEqual({ min: 40, max: 60 });
+  });
+
+  it("uses a compact accepted-baseline placeholder without scientific notation", () => {
+    const placeholder = canonicalConsumerParameterPlaceholder({
+      parameter: {
+        source: "ASSUMED",
+        validation: { min: 40, max: 60 },
+        normativeSource: { document: "СП", locator: "п. 4", sourceId: "n1" },
+      } as never,
+      baselineDisplay: "50 мм",
+      guideShortRu: "По проекту",
+    });
+    expect(placeholder).toBe("Предварительно принято: 50 мм · норма: 40–60");
+    expect(placeholder).not.toMatch(/e-\d|2\.220446|Нормативный диапазон: числовое значение/u);
+  });
+
+  it("keeps approval on the compatible archival contract and removes technical routing from line actions", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
+    expect(screen).toContain('kind: "pdf"');
+    expect(screen).toContain('idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`');
+    expect(screen).not.toContain("consumer-approve-professional-pdf");
+    const photoOwner = screen.slice(screen.indexOf("private openPhotoRecognition"), screen.indexOf("private addPhotoMaterialRecognition"));
+    const catalogOwner = screen.slice(screen.indexOf("private openCatalogForEstimateItem"), screen.indexOf("private createNew"));
+    expect(photoOwner).not.toContain("openCanonicalBackendEditor");
+    expect(catalogOwner).not.toContain("openCanonicalBackendEditor");
+    expect(photoOwner).toContain('this.actionContext("openLinePhoto"');
+    expect(catalogOwner).toContain('this.actionContext("openLineCatalog"');
+    expect(container).toContain("recalculateConsumerCanonicalCatalogSelection");
+  });
+
+  it("preserves every persisted backend row instead of filtering the DTO", () => {
+    const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
+    expect(container).toContain("buildStructuredEstimateRequestDraft(mapping.payload)");
+    expect(container).not.toContain("mapping.payload.rows.filter((row) => row.includedInEstimate !== false)");
+  });
+});

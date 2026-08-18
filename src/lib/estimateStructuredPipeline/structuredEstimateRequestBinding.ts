@@ -25,8 +25,12 @@ function isDangerousEstimate(payload: StructuredEstimatePayload): boolean {
 }
 
 function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRepairSelectedWork | undefined {
+  const canonicalCatalogId = payload.rows
+    .map((row) => String(row.sourceParameters?.canonicalBackendCatalogId ?? "").trim())
+    .find(Boolean);
   return payload.selectedWork
     ? {
+        selectedCatalogWorkId: canonicalCatalogId || payload.selectedWork.selectedWorkKey,
         selectedWorkKey: payload.selectedWork.selectedWorkKey,
         selectedWorkTitleRu: payload.selectedWork.selectedTitleRu,
         selectedWorkCategoryKey: payload.selectedWork.selectedCategoryKey,
@@ -35,7 +39,18 @@ function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRep
         selectedWorkSource: "user_selected",
         selectedWorkResolverReGuessed: false,
       }
-    : undefined;
+    : canonicalCatalogId
+      ? {
+          selectedCatalogWorkId: canonicalCatalogId,
+          selectedWorkKey: payload.workKey,
+          selectedWorkTitleRu: payload.workTitle,
+          selectedWorkCategoryKey: payload.workCategory,
+          selectedWorkCategoryTitleRu: payload.workCategory.replace(/[_-]+/g, " "),
+          selectedWorkRawInput: payload.inputText || payload.workTitle,
+          selectedWorkSource: "user_selected",
+          selectedWorkResolverReGuessed: false,
+        }
+      : undefined;
 }
 
 function visibleDraftItemTitle(row: StructuredEstimatePayload["rows"][number]): string {
