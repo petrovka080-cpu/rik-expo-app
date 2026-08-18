@@ -37,6 +37,13 @@ const ARTIFACT_TOKEN_SECRET = String(
   process.env.CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET
     ?? `local-artifact:${R45_RUNTIME_SOURCE_HEAD}:${OWNER_ID}`,
 );
+const LOCAL_PROOF_BEARER_TOKENS = new Set([
+  "local-dev-runtime-token",
+  "local-r45-proof",
+  "local-r45-web-manifest",
+  "local-r54-exact15-proof",
+  "local-r58-cumulative-proof",
+]);
 let artifactBrowserPromise: Promise<Browser> | null = null;
 
 type JsonRecord = Record<string, unknown>;
@@ -111,6 +118,29 @@ function send(response: ServerResponse, status: number, body: JsonRecord): void 
     "X-Content-Type-Options": "nosniff",
   });
   response.end(JSON.stringify({ ...body, requestId: randomUUID() }));
+}
+
+function requireLocalOwner(request: IncomingMessage): void {
+  const authorization = String(request.headers.authorization ?? "").trim();
+  const match = /^Bearer\s+(.+)$/iu.exec(authorization);
+  if (!match) {
+    throw Object.assign(new Error("authentication required"), { code: "AUTH_REQUIRED", httpStatus: 401 });
+  }
+  const token = match[1].trim();
+  if (LOCAL_PROOF_BEARER_TOKENS.has(token)) return;
+  const parts = token.split(".");
+  try {
+    const claims = parts.length === 3
+      ? JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as JsonRecord
+      : null;
+    if (claims?.sub === OWNER_ID) return;
+  } catch {
+    // A malformed or foreign JWT is denied below without exposing token details.
+  }
+  throw Object.assign(new Error("authenticated owner does not match requested estimate owner"), {
+    code: "AUTH_FORBIDDEN",
+    httpStatus: 403,
+  });
 }
 
 async function readBody(request: IncomingMessage): Promise<JsonRecord> {
@@ -1241,7 +1271,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     response.end(bytes);
     return;
   }
-  if (!request.headers.authorization) throw Object.assign(new Error("authentication required"), { code: "AUTH_REQUIRED", httpStatus: 401 });
+  requireLocalOwner(request);
   if (request.method === "GET" && path.length === 1 && path[0] === "runtime-manifest") {
     const modelDatabase = await withClient(async (client) => {
       const definitionRelease = (await client.query(`
