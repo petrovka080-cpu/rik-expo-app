@@ -8,7 +8,11 @@ type CommandResult = { ok: boolean; output: string; status: number | null };
 type UiNode = { resourceId: string; contentDesc: string; text: string; bounds: string; packageName: string; attrs: string };
 type UiSnapshot = { ok: boolean; xml: string; nodes: UiNode[]; text: string; error: string | null };
 type AuditRow = { at: string; method: string | null; path: string | null; status: number; userAgent: string | null; authorizationPresent: boolean };
-type WowCase = Json & { catalog_id: string; child_revision_id: string };
+type WowCase = Json & {
+  catalog_id: string;
+  child_revision_id: string;
+  parameter_ordinal?: number;
+};
 
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const MAIN_ACTIVITY = `${PACKAGE_NAME}/.MainActivity`;
@@ -350,6 +354,8 @@ async function returnToMainActivity(): Promise<{ ok: boolean; line: string }> {
 }
 
 async function main(): Promise<void> {
+  const mode = argument("mode", "water-r6-a2");
+  const r58Mode = mode === "r58";
   const releaseId = argument("release-id");
   const expectedHead = argument("expected-head");
   const expectedTree = argument("expected-tree");
@@ -358,10 +364,15 @@ async function main(): Promise<void> {
   const output = resolve(argument("output", join(evidenceRoot, "A2_11_ANDROID_RUNTIME")));
   if (!/^[0-9a-f-]{36}$/i.test(releaseId) || !/^[0-9a-f]{40}$/i.test(expectedHead)
     || !/^[0-9a-f]{40}$/i.test(expectedTree) || !auditLog) throw new Error("WATER_R6_A2_ANDROID_MATRIX_IDENTITY_REQUIRED");
-  const wow = readFileSync(join(evidenceRoot, "A2_10_WOW_50_CASES.jsonl"), "utf8").split(/\r?\n/)
+  const casesPath = resolve(argument("cases", join(evidenceRoot, "A2_10_WOW_50_CASES.jsonl")));
+  const reportPath = resolve(argument("report", join(evidenceRoot, "A2_11_ANDROID_API34_MAINACTIVITY_MATRIX_50.json")));
+  const wow = readFileSync(casesPath, "utf8").split(/\r?\n/)
     .filter(Boolean).map((line) => JSON.parse(line) as WowCase);
   if (wow.length !== 50 || new Set(wow.map((row) => row.catalog_id)).size !== 50
-    || wow.some((row) => row.status !== "GREEN" || !row.child_revision_id)) throw new Error("WATER_R6_A2_ANDROID_MATRIX_INPUT_RED");
+    || wow.some((row) => row.status !== "GREEN" || !row.child_revision_id
+      || (r58Mode && (!Number.isSafeInteger(Number(row.parameter_ordinal)) || Number(row.parameter_ordinal) < 0)))) {
+    throw new Error(r58Mode ? "R58_ANDROID_MATRIX_INPUT_RED" : "WATER_R6_A2_ANDROID_MATRIX_INPUT_RED");
+  }
 
   mkdirSync(output, { recursive: true });
   mkdirSync(dirname(auditLog), { recursive: true });
@@ -376,7 +387,7 @@ async function main(): Promise<void> {
   if (bundleReachability.status !== "GREEN") blockers.push("NATIVE_BUNDLE_OWNERSHIP_RED");
 
   adb(["shell", "am", "force-stop", PACKAGE_NAME], 10_000);
-  const launchUrl = `rik:///request?launchId=water-r6-a2-native-${Date.now()}`;
+  const launchUrl = `rik:///request?launchId=${r58Mode ? "r58" : "water-r6-a2"}-native-${Date.now()}`;
   const launch = adb(["shell", "am", "start", "-W", "-n", MAIN_ACTIVITY, "-a", "android.intent.action.VIEW", "-d", launchUrl], 60_000);
   if (!launch.ok || !launch.output.includes(`Activity: ${MAIN_ACTIVITY}`)) blockers.push("EXACT_MAINACTIVITY_LAUNCH_FAILED");
   let snapshot = await waitForId("consumer-repair-screen", 90_000);
@@ -409,13 +420,15 @@ async function main(): Promise<void> {
     const releaseNode = findById(snapshot, "canonical-estimate-release-id-top");
     if (!releaseNode?.text.includes(releaseId)) caseBlockers.push("PARENT_RELEASE_VISIBLE_RED");
 
-    const parameterFound = await findScrollable((current) => findById(current, "canonical-estimate-parameter-0"), 36);
+    const parameterOrdinal = r58Mode ? Number(item.parameter_ordinal) : 0;
+    const parameterInputId = `canonical-estimate-parameter-${parameterOrdinal}`;
+    const parameterFound = await findScrollable((current) => findById(current, parameterInputId), 36);
     const beforeValue = parameterFound.node?.text ?? "";
     let afterValue = "";
     if (!parameterFound.node) caseBlockers.push("FIRST_PARAMETER_MISSING");
     else {
       try { afterValue = changedNumericValue(beforeValue); } catch { caseBlockers.push("FIRST_PARAMETER_NOT_NUMERIC"); }
-      if (afterValue && !(await replaceInput("canonical-estimate-parameter-0", afterValue)).ok) caseBlockers.push("FIRST_PARAMETER_EDIT_FAILED");
+      if (afterValue && !(await replaceInput(parameterInputId, afterValue)).ok) caseBlockers.push("FIRST_PARAMETER_EDIT_FAILED");
     }
 
     const auditBeforeRecalc = readAudit(auditLog).length;
@@ -511,7 +524,8 @@ async function main(): Promise<void> {
 
     if ((index + 1) % 10 === 0 || index === wow.length - 1) {
       snapshot = dumpUi();
-      artifactEvidence.capture = capture(output, `water-native-${String(index + 1).padStart(2, "0")}`, snapshot);
+      artifactEvidence.capture = capture(output,
+        `${r58Mode ? "r58" : "water"}-native-${String(index + 1).padStart(2, "0")}`, snapshot);
     }
     rows.push({
       case: index + 1,
@@ -520,7 +534,7 @@ async function main(): Promise<void> {
       androidParentRevisionId: parentRevisionId,
       androidChildRevisionId: childRevisionId,
       releaseId,
-      parameterEdit: { ordinal: 0, before: beforeValue, after: afterValue },
+      parameterEdit: { ordinal: parameterOrdinal, before: beforeValue, after: afterValue },
       rowCountText,
       artifacts: artifactEvidence,
       activity: resumedMainActivity(),
@@ -531,7 +545,7 @@ async function main(): Promise<void> {
       blockers: caseBlockers,
       status: caseBlockers.length === 0 ? "GREEN" : "RED",
     });
-    process.stdout.write(`[${new Date().toISOString()}] Water Android ${index + 1}/50 ${item.catalog_id} ${rows.at(-1)!.status}\n`);
+    process.stdout.write(`[${new Date().toISOString()}] ${r58Mode ? "R58" : "Water"} Android ${index + 1}/50 ${item.catalog_id} ${rows.at(-1)!.status}\n`);
     if (caseBlockers.length) blockers.push(`ANDROID_CASE_${index + 1}_RED:${caseBlockers.join(",")}`);
   }
 
@@ -544,7 +558,8 @@ async function main(): Promise<void> {
   if (chromeRows.length) blockers.push(`NATIVE_REQUESTS_FROM_BROWSER_${chromeRows.length}`);
 
   const report = {
-    schemaVersion: "water-r6-a2-native-android-api34-mainactivity-matrix.v1",
+    schemaVersion: r58Mode ? "p0-one-monolith-r58-native-android-api34-mainactivity-matrix-50.v1"
+      : "water-r6-a2-native-android-api34-mainactivity-matrix.v1",
     generatedAt: new Date().toISOString(),
     source: { head: expectedHead, tree: expectedTree },
     releaseId,
@@ -554,7 +569,7 @@ async function main(): Promise<void> {
     executed: rows.length,
     green: rows.filter((row) => row.status === "GREEN").length,
     distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
-    lifecycle: { backendWowReference: 50, openLatestExactRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50, explicitExternalViewerProofs: 2 },
+    lifecycle: { backendParentReference: 50, openLatestExactRevision: 50, editParameters: 50, serverRecalculate: 50, immutableChild: 50, historyReopen: 50, pdf: 50, procurement: 50, explicitExternalViewerProofs: 2 },
     realMainActivity: true,
     api34: apiLevel === "34",
     browserEmulation: false,
@@ -566,10 +581,10 @@ async function main(): Promise<void> {
     cases: rows,
     blockers,
     productionDeployed: false,
-    batch007Started: false,
+    mode,
+    casesPath,
     status: blockers.length === 0 && rows.length === 50 ? "GREEN" : "RED",
   };
-  const reportPath = resolve(evidenceRoot, "A2_11_ANDROID_API34_MAINACTIVITY_MATRIX_50.json");
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   writeFileSync(join(output, "REQUEST_AUDIT_COPY.jsonl"), `${audit.map((row) => JSON.stringify(row)).join("\n")}\n`, "utf8");
   process.stdout.write(`${JSON.stringify({ status: report.status, reportPath, green: report.green, blockers }, null, 2)}\n`);
