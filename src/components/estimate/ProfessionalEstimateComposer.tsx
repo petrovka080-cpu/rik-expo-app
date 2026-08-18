@@ -662,7 +662,7 @@ export default function ProfessionalEstimateComposer({
     setJobProgress(null);
     try {
       const request = {
-        idempotencyKey: `composer-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
+        idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
         catalogId: selectedCatalog.catalogId,
         parameters,
         currencyCode: "KGS",
@@ -678,7 +678,7 @@ export default function ProfessionalEstimateComposer({
           ownerUserId: await authenticatedOwnerUserId(),
           expectedReleaseId: selectedCatalog.releaseId,
           request: {
-            idempotencyKey: `composer-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
+            idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
             catalogId: selectedCatalog.catalogId,
             parameters,
             currencyCode: "KGS",

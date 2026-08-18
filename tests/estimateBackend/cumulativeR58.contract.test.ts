@@ -17,6 +17,7 @@ describe("R5.8 cumulative canonical backend contract", () => {
   const traceValidator = read(
     "scripts/estimate/p0TruthRemediationR5/validateR57AcceptedTraceBaselineCandidates.ts",
   );
+  const composer = read("src/components/estimate/ProfessionalEstimateComposer.tsx");
 
   it("keeps BATCH009 out and resolves one inherited definition without copying accepted rows", () => {
     expect(manifestMigration).toContain("upper(source_batch) not like 'BATCH009%'");
@@ -57,5 +58,10 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(traceValidator).toContain("duplicate_cost_owners:");
     expect(traceValidator).toContain("blank_semantic_owners:");
     expect(traceValidator).toContain("provenance_less_defaults:");
+  });
+
+  it("scopes client idempotency to the cumulative release lineage", () => {
+    expect(composer).toContain("composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}");
+    expect(composer).not.toContain("composer-${selectedCatalog.catalogId}-${stableInputKey(parameters)}");
   });
 });
