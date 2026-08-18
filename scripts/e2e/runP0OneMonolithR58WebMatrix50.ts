@@ -11,7 +11,8 @@ type Json = Record<string, any>;
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const CONTROL_72 = String(process.env.R6_CONTROL72_GATE ?? "").trim() === "true";
 const ORGANIZATION_ID = CONTROL_72
-  ? "66666666-6666-4666-8666-666666666666"
+  ? String(process.env.R6_CONTROL_ORGANIZATION_ID
+    ?? "66666666-6666-4666-8666-666666666666").trim()
   : "22222222-2222-4222-8222-222222222222";
 const PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
 const SPEC_PATH = resolve(CONTROL_72
