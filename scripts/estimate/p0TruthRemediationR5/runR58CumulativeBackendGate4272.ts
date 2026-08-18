@@ -12,6 +12,7 @@ type Definition = {
   catalogId: string;
   definitionVersionId: string;
   domain: string;
+  titleRu: string;
   baselineId: string;
   values: Json;
   formulaConsumers: Json;
@@ -204,7 +205,7 @@ function mutations(definition: Definition): Mutation[] {
 
 async function loadDefinitions(client: Client, catalogIds: readonly string[]): Promise<Definition[]> {
   const rows = (await client.query(`
-    select manifest.catalog_id,manifest.definition_version_id::text,identity.domain,
+    select manifest.catalog_id,manifest.definition_version_id::text,identity.domain,identity.title_ru,
       baseline.id::text baseline_id,baseline.input_values,baseline.formula_consumer_ids,
       baseline.validation_scenario_refs
     from public.estimate_cumulative_manifest_entry manifest
@@ -229,7 +230,7 @@ async function loadDefinitions(client: Client, catalogIds: readonly string[]): P
     resourcesByDefinition.set(key,list);
   }
   const parameters = definitionIds.length === 0 ? [] : (await client.query(`
-    select definition_version_id::text,parameter_id,ordinal,value_type,required,constraints_json
+    select definition_version_id::text,parameter_id,ordinal,value_type,unit_id,title_ru,required,constraints_json
     from public.estimate_parameter_definition
     where definition_version_id=any($1::uuid[]) and required
       and value_type in ('decimal','integer')
@@ -246,6 +247,7 @@ async function loadDefinitions(client: Client, catalogIds: readonly string[]): P
     catalogId: String(row.catalog_id),
     definitionVersionId: String(row.definition_version_id),
     domain: String(row.domain),
+    titleRu: String(row.title_ru),
     baselineId: String(row.baseline_id),
     values: row.input_values as Json,
     formulaConsumers: row.formula_consumer_ids as Json,
@@ -262,6 +264,21 @@ async function createOperation(definition: Definition, operation: "compile" | "r
   if (mutation) parameters[mutation.parameterId] = mutation.changedValue;
   const key = `${CONTROL_72 ? "r6-control72" : "r58-4272"}-${sha256({ head, catalogId: definition.catalogId, operation,
     mutation, parentRevisionId }).slice(0, 48)}`;
+  const primaryParameter = [...definition.numericParameters]
+    .filter((parameter) => Number.isFinite(Number(parameters[String(parameter.parameter_id)])))
+    .sort((left, right) => {
+      const score = (parameter: Json): number => {
+        const id = String(parameter.parameter_id);
+        if (/^quantity_/u.test(id)) return 20;
+        if (/(?:area|length|volume|count|width|height|mass|distance|capacity|power)/u.test(id)) return 0;
+        return 10;
+      };
+      return score(left) - score(right) || Number(left.ordinal) - Number(right.ordinal);
+    })[0];
+  invariant(primaryParameter, `R6_BACKEND_PRIMARY_MEASURE_MISSING:${definition.catalogId}`);
+  const primaryMeasureParameterId = String(primaryParameter.parameter_id);
+  const sourceRequestText = `${definition.titleRu} ${parameters[primaryMeasureParameterId]}`
+    + `${primaryParameter.unit_id ? ` ${primaryParameter.unit_id}` : ""}`;
   const created = await api(`jobs/${operation}`, {
     method: "POST",
     body: JSON.stringify({
@@ -269,6 +286,7 @@ async function createOperation(definition: Definition, operation: "compile" | "r
       catalogId: definition.catalogId,
       parentRevisionId,
       parameters,
+      ...(operation === "compile" ? { sourceRequestText, primaryMeasureParameterId } : {}),
       currencyCode: "KGS",
       priceSnapshotIds: [],
     }),
