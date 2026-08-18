@@ -1432,7 +1432,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       if (!identity || !definition) return null;
       const parameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
       const baseline = definition.cumulative_baseline_id == null ? null : (await client.query(`
-        select id,contract_version,acceptance_evidence_sha256,accepted_at,input_classification,
+        select id,contract_version,acceptance_evidence_sha256,accepted_at,input_values,input_classification,
           formula_consumer_ids,resource_consumer_row_ids,normative_source_ids,guide_provenance_ru,
           proposal_source_refs
         from public.estimate_approved_template_baseline where id=$1`,
@@ -1440,6 +1440,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       return { catalogId: identity.catalog_id, releaseId: definition.cumulative_release_id, namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key, titleRu: identity.title_ru, definitionVersion: definition.definition_version, applicability: definition.applicability, professionalMetadata: definition.source_metadata, parameterSchema: parameters.map((parameter) => {
         const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object" ? parameter.truth_metadata : {};
         const parameterId = String(parameter.parameter_id);
+        const acceptedAsInput = baseline != null
+          && Object.prototype.hasOwnProperty.call(baseline.input_values ?? {}, parameterId);
         const acceptedGuide = String(baseline?.guide_provenance_ru?.[parameterId] ?? "").trim();
         const acceptedFormulaConsumers = Array.isArray(baseline?.formula_consumer_ids?.[parameterId])
           ? baseline.formula_consumer_ids[parameterId] : [];
@@ -1480,11 +1482,15 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required,
           defaultValue: parameter.default_value, constraints: parameter.constraints_json,
           semanticParameterKey: truth.semantic_parameter_key ?? (baseline ? parameterId : undefined),
-          visibilityRole: truth.visibility_role ?? (baseline ? "USER_INPUT" : undefined),
+          visibilityRole: truth.visibility_role ?? (baseline
+            ? acceptedAsInput ? "USER_INPUT" : "INTERNAL_ONLY"
+            : undefined),
           descriptionRu: truth.description_ru, requiredWhen: truth.required_when,
           visibleWhen: truth.visible_when, allowedRangeOrOptions: truth.allowed_range_or_options,
           defaultPolicy: truth.default_policy,
-          valueSourceRole: truth.value_source_role ?? (baseline ? "PROJECT_DOCUMENTATION" : undefined),
+          valueSourceRole: truth.value_source_role ?? (baseline
+            ? acceptedAsInput ? "PROJECT_DOCUMENTATION" : "BACKEND_DERIVED"
+            : undefined),
           guide: localParameterGuideView(effectiveGuide),
           compositeItemSchema: composite ? {
             itemLabelRu: composite.item_label_ru, minimumItems: composite.minimum_items,
