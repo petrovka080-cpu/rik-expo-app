@@ -125,6 +125,7 @@ export function buildStructuredEstimateRequestDraft(
     titleRu: payload.workTitle,
     summaryRu: formatRequestEstimateSummary(payload.sourceEstimate),
     repairType: payload.workCategory,
+    structuredEstimatePayload: payload,
     selectedWork: selectedWorkForRequest(payload),
     estimatePresentation: payload.presentation,
     dangerousDiyBlocked: dangerous,

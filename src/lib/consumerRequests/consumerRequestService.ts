@@ -83,6 +83,7 @@ import type {
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
+import { appendCanonicalBackendRevisionProjection } from "./consumerCanonicalBackendRevisionProjection";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -580,7 +581,7 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     ? findConsumerRepairBundle(input.requestDraftId)
     : null;
   if (!existing || existing.draft.status !== "draft") {
-    return createConsumerRepairRequestDraft({
+    const created = createConsumerRepairRequestDraft({
       consumerUserId: input.consumerUserId,
       problemText: input.problemText,
       city: input.city ?? existing?.draft.city,
@@ -590,6 +591,11 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
       selectedWork: input.aiDraft.selectedWork,
       aiDraft: input.aiDraft,
     });
+    return saveConsumerRepairBundle(appendCanonicalBackendRevisionProjection({
+      previousBundle: null,
+      nextBundle: created,
+      payload: input.aiDraft.structuredEstimatePayload,
+    }));
   }
   if (existing.draft.consumerUserId !== input.consumerUserId) {
     throw new ConsumerRepairValidationError([{
@@ -651,7 +657,11 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
       releaseId: nextBinding.releaseId,
     },
   }));
-  return saveConsumerRepairBundle(next);
+  return saveConsumerRepairBundle(appendCanonicalBackendRevisionProjection({
+    previousBundle: existing,
+    nextBundle: next,
+    payload: input.aiDraft.structuredEstimatePayload,
+  }));
 }
 
 export function selectConsumerRepairRoadScopeV4(input: {

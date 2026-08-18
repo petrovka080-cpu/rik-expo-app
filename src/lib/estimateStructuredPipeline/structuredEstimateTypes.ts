@@ -152,6 +152,18 @@ export type StructuredEstimatePayload = {
   totals: EstimatePresentationViewModel["totals"];
   tax: EstimatePresentationViewModel["tax"];
   fingerprint: string;
+  canonicalBackend?: {
+    compilerOwner: "backend";
+    revisionId: string;
+    parentRevisionId: string | null;
+    releaseId: string;
+    catalogId: string;
+    createdAt: string;
+    checksumSha256: string;
+    formulaGraphVersion?: string | null;
+    parameterSchemaHash?: string | null;
+    parameters: Record<string, unknown>;
+  };
   visiblePolicy: StructuredEstimateVisiblePolicy;
   fakeGreenClaimed: false;
 };

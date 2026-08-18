@@ -1,4 +1,5 @@
 import type { ConsumerRepairDraftBundle, ConsumerRepairStatus } from "./consumerRequestTypes";
+import { canonicalBackendRevisionProjectionForSave } from "./consumerCanonicalBackendRevisionProjection";
 import { safeJsonParseValue, safeJsonStringify } from "../format";
 import {
   bindConsumerRepairEstimateRevisionHistory,
@@ -828,6 +829,9 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
     bundle.estimateRevisionState == null &&
     bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
   const canonicalBackendOwned = isCanonicalBackendOwnedBundle(bundle);
+  const canonicalBackendCalculationState = canonicalBackendOwned
+    ? canonicalBackendRevisionProjectionForSave(bundle)
+    : null;
   // A fail-closed parameter session is a request/session artifact, not an
   // estimate. Creating an empty editable snapshot or immutable compatibility
   // revision here would be a partial estimate mutation before P0 is complete.
@@ -837,7 +841,7 @@ export function saveConsumerRepairBundle(bundle: ConsumerRepairDraftBundle): Con
         ...bundle,
         editableEstimateSnapshot: undefined,
         estimateRevisionState: undefined,
-        estimateDraftRevisionState: null,
+        estimateDraftRevisionState: canonicalBackendCalculationState,
         estimateDraftSession: null,
         canonicalParameterSession: null,
         pendingRoadScopeSelection: null,

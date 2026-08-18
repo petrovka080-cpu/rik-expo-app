@@ -195,6 +195,18 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     pdf: { rows: presentation.rows, tableFormat: true, noMojibakeRequired: true },
     catalogBinding: { searchLabels: rows.map((row) => ({ rowId: row.rowId, visibleQueryRu: row.visibleName, internalKeyVisible: false as const })) },
     assumptions: input.assumptions ?? [], clarifications: [], risks: [], sections, rows, totals, tax, fingerprint,
+    canonicalBackend: {
+      compilerOwner: "backend",
+      revisionId: input.revision.revisionId,
+      parentRevisionId: input.revision.parentRevisionId,
+      releaseId: input.revision.releaseId,
+      catalogId: input.revision.catalogId,
+      createdAt: input.revision.createdAt,
+      checksumSha256: input.revision.checksumSha256,
+      formulaGraphVersion: input.revision.formulaGraphVersion,
+      parameterSchemaHash: input.revision.parameterSchemaHash,
+      parameters: input.revision.parameters,
+    },
     visiblePolicy: { noInternalKeysVisible: true, noGenericRowsVisible: true, controlRowsAreNotPaidItems: true, uiPdfSameRows: true },
     fakeGreenClaimed: false,
   };

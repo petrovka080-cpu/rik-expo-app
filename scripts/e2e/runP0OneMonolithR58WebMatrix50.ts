@@ -6,6 +6,8 @@ import { dirname, join, resolve } from "node:path";
 import { chromium, type Page, type Response } from "playwright";
 import { Client } from "pg";
 
+import { aiEstimateRuLabelForParameter } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
+
 type Json = Record<string, any>;
 
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
@@ -482,8 +484,11 @@ async function main(): Promise<void> {
         const guide = page.getByTestId(`editable-param-guide-${parameter.parameterId}`);
         const parameterGuide = await guide.isVisible().catch(() => false) ? await guide.innerText() : null;
         const rawParameterTitle = String(parameter.titleRu);
-        const expectedParameterTitle = CONTROL_72 && rawParameterTitle.includes(":")
+        const conciseParameterFallback = CONTROL_72 && rawParameterTitle.includes(":")
           ? rawParameterTitle.slice(rawParameterTitle.indexOf(":") + 1).trim()
+          : rawParameterTitle;
+        const expectedParameterTitle = CONTROL_72
+          ? aiEstimateRuLabelForParameter(String(parameter.parameterId), conciseParameterFallback)
           : rawParameterTitle;
         if (!parameterLabel.includes(expectedParameterTitle)
           || (!CONTROL_72 && parameter.unitId && !parameterLabel.includes(String(parameter.unitId)))) {
