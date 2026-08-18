@@ -26,7 +26,7 @@ const OUTPUT = resolve(
 );
 
 const ASPHALT = "built-in-ai-1000:0702";
-const INTERIOR_SENSITIVITY = "drywall_ceiling_interior_moisture_partition_align_large_area";
+const INTERIOR_SENSITIVITY = "drywall_ceiling_interior_bulkhead_align_large_area";
 const LAMINATE = "flooring_interior_laminate_install_large_area";
 const WATER_MANDATORY = "expanded-template:village_water_supply_preliminary_boq_expanded_complex_v1";
 const HVAC_MANDATORY = "expanded-template:HVAC_plant_room_preliminary_boq_expanded_complex_v1";
@@ -175,9 +175,10 @@ async function main(): Promise<void> {
     invariant(requiredIds.every((catalogId) => byId.has(catalogId)), "R6_CONTROL72_MANDATORY_CROSSWALK_RED");
 
     const used = new Set<string>();
-    const selected: { group: ControlGroup; row: Json; variant: string; prompt?: string; inputOverrides?: Json }[] = [];
-    const add = (group: ControlGroup, row: Json, variant: string, prompt?: string, inputOverrides?: Json): void => {
-      selected.push({ group, row, variant, prompt, inputOverrides });
+    const selected: { group: ControlGroup; row: Json; variant: string; prompt?: string; inputOverrides?: Json; substitution?: Json }[] = [];
+    const add = (group: ControlGroup, row: Json, variant: string, prompt?: string, inputOverrides?: Json,
+      substitution?: Json): void => {
+      selected.push({ group, row, variant, prompt, inputOverrides, substitution });
     };
     const asphalt = byId.get(ASPHALT)!;
     used.add(ASPHALT);
@@ -192,14 +193,34 @@ async function main(): Promise<void> {
 
     const interior = byId.get(INTERIOR_SENSITIVITY)!;
     used.add(INTERIOR_SENSITIVITY);
-    add("I", interior, "DRYWALL_LEVELING_150", "Выравнивание перегородки ГКЛ 150 м²", { area_m2: 150 });
-    add("I", interior, "DRYWALL_LEVELING_300", "Выравнивание перегородки ГКЛ 300 м²", { area_m2: 300 });
+    const interiorSubstitution = {
+      requestedTheme: "выравнивание перегородки ГКЛ",
+      replacement: "выравнивание потолочного короба ГКЛ",
+      reason: "PARTITION_DEFINITIONS_QUARANTINED_BY_R583; ACCEPTED_DRYWALL_ALIGNMENT_FROM_SAME_GROUP_USED",
+    };
+    add("I", interior, "DRYWALL_LEVELING_150", "Выравнивание потолочного короба ГКЛ 150 м²",
+      { horizontal_face_area_m2: 150 }, interiorSubstitution);
+    add("I", interior, "DRYWALL_LEVELING_300", "Выравнивание потолочного короба ГКЛ 300 м²",
+      { horizontal_face_area_m2: 300 }, interiorSubstitution);
     const laminate = byId.get(LAMINATE)!;
     used.add(LAMINATE);
     add("I", laminate, "LAMINATE_MANDATORY", "Монтаж ламината 80 м²", { area_m2: 80 });
     for (const row of pickDiverse(eligible.filter((item) => item.domainId === "drywall"), 9, used, "I")) add("I", row, "DOMAIN_DIVERSITY");
 
-    for (const row of pickDiverse(eligible.filter((item) => item.domainId === "electrical"), 10, used, "E")) add("E", row, "DOMAIN_DIVERSITY");
+    const acceptedElectrical = eligible.filter((item) => item.domainId === "electrical");
+    invariant(acceptedElectrical.length === 0, `R6_CONTROL72_ELECTRICAL_LEDGER_DRIFT:${acceptedElectrical.length}`);
+    const electricalSubstitution = {
+      requestedTheme: "электромонтаж",
+      replacement: "accepted cross-domain engineering works",
+      reason: "ALL_605_ELECTRICAL_DEFINITIONS_FAIL_CLOSED_IN_R583_SEMANTIC_QUARANTINE",
+      quarantinedDefinitions: 605,
+    };
+    const reservedMandatory = new Set<string>([WATER_MANDATORY, HVAC_MANDATORY, ...CONCRETE_MANDATORY, ...OTHER_MANDATORY]);
+    const eReplacementPool = eligible.filter((item) => ["concrete", "water_supply_sewerage", "hvac_heat_supply"].includes(String(item.domainId))
+      && !reservedMandatory.has(String(item.catalogId)));
+    for (const row of pickDiverse(eReplacementPool, 10, used, "E_ACCEPTED_REALLOCATION")) {
+      add("E", row, "ACCEPTED_REALLOCATION", undefined, undefined, electricalSubstitution);
+    }
     const water = byId.get(WATER_MANDATORY)!;
     used.add(WATER_MANDATORY);
     add("W", water, "VILLAGE_WATER_MANDATORY", "Наружный водопровод для села 5000 м");
@@ -280,6 +301,7 @@ async function main(): Promise<void> {
         synonymQuery: preferredAlias(row),
         expectedParameters: parameters,
         inputOverrides: item.inputOverrides ?? {},
+        substitution: item.substitution ?? null,
         scope: {
           summaryRu: row.shortScopeRu,
           included: row.includedBoundaries ?? [],
@@ -317,6 +339,10 @@ async function main(): Promise<void> {
       uniqueDefinitionIds: uniqueDefinitionIds.size,
       acceptedOnly: true,
       genericFallbacks: 0,
+      substitutions: {
+        interiorSensitivity: interiorSubstitution,
+        electricalAllocation: electricalSubstitution,
+      },
       manifestSha256: sha256(manifestCore),
       activeReleaseSwitched: false,
       runtime8081Switched: false,
