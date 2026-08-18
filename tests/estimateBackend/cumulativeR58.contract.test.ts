@@ -47,6 +47,8 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(gateway).toContain('"estimate_commit_compile_job_v1"');
     expect(gateway).toContain("from public.estimate_cumulative_manifest_entry manifest");
     expect(gateway).toContain("version.id=manifest.definition_version_id");
+    expect(gateway).toContain("manifest.release_id cumulative_release_id");
+    expect(gateway).toContain("releaseId: definition.cumulative_release_id");
     expect(gateway).not.toContain("where (($2::uuid is not null and r.id=$2) or ($2::uuid is null and r.status='active')) and v.catalog_id=$1");
   });
 

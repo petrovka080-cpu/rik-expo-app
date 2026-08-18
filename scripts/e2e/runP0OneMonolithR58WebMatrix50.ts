@@ -143,7 +143,8 @@ async function main(): Promise<void> {
         const history = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
         await history.first().waitFor({ state: "visible", timeout: 60_000 });
         const baselineHistoryCount = await history.count();
-        const catalog = await api(`catalog/${encodeURIComponent(catalogId)}`, apiRoot);
+        const catalogResponse = await api(`catalog/${encodeURIComponent(catalogId)}`, apiRoot);
+        const catalog = catalogResponse.item ?? catalogResponse;
         const parameter = (catalog.parameterSchema as Json[]).find((row) => row.parameterId === mutation.parameterId);
         if (!parameter) throw new Error(`R58_WEB50_MUTATION_PARAMETER_MISSING:${catalogId}:${mutation.parameterId}`);
         await page.getByTestId("canonical-estimate-refine-parameters").click();
