@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
 
-type Json = Record<string, any>;
+export type Json = Record<string, any>;
 type Ast = Json;
 type Parameter = {
   id: string; title: string; type?: "decimal" | "integer" | "boolean" | "enum";
@@ -18,7 +18,7 @@ type Resource = {
   type: "material" | "labor" | "equipment" | "service"; unit: string; formula: string;
   procurement?: boolean; inclusion?: Ast;
 };
-type WorkSpec = {
+export type WorkSpec = {
   catalogId: string; domain: string; title: string; aliases: string[];
   included: string[]; excluded: string[]; standard: string; standardTitle: string;
   standardUrl: string; parameters: Parameter[]; formulas: Formula[]; resources: Resource[];
@@ -370,7 +370,7 @@ function baselineFor(spec: WorkSpec, definitionId: string, releaseId: string): J
   };
 }
 
-async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Promise<Json> {
+export async function insertWork(client: Client, spec: WorkSpec, releaseId: string): Promise<Json> {
   const definitionId = uuid(`${CONTRACT}:definition:${spec.catalogId}`);
   const baseline = baselineFor(spec, definitionId, releaseId);
   const definitionSha256 = shaObject({ spec, parameterSchemaSha256: baseline.parameterSchemaSha256 });
@@ -568,7 +568,7 @@ async function main(): Promise<void> {
   finally { await client.end(); }
 }
 
-void main().catch((error: unknown) => {
+if (process.argv[1]?.endsWith("promoteR58MandatoryJourneysSuccessor.ts")) void main().catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
   process.exitCode = 1;
 });
