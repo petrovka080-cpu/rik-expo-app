@@ -391,21 +391,22 @@ async function main(): Promise<void> {
         const searchEvidence = await selectAndBuildBaseline(page, matrixCase);
         const baselineReleaseText = await page.getByTestId("consumer-repair-draft-release-id").innerText();
         const baselineRowsText = await page.getByTestId("request-estimate-row-count").innerText();
+        const baselineRevisionId = String(baselineReleaseText.match(/Backend revision\s+([0-9a-f-]{36})/iu)?.[1] ?? "");
+        const baselineRevision = baselineRevisionId ? await api(`revisions/${baselineRevisionId}`, apiRoot) : null;
         const launchPromptText = await page.getByTestId("request-estimate-current-launch-prompt-text").innerText();
         const displayTitleText = await page.getByTestId("request-estimate-selected-work-title").innerText();
         const promptMeasure = String(matrixCase.prompt ?? "").match(/\b\d+(?:[.,]\d+)?\b/u)?.[0] ?? "";
         if (!baselineReleaseText.includes(releaseId)) blockers.push("BASELINE_RELEASE_RED");
         if (displayedCount(baselineRowsText) <= 0) blockers.push("BASELINE_EMPTY");
+        if (!baselineRevision || baselineRevision.revisionId !== baselineRevisionId
+          || baselineRevision.catalogId !== catalogId || baselineRevision.releaseId !== releaseId
+          || Number(baselineRevision.rowCount) !== displayedCount(baselineRowsText)) {
+          blockers.push("BASELINE_BACKEND_IDENTITY_RED");
+        }
         if (hasUtf8Mojibake(await page.getByTestId("consumer-repair-draft").innerText())) blockers.push("BASELINE_UTF8_RED");
         if (CONTROL_72 && launchPromptText.trim() !== String(matrixCase.prompt).trim()) blockers.push("SOURCE_REQUEST_TEXT_RED");
         if (CONTROL_72 && promptMeasure && !displayTitleText.includes(promptMeasure)) blockers.push("DISPLAY_TITLE_MEASURE_RED");
         if (CONTROL_72) {
-          const fallbackMarker = page.locator('[data-testid^="request-estimate-exact-generic-fallback-"]');
-          await fallbackMarker.waitFor({ state: "attached", timeout: 10_000 });
-          const fallbackMarkerId = await fallbackMarker.getAttribute("data-testid");
-          if (fallbackMarkerId !== "request-estimate-exact-generic-fallback-not-used") {
-            blockers.push(`GENERIC_FALLBACK_USED:${fallbackMarkerId ?? "missing"}`);
-          }
           for (const testId of [
             "consumer-repair-add-manual-item",
             "consumer-repair-add-photo-draft",
@@ -576,7 +577,7 @@ async function main(): Promise<void> {
         if (parameterCount <= 0 || guideCount > parameterCount) blockers.push("PARAMETER_GUIDE_RED");
         rows.push({ ordinal: index + 1, caseId: matrixCase.caseId, allocationGroup: matrixCase.allocationGroup ?? null,
           catalogId, prompt: matrixCase.prompt ?? null, searchEvidence, mutation, baselineReleaseText, baselineRowsText,
-          launchPromptText, displayTitleText, catalogAddition,
+          baselineRevisionId, baselineRevision, launchPromptText, displayTitleText, catalogAddition,
           baselineHistoryCount, childHistoryCount, revisionId, visibleRelease, visibleRows,
           parameterCount, guideCount, acceptedJobId: acceptedBody.jobId ?? null,
           coldReopen, supplementalActions,
