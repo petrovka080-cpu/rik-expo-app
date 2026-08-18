@@ -6,6 +6,7 @@ export type ConsumerEstimateActionName =
   | "openParameters"
   | "openLinePhoto"
   | "openLineCatalog"
+  | "addCatalogItem"
   | "openProfessionalPdf"
   | "openProcurement"
   | "openHistoryRevision";

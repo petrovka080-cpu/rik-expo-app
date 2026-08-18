@@ -12,6 +12,7 @@ type Props = {
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
+  onAddManual: (initialQuery?: string) => void;
   onOpenCatalog?: (itemId: string) => void;
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButtons?: boolean;
@@ -79,6 +80,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       onQuantityChange,
       onUnitPriceChange,
       onRemove,
+      onAddManual,
       onOpenCatalog,
       onOpenPhoto,
       showPhotoButtons,
@@ -98,7 +100,8 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           : section.items,
       };
     }).filter((section) => section.items.length > 0);
-    const expandedSections = filteredSections.filter((section) => !this.state.collapsedSectionIds[section.id]);
+    const expandedSections = filteredSections.filter((section) =>
+      Boolean(normalizedQuery) || !this.state.collapsedSectionIds[section.id]);
     const totalRows = expandedSections.reduce((total, section) => total + section.items.length, 0);
     let remainingRows = this.state.visibleLimit;
     const visibleSections = expandedSections
@@ -119,16 +122,26 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Text>
         </View>
         <TextInput
-          accessibilityLabel="\u041f\u043e\u0438\u0441\u043a \u043f\u043e \u0441\u043c\u0435\u0442\u0435"
+          accessibilityLabel="\u041f\u043e\u0438\u0441\u043a \u0438 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0432 \u0441\u043c\u0435\u0442\u0443"
           onChangeText={this.updateSearch}
-          placeholder={"\u041d\u0430\u0439\u0442\u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b, \u0440\u0430\u0431\u043e\u0442\u0443, \u043d\u043e\u0440\u043c\u0443..."}
+          onSubmitEditing={() => onAddManual(this.state.searchQuery)}
+          placeholder={"\u041d\u0430\u0439\u0442\u0438 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b, \u0440\u0430\u0431\u043e\u0442\u0443 \u0438\u043b\u0438 \u0443\u0441\u043b\u0443\u0433\u0443..."}
           placeholderTextColor="#64748B"
           style={styles.searchInput}
           testID="request-estimate-items-search"
           value={this.state.searchQuery}
         />
-        {viewModel.sections.map((section) => {
-          const isCollapsed = this.state.collapsedSectionIds[section.id] === true;
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="\u0418\u0441\u043a\u0430\u0442\u044c \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0435 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0432 \u0441\u043c\u0435\u0442\u0443"
+          onPress={() => onAddManual(this.state.searchQuery)}
+          style={styles.addCatalogButton}
+          testID="request-estimate-add-from-catalog"
+        >
+          <Text style={styles.addCatalogButtonText}>{"\u041d\u0430\u0439\u0442\u0438 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c"}</Text>
+        </Pressable>
+        {(normalizedQuery ? filteredSections : viewModel.sections).map((section) => {
+          const isCollapsed = !normalizedQuery && this.state.collapsedSectionIds[section.id] === true;
           return (
             <Pressable
               accessibilityLabel={`${section.title}: ${section.items.length} ${"\u043f\u043e\u0437\u0438\u0446\u0438\u0439"}`}
@@ -213,6 +226,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     paddingHorizontal: 12,
+  },
+  addCatalogButton: {
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+    backgroundColor: "#16A34A",
+    paddingHorizontal: 16,
+  },
+  addCatalogButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
   },
   stageToggle: {
     minHeight: 40,

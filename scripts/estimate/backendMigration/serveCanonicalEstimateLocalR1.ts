@@ -582,15 +582,20 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values
     from public.estimate_definition_release release
     cross join lateral (
-      select direct.id,false cumulative_manifest,null::uuid approved_template_baseline_id,0 priority
-      from public.estimate_definition_version direct
-      where direct.release_id=release.id and direct.catalog_id=$1
-      union all
-      select inherited.id,true cumulative_manifest,manifest.approved_template_baseline_id,1 priority
+      select inherited.id,true cumulative_manifest,manifest.approved_template_baseline_id,0 priority
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_definition_version inherited on inherited.id=manifest.definition_version_id
       where manifest.release_id=release.id and manifest.catalog_id=$1
         and manifest.baseline_ready and manifest.scenario_ready
+      union all
+      select direct.id,false cumulative_manifest,null::uuid approved_template_baseline_id,1 priority
+      from public.estimate_definition_version direct
+      where direct.release_id=release.id and direct.catalog_id=$1
+        and not exists(
+          select 1 from public.estimate_cumulative_manifest_entry manifest
+          where manifest.release_id=release.id and manifest.catalog_id=$1
+            and manifest.baseline_ready and manifest.scenario_ready
+        )
     ) effective
     left join public.estimate_approved_template_baseline baseline
       on baseline.id=effective.approved_template_baseline_id
@@ -781,7 +786,13 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
       included_in_estimate: includedInEstimate,
       included_in_procurement: includedInProcurement,
       ownership_status: "MANUAL_SERVER_OWNED",
-      calculation_trace: { compilerVersion: COMPILER_VERSION, manualAmendment: provenance },
+      calculation_trace: {
+        compilerVersion: COMPILER_VERSION,
+        rowId,
+        semanticOwner: `manual:${clientRowId}`,
+        physicalRowType: String(custom.category ?? "manual"),
+        manualAmendment: provenance,
+      },
       normative_trace: [],
       legacy_row_payload: sourcePayload,
       price_snapshot_id: null,
@@ -1413,6 +1424,156 @@ function localDraftView(row: Record<string, any>) {
   return { draftId: row.id, status: row.status, title: row.title, originalQuery: row.original_query, normalizedQuery: row.normalized_query, searchIndexReleaseId: row.search_index_release_id, taxonomyVersion: row.taxonomy_version, groupRelationVersion: row.group_relation_version, searchResultSetHash: row.search_result_set_hash, candidateSetHash: row.candidate_set_hash, selectedResultHash: row.selected_result_hash, selectedCatalogIds: row.selected_catalog_ids, selectedWorkOrder: row.selected_work_order, parameterSchemaVersions: row.parameter_schema_versions, typedInputs: row.typed_inputs, unresolvedRequiredParameters: row.unresolved_required_parameters, conflicts: row.conflicts, latestRevisionId: row.latest_revision_id, optimisticVersion: Number(row.optimistic_version), lastDeviceId: row.last_device_id, createdAt: row.created_at, updatedAt: row.updated_at };
 }
 
+function localRevisionView(revision: Record<string, any>) {
+  return {
+    apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id,
+    releaseId: revision.release_id, catalogId: revision.catalog_id,
+    revisionNumber: revision.revision_number, status: revision.status,
+    currencyCode: revision.currency_code, parameters: revision.input_parameters,
+    sourceRequestText: revision.source_request_text ?? null,
+    sourceRequestHash: revision.source_request_hash ?? null,
+    canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
+    displayTitleRu: revision.display_title_ru ?? null,
+    primaryMeasureParameterId: revision.primary_measure_parameter_id ?? null,
+    primaryMeasureValue: revision.primary_measure_value == null ? null : String(revision.primary_measure_value),
+    primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
+    normalizedIntent: revision.normalized_intent ?? null,
+    definitionVersionId: revision.definition_version_id ?? null,
+    groupId: revision.group_id ?? null,
+    searchReleaseId: revision.search_release_id ?? null,
+    userInputSnapshot: revision.user_input_snapshot ?? null,
+    acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
+    assumptionSnapshot: revision.assumption_snapshot ?? null,
+    formulaGraphVersion: revision.formula_graph_version ?? null,
+    revisionContractVersion: revision.revision_contract_version ?? null,
+    amendmentContract: revision.amendment_contract, totals: revision.totals,
+    rowCount: revision.row_count, checksumSha256: revision.checksum_sha256,
+    compilerVersion: revision.compiler_version, definitionVersion: revision.definition_version ?? null,
+    compilerOwner: revision.compiler_owner ?? "backend",
+    parameterSchemaHash: revision.parameter_schema_hash ?? null,
+    inputHash: revision.input_hash ?? null,
+    outputHash: revision.output_hash ?? revision.checksum_sha256,
+    createdAt: revision.created_at,
+  };
+}
+
+function localParameterSessionSchema(
+  catalogId: string,
+  parameters: Record<string, any>[],
+  baseline: Record<string, any> | null,
+) {
+  return parameters.map((parameter) => {
+    const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object"
+      ? parameter.truth_metadata : {};
+    const parameterId = String(parameter.parameter_id);
+    const acceptedAsInput = baseline != null
+      && Object.prototype.hasOwnProperty.call(baseline.input_values ?? {}, parameterId);
+    const acceptedGuide = String(baseline?.guide_provenance_ru?.[parameterId] ?? "").trim();
+    const formulaConsumers = Array.isArray(truth.formula_consumers) && truth.formula_consumers.length > 0
+      ? truth.formula_consumers
+      : Array.isArray(baseline?.formula_consumer_ids?.[parameterId]) ? baseline.formula_consumer_ids[parameterId] : [];
+    const resourceConsumers = Array.isArray(truth.resource_branch_consumers) && truth.resource_branch_consumers.length > 0
+      ? truth.resource_branch_consumers
+      : Array.isArray(baseline?.resource_consumer_row_ids?.[parameterId]) ? baseline.resource_consumer_row_ids[parameterId] : [];
+    const normativeSources = Array.isArray(baseline?.normative_source_ids?.[parameterId])
+      ? baseline.normative_source_ids[parameterId] : [];
+    const baselineGuide = acceptedGuide && baseline ? {
+      guide_kind: "PROJECT_DEFINED", guide_short_ru: acceptedGuide,
+      source_role: "PROJECT_DOCUMENTATION", guide_validation_policy: "INFORMATION_ONLY",
+      source_document: normativeSources.join(", ") || "APPROVED_TEMPLATE_BASELINE",
+      source_edition_status: baseline.contract_version,
+      source_locator: String(baseline.proposal_source_refs?.[0]?.sha256 ?? baseline.id),
+      guide_version: baseline.contract_version,
+      source_snapshot_hash: baseline.acceptance_evidence_sha256,
+      applicability: `Только для выбранной работы ${catalogId}.`, verified_at: baseline.accepted_at,
+    } : undefined;
+    const effectiveGuide = baselineGuide ? { ...baselineGuide, ...(truth.guide ?? {}) } : truth.guide;
+    const composite = truth.composite_item_schema && typeof truth.composite_item_schema === "object"
+      ? truth.composite_item_schema as Record<string, any> : null;
+    return {
+      parameterId, ordinal: parameter.ordinal, valueType: parameter.value_type,
+      unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required,
+      defaultValue: parameter.default_value ?? (acceptedAsInput ? baseline?.input_values?.[parameterId] : null),
+      constraints: parameter.constraints_json,
+      semanticParameterKey: truth.semantic_parameter_key ?? (baseline ? parameterId : undefined),
+      visibilityRole: truth.visibility_role ?? (baseline ? acceptedAsInput ? "USER_INPUT" : "INTERNAL_ONLY" : undefined),
+      descriptionRu: truth.description_ru, requiredWhen: truth.required_when,
+      visibleWhen: truth.visible_when, allowedRangeOrOptions: truth.allowed_range_or_options,
+      defaultPolicy: truth.default_policy,
+      valueSourceRole: truth.value_source_role ?? (baseline ? acceptedAsInput ? "PROJECT_DOCUMENTATION" : "BACKEND_DERIVED" : undefined),
+      guide: localParameterGuideView(effectiveGuide),
+      compositeItemSchema: composite ? {
+        itemLabelRu: composite.item_label_ru, minimumItems: composite.minimum_items,
+        maximumItems: composite.maximum_items, reorderable: composite.reorderable === true,
+        subfields: Array.isArray(composite.subfields) ? composite.subfields.map((subfield: Record<string, any>) => ({
+          subfieldId: subfield.subfield_id, labelRu: subfield.label_ru, valueType: subfield.value_type,
+          unitId: subfield.unit_id, required: subfield.required === true,
+          constraints: subfield.constraints ?? {}, guide: localParameterGuideView(subfield.guide),
+          formulaConsumers: subfield.formula_consumers ?? [],
+          resourceBranchConsumers: subfield.resource_branch_consumers ?? [],
+        })) : [],
+      } : undefined,
+      sharedInputBindingPolicy: truth.shared_input_binding_policy, derivedFrom: truth.derived_from,
+      normativeLinks: truth.normative_links, formulaConsumers, resourceBranchConsumers: resourceConsumers,
+      validationRules: Array.isArray(truth.validation_rules) && truth.validation_rules.length > 0
+        ? truth.validation_rules : baseline ? ["declared_type", "work_specific_applicability"] : truth.validation_rules,
+      conflictsWith: truth.conflicts_with,
+      provenance: truth.provenance && Object.keys(truth.provenance).length > 0
+        ? truth.provenance : baseline ? {
+          owner: "backend", contract: baseline.contract_version,
+          approvedTemplateBaselineId: baseline.id,
+          acceptanceEvidenceSha256: baseline.acceptance_evidence_sha256,
+        } : truth.provenance,
+    };
+  });
+}
+
+async function localParameterSessionSnapshot(revisionId: string) {
+  const modelDatabaseUrl = await modelDatabaseUrlForRevision(revisionId);
+  return withDatabaseClient(modelDatabaseUrl, async (client) => {
+    const revision = (await client.query(
+      "select * from public.estimate_revision where id=$1 and owner_user_id=$2",
+      [revisionId, OWNER_ID],
+    )).rows[0];
+    if (!revision) return null;
+    const parent = revision.parent_revision_id == null ? null : (await client.query(
+      "select * from public.estimate_revision where id=$1 and owner_user_id=$2",
+      [revision.parent_revision_id, OWNER_ID],
+    )).rows[0] ?? null;
+    const identity = (await client.query(
+      "select * from public.estimate_work_identity where catalog_id=$1 and retired_at is null",
+      [revision.catalog_id],
+    )).rows[0];
+    const definition = (await client.query(`select version.*,manifest.release_id cumulative_release_id,
+        manifest.approved_template_baseline_id cumulative_baseline_id
+      from public.estimate_cumulative_manifest_entry manifest
+      join public.estimate_definition_version version on version.id=manifest.definition_version_id
+      where manifest.release_id=$1 and manifest.catalog_id=$2`,
+    [revision.release_id, revision.catalog_id])).rows[0];
+    if (!identity || !definition) return null;
+    const parameters = (await client.query(
+      "select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal",
+      [definition.id],
+    )).rows;
+    const baseline = definition.cumulative_baseline_id == null ? null : (await client.query(`
+      select id,contract_version,acceptance_evidence_sha256,accepted_at,input_values,input_classification,
+        formula_consumer_ids,resource_consumer_row_ids,normative_source_ids,guide_provenance_ru,proposal_source_refs
+      from public.estimate_approved_template_baseline where id=$1`,
+    [definition.cumulative_baseline_id])).rows[0] ?? null;
+    return {
+      revision: localRevisionView(revision),
+      parent: parent == null ? null : localRevisionView(parent),
+      catalog: {
+        catalogId: identity.catalog_id, releaseId: definition.cumulative_release_id,
+        namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key,
+        titleRu: identity.title_ru, definitionVersion: definition.definition_version,
+        applicability: definition.applicability, professionalMetadata: definition.source_metadata,
+        parameterSchema: localParameterSessionSchema(String(identity.catalog_id), parameters, baseline),
+      },
+    };
+  });
+}
+
 async function route(request: IncomingMessage, response: ServerResponse): Promise<void> {
   if (request.method === "OPTIONS") return send(response, 204, {});
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
@@ -1688,6 +1849,11 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     if (!cancelled) throw Object.assign(new Error("job is not cancellable"), { code: "JOB_NOT_CANCELLABLE", httpStatus: 409 });
     return send(response, 200, { apiVersion: API_VERSION, jobId: path[1], status: "cancelled" });
   }
+  if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "parameter-session") {
+    const snapshot = await localParameterSessionSnapshot(path[1]);
+    if (!snapshot) throw Object.assign(new Error("revision parameter session not found"), { code: "NOT_FOUND", httpStatus: 404 });
+    return send(response, 200, { apiVersion: API_VERSION, ...snapshot });
+  }
   if (request.method === "GET" && path.length === 1 && path[0] === "revisions") {
     const catalogId = String(url.searchParams.get("catalogId") ?? "").trim();
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") ?? 30) || 30));
@@ -1844,6 +2010,10 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   }
   if (request.method === "GET" && path.length === 2 && path[0] === "catalog") {
     const catalogId = decodeURIComponent(path[1]);
+    const requestedReleaseId = String(url.searchParams.get("releaseId") ?? TARGET_RELEASE_ID).trim();
+    if (requestedReleaseId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedReleaseId)) {
+      throw Object.assign(new Error("invalid catalog release identity"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
+    }
     const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
     const item = await withDatabaseClient(modelDatabaseUrl, async (client) => {
       const identity = (await client.query("select * from public.estimate_work_identity where catalog_id=$1 and retired_at is null", [catalogId])).rows[0];
@@ -1854,7 +2024,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         join public.estimate_definition_release release on release.id=manifest.release_id
         where manifest.catalog_id=$1
           and (($2::uuid is not null and release.id=$2) or ($2::uuid is null and release.status='active'))`,
-      [catalogId, TARGET_RELEASE_ID || null])).rows[0];
+      [catalogId, requestedReleaseId || null])).rows[0];
       if (!identity || !definition) return null;
       const parameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
       const baseline = definition.cumulative_baseline_id == null ? null : (await client.query(`

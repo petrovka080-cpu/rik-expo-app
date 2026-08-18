@@ -209,9 +209,16 @@ export async function applyCanonicalEstimateDraftEvent(input: {
   return result.draft;
 }
 
-export async function getCanonicalEstimateCatalogItem(catalogId: string, signal?: AbortSignal | null) {
+export async function getCanonicalEstimateCatalogItem(
+  catalogId: string,
+  signal?: AbortSignal | null,
+  releaseId?: string | null,
+) {
+  const releaseQuery = releaseId?.trim()
+    ? `?releaseId=${encodeURIComponent(releaseId.trim())}`
+    : "";
   const result = await invoke<{ item: CanonicalEstimateCatalogItem }>(
-    `catalog/${encodeURIComponent(catalogId)}`,
+    `catalog/${encodeURIComponent(catalogId)}${releaseQuery}`,
     { signal, requestClass: "ui_scope_load" },
   );
   return result.item;
@@ -403,6 +410,21 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
 
 export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortSignal | null) {
   return invoke<CanonicalEstimateRevisionView>(`revisions/${encodeURIComponent(revisionId)}`, {
+    signal,
+    requestClass: "ui_scope_load",
+  });
+}
+
+export function getCanonicalEstimateParameterSessionSnapshot(
+  revisionId: string,
+  signal?: AbortSignal | null,
+) {
+  return invoke<{
+    apiVersion: string;
+    revision: CanonicalEstimateRevisionView;
+    parent: CanonicalEstimateRevisionView | null;
+    catalog: CanonicalEstimateCatalogItem;
+  }>(`revisions/${encodeURIComponent(revisionId)}/parameter-session`, {
     signal,
     requestClass: "ui_scope_load",
   });

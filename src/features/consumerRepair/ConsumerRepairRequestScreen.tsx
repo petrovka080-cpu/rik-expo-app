@@ -169,6 +169,11 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string;
     catalogItem: CatalogItemPickerItem;
   }) => Promise<void>;
+  onAddCanonicalCatalogItem: (input: {
+    context: ConsumerEstimateActionContext;
+    problemText: string;
+    catalogItem: CatalogItemPickerItem;
+  }) => Promise<void>;
   onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
   MobilePhotoCaptureFlowNode?: React.ReactElement | null;
 };
@@ -1425,14 +1430,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : null
     );
     if (canonical) {
-      if (!requestedBundle) {
-        throw new ConsumerEstimateActionContextError(
-          "PDF не открыт: локальный контекст исторической версии отсутствует.",
-        );
-      }
-      const context = this.actionContext("openHistoryRevision", requestedBundle);
+      const context = requestedBundle
+        ? this.actionContext("openHistoryRevision", requestedBundle)
+        : null;
       const revision = await getCanonicalEstimateRevision(canonical.revisionId);
-      if (revision.revisionId !== context.revisionId || revision.releaseId !== context.releaseId) {
+      if (
+        revision.revisionId !== canonical.revisionId ||
+        revision.releaseId !== canonical.releaseId ||
+        (context != null && (
+          revision.revisionId !== context.revisionId ||
+          revision.releaseId !== context.releaseId
+        ))
+      ) {
         throw new ConsumerEstimateActionContextError("PDF не открыт: историческая версия не совпала.");
       }
       const artifact = await buildCanonicalEstimateArtifact({
@@ -1446,13 +1455,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         revision,
         expectedKind: "pdf",
         expectedDocumentProfile: "professional_v1",
-        expectedCatalogId: context.definitionId ?? revision.catalogId,
+        expectedCatalogId: context?.definitionId ?? revision.catalogId,
         expectedRowCount: revision.rowCount,
       });
       if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
       await previewPdfDocument(createPdfDocumentDescriptor({
         uri: artifact.signedUrl,
-        title: requestedBundle?.draft.selectedWorkTitleRu || requestedBundle?.draft.title || "Смета",
+        title: requestedBundle?.draft.selectedWorkTitleRu || requestedBundle?.draft.title || historyRecord?.title || "Смета",
         documentType: "request",
         source: "generated",
         originModule: "reports",
@@ -1466,6 +1475,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         "PDF не открыт: у выбранной сметы нет подтверждённой backend-версии.",
       );
     }
+    throw new ConsumerEstimateActionContextError(
+      "PDF не открыт: выбранная запись истории не найдена.",
+    );
   };
   private openPdf = (requestDraftId?: string) => {
     void this.completeHistoryPdfOpen(requestDraftId).catch(this.handleCanonicalArtifactOpenError);
@@ -1658,10 +1670,6 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.handleActionContextError(error);
       return;
     }
-    if (this.state.canonicalBackendParameterSession?.revisionId === binding.revisionId) {
-      this.setState({ statusMessage: "Параметры открыты в текущей смете. Сохранение создаст новую дочернюю версию." });
-      return;
-    }
     this.setState({ statusMessage: "Загружаем параметры выбранной версии сметы…" });
     try {
       const session = await this.props.onLoadCanonicalParameterSession(binding.revisionId, current.draft.id);
@@ -1747,10 +1755,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({ lastRemovedItem: null });
     this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
-  private addManualItem = () => {
+  private addManualItem = (initialQuery?: string) => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
     if (!current) return;
-    this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+    const query = typeof initialQuery === "string" ? initialQuery.trim() : "";
+    this.pendingCatalogActionContext = null;
+    this.setState({
+      catalogPickerVisible: true,
+      catalogPickerTargetItemId: null,
+      catalogPickerInitialQuery: query || undefined,
+    });
   };
   private openPhotoRecognition = async (targetItemId?: string) => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
@@ -1848,9 +1862,27 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const current = this.resolvedDraftBundle(this.ensureDraftBundle());
     if (!current) return;
     if (consumerRepairCanonicalBackendBinding(current) && !this.pendingCatalogActionContext) {
-      this.handleActionContextError(new ConsumerEstimateActionContextError(
-        "Товар не выбран: контекст строки устарел. Откройте каталог ещё раз.",
-      ));
+      try {
+        const context = this.actionContext("addCatalogItem", current);
+        this.setState({ statusMessage: "\u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0435\u043c \u043f\u043e\u0437\u0438\u0446\u0438\u044e \u0438 \u0441\u043e\u0437\u0434\u0430\u0451\u043c \u0434\u043e\u0447\u0435\u0440\u043d\u044e\u044e \u0432\u0435\u0440\u0441\u0438\u044e \u0441\u043c\u0435\u0442\u044b\u2026" });
+        await this.props.onAddCanonicalCatalogItem({
+          context,
+          problemText: current.draft.problemText || current.draft.title || "\u0421\u043c\u0435\u0442\u0430",
+          catalogItem,
+        });
+        this.setState({
+          catalogPickerVisible: false,
+          catalogPickerTargetItemId: null,
+          catalogPickerInitialQuery: undefined,
+          statusMessage: `\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430 \u0432 \u043d\u043e\u0432\u0443\u044e \u0434\u043e\u0447\u0435\u0440\u043d\u044e\u044e \u0432\u0435\u0440\u0441\u0438\u044e \u0441\u043c\u0435\u0442\u044b: ${catalogItem.name}.`,
+        });
+      } catch (error) {
+        this.setState({
+          statusMessage: error instanceof Error
+            ? error.message
+            : "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: backend \u043d\u0435 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u043b \u0434\u043e\u0447\u0435\u0440\u043d\u044e\u044e \u0432\u0435\u0440\u0441\u0438\u044e.",
+        });
+      }
       return;
     }
     const canonicalContext = this.pendingCatalogActionContext;

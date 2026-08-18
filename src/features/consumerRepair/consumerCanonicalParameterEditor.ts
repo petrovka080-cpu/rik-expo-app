@@ -1,6 +1,7 @@
 import type { ConsumerRepairDraftRevisionParamBatchPatch } from "../../lib/consumerRequests";
 import {
   getCanonicalEstimateCatalogItem,
+  getCanonicalEstimateParameterSessionSnapshot,
   getCanonicalEstimateRevision,
   getAllCanonicalEstimateRevisionRows,
   recalculateCanonicalEstimateAndLoad,
@@ -10,6 +11,7 @@ import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/bac
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateCatalogItem,
+  type CanonicalEstimateCustomRow,
   type CanonicalEstimateParameterInputValue,
   type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
@@ -279,11 +281,7 @@ export async function loadConsumerCanonicalParameterSession(input: {
   revisionId: string;
   draftId: string;
 }): Promise<CanonicalParameterSession> {
-  const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const [catalog, parent] = await Promise.all([
-    getCanonicalEstimateCatalogItem(revision.catalogId),
-    revision.parentRevisionId ? getCanonicalEstimateRevision(revision.parentRevisionId) : Promise.resolve(null),
-  ]);
+  const { revision, catalog, parent } = await getCanonicalEstimateParameterSessionSnapshot(input.revisionId);
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Параметры не открыты: версия каталога не совпадает со сметой.", {
       code: "REVISION_RELEASE_MISMATCH",
@@ -299,7 +297,7 @@ export async function loadConsumerCanonicalRevisionDraftMapping(input: {
 }): Promise<ForemanAiEstimateDraftMapping> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
   const [catalog, rows] = await Promise.all([
-    getCanonicalEstimateCatalogItem(revision.catalogId),
+    getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId),
     getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
   ]);
   if (catalog.releaseId !== revision.releaseId) {
@@ -349,7 +347,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
 }): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
-  const catalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
+  const catalog = await getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId);
   if (catalog.releaseId !== revision.releaseId) {
     throw new CanonicalEstimateApiError("Пересчёт остановлен: версия каталога не совпадает с родительской сметой.", {
       code: "REVISION_RELEASE_MISMATCH",
@@ -433,7 +431,7 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
 }): Promise<ForemanAiEstimateDraftMapping> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
   const [catalog, rows] = await Promise.all([
-    getCanonicalEstimateCatalogItem(revision.catalogId),
+    getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId),
     getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
   ]);
   if (catalog.releaseId !== revision.releaseId) {
@@ -539,4 +537,130 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
     });
   }
   return mapping;
+}
+
+export async function recalculateConsumerCanonicalCatalogAddition(input: {
+  revisionId: string;
+  problemText: string;
+  catalogItem: CatalogItemPickerItem;
+}): Promise<{ mapping: ForemanAiEstimateDraftMapping; rowId: string }> {
+  const revision = await getCanonicalEstimateRevision(input.revisionId);
+  const catalog = await getCanonicalEstimateCatalogItem(
+    revision.catalogId,
+    null,
+    revision.releaseId,
+  );
+  if (catalog.releaseId !== revision.releaseId) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u0432\u0435\u0440\u0441\u0438\u044f \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430 \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u0435\u0442 \u0441\u043e \u0441\u043c\u0435\u0442\u043e\u0439.",
+      { code: "REVISION_RELEASE_MISMATCH", httpStatus: 409 },
+    );
+  }
+  const titleRu = input.catalogItem.name.trim();
+  const unitId = input.catalogItem.unit.trim();
+  if (!titleRu || !unitId) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0435 \u043d\u0435\u0442 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u0438\u043b\u0438 \u0435\u0434\u0438\u043d\u0438\u0446\u044b \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f.",
+      { code: "CATALOG_ITEM_CONTRACT_INVALID", httpStatus: 400 },
+    );
+  }
+  const unitPrice = input.catalogItem.unitPrice == null
+    ? null
+    : Number(input.catalogItem.unitPrice);
+  if (unitPrice != null && (!Number.isFinite(unitPrice) || unitPrice < 0)) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u0446\u0435\u043d\u0430 \u0442\u043e\u0432\u0430\u0440\u0430 \u043d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u0430.",
+      { code: "CATALOG_ITEM_PRICE_INVALID", httpStatus: 400 },
+    );
+  }
+  const parameterValidation = validateCanonicalEstimateParameterInputs({
+    schema: catalog.parameterSchema,
+    rawInputs: revision.parameters,
+  });
+  if (!parameterValidation.ok) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0439 \u0432\u0435\u0440\u0441\u0438\u0438 \u043d\u0435 \u043f\u0440\u043e\u0448\u043b\u0438 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0443.",
+      { code: "PARENT_PARAMETER_CONTRACT_INVALID", httpStatus: 409 },
+    );
+  }
+  const kind = String(input.catalogItem.kind ?? input.catalogItem.category ?? "material")
+    .trim()
+    .toLocaleLowerCase("en-US");
+  const clientRowId = `catalog-${estimateDeterministicHash({
+    parentRevisionId: revision.revisionId,
+    catalogItemId: input.catalogItem.catalogItemId,
+    sourceId: input.catalogItem.sourceId,
+    ordinal: revision.amendmentContract.customRows.length,
+  }).slice(0, 40)}`;
+  const customRow: CanonicalEstimateCustomRow = {
+    clientRowId,
+    section: kind === "work"
+      ? "\u0420\u0430\u0431\u043e\u0442\u044b"
+      : kind === "service"
+        ? "\u0423\u0441\u043b\u0443\u0433\u0438 / \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430"
+        : "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
+    category: kind || "material",
+    titleRu,
+    unitId,
+    quantity: 1,
+    unitPrice,
+    includedInEstimate: true,
+    includedInProcurement: kind !== "work" && kind !== "service",
+    provenance: {
+      kind: "manual",
+      reason: `catalog_add:${input.catalogItem.catalogItemId}:${input.catalogItem.sourceId}`.slice(0, 500),
+    },
+  };
+  const result = await recalculateCanonicalEstimateAndLoad({
+    request: {
+      idempotencyKey: `consumer-catalog-add-${estimateDeterministicHash({
+        parentRevisionId: revision.revisionId,
+        clientRowId,
+      })}`,
+      catalogId: revision.catalogId,
+      parentRevisionId: revision.revisionId,
+      ...requestIdentityForRecalculation({ revision, catalog, problemText: input.problemText }),
+      parameters: parameterValidation.parameters,
+      currencyCode: revision.currencyCode,
+      rowOverrides: revision.amendmentContract.rowOverrides,
+      customRows: [...revision.amendmentContract.customRows, customRow],
+    },
+  });
+  const rowId = `manual:${clientRowId}`;
+  if (
+    result.revision.parentRevisionId !== revision.revisionId
+    || !result.rows.some((row) => row.rowId === rowId && row.titleRu === titleRu)
+    || result.rows.length !== result.revision.rowCount
+  ) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: backend \u043d\u0435 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u043b \u0434\u043e\u0447\u0435\u0440\u043d\u044e\u044e \u0432\u0435\u0440\u0441\u0438\u044e \u0438 \u043d\u043e\u0432\u0443\u044e \u0441\u0442\u0440\u043e\u043a\u0443.",
+      { code: "CANONICAL_CUSTOM_ROW_PARITY_FAILED", httpStatus: 409 },
+    );
+  }
+  const estimate = adaptCanonicalRevisionToStructuredEstimate({
+    catalog,
+    revision: result.revision,
+    rows: result.rows,
+    inputText: input.problemText,
+  });
+  const mapping = mapAiEstimateToForemanDraft({
+    estimate,
+    context: {
+      objectName: "\u0417\u0430\u044f\u0432\u043a\u0430 \u043d\u0430 \u0440\u0435\u043c\u043e\u043d\u0442",
+      levelName: "",
+      systemName: "",
+      zoneName: "",
+      sourceScreen: "foreman_materials",
+    },
+    estimateRevisionId: result.revision.revisionId,
+    estimateReleaseId: result.revision.releaseId,
+  });
+  const parity = verifyForemanAiEstimatePayloadParity(mapping);
+  if (!parity.ok || mapping.payload.rows.length !== result.revision.rowCount) {
+    throw new CanonicalEstimateApiError(
+      "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u043d\u0435 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0430: \u043d\u0430\u0440\u0443\u0448\u0435\u043d\u043e \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u0435 \u0441\u0442\u0440\u043e\u043a \u0434\u043e\u0447\u0435\u0440\u043d\u0435\u0439 backend-\u0432\u0435\u0440\u0441\u0438\u0438.",
+      { code: "CANONICAL_CUSTOM_ROW_PROJECTION_PARITY_FAILED", httpStatus: 409 },
+    );
+  }
+  return { mapping, rowId };
 }

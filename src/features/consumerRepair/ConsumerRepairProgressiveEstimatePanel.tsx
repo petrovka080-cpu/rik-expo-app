@@ -44,7 +44,7 @@ type ItemEditorHandlers = {
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
   onRemove: (itemId: string) => void;
-  onAddManual: () => void;
+  onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition?: () => void;
   onOpenPhotoForEstimateItem?: (itemId: string) => void;
   onAddCustom: () => void;
@@ -277,9 +277,23 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       this.props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED",
   };
 
+  componentDidUpdate(prevProps: Props): void {
+    const previousRevisionId = prevProps.currentRevision?.revisionId ?? null;
+    const currentRevisionId = this.props.currentRevision?.revisionId ?? null;
+    if (
+      this.state.parametersOpen &&
+      currentRevisionId != null &&
+      currentRevisionId !== previousRevisionId
+    ) {
+      this.props.onRefineCanonicalParameters?.();
+    }
+  }
+
   private toggleParameters = () => {
-    this.setState((state) => ({ parametersOpen: !state.parametersOpen }));
-    this.props.onRefineCanonicalParameters?.();
+    const parametersOpen = !this.state.parametersOpen;
+    this.setState({ parametersOpen }, () => {
+      if (parametersOpen) this.props.onRefineCanonicalParameters?.();
+    });
   };
 
   private togglePositions = () => {
@@ -346,7 +360,6 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         </Text>
       ) : null}
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
-        {canonicalParameterSession == null || canonicalParameterSession.parameters.length > 0 ? (
         <Pressable
           accessibilityRole="button"
           onPress={this.toggleParameters}
@@ -356,11 +369,6 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           <Ionicons name={parametersOpen ? "chevron-up" : "options-outline"} size={16} color="#FFFFFF" />
           <Text style={styles.primaryButtonText}>{parametersOpen ? "Скрыть параметры" : "Уточнить параметры"}</Text>
         </Pressable>
-        ) : (
-          <Text style={styles.neutralStatus} testID="request-estimate-no-editable-parameters">
-            Дополнительные параметры для этой работы не требуются
-          </Text>
-        )}
         <Pressable
           accessibilityRole="button"
           onPress={this.togglePositions}
@@ -905,8 +913,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
       : undefined;
     const editableInPlace = paramEditorEnabled && card.editable && card.source !== "formula_derived";
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
-    const acceptedBaseline = canonicalParameter?.source === "ASSUMED" && !isDirty;
-    const editorValue = acceptedBaseline ? "" : rawValue;
+    const editorValue = rawValue;
     const placeholder = canonicalConsumerParameterPlaceholder({
       parameter: canonicalParameter,
       baselineDisplay: meta,
@@ -1088,6 +1095,11 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
           {artifactLabel}
         </Text>
       ) : null}
+      {cards.length === 0 ? (
+        <Text style={styles.neutralStatus} testID="request-estimate-no-editable-parameters">
+          Дополнительные пользовательские параметры для этой работы не требуются.
+        </Text>
+      ) : null}
       {visibleMissingCards.length > 0 ? (
         <View style={styles.parameterGroup} testID="request-estimate-visible-missing-parameters">
           {visibleMissingCards.some((card) => card.clarificationTier === "critical") ? (
@@ -1203,6 +1215,7 @@ function EstimatePositionsPanel({
       />
       <RequestEstimateItemsEditor
         viewModel={viewModel}
+        onAddManual={onAddManual}
         onDecrease={onDecrease}
         onIncrease={onIncrease}
         onQuantityChange={onQuantityChange}
@@ -1233,7 +1246,7 @@ export function ConsumerRepairDraftQuickActions({
   onAddPhotoMaterialRecognition,
   onAddCustom,
 }: {
-  onAddManual: () => void;
+  onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition?: () => void;
   onAddCustom: () => void;
 }): React.ReactElement {
@@ -1242,7 +1255,7 @@ export function ConsumerRepairDraftQuickActions({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Добавить материал"
-        onPress={onAddManual}
+        onPress={() => onAddManual()}
         style={[styles.quickButton, styles.greenQuickButton]}
         testID="consumer-repair-add-manual-item"
       >

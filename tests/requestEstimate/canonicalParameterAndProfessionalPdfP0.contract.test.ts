@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { buildConsumerCanonicalParameterSession } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
+import { requestEstimatePublicItemTitle } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import type { ConsumerRepairRequestItem } from "../../src/lib/consumerRequests/consumerRequestTypes";
 import { assertCanonicalEstimateArtifactIdentity } from "../../src/lib/estimate/backendPlatform/canonicalEstimateClient";
+import { isCanonicalEstimateUserEditableParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
   ESTIMATE_PLATFORM_API_VERSION,
   type CanonicalEstimateArtifactView,
@@ -79,6 +82,43 @@ const asphaltCatalog: CanonicalEstimateCatalogItem = {
 };
 
 describe("P0 canonical parameter editor and professional PDF", () => {
+  it("keeps generated per-output and per-unit formula inputs out of the consumer form", () => {
+    const visibleArea = asphaltCatalog.parameterSchema[0];
+    expect(isCanonicalEstimateUserEditableParameter(visibleArea)).toBe(true);
+
+    for (const parameterId of [
+      "qty_suction_collector_per_output",
+      "labor_suction_collector_per_unit",
+      "machine_suction_collector_per_unit",
+      "mass_suction_collector_per_unit",
+      "handling_suction_collector_per_unit",
+      "inspection_suction_collector_per_unit",
+      "waste_suction_collector_per_unit",
+    ]) {
+      expect(isCanonicalEstimateUserEditableParameter({
+        ...visibleArea,
+        parameterId,
+        titleRu: `Technical derived input: ${parameterId}`,
+        unitId: "machine_hour/item",
+      })).toBe(false);
+    }
+  });
+
+  it("shows only the actual position name after the operation prefix", () => {
+    const item = (titleRu: string) => ({
+      id: titleRu,
+      titleRu,
+      sourceParameters: {},
+    }) as unknown as ConsumerRepairRequestItem;
+
+    expect(requestEstimatePublicItemTitle(item("Учёт технологических обрезков: Опора напорного трубопровода")))
+      .toBe("Опора напорного трубопровода");
+    expect(requestEstimatePublicItemTitle(item("Механизированное выполнение: Всасывающий коллектор")))
+      .toBe("Всасывающий коллектор");
+    expect(requestEstimatePublicItemTitle(item("Рабочий насосный агрегат")))
+      .toBe("Рабочий насосный агрегат");
+  });
+
   it("shows all seven accepted asphalt baseline inputs without calling them user-confirmed", () => {
     const root = revision({
       revisionId: ASPHALT_REVISION_ID,
@@ -232,9 +272,26 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(pdfFlow).toContain('documentProfile: "professional_v1"');
     expect(pdfFlow).toContain("previewPdfDocument(createPdfDocumentDescriptor");
     expect(pdfFlow).not.toContain("Linking.openURL(artifact.signedUrl)");
+    expect(screen).toContain("context?.definitionId ?? revision.catalogId");
+    expect(screen).toContain("historyRecord?.title");
+    expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
     expect(runtime).toContain('templateVersion: "professional-estimate-pdf:3"');
     expect(runtime).toContain("Профессиональная смета");
     expect(runtime).toContain('man_hour: "чел.-ч"');
     expect(runtime).not.toContain("?token=local-dev-signed-artifact-r1");
+  });
+
+  it("loads parameter schema from the exact historical revision release", () => {
+    const editor = readFileSync(resolve(process.cwd(), "src/features/consumerRepair/consumerCanonicalParameterEditor.ts"), "utf8");
+    const client = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts"), "utf8");
+    const runtime = readFileSync(resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), "utf8");
+
+    expect(editor).toContain("getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId)");
+    expect(editor).toContain("getCanonicalEstimateParameterSessionSnapshot(input.revisionId)");
+    expect(client).toContain("?releaseId=${encodeURIComponent(releaseId.trim())}");
+    expect(client).toContain("/parameter-session`");
+    expect(runtime).toContain('url.searchParams.get("releaseId") ?? TARGET_RELEASE_ID');
+    expect(runtime).toContain("requestedReleaseId || null");
+    expect(runtime).toContain('path[2] === "parameter-session"');
   });
 });

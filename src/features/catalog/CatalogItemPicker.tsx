@@ -30,7 +30,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
   private searchTimer: TimerRegistryHandle | null = null;
 
   state: State = {
-    query: this.props.initialQuery ?? "бетон",
+    query: this.props.initialQuery ?? "",
     loading: false,
     rows: [],
     error: null,
@@ -99,7 +99,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
       this.setState({ rows, loading: false });
     } catch {
       if (sequence !== this.searchSequence) return;
-      this.setState({ rows: [], loading: false, error: "Каталог временно недоступен" });
+      this.setState({ rows: [], loading: false, error: "Поиск временно недоступен. Повторите попытку." });
     }
   };
 
@@ -134,26 +134,26 @@ export class CatalogItemPicker extends React.Component<Props, State> {
         <View style={styles.overlay} testID="request-catalog-item-picker">
           <View style={styles.sheet}>
             <View style={styles.header} testID="request-catalog-picker-header">
-              <Text style={styles.title}>Каталог материалов</Text>
+              <Text style={styles.title}>{"Каталог позиций"}</Text>
               <Pressable accessibilityRole="button" onPress={this.props.onClose} testID="request-catalog-picker-close">
-                <Text style={styles.close}>Закрыть</Text>
+                <Text style={styles.close}>{"Закрыть"}</Text>
               </Pressable>
             </View>
             <View style={styles.searchRow} testID="request-catalog-picker-search-row">
               <TextInput
                 value={this.state.query}
                 onChangeText={this.setQuery}
-                placeholder="Введите 2 буквы: бе, ар, пе"
+                placeholder={"Введите минимум 2 буквы"}
                 style={styles.input}
                 testID="request-catalog-picker-search"
               />
             </View>
             <Text style={styles.hint} testID="request-catalog-picker-live-search-hint">
-              Поиск запускается автоматически и подбирает материалы из catalog_items.
+              {"Ищем материалы, работы и услуги во всех доступных каталогах. Выбор добавит позицию в новую версию сметы."}
             </Text>
             {this.state.lastSearchedQuery ? (
               <Text style={styles.resultsTitle} testID="request-catalog-picker-results-title">
-                Подобранные материалы: {this.state.lastSearchedQuery}
+                {"Результаты поиска"}: {this.state.lastSearchedQuery}
               </Text>
             ) : null}
             {this.state.loading ? <ActivityIndicator color="#2563EB" /> : null}
@@ -176,12 +176,12 @@ export class CatalogItemPicker extends React.Component<Props, State> {
                 >
                   <Text style={styles.rowTitle}>{item.name}</Text>
                   <Text style={styles.rowMeta}>
-                    {item.rikCode} · {formatEstimateUnitLabel(item.unit)} · {item.sourceLabel}
+                    {item.rikCode} {"\u00b7"} {formatEstimateUnitLabel(item.unit)} {"\u00b7"} {item.sourceLabel}
                   </Text>
                 </Pressable>
               ))}
               {!this.state.loading && this.state.rows.length === 0 ? (
-                <Text style={styles.empty}>Введите минимум две буквы, например “бе” или “ар”.</Text>
+                <Text style={styles.empty}>{"Введите минимум две буквы. Если совпадений нет, измените запрос."}</Text>
               ) : null}
             </ScrollView>
           </View>

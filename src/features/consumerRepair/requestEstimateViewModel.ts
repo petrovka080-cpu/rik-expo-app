@@ -357,7 +357,15 @@ function publicItemTitle(item: ConsumerRepairRequestItem): string {
   if (/^\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0438\u0437\u0434\u0435\u043b\u0438\u0439/iu.test(normalized)) {
     return "\u0420\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u043f\u043e \u043d\u043e\u0440\u043c\u0430\u043c";
   }
-  return normalized || "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b";
+  const separatorIndex = normalized.indexOf(":");
+  const conciseTitle = separatorIndex >= 0
+    ? normalized.slice(separatorIndex + 1).trim()
+    : normalized;
+  return conciseTitle || "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b";
+}
+
+export function requestEstimatePublicItemTitle(item: ConsumerRepairRequestItem): string {
+  return publicItemTitle(item);
 }
 
 function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
@@ -884,7 +892,10 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
     .map((id) => ({
       id,
       title: sectionTitle(id),
-      items: bundle.items.filter((item) => itemSection(item) === id).sort((a, b) => itemSortRank(a) - itemSortRank(b)),
+      items: bundle.items
+        .filter((item) => itemSection(item) === id)
+        .sort((a, b) => itemSortRank(a) - itemSortRank(b))
+        .map((item) => ({ ...item, titleRu: publicItemTitle(item) })),
     }))
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(bundle);

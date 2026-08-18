@@ -65,13 +65,24 @@ export async function searchCatalogItemsForPicker(query: string, limit = 40): Pr
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
-  const preview = await loadCatalogItemsSearchPreviewRows(trimmed, "material", limit);
-  if (!preview.error && Array.isArray(preview.data) && preview.data.length > 0) {
-    return preview.data.map(mapCatalogPreviewRowToPickerItem);
+  const [previewResult, quickResult] = await Promise.allSettled([
+    loadCatalogItemsSearchPreviewRows(trimmed, "all", limit),
+    rikQuickSearch(trimmed, limit),
+  ]);
+  const previewRows = previewResult.status === "fulfilled"
+    && !previewResult.value.error
+    && Array.isArray(previewResult.value.data)
+    ? previewResult.value.data.map(mapCatalogPreviewRowToPickerItem)
+    : [];
+  const quickRows = quickResult.status === "fulfilled"
+    ? quickResult.value.map(mapRikQuickSearchItemToPickerItem)
+    : [];
+  const unique = new Map<string, CatalogItemPickerItem>();
+  for (const item of [...previewRows, ...quickRows]) {
+    const key = `${item.rikCode || item.catalogItemId}:${item.unit}`.toLocaleLowerCase("ru-RU");
+    if (!unique.has(key)) unique.set(key, item);
   }
-
-  const quickRows = await rikQuickSearch(trimmed, limit);
-  return quickRows.map(mapRikQuickSearchItemToPickerItem);
+  return [...unique.values()].slice(0, limit);
 }
 
 export function mapPickerItemToCatalogItemForEstimate(item: CatalogItemPickerItem): CatalogItemForEstimate {

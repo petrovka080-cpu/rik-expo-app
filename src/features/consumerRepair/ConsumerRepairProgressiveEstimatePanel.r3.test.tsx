@@ -3,6 +3,7 @@ import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
   buildConsumerRepairProgressiveParameterCards,
+  ConsumerRepairProgressiveEstimatePanel,
   InlineParamEditor,
 } from "./ConsumerRepairProgressiveEstimatePanel";
 
@@ -11,6 +12,93 @@ jest.mock("@expo/vector-icons", () => ({
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it("opens, shows the persisted value, refreshes the exact session, and closes again", () => {
+    const onRefineCanonicalParameters = jest.fn();
+    const noop = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairProgressiveEstimatePanel
+          viewModel={{
+            title: "Асфальтирование парковки — 987 м²",
+            summary: "",
+            totalLabel: "",
+            priceStatusLabel: "",
+            sourceConfidenceLabel: "",
+            sourceLabels: [],
+            taxLabel: "",
+            trustLevelLabel: "",
+            commercialEstimateLevelLabel: "",
+            sourceQualityLabel: "",
+            expertReviewStatusLabel: "",
+            fullTotalStatusLabel: "",
+            visibleLines: [],
+            assumptionRows: [],
+            sections: [],
+            professionalPreview: false,
+            previewSections: [],
+            calculationPreviewLines: [],
+            normSourcePreviewLines: [],
+            rawItemCount: 0,
+            manualCatalogItems: [],
+          }}
+          revisionState={null}
+          currentRevision={null}
+          latestDiff={null}
+          canonicalParameterSession={{
+            revisionId: "revision-987",
+            status: "PRELIMINARY_WITH_ASSUMPTIONS",
+            parameters: [{
+              parameterId: "area_m2",
+              label: "Площадь покрытия",
+              description: "Площадь покрытия по исходному запросу",
+              value: 987,
+              valueType: "number",
+              unit: "м²",
+              requiredLevel: "CONTRACT_REQUIRED",
+              visibilityCondition: { kind: "ALWAYS" },
+              validation: { min: 1 },
+              allowedValues: [],
+              source: "ASSUMED",
+              state: "ASSUMED",
+              confidence: 0.7,
+              assumption: "Предварительно принято из исходного запроса.",
+              affectsRows: ["asphalt:area"],
+              affectsFormula: ["asphalt:area:formula"],
+              normativeSource: null,
+              displayOrder: 1,
+              sourceText: "Из исходного запроса",
+              valid: true,
+              validationIssues: [],
+            }],
+            blockingMissingParameterIds: [],
+            contractMissingParameterIds: [],
+            assumptionParameterIds: ["area_m2"],
+            invalidParameterIds: [],
+          } as never}
+          onRefineCanonicalParameters={onRefineCanonicalParameters}
+          onDecrease={noop}
+          onIncrease={noop}
+          onQuantityChange={noop}
+          onUnitPriceChange={noop}
+          onRemove={noop}
+          onAddManual={noop}
+          onAddCustom={noop}
+          onApplyParamBatch={noop}
+        />,
+      );
+    });
+
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
+    act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
+    expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
+    expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("987");
+
+    act(() => renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress());
+    expect(renderer.root.findAllByProps({ testID: "request-estimate-parameter-panel" })).toHaveLength(0);
+  });
+
   it("does not turn persisted BOQ assumptions into inputs when the canonical user-input set is empty", () => {
     const cards = buildConsumerRepairProgressiveParameterCards({
       revision: null,

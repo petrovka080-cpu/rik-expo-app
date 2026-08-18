@@ -18,6 +18,7 @@ import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canon
 import {
   loadConsumerCanonicalParameterSession,
   loadConsumerCanonicalRevisionDraftMapping,
+  recalculateConsumerCanonicalCatalogAddition,
   recalculateConsumerCanonicalCatalogSelection,
   recalculateConsumerCanonicalEstimate,
 } from "./consumerCanonicalParameterEditor";
@@ -233,6 +234,29 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               item.sourceParameters?.rowCode === context.lineId
             );
             if (!childItem) throw new Error("CATALOG_CHILD_ROW_NOT_FOUND");
+            const selected = applyConsumerRepairCatalogItemSelection({
+              current: childBundle,
+              catalogItem,
+              targetItemId: childItem.id,
+            });
+            screenRef.current?.acceptCanonicalBackendDraft(selected.bundle);
+          }}
+          onAddCanonicalCatalogItem={async ({ context, problemText, catalogItem }) => {
+            const result = await recalculateConsumerCanonicalCatalogAddition({
+              revisionId: context.revisionId,
+              problemText,
+              catalogItem,
+            });
+            const childBundle = await persistCanonicalDraft(
+              result.mapping,
+              problemText,
+              context.draftId,
+            );
+            if (!childBundle) throw new Error("CATALOG_ADDITION_CHILD_DRAFT_NOT_PERSISTED");
+            const childItem = childBundle.items.find((item) =>
+              item.sourceParameters?.rowCode === result.rowId
+            );
+            if (!childItem) throw new Error("CATALOG_ADDITION_CHILD_ROW_NOT_FOUND");
             const selected = applyConsumerRepairCatalogItemSelection({
               current: childBundle,
               catalogItem,
