@@ -39,6 +39,9 @@ const API_ROOT = String(process.env.R58_CANONICAL_API_ROOT
 const AUTHORIZATION = "Bearer local-r58-cumulative-proof";
 const EXPECTED_TOTAL = Number(process.env.R58_EXPECTED_TOTAL ?? "4272");
 const TARGET_CATALOG_ID = String(process.env.R58_TARGET_CATALOG_ID ?? "").trim();
+const TARGET_CATALOG_IDS = String(process.env.R58_TARGET_CATALOG_IDS ?? "").split(",")
+  .map((value) => value.trim()).filter(Boolean);
+const REPRESENTATIVE = String(process.env.R58_REPRESENTATIVE_GATE ?? "").trim() === "true";
 const DEFAULT_SHARD_SIZE = 10;
 const ARTIFACT_ROOT = resolve(".release-runtime/master11610-backend-canonical-r1/05-runtime/local-artifacts");
 const OUTPUT_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence/06-backend");
@@ -533,7 +536,8 @@ async function main(): Promise<void> {
   invariant(!PROBE || LIMIT <= SHARD_SIZE, "R58_BACKEND_PROBE_MUST_BE_SINGLE_SHARD");
 
   mkdirSync(OUTPUT_ROOT, { recursive: true });
-  const suffix = PROBE ? `PROBE_${head.slice(0, 8)}` : head.slice(0, 8);
+  const suffix = REPRESENTATIVE ? `REPRESENTATIVE50_${head.slice(0, 8)}`
+    : PROBE ? `PROBE_${head.slice(0, 8)}` : head.slice(0, 8);
   const ledgerPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_ADMISSION_4272_${suffix}.jsonl`);
   const repairPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_REPAIR_QUEUE_${suffix}.jsonl`);
   const summaryPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_ADMISSION_4272_${suffix}.json`);
@@ -573,8 +577,11 @@ async function main(): Promise<void> {
     }
 
     const catalogIds = (await client.query(`select catalog_id from public.estimate_cumulative_manifest_entry
-      where release_id=$1 and ($2='' or catalog_id=$2) order by catalog_id`,
-    [TARGET_RELEASE_ID,TARGET_CATALOG_ID])).rows.map((row) => String(row.catalog_id));
+      where release_id=$1
+        and ($2='' or catalog_id=$2)
+        and (cardinality($3::text[])=0 or catalog_id=any($3::text[]))
+      order by catalog_id`, [TARGET_RELEASE_ID,TARGET_CATALOG_ID,TARGET_CATALOG_IDS])).rows
+      .map((row) => String(row.catalog_id));
     invariant(catalogIds.length === EXPECTED_TOTAL && new Set(catalogIds).size === EXPECTED_TOTAL,
       `R58_BACKEND_DENOMINATOR:${catalogIds.length}/${new Set(catalogIds).size}`);
     const pendingCatalogIds = catalogIds.filter((catalogId) => !completed.has(catalogId)).slice(0, LIMIT);
@@ -623,7 +630,8 @@ async function main(): Promise<void> {
     const fullRunComplete = !PROBE && rows.length === EXPECTED_TOTAL;
     const asphaltRows = asphalt.reduce((sum, row) => sum + Number(row.compile?.rowCount ?? 0), 0);
     const summary = {
-      schemaVersion: "p0-one-monolith-r58-cumulative-backend-admission-4272.v1",
+      schemaVersion: REPRESENTATIVE ? "p0-one-monolith-r58-representative-backend-50.v1"
+        : "p0-one-monolith-r58-cumulative-backend-admission-4272.v1",
       capturedAt: new Date().toISOString(),
       specSha256: SPEC_SHA256,
       source: { branch, head, tree, descendantOf691acb78: true },
@@ -649,7 +657,11 @@ async function main(): Promise<void> {
       ledgerPath,
       repairQueuePath: repairPath,
       ledgerSha256: sha256(rows),
-      status: PROBE
+      status: REPRESENTATIVE
+        ? (fullRunComplete && red.length === 0 && rows.length === 50
+          ? "GREEN_R58_REPRESENTATIVE_BACKEND_50_CLEANED_NOT_TERMINAL"
+          : "RED_R58_REPRESENTATIVE_BACKEND_50_REPAIR_QUEUE_ACTIVE")
+        : PROBE
         ? (red.length === 0 && rows.length === LIMIT ? "GREEN_R58_CUMULATIVE_BACKEND_PROBE_CLEANED" : "RED_R58_CUMULATIVE_BACKEND_PROBE")
         : fullRunComplete && red.length === 0 && asphalt.length === 63 && asphaltRows === 3_709
           ? "GREEN_R58_BATCH001_008_BACKEND_4272_CLEANED_NOT_TERMINAL"
