@@ -196,22 +196,35 @@ async function main(): Promise<void> {
       const formula = formulaByDefinition.get(id) ?? {};
       const resource = resourceByDefinition.get(id) ?? {};
       const norm = normativeByDefinition.get(id) ?? {};
-      const missingProjectParameterIds = removedProjectParameters(definition.source_metadata);
+      const removedParameterIds = removedProjectParameters(definition.source_metadata);
       const erroneousQuantityInputIds = parameter.erroneous_quantity_input_ids ?? [];
       const quantityPassthroughFormulaIds = formula.quantity_passthrough_formula_ids ?? [];
+      const hasQuantitySemanticDefect = erroneousQuantityInputIds.length > 0
+        || quantityPassthroughFormulaIds.length > 0;
+      // A predecessor repair is allowed to remove parameters which have no formula or
+      // resource consumer. Those removals are not missing project inputs. They become
+      // evidence of a real defect only when the surviving graph asks the user to enter
+      // quantity_* outputs and merely passes them through (the drywall failure mode).
+      const missingProjectParameterIds = hasQuantitySemanticDefect ? removedParameterIds : [];
+      const intentionallyRemovedUnusedParameterIds = hasQuantitySemanticDefect ? [] : removedParameterIds;
       const professionalContentPresent = Number(formula.formula_count ?? 0) > 0
         && Number(resource.resource_count ?? 0) > 0;
       const authoritativeFoundationPresent = definition.baseline_ready === true
         && definition.scenario_ready === true
         && definition.approved_template_baseline_id != null
         && Number(norm.normative_source_count ?? 0) > 0;
-      const semanticDefectPresent = erroneousQuantityInputIds.length > 0
-        || quantityPassthroughFormulaIds.length > 0
-        || missingProjectParameterIds.length > 0;
+      // An approved scenario baseline proves one accepted snapshot, not a general
+      // quantity formula. Never manufacture coefficients from it. A quantity repair is
+      // REPAIR_REQUIRED only after an independently cited formula authority is attached
+      // to the immutable definition metadata; otherwise the safe disposition is
+      // QUARANTINED and the historical definition remains untouched.
+      const formulaRepairAuthorityPresent = Boolean(
+        definition.source_metadata?.r583AuthoritativeFormulaRepair?.sourceSha256,
+      );
       const status = !professionalContentPresent
         ? "QUARANTINED"
-        : semanticDefectPresent
-          ? authoritativeFoundationPresent ? "REPAIR_REQUIRED" : "QUARANTINED"
+        : hasQuantitySemanticDefect
+          ? formulaRepairAuthorityPresent ? "REPAIR_REQUIRED" : "QUARANTINED"
           : "PROFESSIONAL_READY";
       return {
         catalogId: definition.catalog_id,
@@ -229,6 +242,7 @@ async function main(): Promise<void> {
         erroneousQuantityInputIds,
         erroneousQuantityInputCount: erroneousQuantityInputIds.length,
         missingProjectParameterIds,
+        intentionallyRemovedUnusedParameterIds,
         passthroughFormulaCount: Number(formula.passthrough_formula_count ?? 0),
         quantityPassthroughFormulaIds,
         rawUnits: [...new Set([
@@ -250,7 +264,15 @@ async function main(): Promise<void> {
           ready: definition.baseline_ready === true,
           scenarioReady: definition.scenario_ready === true,
           authoritativeFoundationPresent,
+          formulaRepairAuthorityPresent,
         },
+        dispositionReason: !professionalContentPresent
+          ? "PROFESSIONAL_CONTENT_MISSING"
+          : hasQuantitySemanticDefect && !formulaRepairAuthorityPresent
+            ? "QUANTITY_FORMULA_AUTHORITY_MISSING"
+            : hasQuantitySemanticDefect
+              ? "AUTHORITATIVE_FORMULA_REPAIR_REQUIRED"
+              : "PROFESSIONAL_SEMANTICS_VERIFIED",
         status,
       };
     });
