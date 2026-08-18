@@ -101,8 +101,8 @@ export function useConsumerRepairPhotoCaptureController({
         const item = bundle.items.find((candidate) => candidate.id === targetItemId);
         const itemLineId = typeof item?.sourceParameters?.rowCode === "string"
           ? item.sourceParameters.rowCode.trim()
-          : item?.id ?? "";
-        if (!item || itemLineId !== exactLineId) throw new Error("PHOTO_TARGET_ROW_NOT_FOUND");
+          : "";
+        if (!item || (itemLineId && itemLineId !== exactLineId)) throw new Error("PHOTO_TARGET_ROW_NOT_FOUND");
         const itemRevisionId = String(
           item.sourceParameters?.canonicalBackendRevisionId ?? "",
         ).trim();

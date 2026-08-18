@@ -309,7 +309,8 @@ export function migrateCanonicalEstimateLegacyRevision(
 
 export function createCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "professional_pdf" | "procurement";
+  kind: "pdf" | "procurement";
+  documentProfile?: "professional_v1";
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -317,7 +318,10 @@ export function createCanonicalEstimateArtifact(input: {
     `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}`,
     {
       method: "POST",
-      body: { idempotencyKey: input.idempotencyKey },
+      body: {
+        idempotencyKey: input.idempotencyKey,
+        ...(input.documentProfile ? { documentProfile: input.documentProfile } : {}),
+      },
       signal: input.signal,
       requestClass: "mutation_request",
     },
@@ -326,18 +330,23 @@ export function createCanonicalEstimateArtifact(input: {
 
 export function getCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "professional_pdf" | "procurement";
+  kind: "pdf" | "procurement";
+  documentProfile?: "professional_v1";
   signal?: AbortSignal | null;
 }) {
+  const profileQuery = input.documentProfile
+    ? `?documentProfile=${encodeURIComponent(input.documentProfile)}`
+    : "";
   return invoke<CanonicalEstimateArtifactView>(
-    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}`,
+    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}${profileQuery}`,
     { signal: input.signal, requestClass: "ui_scope_load" },
   );
 }
 
 export async function buildCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "professional_pdf" | "procurement";
+  kind: "pdf" | "procurement";
+  documentProfile?: "professional_v1";
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -357,7 +366,8 @@ export async function buildCanonicalEstimateArtifact(input: {
 export function assertCanonicalEstimateArtifactIdentity(input: {
   artifact: CanonicalEstimateArtifactView;
   revision: CanonicalEstimateRevisionView;
-  expectedKind: "pdf" | "professional_pdf" | "procurement";
+  expectedKind: "pdf" | "procurement";
+  expectedDocumentProfile?: "professional_v1";
   expectedCatalogId?: string | null;
   expectedRowCount?: number | null;
 }): void {
@@ -367,6 +377,7 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
     input.artifact.metadata?.sourceRevisionChecksumSha256 ?? "",
   ).trim();
   const metadataTemplateVersion = String(input.artifact.metadata?.templateVersion ?? "").trim();
+  const metadataDocumentProfile = String(input.artifact.metadata?.documentProfile ?? "").trim();
   const metadataOwnerUserId = String(input.artifact.metadata?.sourceOwnerUserId ?? "").trim();
   const expectedCatalogId = input.expectedCatalogId?.trim() || input.revision.catalogId;
   const expectedRowCount = input.expectedRowCount ?? input.revision.rowCount;
@@ -378,7 +389,8 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
     metadataCatalogId === expectedCatalogId &&
     metadataRowCount === expectedRowCount &&
     metadataChecksum === input.revision.checksumSha256 &&
-    (input.expectedKind !== "professional_pdf" || (
+    (!input.expectedDocumentProfile || metadataDocumentProfile === input.expectedDocumentProfile) &&
+    (input.expectedDocumentProfile !== "professional_v1" || (
       metadataTemplateVersion.startsWith("professional-estimate-pdf:") &&
       metadataOwnerUserId.length > 0
     ));

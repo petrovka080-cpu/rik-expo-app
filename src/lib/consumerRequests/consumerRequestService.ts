@@ -1136,8 +1136,8 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
   const item = bundle.items.find((candidate) => candidate.id === input.requestItemId);
   const itemRowId = typeof item?.sourceParameters?.rowCode === "string"
     ? item.sourceParameters.rowCode.trim()
-    : item?.id ?? "";
-  if (!item || itemRowId !== input.rowId) throw new Error("CONSUMER_ESTIMATE_PHOTO_ROW_MISMATCH");
+    : "";
+  if (!item || (itemRowId && itemRowId !== input.rowId)) throw new Error("CONSUMER_ESTIMATE_PHOTO_ROW_MISMATCH");
   const itemRevisionId = String(
     item.sourceParameters?.canonicalBackendRevisionId ?? "",
   ).trim();

@@ -120,6 +120,7 @@ export function ConsumerRepairDraftPanel({
     bundle?.estimateRevisionState,
   );
   const canonical = bundle ? primaryConsumerRepairCanonicalBackendBinding(bundle) : null;
+  const pendingCanonicalRevision = Boolean(bundle && !canonical);
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -202,6 +203,18 @@ export function ConsumerRepairDraftPanel({
                 ? "Откройте историческую версию для просмотра или создайте явную копию без автоматического переноса параметров."
                 : "Контекст расчёта изменился или компиляция завершилась ошибкой. Создайте расчёт из текущих подтверждённых данных."}
           </Text>
+        </View>
+      ) : pendingCanonicalRevision ? (
+        <View style={styles.scopeSelection} testID="consumer-estimate-initial-revision-recovery">
+          <Text style={styles.scopeSelectionTitle}>Расчёт сметы не завершён</Text>
+          <Text style={styles.status}>
+            Запрос и добавленные данные сохранены. Нажмите «Повторить расчёт» внизу экрана.
+          </Text>
+          <ConsumerRepairDraftQuickActions
+            onAddManual={onAddManual}
+            onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
+            onAddCustom={onAddCustom}
+          />
         </View>
       ) : bundle && viewModel ? (
         <>

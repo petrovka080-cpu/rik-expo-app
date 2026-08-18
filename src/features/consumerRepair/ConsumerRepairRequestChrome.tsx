@@ -131,7 +131,7 @@ export function ConsumerRepairRequestStickyActions({
           ? {
               labelRu: hasPendingPrompt
                 ? "Сформировать смету"
-                : "Пересчитать смету",
+                : "Повторить расчёт",
               onPress: onPrepareDraft,
               showLabel: true,
               testID: "consumer-repair-prepare-draft",

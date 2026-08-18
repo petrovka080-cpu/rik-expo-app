@@ -353,10 +353,20 @@ async function createArtifactJob(
   request: Request,
   requester: ReturnType<typeof createClient>,
   revisionId: string,
-  kind: "pdf" | "professional_pdf" | "procurement",
+  publicKind: "pdf" | "professional_pdf" | "procurement",
 ) {
   assertUuid(revisionId, "revisionId");
   const body = await request.json().catch(() => ({}));
+  const documentProfile = String(body?.documentProfile ?? "").trim();
+  if (documentProfile && documentProfile !== "professional_v1") {
+    throw new CanonicalEstimateApiError("unsupported PDF document profile", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
+  if (documentProfile && publicKind !== "pdf") {
+    throw new CanonicalEstimateApiError("documentProfile is only valid for PDF", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
+  const kind = publicKind === "pdf" && documentProfile === "professional_v1"
+    ? "professional_pdf"
+    : publicKind;
   const idempotencyKey = String(body?.idempotencyKey ?? request.headers.get("x-idempotency-key") ?? "").trim();
   if (!idempotencyKey || idempotencyKey.length > 200) {
     throw new CanonicalEstimateApiError("idempotencyKey is required", { code: "INVALID_ARGUMENT", httpStatus: 400 });
@@ -380,11 +390,22 @@ async function createArtifactJob(
 }
 
 async function readArtifact(
+  request: Request,
   requester: ReturnType<typeof createClient>,
   revisionId: string,
-  kind: "pdf" | "professional_pdf" | "procurement",
+  publicKind: "pdf" | "professional_pdf" | "procurement",
 ) {
   assertUuid(revisionId, "revisionId");
+  const documentProfile = String(new URL(request.url).searchParams.get("documentProfile") ?? "").trim();
+  if (documentProfile && documentProfile !== "professional_v1") {
+    throw new CanonicalEstimateApiError("unsupported PDF document profile", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
+  if (documentProfile && publicKind !== "pdf") {
+    throw new CanonicalEstimateApiError("documentProfile is only valid for PDF", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
+  const kind = publicKind === "pdf" && documentProfile === "professional_v1"
+    ? "professional_pdf"
+    : publicKind;
   const { data, error } = await requester
     .from("estimate_revision_artifact")
     .select("id,revision_id,artifact_kind,status,storage_bucket,storage_key,content_type,byte_size,sha256,metadata,error_code,expires_at,created_at,updated_at,ready_at")
@@ -415,6 +436,7 @@ async function readArtifact(
   }
   const metadata = {
     ...sourceMetadata,
+    ...(kind === "professional_pdf" ? { documentProfile: "professional_v1" } : {}),
     sourceCatalogId: revision.catalog_id,
     sourceRowCount: Number(revision.row_count),
     sourceReleaseId: revision.release_id,
@@ -449,7 +471,7 @@ async function readArtifact(
     artifactId: data.id,
     revisionId: data.revision_id,
     releaseId: artifactReleaseId || revision.release_id,
-    kind: data.artifact_kind,
+    kind: publicKind,
     status: data.status,
     contentType: data.content_type,
     byteSize: data.byte_size == null ? null : Number(data.byte_size),
@@ -1130,7 +1152,7 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
         return json(202, await createArtifactJob(request, requester, path[1], path[3]), requestId, request);
       }
       if (request.method === "GET") {
-        return json(200, await readArtifact(requester, path[1], path[3]), requestId, request);
+        return json(200, await readArtifact(request, requester, path[1], path[3]), requestId, request);
       }
     }
     if (request.method === "GET" && path.length === 2 && path[0] === "search" && path[1] === "catalog") {

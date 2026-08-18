@@ -6,6 +6,7 @@ import {
   attachConsumerRepairEstimateRowPhoto,
   buildApprovedEstimateHistoryRecord,
   commitPreparedConsumerRepairRequestBundle,
+  createConsumerRepairRequestDraft,
   deleteConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory, listConsumerRepairRequestHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
@@ -56,11 +57,11 @@ import {
   buildApprovedConsumerRepairWorkspaceClearedState,
   buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
   buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
-  buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
+  buildConsumerRepairExactCatalogLaunchSelectedWork, buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
   composeSelectedTemplateCandidateActiveInputText, composeSelectedWorkProblemText, focusConsumerRepairProblemInputAtEnd,
   emptyConsumerRepairCanonicalWorkSearchState, mergeConsumerRepairCanonicalWorkSearchPage,
   preserveSelectedWorkResolverInput,
-  parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem,
+  parseEditableEstimateNumberInput, restoreConsumerRepairRequestItem, selectedWorkFromBundle, toConsumerRepairSelectedWork,
   sendConsumerRepairHistoryToMarketplaceFromScreen,
   shouldPreserveSelectedWorkForProblemText, shouldShowConsumerRepairWorkSuggestions, syncConsumerRepairDraftFromScreenState,
   type ConsumerRepairRequestScreenState,
@@ -70,6 +71,7 @@ import type { CanonicalParameterSession } from "../../lib/estimate/canonicalPara
 import {
   buildConsumerEstimateActionContext,
   ConsumerEstimateActionContextError,
+  resolveConsumerEstimateLineActionContext,
   type ConsumerEstimateActionContext,
   type ConsumerEstimateActionName,
 } from "./consumerEstimateActionRouter";
@@ -121,6 +123,13 @@ function hasMemoryOnlyDurableSaveFailure(bundle: ConsumerRepairDraftBundle): boo
 }
 
 type State = ConsumerRepairRequestScreenState;
+export type EnsureConsumerRepairDraftBundleResult =
+  | { status: "READY"; bundle: ConsumerRepairDraftBundle }
+  | { status: "REVISION_RECOVERED"; bundle: ConsumerRepairDraftBundle }
+  | { status: "PENDING_DRAFT_ACTION"; bundle: ConsumerRepairDraftBundle }
+  | { status: "RETRYABLE_ERROR"; bundle: ConsumerRepairDraftBundle | null; message: string }
+  | { status: "BLOCKED_WITH_REASON"; bundle: ConsumerRepairDraftBundle | null; message: string };
+
 export type ConsumerRepairRequestScreenProps = {
   consumerUserId?: string;
   initialProblemText?: string;
@@ -144,7 +153,7 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     problemText: string,
     catalogId: string,
     requestDraftId?: string | null,
-  ) => Promise<void>;
+  ) => Promise<ConsumerRepairDraftBundle | null>;
   onLoadCanonicalParameterSession: (
     revisionId: string,
     requestDraftId: string,
@@ -555,8 +564,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return;
     }
     this.initialDeepLinkApplied = true;
-    this.props.onOpenCanonicalEstimate(launchProblemText);
-    this.props.onInitialLaunchBuildSettled?.();
+    void this.prepareDraft().finally(() => {
+      this.props.onInitialLaunchBuildSettled?.();
+    });
   }
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(this.props.consumerUserId);
@@ -634,14 +644,77 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.launchIntentAcknowledged = true;
   }
-  private ensureDraftBundle(): ConsumerRepairDraftBundle {
-    if (!this.state.bundle) throw new Error("CANONICAL_BACKEND_REVISION_REQUIRED");
-    return this.state.bundle;
+  private ensureDraftBundle(options: {
+    allowPendingDraftCreation?: boolean;
+  } = {}): EnsureConsumerRepairDraftBundleResult {
+    if (this.state.bundle) {
+      return {
+        status: consumerRepairCanonicalBackendBinding(this.state.bundle)
+          ? "READY"
+          : "PENDING_DRAFT_ACTION",
+        bundle: this.state.bundle,
+      };
+    }
+    if (!options.allowPendingDraftCreation) {
+      return {
+        status: "BLOCKED_WITH_REASON",
+        bundle: null,
+        message: "Сначала сформируйте смету. Введённый запрос сохранён и расчёт можно повторить.",
+      };
+    }
+    try {
+      const problemText = this.state.problemText.trim() || this.props.initialProblemText?.trim() || null;
+      const selectedWork = this.state.selectedWork
+        ? toConsumerRepairSelectedWork(this.state.selectedWork)
+        : null;
+      const bundle = createConsumerRepairRequestDraft({
+        consumerUserId: this.props.consumerUserId,
+        problemText,
+        repairType: selectedWork?.selectedWorkCategoryKey ?? this.state.repairType,
+        city: this.state.city,
+        addressText: this.state.addressText,
+        preferredTimeText: this.state.preferredTimeText,
+        contactPhone: this.state.contactPhone,
+        selectedWork,
+      });
+      this.historyLoaded = true;
+      this.setState({
+        bundle,
+        history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+        approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
+        selectedHistoryId: null,
+        validationErrors: [],
+      });
+      const launchId = this.props.launchId?.trim();
+      if (launchId) requestEstimateIntentLifecycle.bindPendingDraft(launchId, bundle.draft.id);
+      return { status: "PENDING_DRAFT_ACTION", bundle };
+    } catch (error) {
+      return {
+        status: "RETRYABLE_ERROR",
+        bundle: null,
+        message: error instanceof Error
+          ? error.message
+          : "Не удалось сохранить черновик. Повторите действие.",
+      };
+    }
+  }
+  private resolvedDraftBundle(
+    result: EnsureConsumerRepairDraftBundleResult,
+  ): ConsumerRepairDraftBundle | null {
+    if (
+      result.status === "READY" ||
+      result.status === "REVISION_RECOVERED" ||
+      result.status === "PENDING_DRAFT_ACTION"
+    ) return result.bundle;
+    if (result.bundle) return result.bundle;
+    this.setState({ statusMessage: result.message });
+    return null;
   }
   setPhotoCaptureStatusMessage(statusMessage: string | null): void { this.setState({ statusMessage }); }
   attachCapturedPhotoToLine(result: ConsumerRepairPhotoMaterialCaptureResult): void {
     try {
-      const current = this.ensureDraftBundle();
+      const current = this.resolvedDraftBundle(this.ensureDraftBundle());
+      if (!current) return;
       if (current.draft.id !== result.draftId || result.purpose !== "line_attachment") {
         throw new ConsumerEstimateActionContextError(
           "Фото не сохранено: контекст строки изменился.",
@@ -948,35 +1021,34 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.setState({ statusMessage });
     return true;
   }
-  private prepareDraft = async () => {
-    if (this.canonicalBaselineCompileInFlight) return;
-    const currentRevision =
-      this.state.bundle?.estimateDraftRevisionState?.revisions.find(
-        (revision) =>
-          revision.revisionId ===
-          this.state.bundle?.estimateDraftRevisionState?.currentRevisionId,
-      ) ?? null;
-    const legacyEstimateRequiresRebuild = Boolean(
-      this.state.bundle &&
-      this.state.bundle.canonicalParameterSession == null &&
-      (
-        this.state.bundle.estimateDraftSession?.status ===
-          "PARAMETERS_REQUIRED" ||
-        currentRevision?.status === "blocking_required"
-      ),
-    );
+  private ensureInitialCanonicalRevision = async (): Promise<EnsureConsumerRepairDraftBundleResult> => {
+    const initial = this.ensureDraftBundle({ allowPendingDraftCreation: true });
+    const pendingBundle = this.resolvedDraftBundle(initial);
+    if (!pendingBundle) return initial;
+    if (consumerRepairCanonicalBackendBinding(pendingBundle)) {
+      return { status: "READY", bundle: pendingBundle };
+    }
+
     const problemText =
       this.state.problemText.trim() ||
-      (
-        legacyEstimateRequiresRebuild
-          ? this.state.bundle?.draft.problemText?.trim() ?? ""
-          : ""
-      );
+      pendingBundle.draft.problemText?.trim() ||
+      this.props.initialProblemText?.trim() ||
+      "";
     if (!problemText) {
-      this.setState({ statusMessage: "Напишите, что нужно посчитать по смете." });
-      return;
+      return {
+        status: "BLOCKED_WITH_REASON",
+        bundle: pendingBundle,
+        message: "Напишите, что нужно посчитать по смете.",
+      };
     }
-    let selectedWork = this.state.selectedWork;
+
+    let selectedWork = this.state.selectedWork ?? selectedWorkFromBundle(pendingBundle);
+    if (!selectedWork && this.props.initialSelectedCatalogWorkId?.trim()) {
+      selectedWork = buildConsumerRepairExactCatalogLaunchSelectedWork({
+        catalogWorkId: this.props.initialSelectedCatalogWorkId,
+        rawInput: problemText,
+      });
+    }
     if (!selectedWork) {
       try {
         const searchQuery = canonicalWorkSearchQueryFromPrompt(problemText);
@@ -991,41 +1063,67 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         const exact = suggestions[0];
         if (literalTotalCount !== 1 || !exact || !["exact_title", "exact_alias"].includes(exact.matchKind)) {
           this.scheduleCanonicalWorkSearch(problemText);
-          this.setState({
-            statusMessage: literalTotalCount > 1
-              ? `Найдено несколько работ: ${literalTotalCount}. Выберите точную работу из списка — группа целиком не компилируется.`
-              : "Точная работа не определена. Выберите работу из результатов поиска; пустой второй экран больше не открывается.",
-          });
-          return;
+          return {
+            status: "BLOCKED_WITH_REASON",
+            bundle: pendingBundle,
+            message: literalTotalCount > 1
+              ? `Найдено несколько работ: ${literalTotalCount}. Выберите точную работу из списка.`
+              : "Точная работа не определена. Выберите работу из результатов поиска.",
+          };
         }
         selectedWork = buildSelectedWorkFromSuggestion(exact, problemText);
         this.setState({ selectedWork, repairType: selectedWork.selectedCategoryKey });
       } catch (error) {
-        this.setState({
-          statusMessage: error instanceof CanonicalEstimateApiError
+        return {
+          status: "RETRYABLE_ERROR",
+          bundle: pendingBundle,
+          message: error instanceof CanonicalEstimateApiError
             ? error.message
-            : "Не удалось определить точную работу в canonical backend.",
-        });
-        return;
+            : "Не удалось определить точную работу. Повторите расчёт.",
+        };
       }
     }
-    this.canonicalBaselineCompileInFlight = true;
-    this.setState({ statusMessage: "Формируем исходную смету в backend…" });
+
+    this.setState({ statusMessage: "Формируем исходную смету…" });
     try {
-      await this.props.onPrepareCanonicalEstimate(
+      const recovered = await this.props.onPrepareCanonicalEstimate(
         problemText,
         selectedWork.selectedWorkKey,
-        this.state.bundle?.draft.id ?? null,
+        pendingBundle.draft.id,
       );
+      const binding = consumerRepairCanonicalBackendBinding(recovered);
+      if (!recovered || !binding) {
+        return {
+          status: "RETRYABLE_ERROR",
+          bundle: pendingBundle,
+          message: "Не удалось рассчитать смету. Черновик сохранён — повторите расчёт.",
+        };
+      }
+      return { status: "REVISION_RECOVERED", bundle: recovered };
     } catch (error) {
       const code = error instanceof Error ? error.message : String(error);
-      this.setState({
-        statusMessage: code.startsWith("CANONICAL_BACKEND_DEFINITION_MISSING:")
-          ? "Работа найдена в поиске, но её расчётная backend-модель ещё не загружена. Смета не создана: вымышленные материалы и ложная сумма запрещены."
+      return {
+        status: "RETRYABLE_ERROR",
+        bundle: pendingBundle,
+        message: code.startsWith("CANONICAL_BACKEND_DEFINITION_MISSING:")
+          ? "Работа найдена, но её расчётная модель временно недоступна. Черновик сохранён — повторите расчёт."
           : code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
-            ? "Backend не содержит обязательной исходной модели этой работы. Пустая смета и вымышленные значения запрещены."
-            : "Не удалось сформировать исходную backend-смету. Второй пустой экран не открыт; ошибка зафиксирована.",
-      });
+            ? "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт."
+            : "Не удалось рассчитать смету. Черновик сохранён — повторите расчёт.",
+      };
+    }
+  };
+  private prepareDraft = async () => {
+    if (this.canonicalBaselineCompileInFlight) {
+      this.setState({ statusMessage: "Расчёт уже выполняется…" });
+      return;
+    }
+    this.canonicalBaselineCompileInFlight = true;
+    try {
+      const result = await this.ensureInitialCanonicalRevision();
+      if (result.status === "RETRYABLE_ERROR" || result.status === "BLOCKED_WITH_REASON") {
+        this.setState({ statusMessage: result.message });
+      }
     } finally {
       this.canonicalBaselineCompileInFlight = false;
     }
@@ -1064,17 +1162,22 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     if (this.approvalCommitInFlight) return;
     this.approvalCommitInFlight = true;
     try {
-      const current = this.ensureDraftBundle();
+      const ensured = await this.ensureInitialCanonicalRevision();
+      if (ensured.status === "RETRYABLE_ERROR" || ensured.status === "BLOCKED_WITH_REASON") {
+        this.setState({ statusMessage: ensured.message });
+        return;
+      }
+      const current = ensured.bundle;
       const synced = this.syncCurrentDraftFields(current);
       const canonical = consumerRepairCanonicalBackendBinding(synced);
       if (!canonical) {
-        this.openCanonicalBackendEditor(synced, "Перед утверждением перенесите смету в canonical backend.");
+        this.setState({ statusMessage: "Сначала завершите расчёт сметы. Черновик сохранён." });
         return;
       }
       const canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
           // Approval keeps the established backend archival artifact contract.
-          // The user-facing PDF button independently requests professional_pdf;
+          // The user-facing PDF button independently requests the professional profile;
           // approval must not be blocked by presentation-route rollout order.
           kind: "pdf",
           idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`,
@@ -1146,7 +1249,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private completePdfOpen = async () => {
     try {
-      const current = this.ensureDraftBundle();
+      const current = this.resolvedDraftBundle(this.ensureDraftBundle());
+      if (!current) return;
       const context = this.actionContext("openProfessionalPdf", current);
       {
         const revision = await getCanonicalEstimateRevision(context.revisionId);
@@ -1160,13 +1264,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         }
         const artifact = await buildCanonicalEstimateArtifact({
           revisionId: context.revisionId,
-          kind: "professional_pdf",
+          kind: "pdf",
+          documentProfile: "professional_v1",
           idempotencyKey: `consumer-professional-pdf-${context.revisionId}`,
         });
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,
-          expectedKind: "professional_pdf",
+          expectedKind: "pdf",
+          expectedDocumentProfile: "professional_v1",
           expectedCatalogId: context.definitionId ?? revision.catalogId,
           expectedRowCount: revision.rowCount,
         });
@@ -1228,13 +1334,15 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       }
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: canonical.revisionId,
-        kind: "professional_pdf",
+        kind: "pdf",
+        documentProfile: "professional_v1",
         idempotencyKey: `consumer-history-professional-pdf-${canonical.revisionId}`,
       });
       assertCanonicalEstimateArtifactIdentity({
         artifact,
         revision,
-        expectedKind: "professional_pdf",
+        expectedKind: "pdf",
+        expectedDocumentProfile: "professional_v1",
         expectedCatalogId: context.definitionId ?? revision.catalogId,
         expectedRowCount: revision.rowCount,
       });
@@ -1554,12 +1662,14 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     this.updateCurrentBundle(bundle, "Позиция возвращена.");
   };
   private addManualItem = () => {
-    const current = this.ensureDraftBundle();
-    if (this.openCanonicalBackendEditor(current)) return;
+    const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
+    if (!current) return;
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
   };
-  private openPhotoRecognition(targetItemId?: string) {
-    let bundle = this.ensureDraftBundle();
+  private openPhotoRecognition = async (targetItemId?: string) => {
+    const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
+    if (!current) return;
+    let bundle = current;
     let targetItem = targetItemId
       ? bundle.items.find((candidate) => candidate.id === targetItemId) ?? null
       : bundle.items.find((candidate) => candidate.itemType === "material") ?? null;
@@ -1585,7 +1695,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     if (consumerRepairCanonicalBackendBinding(bundle)) {
       try {
-        const context = this.actionContext("openLinePhoto", bundle, targetItem.id);
+        const context = await resolveConsumerEstimateLineActionContext({
+          context: this.actionContext("openLinePhoto", bundle, targetItem.id),
+          bundle,
+        });
         this.props.onOpenPhotoForMaterialRecognition({
           userId: context.ownerId,
           draftId: context.draftId,
@@ -1607,17 +1720,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       targetItemId: targetItem.id,
       bundle,
     });
-  }
-  private addPhotoMaterialRecognition = () => this.openPhotoRecognition();
-  private openPhotoForEstimateItem = (itemId: string) => this.openPhotoRecognition(itemId);
+  };
+  private addPhotoMaterialRecognition = () => { void this.openPhotoRecognition(); };
+  private openPhotoForEstimateItem = (itemId: string) => { void this.openPhotoRecognition(itemId); };
   private addCustomItem = () => {
-    const current = this.ensureDraftBundle();
-    if (this.openCanonicalBackendEditor(current)) return;
+    const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
+    if (!current) return;
     const bundle = addConsumerRepairCustomNoteItem(current);
     this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
   };
-  private openCatalogForEstimateItem = (itemId: string) => {
-    const current = this.ensureDraftBundle();
+  private openCatalogForEstimateItem = async (itemId: string) => {
+    const current = this.resolvedDraftBundle(this.ensureDraftBundle());
+    if (!current) return;
     const item = current.items.find((candidate) => candidate.id === itemId);
     if (!item) {
       this.handleActionContextError(new ConsumerEstimateActionContextError(
@@ -1627,7 +1741,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     if (consumerRepairCanonicalBackendBinding(current)) {
       try {
-        this.pendingCatalogActionContext = this.actionContext("openLineCatalog", current, itemId);
+        this.pendingCatalogActionContext = await resolveConsumerEstimateLineActionContext({
+          context: this.actionContext("openLineCatalog", current, itemId),
+          bundle: current,
+        });
       } catch (error) {
         this.handleActionContextError(error);
         return;
@@ -1642,7 +1759,8 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   };
   private addCatalogItem = async (catalogItem: CatalogItemPickerItem) => {
-    const current = this.ensureDraftBundle();
+    const current = this.resolvedDraftBundle(this.ensureDraftBundle());
+    if (!current) return;
     if (consumerRepairCanonicalBackendBinding(current) && !this.pendingCatalogActionContext) {
       this.handleActionContextError(new ConsumerEstimateActionContextError(
         "Товар не выбран: контекст строки устарел. Откройте каталог ещё раз.",

@@ -218,8 +218,14 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             setCanonicalComposerVisible(true);
           }}
           onPrepareCanonicalEstimate={async (problemText, catalogId, requestDraftId) => {
-            const mapping = await compileConsumerCanonicalBaseline({ catalogId, prompt: problemText });
-            await persistCanonicalDraft(mapping, problemText, requestDraftId?.trim() || null);
+            const draftId = requestDraftId?.trim();
+            if (!draftId) throw new Error("INITIAL_CANONICAL_DRAFT_ID_REQUIRED");
+            const mapping = await compileConsumerCanonicalBaseline({
+              catalogId,
+              prompt: problemText,
+              draftId,
+            });
+            return await persistCanonicalDraft(mapping, problemText, draftId) ?? null;
           }}
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}

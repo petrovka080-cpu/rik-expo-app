@@ -71,6 +71,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       quantityFormula: null,
       calculationTrace: JSON.stringify(row.calculationTrace),
       sourceParameters: {
+        rowCode: row.rowId,
         normativeTrace: row.normativeTrace,
         rowSha256: row.rowSha256,
         canonicalBackendRevisionId: input.revision.revisionId,

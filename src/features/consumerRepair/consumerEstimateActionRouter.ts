@@ -1,4 +1,5 @@
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
+import { getAllCanonicalEstimateRevisionRows } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 export type ConsumerEstimateActionName =
@@ -84,12 +85,11 @@ export function buildConsumerEstimateActionContext(input: {
   }
   const lineId = item == null
     ? null
-    : required(
-        typeof item.sourceParameters?.rowCode === "string"
-          ? item.sourceParameters.rowCode
-          : item.id,
-        "lineId",
-      );
+    : [
+        item.sourceParameters?.rowCode,
+        item.sourceParameters?.canonicalBackendRowId,
+        item.sourceParameters?.estimateSourceRowId,
+      ].map((value) => String(value ?? "").trim()).find(Boolean) ?? null;
   if (item) {
     const itemRevisionId = String(
       item.sourceParameters?.canonicalBackendRevisionId ?? "",
@@ -124,4 +124,54 @@ export function buildConsumerEstimateActionContext(input: {
     returnRoute: `/request?draftId=${encodeURIComponent(draftId)}`,
     returnScrollPosition,
   };
+}
+
+function comparableRowTitle(value: unknown): string {
+  return String(value ?? "")
+    .replace(/^\s*\d+\s+/u, "")
+    .replace(/\s+/gu, " ")
+    .trim()
+    .toLocaleLowerCase("ru-RU");
+}
+
+/**
+ * Recovers rowId for projections written before rowCode became mandatory.
+ * rowSha256 is preferred; the visible tuple is accepted only when it resolves
+ * to exactly one row inside the already-bound immutable revision.
+ */
+export async function resolveConsumerEstimateLineActionContext(input: {
+  context: ConsumerEstimateActionContext;
+  bundle: ConsumerRepairDraftBundle;
+}): Promise<ConsumerEstimateActionContext> {
+  if (!input.context.requestItemId) return input.context;
+  if (input.context.lineId) return input.context;
+  const item = input.bundle.items.find(
+    (candidate) => candidate.id === input.context.requestItemId,
+  );
+  if (!item) {
+    throw new ConsumerEstimateActionContextError(
+      "Действие не выполнено: выбранная строка отсутствует в этой версии сметы.",
+    );
+  }
+  const rows = await getAllCanonicalEstimateRevisionRows({
+    revisionId: input.context.revisionId,
+  });
+  const rowSha256 = String(item.sourceParameters?.rowSha256 ?? "").trim();
+  const hashMatches = rowSha256
+    ? rows.filter((row) => row.rowSha256 === rowSha256)
+    : [];
+  const tupleMatches = hashMatches.length === 0
+    ? rows.filter((row) =>
+        comparableRowTitle(row.titleRu) === comparableRowTitle(item.titleRu) &&
+        String(row.unitId ?? "").trim() === String(item.unit ?? "").trim() &&
+        Number(row.quantity) === Number(item.quantity)
+      )
+    : [];
+  const matches = hashMatches.length > 0 ? hashMatches : tupleMatches;
+  if (matches.length !== 1) {
+    throw new ConsumerEstimateActionContextError(
+      "Действие не выполнено: строка не получила однозначную привязку к выбранной версии сметы.",
+    );
+  }
+  return { ...input.context, lineId: matches[0].rowId };
 }

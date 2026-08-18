@@ -165,7 +165,8 @@ function professionalUnit(row: Record<string, unknown>): string {
   const unit = String(row.unit_id ?? "").trim();
   const localized: Record<string, string> = {
     set: "компл.", item: "шт.", pcs: "шт.", man_hour: "чел.-ч",
-    machine_hour: "маш.-ч", t_km: "т·км", kg: "кг", t: "т", m: "м", m2: "м²", m3: "м³",
+    machine_hour: "маш.-ч", t_km: "т·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
+    trip: "рейс", document: "док.", ratio: "коэф.",
   };
   if (unit !== "test") return localized[unit] ?? unit;
   const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");

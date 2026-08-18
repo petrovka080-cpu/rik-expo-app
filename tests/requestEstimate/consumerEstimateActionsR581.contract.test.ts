@@ -5,13 +5,17 @@ import {
   buildConsumerEstimateActionContext,
   ConsumerEstimateActionContextError,
 } from "../../src/features/consumerRepair/consumerEstimateActionRouter";
-import { extractUserQuantity } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {
+  buildCanonicalBaselineInputs,
+  extractUserQuantity,
+} from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import {
   isConsumerMeaningfulCanonicalParameter,
   normalizedCanonicalNumericValidation,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { canonicalConsumerParameterPlaceholder } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
 import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
+import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 
 const root = path.resolve(__dirname, "../..");
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -67,6 +71,44 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     for (const prompt of ["500 м²", "500 м2", "500 кв. м", "500 квадратных метров", "500 кв метров"]) {
       expect(extractUserQuantity(prompt)).toEqual({ value: "500", unit: "m2" });
     }
+  });
+
+  it("maps a Cyrillic square-metre unit and scales accepted machine coverage inputs", () => {
+    const parameter = (
+      parameterId: string,
+      unitId: string | null,
+    ): CanonicalEstimateCatalogItem["parameterSchema"][number] => ({
+      parameterId,
+      ordinal: parameterId === "area_m2" ? 0 : 1,
+      valueType: "decimal",
+      unitId,
+      titleRu: parameterId,
+      required: true,
+      defaultValue: null,
+      constraints: { min: Number.EPSILON },
+      semanticParameterKey: parameterId,
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "USER_INPUT_REQUIRED",
+      normativeLinks: [],
+      formulaConsumers: [],
+      resourceBranchConsumers: [],
+      validationRules: [],
+      provenance: {},
+    });
+    const catalog = {
+      parameterSchema: [
+        parameter("area_m2", "\u043c\u00b2"),
+        parameter("asphalt_paver_layer_1_coverage_area_m2", null),
+      ],
+    } as CanonicalEstimateCatalogItem;
+
+    expect(buildCanonicalBaselineInputs({
+      catalog,
+      prompt: "\u0410\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 5000 \u043a\u0432 \u043c\u0435\u0442\u0440\u043e\u0432",
+    })).toMatchObject({
+      area_m2: "5000",
+      asphalt_paver_layer_1_coverage_area_m2: "5000",
+    });
   });
 
   it("routes a line action only with exact immutable identity and return position", () => {

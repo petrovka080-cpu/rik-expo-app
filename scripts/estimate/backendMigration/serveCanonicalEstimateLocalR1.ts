@@ -852,9 +852,13 @@ function professionalPdfUnit(row: JsonRecord): string {
     t_km: "т·км",
     kg: "кг",
     t: "т",
+    l: "л",
     m: "м",
     m2: "м²",
     m3: "м³",
+    trip: "рейс",
+    document: "док.",
+    ratio: "коэф.",
   };
   if (unit !== "test") return fixed[unit] ?? unit;
   const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
@@ -1532,8 +1536,21 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     return send(response, 200, { apiVersion: API_VERSION, revisionId: path[1], rows: page.map((row) => ({ rowId: row.row_id, ordinal: row.ordinal, section: row.section, category: row.category, titleRu: row.title_ru, unitId: row.unit_id, quantity: row.quantity == null ? null : String(row.quantity), unitPrice: row.unit_price == null ? null : String(row.unit_price), amount: row.amount == null ? null : String(row.amount), currencyCode: row.currency_code, procurementEligible: row.procurement_eligible, includedInEstimate: row.included_in_estimate, includedInProcurement: row.included_in_procurement, ownershipStatus: row.ownership_status, calculationTrace: row.calculation_trace, normativeTrace: row.normative_trace, rowSha256: row.row_sha256 })), nextCursor: rows.length > limit ? Buffer.from(JSON.stringify({ ordinal: page[page.length - 1].ordinal })).toString("base64url") : null });
   }
   if (path.length === 4 && path[0] === "revisions" && path[2] === "artifacts" && (path[3] === "pdf" || path[3] === "professional_pdf" || path[3] === "procurement")) {
-    const kind = path[3] as "pdf" | "professional_pdf" | "procurement";
-    if (request.method === "POST") return send(response, 202, await createArtifactJob(await readBody(request), path[1], kind));
+    const publicKind = path[3] as "pdf" | "professional_pdf" | "procurement";
+    const body = request.method === "POST" ? await readBody(request) : {};
+    const requestedProfile = String(
+      request.method === "POST" ? body.documentProfile ?? "" : url.searchParams.get("documentProfile") ?? "",
+    ).trim();
+    if (requestedProfile && requestedProfile !== "professional_v1") {
+      throw Object.assign(new Error("unsupported PDF document profile"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
+    }
+    if (requestedProfile && publicKind !== "pdf") {
+      throw Object.assign(new Error("documentProfile is only valid for PDF"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
+    }
+    const kind = (
+      publicKind === "pdf" && requestedProfile === "professional_v1" ? "professional_pdf" : publicKind
+    ) as "pdf" | "professional_pdf" | "procurement";
+    if (request.method === "POST") return send(response, 202, await createArtifactJob(body, path[1], kind));
     if (request.method === "GET") {
       const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
       const artifact = await withDatabaseClient(modelDatabaseUrl, async (client) => (await client.query(`
@@ -1567,6 +1584,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       )) throw Object.assign(new Error("artifact revision identity mismatch"), { code: "ARTIFACT_REVISION_IDENTITY_MISMATCH", httpStatus: 409 });
       const metadata = {
         ...sourceMetadata,
+        ...(kind === "professional_pdf" ? { documentProfile: "professional_v1" } : {}),
         sourceCatalogId: artifact.catalog_id,
         sourceRowCount: Number(artifact.row_count),
         sourceReleaseId: artifact.release_id,
@@ -1574,7 +1592,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         sourceOwnerUserId: artifact.owner_user_id,
         sourceOrganizationId: artifact.organization_id ?? null,
       };
-      return send(response, 200, { apiVersion: API_VERSION, artifactId: artifact.id, revisionId: artifact.revision_id, releaseId: artifact.release_id, kind: artifact.artifact_kind, status: artifact.status, contentType: artifact.content_type, byteSize: artifact.byte_size == null ? null : Number(artifact.byte_size), sha256: artifact.sha256, metadata, errorCode: artifact.error_code, createdAt: artifact.created_at, updatedAt: artifact.updated_at, readyAt: artifact.ready_at, signedUrl, signedUrlExpiresAt: signedUrl ? new Date(signedUrlExpiresAtMs).toISOString() : null });
+      return send(response, 200, { apiVersion: API_VERSION, artifactId: artifact.id, revisionId: artifact.revision_id, releaseId: artifact.release_id, kind: publicKind, status: artifact.status, contentType: artifact.content_type, byteSize: artifact.byte_size == null ? null : Number(artifact.byte_size), sha256: artifact.sha256, metadata, errorCode: artifact.error_code, createdAt: artifact.created_at, updatedAt: artifact.updated_at, readyAt: artifact.ready_at, signedUrl, signedUrlExpiresAt: signedUrl ? new Date(signedUrlExpiresAtMs).toISOString() : null });
     }
   }
   if (request.method === "GET" && path.length === 1 && path[0] === "catalog") {

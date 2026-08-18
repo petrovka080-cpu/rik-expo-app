@@ -56,7 +56,24 @@ function parameterAcceptsQuantity(
   const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`.toLocaleLowerCase("ru-RU");
   const isCount = /количеств|число|count|quantity|qty/u.test(identity);
   if (quantity.unit === "pcs") return isCount || /шт|сва|тумб/u.test(identity);
-  const unit = String(parameter.unitId ?? "").toLocaleLowerCase("en").replace("²", "2").replace("³", "3");
+  const rawUnit = String(parameter.unitId ?? "")
+    .toLocaleLowerCase("ru-RU")
+    .replace("²", "2")
+    .replace("³", "3")
+    .replace(/[.\s]+/gu, "");
+  const unit: UserQuantity["unit"] = rawUnit === "m2" || rawUnit === "м2" || rawUnit === "sqm" || rawUnit === "sq_m"
+    ? "m2"
+    : rawUnit === "m3" || rawUnit === "м3" || rawUnit === "cbm"
+      ? "m3"
+      : rawUnit === "m" || rawUnit === "м"
+        ? "m"
+        : rawUnit === "kg" || rawUnit === "кг"
+          ? "kg"
+          : rawUnit === "t" || rawUnit === "т"
+            ? "t"
+            : rawUnit === "pcs" || rawUnit === "pc" || rawUnit === "шт"
+              ? "pcs"
+              : null;
   return quantity.unit != null && unit === quantity.unit;
 }
 
@@ -102,6 +119,27 @@ function baselineValue(
   if (parameter.valueType === "text") return "1";
   if (parameter.valueType === "array_object") return [];
   return undefined;
+}
+
+function applyExplicitQuantityDependencies(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  rawInputs: Record<string, CanonicalEstimateParameterInputValue>;
+  quantity: UserQuantity;
+  primaryParameterId: string;
+}): void {
+  if (input.quantity.unit !== "m2") return;
+  for (const parameter of input.catalog.parameterSchema) {
+    if (parameter.parameterId === input.primaryParameterId) continue;
+    if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") continue;
+    if (parameter.visibilityRole === "INTERNAL_ONLY" || parameter.visibilityRole === "USER_DERIVED_READONLY") continue;
+    const semanticKey = String(parameter.semanticParameterKey ?? parameter.parameterId).toLocaleLowerCase("en");
+    // Accepted formula graphs expose machine coverage as explicit input nodes.
+    // Their quantity basis is the same measured work surface, so preserve the
+    // user's area instead of silently falling back to the synthetic value 1.
+    if (/(?:^|_)coverage_area_m2$/.test(semanticKey)) {
+      input.rawInputs[parameter.parameterId] = input.quantity.value;
+    }
+  }
 }
 
 function conditionMatches(
@@ -173,6 +211,12 @@ export function buildCanonicalBaselinePlan(input: {
     if (target) {
       rawInputs[target.parameterId] = userQuantity.value;
       userQuantityParameterId = target.parameterId;
+      applyExplicitQuantityDependencies({
+        catalog: input.catalog,
+        rawInputs,
+        quantity: userQuantity,
+        primaryParameterId: target.parameterId,
+      });
     }
   }
   normalizeCrossFieldBaseline(input.catalog, rawInputs);
@@ -219,6 +263,7 @@ function stableId(value: string): string {
 export async function compileConsumerCanonicalBaseline(input: {
   catalogId: string;
   prompt: string;
+  draftId: string;
 }): Promise<ForemanAiEstimateDraftMapping> {
   const catalog = await getCanonicalEstimateCatalogItem(input.catalogId).catch((error: unknown) => {
     if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
@@ -230,7 +275,7 @@ export async function compileConsumerCanonicalBaseline(input: {
   const parameters = baseline.parameters;
   const compiled = await compileCanonicalEstimateAndLoad({
     request: {
-      idempotencyKey: `consumer-baseline-${stableId(`${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
+      idempotencyKey: `consumer-baseline-${stableId(`${input.draftId}|${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
       catalogId: catalog.catalogId,
       parameters,
       currencyCode: "KGS",

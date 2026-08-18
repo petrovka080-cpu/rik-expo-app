@@ -790,16 +790,17 @@ export default function ProfessionalEstimateComposer({
     setSaving(true);
     setError("");
     try {
-      const artifactKind = kind === "pdf" ? "professional_pdf" as const : "procurement" as const;
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: bundle.revision.revisionId,
-        kind: artifactKind,
-        idempotencyKey: `composer-${artifactKind}-${bundle.revision.revisionId}`,
+        kind,
+        ...(kind === "pdf" ? { documentProfile: "professional_v1" as const } : {}),
+        idempotencyKey: `composer-${kind}-${bundle.revision.revisionId}`,
       });
       assertCanonicalEstimateArtifactIdentity({
         artifact,
         revision: bundle.revision,
-        expectedKind: artifactKind,
+        expectedKind: kind,
+        ...(kind === "pdf" ? { expectedDocumentProfile: "professional_v1" as const } : {}),
         expectedCatalogId: selectedCatalog?.catalogId ?? bundle.revision.catalogId,
         expectedRowCount: bundle.revision.rowCount,
       });

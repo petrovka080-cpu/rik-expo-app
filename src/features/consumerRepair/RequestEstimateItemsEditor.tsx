@@ -121,7 +121,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         <TextInput
           accessibilityLabel="\u041f\u043e\u0438\u0441\u043a \u043f\u043e \u0441\u043c\u0435\u0442\u0435"
           onChangeText={this.updateSearch}
-          placeholder="\u041d\u0430\u0439\u0442\u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b, \u0440\u0430\u0431\u043e\u0442\u0443, \u043d\u043e\u0440\u043c\u0443..."
+          placeholder={"\u041d\u0430\u0439\u0442\u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b, \u0440\u0430\u0431\u043e\u0442\u0443, \u043d\u043e\u0440\u043c\u0443..."}
           placeholderTextColor="#64748B"
           style={styles.searchInput}
           testID="request-estimate-items-search"

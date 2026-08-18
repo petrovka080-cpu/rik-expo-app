@@ -25,6 +25,7 @@ import type { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequ
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenActions";
 import { consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
+import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 type ConsumerRepairRequestRenderModel = ReturnType<typeof buildConsumerRepairRequestRenderModel>;
 
@@ -172,11 +173,15 @@ export function ConsumerRepairRequestScreenView({
     ) ?? null;
   const legacyEstimateRequiresRebuild =
     consumerRepairLegacyEstimateRequiresRebuild(renderModel.bundle);
+  const canonicalRevisionMissing = Boolean(
+    renderModel.bundle && !consumerRepairCanonicalBackendBinding(renderModel.bundle),
+  );
   const approvalBlockedByEstimate = Boolean(
     renderModel.bundle?.canonicalParameterSession?.status ===
       "BLOCKING_REQUIRED" ||
     currentDraftRevision?.status === "blocking_required" ||
     legacyEstimateRequiresRebuild ||
+    canonicalRevisionMissing ||
     consumerRepairExactAsphaltApprovalErrors(renderModel.bundle).length > 0
   );
   return (
@@ -271,7 +276,7 @@ export function ConsumerRepairRequestScreenView({
         sent={renderModel.sent}
         hasBundle={Boolean(renderModel.bundle)}
         hasPendingPrompt={state.problemText.trim().length > 0}
-        estimateRequiresRebuild={legacyEstimateRequiresRebuild}
+        estimateRequiresRebuild={legacyEstimateRequiresRebuild || canonicalRevisionMissing}
         hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
         approvalBlockedByEstimate={approvalBlockedByEstimate}
         needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
