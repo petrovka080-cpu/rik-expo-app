@@ -49,6 +49,10 @@ begin
       and job.owner_user_id = p_test_owner_user_id
       and job.organization_id = p_test_organization_id
       and job.idempotency_key not like p_idempotency_key_pattern
+      and not (
+        job.operation in ('pdf', 'procurement')
+        and job.idempotency_key like 'r58-4272-artifact-%'
+      )
   ) then
     raise exception using errcode = '55000', message = 'test tenant contains runtime outside the exact R6 control run';
   end if;

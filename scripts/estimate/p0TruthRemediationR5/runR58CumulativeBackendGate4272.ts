@@ -356,7 +356,7 @@ async function createArtifacts(client: Client, definitions: readonly Definition[
     const payload = await api(`revisions/${request.final.revisionId}/artifacts/${request.kind}`, {
       method: "POST",
       body: JSON.stringify({
-        idempotencyKey: `r58-4272-artifact-${sha256({ head, catalogId: request.definition.catalogId,
+        idempotencyKey: `${CONTROL_72 ? "r6-control72-artifact" : "r58-4272-artifact"}-${sha256({ head, catalogId: request.definition.catalogId,
           revisionId: request.final.revisionId, kind: request.kind }).slice(0, 48)}`,
       }),
     });
