@@ -429,7 +429,6 @@ async function main(): Promise<void> {
           blockers.push("CATALOG_SEARCH_OR_ADD_RED");
         }
         await page.getByTestId("request-estimate-parameters-toggle").click();
-        await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
         await page.getByTestId("canonical-estimate-parameter-form").waitFor({ state: "visible", timeout: 60_000 });
         const history = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
         await history.first().waitFor({ state: "visible", timeout: 60_000 });
