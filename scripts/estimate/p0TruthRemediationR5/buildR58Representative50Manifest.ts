@@ -99,11 +99,17 @@ async function main(): Promise<void> {
       group by definition_version_id`, [selected.map((row) => row.definitionVersionId)])).rows as Json[];
     const resourcesByDefinition = new Map(resourceCounts.map((row) => [String(row.definitionVersionId), row]));
     for (const row of selected) Object.assign(row, resourcesByDefinition.get(String(row.definitionVersionId)) ?? {});
+    const parameterCounts = (await client.query(`select definition_version_id::text "definitionVersionId",
+        count(*)::int "parameterRows" from public.estimate_parameter_definition
+      where definition_version_id=any($1::uuid[]) group by definition_version_id`,
+    [selected.map((row) => row.definitionVersionId)])).rows as Json[];
+    const parametersByDefinition = new Map(parameterCounts.map((row) => [String(row.definitionVersionId), row]));
+    for (const row of selected) Object.assign(row, parametersByDefinition.get(String(row.definitionVersionId)) ?? {});
     const domainCounts = Object.fromEntries(domains.map((domain) => [domain,
       selected.filter((row) => row.domainId === domain).length]).filter(([, count]) => Number(count) > 0));
     invariant(selected.length === 50 && new Set(selected.map((row) => row.catalogId)).size === 50,
       "R58_REP50_DENOMINATOR_RED");
-    invariant(selected.every((row) => Number(row.resourceRows) > 0 && Number(row.requiredInputsCount) > 0),
+    invariant(selected.every((row) => Number(row.resourceRows) > 0 && Number(row.parameterRows) > 0),
       "R58_REP50_EMPTY_DEFINITION_RED");
     invariant(selected.some((row) => Number(row.procurementRows) > 0)
       && selected.some((row) => Number(row.laborRows) > 0)
