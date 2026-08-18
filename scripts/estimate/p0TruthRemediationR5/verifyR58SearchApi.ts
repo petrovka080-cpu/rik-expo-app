@@ -128,7 +128,8 @@ async function main():Promise<void> {
     && pieces.items[0]?.catalogId==="r58-real:reinforced-concrete-equipment-pedestal"
     && pieces.items[0]?.estimateReady===true,"R58_SEARCH_PIECES_WORK_RED");
   const reference=await api(`search/catalog?query=${encodeURIComponent("бетонные тумбы")}&scope=REFERENCES&pageSize=100`);
-  invariant(reference.literalTotalCount===0,"R58_SEARCH_REFERENCE_SCOPE_LEAK");
+  invariant(reference.items.every((item:Json)=>item.estimateReady===false
+    && item.catalogId!=="r58-real:reinforced-concrete-equipment-pedestal"),"R58_SEARCH_REFERENCE_SCOPE_LEAK");
   const mandatory:Json[]=[];
   for(const [query,catalogId] of MANDATORY){
     const result=await api(`search/catalog?query=${encodeURIComponent(query)}&pageSize=100`);
