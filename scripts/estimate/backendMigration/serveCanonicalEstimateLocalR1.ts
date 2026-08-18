@@ -1187,6 +1187,9 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         rows=fuzzySearchPage(candidates,intent.searchText,cursor?.orderKey ?? null,limit);
         resultLevel="FUZZY";
       }
+      const inventoryAuditReleaseId = String(
+        release.metadata?.parentSearchReleaseId ?? release.metadata?.parent_search_release_id ?? release.id,
+      );
       const inventory = url.searchParams.get("auditInventory") === "true" ? (await client.query(`with tokens as(
         select distinct unnest($2::text[]) q
       ),hits as(
@@ -1199,7 +1202,7 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       where (upper($3)='ANY' and hits.matched>0)
         or (upper($3)='ALL' and state.token_count>0 and hits.matched=state.token_count)
         or (upper($3)='PHRASE' and state.token_count=1 and hits.matched=1)`,
-      [release.id,intent.tokens,intent.mode])).rows[0] : null;
+      [inventoryAuditReleaseId,intent.tokens,intent.mode])).rows[0] : null;
       return { release,rows,inventory,resultLevel };
     });
     const literalTotalCount = Number(result.rows[0]?.literal_total_count ?? 0);

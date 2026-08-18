@@ -8,13 +8,31 @@ type Json=Record<string,any>;
 const SPEC_PATH=resolve("C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md");
 const SPEC_SHA256="4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
 const BASE_COMMIT="691acb78d55c38ef447a4d91c0bc798992e58dbc";
-const SEARCH_RELEASE_ID="67a40ccc-9ae1-5727-a01f-7d4272fba77b";
-const DEFINITION_RELEASE_ID="34a707dc-954c-547d-ba88-27c15dba58d7";
+const SEARCH_RELEASE_ID=String(process.env.R58_SEARCH_RELEASE_ID??"").trim();
+const DEFINITION_RELEASE_ID=String(process.env.R58_TARGET_RELEASE_ID??"94443669-8f5b-5cc7-b364-2f8e9f9e3506").trim();
 const API_ROOT=String(process.env.R58_CANONICAL_API_ROOT??"http://127.0.0.1:8777/canonical-estimate").replace(/\/+$/u,"");
 const OUTPUT=resolve(".release-runtime/p0-one-monolith-r58/evidence/09-search/R58_SEARCH_API_GATE.json");
-const EXPECTED=Object.freeze({"ла":1225,"ро":1237,"со":607,"др":16,
-  "ла или ро или со или др":2212});
+const EXPECTED=Object.freeze({"ла":1226,"ро":1244,"со":607,"др":16,
+  "ла или ро или со или др":2219});
 const EXPECTED_INVENTORY=Object.freeze({"ла":3678,"ро":4128,"со":1462,"др":825});
+const MANDATORY=Object.freeze([
+  ["ламинат","flooring_interior_laminate_install_large_area"],
+  ["бетонные тумбы","r58-real:reinforced-concrete-equipment-pedestal"],
+  ["асфальтирование парковки","built-in-ai-1000:0702"],
+  ["демонтаж асфальта","built-in-ai-1000:0670"],
+  ["армокаркас во влажной зоне","concrete_foundation_interior_reinforcement_frame_reinforce_wet_zone"],
+  ["свайный фундамент моста","r58-real:bridge-bored-pile-installation"],
+  ["гкл перегородка","drywall_ceiling_interior_drywall_partition_install_large_area"],
+  ["электромонтаж кабеля","electrical_interior_power_cable_lay_large_area"],
+  ["водоснабжение","expanded-template:village_water_supply_preliminary_boq_expanded_complex_v1"],
+  ["hvac помещения","expanded-template:HVAC_plant_room_preliminary_boq_expanded_complex_v1"],
+  ["штукатурка","r58-real:wall-plaster-application"],
+  ["габионная стена","r58-real:gabion-wall-construction"],
+  ["кладка с перемычками","r58-real:masonry-wall-openings-lintels"],
+  ["кровельная система","r58-real:roofing-membrane-system"],
+  ["железобетонный элемент","r58-real:monolithic-reinforced-concrete"],
+  ["отделочное покрытие","r58-real:finish-coating-application"],
+] as const);
 
 function invariant(value:unknown,code:string):asserts value {if(!value)throw new Error(code);}
 function sha256(value:Buffer|string):string {return createHash("sha256").update(value).digest("hex");}
@@ -69,6 +87,7 @@ async function walk(query:string,mode?:"ANY"|"ALL"|"PHRASE",tokens:string[]=[]):
 }
 
 async function main():Promise<void> {
+  invariant(/^[0-9a-f-]{36}$/u.test(SEARCH_RELEASE_ID),"R58_SEARCH_RELEASE_ID_REQUIRED");
   invariant(sha256(readFileSync(SPEC_PATH))===SPEC_SHA256,"R58_SEARCH_SPEC_DRIFT");
   const branch=git(["branch","--show-current"]),head=git(["rev-parse","HEAD"]),tree=git(["rev-parse","HEAD^{tree}"]);
   invariant(branch==="codex/p0-one-monolith-r5","R58_SEARCH_BRANCH_DRIFT");
@@ -105,9 +124,18 @@ async function main():Promise<void> {
   const pieces=await api(`search/catalog?query=${encodeURIComponent("бетонные тумбы 10 штук")}&pageSize=100`);
   invariant(pieces.searchText==="бетонные тумбы"&&pieces.parsedQuantity===10&&pieces.parsedUnit==="шт",
     "R58_SEARCH_PIECES_QUANTITY_RED");
+  invariant(pieces.literalTotalCount===1
+    && pieces.items[0]?.catalogId==="r58-real:reinforced-concrete-equipment-pedestal"
+    && pieces.items[0]?.estimateReady===true,"R58_SEARCH_PIECES_WORK_RED");
   const reference=await api(`search/catalog?query=${encodeURIComponent("бетонные тумбы")}&scope=REFERENCES&pageSize=100`);
-  invariant(reference.literalTotalCount>=1&&reference.items.some((item:Json)=>item.canonicalNameRu==="бетонные тумбы"
-    && item.estimateReady===false&&item.selectableMode==="PRELIMINARY"),"R58_SEARCH_REFERENCE_SCOPE_RED");
+  invariant(reference.literalTotalCount===0,"R58_SEARCH_REFERENCE_SCOPE_LEAK");
+  const mandatory:Json[]=[];
+  for(const [query,catalogId] of MANDATORY){
+    const result=await api(`search/catalog?query=${encodeURIComponent(query)}&pageSize=100`);
+    invariant(result.items.some((item:Json)=>item.catalogId===catalogId&&item.definitionReleaseId===DEFINITION_RELEASE_ID
+      && item.estimateReady===true),`R58_SEARCH_MANDATORY_JOURNEY_RED:${query}:${catalogId}`);
+    mandatory.push({query,catalogId,total:result.literalTotalCount,matched:true});
+  }
   const fuzzy=await api(`search/catalog?query=${encodeURIComponent("ламенат")}&pageSize=100`);
   invariant(fuzzy.resultLevel==="FUZZY"&&fuzzy.items[0]?.catalogId==="flooring_interior_laminate_install_large_area"
     && fuzzy.items[0]?.matchType==="T6_TYPO_TRANSLITERATION_SUGGESTION","R58_SEARCH_FUZZY_RED");
@@ -125,7 +153,9 @@ async function main():Promise<void> {
     definitionReleaseId:DEFINITION_RELEASE_ID,searchReleaseId:SEARCH_RELEASE_ID,
     walks,repeatAny:repeat,inventoryOracle:inventory,laminate:{literal:laminate.literalTotalCount,
       catalogId:laminate.items[0].catalogId,quantity:laminateQuantity.parsedQuantity,unit:laminateQuantity.parsedUnit},
-    piecesQuantity:{quantity:pieces.parsedQuantity,unit:pieces.parsedUnit},fuzzy:{total:fuzzy.fuzzyTotalCount,
+    piecesQuantity:{quantity:pieces.parsedQuantity,unit:pieces.parsedUnit,catalogId:pieces.items[0].catalogId},
+    mandatoryJourneys:mandatory,mandatoryDenominator:`${mandatory.length}/16`,referenceScopeLeak:reference.literalTotalCount,
+    fuzzy:{total:fuzzy.fuzzyTotalCount,
       firstCatalogId:fuzzy.items[0].catalogId},group:{groupId,total:groupTotal,unique:new Set(groupIds).size},
     performance:{samples:durations.length,p95Ms:p95,maxMs:Math.max(...durations)},duplicateCatalogIds:0,
     legacyFirst15Cap:false,activeSearchReleaseSwitched:false,activeDefinitionReleaseSwitched:false,
