@@ -74,24 +74,25 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     }
   });
 
-  it("maps a Cyrillic square-metre unit and scales accepted machine coverage inputs", () => {
+  it("maps a Cyrillic square-metre unit only to the direct measured source", () => {
     const parameter = (
       parameterId: string,
       unitId: string | null,
+      derived = false,
     ): CanonicalEstimateCatalogItem["parameterSchema"][number] => ({
       parameterId,
       ordinal: parameterId === "area_m2" ? 0 : 1,
       valueType: "decimal",
       unitId,
       titleRu: parameterId,
-      required: true,
+      required: !derived,
       defaultValue: null,
       constraints: { min: Number.EPSILON },
       semanticParameterKey: parameterId,
-      visibilityRole: "USER_INPUT",
-      valueSourceRole: "USER_INPUT_REQUIRED",
+      visibilityRole: derived ? "USER_DERIVED_READONLY" : "USER_INPUT",
+      valueSourceRole: derived ? "BACKEND_DERIVED" : "USER_MEASURED",
       normativeLinks: [],
-      formulaConsumers: [],
+      formulaConsumers: derived ? [] : ["row:asphalt_paving"],
       resourceBranchConsumers: [],
       validationRules: [],
       provenance: {},
@@ -99,17 +100,51 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     const catalog = {
       parameterSchema: [
         parameter("area_m2", "\u043c\u00b2"),
-        parameter("asphalt_paver_layer_1_coverage_area_m2", null),
+        parameter("asphalt_paver_layer_1_coverage_area_m2", null, true),
       ],
-    } as CanonicalEstimateCatalogItem;
+    } as unknown as CanonicalEstimateCatalogItem;
 
-    expect(buildCanonicalBaselineInputs({
+    const inputs = buildCanonicalBaselineInputs({
       catalog,
       prompt: "\u0410\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 5000 \u043a\u0432 \u043c\u0435\u0442\u0440\u043e\u0432",
-    })).toMatchObject({
-      area_m2: "5000",
-      asphalt_paver_layer_1_coverage_area_m2: "5000",
     });
+    expect(inputs).toEqual({ area_m2: "5000" });
+    expect(inputs).not.toHaveProperty("asphalt_paver_layer_1_coverage_area_m2");
+  });
+
+  it("fails closed when a frozen definition exposes derived coverage as required user input", () => {
+    const catalog = {
+      parameterSchema: [{
+        parameterId: "area_m2",
+        ordinal: 0,
+        valueType: "decimal",
+        unitId: "m2",
+        titleRu: "Площадь",
+        required: true,
+        defaultValue: null,
+        constraints: { min: Number.EPSILON },
+        semanticParameterKey: "area_m2",
+        visibilityRole: "USER_INPUT",
+        valueSourceRole: "USER_MEASURED",
+      }, {
+        parameterId: "asphalt_paver_layer_1_coverage_area_m2",
+        ordinal: 1,
+        valueType: "decimal",
+        unitId: "m2",
+        titleRu: "Производная площадь покрытия",
+        required: true,
+        defaultValue: null,
+        constraints: { min: Number.EPSILON },
+        semanticParameterKey: "asphalt_paver_layer_1_coverage_area_m2",
+        visibilityRole: "USER_INPUT",
+        valueSourceRole: "USER_MEASURED",
+      }],
+    } as unknown as CanonicalEstimateCatalogItem;
+
+    expect(() => buildCanonicalBaselineInputs({
+      catalog,
+      prompt: "Асфальтирование 5000 кв метров",
+    })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING:asphalt_paver_layer_1_coverage_area_m2");
   });
 
   it("routes a line action only with exact immutable identity and return position", () => {
@@ -174,7 +209,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       resourceBranchConsumers: ["paver-row"],
     } as never;
     const undeclaredOwner = {
-      ...area,
+      ...(area as unknown as Record<string, unknown>),
       visibilityRole: undefined,
     } as never;
     expect(isConsumerMeaningfulCanonicalParameter(internal)).toBe(false);
@@ -200,7 +235,7 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       constraints: { values: ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] },
       semanticParameterKey: "estimate_scope_mode",
       visibilityRole: "USER_INPUT",
-      valueSourceRole: "USER_INPUT_REQUIRED",
+      valueSourceRole: "USER_MEASURED",
       normativeLinks: [],
       formulaConsumers: ["scope"],
       resourceBranchConsumers: ["scope"],
@@ -265,6 +300,32 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(photoOwner).toContain('this.actionContext("openLinePhoto"');
     expect(catalogOwner).toContain('this.actionContext("openLineCatalog"');
     expect(container).toContain("recalculateConsumerCanonicalCatalogSelection");
+  });
+
+  it("publishes a successfully recovered backend revision into the active screen bundle", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const prepareFlow = screen.slice(
+      screen.indexOf("private prepareDraft = async"),
+      screen.indexOf("private selectRoadScope"),
+    );
+    expect(prepareFlow).toContain("this.updateCurrentBundle(");
+    expect(prepareFlow).toContain("result.bundle");
+    expect(prepareFlow).toContain("Смета рассчитана. Проверьте позиции и параметры.");
+  });
+
+  it("opens history editing on /request with the exact inline parameter session", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const container = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
+    const editFlow = screen.slice(
+      screen.indexOf("private editHistoryDraft = async"),
+      screen.indexOf("private sendHistoryToMarket"),
+    );
+    expect(editFlow).toContain("openExactCanonicalRevisionInConsumerEditor");
+    expect(editFlow).toContain("expectedReleaseId: binding.releaseId");
+    expect(editFlow).not.toContain("onOpenCanonicalEstimate");
+    expect(screen).toContain("onLoadCanonicalParameterSession(");
+    expect(screen).toContain('router.setParams({ canonicalRevisionId: "", draftId: bundle.draft.id })');
+    expect(container).not.toContain("ProfessionalEstimateComposer");
   });
 
   it("preserves every persisted backend row instead of filtering the DTO", () => {

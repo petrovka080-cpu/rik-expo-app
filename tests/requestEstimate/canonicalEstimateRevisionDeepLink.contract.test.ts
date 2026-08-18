@@ -14,16 +14,24 @@ describe("canonical estimate revision deep link", () => {
     expect(canonicalEstimateRevisionIdFromRoute(undefined)).toBeNull();
   });
 
-  it("makes the exact revision authoritative for the request workspace", () => {
+  it("makes the exact revision authoritative inside the consumer request workspace", () => {
     const container = readFileSync(
       "src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx",
+      "utf8",
+    );
+    const screen = readFileSync(
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
       "utf8",
     );
     expect(container).toContain(
       "return canonicalEstimateRevisionIdFromRoute(props.initialCanonicalRevisionId)",
     );
-    expect(container).toContain("setCanonicalInitialRevisionId(routeCanonicalRevisionId)");
-    expect(container).toContain("setCanonicalComposerVisible(true)");
+    expect(container).toContain("loadConsumerCanonicalRevisionDraftMapping");
+    expect(container).not.toContain("ProfessionalEstimateComposer");
+    expect(container).not.toContain("canonicalComposerVisible");
+    expect(screen).toContain("openExactCanonicalRevisionInConsumerEditor");
+    expect(screen).toContain('router.setParams({ canonicalRevisionId: "", draftId: bundle.draft.id })');
+    expect(screen).not.toContain("onOpenCanonicalEstimate");
   });
 
   it("keeps canonical reopen read-only at route ingress", () => {

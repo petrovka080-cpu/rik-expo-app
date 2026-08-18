@@ -61,7 +61,7 @@ describe("MASTER 11610 canonical backend R3 production contracts", () => {
     expect(composer).toContain("canonical-estimate-release-id");
     expect(composer).toContain("release {revision.releaseId}");
     expect(consumerHistory).toContain("sourceReleaseId");
-    expect(consumerPdf).toContain("sourceReleaseId");
+    expect(consumerPdf).toContain("release {canonical.releaseId}");
   });
 
   it("chains covering recalculation scenarios through the latest immutable child revision", () => {
@@ -87,25 +87,32 @@ describe("MASTER 11610 canonical backend R3 production contracts", () => {
     expect(gateway).not.toContain("estimate_fail_compile_job_v1");
     expect(gateway).toContain('code === "REVISION_COMMIT_RETRYABLE"');
     expect(gateway).toContain("if (rawRetryDelayMs != null)");
-    expect(gateway).toContain("scheduleRetryDrain(retryDelayMs + 100)");
+    expect(gateway).toContain("scheduleRetryDrain(retryDelayMs + 100, connectionString)");
   });
 
-  it("does not mount the web modal before the backend estimate action is opened", () => {
+  it("persists immutable R6 source identity and permits branch children from historical revisions", () => {
+    const gateway = read("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
+    const identityMigration = read("supabase/migrations/20260818130000_one_canonical_estimate_r6_revision_identity.sql");
+    const historicalChildMigration = read("supabase/migrations/20260818131000_one_canonical_estimate_r6_historical_child.sql");
+
+    expect(gateway).toContain('sourceRequestHash: createHash("sha256").update(sourceRequestText, "utf8").digest("hex")');
+    expect(gateway).toContain("source_request_text,source_request_hash,primary_measure_parameter_id");
+    expect(gateway).toContain('input.parent?.revision_contract_version');
+    expect(gateway).toContain("legacyParentIdentityRecovery");
+    expect(identityMigration).toContain("R6 child revision changed immutable source identity");
+    expect(identityMigration).toContain("R6 legacy parent identity recovery is invalid");
+    expect(historicalChildMigration).toContain("R6 intentionally permits an immutable historical revision");
+    expect(historicalChildMigration).toContain("max+1 allocation");
+  });
+
+  it("keeps consumer revision actions in the request screen and out of the foreman composer", () => {
     const requestContainer = read("src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx");
-    expect(requestContainer).toContain(
-      "{resolvedConsumerUserId && canonicalComposerVisible ? <ProfessionalEstimateComposer",
-    );
-    expect(requestContainer).not.toContain(
-      "visible={Boolean(resolvedConsumerUserId && canonicalComposerVisible)}",
-    );
-    expect(requestContainer).toContain(
-      "bottom: APP_LAYOUT.floatingAiButtonWithStickyActionOffsetPx + 68",
-    );
-    const webE2e = read("scripts/e2e/runCanonicalEstimateWebR3.ts");
-    expect(webE2e).toContain('const promptIngressAutoOpened = true');
-    expect(webE2e).toContain('getByTestId("foreman-ai-estimate-back").click()');
-    expect(webE2e).toContain('getByTestId("professional-estimate-composer").waitFor({ state: "detached"');
-    expect(webE2e).toContain('response.url().endsWith("/jobs/recalculate")');
+    const requestScreen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    expect(requestContainer).not.toContain("ProfessionalEstimateComposer");
+    expect(requestContainer).not.toContain("canonicalComposerVisible");
+    expect(requestScreen).not.toContain("onOpenCanonicalEstimate");
+    expect(requestScreen).toContain("openExactCanonicalRevisionInConsumerEditor");
+    expect(requestScreen).toContain("onLoadCanonicalParameterSession");
   });
 
   it("cleans release jobs before their parent revisions and samples final native requests", () => {

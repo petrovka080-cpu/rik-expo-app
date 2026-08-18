@@ -41,6 +41,11 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   inputText?: string;
   assumptions?: string[];
 }): StructuredEstimatePayload {
+  const sourceRequestText = input.revision.sourceRequestText?.trim()
+    || input.inputText?.trim()
+    || input.catalog.titleRu;
+  const displayTitleRu = input.revision.displayTitleRu?.trim()
+    || input.catalog.titleRu;
   const sectionOrder: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
   const currency = input.revision.currencyCode;
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
@@ -127,9 +132,9 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const presentation = {
     estimateId: input.revision.revisionId,
     workKey: input.catalog.workKey,
-    workTitle: input.catalog.titleRu,
+    workTitle: displayTitleRu,
     workCategory: input.catalog.domain,
-    originalText: input.inputText,
+    originalText: sourceRequestText,
     localContext: {
       countryCode: "KG",
       locationLabel: "Кыргызстан",
@@ -156,8 +161,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       locale: "ru-KG", unitSystem: "metric", currency, taxMode: "unknown",
       taxIncludedByDefault: false, source: "project_address", confidence: "high",
     },
-    work: { workKey: input.catalog.workKey, title: input.catalog.titleRu, category: input.catalog.domain },
-    input: { volume: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", originalText: input.inputText },
+    work: { workKey: input.catalog.workKey, title: displayTitleRu, category: input.catalog.domain },
+    input: { volume: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", originalText: sourceRequestText },
     assumptions: input.assumptions ?? [], sections: [], tax, totals, regionalRisks: [], costIncreaseFactors: [],
     clarifyingQuestions: [], sources: [], confidence: "high", requiresReview: false,
   } as unknown as GlobalEstimateResult;
@@ -166,14 +171,14 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     version: "structured-estimate-v1",
     id: input.revision.revisionId,
     source: "foreman",
-    inputText: input.inputText ?? input.catalog.titleRu,
+    inputText: sourceRequestText,
     estimateId: input.revision.revisionId,
     workKey: input.catalog.workKey,
-    workTitle: input.catalog.titleRu,
+    workTitle: displayTitleRu,
     workCategory: input.catalog.domain,
     locale: sourceEstimate.locale,
     sourceEstimate,
-    classification: { status: "accepted", workKey: input.catalog.workKey, domainKey: input.catalog.domain, titleRu: input.catalog.titleRu, confidence: 1, evidence: [] },
+    classification: { status: "accepted", workKey: input.catalog.workKey, domainKey: input.catalog.domain, titleRu: displayTitleRu, confidence: 1, evidence: [] },
     quantity: { status: "accepted", quantity: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", measurementKind: "backend_formula_graph", assumptions: input.assumptions ?? [] },
     boq: {
       sections,

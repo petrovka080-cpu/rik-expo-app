@@ -675,6 +675,10 @@ export default function ProfessionalEstimateComposer({
       const request = {
         idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
         catalogId: selectedCatalog.catalogId,
+        sourceRequestText: text.trim(),
+        primaryMeasureParameterId: selectedCatalog.parameterSchema
+          .find((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
+          ?.parameterId ?? selectedCatalog.parameterSchema[0]?.parameterId ?? "quantity",
         parameters,
         currencyCode: "KGS",
       };
@@ -691,6 +695,10 @@ export default function ProfessionalEstimateComposer({
           request: {
             idempotencyKey: `composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}-${stableInputKey(parameters)}`.slice(0, 200),
             catalogId: selectedCatalog.catalogId,
+            sourceRequestText: text.trim(),
+            primaryMeasureParameterId: selectedCatalog.parameterSchema
+              .find((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
+              ?.parameterId ?? selectedCatalog.parameterSchema[0]?.parameterId ?? "quantity",
             parameters,
             currencyCode: "KGS",
           },

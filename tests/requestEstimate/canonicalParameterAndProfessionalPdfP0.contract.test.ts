@@ -116,6 +116,63 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(JSON.stringify(parent)).toBe(parentSnapshot);
   });
 
+  it("keeps parameters from optional scope branches conditional in the consumer session", () => {
+    const catalog: CanonicalEstimateCatalogItem = {
+      ...asphaltCatalog,
+      parameterSchema: [
+        ...asphaltCatalog.parameterSchema,
+        {
+          parameterId: "drainage_required",
+          ordinal: 20,
+          valueType: "boolean",
+          unitId: null,
+          titleRu: "Добавить водоотвод",
+          required: false,
+          defaultValue: false,
+          constraints: {},
+          visibilityRole: "USER_INPUT",
+          resourceBranchConsumers: ["asphalt_parking_lot:drainage:pipe"],
+        },
+        {
+          parameterId: "drainage_length_m",
+          ordinal: 21,
+          valueType: "decimal",
+          unitId: "m",
+          titleRu: "Длина водоотвода",
+          required: false,
+          defaultValue: 80,
+          constraints: { min: 0 },
+          visibilityRole: "USER_INPUT",
+          visibleWhen: "drainage_required == true OR estimate_scope_mode == FULL_APPLICABLE_SCOPE",
+          formulaConsumers: ["formula:drainage_length_m"],
+        },
+      ],
+    };
+    const current = revision({
+      revisionId: ASPHALT_REVISION_ID,
+      catalogId: ASPHALT_CATALOG_ID,
+      parameters: {
+        ...Object.fromEntries(asphaltCatalog.parameterSchema.map((schema) => [schema.parameterId, schema.defaultValue])),
+        drainage_required: false,
+        drainage_length_m: 80,
+      },
+    });
+    const session = buildConsumerCanonicalParameterSession({
+      catalog,
+      revision: current,
+      draftId: "consumer-draft-conditional-scope",
+    });
+
+    expect(session.parameters.find((parameter) => parameter.parameterId === "drainage_length_m")?.visibilityCondition)
+      .toEqual({
+        kind: "ANY_OF",
+        conditions: [
+          { parameterId: "drainage_required", value: true },
+          { parameterId: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" },
+        ],
+      });
+  });
+
   it("treats the pipeline artifact as a separate work and fails closed for any selected-revision mismatch", () => {
     const pipeline = revision({
       revisionId: PIPELINE_REVISION_ID,
@@ -128,7 +185,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       artifactId: PIPELINE_ARTIFACT_ID,
       revisionId: PIPELINE_REVISION_ID,
       releaseId: RELEASE_ID,
-      kind: "professional_pdf",
+      kind: "pdf",
       status: "ready",
       contentType: "application/pdf",
       byteSize: 1200,
@@ -140,6 +197,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
         sourceOwnerUserId: "11111111-1111-4111-8111-111111111111",
         sourceOrganizationId: "22222222-2222-4222-8222-222222222222",
         templateVersion: "professional-estimate-pdf:3",
+        documentProfile: "professional_v1",
       },
       errorCode: null,
       createdAt: "2026-08-18T04:49:25.360Z",
@@ -149,9 +207,19 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       signedUrlExpiresAt: "2026-08-18T05:04:25.360Z",
     };
 
-    expect(() => assertCanonicalEstimateArtifactIdentity({ artifact, revision: pipeline, expectedKind: "professional_pdf" })).not.toThrow();
+    expect(() => assertCanonicalEstimateArtifactIdentity({
+      artifact,
+      revision: pipeline,
+      expectedKind: "pdf",
+      expectedDocumentProfile: "professional_v1",
+    })).not.toThrow();
     const asphalt = revision({ revisionId: ASPHALT_REVISION_ID, catalogId: ASPHALT_CATALOG_ID, parameters: {} });
-    expect(() => assertCanonicalEstimateArtifactIdentity({ artifact, revision: asphalt, expectedKind: "professional_pdf" }))
+    expect(() => assertCanonicalEstimateArtifactIdentity({
+      artifact,
+      revision: asphalt,
+      expectedKind: "pdf",
+      expectedDocumentProfile: "professional_v1",
+    }))
       .toThrow("документ не принадлежит выбранной версии");
   });
 
@@ -160,7 +228,8 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     const runtime = readFileSync(resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), "utf8");
     const pdfFlow = screen.slice(screen.indexOf("private completePdfOpen"), screen.indexOf("private openDraftFromHistory"));
 
-    expect(pdfFlow).toContain('kind: "professional_pdf"');
+    expect(pdfFlow).toContain('kind: "pdf"');
+    expect(pdfFlow).toContain('documentProfile: "professional_v1"');
     expect(pdfFlow).toContain("previewPdfDocument(createPdfDocumentDescriptor");
     expect(pdfFlow).not.toContain("Linking.openURL(artifact.signedUrl)");
     expect(runtime).toContain('templateVersion: "professional-estimate-pdf:3"');

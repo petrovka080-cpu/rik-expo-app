@@ -88,6 +88,10 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
           request: {
             idempotencyKey: `ai-plugin-${runInput.flowId}-${catalog.catalogId}`.slice(0, 200),
             catalogId: catalog.catalogId,
+            sourceRequestText: query,
+            primaryMeasureParameterId: catalog.parameterSchema
+              .find((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
+              ?.parameterId ?? catalog.parameterSchema[0]?.parameterId ?? "quantity",
             parameters: defaults.parameters,
             currencyCode: "KGS",
           },

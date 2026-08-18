@@ -27,6 +27,10 @@ export type CanonicalEstimateCreateRequest = {
   idempotencyKey: string;
   catalogId: string;
   organizationId?: string | null;
+  /** Exact user-authored request. Required by the R6 consumer compile path. */
+  sourceRequestText?: string;
+  /** Canonical parameter that owns the request's primary displayed measure. */
+  primaryMeasureParameterId?: string;
   parameters: Record<string, CanonicalEstimateParameterInputValue>;
   currencyCode: string;
   priceSnapshotIds?: string[];
@@ -150,6 +154,23 @@ export type CanonicalEstimateRevisionView = {
   status: "ready" | "failed" | "archived";
   currencyCode: string;
   parameters: Record<string, unknown>;
+  /** Immutable R6 request identity. Null only for revisions created before R6. */
+  sourceRequestText?: string | null;
+  sourceRequestHash?: string | null;
+  canonicalWorkTitleRu?: string | null;
+  displayTitleRu?: string | null;
+  primaryMeasureParameterId?: string | null;
+  primaryMeasureValue?: string | null;
+  primaryMeasureUnitId?: string | null;
+  normalizedIntent?: Record<string, unknown> | null;
+  definitionVersionId?: string | null;
+  groupId?: string | null;
+  searchReleaseId?: string | null;
+  userInputSnapshot?: Record<string, unknown> | null;
+  acceptedBaselineSnapshot?: Record<string, unknown> | null;
+  assumptionSnapshot?: Record<string, unknown> | null;
+  formulaGraphVersion?: string | null;
+  revisionContractVersion?: string | null;
   amendmentContract: {
     rowOverrides: Record<string, CanonicalEstimateRowOverride>;
     customRows: CanonicalEstimateCustomRow[];
@@ -502,6 +523,25 @@ export function assertCreateRequest(value: unknown): asserts value is CanonicalE
   }
   if (typeof request.catalogId !== "string" || !request.catalogId.trim() || request.catalogId.length > 240) {
     throw new CanonicalEstimateApiError("catalogId is required", {
+      code: "INVALID_ARGUMENT",
+      httpStatus: 400,
+    });
+  }
+  if (request.sourceRequestText != null && (
+    typeof request.sourceRequestText !== "string"
+    || !request.sourceRequestText.trim()
+    || request.sourceRequestText.trim().length > 4_000
+  )) {
+    throw new CanonicalEstimateApiError("sourceRequestText must contain the exact user request", {
+      code: "INVALID_ARGUMENT",
+      httpStatus: 400,
+    });
+  }
+  if (request.primaryMeasureParameterId != null && (
+    typeof request.primaryMeasureParameterId !== "string"
+    || !/^[A-Za-z][A-Za-z0-9_.:-]{0,199}$/.test(request.primaryMeasureParameterId.trim())
+  )) {
+    throw new CanonicalEstimateApiError("primaryMeasureParameterId is invalid", {
       code: "INVALID_ARGUMENT",
       httpStatus: 400,
     });

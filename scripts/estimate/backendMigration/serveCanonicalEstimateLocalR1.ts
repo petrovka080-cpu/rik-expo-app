@@ -10,7 +10,7 @@ import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatfor
 import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints";
 
 const API_VERSION = "2026-08-14.r2";
-const COMPILER_VERSION = "canonical-estimate-local-runtime.r2";
+const COMPILER_VERSION = "canonical-estimate-local-runtime.r6";
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const TEST_ORGANIZATION_ID = process.env.CANONICAL_ESTIMATE_TEST_ORGANIZATION_ID
   ?? "22222222-2222-4222-8222-222222222222";
@@ -32,7 +32,7 @@ const REQUEST_AUDIT_LOG = String(process.env.CANONICAL_ESTIMATE_REQUEST_AUDIT_LO
 const R45_RUNTIME_STARTED_AT = new Date().toISOString();
 const R45_RUNTIME_SOURCE_HEAD = String(process.env.R45_RUNTIME_SOURCE_HEAD ?? "UNSET").trim();
 const R45_RUNTIME_SOURCE_TREE = String(process.env.R45_RUNTIME_SOURCE_TREE ?? "UNSET").trim();
-const R45_RUNTIME_SPEC_SHA256 = String(process.env.R45_RUNTIME_SPEC_SHA256 ?? "e834a50c139189432dc4c20eb59b51a2507b4bb3f857e094b38376b6b5bda860").trim();
+const R45_RUNTIME_SPEC_SHA256 = String(process.env.R45_RUNTIME_SPEC_SHA256 ?? "4ffc00413c14458730823a90950b80d5191073e26f3bea4201f665953ed1eefa").trim();
 const ARTIFACT_TOKEN_SECRET = String(
   process.env.CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET
     ?? `local-artifact:${R45_RUNTIME_SOURCE_HEAD}:${OWNER_ID}`,
@@ -72,6 +72,91 @@ function nonNegativeNumericText(value: unknown, field: string, nullable = false)
     throw Object.assign(new Error(`invalid ${field}`), { code: "ROW_AMENDMENT_INVALID" });
   }
   return normalized;
+}
+
+function publicUnitRu(unitId: unknown): string {
+  const unit = String(unitId ?? "").trim();
+  const units: Record<string, string> = {
+    m2: "м²", m3: "м³", m: "м", mm: "мм", cm: "см", km: "км",
+    pcs: "шт.", item: "шт.", kg: "кг", t: "т", l: "л",
+    man_hour: "чел.-ч", machine_hour: "маш.-ч", person_shift: "чел.-смена",
+    service: "усл.", test: "исп.", document: "док.", trip: "рейс", t_km: "т·км",
+    m3_m3: "м³/м³", m3_m: "м³/м", percent: "%",
+  };
+  return units[unit] ?? unit;
+}
+
+function publicMeasureValue(value: unknown): string {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return String(value ?? "").trim();
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 6 }).format(numeric);
+}
+
+function revisionIdentityContract(input: {
+  job: JsonRecord;
+  definition: JsonRecord;
+  parameterDefinitions: JsonRecord[];
+  parameters: JsonRecord;
+  effectiveUserParameters: JsonRecord;
+  baselineAssumptions: JsonRecord;
+  parent: JsonRecord | null;
+}): JsonRecord {
+  const payload = (input.job.input_payload ?? {}) as JsonRecord;
+  const requestIdentity = (payload.requestIdentity ?? {}) as JsonRecord;
+  const parentHasR6Identity = input.parent?.revision_contract_version
+    === "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V1";
+  const sourceRequestText = parentHasR6Identity
+    ? String(input.parent?.source_request_text ?? "").trim()
+    : String(requestIdentity.sourceRequestText ?? "").trim();
+  const primaryMeasureParameterId = parentHasR6Identity
+    ? String(input.parent?.primary_measure_parameter_id ?? "").trim()
+    : String(requestIdentity.primaryMeasureParameterId ?? "").trim();
+  if (!sourceRequestText || !primaryMeasureParameterId) {
+    throw Object.assign(new Error("source request identity is unavailable"), {
+      code: "SOURCE_REQUEST_IDENTITY_REQUIRED",
+    });
+  }
+  const primary = input.parameterDefinitions.find((parameter) => parameter.parameter_id === primaryMeasureParameterId);
+  const primaryMeasureValue = input.parameters[primaryMeasureParameterId];
+  if (!primary || primaryMeasureValue == null || !String(primaryMeasureValue).trim()) {
+    throw Object.assign(new Error("primary measure is unavailable"), {
+      code: "PRIMARY_MEASURE_REQUIRED",
+    });
+  }
+  const canonicalWorkTitleRu = String(input.definition.title_ru ?? "").trim();
+  if (!canonicalWorkTitleRu) throw Object.assign(new Error("canonical work title is unavailable"), {
+    code: "DEFINITION_INTEGRITY_FAILED",
+  });
+  const primaryMeasureUnitId = String(primary.unit_id ?? "").trim();
+  const displayTitleRu = `${canonicalWorkTitleRu} — ${publicMeasureValue(primaryMeasureValue)}${primaryMeasureUnitId ? ` ${publicUnitRu(primaryMeasureUnitId)}` : ""}`;
+  return {
+    contractVersion: "ONE_CANONICAL_ESTIMATE_R6_REVISION_IDENTITY_V1",
+    sourceRequestText,
+    sourceRequestHash: createHash("sha256").update(sourceRequestText, "utf8").digest("hex"),
+    canonicalWorkTitleRu,
+    displayTitleRu,
+    primaryMeasureParameterId,
+    primaryMeasureValue: String(primaryMeasureValue),
+    primaryMeasureUnitId: primaryMeasureUnitId || null,
+    normalizedIntent: {
+      catalogId: input.job.catalog_id,
+      groupId: input.definition.domain,
+      primaryMeasure: {
+        parameterId: primaryMeasureParameterId,
+        value: String(primaryMeasureValue),
+        unitId: primaryMeasureUnitId || null,
+      },
+      parameters: input.parameters,
+    },
+    definitionVersionId: input.definition.id,
+    groupId: input.definition.domain,
+    searchReleaseId: TARGET_SEARCH_RELEASE_ID || null,
+    userInputSnapshot: input.effectiveUserParameters,
+    acceptedBaselineSnapshot: input.baselineAssumptions,
+    assumptionSnapshot: input.baselineAssumptions,
+    formulaGraphVersion: COMPILER_VERSION,
+    legacyParentIdentityRecovery: input.parent != null && !parentHasR6Identity,
+  };
 }
 
 function manualProvenance(value: unknown, field: string): JsonRecord {
@@ -233,6 +318,18 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
   }
   const parameters = body.parameters;
   if (!parameters || typeof parameters !== "object" || Array.isArray(parameters)) throw Object.assign(new Error("parameters must be an object"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  const sourceRequestText = String(body.sourceRequestText ?? "").trim();
+  const primaryMeasureParameterId = String(body.primaryMeasureParameterId ?? "").trim();
+  const suppliedRequestIdentity = Boolean(sourceRequestText || primaryMeasureParameterId);
+  if ((operation === "compile" || suppliedRequestIdentity) && (
+      !sourceRequestText || sourceRequestText.length > 4_000
+      || !/^[A-Za-z][A-Za-z0-9_.:-]{0,199}$/.test(primaryMeasureParameterId)
+    )) {
+    throw Object.assign(new Error("source request identity is required"), {
+      code: "SOURCE_REQUEST_IDENTITY_REQUIRED",
+      httpStatus: 400,
+    });
+  }
   const parentRevisionId = operation === "recalculate" ? String(body.parentRevisionId ?? "") : null;
   const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
   const result = await withDatabaseClient(modelDatabaseUrl, async (client) => {
@@ -242,7 +339,13 @@ async function createJob(body: JsonRecord, operation: "compile" | "recalculate")
           parameters,
           currencyCode,
           priceSnapshotIds: body.priceSnapshotIds ?? [],
+          ...(operation === "compile" ? {
+            requestIdentity: { sourceRequestText, primaryMeasureParameterId },
+          } : {}),
           ...(operation === "recalculate" ? {
+            ...(suppliedRequestIdentity ? {
+              requestIdentity: { sourceRequestText, primaryMeasureParameterId },
+            } : {}),
             rowOverrides: body.rowOverrides ?? {},
             customRows: body.customRows ?? [],
             ...(body.releaseMigration == null ? {} : { releaseMigration: body.releaseMigration }),
@@ -475,6 +578,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
 async function compileClaimedJob(client: Client, workerId: string, job: JsonRecord): Promise<void> {
   const definition = (await client.query(`
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
+      resolved.definition_version,identity.title_ru,identity.domain,
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values
     from public.estimate_definition_release release
     cross join lateral (
@@ -490,6 +594,8 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
     ) effective
     left join public.estimate_approved_template_baseline baseline
       on baseline.id=effective.approved_template_baseline_id
+    join public.estimate_definition_version resolved on resolved.id=effective.id
+    join public.estimate_work_identity identity on identity.catalog_id=resolved.catalog_id
     where release.id=$2
       and (release.status='active' or (release.status='prepared' and $3::boolean))
     order by effective.priority
@@ -502,9 +608,13 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
   const submittedParameters = (payload.parameters ?? {}) as JsonRecord;
   let confirmedParameters: JsonRecord = { ...baselineParameters };
   let inheritedUserParameters: JsonRecord = {};
+  let parentRevision: JsonRecord | null = null;
   if (job.operation === "recalculate") {
     const parent = (await client.query(
-      "select release_id,catalog_id,input_parameters,amendment_contract from public.estimate_revision where id=$1",
+      `select release_id,catalog_id,input_parameters,amendment_contract,
+        source_request_text,source_request_hash,primary_measure_parameter_id,
+        revision_contract_version
+       from public.estimate_revision where id=$1`,
       [job.parent_revision_id],
     )).rows[0];
     if (!parent || parent.catalog_id !== job.catalog_id) {
@@ -514,6 +624,7 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
       confirmedParameters = { ...baselineParameters, ...(parent.input_parameters ?? {}) };
       inheritedUserParameters = parent.amendment_contract?.parameterSources?.userParameters ?? {};
     }
+    parentRevision = parent;
   }
   const parameters = validateCanonicalEstimateParameters(
     parameterDefinitions,
@@ -690,8 +801,18 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
     unpricedRowCount: rows.filter((row) => row.included_in_estimate && row.unit_price == null).length,
     currencyCode,
   };
+  const identityContract = revisionIdentityContract({
+    job,
+    definition,
+    parameterDefinitions,
+    parameters,
+    effectiveUserParameters,
+    baselineAssumptions,
+    parent: parentRevision,
+  });
   const revisionProjection = {
     catalogId: job.catalog_id,
+    identity: identityContract,
     parameters,
     priceSnapshotIds: payload.priceSnapshotIds ?? [],
     currencyCode,
@@ -715,6 +836,7 @@ async function compileClaimedJob(client: Client, workerId: string, job: JsonReco
       baselineAssumptions,
       userParameters: effectiveUserParameters,
       parentRevisionId: job.parent_revision_id,
+      identityContract,
     },
   }), JSON.stringify(rows)]);
 }
@@ -953,10 +1075,18 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
   let renderer: string;
   if (job.operation === "procurement") {
     bytes = Buffer.from(stableJson({
-      schemaVersion: "canonical_estimate_procurement_v2",
+      schemaVersion: "canonical_estimate_procurement_r6",
       revisionId,
       releaseId: revision.release_id,
       revisionChecksumSha256: revision.checksum_sha256,
+      sourceRequestText: revision.source_request_text ?? null,
+      sourceRequestHash: revision.source_request_hash ?? null,
+      displayTitleRu: revision.display_title_ru ?? null,
+      primaryMeasure: {
+        parameterId: revision.primary_measure_parameter_id ?? null,
+        value: revision.primary_measure_value == null ? null : String(revision.primary_measure_value),
+        unitId: revision.primary_measure_unit_id ?? null,
+      },
       rows,
     }), "utf8");
     contentType = "application/json; charset=utf-8";
@@ -967,6 +1097,21 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
       "select title_ru from public.estimate_work_identity where catalog_id=$1",
       [revision.catalog_id],
     )).rows[0];
+    const parameterDefinitionsForPdf = (await client.query(`
+      select parameter.*
+      from public.estimate_parameter_definition parameter
+      where parameter.definition_version_id=(
+        select candidate.definition_version_id from (
+          select direct.id definition_version_id,0 priority
+          from public.estimate_definition_version direct
+          where direct.release_id=$1 and direct.catalog_id=$2
+          union all
+          select manifest.definition_version_id,1 priority
+          from public.estimate_cumulative_manifest_entry manifest
+          where manifest.release_id=$1 and manifest.catalog_id=$2
+        ) candidate order by candidate.priority limit 1
+      ) order by parameter.ordinal
+    `, [revision.release_id, revision.catalog_id])).rows as JsonRecord[];
     const groups = new Map<string, JsonRecord[]>();
     for (const row of rows as JsonRecord[]) {
       const section = professionalPdfSection(row);
@@ -980,6 +1125,20 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
     const pricedRows = rows.filter((row) => row.unit_price != null).length;
     const createdDate = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(new Date(revision.created_at));
     const total = revision.totals?.amount ?? null;
+    const displayTitleRu = revision.display_title_ru || identity?.title_ru || "Строительно-монтажные работы";
+    const sourceRequestText = revision.source_request_text || identity?.title_ru || "Задание не сохранено в исторической версии";
+    const userInputs = revision.user_input_snapshot && typeof revision.user_input_snapshot === "object"
+      ? Object.entries(revision.user_input_snapshot as JsonRecord)
+      : [];
+    const parameterRows = userInputs.map(([parameterId, value]) => {
+      const parameter = parameterDefinitionsForPdf.find((item) => item.parameter_id === parameterId);
+      const label = parameter?.title_ru ?? parameterId;
+      const unit = parameter?.unit_id ? ` ${publicUnitRu(parameter.unit_id)}` : "";
+      return `<tr><td>${escapeArtifactHtml(label)}</td><td>${escapeArtifactHtml(publicMeasureValue(value))}${escapeArtifactHtml(unit)}</td></tr>`;
+    }).join("");
+    const optionalScopeEnabled = ["curb_required", "drainage_required", "storm_sewer_required", "road_marking_required", "traffic_signs_required", "lighting_required"]
+      .some((key) => revision.input_parameters?.[key] === true);
+    const scopeTitle = optionalScopeEnabled ? "Полный применимый состав по выбранным параметрам" : "Только указанная работа";
     const browser = await artifactBrowser();
     const page = await browser.newPage();
     try {
@@ -991,8 +1150,9 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
         tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
         footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}
       </style></head><body>
-        <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeArtifactHtml(identity?.title_ru ?? "Строительно-монтажные работы")}</div><div class="meta">Сформировано ${escapeArtifactHtml(createdDate)} из сохранённой версии сметы</div></header>
+        <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeArtifactHtml(displayTitleRu)}</div><div class="source-request"><strong>Исходное задание:</strong> ${escapeArtifactHtml(sourceRequestText)}</div><div class="meta">Сформировано ${escapeArtifactHtml(createdDate)} из сохранённой версии сметы</div></header>
         <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalPdfMoney(total, revision.currency_code)}</div></div>
+        <section><h2>Параметры и состав</h2><p><strong>Состав:</strong> ${escapeArtifactHtml(scopeTitle)}</p>${parameterRows ? `<table><tbody>${parameterRows}</tbody></table>` : "<p>Пользовательские параметры сохранены в исходной версии.</p>"}</section>
         ${sections}
         <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
         <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
@@ -1039,6 +1199,8 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
       sourceCatalogId: revision.catalog_id,
       sourceReleaseId: revision.release_id,
       sourceRevisionChecksumSha256: revision.checksum_sha256,
+      sourceRequestHash: revision.source_request_hash ?? null,
+      displayTitleRu: revision.display_title_ru ?? null,
       sourceOwnerUserId: revision.owner_user_id,
       sourceOrganizationId: revision.organization_id ?? null,
     },
@@ -1543,6 +1705,22 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         revisionId: revision.id, parentRevisionId: revision.parent_revision_id, releaseId: revision.release_id,
         catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status,
         currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals,
+        sourceRequestText: revision.source_request_text ?? null,
+        sourceRequestHash: revision.source_request_hash ?? null,
+        canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
+        displayTitleRu: revision.display_title_ru ?? null,
+        primaryMeasureParameterId: revision.primary_measure_parameter_id ?? null,
+        primaryMeasureValue: revision.primary_measure_value == null ? null : String(revision.primary_measure_value),
+        primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
+        normalizedIntent: revision.normalized_intent ?? null,
+        definitionVersionId: revision.definition_version_id ?? null,
+        groupId: revision.group_id ?? null,
+        searchReleaseId: revision.search_release_id ?? null,
+        userInputSnapshot: revision.user_input_snapshot ?? null,
+        acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
+        assumptionSnapshot: revision.assumption_snapshot ?? null,
+        formulaGraphVersion: revision.formula_graph_version ?? null,
+        revisionContractVersion: revision.revision_contract_version ?? null,
         rowCount: revision.row_count, checksumSha256: revision.checksum_sha256,
         compilerVersion: revision.compiler_version,
         definitionVersion: revision.definition_version ?? null,
@@ -1558,7 +1736,36 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   if (request.method === "GET" && path.length === 2 && path[0] === "revisions") {
     const revision = await findAcrossModelDatabases(async (client) => (await client.query("select * from public.estimate_revision where id=$1 and owner_user_id=$2", [path[1], OWNER_ID])).rows[0]);
     if (!revision) throw Object.assign(new Error("revision not found"), { code: "NOT_FOUND", httpStatus: 404 });
-    return send(response, 200, { apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id, releaseId: revision.release_id, catalogId: revision.catalog_id, revisionNumber: revision.revision_number, status: revision.status, currencyCode: revision.currency_code, parameters: revision.input_parameters, amendmentContract: revision.amendment_contract, totals: revision.totals, rowCount: revision.row_count, checksumSha256: revision.checksum_sha256, compilerVersion: revision.compiler_version, definitionVersion: revision.definition_version ?? null, compilerOwner: revision.compiler_owner ?? "backend", parameterSchemaHash: revision.parameter_schema_hash ?? null, inputHash: revision.input_hash ?? null, outputHash: revision.output_hash ?? revision.checksum_sha256, createdAt: revision.created_at });
+    return send(response, 200, {
+      apiVersion: API_VERSION, revisionId: revision.id, parentRevisionId: revision.parent_revision_id,
+      releaseId: revision.release_id, catalogId: revision.catalog_id,
+      revisionNumber: revision.revision_number, status: revision.status,
+      currencyCode: revision.currency_code, parameters: revision.input_parameters,
+      sourceRequestText: revision.source_request_text ?? null,
+      sourceRequestHash: revision.source_request_hash ?? null,
+      canonicalWorkTitleRu: revision.canonical_work_title_ru ?? null,
+      displayTitleRu: revision.display_title_ru ?? null,
+      primaryMeasureParameterId: revision.primary_measure_parameter_id ?? null,
+      primaryMeasureValue: revision.primary_measure_value == null ? null : String(revision.primary_measure_value),
+      primaryMeasureUnitId: revision.primary_measure_unit_id ?? null,
+      normalizedIntent: revision.normalized_intent ?? null,
+      definitionVersionId: revision.definition_version_id ?? null,
+      groupId: revision.group_id ?? null,
+      searchReleaseId: revision.search_release_id ?? null,
+      userInputSnapshot: revision.user_input_snapshot ?? null,
+      acceptedBaselineSnapshot: revision.accepted_baseline_snapshot ?? null,
+      assumptionSnapshot: revision.assumption_snapshot ?? null,
+      formulaGraphVersion: revision.formula_graph_version ?? null,
+      revisionContractVersion: revision.revision_contract_version ?? null,
+      amendmentContract: revision.amendment_contract, totals: revision.totals,
+      rowCount: revision.row_count, checksumSha256: revision.checksum_sha256,
+      compilerVersion: revision.compiler_version, definitionVersion: revision.definition_version ?? null,
+      compilerOwner: revision.compiler_owner ?? "backend",
+      parameterSchemaHash: revision.parameter_schema_hash ?? null,
+      inputHash: revision.input_hash ?? null,
+      outputHash: revision.output_hash ?? revision.checksum_sha256,
+      createdAt: revision.created_at,
+    });
   }
   if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "rows") {
     const after = cursorAfter(url.searchParams.get("cursor"));
@@ -1699,7 +1906,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
         return {
           parameterId: parameter.parameter_id, ordinal: parameter.ordinal, valueType: parameter.value_type,
           unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required,
-          defaultValue: parameter.default_value, constraints: parameter.constraints_json,
+          // The worker already merges this exact immutable approved baseline
+          // before validation. Expose the same persisted value to the client
+          // for readiness validation; it remains backend-owned and is not
+          // resubmitted as a user parameter.
+          defaultValue: parameter.default_value
+            ?? (acceptedAsInput ? baseline?.input_values?.[parameterId] : null),
+          constraints: parameter.constraints_json,
           semanticParameterKey: truth.semantic_parameter_key ?? (baseline ? parameterId : undefined),
           visibilityRole: truth.visibility_role ?? (baseline
             ? acceptedAsInput ? "USER_INPUT" : "INTERNAL_ONLY"

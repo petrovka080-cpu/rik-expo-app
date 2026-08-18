@@ -23,7 +23,19 @@ type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t
 type CanonicalBaselinePlan = {
   parameters: Record<string, CanonicalEstimateParameterInputValue>;
   assumptions: string[];
+  primaryMeasureParameterId: string;
 };
+
+const DERIVED_QUANTITY_PARAMETER = /(?:^quantity_|^unit_price_|(?:^|_)(?:compacted_volume|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(?:_|$))/iu;
+const DIRECT_USER_QUANTITY_SOURCE = new Set([
+  "USER_MEASURED",
+  "USER_DECLARED",
+  "PROJECT_SPECIFIC_INPUT",
+  "USER_INPUT_REQUIRED",
+  "PROJECT_DOCUMENTATION",
+  "ENGINEERING_DESIGN",
+  "SITE_SURVEY",
+]);
 
 export function extractUserQuantity(prompt: string): UserQuantity | null {
   const normalizedPrompt = prompt
@@ -53,7 +65,10 @@ function parameterAcceptsQuantity(
   quantity: UserQuantity,
 ): boolean {
   if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") return false;
+  if (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT") return false;
+  if (parameter.valueSourceRole != null && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole))) return false;
   const identity = `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`.toLocaleLowerCase("ru-RU");
+  if (DERIVED_QUANTITY_PARAMETER.test(identity)) return false;
   const isCount = /количеств|число|count|quantity|qty/u.test(identity);
   if (quantity.unit === "pcs") return isCount || /шт|сва|тумб/u.test(identity);
   const rawUnit = String(parameter.unitId ?? "")
@@ -77,29 +92,23 @@ function parameterAcceptsQuantity(
   return quantity.unit != null && unit === quantity.unit;
 }
 
-function allowedValues(parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]): unknown[] {
-  const raw = parameter.constraints.values
-    ?? parameter.constraints.allowedValues
-    ?? parameter.constraints.enum;
-  return Array.isArray(raw) ? raw : [];
-}
-
-function boundedPositiveNumber(
+function quantityParameterScore(
   parameter: CanonicalEstimateCatalogItem["parameterSchema"][number],
-): string {
-  const minimum = parameter.constraints.min == null ? null : Number(parameter.constraints.min);
-  const minimumExclusive = parameter.constraints.minExclusive == null
-    ? null
-    : Number(parameter.constraints.minExclusive);
-  const maximum = parameter.constraints.max == null ? null : Number(parameter.constraints.max);
-  let value = 1;
-  if (Number.isFinite(minimum) && value < Number(minimum)) value = Number(minimum);
-  if (Number.isFinite(minimumExclusive) && value <= Number(minimumExclusive)) {
-    value = Number(minimumExclusive) + (parameter.valueType === "integer" ? 1 : 0.01);
-  }
-  if (Number.isFinite(maximum) && value > Number(maximum)) value = Number(maximum);
-  if (parameter.valueType === "integer") value = Math.ceil(value);
-  return String(value);
+  quantity: UserQuantity,
+): number | null {
+  if (!parameterAcceptsQuantity(parameter, quantity)) return null;
+  const semanticKey = String(parameter.semanticParameterKey ?? parameter.parameterId).toLocaleLowerCase("en-US");
+  const exactSourceByUnit: Record<Exclude<UserQuantity["unit"], null>, RegExp> = {
+    m2: /^(?:area_m2|(?:work|surface|floor|wall|roof|parking|paving|site)_area_m2)$/u,
+    m3: /^(?:volume_m3|(?:work|excavation|fill|concrete)_volume_m3)$/u,
+    m: /^(?:length_m|(?:work|route|pipeline|cable)_length_m)$/u,
+    kg: /^(?:weight_kg|mass_kg)$/u,
+    t: /^(?:weight_t|mass_t)$/u,
+    pcs: /^(?:count|quantity|qty)$/u,
+  };
+  if (quantity.unit != null && exactSourceByUnit[quantity.unit].test(semanticKey)) return 120;
+  if (/(?:^|_)(?:area|volume|length|count|quantity|qty|weight|mass)(?:_|$)/u.test(semanticKey)) return 80;
+  return 20;
 }
 
 function baselineValue(
@@ -108,121 +117,49 @@ function baselineValue(
   if (parameter.defaultValue != null) {
     return parameter.defaultValue as CanonicalEstimateParameterInputValue;
   }
-  if (parameter.valueType === "boolean") return true;
-  if (parameter.valueType === "enum") {
-    const first = allowedValues(parameter)[0];
-    return first == null ? undefined : String(first);
-  }
-  if (parameter.valueType === "decimal" || parameter.valueType === "integer") {
-    return boundedPositiveNumber(parameter);
-  }
-  if (parameter.valueType === "text") return "1";
-  if (parameter.valueType === "array_object") return [];
   return undefined;
-}
-
-function applyExplicitQuantityDependencies(input: {
-  catalog: CanonicalEstimateCatalogItem;
-  rawInputs: Record<string, CanonicalEstimateParameterInputValue>;
-  quantity: UserQuantity;
-  primaryParameterId: string;
-}): void {
-  if (input.quantity.unit !== "m2") return;
-  for (const parameter of input.catalog.parameterSchema) {
-    if (parameter.parameterId === input.primaryParameterId) continue;
-    if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") continue;
-    if (parameter.visibilityRole === "INTERNAL_ONLY" || parameter.visibilityRole === "USER_DERIVED_READONLY") continue;
-    const semanticKey = String(parameter.semanticParameterKey ?? parameter.parameterId).toLocaleLowerCase("en");
-    // Accepted formula graphs expose machine coverage as explicit input nodes.
-    // Their quantity basis is the same measured work surface, so preserve the
-    // user's area instead of silently falling back to the synthetic value 1.
-    if (/(?:^|_)coverage_area_m2$/.test(semanticKey)) {
-      input.rawInputs[parameter.parameterId] = input.quantity.value;
-    }
-  }
-}
-
-function conditionMatches(
-  raw: unknown,
-  values: Record<string, CanonicalEstimateParameterInputValue>,
-): boolean {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
-  const condition = raw as Record<string, unknown>;
-  return typeof condition.parameterId === "string"
-    && values[condition.parameterId] === condition.equals;
-}
-
-function normalizeCrossFieldBaseline(
-  catalog: CanonicalEstimateCatalogItem,
-  values: Record<string, CanonicalEstimateParameterInputValue>,
-): void {
-  const enabledBooleanGroups = new Set<string>();
-  for (const parameter of catalog.parameterSchema) {
-    const group = parameter.constraints.mutuallyExclusiveBooleanGroup;
-    if (parameter.valueType !== "boolean" || group == null) continue;
-    const key = String(group);
-    if (enabledBooleanGroups.has(key)) values[parameter.parameterId] = false;
-    else enabledBooleanGroups.add(key);
-  }
-  for (let pass = 0; pass < 4; pass += 1) {
-    for (const parameter of catalog.parameterSchema) {
-      if (conditionMatches(parameter.constraints.forbiddenWhen, values) && !parameter.required) {
-        delete values[parameter.parameterId];
-        continue;
-      }
-      if (parameter.valueType !== "decimal" && parameter.valueType !== "integer") continue;
-      const current = Number(values[parameter.parameterId]);
-      if (!Number.isFinite(current)) continue;
-      let next = current;
-      for (const [constraint, adjustment] of [
-        ["greaterThanOrEqualParameter", 0],
-        ["greaterThanParameter", parameter.valueType === "integer" ? 1 : 0.01],
-      ] as const) {
-        const peerId = parameter.constraints[constraint];
-        const peer = peerId == null ? Number.NaN : Number(values[String(peerId)]);
-        if (Number.isFinite(peer)) next = Math.max(next, peer + adjustment);
-      }
-      for (const [constraint, adjustment] of [
-        ["lessThanOrEqualParameter", 0],
-        ["lessThanParameter", parameter.valueType === "integer" ? 1 : 0.01],
-      ] as const) {
-        const peerId = parameter.constraints[constraint];
-        const peer = peerId == null ? Number.NaN : Number(values[String(peerId)]);
-        if (Number.isFinite(peer)) next = Math.min(next, peer - adjustment);
-      }
-      values[parameter.parameterId] = String(parameter.valueType === "integer" ? Math.trunc(next) : next);
-    }
-  }
 }
 
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
 }): CanonicalBaselinePlan {
-  const rawInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
+  const baselineInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const parameter of input.catalog.parameterSchema) {
     const value = baselineValue(parameter);
-    if (value !== undefined) rawInputs[parameter.parameterId] = value;
+    if (value !== undefined) baselineInputs[parameter.parameterId] = value;
   }
+  const submittedInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
   const userQuantity = extractUserQuantity(input.prompt);
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
-    const target = input.catalog.parameterSchema.find((parameter) => parameterAcceptsQuantity(parameter, userQuantity));
-    if (target) {
-      rawInputs[target.parameterId] = userQuantity.value;
-      userQuantityParameterId = target.parameterId;
-      applyExplicitQuantityDependencies({
-        catalog: input.catalog,
-        rawInputs,
-        quantity: userQuantity,
-        primaryParameterId: target.parameterId,
-      });
+    const candidates = input.catalog.parameterSchema
+      .map((parameter) => ({ parameter, score: quantityParameterScore(parameter, userQuantity) }))
+      .filter((candidate): candidate is { parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]; score: number } => candidate.score != null)
+      .sort((left, right) => right.score - left.score || left.parameter.ordinal - right.parameter.ordinal);
+    const target = candidates[0];
+    if (target && (candidates.length === 1 || target.score > candidates[1].score)) {
+      submittedInputs[target.parameter.parameterId] = userQuantity.value;
+      userQuantityParameterId = target.parameter.parameterId;
     }
   }
-  normalizeCrossFieldBaseline(input.catalog, rawInputs);
+  const primaryMeasureParameterId = userQuantityParameterId
+    ?? input.catalog.parameterSchema
+      .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
+      .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")
+      .filter((parameter) => !DERIVED_QUANTITY_PARAMETER.test(
+        `${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`,
+      ))
+      .sort((left, right) => {
+        const score = (parameter: typeof left) => /^(?:area_m2|volume_m3|length_m|count|quantity|qty)$/u.test(
+          String(parameter.semanticParameterKey ?? parameter.parameterId).toLocaleLowerCase("en-US"),
+        ) ? 0 : 1;
+        return score(left) - score(right) || left.ordinal - right.ordinal;
+      })[0]?.parameterId;
+  if (!primaryMeasureParameterId) throw new Error("CANONICAL_PRIMARY_MEASURE_NOT_RESOLVED");
   const validation = validateCanonicalEstimateParameterInputs({
     schema: input.catalog.parameterSchema,
-    rawInputs,
+    rawInputs: { ...baselineInputs, ...submittedInputs },
   });
   if (!validation.ok) {
     const missing = validation.issues
@@ -231,12 +168,19 @@ export function buildCanonicalBaselinePlan(input: {
     throw new Error(`CANONICAL_BASELINE_CONTRACT_MISSING:${[...new Set(missing)].join(",") || validation.issues.map((issue) => issue.code).join(",")}`);
   }
   const assumptions = input.catalog.parameterSchema
-    .filter((parameter) => parameter.visibilityRole !== "INTERNAL_ONLY")
+    .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
+    .filter((parameter) => parameter.valueSourceRole == null || DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole)))
+    .filter((parameter) => !DERIVED_QUANTITY_PARAMETER.test(`${parameter.parameterId} ${parameter.semanticParameterKey ?? ""} ${parameter.titleRu}`))
+    .filter((parameter) => parameter.guide?.guideKind !== "DERIVED_VALUE_RULE")
     .filter((parameter) => parameter.parameterId !== userQuantityParameterId)
     .filter((parameter) => validation.parameters[parameter.parameterId] != null)
     .map((parameter) => `${parameter.titleRu}: ${String(validation.parameters[parameter.parameterId])}${parameter.unitId ? ` ${parameter.unitId}` : ""}`);
   return {
-    parameters: validation.parameters,
+    // Persisted baseline values are merged and owned by the backend worker.
+    // Sending only prompt-owned values prevents baseline assumptions and
+    // derived outputs from being misclassified as user input.
+    parameters: submittedInputs,
+    primaryMeasureParameterId,
     assumptions: [
       "Исходная смета рассчитана по явно показанным базовым допущениям; их необходимо проверить перед договором.",
       ...assumptions,
@@ -277,6 +221,8 @@ export async function compileConsumerCanonicalBaseline(input: {
     request: {
       idempotencyKey: `consumer-baseline-${stableId(`${input.draftId}|${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
       catalogId: catalog.catalogId,
+      sourceRequestText: input.prompt.trim(),
+      primaryMeasureParameterId: baseline.primaryMeasureParameterId,
       parameters,
       currencyCode: "KGS",
     },

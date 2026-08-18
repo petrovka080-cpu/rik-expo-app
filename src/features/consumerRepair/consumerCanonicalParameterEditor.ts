@@ -36,6 +36,29 @@ import {
 
 type EditableSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
+function requestIdentityForRecalculation(input: {
+  revision: CanonicalEstimateRevisionView;
+  catalog: CanonicalEstimateCatalogItem;
+  problemText: string;
+}): { sourceRequestText: string; primaryMeasureParameterId: string } {
+  const sourceRequestText = input.revision.sourceRequestText?.trim() || input.problemText.trim();
+  const primaryMeasureParameterId = input.revision.primaryMeasureParameterId?.trim()
+    || input.catalog.parameterSchema.find((parameter) =>
+      parameter.parameterId === "area_m2"
+      && input.revision.parameters[parameter.parameterId] != null)?.parameterId
+    || input.catalog.parameterSchema.find((parameter) =>
+      isConsumerMeaningfulCanonicalParameter(parameter)
+      && input.revision.parameters[parameter.parameterId] != null)?.parameterId
+    || "";
+  if (!sourceRequestText || !primaryMeasureParameterId) {
+    throw new CanonicalEstimateApiError(
+      "Не удалось восстановить исходное задание выбранной версии. Смета не изменена.",
+      { code: "SOURCE_REQUEST_IDENTITY_REQUIRED", httpStatus: 409 },
+    );
+  }
+  return { sourceRequestText, primaryMeasureParameterId };
+}
+
 export function isConsumerMeaningfulCanonicalParameter(schema: EditableSchema): boolean {
   return isCanonicalEstimateUserEditableParameter(schema);
 }
@@ -98,6 +121,33 @@ function parameterSource(input: {
   return "ASSUMED";
 }
 
+function parameterVisibilityCondition(schema: EditableSchema): CanonicalParameter["visibilityCondition"] {
+  const expression = schema.visibleWhen?.trim();
+  if (!expression) return { kind: "ALWAYS" };
+  const conditions = expression.split(/\s+OR\s+/iu).reduce<Array<{
+    parameterId: string;
+    value: CanonicalParameterValue;
+  }>>((accepted, clause) => {
+    const match = /^([A-Za-z][A-Za-z0-9_.:-]*)\s*==\s*(.+)$/.exec(clause.trim());
+    if (!match) return accepted;
+    const rawValue = match[2].trim();
+    const value: CanonicalParameterValue = rawValue === "true"
+      ? true
+      : rawValue === "false"
+        ? false
+        : rawValue;
+    accepted.push({ parameterId: match[1], value });
+    return accepted;
+  }, []);
+  if (conditions.length === 0) return { kind: "ALWAYS" };
+  if (conditions.length === 1) return {
+    kind: "PARAMETER_EQUALS",
+    parameterId: conditions[0].parameterId,
+    value: conditions[0].value,
+  };
+  return { kind: "ANY_OF", conditions };
+}
+
 function buildParameter(input: {
   schema: EditableSchema;
   revision: CanonicalEstimateRevisionView;
@@ -132,7 +182,7 @@ function buildParameter(input: {
       : input.schema.valueType === "boolean" ? "boolean" : "string",
     unit: input.schema.unitId,
     requiredLevel,
-    visibilityCondition: { kind: "ALWAYS" },
+    visibilityCondition: parameterVisibilityCondition(input.schema),
     validation: {
       ...numericValidation,
       ...(["text", "enum", "array_object"].includes(input.schema.valueType) && input.schema.required
@@ -243,6 +293,55 @@ export async function loadConsumerCanonicalParameterSession(input: {
   return buildConsumerCanonicalParameterSession({ catalog, revision, parent, draftId: input.draftId });
 }
 
+export async function loadConsumerCanonicalRevisionDraftMapping(input: {
+  revisionId: string;
+  problemText?: string | null;
+}): Promise<ForemanAiEstimateDraftMapping> {
+  const revision = await getCanonicalEstimateRevision(input.revisionId);
+  const [catalog, rows] = await Promise.all([
+    getCanonicalEstimateCatalogItem(revision.catalogId),
+    getAllCanonicalEstimateRevisionRows({ revisionId: revision.revisionId }),
+  ]);
+  if (catalog.releaseId !== revision.releaseId) {
+    throw new CanonicalEstimateApiError("Смета не открыта: версия каталога не совпадает с выбранной версией сметы.", {
+      code: "REVISION_RELEASE_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  if (revision.status === "failed" || rows.length !== revision.rowCount) {
+    throw new CanonicalEstimateApiError("Смета не открыта: backend не подтвердил полный состав выбранной версии.", {
+      code: "REVISION_ROW_PARITY_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const estimate = adaptCanonicalRevisionToStructuredEstimate({
+    catalog,
+    revision,
+    rows,
+    inputText: input.problemText?.trim() || catalog.titleRu,
+  });
+  const mapping = mapAiEstimateToForemanDraft({
+    estimate,
+    context: {
+      objectName: "Заявка на ремонт",
+      levelName: "",
+      systemName: "",
+      zoneName: "",
+      sourceScreen: "foreman_materials",
+    },
+    estimateRevisionId: revision.revisionId,
+    estimateReleaseId: revision.releaseId,
+  });
+  const parity = verifyForemanAiEstimatePayloadParity(mapping);
+  if (!parity.ok || mapping.payload.rows.length !== revision.rowCount) {
+    throw new CanonicalEstimateApiError("Смета не открыта: нарушено соответствие строк выбранной backend-версии.", {
+      code: "CANONICAL_REVISION_PROJECTION_PARITY_FAILED",
+      httpStatus: 409,
+    });
+  }
+  return mapping;
+}
+
 export async function recalculateConsumerCanonicalEstimate(input: {
   revisionId: string;
   draftId: string;
@@ -267,11 +366,17 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     );
   }
   const parameters = validation.parameters as Record<string, CanonicalEstimateParameterInputValue>;
+  const requestIdentity = requestIdentityForRecalculation({
+    revision,
+    catalog,
+    problemText: input.problemText,
+  });
   const result = await recalculateCanonicalEstimateAndLoad({
     request: {
       idempotencyKey: `consumer-inline-recalc-${estimateDeterministicHash({ parent: revision.revisionId, parameters })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
+      ...requestIdentity,
       parameters,
       currencyCode: revision.currencyCode,
       rowOverrides: revision.amendmentContract.rowOverrides,
@@ -391,6 +496,11 @@ export async function recalculateConsumerCanonicalCatalogSelection(input: {
       })}`,
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
+      ...requestIdentityForRecalculation({
+        revision,
+        catalog,
+        problemText: input.problemText,
+      }),
       parameters: parameterValidation.parameters,
       currencyCode: revision.currencyCode,
       rowOverrides,

@@ -9,7 +9,6 @@ import {
   type ConsumerRepairRequestScreenProps,
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
-import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
 import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import { upsertConsumerRepairCanonicalBackendDraft } from "../../lib/consumerRequests/consumerRequestService";
 import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
@@ -18,6 +17,7 @@ import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCom
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
 import {
   loadConsumerCanonicalParameterSession,
+  loadConsumerCanonicalRevisionDraftMapping,
   recalculateConsumerCanonicalCatalogSelection,
   recalculateConsumerCanonicalEstimate,
 } from "./consumerCanonicalParameterEditor";
@@ -66,9 +66,6 @@ async function runBoundedDurableHydration(
 }
 
 export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenProps): React.ReactElement {
-  const routeCanonicalRevisionId = canonicalEstimateRevisionIdFromRoute(
-    props.initialCanonicalRevisionId,
-  );
   const [durableStatus, setDurableStatus] =
     React.useState<DurableHydrationStatus>("loading");
   const [authResolved, setAuthResolved] = React.useState(Boolean(props.consumerUserId?.trim()));
@@ -77,27 +74,12 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   );
   const hydrationAttemptRef = React.useRef(0);
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
-  const [canonicalComposerVisible, setCanonicalComposerVisible] = React.useState(
-    Boolean(routeCanonicalRevisionId),
-  );
-  const [canonicalPrompt, setCanonicalPrompt] = React.useState(props.initialProblemText ?? "");
-  const [canonicalInitialRevisionId, setCanonicalInitialRevisionId] = React.useState<string | null>(
-    routeCanonicalRevisionId,
-  );
-  const [canonicalTargetDraftId, setCanonicalTargetDraftId] = React.useState<string | null>(null);
   const freshBuildKey = shouldAutoPrepareInitialConsumerRepairRequest(props) &&
     props.initialProblemText?.trim() &&
     !props.initialDraftId?.trim()
     ? props.launchId?.trim() || props.launchFingerprint?.trim() || props.initialProblemText.trim()
     : null;
   const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
-  React.useEffect(() => {
-    if (!routeCanonicalRevisionId) return;
-    setCanonicalPrompt("");
-    setCanonicalInitialRevisionId(routeCanonicalRevisionId);
-    setCanonicalTargetDraftId(null);
-    setCanonicalComposerVisible(true);
-  }, [routeCanonicalRevisionId]);
   React.useEffect(() => {
     const explicit = props.consumerUserId?.trim();
     if (explicit) {
@@ -185,12 +167,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     screenRef.current?.acceptCanonicalBackendDraft(bundle);
     return bundle;
   }, [resolvedConsumerUserId]);
-  const acceptCanonicalDraft = React.useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
-    await persistCanonicalDraft(mapping, canonicalPrompt, canonicalTargetDraftId);
-    setCanonicalComposerVisible(false);
-    setCanonicalInitialRevisionId(null);
-    setCanonicalTargetDraftId(null);
-  }, [canonicalPrompt, canonicalTargetDraftId, persistCanonicalDraft]);
   const authUnavailable = authResolved && !resolvedConsumerUserId;
   return (
     <View style={styles.root}>
@@ -211,12 +187,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           onInitialLaunchBuildSettled={() => {
             if (freshBuildKey) setSettledFreshBuildKey(freshBuildKey);
           }}
-          onOpenCanonicalEstimate={(problemText, revisionId, requestDraftId) => {
-            setCanonicalPrompt(problemText);
-            setCanonicalInitialRevisionId(revisionId?.trim() || null);
-            setCanonicalTargetDraftId(requestDraftId?.trim() || null);
-            setCanonicalComposerVisible(true);
-          }}
           onPrepareCanonicalEstimate={async (problemText, catalogId, requestDraftId) => {
             const draftId = requestDraftId?.trim();
             if (!draftId) throw new Error("INITIAL_CANONICAL_DRAFT_ID_REQUIRED");
@@ -226,6 +196,17 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
               draftId,
             });
             return await persistCanonicalDraft(mapping, problemText, draftId) ?? null;
+          }}
+          onLoadCanonicalRevisionDraft={async ({ revisionId, requestDraftId, problemText }) => {
+            const mapping = await loadConsumerCanonicalRevisionDraftMapping({
+              revisionId,
+              problemText,
+            });
+            return await persistCanonicalDraft(
+              mapping,
+              problemText?.trim() || mapping.payload.inputText,
+              requestDraftId?.trim() || null,
+            ) ?? null;
           }}
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
@@ -293,19 +274,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           </Pressable>
         </View>
       ) : null}
-      {resolvedConsumerUserId && canonicalComposerVisible ? <ProfessionalEstimateComposer
-        visible
-        mode="consumer"
-        context={{ objectName: "Заявка на ремонт", levelName: "", systemName: "", zoneName: "", sourceScreen: "foreman_materials" }}
-        initialText={canonicalPrompt}
-        initialRevisionId={canonicalInitialRevisionId}
-        onClose={() => {
-          setCanonicalComposerVisible(false);
-          setCanonicalInitialRevisionId(null);
-          setCanonicalTargetDraftId(null);
-        }}
-        onDraftCreated={acceptCanonicalDraft}
-      /> : null}
     </View>
   );
 }

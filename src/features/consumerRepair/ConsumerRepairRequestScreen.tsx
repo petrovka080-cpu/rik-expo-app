@@ -144,16 +144,16 @@ export type ConsumerRepairRequestScreenProps = {
 export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestScreenProps & {
   consumerUserId: string;
   onInitialLaunchBuildSettled?: () => void;
-  onOpenCanonicalEstimate: (
-    problemText: string,
-    revisionId?: string | null,
-    requestDraftId?: string | null,
-  ) => void;
   onPrepareCanonicalEstimate: (
     problemText: string,
     catalogId: string,
     requestDraftId?: string | null,
   ) => Promise<ConsumerRepairDraftBundle | null>;
+  onLoadCanonicalRevisionDraft: (input: {
+    revisionId: string;
+    requestDraftId?: string | null;
+    problemText?: string | null;
+  }) => Promise<ConsumerRepairDraftBundle | null>;
   onLoadCanonicalParameterSession: (
     revisionId: string,
     requestDraftId: string,
@@ -435,6 +435,19 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   private applyInitialLaunchFlow(): void {
+    const initialCanonicalRevisionId = this.props.initialCanonicalRevisionId?.trim();
+    if (initialCanonicalRevisionId) {
+      if (this.initialDeepLinkApplied) return;
+      this.initialDeepLinkApplied = true;
+      void this.openExactCanonicalRevisionInConsumerEditor({
+        revisionId: initialCanonicalRevisionId,
+        source: this.findKnownBundleByCanonicalRevision(initialCanonicalRevisionId),
+        requestDraftId: null,
+        problemText: null,
+        successMessage: "Выбранная версия сметы открыта.",
+      }).finally(() => this.props.onInitialLaunchBuildSettled?.());
+      return;
+    }
     if (shouldAutoPrepareInitialConsumerRepairRequest(this.props)) {
       this.applyInitialDeepLinkFlow();
       return;
@@ -589,6 +602,16 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return this.state.history.find((candidate) => candidate.draft.id === requestDraftId)
       ?? this.state.approvedHistoryPage.items.find((candidate) => candidate.draft.id === requestDraftId)
       ?? null;
+  }
+  private findKnownBundleByCanonicalRevision(revisionId: string): ConsumerRepairDraftBundle | null {
+    const candidates = [
+      this.state.bundle,
+      ...this.state.history,
+      ...this.state.approvedHistoryPage.items,
+    ];
+    return candidates.find((candidate) =>
+      consumerRepairCanonicalBackendBinding(candidate)?.revisionId === revisionId
+    ) ?? null;
   }
   private findKnownHistoryRecord(requestDraftId: string) {
     return this.state.approvedHistoryPage.records.find(
@@ -1009,18 +1032,87 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   };
   private openCanonicalBackendEditor(
     bundle: ConsumerRepairDraftBundle | null = this.state.bundle,
-    statusMessage = "Изменение выполняется в каноническом backend-редакторе.",
+    statusMessage = "Параметры выбранной версии открываются в текущей смете.",
   ): boolean {
     if (!bundle) return false;
     const binding = consumerRepairCanonicalBackendBinding(bundle);
-    this.props.onOpenCanonicalEstimate(
-      bundle.draft.problemText?.trim() || this.state.problemText.trim() || bundle.draft.title || "Смета",
-      binding?.revisionId ?? null,
-      bundle.draft.id,
-    );
+    if (!binding) {
+      this.setState({
+        statusMessage: "Изменение пока недоступно: сначала повторите расчёт и дождитесь подтверждённой версии сметы.",
+      });
+      return true;
+    }
     this.setState({ statusMessage });
+    void this.openExactCanonicalRevisionInConsumerEditor({
+      revisionId: binding.revisionId,
+      expectedReleaseId: binding.releaseId,
+      source: bundle,
+      requestDraftId: bundle.draft.id,
+      problemText: bundle.draft.problemText,
+      successMessage: "Параметры открыты в текущей смете. Сохранение создаст новую дочернюю версию.",
+    });
     return true;
   }
+  private openExactCanonicalRevisionInConsumerEditor = async (input: {
+    revisionId: string;
+    expectedReleaseId?: string | null;
+    source: ConsumerRepairDraftBundle | null;
+    requestDraftId?: string | null;
+    problemText?: string | null;
+    successMessage: string;
+  }): Promise<void> => {
+    try {
+      const revision = await getCanonicalEstimateRevision(input.revisionId);
+      if (
+        revision.revisionId !== input.revisionId ||
+        revision.status === "failed" ||
+        (input.expectedReleaseId && revision.releaseId !== input.expectedReleaseId)
+      ) {
+        throw new Error("HISTORY_BACKEND_REVISION_IDENTITY_MISMATCH");
+      }
+      const bundle = input.source ?? await this.props.onLoadCanonicalRevisionDraft({
+        revisionId: revision.revisionId,
+        requestDraftId: input.requestDraftId,
+        problemText: input.problemText,
+      });
+      const restoredBinding = consumerRepairCanonicalBackendBinding(bundle);
+      if (
+        !bundle ||
+        restoredBinding?.revisionId !== revision.revisionId ||
+        restoredBinding.releaseId !== revision.releaseId
+      ) {
+        throw new Error("HISTORY_CONSUMER_PROJECTION_IDENTITY_MISMATCH");
+      }
+      const session = await this.props.onLoadCanonicalParameterSession(
+        revision.revisionId,
+        bundle.draft.id,
+      );
+      if (session.revisionId !== revision.revisionId) {
+        throw new Error("HISTORY_PARAMETER_SESSION_IDENTITY_MISMATCH");
+      }
+      this.historyLoaded = true;
+      this.setState({
+        bundle,
+        history: listConsumerRepairRequestHistory(this.props.consumerUserId),
+        approvedHistoryPage: listConsumerRepairApprovedHistory(this.props.consumerUserId),
+        problemText: "",
+        selectedWork: selectedWorkFromBundle(bundle),
+        selectedHistoryId: null,
+        canonicalBackendParameterSession: session,
+        statusMessage: input.successMessage,
+        validationErrors: [],
+      }, () => {
+        router.setParams({ canonicalRevisionId: "", draftId: bundle.draft.id });
+      });
+    } catch (error) {
+      const forbidden = error instanceof CanonicalEstimateApiError && ["ACCESS_DENIED", "NOT_FOUND"].includes(error.code);
+      this.setState({
+        statusMessage: forbidden
+          ? "Выбранная версия сметы недоступна. Проверьте учётную запись и повторите попытку."
+          : "Не удалось открыть выбранную версию сметы. Исходная версия не изменена; повторите попытку позже.",
+      });
+    }
+  };
   private ensureInitialCanonicalRevision = async (): Promise<EnsureConsumerRepairDraftBundleResult> => {
     const initial = this.ensureDraftBundle({ allowPendingDraftCreation: true });
     const pendingBundle = this.resolvedDraftBundle(initial);
@@ -1123,7 +1215,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const result = await this.ensureInitialCanonicalRevision();
       if (result.status === "RETRYABLE_ERROR" || result.status === "BLOCKED_WITH_REASON") {
         this.setState({ statusMessage: result.message });
+        return;
       }
+      // The backend job can complete and return a durable canonical revision while
+      // the screen is still rendering the locally-created pending bundle.  Persisting
+      // the mapping is not enough: publish the recovered bundle into screen state so
+      // the user sees the created rows and all revision-bound actions become enabled.
+      this.updateCurrentBundle(
+        result.bundle,
+        result.status === "REVISION_RECOVERED"
+          ? "Смета рассчитана. Проверьте позиции и параметры."
+          : buildEstimateDraftSessionTransitionStatusMessage(result.bundle),
+      );
     } finally {
       this.canonicalBaselineCompileInFlight = false;
     }
@@ -1397,45 +1500,28 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }));
   };
   private editHistoryDraft = async (requestDraftId: string) => {
-    try {
-      const source = this.findKnownHistoryBundle(requestDraftId);
-      const record = this.findKnownHistoryRecord(requestDraftId);
-      const binding = consumerRepairCanonicalBackendBinding(source) ?? (
-        record?.sourceRevisionId && record.sourceReleaseId
-          ? { revisionId: record.sourceRevisionId, releaseId: record.sourceReleaseId }
-          : null
-      );
-      if (!binding) {
-        this.setState({
-          statusMessage: "Историческая revision не имеет canonical backend binding. Нужна явная read-only миграция; новая смета из текущего шаблона не создана.",
-        });
-        return;
-      }
-      this.setState({ statusMessage: "Восстанавливаем immutable revision через backend и проверяем доступ…" });
-      const revision = await getCanonicalEstimateRevision(binding.revisionId);
-      if (revision.releaseId !== binding.releaseId || revision.status === "failed") {
-        throw new Error("HISTORY_BACKEND_REVISION_IDENTITY_MISMATCH");
-      }
-      this.props.onOpenCanonicalEstimate(
-        source?.draft.problemText?.trim() || record?.prompt?.trim() || record?.title || "Историческая смета",
-        revision.revisionId,
-        source?.draft.id ?? record?.approvedEstimateId ?? requestDraftId,
-      );
+    const source = this.findKnownHistoryBundle(requestDraftId);
+    const record = this.findKnownHistoryRecord(requestDraftId);
+    const binding = consumerRepairCanonicalBackendBinding(source) ?? (
+      record?.sourceRevisionId && record.sourceReleaseId
+        ? { revisionId: record.sourceRevisionId, releaseId: record.sourceReleaseId }
+        : null
+    );
+    if (!binding) {
       this.setState({
-        statusMessage: "Историческая revision восстановлена через backend. Редактирование создаст child revision; оригинал останется неизменным.",
+        statusMessage: "Выбранная историческая версия не подтверждена backend и не может быть изменена. Исходная смета сохранена.",
       });
-    } catch (error) {
-      if (error instanceof ConsumerRepairValidationError) {
-        this.handleValidationError(error);
-        return;
-      }
-      const forbidden = error instanceof CanonicalEstimateApiError && ["ACCESS_DENIED", "NOT_FOUND"].includes(error.code);
-      this.setState({
-        statusMessage: forbidden
-          ? "Историческая revision недоступна или не найдена. Проверьте учётную запись и повторите восстановление; приложение не завершило работу аварийно."
-          : "Не удалось восстановить историческую revision. Повторите позже; исходная смета не изменена.",
-      });
+      return;
     }
+    this.setState({ statusMessage: "Открываем выбранную историческую версию в текущей смете…" });
+    await this.openExactCanonicalRevisionInConsumerEditor({
+      revisionId: binding.revisionId,
+      expectedReleaseId: binding.releaseId,
+      source,
+      requestDraftId: source?.draft.id ?? record?.approvedEstimateId ?? requestDraftId,
+      problemText: source?.draft.problemText?.trim() || record?.prompt?.trim() || record?.title,
+      successMessage: "Историческая версия открыта. Сохранение изменений создаст дочернюю версию; оригинал останется неизменным.",
+    });
   };
   private sendHistoryToMarket = async (requestDraftId: string) => {
     try {

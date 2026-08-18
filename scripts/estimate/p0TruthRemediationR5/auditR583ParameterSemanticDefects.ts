@@ -132,6 +132,19 @@ async function main(): Promise<void> {
         coalesce(jsonb_agg(p.parameter_id order by p.ordinal) filter(where
           p.truth_metadata->>'visibility_role'='USER_INPUT' and p.parameter_id ~* '^quantity_'
         ),'[]'::jsonb) erroneous_quantity_input_ids,
+        coalesce(jsonb_agg(p.parameter_id order by p.ordinal) filter(where
+          p.truth_metadata->>'visibility_role'='USER_INPUT'
+          and coalesce(p.truth_metadata->>'value_source_role','') not in
+            ('USER_MEASURED','USER_DECLARED','PROJECT_SPECIFIC_INPUT')
+          and (
+            p.parameter_id ~* '^quantity_|^unit_price_'
+            or p.parameter_id ~* '(^|_)(compacted_volume|volume_m3|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|mass_t|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(_|$)'
+            or p.title_ru ~* '^\s*(Количество|Объём|Объем):'
+            or coalesce(p.truth_metadata#>>'{guide,guideKind}','')='DERIVED_VALUE_RULE'
+            or coalesce(lower(p.unit_id),'') in
+              ('document','machine_hour','man_hour','person_shift','service','t_km','test','trip')
+          )
+        ),'[]'::jsonb) erroneous_derived_input_ids,
         coalesce(jsonb_agg(distinct p.unit_id) filter(where lower(coalesce(p.unit_id,'')) in
           ('service','trip','test','person_shift','document','item','person','man_hour','machine_hour','t_km')),'[]'::jsonb) raw_parameter_units
       from public.estimate_parameter_definition p
@@ -145,7 +158,12 @@ async function main(): Promise<void> {
           and f.ast->>'id'=f.input_parameter_ids[1])::int passthrough_formula_count,
         coalesce(jsonb_agg(f.formula_id order by f.formula_id) filter(where f.ast->>'kind'='parameter'
           and cardinality(f.input_parameter_ids)=1 and f.ast->>'id'=f.input_parameter_ids[1]
-          and f.input_parameter_ids[1] ~* '^quantity_'),'[]'::jsonb) quantity_passthrough_formula_ids
+          and f.input_parameter_ids[1] ~* '^quantity_'),'[]'::jsonb) quantity_passthrough_formula_ids,
+        coalesce(jsonb_agg(jsonb_build_object(
+          'formulaId',f.formula_id,'parameterId',f.input_parameter_ids[1]
+        ) order by f.formula_id) filter(where f.ast->>'kind'='parameter'
+          and cardinality(f.input_parameter_ids)=1 and f.ast->>'id'=f.input_parameter_ids[1]
+        ),'[]'::jsonb) passthrough_formula_bindings
       from public.estimate_formula_graph f
       where f.definition_version_id=any($1::uuid[])
       group by f.definition_version_id
@@ -198,9 +216,14 @@ async function main(): Promise<void> {
       const norm = normativeByDefinition.get(id) ?? {};
       const removedParameterIds = removedProjectParameters(definition.source_metadata);
       const erroneousQuantityInputIds = parameter.erroneous_quantity_input_ids ?? [];
+      const erroneousDerivedInputIds = parameter.erroneous_derived_input_ids ?? [];
+      const erroneousDerivedInputSet = new Set(erroneousDerivedInputIds.map(String));
       const quantityPassthroughFormulaIds = formula.quantity_passthrough_formula_ids ?? [];
-      const hasQuantitySemanticDefect = erroneousQuantityInputIds.length > 0
-        || quantityPassthroughFormulaIds.length > 0;
+      const derivedPassthroughFormulaIds = (formula.passthrough_formula_bindings ?? [])
+        .filter((binding: Json) => erroneousDerivedInputSet.has(String(binding.parameterId)))
+        .map((binding: Json) => String(binding.formulaId));
+      const hasQuantitySemanticDefect = erroneousDerivedInputIds.length > 0
+        || derivedPassthroughFormulaIds.length > 0;
       // A predecessor repair is allowed to remove parameters which have no formula or
       // resource consumer. Those removals are not missing project inputs. They become
       // evidence of a real defect only when the surviving graph asks the user to enter
@@ -241,10 +264,13 @@ async function main(): Promise<void> {
         declaredUserInputCount: Number(parameter.declared_user_input_count ?? 0),
         erroneousQuantityInputIds,
         erroneousQuantityInputCount: erroneousQuantityInputIds.length,
+        erroneousDerivedInputIds,
+        erroneousDerivedInputCount: erroneousDerivedInputIds.length,
         missingProjectParameterIds,
         intentionallyRemovedUnusedParameterIds,
         passthroughFormulaCount: Number(formula.passthrough_formula_count ?? 0),
         quantityPassthroughFormulaIds,
+        derivedPassthroughFormulaIds,
         rawUnits: [...new Set([
           ...(parameter.raw_parameter_units ?? []),
           ...(resource.raw_resource_units ?? []),
@@ -269,7 +295,7 @@ async function main(): Promise<void> {
         dispositionReason: !professionalContentPresent
           ? "PROFESSIONAL_CONTENT_MISSING"
           : hasQuantitySemanticDefect && !formulaRepairAuthorityPresent
-            ? "QUANTITY_FORMULA_AUTHORITY_MISSING"
+            ? "DERIVED_OUTPUT_EXPOSED_AS_REQUIRED_USER_INPUT_WITHOUT_FORMULA_AUTHORITY"
             : hasQuantitySemanticDefect
               ? "AUTHORITATIVE_FORMULA_REPAIR_REQUIRED"
               : "PROFESSIONAL_SEMANTICS_VERIFIED",
@@ -280,14 +306,16 @@ async function main(): Promise<void> {
     const counts = Object.fromEntries(["PROFESSIONAL_READY", "REPAIR_REQUIRED", "QUARANTINED"]
       .map((status) => [status, entries.filter((entry) => entry.status === status).length]));
     const totalErroneousQuantityInputs = entries.reduce((sum, entry) => sum + entry.erroneousQuantityInputCount, 0);
+    const totalErroneousDerivedInputs = entries.reduce((sum, entry) => sum + entry.erroneousDerivedInputCount, 0);
     const totalQuantityPassthroughFormulas = entries.reduce((sum, entry) => sum + entry.quantityPassthroughFormulaIds.length, 0);
+    const totalDerivedPassthroughFormulas = entries.reduce((sum, entry) => sum + entry.derivedPassthroughFormulaIds.length, 0);
     const dbFingerprint = sha256(stableJson({
       releaseId,
       releaseSourceManifest: release.source_manifest_sha256,
       entries: definitions.map((row) => [row.catalog_id, row.definition_version_id, row.definition_hash, row.entry_sha256]),
     }));
     const ledger = {
-      schemaVersion: "p0-one-monolith-r5.8.3-parameter-semantic-defect-ledger.v1",
+      schemaVersion: "p0-one-monolith-r5.9-parameter-semantic-defect-ledger.v2",
       capturedAt: new Date().toISOString(),
       specSha256: SPEC_SHA256,
       source: { branch, head, tree, parentHead: git(["rev-parse", "HEAD^"]), descendantOf18c6b3a9: true },
@@ -296,6 +324,8 @@ async function main(): Promise<void> {
       policy: {
         editableOwner: "USER_INPUT only",
         derivedQuantityPrefix: "quantity_",
+        suspiciousDerivedInputsRequireExplicitMeasuredOwnership: true,
+        acceptedMeasuredOwnershipRoles: ["USER_MEASURED", "USER_DECLARED", "PROJECT_SPECIFIC_INPUT"],
         formulaConsumersDoNotProveUserOwnership: true,
         missingAuthorityDisposition: "QUARANTINED",
         historicalDefinitionsMutated: false,
@@ -305,7 +335,9 @@ async function main(): Promise<void> {
         audited: entries.length,
         ...counts,
         totalErroneousQuantityInputs,
+        totalErroneousDerivedInputs,
         totalQuantityPassthroughFormulas,
+        totalDerivedPassthroughFormulas,
         entriesWithDuplicateRows: entries.filter((entry) => entry.duplicateRowCount > 0).length,
         entriesWithRawUnits: entries.filter((entry) => entry.rawUnits.length > 0).length,
         batch009Entries: entries.filter((entry) => /^BATCH009/iu.test(String(entry.sourceBatch))).length,

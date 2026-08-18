@@ -106,4 +106,48 @@ describe("Asphalt V4 Phase 1 scenario matrix", () => {
     expect(convertEngineeringUnitV4(5, "cm", "m")).toBeCloseTo(0.05, 8);
     expect(convertEngineeringUnitV4(0.05, "m", "mm")).toBeCloseTo(50, 8);
   });
+
+  test("recomputes dependent logistics, machines and quality rows from the requested area", () => {
+    const compileParking = (area_m2: number) => compileAsphaltProfessionalEstimateV4({
+      ...asphaltPhase1CompleteInput({ area_m2, purpose: "yard_parking", construction_mode: "new_construction" }),
+      profile_override: "parking_full_construction",
+    }).compiled_rows;
+    const small = new Map(compileParking(50).map((row) => [row.definition.row_id, row]));
+    const large = new Map(compileParking(500).map((row) => [row.definition.row_id, row]));
+    const requested = new Map(compileParking(879).map((row) => [row.definition.row_id, row]));
+
+    const continuousRows = [
+      "excavator",
+      "wheel_loader",
+      "bulldozer",
+      "subgrade_roller",
+      "crushed_layer_1_delivery",
+      "crushed_layer_1_moistening_water",
+      "grader",
+      "base_roller",
+      "water_truck",
+      "surface_cleaner",
+      "asphalt_layer_1_delivery",
+      "asphalt_paver_layer_1",
+      "smooth_roller_layer_1",
+    ];
+    expect([...small.keys()]).toEqual(expect.arrayContaining(continuousRows));
+    for (const rowId of continuousRows) {
+      expect(small.get(rowId)?.quantity).toBeGreaterThan(0);
+      expect(large.get(rowId)?.quantity).toBeCloseTo(10 * small.get(rowId)!.quantity, 4);
+      expect(requested.get(rowId)?.quantity).toBeCloseTo(17.58 * small.get(rowId)!.quantity, 4);
+    }
+
+    for (const rowId of ["crushed_layer_1_trips", "asphalt_layer_1_truck_trips", "dump_trucks_layer_1", "asphalt_temperature_control"]) {
+      expect(large.get(rowId)?.quantity).toBeGreaterThan(small.get(rowId)!.quantity);
+    }
+
+    const derivedFormulaInput = /(?:_material_m3|_mass_t|_work_quantity|_coverage_area_m2|_truck_trip_count|^total_asphalt_trip_count$|^quality_layer_factor$|^asphalt_quality_layer_factor$|^asphalt_thickness_layer_factor$|_water_m3$|_compacted_m3$)/u;
+    const offenders = [...small.values()].flatMap((row) =>
+      row.definition.formula_inputs
+        .filter((inputId) => derivedFormulaInput.test(inputId))
+        .map((inputId) => `${row.definition.row_id}:${inputId}`),
+    );
+    expect(offenders).toEqual([]);
+  });
 });

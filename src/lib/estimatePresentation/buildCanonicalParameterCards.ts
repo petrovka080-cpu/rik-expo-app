@@ -245,7 +245,21 @@ export function buildCanonicalParameterCards(input: {
 }): AiEstimateParameterCard[] {
   if (!input.session) return [];
   const rowTitleById = new Map((input.revision?.boq.rows ?? []).map((row) => [row.rowId, row.titleRu]));
-  const visibleParameters = input.session.parameters.filter((parameter) => getAsphaltParameterV4(parameter.parameterId)?.internal_only !== true);
+  const sessionValues = new Map(input.session.parameters
+    .filter((parameter) => parameter.value != null)
+    .map((parameter) => [parameter.parameterId, parameter.value!]));
+  const conditionMatches = (parameter: CanonicalParameter): boolean => {
+    const condition = parameter.visibilityCondition;
+    if (condition.kind === "ALWAYS") return true;
+    if (condition.kind === "PARAMETER_EQUALS") {
+      return sessionValues.get(condition.parameterId) === condition.value;
+    }
+    return condition.conditions.some((candidate) =>
+      sessionValues.get(candidate.parameterId) === candidate.value);
+  };
+  const visibleParameters = input.session.parameters.filter((parameter) =>
+    getAsphaltParameterV4(parameter.parameterId)?.internal_only !== true
+    && conditionMatches(parameter));
   const derivedCountKeys = new Set(visibleParameters
     .map((parameter) => COMPOSITE_DERIVED_COUNT[parameter.parameterId])
     .filter((key): key is string => Boolean(key)));
