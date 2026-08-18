@@ -61,17 +61,10 @@ async function main(): Promise<void> {
     const candidates = (await client.query(`select document.catalog_id "catalogId",document.canonical_name_ru "nameRu",
         document.domain_id "domainId",document.group_id "groupId",document.operation_kind "operationKind",
         document.primary_uom "primaryUom",document.required_inputs_count "requiredInputsCount",
-        document.definition_version_id::text "definitionVersionId",
-        count(distinct resource.id)::int "resourceRows",
-        count(distinct resource.id) filter(where resource.procurement_eligible)::int "procurementRows",
-        count(distinct resource.id) filter(where resource.row_type='labor')::int "laborRows",
-        count(distinct resource.id) filter(where resource.row_type='equipment')::int "equipmentRows"
+        document.definition_version_id::text "definitionVersionId"
       from public.estimate_search_document document
-      join public.estimate_resource_spec resource on resource.definition_version_id=document.definition_version_id
       where document.search_release_id=$1 and document.selectable and document.adjudication_class='EFFECTIVE_WORK'
         and document.definition_release_id=$2
-      group by document.catalog_id,document.canonical_name_ru,document.domain_id,document.group_id,
-        document.operation_kind,document.primary_uom,document.required_inputs_count,document.definition_version_id
       order by document.domain_id,document.catalog_id`, [SEARCH_RELEASE_ID, DEFINITION_RELEASE_ID])).rows as Json[];
     const byId = new Map(candidates.map((row) => [String(row.catalogId), row]));
     invariant(MANDATORY.every((catalogId) => byId.has(catalogId)), "R58_REP50_MANDATORY_CROSSWALK_RED");
@@ -97,6 +90,15 @@ async function main(): Promise<void> {
       }
       invariant(advanced, "R58_REP50_CANDIDATES_EXHAUSTED");
     }
+    const resourceCounts = (await client.query(`select definition_version_id::text "definitionVersionId",
+        count(*)::int "resourceRows",
+        count(*) filter(where procurement_eligible)::int "procurementRows",
+        count(*) filter(where row_type='labor')::int "laborRows",
+        count(*) filter(where row_type='equipment')::int "equipmentRows"
+      from public.estimate_resource_spec where definition_version_id=any($1::uuid[])
+      group by definition_version_id`, [selected.map((row) => row.definitionVersionId)])).rows as Json[];
+    const resourcesByDefinition = new Map(resourceCounts.map((row) => [String(row.definitionVersionId), row]));
+    for (const row of selected) Object.assign(row, resourcesByDefinition.get(String(row.definitionVersionId)) ?? {});
     const domainCounts = Object.fromEntries(domains.map((domain) => [domain,
       selected.filter((row) => row.domainId === domain).length]).filter(([, count]) => Number(count) > 0));
     invariant(selected.length === 50 && new Set(selected.map((row) => row.catalogId)).size === 50,
