@@ -79,6 +79,10 @@ import { reconcilePendingCanonicalEstimateAdmissions } from "../../lib/estimate/
 import { currentUserId } from "../../lib/supabaseClient";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
+import {
+  canonicalEstimateParameterChoiceLabelRu,
+  isCanonicalEstimateUserEditableParameter,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 
 type CatalogSuggestion = CanonicalEstimateSearchItem;
 type RevisionBundle = { revision: CanonicalEstimateRevisionView; rows: CanonicalEstimateRevisionRowView[] };
@@ -184,7 +188,7 @@ function parameterProgress(
   inputs: Record<string, CanonicalEstimateParameterInputValue>,
 ): { filled: number; required: number; remaining: number } {
   const requiredParameters = catalog.parameterSchema.filter((parameter) =>
-    parameter.required && (parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT"));
+    parameter.required && isCanonicalEstimateUserEditableParameter(parameter));
   const filled = requiredParameters.filter((parameter) => {
     const value = inputs[parameter.parameterId];
     return Array.isArray(value) ? value.length > 0 : String(value ?? "").trim() !== "";
@@ -953,7 +957,7 @@ export default function ProfessionalEstimateComposer({
     });
   };
 
-  const visibleParameters = selectedCatalog?.parameterSchema.filter((parameter) => parameter.visibilityRole !== "INTERNAL_ONLY") ?? [];
+  const visibleParameters = selectedCatalog?.parameterSchema.filter(isCanonicalEstimateUserEditableParameter) ?? [];
   const currentParameterValidation = selectedCatalog
     ? validateCanonicalEstimateParameterInputs({ schema: selectedCatalog.parameterSchema, rawInputs: parameterInputs })
     : null;
@@ -1069,7 +1073,7 @@ export default function ProfessionalEstimateComposer({
                   const composite = parameter.compositeItemSchema;
                   const items = compositeItems(inputValue);
                   return <View key={parameter.parameterId} style={styles.parameterCard} testID={`canonical-estimate-parameter-card-${parameter.ordinal}`}>
-                    <Text style={styles.fieldLabel} testID={`canonical-estimate-parameter-label-${parameter.ordinal}`}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${parameter.unitId}` : ""}</Text>
+                    <Text style={styles.fieldLabel} testID={`canonical-estimate-parameter-label-${parameter.ordinal}`}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${formatEstimateUnit(parameter.unitId)}` : ""}</Text>
                     {parameter.sharedInputBindingPolicy ? <Text style={styles.sharedInputChip}>Общий ввод · применяется к связанным работам</Text> : null}
                     {parameter.visibilityRole === "USER_DERIVED_READONLY" ? <Text style={styles.readonlyValue} accessibilityLabel={parameter.titleRu}>{parameter.valueType === "array_object" ? `${items.length} элементов` : inputText || "Рассчитывается backend"}</Text>
                       : parameter.valueType === "array_object" && composite ? <View style={styles.compositeEditor}>
@@ -1108,7 +1112,7 @@ export default function ProfessionalEstimateComposer({
                             </View>;
                           })}
                         </View>)}
-                      </View> : values.length > 0 && values.length <= 12 ? <View style={styles.rowActions}>{values.map((value) => <Pressable key={value} testID={`canonical-estimate-parameter-${parameter.ordinal}-${value}`} onPress={() => setParameterInputs((previous) => ({ ...previous, [parameter.parameterId]: value }))} style={[styles.toggleButton, parameterInputs[parameter.parameterId] === value && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{value}</Text></Pressable>)}</View> : <TextInput
+                      </View> : values.length > 0 && values.length <= 12 ? <View style={styles.rowActions}>{values.map((value) => <Pressable key={value} testID={`canonical-estimate-parameter-${parameter.ordinal}-${value}`} onPress={() => setParameterInputs((previous) => ({ ...previous, [parameter.parameterId]: value }))} style={[styles.toggleButton, parameterInputs[parameter.parameterId] === value && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{canonicalEstimateParameterChoiceLabelRu(parameter.parameterId, value, parameter.guide?.guideOptions?.find((candidate) => String(candidate.value) === value)?.ruleRu)}</Text></Pressable>)}</View> : <TextInput
                         testID={`canonical-estimate-parameter-${parameter.ordinal}`}
                         value={inputText}
                         onChangeText={(value) => setParameterInputs((previous) => ({ ...previous, [parameter.parameterId]: value }))}

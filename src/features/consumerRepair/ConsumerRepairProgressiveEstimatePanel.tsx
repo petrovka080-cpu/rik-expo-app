@@ -206,8 +206,8 @@ function buildAssumptionParameterCards(
         source: "formula_derived",
         sourceLabelRu: "рассчитано",
         inputKind: typeof value === "number" ? "number" : "text",
-        editable: true,
-        clickAction: "open_parameter_editor",
+        editable: false,
+        clickAction: "read_only",
         noStepperControls: true,
         missing: false,
         requiredFor: "better_accuracy",
@@ -236,7 +236,10 @@ export function buildConsumerRepairProgressiveParameterCards(input: {
     session: input.canonicalParameterSession ?? null,
     revision: input.revision,
   });
-  if (canonicalCards.length > 0) return canonicalCards;
+  // An empty canonical session means this work has no safe user-editable
+  // parameters. Falling back to persisted assumptions here re-exposed BOQ
+  // quantities as an editable form.
+  if (input.canonicalParameterSession) return canonicalCards;
   const storedCards = buildRevisionParameterCards(input.revision);
   const existingKeys = new Set(storedCards.map((card) => card.key));
   return input.revision?.professionalWorkId === LEGACY_ASPHALT_WORK_ID ||
@@ -627,19 +630,22 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               ))}
             </View>
           ) : (
-            <TextInput
-              value={value}
-              onChangeText={(nextValue) => onChange(paramKey, nextValue)}
-              onFocus={() => this.setState({ focusedControlId: paramKey })}
-              onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === paramKey ? null : state.focusedControlId }))}
-              keyboardType={keyboardType}
-              placeholder={inputGuideAsCaption ? undefined : guideShortRu}
-              placeholderTextColor="#64748B"
-              accessibilityLabel={label}
-              accessibilityHint={`${guideShortRu}${unitLabel ? `, ${unitLabel}` : ""}`}
-              style={styles.inlineParamInput}
-              testID="editable-param-popover-input"
-            />
+            <View>
+              <TextInput
+                value={value}
+                onChangeText={(nextValue) => onChange(paramKey, nextValue)}
+                onFocus={() => this.setState({ focusedControlId: paramKey })}
+                onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === paramKey ? null : state.focusedControlId }))}
+                keyboardType={keyboardType}
+                placeholder={inputGuideAsCaption ? undefined : guideShortRu}
+                placeholderTextColor="#64748B"
+                accessibilityLabel={label}
+                accessibilityHint={`${guideShortRu}${unitLabel ? `, ${unitLabel}` : ""}`}
+                style={styles.inlineParamInput}
+                testID="editable-param-popover-input"
+              />
+              {inputGuideAsCaption ? <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>{guideShortRu}</Text> : null}
+            </View>
           )}
           {error ? (
             <Text style={styles.inlineParamError} testID={`editable-param-validation-error-${paramKey}`}>
@@ -897,10 +903,7 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
         unit: card.unitRu,
       })}.`
       : undefined;
-    // A derived value describes provenance, not immutability. Editing it creates
-    // an explicit user override in the next revision and must use the same
-    // atomic batch path as every other parameter.
-    const editableInPlace = paramEditorEnabled;
+    const editableInPlace = paramEditorEnabled && card.editable && card.source !== "formula_derived";
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
     const acceptedBaseline = canonicalParameter?.source === "ASSUMED" && !isDirty;
     const editorValue = acceptedBaseline ? "" : rawValue;

@@ -20,8 +20,8 @@ export type AiEstimateParameterCard = {
   source: AiEstimateParameterCardSource;
   sourceLabelRu: string;
   inputKind: AiEstimateParameterInputKind;
-  editable: true;
-  clickAction: "open_parameter_editor";
+  editable: boolean;
+  clickAction: "open_parameter_editor" | "read_only";
   noStepperControls: true;
   missing: boolean;
   requiredFor: AiEstimateParameterRequiredFor;

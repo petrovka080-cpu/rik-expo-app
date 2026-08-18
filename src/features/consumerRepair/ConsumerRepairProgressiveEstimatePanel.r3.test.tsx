@@ -1,13 +1,29 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
-import { InlineParamEditor } from "./ConsumerRepairProgressiveEstimatePanel";
+import {
+  buildConsumerRepairProgressiveParameterCards,
+  InlineParamEditor,
+} from "./ConsumerRepairProgressiveEstimatePanel";
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: () => null,
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it("does not turn persisted BOQ assumptions into inputs when the canonical user-input set is empty", () => {
+    const cards = buildConsumerRepairProgressiveParameterCards({
+      revision: null,
+      viewModel: {
+        assumptionRows: [{ id: "expanded_quantity_delivery", label: "Количество: Доставка", value: "1 т·км" }],
+      } as never,
+      canonicalParameterSession: {
+        parameters: [],
+      } as never,
+    });
+    expect(cards).toEqual([]);
+  });
+
   it("держит серую норму внутри пустого input и сохраняет её подписью после ввода", () => {
     const onChange = jest.fn();
     let renderer!: ReactTestRenderer;

@@ -22,7 +22,6 @@ import {
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
   aiEstimateRuLabelForParameter,
-  hasHumanReadableAiEstimateParameterPassport,
 } from "../../lib/estimate/aiEstimateRuParameterDictionary";
 import {
   mapAiEstimateToForemanDraft,
@@ -30,20 +29,15 @@ import {
   type ForemanAiEstimateDraftMapping,
 } from "../../lib/foremanAiEstimate";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import {
+  canonicalEstimateParameterChoiceLabelRu,
+  isCanonicalEstimateUserEditableParameter,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 
 type EditableSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
-const INTERNAL_PRESENTATION_PARAMETER = /(?:^|_)(?:compacted_volume|volume_m3|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|mass_t)(?:_|$)/iu;
-
 export function isConsumerMeaningfulCanonicalParameter(schema: EditableSchema): boolean {
-  if (schema.visibilityRole === "INTERNAL_ONLY" || schema.visibilityRole === "USER_DERIVED_READONLY") return false;
-  if (!hasHumanReadableAiEstimateParameterPassport(schema.parameterId, schema.titleRu)) return false;
-  if (INTERNAL_PRESENTATION_PARAMETER.test(schema.parameterId)) return false;
-  return Boolean(
-    schema.required ||
-    (schema.formulaConsumers?.length ?? 0) > 0 ||
-    (schema.resourceBranchConsumers?.length ?? 0) > 0
-  );
+  return isCanonicalEstimateUserEditableParameter(schema);
 }
 
 export function normalizedCanonicalNumericValidation(input: {
@@ -147,7 +141,10 @@ function buildParameter(input: {
     },
     allowedValues: choices.map((choice) => {
       const guideChoice = guide?.guideOptions?.find((candidate) => String(candidate.value) === String(choice));
-      return { value: scalarValue(input.schema, choice) ?? String(choice), label: guideChoice?.ruleRu || String(choice) };
+      return {
+        value: scalarValue(input.schema, choice) ?? String(choice),
+        label: canonicalEstimateParameterChoiceLabelRu(input.schema.parameterId, choice, guideChoice?.ruleRu),
+      };
     }),
     source,
     state: value == null ? (input.schema.required ? "BLOCKING_REQUIRED" : "NOT_APPLICABLE") : source === "CALCULATED" ? "DERIVED" : source === "ASSUMED" ? "ASSUMED" : "PROVIDED",

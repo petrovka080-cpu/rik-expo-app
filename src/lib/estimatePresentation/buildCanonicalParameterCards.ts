@@ -87,6 +87,7 @@ export function buildRevisionParameterCards(
     const unitRu = aiEstimateRuUnitForParameter(key, parameter?.canonicalUnit ?? null);
     const source = revisionCardSource(parameter?.source ?? null);
     const requiredFor = missing?.requiredFor ?? "better_accuracy";
+    const editable = source !== "formula_derived";
     return [{
       key,
       labelRu,
@@ -100,8 +101,8 @@ export function buildRevisionParameterCards(
         : typeof parameter?.value === "number" || Boolean(parameter?.canonicalUnit)
           ? "number"
           : "text",
-      editable: true,
-      clickAction: "open_parameter_editor",
+      editable,
+      clickAction: editable ? "open_parameter_editor" : "read_only",
       noStepperControls: true,
       missing: parameter == null,
       requiredFor,

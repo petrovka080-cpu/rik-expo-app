@@ -10,6 +10,7 @@ import {
   extractUserQuantity,
 } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import {
+  buildConsumerCanonicalParameterSession,
   isConsumerMeaningfulCanonicalParameter,
   normalizedCanonicalNumericValidation,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
@@ -154,11 +155,79 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
       formulaConsumers: ["area"],
       resourceBranchConsumers: ["asphalt"],
     } as never;
+    const derivedBoqQuantity = {
+      parameterId: "quantity_delivery_to_site",
+      titleRu: "Количество: Доставка материалов на объект",
+      unitId: "t_km",
+      visibilityRole: "USER_INPUT",
+      required: true,
+      formulaConsumers: ["delivery"],
+      resourceBranchConsumers: ["delivery-row"],
+    } as never;
+    const internalProductivity = {
+      parameterId: "paver_productivity_m2_per_machine_hour",
+      titleRu: "Производительность асфальтоукладчика",
+      unitId: "m2_machine_hour",
+      visibilityRole: "USER_INPUT",
+      required: true,
+      formulaConsumers: ["paver-hours"],
+      resourceBranchConsumers: ["paver-row"],
+    } as never;
+    const undeclaredOwner = {
+      ...area,
+      visibilityRole: undefined,
+    } as never;
     expect(isConsumerMeaningfulCanonicalParameter(internal)).toBe(false);
+    expect(isConsumerMeaningfulCanonicalParameter(derivedBoqQuantity)).toBe(false);
+    expect(isConsumerMeaningfulCanonicalParameter(internalProductivity)).toBe(false);
+    expect(isConsumerMeaningfulCanonicalParameter(undeclaredOwner)).toBe(false);
     expect(isConsumerMeaningfulCanonicalParameter(area)).toBe(true);
     expect(normalizedCanonicalNumericValidation({ minimum: Number.EPSILON, maximum: 0, integer: false })).toEqual({});
     expect(normalizedCanonicalNumericValidation({ minimum: 1, maximum: 0, integer: false })).toEqual({});
     expect(normalizedCanonicalNumericValidation({ minimum: 40, maximum: 60, integer: false })).toEqual({ min: 40, max: 60 });
+  });
+
+  it("presents scope choices as product language instead of backend enums", () => {
+    const scopeSchema = {
+      parameterId: "estimate_scope_mode",
+      ordinal: 0,
+      valueType: "enum",
+      unitId: null,
+      titleRu: "Состав сметы",
+      descriptionRu: "Выберите применимый состав работ",
+      required: true,
+      defaultValue: "MINIMAL_EXPLICIT_SCOPE",
+      constraints: { values: ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] },
+      semanticParameterKey: "estimate_scope_mode",
+      visibilityRole: "USER_INPUT",
+      valueSourceRole: "USER_INPUT_REQUIRED",
+      normativeLinks: [],
+      formulaConsumers: ["scope"],
+      resourceBranchConsumers: ["scope"],
+      validationRules: [],
+      provenance: {},
+    } as never;
+    const session = buildConsumerCanonicalParameterSession({
+      catalog: {
+        catalogId: "scope-catalog",
+        workKey: "scope-work",
+        definitionVersion: 1,
+        parameterSchema: [scopeSchema],
+      } as never,
+      revision: {
+        revisionId: "scope-revision",
+        checksumSha256: "scope-checksum",
+        parameterSchemaHash: "scope-schema",
+        compilerVersion: "scope-compiler",
+        createdAt: "2026-08-18T00:00:00.000Z",
+        parameters: { estimate_scope_mode: "MINIMAL_EXPLICIT_SCOPE" },
+      } as never,
+      draftId: "scope-draft",
+    });
+    expect(session.parameters[0]?.allowedValues).toEqual([
+      { value: "MINIMAL_EXPLICIT_SCOPE", label: "Базовый состав" },
+      { value: "FULL_APPLICABLE_SCOPE", label: "Полный применимый состав" },
+    ]);
   });
 
   it("uses a compact accepted-baseline placeholder without scientific notation", () => {
