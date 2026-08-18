@@ -1421,7 +1421,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
     const item = await withDatabaseClient(modelDatabaseUrl, async (client) => {
       const identity = (await client.query("select * from public.estimate_work_identity where catalog_id=$1 and retired_at is null", [catalogId])).rows[0];
-      const definition = (await client.query(`select v.* from public.estimate_definition_version v join public.estimate_definition_release r on r.id=v.release_id where (($2::uuid is not null and r.id=$2) or ($2::uuid is null and r.status='active')) and v.catalog_id=$1`, [catalogId, TARGET_RELEASE_ID || null])).rows[0];
+      const definition = (await client.query(`select version.*
+        from public.estimate_cumulative_manifest_entry manifest
+        join public.estimate_definition_version version on version.id=manifest.definition_version_id
+        join public.estimate_definition_release release on release.id=manifest.release_id
+        where manifest.catalog_id=$1
+          and (($2::uuid is not null and release.id=$2) or ($2::uuid is null and release.status='active'))`,
+      [catalogId, TARGET_RELEASE_ID || null])).rows[0];
       if (!identity || !definition) return null;
       const parameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
       return { catalogId: identity.catalog_id, releaseId: definition.release_id, namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key, titleRu: identity.title_ru, definitionVersion: definition.definition_version, applicability: definition.applicability, professionalMetadata: definition.source_metadata, parameterSchema: parameters.map((parameter) => {
