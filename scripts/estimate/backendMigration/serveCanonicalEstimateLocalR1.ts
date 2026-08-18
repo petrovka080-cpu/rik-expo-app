@@ -859,6 +859,7 @@ function professionalPdfUnit(row: JsonRecord): string {
     trip: "рейс",
     document: "док.",
     ratio: "коэф.",
+    service: "\u0443\u0441\u043b\u0443\u0433\u0430",
   };
   if (unit !== "test") return fixed[unit] ?? unit;
   const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
@@ -952,14 +953,14 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
         .subtitle{font-size:14px;font-weight:700}.meta,.notice{color:#526174}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.summary div{background:#eef7f2;border-radius:6px;padding:9px}
         table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#e7edf4;text-align:left}td,th{border:1px solid #cbd4df;padding:5px;vertical-align:top}th:nth-child(1){width:6%}th:nth-child(3){width:10%}th:nth-child(4){width:13%}th:nth-child(5),th:nth-child(6){width:14%}
         tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
-        footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}.page:after{content:counter(page)}
+        footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}
       </style></head><body>
         <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeArtifactHtml(identity?.title_ru ?? "Строительно-монтажные работы")}</div><div class="meta">Сформировано ${escapeArtifactHtml(createdDate)} из сохранённой версии сметы</div></header>
         <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalPdfMoney(total, revision.currency_code)}</div></div>
         ${sections}
         <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
         <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
-        <footer>Профессиональная смета · страница <span class="page"></span></footer>
+        <footer>Профессиональная смета</footer>
       </body></html>`);
       bytes = await page.pdf({ format: "A4", printBackground: true });
     } finally {
