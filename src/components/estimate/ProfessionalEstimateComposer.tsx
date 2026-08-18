@@ -124,16 +124,19 @@ function parameterTruthMissing(
   if (!parameter.semanticParameterKey?.trim()) missing.push("semantic_parameter_key");
   if (!parameter.visibilityRole) missing.push("visibility_role");
   if (parameter.visibilityRole === "INTERNAL_ONLY") return missing;
-  if (!parameter.descriptionRu?.trim()) missing.push("description_ru");
-  if (!parameter.defaultPolicy?.trim()) missing.push("default_policy");
   if (!parameter.valueSourceRole) missing.push("value_source_role");
   if (!parameter.guide?.guideShortRu?.trim()) missing.push("guide_short_ru");
   if (!parameter.guide?.guideKind) missing.push("guide_kind");
   if (!parameter.guide?.guideVersion?.trim()) missing.push("guide_version");
   if (!parameter.guide?.sourceSnapshotHash?.match(/^[0-9a-f]{64}$/u)) missing.push("source_snapshot_hash");
   if (!parameter.guide?.applicability?.trim()) missing.push("guide_applicability");
+  const guideCarriesExactNormativeSource = Boolean(
+    parameter.guide?.sourceDocument?.trim() && parameter.guide?.sourceLocator?.trim(),
+  );
   if (["MANDATORY_NORM_VALUE", "NORMATIVE_RANGE"].includes(parameter.guide?.guideKind ?? "")
-    && !parameter.normativeLinks?.length) missing.push("normative_links");
+    && !parameter.normativeLinks?.length && !guideCarriesExactNormativeSource) {
+    missing.push("normative_links");
+  }
   if (parameter.valueType === "array_object" && !parameter.compositeItemSchema?.subfields.length) {
     missing.push("composite_item_schema");
   }

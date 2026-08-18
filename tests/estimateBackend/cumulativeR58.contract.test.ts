@@ -18,6 +18,9 @@ describe("R5.8 cumulative canonical backend contract", () => {
     "scripts/estimate/p0TruthRemediationR5/validateR57AcceptedTraceBaselineCandidates.ts",
   );
   const composer = read("src/components/estimate/ProfessionalEstimateComposer.tsx");
+  const consumerBaseline = read(
+    "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+  );
 
   it("keeps BATCH009 out and resolves one inherited definition without copying accepted rows", () => {
     expect(manifestMigration).toContain("upper(source_batch) not like 'BATCH009%'");
@@ -49,8 +52,18 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(gateway).toContain("from public.estimate_cumulative_manifest_entry manifest");
     expect(gateway).toContain("version.id=manifest.definition_version_id");
     expect(gateway).toContain("manifest.release_id cumulative_release_id");
+    expect(gateway).toContain("manifest.approved_template_baseline_id cumulative_baseline_id");
     expect(gateway).toContain("releaseId: definition.cumulative_release_id");
     expect(gateway).not.toContain("where (($2::uuid is not null and r.id=$2) or ($2::uuid is null and r.status='active')) and v.catalog_id=$1");
+  });
+
+  it("projects accepted per-work baseline guides into inherited catalog inputs", () => {
+    expect(gateway).toContain("from public.estimate_approved_template_baseline where id=$1");
+    expect(gateway).toContain("baseline?.guide_provenance_ru?.[parameterId]");
+    expect(gateway).toContain("baseline?.formula_consumer_ids?.[parameterId]");
+    expect(gateway).toContain("baseline?.resource_consumer_row_ids?.[parameterId]");
+    expect(gateway).toContain("approvedTemplateBaselineId: baseline.id");
+    expect(gateway).toContain("work_specific_applicability");
   });
 
   it("does not treat removal of duplicate semantic owners as equivalent to a valid estimate", () => {
@@ -63,5 +76,21 @@ describe("R5.8 cumulative canonical backend contract", () => {
   it("scopes client idempotency to the cumulative release lineage", () => {
     expect(composer).toContain("composer-${selectedCatalog.releaseId}-${selectedCatalog.catalogId}");
     expect(composer).not.toContain("composer-${selectedCatalog.catalogId}-${stableInputKey(parameters)}");
+    expect(consumerBaseline).toContain("${catalog.releaseId}|${catalog.catalogId}|${input.prompt}");
+    expect(consumerBaseline).not.toContain("`${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`");
+  });
+
+  it("accepts an exact guide document and locator as the inline normative source", () => {
+    expect(composer).toContain("guideCarriesExactNormativeSource");
+    expect(composer).toContain("parameter.guide?.sourceDocument?.trim()");
+    expect(composer).toContain("parameter.guide?.sourceLocator?.trim()");
+    expect(composer).toContain("!parameter.normativeLinks?.length && !guideCarriesExactNormativeSource");
+  });
+
+  it("gates user inputs on their inline guide and provenance, not optional descriptive metadata", () => {
+    expect(composer).not.toContain('missing.push("description_ru")');
+    expect(composer).not.toContain('missing.push("default_policy")');
+    expect(composer).toContain('missing.push("guide_short_ru")');
+    expect(composer).toContain('missing.push("provenance")');
   });
 });

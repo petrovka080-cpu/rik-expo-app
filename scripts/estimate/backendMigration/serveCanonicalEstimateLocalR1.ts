@@ -1421,7 +1421,8 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const modelDatabaseUrl = await modelDatabaseUrlForCatalog(catalogId);
     const item = await withDatabaseClient(modelDatabaseUrl, async (client) => {
       const identity = (await client.query("select * from public.estimate_work_identity where catalog_id=$1 and retired_at is null", [catalogId])).rows[0];
-      const definition = (await client.query(`select version.*,manifest.release_id cumulative_release_id
+      const definition = (await client.query(`select version.*,manifest.release_id cumulative_release_id,
+          manifest.approved_template_baseline_id cumulative_baseline_id
         from public.estimate_cumulative_manifest_entry manifest
         join public.estimate_definition_version version on version.id=manifest.definition_version_id
         join public.estimate_definition_release release on release.id=manifest.release_id
@@ -1430,8 +1431,47 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
       [catalogId, TARGET_RELEASE_ID || null])).rows[0];
       if (!identity || !definition) return null;
       const parameters = (await client.query("select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal", [definition.id])).rows;
+      const baseline = definition.cumulative_baseline_id == null ? null : (await client.query(`
+        select id,contract_version,acceptance_evidence_sha256,accepted_at,input_classification,
+          formula_consumer_ids,resource_consumer_row_ids,normative_source_ids,guide_provenance_ru,
+          proposal_source_refs
+        from public.estimate_approved_template_baseline where id=$1`,
+      [definition.cumulative_baseline_id])).rows[0] ?? null;
       return { catalogId: identity.catalog_id, releaseId: definition.cumulative_release_id, namespace: identity.namespace, domain: identity.domain, workKey: identity.work_key, titleRu: identity.title_ru, definitionVersion: definition.definition_version, applicability: definition.applicability, professionalMetadata: definition.source_metadata, parameterSchema: parameters.map((parameter) => {
         const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object" ? parameter.truth_metadata : {};
+        const parameterId = String(parameter.parameter_id);
+        const acceptedGuide = String(baseline?.guide_provenance_ru?.[parameterId] ?? "").trim();
+        const acceptedFormulaConsumers = Array.isArray(baseline?.formula_consumer_ids?.[parameterId])
+          ? baseline.formula_consumer_ids[parameterId] : [];
+        const acceptedResourceConsumers = Array.isArray(baseline?.resource_consumer_row_ids?.[parameterId])
+          ? baseline.resource_consumer_row_ids[parameterId] : [];
+        const acceptedNormativeSources = Array.isArray(baseline?.normative_source_ids?.[parameterId])
+          ? baseline.normative_source_ids[parameterId] : [];
+        const baselineGuide = acceptedGuide && baseline ? {
+          guide_kind: "PROJECT_DEFINED",
+          guide_short_ru: acceptedGuide,
+          source_role: "PROJECT_DOCUMENTATION",
+          guide_validation_policy: "INFORMATION_ONLY",
+          source_document: acceptedNormativeSources.join(", ") || "APPROVED_TEMPLATE_BASELINE",
+          source_edition_status: baseline.contract_version,
+          source_locator: String(baseline.proposal_source_refs?.[0]?.sha256 ?? baseline.id),
+          guide_version: baseline.contract_version,
+          source_snapshot_hash: baseline.acceptance_evidence_sha256,
+          applicability: `Только для выбранной работы ${catalogId}; параметр подтверждён её индивидуальным baseline и связан с её формулами или ресурсами.`,
+          verified_at: baseline.accepted_at,
+        } : undefined;
+        const effectiveGuide = baselineGuide ? { ...baselineGuide, ...(truth.guide ?? {}) } : truth.guide;
+        const effectiveFormulaConsumers = Array.isArray(truth.formula_consumers) && truth.formula_consumers.length > 0
+          ? truth.formula_consumers : acceptedFormulaConsumers;
+        const effectiveResourceConsumers = Array.isArray(truth.resource_branch_consumers) && truth.resource_branch_consumers.length > 0
+          ? truth.resource_branch_consumers : acceptedResourceConsumers;
+        const effectiveProvenance = truth.provenance && Object.keys(truth.provenance).length > 0
+          ? truth.provenance : baseline ? {
+            owner: "backend",
+            contract: baseline.contract_version,
+            approvedTemplateBaselineId: baseline.id,
+            acceptanceEvidenceSha256: baseline.acceptance_evidence_sha256,
+          } : truth.provenance;
         const composite = truth.composite_item_schema && typeof truth.composite_item_schema === "object"
           ? truth.composite_item_schema as Record<string, any>
           : null;
@@ -1439,11 +1479,13 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
           parameterId: parameter.parameter_id, ordinal: parameter.ordinal, valueType: parameter.value_type,
           unitId: parameter.unit_id, titleRu: parameter.title_ru, required: parameter.required,
           defaultValue: parameter.default_value, constraints: parameter.constraints_json,
-          semanticParameterKey: truth.semantic_parameter_key, visibilityRole: truth.visibility_role,
+          semanticParameterKey: truth.semantic_parameter_key ?? (baseline ? parameterId : undefined),
+          visibilityRole: truth.visibility_role ?? (baseline ? "USER_INPUT" : undefined),
           descriptionRu: truth.description_ru, requiredWhen: truth.required_when,
           visibleWhen: truth.visible_when, allowedRangeOrOptions: truth.allowed_range_or_options,
-          defaultPolicy: truth.default_policy, valueSourceRole: truth.value_source_role,
-          guide: localParameterGuideView(truth.guide),
+          defaultPolicy: truth.default_policy,
+          valueSourceRole: truth.value_source_role ?? (baseline ? "PROJECT_DOCUMENTATION" : undefined),
+          guide: localParameterGuideView(effectiveGuide),
           compositeItemSchema: composite ? {
             itemLabelRu: composite.item_label_ru, minimumItems: composite.minimum_items,
             maximumItems: composite.maximum_items, reorderable: composite.reorderable === true,
@@ -1456,9 +1498,11 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
             })) : [],
           } : undefined,
           sharedInputBindingPolicy: truth.shared_input_binding_policy, derivedFrom: truth.derived_from,
-          normativeLinks: truth.normative_links, formulaConsumers: truth.formula_consumers,
-          resourceBranchConsumers: truth.resource_branch_consumers, validationRules: truth.validation_rules,
-          conflictsWith: truth.conflicts_with, provenance: truth.provenance,
+          normativeLinks: truth.normative_links, formulaConsumers: effectiveFormulaConsumers,
+          resourceBranchConsumers: effectiveResourceConsumers,
+          validationRules: Array.isArray(truth.validation_rules) && truth.validation_rules.length > 0
+            ? truth.validation_rules : baseline ? ["declared_type", "work_specific_applicability"] : truth.validation_rules,
+          conflictsWith: truth.conflicts_with, provenance: effectiveProvenance,
         };
       }) };
     });

@@ -114,11 +114,20 @@ async function main(): Promise<void> {
   const pageErrors: string[] = [];
   const consoleErrors: string[] = [];
   const failedCanonical: Json[] = [];
+  const failedCanonicalPending: Promise<void>[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("response", (response) => {
     if (response.url().includes("/canonical-estimate/") && response.status() >= 400) {
-      failedCanonical.push({ method: response.request().method(), url: response.url(), status: response.status() });
+      failedCanonicalPending.push((async () => {
+        failedCanonical.push({
+          method: response.request().method(),
+          url: response.url(),
+          status: response.status(),
+          requestBody: response.request().postDataJSON() ?? null,
+          responseBody: await response.json().catch(() => null),
+        });
+      })());
     }
   });
   context.on("page", (opened) => { if (opened !== page) void opened.close().catch(() => undefined); });
@@ -148,6 +157,8 @@ async function main(): Promise<void> {
         const parameter = (catalog.parameterSchema as Json[]).find((row) => row.parameterId === mutation.parameterId);
         if (!parameter) throw new Error(`R58_WEB50_MUTATION_PARAMETER_MISSING:${catalogId}:${mutation.parameterId}`);
         await page.getByTestId("canonical-estimate-refine-parameters").click();
+        const expandParameters = page.getByTestId("canonical-estimate-expand-parameters");
+        if (await expandParameters.isVisible().catch(() => false)) await expandParameters.click();
         const truthToggles = page.locator('[data-testid^="canonical-estimate-parameter-truth-toggle-"]');
         await truthToggles.first().waitFor({ state: "visible", timeout: 60_000 });
         const parameterCount = await truthToggles.count();
@@ -201,6 +212,7 @@ async function main(): Promise<void> {
   } finally {
     await browser.close();
   }
+  await Promise.all(failedCanonicalPending);
   const client = new Client({ connectionString: databaseUrl, application_name: "r58-web50-cleanup" });
   await client.connect();
   let cleanup: Json;

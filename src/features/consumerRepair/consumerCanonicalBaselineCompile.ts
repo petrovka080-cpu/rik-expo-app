@@ -230,7 +230,7 @@ export async function compileConsumerCanonicalBaseline(input: {
   const parameters = baseline.parameters;
   const compiled = await compileCanonicalEstimateAndLoad({
     request: {
-      idempotencyKey: `consumer-baseline-${stableId(`${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
+      idempotencyKey: `consumer-baseline-${stableId(`${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
       catalogId: catalog.catalogId,
       parameters,
       currencyCode: "KGS",
