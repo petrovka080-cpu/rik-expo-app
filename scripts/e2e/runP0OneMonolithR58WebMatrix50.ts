@@ -142,20 +142,33 @@ function displayedCount(value: string): number {
   return Number(value.match(/\b(\d+)\b/u)?.[1] ?? 0);
 }
 
-function hasUtf8Mojibake(value: string): boolean {
-  return /(?:\uFFFD|[\u0420\u0421][\u0080-\u00BF\u0400-\u040F\u0450-\u045F\u2010-\u203A])/u.test(value);
+function revisionIdFromIdentity(value: string): string {
+  return String(value.match(/Backend revision\s+([0-9a-f-]{36})/iu)?.[1] ?? "");
 }
 
-async function buildArtifact(page: Page, revisionId: string, kind: "pdf" | "procurement"): Promise<Json> {
-  const ready = page.waitForResponse((response) => response.request().method() === "GET"
-    && response.url().endsWith(`/revisions/${revisionId}/artifacts/${kind}`) && response.status() === 200,
-  { timeout: 120_000 });
-  await page.getByTestId(`canonical-estimate-artifact-${kind}`).click();
-  const artifact = await responseJson(await ready);
-  if (artifact.status !== "ready" || artifact.revisionId !== revisionId) {
-    throw new Error(`R58_WEB50_ARTIFACT_${kind.toUpperCase()}_RED:${revisionId}`);
+async function currentRevisionIdentity(page: Page): Promise<{ text: string; revisionId: string }> {
+  const identity = page.getByTestId("consumer-repair-draft-release-id");
+  await identity.waitFor({ state: "visible", timeout: 120_000 });
+  const text = await identity.innerText();
+  return { text, revisionId: revisionIdFromIdentity(text) };
+}
+
+async function revealEditableParameter(page: Page, parameterId: string): Promise<ReturnType<Page["locator"]>> {
+  const row = page.getByTestId(`editable-param-chip-${parameterId}`);
+  if (!await row.isVisible().catch(() => false)) {
+    const showMore = page.getByTestId("request-estimate-show-more-parameters");
+    if (await showMore.isVisible().catch(() => false)) await showMore.click();
   }
-  return artifact;
+  if (!await row.isVisible().catch(() => false)) {
+    const showFilled = page.getByTestId("request-estimate-filled-parameters-toggle");
+    if (await showFilled.isVisible().catch(() => false)) await showFilled.click();
+  }
+  await row.waitFor({ state: "visible", timeout: 60_000 });
+  return row;
+}
+
+function hasUtf8Mojibake(value: string): boolean {
+  return /(?:\uFFFD|[\u0420\u0421][\u0080-\u00BF\u0400-\u040F\u0450-\u045F\u2010-\u203A])/u.test(value);
 }
 
 async function addRealCatalogItem(page: Page): Promise<Json> {
@@ -246,6 +259,21 @@ async function openProductPdf(page: Page, revisionId: string, expectedColdMs = 3
     sloMs: expectedColdMs,
     status: artifact.revisionId === revisionId && durationMs <= expectedColdMs ? "GREEN" : "RED",
   };
+}
+
+async function openProductProcurement(page: Page, revisionId: string): Promise<Json> {
+  const artifactReady = page.waitForResponse((response) => response.request().method() === "GET"
+    && response.url().endsWith(`/revisions/${revisionId}/artifacts/procurement`) && response.status() === 200,
+  { timeout: 120_000 });
+  const action = page.getByTestId("consumer-estimate-open-procurement").first();
+  await action.waitFor({ state: "visible", timeout: 30_000 });
+  if (!await action.isEnabled()) throw new Error(`R6_WEB72_PROCUREMENT_DISABLED:${revisionId}`);
+  await action.click();
+  const artifact = await responseJson(await artifactReady);
+  if (artifact.status !== "ready" || artifact.revisionId !== revisionId) {
+    throw new Error(`R6_WEB72_PRODUCT_PROCUREMENT_RED:${revisionId}`);
+  }
+  return artifact;
 }
 
 async function main(): Promise<void> {
@@ -391,7 +419,7 @@ async function main(): Promise<void> {
         const searchEvidence = await selectAndBuildBaseline(page, matrixCase);
         const baselineReleaseText = await page.getByTestId("consumer-repair-draft-release-id").innerText();
         const baselineRowsText = await page.getByTestId("request-estimate-row-count").innerText();
-        const baselineRevisionId = String(baselineReleaseText.match(/Backend revision\s+([0-9a-f-]{36})/iu)?.[1] ?? "");
+        const baselineRevisionId = revisionIdFromIdentity(baselineReleaseText);
         const baselineRevision = baselineRevisionId ? await api(`revisions/${baselineRevisionId}`, apiRoot) : null;
         const launchPromptText = await page.getByTestId("request-estimate-current-launch-prompt-text").innerText();
         const displayTitleText = await page.getByTestId("request-estimate-selected-work-title").innerText();
@@ -428,26 +456,29 @@ async function main(): Promise<void> {
         if (CONTROL_72 && (!catalogAddition?.acceptedJobId || catalogAddition.resultCount <= 0)) {
           blockers.push("CATALOG_SEARCH_OR_ADD_RED");
         }
-        await page.getByTestId("request-estimate-parameters-toggle").click();
-        await page.getByTestId("canonical-estimate-parameter-form").waitFor({ state: "visible", timeout: 60_000 });
-        const history = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
-        await history.first().waitFor({ state: "visible", timeout: 60_000 });
-        const baselineHistoryCount = await history.count();
+        const parameterParentIdentity = await currentRevisionIdentity(page);
+        const parameterParentRevisionId = parameterParentIdentity.revisionId;
+        if (!parameterParentRevisionId) throw new Error(`R6_WEB72_PARAMETER_PARENT_ID_MISSING:${catalogId}`);
+        const historyBefore = await api(`revisions?catalogId=${encodeURIComponent(catalogId)}&limit=100`, apiRoot);
+        const baselineHistoryCount = Array.isArray(historyBefore.revisions) ? historyBefore.revisions.length : 0;
+        const baselineTimelineCount = await page.locator('[data-testid^="estimate-revision-timeline-r"]').count();
+        const parametersToggle = page.getByTestId("request-estimate-parameters-toggle");
+        await parametersToggle.click();
+        const parameterPanel = page.getByTestId("request-estimate-parameter-panel");
+        await parameterPanel.waitFor({ state: "visible", timeout: 60_000 });
         const catalogResponse = await api(`catalog/${encodeURIComponent(catalogId)}`, apiRoot);
         const catalog = catalogResponse.item ?? catalogResponse;
         const parameter = (catalog.parameterSchema as Json[]).find((row) => row.parameterId === mutation.parameterId);
         if (!parameter) throw new Error(`R58_WEB50_MUTATION_PARAMETER_MISSING:${catalogId}:${mutation.parameterId}`);
-        await page.getByTestId("canonical-estimate-refine-parameters").click();
-        const expandParameters = page.getByTestId("canonical-estimate-expand-parameters");
-        if (await expandParameters.isVisible().catch(() => false)) await expandParameters.click();
-        const truthToggles = page.locator('[data-testid^="canonical-estimate-parameter-truth-toggle-"]');
-        await truthToggles.first().waitFor({ state: "visible", timeout: 60_000 });
-        const parameterCount = await truthToggles.count();
-        const guideCount = await page.locator('[data-testid^="canonical-estimate-parameter-guide-"]').count();
-        const input = page.getByTestId(`canonical-estimate-parameter-${parameter.ordinal}`);
+        let parameterRow = await revealEditableParameter(page, String(parameter.parameterId));
+        const parameterCount = await page.locator('[data-testid^="editable-param-chip-"]').count();
+        const guideCount = await page.locator(
+          '[data-testid^="editable-param-guide-"]:not([data-testid^="editable-param-guide-details-"])',
+        ).count();
+        let input = parameterRow.getByTestId("editable-param-popover-input");
         await input.waitFor({ state: "visible", timeout: 30_000 });
-        const parameterLabel = await page.getByTestId(`canonical-estimate-parameter-label-${parameter.ordinal}`).innerText();
-        const guide = page.getByTestId(`canonical-estimate-parameter-guide-${parameter.ordinal}`);
+        const parameterLabel = await parameterRow.innerText();
+        const guide = page.getByTestId(`editable-param-guide-${parameter.parameterId}`);
         const parameterGuide = await guide.isVisible().catch(() => false) ? await guide.innerText() : null;
         const rawParameterTitle = String(parameter.titleRu);
         const expectedParameterTitle = CONTROL_72 && rawParameterTitle.includes(":")
@@ -464,108 +495,107 @@ async function main(): Promise<void> {
           && parameterLabel.includes(rawParameterTitle.slice(0, rawParameterTitle.indexOf(":")))) {
           blockers.push("PARAMETER_TECHNICAL_PREFIX_VISIBLE");
         }
-        if (parameterGuide !== null && parameterGuide !== String(parameter.guide?.guideShortRu ?? "")) {
+        if (!CONTROL_72 && parameterGuide !== null && parameterGuide !== String(parameter.guide?.guideShortRu ?? "")) {
           blockers.push("PARAMETER_INLINE_GUIDE_RED");
         }
+        if (CONTROL_72 && parameterGuide !== null && hasUtf8Mojibake(parameterGuide)) {
+          blockers.push("PARAMETER_INLINE_GUIDE_UTF8_RED");
+        }
         if (CONTROL_72) {
-          await page.getByTestId("canonical-estimate-refine-parameters").click();
+          await parametersToggle.click();
+          await parameterPanel.waitFor({ state: "hidden", timeout: 10_000 });
           if (await input.isVisible().catch(() => false)) blockers.push("PARAMETER_PANEL_DID_NOT_HIDE");
-          await page.getByTestId("canonical-estimate-refine-parameters").click();
+          await parametersToggle.click();
+          await parameterPanel.waitFor({ state: "visible", timeout: 60_000 });
+          parameterRow = await revealEditableParameter(page, String(parameter.parameterId));
+          input = parameterRow.getByTestId("editable-param-popover-input");
           await input.waitFor({ state: "visible", timeout: 10_000 });
         }
         await input.fill(String(mutation.changedValue));
+        const dirtyCountText = await page.getByTestId("editable-param-batch-dirty-count").innerText();
+        if (displayedCount(dirtyCountText) !== 1) blockers.push("PARAMETER_BATCH_DIRTY_COUNT_RED");
         const accepted = page.waitForResponse((response) => response.request().method() === "POST"
           && response.url().endsWith("/jobs/recalculate") && response.status() === 202, { timeout: 60_000 });
-        await page.getByTestId("foreman-ai-estimate-generate").click();
+        await page.getByTestId("editable-param-batch-apply").click();
         const acceptedBody = await responseJson(await accepted);
-        await page.waitForFunction((count) => document.querySelectorAll('[data-testid^="canonical-estimate-history-revision-"]').length > count,
-          baselineHistoryCount, { timeout: 120_000 });
-        const childHistory = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
-        const childHistoryCount = await childHistory.count();
-        const childTestId = await childHistory.first().getAttribute("data-testid");
-        const revisionId = String(childTestId?.match(/([0-9a-f-]{36})$/iu)?.[1] ?? "");
+        await page.waitForFunction((parentRevisionId) => {
+          const value = document.querySelector('[data-testid="consumer-repair-draft-release-id"]')?.textContent ?? "";
+          return value.includes("Backend revision") && !value.includes(parentRevisionId);
+        }, parameterParentRevisionId, { timeout: 120_000 });
+        const childIdentity = await currentRevisionIdentity(page);
+        const revisionId = childIdentity.revisionId;
         if (!revisionId) blockers.push("CHILD_REVISION_ID_MISSING");
-        const visibleRelease = await page.getByTestId("canonical-estimate-release-id").innerText();
-        const visibleRows = await page.getByTestId("foreman-ai-estimate-row-count").innerText();
+        const visibleRelease = childIdentity.text;
+        const visibleRows = await page.getByTestId("request-estimate-row-count").innerText();
         if (!visibleRelease.includes(releaseId)) blockers.push("CHILD_RELEASE_RED");
         if (displayedCount(visibleRows) <= 0) blockers.push("CHILD_EMPTY");
-        if (!(await page.getByTestId("canonical-estimate-selected-catalog-id").innerText()).includes(catalogId)) {
+        if (await page.getByTestId(`request-estimate-selected-catalog-id-${catalogId}`).count() !== 1) {
           blockers.push("CHILD_EXACT_CATALOG_RED");
         }
+        const historyAfter = await api(`revisions?catalogId=${encodeURIComponent(catalogId)}&limit=100`, apiRoot);
+        const childHistoryCount = Array.isArray(historyAfter.revisions) ? historyAfter.revisions.length : 0;
         if (childHistoryCount <= baselineHistoryCount) blockers.push("CHILD_HISTORY_NOT_APPENDED");
+        const childRevision = revisionId ? await api(`revisions/${revisionId}`, apiRoot) : null;
+        if (!childRevision || childRevision.parentRevisionId !== parameterParentRevisionId
+          || childRevision.catalogId !== catalogId || childRevision.releaseId !== releaseId
+          || Number(childRevision.rowCount) !== displayedCount(visibleRows)) {
+          blockers.push("CHILD_BACKEND_IDENTITY_RED");
+        }
+        const childTimelineCount = await page.locator('[data-testid^="estimate-revision-timeline-r"]').count();
+        if (childTimelineCount <= baselineTimelineCount) blockers.push("CHILD_TIMELINE_NOT_APPENDED");
+        await page.getByTestId("estimate-revision-diff").waitFor({ state: "visible", timeout: 60_000 });
+        if (await page.getByTestId(`estimate-revision-diff-param-${parameter.parameterId}`).count() !== 1) {
+          blockers.push("CHILD_PARAMETER_DIFF_MISSING");
+        }
         let coldReopen: Json | null = null;
         if (revisionId) {
-          const rowsResponse = page.waitForResponse((response) => response.request().method() === "GET"
-            && response.url().includes(`/revisions/${revisionId}/rows`) && response.status() === 200,
-          { timeout: 60_000 });
-          await childHistory.first().click();
-          await rowsResponse;
-          const pdf = await buildArtifact(page, revisionId, "pdf");
-          const procurement = await buildArtifact(page, revisionId, "procurement");
-          if (pdf.releaseId !== releaseId || procurement.releaseId !== releaseId) blockers.push("ARTIFACT_RELEASE_RED");
+          const procurement = await openProductProcurement(page, revisionId);
+          if (procurement.releaseId !== releaseId) blockers.push("ARTIFACT_RELEASE_RED");
           let currentProductPdf: Json | null = null;
           let parentProductPdf: Json | null = null;
-          let parentRevisionId = "";
+          const parentRevisionId = parameterParentRevisionId;
           if (CONTROL_72) {
-            currentProductPdf = await openProductPdf(page, revisionId, 1_500);
+            currentProductPdf = await openProductPdf(page, revisionId);
             if (currentProductPdf.status !== "GREEN") blockers.push("CURRENT_PRODUCT_PDF_RED");
-            await page.getByTestId("request-estimate-parameters-toggle").click();
-            await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
-            const reopenedHistory = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
-            await reopenedHistory.nth(1).waitFor({ state: "visible", timeout: 60_000 });
-            const parentTestId = await reopenedHistory.nth(1).getAttribute("data-testid");
-            parentRevisionId = String(parentTestId?.match(/([0-9a-f-]{36})$/iu)?.[1] ?? "");
             if (!parentRevisionId || parentRevisionId === revisionId) {
               blockers.push("PARENT_REVISION_ID_RED");
             } else {
-              const parentRows = page.waitForResponse((response) => response.request().method() === "GET"
-                && response.url().includes(`/revisions/${parentRevisionId}/rows`) && response.status() === 200,
-              { timeout: 60_000 });
-              await reopenedHistory.nth(1).click();
-              await parentRows;
+              const parentUrl = `${baseUrl}/request?canonicalRevisionId=${encodeURIComponent(parentRevisionId)}&r6Parent=${index}-${Date.now()}`;
+              await page.goto(parentUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
+              await page.getByTestId("consumer-repair-screen").waitFor({ state: "visible", timeout: 120_000 });
+              const parentIdentity = await currentRevisionIdentity(page);
+              if (parentIdentity.revisionId !== parentRevisionId || !parentIdentity.text.includes(releaseId)) {
+                blockers.push("PARENT_PRODUCT_REOPEN_IDENTITY_RED");
+              }
               parentProductPdf = await openProductPdf(page, parentRevisionId);
               if (parentProductPdf.status !== "GREEN") blockers.push("PARENT_PRODUCT_PDF_RED");
               if (parentProductPdf.sha256 && parentProductPdf.sha256 === currentProductPdf.sha256) {
                 blockers.push("PARENT_CHILD_PDF_HASH_NOT_DISTINCT");
               }
-              await page.getByTestId("request-estimate-parameters-toggle").click();
-              await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
-              const latestHistory = page.locator('[data-testid^="canonical-estimate-history-revision-"]');
-              const childRows = page.waitForResponse((response) => response.request().method() === "GET"
-                && response.url().includes(`/revisions/${revisionId}/rows`) && response.status() === 200,
-              { timeout: 60_000 });
-              await latestHistory.first().click();
-              await childRows;
             }
           }
           const requestsBeforeCold = canonicalRequests.length;
-          const exactRevisionResponse = page.waitForResponse((response) => response.request().method() === "GET"
-            && response.url().endsWith(`/revisions/${revisionId}`) && response.status() === 200,
-          { timeout: 120_000 });
-          const exactRowsResponse = page.waitForResponse((response) => response.request().method() === "GET"
-            && response.url().includes(`/revisions/${revisionId}/rows`) && response.status() === 200,
-          { timeout: 120_000 });
-          const exactCatalogResponse = page.waitForResponse((response) => response.request().method() === "GET"
-            && response.url().includes(`/catalog/${encodeURIComponent(catalogId)}`) && response.status() === 200,
-          { timeout: 120_000 });
-          const exactHistoryResponse = page.waitForResponse((response) => response.request().method() === "GET"
-            && response.url().includes(`/revisions?catalogId=${encodeURIComponent(catalogId)}`) && response.status() === 200,
-          { timeout: 120_000 });
           const coldUrl = `${baseUrl}/request?canonicalRevisionId=${encodeURIComponent(revisionId)}&r58WebCold=${index}-${Date.now()}`;
           await page.goto(coldUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
-          await Promise.all([exactRevisionResponse, exactRowsResponse, exactCatalogResponse, exactHistoryResponse]);
-          await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
-          await page.getByTestId("canonical-estimate-native-quick-actions").waitFor({ state: "visible", timeout: 120_000 });
-          const coldCatalog = await page.getByTestId("canonical-estimate-selected-catalog-id").innerText();
-          const coldRelease = await page.getByTestId("canonical-estimate-release-id-top").innerText();
-          const coldRows = await page.getByTestId("canonical-estimate-row-count-top").innerText();
+          await page.getByTestId("consumer-repair-screen").waitFor({ state: "visible", timeout: 120_000 });
+          const coldIdentity = await currentRevisionIdentity(page);
+          const coldCatalog = await page.getByTestId(`request-estimate-selected-catalog-id-${catalogId}`).count() === 1
+            ? catalogId : "";
+          const coldRelease = coldIdentity.text;
+          const coldRows = await page.getByTestId("request-estimate-row-count").innerText();
           const coldRequests = canonicalRequests.slice(requestsBeforeCold);
           const coldMutationPosts = coldRequests.filter((request) => request.method === "POST");
-          if (!coldCatalog.includes(catalogId)) blockers.push("COLD_CATALOG_IDENTITY_RED");
+          const coldGets = coldRequests.filter((request) => request.method === "GET");
+          if (coldCatalog !== catalogId || coldIdentity.revisionId !== revisionId) blockers.push("COLD_CATALOG_IDENTITY_RED");
           if (!coldRelease.includes(releaseId)) blockers.push("COLD_RELEASE_IDENTITY_RED");
           if (coldRows !== visibleRows) blockers.push("COLD_ROW_COUNT_IDENTITY_RED");
           if (coldMutationPosts.length > 0) blockers.push("COLD_CREATED_NEW_REVISION");
-          if (hasUtf8Mojibake(await page.getByTestId("professional-estimate-composer").innerText())) {
+          if (!coldGets.some((request) => request.url.endsWith(`/revisions/${revisionId}`))
+            || !coldGets.some((request) => request.url.includes(`/revisions/${revisionId}/rows`))
+            || !coldGets.some((request) => request.url.includes(`/catalog/${encodeURIComponent(catalogId)}`))) {
+            blockers.push("COLD_EXACT_READS_NOT_OBSERVED");
+          }
+          if (hasUtf8Mojibake(await page.getByTestId("consumer-repair-draft").innerText())) {
             blockers.push("COLD_UTF8_RED");
           }
           coldReopen = { coldUrl, revisionId, parentRevisionId, currentProductPdf, parentProductPdf,
