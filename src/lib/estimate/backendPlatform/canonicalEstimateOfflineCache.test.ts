@@ -1,10 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
+  cacheCanonicalEstimateRevision,
   listPendingCanonicalEstimateAdmissions,
   queuePendingCanonicalEstimateAdmission,
   queuePendingCanonicalEstimateRecalculation,
   removePendingCanonicalEstimateAdmission,
+  readCachedCanonicalEstimateRevision,
 } from "./canonicalEstimateOfflineCache";
 
 describe("canonical estimate bounded offline outbox", () => {
@@ -58,5 +60,29 @@ describe("canonical estimate bounded offline outbox", () => {
     expect(pending.baseRevisionChecksumSha256).toBe("checksum-r1");
     expect(await listPendingCanonicalEstimateAdmissions("user-b")).toEqual([]);
     expect(await listPendingCanonicalEstimateAdmissions("user-a")).toHaveLength(1);
+  });
+
+  it("recovers a bounded cache quota failure without cancelling the server revision", async () => {
+    const setItem = jest.spyOn(AsyncStorage, "setItem");
+    const removeItem = jest.spyOn(AsyncStorage, "removeItem");
+    setItem.mockRejectedValueOnce(new DOMException("quota exceeded", "QuotaExceededError"));
+    const revision = {
+      revisionId: "revision-online-authority",
+      releaseId: "release-r58",
+      catalogId: "catalog-r58",
+      rowCount: 0,
+    } as any;
+
+    await expect(cacheCanonicalEstimateRevision({
+      ownerUserId: "user-a",
+      revision,
+      rows: [],
+    })).resolves.toBeUndefined();
+
+    expect(removeItem).toHaveBeenCalledWith("@estimate-platform/canonical-cache/v2");
+    expect(await readCachedCanonicalEstimateRevision("user-a", revision.revisionId))
+      .toMatchObject({ revision: { revisionId: revision.revisionId } });
+    setItem.mockRestore();
+    removeItem.mockRestore();
   });
 });

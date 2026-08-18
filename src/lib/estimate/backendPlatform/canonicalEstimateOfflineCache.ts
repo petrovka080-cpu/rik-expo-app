@@ -78,6 +78,26 @@ function trimCache(envelope: CacheEnvelope): CacheEnvelope {
   return { version: 2, revisions };
 }
 
+function isQuotaExceeded(error: unknown): boolean {
+  const name = error instanceof Error ? error.name : "";
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return name === "QuotaExceededError" || /quota|storage.*exceed/iu.test(message);
+}
+
+async function writeCacheWithoutBlockingServerRevision(next: CacheEnvelope): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next));
+  } catch (error) {
+    if (!isQuotaExceeded(error)) throw error;
+    await AsyncStorage.removeItem(CACHE_KEY).catch(() => undefined);
+    try {
+      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next));
+    } catch (retryError) {
+      if (!isQuotaExceeded(retryError)) throw retryError;
+    }
+  }
+}
+
 export async function cacheCanonicalEstimateRevision(input: {
   ownerUserId: string;
   revision: CanonicalEstimateRevisionView;
@@ -100,7 +120,7 @@ export async function cacheCanonicalEstimateRevision(input: {
       item.ownerUserId === ownerUserId && item.revision.revisionId !== input.revision.revisionId
     )],
   });
-  await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(next));
+  await writeCacheWithoutBlockingServerRevision(next);
 }
 
 export async function readCachedCanonicalEstimateRevision(
