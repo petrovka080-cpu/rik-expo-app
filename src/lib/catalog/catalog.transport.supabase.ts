@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+import { publicCatalogSupabase, supabase } from "../supabaseClient";
 import {
   loadPagedRowsWithCeiling,
   normalizePage,
@@ -51,6 +51,11 @@ type CatalogQueryResult<T> = {
   data: T[] | null;
   error: { message?: string } | null;
 };
+
+// Jest transport fixtures written before the public client was introduced
+// expose only `supabase`; the fallback also keeps tests and incomplete dev
+// environments fail-safe without changing production selection.
+const publicSearchSupabase = publicCatalogSupabase ?? supabase;
 
 type CatalogQueryFactory<T> = () => {
   range: (from: number, to: number) => PromiseLike<CatalogQueryResult<T>>;
@@ -175,18 +180,18 @@ export const runCatalogSearchRpcRawFromSupabase = async (
 ): Promise<{ data: unknown; error: { message?: string } | null }> => {
   switch (fn) {
     case "rik_quick_ru":
-      return await supabase.rpc("rik_quick_ru", {
+      return await publicSearchSupabase.rpc("rik_quick_ru", {
         p_q: args.p_q,
         p_limit: args.p_limit,
       });
     case "rik_quick_search_typed":
-      return await supabase.rpc("rik_quick_search_typed", {
+      return await publicSearchSupabase.rpc("rik_quick_search_typed", {
         p_q: args.p_q,
         p_limit: args.p_limit,
         p_apps: args.p_apps ?? undefined,
       });
     case "rik_quick_search":
-      return await supabase.rpc("rik_quick_search", {
+      return await publicSearchSupabase.rpc("rik_quick_search", {
         p_q: args.p_q,
         p_limit: args.p_limit,
         p_apps: args.p_apps ?? undefined,
@@ -200,7 +205,7 @@ export const loadCatalogSearchFallbackRowsFromSupabase = async (
   limit: number,
 ) => {
   const page = normalizeRikItemsSearchPreviewPage(limit);
-  let queryBuilder = supabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT);
+  let queryBuilder = publicSearchSupabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT);
   if (tokens.length > 0) {
     tokens.forEach((token) => {
       queryBuilder = queryBuilder.or(`name_human.ilike.%${token}%,rik_code.ilike.%${token}%`);
@@ -296,7 +301,7 @@ export const loadRikQuickSearchFallbackRowsFromSupabase = async (
   limit: number,
 ) => {
   const page = normalizeRikItemsSearchPreviewPage(limit);
-  let builder = supabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS);
+  let builder = publicSearchSupabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS);
   if (tokens.length > 0) {
     const orFilters = tokens
       .flatMap((token) => [`name_human.ilike.%${token}%`, `rik_code.ilike.%${token}%`])
@@ -318,7 +323,7 @@ export const loadCatalogItemsSearchPreviewRowsFromSupabase = async (
   pageSize?: number | null,
 ): Promise<CatalogQueryResult<CatalogItemsSearchPreviewRow>> => {
   const page = normalizeCatalogItemsSearchPreviewPage(pageSize);
-  let query = supabase
+  let query = publicSearchSupabase
     .from("catalog_items")
     .select(CATALOG_ITEMS_SEARCH_PREVIEW_SELECT);
 

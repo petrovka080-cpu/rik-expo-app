@@ -905,6 +905,26 @@ const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   })
   : createMissingSupabaseClient();
 
+// Public catalog reads must not inherit a stale or locally-provisioned user
+// session. Supabase attaches the current access token to every query made by
+// the main client; when that token is no longer accepted, otherwise-public
+// catalog_items/rik_items reads fail with 401 as well. Keep a deliberately
+// sessionless client for the read-only catalog transport. Database RLS remains
+// the authority for which catalog rows are public.
+const rawPublicCatalogSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: { "x-client-info": "rik-expo-app-public-catalog" },
+        fetch: supabaseClientFetch,
+      },
+    })
+  : rawSupabaseClient;
+
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? (createRpcRateLimitedSupabaseClient(rawSupabaseClient as unknown as RpcCallableClient, {
       context: {
@@ -913,6 +933,15 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
       },
     }) as RateLimitedRpcClient<RpcCallableClient> as unknown as SupabaseClient<Database>)
   : rawSupabaseClient;
+
+export const publicCatalogSupabase: SupabaseClient<Database> = isSupabaseEnvValid
+  ? (createRpcRateLimitedSupabaseClient(rawPublicCatalogSupabaseClient as unknown as RpcCallableClient, {
+      context: {
+        owner: "public_catalog_supabase_client",
+        source: "supabase_client_proxy",
+      },
+    }) as RateLimitedRpcClient<RpcCallableClient> as unknown as SupabaseClient<Database>)
+  : rawPublicCatalogSupabaseClient;
 
 export async function ensureSignedIn(): Promise<boolean> {
   if (!supabase) return false;
