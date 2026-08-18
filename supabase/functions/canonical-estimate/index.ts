@@ -353,7 +353,7 @@ async function createArtifactJob(
   request: Request,
   requester: ReturnType<typeof createClient>,
   revisionId: string,
-  kind: "pdf" | "procurement",
+  kind: "pdf" | "professional_pdf" | "procurement",
 ) {
   assertUuid(revisionId, "revisionId");
   const body = await request.json().catch(() => ({}));
@@ -382,7 +382,7 @@ async function createArtifactJob(
 async function readArtifact(
   requester: ReturnType<typeof createClient>,
   revisionId: string,
-  kind: "pdf" | "procurement",
+  kind: "pdf" | "professional_pdf" | "procurement",
 ) {
   assertUuid(revisionId, "revisionId");
   const { data, error } = await requester
@@ -394,12 +394,36 @@ async function readArtifact(
   if (error) normalizeDbError(error);
   const { data: revision, error: revisionError } = await requester
     .from("estimate_revision")
-    .select("id,release_id,checksum_sha256")
+    .select("id,release_id,catalog_id,row_count,checksum_sha256,owner_user_id,organization_id")
     .eq("id", revisionId)
     .single();
   if (revisionError) normalizeDbError(revisionError);
-  const artifactReleaseId = String(data.metadata?.sourceReleaseId ?? "");
-  const artifactRevisionChecksum = String(data.metadata?.sourceRevisionChecksumSha256 ?? "");
+  const sourceMetadata = data.metadata ?? {};
+  if (data.status === "ready" && (
+    (sourceMetadata.sourceReleaseId != null && sourceMetadata.sourceReleaseId !== revision.release_id)
+    || (sourceMetadata.sourceRevisionChecksumSha256 != null && sourceMetadata.sourceRevisionChecksumSha256 !== revision.checksum_sha256)
+    || (sourceMetadata.sourceCatalogId != null && sourceMetadata.sourceCatalogId !== revision.catalog_id)
+    || (sourceMetadata.sourceRowCount != null && Number(sourceMetadata.sourceRowCount) !== Number(revision.row_count))
+    || (sourceMetadata.sourceOwnerUserId != null && sourceMetadata.sourceOwnerUserId !== revision.owner_user_id)
+    || (sourceMetadata.sourceOrganizationId != null && sourceMetadata.sourceOrganizationId !== (revision.organization_id ?? null))
+    || (kind === "professional_pdf" && !String(sourceMetadata.templateVersion ?? "").startsWith("professional-estimate-pdf:"))
+  )) {
+    throw new CanonicalEstimateApiError("artifact revision identity mismatch", {
+      code: "ARTIFACT_REVISION_IDENTITY_MISMATCH",
+      httpStatus: 409,
+    });
+  }
+  const metadata = {
+    ...sourceMetadata,
+    sourceCatalogId: revision.catalog_id,
+    sourceRowCount: Number(revision.row_count),
+    sourceReleaseId: revision.release_id,
+    sourceRevisionChecksumSha256: revision.checksum_sha256,
+    sourceOwnerUserId: revision.owner_user_id,
+    sourceOrganizationId: revision.organization_id ?? null,
+  };
+  const artifactReleaseId = String(metadata.sourceReleaseId ?? "");
+  const artifactRevisionChecksum = String(metadata.sourceRevisionChecksumSha256 ?? "");
   if (data.status === "ready" && (
     artifactReleaseId !== revision.release_id || artifactRevisionChecksum !== revision.checksum_sha256
   )) {
@@ -430,7 +454,7 @@ async function readArtifact(
     contentType: data.content_type,
     byteSize: data.byte_size == null ? null : Number(data.byte_size),
     sha256: data.sha256,
-    metadata: data.metadata,
+    metadata,
     errorCode: data.error_code,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -1101,7 +1125,7 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
       return json(200, await readRevisionRows(request, requester, path[1]), requestId, request);
     }
     if (path.length === 4 && path[0] === "revisions" && path[2] === "artifacts"
-      && (path[3] === "pdf" || path[3] === "procurement")) {
+      && (path[3] === "pdf" || path[3] === "professional_pdf" || path[3] === "procurement")) {
       if (request.method === "POST") {
         return json(202, await createArtifactJob(request, requester, path[1], path[3]), requestId, request);
       }

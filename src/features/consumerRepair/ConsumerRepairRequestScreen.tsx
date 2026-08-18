@@ -32,11 +32,14 @@ import {
 import type { ConsumerRepairPhotoMaterialCaptureResult, OpenConsumerRepairPhotoForMaterialRecognitionInput } from "./useConsumerRepairPhotoCaptureController";
 import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import {
+  assertCanonicalEstimateArtifactIdentity,
   buildCanonicalEstimateArtifact,
   getCanonicalEstimateRevision,
   searchCanonicalEstimateCatalog,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { CanonicalEstimateApiError } from "../../lib/estimate/backendPlatform/contracts";
+import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { canonicalWorkSearchQueryFromPrompt } from "../../lib/estimate/backendPlatform/canonicalEstimateSearchInput";
 import {
   createConsumerRepairQuantityEditOperationId,
@@ -62,6 +65,7 @@ import {
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
 
 const QUANTITY_EDIT_SAVING_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442\u0441\u044f.";
 const QUANTITY_EDIT_SAVED_MESSAGE = "\u0421\u043c\u0435\u0442\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0430.";
@@ -134,6 +138,16 @@ export type ConsumerRepairRequestScreenControllerProps = ConsumerRepairRequestSc
     catalogId: string,
     requestDraftId?: string | null,
   ) => Promise<void>;
+  onLoadCanonicalParameterSession: (
+    revisionId: string,
+    requestDraftId: string,
+  ) => Promise<CanonicalParameterSession>;
+  onRecalculateCanonicalEstimate: (input: {
+    revisionId: string;
+    requestDraftId: string;
+    problemText: string;
+    patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  }) => Promise<CanonicalParameterSession>;
   onOpenPhotoForMaterialRecognition: (input: OpenConsumerRepairPhotoForMaterialRecognitionInput) => void;
   MobilePhotoCaptureFlowNode?: React.ReactElement | null;
 };
@@ -389,7 +403,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       problemText: "",
       selectedWork: null,
       selectedHistoryId: null,
-      aiAnswerRu: `Backend revision принята: ${String(bundle.structuredEstimatePayload?.estimateId ?? bundle.draft.id)}.`,
+      aiAnswerRu: "Смета рассчитана и сохранена.",
       statusMessage: "Canonical backend revision сохранена в черновике заявки.",
       validationErrors: [],
     }, () => {
@@ -834,6 +848,21 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     throw error;
   }
+  private handleCanonicalArtifactOpenError = (error: unknown): void => {
+    if (error instanceof ConsumerRepairValidationError) {
+      this.handleValidationError(error);
+      return;
+    }
+    const identityFailure = error instanceof CanonicalEstimateApiError &&
+      error.code === "ARTIFACT_REVISION_IDENTITY_MISMATCH";
+    this.setState({
+      statusMessage: identityFailure
+        ? "PDF для выбранной версии сметы не найден. Другой документ не был открыт."
+        : error instanceof CanonicalEstimateApiError
+          ? error.message
+          : "PDF выбранной версии не удалось открыть. Другой документ не был открыт.",
+    });
+  };
   private openCanonicalBackendEditor(
     bundle: ConsumerRepairDraftBundle | null = this.state.bundle,
     statusMessage = "Изменение выполняется в каноническом backend-редакторе.",
@@ -971,15 +1000,19 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.openCanonicalBackendEditor(synced, "Перед утверждением перенесите смету в canonical backend.");
         return;
       }
+      const canonicalRevision = await getCanonicalEstimateRevision(canonical.revisionId);
       const canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
-          kind: "pdf",
-          idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`,
+          kind: "professional_pdf",
+          idempotencyKey: `consumer-approve-professional-pdf-${canonical.revisionId}`,
         });
-      if (
-        canonicalArtifact.status !== "ready" ||
-        canonicalArtifact.releaseId !== canonical.releaseId
-      ) throw new Error("CANONICAL_APPROVAL_PDF_NOT_READY_OR_RELEASE_MISMATCH");
+      assertCanonicalEstimateArtifactIdentity({
+        artifact: canonicalArtifact,
+        revision: canonicalRevision,
+        expectedKind: "professional_pdf",
+        expectedCatalogId: synced.draft.selectedCatalogWorkId,
+        expectedRowCount: canonicalRevision.rowCount,
+      });
       const bundle = approveConsumerRepairRequestDraft({
         requestDraftId: synced.draft.id,
         userId: this.props.consumerUserId,
@@ -1044,19 +1077,34 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       const current = this.ensureDraftBundle();
       const canonical = consumerRepairCanonicalBackendBinding(current);
       if (canonical) {
+        const revision = await getCanonicalEstimateRevision(canonical.revisionId);
         const artifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
-          kind: "pdf",
-          idempotencyKey: `consumer-pdf-${canonical.revisionId}`,
+          kind: "professional_pdf",
+          idempotencyKey: `consumer-professional-pdf-${canonical.revisionId}`,
         });
-        if (artifact.releaseId !== canonical.releaseId) throw new Error("CANONICAL_PDF_RELEASE_MISMATCH");
-        if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
-        this.setState({ statusMessage: `PDF: revision ${canonical.revisionId}, release ${canonical.releaseId}.` });
+        assertCanonicalEstimateArtifactIdentity({
+          artifact,
+          revision,
+          expectedKind: "professional_pdf",
+          expectedCatalogId: current.draft.selectedCatalogWorkId,
+          expectedRowCount: revision.rowCount,
+        });
+        if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
+        await previewPdfDocument(createPdfDocumentDescriptor({
+          uri: artifact.signedUrl,
+          title: current.draft.selectedWorkTitleRu || current.draft.title || "Смета",
+          documentType: "request",
+          source: "generated",
+          originModule: "reports",
+          entityId: current.draft.id,
+        }), { router });
+        this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт." });
         return;
       }
       this.openCanonicalBackendEditor(current, "Для PDF сначала перенесите эту смету в canonical backend.");
     } catch (error) {
-      this.handleValidationError(error);
+      this.handleCanonicalArtifactOpenError(error);
     } finally {
       this.setState({ pdfOpenBusy: false });
     }
@@ -1078,7 +1126,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       },
     );
   };
-  private openPdf = async (requestDraftId?: string) => {
+  private completeHistoryPdfOpen = async (requestDraftId?: string) => {
     const requestedBundle = requestDraftId
       ? this.findKnownHistoryBundle(requestDraftId) ?? (this.state.bundle?.draft.id === requestDraftId ? this.state.bundle : null)
       : this.state.bundle;
@@ -1089,19 +1137,37 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         : null
     );
     if (canonical) {
+      const revision = await getCanonicalEstimateRevision(canonical.revisionId);
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: canonical.revisionId,
-        kind: "pdf",
-        idempotencyKey: `consumer-history-pdf-${canonical.revisionId}`,
+        kind: "professional_pdf",
+        idempotencyKey: `consumer-history-professional-pdf-${canonical.revisionId}`,
       });
-      if (artifact.releaseId !== canonical.releaseId) throw new Error("CANONICAL_PDF_RELEASE_MISMATCH");
-      if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
-      this.setState({ statusMessage: `PDF: revision ${canonical.revisionId}, release ${canonical.releaseId}.` });
+      assertCanonicalEstimateArtifactIdentity({
+        artifact,
+        revision,
+        expectedKind: "professional_pdf",
+        expectedCatalogId: requestedBundle?.draft.selectedCatalogWorkId,
+        expectedRowCount: revision.rowCount,
+      });
+      if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
+      await previewPdfDocument(createPdfDocumentDescriptor({
+        uri: artifact.signedUrl,
+        title: requestedBundle?.draft.selectedWorkTitleRu || requestedBundle?.draft.title || "Смета",
+        documentType: "request",
+        source: "generated",
+        originModule: "reports",
+        entityId: requestedBundle?.draft.id ?? requestDraftId ?? revision.revisionId,
+      }), { router });
+      this.setState({ statusMessage: "Профессиональный PDF выбранной версии открыт из истории." });
       return;
     }
     if (requestedBundle) {
       this.openCanonicalBackendEditor(requestedBundle, "Для PDF сначала перенесите эту смету в canonical backend.");
     }
+  };
+  private openPdf = (requestDraftId?: string) => {
+    void this.completeHistoryPdfOpen(requestDraftId).catch(this.handleCanonicalArtifactOpenError);
   };
   private openDraftFromHistory = (requestDraftId: string) => {
     const bundle = this.findKnownHistoryBundle(requestDraftId);
@@ -1182,15 +1248,19 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.openCanonicalBackendEditor(source, "Для закупки сначала перенесите эту смету в canonical backend.");
         return;
       }
+      const canonicalRevision = await getCanonicalEstimateRevision(canonical.revisionId);
       const canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
           kind: "procurement",
           idempotencyKey: `consumer-procurement-${canonical.revisionId}`,
         });
-      if (
-        canonicalArtifact.status !== "ready" ||
-        canonicalArtifact.releaseId !== canonical.releaseId
-      ) throw new Error("CANONICAL_PROCUREMENT_NOT_READY_OR_RELEASE_MISMATCH");
+      assertCanonicalEstimateArtifactIdentity({
+        artifact: canonicalArtifact,
+        revision: canonicalRevision,
+        expectedKind: "procurement",
+        expectedCatalogId: source.draft.selectedCatalogWorkId,
+        expectedRowCount: canonicalRevision.rowCount,
+      });
       this.setState(sendConsumerRepairHistoryToMarketplaceFromScreen({
         requestDraftId,
         userId: this.props.consumerUserId,
@@ -1261,27 +1331,64 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
     this.updateCurrentBundle(bundle);
   };
-  private applyParamPatch = async (_operation: UserParamPatchOperation, _paramKey: string, _rawValue: string) => {
+  private applyParamPatch = async (operation: UserParamPatchOperation, paramKey: string, rawValue: string) => {
     const current = this.state.bundle;
     if (!current) return;
-    this.openCanonicalBackendEditor(
-      current,
-      "Параметры изменяются и сохраняются только в каноническом backend-редакторе.",
-    );
+    await this.applyParamBatch([{ operation, paramKey, rawValue }]);
   };
-  private applyParamBatch = async (_patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
+  private applyParamBatch = async (patches: ConsumerRepairDraftRevisionParamBatchPatch[]) => {
     const current = this.state.bundle;
     if (!current) return;
-    this.openCanonicalBackendEditor(
-      current,
-      "Пакет параметров применяется одной новой immutable revision в каноническом backend-редакторе.",
-    );
+    const binding = consumerRepairCanonicalBackendBinding(current);
+    if (!binding) {
+      this.setState({ statusMessage: "Параметры не сохранены: у сметы нет точной backend revision." });
+      return;
+    }
+    this.setState({ statusMessage: "Сохраняем параметры и создаём дочернюю версию сметы…" });
+    try {
+      const session = await this.props.onRecalculateCanonicalEstimate({
+        revisionId: binding.revisionId,
+        requestDraftId: current.draft.id,
+        problemText: current.draft.problemText || current.draft.title || "Смета",
+        patches,
+      });
+      this.setState({
+        canonicalBackendParameterSession: session,
+        statusMessage: "Параметры сохранены. Создана новая дочерняя версия и пересчитаны зависимые позиции.",
+      });
+    } catch (error) {
+      this.setState({
+        statusMessage: error instanceof Error
+          ? error.message
+          : "Параметры не сохранены: backend не подтвердил дочернюю версию.",
+      });
+    }
   };
-  private refineCanonicalParameters = () => {
-    this.openCanonicalBackendEditor(
-      this.state.bundle,
-      "Параметры уточняются в единственном canonical backend; сохранение создаст новую immutable revision.",
-    );
+  private refineCanonicalParameters = async () => {
+    const current = this.state.bundle;
+    const binding = consumerRepairCanonicalBackendBinding(current);
+    if (!current || !binding) return;
+    if (this.state.canonicalBackendParameterSession?.revisionId === binding.revisionId) {
+      this.setState({ statusMessage: "Параметры открыты в текущей смете. Сохранение создаст новую дочернюю версию." });
+      return;
+    }
+    this.setState({ statusMessage: "Загружаем параметры выбранной версии сметы…" });
+    try {
+      const session = await this.props.onLoadCanonicalParameterSession(binding.revisionId, current.draft.id);
+      if (consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId !== binding.revisionId) return;
+      this.setState({
+        canonicalBackendParameterSession: session,
+        statusMessage: session.parameters.length > 0
+          ? "Параметры открыты в текущей смете. Предварительно принятые значения можно уточнить."
+          : "Дополнительные параметры для этой работы не требуются.",
+      });
+    } catch (error) {
+      this.setState({
+        statusMessage: error instanceof Error
+          ? error.message
+          : "Параметры выбранной версии не удалось загрузить.",
+      });
+    }
   };
   private openProcurement = async () => {
     const current = this.state.bundle;
@@ -1289,14 +1396,21 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     try {
       const canonical = consumerRepairCanonicalBackendBinding(current);
       if (canonical) {
+        const revision = await getCanonicalEstimateRevision(canonical.revisionId);
         const artifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
           kind: "procurement",
           idempotencyKey: `consumer-procurement-${canonical.revisionId}`,
         });
-        if (artifact.releaseId !== canonical.releaseId) throw new Error("CANONICAL_PROCUREMENT_RELEASE_MISMATCH");
+        assertCanonicalEstimateArtifactIdentity({
+          artifact,
+          revision,
+          expectedKind: "procurement",
+          expectedCatalogId: current.draft.selectedCatalogWorkId,
+          expectedRowCount: revision.rowCount,
+        });
         if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
-        this.setState({ statusMessage: `Закупка: revision ${canonical.revisionId}, release ${canonical.releaseId}.` });
+        this.setState({ statusMessage: "Закупка выбранной версии открыта." });
         return;
       }
       this.openCanonicalBackendEditor(current, "Для закупки сначала перенесите эту смету в canonical backend.");
@@ -1611,10 +1725,17 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       return this.cachedScreenView;
     }
     this.cachedScreenViewState = state;
+    const binding = consumerRepairCanonicalBackendBinding(state.bundle);
+    const parameterSession = state.canonicalBackendParameterSession?.revisionId === binding?.revisionId
+      ? state.canonicalBackendParameterSession
+      : null;
+    const viewState = parameterSession && state.bundle
+      ? { ...state, bundle: { ...state.bundle, canonicalParameterSession: parameterSession } }
+      : state;
     this.cachedScreenView = (
       <ConsumerRepairRequestScreenView
-        state={state}
-        renderModel={buildConsumerRepairRequestRenderModel(state, {
+        state={viewState}
+        renderModel={buildConsumerRepairRequestRenderModel(viewState, {
           includeWorkSuggestions: this.workSuggestionsEnabled,
         })}
         problemInputRef={this.problemInputRef} onGoToMarket={this.goToMarket}

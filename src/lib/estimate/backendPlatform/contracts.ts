@@ -8,7 +8,7 @@ export type EstimateJobStatus =
   | "failed"
   | "cancelled";
 
-export type EstimateArtifactKind = "pdf" | "procurement" | "xlsx" | "archive";
+export type EstimateArtifactKind = "pdf" | "professional_pdf" | "procurement" | "xlsx" | "archive";
 
 export type CanonicalEstimateCompositeItem = {
   itemId: string;
@@ -112,7 +112,7 @@ export type CanonicalEstimateArtifactView = {
   artifactId: string;
   revisionId: string;
   releaseId: string;
-  kind: "pdf" | "procurement";
+  kind: "pdf" | "professional_pdf" | "procurement";
   status: "queued" | "building" | "ready" | "failed" | "expired";
   contentType: string | null;
   byteSize: number | null;
@@ -129,7 +129,7 @@ export type CanonicalEstimateArtifactView = {
 export type CanonicalEstimateJobView = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   jobId: string;
-  operation: "compile" | "recalculate" | "pdf" | "procurement" | "legacy_revision_migration";
+  operation: "compile" | "recalculate" | "pdf" | "professional_pdf" | "procurement" | "legacy_revision_migration";
   status: EstimateJobStatus;
   stage: string;
   progress: number;

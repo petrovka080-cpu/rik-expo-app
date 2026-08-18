@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { router } from "expo-router";
 import {
   ActivityIndicator,
   AppState,
@@ -50,6 +51,7 @@ import {
   type CanonicalEstimateTypedRelation,
 } from "../../lib/estimate/backendPlatform/contracts";
 import {
+  assertCanonicalEstimateArtifactIdentity,
   buildCanonicalEstimateArtifact,
   applyCanonicalEstimateDraftEvent,
   cancelCanonicalEstimateJob,
@@ -65,6 +67,8 @@ import {
   recalculateCanonicalEstimateAndLoad,
   searchCanonicalEstimateCatalog,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import {
   cacheCanonicalEstimateRevision,
   queuePendingCanonicalEstimateAdmission,
@@ -786,13 +790,22 @@ export default function ProfessionalEstimateComposer({
     setSaving(true);
     setError("");
     try {
+      const artifactKind = kind === "pdf" ? "professional_pdf" as const : "procurement" as const;
       const artifact = await buildCanonicalEstimateArtifact({
         revisionId: bundle.revision.revisionId,
-        kind,
-        idempotencyKey: `composer-${kind}-${bundle.revision.revisionId}`,
+        kind: artifactKind,
+        idempotencyKey: `composer-${artifactKind}-${bundle.revision.revisionId}`,
       });
-      if (artifact.releaseId !== bundle.revision.releaseId) throw new Error("Artifact release_id не совпадает с revision.");
-      setArtifactMessage(`${kind.toUpperCase()}: release ${artifact.releaseId} · sha256 ${artifact.sha256 ?? "pending"}`);
+      assertCanonicalEstimateArtifactIdentity({
+        artifact,
+        revision: bundle.revision,
+        expectedKind: artifactKind,
+        expectedCatalogId: selectedCatalog?.catalogId ?? bundle.revision.catalogId,
+        expectedRowCount: bundle.revision.rowCount,
+      });
+      setArtifactMessage(kind === "pdf"
+        ? "Профессиональный PDF выбранной версии готов."
+        : "Закупка выбранной версии готова.");
       if (artifact.signedUrl) setArtifactLinks((previous) => ({
         ...previous,
         [kind]: {
@@ -816,7 +829,18 @@ export default function ProfessionalEstimateComposer({
       return;
     }
     try {
-      await Linking.openURL(artifact.signedUrl);
+      if (kind === "pdf") {
+        await previewPdfDocument(createPdfDocumentDescriptor({
+          uri: artifact.signedUrl,
+          title: selectedCatalog?.titleRu || "Профессиональная смета",
+          documentType: "request",
+          source: "generated",
+          originModule: "reports",
+          entityId: bundle.revision.revisionId,
+        }), { router });
+      } else {
+        await Linking.openURL(artifact.signedUrl);
+      }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : String(nextError));
     }
@@ -1022,8 +1046,8 @@ export default function ProfessionalEstimateComposer({
                   <Pressable testID="canonical-estimate-recalculate-top" disabled={loading || saving} onPress={handleGenerate} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Recalculate</Text></Pressable>
                   <Pressable testID="canonical-estimate-artifact-pdf-top" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>PDF</Text></Pressable>
                   <Pressable testID="canonical-estimate-artifact-procurement-top" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Закупка</Text></Pressable>
-                  {artifactLinks.pdf ? <Pressable testID="canonical-estimate-open-artifact-pdf-top" disabled={saving} onPress={() => handleOpenArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Open PDF</Text></Pressable> : null}
-                  {artifactLinks.procurement ? <Pressable testID="canonical-estimate-open-artifact-procurement-top" disabled={saving} onPress={() => handleOpenArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Open procurement</Text></Pressable> : null}
+                  {artifactLinks.pdf ? <Pressable testID="canonical-estimate-open-artifact-pdf-top" disabled={saving} onPress={() => handleOpenArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть PDF</Text></Pressable> : null}
+                  {artifactLinks.procurement ? <Pressable testID="canonical-estimate-open-artifact-procurement-top" disabled={saving} onPress={() => handleOpenArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть закупку</Text></Pressable> : null}
                 </View>
               </View> : null}
               {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-parameter-form">

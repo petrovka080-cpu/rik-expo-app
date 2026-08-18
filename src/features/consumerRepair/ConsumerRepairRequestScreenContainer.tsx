@@ -16,6 +16,10 @@ import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate"
 import { currentUserId } from "../../lib/supabaseClient";
 import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCompile";
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
+import {
+  loadConsumerCanonicalParameterSession,
+  recalculateConsumerCanonicalEstimate,
+} from "./consumerCanonicalParameterEditor";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 
@@ -179,6 +183,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       aiDraft: buildStructuredEstimateRequestDraft(payload),
     });
     screenRef.current?.acceptCanonicalBackendDraft(bundle);
+    return bundle;
   }, [resolvedConsumerUserId]);
   const acceptCanonicalDraft = React.useCallback(async (mapping: ForemanAiEstimateDraftMapping) => {
     await persistCanonicalDraft(mapping, canonicalPrompt, canonicalTargetDraftId);
@@ -215,6 +220,18 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           onPrepareCanonicalEstimate={async (problemText, catalogId, requestDraftId) => {
             const mapping = await compileConsumerCanonicalBaseline({ catalogId, prompt: problemText });
             await persistCanonicalDraft(mapping, problemText, requestDraftId?.trim() || null);
+          }}
+          onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
+            loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
+          onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches }) => {
+            const result = await recalculateConsumerCanonicalEstimate({
+              revisionId,
+              draftId: requestDraftId,
+              problemText,
+              patches,
+            });
+            await persistCanonicalDraft(result.mapping, problemText, requestDraftId);
+            return result.session;
           }}
           onOpenPhotoForMaterialRecognition={photoCapture.openPhotoForMaterialRecognition}
           MobilePhotoCaptureFlowNode={photoCapture.flow}

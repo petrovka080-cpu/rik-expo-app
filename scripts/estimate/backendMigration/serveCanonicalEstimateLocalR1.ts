@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { dirname, resolve } from "node:path";
@@ -33,6 +33,10 @@ const R45_RUNTIME_STARTED_AT = new Date().toISOString();
 const R45_RUNTIME_SOURCE_HEAD = String(process.env.R45_RUNTIME_SOURCE_HEAD ?? "UNSET").trim();
 const R45_RUNTIME_SOURCE_TREE = String(process.env.R45_RUNTIME_SOURCE_TREE ?? "UNSET").trim();
 const R45_RUNTIME_SPEC_SHA256 = String(process.env.R45_RUNTIME_SPEC_SHA256 ?? "e834a50c139189432dc4c20eb59b51a2507b4bb3f857e094b38376b6b5bda860").trim();
+const ARTIFACT_TOKEN_SECRET = String(
+  process.env.CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET
+    ?? `local-artifact:${R45_RUNTIME_SOURCE_HEAD}:${OWNER_ID}`,
+);
 let artifactBrowserPromise: Promise<Browser> | null = null;
 
 type JsonRecord = Record<string, unknown>;
@@ -316,7 +320,7 @@ async function createLegacyJob(body: JsonRecord) {
   return { apiVersion: API_VERSION, jobId: result.job_id, status: result.job_status, created: result.created, sourceChecksumSha256, pollAfterMs: 250 };
 }
 
-async function createArtifactJob(body: JsonRecord, revisionId: string, kind: "pdf" | "procurement") {
+async function createArtifactJob(body: JsonRecord, revisionId: string, kind: "pdf" | "professional_pdf" | "procurement") {
   const idempotencyKey = String(body.idempotencyKey ?? "").trim();
   if (!idempotencyKey) throw Object.assign(new Error("idempotencyKey is required"), { code: "INVALID_ARGUMENT", httpStatus: 400 });
   const modelDatabaseUrl = await modelDatabaseUrlForRevision(revisionId);
@@ -379,7 +383,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
           for (const job of claimed.rows) {
             try {
               if (job.operation === "legacy_revision_migration") await migrateLegacyClaimedJob(client, workerId, job as JsonRecord);
-              else if (job.operation === "pdf" || job.operation === "procurement") await buildArtifactClaimedJob(client, workerId, job as JsonRecord);
+              else if (job.operation === "pdf" || job.operation === "professional_pdf" || job.operation === "procurement") await buildArtifactClaimedJob(client, workerId, job as JsonRecord);
               else await compileClaimedJob(client, workerId, job as JsonRecord);
             }
             catch (error) {
@@ -811,6 +815,87 @@ function artifactBrowser(): Promise<Browser> {
   return artifactBrowserPromise;
 }
 
+function escapeArtifactHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function professionalPdfQuantity(value: unknown): string {
+  if (value == null || value === "") return "—";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return escapeArtifactHtml(value);
+  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(numeric);
+}
+
+function professionalPdfMoney(value: unknown, currencyCode: unknown): string {
+  if (value == null || value === "") return "уточнить";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "уточнить";
+  const currency = String(currencyCode ?? "KGS") === "KGS" ? "сом" : String(currencyCode ?? "");
+  return `${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric)} ${currency}`.trim();
+}
+
+function professionalPdfUnit(row: JsonRecord): string {
+  const traceUnit = String((row.calculation_trace as JsonRecord | null)?.displayUnitRu ?? "").trim();
+  if (traceUnit) return traceUnit;
+  const unit = String(row.unit_id ?? "").trim();
+  const fixed: Record<string, string> = {
+    set: "компл.",
+    item: "шт.",
+    pcs: "шт.",
+    man_hour: "чел.-ч",
+    machine_hour: "маш.-ч",
+    t_km: "т·км",
+    kg: "кг",
+    t: "т",
+    m: "м",
+    m2: "м²",
+    m3: "м³",
+  };
+  if (unit !== "test") return fixed[unit] ?? unit;
+  const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
+  if (/гермет|давлен|опресс|испыт/u.test(semanticOwner)) return "испыт.";
+  if (/при[её]м|контрол|провер/u.test(semanticOwner)) return "проверка";
+  return "испыт.";
+}
+
+function professionalPdfSection(row: JsonRecord): string {
+  const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
+  if (/material|waste/u.test(identity)) return "Материалы";
+  if (/equipment|machine|machinery/u.test(identity)) return "Машины и оборудование";
+  if (/delivery|transport|logistic/u.test(identity)) return "Логистика";
+  if (/test|quality|control/u.test(identity)) return "Испытания и контроль";
+  return "Работы и услуги";
+}
+
+function professionalArtifactToken(input: {
+  artifactId: string;
+  expiresAt: number;
+  ownerUserId: string;
+  organizationId: string | null;
+}): string {
+  const claim = `${input.artifactId}.${input.expiresAt}.${input.ownerUserId}.${input.organizationId ?? "personal"}`;
+  return createHmac("sha256", ARTIFACT_TOKEN_SECRET).update(claim).digest("base64url");
+}
+
+function artifactTokenMatches(input: {
+  signature: string;
+  artifactId: string;
+  expiresAt: number;
+  ownerUserId: string;
+  organizationId: string | null;
+}): boolean {
+  if (!Number.isSafeInteger(input.expiresAt) || input.expiresAt <= Date.now()) return false;
+  const expected = professionalArtifactToken(input);
+  const actualBytes = Buffer.from(input.signature);
+  const expectedBytes = Buffer.from(expected);
+  return actualBytes.length === expectedBytes.length && timingSafeEqual(actualBytes, expectedBytes);
+}
+
 async function buildArtifactClaimedJob(client: Client, workerId: string, job: JsonRecord): Promise<void> {
   const revisionId = String(job.parent_revision_id ?? "");
   const revision = (await client.query("select * from public.estimate_revision where id=$1", [revisionId])).rows[0];
@@ -836,6 +921,49 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
     contentType = "application/json; charset=utf-8";
     extension = "json";
     renderer = "canonical-procurement-local.r2";
+  } else if (job.operation === "professional_pdf") {
+    const identity = (await client.query(
+      "select title_ru from public.estimate_work_identity where catalog_id=$1",
+      [revision.catalog_id],
+    )).rows[0];
+    const groups = new Map<string, JsonRecord[]>();
+    for (const row of rows as JsonRecord[]) {
+      const section = professionalPdfSection(row);
+      groups.set(section, [...(groups.get(section) ?? []), row]);
+    }
+    const sections = [...groups.entries()].map(([section, sectionRows]) => `
+      <section><h2>${escapeArtifactHtml(section)}</h2><table>
+        <thead><tr><th>№</th><th>Позиция</th><th>Ед.</th><th>Количество</th><th>Цена</th><th>Сумма</th></tr></thead>
+        <tbody>${sectionRows.map((row) => `<tr><td>${Number(row.ordinal) + 1}</td><td>${escapeArtifactHtml(row.title_ru)}</td><td>${escapeArtifactHtml(professionalPdfUnit(row))}</td><td>${professionalPdfQuantity(row.quantity)}</td><td>${professionalPdfMoney(row.unit_price, row.currency_code ?? revision.currency_code)}</td><td>${professionalPdfMoney(row.amount, row.currency_code ?? revision.currency_code)}</td></tr>`).join("")}</tbody>
+      </table></section>`).join("");
+    const pricedRows = rows.filter((row) => row.unit_price != null).length;
+    const createdDate = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(new Date(revision.created_at));
+    const total = revision.totals?.amount ?? null;
+    const browser = await artifactBrowser();
+    const page = await browser.newPage();
+    try {
+      await page.setContent(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
+        @page{size:A4;margin:18mm 14mm 18mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;font-size:10px;line-height:1.35}
+        header{border-bottom:3px solid #176b45;padding-bottom:12px;margin-bottom:16px}h1{font-size:24px;margin:0 0 7px;color:#10253d}h2{font-size:14px;color:#176b45;margin:18px 0 7px}
+        .subtitle{font-size:14px;font-weight:700}.meta,.notice{color:#526174}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.summary div{background:#eef7f2;border-radius:6px;padding:9px}
+        table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#e7edf4;text-align:left}td,th{border:1px solid #cbd4df;padding:5px;vertical-align:top}th:nth-child(1){width:6%}th:nth-child(3){width:10%}th:nth-child(4){width:13%}th:nth-child(5),th:nth-child(6){width:14%}
+        tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
+        footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}.page:after{content:counter(page)}
+      </style></head><body>
+        <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeArtifactHtml(identity?.title_ru ?? "Строительно-монтажные работы")}</div><div class="meta">Сформировано ${escapeArtifactHtml(createdDate)} из сохранённой версии сметы</div></header>
+        <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalPdfMoney(total, revision.currency_code)}</div></div>
+        ${sections}
+        <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
+        <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
+        <footer>Профессиональная смета · страница <span class="page"></span></footer>
+      </body></html>`);
+      bytes = await page.pdf({ format: "A4", printBackground: true });
+    } finally {
+      await page.close();
+    }
+    contentType = "application/pdf";
+    extension = "pdf";
+    renderer = "canonical-professional-pdf-local.r3";
   } else {
     const body = rows.map((row) => `<tr><td>${row.ordinal + 1}</td><td>${String(row.title_ru).replace(/[<>&]/g, "")}</td><td>${row.unit_id}</td><td>${row.quantity ?? "—"}</td><td>${row.amount ?? "—"}</td></tr>`).join("");
     const browser = await artifactBrowser();
@@ -864,9 +992,14 @@ async function buildArtifactClaimedJob(client: Client, workerId: string, job: Js
     sha256: artifactSha256,
     metadata: {
       renderer,
+      ...(job.operation === "professional_pdf" ? { templateVersion: "professional-estimate-pdf:3" } : {}),
       projectedRowCount: rows.length,
+      sourceRowCount: Number(revision.row_count),
+      sourceCatalogId: revision.catalog_id,
       sourceReleaseId: revision.release_id,
       sourceRevisionChecksumSha256: revision.checksum_sha256,
+      sourceOwnerUserId: revision.owner_user_id,
+      sourceOrganizationId: revision.organization_id ?? null,
     },
   })]);
 }
@@ -1082,14 +1215,22 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
   const path = url.pathname.split("/").filter(Boolean).filter((part, index) => !(index === 0 && part === "canonical-estimate"));
   if (request.method === "GET" && path.length === 2 && path[0] === "artifact-files") {
-    if (url.searchParams.get("token") !== "local-dev-signed-artifact-r1") {
-      throw Object.assign(new Error("artifact signature invalid"), { code: "AUTH_REQUIRED", httpStatus: 401 });
-    }
     const artifact = await findAcrossModelDatabases(async (client) => (await client.query(`
-      select a.* from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
+      select a.*,r.owner_user_id,r.organization_id from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
       where a.id=$1 and a.status='ready' and r.owner_user_id=$2
     `, [path[1], OWNER_ID])).rows[0]);
     if (!artifact?.storage_key) throw Object.assign(new Error("artifact file not found"), { code: "NOT_FOUND", httpStatus: 404 });
+    const expiresAt = Number(url.searchParams.get("expires"));
+    const signature = String(url.searchParams.get("signature") ?? "");
+    if (!artifactTokenMatches({
+      signature,
+      artifactId: artifact.id,
+      expiresAt,
+      ownerUserId: artifact.owner_user_id,
+      organizationId: artifact.organization_id ?? null,
+    })) {
+      throw Object.assign(new Error("artifact signature invalid"), { code: "AUTH_REQUIRED", httpStatus: 401 });
+    }
     const bytes = readFileSync(artifactFilePath(artifact.storage_key));
     response.writeHead(200, { "Access-Control-Allow-Origin": "*", "Content-Type": artifact.content_type, "Content-Length": String(bytes.byteLength), "Cache-Control": "private, no-store" });
     response.end(bytes);
@@ -1390,27 +1531,50 @@ async function route(request: IncomingMessage, response: ServerResponse): Promis
     const page = rows.slice(0, limit);
     return send(response, 200, { apiVersion: API_VERSION, revisionId: path[1], rows: page.map((row) => ({ rowId: row.row_id, ordinal: row.ordinal, section: row.section, category: row.category, titleRu: row.title_ru, unitId: row.unit_id, quantity: row.quantity == null ? null : String(row.quantity), unitPrice: row.unit_price == null ? null : String(row.unit_price), amount: row.amount == null ? null : String(row.amount), currencyCode: row.currency_code, procurementEligible: row.procurement_eligible, includedInEstimate: row.included_in_estimate, includedInProcurement: row.included_in_procurement, ownershipStatus: row.ownership_status, calculationTrace: row.calculation_trace, normativeTrace: row.normative_trace, rowSha256: row.row_sha256 })), nextCursor: rows.length > limit ? Buffer.from(JSON.stringify({ ordinal: page[page.length - 1].ordinal })).toString("base64url") : null });
   }
-  if (path.length === 4 && path[0] === "revisions" && path[2] === "artifacts" && (path[3] === "pdf" || path[3] === "procurement")) {
-    const kind = path[3] as "pdf" | "procurement";
+  if (path.length === 4 && path[0] === "revisions" && path[2] === "artifacts" && (path[3] === "pdf" || path[3] === "professional_pdf" || path[3] === "procurement")) {
+    const kind = path[3] as "pdf" | "professional_pdf" | "procurement";
     if (request.method === "POST") return send(response, 202, await createArtifactJob(await readBody(request), path[1], kind));
     if (request.method === "GET") {
       const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
       const artifact = await withDatabaseClient(modelDatabaseUrl, async (client) => (await client.query(`
-        select a.*,r.release_id,r.checksum_sha256 revision_checksum_sha256
+        select a.*,r.release_id,r.catalog_id,r.row_count,r.checksum_sha256 revision_checksum_sha256,
+          r.owner_user_id,r.organization_id
         from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
         where a.revision_id=$1 and a.artifact_kind=$2 and r.owner_user_id=$3
       `, [path[1], kind, OWNER_ID])).rows[0]);
       if (!artifact) throw Object.assign(new Error("artifact not found"), { code: "NOT_FOUND", httpStatus: 404 });
       const forwardedProtocol = String(request.headers["x-forwarded-proto"] ?? "").split(",")[0]?.trim();
       const protocol = forwardedProtocol === "https" ? "https" : "http";
+      const signedUrlExpiresAtMs = Date.now() + 900_000;
+      const signature = professionalArtifactToken({
+        artifactId: artifact.id,
+        expiresAt: signedUrlExpiresAtMs,
+        ownerUserId: artifact.owner_user_id,
+        organizationId: artifact.organization_id ?? null,
+      });
       const signedUrl = artifact.status === "ready"
-        ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?token=local-dev-signed-artifact-r1`
+        ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?expires=${signedUrlExpiresAtMs}&signature=${encodeURIComponent(signature)}`
         : null;
+      const sourceMetadata = artifact.metadata ?? {};
       if (artifact.status === "ready" && (
-        artifact.metadata?.sourceReleaseId !== artifact.release_id
-        || artifact.metadata?.sourceRevisionChecksumSha256 !== artifact.revision_checksum_sha256
+        (sourceMetadata.sourceReleaseId != null && sourceMetadata.sourceReleaseId !== artifact.release_id)
+        || (sourceMetadata.sourceRevisionChecksumSha256 != null && sourceMetadata.sourceRevisionChecksumSha256 !== artifact.revision_checksum_sha256)
+        || (sourceMetadata.sourceCatalogId != null && sourceMetadata.sourceCatalogId !== artifact.catalog_id)
+        || (sourceMetadata.sourceRowCount != null && Number(sourceMetadata.sourceRowCount) !== Number(artifact.row_count))
+        || (sourceMetadata.sourceOwnerUserId != null && sourceMetadata.sourceOwnerUserId !== artifact.owner_user_id)
+        || (sourceMetadata.sourceOrganizationId != null && sourceMetadata.sourceOrganizationId !== (artifact.organization_id ?? null))
+        || (kind === "professional_pdf" && !String(sourceMetadata.templateVersion ?? "").startsWith("professional-estimate-pdf:"))
       )) throw Object.assign(new Error("artifact revision identity mismatch"), { code: "ARTIFACT_REVISION_IDENTITY_MISMATCH", httpStatus: 409 });
-      return send(response, 200, { apiVersion: API_VERSION, artifactId: artifact.id, revisionId: artifact.revision_id, releaseId: artifact.release_id, kind: artifact.artifact_kind, status: artifact.status, contentType: artifact.content_type, byteSize: artifact.byte_size == null ? null : Number(artifact.byte_size), sha256: artifact.sha256, metadata: artifact.metadata, errorCode: artifact.error_code, createdAt: artifact.created_at, updatedAt: artifact.updated_at, readyAt: artifact.ready_at, signedUrl, signedUrlExpiresAt: signedUrl ? new Date(Date.now() + 900_000).toISOString() : null });
+      const metadata = {
+        ...sourceMetadata,
+        sourceCatalogId: artifact.catalog_id,
+        sourceRowCount: Number(artifact.row_count),
+        sourceReleaseId: artifact.release_id,
+        sourceRevisionChecksumSha256: artifact.revision_checksum_sha256,
+        sourceOwnerUserId: artifact.owner_user_id,
+        sourceOrganizationId: artifact.organization_id ?? null,
+      };
+      return send(response, 200, { apiVersion: API_VERSION, artifactId: artifact.id, revisionId: artifact.revision_id, releaseId: artifact.release_id, kind: artifact.artifact_kind, status: artifact.status, contentType: artifact.content_type, byteSize: artifact.byte_size == null ? null : Number(artifact.byte_size), sha256: artifact.sha256, metadata, errorCode: artifact.error_code, createdAt: artifact.created_at, updatedAt: artifact.updated_at, readyAt: artifact.ready_at, signedUrl, signedUrlExpiresAt: signedUrl ? new Date(signedUrlExpiresAtMs).toISOString() : null });
     }
   }
   if (request.method === "GET" && path.length === 1 && path[0] === "catalog") {

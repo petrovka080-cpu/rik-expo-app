@@ -240,6 +240,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
   private toggleParameters = () => {
     this.setState((state) => ({ parametersOpen: !state.parametersOpen }));
+    this.props.onRefineCanonicalParameters?.();
   };
 
   private togglePositions = () => {
@@ -306,15 +307,21 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         </Text>
       ) : null}
       <View style={styles.primaryActions} testID="request-estimate-progressive-actions">
+        {canonicalParameterSession == null || canonicalParameterSession.parameters.length > 0 ? (
         <Pressable
           accessibilityRole="button"
-          onPress={onRefineCanonicalParameters ?? this.toggleParameters}
+          onPress={this.toggleParameters}
           style={[styles.actionButton, styles.primaryButton]}
           testID="request-estimate-parameters-toggle"
         >
-          <Ionicons name={!onRefineCanonicalParameters && parametersOpen ? "chevron-up" : "options-outline"} size={16} color="#FFFFFF" />
-          <Text style={styles.primaryButtonText}>{!onRefineCanonicalParameters && parametersOpen ? "Скрыть параметры" : "Уточнить параметры"}</Text>
+          <Ionicons name={parametersOpen ? "chevron-up" : "options-outline"} size={16} color="#FFFFFF" />
+          <Text style={styles.primaryButtonText}>{parametersOpen ? "Скрыть параметры" : "Уточнить параметры"}</Text>
         </Pressable>
+        ) : (
+          <Text style={styles.neutralStatus} testID="request-estimate-no-editable-parameters">
+            Дополнительные параметры для этой работы не требуются
+          </Text>
+        )}
         <Pressable
           accessibilityRole="button"
           onPress={this.togglePositions}

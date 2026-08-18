@@ -30,6 +30,7 @@ import type { InlineWorkTemplateCandidate } from "../../lib/ai/matchWorkTemplate
 import { mapPickerItemToCatalogItemForEstimate } from "../../lib/catalog/catalogItemsService";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
 import type {
   CanonicalEstimateSearchItem,
   CanonicalEstimateSearchPage,
@@ -98,6 +99,7 @@ export type ConsumerRepairRequestScreenState = {
   selectedHistoryId: string | null;
   editingParam: ConsumerRepairParamEditState;
   canonicalWorkSearch: ConsumerRepairCanonicalWorkSearchState;
+  canonicalBackendParameterSession?: CanonicalParameterSession | null;
 };
 
 export function buildEmptyConsumerRepairApprovedHistoryPage(

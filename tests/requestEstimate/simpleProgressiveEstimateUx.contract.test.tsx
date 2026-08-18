@@ -70,6 +70,10 @@ function renderWaterSupplyPanel(options: { onRefineCanonicalParameters?: () => v
   return renderer;
 }
 
+const ASPHALT_DRAIN_CATALOG_ID =
+  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_large_area_professional_expanded_v1";
+const ASPHALT_DRAIN_REVISION_ID = "3f697e7c-e53b-45a7-b1cf-1d05680f9cb9";
+
 describe("simple progressive estimate UX", () => {
   it("shows editable positions by default while keeping parameters and technical traces collapsed", () => {
     const renderer = renderWaterSupplyPanel();
@@ -101,15 +105,18 @@ describe("simple progressive estimate UX", () => {
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-items-editor")).toBe(0);
   });
 
-  it("routes the primary refine action directly to the canonical editor when one owns the revision", () => {
+  it("keeps exact asphalt-drain refinement inline instead of opening the foreman composer", () => {
     const onRefineCanonicalParameters = jest.fn();
     const renderer = renderWaterSupplyPanel({ onRefineCanonicalParameters });
+
+    expect(ASPHALT_DRAIN_CATALOG_ID).toContain("asphalt_drain_large_area");
+    expect(ASPHALT_DRAIN_REVISION_ID).toMatch(/^[0-9a-f-]{36}$/u);
 
     act(() => {
       renderer.root.findByProps({ testID: "request-estimate-parameters-toggle" }).props.onPress();
     });
 
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(0);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(1);
   });
 });

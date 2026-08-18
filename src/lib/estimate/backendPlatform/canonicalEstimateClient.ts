@@ -309,7 +309,7 @@ export function migrateCanonicalEstimateLegacyRevision(
 
 export function createCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "procurement";
+  kind: "pdf" | "professional_pdf" | "procurement";
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -326,7 +326,7 @@ export function createCanonicalEstimateArtifact(input: {
 
 export function getCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "procurement";
+  kind: "pdf" | "professional_pdf" | "procurement";
   signal?: AbortSignal | null;
 }) {
   return invoke<CanonicalEstimateArtifactView>(
@@ -337,7 +337,7 @@ export function getCanonicalEstimateArtifact(input: {
 
 export async function buildCanonicalEstimateArtifact(input: {
   revisionId: string;
-  kind: "pdf" | "procurement";
+  kind: "pdf" | "professional_pdf" | "procurement";
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -352,6 +352,41 @@ export async function buildCanonicalEstimateArtifact(input: {
     });
   }
   return getCanonicalEstimateArtifact(input);
+}
+
+export function assertCanonicalEstimateArtifactIdentity(input: {
+  artifact: CanonicalEstimateArtifactView;
+  revision: CanonicalEstimateRevisionView;
+  expectedKind: "pdf" | "professional_pdf" | "procurement";
+  expectedCatalogId?: string | null;
+  expectedRowCount?: number | null;
+}): void {
+  const metadataCatalogId = String(input.artifact.metadata?.sourceCatalogId ?? "").trim();
+  const metadataRowCount = Number(input.artifact.metadata?.sourceRowCount);
+  const metadataChecksum = String(
+    input.artifact.metadata?.sourceRevisionChecksumSha256 ?? "",
+  ).trim();
+  const metadataTemplateVersion = String(input.artifact.metadata?.templateVersion ?? "").trim();
+  const metadataOwnerUserId = String(input.artifact.metadata?.sourceOwnerUserId ?? "").trim();
+  const expectedCatalogId = input.expectedCatalogId?.trim() || input.revision.catalogId;
+  const expectedRowCount = input.expectedRowCount ?? input.revision.rowCount;
+  const matches =
+    input.artifact.status === "ready" &&
+    input.artifact.kind === input.expectedKind &&
+    input.artifact.revisionId === input.revision.revisionId &&
+    input.artifact.releaseId === input.revision.releaseId &&
+    metadataCatalogId === expectedCatalogId &&
+    metadataRowCount === expectedRowCount &&
+    metadataChecksum === input.revision.checksumSha256 &&
+    (input.expectedKind !== "professional_pdf" || (
+      metadataTemplateVersion.startsWith("professional-estimate-pdf:") &&
+      metadataOwnerUserId.length > 0
+    ));
+  if (matches) return;
+  throw new CanonicalEstimateApiError(
+    "PDF не открыт: документ не принадлежит выбранной версии сметы.",
+    { code: "ARTIFACT_REVISION_IDENTITY_MISMATCH", httpStatus: 409 },
+  );
 }
 
 export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortSignal | null) {
