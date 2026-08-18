@@ -31,6 +31,11 @@ const EXPECTED_API = "34";
 const POLL_MS = 600;
 const R58_OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const R58_ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
+const R58_SPEC_PATH = resolve(
+  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
+);
+const R58_SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
+const R58_EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 
 function argument(name: string, fallback = ""): string {
   const prefix = `--${name}=`;
@@ -51,6 +56,22 @@ function run(command: string, args: string[], timeoutMs = 30_000): CommandResult
     const record = error as { status?: number; stdout?: string | Buffer; stderr?: string | Buffer; message?: string };
     return { ok: false, output: `${String(record.stdout ?? "")}${String(record.stderr ?? "")}${record.message ?? ""}`.trim(), status: typeof record.status === "number" ? record.status : null };
   }
+}
+
+function git(args: string[]): string {
+  return execFileSync("git", args, {
+    cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 30_000,
+  }).trim();
+}
+
+async function canonicalApi(apiRoot: string, path: string): Promise<Json> {
+  const response = await fetch(`${apiRoot}/${path.replace(/^\/+/, "")}`, {
+    headers: { Accept: "application/json", Authorization: "Bearer local-r58-cumulative-proof" },
+    signal: AbortSignal.timeout(30_000),
+  });
+  const body = await response.json().catch(() => null) as Json | null;
+  if (!response.ok) throw new Error(`R58_ANDROID_API_${response.status}:${path}:${JSON.stringify(body)}`);
+  return body ?? {};
 }
 
 function adb(args: string[], timeoutMs = 30_000): CommandResult {
@@ -635,6 +656,7 @@ async function main(): Promise<void> {
   const releaseId = argument("release-id");
   const expectedHead = argument("expected-head");
   const expectedTree = argument("expected-tree");
+  const apiRoot = argument("api-root", "http://127.0.0.1:8777/canonical-estimate").replace(/\/+$/u, "");
   const evidenceRoot = resolve(argument("evidence-root", ".release-runtime/batch006-water-backend-r3/evidence-a2"));
   const auditLog = resolve(argument("request-audit-log"));
   const output = resolve(argument("output", join(evidenceRoot, "A2_11_ANDROID_RUNTIME")));
@@ -643,6 +665,27 @@ async function main(): Promise<void> {
     || !/^[0-9a-f]{40}$/i.test(expectedTree) || !auditLog) throw new Error("WATER_R6_A2_ANDROID_MATRIX_IDENTITY_REQUIRED");
   const casesPath = resolve(argument("cases", join(evidenceRoot, "A2_10_WOW_50_CASES.jsonl")));
   const reportPath = resolve(argument("report", join(evidenceRoot, "A2_11_ANDROID_API34_MAINACTIVITY_MATRIX_50.json")));
+  let runtime: Json | null = null;
+  if (r58Mode) {
+    const branch = git(["branch", "--show-current"]);
+    const head = git(["rev-parse", "HEAD"]);
+    const tree = git(["rev-parse", "HEAD^{tree}"]);
+    const specSha256 = createHash("sha256").update(readFileSync(R58_SPEC_PATH)).digest("hex");
+    if (branch !== R58_EXPECTED_BRANCH || head !== expectedHead || tree !== expectedTree
+      || git(["status", "--porcelain=v1"]) !== "" || specSha256 !== R58_SPEC_SHA256) {
+      throw new Error("R58_ANDROID_LOCAL_SOURCE_IDENTITY_RED");
+    }
+    const casesSummaryPath = resolve(argument("cases-summary",
+      join(dirname(casesPath), "R58_ANDROID_PARENT_50_SUMMARY.json")));
+    const casesSummary = JSON.parse(readFileSync(casesSummaryPath, "utf8")) as Json;
+    if (casesSummary.specSha256 !== R58_SPEC_SHA256 || casesSummary.source?.head !== head
+      || casesSummary.source?.tree !== tree || casesSummary.status !== "GREEN") {
+      throw new Error("R58_ANDROID_CASES_SOURCE_IDENTITY_RED");
+    }
+    runtime = await canonicalApi(apiRoot, "runtime-manifest");
+    if (runtime.sourceHead !== head || runtime.sourceTree !== tree || runtime.specSha256 !== R58_SPEC_SHA256
+      || runtime.workingDirectory !== process.cwd()) throw new Error("R58_ANDROID_RUNTIME_IDENTITY_RED");
+  }
   const wow = readFileSync(casesPath, "utf8").split(/\r?\n/)
     .filter(Boolean).map((line) => JSON.parse(line) as WowCase);
   if (wow.length !== 50 || new Set(wow.map((row) => row.catalog_id)).size !== 50
@@ -996,7 +1039,8 @@ async function main(): Promise<void> {
     schemaVersion: r58Mode ? "p0-one-monolith-r58-native-android-api34-mainactivity-matrix-50.v1"
       : "water-r6-a2-native-android-api34-mainactivity-matrix.v1",
     generatedAt: new Date().toISOString(),
-    source: { head: expectedHead, tree: expectedTree },
+    source: { head: expectedHead, tree: expectedTree, specSha256: r58Mode ? R58_SPEC_SHA256 : null },
+    runtime,
     releaseId,
     device: { id: DEVICE_ID, apiLevel, packageName: PACKAGE_NAME, packagePath, component: MAIN_ACTIVITY },
     launch: { output: launch.output.trim(), exactComponent: launch.output.includes(`Activity: ${MAIN_ACTIVITY}`) },

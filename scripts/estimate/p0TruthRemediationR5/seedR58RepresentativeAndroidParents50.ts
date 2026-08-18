@@ -23,10 +23,6 @@ const AUTHORIZATION = "Bearer local-r58-cumulative-proof";
 const MANIFEST_PATH = resolve(
   ".release-runtime/p0-one-monolith-r58/evidence/12-representative/R58_REPRESENTATIVE_50_MANIFEST.json",
 );
-const BACKEND_LEDGER_PATH = resolve(
-  ".release-runtime/p0-one-monolith-r58/evidence/06-backend/"
-    + "BATCH001_008_BACKEND_ADMISSION_4272_REPRESENTATIVE50_99f178ca.jsonl",
-);
 const OUTPUT_ROOT = resolve(
   ".release-runtime/p0-one-monolith-r58/evidence/11-web-android/R58_ANDROID_API34_MATRIX_50_DIAGNOSTIC",
 );
@@ -114,11 +110,17 @@ async function main(): Promise<void> {
   git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
 
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as Json;
-  const backend = jsonl(BACKEND_LEDGER_PATH);
+  const backendLedgerPath = resolve(process.env.R58_REPRESENTATIVE_BACKEND_LEDGER
+    ?? ".release-runtime/p0-one-monolith-r58/evidence/06-backend/"
+      + `BATCH001_008_BACKEND_ADMISSION_4272_REPRESENTATIVE50_${head.slice(0, 8)}.jsonl`);
+  const backend = jsonl(backendLedgerPath);
   const catalogIds = (manifest.catalogIds ?? []).map(String) as string[];
+  invariant(manifest.specSha256 === SPEC_SHA256 && manifest.source?.head === head
+    && manifest.source?.tree === tree, "R58_ANDROID_PARENT_MANIFEST_SOURCE_DRIFT");
   invariant(catalogIds.length === 50 && new Set(catalogIds).size === 50,
     `R58_ANDROID_PARENT_MANIFEST:${catalogIds.length}/${new Set(catalogIds).size}`);
-  invariant(backend.length === 50 && backend.every((row) => row.status === "GREEN" && row.recalculate?.mutation),
+  invariant(backend.length === 50 && backend.every((row) => row.head === head
+    && row.status === "GREEN" && row.recalculate?.mutation),
     "R58_ANDROID_PARENT_BACKEND_INPUT_RED");
   const backendByCatalog = new Map(backend.map((row) => [String(row.catalogId), row]));
   invariant(catalogIds.every((catalogId) => backendByCatalog.has(catalogId)),
@@ -226,6 +228,7 @@ async function main(): Promise<void> {
       capturedAt: new Date().toISOString(), specSha256: SPEC_SHA256,
       source: { branch, head, tree, descendantOf691acb78: true },
       runtime, releaseId: TARGET_RELEASE_ID, expected: 50, executed: outputRows.length,
+      inputs: { manifestPath: MANIFEST_PATH, backendLedgerPath },
       green: outputRows.filter((row) => row.status === "GREEN").length,
       red: outputRows.filter((row) => row.status !== "GREEN").length,
       searchModes: {

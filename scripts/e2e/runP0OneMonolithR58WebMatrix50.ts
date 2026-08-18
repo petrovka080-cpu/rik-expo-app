@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
@@ -10,11 +11,21 @@ type Json = Record<string, any>;
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
 const PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
+const SPEC_PATH = resolve(
+  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
+);
 const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
+const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
+const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 
 function argument(name: string, fallback = ""): string {
   const prefix = `--${name}=`;
   return process.argv.find((entry) => entry.startsWith(prefix))?.slice(prefix.length) ?? fallback;
+}
+function git(args: string[]): string {
+  return execFileSync("git", args, {
+    encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 30_000,
+  }).trim();
 }
 function base64Url(value: unknown): string { return Buffer.from(JSON.stringify(value), "utf8").toString("base64url"); }
 function proofSession(): Json {
@@ -92,25 +103,37 @@ async function buildArtifact(page: Page, revisionId: string, kind: "pdf" | "proc
 }
 
 async function main(): Promise<void> {
+  const branch = git(["branch", "--show-current"]);
+  const head = git(["rev-parse", "HEAD"]);
+  const tree = git(["rev-parse", "HEAD^{tree}"]);
+  if (branch !== EXPECTED_BRANCH || git(["status", "--porcelain=v1"]) !== ""
+    || createHash("sha256").update(readFileSync(SPEC_PATH)).digest("hex") !== SPEC_SHA256) {
+    throw new Error("R58_WEB50_SOURCE_IDENTITY_RED");
+  }
+  git(["merge-base", "--is-ancestor", BASE_COMMIT, head]);
   const baseUrl = argument("base-url", "http://127.0.0.1:8188").replace(/\/+$/u, "");
   const apiRoot = argument("api-root", "http://127.0.0.1:8777/canonical-estimate").replace(/\/+$/u, "");
   const releaseId = argument("release-id", "94443669-8f5b-5cc7-b364-2f8e9f9e3506");
   const manifestPath = resolve(argument("manifest",
     ".release-runtime/p0-one-monolith-r58/evidence/12-representative/R58_REPRESENTATIVE_50_MANIFEST.json"));
   const backendLedgerPath = resolve(argument("backend-ledger",
-    ".release-runtime/p0-one-monolith-r58/evidence/06-backend/BATCH001_008_BACKEND_ADMISSION_4272_REPRESENTATIVE50_99f178ca.jsonl"));
+    ".release-runtime/p0-one-monolith-r58/evidence/06-backend/"
+      + `BATCH001_008_BACKEND_ADMISSION_4272_REPRESENTATIVE50_${head.slice(0, 8)}.jsonl`));
   const outputRoot = resolve(argument("output",
     ".release-runtime/p0-one-monolith-r58/evidence/11-web-android/R58_WEB_MATRIX_50_DIAGNOSTIC"));
   const databaseUrl = argument("database-url", "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Json;
   const backend = jsonl(backendLedgerPath);
   if (manifest.catalogIds?.length !== 50 || backend.length !== 50) throw new Error("R58_WEB50_INPUT_DENOMINATOR_RED");
+  if (manifest.specSha256 !== SPEC_SHA256 || manifest.source?.head !== head || manifest.source?.tree !== tree
+    || backend.some((row) => row.head !== head)) throw new Error("R58_WEB50_INPUT_SOURCE_DRIFT");
   const mutationByCatalog = new Map(backend.map((row) => [String(row.catalogId), row.recalculate?.mutation as Json]));
   if (backend.some((row) => row.status !== "GREEN" || !row.recalculate?.mutation)) throw new Error("R58_WEB50_BACKEND_INPUT_RED");
   mkdirSync(outputRoot, { recursive: true });
 
   const runtime = await api("runtime-manifest", apiRoot);
-  if (runtime.specSha256 !== SPEC_SHA256 || runtime.workingDirectory !== process.cwd()) {
+  if (runtime.sourceHead !== head || runtime.sourceTree !== tree || runtime.specSha256 !== SPEC_SHA256
+    || runtime.workingDirectory !== process.cwd()) {
     throw new Error(`R58_WEB50_RUNTIME_IDENTITY_RED:${runtime.sourceHead}:${runtime.workingDirectory}`);
   }
   const browser = await chromium.launch({ headless: true });
@@ -295,7 +318,8 @@ async function main(): Promise<void> {
   if (Number(cleanup.residue) !== 0) blockers.push(`CLEANUP_RESIDUE:${cleanup.residue}`);
   const report = {
     schemaVersion: "p0-one-monolith-r58-web-matrix-50.v1", capturedAt: new Date().toISOString(),
-    specSha256: SPEC_SHA256, baseUrl, apiRoot, runtime, releaseId,
+    specSha256: SPEC_SHA256, source: { branch, head, tree, descendantOf691acb78: true },
+    baseUrl, apiRoot, runtime, releaseId, inputs: { manifestPath, backendLedgerPath },
     manifestCatalogSetSha256: manifest.catalogSetSha256,
     expected: 50, executed: rows.length, green: rows.filter((row) => row.status === "GREEN").length,
     red: rows.filter((row) => row.status !== "GREEN").length, distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
