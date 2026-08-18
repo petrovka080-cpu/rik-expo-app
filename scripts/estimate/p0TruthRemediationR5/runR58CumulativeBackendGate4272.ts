@@ -262,8 +262,8 @@ async function createOperation(definition: Definition, operation: "compile" | "r
   head: string, mutation: Mutation | null, parentRevisionId: string | null): Promise<Json> {
   const parameters = { ...definition.values };
   if (mutation) parameters[mutation.parameterId] = mutation.changedValue;
-  const key = `${CONTROL_72 ? "r6-control72" : "r58-4272"}-${sha256({ head, catalogId: definition.catalogId, operation,
-    mutation, parentRevisionId }).slice(0, 48)}`;
+  const key = `${CONTROL_72 ? "r6-control72" : "r58-4272"}-${sha256({ head, organizationId: ORGANIZATION_ID,
+    catalogId: definition.catalogId, operation, mutation, parentRevisionId }).slice(0, 48)}`;
   const primaryParameter = [...definition.numericParameters]
     .filter((parameter) => Number.isFinite(Number(parameters[String(parameter.parameter_id)])))
     .sort((left, right) => {
@@ -356,7 +356,8 @@ async function createArtifacts(client: Client, definitions: readonly Definition[
     const payload = await api(`revisions/${request.final.revisionId}/artifacts/${request.kind}`, {
       method: "POST",
       body: JSON.stringify({
-        idempotencyKey: `${CONTROL_72 ? "r6-control72-artifact" : "r58-4272-artifact"}-${sha256({ head, catalogId: request.definition.catalogId,
+        idempotencyKey: `${CONTROL_72 ? "r6-control72-artifact" : "r58-4272-artifact"}-${sha256({ head,
+          organizationId: ORGANIZATION_ID, catalogId: request.definition.catalogId,
           revisionId: request.final.revisionId, kind: request.kind }).slice(0, 48)}`,
       }),
     });
