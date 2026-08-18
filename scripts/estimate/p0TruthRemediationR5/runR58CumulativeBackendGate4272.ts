@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { Client } from "pg";
 
@@ -21,17 +21,23 @@ type Definition = {
 };
 type Mutation = { parameterId: string; baselineValue: number; changedValue: number; source: string };
 
-const SPEC_PATH = resolve(
-  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
-);
-const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
+const CONTROL_72 = String(process.env.R6_CONTROL72_GATE ?? "").trim() === "true";
+const SPEC_PATH = resolve(CONTROL_72
+  ? "C:/Users/User/Downloads/ONE_CANONICAL_ESTIMATE_PRODUCTION_TZ_R6.md"
+  : "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md");
+const SPEC_SHA256 = CONTROL_72
+  ? "4ffc00413c14458730823a90950b80d5191073e26f3bea4201f665953ed1eefa"
+  : "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 const ACTIVE_RELEASE_ID = "da29dc2b-1384-5487-b8da-6ee93f4e514e";
 const TARGET_RELEASE_ID = process.env.R58_TARGET_RELEASE_ID
   ?? "a7dca174-3ad5-552b-aa4c-fc28979a56ef";
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
-const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
+const ORGANIZATION_ID = CONTROL_72
+  ? String(process.env.CANONICAL_ESTIMATE_TEST_ORGANIZATION_ID
+    ?? "66666666-6666-4666-8666-666666666666")
+  : "22222222-2222-4222-8222-222222222222";
 const DATABASE_URL = process.env.MONOLITH_ESTIMATE_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/batch009_fire_r5_a";
 const API_ROOT = String(process.env.R58_CANONICAL_API_ROOT
@@ -44,7 +50,9 @@ const TARGET_CATALOG_IDS = String(process.env.R58_TARGET_CATALOG_IDS ?? "").spli
 const REPRESENTATIVE = String(process.env.R58_REPRESENTATIVE_GATE ?? "").trim() === "true";
 const DEFAULT_SHARD_SIZE = 10;
 const ARTIFACT_ROOT = resolve(".release-runtime/master11610-backend-canonical-r1/05-runtime/local-artifacts");
-const OUTPUT_ROOT = resolve(".release-runtime/p0-one-monolith-r58/evidence/06-backend");
+const OUTPUT_ROOT = resolve(CONTROL_72
+  ? ".release-runtime/one-canonical-estimate-r6/evidence/09-control-72/backend"
+  : ".release-runtime/p0-one-monolith-r58/evidence/06-backend");
 const PROBE = process.argv.includes("--probe");
 
 function optionNumber(name: string, fallback: number): number {
@@ -252,7 +260,7 @@ async function createOperation(definition: Definition, operation: "compile" | "r
   head: string, mutation: Mutation | null, parentRevisionId: string | null): Promise<Json> {
   const parameters = { ...definition.values };
   if (mutation) parameters[mutation.parameterId] = mutation.changedValue;
-  const key = `r58-4272-${sha256({ head, catalogId: definition.catalogId, operation,
+  const key = `${CONTROL_72 ? "r6-control72" : "r58-4272"}-${sha256({ head, catalogId: definition.catalogId, operation,
     mutation, parentRevisionId }).slice(0, 48)}`;
   const created = await api(`jobs/${operation}`, {
     method: "POST",
@@ -374,12 +382,15 @@ async function cleanupRuntime(client: Client): Promise<Json> {
   const storageKeys = (await client.query(`
     select artifact.storage_key from public.estimate_revision_artifact artifact
     join public.estimate_revision revision on revision.id=artifact.revision_id
-    where revision.release_id=$1 and artifact.storage_key is not null
-  `, [TARGET_RELEASE_ID])).rows.map((row) => String(row.storage_key));
-  const cleanup = (await client.query(
-    "select * from public.estimate_cleanup_cumulative_admission_runtime_r58($1,$2,$3)",
-    [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID],
-  )).rows[0] as Json;
+    where revision.release_id=$1 and revision.owner_user_id=$2 and revision.organization_id=$3
+      and artifact.storage_key is not null
+  `, [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID])).rows.map((row) => String(row.storage_key));
+  const cleanup = (await client.query(CONTROL_72
+    ? "select * from public.estimate_cleanup_r6_control_runtime($1,$2,$3,$4)"
+    : "select * from public.estimate_cleanup_cumulative_admission_runtime_r58($1,$2,$3)",
+  CONTROL_72
+    ? [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID, "r6-control72-%"]
+    : [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID])).rows[0] as Json;
   invariant(Number(cleanup.residue) === 0, `R58_BACKEND_CLEANUP_RESIDUE:${cleanup.residue}`);
   let artifactFilesDeleted = 0;
   for (const storageKey of storageKeys) {
@@ -536,11 +547,13 @@ async function main(): Promise<void> {
   invariant(!PROBE || LIMIT <= SHARD_SIZE, "R58_BACKEND_PROBE_MUST_BE_SINGLE_SHARD");
 
   mkdirSync(OUTPUT_ROOT, { recursive: true });
-  const suffix = REPRESENTATIVE ? `REPRESENTATIVE50_${head.slice(0, 8)}`
+  const suffix = CONTROL_72 ? `CONTROL72_${head.slice(0, 8)}`
+    : REPRESENTATIVE ? `REPRESENTATIVE50_${head.slice(0, 8)}`
     : PROBE ? `PROBE_${head.slice(0, 8)}` : head.slice(0, 8);
-  const ledgerPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_ADMISSION_4272_${suffix}.jsonl`);
-  const repairPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_REPAIR_QUEUE_${suffix}.jsonl`);
-  const summaryPath = resolve(OUTPUT_ROOT, `BATCH001_008_BACKEND_ADMISSION_4272_${suffix}.json`);
+  const basename = CONTROL_72 ? "R6_CONTROL_72_BACKEND" : "BATCH001_008_BACKEND_ADMISSION_4272";
+  const ledgerPath = resolve(OUTPUT_ROOT, `${basename}_${suffix}.jsonl`);
+  const repairPath = resolve(OUTPUT_ROOT, `${CONTROL_72 ? "R6_CONTROL_72_BACKEND_REPAIR_QUEUE" : "BATCH001_008_BACKEND_REPAIR_QUEUE"}_${suffix}.jsonl`);
+  const summaryPath = resolve(OUTPUT_ROOT, `${basename}_${suffix}.json`);
   const existing = PROBE ? [] : readJsonl(ledgerPath);
   invariant(existing.every((row) => row.head === head), "R58_BACKEND_CHECKPOINT_HEAD_DRIFT");
   const completed = new Set(existing.map((row) => String(row.catalogId)));
@@ -564,14 +577,23 @@ async function main(): Promise<void> {
     const candidate = releases.find((row) => row.id === TARGET_RELEASE_ID);
     invariant(active?.status === "active" && candidate?.status === "prepared" && candidate.schema_version === 6,
       "R58_BACKEND_RELEASE_STATE_RED");
-    const residueBefore = Number((await client.query(`
+    const residueBefore = Number((await client.query(CONTROL_72 ? `
+      select (select count(*) from public.estimate_compile_job where target_release_id=$1
+          and owner_user_id=$2 and organization_id=$3)
+        +(select count(*) from public.estimate_revision where release_id=$1
+          and owner_user_id=$2 and organization_id=$3) value
+    ` : `
       select (select count(*) from public.estimate_compile_job where target_release_id=$1)
         +(select count(*) from public.estimate_revision where release_id=$1) value
-    `, [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
+    `, CONTROL_72 ? [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID] : [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
     if (residueBefore > 0) {
-      const nonterminal = Number((await client.query(`select count(*)::int value
+      const nonterminal = Number((await client.query(CONTROL_72 ? `select count(*)::int value
+        from public.estimate_compile_job where target_release_id=$1 and owner_user_id=$2 and organization_id=$3
+          and status not in ('succeeded','failed','cancelled')` : `select count(*)::int value
         from public.estimate_compile_job where target_release_id=$1
-          and status not in ('succeeded','failed','cancelled')`, [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
+          and status not in ('succeeded','failed','cancelled')`, CONTROL_72
+        ? [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID]
+        : [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
       invariant(nonterminal === 0, `R58_BACKEND_NONTERMINAL_RESIDUE:${nonterminal}`);
       await cleanupRuntime(client);
     }
@@ -623,14 +645,20 @@ async function main(): Promise<void> {
       [ACTIVE_RELEASE_ID])).rows[0]?.status;
     const candidateAfter = (await client.query("select status from public.estimate_definition_release where id=$1",
       [TARGET_RELEASE_ID])).rows[0]?.status;
-    const residueAfter = Number((await client.query(`
+    const residueAfter = Number((await client.query(CONTROL_72 ? `
+      select (select count(*) from public.estimate_compile_job where target_release_id=$1
+          and owner_user_id=$2 and organization_id=$3)
+        +(select count(*) from public.estimate_revision where release_id=$1
+          and owner_user_id=$2 and organization_id=$3) value
+    ` : `
       select (select count(*) from public.estimate_compile_job where target_release_id=$1)
         +(select count(*) from public.estimate_revision where release_id=$1) value
-    `, [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
+    `, CONTROL_72 ? [TARGET_RELEASE_ID, OWNER_ID, ORGANIZATION_ID] : [TARGET_RELEASE_ID])).rows[0]?.value ?? 0);
     const fullRunComplete = !PROBE && rows.length === EXPECTED_TOTAL;
     const asphaltRows = asphalt.reduce((sum, row) => sum + Number(row.compile?.rowCount ?? 0), 0);
     const summary = {
-      schemaVersion: REPRESENTATIVE ? "p0-one-monolith-r58-representative-backend-50.v1"
+      schemaVersion: CONTROL_72 ? "one-canonical-estimate-r6-control-72-backend.v1"
+        : REPRESENTATIVE ? "p0-one-monolith-r58-representative-backend-50.v1"
         : "p0-one-monolith-r58-cumulative-backend-admission-4272.v1",
       capturedAt: new Date().toISOString(),
       specSha256: SPEC_SHA256,
@@ -657,7 +685,11 @@ async function main(): Promise<void> {
       ledgerPath,
       repairQueuePath: repairPath,
       ledgerSha256: sha256(rows),
-      status: REPRESENTATIVE
+      status: CONTROL_72
+        ? (fullRunComplete && red.length === 0 && rows.length === EXPECTED_TOTAL
+          ? "GREEN_R6_CONTROL_72_UNIQUE_BACKEND_CLEANED_NOT_TERMINAL"
+          : "RED_R6_CONTROL_72_BACKEND_REPAIR_QUEUE_ACTIVE")
+        : REPRESENTATIVE
         ? (fullRunComplete && red.length === 0 && rows.length === 50
           ? "GREEN_R58_REPRESENTATIVE_BACKEND_50_CLEANED_NOT_TERMINAL"
           : "RED_R58_REPRESENTATIVE_BACKEND_50_REPAIR_QUEUE_ACTIVE")
