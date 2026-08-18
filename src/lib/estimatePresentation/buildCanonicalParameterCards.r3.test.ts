@@ -3,7 +3,11 @@ import type {
   CanonicalParameter,
   CanonicalParameterSession,
 } from "../estimate/canonicalParameters/canonicalParameterCore";
-import { buildCanonicalParameterCards } from "./buildCanonicalParameterCards";
+import type { EstimateDraftRevision } from "../estimate/estimateDraftRevisionContract";
+import {
+  buildCanonicalParameterCards,
+  buildRevisionParameterCards,
+} from "./buildCanonicalParameterCards";
 
 function parameter(
   parameterId: string,
@@ -59,6 +63,49 @@ function session(parameters: readonly CanonicalParameter[]): CanonicalParameterS
 }
 
 describe("buildCanonicalParameterCards R3 truth presenter", () => {
+  it("keeps a historical revision readable from persisted DTO data only", () => {
+    const revision = {
+      params: {
+        area_m2: {
+          value: 42,
+          canonicalUnit: "m2",
+          source: "edited_by_user",
+          sourceText: "Подтверждено обмером",
+          lastChangedAt: "revision-history-1",
+        },
+      },
+      missingInputs: [{
+        key: "height_m",
+        label: "Высота",
+        blocksPreliminaryEstimate: false,
+        requiredFor: "better_accuracy",
+      }],
+      boq: { rows: [{ rowId: "row-1", titleRu: "Монтаж покрытия" }] },
+      trace: {
+        params: [{ key: "area_m2", affectsRowIds: ["row-1"] }],
+        rows: [{ rowId: "row-1", formulaId: "quantity-by-area" }],
+      },
+    } as unknown as EstimateDraftRevision;
+
+    const cards = buildRevisionParameterCards(revision);
+
+    expect(cards.map((card) => card.key).sort()).toEqual(["area_m2", "height_m"]);
+    expect(cards.find((card) => card.key === "area_m2")).toMatchObject({
+      value: 42,
+      displayValueRu: "42 м²",
+      source: "manual_override",
+      affectsRowIds: ["row-1"],
+      affectsRowTitlesRu: ["Монтаж покрытия"],
+      formulaRefs: ["quantity-by-area"],
+      missing: false,
+    });
+    expect(cards.find((card) => card.key === "height_m")).toMatchObject({
+      labelRu: "Высота",
+      value: null,
+      missing: true,
+    });
+  });
+
   it("скрывает внутренний scope и заменяет count + free-text одним typed-редактором", () => {
     const cards = buildCanonicalParameterCards({
       session: session([

@@ -91,6 +91,12 @@ export function WorkTemplateSuggestions({
         >
           <Text style={styles.title}>{suggestion.titleRu}</Text>
           <Text style={styles.meta}>{suggestion.categoryTitleRu}</Text>
+          <Text
+            style={styles.identity}
+            testID={`consumer-repair-work-suggestion-catalog-${index + 1}`}
+          >
+            {suggestion.workKey}
+          </Text>
         </Pressable>
       ))}
       {errorRu ? <Text style={styles.error} testID="consumer-repair-work-search-error">{errorRu}</Text> : null}
@@ -121,6 +127,10 @@ const styles = StyleSheet.create({
   content: {
     gap: 8,
     padding: 8,
+  },
+  identity: {
+    color: "#64748B",
+    fontSize: 10,
   },
   summary: {
     borderRadius: 8,

@@ -12,8 +12,8 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
-const SPEC_PATH = "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md";
+const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
+const SPEC_PATH = "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md";
 const REQUIRED_ANCESTOR = "691acb78";
 const GATE_ROOT = path.join(
   ".release-runtime",

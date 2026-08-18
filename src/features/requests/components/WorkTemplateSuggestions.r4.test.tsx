@@ -45,9 +45,12 @@ describe("R4 canonical work search renderer", () => {
 
     expect(tree!.root.findByProps({ testID: "consumer-repair-work-search-total" })).toBeTruthy();
     const suggestionTestIds = new Set(tree!.root
-      .findAll((node) => String(node.props.testID ?? "").startsWith("consumer-repair-work-suggestion-"))
+      .findAll((node) => /^consumer-repair-work-suggestion-\d+$/u.test(String(node.props.testID ?? "")))
       .map((node) => String(node.props.testID)));
     expect(suggestionTestIds.size).toBe(20);
+    expect(renderedText(tree!.root.findByProps({
+      testID: "consumer-repair-work-suggestion-catalog-1",
+    }))).toBe("canonical-work-1");
     const text = renderedText(tree!.root.findByProps({ testID: "consumer-repair-work-search-total" }));
     expect(text).toContain("Найдено буквально: 3523");
     expect(text).toContain("Основной каталог: 3485 · справочные: 38");

@@ -1015,6 +1015,7 @@ export default function ProfessionalEstimateComposer({
               </View> : null}
               {history[0] ? <Pressable testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`} disabled={loading} onPress={() => handleOpenHistoryRevision(history[0])} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Latest backend revision · {history[0].revisionId}</Text></Pressable> : null}
               {bundle ? <View testID="canonical-estimate-native-quick-actions" style={styles.catalogPanel}>
+                <Text testID="canonical-estimate-selected-catalog-id" style={styles.catalogHint}>catalog: {bundle.revision.catalogId}</Text>
                 <Text testID="canonical-estimate-release-id-top" style={styles.catalogHint}>release: {bundle.revision.releaseId}</Text>
                 <Text testID="canonical-estimate-row-count-top" style={styles.catalogHint}>{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
                 <View style={styles.rowActions}>
@@ -1042,8 +1043,8 @@ export default function ProfessionalEstimateComposer({
                   const hasIssue = parameterIssues.has(parameter.parameterId);
                   const composite = parameter.compositeItemSchema;
                   const items = compositeItems(inputValue);
-                  return <View key={parameter.parameterId} style={styles.parameterCard}>
-                    <Text style={styles.fieldLabel}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${parameter.unitId}` : ""}</Text>
+                  return <View key={parameter.parameterId} style={styles.parameterCard} testID={`canonical-estimate-parameter-card-${parameter.ordinal}`}>
+                    <Text style={styles.fieldLabel} testID={`canonical-estimate-parameter-label-${parameter.ordinal}`}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${parameter.unitId}` : ""}</Text>
                     {parameter.sharedInputBindingPolicy ? <Text style={styles.sharedInputChip}>Общий ввод · применяется к связанным работам</Text> : null}
                     {parameter.visibilityRole === "USER_DERIVED_READONLY" ? <Text style={styles.readonlyValue} accessibilityLabel={parameter.titleRu}>{parameter.valueType === "array_object" ? `${items.length} элементов` : inputText || "Рассчитывается backend"}</Text>
                       : parameter.valueType === "array_object" && composite ? <View style={styles.compositeEditor}>

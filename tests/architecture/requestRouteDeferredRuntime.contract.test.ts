@@ -1,8 +1,16 @@
 import { readFileSync } from "node:fs";
 
-describe("request route deferred professional runtime", () => {
-  it("keeps native route registration static while loading the compiler only on demand", () => {
+describe("request route canonical backend ownership", () => {
+  it("keeps native route registration static while making every legacy client compiler unreachable", () => {
     const source = readFileSync("app/(tabs)/request/index.tsx", "utf8");
+    const container = readFileSync(
+      "src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx",
+      "utf8",
+    );
+    const baseline = readFileSync(
+      "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "utf8",
+    );
     const actions = readFileSync(
       "src/features/consumerRepair/requestEstimateScreenActions.ts",
       "utf8",
@@ -16,18 +24,14 @@ describe("request route deferred professional runtime", () => {
       'import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer"',
     );
     expect(source).not.toContain("React.lazy");
-    expect(actions).toContain('require("./consumerRepairAiAdapter")');
-    expect(actions).toContain(
-      '"../../lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime"',
-    );
-    expect(actions).not.toContain(
-      'import { buildConsumerRepairAiDraft } from "./consumerRepairAiAdapter"',
-    );
-    expect(service).toContain(
-      'require("../estimate/runtime/createAiEstimateRuntime")',
-    );
-    expect(service).not.toContain(
-      'import { createAiEstimateRuntime } from "../estimate/runtime/createAiEstimateRuntime"',
-    );
+    expect(actions).not.toContain("require(");
+    expect(actions).not.toContain("consumerRepairAiAdapter");
+    expect(actions).not.toContain("buildConsumerRepairDraftFromAiEstimateRuntime");
+    expect(service).not.toContain("require(");
+    expect(service).not.toContain("createAiEstimateRuntime");
+    expect(service).toContain("canonicalBackendRequired");
+    expect(container).toContain("compileConsumerCanonicalBaseline");
+    expect(container).not.toContain("migrateExistingEstimatesToCanonicalBackend");
+    expect(baseline).toContain("compileCanonicalEstimateAndLoad");
   });
 });

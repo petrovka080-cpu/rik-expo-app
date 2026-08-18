@@ -9,6 +9,7 @@ import {
   decodeRequestEstimateLaunchPayloadV1,
   requestEstimateLaunchFingerprintForRouteParametersV1,
 } from "../../../src/lib/navigation/requestEstimateLaunchPayload";
+import { canonicalEstimateRevisionIdFromRoute } from "../../../src/lib/navigation/canonicalEstimateRevisionDeepLink";
 import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
@@ -23,6 +24,7 @@ function RequestRoute() {
     autoSend?: string | string[];
     context?: string | string[];
     catalogWorkId?: string | string[];
+    canonicalRevisionId?: string | string[];
     description?: string | string[];
     draftId?: string | string[];
     launchError?: string | string[];
@@ -33,6 +35,11 @@ function RequestRoute() {
   const encodedPayload = getParam(params[REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM]);
   let launchPayload = null;
   let launchError = getParam(params.launchError).trim();
+  const rawCanonicalRevisionId = getParam(params.canonicalRevisionId).trim();
+  const canonicalRevisionId = canonicalEstimateRevisionIdFromRoute(rawCanonicalRevisionId);
+  if (rawCanonicalRevisionId && !canonicalRevisionId && !launchError) {
+    launchError = "CANONICAL_ESTIMATE_REVISION_ID_INVALID";
+  }
   if (encodedPayload && !launchError) {
     try {
       launchPayload = decodeRequestEstimateLaunchPayloadV1(encodedPayload);
@@ -89,13 +96,14 @@ function RequestRoute() {
         />
       ) : null}
       <ConsumerRepairRequestScreen
-        initialProblemText={prompt || undefined}
-        initialDraftId={draftId || undefined}
-        initialSelectedCatalogWorkId={catalogWorkId || undefined}
-        launchFingerprint={launchFingerprint}
-        launchId={launchId}
-        autoPrepare={autoPrepare || autoPdf}
-        autoPdf={autoPdf}
+        initialProblemText={canonicalRevisionId ? undefined : prompt || undefined}
+        initialDraftId={canonicalRevisionId ? undefined : draftId || undefined}
+        initialSelectedCatalogWorkId={canonicalRevisionId ? undefined : catalogWorkId || undefined}
+        initialCanonicalRevisionId={canonicalRevisionId || undefined}
+        launchFingerprint={canonicalRevisionId ? undefined : launchFingerprint}
+        launchId={canonicalRevisionId ? undefined : launchId}
+        autoPrepare={!canonicalRevisionId && (autoPrepare || autoPdf)}
+        autoPdf={!canonicalRevisionId && autoPdf}
       />
     </>
   );

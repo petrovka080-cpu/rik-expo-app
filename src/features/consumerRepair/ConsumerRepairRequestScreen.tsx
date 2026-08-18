@@ -115,6 +115,7 @@ export type ConsumerRepairRequestScreenProps = {
   initialProblemText?: string;
   initialDraftId?: string;
   initialSelectedCatalogWorkId?: string;
+  initialCanonicalRevisionId?: string;
   launchFingerprint?: string;
   launchId?: string;
   autoPrepare?: boolean;

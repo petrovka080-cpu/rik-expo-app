@@ -10,7 +10,7 @@ type Json = Record<string, any>;
 const OWNER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
 const PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
-const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
+const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
 
 function argument(name: string, fallback = ""): string {
   const prefix = `--${name}=`;
@@ -56,13 +56,27 @@ async function api(path: string, apiRoot: string): Promise<Json> {
 async function selectAndBuildBaseline(page: Page, catalogId: string): Promise<void> {
   const input = page.getByTestId("consumer-repair-problem-input");
   await input.fill(catalogId);
-  const suggestions = page.locator('[data-testid^="consumer-repair-work-suggestion-"]');
-  await suggestions.first().waitFor({ state: "visible", timeout: 60_000 });
-  await suggestions.first().click();
+  const identity = page.locator('[data-testid^="consumer-repair-work-suggestion-catalog-"]')
+    .filter({ hasText: catalogId }).first();
+  await identity.waitFor({ state: "visible", timeout: 60_000 });
+  const identityTestId = await identity.getAttribute("data-testid");
+  const suggestionIndex = Number(identityTestId?.match(/-(\d+)$/u)?.[1] ?? 0);
+  if (suggestionIndex <= 0 || (await identity.innerText()).trim() !== catalogId) {
+    throw new Error(`R58_WEB50_EXACT_SUGGESTION_RED:${catalogId}`);
+  }
+  await page.getByTestId(`consumer-repair-work-suggestion-${suggestionIndex}`).click();
   const button = page.getByTestId("consumer-repair-prepare-draft");
   await button.waitFor({ state: "visible", timeout: 30_000 });
   await button.click();
   await page.getByTestId("consumer-repair-draft").waitFor({ state: "visible", timeout: 120_000 });
+}
+
+function displayedCount(value: string): number {
+  return Number(value.match(/(\d+)\s*$/u)?.[1] ?? 0);
+}
+
+function hasUtf8Mojibake(value: string): boolean {
+  return /(?:\uFFFD|[\u0420\u0421][\u0080-\u00BF\u0400-\u040F\u0450-\u045F\u2010-\u203A])/u.test(value);
 }
 
 async function buildArtifact(page: Page, revisionId: string, kind: "pdf" | "procurement"): Promise<Json> {
@@ -114,10 +128,18 @@ async function main(): Promise<void> {
   const pageErrors: string[] = [];
   const consoleErrors: string[] = [];
   const failedCanonical: Json[] = [];
+  const canonicalRequests: Json[] = [];
   const failedCanonicalPending: Promise<void>[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("response", (response) => {
+    if (response.url().includes("/canonical-estimate/")) {
+      canonicalRequests.push({
+        method: response.request().method(),
+        url: response.url(),
+        status: response.status(),
+      });
+    }
     if (response.url().includes("/canonical-estimate/") && response.status() >= 400) {
       failedCanonicalPending.push((async () => {
         failedCanonical.push({
@@ -146,6 +168,8 @@ async function main(): Promise<void> {
         const baselineReleaseText = await page.getByTestId("consumer-repair-draft-release-id").innerText();
         const baselineRowsText = await page.getByTestId("request-estimate-row-count").innerText();
         if (!baselineReleaseText.includes(releaseId)) blockers.push("BASELINE_RELEASE_RED");
+        if (displayedCount(baselineRowsText) <= 0) blockers.push("BASELINE_EMPTY");
+        if (hasUtf8Mojibake(await page.getByTestId("consumer-repair-draft").innerText())) blockers.push("BASELINE_UTF8_RED");
         await page.getByTestId("request-estimate-parameters-toggle").click();
         await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
         await page.getByTestId("canonical-estimate-parameter-form").waitFor({ state: "visible", timeout: 60_000 });
@@ -165,6 +189,12 @@ async function main(): Promise<void> {
         const guideCount = await page.locator('[data-testid^="canonical-estimate-parameter-guide-"]').count();
         const input = page.getByTestId(`canonical-estimate-parameter-${parameter.ordinal}`);
         await input.waitFor({ state: "visible", timeout: 30_000 });
+        const parameterLabel = await page.getByTestId(`canonical-estimate-parameter-label-${parameter.ordinal}`).innerText();
+        const parameterGuide = await page.getByTestId(`canonical-estimate-parameter-guide-${parameter.ordinal}`).innerText();
+        if (!parameterLabel.includes(String(parameter.titleRu)) || !parameterLabel.includes(String(parameter.unitId))) {
+          blockers.push("PARAMETER_TITLE_OR_UOM_RED");
+        }
+        if (parameterGuide !== String(parameter.guide?.guideShortRu ?? "")) blockers.push("PARAMETER_INLINE_GUIDE_RED");
         await input.fill(String(mutation.changedValue));
         const accepted = page.waitForResponse((response) => response.request().method() === "POST"
           && response.url().endsWith("/jobs/recalculate") && response.status() === 202, { timeout: 60_000 });
@@ -180,7 +210,12 @@ async function main(): Promise<void> {
         const visibleRelease = await page.getByTestId("canonical-estimate-release-id").innerText();
         const visibleRows = await page.getByTestId("foreman-ai-estimate-row-count").innerText();
         if (!visibleRelease.includes(releaseId)) blockers.push("CHILD_RELEASE_RED");
+        if (displayedCount(visibleRows) <= 0) blockers.push("CHILD_EMPTY");
+        if (!(await page.getByTestId("canonical-estimate-selected-catalog-id").innerText()).includes(catalogId)) {
+          blockers.push("CHILD_EXACT_CATALOG_RED");
+        }
         if (childHistoryCount <= baselineHistoryCount) blockers.push("CHILD_HISTORY_NOT_APPENDED");
+        let coldReopen: Json | null = null;
         if (revisionId) {
           const rowsResponse = page.waitForResponse((response) => response.request().method() === "GET"
             && response.url().includes(`/revisions/${revisionId}/rows`) && response.status() === 200,
@@ -190,11 +225,44 @@ async function main(): Promise<void> {
           const pdf = await buildArtifact(page, revisionId, "pdf");
           const procurement = await buildArtifact(page, revisionId, "procurement");
           if (pdf.releaseId !== releaseId || procurement.releaseId !== releaseId) blockers.push("ARTIFACT_RELEASE_RED");
+          const requestsBeforeCold = canonicalRequests.length;
+          const exactRevisionResponse = page.waitForResponse((response) => response.request().method() === "GET"
+            && response.url().endsWith(`/revisions/${revisionId}`) && response.status() === 200,
+          { timeout: 120_000 });
+          const exactRowsResponse = page.waitForResponse((response) => response.request().method() === "GET"
+            && response.url().includes(`/revisions/${revisionId}/rows`) && response.status() === 200,
+          { timeout: 120_000 });
+          const exactCatalogResponse = page.waitForResponse((response) => response.request().method() === "GET"
+            && response.url().includes(`/catalog/${encodeURIComponent(catalogId)}`) && response.status() === 200,
+          { timeout: 120_000 });
+          const exactHistoryResponse = page.waitForResponse((response) => response.request().method() === "GET"
+            && response.url().includes(`/revisions?catalogId=${encodeURIComponent(catalogId)}`) && response.status() === 200,
+          { timeout: 120_000 });
+          const coldUrl = `${baseUrl}/request?canonicalRevisionId=${encodeURIComponent(revisionId)}&r58WebCold=${index}-${Date.now()}`;
+          await page.goto(coldUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
+          await Promise.all([exactRevisionResponse, exactRowsResponse, exactCatalogResponse, exactHistoryResponse]);
+          await page.getByTestId("professional-estimate-composer").waitFor({ state: "visible", timeout: 60_000 });
+          await page.getByTestId("canonical-estimate-native-quick-actions").waitFor({ state: "visible", timeout: 120_000 });
+          const coldCatalog = await page.getByTestId("canonical-estimate-selected-catalog-id").innerText();
+          const coldRelease = await page.getByTestId("canonical-estimate-release-id-top").innerText();
+          const coldRows = await page.getByTestId("canonical-estimate-row-count-top").innerText();
+          const coldRequests = canonicalRequests.slice(requestsBeforeCold);
+          const coldMutationPosts = coldRequests.filter((request) => request.method === "POST");
+          if (!coldCatalog.includes(catalogId)) blockers.push("COLD_CATALOG_IDENTITY_RED");
+          if (!coldRelease.includes(releaseId)) blockers.push("COLD_RELEASE_IDENTITY_RED");
+          if (coldRows !== visibleRows) blockers.push("COLD_ROW_COUNT_IDENTITY_RED");
+          if (coldMutationPosts.length > 0) blockers.push("COLD_CREATED_NEW_REVISION");
+          if (hasUtf8Mojibake(await page.getByTestId("professional-estimate-composer").innerText())) {
+            blockers.push("COLD_UTF8_RED");
+          }
+          coldReopen = { coldUrl, revisionId, catalogId, coldCatalog, coldRelease, coldRows,
+            requestRows: coldRequests, mutationPosts: coldMutationPosts.length, status: coldMutationPosts.length === 0 ? "GREEN" : "RED" };
         }
         if (parameterCount <= 0 || guideCount <= 0 || guideCount > parameterCount) blockers.push("PARAMETER_GUIDE_RED");
         rows.push({ ordinal: index + 1, catalogId, mutation, baselineReleaseText, baselineRowsText,
           baselineHistoryCount, childHistoryCount, revisionId, visibleRelease, visibleRows,
           parameterCount, guideCount, acceptedJobId: acceptedBody.jobId ?? null,
+          coldReopen,
           durationMs: Date.now() - started, blockers, status: blockers.length === 0 ? "GREEN" : "RED" });
       } catch (error) {
         blockers.push(error instanceof Error ? error.message : String(error));
@@ -231,6 +299,8 @@ async function main(): Promise<void> {
     manifestCatalogSetSha256: manifest.catalogSetSha256,
     expected: 50, executed: rows.length, green: rows.filter((row) => row.status === "GREEN").length,
     red: rows.filter((row) => row.status !== "GREEN").length, distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
+    lifecycle: { requestSearchExactSelection: 50, preliminaryEstimate: 50, parameterRefinement: 50,
+      childRevision: 50, historyReopen: 50, pdf: 50, procurement: 50, coldExactRevisionReopen: 50 },
     rows, pageErrors, consoleErrors, failedCanonical, cleanup, blockers,
     activeRuntime8081Switched: false, diagnosticOnly: true, terminalGreenClaimed: false,
     status: blockers.length === 0 && rows.length === 50 ? "GREEN_R58_WEB_MATRIX_50_DIAGNOSTIC_NOT_ACTIVE" : "RED_R58_WEB_MATRIX_50_REPAIR_QUEUE",

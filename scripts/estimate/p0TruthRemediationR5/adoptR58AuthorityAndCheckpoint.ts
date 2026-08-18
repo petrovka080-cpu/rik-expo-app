@@ -12,9 +12,9 @@ import { dirname, relative, resolve } from "node:path";
 type Json = Record<string, unknown>;
 
 const SPEC_PATH = resolve(
-  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md",
+  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
 );
-const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
+const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
 const SPEC_BYTES = 219_294;
 const SPEC_LINES = 3_751;
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";

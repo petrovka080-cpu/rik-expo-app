@@ -1,6 +1,12 @@
 import type { AiEstimateParameterCard } from "../estimate/aiEstimateParameterCardContract";
-import { aiEstimateRuUnitForParameter } from "../estimate/aiEstimateRuParameterDictionary";
-import { buildAiEstimateParameterCards } from "../estimate/buildAiEstimateParameterCards";
+import {
+  aiEstimateRuLabelForParameter,
+  aiEstimateRuSourceLabel,
+  aiEstimateRuUnitForParameter,
+  containsForbiddenAiEstimateVisibleToken,
+  hasHumanReadableAiEstimateParameterPassport,
+  isAiEstimateTechnicalHiddenParam,
+} from "../estimate/aiEstimateRuParameterDictionary";
 import type { EstimateDraftRevision } from "../estimate/estimateDraftRevisionContract";
 import type {
   CanonicalParameter,
@@ -14,11 +20,107 @@ const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze(
   asphalt_layers: "asphalt_layer_count",
 });
 
-/** Presentation-owned adapter for persisted revisions; feature UI never imports the calculation layer. */
+function revisionCardSource(
+  source: EstimateDraftRevision["params"][string]["source"] | null,
+): AiEstimateParameterCard["source"] {
+  if (source === "user_input") return "user_prompt";
+  if (source === "edited_by_user") return "manual_override";
+  if (source === "default_assumption") return "catalog_default";
+  if (source === "derived") return "formula_derived";
+  return "schema_missing";
+}
+
+function revisionRequiredLabel(requiredFor: AiEstimateParameterCard["requiredFor"]): string {
+  if (requiredFor === "contract_ready") return "для рабочей сметы";
+  if (requiredFor === "safety_review") return "для проверки безопасности";
+  return "для точного расчёта";
+}
+
+function revisionDisplayValue(
+  key: string,
+  value: EstimateDraftRevision["params"][string]["value"] | null,
+  unitRu: string,
+): string {
+  if (value == null || value === "") return "нужно уточнить";
+  if (typeof value === "boolean") return value ? "Да" : "Нет";
+  const text = typeof value === "number"
+    ? new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value)
+    : String(value);
+  if (containsForbiddenAiEstimateVisibleToken(text) || /^[a-z0-9]+(?:_[a-z0-9]+)+$/iu.test(text)) {
+    return "уточняется";
+  }
+  return unitRu ? `${text} ${unitRu}` : text;
+}
+
+/**
+ * Presentation-only adapter for persisted legacy revisions.
+ *
+ * The active R5.8 path renders the canonical backend session above. Historical
+ * local revisions still need a readable, non-mutating fallback, but importing
+ * the former schema/passport builder here also pulled its frontend compiler
+ * into every production bundle. Everything used below is already persisted in
+ * the immutable revision; no formula, resource branch or template is evaluated.
+ */
 export function buildRevisionParameterCards(
   revision: EstimateDraftRevision | null,
 ): AiEstimateParameterCard[] {
-  return buildAiEstimateParameterCards({ revision, includeMissing: true });
+  if (!revision) return [];
+  const missingByKey = new Map(revision.missingInputs.map((item) => [item.key, item]));
+  const rowTitleById = new Map(revision.boq.rows.map((row) => [row.rowId, row.titleRu]));
+  const keys = new Set([...Object.keys(revision.params), ...missingByKey.keys()]);
+  return [...keys].flatMap((key) => {
+    const parameter = revision.params[key] ?? null;
+    const missing = missingByKey.get(key) ?? null;
+    const fallbackLabel = missing?.label ?? null;
+    if (isAiEstimateTechnicalHiddenParam(key) || !hasHumanReadableAiEstimateParameterPassport(key, fallbackLabel)) {
+      return [];
+    }
+    const labelRu = aiEstimateRuLabelForParameter(key, fallbackLabel);
+    if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/iu.test(labelRu)) {
+      return [];
+    }
+    const affectedRowIds = revision.trace.params.find((item) => item.key === key)?.affectsRowIds ?? [];
+    const formulaRefs = affectedRowIds.flatMap((rowId) => {
+      const formulaId = revision.trace.rows.find((row) => row.rowId === rowId)?.formulaId;
+      return formulaId ? [formulaId] : [];
+    });
+    const unitRu = aiEstimateRuUnitForParameter(key, parameter?.canonicalUnit ?? null);
+    const source = revisionCardSource(parameter?.source ?? null);
+    const requiredFor = missing?.requiredFor ?? "better_accuracy";
+    return [{
+      key,
+      labelRu,
+      value: parameter?.value ?? null,
+      displayValueRu: revisionDisplayValue(key, parameter?.value ?? null, unitRu),
+      unitRu,
+      source,
+      sourceLabelRu: aiEstimateRuSourceLabel(source),
+      inputKind: typeof parameter?.value === "boolean"
+        ? "boolean"
+        : typeof parameter?.value === "number" || Boolean(parameter?.canonicalUnit)
+          ? "number"
+          : "text",
+      editable: true,
+      clickAction: "open_parameter_editor",
+      noStepperControls: true,
+      missing: parameter == null,
+      requiredFor,
+      requiredForLabelRu: revisionRequiredLabel(requiredFor),
+      affectsRowIds: affectedRowIds,
+      affectsRowTitlesRu: affectedRowIds
+        .map((rowId) => rowTitleById.get(rowId))
+        .filter((title): title is string => Boolean(title)),
+      formulaRefs: [...new Set(formulaRefs)],
+      clarificationTier: requiredFor === "contract_ready"
+        ? "critical"
+        : requiredFor === "safety_review" ? "recommended" : "optional",
+      provenanceRu: parameter?.sourceText,
+      guideShortRu: parameter?.canonicalUnit
+        ? `По проекту или обмеру: введите подтверждённое значение, ${unitRu}`
+        : "По проекту: укажите подтверждённое значение.",
+      guideKind: parameter?.canonicalUnit ? "MEASUREMENT_RULE" : "PROJECT_DEFINED",
+    } satisfies AiEstimateParameterCard];
+  }).sort((a, b) => a.labelRu.localeCompare(b.labelRu, "ru"));
 }
 
 function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null): {

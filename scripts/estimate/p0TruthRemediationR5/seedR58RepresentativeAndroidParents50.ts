@@ -8,9 +8,9 @@ import { Client } from "pg";
 type Json = Record<string, any>;
 
 const SPEC_PATH = resolve(
-  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md",
+  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
 );
-const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
+const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 const TARGET_RELEASE_ID = process.env.R58_TARGET_RELEASE_ID
@@ -156,6 +156,9 @@ async function main(): Promise<void> {
       invariant(parameter, `R58_ANDROID_PARENT_PARAMETER_MISSING:${catalogId}:${mutation.parameterId}`);
       invariant(Number.isSafeInteger(Number(parameter.ordinal)) && Number(parameter.ordinal) >= 0,
         `R58_ANDROID_PARENT_PARAMETER_ORDINAL:${catalogId}:${parameter.ordinal}`);
+      invariant(String(parameter.titleRu ?? "").trim() && String(parameter.unitId ?? "").trim()
+        && String(parameter.guide?.guideShortRu ?? "").trim(),
+      `R58_ANDROID_PARENT_PARAMETER_PRESENTATION:${catalogId}:${parameter.parameterId}`);
       const parameters = baselineByCatalog.get(catalogId);
       invariant(parameters, `R58_ANDROID_PARENT_BASELINE_MISSING:${catalogId}`);
       const created = await api("jobs/compile", {
@@ -170,7 +173,13 @@ async function main(): Promise<void> {
         }),
       });
       process.stdout.write(`[${new Date().toISOString()}] R58 Android parent ${index + 1}/50 ${catalogId}\n`);
-      return { catalogId, mutation, parameter, jobId: String(created.jobId) };
+      return {
+        catalogId,
+        mutation,
+        parameter,
+        parameterCount: Number((catalog.parameterSchema as Json[]).length),
+        jobId: String(created.jobId),
+      };
     });
     const jobs = await waitForJobs(client, cases.map((row) => row.jobId));
     const revisionIds = cases.map((row) => String(jobs.get(row.jobId)?.result_revision_id ?? "")).filter(Boolean);
@@ -193,8 +202,14 @@ async function main(): Promise<void> {
         ordinal: index + 1,
         catalog_id: row.catalogId,
         child_revision_id: revisionId,
+        search_kind: index === 0 ? "fuzzy" : index === 3 ? "group" : "literal",
+        search_query: index === 0 ? "lamenat" : index === 3 ? "asphalt" : row.catalogId,
         parameter_id: row.mutation.parameterId,
         parameter_ordinal: Number(row.parameter.ordinal),
+        parameter_title_ru: row.parameter.titleRu,
+        parameter_unit_id: row.parameter.unitId,
+        guide_short_ru: row.parameter.guide.guideShortRu,
+        parameter_count: row.parameterCount,
         baseline_value: row.mutation.baselineValue,
         changed_value: row.mutation.changedValue,
         compile_job_id: row.jobId,
@@ -213,6 +228,11 @@ async function main(): Promise<void> {
       runtime, releaseId: TARGET_RELEASE_ID, expected: 50, executed: outputRows.length,
       green: outputRows.filter((row) => row.status === "GREEN").length,
       red: outputRows.filter((row) => row.status !== "GREEN").length,
+      searchModes: {
+        literal: outputRows.filter((row) => row.search_kind === "literal").length,
+        fuzzy: outputRows.filter((row) => row.search_kind === "fuzzy").length,
+        group: outputRows.filter((row) => row.search_kind === "group").length,
+      },
       outputPath,
       status: outputRows.length === 50 && outputRows.every((row) => row.status === "GREEN") ? "GREEN" : "RED",
     };

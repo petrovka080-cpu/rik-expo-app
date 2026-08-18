@@ -9,31 +9,15 @@ import {
   type ConsumerRepairRequestScreenProps,
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
-import { migrateExistingEstimatesToCanonicalBackend } from "../../lib/estimate/backendPlatform/migrateExistingCanonicalEstimates";
 import ProfessionalEstimateComposer from "../../components/estimate/ProfessionalEstimateComposer";
 import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import { upsertConsumerRepairCanonicalBackendDraft } from "../../lib/consumerRequests/consumerRequestService";
 import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
 import { currentUserId } from "../../lib/supabaseClient";
 import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCompile";
+import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
-let canonicalBackendMigrationStarted = false;
-
-function startCanonicalBackendMigrationOnce(): void {
-  if (canonicalBackendMigrationStarted) return;
-  canonicalBackendMigrationStarted = true;
-  void migrateExistingEstimatesToCanonicalBackend().then((result) => {
-    console.info("[canonical-estimate] legacy revision ingress complete", result);
-  }).catch((error: unknown) => {
-    // Server and local ledgers are idempotent. Authentication/network failures
-    // therefore remain safe to retry on the next application session.
-    canonicalBackendMigrationStarted = false;
-    console.warn("[canonical-estimate] legacy revision ingress deferred", {
-      code: error instanceof Error ? error.message : String(error),
-    });
-  });
-}
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
@@ -45,7 +29,8 @@ type BoundedDurableHydrationOutcome =
 export function requestEstimateControllerWorkspaceKey(
   props: ConsumerRepairRequestScreenProps,
 ): string {
-  return props.launchFingerprint?.trim()
+  return canonicalEstimateRevisionIdFromRoute(props.initialCanonicalRevisionId)
+    || props.launchFingerprint?.trim()
     || props.launchId?.trim()
     || props.initialDraftId?.trim()
     || "request-composer";
@@ -75,6 +60,9 @@ async function runBoundedDurableHydration(
 }
 
 export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenProps): React.ReactElement {
+  const routeCanonicalRevisionId = canonicalEstimateRevisionIdFromRoute(
+    props.initialCanonicalRevisionId,
+  );
   const [durableStatus, setDurableStatus] =
     React.useState<DurableHydrationStatus>("loading");
   const [authResolved, setAuthResolved] = React.useState(Boolean(props.consumerUserId?.trim()));
@@ -83,9 +71,13 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   );
   const hydrationAttemptRef = React.useRef(0);
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
-  const [canonicalComposerVisible, setCanonicalComposerVisible] = React.useState(false);
+  const [canonicalComposerVisible, setCanonicalComposerVisible] = React.useState(
+    Boolean(routeCanonicalRevisionId),
+  );
   const [canonicalPrompt, setCanonicalPrompt] = React.useState(props.initialProblemText ?? "");
-  const [canonicalInitialRevisionId, setCanonicalInitialRevisionId] = React.useState<string | null>(null);
+  const [canonicalInitialRevisionId, setCanonicalInitialRevisionId] = React.useState<string | null>(
+    routeCanonicalRevisionId,
+  );
   const [canonicalTargetDraftId, setCanonicalTargetDraftId] = React.useState<string | null>(null);
   const freshBuildKey = shouldAutoPrepareInitialConsumerRepairRequest(props) &&
     props.initialProblemText?.trim() &&
@@ -93,6 +85,13 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     ? props.launchId?.trim() || props.launchFingerprint?.trim() || props.initialProblemText.trim()
     : null;
   const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!routeCanonicalRevisionId) return;
+    setCanonicalPrompt("");
+    setCanonicalInitialRevisionId(routeCanonicalRevisionId);
+    setCanonicalTargetDraftId(null);
+    setCanonicalComposerVisible(true);
+  }, [routeCanonicalRevisionId]);
   React.useEffect(() => {
     const explicit = props.consumerUserId?.trim();
     if (explicit) {
@@ -122,7 +121,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       if (outcome.status === "ready") {
         screenRef.current?.refreshAfterDurableHydration();
         setDurableStatus("ready");
-        startCanonicalBackendMigrationOnce();
         return;
       }
       setDurableStatus("recovery");
@@ -132,7 +130,6 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
           if (hydrationAttemptRef.current !== attempt) return;
           screenRef.current?.refreshAfterDurableHydration();
           setDurableStatus("ready");
-          startCanonicalBackendMigrationOnce();
         },
         () => {
           // The recovery action remains available for a terminal storage error.

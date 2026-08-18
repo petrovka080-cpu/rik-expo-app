@@ -8,9 +8,9 @@ import { Client } from "pg";
 type Json = Record<string, any>;
 
 const SPEC_PATH = resolve(
-  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (10).md",
+  "C:/Users/User/Downloads/P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5_PRODUCTION_GRADE_TZ (11).md",
 );
-const SPEC_SHA256 = "4cf42813e8a94816867ec62e63909fe0624a12d6955f598599deb0a92338e318";
+const SPEC_SHA256 = "21bdd2cf79185cbcf2a6621005f32d6eaf47e653dd88e5b006fcdc6797854138";
 const BASE_COMMIT = "691acb78d55c38ef447a4d91c0bc798992e58dbc";
 const EXPECTED_BRANCH = "codex/p0-one-monolith-r5";
 const PREDECESSOR_RELEASE_ID = "a7dca174-3ad5-552b-aa4c-fc28979a56ef";
