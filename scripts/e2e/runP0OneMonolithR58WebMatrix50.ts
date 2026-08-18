@@ -139,7 +139,7 @@ async function selectAndBuildBaseline(page: Page, item: Json): Promise<Json> {
 }
 
 function displayedCount(value: string): number {
-  return Number(value.match(/(\d+)\s*$/u)?.[1] ?? 0);
+  return Number(value.match(/\b(\d+)\b/u)?.[1] ?? 0);
 }
 
 function hasUtf8Mojibake(value: string): boolean {
@@ -361,6 +361,7 @@ async function main(): Promise<void> {
   });
   context.on("page", (opened) => { if (opened !== page) void opened.close().catch(() => undefined); });
   const rows: Json[] = [];
+  let frontendRuntime: Json | null = null;
   try {
     for (let index = 0; index < runCases.length; index += 1) {
       const matrixCase = runCases[index];
@@ -372,6 +373,21 @@ async function main(): Promise<void> {
         await page.goto(`${baseUrl}/request?r58Web50=${index}-${Date.now()}`,
           { waitUntil: "domcontentloaded", timeout: 120_000 });
         await page.getByTestId("consumer-repair-screen").waitFor({ state: "visible", timeout: 120_000 });
+        if (CONTROL_72 && index === 0) {
+          frontendRuntime = await page.evaluate(async () => {
+            const root = globalThis as typeof globalThis & {
+              __RIK_R45_RUNTIME_MANIFEST_READY__?: Promise<Json>;
+            };
+            return await root.__RIK_R45_RUNTIME_MANIFEST_READY__ ?? null;
+          });
+          if (frontendRuntime?.sourceHead !== head || frontendRuntime?.sourceTree !== tree
+            || frontendRuntime?.specSha256 !== SPEC_SHA256
+            || frontendRuntime?.workingDirectory !== process.cwd()
+            || frontendRuntime?.backendUrl !== apiRoot
+            || frontendRuntime?.backendManifestStatus !== "READY") {
+            throw new Error(`R6_WEB72_FRONTEND_RUNTIME_IDENTITY_RED:${JSON.stringify(frontendRuntime)}`);
+          }
+        }
         const searchEvidence = await selectAndBuildBaseline(page, matrixCase);
         const baselineReleaseText = await page.getByTestId("consumer-repair-draft-release-id").innerText();
         const baselineRowsText = await page.getByTestId("request-estimate-row-count").innerText();
@@ -384,7 +400,12 @@ async function main(): Promise<void> {
         if (CONTROL_72 && launchPromptText.trim() !== String(matrixCase.prompt).trim()) blockers.push("SOURCE_REQUEST_TEXT_RED");
         if (CONTROL_72 && promptMeasure && !displayTitleText.includes(promptMeasure)) blockers.push("DISPLAY_TITLE_MEASURE_RED");
         if (CONTROL_72) {
-          await page.getByTestId("request-estimate-exact-generic-fallback-not-used").waitFor({ state: "attached", timeout: 10_000 });
+          const fallbackMarker = page.locator('[data-testid^="request-estimate-exact-generic-fallback-"]');
+          await fallbackMarker.waitFor({ state: "attached", timeout: 10_000 });
+          const fallbackMarkerId = await fallbackMarker.getAttribute("data-testid");
+          if (fallbackMarkerId !== "request-estimate-exact-generic-fallback-not-used") {
+            blockers.push(`GENERIC_FALLBACK_USED:${fallbackMarkerId ?? "missing"}`);
+          }
           for (const testId of [
             "consumer-repair-add-manual-item",
             "consumer-repair-add-photo-draft",
@@ -622,7 +643,7 @@ async function main(): Promise<void> {
     schemaVersion: CONTROL_72 ? "one-canonical-estimate-r6-web-matrix-72.v1" : "p0-one-monolith-r58-web-matrix-50.v1",
     capturedAt: new Date().toISOString(),
     specSha256: SPEC_SHA256, source: { branch, head, tree, descendantOf691acb78: true },
-    baseUrl, apiRoot, runtime, releaseId, inputs: { manifestPath, backendLedgerPath },
+    baseUrl, apiRoot, runtime, frontendRuntime, releaseId, inputs: { manifestPath, backendLedgerPath },
     manifestCatalogSetSha256: manifest.catalogSetSha256 ?? manifest.manifestSha256,
     expected, executed: rows.length, green: rows.filter((row) => row.status === "GREEN").length,
     red: rows.filter((row) => row.status !== "GREEN").length, distinctCatalogIds: new Set(rows.map((row) => row.catalogId)).size,
