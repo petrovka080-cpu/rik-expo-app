@@ -112,18 +112,23 @@ async function updateExistingJourney(client: Client, searchReleaseId: string, jo
   const row = (await client.query("select * from public.estimate_search_document where search_release_id=$1 and catalog_id=$2",
     [searchReleaseId, journey.catalogId])).rows[0] as Json | undefined;
   invariant(row, `R58_SEARCH_EXISTING_JOURNEY_MISSING:${journey.ordinal}:${journey.catalogId}`);
+  const definition = (await client.query(`select definition_version_id::text
+    from public.estimate_cumulative_manifest_entry where release_id=$1 and catalog_id=$2`,
+  [DEFINITION_RELEASE_ID, journey.catalogId])).rows[0] as Json | undefined;
+  invariant(definition, `R58_SEARCH_EXISTING_JOURNEY_DEFINITION_MISSING:${journey.ordinal}:${journey.catalogId}`);
   const aliases = unique([...(row.aliases ?? []), ...journey.aliases]);
   const normalizedAliases = unique(aliases.map(normalize));
   const terms = unique([...(row.normalized_search_terms ?? []), ...searchTerms(row.canonical_name_ru, aliases, journey.catalogId)]);
   await client.query(`update public.estimate_search_document set
     aliases=$3::text[],normalized_aliases=$4::text[],normalized_search_terms=$5::text[],normalized_search_blob=$6,
     adjudication_class='EFFECTIVE_WORK',selectable=true,publication_state='ADMITTED_BACKEND',
+    definition_release_id=$9,definition_version_id=$10,
     operation_kind=coalesce($7,operation_kind),canonical_target_catalog_id=null,replacement_catalog_id=null,
     source_provenance=source_provenance||$8::jsonb
     where search_release_id=$1 and catalog_id=$2`, [searchReleaseId, journey.catalogId, aliases, normalizedAliases,
     terms, terms.join("\u001f"), journey.operationKind ?? null,
     JSON.stringify({ r58MandatoryJourney: journey.ordinal, r58MandatorySearchContract: CONTRACT,
-      r58DefinitionReleaseId: DEFINITION_RELEASE_ID })]);
+      r58DefinitionReleaseId: DEFINITION_RELEASE_ID }), DEFINITION_RELEASE_ID, definition.definition_version_id]);
 }
 
 async function insertNewJourney(client: Client, searchReleaseId: string, journey: Journey): Promise<void> {
