@@ -53,8 +53,31 @@ function selectedWorkForRequest(payload: StructuredEstimatePayload): ConsumerRep
       : undefined;
 }
 
-function visibleDraftItemTitle(row: StructuredEstimatePayload["rows"][number]): string {
+function admissionVerifiedCanonicalPayloadRow(
+  payload: StructuredEstimatePayload,
+  row: StructuredEstimatePayload["rows"][number],
+): boolean {
+  const metadata = payload.canonicalBackend;
+  const source = row.sourceParameters ?? {};
+  return Boolean(
+    metadata?.compilerOwner === "backend"
+    && /^[0-9a-f]{64}$/u.test(metadata.checksumSha256)
+    && String(source.canonicalBackendRevisionId ?? "").trim() === metadata.revisionId
+    && String(source.canonicalBackendReleaseId ?? "").trim() === metadata.releaseId
+    && String(source.canonicalBackendCatalogId ?? "").trim() === metadata.catalogId
+    && String(source.rowCode ?? "").trim() === String(row.code ?? "").trim()
+    && /^[0-9a-f]{64}$/u.test(String(source.rowSha256 ?? "").trim())
+    && ["OWNED", "OWNED_EXCLUDED", "MANUAL_SERVER_OWNED", "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL"]
+      .includes(String(source.canonicalBackendOwnershipStatus ?? "").trim())
+  );
+}
+
+function visibleDraftItemTitle(
+  payload: StructuredEstimatePayload,
+  row: StructuredEstimatePayload["rows"][number],
+): string {
   const name = professionalEstimateRowVisibleName(row).trim();
+  if (admissionVerifiedCanonicalPayloadRow(payload, row)) return name;
   if (!row.rowNumber) return name;
   if (name.startsWith(`${row.rowNumber} `)) return name;
   return `${row.rowNumber} ${name}`.trim();
@@ -138,7 +161,7 @@ export function buildStructuredEstimateRequestDraft(
       const pricePolicy = editablePricePolicyForRow(row);
       return {
         itemType: itemTypeFor(row.sectionType),
-        titleRu: visibleDraftItemTitle(row),
+        titleRu: visibleDraftItemTitle(payload, row),
         quantity: row.quantity,
         unit: row.unit,
         unitLabel: formatEstimateUnitLabel(row.unit),

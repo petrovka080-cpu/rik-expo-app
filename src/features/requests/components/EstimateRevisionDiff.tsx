@@ -27,6 +27,13 @@ export function EstimateRevisionDiff({
           {row.titleRu}: {row.beforeQuantity ?? "нет"} {"->"} {row.afterQuantity ?? "нет"} {row.unit}
         </Text>
       ))}
+      {diff.changedRows.filter((row) =>
+        row.beforeUnitPrice !== undefined || row.afterUnitPrice !== undefined
+      ).slice(0, 6).map((row) => (
+        <Text key={`${row.rowId}:price`} style={styles.line} testID={`estimate-revision-diff-price-${row.rowId}`}>
+          Цена: {row.beforeUnitPrice ?? "нет"} {"->"} {row.afterUnitPrice ?? "нет"} {row.currency ?? ""}
+        </Text>
+      ))}
       <Text style={styles.meta} testID="estimate-revision-artifact-status">
         PDF и пакет закупки нужно пересоздать для текущей ревизии
       </Text>

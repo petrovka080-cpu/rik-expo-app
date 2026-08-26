@@ -2,6 +2,8 @@ import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { ProfileOtaDiagnosticsCard } from "@/src/features/profile/ProfileOtaDiagnosticsCard";
+import { VerifiedIdentitySummary } from "@/src/components/auth/ProtectedIdentityBoundary";
+import type { ProtectedIdentity } from "../../../lib/auth/protectedIdentity";
 import { profileStyles } from "../profile.styles";
 
 const styles = profileStyles;
@@ -9,12 +11,17 @@ const styles = profileStyles;
 type ProfileLoadErrorStateProps = {
   errorMessage: string | null;
   onRetry: () => void;
+  onSignOut: () => void;
+  verifiedIdentity: ProtectedIdentity;
 };
 
 export function ProfileLoadErrorState({
   errorMessage,
   onRetry,
+  onSignOut,
+  verifiedIdentity,
 }: ProfileLoadErrorStateProps) {
+  const hasDiagnostic = Boolean(errorMessage?.trim());
   return (
     <View style={styles.screen} testID="profile-load-error-shell">
       <ScrollView
@@ -25,9 +32,14 @@ export function ProfileLoadErrorState({
         <View style={styles.section}>
           <Text style={styles.profileTitle}>{"\u041f\u0440\u043e\u0444\u0438\u043b\u044c"}</Text>
           <Text style={styles.profileTitleSubtitle}>
-            {errorMessage ??
-              "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043f\u0440\u043e\u0444\u0438\u043b\u044c. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0435 \u0440\u0430\u0437."}
+            {hasDiagnostic
+              ? "Учётная запись подтверждена, но дополнительные данные профиля сейчас недоступны."
+              : "Не удалось загрузить дополнительные данные профиля. Попробуйте ещё раз."}
           </Text>
+        </View>
+
+        <View style={styles.section}>
+          <VerifiedIdentitySummary identity={verifiedIdentity} />
         </View>
 
         <View style={styles.section}>
@@ -38,6 +50,14 @@ export function ProfileLoadErrorState({
             testID="profile-load-retry"
           >
             <Text style={styles.profileEditButtonText}>{"\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u044c"}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onSignOut}
+            style={[styles.profileEditButton, { marginTop: 10 }]}
+            testID="profile-load-sign-out"
+          >
+            <Text style={styles.profileEditButtonText}>Выйти</Text>
           </Pressable>
         </View>
 

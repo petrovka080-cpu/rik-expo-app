@@ -36,6 +36,18 @@ function renderWaterSupplyPanel(options: { onRefineCanonicalParameters?: () => v
   __resetConsumerRepairRequestStoreForTests();
   const prompt = "водоснабжение села 5 км труба ПНД 110 водонапорная башня 25 м3";
   const aiDraft = buildConsumerRepairAiDraft(prompt, { currency: "KGS", city: "Бишкек" });
+  const backendProjectedAiDraft = {
+    ...aiDraft,
+    items: aiDraft.items.map((item, index) => ({
+      ...item,
+      sourceParameters: {
+        ...item.sourceParameters,
+        canonicalBackendRevisionId: "22222222-3333-4444-8555-666666666666",
+        canonicalBackendReleaseId: "simple-progressive-backend-contract-release",
+        rowCode: String(item.sourceParameters?.rowCode ?? `backend-row-${index + 1}`),
+      },
+    })),
+  };
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: "simple-progressive-estimate-ux",
     problemText: prompt,
@@ -43,7 +55,7 @@ function renderWaterSupplyPanel(options: { onRefineCanonicalParameters?: () => v
     city: "Бишкек",
     addressText: "Бишкек, тестовый адрес",
     contactPhone: "+996700000000",
-    aiDraft,
+    aiDraft: backendProjectedAiDraft,
   });
   const noop = jest.fn();
   let renderer!: TestRenderer.ReactTestRenderer;

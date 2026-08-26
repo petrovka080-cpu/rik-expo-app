@@ -150,7 +150,7 @@ async function runDomProof(): Promise<RouteCheck[]> {
 async function main(): Promise<void> {
   const staticFiles = {
     layout: read("src/components/layout/appLayout.ts"),
-    stickyActionBar: read("src/components/layout/StickyActionBar.tsx"),
+    stickyActionBar: read("src/components/layout/AppStickyActionBar.tsx"),
     tabsLayout: read("app/(tabs)/_layout.tsx"),
     roleLayout: read("src/components/layout/RoleScreenLayout.tsx"),
     foremanEditor: read("src/screens/foreman/ForemanEditorSection.tsx"),
@@ -190,8 +190,8 @@ async function main(): Promise<void> {
       staticFiles.tabsLayout.includes("APP_LAYOUT.bottomNavHeightPx") &&
       staticFiles.roleLayout.includes("APP_LAYOUT.pageBottomExtraPaddingPx"),
     sticky_action_bar_ready:
-      staticFiles.stickyActionBar.includes("StickyActionBarProps") &&
-      staticFiles.stickyActionBar.includes("AppStickyActionBar"),
+      staticFiles.stickyActionBar.includes("AppStickyActionBarProps") &&
+      staticFiles.stickyActionBar.includes('testID="app.sticky-action-bar"'),
     scroll_bottom_padding_global:
       staticFiles.foremanStyles.includes("APP_LAYOUT.scrollBottomPaddingPx") &&
       staticFiles.profileStyles.includes("APP_LAYOUT.scrollBottomPaddingPx") &&
@@ -212,7 +212,7 @@ async function main(): Promise<void> {
   writeJson("bottom_nav_collision", routeChecks);
   writeJson("inventory", {
     layout_token_file: "src/components/layout/appLayout.ts",
-    sticky_action_bar_file: "src/components/layout/StickyActionBar.tsx",
+    sticky_action_bar_file: "src/components/layout/AppStickyActionBar.tsx",
     touched_routes: ["/office/foreman", "/add", "/office/contractor"],
     media_backend_migration: "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql",
   });

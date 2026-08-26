@@ -2,6 +2,7 @@ import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
+  generateConsumerRepairRequestPdfForDraft,
   type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
@@ -11,6 +12,36 @@ export const CONSUMER_REPAIR_VALID_PROBLEM = "Хочу уложить ламин
 export const CONSUMER_REPAIR_VALID_PHONE = "+996 555 123 456";
 export const CONSUMER_REPAIR_VALID_CITY = "Бишкек";
 export const CONSUMER_REPAIR_VALID_ADDRESS = "64 Malikova Street";
+const CONSUMER_REPAIR_CANONICAL_TEST_RELEASE_ID =
+  "c2222222-3333-4444-8555-666666666666";
+let canonicalTestRevisionSequence = 0;
+
+export function canonicalArtifactForApprovedConsumerRepairTestBundle(
+  bundle: ConsumerRepairDraftBundle,
+): {
+  artifactId: string;
+  revisionId: string;
+  releaseId: string;
+  status: "ready";
+  sha256: string | null;
+} {
+  const event = [...bundle.events].reverse().find((candidate) =>
+    candidate.eventType === "consumer_approved_canonical_backend_pdf"
+  );
+  const artifactId = String(event?.payload.artifactId ?? "").trim();
+  const revisionId = String(event?.payload.revisionId ?? "").trim();
+  const releaseId = String(event?.payload.releaseId ?? "").trim();
+  if (!artifactId || !revisionId || !releaseId) {
+    throw new Error("CANONICAL_APPROVED_TEST_ARTIFACT_MISSING");
+  }
+  return {
+    artifactId,
+    revisionId,
+    releaseId,
+    status: "ready",
+    sha256: typeof event?.payload.sha256 === "string" ? event.payload.sha256 : null,
+  };
+}
 
 export function createApprovedConsumerRepairRequest(input: {
   problemText?: string;
@@ -22,15 +53,30 @@ export function createApprovedConsumerRepairRequest(input: {
   withPdf?: boolean;
   userId?: string;
 } = {}): ConsumerRepairDraftBundle {
+  const problemText = input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM;
+  const canonicalDraft = buildConsumerRepairAiDraft(problemText);
+  canonicalTestRevisionSequence += 1;
+  const canonicalRevisionId = `c1111111-2222-4333-8444-${String(canonicalTestRevisionSequence).padStart(12, "0")}`;
   let bundle = createConsumerRepairRequestDraft({
     consumerUserId: input.userId ?? CONSUMER_REPAIR_TEST_USER_ID,
-    problemText: input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM,
+    problemText,
     contactPhone: input.contactPhone === undefined ? CONSUMER_REPAIR_VALID_PHONE : input.contactPhone,
     city: input.city === undefined ? CONSUMER_REPAIR_VALID_CITY : input.city,
     addressText: input.addressText === undefined ? CONSUMER_REPAIR_VALID_ADDRESS : input.addressText,
     preferredTimeText: input.preferredTimeText === undefined ? "Сегодня" : input.preferredTimeText,
     repairType: "flooring",
-    aiDraft: buildConsumerRepairAiDraft(input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM),
+    aiDraft: {
+      ...canonicalDraft,
+      items: canonicalDraft.items.map((item, index) => ({
+        ...item,
+        sourceParameters: {
+          ...item.sourceParameters,
+          canonicalBackendRevisionId: canonicalRevisionId,
+          canonicalBackendReleaseId: CONSUMER_REPAIR_CANONICAL_TEST_RELEASE_ID,
+          canonicalBackendRowId: `canonical-history-row-${index + 1}`,
+        },
+      })),
+    },
   });
 
   if (input.withMedia !== false) {
@@ -38,11 +84,31 @@ export function createApprovedConsumerRepairRequest(input: {
   }
 
   if (input.withPdf !== false) {
+    // This common fixture also covers the explicitly legacy-only PDF migration
+    // reader. Generate that persisted snapshot before canonical approval, then
+    // bind the approval event to the same immutable artifact identity.
+    bundle = generateConsumerRepairRequestPdfForDraft({
+      requestDraftId: bundle.draft.id,
+      userId: input.userId ?? CONSUMER_REPAIR_TEST_USER_ID,
+    });
+    const artifactId = bundle.pdfs[0]?.id;
+    if (!artifactId) throw new Error("CANONICAL_APPROVED_TEST_PDF_MISSING");
     bundle = approveConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
       userId: input.userId ?? CONSUMER_REPAIR_TEST_USER_ID,
+      canonicalArtifact: {
+        artifactId,
+        revisionId: canonicalRevisionId,
+        releaseId: CONSUMER_REPAIR_CANONICAL_TEST_RELEASE_ID,
+        status: "ready",
+        sha256: "c".repeat(64),
+      },
     });
   }
 
   return bundle;
+}
+
+export function createCanonicalApprovedConsumerRepairRequest(): ConsumerRepairDraftBundle {
+  return createApprovedConsumerRepairRequest();
 }

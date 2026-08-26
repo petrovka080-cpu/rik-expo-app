@@ -43,10 +43,26 @@ describe("logger boundary", () => {
     }
   });
 
-  it("exports all three methods", () => {
+  it("exports the three dev methods and bounded release evidence", () => {
     expect(typeof logger.info).toBe("function");
     expect(typeof logger.warn).toBe("function");
     expect(typeof logger.error).toBe("function");
+    expect(typeof logger.releaseEvidence).toBe("function");
+  });
+
+  it("always emits redacted structured release evidence", () => {
+    const spy = jest.spyOn(console, "info").mockImplementation(() => {});
+
+    logger.releaseEvidence("RikWarmDeepLink", "INTENT_RECEIVED", {
+      launchId: "launch-1",
+      email: "person@example.test",
+    });
+
+    const logged = JSON.stringify(spy.mock.calls);
+    expect(logged).toContain("[RikWarmDeepLink] INTENT_RECEIVED");
+    expect(logged).toContain("launch-1");
+    expect(logged).not.toContain("person@example.test");
+    expect(logged).toContain("[redacted]");
   });
 
   it("redacts token-bearing diagnostics before delegating to console", () => {

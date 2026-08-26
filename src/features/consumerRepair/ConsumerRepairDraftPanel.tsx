@@ -6,6 +6,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import {
   ConsumerRepairDraftQuickActions,
@@ -32,6 +33,8 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
   onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition?: () => void;
@@ -40,6 +43,7 @@ type Props = {
   onRestoreLastRemoved?: () => void;
   canRestoreLastRemoved?: boolean;
   onOpenCatalog?: (itemId: string) => void;
+  onSelectCatalogItem?: (item: CatalogItemPickerItem) => void;
   editingParam?: ConsumerRepairParamEditState;
   onOpenParamEditor?: (operation: UserParamPatchOperation, paramKey: string) => void;
   onSaveParamEdit?: (rawValue: string) => void;
@@ -61,6 +65,8 @@ export function ConsumerRepairDraftPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onSpecificationChange,
+  onOptionalChange,
   onRemove,
   onAddManual,
   onAddPhotoMaterialRecognition,
@@ -69,6 +75,7 @@ export function ConsumerRepairDraftPanel({
   onRestoreLastRemoved,
   canRestoreLastRemoved,
   onOpenCatalog,
+  onSelectCatalogItem,
   editingParam,
   onOpenParamEditor,
   onSaveParamEdit,
@@ -87,10 +94,10 @@ export function ConsumerRepairDraftPanel({
   );
   const offeredScopeOptions = [...offeredScopeIds].map((scopePresetId) => ({
     scopePresetId,
-    labelRu: "Открыть вариант в backend-редакторе",
+    labelRu: "Открыть вариант для редактирования",
   }));
   const selectedScopeOption = estimateDraftSession?.scopePresetId
-    ? { scopePresetId: estimateDraftSession.scopePresetId, labelRu: "Вариант сохранён в revision" }
+    ? { scopePresetId: estimateDraftSession.scopePresetId, labelRu: "Вариант сохранён" }
     : null;
   const blocksActiveEstimate =
     estimateDraftSession != null &&
@@ -110,6 +117,17 @@ export function ConsumerRepairDraftPanel({
   const revisionState = getConsumerRepairCalculationStateForReadOnlyDisplay(bundle);
   const currentRevision = revisionState?.revisions.find((revision) => revision.revisionId === revisionState.currentRevisionId) ?? null;
   const latestDiff = revisionState?.diffs[revisionState.diffs.length - 1] ?? null;
+  const rowPhotoThumbnails = Object.fromEntries((bundle?.items ?? []).flatMap((item) => {
+    const rowId = String(item.sourceParameters?.rowCode ?? "").trim();
+    if (!rowId) return [];
+    const attachment = [...(bundle?.estimateAttachments ?? [])].reverse().find((candidate) =>
+      !candidate.deleted
+      && candidate.rowId === rowId
+      && candidate.revisionId === currentRevision?.revisionId
+      && Boolean(candidate.thumbnailReference?.trim())
+    );
+    return attachment?.thumbnailReference ? [[item.id, attachment.thumbnailReference]] : [];
+  }));
   const selectedCatalogWorkId = bundle?.draft.selectedCatalogWorkId?.trim() ?? "";
   const canonicalProfessionalWorkId = currentRevision?.professionalWorkId?.trim() ?? "";
   const exactSelectionUsedGenericFallback = consumerRepairRevisionUsesGenericFallback(currentRevision);
@@ -134,9 +152,11 @@ export function ConsumerRepairDraftPanel({
         </Text>
       </View>
       {canonical ? (
-        <Text style={styles.status} testID="consumer-repair-draft-release-id">
-          Backend revision {canonical.revisionId} / release {canonical.releaseId}
-        </Text>
+        <View
+          accessible={false}
+          style={styles.runtimeIdentityMarker}
+          testID="consumer-repair-draft-release-id"
+        />
       ) : null}
       {selectedCatalogWorkId ? (
         <View
@@ -252,14 +272,18 @@ export function ConsumerRepairDraftPanel({
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          onSpecificationChange={onSpecificationChange}
+          onOptionalChange={onOptionalChange}
           onRemove={onRemove}
           onAddManual={onAddManual}
           onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
           onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
+          rowPhotoThumbnails={rowPhotoThumbnails}
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           canRestoreLastRemoved={canRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
+          onSelectCatalogItem={onSelectCatalogItem}
           editingParam={editingParam}
           onOpenParamEditor={onOpenParamEditor}
           onSaveParamEdit={onSaveParamEdit}

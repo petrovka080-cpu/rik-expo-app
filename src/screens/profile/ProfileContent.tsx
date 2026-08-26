@@ -39,6 +39,8 @@ import {
 } from "./components/ProfileContentLoadState";
 import { ProfileMainSections } from "./components/ProfileMainSections";
 import { useProfileForm } from "./hooks/useProfileForm";
+import type { ProtectedIdentity } from "../../lib/auth/protectedIdentity";
+import { buildProviderVerifiedProfileScreenData } from "./profile.canonicalIdentity";
 
 const styles = profileStyles;
 
@@ -61,9 +63,21 @@ const buildActiveContextDescription = (params: {
       ? "Сейчас активен Market. Office-доступ сохранён, но не выбран как текущий контекст."
       : "Сейчас активен Market. Это единственный доступный контекст для текущего аккаунта.";
 
-export function ProfileContent() {
+type ProfileContentProps = {
+  verifiedIdentity: ProtectedIdentity;
+};
+
+export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
   const router = useRouter();
   const { replace: replaceRoute } = router;
+  const {
+    email: verifiedEmail,
+    membershipId: verifiedMembershipId,
+    organizationId: verifiedOrganizationId,
+    role: verifiedRole,
+    source: verifiedSource,
+    userId: verifiedUserId,
+  } = verifiedIdentity;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -111,7 +125,17 @@ export function ProfileContent() {
         setLoading(true);
         setRedirectingToAuth(false);
         setProfileLoadError(null);
-        const result = await loadProfileScreenData();
+        const result = verifiedSource === "provider_verified_claims"
+          ? buildProviderVerifiedProfileScreenData({
+              userId: verifiedUserId,
+              email: verifiedEmail,
+              organizationId: verifiedOrganizationId,
+              membershipId: verifiedMembershipId,
+              role: verifiedRole,
+              profileEnsured: true,
+              source: verifiedSource,
+            })
+          : await loadProfileScreenData();
         const storedActiveContext = await loadStoredActiveContext(
           result.profile.user_id,
         );
@@ -119,8 +143,8 @@ export function ProfileContent() {
 
         setProfile(result.profile);
         setCompany(result.company);
-        setProfileRole(result.profileRole);
-        setProfileEmail(result.profileEmail);
+        setProfileRole(result.profileRole ?? verifiedRole);
+        setProfileEmail(result.profileEmail ?? verifiedEmail);
         setProfileAvatarUrl(result.profileAvatarUrl);
         setProfileAvatarDraft(result.profileAvatarUrl);
         setAccessSourceSnapshot(result.accessSourceSnapshot);
@@ -146,7 +170,17 @@ export function ProfileContent() {
     return () => {
       alive = false;
     };
-  }, [profileLoadAttempt, replaceRoute, setProfileAvatarDraft]);
+  }, [
+    profileLoadAttempt,
+    replaceRoute,
+    setProfileAvatarDraft,
+    verifiedEmail,
+    verifiedMembershipId,
+    verifiedOrganizationId,
+    verifiedRole,
+    verifiedSource,
+    verifiedUserId,
+  ]);
 
   const accessModel = useMemo(
     () =>
@@ -178,7 +212,7 @@ export function ProfileContent() {
 
   const sellerListingsCount = accessSourceSnapshot?.listingsCount ?? 0;
   const hasSellerAreaEntry = sellerListingsCount > 0;
-  const displayRole = accessModel.activeOfficeRole ?? profileRole;
+  const displayRole = accessModel.activeOfficeRole ?? profileRole ?? verifiedIdentity.role;
   const profileName = getProfileDisplayName({
     fullName: profile?.full_name,
     email: profileEmail,
@@ -364,6 +398,8 @@ export function ProfileContent() {
       <ProfileLoadErrorState
         errorMessage={profileLoadError}
         onRetry={retryProfileLoad}
+        onSignOut={() => void performSignOut()}
+        verifiedIdentity={verifiedIdentity}
       />
     );
   }
@@ -393,6 +429,8 @@ export function ProfileContent() {
         onSelectActiveContext={handleSelectActiveContext}
         onOpenActiveContext={openActiveContext}
         onSignOut={handleSignOut}
+        verifiedIdentity={verifiedIdentity}
+        canEditProfile={verifiedIdentity.source === "verified_company_membership"}
       />
 
       <EditProfileModal

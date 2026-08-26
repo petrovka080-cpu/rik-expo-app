@@ -265,7 +265,7 @@ export function ConsumerRepairRequestFormCard({
 }: RequestFormCardProps): React.ReactElement {
   return (
     <View pointerEvents="box-none" style={screenStyles.card}>
-      <Text style={screenStyles.label}>Что посчитать</Text>
+      <Text style={screenStyles.label}>Что именно нужно</Text>
       <WorkEstimatePromptField
         value={problemText}
         selectedWork={selectedWork}

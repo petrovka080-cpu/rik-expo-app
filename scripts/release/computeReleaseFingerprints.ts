@@ -71,31 +71,77 @@ export const PROOF_HARNESS_PATTERNS = [
   "tests",
 ] as const;
 
-type FingerprintPayload = {
+const SOURCE_FINGERPRINT_EXCLUDE_PATTERNS = [
+  ".tmp_*",
+  "android/.gradle",
+  "android/.gradle-*",
+  "android/build",
+  "android/build-*",
+  "android/app/build",
+  "android/app/build-*",
+  "**/.cxx",
+  "**/.cache",
+  "**/coverage",
+  "**/dist",
+  "**/node_modules",
+  "*.apk",
+  "*.aab",
+] as const;
+
+export type FingerprintPayload = {
   name: "productSourceHash" | "nativeBuildHash" | "jsBundleFingerprint" | "proofHarnessHash";
   patterns: readonly string[];
   files: Array<{ path: string; sha256: string; bytes: number }>;
   hash: string;
 };
 
+export function computeReleaseFingerprintPayload(
+  name: FingerprintPayload["name"],
+): FingerprintPayload {
+  const patterns = name === "productSourceHash"
+    ? PRODUCT_SOURCE_PATTERNS
+    : name === "nativeBuildHash"
+      ? NATIVE_BUILD_PATTERNS
+      : name === "jsBundleFingerprint"
+        ? JS_BUNDLE_PATTERNS
+        : PROOF_HARNESS_PATTERNS;
+  return fingerprint(name, patterns);
+}
+
 function normalizePath(value: string): string {
   return value.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
-function gitLsFiles(patterns: readonly string[]): string[] {
-  const result = spawnSync("git", ["ls-files", "-z", "--", ...patterns], {
+function gitSourceFiles(patterns: readonly string[]): string[] {
+  const exclusions = SOURCE_FINGERPRINT_EXCLUDE_PATTERNS.map(
+    (pattern) => `:(exclude)${pattern}`,
+  );
+  const result = spawnSync(
+    "git",
+    [
+      "ls-files",
+      "--cached",
+      "--others",
+      "--exclude-standard",
+      "-z",
+      "--",
+      ...patterns,
+      ...exclusions,
+    ],
+    {
     cwd: process.cwd(),
     encoding: "buffer",
     stdio: ["ignore", "pipe", "pipe"],
-  });
+    },
+  );
   if (result.status !== 0) {
     throw new Error(result.stderr.toString("utf8").trim() || "git ls-files failed");
   }
-  return result.stdout
+  return Array.from(new Set(result.stdout
     .toString("utf8")
     .split("\0")
     .map((item) => normalizePath(item.trim()))
-    .filter(Boolean)
+    .filter(Boolean)))
     .sort();
 }
 
@@ -118,7 +164,7 @@ function compositeHash(parts: readonly string[]): string {
 }
 
 function fingerprint(name: FingerprintPayload["name"], patterns: readonly string[]): FingerprintPayload {
-  const files = gitLsFiles(patterns)
+  const files = gitSourceFiles(patterns)
     .map((relativePath) => {
       const bytes = readExistingFile(relativePath);
       if (!bytes) return null;
@@ -140,10 +186,10 @@ function fingerprint(name: FingerprintPayload["name"], patterns: readonly string
 
 export function computeReleaseFingerprintPayloads(): Record<FingerprintPayload["name"], FingerprintPayload> {
   return {
-    productSourceHash: fingerprint("productSourceHash", PRODUCT_SOURCE_PATTERNS),
-    nativeBuildHash: fingerprint("nativeBuildHash", NATIVE_BUILD_PATTERNS),
-    jsBundleFingerprint: fingerprint("jsBundleFingerprint", JS_BUNDLE_PATTERNS),
-    proofHarnessHash: fingerprint("proofHarnessHash", PROOF_HARNESS_PATTERNS),
+    productSourceHash: computeReleaseFingerprintPayload("productSourceHash"),
+    nativeBuildHash: computeReleaseFingerprintPayload("nativeBuildHash"),
+    jsBundleFingerprint: computeReleaseFingerprintPayload("jsBundleFingerprint"),
+    proofHarnessHash: computeReleaseFingerprintPayload("proofHarnessHash"),
   };
 }
 

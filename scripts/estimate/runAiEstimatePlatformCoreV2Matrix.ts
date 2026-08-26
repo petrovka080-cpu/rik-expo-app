@@ -6,6 +6,7 @@ import { createInMemoryAiEstimateHistoryStore } from "../../src/lib/estimate/sto
 import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/artifacts/validateAiEstimateBuyerPackageParity";
 import { validateAiEstimatePdfSnapshotParity } from "../../src/lib/estimate/artifacts/validateAiEstimatePdfSnapshotParity";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 import type {
   DomainResolutionReadiness,
   EstimateDraftRevision,
@@ -44,19 +45,44 @@ function promptForTemplate(templateId: string, localizedNameRu: string, index: n
   ].join(" ");
 }
 
+type CreateCaseResult = {
+  template_id: string;
+  passed: boolean;
+  row_count: number;
+  registered_backend_only: boolean;
+  status: EstimateDraftRevision["status"];
+  outcome: "client_compiled_nonempty_boq" | "registered_backend_only_honestly_blocked" | "invalid_empty_client_result";
+};
+
 function runCreateCase(
   runtime: ReturnType<typeof createAiEstimateRuntime>,
   templateId: string,
   localizedNameRu: string,
   index: number,
-): boolean {
+): CreateCaseResult {
   const draft = runtime.createDraft({
     estimateDraftId: `platform-core-v2-create-${index}-${templateId}`,
     rawInput: promptForTemplate(templateId, localizedNameRu, index),
     selectedTemplateId: templateId,
     createdAt: "2026-07-09T00:00:00.000Z",
   });
-  return draft.revision.selectedTemplateId.length > 0 && draft.revision.boq.rows.length > 0;
+  const registeredBackendOnly = Boolean(resolveRegisteredProfessionalEstimateSelectionV1(templateId));
+  const clientCompiled = draft.revision.selectedTemplateId.length > 0 && draft.revision.boq.rows.length > 0;
+  const backendOnlyHonestlyBlocked = registeredBackendOnly &&
+    draft.revision.status === "failed" &&
+    draft.revision.boq.rows.length === 0;
+  return {
+    template_id: templateId,
+    passed: clientCompiled || backendOnlyHonestlyBlocked,
+    row_count: draft.revision.boq.rows.length,
+    registered_backend_only: registeredBackendOnly,
+    status: draft.revision.status,
+    outcome: clientCompiled
+      ? "client_compiled_nonempty_boq"
+      : backendOnlyHonestlyBlocked
+        ? "registered_backend_only_honestly_blocked"
+        : "invalid_empty_client_result",
+  };
 }
 
 type OverrideCaseResult = {
@@ -64,6 +90,7 @@ type OverrideCaseResult = {
   passed: boolean;
   domain_resolution_readiness: DomainResolutionReadiness | null;
   reason: string;
+  registered_backend_only: boolean;
 };
 
 function revisionReadiness(revision: EstimateDraftRevision): DomainResolutionReadiness | null {
@@ -85,6 +112,19 @@ function runOverrideCase(
     createdAt: "2026-07-09T00:00:00.000Z",
   });
   const readiness = revisionReadiness(draft.revision);
+  const registeredBackendOnly = Boolean(resolveRegisteredProfessionalEstimateSelectionV1(templateId));
+  if (registeredBackendOnly) {
+    const honestlyBlocked = draft.revision.status === "failed" && draft.revision.boq.rows.length === 0;
+    return {
+      template_id: templateId,
+      passed: honestlyBlocked,
+      domain_resolution_readiness: readiness,
+      reason: honestlyBlocked
+        ? "registered_backend_only_honestly_blocked"
+        : "registered_backend_only_client_rows_present",
+      registered_backend_only: true,
+    };
+  }
   if (readiness && readiness !== "CALCULATION_READY") {
     const honestlyBlocked = draft.revision.boq.rows.length > 0 && draft.revision.boq.rows.every((row) =>
       row.includedInProcurement === false &&
@@ -97,6 +137,7 @@ function runOverrideCase(
       passed: honestlyBlocked,
       domain_resolution_readiness: readiness,
       reason: honestlyBlocked ? "non_calculation_ready_case_honestly_blocked" : "invalid_readiness_blocker",
+      registered_backend_only: false,
     };
   }
   const paramKey = draft.revision.trace.params
@@ -117,6 +158,7 @@ function runOverrideCase(
     passed,
     domain_resolution_readiness: readiness,
     reason: passed ? "parameter_override_recalculated_rows" : "parameter_override_did_not_change_rows",
+    registered_backend_only: false,
   };
 }
 
@@ -170,16 +212,24 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
   const runtime = createAiEstimateRuntime();
   const localizedName = (templateId: string) => localizedNameByTemplateId.get(templateId) ?? templateId;
 
-  const randomPassed = random.filter((templateId, caseIndex) =>
+  const randomResults = random.map((templateId, caseIndex) =>
     runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
-  ).length;
-  const criticalPassed = critical.filter((templateId, caseIndex) =>
+  );
+  const randomPassed = randomResults.filter((result) => result.passed).length;
+  const randomClientResults = randomResults.filter((result) => !result.registered_backend_only);
+  const randomBackendOnlyResults = randomResults.filter((result) => result.registered_backend_only);
+  const criticalResults = critical.map((templateId, caseIndex) =>
     runCreateCase(runtime, templateId, localizedName(templateId), caseIndex)
-  ).length;
+  );
+  const criticalPassed = criticalResults.filter((result) => result.passed).length;
+  const criticalClientResults = criticalResults.filter((result) => !result.registered_backend_only);
+  const criticalBackendOnlyResults = criticalResults.filter((result) => result.registered_backend_only);
   const overrideResults = override.map((templateId, caseIndex) =>
     runOverrideCase(runtime, templateId, localizedName(templateId), caseIndex)
   );
   const overridePassed = overrideResults.filter((result) => result.passed).length;
+  const overrideClientResults = overrideResults.filter((result) => !result.registered_backend_only);
+  const overrideBackendOnlyResults = overrideResults.filter((result) => result.registered_backend_only);
   const missingPassed = missing.filter((templateId, caseIndex) =>
     runMissingCase(runtime, templateId, localizedName(templateId), caseIndex)
   ).length;
@@ -228,9 +278,20 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
     platform_core_v2_matrix_created: true,
     catalog_coverage: `${index.entries.length}/${index.catalogTotalTemplates}`,
     random_create_draft_cases_passed: `${randomPassed}/1000`,
+    random_create_draft_failures: randomResults.filter((result) => !result.passed),
+    random_registered_backend_only_cases: randomResults.filter((result) => result.registered_backend_only).length,
+    random_client_compile_cases_passed: `${randomClientResults.filter((result) => result.passed).length}/${randomClientResults.length}`,
+    random_backend_only_honestly_blocked_cases_passed: `${randomBackendOnlyResults.filter((result) => result.passed).length}/${randomBackendOnlyResults.length}`,
     critical_create_draft_cases_passed: `${criticalPassed}/200`,
+    critical_create_draft_failures: criticalResults.filter((result) => !result.passed),
+    critical_registered_backend_only_cases: criticalResults.filter((result) => result.registered_backend_only).length,
+    critical_client_compile_cases_passed: `${criticalClientResults.filter((result) => result.passed).length}/${criticalClientResults.length}`,
+    critical_backend_only_honestly_blocked_cases_passed: `${criticalBackendOnlyResults.filter((result) => result.passed).length}/${criticalBackendOnlyResults.length}`,
     parameter_override_cases_passed: `${overridePassed}/200`,
     parameter_override_failures: overrideResults.filter((result) => !result.passed),
+    parameter_override_registered_backend_only_cases: overrideResults.filter((result) => result.registered_backend_only).length,
+    parameter_override_executed_cases_passed: `${overrideClientResults.filter((result) => result.passed).length}/${overrideClientResults.length}`,
+    parameter_override_backend_only_honestly_blocked_cases_passed: `${overrideBackendOnlyResults.filter((result) => result.passed).length}/${overrideBackendOnlyResults.length}`,
     parameter_override_non_calculation_ready_cases: overrideResults.filter(
       (result) => result.reason === "non_calculation_ready_case_honestly_blocked",
     ).length,

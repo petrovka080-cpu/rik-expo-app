@@ -253,9 +253,9 @@ function main(): void {
     companion_tables: ["catalog_items_canon", "catalog_items_import", "rik_items"],
     catalog_views: viewNames,
     database_types_source: "src/lib/database.types.ts",
-    direct_catalog_items_read_transport: "src/lib/catalog/catalog.transport.supabase.ts",
+    canonical_catalog_items_read_owner: "scripts/server/stagingBffCatalogTransportReadPort.ts",
     bff_contract_source: "src/lib/catalog/catalog.bff.contract.ts",
-    source_of_truth_note: "catalog_items is the active material picker source; rik_items remains a compatibility fallback for quick search.",
+    source_of_truth_note: "catalog_items is the active material picker source; all catalog and rik_items reads are owned by the canonical BFF port and fail closed in the client.",
     fake_green_claimed: false,
   });
 

@@ -9,7 +9,10 @@ import {
   compactConsumerRepairBundleForDurableStorage,
   encodeConsumerRepairBundleForDurableStorage,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
-import { sanitizeConsumerRepairTransactionalBundle } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import {
+  CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD,
+  sanitizeConsumerRepairTransactionalBundle,
+} from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
 import {
   ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   createDurableEnvelope,
@@ -292,7 +295,8 @@ async function main(): Promise<void> {
         top20Fields: compactTopFields,
       },
       adapterBudgets: {
-        synchronousWebStorageCompactThresholdBytes: 4_000_000,
+        synchronousWebStorageCompactThresholdBytes:
+          CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD,
         ...ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
         readAndWriteUseSameCapacity: true,
       },

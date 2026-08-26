@@ -479,7 +479,7 @@ describe("Asphalt native case isolation contract", () => {
     );
     const editApply = source.slice(
       source.indexOf("async function applyEditAndWaitForChangedRevision"),
-      source.indexOf("function visibleBuildIdentity"),
+      source.indexOf("function buildIdentityEvidenceLog"),
     );
     const editFlow = source.slice(
       source.indexOf("const changedRevision = await applyEditAndWaitForChangedRevision"),

@@ -24,6 +24,7 @@ export type CatalogTransportBffReadonlyQueryPlan = {
 
 const DEFAULT_CONNECTION_TIMEOUT_MS = 10_000;
 const DEFAULT_QUERY_TIMEOUT_MS = 8_000;
+const PROFILE_CONTRACTOR_COMPAT_SELECT = "user_id, full_name, phone, is_contractor";
 
 const READ_ERROR: CatalogTransportBffReadErrorDto = {
   code: "CATALOG_TRANSPORT_BFF_READ_ERROR",
@@ -170,7 +171,7 @@ export function buildCatalogTransportReadQueryPlan(
     return plan(
       input.operation,
       [
-        "select *",
+        `select ${PROFILE_CONTRACTOR_COMPAT_SELECT}`,
         "from public.user_profiles",
         input.args.withFilter ? "where is_contractor = true" : "",
         "order by user_id asc",

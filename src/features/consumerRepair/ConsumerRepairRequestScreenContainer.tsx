@@ -1,7 +1,10 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { hydrateTransactionalConsumerRepairRequestStore } from "../../lib/consumerRequests/consumerRequestRepository";
+import {
+  awaitConsumerRepairBundleDurableCommit,
+  hydrateTransactionalConsumerRepairRequestStore,
+} from "../../lib/consumerRequests/consumerRequestRepository";
 import {
   ConsumerRepairRequestScreenController,
   shouldAutoPrepareInitialConsumerRepairRequest,
@@ -10,7 +13,11 @@ import {
 } from "./ConsumerRepairRequestScreen";
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
 import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
-import { upsertConsumerRepairCanonicalBackendDraft } from "../../lib/consumerRequests/consumerRequestService";
+import {
+  listConsumerRepairRequestHistory,
+  synchronizeConsumerRepairAuthoritativePhotoAttachments,
+  upsertConsumerRepairCanonicalBackendDraft,
+} from "../../lib/consumerRequests/consumerRequestService";
 import type { ForemanAiEstimateDraftMapping } from "../../lib/foremanAiEstimate";
 import { currentUserId } from "../../lib/supabaseClient";
 import { compileConsumerCanonicalBaseline } from "./consumerCanonicalBaselineCompile";
@@ -23,8 +30,14 @@ import {
   recalculateConsumerCanonicalEstimate,
 } from "./consumerCanonicalParameterEditor";
 import { applyConsumerRepairCatalogItemSelection } from "./requestEstimateScreenActions";
+import {
+  getCanonicalEstimateRevisionHistory,
+  listCanonicalEstimatePhotoAttachments,
+} from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
+const canonicalDeepLinkWorkspaceDraftIdsByConsumer = new Map<string, string>();
 
 type DurableHydrationStatus = "loading" | "ready" | "recovery";
 
@@ -33,14 +46,99 @@ type BoundedDurableHydrationOutcome =
   | { status: "failed" }
   | { status: "timed_out"; completion: Promise<void> };
 
+export function requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId(input: {
+  consumerUserId: string;
+  componentDraftId?: string | null;
+}): string | null {
+  const consumerUserId = input.consumerUserId.trim();
+  return input.componentDraftId?.trim()
+    || (consumerUserId
+      ? canonicalDeepLinkWorkspaceDraftIdsByConsumer.get(consumerUserId) ?? null
+      : null);
+}
+
+export function rememberRequestEstimateCanonicalDeepLinkSessionWorkspace(input: {
+  consumerUserId: string;
+  draftId: string;
+}): void {
+  const consumerUserId = input.consumerUserId.trim();
+  const draftId = input.draftId.trim();
+  if (consumerUserId && draftId) {
+    canonicalDeepLinkWorkspaceDraftIdsByConsumer.set(consumerUserId, draftId);
+  }
+}
+
 export function requestEstimateControllerWorkspaceKey(
   props: ConsumerRepairRequestScreenProps,
 ): string {
-  return canonicalEstimateRevisionIdFromRoute(props.initialCanonicalRevisionId)
+  return (canonicalEstimateRevisionIdFromRoute(props.initialCanonicalRevisionId)
+    ? "canonical-revision-viewer"
+    : null)
     || props.launchFingerprint?.trim()
     || props.launchId?.trim()
     || props.initialDraftId?.trim()
     || "request-composer";
+}
+
+export function requestEstimateFreshBuildKey(
+  props: ConsumerRepairRequestScreenProps,
+): string | null {
+  if (props.initialDraftId?.trim()) return null;
+  const canonicalRevisionId = canonicalEstimateRevisionIdFromRoute(
+    props.initialCanonicalRevisionId,
+  );
+  const requiresSettledBuild = Boolean(canonicalRevisionId) ||
+    shouldAutoPrepareInitialConsumerRepairRequest(props);
+  if (!requiresSettledBuild) return null;
+  return props.launchId?.trim()
+    || props.launchFingerprint?.trim()
+    || canonicalRevisionId
+    || props.initialProblemText?.trim()
+    || null;
+}
+
+export function requestEstimateCanonicalDeepLinkWorkspaceDraftPlan(input: {
+  routeRevisionId?: string | null;
+  requestedRevisionId: string;
+  explicitRequestDraftId?: string | null;
+  matchingRevisionDraftId?: string | null;
+  transientWorkspaceDraftId?: string | null;
+}): {
+  targetDraftId: string | null;
+  replaceCanonicalRevisionHistory: boolean;
+  establishTransientWorkspace: boolean;
+} {
+  const explicitRequestDraftId = input.explicitRequestDraftId?.trim() || null;
+  if (explicitRequestDraftId) {
+    return {
+      targetDraftId: explicitRequestDraftId,
+      replaceCanonicalRevisionHistory: false,
+      establishTransientWorkspace: false,
+    };
+  }
+  const matchingRevisionDraftId = input.matchingRevisionDraftId?.trim() || null;
+  if (matchingRevisionDraftId) {
+    return {
+      targetDraftId: matchingRevisionDraftId,
+      replaceCanonicalRevisionHistory: false,
+      establishTransientWorkspace: false,
+    };
+  }
+  const routeRevisionId = canonicalEstimateRevisionIdFromRoute(input.routeRevisionId);
+  const requestedRevisionId = canonicalEstimateRevisionIdFromRoute(input.requestedRevisionId);
+  if (!routeRevisionId || routeRevisionId !== requestedRevisionId) {
+    return {
+      targetDraftId: null,
+      replaceCanonicalRevisionHistory: false,
+      establishTransientWorkspace: false,
+    };
+  }
+  const transientWorkspaceDraftId = input.transientWorkspaceDraftId?.trim() || null;
+  return {
+    targetDraftId: transientWorkspaceDraftId,
+    replaceCanonicalRevisionHistory: true,
+    establishTransientWorkspace: transientWorkspaceDraftId == null,
+  };
 }
 
 async function runBoundedDurableHydration(
@@ -75,11 +173,8 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
   );
   const hydrationAttemptRef = React.useRef(0);
   const screenRef = React.useRef<ConsumerRepairRequestScreenController>(null);
-  const freshBuildKey = shouldAutoPrepareInitialConsumerRepairRequest(props) &&
-    props.initialProblemText?.trim() &&
-    !props.initialDraftId?.trim()
-    ? props.launchId?.trim() || props.launchFingerprint?.trim() || props.initialProblemText.trim()
-    : null;
+  const canonicalDeepLinkWorkspaceDraftIdRef = React.useRef<string | null>(null);
+  const freshBuildKey = requestEstimateFreshBuildKey(props);
   const [settledFreshBuildKey, setSettledFreshBuildKey] = React.useState<string | null>(null);
   React.useEffect(() => {
     const explicit = props.consumerUserId?.trim();
@@ -108,7 +203,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     void runBoundedDurableHydration(props.initialDraftId?.trim()).then((outcome) => {
       if (hydrationAttemptRef.current !== attempt) return;
       if (outcome.status === "ready") {
-        screenRef.current?.refreshAfterDurableHydration();
+        if (!freshBuildKey) screenRef.current?.refreshAfterDurableHydration();
         setDurableStatus("ready");
         return;
       }
@@ -117,7 +212,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       void outcome.completion.then(
         () => {
           if (hydrationAttemptRef.current !== attempt) return;
-          screenRef.current?.refreshAfterDurableHydration();
+          if (!freshBuildKey) screenRef.current?.refreshAfterDurableHydration();
           setDurableStatus("ready");
         },
         () => {
@@ -125,7 +220,7 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
         },
       );
     });
-  }, [props.initialDraftId]);
+  }, [freshBuildKey, props.initialDraftId]);
   React.useEffect(() => {
     if (!authResolved || !resolvedConsumerUserId) return;
     // Native effects can run before the controller's queued initial build.
@@ -148,11 +243,13 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
     },
   });
   const durableHydrationPending = durableStatus === "loading" &&
+    !freshBuildKey &&
     !shouldDeferInitialHistoryLoad(props);
   const persistCanonicalDraft = React.useCallback(async (
     mapping: ForemanAiEstimateDraftMapping,
     problemText: string,
     targetDraftId: string | null,
+    options: { replaceCanonicalRevisionHistory?: boolean } = {},
   ) => {
     if (!resolvedConsumerUserId) return;
     const bundle = upsertConsumerRepairCanonicalBackendDraft({
@@ -164,10 +261,80 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
       // their disposition in the UI model; filtering them here made one
       // revision report different row counts in UI, history, PDF and backend.
       aiDraft: buildStructuredEstimateRequestDraft(mapping.payload),
+      replaceCanonicalRevisionHistory: options.replaceCanonicalRevisionHistory === true,
+    });
+    const binding = consumerRepairCanonicalBackendBinding(bundle);
+    if (!binding || !mapping.payload.canonicalBackend) {
+      throw new Error("CANONICAL_COMPILE_HISTORY_IDENTITY_MISSING");
+    }
+    const history = await getCanonicalEstimateRevisionHistory({
+      catalogId: mapping.payload.canonicalBackend.catalogId,
+      limit: 100,
+    });
+    const historyRevision = history.revisions.find((revision) =>
+      revision.revisionId === binding.revisionId
+    );
+    if (!historyRevision || historyRevision.releaseId !== binding.releaseId) {
+      throw new Error("CANONICAL_COMPILE_HISTORY_REVISION_MISSING");
+    }
+    await awaitConsumerRepairBundleDurableCommit({
+      requestDraftId: bundle.draft.id,
+      expectedStatus: bundle.draft.status,
+      expectedRevisionId:
+        bundle.estimateDraftRevisionState?.currentRevisionId ?? null,
     });
     screenRef.current?.acceptCanonicalBackendDraft(bundle);
     return bundle;
   }, [resolvedConsumerUserId]);
+  const refreshAuthoritativePhotos = React.useCallback(async (
+    bundle: ReturnType<typeof upsertConsumerRepairCanonicalBackendDraft>,
+    revisionId: string,
+  ) => {
+    if (!resolvedConsumerUserId) return bundle;
+    const projection = await listCanonicalEstimatePhotoAttachments({
+      revisionId,
+      includeDeleted: true,
+    });
+    if (
+      projection.attachments.length === 0 &&
+      !(bundle.estimateAttachments ?? []).some((attachment) =>
+        attachment.serverCommitted === true &&
+        attachment.revisionId === revisionId
+      )
+    ) {
+      return bundle;
+    }
+    const synchronized = synchronizeConsumerRepairAuthoritativePhotoAttachments({
+      requestDraftId: bundle.draft.id,
+      ownerUserId: resolvedConsumerUserId,
+      revisionId,
+      attachments: projection.attachments,
+    });
+    await awaitConsumerRepairBundleDurableCommit({
+      requestDraftId: synchronized.draft.id,
+      expectedStatus: synchronized.draft.status,
+      expectedRevisionId:
+        synchronized.estimateDraftRevisionState?.currentRevisionId ?? null,
+    });
+    return synchronized;
+  }, [resolvedConsumerUserId]);
+  React.useEffect(() => {
+    const draftId = props.initialDraftId?.trim();
+    if (durableStatus !== "ready" || !resolvedConsumerUserId || !draftId) return;
+    const existing = listConsumerRepairRequestHistory(resolvedConsumerUserId)
+      .find((candidate) => candidate.draft.id === draftId);
+    const binding = consumerRepairCanonicalBackendBinding(existing ?? null);
+    if (!existing || !binding) return;
+    let active = true;
+    void refreshAuthoritativePhotos(existing, binding.revisionId).then(() => {
+      if (active) screenRef.current?.refreshAfterDurableHydration();
+    }, () => {
+      // Preserve the last locally confirmed metadata while the authoritative
+      // projection is temporarily unavailable; it is never promoted to a new
+      // server commit and the signed URL remains redacted in durable storage.
+    });
+    return () => { active = false; };
+  }, [durableStatus, props.initialDraftId, refreshAuthoritativePhotos, resolvedConsumerUserId]);
   const authUnavailable = authResolved && !resolvedConsumerUserId;
   return (
     <View style={styles.root}>
@@ -199,27 +366,57 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
             return await persistCanonicalDraft(mapping, problemText, draftId) ?? null;
           }}
           onLoadCanonicalRevisionDraft={async ({ revisionId, requestDraftId, problemText }) => {
+            const matchingRevisionDraftId = listConsumerRepairRequestHistory(
+              resolvedConsumerUserId!,
+            ).find((candidate) =>
+              consumerRepairCanonicalBackendBinding(candidate)?.revisionId === revisionId
+            )?.draft.id || null;
+            const workspacePlan = requestEstimateCanonicalDeepLinkWorkspaceDraftPlan({
+              routeRevisionId: props.initialCanonicalRevisionId,
+              requestedRevisionId: revisionId,
+              explicitRequestDraftId: requestDraftId,
+              matchingRevisionDraftId,
+              transientWorkspaceDraftId:
+                requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId({
+                  consumerUserId: resolvedConsumerUserId!,
+                  componentDraftId: canonicalDeepLinkWorkspaceDraftIdRef.current,
+                }),
+            });
             const mapping = await loadConsumerCanonicalRevisionDraftMapping({
               revisionId,
               problemText,
             });
-            return await persistCanonicalDraft(
+            const bundle = await persistCanonicalDraft(
               mapping,
               problemText?.trim() || mapping.payload.inputText,
-              requestDraftId?.trim() || null,
-            ) ?? null;
+              workspacePlan.targetDraftId,
+              {
+                replaceCanonicalRevisionHistory:
+                  workspacePlan.replaceCanonicalRevisionHistory,
+              },
+            );
+            if (bundle && workspacePlan.replaceCanonicalRevisionHistory) {
+              canonicalDeepLinkWorkspaceDraftIdRef.current = bundle.draft.id;
+              rememberRequestEstimateCanonicalDeepLinkSessionWorkspace({
+                consumerUserId: resolvedConsumerUserId!,
+                draftId: bundle.draft.id,
+              });
+            }
+            return bundle ? await refreshAuthoritativePhotos(bundle, revisionId) : null;
           }}
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}
-          onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches }) => {
+          onRecalculateCanonicalEstimate={async ({ revisionId, requestDraftId, problemText, patches, rowOverrides }) => {
             const result = await recalculateConsumerCanonicalEstimate({
               revisionId,
               draftId: requestDraftId,
               problemText,
               patches,
+              rowOverrides,
             });
-            await persistCanonicalDraft(result.mapping, problemText, requestDraftId);
-            return result.session;
+            const bundle = await persistCanonicalDraft(result.mapping, problemText, requestDraftId);
+            if (!bundle) throw new Error("CANONICAL_CONSUMER_CHILD_DRAFT_PERSIST_FAILED");
+            return { session: result.session, bundle };
           }}
           onSelectCanonicalCatalogItem={async ({ context, problemText, catalogItem }) => {
             const mapping = await recalculateConsumerCanonicalCatalogSelection({

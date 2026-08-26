@@ -6,7 +6,11 @@ export type FormulaAst =
   | { kind: "parameter"; id: string }
   | { kind: "unary"; operator: "+" | "-"; operand: FormulaAst }
   | { kind: "binary"; operator: "+" | "-" | "*" | "/"; left: FormulaAst; right: FormulaAst }
-  | { kind: "call"; function: "ceil" | "max" | "min"; arguments: FormulaAst[] };
+  | {
+    kind: "call";
+    function: "ceil" | "floor" | "max" | "min" | "pow" | "round_to" | "sqrt" | "unit_convert";
+    arguments: FormulaAst[];
+  };
 
 export type CompiledFormulaGraph = {
   version: typeof FORMULA_GRAPH_VERSION;
@@ -160,7 +164,7 @@ class Parser {
       if (this.peek().type !== "left") return this.node({ kind: "parameter", id: token.value }, depth);
       this.consume();
       const name = token.value.toLowerCase();
-      if (name !== "ceil" && name !== "max" && name !== "min") {
+      if (!["ceil", "floor", "max", "min", "pow", "round_to", "sqrt", "unit_convert"].includes(name)) {
         throw new FormulaGraphError("INVALID_FORMULA", `function ${token.value} is not allowed`, token.offset);
       }
       const args: FormulaAst[] = [];
@@ -172,10 +176,18 @@ class Parser {
         } while (true);
       }
       this.expect("right");
-      if ((name === "ceil" && args.length !== 1) || (name !== "ceil" && args.length < 2)) {
+      const unaryFunction = name === "ceil" || name === "floor" || name === "sqrt";
+      const fixedBinaryFunction = name === "pow" || name === "round_to" || name === "unit_convert";
+      if ((unaryFunction && args.length !== 1)
+        || (fixedBinaryFunction && args.length !== 2)
+        || (!unaryFunction && !fixedBinaryFunction && args.length < 2)) {
         throw new FormulaGraphError("INVALID_FORMULA", `invalid argument count for ${name}`, token.offset);
       }
-      return this.node({ kind: "call", function: name, arguments: args }, depth);
+      return this.node({
+        kind: "call",
+        function: name as Extract<FormulaAst, { kind: "call" }>["function"],
+        arguments: args,
+      }, depth);
     }
     throw new FormulaGraphError("INVALID_FORMULA", `expected formula value at offset ${token.offset}`, token.offset);
   }
@@ -270,6 +282,27 @@ class FixedDecimal {
     const remainder = this.scaled % SCALE_FACTOR;
     return FixedDecimal.fromScaled((remainder > 0n ? quotient + 1n : quotient) * SCALE_FACTOR);
   }
+  floor(): FixedDecimal {
+    const quotient = this.scaled / SCALE_FACTOR;
+    const remainder = this.scaled % SCALE_FACTOR;
+    return FixedDecimal.fromScaled((remainder < 0n ? quotient - 1n : quotient) * SCALE_FACTOR);
+  }
+  round(decimalPlaces: number): FixedDecimal {
+    if (!Number.isInteger(decimalPlaces) || decimalPlaces < 0 || decimalPlaces > FORMULA_DECIMAL_SCALE) {
+      throw new FormulaGraphError("INVALID_FORMULA", `invalid decimal places: ${decimalPlaces}`);
+    }
+    const divisor = 10n ** BigInt(FORMULA_DECIMAL_SCALE - decimalPlaces);
+    const quotient = this.scaled / divisor;
+    const remainder = this.scaled % divisor;
+    const absoluteRemainder = remainder < 0n ? -remainder : remainder;
+    const rounded = absoluteRemainder * 2n >= divisor
+      ? quotient + (this.scaled < 0n ? -1n : 1n)
+      : quotient;
+    return FixedDecimal.fromScaled(rounded * divisor);
+  }
+  toNumber(): number {
+    return Number(this.toString());
+  }
   compare(other: FixedDecimal): number { return this.scaled < other.scaled ? -1 : this.scaled > other.scaled ? 1 : 0; }
   toString(): string {
     const negative = this.scaled < 0n;
@@ -320,6 +353,21 @@ function evaluateNode(ast: FormulaAst, parameters: Record<string, string | numbe
   }
   const values = ast.arguments.map((argument) => evaluateNode(argument, parameters));
   if (ast.function === "ceil") return values[0].ceil();
+  if (ast.function === "floor") return values[0].floor();
+  if (ast.function === "unit_convert") return values[0].multiply(values[1]);
+  if (ast.function === "round_to") return values[0].round(values[1].toNumber());
+  if (ast.function === "sqrt") {
+    const result = Math.sqrt(values[0].toNumber());
+    if (!Number.isFinite(result)) throw new FormulaGraphError("INVALID_FORMULA", "sqrt requires a non-negative finite value");
+    return FixedDecimal.parse(result.toFixed(FORMULA_DECIMAL_SCALE));
+  }
+  if (ast.function === "pow") {
+    const rawResult = Math.pow(values[0].toNumber(), values[1].toNumber());
+    const nearestInteger = Math.round(rawResult);
+    const result = Math.abs(rawResult - nearestInteger) < 0.00000001 ? nearestInteger : rawResult;
+    if (!Number.isFinite(result)) throw new FormulaGraphError("DECIMAL_OVERFLOW", "pow result exceeds decimal range");
+    return FixedDecimal.parse(result.toFixed(FORMULA_DECIMAL_SCALE));
+  }
   return values.slice(1).reduce(
     (selected, value) => ast.function === "max"
       ? (selected.compare(value) >= 0 ? selected : value)

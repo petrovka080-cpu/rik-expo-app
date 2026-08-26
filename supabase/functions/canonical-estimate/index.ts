@@ -8,12 +8,23 @@ import {
   assertCreateRequest,
   assertUuid,
 } from "../../../src/lib/estimate/backendPlatform/contracts.ts";
+import {
+  evaluateEstimateAdmission,
+  type AdmissionDecision,
+  type EstimateAdmissionIngress,
+} from "../../../src/lib/estimate/backendPlatform/estimateAdmissionR3.ts";
+import {
+  buildCanonicalEstimateRegistryEntry,
+  CanonicalEstimateDefinitionRegistry,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
 const MAX_LEGACY_ROWS = 5_000;
 const MAX_LEGACY_PAYLOAD_BYTES = 8 * 1024 * 1024;
 const ARTIFACT_SIGNED_URL_TTL_SECONDS = 15 * 60;
+const PHOTO_SIGNED_URL_TTL_SECONDS = 15 * 60;
+const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
 function corsHeaders(request: Request): Record<string, string> {
   const base = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-idempotency-key",
@@ -89,6 +100,19 @@ function stableJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`).join(",")}}`;
+}
+
+function photoMimeFromBytes(bytes: Uint8Array): "image/jpeg" | "image/png" | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes.length >= 8
+    && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47
+    && bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) return "image/png";
+  return null;
+}
+
+async function sha256Bytes(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 async function sha256(value: unknown): Promise<string> {
@@ -238,17 +262,148 @@ async function requireUser(requester: ReturnType<typeof createClient>) {
   return data.user;
 }
 
+async function productionAdmissionDecisions(
+  requester: ReturnType<typeof createClient>,
+  catalogIds: readonly string[],
+  ingress: EstimateAdmissionIngress,
+  exactReleaseId?: string | null,
+): Promise<Map<string, AdmissionDecision>> {
+  const ids = [...new Set(catalogIds.map((value) => String(value).trim()).filter(Boolean))];
+  if (ids.length === 0) return new Map();
+  let releaseQuery = requester
+    .from("estimate_definition_release")
+    .select("id,status");
+  releaseQuery = exactReleaseId
+    ? releaseQuery.eq("id", exactReleaseId)
+    : releaseQuery.eq("status", "active");
+  const { data: release, error: releaseError } = await releaseQuery.maybeSingle();
+  if (releaseError) normalizeDbError(releaseError);
+
+  const { data: searchRelease, error: searchReleaseError } = await requester
+    .from("estimate_search_index_release")
+    .select("id")
+    .eq("status", "active")
+    .maybeSingle();
+  if (searchReleaseError) normalizeDbError(searchReleaseError);
+
+  const { data: manifests, error: manifestError } = release?.id
+    ? await requester
+      .from("estimate_cumulative_manifest_entry")
+      .select("release_id,catalog_id,definition_version_id,runtime_publication_state,baseline_ready,scenario_ready")
+      .eq("release_id", release.id)
+      .in("catalog_id", ids)
+    : { data: [], error: null };
+  if (manifestError) normalizeDbError(manifestError);
+  const manifestByCatalog = new Map((manifests ?? []).map((row) => [row.catalog_id, row]));
+  const definitionIds = [...new Set((manifests ?? []).map((row) => row.definition_version_id).filter(Boolean))];
+  const { data: definitions, error: definitionError } = definitionIds.length
+    ? await requester
+      .from("estimate_definition_version")
+      .select("id,release_id,catalog_id,content_status,content_gate_status,source_metadata")
+      .in("id", definitionIds)
+    : { data: [], error: null };
+  if (definitionError) normalizeDbError(definitionError);
+  const definitionById = new Map((definitions ?? []).map((row) => [row.id, row]));
+
+  const { data: searchDocuments, error: searchDocumentError } = searchRelease?.id
+    ? await requester
+      .from("estimate_search_document")
+      .select("search_release_id,catalog_id,definition_version_id,definition_release_id,adjudication_class,selectable,canonical_target_catalog_id,replacement_catalog_id")
+      .eq("search_release_id", searchRelease.id)
+      .in("catalog_id", ids)
+    : { data: [], error: null };
+  if (searchDocumentError) normalizeDbError(searchDocumentError);
+  const searchByCatalog = new Map((searchDocuments ?? []).map((row) => [row.catalog_id, row]));
+  const registry = new CanonicalEstimateDefinitionRegistry(ids.map((catalogId) => {
+    const manifest = manifestByCatalog.get(catalogId);
+    const definition = manifest ? definitionById.get(manifest.definition_version_id) : null;
+    const search = searchByCatalog.get(catalogId);
+    return buildCanonicalEstimateRegistryEntry({
+      catalogId,
+      manifestPresent: Boolean(manifest),
+      definitionPresent: Boolean(definition),
+      searchDocumentPresent: Boolean(search),
+      definitionVersionId: definition?.id ?? manifest?.definition_version_id ?? null,
+      definitionReleaseId: manifest && release ? release.id : definition?.release_id ?? null,
+      searchDefinitionVersionId: search?.definition_version_id ?? null,
+      searchReleaseId: search?.search_release_id ?? null,
+      adjudicationClass: search?.adjudication_class ?? null,
+      selectable: search?.selectable,
+      canonicalTargetCatalogId: search?.canonical_target_catalog_id ?? null,
+      replacementCatalogId: search?.replacement_catalog_id ?? null,
+      sourceMetadata: definition?.source_metadata,
+    });
+  }));
+
+  return new Map(ids.map((catalogId) => {
+    const manifest = manifestByCatalog.get(catalogId);
+    const definition = manifest ? definitionById.get(manifest.definition_version_id) : null;
+    const search = searchByCatalog.get(catalogId);
+    const registryEntry = registry.get(catalogId)!;
+    const decision = evaluateEstimateAdmission({
+      mode: "production",
+      ingress,
+      releaseId: release?.id ?? exactReleaseId ?? null,
+      definitionVersionId: definition?.id ?? manifest?.definition_version_id ?? null,
+      catalogId,
+      releaseStatus: release?.status ?? null,
+      manifestPublicationState: manifest?.runtime_publication_state ?? null,
+      baselineReady: manifest?.baseline_ready === true,
+      scenarioReady: manifest?.scenario_ready === true,
+      definitionContentStatus: definition?.content_status ?? null,
+      contentGateStatus: definition?.content_gate_status ?? null,
+      definitionReleaseId: manifest && release ? release.id : null,
+      selectedSearchReleaseId: searchRelease?.id ?? null,
+      definitionSearchReleaseId: search?.search_release_id ?? null,
+      unresolvedDisposition: registryEntry.unresolvedDisposition,
+      authorizationValid: true,
+    });
+    return [catalogId, decision];
+  }));
+}
+
+async function assertProductionAdmission(
+  requester: ReturnType<typeof createClient>,
+  catalogId: string,
+  ingress: EstimateAdmissionIngress,
+  exactReleaseId?: string | null,
+): Promise<AdmissionDecision> {
+  const decision = (await productionAdmissionDecisions(requester, [catalogId], ingress, exactReleaseId)).get(catalogId);
+  if (!decision?.allowed) {
+    throw new CanonicalEstimateApiError(
+      "Эта смета проходит обновление состава и временно недоступна для нового расчёта.",
+      { code: decision?.reasons[0]?.code ?? "ESTIMATE_ADMISSION_DENIED", httpStatus: 409 },
+    );
+  }
+  return decision;
+}
+
 async function createCompileJob(request: Request, requester: ReturnType<typeof createClient>, operation: "compile" | "recalculate") {
   const body = await request.json();
   assertCreateRequest(body);
   const parentRevisionId = operation === "recalculate" ? body.parentRevisionId : null;
   if (operation === "recalculate") assertUuid(parentRevisionId, "parentRevisionId");
+  const sourceRequestText = String(body.sourceRequestText ?? "").trim();
+  const primaryMeasureParameterId = String(body.primaryMeasureParameterId ?? "").trim();
+  const suppliedRequestIdentity = Boolean(sourceRequestText || primaryMeasureParameterId);
+  if ((operation === "compile" || suppliedRequestIdentity)
+    && (!sourceRequestText || !primaryMeasureParameterId)) {
+    throw new CanonicalEstimateApiError("source request identity is required", {
+      code: "SOURCE_REQUEST_IDENTITY_REQUIRED",
+      httpStatus: 400,
+    });
+  }
   if (operation === "compile" && (body.rowOverrides != null || body.customRows != null || body.releaseMigration != null)) {
     throw new CanonicalEstimateApiError("row amendments require a parent revision", {
       code: "INVALID_ARGUMENT",
       httpStatus: 400,
     });
   }
+  await assertProductionAdmission(
+    requester,
+    body.catalogId,
+    operation === "compile" ? "direct_catalog_compile" : "parameter_recalculation",
+  );
   const { data, error } = await requester.rpc("estimate_create_compile_job_v1", {
     p_idempotency_key: body.idempotencyKey,
     p_operation: operation,
@@ -259,6 +414,9 @@ async function createCompileJob(request: Request, requester: ReturnType<typeof c
       parameters: body.parameters,
       currencyCode: body.currencyCode,
       priceSnapshotIds: body.priceSnapshotIds ?? [],
+      ...(operation === "compile" || suppliedRequestIdentity ? {
+        requestIdentity: { sourceRequestText, primaryMeasureParameterId },
+      } : {}),
       ...(operation === "recalculate" ? {
         rowOverrides: body.rowOverrides ?? {},
         customRows: body.customRows ?? [],
@@ -296,6 +454,7 @@ async function createLegacyRevisionJob(request: Request, requester: ReturnType<t
   if (!Array.isArray(body.rows) || body.rows.length > MAX_LEGACY_ROWS) {
     throw new CanonicalEstimateApiError("legacy revision rows exceed the bounded import limit", { code: "INVALID_ARGUMENT", httpStatus: 400 });
   }
+  await assertProductionAdmission(requester, catalogId, "revision_replay_migration");
   const currencyCode = String(body.currencyCode ?? "");
   if (!/^[A-Z]{3}$/.test(currencyCode)) {
     throw new CanonicalEstimateApiError("currencyCode must be an ISO-4217 code", { code: "INVALID_ARGUMENT", httpStatus: 400 });
@@ -327,6 +486,7 @@ async function createLegacyRevisionJob(request: Request, requester: ReturnType<t
   if (new TextEncoder().encode(JSON.stringify(inputPayload)).byteLength > MAX_LEGACY_PAYLOAD_BYTES) {
     throw new CanonicalEstimateApiError("legacy revision payload exceeds 8 MiB", { code: "PAYLOAD_TOO_LARGE", httpStatus: 413 });
   }
+  await assertProductionAdmission(requester, catalogId, "revision_replay_migration");
   const { data, error } = await requester.rpc("estimate_create_legacy_revision_job_v1", {
     p_idempotency_key: idempotencyKey,
     p_catalog_id: catalogId,
@@ -371,6 +531,18 @@ async function createArtifactJob(
   if (!idempotencyKey || idempotencyKey.length > 200) {
     throw new CanonicalEstimateApiError("idempotencyKey is required", { code: "INVALID_ARGUMENT", httpStatus: 400 });
   }
+  const { data: sourceRevision, error: sourceRevisionError } = await requester
+    .from("estimate_revision")
+    .select("id,release_id,catalog_id,definition_version_id")
+    .eq("id", revisionId)
+    .single();
+  if (sourceRevisionError) normalizeDbError(sourceRevisionError);
+  await assertProductionAdmission(
+    requester,
+    sourceRevision.catalog_id,
+    kind === "procurement" ? "procurement_artifact_create" : "pdf_artifact_create",
+    sourceRevision.release_id,
+  );
   const { data, error } = await requester.rpc("estimate_create_artifact_job_v1", {
     p_idempotency_key: idempotencyKey,
     p_revision_id: revisionId,
@@ -387,6 +559,260 @@ async function createArtifactJob(
     created: result.created,
     pollAfterMs: 1_000,
   };
+}
+
+async function createRevisionPhotoUpload(
+  request: Request,
+  requester: ReturnType<typeof createClient>,
+  revisionId: string,
+) {
+  assertUuid(revisionId, "revisionId");
+  const body = await request.json().catch(() => ({}));
+  const idempotencyKey = String(body?.idempotencyKey ?? request.headers.get("x-idempotency-key") ?? "").trim();
+  const requestId = String(body?.requestId ?? "").trim();
+  const catalogId = String(body?.catalogId ?? "").trim();
+  const rowId = String(body?.rowId ?? "").trim();
+  const contentSha256 = String(body?.contentSha256 ?? "").trim().toLowerCase();
+  const mimeType = String(body?.mimeType ?? "").trim().toLowerCase();
+  const sizeBytes = Number(body?.sizeBytes);
+  const replacesAttachmentId = body?.replacesAttachmentId == null
+    ? null
+    : String(body.replacesAttachmentId).trim();
+  if (!idempotencyKey || idempotencyKey.length > 200
+    || !requestId || requestId.length > 240
+    || !catalogId || catalogId.length > 240
+    || !rowId || rowId.length > 240
+    || !/^[0-9a-f]{64}$/.test(contentSha256)
+    || !["image/jpeg", "image/png"].includes(mimeType)
+    || !Number.isSafeInteger(sizeBytes) || sizeBytes < 1 || sizeBytes > MAX_PHOTO_BYTES) {
+    throw new CanonicalEstimateApiError("invalid estimate photo upload request", {
+      code: "INVALID_ARGUMENT",
+      httpStatus: 400,
+    });
+  }
+  if (replacesAttachmentId) assertUuid(replacesAttachmentId, "replacesAttachmentId");
+  const { data, error } = await requester.rpc("estimate_create_row_photo_upload_r55", {
+    p_idempotency_key: idempotencyKey,
+    p_request_id: requestId,
+    p_catalog_id: catalogId,
+    p_parent_revision_id: revisionId,
+    p_row_id: rowId,
+    p_content_sha256: contentSha256,
+    p_mime_type: mimeType,
+    p_size_bytes: sizeBytes,
+    p_replaces_attachment_id: replacesAttachmentId,
+  });
+  if (error) normalizeDbError(error);
+  const upload = Array.isArray(data) ? data[0] : data;
+  let uploadUrl: string | null = null;
+  let uploadToken: string | null = null;
+  if (upload.upload_status === "staged") {
+    const { data: signed, error: signedError } = await requireAdmin().storage
+      .from(upload.storage_bucket)
+      .createSignedUploadUrl(upload.staging_storage_key, { upsert: false });
+    if (signedError || !signed?.signedUrl || !signed?.token) {
+      throw new CanonicalEstimateApiError("photo upload signing failed", {
+        code: "PHOTO_UPLOAD_SIGNING_FAILED",
+        httpStatus: 503,
+        retryable: true,
+      });
+    }
+    uploadUrl = signed.signedUrl;
+    uploadToken = signed.token;
+  }
+  return {
+    apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+    uploadId: upload.upload_id,
+    attachmentId: upload.attachment_id,
+    status: upload.upload_status,
+    storageBucket: upload.storage_bucket,
+    storageObjectKey: upload.staging_storage_key,
+    uploadUrl,
+    uploadToken,
+    expiresAt: upload.expires_at,
+    created: upload.created,
+  };
+}
+
+function photoAttachmentView(row: Record<string, unknown>) {
+  return {
+    attachmentId: row.attachment_id,
+    attachmentEventId: row.attachment_event_id,
+    tenantId: row.tenant_id,
+    ownerUserId: row.owner_user_id,
+    requestId: row.request_id,
+    catalogId: row.catalog_id,
+    rowId: row.row_id,
+    parentRevisionId: row.parent_revision_id,
+    childRevisionId: null,
+    storageBucket: row.storage_bucket,
+    storageObjectKey: row.storage_object_key,
+    contentSha256: row.content_sha256,
+    mimeType: row.mime_type,
+    sizeBytes: Number(row.size_bytes),
+    status: row.attachment_status,
+    createdAt: row.created_at,
+    createdBy: row.created_by ?? null,
+  };
+}
+
+async function listRevisionPhotoAttachments(
+  requester: ReturnType<typeof createClient>,
+  revisionId: string,
+  includeDeleted = false,
+) {
+  assertUuid(revisionId, "revisionId");
+  const { data, error } = await requester.rpc("estimate_list_revision_photo_attachments_r55", {
+    p_revision_id: revisionId,
+    p_include_deleted: includeDeleted,
+  });
+  if (error) normalizeDbError(error);
+  const admin = requireAdmin();
+  const expiresAt = new Date(Date.now() + PHOTO_SIGNED_URL_TTL_SECONDS * 1000).toISOString();
+  const attachments = await Promise.all((data ?? []).map(async (row) => {
+    const view = photoAttachmentView(row);
+    if (view.status !== "committed") return { ...view, signedUrl: null, signedUrlExpiresAt: null };
+    const { data: signed, error: signError } = await admin.storage
+      .from(String(view.storageBucket))
+      .createSignedUrl(String(view.storageObjectKey), PHOTO_SIGNED_URL_TTL_SECONDS);
+    if (signError || !signed?.signedUrl) {
+      throw new CanonicalEstimateApiError("photo signing failed", {
+        code: "PHOTO_SIGNING_FAILED",
+        httpStatus: 503,
+        retryable: true,
+      });
+    }
+    return { ...view, signedUrl: signed.signedUrl, signedUrlExpiresAt: expiresAt };
+  }));
+  return { apiVersion: ESTIMATE_PLATFORM_API_VERSION, revisionId, attachments };
+}
+
+async function finalizeRevisionPhotoUpload(
+  requester: ReturnType<typeof createClient>,
+  userId: string,
+  revisionId: string,
+  uploadId: string,
+) {
+  assertUuid(revisionId, "revisionId");
+  assertUuid(uploadId, "uploadId");
+  const { data: reservation, error: reservationError } = await requester
+    .from("estimate_revision_photo_upload")
+    .select("id,attachment_id,parent_revision_id,status,staging_storage_bucket,staging_storage_key,committed_storage_key,expected_content_sha256,expected_mime_type,expected_size_bytes")
+    .eq("id", uploadId)
+    .eq("parent_revision_id", revisionId)
+    .single();
+  if (reservationError) normalizeDbError(reservationError);
+  if (reservation.status === "committed") {
+    const projection = await listRevisionPhotoAttachments(requester, revisionId, false);
+    const attachment = projection.attachments.find((candidate) => candidate.attachmentId === reservation.attachment_id)
+      ?? projection.attachments.find((candidate) => candidate.parentRevisionId === revisionId);
+    if (!attachment) throw new CanonicalEstimateApiError("committed photo projection is missing", {
+      code: "PHOTO_ATTACHMENT_PROJECTION_MISSING",
+      httpStatus: 409,
+    });
+    return { apiVersion: ESTIMATE_PLATFORM_API_VERSION, attachment, created: false };
+  }
+  if (reservation.status !== "staged") {
+    throw new CanonicalEstimateApiError("photo upload is not finalizable", {
+      code: "PHOTO_UPLOAD_NOT_FINALIZABLE",
+      httpStatus: 409,
+    });
+  }
+  const admin = requireAdmin();
+  const bucket = admin.storage.from(reservation.staging_storage_bucket);
+  const { data: blob, error: downloadError } = await bucket.download(reservation.staging_storage_key);
+  if (downloadError || !blob) {
+    throw new CanonicalEstimateApiError("uploaded photo object is unavailable", {
+      code: "PHOTO_UPLOAD_OBJECT_MISSING",
+      httpStatus: 409,
+      retryable: true,
+    });
+  }
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const verifiedMimeType = photoMimeFromBytes(bytes);
+  const verifiedContentSha256 = await sha256Bytes(bytes);
+  if (bytes.byteLength !== Number(reservation.expected_size_bytes)
+    || verifiedContentSha256 !== reservation.expected_content_sha256
+    || verifiedMimeType !== reservation.expected_mime_type) {
+    await bucket.remove([reservation.staging_storage_key]).catch(() => undefined);
+    throw new CanonicalEstimateApiError("uploaded photo integrity mismatch", {
+      code: "PHOTO_UPLOAD_INTEGRITY_MISMATCH",
+      httpStatus: 422,
+    });
+  }
+  const { error: moveError } = await bucket.move(
+    reservation.staging_storage_key,
+    reservation.committed_storage_key,
+  );
+  if (moveError) {
+    throw new CanonicalEstimateApiError("photo object commit failed", {
+      code: "PHOTO_UPLOAD_OBJECT_COMMIT_FAILED",
+      httpStatus: 503,
+      retryable: true,
+    });
+  }
+  try {
+    const { data, error } = await admin.rpc("estimate_finalize_row_photo_upload_r55", {
+      p_actor_user_id: userId,
+      p_upload_id: uploadId,
+      p_committed_storage_key: reservation.committed_storage_key,
+      p_verified_content_sha256: verifiedContentSha256,
+      p_verified_mime_type: verifiedMimeType,
+      p_verified_size_bytes: bytes.byteLength,
+    });
+    if (error) normalizeDbError(error);
+    const finalized = Array.isArray(data) ? data[0] : data;
+    const attachment = photoAttachmentView(finalized);
+    const { data: signed, error: signError } = await bucket.createSignedUrl(
+      reservation.committed_storage_key,
+      PHOTO_SIGNED_URL_TTL_SECONDS,
+    );
+    if (signError || !signed?.signedUrl) {
+      throw new CanonicalEstimateApiError("photo signing failed", {
+        code: "PHOTO_SIGNING_FAILED",
+        httpStatus: 503,
+        retryable: true,
+      });
+    }
+    return {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+      attachment: {
+        ...attachment,
+        signedUrl: signed.signedUrl,
+        signedUrlExpiresAt: new Date(Date.now() + PHOTO_SIGNED_URL_TTL_SECONDS * 1000).toISOString(),
+      },
+      created: finalized.created,
+    };
+  } catch (error) {
+    const { data: latest } = await admin
+      .from("estimate_revision_photo_upload")
+      .select("status")
+      .eq("id", uploadId)
+      .maybeSingle();
+    if (latest?.status !== "committed") {
+      await bucket.move(reservation.committed_storage_key, reservation.staging_storage_key).catch(() => undefined);
+    }
+    throw error;
+  }
+}
+
+async function tombstoneRevisionPhotoAttachment(
+  request: Request,
+  requester: ReturnType<typeof createClient>,
+  attachmentId: string,
+) {
+  assertUuid(attachmentId, "attachmentId");
+  const body = await request.json().catch(() => ({}));
+  const idempotencyKey = String(body?.idempotencyKey ?? request.headers.get("x-idempotency-key") ?? "").trim();
+  if (!idempotencyKey || idempotencyKey.length > 200) {
+    throw new CanonicalEstimateApiError("idempotencyKey is required", { code: "INVALID_ARGUMENT", httpStatus: 400 });
+  }
+  const { data, error } = await requester.rpc("estimate_tombstone_row_photo_attachment_r55", {
+    p_attachment_id: attachmentId,
+    p_idempotency_key: idempotencyKey,
+  });
+  if (error) normalizeDbError(error);
+  return { apiVersion: ESTIMATE_PLATFORM_API_VERSION, attachmentId, attachmentEventId: data, status: "deleted" };
 }
 
 async function readArtifact(
@@ -415,10 +841,17 @@ async function readArtifact(
   if (error) normalizeDbError(error);
   const { data: revision, error: revisionError } = await requester
     .from("estimate_revision")
-    .select("id,release_id,catalog_id,row_count,checksum_sha256,owner_user_id,organization_id")
+    .select("id,release_id,catalog_id,definition_version_id,row_count,checksum_sha256,owner_user_id,organization_id")
     .eq("id", revisionId)
     .single();
   if (revisionError) normalizeDbError(revisionError);
+  const contentAdmission = legacyReadAdmission(revision, "artifact_read", true);
+  if (!contentAdmission.allowed) {
+    throw new CanonicalEstimateApiError("historical artifact is unavailable", {
+      code: contentAdmission.reasons[0]?.code ?? "ESTIMATE_ADMISSION_DENIED",
+      httpStatus: 409,
+    });
+  }
   const sourceMetadata = data.metadata ?? {};
   if (data.status === "ready" && (
     (sourceMetadata.sourceReleaseId != null && sourceMetadata.sourceReleaseId !== revision.release_id)
@@ -477,6 +910,7 @@ async function readArtifact(
     byteSize: data.byte_size == null ? null : Number(data.byte_size),
     sha256: data.sha256,
     metadata,
+    contentAdmission,
     errorCode: data.error_code,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
@@ -520,11 +954,38 @@ async function cancelJob(requester: ReturnType<typeof createClient>, jobId: stri
   return { apiVersion: ESTIMATE_PLATFORM_API_VERSION, jobId, status: "cancelled" };
 }
 
+function legacyReadAdmission(
+  revision: Record<string, unknown>,
+  ingress: "revision_read" | "artifact_read",
+  existingExactArtifact = false,
+): AdmissionDecision {
+  return evaluateEstimateAdmission({
+    mode: "legacy_read_only",
+    ingress,
+    releaseId: String(revision.release_id ?? "") || null,
+    definitionVersionId: String(revision.definition_version_id ?? "") || null,
+    catalogId: String(revision.catalog_id ?? "") || null,
+    releaseStatus: null,
+    manifestPublicationState: null,
+    baselineReady: false,
+    scenarioReady: false,
+    definitionContentStatus: null,
+    contentGateStatus: null,
+    definitionReleaseId: null,
+    selectedSearchReleaseId: null,
+    definitionSearchReleaseId: null,
+    unresolvedDisposition: null,
+    authorizationValid: true,
+    legacyRevisionImmutable: true,
+    existingExactArtifact,
+  });
+}
+
 async function readRevision(requester: ReturnType<typeof createClient>, revisionId: string) {
   assertUuid(revisionId, "revisionId");
   const { data, error } = await requester
     .from("estimate_revision")
-    .select("id,parent_revision_id,release_id,catalog_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
+    .select("id,parent_revision_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
     .eq("id", revisionId)
     .single();
   if (error) normalizeDbError(error);
@@ -548,6 +1009,8 @@ async function readRevision(requester: ReturnType<typeof createClient>, revision
     parameterSchemaHash: data.parameter_schema_hash,
     inputHash: data.input_hash,
     outputHash: data.output_hash,
+    contentAdmission: legacyReadAdmission(data, "revision_read"),
+    legacyWarningRu: "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
     createdAt: data.created_at,
   };
 }
@@ -573,6 +1036,8 @@ function revisionView(data: Record<string, unknown>) {
     parameterSchemaHash: data.parameter_schema_hash,
     inputHash: data.input_hash,
     outputHash: data.output_hash,
+    contentAdmission: legacyReadAdmission(data, "revision_read"),
+    legacyWarningRu: "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
     createdAt: data.created_at,
   };
 }
@@ -590,7 +1055,7 @@ async function readRevisionHistory(request: Request, requester: ReturnType<typeo
   }
   let query = requester
     .from("estimate_revision")
-    .select("id,parent_revision_id,release_id,catalog_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
+    .select("id,parent_revision_id,release_id,catalog_id,definition_version_id,revision_number,status,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,definition_version,compiler_owner,parameter_schema_hash,input_hash,output_hash,created_at")
     .eq("catalog_id", catalogId)
     .order("revision_number", { ascending: false })
     .limit(limit + 1);
@@ -612,6 +1077,19 @@ async function readRevisionRows(request: Request, requester: ReturnType<typeof c
   const afterOrdinal = parseCursor(url.searchParams.get("cursor"));
   const requestedLimit = Number(url.searchParams.get("limit") ?? 100);
   const limit = Number.isInteger(requestedLimit) ? Math.min(MAX_ROWS_PAGE, Math.max(1, requestedLimit)) : 100;
+  const { data: revision, error: revisionError } = await requester
+    .from("estimate_revision")
+    .select("id,release_id,catalog_id,definition_version_id")
+    .eq("id", revisionId)
+    .single();
+  if (revisionError) normalizeDbError(revisionError);
+  const contentAdmission = legacyReadAdmission(revision, "revision_read");
+  if (!contentAdmission.allowed) {
+    throw new CanonicalEstimateApiError("historical revision is unavailable", {
+      code: contentAdmission.reasons[0]?.code ?? "ESTIMATE_ADMISSION_DENIED",
+      httpStatus: 409,
+    });
+  }
   const { data, error } = await requester
     .from("estimate_revision_row")
     .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,row_sha256")
@@ -625,6 +1103,7 @@ async function readRevisionRows(request: Request, requester: ReturnType<typeof c
   return {
     apiVersion: ESTIMATE_PLATFORM_API_VERSION,
     revisionId,
+    contentAdmission,
     rows: page.map((row) => ({
       rowId: row.row_id,
       ordinal: row.ordinal,
@@ -692,6 +1171,11 @@ async function searchCatalog(request: Request, requester: ReturnType<typeof crea
   });
   if (error) normalizeDbError(error);
   const rows = data ?? [];
+  const admissions = await productionAdmissionDecisions(
+    requester,
+    rows.map((row) => row.catalog_id),
+    "search_selectable",
+  );
   const literalTotalCount = Number(rows[0]?.literal_total_count ?? 0);
   const globalLiteralTotalCount = Number(rows[0]?.global_literal_total_count ?? literalTotalCount);
   const externalLiteralTotalCount = Number(rows[0]?.external_literal_total_count ?? 0);
@@ -714,7 +1198,10 @@ async function searchCatalog(request: Request, requester: ReturnType<typeof crea
     externalLiteralTotalCount,
     suggestionTotalCount,
     shownCount,
-    items: rows.map((row) => ({
+    items: rows.map((row) => {
+      const contentAdmission = admissions.get(row.catalog_id) ?? null;
+      const estimateReady = contentAdmission?.allowed === true;
+      return {
       catalogId: row.catalog_id,
       canonicalNameRu: row.canonical_name_ru,
       groupId: row.group_id,
@@ -742,12 +1229,17 @@ async function searchCatalog(request: Request, requester: ReturnType<typeof crea
       matchedTerm: row.matched_term,
       matchedField: row.matched_field,
       rankingReasonRu: row.ranking_reason_ru,
-      selectableMode: row.publication_state === "ADMITTED_BACKEND" ? "PROFESSIONAL"
+      estimateReady,
+      contentAdmission,
+      selectableMode: estimateReady ? "PROFESSIONAL"
         : row.publication_state === "PRELIMINARY_NOT_CANONICAL" ? "PRELIMINARY" : "NONE",
-      nonselectableReasonRu: row.publication_state === "RETIRED"
+      nonselectableReasonRu: !estimateReady && row.publication_state === "ADMITTED_BACKEND"
+        ? "Эта смета проходит обновление состава и временно недоступна для нового расчёта."
+        : row.publication_state === "RETIRED"
         ? "Работа выведена из актуального каталога; используйте указанную замену."
         : null,
-    })),
+      };
+    }),
     nextCursor: last && shownCount < completeCount ? base64UrlJson({
       releaseId: release.id,
       snapshotSha256: release.snapshot_sha256,
@@ -786,6 +1278,11 @@ async function listSearchGroup(request: Request, requester: ReturnType<typeof cr
   });
   if (error) normalizeDbError(error);
   const rows = data ?? [];
+  const admissions = await productionAdmissionDecisions(
+    requester,
+    rows.map((row) => row.catalog_id),
+    "search_selectable",
+  );
   if (rows.length === 0 && !cursor) throw new CanonicalEstimateApiError("search group not found", {
     code: "NOT_FOUND",
     httpStatus: 404,
@@ -810,6 +1307,8 @@ async function listSearchGroup(request: Request, requester: ReturnType<typeof cr
       catalogOrigin: row.catalog_origin,
       operationKind: row.operation_kind,
       technologyVariant: row.technology_variant,
+      estimateReady: admissions.get(row.catalog_id)?.allowed === true,
+      contentAdmission: admissions.get(row.catalog_id) ?? null,
     })),
     nextCursor: last && shownCount < totalCount ? base64UrlJson({
       releaseId: release.id,
@@ -923,6 +1422,13 @@ async function assertSearchSelection(
       httpStatus: 409,
     });
   }
+  const admissions = await productionAdmissionDecisions(requester, uniqueIds, "search_selectable");
+  if (uniqueIds.some((catalogId) => admissions.get(catalogId)?.allowed !== true)) {
+    throw new CanonicalEstimateApiError(
+      "Эта смета проходит обновление состава и временно недоступна для нового расчёта.",
+      { code: "ESTIMATE_ADMISSION_DENIED", httpStatus: 409 },
+    );
+  }
   return uniqueIds;
 }
 
@@ -1013,6 +1519,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
     code: "INVALID_ARGUMENT",
     httpStatus: 400,
   });
+  const contentAdmission = await assertProductionAdmission(requester, catalogId, "catalog_read");
   const { data: identity, error: identityError } = await requester
     .from("estimate_work_identity")
     .select("catalog_id,namespace,domain,work_key,title_ru")
@@ -1051,6 +1558,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
       definitionVersion: definition.definition_version,
       applicability: definition.applicability,
       professionalMetadata: definition.source_metadata,
+      contentAdmission,
       parameterSchema: parameters.map((parameter) => {
         const truth = parameter.truth_metadata && typeof parameter.truth_metadata === "object"
           ? parameter.truth_metadata as Record<string, unknown>
@@ -1111,7 +1619,7 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request) });
   try {
     const requester = requireRequester(request);
-    await requireUser(requester);
+    const user = await requireUser(requester);
     const path = routeSegments(request);
     if (request.method === "POST" && path.join("/") === "jobs/compile") {
       return json(202, await createCompileJob(request, requester, "compile"), requestId, request);
@@ -1145,6 +1653,21 @@ export async function handleCanonicalEstimateRequest(request: Request): Promise<
     }
     if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "rows") {
       return json(200, await readRevisionRows(request, requester, path[1]), requestId, request);
+    }
+    if (request.method === "POST" && path.length === 5 && path[0] === "revisions"
+      && path[2] === "attachments" && path[3] === "photo" && path[4] === "uploads") {
+      return json(201, await createRevisionPhotoUpload(request, requester, path[1]), requestId, request);
+    }
+    if (request.method === "POST" && path.length === 7 && path[0] === "revisions"
+      && path[2] === "attachments" && path[3] === "photo" && path[4] === "uploads" && path[6] === "finalize") {
+      return json(200, await finalizeRevisionPhotoUpload(requester, user.id, path[1], path[5]), requestId, request);
+    }
+    if (request.method === "GET" && path.length === 3 && path[0] === "revisions" && path[2] === "attachments") {
+      const includeDeleted = new URL(request.url).searchParams.get("includeDeleted") === "true";
+      return json(200, await listRevisionPhotoAttachments(requester, path[1], includeDeleted), requestId, request);
+    }
+    if (request.method === "POST" && path.length === 3 && path[0] === "attachments" && path[2] === "tombstone") {
+      return json(200, await tombstoneRevisionPhotoAttachment(request, requester, path[1]), requestId, request);
     }
     if (path.length === 4 && path[0] === "revisions" && path[2] === "artifacts"
       && (path[3] === "pdf" || path[3] === "professional_pdf" || path[3] === "procurement")) {

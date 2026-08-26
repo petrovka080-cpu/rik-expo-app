@@ -20,4 +20,10 @@ describe("canonical FormulaGraph", () => {
     expect(() => evaluateFormulaGraph(compileFormulaGraph("a + 1"), {})).toThrow("missing parameter a");
     expect(() => evaluateFormulaGraph(compileFormulaGraph("1 / zero"), { zero: 0 })).toThrow("division by zero");
   });
+
+  it("evaluates the complete R5.5.5 engineering function vocabulary", () => {
+    expect(evaluateFormulaGraph(compileFormulaGraph("round_to(unit_convert(q, 1.1), 4)"), { q: 3 })).toBe("3.3");
+    expect(evaluateFormulaGraph(compileFormulaGraph("floor(10 / 3) + sqrt(16)"), {})).toBe("7");
+    expect(evaluateFormulaGraph(compileFormulaGraph("pow(8, 2 / 3)"), {})).toBe("4");
+  });
 });

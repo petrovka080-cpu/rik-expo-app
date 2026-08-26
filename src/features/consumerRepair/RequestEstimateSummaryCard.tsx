@@ -27,6 +27,14 @@ export class RequestEstimateSummaryCard extends React.PureComponent<Props> {
         <Text style={styles.eyebrow}>Предварительная профессиональная смета</Text>
         <Text style={styles.title} testID="request-estimate-selected-work-title">{viewModel.title}</Text>
         <Text style={styles.summary} numberOfLines={2}>{viewModel.summary}</Text>
+        {viewModel.visibleLines.length > 0 ? (
+          <View style={styles.visibleLines} testID="request-estimate-visible-lines">
+            <Text style={styles.meta}>Ключевые позиции:</Text>
+            {viewModel.visibleLines.slice(0, 4).map((line) => (
+              <Text key={line.id} style={styles.visibleLine}>{line.text}</Text>
+            ))}
+          </View>
+        ) : null}
         <Text style={styles.meta} testID="request-estimate-row-count">
           {viewModel.rawItemCount} {pluralizeRu(viewModel.rawItemCount, "позиция", "позиции", "позиций")}
         </Text>

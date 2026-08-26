@@ -25,6 +25,23 @@ describe("shared professional unit registry", () => {
     }
   });
 
+  it("localizes every backend time alias used by the 678-group canonical corpus", () => {
+    expect(resolveProfessionalUnitDefinition("worker_h")).toMatchObject({
+      code: "man_hour",
+      dimension: "labor_time",
+      displayRu: "чел.-ч",
+    });
+    expect(resolveProfessionalUnitDefinition("machine_h")).toMatchObject({
+      code: "machine_hour",
+      dimension: "machine_time",
+      displayRu: "маш.-ч",
+    });
+    expect(formatEstimateUnitLabel("worker_h")).toBe("чел.-ч");
+    expect(formatEstimateUnitLabel("machine_h")).toBe("маш.-ч");
+    expect(formatEstimateUnitLabel("system")).toBe("система");
+    expect(formatEstimateUnitLabel("vehicle_km")).toBe("авт.-км");
+  });
+
   it("owns exact imperial factors and rejects cross-dimensional conversion", () => {
     expect(getProfessionalUnitDefinition("lbs")).toMatchObject({
       canonicalSiUnit: "kg",

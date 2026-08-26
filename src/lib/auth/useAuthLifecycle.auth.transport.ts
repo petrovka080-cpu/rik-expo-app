@@ -1,6 +1,6 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-import { isSupabaseEnvValid, supabase } from "../supabaseClient";
+import { supabaseClientAvailability } from "../supabaseClient";
 
 export type AuthLifecycleStateChangeHandler = (
   event: AuthChangeEvent,
@@ -8,11 +8,14 @@ export type AuthLifecycleStateChangeHandler = (
 ) => void;
 
 export function hasAuthLifecycleClient(): boolean {
-  return isSupabaseEnvValid;
+  return supabaseClientAvailability.status === "ready";
 }
 
 export function subscribeAuthLifecycleStateChange(
   callback: AuthLifecycleStateChangeHandler,
 ) {
-  return supabase.auth.onAuthStateChange(callback);
+  if (supabaseClientAvailability.status !== "ready") {
+    return { data: { subscription: { unsubscribe: () => undefined } } };
+  }
+  return supabaseClientAvailability.client.auth.onAuthStateChange(callback);
 }

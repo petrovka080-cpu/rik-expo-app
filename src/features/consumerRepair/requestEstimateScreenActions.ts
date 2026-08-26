@@ -394,11 +394,15 @@ export function buildConsumerRepairExactCatalogLaunchSelectedWork(input: {
   const catalogWorkId = input.catalogWorkId.trim();
   const rawInput = input.rawInput.trim();
   if (!catalogWorkId) throw new Error("CANONICAL_CATALOG_ID_REQUIRED");
+  const visibleQuery = canonicalWorkSearchQueryFromPrompt(rawInput).trim();
   return {
     selectedWorkKey: catalogWorkId,
-    selectedTitleRu: catalogWorkId,
+    // Backend search/admission is the identity authority. Until that exact
+    // catalog row is loaded, preserve a human query as the visible title and
+    // never expose the internal catalog identifier as customer copy.
+    selectedTitleRu: visibleQuery || "Выбранный вид работ",
     selectedCategoryKey: "other",
-    selectedCategoryTitleRu: "Canonical backend",
+    selectedCategoryTitleRu: "Вид работ",
     rawInput,
     source: "user_selected",
     resolverReGuessed: false,
@@ -590,6 +594,10 @@ export function canonicalSearchItemToConsumerRepairSuggestion(
           ? "phrase"
           : "token_overlap",
     matchedTokens: item.matchedTerm ? [item.matchedTerm] : [],
+    estimateReady: item.estimateReady === true
+      && item.contentAdmission?.allowed === true
+      && item.contentAdmission.contractVersion === "estimate-admission-r3",
+    nonselectableReasonRu: item.nonselectableReasonRu,
     visibleText: `${item.canonicalNameRu} · ${item.groupNameRu}`,
   };
 }

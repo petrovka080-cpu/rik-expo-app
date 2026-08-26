@@ -71,6 +71,8 @@ describe("global local Android API34 smoke", () => {
     expect(requestChrome).toContain("buildRequestEstimateTopProofText");
     expect(requestChrome).toContain("viewModel.visibleLines.slice(0, 5)");
     expect(aiEstimateTable).toContain("ai-estimate-visible-lines");
+    expect(aiEstimateTable).toContain("presentation?.rows ?? []");
+    expect(aiEstimateTable).toContain('unitAliases.add("м² / м2")');
     expect(aiEstimateTable).toContain("buildEstimateActionProofText");
     expect(aiEstimateTable).toContain("ai-estimate-action-proof");
     expect(aiEstimateTable).toContain("Источник:");

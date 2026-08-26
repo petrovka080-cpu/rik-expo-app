@@ -1,7 +1,7 @@
  
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
-import { Alert, Text } from "react-native";
+import { Alert, Platform, Text } from "react-native";
 
 import { ProfileOtaDiagnosticsCard } from "./ProfileOtaDiagnosticsCard";
 import type { OtaDiagnostics } from "@/src/lib/otaDiagnostics";
@@ -16,6 +16,8 @@ const mockGetOfficeReentryBreadcrumbs = jest.fn();
 const mockBuildOfficeReentryBreadcrumbsText = jest.fn();
 const mockGetWarehouseBackBreadcrumbs = jest.fn();
 const mockBuildWarehouseBackBreadcrumbsText = jest.fn();
+const mockEmbeddedWebBuildIdentity = jest.fn();
+const mockLoadWebBuildIdentity = jest.fn();
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: (props: { name: string }) => {
@@ -36,6 +38,11 @@ jest.mock("@/src/lib/otaHardening", () => ({
 jest.mock("@/src/lib/otaDiagnostics", () => ({
   buildOtaDiagnosticsText: (...args: unknown[]) => mockBuildOtaDiagnosticsText(...args),
   getOtaDiagnostics: (...args: unknown[]) => mockGetOtaDiagnostics(...args),
+}));
+
+jest.mock("@/src/lib/release/webBuildIdentity", () => ({
+  embeddedWebBuildIdentity: (...args: unknown[]) => mockEmbeddedWebBuildIdentity(...args),
+  loadWebBuildIdentity: (...args: unknown[]) => mockLoadWebBuildIdentity(...args),
 }));
 
 jest.mock("@/src/lib/pdf/pdfCrashBreadcrumbs", () => ({
@@ -120,6 +127,8 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockBuildOfficeReentryBreadcrumbsText.mockReset();
     mockGetWarehouseBackBreadcrumbs.mockReset();
     mockBuildWarehouseBackBreadcrumbsText.mockReset();
+    mockEmbeddedWebBuildIdentity.mockReset();
+    mockLoadWebBuildIdentity.mockReset();
     mockBuildOtaDiagnosticsText.mockReturnValue("diagnostics");
     mockGetPdfCrashBreadcrumbs.mockResolvedValue([]);
     mockBuildPdfCrashBreadcrumbsText.mockReturnValue("breadcrumb-line");
@@ -127,6 +136,16 @@ describe("ProfileOtaDiagnosticsCard", () => {
     mockBuildOfficeReentryBreadcrumbsText.mockReturnValue("office-breadcrumb-line");
     mockGetWarehouseBackBreadcrumbs.mockResolvedValue([]);
     mockBuildWarehouseBackBreadcrumbsText.mockReturnValue("warehouse-breadcrumb-line");
+    mockEmbeddedWebBuildIdentity.mockReturnValue({
+      sourceSha256: "a".repeat(64),
+      webBuildSha256: "b".repeat(64),
+      source: "embedded-fingerprint",
+    });
+    mockLoadWebBuildIdentity.mockResolvedValue({
+      sourceSha256: "a".repeat(64),
+      webBuildSha256: "c".repeat(64),
+      source: "release-manifest",
+    });
 
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
     warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
@@ -146,6 +165,27 @@ describe("ProfileOtaDiagnosticsCard", () => {
 
     return renderer!;
   }
+
+  it("shows Web source/build identity and marks native OTA as not applicable without ERROR", async () => {
+    const originalPlatformOS = Platform.OS;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "web" });
+    try {
+      let renderer: ReactTestRenderer;
+      await act(async () => {
+        renderer = TestRenderer.create(<ProfileOtaDiagnosticsCard />);
+        await Promise.resolve();
+      });
+      const text = renderer!.root.findAllByType(Text).map((node) => node.props.children).join(" ");
+      expect(text).toContain("Диагностика Web-сборки");
+      expect(text).toContain("a".repeat(64));
+      expect(text).toContain("c".repeat(64));
+      expect(text).toContain("Не применяется для Web");
+      expect(text).not.toContain("ERROR");
+      expect(mockGetOtaDiagnostics).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(Platform, "OS", { configurable: true, value: originalPlatformOS });
+    }
+  });
 
   it("shows safe OTA steps on release channels without calling manual fetch", async () => {
     mockGetOtaDiagnostics.mockReturnValue(createDiagnostics({ channel: "production", expectedBranch: "production" }));

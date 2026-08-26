@@ -65,6 +65,26 @@ export const ROADWORKS_WAVE_A_SCOPE_EXECUTION_PROFILES: Readonly<
   },
 });
 
+const ROADWORKS_WAVE_A_MACHINE_NAMES_RU: Readonly<Record<string, string>> = Object.freeze({
+  surface_cleaner: "подметально-уборочная машина",
+  bitumen_distributor: "автогудронатор",
+  paver: "асфальтоукладчик",
+  breakdown_roller: "каток предварительного уплотнения",
+  roller: "дорожный каток",
+  finish_roller: "каток окончательного уплотнения",
+  boundary_saw: "нарезчик швов",
+  breakout_equipment: "механизм разборки асфальтобетонного покрытия",
+  loader: "фронтальный погрузчик",
+  repair_paver: "малогабаритный асфальтоукладчик",
+  cleaner: "подметально-уборочная машина",
+  air_compressor: "передвижной компрессор",
+  leveling_paver: "асфальтоукладчик выравнивающего слоя",
+  profiling: "автогрейдер для профилирования",
+  survey_equipment: "комплект геодезического оборудования",
+  joint_equipment: "установка очистки и герметизации швов",
+  finishing_cleaner: "подметально-уборочная машина для финишной очистки",
+});
+
 export function roadworksWaveAParameterPresentation(
   key: RoadworksWaveAParameterKey,
 ): RoadworksWaveAParameterPresentation {
@@ -72,8 +92,10 @@ export function roadworksWaveAParameterPresentation(
   if (defined) return defined;
   if (key.startsWith("machine_") && key.endsWith("_productivity_m2_per_machine_hour")) {
     const machineId = key.replace(/^machine_/u, "").replace(/_productivity_m2_per_machine_hour$/u, "");
+    const machineNameRu = ROADWORKS_WAVE_A_MACHINE_NAMES_RU[machineId];
+    if (!machineNameRu) throw new Error(`ROADWORKS_WAVE_A_MACHINE_NAME_RU_MISSING:${machineId}`);
     return {
-      labelRu: `Производительность машины «${machineId.replace(/_/g, " ")}» по ППР или техкарте`,
+      labelRu: `Производительность механизма «${machineNameRu}» по ППР или технологической карте`,
       unit: "m2_machine_hour",
       inputKind: "number",
       choices: [],

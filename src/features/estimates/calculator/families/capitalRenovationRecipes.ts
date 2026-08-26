@@ -1,44 +1,16 @@
 import type { CapitalRenovationDerivedGeometry } from "./capitalRenovationGeometry";
 
-export type CapitalRenovationGroupId =
-  | "demolition"
-  | "rough_floors"
-  | "walls"
-  | "painting"
-  | "floor_finishes"
-  | "bathrooms"
-  | "electrical"
-  | "plumbing"
-  | "doors"
-  | "logistics";
+import {
+  CAPITAL_RENOVATION_GROUP_TITLES,
+  type CapitalRenovationEstimateRow,
+} from "./capitalRenovationPresentation";
 
-export type CapitalRenovationLineType = "material" | "work" | "service" | "equipment";
-
-export type CapitalRenovationEstimateRow = {
-  code: string;
-  groupId: CapitalRenovationGroupId;
-  groupTitle: string;
-  lineType: CapitalRenovationLineType;
-  titleRu: string;
-  quantity: number;
-  unit: string;
-  formula: string;
-  materialKey?: string;
-  includedInProcurement: boolean;
-};
-
-export const CAPITAL_RENOVATION_GROUP_TITLES: Record<CapitalRenovationGroupId, string> = {
-  demolition: "Демонтаж и подготовка",
-  rough_floors: "Черновые полы",
-  walls: "Стены",
-  painting: "Покраска",
-  floor_finishes: "Полы",
-  bathrooms: "Санузлы",
-  electrical: "Электрика",
-  plumbing: "Сантехника",
-  doors: "Двери",
-  logistics: "Услуги / логистика",
-};
+export {
+  CAPITAL_RENOVATION_GROUP_TITLES,
+  type CapitalRenovationEstimateRow,
+  type CapitalRenovationGroupId,
+  type CapitalRenovationLineType,
+} from "./capitalRenovationPresentation";
 
 function round(value: number, digits = 1): number {
   const factor = 10 ** digits;

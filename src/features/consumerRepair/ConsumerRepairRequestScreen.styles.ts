@@ -1,7 +1,5 @@
 import { StyleSheet } from "react-native";
 
-import { APP_LAYOUT } from "../../components/layout/appLayout";
-
 export const consumerRepairRequestScreenStyles = StyleSheet.create({
   keyboardRoot: {
     flex: 1,
@@ -13,7 +11,6 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
   content: {
     gap: 14,
     paddingTop: 4,
-    paddingBottom: APP_LAYOUT.scrollBottomPaddingPx + APP_LAYOUT.stickyActionHeightPx,
   },
   lead: {
     color: "#475569",
@@ -159,6 +156,91 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "900",
+  },
+  bottomActions: {
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    padding: 14,
+    marginTop: 2,
+  },
+  bottomActionsTitle: {
+    color: "#0F172A",
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "900",
+  },
+  bottomActionButton: {
+    minHeight: 48,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+  },
+  bottomActionPrimary: {
+    backgroundColor: "#16A34A",
+    borderColor: "#16A34A",
+  },
+  bottomActionSecondary: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+  },
+  bottomActionDanger: {
+    backgroundColor: "#DC2626",
+    borderColor: "#DC2626",
+  },
+  bottomActionDisabled: {
+    opacity: 0.55,
+  },
+  bottomActionPrimaryText: {
+    flexShrink: 1,
+    minWidth: 0,
+    color: "#FFFFFF",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  bottomActionSecondaryText: {
+    flexShrink: 1,
+    minWidth: 0,
+    color: "#0F172A",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  deleteDraftConfirmation: {
+    gap: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    backgroundColor: "#FEF2F2",
+    padding: 12,
+  },
+  deleteDraftConfirmationTitle: {
+    color: "#991B1B",
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "900",
+  },
+  deleteDraftConfirmationText: {
+    color: "#7F1D1D",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+  },
+  deleteDraftConfirmationActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  deleteDraftConfirmationButton: {
+    flex: 1,
   },
   marketBackButton: {
     minHeight: 36,

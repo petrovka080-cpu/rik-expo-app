@@ -1,9 +1,16 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
+import { searchMaterialCatalogItemsForPicker } from "../../lib/catalog/catalog.facade";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { registerTimeout, type TimerRegistryHandle } from "../../lib/lifecycle/timerRegistry";
 import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
-import type { RequestEstimateViewModel } from "./requestEstimateViewModel";
+import type {
+  RequestEstimateSectionViewModel,
+  RequestEstimateViewModel,
+} from "./requestEstimateViewModel";
 
 type Props = {
   viewModel: RequestEstimateViewModel;
@@ -11,21 +18,137 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
   onAddManual: (initialQuery?: string) => void;
+  onSelectCatalogItem?: (item: CatalogItemPickerItem) => void;
   onOpenCatalog?: (itemId: string) => void;
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButtons?: boolean;
+  rowPhotoThumbnails?: Readonly<Record<string, string>>;
 };
 
 type State = {
   estimateIdentity: string;
-  visibleLimit: number;
   searchQuery: string;
+  catalogRows: CatalogItemPickerItem[];
+  catalogLoading: boolean;
+  catalogError: string | null;
+  lastCatalogQuery: string | null;
   collapsedSectionIds: Record<string, true>;
 };
 
-const ESTIMATE_ROWS_PAGE_SIZE = 6;
+type ExistingEstimateSearchMatch = {
+  itemId: string;
+  titleRu: string;
+  sectionId: string;
+  sectionTitle: string;
+};
+
+type EstimateMaterialSearchAddControlProps = {
+  query: string;
+  existingMatches: ExistingEstimateSearchMatch[];
+  catalogRows: CatalogItemPickerItem[];
+  catalogLoading: boolean;
+  catalogError: string | null;
+  lastCatalogQuery: string | null;
+  onChangeQuery: (query: string) => void;
+  onSubmit: () => void;
+  onSelectExisting: (match: ExistingEstimateSearchMatch) => void;
+  onSelectCatalogItem: (item: CatalogItemPickerItem) => void;
+};
+
+export function EstimateMaterialSearchAddControl({
+  query,
+  existingMatches,
+  catalogRows,
+  catalogLoading,
+  catalogError,
+  lastCatalogQuery,
+  onChangeQuery,
+  onSubmit,
+  onSelectExisting,
+  onSelectCatalogItem,
+}: EstimateMaterialSearchAddControlProps): React.ReactElement {
+  const hasQuery = query.trim().length > 0;
+  return (
+    <View style={styles.materialSearchWrap} testID="estimate-material-search-add-control">
+      <View style={styles.searchAddControl}>
+        <TextInput
+          accessibilityLabel="Найти в смете или добавить материал"
+          importantForAutofill="no"
+          onChangeText={onChangeQuery}
+          onSubmitEditing={onSubmit}
+          placeholder="Найти в смете или добавить материал…"
+          placeholderTextColor="#64748B"
+          returnKeyType="search"
+          style={styles.searchInput}
+          testID="request-estimate-items-search"
+          value={query}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Добавить материал из каталога"
+          onPress={onSubmit}
+          style={styles.addCatalogButton}
+          testID="request-estimate-add-from-catalog"
+        >
+          <Text style={styles.addCatalogButtonText}>+</Text>
+        </Pressable>
+      </View>
+      {hasQuery ? (
+        <View style={styles.searchResults} testID="estimate-material-search-sections">
+          <View style={styles.searchResultSection} testID="estimate-material-search-existing-section">
+            <Text style={styles.searchSectionLabel}>В этой смете</Text>
+            {existingMatches.slice(0, 12).map((match) => (
+              <Pressable
+                accessibilityRole="button"
+                key={`${match.sectionId}:${match.itemId}`}
+                onPress={() => onSelectExisting(match)}
+                style={styles.searchResultRow}
+                testID={`estimate-material-search-existing-${match.itemId}`}
+              >
+                <Text numberOfLines={2} style={styles.searchResultTitle}>{match.titleRu}</Text>
+                <Text style={styles.searchResultMeta}>{match.sectionTitle}</Text>
+              </Pressable>
+            ))}
+            {existingMatches.length === 0 ? (
+              <Text style={styles.searchResultEmpty}>Совпадений в текущей смете нет.</Text>
+            ) : null}
+          </View>
+          <View style={styles.searchResultSection} testID="estimate-material-search-catalog-section">
+            <Text style={styles.searchSectionCatalogLabel}>Добавить из каталога</Text>
+            {catalogLoading ? <ActivityIndicator color="#16A34A" size="small" /> : null}
+            {catalogError ? (
+              <Pressable accessibilityRole="button" onPress={onSubmit} style={styles.catalogRetry}>
+                <Text style={styles.catalogError}>{catalogError}</Text>
+                <Text style={styles.catalogRetryText}>Повторить</Text>
+              </Pressable>
+            ) : null}
+            {!catalogLoading && !catalogError && lastCatalogQuery && catalogRows.length === 0 ? (
+              <Text style={styles.searchResultEmpty}>Подходящих материалов в каталоге не найдено.</Text>
+            ) : null}
+            {catalogRows.map((item) => (
+              <Pressable
+                accessibilityRole="button"
+                key={`${item.catalogItemId}:${item.unit}`}
+                onPress={() => onSelectCatalogItem(item)}
+                style={styles.catalogResultRow}
+                testID={`estimate-material-search-catalog-${item.catalogItemId}`}
+              >
+                <Text numberOfLines={2} style={styles.searchResultTitle}>{item.name}</Text>
+                <Text style={styles.catalogResultMeta}>
+                  {item.rikCode} · {formatEstimateUnitLabel(item.unit)} · {item.sourceLabel}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+}
 
 function estimateIdentity(viewModel: RequestEstimateViewModel): string {
   return viewModel.sections
@@ -34,10 +157,16 @@ function estimateIdentity(viewModel: RequestEstimateViewModel): string {
 }
 
 export class RequestEstimateItemsEditor extends React.PureComponent<Props, State> {
+  private searchSequence = 0;
+  private searchTimer: TimerRegistryHandle | null = null;
+
   state: State = {
     estimateIdentity: estimateIdentity(this.props.viewModel),
-    visibleLimit: ESTIMATE_ROWS_PAGE_SIZE,
     searchQuery: "",
+    catalogRows: [],
+    catalogLoading: false,
+    catalogError: null,
+    lastCatalogQuery: null,
     collapsedSectionIds: {},
   };
 
@@ -47,20 +176,69 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       ? null
       : {
           estimateIdentity: nextIdentity,
-          visibleLimit: ESTIMATE_ROWS_PAGE_SIZE,
           searchQuery: "",
+          catalogRows: [],
+          catalogLoading: false,
+          catalogError: null,
+          lastCatalogQuery: null,
           collapsedSectionIds: {},
         };
   }
 
-  private showMore = (): void => {
-    this.setState((state) => ({
-      visibleLimit: state.visibleLimit + ESTIMATE_ROWS_PAGE_SIZE,
-    }));
-  };
+  componentWillUnmount(): void {
+    this.cancelScheduledSearch();
+    this.searchSequence += 1;
+  }
+
+  private cancelScheduledSearch(): void {
+    this.searchTimer?.dispose();
+    this.searchTimer = null;
+  }
 
   private updateSearch = (searchQuery: string): void => {
-    this.setState({ searchQuery, visibleLimit: ESTIMATE_ROWS_PAGE_SIZE });
+    this.cancelScheduledSearch();
+    const sequence = ++this.searchSequence;
+    const normalizedQuery = searchQuery.trim();
+    if (normalizedQuery.length < 2) {
+      this.setState({
+        searchQuery,
+        catalogRows: [],
+        catalogLoading: false,
+        catalogError: null,
+        lastCatalogQuery: null,
+      });
+      return;
+    }
+    this.setState({ searchQuery, catalogLoading: true, catalogError: null });
+    this.searchTimer = registerTimeout(
+      "request-estimate:material-live-search",
+      () => {
+        this.searchTimer = null;
+        void this.searchCatalog(normalizedQuery, sequence);
+      },
+      250,
+    );
+  };
+
+  private searchCatalog = async (
+    queryValue: string,
+    sequence = ++this.searchSequence,
+  ): Promise<void> => {
+    const query = queryValue.trim();
+    if (query.length < 2) return;
+    this.setState({ catalogLoading: true, catalogError: null, lastCatalogQuery: query });
+    try {
+      const catalogRows = await searchMaterialCatalogItemsForPicker(query, 12);
+      if (sequence !== this.searchSequence) return;
+      this.setState({ catalogRows, catalogLoading: false });
+    } catch {
+      if (sequence !== this.searchSequence) return;
+      this.setState({
+        catalogRows: [],
+        catalogLoading: false,
+        catalogError: "Поиск материалов временно недоступен.",
+      });
+    }
   };
 
   private toggleSection = (sectionId: string): void => {
@@ -72,6 +250,45 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     });
   };
 
+  private openCatalogForCurrentQuery = (): void => {
+    const explicitQuery = this.state.searchQuery.trim();
+    const recommendedMaterial = this.props.viewModel.sections
+      .find((section) => section.id === "materials")?.items[0]?.titleRu?.trim();
+    const contextualQuery = explicitQuery || recommendedMaterial || this.props.viewModel.title.trim();
+    if (!this.props.onSelectCatalogItem) {
+      this.props.onAddManual(contextualQuery);
+      return;
+    }
+    this.cancelScheduledSearch();
+    const sequence = ++this.searchSequence;
+    this.setState({ searchQuery: contextualQuery }, () => {
+      void this.searchCatalog(contextualQuery, sequence);
+    });
+  };
+
+  private selectExistingMatch = (match: ExistingEstimateSearchMatch): void => {
+    this.setState((state) => {
+      const collapsedSectionIds = { ...state.collapsedSectionIds };
+      delete collapsedSectionIds[match.sectionId];
+      return { collapsedSectionIds };
+    }, () => {
+      if (typeof document === "undefined") return;
+      const testId = `request-estimate-item-anchor-${match.itemId}`;
+      const target = Array.from(document.querySelectorAll<HTMLElement>("[data-testid^='request-estimate-item-anchor-']"))
+        .find((element) => element.getAttribute("data-testid") === testId);
+      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+      target?.focus?.();
+    });
+  };
+
+  private selectCatalogItem = (item: CatalogItemPickerItem): void => {
+    if (this.props.onSelectCatalogItem) {
+      this.props.onSelectCatalogItem(item);
+      return;
+    }
+    this.props.onAddManual(this.state.searchQuery.trim() || item.name);
+  };
+
   render(): React.ReactElement {
     const {
       viewModel,
@@ -79,8 +296,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       onIncrease,
       onQuantityChange,
       onUnitPriceChange,
+      onSpecificationChange,
+      onOptionalChange,
       onRemove,
-      onAddManual,
       onOpenCatalog,
       onOpenPhoto,
       showPhotoButtons,
@@ -102,16 +320,13 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     }).filter((section) => section.items.length > 0);
     const expandedSections = filteredSections.filter((section) =>
       Boolean(normalizedQuery) || !this.state.collapsedSectionIds[section.id]);
-    const totalRows = expandedSections.reduce((total, section) => total + section.items.length, 0);
-    let remainingRows = this.state.visibleLimit;
-    const visibleSections = expandedSections
-      .map((section) => {
-        const items = section.items.slice(0, Math.max(0, remainingRows));
-        remainingRows -= items.length;
-        return { ...section, items };
-      })
-      .filter((section) => section.items.length > 0);
-    const visibleRows = Math.min(this.state.visibleLimit, totalRows);
+    const existingMatches: ExistingEstimateSearchMatch[] = filteredSections.flatMap((section) =>
+      section.items.map((item) => ({
+        itemId: item.id,
+        titleRu: item.titleRu,
+        sectionId: section.id,
+        sectionTitle: section.title,
+      })));
 
     return (
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
@@ -121,25 +336,18 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             {`${viewModel.rawItemCount} ${"\u043f\u043e\u0437\u0438\u0446\u0438\u0439"}`}
           </Text>
         </View>
-        <TextInput
-          accessibilityLabel="\u041f\u043e\u0438\u0441\u043a \u0438 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0432 \u0441\u043c\u0435\u0442\u0443"
-          onChangeText={this.updateSearch}
-          onSubmitEditing={() => onAddManual(this.state.searchQuery)}
-          placeholder={"\u041d\u0430\u0439\u0442\u0438 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b, \u0440\u0430\u0431\u043e\u0442\u0443 \u0438\u043b\u0438 \u0443\u0441\u043b\u0443\u0433\u0443..."}
-          placeholderTextColor="#64748B"
-          style={styles.searchInput}
-          testID="request-estimate-items-search"
-          value={this.state.searchQuery}
+        <EstimateMaterialSearchAddControl
+          query={this.state.searchQuery}
+          existingMatches={existingMatches}
+          catalogRows={this.state.catalogRows}
+          catalogLoading={this.state.catalogLoading}
+          catalogError={this.state.catalogError}
+          lastCatalogQuery={this.state.lastCatalogQuery}
+          onChangeQuery={this.updateSearch}
+          onSubmit={this.openCatalogForCurrentQuery}
+          onSelectExisting={this.selectExistingMatch}
+          onSelectCatalogItem={this.selectCatalogItem}
         />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="\u0418\u0441\u043a\u0430\u0442\u044c \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0435 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0432 \u0441\u043c\u0435\u0442\u0443"
-          onPress={() => onAddManual(this.state.searchQuery)}
-          style={styles.addCatalogButton}
-          testID="request-estimate-add-from-catalog"
-        >
-          <Text style={styles.addCatalogButtonText}>{"\u041d\u0430\u0439\u0442\u0438 \u0438 \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c"}</Text>
-        </Pressable>
         {(normalizedQuery ? filteredSections : viewModel.sections).map((section) => {
           const isCollapsed = !normalizedQuery && this.state.collapsedSectionIds[section.id] === true;
           return (
@@ -161,36 +369,33 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             {"\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e. \u0418\u0437\u043c\u0435\u043d\u0438\u0442\u0435 \u0437\u0430\u043f\u0440\u043e\u0441."}
           </Text>
         ) : null}
-        {visibleSections.map((section) => (
+        {expandedSections.map((section: RequestEstimateSectionViewModel) => (
           <View key={section.id} style={styles.section} testID={`request-estimate-section-${section.id}`}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
             {section.items.map((item, index) => (
-              <ConsumerRepairItemRow
+              <View
+                focusable
                 key={`${item.id}-${index}`}
-                item={item}
-                onDecrease={onDecrease}
-                onIncrease={onIncrease}
-                onQuantityChange={onQuantityChange}
-                onUnitPriceChange={onUnitPriceChange}
-                onRemove={onRemove}
-                onOpenCatalog={onOpenCatalog}
-                onOpenPhoto={onOpenPhoto}
-                showPhotoButton={showPhotoButtons === true}
-              />
+                testID={`request-estimate-item-anchor-${item.id}`}
+              >
+                <ConsumerRepairItemRow
+                  item={item}
+                  onDecrease={onDecrease}
+                  onIncrease={onIncrease}
+                  onQuantityChange={onQuantityChange}
+                  onUnitPriceChange={onUnitPriceChange}
+                  onSpecificationChange={onSpecificationChange}
+                  onOptionalChange={onOptionalChange}
+                  onRemove={onRemove}
+                  onOpenCatalog={onOpenCatalog}
+                  onOpenPhoto={onOpenPhoto}
+                  showPhotoButton={showPhotoButtons === true}
+                  photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
+                />
+              </View>
             ))}
           </View>
         ))}
-        {visibleRows < totalRows ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Показать следующие позиции сметы. Показано ${visibleRows} из ${totalRows}`}
-            onPress={this.showMore}
-            style={styles.loadMoreButton}
-            testID="request-estimate-items-load-more"
-          >
-            <Text style={styles.loadMoreText}>{`Показать ещё · ${visibleRows} из ${totalRows}`}</Text>
-          </Pressable>
-        ) : null}
       </View>
     );
   }
@@ -216,28 +421,117 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
   },
-  searchInput: {
+  materialSearchWrap: {
+    gap: 8,
+  },
+  searchAddControl: {
     minHeight: 44,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "stretch",
+    overflow: "hidden",
+  },
+  searchInput: {
+    flex: 1,
+    minWidth: 0,
     color: "#0F172A",
     fontSize: 13,
     fontWeight: "700",
     paddingHorizontal: 12,
   },
   addCatalogButton: {
-    minHeight: 44,
+    width: 48,
+    minHeight: 42,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
     backgroundColor: "#16A34A",
-    paddingHorizontal: 16,
   },
   addCatalogButtonText: {
     color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  searchResults: {
+    gap: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#F8FAFC",
+    padding: 10,
+  },
+  searchResultSection: {
+    gap: 6,
+  },
+  searchSectionLabel: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  searchSectionCatalogLabel: {
+    color: "#15803D",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  searchResultRow: {
+    minHeight: 42,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  catalogResultRow: {
+    minHeight: 46,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#F0FDF4",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  searchResultTitle: {
+    color: "#0F172A",
     fontSize: 13,
+    fontWeight: "800",
+  },
+  searchResultMeta: {
+    color: "#64748B",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  catalogResultMeta: {
+    color: "#15803D",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  searchResultEmpty: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "700",
+    paddingVertical: 3,
+  },
+  catalogRetry: {
+    gap: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    backgroundColor: "#FEF2F2",
+    padding: 9,
+  },
+  catalogError: {
+    color: "#B91C1C",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  catalogRetryText: {
+    color: "#B91C1C",
+    fontSize: 12,
     fontWeight: "900",
   },
   stageToggle: {
@@ -276,21 +570,6 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   sectionTitle: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900",
-  },
-  loadMoreButton: {
-    minHeight: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#CBD5E1",
-    backgroundColor: "#F8FAFC",
-    paddingHorizontal: 14,
-  },
-  loadMoreText: {
     color: "#334155",
     fontSize: 13,
     fontWeight: "900",

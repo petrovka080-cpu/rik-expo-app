@@ -16,6 +16,7 @@ import {
   isAiEstimateTechnicalHiddenParam,
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import { estimateDeterministicHash } from "../../src/lib/estimate/estimateDeterministicHash";
+import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 import type {
   DomainResolutionReadiness,
   EstimateDraftRevision,
@@ -45,6 +46,7 @@ type RuntimeCaseResult = {
   regenerated_pdf_uses_updated_parameters: boolean;
   regenerated_buyer_package_uses_updated_parameters: boolean;
   passed: boolean;
+  registered_backend_only: boolean;
   domain_resolution_readiness?: DomainResolutionReadiness | null;
   parameter_edit_applicable?: boolean;
   reason?: string;
@@ -249,6 +251,7 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       regenerated_pdf_uses_updated_parameters: false,
       regenerated_buyer_package_uses_updated_parameters: false,
       passed: false,
+      registered_backend_only: false,
       reason: "passport_missing",
     };
   }
@@ -269,6 +272,32 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     },
   };
   const cards = buildAiEstimateParameterCards({ revision: revisionWithArtifacts, includeMissing: true });
+  const registeredBackendOnly = Boolean(resolveRegisteredProfessionalEstimateSelectionV1(templateId));
+  if (registeredBackendOnly) {
+    const honestlyBlocked = revisionWithArtifacts.status === "failed" && revisionWithArtifacts.boq.rows.length === 0;
+    return {
+      bucket,
+      template_id: templateId,
+      prompt_parsed: false,
+      parameter_cards_rendered: cards.length > 0,
+      all_visible_labels_russian: visibleRussianOnly(revisionWithArtifacts),
+      editable_parameters_exist_where_needed: false,
+      parameter_edit_changes_snapshot_hash: false,
+      affected_rows_change_after_parameter_edit: false,
+      unaffected_rows_remain_stable: false,
+      new_revision_created_after_parameter_edit: false,
+      pdf_marked_stale: false,
+      buyer_package_marked_stale: false,
+      regenerated_pdf_uses_updated_parameters: false,
+      regenerated_buyer_package_uses_updated_parameters: false,
+      passed: honestlyBlocked,
+      registered_backend_only: true,
+      parameter_edit_applicable: false,
+      reason: honestlyBlocked
+        ? "registered_backend_only_honestly_blocked"
+        : "registered_backend_only_client_rows_present",
+    };
+  }
   const readiness = domainResolutionReadiness(revisionWithArtifacts);
   const honestNonCalculationReady = isHonestNonCalculationReadyRevision(revisionWithArtifacts, readiness);
   if (honestNonCalculationReady) {
@@ -290,6 +319,7 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       domain_resolution_readiness: readiness,
       parameter_edit_applicable: false,
       passed: true,
+      registered_backend_only: false,
       reason: "non_calculation_ready_case_honestly_blocked",
     };
   }
@@ -311,6 +341,7 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
       regenerated_pdf_uses_updated_parameters: false,
       regenerated_buyer_package_uses_updated_parameters: false,
       passed: false,
+      registered_backend_only: false,
       reason: "editable_numeric_param_missing",
     };
   }
@@ -404,12 +435,22 @@ function runCase(bucket: MatrixBucket, templateId: string, index: number): Runti
     domain_resolution_readiness: readiness,
     parameter_edit_applicable: true,
     passed,
+    registered_backend_only: false,
     reason: passed ? undefined : "runtime_case_failed",
   };
 }
 
 function countBucket(results: RuntimeCaseResult[], bucket: MatrixBucket): string {
   const items = results.filter((result) => result.bucket === bucket);
+  return `${items.filter((result) => result.passed).length}/${items.length}`;
+}
+
+function countBucketWhere(
+  results: RuntimeCaseResult[],
+  bucket: MatrixBucket,
+  predicate: (result: RuntimeCaseResult) => boolean,
+): string {
+  const items = results.filter((result) => result.bucket === bucket && predicate(result));
   return `${items.filter((result) => result.passed).length}/${items.length}`;
 }
 
@@ -437,6 +478,7 @@ export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: bool
   }
   clearProfessionalWorkPassportBuildCaches();
   const failures = results.filter((result) => !result.passed);
+  const parameterEditResults = results.filter((result) => result.parameter_edit_applicable !== false);
   const summary = {
     final_status: failures.length === 0
       ? GREEN_AI_ESTIMATE_PARAMETER_RUNTIME_MATRIX_READY
@@ -444,16 +486,27 @@ export function runAiEstimateParameterRuntimeMatrix(input: { writeSummary?: bool
     source_sha: gitOutput(["rev-parse", "HEAD"]),
     parameter_runtime_matrix_created: true,
     random_parameter_cases_passed: countBucket(results, "random"),
+    random_client_compatible_cases_passed: countBucketWhere(results, "random", (result) => !result.registered_backend_only),
+    random_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "random", (result) => result.registered_backend_only),
     critical_parameter_cases_passed: countBucket(results, "critical"),
+    critical_client_compatible_cases_passed: countBucketWhere(results, "critical", (result) => !result.registered_backend_only),
+    critical_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "critical", (result) => result.registered_backend_only),
     infrastructure_parameter_cases_passed: countBucket(results, "infrastructure"),
+    infrastructure_client_compatible_cases_passed: countBucketWhere(results, "infrastructure", (result) => !result.registered_backend_only),
+    infrastructure_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "infrastructure", (result) => result.registered_backend_only),
     repair_parameter_cases_passed: countBucket(results, "repair"),
+    repair_client_compatible_cases_passed: countBucketWhere(results, "repair", (result) => !result.registered_backend_only),
+    repair_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "repair", (result) => result.registered_backend_only),
     foreman_parameter_cases_passed: countBucket(results, "foreman"),
-    parameter_edit_changes_snapshot_hash: results.every((result) => result.parameter_edit_changes_snapshot_hash),
-    affected_rows_change_after_parameter_edit: results.every((result) => result.affected_rows_change_after_parameter_edit),
-    unaffected_rows_remain_stable: results.every((result) => result.unaffected_rows_remain_stable),
-    new_revision_created_after_parameter_edit: results.every((result) => result.new_revision_created_after_parameter_edit),
-    pdf_regeneration_uses_updated_parameters: results.every((result) => result.regenerated_pdf_uses_updated_parameters),
-    buyer_package_regeneration_uses_updated_parameters: results.every((result) => result.regenerated_buyer_package_uses_updated_parameters),
+    foreman_client_compatible_cases_passed: countBucketWhere(results, "foreman", (result) => !result.registered_backend_only),
+    foreman_registered_backend_only_honestly_blocked_cases_passed: countBucketWhere(results, "foreman", (result) => result.registered_backend_only),
+    parameter_edit_executed_cases: parameterEditResults.length,
+    parameter_edit_changes_snapshot_hash: parameterEditResults.every((result) => result.parameter_edit_changes_snapshot_hash),
+    affected_rows_change_after_parameter_edit: parameterEditResults.every((result) => result.affected_rows_change_after_parameter_edit),
+    unaffected_rows_remain_stable: parameterEditResults.every((result) => result.unaffected_rows_remain_stable),
+    new_revision_created_after_parameter_edit: parameterEditResults.every((result) => result.new_revision_created_after_parameter_edit),
+    pdf_regeneration_uses_updated_parameters: parameterEditResults.every((result) => result.regenerated_pdf_uses_updated_parameters),
+    buyer_package_regeneration_uses_updated_parameters: parameterEditResults.every((result) => result.regenerated_buyer_package_uses_updated_parameters),
     failures: failures.slice(0, 20),
   };
   const summaryPath = path.join(".release-runtime", "ai-estimate-parameter-cards-durable-history-runtime-hardening", "parameter-runtime-matrix-summary.json");

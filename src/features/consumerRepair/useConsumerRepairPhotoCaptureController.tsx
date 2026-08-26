@@ -11,6 +11,9 @@ import {
 import { ensureConsumerRepairBundleEstimateRevisionState } from "../../lib/consumerRequests/consumerRequestEditableEstimateSnapshot";
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { CapturedPhotoAsset } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
+import type { MobilePhotoStorageIdentity } from "../../lib/mobilePhotoCapture/mobilePhotoLocalRepository";
+import { commitCanonicalEstimateRowPhoto } from "../../lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService";
+import type { CanonicalEstimatePhotoAttachmentView } from "../../lib/estimate/backendPlatform/contracts";
 
 export type OpenConsumerRepairPhotoForMaterialRecognitionInput = {
   userId: string;
@@ -31,6 +34,8 @@ export type ConsumerRepairPhotoMaterialCaptureResult = {
   revisionId: string | null;
   lineId: string;
   purpose: "material_recognition" | "line_attachment";
+  storageIdentity: MobilePhotoStorageIdentity;
+  authoritativeAttachment?: CanonicalEstimatePhotoAttachmentView;
 };
 
 type ConsumerRepairPhotoCaptureControllerInput = {
@@ -49,6 +54,8 @@ type ActivePhotoCapture = {
   revisionId: string | null;
   lineId: string;
   purpose: "material_recognition" | "line_attachment";
+  storageIdentity: MobilePhotoStorageIdentity;
+  catalogId: string;
 };
 
 const LazyMobilePhotoCaptureFlow = React.lazy(async () => {
@@ -106,9 +113,13 @@ export function useConsumerRepairPhotoCaptureController({
         const itemRevisionId = String(
           item.sourceParameters?.canonicalBackendRevisionId ?? "",
         ).trim();
+        const catalogId = String(
+          item.sourceParameters?.canonicalBackendCatalogId ?? bundle.draft.selectedCatalogWorkId ?? "",
+        ).trim();
         if (
           !revisionId?.trim() ||
-          (itemRevisionId && itemRevisionId !== revisionId)
+          (itemRevisionId && itemRevisionId !== revisionId) ||
+          !catalogId
         ) {
           throw new Error("PHOTO_TARGET_REVISION_MISMATCH");
         }
@@ -121,6 +132,13 @@ export function useConsumerRepairPhotoCaptureController({
           revisionId,
           lineId: exactLineId,
           purpose,
+          storageIdentity: {
+            tenantId: bundle.draft.orgId?.trim() || userId,
+            requestId: draftId,
+            revisionId,
+            rowId: exactLineId,
+          },
+          catalogId,
         });
         onStatusMessage(null);
         return;
@@ -149,9 +167,16 @@ export function useConsumerRepairPhotoCaptureController({
         targetItemId,
         targetRowId: scanSession.targetRowId,
         kind: "PRODUCT_FRONT",
-        revisionId: revisionId?.trim() || null,
+        revisionId: revisionId?.trim() || currentRevision.revision_id,
         lineId: exactLineId,
         purpose,
+        storageIdentity: {
+          tenantId: bundle.draft.orgId?.trim() || userId,
+          requestId: draftId,
+          revisionId: revisionId?.trim() || currentRevision.revision_id,
+          rowId: scanSession.targetRowId,
+        },
+        catalogId: String(bundle.draft.selectedCatalogWorkId ?? "").trim() || currentRevision.estimate_id,
       });
       onStatusMessage(null);
     } catch (error) {
@@ -173,6 +198,20 @@ export function useConsumerRepairPhotoCaptureController({
           targetRowId={activeCapture.targetRowId}
           kind={activeCapture.kind}
           queueUploadOnUse={false}
+          storageIdentity={activeCapture.storageIdentity}
+          commitPhotoOnUse={activeCapture.purpose === "line_attachment" ? async (asset) => {
+            const committed = await commitCanonicalEstimateRowPhoto({
+              asset,
+              requestId: activeCapture.draftId,
+              catalogId: activeCapture.catalogId,
+              revisionId: activeCapture.revisionId!,
+              rowId: activeCapture.lineId,
+            });
+            return {
+              storedImage: committed.storedImage,
+              authoritativeAttachment: committed.attachment,
+            };
+          } : undefined}
           onCancel={closePhotoCapture}
           onError={onStatusMessage}
           onCaptured={(result) => {
@@ -186,6 +225,8 @@ export function useConsumerRepairPhotoCaptureController({
               revisionId: activeCapture.revisionId,
               lineId: activeCapture.lineId,
               purpose: activeCapture.purpose,
+              storageIdentity: activeCapture.storageIdentity,
+              authoritativeAttachment: result.authoritativeAttachment,
             });
             closePhotoCapture();
           }}

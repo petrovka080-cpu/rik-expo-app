@@ -39,10 +39,9 @@ describe("S-PAG-5A contractor foreman buyer pagination contract", () => {
       supplierShowcase.match(/\.range\(page\.from, page\.to\)/g),
     ).toHaveLength(2);
 
-    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
-    expect(
-      catalogTransport.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0,
-    ).toBeGreaterThanOrEqual(2);
+    const catalogTransport = read("scripts/server/stagingBffCatalogTransportReadPort.ts");
+    expect(catalogTransport).toContain("referenceProbeLimit");
+    expect(catalogTransport).toContain("CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS.maxRows + 1");
   });
 
   it("paginates foreman dictionary and app option list reads without silently capping completeness", () => {

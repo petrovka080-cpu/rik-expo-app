@@ -9,7 +9,7 @@ import { formatEstimateUserTextRu } from "../../lib/ai/globalEstimate/formatEsti
 import {
   CAPITAL_RENOVATION_GROUP_TITLES,
   type CapitalRenovationGroupId,
-} from "../estimates/calculator/families/capitalRenovationRecipes";
+} from "../estimates/calculator/families/capitalRenovationPresentation";
 import {
   estimateRowChildTemplateId,
   isProfessionalEstimateHelperRow,
@@ -19,6 +19,8 @@ import {
 import { buildConsumerRepairProductionTrust } from "../estimates/governance/productionTrust";
 import { buildEstimatePilotModeViewState } from "../estimates/runtime/estimatePilotMode";
 import { professionalBoqRiskRowsFromSourceParameters } from "../../lib/estimate/professionalBoqAssumptions";
+import { resolvedEstimateIdentityChecksum } from "../../lib/estimate/resolvedEstimateIdentityChecksum";
+import { CANONICAL_BACKEND_REVISION_PROJECTION_VERSION } from "../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;
@@ -146,9 +148,27 @@ export function sanitizeRequestEstimatePublicText(value: string | null | undefin
     .replace(/\bnormFactor\b/g, "\u043d\u043e\u0440\u043c\u0430")
     .replace(/\bbaseQuantity\b/g, "\u0431\u0430\u0437\u043e\u0432\u044b\u0439 \u043e\u0431\u044a\u0435\u043c")
     .replace(/\bq\b/g, "\u043e\u0431\u044a\u0435\u043c")
+    .replace(/\s*Проверочный\s+объект\s+BATCH[-\s]*\d+\s*\.?/giu, "")
+    .replace(/\bCanonical\s+backend\s+revision\b/gi, "Версия сметы")
+    .replace(/PROJECT_SYSTEM_SPECIFICATION_REQUIRED_R1/gi, "Нужно уточнить параметры")
+    .replace(/\bsource\s+SHA\b/gi, "версия источника")
+    .replace(/\bDRAFT\b/gi, "Черновик сметы")
+    .replace(/\bbackend\b/gi, "сервис")
+    .replace(/\brevision\b/gi, "версия")
+    .replace(/\brelease\b/gi, "версия расчёта")
+    .replace(/\badmission\b/gi, "проверка")
+    .replace(/\bcanonical\b/gi, "основная версия")
+    .replace(/\bmanifest\b/gi, "состав")
+    .replace(/\bchild\b/gi, "новая")
+    .replace(/\bserver(?:-side)?\b/gi, "сервис")
+    .replace(/\bBATCH[-\s]*\d+\b\.?/gi, "")
+    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, "")
+    .replace(/\b[0-9a-f]{64}\b/gi, "")
     .replace(/\bsrc_professional_norm_pack_[a-z0-9_/-]+/gi, "\u043f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u044b\u0439 \u043a\u0430\u0442\u0430\u043b\u043e\u0433")
     .replace(/\s*;\s*/g, "; ")
     .replace(/\s+/g, " ")
+    .replace(/\s+([.,;:])/g, "$1")
+    .replace(/(?:^|\s)\.(?=\s|$)/g, " ")
     .trim();
   return safe || fallback;
 }
@@ -345,7 +365,74 @@ function rowDisplayInput(item: ConsumerRepairRequestItem) {
   };
 }
 
-function publicItemTitle(item: ConsumerRepairRequestItem): string {
+const CANONICAL_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const CANONICAL_ROW_SHA_RE = /^[0-9a-f]{64}$/u;
+const CANONICAL_OWNERSHIP = new Set([
+  "OWNED",
+  "OWNED_EXCLUDED",
+  "MANUAL_SERVER_OWNED",
+  "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL",
+]);
+
+function admissionVerifiedCanonicalTitleItems(
+  bundle: ConsumerRepairDraftBundle,
+): ReadonlySet<ConsumerRepairRequestItem> {
+  const rejected = new Set<ConsumerRepairRequestItem>();
+  const state = bundle.estimateDraftRevisionState;
+  const current = state?.revisions.find((revision) => revision.revisionId === state.currentRevisionId);
+  const identity = current?.resolvedIdentity;
+  if (!state || !current || !identity || bundle.items.length === 0) return rejected;
+  const { checksum, ...identityWithoutChecksum } = identity;
+  const revisionId = current.revisionId;
+  const releaseId = String(identity.canonicalModelVersion ?? "").trim();
+  const catalogId = String(current.selectedTemplateId ?? "").trim();
+  if (
+    identity.compilerVersion !== CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
+    || identity.canonicalModelId !== "canonical-estimate-backend"
+    || checksum !== resolvedEstimateIdentityChecksum(identityWithoutChecksum)
+    || !CANONICAL_ID_RE.test(revisionId)
+    || !CANONICAL_ID_RE.test(releaseId)
+    || !catalogId
+    || current.boq.rows.length !== bundle.items.length
+  ) return rejected;
+
+  const rowsById = new Map(current.boq.rows.map((row) => [row.rowId, row]));
+  if (rowsById.size !== current.boq.rows.length) return rejected;
+  const accepted = new Set<ConsumerRepairRequestItem>();
+  for (const item of bundle.items) {
+    const source = item.sourceParameters ?? {};
+    const rowId = String(source.rowCode ?? "").trim();
+    const rowSha256 = String(source.rowSha256 ?? "").trim();
+    const ownership = String(source.canonicalBackendOwnershipStatus ?? "").trim();
+    const projection = rowsById.get(rowId);
+    if (
+      String(source.canonicalBackendRevisionId ?? "").trim() !== revisionId
+      || String(source.canonicalBackendReleaseId ?? "").trim() !== releaseId
+      || String(source.canonicalBackendCatalogId ?? "").trim() !== catalogId
+      || !rowId
+      || !CANONICAL_ROW_SHA_RE.test(rowSha256)
+      || !CANONICAL_OWNERSHIP.has(ownership)
+      || !projection
+      || projection.titleRu !== item.titleRu
+      || Number(projection.quantity) !== Number(item.quantity)
+      || String(projection.unit ?? "") !== String(item.unit ?? "")
+      || String(projection.sourceParameters?.rowSha256 ?? "").trim() !== rowSha256
+      || String(projection.sourceParameters?.canonicalBackendRevisionId ?? "").trim() !== revisionId
+      || String(projection.sourceParameters?.canonicalBackendReleaseId ?? "").trim() !== releaseId
+      || String(projection.sourceParameters?.canonicalBackendCatalogId ?? "").trim() !== catalogId
+    ) return rejected;
+    accepted.add(item);
+  }
+  return accepted;
+}
+
+function publicItemTitle(item: ConsumerRepairRequestItem, canonicalTitleVerified = false): string {
+  if (canonicalTitleVerified) {
+    // An accepted canonical backend row is immutable evidence. Its title must
+    // stay byte-for-byte equivalent at the UI boundary: translating technical
+    // tokens here breaks backend/UI parity even though the row itself is intact.
+    return item.titleRu;
+  }
   const normalized = sanitizeRequestEstimatePublicText(
     professionalEstimateRowVisibleName(rowDisplayInput(item)),
     "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b",
@@ -357,15 +444,15 @@ function publicItemTitle(item: ConsumerRepairRequestItem): string {
   if (/^\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0442 \u0440\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0445 \u0438\u0437\u0434\u0435\u043b\u0438\u0439/iu.test(normalized)) {
     return "\u0420\u0430\u0441\u0445\u043e\u0434\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u043f\u043e \u043d\u043e\u0440\u043c\u0430\u043c";
   }
-  const separatorIndex = normalized.indexOf(":");
-  const conciseTitle = separatorIndex >= 0
-    ? normalized.slice(separatorIndex + 1).trim()
-    : normalized;
-  return conciseTitle || "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b";
+  return normalized || "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0441\u043c\u0435\u0442\u044b";
 }
 
-export function requestEstimatePublicItemTitle(item: ConsumerRepairRequestItem): string {
-  return publicItemTitle(item);
+export function requestEstimatePublicItemTitle(
+  item: ConsumerRepairRequestItem,
+  bundle?: ConsumerRepairDraftBundle | null,
+): string {
+  const verified = bundle ? admissionVerifiedCanonicalTitleItems(bundle).has(item) : false;
+  return publicItemTitle(item, verified);
 }
 
 function isGenericHelperItem(item: ConsumerRepairRequestItem): boolean {
@@ -572,14 +659,14 @@ function formatQuantityValue(value: number, unit: string | null | undefined): st
 function laborGroupKey(item: ConsumerRepairRequestItem): string | null {
   const childId = estimateRowChildTemplateId(rowDisplayInput(item));
   if (childId) return `child:${childId}`;
-  const title = publicItemTitle(item).split(":")[0]?.trim();
+  const title = item.titleRu.split(":")[0]?.trim();
   return title ? `title:${title}` : null;
 }
 
 function laborGroupTitle(item: ConsumerRepairRequestItem): string {
   const childTitle = professionalEstimateRowChildTitle(rowDisplayInput(item));
   if (childTitle) return childTitle;
-  return publicItemTitle(item).split(":")[0]?.trim() || publicItemTitle(item);
+  return item.titleRu.split(":")[0]?.trim() || item.titleRu;
 }
 
 function formatLaborGroupQuantity(items: ConsumerRepairRequestItem[]): string {
@@ -596,7 +683,7 @@ function formatLaborGroupQuantity(items: ConsumerRepairRequestItem[]): string {
 
 function buildPreviewRow(section: RequestEstimateSectionViewModel, items: ConsumerRepairRequestItem[], index: number): RequestEstimatePreviewRow {
   const first = items[0];
-  const title = section.id === "labor" ? laborGroupTitle(first) : publicItemTitle(first);
+  const title = section.id === "labor" ? laborGroupTitle(first) : first.titleRu;
   const missingPriceCount = items.filter((item) => item.unitPrice == null || item.totalPrice == null).length;
   return {
     id: `${section.id}-${index}-${first.id}`,
@@ -746,7 +833,7 @@ function visibleLineForItem(item: ConsumerRepairRequestItem): RequestEstimateVis
     ? `${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`
     : null;
   const parts = [
-      publicItemTitle(item),
+      item.titleRu,
       selectedProduct,
       `${item.quantity ?? 0} ${unitLabel}`,
       priceText,
@@ -772,7 +859,7 @@ function buildPreviewSections(sections: RequestEstimateSectionViewModel[]): Requ
         helperItems.push(item);
         continue;
       }
-      const key = `${publicItemTitle(item)}::${displayUnitLabelForItem(item)}`;
+      const key = `${item.titleRu}::${displayUnitLabelForItem(item)}`;
       grouped.set(key, [...(grouped.get(key) ?? []), item]);
     }
     const rows = [...grouped.values()].map((items, index) => buildPreviewRow(section, items, index));
@@ -868,6 +955,7 @@ function revisionViewLabels(bundle: ConsumerRepairDraftBundle): Pick<
 
 export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle | null): RequestEstimateViewModel | null {
   if (!bundle) return null;
+  const canonicalTitleItems = admissionVerifiedCanonicalTitleItems(bundle);
   const durableSummary = bundle.durableHistorySummary ?? null;
   const rawItemCount = bundle.items.length || durableSummary?.rowCount || 0;
   const priced = bundle.items.filter((item) => item.totalPrice != null);
@@ -895,7 +983,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
       items: bundle.items
         .filter((item) => itemSection(item) === id)
         .sort((a, b) => itemSortRank(a) - itemSortRank(b))
-        .map((item) => ({ ...item, titleRu: publicItemTitle(item) })),
+        .map((item) => ({ ...item, titleRu: publicItemTitle(item, canonicalTitleItems.has(item)) })),
     }))
     .filter((section) => section.items.length > 0);
   const sourceLabels = uniqueSourceLabels(bundle);

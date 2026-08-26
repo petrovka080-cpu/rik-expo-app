@@ -1,6 +1,7 @@
 import { Alert, Platform } from "react-native";
 
 import type { AppAccessOfficeRole } from "../../lib/appAccessModel";
+import { readableUnknownError } from "../../lib/auth/protectedIdentity";
 
 export const PROFILE_UI = {
   bg: "#020617",
@@ -78,8 +79,18 @@ export const getProfileDisplayName = (args: {
   );
 };
 
-export const getErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error ?? "profile_error");
+export const getErrorMessage = (error: unknown): string => {
+  const message = readableUnknownError(error);
+  if (!message || message === "[object Object]") {
+    return "Не удалось выполнить действие с профилем. Попробуйте ещё раз.";
+  }
+  if (/auth session missing|no current user|jwt.*(?:expired|invalid)/iu.test(message)) {
+    return "auth session missing";
+  }
+  return /[А-Яа-яЁё]/u.test(message)
+    ? message
+    : "Не удалось выполнить действие с профилем. Попробуйте ещё раз.";
+};
 
 type ImagePickerModule = typeof import("expo-image-picker");
 

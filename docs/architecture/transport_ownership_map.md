@@ -95,7 +95,7 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/lib/catalog/catalog.bff.client.ts` - auth
 - `src/lib/catalog/catalog.proposalCreation.transport.ts` - rpc
 - `src/lib/catalog/catalog.request.transport.ts` - read, rpc, write
-- `src/lib/catalog/catalog.transport.supabase.ts` - read, rpc
+- `scripts/server/stagingBffCatalogTransportReadPort.ts` - canonical server-side catalog read/RPC owner; client transport fails closed
 - `src/lib/chat.auth.transport.ts` - auth
 - `src/lib/documents/attachmentOpener.storage.transport.ts` - storage
 - `src/lib/files.storage.transport.ts` - storage, write

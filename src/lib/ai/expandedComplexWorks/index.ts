@@ -14,6 +14,10 @@ import {
   s2bWave2KindForFamily,
 } from "./s2b/registry";
 import { S2B_REGULATED_SAFETY_NOTICE } from "./s2b/types";
+import {
+  resolveExpandedPublicRussianCategoryTitleR555,
+  resolveExpandedPublicRussianIdentityR555,
+} from "../../estimate/publicRussianLexiconR555";
 
 export type ExpandedComplexEstimateLevel =
   | "ROM_CONCEPT"
@@ -864,17 +868,17 @@ function calculatorFor(seed: FamilySeed, block: FamilyBlock): ExpandedComplexCal
 export const EXPANDED_COMPLEX_WORK_FAMILIES: readonly ExpandedComplexWorkFamilyDefinition[] =
   EXPANDED_COMPLEX_FAMILY_BLOCKS.flatMap((block) =>
     block.families.map((seed) => {
-      const professionalNameRu = seed.nameRu ?? titleFromId(seed.id, block.titleRu);
+      const sourceProfessionalNameRu = seed.nameRu ?? titleFromId(seed.id, block.titleRu);
+      const publicIdentity = resolveExpandedPublicRussianIdentityR555({
+        work_family_id: seed.id,
+        professionalNameRu: sourceProfessionalNameRu,
+      });
+      const professionalNameRu = publicIdentity.titleRu;
       const calculatorId = calculatorFor(seed, block);
       return {
         work_family_id: seed.id,
         professionalNameRu,
-        aliases: [
-          seed.id,
-          seed.id.replace(/_/g, " "),
-          professionalNameRu,
-          ...(seed.aliases ?? []),
-        ],
+        aliases: publicIdentity.aliasesRu,
         categoryGroup: block.key,
         globalCategory: block.globalCategory,
         parameterSchema: schemaFor(block.key, calculatorId),
@@ -886,7 +890,7 @@ export const EXPANDED_COMPLEX_WORK_FAMILIES: readonly ExpandedComplexWorkFamilyD
         serviceRecipe: recipeFor(block.key, "service"),
         normSource: {
           sourceId: `src_expanded_complex_${block.key}_reference_formula_v1`,
-          titleRu: `Инженерная справочная формула для блока "${block.titleRu}"`,
+          titleRu: `Инженерная справочная формула для блока "${resolveExpandedPublicRussianCategoryTitleR555(block.key, block.titleRu)}"`,
           version: "2026.07.04",
           provenance: "engineering_reference_formula",
         },
@@ -2241,7 +2245,7 @@ function solarUtilityScaleRows(input: {
     row({ family, code: "utility_solar_grid_connection_line_m", titleRu: "Линия присоединения к электрической сети", lineType: "material", group: "grid_connection", quantity: capacityMw * 25, unit: "m", formula: "capacity_mw * 25; connection distance required before preliminary quantity BOQ", materialKey: "solar_grid_connection_line", sourceParameters: common }),
     row({ family, code: "utility_solar_relay_protection_hours", titleRu: "Релейная защита, автоматика и телемеханика СЭС", lineType: "service", group: "protection", quantity: capacityMw * 8, unit: "hour", formula: "capacity_mw * 8; protection design required", sourceParameters: common }),
     row({ family, code: "utility_solar_grounding_m", titleRu: "Контур заземления и молниезащита СЭС", lineType: "material", group: "grounding", quantity: capacityMw * 750, unit: "m", formula: "capacity_mw * 750; final grid from soil resistivity", materialKey: "solar_grounding_conductor", sourceParameters: common }),
-    row({ family, code: "utility_solar_scada_points_pcs", titleRu: "SCADA, мониторинг и точки телеметрии СЭС", lineType: "equipment", group: "scada", quantity: Math.ceil(capacityMw * 2), unit: "pcs", formula: "ceil(capacity_mw * 2); final IO list required", materialKey: "solar_scada_monitoring", sourceParameters: common }),
+    row({ family, code: "utility_solar_scada_points_pcs", titleRu: "Система диспетчеризации, мониторинга и телеметрии СЭС", lineType: "equipment", group: "scada", quantity: Math.ceil(capacityMw * 2), unit: "pcs", formula: "ceil(capacity_mw * 2); final IO list required", materialKey: "solar_scada_monitoring", sourceParameters: common }),
     row({ family, code: "utility_solar_meteo_stations_pcs", titleRu: "Метеостанции и датчики генерации СЭС", lineType: "equipment", group: "monitoring", quantity: Math.max(1, Math.ceil(capacityMw / 50)), unit: "pcs", formula: "max(1, ceil(capacity_mw / 50))", materialKey: "solar_meteo_station", sourceParameters: common }),
     row({ family, code: "utility_solar_communications_m", titleRu: "Связь, оптика и сети передачи данных СЭС", lineType: "material", group: "communications", quantity: capacityMw * 35, unit: "m", formula: "capacity_mw * 35; final routes from layout", materialKey: "solar_fiber_network", sourceParameters: common }),
     row({ family, code: "utility_solar_security_cameras_pcs", titleRu: "Видеонаблюдение и охранные системы площадки СЭС", lineType: "equipment", group: "security", quantity: Math.ceil(capacityMw * 2), unit: "pcs", formula: "ceil(capacity_mw * 2); final perimeter design required", materialKey: "solar_security_camera", sourceParameters: common }),
@@ -2307,7 +2311,7 @@ export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalc
   }
   const rows = [
     row({ family, code: "equipment_foundations_m3", titleRu: "Фундаменты энергооборудования", lineType: "material", group: "materials", quantity: capacityMw * 20, unit: "m3", formula: "capacity_mw * 20", materialKey: "ready_mix_concrete" }),
-    row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели / ВЭУ / BESS", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
+    row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели, ВЭУ и аккумуляторная система накопления энергии", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
     row({ family, code: "cable_m", titleRu: "Кабельные линии", lineType: "material", group: "materials", quantity: capacityMw * 180, unit: "m", formula: "capacity_mw * 180", materialKey: "power_cable" }),
     row({ family, code: "grounding_system_set", titleRu: "Заземление площадки", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 set", materialKey: "grounding_system" }),
     row({ family, code: "energy_installation_labor_hours", titleRu: "Монтаж энергооборудования и кабельных линий", lineType: "work", group: "labor", quantity: capacityMw * 42, unit: "hour", formula: "capacity_mw * 42" }),
@@ -2350,8 +2354,8 @@ export function miningEarthworksCalculator(input: CalcInput): ExpandedComplexCal
   const volumeM3 = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/i], 50000);
   const rows = [
     row({ family, code: "large_scale_excavation_m3", titleRu: "Крупная выемка грунта / породы", lineType: "work", group: "earthworks", quantity: volumeM3, unit: "m3", formula: "input volume_m3" }),
-    row({ family, code: "temporary_stabilization_geotextile_m2", titleRu: "Temporary geotextile for haul roads and slopes", lineType: "material", group: "materials", quantity: Math.max(1000, Math.sqrt(volumeM3) * 18), unit: "m2", formula: "max(1000, sqrt(volume_m3) * 18)", materialKey: "geotextile" }),
-    row({ family, code: "dust_suppression_water_l", titleRu: "Dust suppression water", lineType: "material", group: "materials", quantity: volumeM3 * 0.4, unit: "l", formula: "volume_m3 * 0.4", materialKey: "process_water" }),
+    row({ family, code: "temporary_stabilization_geotextile_m2", titleRu: "Временный геотекстиль для технологических дорог и откосов", lineType: "material", group: "materials", quantity: Math.max(1000, Math.sqrt(volumeM3) * 18), unit: "m2", formula: "max(1000, sqrt(volume_m3) * 18)", materialKey: "geotextile" }),
+    row({ family, code: "dust_suppression_water_l", titleRu: "Техническая вода для пылеподавления", lineType: "material", group: "materials", quantity: volumeM3 * 0.4, unit: "l", formula: "volume_m3 * 0.4", materialKey: "process_water" }),
     row({ family, code: "haulage_trips", titleRu: "Вывоз / перемещение горной массы", lineType: "equipment", group: "logistics", quantity: Math.ceil(volumeM3 / 18), unit: "trip", formula: "ceil(volume_m3 / 18)" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаваторы", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 2500), unit: "shift", formula: "ceil(volume_m3 / 2500)" }),
     row({ family, code: "bulldozer_shifts", titleRu: "Бульдозеры", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 3500), unit: "shift", formula: "ceil(volume_m3 / 3500)" }),

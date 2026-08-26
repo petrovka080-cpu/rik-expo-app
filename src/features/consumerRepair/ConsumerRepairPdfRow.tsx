@@ -55,9 +55,7 @@ export function ConsumerRepairPdfRow({
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
       </Pressable>
       {canonical ? (
-        <Text style={styles.canonicalMeta} testID="consumer-repair-history-release-id">
-          revision {canonical.revisionId} · release {canonical.releaseId}
-        </Text>
+        <View accessible={false} style={styles.canonicalIdentityMarker} testID="consumer-repair-history-release-id" />
       ) : null}
       {latestPdf || canonical ? (
         <Pressable
@@ -108,6 +106,11 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  canonicalIdentityMarker: {
+    width: 0,
+    height: 0,
+    opacity: 0,
+  },
   title: {
     color: "#0F172A",
     fontSize: 14,
@@ -117,12 +120,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: "#64748B",
     fontSize: 12,
-    fontWeight: "700",
-  },
-  canonicalMeta: {
-    maxWidth: 260,
-    color: "#475569",
-    fontSize: 10,
     fontWeight: "700",
   },
   button: {

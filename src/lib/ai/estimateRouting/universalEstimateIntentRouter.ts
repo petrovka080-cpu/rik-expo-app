@@ -1,5 +1,6 @@
 import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
 import type { GlobalEstimateInput, GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
+import { resolveGlobalWorkType } from "../globalEstimate/globalWorkTypeResolver";
 import { classifyEstimateIntent } from "./estimateIntentClassifier";
 import { assertEstimateIntentBeatsRoleContext } from "./estimateIntentPriorityGuard";
 import type { EstimateIntentRoute } from "./estimateRoutingTypes";
@@ -45,7 +46,16 @@ export function buildGlobalEstimateInputFromRoute(route: EstimateIntentRoute, in
   const confidenceOverride = route.resolvedWorkKey === "other_construction_work"
     ? (route.confidence === "high" ? "medium" : route.confidence)
     : undefined;
-  const explicitWorkKey = input.explicitWorkKey ?? fallbackWorkKeyForEstimateRoute(route);
+  const textResolvedWorkKey = input.explicitWorkKey == null && !route.resolvedWorkKey
+    ? resolveGlobalWorkType({
+      text: route.originalText,
+      language: route.language ?? input.language,
+    }).workKey
+    : null;
+  const explicitWorkKey = input.explicitWorkKey ??
+    route.resolvedWorkKey ??
+    (textResolvedWorkKey !== "other_construction_work" ? textResolvedWorkKey : undefined) ??
+    fallbackWorkKeyForEstimateRoute(route);
   return {
     ...input,
     text: route.originalText,

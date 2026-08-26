@@ -36,7 +36,6 @@ export function buildOfficeShellContentModel(params: {
       ),
     showCompanyFeedback: Boolean(params.companyFeedback),
     showDeveloperOverride:
-      isServerAuthorizedPlatformDeveloper(params.data.developerOverride) ||
-      params.data.developerOverride?.authorizationSource === "local_ui_only",
+      isServerAuthorizedPlatformDeveloper(params.data.developerOverride),
   };
 }

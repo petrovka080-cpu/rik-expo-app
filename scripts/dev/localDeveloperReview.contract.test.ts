@@ -1,0 +1,48 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const source = (relative: string) => readFileSync(resolve(relative), "utf8");
+
+describe("R5.5.1 local developer review tooling", () => {
+  it("preflights the authoritative provider and seals one owned Metro", () => {
+    const launcher = source("scripts/dev/startLocalDeveloperReview.ps1");
+    expect(launcher).toContain("status -o json");
+    expect(launcher).toContain("NON_LOCAL_PROVIDER_FORBIDDEN");
+    expect(launcher).toContain("PUBLIC_KEY_CLASS_RED");
+    expect(launcher).toContain("$Port = 8081");
+    expect(launcher).toContain("PORT_8081_FOREIGN_OWNER_PID_");
+    expect(launcher).toContain("$NormalizedCommand.Contains($NormalizedRoot)");
+    expect(launcher).toContain('EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW = "1"');
+    expect(launcher).toContain("provisionLocalDeveloperReview.ts");
+    expect(launcher).toContain("serveLocalDeveloperAuthBroker.ts");
+    expect(launcher).toContain("probeLocalDeveloperCanonicalBackend.ts");
+    expect(launcher).toContain('EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = $CanonicalBackendUrl');
+    expect(launcher).toContain('EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK = "true"');
+    expect(launcher).toContain("GREEN_R555_LOCAL_DEVELOPER_PROVIDER_PRINCIPALS_9_OFFICE_PLUS_1_CONSUMER");
+    expect(launcher).toContain("[int]$ProvisionResult.office_green -ne 9");
+    expect(launcher).toContain("[int]$ProvisionResult.consumer_green -ne 1");
+    expect(launcher).toContain("[int]$BrokerHealth.principal_count -eq 10");
+    expect(launcher).not.toMatch(/Write-Host[^\n]*(PublicKey|ANON_KEY)/u);
+  });
+
+  it("keeps credentials in ignored runtime and broker origins on developer 8081", () => {
+    const provisioner = source("scripts/dev/provisionLocalDeveloperReview.ts");
+    const broker = source("scripts/dev/serveLocalDeveloperAuthBroker.ts");
+    const roleRegistry = source("src/lib/localDeveloperReviewRoles.ts");
+    const gitignore = source(".gitignore");
+    expect(gitignore).toContain(".release-runtime/");
+    expect(provisioner).toContain(
+      ".release-runtime/r551/runtime/local-developer/credentials.json",
+    );
+    expect(provisioner).toContain("GREEN_R555_LOCAL_DEVELOPER_PROVIDER_PRINCIPALS_9_OFFICE_PLUS_1_CONSUMER");
+    expect(provisioner).toContain("LOCAL_DEVELOPER_REVIEW_ROLES");
+    expect(provisioner).toContain("LOCAL_DEVELOPER_CONSUMER_ROLE");
+    expect(roleRegistry).toContain('"security"');
+    expect(provisioner).toContain("service_key_in_browser: false");
+    expect(broker).toContain('"http://localhost:8081"');
+    expect(broker).toContain('"http://127.0.0.1:8081"');
+    expect(broker).not.toContain('"http://localhost:8190"');
+    expect(broker).toContain("origin_forbidden");
+    expect(broker).toContain('credentials_printed: false');
+  });
+});

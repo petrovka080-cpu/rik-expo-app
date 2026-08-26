@@ -36,6 +36,7 @@ describe("approved history PDF/edit/market actions", () => {
       renderer = TestRenderer.create(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={approved.draft.id}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}

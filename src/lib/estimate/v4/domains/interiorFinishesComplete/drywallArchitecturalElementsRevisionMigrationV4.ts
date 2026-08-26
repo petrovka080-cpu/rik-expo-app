@@ -72,7 +72,9 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
     prior.legacyFallbackUsed !== true &&
     revision.boq.rows.length > 0 && revision.boq.rows.every((row) =>
       row.sourceParameters?.professionalDomainFactoryV1 === true && row.sourceParameters?.catalogId === catalogId &&
-      row.sourceParameters?.semanticOwner === owner && row.sourceParameters?.calculationStrategyId === strategy);
+      row.sourceParameters?.workSemanticOwner === owner &&
+      row.sourceParameters?.professionalEstimatePassportId === owner &&
+      row.sourceParameters?.calculationStrategyId === strategy);
   if (alreadyCanonical) return revision;
   const identityWithoutChecksum: Omit<EstimateResolvedIdentity, "checksum"> = {
     requestedCatalogWorkId: catalogId,
@@ -125,8 +127,8 @@ export function migrateDrywallArchitecturalElementRevisionV4(revision: EstimateD
           domainId: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, domainVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
           catalogId, workKey: inventory.work_key, canonicalTechnologyId: inventory.canonical_technology_id,
           parameterSchemaId: canonicalSchemaId, parameterSchemaVersion: schema.schema_version,
-          parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id), semanticOwner: owner,
-          professionalEstimatePassportId: owner, calculationStrategyId: strategy,
+          parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
+          workSemanticOwner: owner, professionalEstimatePassportId: owner, calculationStrategyId: strategy,
         },
       })),
     },

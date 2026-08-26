@@ -4,6 +4,7 @@ import {
   type ConsumerRepairDraftBundle,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
+  ConsumerRepairValidationError,
   prepareConsumerRepairRequestItemQuantityUpdate,
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
@@ -17,7 +18,10 @@ import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_LEGACY_KEY,
   CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+  CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX,
+  CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX,
   saveConsumerRepairBundle,
+  setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { safeJsonStringify } from "../../src/lib/format";
 import {
@@ -33,9 +37,13 @@ import {
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../../src/lib/platform/consumerRepairDurableSavePolicy";
 import {
+  CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX,
   CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD,
+  CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD,
+  flushTransactionalConsumerRepairWrites,
   isLargeConsumerRepairRevisionBundle,
 } from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import type { EstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore";
 import {
   CONSUMER_REPAIR_VALID_ADDRESS,
   CONSUMER_REPAIR_VALID_CITY,
@@ -54,6 +62,24 @@ type InstalledQuotaStorage = {
 const LOCAL_STORAGE_HISTORY_ROW_COUNT =
   CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD - 1;
 const LOCAL_STORAGE_EDIT_HISTORY_ROW_COUNT = 200;
+
+// This suite owns the localStorage summary/compaction boundary. Full
+// transactional payload integrity, rollback, crash recovery and adapters are
+// covered by the dedicated 22-case durable-store suites; avoid serializing 80
+// unrelated 499-row full snapshots while constructing summary fixtures here.
+const approvedHistorySummaryTransactionalStore: EstimateRevisionDurableStore = {
+  readBundle: async () => null,
+  writeBundleAtomically: async (_key, expectedVersion, bundle) => ({
+    status: "WRITTEN",
+    version: bundle.estimateRevisionState?.current_revision_id
+      ?? `approved-summary:${bundle.draft.id}`,
+    previousVersion: expectedVersion,
+    checksum: "approved-history-summary-fixture",
+  }),
+  recoverLastValid: async () => null,
+  deleteOrphans: async () => undefined,
+  listKeys: async () => [],
+};
 
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   const originalPlatformOs = Platform.OS;
@@ -165,6 +191,9 @@ function createHeavyApprovedConsumerRepairRequest(input: {
   problemText: string;
   rowCount: number;
 }): ConsumerRepairDraftBundle {
+  const revisionId = "c3333333-4444-4555-8666-777777777777";
+  const releaseId = "c4444444-5555-4666-8777-888888888888";
+  const canonicalDraft = buildConsumerRepairAiDraft(input.problemText);
   const created = createConsumerRepairRequestDraft({
     consumerUserId: input.userId,
     problemText: input.problemText,
@@ -173,13 +202,31 @@ function createHeavyApprovedConsumerRepairRequest(input: {
     addressText: CONSUMER_REPAIR_VALID_ADDRESS,
     preferredTimeText: "Сегодня",
     repairType: "flooring",
-    aiDraft: buildConsumerRepairAiDraft(input.problemText),
+    aiDraft: {
+      ...canonicalDraft,
+      items: canonicalDraft.items.map((item, index) => ({
+        ...item,
+        sourceParameters: {
+          ...item.sourceParameters,
+          canonicalBackendRevisionId: revisionId,
+          canonicalBackendReleaseId: releaseId,
+          canonicalBackendRowId: `canonical-heavy-history-row-${index + 1}`,
+        },
+      })),
+    },
   });
   const inflated = saveConsumerRepairBundle(inflateBundleItems(created, input.rowCount));
   attachConsumerRepairMedia({ requestDraftId: inflated.draft.id, mediaKind: "photo" });
   return approveConsumerRepairRequestDraft({
     requestDraftId: inflated.draft.id,
     userId: input.userId,
+    canonicalArtifact: {
+      artifactId: `canonical-heavy-history-pdf:${inflated.draft.id}`,
+      revisionId,
+      releaseId,
+      status: "ready",
+      sha256: "d".repeat(64),
+    },
   });
 }
 
@@ -189,6 +236,9 @@ describe("approved history durable storage migration", () => {
   beforeEach(() => {
     storage = installQuotaLocalStorageMock();
     __resetConsumerRepairRequestStoreForTests();
+    setConsumerRepairTransactionalDurableStoreForTests(
+      approvedHistorySummaryTransactionalStore,
+    );
   });
 
   afterEach(() => {
@@ -247,7 +297,117 @@ describe("approved history durable storage migration", () => {
       created.editableEstimateSnapshot?.rows.length ?? 0,
     );
     expect(decoded?.estimateDraftRevisionState).toBeNull();
-    expect(decoded?.estimateDraftSession).not.toBeNull();
+    // Canonical backend revisions own immutable history. The durable consumer
+    // projection must not retain a second legacy session copy.
+    expect(decoded?.estimateDraftSession).toBeNull();
+  });
+
+  it("updates a 1.7 MiB draft atomically without requiring three full localStorage copies", () => {
+    const userId = "durable-v3-large-update-two-generation-budget";
+    const problemText = "large canonical draft must retain one recovery generation";
+    const created = createConsumerRepairRequestDraft({
+      consumerUserId: userId,
+      problemText,
+      aiDraft: buildConsumerRepairAiDraft(problemText),
+    });
+    const heavy = saveConsumerRepairBundle({
+      ...inflateBundleItems(created, 213),
+      items: inflateBundleItems(created, 213).items.map((item) => ({
+        ...item,
+        calculationTrace: `${item.calculationTrace ?? ""}:${"trace".repeat(1_400)}`,
+      })),
+    });
+    const recordKey =
+      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(heavy.draft.id)}`;
+    const pointerKey =
+      `${CONSUMER_REPAIR_DURABLE_STORE_POINTER_KEY_PREFIX}${encodeURIComponent(heavy.draft.id)}`;
+    const snapshotPrefix =
+      `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(heavy.draft.id)}:`;
+    const currentRaw = storage?.values.get(recordKey) ?? "";
+    const edited = {
+      ...heavy,
+      items: heavy.items.map((item, index) => index === 0
+        ? { ...item, quantity: (item.quantity ?? 0) + 1 }
+        : item),
+    };
+    const editedRaw = safeJsonStringify(
+      encodeConsumerRepairBundleForDurableStorage(
+        compactConsumerRepairBundleForDurableStorage(edited),
+      ),
+      "",
+    );
+    const twoGenerationBudget =
+      Math.max(currentRaw.length, editedRaw.length) * 2 + 100_000;
+    const threeGenerationFootprint =
+      currentRaw.length * 2 + editedRaw.length;
+
+    expect(currentRaw.length).toBeGreaterThan(1_500_000);
+    expect(threeGenerationFootprint).toBeGreaterThan(twoGenerationBudget);
+    storage?.setQuota(twoGenerationBudget);
+    resetConsumerRepairDurableSaveDiagnosticsForTests();
+
+    const saved = saveConsumerRepairBundle(edited);
+    const snapshotKeys = Array.from(storage?.values.keys() ?? [])
+      .filter((key) => key.startsWith(snapshotPrefix));
+    const pointer = JSON.parse(storage?.values.get(pointerKey) ?? "null") as {
+      currentChecksum?: string;
+      previousChecksum?: string | null;
+    } | null;
+
+    expect(saved.events.some((event) =>
+      String(event.payload?.reason ?? "").includes("memory_only")
+    )).toBe(false);
+    expect(pointer?.currentChecksum).toBeTruthy();
+    expect(pointer?.previousChecksum).toBeTruthy();
+    expect(snapshotKeys).toHaveLength(2);
+
+    __simulateConsumerRepairRequestStoreReloadForTests();
+    const rehydrated = getConsumerRepairRequest(heavy.draft.id);
+
+    expect(rehydrated.items).toHaveLength(213);
+    expect(rehydrated.items[0]?.quantity).toBe(edited.items[0]?.quantity);
+  });
+
+  it("routes a compact record above the two-generation Web Storage budget transactionally", () => {
+    const problemText = "large canonical revision must not enter localStorage";
+    const created = createConsumerRepairRequestDraft({
+      consumerUserId: "durable-transactional-two-generation-budget",
+      problemText,
+      aiDraft: buildConsumerRepairAiDraft(problemText),
+    });
+    const base = inflateBundleItems(created, 213);
+    const baseLength = safeJsonStringify(
+      encodeConsumerRepairBundleForDurableStorage(
+        compactConsumerRepairBundleForDurableStorage(base),
+      ),
+      "",
+    ).length;
+    const paddingPerRow = Math.ceil(
+      (CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD + 50_000 - baseLength) /
+        base.items.length,
+    );
+    const pressureBundle = {
+      ...base,
+      items: base.items.map((item) => ({
+        ...item,
+        calculationTrace: `${item.calculationTrace ?? ""}:${"x".repeat(paddingPerRow)}`,
+      })),
+    };
+    const serializedLength = safeJsonStringify(
+      encodeConsumerRepairBundleForDurableStorage(
+        compactConsumerRepairBundleForDurableStorage(pressureBundle),
+      ),
+      "",
+    ).length;
+
+    expect(pressureBundle.items).toHaveLength(213);
+    expect(serializedLength).toBeGreaterThanOrEqual(
+      CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD,
+    );
+    expect(serializedLength).toBeLessThan(
+      CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD + 300_000,
+    );
+    expect(isLargeConsumerRepairRevisionBundle(pressureBundle)).toBe(true);
   });
 
   it("migrates a legacy 13-record store and persists newly approved estimates after reload", () => {
@@ -486,7 +646,7 @@ describe("approved history durable storage migration", () => {
   it("keeps a quantity edit durable after proactive approved history snapshot compaction", () => {
     jest.useFakeTimers();
     const userId = "approved-history-summary-pressure-edit";
-    const approvedBundles: ConsumerRepairDraftBundle[] = [];
+    const approvedDraftIds: string[] = [];
 
     for (let index = 0; index < 30; index += 1) {
       jest.setSystemTime(new Date(Date.UTC(2026, 6, 9, 11, 0, index)));
@@ -495,7 +655,8 @@ describe("approved history durable storage migration", () => {
         problemText: `Нужно уложить ламинат на ${100 + index} кв м в комнате`,
         rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
-      approvedBundles.push(approved);
+      approvedDraftIds.push(approved.draft.id);
+      __simulateConsumerRepairRequestStoreReloadForTests();
     }
 
     jest.setSystemTime(new Date(Date.UTC(2026, 6, 9, 12, 0, 0)));
@@ -517,12 +678,11 @@ describe("approved history durable storage migration", () => {
     expect(isLargeConsumerRepairRevisionBundle(preparedEdit)).toBe(false);
     const activeRecordKey =
       `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(activeHeavy.draft.id)}`;
-    const oldestApproved = approvedBundles[0]!;
     const oldestRecordKey =
-      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(oldestApproved.draft.id)}`;
+      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(approvedDraftIds[0]!)}`;
     resetConsumerRepairDurableSaveDiagnosticsForTests();
 
-    expect(approvedBundles).toHaveLength(30);
+    expect(approvedDraftIds).toHaveLength(30);
     expect(decodeConsumerRepairBundleFromDurableStorage(
       JSON.parse(storage?.values.get(oldestRecordKey) ?? "{}"),
     )?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
@@ -565,7 +725,7 @@ describe("approved history durable storage migration", () => {
     expect(history.totalCountSource).toBe("durable_store");
   });
 
-  it("reopens a heavy approved estimate edit after many approved history compactions", () => {
+  it("keeps a heavy approved canonical revision immutable after many history compactions", () => {
     jest.useFakeTimers();
     const userId = "approved-history-pressure-approved-edit";
     let latestApproved: ConsumerRepairDraftBundle | null = null;
@@ -577,6 +737,9 @@ describe("approved history durable storage migration", () => {
         problemText: `РќСѓР¶РЅР° СЃРјРµС‚Р° РґР»СЏ С‚СЏР¶РµР»РѕР№ РёСЃС‚РѕСЂРёРё ${index}`,
         rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
       });
+      if (index < 39) {
+        __simulateConsumerRepairRequestStoreReloadForTests();
+      }
     }
 
     if (!latestApproved?.items[0]) throw new Error("latest approved fixture missing");
@@ -585,45 +748,54 @@ describe("approved history durable storage migration", () => {
       `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(latestApproved.draft.id)}`;
 
     jest.setSystemTime(new Date(Date.UTC(2026, 6, 9, 15, 0, 0)));
-    const edited = updateConsumerRepairRequestItemQuantity({
+    const mutate = () => updateConsumerRepairRequestItemQuantity({
       requestDraftId: latestApproved.draft.id,
       itemId: item.id,
       quantity: (item.quantity ?? 0) + 1,
     });
-    const decodedEdited = decodeConsumerRepairBundleFromDurableStorage(
+    expect(mutate).toThrow(ConsumerRepairValidationError);
+    try {
+      mutate();
+    } catch (error) {
+      expect((error as ConsumerRepairValidationError).errors.map((entry) => entry.code))
+        .toContain("CANONICAL_ESTIMATE_BACKEND_REQUIRED");
+    }
+    const decodedPreserved = decodeConsumerRepairBundleFromDurableStorage(
       JSON.parse(storage?.values.get(recordKey) ?? "{}"),
     );
     const history = listConsumerRepairApprovedHistory(userId, { limit: 40 });
 
-    expect(edited.draft.status).toBe("draft");
-    expect(edited.draft.approvedAt).toBeNull();
-    expect(decodedEdited?.draft.status).toBe("draft");
-    expect(decodedEdited?.draft.approvedAt).toBeNull();
-    expect(decodedEdited?.items[0]?.quantity).toBe((item.quantity ?? 0) + 1);
-    expect(decodedEdited?.estimateRevisionState?.current_revision_id)
-      .toBe(edited.estimateRevisionState?.current_revision_id);
-    expect(getConsumerRepairRequest(latestApproved.draft.id).draft.status).toBe("draft");
-    expect(history.totalApprovedCount).toBe(39);
+    expect(decodedPreserved?.draft.status).toBe("consumer_approved");
+    expect(decodedPreserved?.draft.approvedAt).toBeTruthy();
+    expect(decodedPreserved?.items).toHaveLength(0);
+    expect(decodedPreserved?.durableHistorySummary?.rowCount).toBe(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    const preserved = getConsumerRepairRequest(latestApproved.draft.id);
+    expect(preserved.draft.status).toBe("consumer_approved");
+    expect(preserved.items[0]?.quantity).toBe(item.quantity);
+    expect(history.totalApprovedCount).toBe(40);
   });
 
-  it("proactively compacts old heavy approved snapshots before Android startup hydration pressure", () => {
+  it("proactively compacts old heavy approved snapshots before Android startup hydration pressure", async () => {
     jest.useFakeTimers();
     const userId = "approved-history-proactive-summary-window";
-    const approvedBundles: ConsumerRepairDraftBundle[] = [];
+    const approvedDraftIds: string[] = [];
 
     for (let index = 0; index < 10; index += 1) {
       jest.setSystemTime(new Date(Date.UTC(2026, 6, 9, 13, 0, index)));
-      approvedBundles.push(createHeavyApprovedConsumerRepairRequest({
+      const approved = createHeavyApprovedConsumerRepairRequest({
         userId,
         problemText: `РќСѓР¶РЅРѕ СЃРѕС…СЂР°РЅРёС‚СЊ Android history snapshot ${index}`,
         rowCount: LOCAL_STORAGE_HISTORY_ROW_COUNT,
-      }));
+      });
+      approvedDraftIds.push(approved.draft.id);
+      __simulateConsumerRepairRequestStoreReloadForTests();
     }
+    await flushTransactionalConsumerRepairWrites();
 
     const oldestRecordKey =
-      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(approvedBundles[0]!.draft.id)}`;
+      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(approvedDraftIds[0]!)}`;
     const newestRecordKey =
-      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(approvedBundles.at(-1)!.draft.id)}`;
+      `${CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX}${encodeURIComponent(approvedDraftIds.at(-1)!)}`;
     const decodedOldest = decodeConsumerRepairBundleFromDurableStorage(
       JSON.parse(storage?.values.get(oldestRecordKey) ?? "{}"),
     );
@@ -636,7 +808,14 @@ describe("approved history durable storage migration", () => {
       LOCAL_STORAGE_HISTORY_ROW_COUNT,
     );
     expect(decodedOldest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
-    expect(decodedNewest?.items).toHaveLength(LOCAL_STORAGE_HISTORY_ROW_COUNT);
+    expect(decodedNewest?.items).toHaveLength(0);
+    expect(decodedNewest?.durableHistorySummary?.rowCount).toBe(
+      LOCAL_STORAGE_HISTORY_ROW_COUNT,
+    );
+    expect(decodedNewest?.durableHistorySummary?.fullSnapshotAvailable).toBe(false);
+    expect(storage?.values.has(
+      `${CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX}${encodeURIComponent(approvedDraftIds.at(-1)!)}`,
+    )).toBe(true);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const history = listConsumerRepairApprovedHistory(userId, { limit: 10 });

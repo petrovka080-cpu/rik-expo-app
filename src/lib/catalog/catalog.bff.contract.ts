@@ -486,5 +486,5 @@ export const CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS = Object.freeze([
   },
 ] as const satisfies readonly CatalogTransportBffOperationContract[]);
 
-export const CATALOG_TRANSPORT_BFF_DIRECT_FALLBACK_REASON =
-  "Catalog transport read traffic is BFF-aware but disabled by default; the existing bounded Supabase read transport is retained as a compatibility fallback until readonly BFF traffic is explicitly enabled.";
+export const CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY =
+  "Catalog reads use the canonical BFF owner exclusively; unavailable or invalid BFF transport fails closed without a direct client database fallback.";

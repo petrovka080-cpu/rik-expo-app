@@ -1,4 +1,3 @@
-import { GLOBAL_WORK_CATEGORIES, resolveGlobalWorkType } from "../globalEstimate/globalWorkTypeResolver";
 import type { GlobalWorkCategory } from "../globalEstimate/globalEstimateTypes";
 import { extractEstimatePrompt } from "./estimatePromptExtractor";
 import type { EstimateIntentRoute } from "./estimateRoutingTypes";
@@ -98,6 +97,8 @@ const EXTRA_CATEGORY_KEYWORDS: Partial<Record<GlobalWorkCategory, string[]>> = {
   delivery_equipment: ["delivery", "crane", "equipment", "rental", "temporary", "dock leveler", "industrial equipment"],
 };
 
+const ESTIMATE_INTENT_CATEGORIES = Object.keys(CATEGORY_KEYWORDS) as GlobalWorkCategory[];
+
 function includesAny(text: string, values: readonly string[]): boolean {
   return values.some((value) => text.includes(value));
 }
@@ -107,20 +108,23 @@ function categoryKeywords(category: GlobalWorkCategory): string[] {
 }
 
 export function resolveEstimateCategory(text: string): GlobalWorkCategory {
-  for (const category of GLOBAL_WORK_CATEGORIES) {
-    if (includesAny(text, categoryKeywords(category))) return category;
+  let best: { category: GlobalWorkCategory; specificity: number } | null = null;
+  for (const category of ESTIMATE_INTENT_CATEGORIES) {
+    const specificity = categoryKeywords(category)
+      .filter((keyword) => text.includes(keyword))
+      .reduce((maximum, keyword) => Math.max(maximum, keyword.length), 0);
+    if (specificity > (best?.specificity ?? 0)) best = { category, specificity };
   }
-  return "other";
+  return best?.category ?? "other";
 }
 
 export function classifyEstimateIntent(originalText: string): EstimateIntentRoute {
   const extracted = extractEstimatePrompt(originalText);
   const normalized = extracted.normalizedText;
   const triggerHit = includesAny(normalized, ESTIMATE_TRIGGERS);
-  const constructionHit = includesAny(normalized, CONSTRUCTION_VERBS) || GLOBAL_WORK_CATEGORIES.some((category) => includesAny(normalized, categoryKeywords(category)));
+  const constructionHit = includesAny(normalized, CONSTRUCTION_VERBS) || ESTIMATE_INTENT_CATEGORIES.some((category) => includesAny(normalized, categoryKeywords(category)));
   const isEstimateIntent = triggerHit || (constructionHit && extracted.volume !== undefined);
-  const work = resolveGlobalWorkType({ text: originalText, language: extracted.language });
-  const category = work.workKey === "other_construction_work" ? resolveEstimateCategory(normalized) : work.category;
+  const category = resolveEstimateCategory(normalized);
   const confidence: EstimateIntentRoute["confidence"] =
     triggerHit && constructionHit ? "high" :
       triggerHit || constructionHit ? "medium" :
@@ -131,7 +135,6 @@ export function classifyEstimateIntent(originalText: string): EstimateIntentRout
     confidence,
     originalText,
     language: extracted.language,
-    resolvedWorkKey: work.workKey,
     resolvedCategory: category,
     volume: extracted.volume,
     unit: extracted.unit,

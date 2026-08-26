@@ -142,6 +142,7 @@ export class CatalogItemPicker extends React.Component<Props, State> {
             <View style={styles.searchRow} testID="request-catalog-picker-search-row">
               <TextInput
                 value={this.state.query}
+                importantForAutofill="no"
                 onChangeText={this.setQuery}
                 placeholder={"Введите минимум 2 буквы"}
                 style={styles.input}

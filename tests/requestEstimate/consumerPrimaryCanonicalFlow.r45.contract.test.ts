@@ -10,6 +10,13 @@ describe("R4.5: основной consumer-поток сметы", () => {
     ["ла", "ла"],
     ["кладка", "кладка"],
     ["монтаж ламината на большой площади 1547 кв метров", "монтаж ламината на большой площади"],
+    [
+      "электрика под ключ 100 кв метров площадь длина трассы 500 метров 10 розеток 10 выключателей 10 точек освещения",
+      "электрика под ключ площадь длина трассы розеток выключателей точек освещения",
+    ],
+    ["гидроизоляция крыши 100 кв м", "гидроизоляция крыши"],
+    ["смета на укладку брусчатки на 587 кв м", "укладку брусчатки"],
+    ["смета на электромонтаж дома 180 кв м", "электромонтаж дома"],
   ])("ищет работу, а количество сохраняет для компиляции: %s", (prompt, expected) => {
     expect(canonicalWorkSearchQueryFromPrompt(prompt)).toBe(expected);
   });
@@ -64,5 +71,49 @@ describe("R4.5: основной consumer-поток сметы", () => {
       .toBe("бетонные тумбы 10 штук");
     expect(composeSelectedWorkProblemText(suggestion, "ла"))
       .toBe("бетонные тумбы ");
+  });
+
+  test("извлекает все явно названные электрические количества для backend-компиляции", () => {
+    const schema = [
+      ["area_m2", "m2", "Площадь"],
+      ["route_length_m", "m", "Длина трассы"],
+      ["outlet_count", "pcs", "Количество розеток"],
+      ["switch_count", "pcs", "Количество выключателей"],
+      ["lighting_point_count", "pcs", "Количество точек освещения"],
+    ].map(([parameterId, unitId, titleRu], ordinal) => ({
+      parameterId,
+      ordinal,
+      valueType: "decimal" as const,
+      unitId,
+      titleRu,
+      required: true,
+      defaultValue: null,
+      constraints: { min: 0 },
+      visibilityRole: "USER_INPUT" as const,
+      valueSourceRole: "USER_MEASURED" as const,
+      semanticParameterKey: parameterId,
+    }));
+    const catalog = {
+      catalogId: "electrical_turnkey_explicit_scope",
+      releaseId: "00000000-0000-4000-8000-000000000001",
+      namespace: "global",
+      domain: "electrical",
+      workKey: "electrical_turnkey_explicit_scope",
+      titleRu: "Электрика под ключ по явным количествам",
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: schema,
+    } satisfies CanonicalEstimateCatalogItem;
+    expect(buildCanonicalBaselineInputs({
+      catalog,
+      prompt: "электрика под ключ 100 кв метров площадь длина трассы 500 метров 10 розеток 10 выключателей 10 точек освещения",
+    })).toEqual({
+      area_m2: "100",
+      route_length_m: "500",
+      outlet_count: "10",
+      switch_count: "10",
+      lighting_point_count: "10",
+    });
   });
 });

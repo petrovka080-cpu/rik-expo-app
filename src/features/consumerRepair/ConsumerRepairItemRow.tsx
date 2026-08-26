@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -19,10 +19,13 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
   onOpenCatalog?: (itemId: string) => void;
   onOpenPhoto?: (itemId: string) => void;
   showPhotoButton?: boolean;
+  photoThumbnailUri?: string | null;
 };
 
 function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
@@ -123,10 +126,13 @@ function ConsumerRepairItemRowComponent({
   item,
   onQuantityChange,
   onUnitPriceChange,
+  onSpecificationChange,
+  onOptionalChange,
   onRemove,
   onOpenCatalog,
   onOpenPhoto,
   showPhotoButton,
+  photoThumbnailUri,
 }: Props): React.ReactElement {
   const unitLabel = React.useMemo(() => formatEstimateUnitLabel(item.unitLabel || item.unit), [item.unit, item.unitLabel]);
   const catalogBindingLabel = React.useMemo(() => bindingLabel(item), [item]);
@@ -138,18 +144,41 @@ function ConsumerRepairItemRowComponent({
   );
   const itemKindLabel = React.useMemo(() => consumerRepairRequestItemTypeLabel(item), [item]);
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
+  const photoRowIdentity = React.useMemo(
+    () => String(item.sourceParameters?.rowCode ?? item.id).trim() || item.id,
+    [item.id, item.sourceParameters],
+  );
+  const canonicalRowNativeId = React.useMemo(() => {
+    const source = item.sourceParameters ?? {};
+    const parts = [
+      source.canonicalBackendRevisionId,
+      source.canonicalBackendReleaseId,
+      source.canonicalBackendCatalogId,
+      source.rowSha256,
+      item.unit,
+      item.itemType,
+      source.rowCode,
+    ].map((value) => String(value ?? "").trim());
+    return parts.every(Boolean) ? `canonical-estimate-row-identity|${parts.join("|")}` : undefined;
+  }, [item.itemType, item.sourceParameters, item.unit]);
   const professionalEvidence = React.useMemo(
     () => buildRequestEstimateProfessionalRowEvidence(item),
     [item],
   );
   const itemQuantityText = formatInputNumber(item.quantity);
+  const itemPriceText = formatInputNumber(item.unitPrice);
+  const itemOptional = item.sourceParameters?.includedInEstimate === false;
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
   const [quantityText, setQuantityText] = React.useState(itemQuantityText);
+  const [priceText, setPriceText] = React.useState(itemPriceText);
+  const [specificationText, setSpecificationText] = React.useState(item.titleRu);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
   React.useEffect(() => {
     setQuantityText(itemQuantityText);
+    setPriceText(itemPriceText);
+    setSpecificationText(item.titleRu);
     setProfessionalEvidenceOpen(false);
-  }, [item.id, itemQuantityText]);
+  }, [item.id, item.titleRu, itemPriceText, itemQuantityText]);
   const commitQuantityText = React.useCallback((nextValue: string, source: ConsumerRepairQuantityEditSource = "direct_input") => {
     const previousQuantity = item.quantity ?? null;
     const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
@@ -193,13 +222,29 @@ function ConsumerRepairItemRowComponent({
     commitQuantityText(formatInputNumber(Math.max(0, baseQuantity + delta)), "stepper");
   }, [commitQuantityText, item.quantity, quantityText]);
   return (
-    <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
+    <View
+      style={styles.row}
+      testID={`consumer-repair-item-${item.id}`}
+      nativeID={canonicalRowNativeId}
+    >
       <View style={styles.main}>
         <Text style={styles.title}>{item.titleRu}</Text>
         <Text style={styles.meta}>{itemKindLabel}</Text>
+        <View style={styles.specificationField}>
+          <Text style={styles.label}>{"Спецификация / название"}</Text>
+          <TextInput
+            value={specificationText}
+            importantForAutofill="no"
+            onChangeText={setSpecificationText}
+            onBlur={() => onSpecificationChange?.(item.id, specificationText)}
+            style={styles.specificationInput}
+            testID={`consumer-repair-item-specification-input-${item.id}`}
+            accessibilityLabel={`${"Спецификация"} ${item.titleRu}`}
+          />
+        </View>
         <View style={styles.fields}>
           <View style={styles.field}>
-            <Text style={styles.label}>{"\u041a\u043e\u043b-\u0432\u043e"}</Text>
+            <Text style={styles.label}>Количество</Text>
             <View style={styles.quantityLine}>
               <Pressable
                 testID={`consumer-repair-item-minus-${item.id}`}
@@ -213,13 +258,14 @@ function ConsumerRepairItemRowComponent({
               <TextInput
                 ref={quantityInputRef}
                 value={quantityText}
+                importantForAutofill="no"
                 onChangeText={(value) => commitQuantityText(value, "direct_input")}
                 keyboardType="decimal-pad"
                 inputMode="decimal"
                 selectTextOnFocus
                 style={styles.input}
                 testID={`consumer-repair-item-quantity-input-${item.id}`}
-                accessibilityLabel={`${"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e"} ${item.titleRu}`}
+                accessibilityLabel={`${"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e"} ${item.titleRu}: ${quantityText} ${unitLabel}`}
               />
               <Pressable
                 testID={`consumer-repair-item-plus-${item.id}`}
@@ -246,10 +292,12 @@ function ConsumerRepairItemRowComponent({
           <View style={styles.field}>
             <Text style={styles.label}>{"\u0426\u0435\u043d\u0430"}</Text>
             <TextInput
-              value={formatInputNumber(item.unitPrice)}
+              value={priceText}
+              importantForAutofill="no"
               placeholder="Укажите цену"
               placeholderTextColor="#94A3B8"
-              onChangeText={(value) => onUnitPriceChange(item.id, value)}
+              onChangeText={setPriceText}
+              onBlur={() => onUnitPriceChange(item.id, priceText)}
               keyboardType="decimal-pad"
               inputMode="decimal"
               selectTextOnFocus
@@ -268,6 +316,18 @@ function ConsumerRepairItemRowComponent({
             {itemPriceStatusLabel}
           </Text>
         ) : null}
+        <Pressable
+          accessibilityRole="switch"
+          accessibilityState={{ checked: itemOptional }}
+          accessibilityLabel={`${"Не включать позицию в расчёт"} ${item.titleRu}`}
+          onPress={() => onOptionalChange?.(item.id, !itemOptional)}
+          style={[styles.optionalToggle, itemOptional && styles.optionalToggleActive]}
+          testID={`consumer-repair-item-optional-toggle-${item.id}`}
+        >
+          <Text style={[styles.optionalToggleText, itemOptional && styles.optionalToggleTextActive]}>
+            {itemOptional ? "Опциональная позиция" : "Включена в расчёт"}
+          </Text>
+        </Pressable>
         {item.selectedProductBinding ? (
           <Text style={styles.selectedProduct} testID={`consumer-repair-item-selected-product-${item.id}`}>
             {`${"\u0412\u044b\u0431\u0440\u0430\u043d \u0442\u043e\u0432\u0430\u0440"}: ${item.selectedProductBinding.visibleName}${item.selectedProductBinding.packageLabel ? `, ${item.selectedProductBinding.packageLabel}` : ""}`}
@@ -289,7 +349,7 @@ function ConsumerRepairItemRowComponent({
                 color="#7C2D12"
               />
               <Text style={styles.traceButtonText}>
-                {"\u041f\u043e\u0447\u0435\u043c\u0443 \u044d\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0430 \u0432 \u0441\u043c\u0435\u0442\u0435"}
+                Как посчитано
               </Text>
             </Pressable>
             {professionalEvidenceOpen ? (
@@ -319,6 +379,24 @@ function ConsumerRepairItemRowComponent({
             <Text style={styles.photoButtonText}>Фото</Text>
           </Pressable>
         ) : null}
+        {item.itemType === "material" && photoThumbnailUri ? (
+          <View
+            accessible={false}
+            style={styles.photoAttachment}
+            testID={`estimate-material-row-photo-attached-${photoRowIdentity}`}
+          >
+            <Image
+              accessible
+              accessibilityLabel={`Прикреплённое фото ${item.titleRu}`}
+              accessibilityIgnoresInvertColors
+              resizeMode="cover"
+              source={{ uri: photoThumbnailUri }}
+              style={styles.photoAttachmentImage}
+              testID={`estimate-material-row-photo-view-${photoRowIdentity}`}
+            />
+            <Text style={styles.photoAttachmentText}>Прикреплённое фото</Text>
+          </View>
+        ) : null}
         {catalogBindingLabel ? (
           <Pressable
             accessibilityRole="button"
@@ -327,7 +405,7 @@ function ConsumerRepairItemRowComponent({
             style={styles.catalogBadge}
             testID={`consumer-repair-item-catalog-${item.id}`}
           >
-            <Text style={styles.catalogBadgeText}>{catalogBindingLabel}</Text>
+            <Text style={styles.catalogBadgeText}>Выбрать материал</Text>
           </Pressable>
         ) : null}
       </View>
@@ -377,6 +455,22 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 8,
     marginTop: 8,
+  },
+  specificationField: {
+    marginTop: 8,
+    gap: 4,
+  },
+  specificationInput: {
+    minHeight: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    color: "#0F172A",
+    fontSize: 12,
+    fontWeight: "800",
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    backgroundColor: "#FFFFFF",
   },
   field: {
     gap: 4,
@@ -444,6 +538,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
   },
+  optionalToggle: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    minHeight: 30,
+    justifyContent: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 8,
+  },
+  optionalToggleActive: {
+    borderColor: "#F59E0B",
+    backgroundColor: "#FFFBEB",
+  },
+  optionalToggleText: {
+    color: "#334155",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  optionalToggleTextActive: {
+    color: "#92400E",
+  },
   selectedProduct: {
     marginTop: 6,
     color: "#334155",
@@ -477,6 +594,28 @@ const styles = StyleSheet.create({
     color: "#166534",
     fontSize: 11,
     fontWeight: "900",
+  },
+  photoAttachment: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    width: 132,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#F0FDF4",
+    overflow: "hidden",
+  },
+  photoAttachmentImage: {
+    width: 130,
+    height: 86,
+    backgroundColor: "#DCFCE7",
+  },
+  photoAttachmentText: {
+    color: "#166534",
+    fontSize: 10,
+    fontWeight: "900",
+    paddingHorizontal: 6,
+    paddingVertical: 4,
   },
   catalogBadge: {
     marginTop: 6,

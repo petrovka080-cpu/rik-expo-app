@@ -1,13 +1,4 @@
-const mockFrom = jest.fn();
-const mockRpc = jest.fn();
 const mockCallCatalogTransportBffRead = jest.fn();
-
-jest.mock("../../src/lib/supabaseClient", () => ({
-  supabase: {
-    from: (...args: unknown[]) => mockFrom(...args),
-    rpc: (...args: unknown[]) => mockRpc(...args),
-  },
-}));
 
 jest.mock("../../src/lib/catalog/catalog.bff.client", () => ({
   callCatalogTransportBffRead: (...args: unknown[]) =>
@@ -27,30 +18,16 @@ import {
   runSuppliersListRpc,
 } from "../../src/lib/catalog/catalog.transport";
 
-const buildPagedQuery = (...pages: unknown[]) => {
-  const range = jest
-    .fn()
-    .mockImplementation(() =>
-      Promise.resolve(
-        pages.length > 1
-          ? pages[Math.min(range.mock.calls.length - 1, pages.length - 1)]
-          : pages[0],
-      ),
-    );
-  const chain = { eq: jest.fn(), order: jest.fn(), range };
-  chain.eq.mockReturnValue(chain);
-  chain.order.mockReturnValue(chain);
-  const select = jest.fn().mockReturnValue(chain);
-  return { select, eq: chain.eq, order: chain.order, range };
-};
+const resolveBffRows = (data: unknown) => ({
+  status: "ok",
+  response: {
+    result: { data, error: null },
+  },
+});
 
 describe("catalog transport strict-null phase 4", () => {
   beforeEach(() => {
-    mockFrom.mockReset();
-    mockRpc.mockReset();
-    mockCallCatalogTransportBffRead
-      .mockReset()
-      .mockResolvedValue({ status: "unavailable", reason: "BFF_CONTRACT_ONLY" });
+    mockCallCatalogTransportBffRead.mockReset();
   });
 
   it("normalizes catalog group rows by preserving valid values and dropping malformed rows", () => {
@@ -76,7 +53,7 @@ describe("catalog transport strict-null phase 4", () => {
     ]);
   });
 
-  it("normalizes incoming item rows and drops rows with invalid required ids or numbers", () => {
+  it("normalizes incoming item rows and drops rows with invalid ids or quantities", () => {
     expect(
       normalizeIncomingItemRows([
         {
@@ -124,7 +101,7 @@ describe("catalog transport strict-null phase 4", () => {
     ]);
   });
 
-  it("uses the bounded suppliers rpc signature for nullable and explicit search text", () => {
+  it("keeps the bounded suppliers RPC argument contract", () => {
     expect(normalizeSuppliersListRpcArgs(null)).toEqual({
       p_q: "",
       p_limit: 100,
@@ -135,67 +112,19 @@ describe("catalog transport strict-null phase 4", () => {
       p_limit: 100,
       p_offset: 0,
     });
-    expect(normalizeSuppliersListRpcArgs("")).toEqual({
-      p_q: "",
-      p_limit: 100,
-      p_offset: 0,
-    });
   });
 
-  it("wires normalized catalog group rows through the transport boundary", async () => {
-    const query = buildPagedQuery(
-      {
-        data: [
-          { code: "grp-1", name: "Materials", parent_code: null },
-          { code: null, name: "Broken", parent_code: "root" },
-        ],
-        error: null,
-      },
-    );
-    mockFrom.mockReturnValue({ select: query.select });
-
-    await expect(loadCatalogGroupsRows()).resolves.toEqual({
-      data: [{ code: "grp-1", name: "Materials", parent_code: null }],
-      error: null,
-    });
-
-    expect(mockFrom).toHaveBeenCalledWith("catalog_groups_clean");
-    expect(query.select).toHaveBeenCalledWith("code,name,parent_code");
-    expect(query.order).toHaveBeenCalledWith("code", { ascending: true });
-    expect(query.range).toHaveBeenCalledWith(0, 99);
-  });
-
-  it("wires normalized uom rows through the transport boundary", async () => {
-    const query = buildPagedQuery(
-      {
-        data: [
-          { id: "uom-1", code: "kg", name: "Kilogram" },
-          { id: null, code: "pc", name: "Piece" },
-          { id: "bad", code: null, name: "Broken" },
-        ],
-        error: null,
-      },
-    );
-    mockFrom.mockReturnValue({ select: query.select });
-
-    await expect(loadUomRows()).resolves.toEqual({
-      data: [
+  it("normalizes BFF-owned catalog groups, UOMs, and incoming items", async () => {
+    mockCallCatalogTransportBffRead
+      .mockResolvedValueOnce(resolveBffRows([
+        { code: "grp-1", name: "Materials", parent_code: null },
+        { code: null, name: "Broken", parent_code: "root" },
+      ]))
+      .mockResolvedValueOnce(resolveBffRows([
         { id: "uom-1", code: "kg", name: "Kilogram" },
-        { id: undefined, code: "pc", name: "Piece" },
-      ],
-      error: null,
-    });
-
-    expect(mockFrom).toHaveBeenCalledWith("ref_uoms_clean");
-    expect(query.select).toHaveBeenCalledWith("id,code,name");
-    expect(query.order).toHaveBeenCalledWith("code", { ascending: true });
-    expect(query.order).toHaveBeenCalledWith("id", { ascending: true });
-    expect(query.range).toHaveBeenCalledWith(0, 99);
-  });
-
-  it("wires normalized incoming item rows through the transport boundary", async () => {
-    const query = buildPagedQuery({
-      data: [
+        { id: null, code: "pc", name: "Piece" },
+      ]))
+      .mockResolvedValueOnce(resolveBffRows([
         {
           incoming_id: "inc-1",
           incoming_item_id: "item-1",
@@ -206,21 +135,19 @@ describe("catalog transport strict-null phase 4", () => {
           qty_expected: 10,
           qty_received: 7,
         },
-        {
-          incoming_id: "inc-1",
-          incoming_item_id: null,
-          purchase_item_id: "pi-2",
-          code: "MAT-2",
-          name: "Broken",
-          uom: "bag",
-          qty_expected: 5,
-          qty_received: 5,
-        },
+      ]));
+
+    await expect(loadCatalogGroupsRows()).resolves.toEqual({
+      data: [{ code: "grp-1", name: "Materials", parent_code: null }],
+      error: null,
+    });
+    await expect(loadUomRows()).resolves.toEqual({
+      data: [
+        { id: "uom-1", code: "kg", name: "Kilogram" },
+        { id: undefined, code: "pc", name: "Piece" },
       ],
       error: null,
     });
-    mockFrom.mockReturnValue({ select: query.select });
-
     await expect(loadIncomingItemRows("inc-1")).resolves.toEqual({
       data: [
         {
@@ -236,31 +163,21 @@ describe("catalog transport strict-null phase 4", () => {
       ],
       error: null,
     });
-
-    expect(mockFrom).toHaveBeenCalledWith("wh_incoming_items_clean");
-    expect(query.select).toHaveBeenCalledWith(
-      "incoming_id,incoming_item_id,purchase_item_id,code,name,uom,qty_expected,qty_received",
-    );
-    expect(query.eq).toHaveBeenCalledWith("incoming_id", "inc-1");
-    expect(query.order).toHaveBeenCalledWith("incoming_item_id", { ascending: true });
-    expect(query.range).toHaveBeenCalledWith(0, 99);
   });
 
-  it("passes bounded suppliers rpc args at the transport boundary", async () => {
-    mockRpc.mockResolvedValue({ data: [], error: null });
+  it("passes suppliers RPC input only to the canonical BFF operation", async () => {
+    mockCallCatalogTransportBffRead.mockResolvedValue(resolveBffRows([]));
 
     await runSuppliersListRpc(null);
     await runSuppliersListRpc("cement");
 
-    expect(mockRpc).toHaveBeenNthCalledWith(1, "suppliers_list", {
-      p_q: "",
-      p_limit: 100,
-      p_offset: 0,
+    expect(mockCallCatalogTransportBffRead).toHaveBeenNthCalledWith(1, {
+      operation: "catalog.suppliers.rpc",
+      args: { searchTerm: null },
     });
-    expect(mockRpc).toHaveBeenNthCalledWith(2, "suppliers_list", {
-      p_q: "cement",
-      p_limit: 100,
-      p_offset: 0,
+    expect(mockCallCatalogTransportBffRead).toHaveBeenNthCalledWith(2, {
+      operation: "catalog.suppliers.rpc",
+      args: { searchTerm: "cement" },
     });
   });
 });

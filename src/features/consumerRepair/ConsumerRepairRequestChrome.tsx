@@ -1,7 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View, type TextInput } from "react-native";
-import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import type {
   ConsumerRepairApprovedHistoryPage,
@@ -99,63 +98,136 @@ export function ConsumerRepairRequestStickyActions({
   onApproveDraft,
   onPrepareDraft,
 }: StickyActionsProps) {
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
   const finalized = (sent || approved) && !needsFreshApproval;
   const shouldPrepareEstimate =
     hasPendingPrompt || (!finalized && estimateRequiresRebuild);
+  const canDeleteDraft = hasBundle && !approved && !sent;
+  React.useEffect(() => {
+    if (!canDeleteDraft) setDeleteConfirmationVisible(false);
+  }, [canDeleteDraft]);
   return (
-    <AppStickyActionBar
-      visible
-      placement="above_bottom_nav"
-      safeAreaAware
-      secondary={
-        hasBundle && (hasSnapshot || finalized)
-          ? [{
-              labelRu: "PDF",
-              onPress: finalized ? onOpenPdf : onMakePdf,
-              testID: finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf",
-            }]
-          : []
-      }
-      danger={
-        hasBundle && !approved && !sent
-          ? {
-              labelRu: "Удалить",
-              onPress: onDeleteDraft,
-              showLabel: true,
-              testID: "consumer-repair-delete-draft",
-            }
-          : undefined
-      }
-      primary={
-        shouldPrepareEstimate
-          ? {
-              labelRu: hasPendingPrompt
-                ? "Сформировать смету"
-                : "Повторить расчёт",
-              onPress: onPrepareDraft,
-              showLabel: true,
-              testID: "consumer-repair-prepare-draft",
-            }
-          : finalized
-          ? { labelRu: "Новая", onPress: onCreateNew, testID: "consumer-repair-new" }
-          : hasBundle
-            ? {
-                labelRu: approvalBlockedByEstimate
-                  ? "Сначала рассчитайте смету"
-                  : "Подтвердить смету",
-                onPress: onApproveDraft,
-                disabled: approvalBlockedByEstimate,
-                showLabel: true,
-                testID: "consumer-repair-approve",
-              }
-            : {
-                labelRu: "Сформировать смету",
-                onPress: onPrepareDraft,
-                showLabel: true,
-                testID: "consumer-repair-prepare-draft",
-              }
-      }
-    />
+    <View
+      accessibilityLabel="Действия со сметой"
+      style={styles.bottomActions}
+      testID="consumer-repair-bottom-actions"
+    >
+      <Text style={styles.bottomActionsTitle}>Действия со сметой</Text>
+      {hasBundle && (hasSnapshot || finalized) ? (
+        <Pressable
+          accessibilityLabel="PDF"
+          accessibilityRole="button"
+          onPress={finalized ? onOpenPdf : onMakePdf}
+          style={[styles.bottomActionButton, styles.bottomActionSecondary]}
+          testID={finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"}
+        >
+          <Ionicons name="download-outline" size={18} color="#0F172A" />
+          <Text style={styles.bottomActionSecondaryText}>PDF</Text>
+        </Pressable>
+      ) : null}
+      {shouldPrepareEstimate ? (
+        <Pressable
+          accessibilityLabel={hasPendingPrompt ? "Сформировать смету" : "Повторить расчёт"}
+          accessibilityRole="button"
+          onPress={onPrepareDraft}
+          style={[styles.bottomActionButton, styles.bottomActionPrimary]}
+          testID="consumer-repair-prepare-draft"
+        >
+          <Ionicons name="calculator-outline" size={18} color="#FFFFFF" />
+          <Text style={styles.bottomActionPrimaryText}>
+            {hasPendingPrompt ? "Сформировать смету" : "Повторить расчёт"}
+          </Text>
+        </Pressable>
+      ) : finalized ? (
+        <Pressable
+          accessibilityLabel="Новая смета"
+          accessibilityRole="button"
+          onPress={onCreateNew}
+          style={[styles.bottomActionButton, styles.bottomActionPrimary]}
+          testID="consumer-repair-new"
+        >
+          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <Text style={styles.bottomActionPrimaryText}>Новая смета</Text>
+        </Pressable>
+      ) : hasBundle ? (
+        <Pressable
+          accessibilityLabel={approvalBlockedByEstimate ? "Сначала рассчитайте смету" : "Подтвердить смету"}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: approvalBlockedByEstimate }}
+          disabled={approvalBlockedByEstimate}
+          onPress={onApproveDraft}
+          style={[
+            styles.bottomActionButton,
+            styles.bottomActionPrimary,
+            approvalBlockedByEstimate ? styles.bottomActionDisabled : null,
+          ]}
+          testID="consumer-repair-approve"
+        >
+          <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+          <Text style={styles.bottomActionPrimaryText}>
+            {approvalBlockedByEstimate ? "Сначала рассчитайте смету" : "Подтвердить смету"}
+          </Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          accessibilityLabel="Сформировать смету"
+          accessibilityRole="button"
+          onPress={onPrepareDraft}
+          style={[styles.bottomActionButton, styles.bottomActionPrimary]}
+          testID="consumer-repair-prepare-draft"
+        >
+          <Ionicons name="calculator-outline" size={18} color="#FFFFFF" />
+          <Text style={styles.bottomActionPrimaryText}>Сформировать смету</Text>
+        </Pressable>
+      )}
+      {canDeleteDraft ? (
+        <Pressable
+          accessibilityLabel="Удалить черновик"
+          accessibilityRole="button"
+          onPress={() => setDeleteConfirmationVisible(true)}
+          style={[styles.bottomActionButton, styles.bottomActionDanger]}
+          testID="consumer-repair-delete-draft"
+        >
+          <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+          <Text style={styles.bottomActionPrimaryText}>Удалить черновик</Text>
+        </Pressable>
+      ) : null}
+      {canDeleteDraft && deleteConfirmationVisible ? (
+        <View
+          accessibilityLabel="Подтверждение удаления черновика"
+          style={styles.deleteDraftConfirmation}
+          testID="consumer-repair-delete-confirmation"
+        >
+          <Text style={styles.deleteDraftConfirmationTitle}>Удалить этот черновик?</Text>
+          <Text style={styles.deleteDraftConfirmationText}>
+            Черновик сметы будет удалён. Это действие нельзя отменить.
+          </Text>
+          <View style={styles.deleteDraftConfirmationActions}>
+            <Pressable
+              accessibilityLabel="Отмена удаления"
+              accessibilityRole="button"
+              onPress={() => setDeleteConfirmationVisible(false)}
+              style={[styles.bottomActionButton, styles.bottomActionSecondary, styles.deleteDraftConfirmationButton]}
+              testID="consumer-repair-delete-cancel"
+            >
+              <Text style={styles.bottomActionSecondaryText}>Отмена</Text>
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Подтвердить удаление черновика"
+              accessibilityRole="button"
+              onPress={() => {
+                setDeleteConfirmationVisible(false);
+                onDeleteDraft();
+              }}
+              style={[styles.bottomActionButton, styles.bottomActionDanger, styles.deleteDraftConfirmationButton]}
+              testID="consumer-repair-delete-confirm"
+            >
+              <Text style={styles.bottomActionPrimaryText}>Удалить</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -204,6 +276,7 @@ type ContentProps = {
   bundle: ConsumerRepairDraftBundle | null;
   aiAnswerRu: string | null;
   statusMessage: string | null;
+  revisionHistory: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
   selectedHistoryId: string | null;
   showPdfAction: boolean;
@@ -229,8 +302,10 @@ type ContentProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
-  onAddManual: () => void;
+  onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition: () => void;
   onOpenPhotoForEstimateItem: (itemId: string) => void;
   onAddCustom: () => void;
@@ -273,6 +348,7 @@ export function ConsumerRepairRequestContent({
   bundle,
   aiAnswerRu,
   statusMessage,
+  revisionHistory,
   approvedHistoryPage,
   selectedHistoryId,
   showPdfAction,
@@ -298,6 +374,8 @@ export function ConsumerRepairRequestContent({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onSpecificationChange,
+  onOptionalChange,
   onRemove,
   onAddManual,
   onAddPhotoMaterialRecognition,
@@ -322,6 +400,7 @@ export function ConsumerRepairRequestContent({
   onSelectRoadScope,
   roadScopeSelectionBusy,
 }: ContentProps) {
+  const publicProblemText = sanitizeRequestEstimatePublicText(bundle?.draft.problemText?.trim());
   const hasSelectedApprovedHistory = Boolean(
     selectedHistoryId && approvedHistoryPage.items.some((item) => item.draft.id === selectedHistoryId),
   );
@@ -332,7 +411,7 @@ export function ConsumerRepairRequestContent({
     draftDecisionStatus === "LEGACY_REVIEW_REQUIRED" ||
     Boolean(bundle?.structuredEstimatePayload);
   const statusNode = statusMessage
-    ? <Text style={styles.status} testID="consumer-repair-status">{statusMessage}</Text>
+    ? <Text style={styles.status} testID="consumer-repair-status">{sanitizeRequestEstimatePublicText(statusMessage)}</Text>
     : null;
   const draftPanel = (
     <ConsumerRepairDraftPanel
@@ -347,6 +426,8 @@ export function ConsumerRepairRequestContent({
       onIncrease={onIncrease}
       onQuantityChange={onQuantityChange}
       onUnitPriceChange={onUnitPriceChange}
+      onSpecificationChange={onSpecificationChange}
+      onOptionalChange={onOptionalChange}
       onRemove={onRemove}
       onAddManual={onAddManual}
       onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
@@ -355,6 +436,7 @@ export function ConsumerRepairRequestContent({
       onRestoreLastRemoved={onRestoreLastRemoved}
       canRestoreLastRemoved={canRestoreLastRemoved}
       onOpenCatalog={onOpenCatalog}
+      onSelectCatalogItem={onSelectCatalogItem}
       editingParam={editingParam}
       onOpenParamEditor={onOpenParamEditor}
       onSaveParamEdit={onSaveParamEdit}
@@ -368,9 +450,9 @@ export function ConsumerRepairRequestContent({
 
   return (
     <>
-      {bundle?.draft.problemText?.trim() ? (
+      {publicProblemText ? (
         <View
-          accessibilityLabel={`Текущий запрос: ${bundle.draft.problemText.trim()}`}
+          accessibilityLabel={`Текущий запрос: ${publicProblemText}`}
           style={styles.launchPrompt}
           testID="request-estimate-current-launch-prompt"
         >
@@ -379,7 +461,7 @@ export function ConsumerRepairRequestContent({
             style={styles.launchPromptText}
             testID="request-estimate-current-launch-prompt-text"
           >
-            {bundle.draft.problemText.trim()}
+            {publicProblemText}
           </Text>
         </View>
       ) : null}
@@ -430,6 +512,7 @@ export function ConsumerRepairRequestContent({
       {!prioritizeDraftDecision ? draftPanel : null}
       <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
       <ConsumerRepairHistory
+        revisionHistory={revisionHistory}
         approvedHistoryPage={approvedHistoryPage}
         selectedHistoryId={selectedHistoryId}
         onOpenPdf={onOpenPdf}

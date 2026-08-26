@@ -13,6 +13,7 @@
   "scripts": {
     "start": "expo start",
     "web": "expo start --web -c",
+    "dev:local-review": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev/startLocalDeveloperReview.ps1",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "expo lint",

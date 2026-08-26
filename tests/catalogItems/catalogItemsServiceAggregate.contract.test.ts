@@ -10,7 +10,10 @@ jest.mock("../../src/lib/catalog/catalog.search.service", () => ({
   rikQuickSearch: (...args: unknown[]) => mockRikQuickSearch(...args),
 }));
 
-import { searchCatalogItemsForPicker } from "../../src/lib/catalog/catalogItemsService";
+import {
+  searchCatalogItemsForPicker,
+  searchMaterialCatalogItemsForPicker,
+} from "../../src/lib/catalog/catalogItemsService";
 
 describe("estimate catalog aggregate search", () => {
   beforeEach(() => {
@@ -49,5 +52,25 @@ describe("estimate catalog aggregate search", () => {
     await expect(searchCatalogItemsForPicker("асфальт", 10)).resolves.toEqual([
       expect.objectContaining({ rikCode: "RIK-4", kind: "work", sourceId: "rik_items" }),
     ]);
+  });
+
+  it("uses the public material filter and excludes non-material quick-search rows", async () => {
+    mockLoadCatalogItemsSearchPreviewRows.mockResolvedValue({
+      data: [
+        { id: "material-5", rik_code: "RIK-5", kind: "material", name_human: "Цемент М500", uom_code: "kg" },
+      ],
+      error: null,
+    });
+    mockRikQuickSearch.mockResolvedValue([
+      { rik_code: "RIK-6", kind: "work", name_human: "Укладка цемента", name_human_ru: null, uom_code: "m2" },
+      { rik_code: "RIK-7", kind: "material", name_human: "Цемент М400", name_human_ru: null, uom_code: "kg" },
+    ]);
+
+    const result = await searchMaterialCatalogItemsForPicker("цемент", 12);
+
+    expect(mockLoadCatalogItemsSearchPreviewRows).toHaveBeenCalledWith("цемент", "material", 12);
+    expect(mockRikQuickSearch).toHaveBeenCalledWith("цемент", 12);
+    expect(result.map((item) => item.rikCode)).toEqual(["RIK-5", "RIK-7"]);
+    expect(result.every((item) => item.kind === "material")).toBe(true);
   });
 });

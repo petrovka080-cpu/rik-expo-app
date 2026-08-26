@@ -9,6 +9,8 @@ import {
   type CanonicalEstimateJobAccepted,
   type CanonicalEstimateJobView,
   type CanonicalEstimateLegacyRevisionRequest,
+  type CanonicalEstimatePhotoAttachmentView,
+  type CanonicalEstimatePhotoUploadIntent,
   type CanonicalEstimateRecalculateRequest,
   type CanonicalEstimateRevisionRowsPage,
   type CanonicalEstimateRevisionHistoryPage,
@@ -38,7 +40,29 @@ type ApiErrorEnvelope = {
   requestId?: unknown;
 };
 
-async function accessToken(): Promise<string> {
+const ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 10;
+let accessTokenRefreshInflight: Promise<string> | null = null;
+
+async function refreshAccessToken(): Promise<string> {
+  if (accessTokenRefreshInflight) return accessTokenRefreshInflight;
+  accessTokenRefreshInflight = (async () => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error || !data.session?.access_token) {
+      throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", {
+        code: "AUTH_REQUIRED",
+        httpStatus: 401,
+      });
+    }
+    return data.session.access_token;
+  })();
+  try {
+    return await accessTokenRefreshInflight;
+  } finally {
+    accessTokenRefreshInflight = null;
+  }
+}
+
+async function accessToken(forceRefresh = false): Promise<string> {
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session?.access_token) {
     throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", {
@@ -46,6 +70,12 @@ async function accessToken(): Promise<string> {
       httpStatus: 401,
     });
   }
+  const expiresAt = Number(data.session.expires_at);
+  if (
+    forceRefresh ||
+    !Number.isFinite(expiresAt) ||
+    expiresAt <= Math.floor(Date.now() / 1_000) + ACCESS_TOKEN_REFRESH_SKEW_SECONDS
+  ) return refreshAccessToken();
   return data.session.access_token;
 }
 
@@ -55,9 +85,8 @@ async function invoke<T>(path: string, options: {
   signal?: AbortSignal | null;
   requestClass?: "lightweight_lookup" | "ui_scope_load" | "mutation_request";
 } = {}): Promise<T> {
-  const token = await accessToken();
   const method = options.method ?? "GET";
-  const response = await fetchWithRequestTimeout(
+  const execute = (token: string) => fetchWithRequestTimeout(
     `${resolveFunctionUrl()}/${path.replace(/^\/+/, "")}`,
     {
       method,
@@ -79,6 +108,10 @@ async function invoke<T>(path: string, options: {
       sourceKind: "canonical_estimate_edge_function",
     },
   );
+  let response = await execute(await accessToken());
+  if (response.status === 401) {
+    response = await execute(await accessToken(true));
+  }
   let payload: unknown = null;
   try { payload = await response.json(); } catch { /* normalized below */ }
   if (!response.ok) {
@@ -221,6 +254,13 @@ export async function getCanonicalEstimateCatalogItem(
     `catalog/${encodeURIComponent(catalogId)}${releaseQuery}`,
     { signal, requestClass: "ui_scope_load" },
   );
+  if (result.item.contentAdmission?.allowed !== true
+    || result.item.contentAdmission.contractVersion !== "estimate-admission-r3") {
+    throw new CanonicalEstimateApiError(
+      "Эта смета проходит обновление состава и временно недоступна для нового расчёта.",
+      { code: "ESTIMATE_ADMISSION_DENIED", httpStatus: 409 },
+    );
+  }
   return result.item;
 }
 
@@ -459,6 +499,127 @@ export function getCanonicalEstimateRevisionRows(input: {
     `revisions/${encodeURIComponent(input.revisionId)}/rows?${params.toString()}`,
     { signal: input.signal, requestClass: "ui_scope_load" },
   );
+}
+
+export function createCanonicalEstimatePhotoUpload(input: {
+  revisionId: string;
+  idempotencyKey: string;
+  requestId: string;
+  catalogId: string;
+  rowId: string;
+  contentSha256: string;
+  mimeType: "image/jpeg" | "image/png";
+  sizeBytes: number;
+  replacesAttachmentId?: string | null;
+  signal?: AbortSignal | null;
+}) {
+  return invoke<CanonicalEstimatePhotoUploadIntent>(
+    `revisions/${encodeURIComponent(input.revisionId)}/attachments/photo/uploads`,
+    {
+      method: "POST",
+      body: {
+        idempotencyKey: input.idempotencyKey,
+        requestId: input.requestId,
+        catalogId: input.catalogId,
+        rowId: input.rowId,
+        contentSha256: input.contentSha256,
+        mimeType: input.mimeType,
+        sizeBytes: input.sizeBytes,
+        replacesAttachmentId: input.replacesAttachmentId ?? null,
+      },
+      signal: input.signal,
+      requestClass: "mutation_request",
+    },
+  );
+}
+
+export async function uploadCanonicalEstimatePhotoObject(input: {
+  uploadUrl: string;
+  uploadToken?: string | null;
+  body: ArrayBuffer;
+  mimeType: "image/jpeg" | "image/png";
+  signal?: AbortSignal | null;
+}): Promise<void> {
+  const uploadUrl = new URL(input.uploadUrl, SUPABASE_URL);
+  if (input.uploadToken && !uploadUrl.searchParams.has("token")) {
+    uploadUrl.searchParams.set("token", input.uploadToken);
+  }
+  const response = await fetchWithRequestTimeout(
+    uploadUrl.toString(),
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": input.mimeType,
+        "x-upsert": "false",
+      },
+      body: input.body,
+      signal: input.signal ?? undefined,
+    },
+    {
+      requestClass: "mutation_request",
+      owner: "canonical_estimate_client",
+      operation: "photo_signed_upload",
+      screen: "request",
+      surface: "canonical_estimate_backend",
+      sourceKind: "canonical_estimate_photo_upload",
+    },
+  );
+  if (!response.ok) {
+    throw new CanonicalEstimateApiError("Не удалось загрузить снимок.", {
+      code: "PHOTO_UPLOAD_FAILED",
+      httpStatus: response.status,
+      retryable: response.status >= 500 || response.status === 408 || response.status === 429,
+    });
+  }
+}
+
+export async function finalizeCanonicalEstimatePhotoUpload(input: {
+  revisionId: string;
+  uploadId: string;
+  signal?: AbortSignal | null;
+}) {
+  return invoke<{
+    apiVersion: string;
+    attachment: CanonicalEstimatePhotoAttachmentView;
+    created: boolean;
+  }>(
+    `revisions/${encodeURIComponent(input.revisionId)}/attachments/photo/uploads/${encodeURIComponent(input.uploadId)}/finalize`,
+    { method: "POST", body: {}, signal: input.signal, requestClass: "mutation_request" },
+  );
+}
+
+export async function listCanonicalEstimatePhotoAttachments(input: {
+  revisionId: string;
+  includeDeleted?: boolean;
+  signal?: AbortSignal | null;
+}) {
+  const query = input.includeDeleted ? "?includeDeleted=true" : "";
+  return invoke<{
+    apiVersion: string;
+    revisionId: string;
+    attachments: CanonicalEstimatePhotoAttachmentView[];
+  }>(`revisions/${encodeURIComponent(input.revisionId)}/attachments${query}`, {
+    signal: input.signal,
+    requestClass: "ui_scope_load",
+  });
+}
+
+export async function tombstoneCanonicalEstimatePhotoAttachment(input: {
+  attachmentId: string;
+  idempotencyKey: string;
+  signal?: AbortSignal | null;
+}) {
+  return invoke<{
+    apiVersion: string;
+    attachmentId: string;
+    attachmentEventId: string;
+    status: "deleted";
+  }>(`attachments/${encodeURIComponent(input.attachmentId)}/tombstone`, {
+    method: "POST",
+    body: { idempotencyKey: input.idempotencyKey },
+    signal: input.signal,
+    requestClass: "mutation_request",
+  });
 }
 
 export async function getAllCanonicalEstimateRevisionRows(input: {

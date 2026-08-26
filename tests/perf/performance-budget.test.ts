@@ -14,6 +14,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { execFileSync } from "child_process";
+import { createHash } from "node:crypto";
 
 const SRC = path.resolve(__dirname, "../../src");
 const REPO_ROOT = path.resolve(SRC, "..");
@@ -151,6 +152,58 @@ describe("performance budget вЂ” bundle module count", () => {
     const sPostBaselineGovernedSourceGrowthFiles = currentSourceFiles.filter(
       (file) => !sourceFilesAtGrowthBaseline.has(file),
     ).length;
+    const preAttributedCanonicalEstimateGrowthFiles = new Set([
+      "src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4.ts",
+      "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts",
+      "src/lib/estimate/v4/asphalt/asphaltReferenceV1.ts",
+      "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts",
+      "src/lib/estimate/v4/electrical/consumerRequestCanonicalElectricalEstimate.ts",
+      "src/lib/estimate/v4/electrical/electricalCanonicalV1.ts",
+      "src/lib/estimate/v4/electrical/electricalProfessionalBoqV1.ts",
+      // Review/shadow evidence is not an admitted runtime/backend owner.
+      "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallMaterialSelectionR33.ts",
+      // R5.5.5 adds two exact named boundaries without increasing the sealed
+      // 160-file canonical runtime/backend owner budget below.
+      "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
+      "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.test.ts",
+      "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.ts",
+    ]);
+    const r33MaterialSelectionReviewOwnerFiles = currentSourceFiles.filter(
+      (file) =>
+        file ===
+        "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallMaterialSelectionR33.ts",
+    );
+    const sR33MaterialSelectionReviewOwnerFiles =
+      r33MaterialSelectionReviewOwnerFiles.length;
+    const r555CanonicalClientAuthRefreshProofFiles = currentSourceFiles.filter(
+      (file) =>
+        file ===
+        "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
+    );
+    const sR555CanonicalClientAuthRefreshProofFiles =
+      r555CanonicalClientAuthRefreshProofFiles.length;
+    const r555PublicRussianTechnologyTitleOwnerFiles = currentSourceFiles.filter(
+      (file) => [
+        "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.test.ts",
+        "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.ts",
+      ].includes(file),
+    );
+    const sR555PublicRussianTechnologyTitleOwnerFiles =
+      r555PublicRussianTechnologyTitleOwnerFiles.length;
+    const postBaselineCanonicalEstimateV4AndBackendOwnerFiles = currentSourceFiles
+      .filter(
+        (file) =>
+          !sourceFilesAtGrowthBaseline.has(file) &&
+          !preAttributedCanonicalEstimateGrowthFiles.has(file) &&
+          (file.startsWith("src/lib/estimate/v4/") ||
+            file.startsWith("src/lib/estimate/backendPlatform/")),
+      )
+      .sort();
+    const sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles =
+      postBaselineCanonicalEstimateV4AndBackendOwnerFiles.length;
+    const postBaselineCanonicalEstimateV4AndBackendOwnerIdentity = createHash("sha256")
+      .update(`${postBaselineCanonicalEstimateV4AndBackendOwnerFiles.join("\n")}\n`, "utf8")
+      .digest("hex");
     const sCurrentCorePostCheckpointSourceFiles = [
       "src/lib/ai/inlineWorkPromptContract.ts",
       "src/lib/estimate/aiEstimateParameterCardContract.ts",
@@ -764,6 +817,20 @@ describe("performance budget вЂ” bundle module count", () => {
     const sB2CConsumerRepairRequestFiles =
       countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /^(?!.*\.test\.tsx?$).*\.tsx?$/) +
       countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /^(?!.*\.test\.ts$).*\.ts$/);
+    const canonicalConsumerEstimatePlatformOwnerFiles = [
+      "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
+      "src/features/consumerRepair/consumerEstimateActionRouter.ts",
+      "src/features/consumerRepair/consumerRepairBackendOwnership.ts",
+      "src/features/consumerRepair/consumerRepairCanonicalSessionPreview.ts",
+      "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
+      "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts",
+      "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+      "src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration.ts",
+    ].filter((file) => currentSourceFiles.includes(file));
+    const sCanonicalConsumerEstimatePlatformOwnerFiles =
+      canonicalConsumerEstimatePlatformOwnerFiles.length;
     const sRequestEstimateBoqCatalogViewFiles = [
       path.join(SRC, "features", "consumerRepair", "requestEstimateViewModel.ts"),
       path.join(SRC, "features", "consumerRepair", "RequestEstimateSummaryCard.tsx"),
@@ -827,6 +894,13 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "estimateRevisions"),
       /\.ts$/,
     );
+    const estimateRevisionAuditSnapshotBarrelFiles = [
+      path.join(SRC, "lib", "ai", "estimateRevisions", "index.ts"),
+    ]
+      .filter((file) => fs.existsSync(file))
+      .map((file) => path.relative(REPO_ROOT, file).replace(/\\/g, "/"));
+    const sEstimateRevisionAuditSnapshotImplementationFiles =
+      sEstimateRevisionAuditSnapshotFiles - estimateRevisionAuditSnapshotBarrelFiles.length;
     const sPhotoMaterialExistingRowFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "photoMaterialExistingRow"),
       /\.ts$/,
@@ -1102,7 +1176,6 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "components", "layout", "AppSheetFooter.tsx"),
       path.join(SRC, "components", "layout", "AppStickyActionBar.tsx"),
       path.join(SRC, "components", "layout", "AppStickyHeaderStack.tsx"),
-      path.join(SRC, "components", "layout", "StickyActionBar.tsx"),
       path.join(SRC, "components", "layout", "appLayout.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sGreenCloseoutLiveRouteMediaFiles = [
@@ -1332,7 +1405,6 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalog.bff.contract.ts"),
       path.join(SRC, "lib", "catalog", "catalog.bff.client.ts"),
       path.join(SRC, "lib", "catalog", "catalog.bff.handler.ts"),
-      path.join(SRC, "lib", "catalog", "catalog.transport.supabase.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sDirectSupabaseBypassAssistantStoreBoundaryFiles = [
       path.join(SRC, "features", "ai", "assistantActions.transport.ts"),
@@ -2127,8 +2199,22 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateFeatureStateMachineFiles -
         sEditableEstimateWorkspaceConsumerRepairFiles -
         sConsumerRepairRequestScreenOwnerSplitFiles -
-        sConsumerRepairGovernancePersistenceBoundaryFiles,
+        sConsumerRepairGovernancePersistenceBoundaryFiles -
+        sCanonicalConsumerEstimatePlatformOwnerFiles,
     ).toBeLessThanOrEqual(24);
+    expect(canonicalConsumerEstimatePlatformOwnerFiles).toEqual([
+      "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
+      "src/features/consumerRepair/consumerEstimateActionRouter.ts",
+      "src/features/consumerRepair/consumerRepairBackendOwnership.ts",
+      "src/features/consumerRepair/consumerRepairCanonicalSessionPreview.ts",
+      "src/features/consumerRepair/consumerRepairDraftAnswer.ts",
+      "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts",
+      "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+      "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
+      "src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration.ts",
+    ]);
+    expect(sCanonicalConsumerEstimatePlatformOwnerFiles).toBe(10);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
@@ -2139,7 +2225,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sEditableEstimateWorkspaceCoreFiles).toBeLessThanOrEqual(9);
-    expect(sEstimateRevisionAuditSnapshotFiles).toBeLessThanOrEqual(13);
+    expect(sEstimateRevisionAuditSnapshotImplementationFiles).toBeLessThanOrEqual(13);
+    expect(estimateRevisionAuditSnapshotBarrelFiles).toEqual([
+      "src/lib/ai/estimateRevisions/index.ts",
+    ]);
+    expect(estimateRevisionAuditSnapshotBarrelFiles).toHaveLength(1);
     expect(sPhotoMaterialExistingRowFiles).toBeLessThanOrEqual(12);
     expect(sMobilePhotoCapturePlatformFiles).toBeLessThanOrEqual(14);
     expect(sRealMarketMaterialPricebookFiles).toBeLessThanOrEqual(15);
@@ -2178,8 +2268,21 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     // Exact working-tree baseline on 2026-07-24. This intentionally includes
     // untracked source modules, so the next .ts/.tsx addition fails before commit.
+    expect(sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles).toBe(160);
+    expect(postBaselineCanonicalEstimateV4AndBackendOwnerIdentity).toBe(
+      "df1fc4e27bda7ad51b63a6eab6d72da21c8f643160a83ec52ef11db5727c2b10",
+    );
+    expect(
+      postBaselineCanonicalEstimateV4AndBackendOwnerFiles.every(
+        (file) => !sourceFilesAtGrowthBaseline.has(file),
+      ),
+    ).toBe(true);
     expect(
       sPostBaselineGovernedSourceGrowthFiles -
+        sPostBaselineCanonicalEstimateV4AndBackendOwnerFiles -
+        sR33MaterialSelectionReviewOwnerFiles -
+        sR555CanonicalClientAuthRefreshProofFiles -
+        sR555PublicRussianTechnologyTitleOwnerFiles -
         sCurrentCorePostCheckpointSourceFiles -
         sT8ConsumerRepairApplicationServiceOwnerFiles -
         sT8ProfessionalUnitOntologyOwnerFiles -
@@ -2195,6 +2298,19 @@ describe("performance budget вЂ” bundle module count", () => {
         sPlatformDeveloperAccessOwnerFiles,
     ).toBeLessThanOrEqual(508);
     expect(sCurrentCorePostCheckpointSourceFiles).toBeLessThanOrEqual(7);
+    expect(r33MaterialSelectionReviewOwnerFiles).toEqual([
+      "src/lib/estimate/v4/domains/interiorFinishesComplete/drywallMaterialSelectionR33.ts",
+    ]);
+    expect(sR33MaterialSelectionReviewOwnerFiles).toBe(1);
+    expect(r555CanonicalClientAuthRefreshProofFiles).toEqual([
+      "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
+    ]);
+    expect(sR555CanonicalClientAuthRefreshProofFiles).toBe(1);
+    expect(r555PublicRussianTechnologyTitleOwnerFiles).toEqual([
+      "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.test.ts",
+      "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.ts",
+    ]);
+    expect(sR555PublicRussianTechnologyTitleOwnerFiles).toBe(2);
     expect(t8ConsumerRepairApplicationServiceOwnerFiles).toEqual([
       "src/lib/consumerRequests/consumerRequestEstimateApplicationService.ts",
     ]);

@@ -7,6 +7,8 @@ let settleInitialLaunchBuild: (() => void) | null = null;
 let controllerMountCount = 0;
 
 jest.mock("../../src/lib/consumerRequests/consumerRequestRepository", () => ({
+  ...jest.requireActual("../../src/lib/consumerRequests/consumerRequestRepository"),
+  awaitConsumerRepairBundleDurableCommit: jest.fn(async () => undefined),
   hydrateTransactionalConsumerRepairRequestStore: () =>
     mockInitializeDurableStorage(),
 }));
@@ -81,10 +83,65 @@ jest.mock(
 // eslint-disable-next-line import/first
 import {
   ConsumerRepairRequestScreen,
+  rememberRequestEstimateCanonicalDeepLinkSessionWorkspace,
+  requestEstimateCanonicalDeepLinkWorkspaceDraftPlan,
+  requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId,
   requestEstimateControllerWorkspaceKey,
+  requestEstimateFreshBuildKey,
 } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 
 describe("consumer repair durable storage startup UI", () => {
+  it("reuses one bounded transient draft for sequential canonical deep links", () => {
+    const firstRevisionId = "4aa65e39-a938-4a98-8309-94aeb60d1ba0";
+    const secondRevisionId = "0f6ad5bb-5664-4e9f-bb4a-0f4d008292c4";
+    expect(requestEstimateCanonicalDeepLinkWorkspaceDraftPlan({
+      routeRevisionId: firstRevisionId,
+      requestedRevisionId: firstRevisionId,
+    })).toEqual({
+      targetDraftId: null,
+      replaceCanonicalRevisionHistory: true,
+      establishTransientWorkspace: true,
+    });
+    expect(requestEstimateCanonicalDeepLinkWorkspaceDraftPlan({
+      routeRevisionId: secondRevisionId,
+      requestedRevisionId: secondRevisionId,
+      transientWorkspaceDraftId: "draft-transient-canonical-viewer",
+    })).toEqual({
+      targetDraftId: "draft-transient-canonical-viewer",
+      replaceCanonicalRevisionHistory: true,
+      establishTransientWorkspace: false,
+    });
+    expect(requestEstimateControllerWorkspaceKey({
+      initialCanonicalRevisionId: firstRevisionId,
+    })).toBe("canonical-revision-viewer");
+    expect(requestEstimateControllerWorkspaceKey({
+      initialCanonicalRevisionId: secondRevisionId,
+    })).toBe("canonical-revision-viewer");
+    const consumerUserId = "canonical-viewer-remount-user";
+    expect(requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId({
+      consumerUserId,
+      componentDraftId: null,
+    })).toBeNull();
+    rememberRequestEstimateCanonicalDeepLinkSessionWorkspace({
+      consumerUserId,
+      draftId: "draft-transient-canonical-viewer",
+    });
+    expect(requestEstimateCanonicalDeepLinkSessionWorkspaceDraftId({
+      consumerUserId,
+      componentDraftId: null,
+    })).toBe("draft-transient-canonical-viewer");
+    expect(requestEstimateCanonicalDeepLinkWorkspaceDraftPlan({
+      routeRevisionId: secondRevisionId,
+      requestedRevisionId: secondRevisionId,
+      matchingRevisionDraftId: "draft-user-owned-revision",
+      transientWorkspaceDraftId: "draft-transient-canonical-viewer",
+    })).toEqual({
+      targetDraftId: "draft-user-owned-revision",
+      replaceCanonicalRevisionHistory: false,
+      establishTransientWorkspace: false,
+    });
+  });
+
   beforeEach(() => {
     jest.useFakeTimers();
     mockInitializeDurableStorage.mockReset();
@@ -242,6 +299,47 @@ describe("consumer repair durable storage startup UI", () => {
     });
 
     expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      renderer.unmount();
+    });
+  });
+
+  it("waits for an exact canonical revision launch to settle before hydrating history", async () => {
+    mockInitializeDurableStorage.mockResolvedValueOnce();
+    let renderer!: TestRenderer.ReactTestRenderer;
+    const props = {
+      consumerUserId: "consumer-test-user",
+      initialCanonicalRevisionId: "4aa65e39-a938-4a98-8309-94aeb60d1ba0",
+      launchId: "r5-exact-canonical-launch",
+    };
+
+    expect(requestEstimateFreshBuildKey(props)).toBe(props.launchId);
+    await act(async () => {
+      renderer = TestRenderer.create(<ConsumerRepairRequestScreen {...props} />);
+      await Promise.resolve();
+    });
+    expect(controllerMountCount).toBe(1);
+    expect(mockInitializeDurableStorage).not.toHaveBeenCalled();
+
+    await act(async () => {
+      if (!settleInitialLaunchBuild) throw new Error("exact_launch_settlement_callback_missing");
+      settleInitialLaunchBuild();
+      await Promise.resolve();
+    });
+    expect(mockInitializeDurableStorage).toHaveBeenCalledTimes(1);
+    expect(mockRefreshAfterDurableHydration).not.toHaveBeenCalled();
+
+    await act(async () => {
+      renderer.update(
+        <ConsumerRepairRequestScreen
+          {...props}
+          initialCanonicalRevisionId="0f6ad5bb-5664-4e9f-bb4a-0f4d008292c4"
+        />,
+      );
+      await Promise.resolve();
+    });
+    expect(controllerMountCount).toBe(1);
+
     await act(async () => {
       renderer.unmount();
     });

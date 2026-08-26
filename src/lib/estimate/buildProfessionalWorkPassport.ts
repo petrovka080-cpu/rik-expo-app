@@ -26,6 +26,9 @@ import type {
   WorkPassportParameter,
   WorkPassportRowType,
 } from "./workPassportContract";
+import {
+  resolveBasePublicRussianTitleR555,
+} from "./publicRussianLexiconR555";
 
 export type BaseWorkTemplateManifestRow = {
   template_id: string;
@@ -81,21 +84,12 @@ const baseLocalizedNameCounts = baseManifestTemplates.reduce((counts, template) 
   counts.set(template.localized_name_ru, (counts.get(template.localized_name_ru) ?? 0) + 1);
   return counts;
 }, new Map<string, number>());
-const BASE_CATEGORY_TITLE_LABELS: Record<string, string> = {
-  earthworks: "земляные работы",
-  insulation: "теплоизоляция",
-  paving_roads_landscape: "дорожные покрытия и благоустройство",
-  special_repair: "специальный ремонт",
-  ventilation: "вентиляция",
-  waterproofing: "гидроизоляция",
-};
-
 function localizedBaseTemplateTitle(manifestRow: BaseWorkTemplateManifestRow): string {
-  if ((baseLocalizedNameCounts.get(manifestRow.localized_name_ru) ?? 0) <= 1) {
-    return manifestRow.localized_name_ru;
-  }
-  const label = BASE_CATEGORY_TITLE_LABELS[manifestRow.category] ?? manifestRow.category.replace(/_/g, " ");
-  return `${manifestRow.localized_name_ru} (раздел: ${label})`;
+  return resolveBasePublicRussianTitleR555({
+    localizedNameRu: manifestRow.localized_name_ru,
+    category: manifestRow.category,
+    duplicateTitleCount: baseLocalizedNameCounts.get(manifestRow.localized_name_ru) ?? 0,
+  });
 }
 
 export function clearProfessionalWorkPassportBuildCaches(): void {
@@ -279,17 +273,11 @@ export function buildProfessionalWorkPassportForBaseTemplate(
     familyId,
     category: manifestRow.category,
     localizedNameRu,
-    aliases: manifestRow.aliases,
+    aliases: [localizedNameRu],
     workDescription: {
       titleRu: localizedNameRu,
       workType: manifestRow.work_type,
-      scopeSummary: [
-        localizedNameRu,
-        `${rows.length} compiled BOQ rows`,
-        manifestRow.norm_pack_id,
-        manifestRow.pdf_policy_id,
-        manifestRow.buyer_handoff_policy_id,
-      ].join("; "),
+      scopeSummary: `${localizedNameRu}; профессиональная смета; ${rows.length} строк; нормативный пакет и закупочная ведомость включены`,
     },
     estimateLevel: "PROFESSIONAL_EXPANDED",
     parameterSchema: {
@@ -379,7 +367,7 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
     workDescription: {
       titleRu: family.professionalNameRu,
       workType: family.globalCategory,
-      scopeSummary: `${family.professionalNameRu}; ${template.template_level}; ${rows.length} compiled BOQ rows`,
+      scopeSummary: `${family.professionalNameRu}; предварительная профессиональная смета; ${rows.length} строк`,
     },
     estimateLevel: template.template_level as WorkEstimateLevel,
     parameterSchema: {

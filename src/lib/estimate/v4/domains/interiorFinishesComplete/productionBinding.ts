@@ -125,7 +125,7 @@ export function buildInteriorFinishesProductionDraftV1(
   const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`INTERIOR_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const passportId = `domain-passport:${input.catalog_id}:v1`;
-  const requestedCatalogWorkId = inventory.template_id;
+  const requestedCatalogWorkId = input.catalog_id;
   const domainCompletionV7 = isDrywallDomainCompletionCatalogIdV7(input.catalog_id);
   const registeredProfessionalOwner = isDrywallCeilingBulkheadProfessionalCatalogIdV3(input.catalog_id)
     ? drywallCeilingBulkheadProfessionalOwnerIdV3(input.catalog_id)
@@ -223,10 +223,13 @@ export function buildInteriorFinishesProductionDraftV1(
       priceBasisDate: row.price_basis_date,
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
-      ...(domainCompletionV7 ? {
-        formulaGraphVersion: "FormulaGraphV7",
-        resourceGraphVersion: "ResourceGraphV7",
-      } : {}),
+      ...(isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
+        ? { formulaGraphVersion: "FormulaGraphV4", resourceGraphVersion: "ResourceGraphV4" }
+        : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
+          ? { formulaGraphVersion: "FormulaGraphV6", resourceGraphVersion: "ResourceGraphV6" }
+          : domainCompletionV7
+            ? { formulaGraphVersion: "FormulaGraphV7", resourceGraphVersion: "ResourceGraphV7" }
+            : {}),
     },
     templateId: registeredProfessionalOwner,
     templateVersion: interiorFinishesDomainFactory.package.manifest.domain_version,

@@ -12,7 +12,10 @@ import {
   selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
-import type { ProjectExecutionDraft } from "../projectExecution";
+import {
+  buildProjectExecutionDraftFromEstimate,
+  type ProjectExecutionDraft,
+} from "../projectExecution";
 import {
   cloneConsumerRepairValue,
   deleteConsumerRepairBundle,
@@ -84,6 +87,7 @@ import type {
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
 import { appendCanonicalBackendRevisionProjection } from "./consumerCanonicalBackendRevisionProjection";
+import type { CanonicalEstimatePhotoAttachmentView } from "../estimate/backendPlatform/contracts";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -106,16 +110,33 @@ function canonicalBackendRequired(operation: string): never {
 function canonicalBackendBindingForItems(
   items: readonly ConsumerRepairRequestItem[],
 ): { revisionId: string; releaseId: string } | null {
-  const revisionIds = new Set(items.map((item) =>
+  if (items.length === 0) return null;
+  const revisionIds = items.map((item) =>
     String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
-  ));
-  const releaseIds = new Set(items.map((item) =>
+  );
+  const releaseIds = items.map((item) =>
     String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
-  ));
-  revisionIds.delete("");
-  releaseIds.delete("");
-  if (revisionIds.size !== 1 || releaseIds.size !== 1 || items.length === 0) return null;
-  return { revisionId: [...revisionIds][0], releaseId: [...releaseIds][0] };
+  );
+  if (revisionIds.some((value) => !value) || releaseIds.some((value) => !value)) return null;
+  if (new Set(revisionIds).size !== 1 || new Set(releaseIds).size !== 1) return null;
+  return { revisionId: revisionIds[0], releaseId: releaseIds[0] };
+}
+
+function canonicalBackendProjectExecutionDrafts(input: {
+  aiDraft: ConsumerRepairAiDraft;
+  requestDraftId: string;
+  city?: string | null;
+  generatedAt: string;
+}): ProjectExecutionDraft[] {
+  const payload = input.aiDraft.structuredEstimatePayload;
+  if (!payload) return [];
+  return [buildProjectExecutionDraftFromEstimate(payload, {
+    source: "request_estimate",
+    sourceRequestId: input.requestDraftId,
+    countryCode: "KG",
+    cityOrRegion: input.city?.trim() || undefined,
+    generatedAt: payload.canonicalBackend?.createdAt ?? input.generatedAt,
+  })];
 }
 
 function loadAiEstimateRuntime(): any {
@@ -302,7 +323,7 @@ export function buildApprovedEstimateHistoryRecord(
     workRowsCount,
     pdfArtifactId: typeof canonicalPdfEvent?.payload.artifactId === "string"
       ? canonicalPdfEvent.payload.artifactId
-      : latestPdf?.id ?? null,
+      : latestPdf?.id ?? bundle.durableHistorySummary?.pdfArtifactId ?? null,
     buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
     status: consumerRepairApprovedHistoryRecordStatus(bundle.draft.status),
   };
@@ -576,6 +597,14 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
   problemText?: string | null;
   city?: string | null;
   aiDraft: ConsumerRepairAiDraft;
+  /**
+   * A route-level authoritative revision viewer owns one reusable draft
+   * workspace. Replacing that workspace must not retain every previously
+   * viewed BOQ as another full in-memory revision; the backend remains the
+   * immutable history owner. User edits/recalculations leave this false and
+   * keep the normal append-only draft revision lineage.
+   */
+  replaceCanonicalRevisionHistory?: boolean;
 }): ConsumerRepairDraftBundle {
   const existing = input.requestDraftId
     ? findConsumerRepairBundle(input.requestDraftId)
@@ -591,11 +620,20 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
       selectedWork: input.aiDraft.selectedWork,
       aiDraft: input.aiDraft,
     });
-    return saveConsumerRepairBundle(appendCanonicalBackendRevisionProjection({
+    const projected = appendCanonicalBackendRevisionProjection({
       previousBundle: null,
-      nextBundle: created,
+      nextBundle: {
+        ...created,
+        projectExecutionDrafts: canonicalBackendProjectExecutionDrafts({
+          aiDraft: input.aiDraft,
+          requestDraftId: created.draft.id,
+          city: created.draft.city,
+          generatedAt: created.draft.updatedAt ?? created.draft.createdAt,
+        }),
+      },
       payload: input.aiDraft.structuredEstimatePayload,
-    }));
+    });
+    return saveConsumerRepairBundle(projected);
   }
   if (existing.draft.consumerUserId !== input.consumerUserId) {
     throw new ConsumerRepairValidationError([{
@@ -643,7 +681,12 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     canonicalParameterSession: null,
     structuredEstimatePayload: input.aiDraft.structuredEstimatePayload ?? null,
     electricalCircuitSchedule: input.aiDraft.electricalCircuitSchedule ?? null,
-    projectExecutionDrafts: [],
+    projectExecutionDrafts: canonicalBackendProjectExecutionDrafts({
+      aiDraft: input.aiDraft,
+      requestDraftId: existing.draft.id,
+      city: input.city ?? existing.draft.city,
+      generatedAt: now,
+    }),
     marketplaceLink: createConsumerMarketplaceLink(existing.draft.id),
   }, createConsumerRepairEvent({
     requestDraftId: existing.draft.id,
@@ -658,7 +701,7 @@ export function upsertConsumerRepairCanonicalBackendDraft(input: {
     },
   }));
   return saveConsumerRepairBundle(appendCanonicalBackendRevisionProjection({
-    previousBundle: existing,
+    previousBundle: input.replaceCanonicalRevisionHistory ? null : existing,
     nextBundle: next,
     payload: input.aiDraft.structuredEstimatePayload,
   }));
@@ -999,6 +1042,9 @@ export function prepareConsumerRepairRequestItemQuantityUpdate(input: {
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
+  if (canonicalBackendBindingForItems(bundle.items)) {
+    return canonicalBackendRequired("update_item_quantity");
+  }
   const before = bundle.items.find((item) => item.id === input.itemId);
   const operationId = input.operationId ?? [
     "quantity",
@@ -1137,6 +1183,14 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
   contentHash: string;
   storageReference: string;
   thumbnailReference?: string | null;
+  authoritativeAttachmentId?: string | null;
+  authoritativeAttachmentEventId?: string | null;
+  authoritativeTenantId?: string | null;
+  authoritativeOwnerUserId?: string | null;
+  authoritativeRequestId?: string | null;
+  authoritativeCatalogId?: string | null;
+  authoritativeStorageBucket?: string | null;
+  signedUrlExpiresAt?: string | null;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "attach_media" });
@@ -1160,8 +1214,40 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
   ) {
     throw new Error("CONSUMER_ESTIMATE_PHOTO_REVISION_MISMATCH");
   }
+  const authoritativeAttachmentId = String(input.authoritativeAttachmentId ?? "").trim();
+  const authoritativeAttachmentEventId = String(input.authoritativeAttachmentEventId ?? "").trim();
+  const authoritativeTenantId = String(input.authoritativeTenantId ?? "").trim();
+  const authoritativeOwnerUserId = String(input.authoritativeOwnerUserId ?? "").trim();
+  const authoritativeRequestId = String(input.authoritativeRequestId ?? "").trim();
+  const authoritativeCatalogId = String(input.authoritativeCatalogId ?? "").trim();
+  const authoritativeStorageBucket = String(input.authoritativeStorageBucket ?? "").trim();
+  if ((authoritativeAttachmentId && !authoritativeAttachmentEventId)
+    || (!authoritativeAttachmentId && authoritativeAttachmentEventId)) {
+    throw new Error("CONSUMER_ESTIMATE_PHOTO_AUTHORITATIVE_IDENTITY_INCOMPLETE");
+  }
+  if (authoritativeAttachmentId) {
+    const itemCatalogId = String(item.sourceParameters?.canonicalBackendCatalogId ?? "").trim();
+    if (!authoritativeTenantId
+      || authoritativeOwnerUserId !== input.ownerUserId
+      || authoritativeRequestId !== bundle.draft.id
+      || !itemCatalogId
+      || authoritativeCatalogId !== itemCatalogId
+      || authoritativeStorageBucket !== "private-media"
+      || !/^estimate-photo\/r55\/committed\/[0-9a-f]{2}\/[0-9a-f]{64}\.(?:jpg|png)$/u.test(input.storageReference)
+      || !/^[0-9a-f]{64}$/u.test(input.contentHash)
+      || !["image/jpeg", "image/png"].includes(input.mimeType)
+      || !Number.isSafeInteger(input.sizeBytes)
+      || input.sizeBytes < 1
+      || input.sizeBytes > 20 * 1024 * 1024) {
+      throw new Error("CONSUMER_ESTIMATE_PHOTO_AUTHORITATIVE_IDENTITY_MISMATCH");
+    }
+  }
+  const existing = authoritativeAttachmentId
+    ? (bundle.estimateAttachments ?? []).find((candidate) => candidate.id === authoritativeAttachmentId)
+    : null;
+  if (existing) return bundle;
   const attachment: ConsumerRepairEstimateAttachment = {
-    id: id("consumer_estimate_row_photo"),
+    id: authoritativeAttachmentId || id("consumer_estimate_row_photo"),
     ownerScope: "row",
     estimateId: bundle.draft.id,
     revisionId: input.revisionId,
@@ -1176,6 +1262,14 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
     deleted: false,
     privacy: bundle.draft.orgId ? "organization" : "private",
     redacted: false,
+    serverCommitted: Boolean(authoritativeAttachmentId),
+    authoritativeAttachmentEventId: authoritativeAttachmentEventId || null,
+    authoritativeTenantId: authoritativeTenantId || null,
+    authoritativeOwnerUserId: authoritativeOwnerUserId || null,
+    authoritativeRequestId: authoritativeRequestId || null,
+    authoritativeCatalogId: authoritativeCatalogId || null,
+    authoritativeStorageBucket: authoritativeStorageBucket || null,
+    signedUrlExpiresAt: input.signedUrlExpiresAt ?? null,
   };
   return saveConsumerRepairBundle(withEvent(
     {
@@ -1191,9 +1285,81 @@ export function attachConsumerRepairEstimateRowPhoto(input: {
         revisionId: input.revisionId,
         rowId: input.rowId,
         contentHash: input.contentHash,
+        authoritativeAttachmentId: authoritativeAttachmentId || null,
+        authoritativeAttachmentEventId: authoritativeAttachmentEventId || null,
       },
     }),
   ));
+}
+
+export function synchronizeConsumerRepairAuthoritativePhotoAttachments(input: {
+  requestDraftId: string;
+  ownerUserId: string;
+  revisionId: string;
+  attachments: readonly CanonicalEstimatePhotoAttachmentView[];
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  if (bundle.draft.consumerUserId !== input.ownerUserId) {
+    throw new Error("CONSUMER_ESTIMATE_PHOTO_PROJECTION_OWNER_MISMATCH");
+  }
+  const binding = canonicalBackendBindingForItems(bundle.items);
+  if (!binding || binding.revisionId !== input.revisionId) {
+    throw new Error("CONSUMER_ESTIMATE_PHOTO_PROJECTION_REVISION_MISMATCH");
+  }
+  const catalogIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendCatalogId ?? "").trim()
+  ));
+  catalogIds.delete("");
+  const rowIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.rowCode ?? "").trim()
+  ));
+  rowIds.delete("");
+  const authoritative = input.attachments.map((attachment): ConsumerRepairEstimateAttachment => {
+    if (attachment.ownerUserId !== input.ownerUserId
+      || attachment.requestId !== bundle.draft.id
+      || attachment.parentRevisionId !== input.revisionId
+      || catalogIds.size !== 1
+      || !catalogIds.has(attachment.catalogId)
+      || !rowIds.has(attachment.rowId)
+      || !attachment.attachmentId
+      || !attachment.attachmentEventId
+      || !/^[0-9a-f]{64}$/u.test(attachment.contentSha256)
+      || attachment.sizeBytes < 1) {
+      throw new Error("CONSUMER_ESTIMATE_PHOTO_PROJECTION_IDENTITY_MISMATCH");
+    }
+    return {
+      id: attachment.attachmentId,
+      ownerScope: "row",
+      estimateId: bundle.draft.id,
+      revisionId: attachment.parentRevisionId,
+      rowId: attachment.rowId,
+      fileName: attachment.storageObjectKey.split("/").pop()?.trim() || `${attachment.attachmentId}.bin`,
+      mimeType: attachment.mimeType,
+      sizeBytes: attachment.sizeBytes,
+      contentHash: attachment.contentSha256,
+      storageReference: attachment.storageObjectKey,
+      thumbnailReference: attachment.status === "committed" ? attachment.signedUrl : null,
+      createdAt: attachment.createdAt,
+      deleted: attachment.status === "deleted",
+      privacy: bundle.draft.orgId ? "organization" : "private",
+      redacted: false,
+      serverCommitted: true,
+      authoritativeAttachmentEventId: attachment.attachmentEventId,
+      authoritativeTenantId: attachment.tenantId,
+      authoritativeOwnerUserId: attachment.ownerUserId,
+      authoritativeRequestId: attachment.requestId,
+      authoritativeCatalogId: attachment.catalogId,
+      authoritativeStorageBucket: attachment.storageBucket,
+      signedUrlExpiresAt: attachment.signedUrlExpiresAt,
+    };
+  });
+  const preserved = (bundle.estimateAttachments ?? []).filter((attachment) =>
+    !(attachment.serverCommitted === true && attachment.revisionId === input.revisionId)
+  );
+  return saveConsumerRepairBundle({
+    ...bundle,
+    estimateAttachments: [...preserved, ...authoritative],
+  });
 }
 
 export function approveConsumerRepairRequestDraft(input: {
@@ -1363,7 +1529,9 @@ export function createConsumerRepairDraftFromHistorySnapshot(input: {
         payload: {
           sourceRequestDraftId: source.draft.id,
           sourceStatus: source.draft.status,
-          sourceRevisionId: source.estimateRevisionState?.current_revision_id ?? null,
+          sourceRevisionId: canonicalBackendBindingForItems(source.items)?.revisionId
+            ?? source.estimateRevisionState?.current_revision_id
+            ?? null,
         },
       }),
     ],

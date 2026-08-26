@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import {
@@ -133,6 +135,8 @@ export function payloadRowsFingerprint(payload: StructuredEstimatePayload): stri
 export function buildRequestBundleFromPayload(payload: StructuredEstimatePayload) {
   __resetConsumerRepairRequestStoreForTests();
   const aiDraft = buildConsumerRepairAiDraft(payload.presentation.originalText ?? payload.workTitle, { city: "Bishkek" });
+  const revisionId = "30000000-0000-4000-8000-000000000001";
+  const releaseId = "40000000-0000-4000-8000-000000000001";
   return createConsumerRepairRequestDraft({
     consumerUserId: "structured-pipeline-user",
     problemText: payload.presentation.originalText ?? payload.workTitle,
@@ -140,27 +144,51 @@ export function buildRequestBundleFromPayload(payload: StructuredEstimatePayload
     city: "Bishkek",
     addressText: "Bishkek, structured pipeline test address",
     contactPhone: "+996700000000",
-    aiDraft,
+    aiDraft: {
+      ...aiDraft,
+      items: aiDraft.items.map((item, index) => ({
+        ...item,
+        sourceParameters: {
+          ...item.sourceParameters,
+          canonicalBackendRevisionId: revisionId,
+          canonicalBackendReleaseId: releaseId,
+          canonicalBackendRowId: `structured-pipeline-row-${index + 1}`,
+        },
+      })),
+    },
   });
 }
 
 export function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayload) {
   let bundle = buildRequestBundleFromPayload(payload);
+  const revisionId = String(bundle.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "");
+  const releaseId = String(bundle.items[0]?.sourceParameters?.canonicalBackendReleaseId ?? "");
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
   bundle = generateConsumerRepairRequestPdfForDraft({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     generatedAt: "2026-06-07T00:00:00.000Z",
   });
+  const pdf = bundle.pdfs[0];
+  const object = getConsumerRepairPdfStorageObject({ storageBucket: pdf.storageBucket, storageKey: pdf.storageKey });
+  const canonicalArtifact = {
+    artifactId: `structured-pipeline-canonical-pdf:${revisionId}`,
+    revisionId,
+    releaseId,
+    status: "ready" as const,
+    sha256: object ? createHash("sha256").update(object.body).digest("hex") : null,
+  };
   bundle = approveConsumerRepairRequestDraft({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     generatedAt: "2026-06-07T00:00:00.000Z",
+    canonicalArtifact,
   });
   return sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `structured-pipeline:${bundle.draft.id}`,
+    canonicalArtifact,
   });
 }
 

@@ -1,6 +1,5 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
 import { createApprovedConsumerRepairRequest } from "./consumerRepairTestHelpers";
@@ -22,14 +21,9 @@ describe("approved history approve increments count", () => {
     expect(beforeApprove.items).toHaveLength(13);
 
     jest.setSystemTime(new Date(Date.UTC(2026, 6, 8, 10, 1, 0)));
-    const draft = createApprovedConsumerRepairRequest({
+    const approved = createApprovedConsumerRepairRequest({
       userId,
-      withPdf: false,
       problemText: "РќРѕРІР°СЏ СѓС‚РІРµСЂР¶РґР°РµРјР°СЏ СЃРјРµС‚Р° РїРѕСЃР»Рµ РїСЂРµРґРµР»Р° 13",
-    });
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: draft.draft.id,
-      userId,
     });
     const afterApprove = listConsumerRepairApprovedHistory(userId, { limit: 20 });
 

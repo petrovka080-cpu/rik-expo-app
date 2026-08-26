@@ -216,6 +216,8 @@ export type EstimateResolvedIdentity = {
 export type EstimateDraftRevision = {
   estimateDraftId: string;
   revisionId: string;
+  /** Immutable backend ordinal. Absent only for local/legacy projections. */
+  canonicalRevisionNumber?: number;
   /** Exact creation instant used by UI/PDF/procurement identity projections. */
   createdAt?: string;
   previousRevisionId: string | null;
@@ -263,6 +265,9 @@ export type EstimateDraftRevisionDiff = {
     beforeQuantity: number | null;
     afterQuantity: number | null;
     unit: string;
+    beforeUnitPrice?: number | null;
+    afterUnitPrice?: number | null;
+    currency?: string;
   }[];
   changedRowsCount: number;
   staleArtifactsAfterEdit: {

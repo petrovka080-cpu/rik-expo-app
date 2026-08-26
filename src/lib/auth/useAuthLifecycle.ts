@@ -19,7 +19,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 
 import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
 import { warmCurrentSessionProfile } from "../sessionRole";
@@ -45,9 +45,27 @@ function isTimeoutLikeAuthError(error: unknown): boolean {
   );
 }
 
+export function authPrincipalFingerprint(session: Session | null): string | null {
+  if (!session?.user?.id) return null;
+  const metadata = session.user.app_metadata ?? {};
+  return JSON.stringify([
+    session.user.id,
+    String(metadata.role ?? "").trim().toLowerCase(),
+    String(
+      metadata.tenant_id ??
+        metadata.organization_id ??
+        metadata.company_id ??
+        "",
+    ),
+    String(metadata.membership_id ?? ""),
+    String(metadata.capability_id ?? ""),
+  ]);
+}
+
 export type AuthLifecycleState = {
   authSessionState: AuthSessionState;
   authenticatedUserId: string | null;
+  authenticatedRole: string | null;
   authSessionStateRef: React.MutableRefObject<AuthSessionState>;
   setAuthSessionState: (next: AuthSessionState) => void;
   hasSession: boolean | null;
@@ -116,7 +134,6 @@ export type AuthRouteDecision =
         | "session_present_on_app_route"
         | "session_unknown_on_route"
         | "session_absent_in_auth_stack"
-        | "session_absent_on_public_app_route"
         | "session_absent_on_pdf_viewer";
     }
   | {
@@ -151,6 +168,7 @@ export function useAuthLifecycle(deps: {
   const [authenticatedUserId, setAuthenticatedUserId] = useState<string | null>(
     null,
   );
+  const [authenticatedRole, setAuthenticatedRole] = useState<string | null>(null);
 
   const initStartedRef = useRef(false);
   const launchMarkerRef = useRef(false);
@@ -166,8 +184,15 @@ export function useAuthLifecycle(deps: {
   const authExitAtRef = useRef<number | null>(null);
   const authExitSessionProbeTokenRef = useRef(0);
   const authExitSessionProbeInFlightRef = useRef(false);
+  const authPrincipalFingerprintRef = useRef<string | null>(null);
 
   const setAuthSessionState = useCallback((next: AuthSessionState) => {
+    if (
+      authSessionStateRef.current.status === next.status &&
+      authSessionStateRef.current.reason === next.reason
+    ) {
+      return;
+    }
     authSessionStateRef.current = next;
     const nextHasSession =
       next.status === "authenticated"
@@ -264,6 +289,7 @@ export function useAuthLifecycle(deps: {
   const clearSessionBoundaryState = useCallback(
     (reason: string) => {
       setAuthenticatedUserId(null);
+      setAuthenticatedRole(null);
       return resetSessionBoundary(reason);
     },
     [],
@@ -272,6 +298,8 @@ export function useAuthLifecycle(deps: {
   // --- Role profile warming (background, non-blocking) ---
   const loadRoleForCurrentSession = useCallback(async (user?: User | null) => {
     setAuthenticatedUserId(user?.id ?? null);
+    const providerRole = String(user?.app_metadata?.role ?? "").trim().toLowerCase();
+    setAuthenticatedRole(providerRole || null);
     if (!hasAuthLifecycleClient()) return;
     try {
       await warmCurrentSessionProfile("root_layout", user);
@@ -397,6 +425,7 @@ export function useAuthLifecycle(deps: {
         }
 
         const has = Boolean(session);
+        authPrincipalFingerprintRef.current = authPrincipalFingerprint(session);
         recordPlatformObservability({
           screen: "request",
           surface: "startup_bootstrap",
@@ -535,6 +564,11 @@ export function useAuthLifecycle(deps: {
         const has = Boolean(session);
         const isTerminalSignOut =
           event === "SIGNED_OUT" || String(event) === "USER_DELETED";
+        const nextPrincipalFingerprint = authPrincipalFingerprint(session);
+        const duplicatePrincipalRefresh =
+          event === "TOKEN_REFRESHED" &&
+          nextPrincipalFingerprint !== null &&
+          nextPrincipalFingerprint === authPrincipalFingerprintRef.current;
 
         recordPlatformObservability({
           screen: "request",
@@ -553,6 +587,14 @@ export function useAuthLifecycle(deps: {
           console.info(
             `[RootLayout] onAuthStateChange: ${event}, hasSession=${has}`,
           );
+        }
+
+        if (duplicatePrincipalRefresh) {
+          recordAuthGateEvent("auth_token_refresh_principal_state_deduplicated", "skipped", {
+            authEvent: event,
+            reason: "same_principal_fingerprint",
+          });
+          return;
         }
 
         setSessionLoaded(true);
@@ -576,6 +618,7 @@ export function useAuthLifecycle(deps: {
           }
 
           resetPendingAuthExitSessionProbe();
+          authPrincipalFingerprintRef.current = null;
           setAuthSessionState({
             status: "unauthenticated",
             reason: "terminal_sign_out",
@@ -585,6 +628,7 @@ export function useAuthLifecycle(deps: {
         }
 
         resetPendingAuthExitSessionProbe();
+        authPrincipalFingerprintRef.current = nextPrincipalFingerprint;
         setAuthSessionState({
           status: "authenticated",
           reason: "auth_event_authenticated",
@@ -614,6 +658,7 @@ export function useAuthLifecycle(deps: {
   return {
     authSessionState,
     authenticatedUserId,
+    authenticatedRole,
     authSessionStateRef,
     setAuthSessionState,
     hasSession,
@@ -642,7 +687,6 @@ function resolveRouteFromAuth(params: {
   inAuthStack: boolean;
   isPdfViewerRoute: boolean;
   hasRecentAuthExit: boolean;
-  isPublicAppRoute?: boolean;
 }): AuthRouteDecision {
   if (!params.sessionLoaded) {
     return {
@@ -687,13 +731,6 @@ function resolveRouteFromAuth(params: {
     };
   }
 
-  if (params.isPublicAppRoute === true) {
-    return {
-      type: "none",
-      reason: "session_absent_on_public_app_route",
-    };
-  }
-
   if (params.hasRecentAuthExit) {
     return {
       type: "wait_for_post_auth_settle",
@@ -732,7 +769,6 @@ function isProtectedAppRoute(
   if (isRootEntryPath(pathname)) return false;
   if (isAuthStackRoute(segments)) return false;
   if (String(pathname ?? "").startsWith("/auth")) return false;
-  if (isPublicRequestEstimatePath(pathname)) return false;
   return true;
 }
 
@@ -743,7 +779,8 @@ function shouldApplyLocalDeveloperFullAccess(input: {
 }) {
   return (
     input.isAllowed === true &&
-    isProtectedAppRoute(input.pathname, input.segments)
+    isProtectedAppRoute(input.pathname, input.segments) &&
+    !isPublicRequestEstimatePath(input.pathname)
   );
 }
 

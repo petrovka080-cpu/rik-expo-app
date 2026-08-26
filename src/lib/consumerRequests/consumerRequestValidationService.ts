@@ -254,6 +254,7 @@ export function validateConsumerRepairRequestForMarketplace(
   const canonicalArtifactValid = Boolean(
     canonicalRevisionId && canonicalReleaseId && canonicalPdfEvent && canonicalArtifact &&
     canonicalArtifact.status === "ready" && canonicalArtifact.artifactId.trim() &&
+    canonicalArtifact.artifactId === canonicalPdfEvent.payload.artifactId &&
     canonicalArtifact.revisionId === canonicalRevisionId &&
     canonicalArtifact.releaseId === canonicalReleaseId,
   );

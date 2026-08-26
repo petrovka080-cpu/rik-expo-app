@@ -4,21 +4,21 @@ create or replace function public.list_buyer_inbox(
   p_company_id uuid default null
 )
 returns table (
-  request_id uuid,
-  request_id_old integer,
-  request_item_id uuid,
-  rik_code text,
-  name_human text,
-  qty numeric,
-  uom text,
   app_code text,
+  created_at timestamptz,
+  director_reject_at timestamptz,
+  director_reject_note text,
+  kind text,
+  name_human text,
   note text,
   object_name text,
+  qty numeric,
+  request_id uuid,
+  request_id_old bigint,
+  request_item_id uuid,
+  rik_code text,
   status text,
-  created_at timestamptz,
-  kind text,
-  director_reject_note text,
-  director_reject_at timestamptz
+  uom text
 )
 language sql
 stable
@@ -28,7 +28,7 @@ as $list_buyer_inbox_include_work_service$
   with source_rows as (
     select
       ri.*,
-      r.id_old::integer as request_id_old,
+      r.id_old::bigint as request_id_old,
       r.status::text as request_status,
       r.submitted_at as request_submitted_at,
       r.created_at as request_created_at,
@@ -77,16 +77,23 @@ as $list_buyer_inbox_include_work_service$
     where p_company_id is null
   )
   select
+    nullif(trim(coalesce(sr.app_code, '')), '')::text as app_code,
+    coalesce(sr.created_at, sr.request_submitted_at, sr.request_created_at)::timestamptz as created_at,
+    sr.director_reject_at,
+    nullif(trim(coalesce(sr.director_reject_note, '')), '')::text as director_reject_note,
+    coalesce(
+      nullif(trim(coalesce(sr.kind, '')), ''),
+      nullif(trim(coalesce(sr.item_kind, '')), ''),
+      'material'
+    )::text as kind,
+    coalesce(nullif(trim(coalesce(sr.name_human, '')), ''), U&'\2014')::text as name_human,
+    nullif(trim(coalesce(sr.note, '')), '')::text as note,
+    sr.resolved_object_name as object_name,
+    coalesce(sr.qty, 0)::numeric as qty,
     sr.request_id,
     sr.request_id_old,
     sr.id as request_item_id,
     nullif(trim(coalesce(sr.rik_code, '')), '')::text as rik_code,
-    coalesce(nullif(trim(coalesce(sr.name_human, '')), ''), U&'\2014')::text as name_human,
-    coalesce(sr.qty, 0)::numeric as qty,
-    nullif(trim(coalesce(sr.uom, '')), '')::text as uom,
-    nullif(trim(coalesce(sr.app_code, '')), '')::text as app_code,
-    nullif(trim(coalesce(sr.note, '')), '')::text as note,
-    sr.resolved_object_name as object_name,
     case
       when sr.director_reject_at is not null
         or coalesce(nullif(btrim(sr.director_reject_note), ''), '') <> ''
@@ -95,14 +102,7 @@ as $list_buyer_inbox_include_work_service$
         then coalesce(nullif(trim(coalesce(sr.request_status, '')), ''), nullif(trim(coalesce(sr.status::text, '')), ''))
       else coalesce(nullif(trim(coalesce(sr.status::text, '')), ''), nullif(trim(coalesce(sr.request_status, '')), ''))
     end::text as status,
-    coalesce(sr.created_at, sr.request_submitted_at, sr.request_created_at)::timestamptz as created_at,
-    coalesce(
-      nullif(trim(coalesce(sr.kind, '')), ''),
-      nullif(trim(coalesce(sr.item_kind, '')), ''),
-      'material'
-    )::text as kind,
-    nullif(trim(coalesce(sr.director_reject_note, '')), '')::text as director_reject_note,
-    sr.director_reject_at
+    nullif(trim(coalesce(sr.uom, '')), '')::text as uom
   from source_rows sr
   where (
       sr.request_ready

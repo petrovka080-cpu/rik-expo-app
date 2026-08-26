@@ -28,7 +28,7 @@ describe("S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT", () => {
       readProjectFile("src/lib/api/suppliers.ts"),
       readProjectFile("src/lib/assistant_store_read.low_risk.transport.ts"),
       readProjectFile("src/lib/catalog/catalog.request.transport.ts"),
-      readProjectFile("src/lib/catalog/catalog.transport.supabase.ts"),
+      readProjectFile("scripts/server/stagingBffCatalogTransportReadPort.ts"),
       readProjectFile("src/lib/chat_api.ts"),
       readProjectFile("src/lib/store_supabase.read.transport.ts"),
       readProjectFile("src/lib/store_supabase.write.transport.ts"),

@@ -9,7 +9,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
-  createApprovedConsumerRepairRequest,
+  createCanonicalApprovedConsumerRepairRequest,
 } from "./consumerRepairTestHelpers";
 
 jest.mock("@expo/vector-icons", () => {
@@ -114,7 +114,7 @@ describe("consumer repair history marketplace UI boundary", () => {
   });
 
   it("exposes marketplace send only on an approved history snapshot", () => {
-    const approved = createApprovedConsumerRepairRequest();
+    const approved = createCanonicalApprovedConsumerRepairRequest();
     const noop = jest.fn();
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_REPAIR_TEST_USER_ID);
     let renderer!: TestRenderer.ReactTestRenderer;
@@ -123,6 +123,7 @@ describe("consumer repair history marketplace UI boundary", () => {
       renderer = TestRenderer.create(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={approved.draft.id}
           onOpenPdf={noop}
           onOpenDraft={noop}

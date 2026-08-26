@@ -11,8 +11,14 @@ describe("R5.8 cumulative canonical backend contract", () => {
   const compilerMigration = read(
     "supabase/migrations/20260818040000_p0_r58_cumulative_compiler_contract.sql",
   );
+  const canonicalWriterMigration = read(
+    "supabase/migrations/20260821120000_r2_one_canonical_estimate_revision_writer.sql",
+  );
   const gateway = read(
     "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
+  );
+  const revisionWriter = read(
+    "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
   );
   const traceValidator = read(
     "scripts/estimate/p0TruthRemediationR5/validateR57AcceptedTraceBaselineCandidates.ts",
@@ -41,14 +47,24 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(compilerMigration).toContain("cumulative revision row ownership projection is invalid");
   });
 
-  it("uses the R5.8 cumulative functions only in explicit manifest mode", () => {
+  it("routes direct, cumulative, and legacy commits through one canonical writer", () => {
     expect(gateway).toContain("CANONICAL_ESTIMATE_CUMULATIVE_MANIFEST");
     expect(gateway).toContain('"estimate_create_compile_job_r58"');
-    expect(gateway).toContain('"estimate_commit_cumulative_compile_job_r58"');
     expect(gateway).toContain("baselineAssumptions");
-    expect(gateway).toContain("userParameters: effectiveUserParameters");
+    expect(gateway).toContain("effectiveUserParameters,");
+    expect(revisionWriter).toContain("userParameters: input.effectiveUserParameters");
     expect(gateway).toContain('"estimate_create_compile_job_v1"');
-    expect(gateway).toContain('"estimate_commit_compile_job_v1"');
+    expect(gateway).toContain("CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION");
+    expect(gateway).not.toContain("estimate_commit_cumulative_compile_job_r58");
+    expect(revisionWriter).toContain('"estimate_commit_compile_job_v1" as const');
+    expect(revisionWriter).not.toContain("estimate_commit_cumulative_compile_job_r58");
+    expect(canonicalWriterMigration).toContain("cumulative baseline/user parameter provenance mismatch");
+    expect(canonicalWriterMigration).toContain("MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL");
+    expect(canonicalWriterMigration).toContain("R6 intentionally permits an immutable historical revision");
+    expect(canonicalWriterMigration).toContain("update public.estimate_legacy_revision_import");
+    expect(canonicalWriterMigration).toContain(
+      "drop function if exists public.estimate_commit_cumulative_compile_job_r58",
+    );
     expect(gateway).toContain("from public.estimate_cumulative_manifest_entry manifest");
     expect(gateway).toContain("version.id=manifest.definition_version_id");
     expect(gateway).toContain("manifest.release_id cumulative_release_id");
@@ -62,8 +78,8 @@ describe("R5.8 cumulative canonical backend contract", () => {
     expect(gateway).toContain("baseline?.guide_provenance_ru?.[parameterId]");
     expect(gateway).toContain("baseline?.formula_consumer_ids?.[parameterId]");
     expect(gateway).toContain("baseline?.resource_consumer_row_ids?.[parameterId]");
-    expect(gateway).toContain("Object.prototype.hasOwnProperty.call(baseline.input_values ?? {}, parameterId)");
-    expect(gateway).toContain('acceptedAsInput ? "USER_INPUT" : "INTERNAL_ONLY"');
+    expect(gateway).toMatch(/Object\.prototype\.hasOwnProperty\.call\(\s*baseline\.input_values \?\? \{\},\s*parameterId,?\s*\)/u);
+    expect(gateway).toMatch(/acceptedAsInput\s*\?\s*"USER_INPUT"\s*:\s*"INTERNAL_ONLY"/u);
     expect(gateway).toContain("approvedTemplateBaselineId: baseline.id");
     expect(gateway).toContain("work_specific_applicability");
   });

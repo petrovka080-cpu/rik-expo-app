@@ -25,7 +25,7 @@ describe("history PDF does not use current workspace", () => {
 
     expect(pdf.requestId).toBe(laminate.draft.id);
     expect(pdf.requestId).not.toBe(foundation.draft.id);
-    expect(laminate.items.map((item) => item.titleRu).join(" ")).toContain("Ламинат");
-    expect(foundation.items.map((item) => item.titleRu).join(" ")).not.toContain("Ламинат");
+    expect(laminate.items.map((item) => item.titleRu).join(" ").toLocaleLowerCase("ru")).toContain("ламинат");
+    expect(foundation.items.map((item) => item.titleRu).join(" ").toLocaleLowerCase("ru")).not.toContain("ламинат");
   });
 });

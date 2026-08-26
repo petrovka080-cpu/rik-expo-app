@@ -156,6 +156,7 @@ export type StructuredEstimatePayload = {
     compilerOwner: "backend";
     revisionId: string;
     parentRevisionId: string | null;
+    revisionNumber: number;
     releaseId: string;
     catalogId: string;
     createdAt: string;

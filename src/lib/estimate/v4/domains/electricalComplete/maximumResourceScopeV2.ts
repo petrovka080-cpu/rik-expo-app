@@ -73,14 +73,96 @@ const PRODUCTION_NORMATIVE_SOURCE_OVERRIDES_V2: Readonly<Record<string, string>>
   ups_static_bypass: EAEU_LV,
 });
 
+const ELECTRICAL_FAMILY_LABELS_RU_V2: Readonly<Record<string, string>> = Object.freeze({
+  BREAKER: "автоматический выключатель",
+  CABLE_CHANNEL: "кабельный канал",
+  LED_STRIP: "светодиодная лента",
+  LIGHTING: "система освещения",
+  PANEL: "электрический щит",
+  POWER_CABLE: "силовой кабель",
+  RCD: "устройство защитного отключения",
+  SOCKET: "розетка",
+  SWITCH: "выключатель",
+  VVG_CABLE: "кабель ВВГ",
+  battery_energy_storage: "аккумуляторная система накопления энергии",
+  cable_ducts: "кабельная канализация",
+  cable_pulling: "протяжка кабеля",
+  cable_trench: "кабельная траншея",
+  cable_trench_energy: "энергетическая кабельная траншея",
+  distribution_board_outdoor: "наружный распределительный щит",
+  distribution_substation: "распределительная подстанция",
+  electrical_poles_04kv: "опоры линии 0,4 кВ",
+  electrical_poles_10kv: "опоры линии 10 кВ",
+  electrical_poles_35kv: "опоры линии 35 кВ",
+  electrical_poles_110kv: "опоры линии 110 кВ",
+  electrical_testing_commissioning: "электроизмерения и пусконаладка",
+  grounding_system: "система заземления",
+  lightning_protection: "система молниезащиты",
+  outdoor_switchgear: "наружное распределительное устройство",
+  overhead_power_line_04kv: "воздушная линия 0,4 кВ",
+  overhead_power_line_10kv: "воздушная линия 10 кВ",
+  overhead_power_line_35kv: "воздушная линия 35 кВ",
+  overhead_power_line_110kv: "воздушная линия 110 кВ",
+  package_transformer_substation: "комплектная трансформаторная подстанция",
+  relay_protection_automation: "релейная защита и автоматика",
+  street_lighting_poles: "опоры уличного освещения",
+  substation_10kv: "подстанция 10 кВ",
+  substation_35kv: "подстанция 35 кВ",
+  substation_110kv: "подстанция 110 кВ",
+  transformer_substation: "трансформаторная подстанция",
+  underground_cable_line: "подземная кабельная линия",
+});
+
+function electricalFamilyLabelRuV2(family: string): string {
+  const label = ELECTRICAL_FAMILY_LABELS_RU_V2[family];
+  if (!label) throw new Error(`ELECTRICAL_FAMILY_RU_LABEL_MISSING:${family}`);
+  return label;
+}
+
+function plainRussianElectricalTextV2(value: string): string {
+  return value
+    .replace(/Electrical-owned/gu, "учтённой электротехнической частью")
+    .replace(/typed-child/gu, "смежных специализированных")
+    .replace(/End-to-end/gu, "Сквозная")
+    .replace(/end-to-end/gu, "сквозных")
+    .replace(/nested BOM/gu, "поузловой спецификации")
+    .replace(/circuit directory/gu, "ведомости цепей")
+    .replace(/final circuit/gu, "конечной электрической цепи")
+    .replace(/bonding/gu, "уравнивания потенциалов")
+    .replace(/feeder/gu, "питающей линии")
+    .replace(/\bLOTO\b/gu, "процедурой блокировки и предупреждающей маркировки")
+    .replace(/\bUPS\b/gu, "источника бесперебойного питания")
+    .replace(/\bDC\b/gu, "постоянного тока")
+    .replace(/\bSPD\b/gu, "устройства защиты от импульсных перенапряжений")
+    .replace(/\bPE\b/gu, "защитного проводника")
+    .replace(/\bDIN\b/gu, "монтажной рейки")
+    .replace(/\bIP\b/gu, "степени защиты оболочки")
+    .replace(/\bIK\b/gu, "класса ударной прочности")
+    .replace(/\bCivil\b/gu, "строительных работ")
+    .replace(/\bControls\b/gu, "автоматизации")
+    .replace(/\bFire\b/gu, "противопожарных систем")
+    .replace(/\bHVAC\b/gu, "отопления и вентиляции")
+    .replace(/\bStructural\b/gu, "несущих конструкций")
+    .replace(/\bElectrical\b/gu, "электротехнических работ")
+    .replace(/\bHSE\b/gu, "Охрана труда")
+    .replace(/\bexact\b/gu, "точного типа")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
 function r(seed: Seed): ElectricalMaximumResourceCandidateV2 {
-  return {
+  const candidate: ElectricalMaximumResourceCandidateV2 = {
     minimal: false,
     normative_source_id: KG_RATE,
     owner: "ELECTRICAL",
     applicability: "Включается только по точному проектному количеству, выбранной технологии и подтверждённой границе стоимости.",
     formula_basis: "EXACT_PROJECT_INPUT",
     ...seed,
+  };
+  return {
+    ...candidate,
+    title_ru: plainRussianElectricalTextV2(candidate.title_ru),
+    section_ru: plainRussianElectricalTextV2(candidate.section_ru),
   };
 }
 
@@ -943,10 +1025,11 @@ function identitySpecificCandidateV2(row: ElectricalDomainInventoryRow, candidat
   });
   if (candidate.candidate_id === operationIdentityCandidate[row.operation_class]) {
     const familyIdentity = row.electrical_family.replace(/[^a-z0-9]+/giu, "_").replace(/^_+|_+$/gu, "").toLocaleLowerCase("en-US");
+    const familyLabelRu = electricalFamilyLabelRuV2(row.electrical_family);
     return {
       ...candidate,
       candidate_id: `${candidate.candidate_id}_${familyIdentity}`,
-      title_ru: `${candidate.title_ru} — exact ${row.electrical_family}`,
+      title_ru: `${candidate.title_ru} — ${familyLabelRu}`,
       applicability: `${candidate.applicability} Exact operation object: ${row.electrical_family}.`,
     };
   }
@@ -960,10 +1043,11 @@ function identitySpecificCandidateV2(row: ElectricalDomainInventoryRow, candidat
   });
   const candidateId = replacements[row.electrical_family]?.[candidate.candidate_id];
   if (!candidateId) return candidate;
+  const familyLabelRu = electricalFamilyLabelRuV2(row.electrical_family);
   return {
     ...candidate,
     candidate_id: candidateId,
-    title_ru: `${candidate.title_ru} — exact ${row.electrical_family}`,
+    title_ru: `${candidate.title_ru} — ${familyLabelRu}`,
     applicability: `${candidate.applicability} Exact physical identity: ${row.electrical_family}.`,
   };
 }

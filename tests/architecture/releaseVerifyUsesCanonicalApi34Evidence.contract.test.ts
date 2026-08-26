@@ -36,7 +36,7 @@ describe("release verify frozen API34 pipeline evidence", () => {
     }
   });
 
-  it("requires API34, embedded bundle, build cache, app root, and build identity in the verifier", () => {
+  it("requires API34, sealed runtime env, exact install, app root, auth, and business ACK in the verifier", () => {
     const verifier = read("scripts/release/android/verifyProof.ts");
 
     expect(verifier).toContain("GREEN_ANDROID_API34_PIPELINE_READY");
@@ -44,11 +44,17 @@ describe("release verify frozen API34 pipeline evidence", () => {
     expect(verifier).toContain("preflight.api36_used === true");
     expect(verifier).toContain("build.android_apk_contains_embedded_bundle !== true");
     expect(verifier).toContain("build.android_build_cache_valid !== true");
+    expect(verifier).toContain("build.android_public_runtime_env_embedded !== true");
+    expect(verifier).toContain("build.android_cached_build_env_digest_matches !== true");
+    expect(verifier).toContain("install.installed_apk_byte_exact !== true");
     expect(verifier).toContain("smoke.android_app_root_ready !== true");
     expect(verifier).toContain("smoke.android_build_identity_matches !== true");
+    expect(verifier).toContain("smoke.auth_login_attempted !== true");
+    expect(verifier).toContain("smoke.auth_green !== true");
+    expect(verifier).toContain("smoke.business_route_opened !== true");
     expect(verifier).toContain("candidate.candidateHash !== fingerprints.candidateHash");
     expect(verifier).toContain("android_uses_metro: false");
-    expect(verifier).toContain("auth_login_attempted: false");
-    expect(verifier).toContain("business_route_opened: false");
+    expect(verifier).toContain("auth_login_attempted: smoke.auth_login_attempted === true");
+    expect(verifier).toContain("business_route_opened: smoke.business_route_opened === true");
   });
 });

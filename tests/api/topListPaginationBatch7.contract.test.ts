@@ -60,55 +60,46 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
   });
 
   it("page-through-all bounds seven safe catalog list and reference reads", () => {
-    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
+    const catalogTransport = read("scripts/server/stagingBffCatalogTransportReadPort.ts");
 
     expect(catalogTransport).toContain(
-      "CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }",
+      "CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS.maxRows + 1",
     );
     expect(catalogTransport).toContain(
-      "const loadPagedCatalogRows = async <T,>",
+      "export function buildCatalogTransportReadQueryPlan",
     );
-    expect(catalogTransport).toContain("loadPagedRowsWithCeiling<T>");
-    expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS");
-    expect(catalogTransport).toContain("toCatalogQueryError(result.error)");
-    expect(catalogTransport).not.toContain(
-      "for (let pageIndex = 0; ; pageIndex += 1)",
-    );
+    expect(catalogTransport).toContain("referenceProbeLimit()");
+    expect(catalogTransport).toContain("CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS.maxRows");
+    expect(catalogTransport).toContain("result.rows.length > queryPlan.maxRows");
+    expect(catalogTransport).toContain("return { data: null, error: READ_ERROR }");
 
     expect(catalogTransport).toContain(
-      "return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery)",
+      'input.operation === "catalog.supplier_counterparty.list"',
     );
     expect(catalogTransport).toContain(
-      "await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>",
+      'input.operation === "catalog.subcontract_counterparty.list"',
     );
     expect(catalogTransport).toContain(
-      "await loadPagedCatalogRows<ContractorCounterpartyRow>(() =>",
+      'input.operation === "catalog.contractor_counterparty.list"',
     );
     expect(catalogTransport).toContain(
-      "return await loadPagedCatalogRows<ProfileContractorCompatRow>(buildQuery)",
+      'input.operation === "catalog.contractor_profile.list"',
     );
     expect(catalogTransport).toContain(
-      "const result = await loadPagedCatalogRows<CatalogGroupTransportRow>(() =>",
+      'input.operation === "catalog.groups.list"',
     );
     expect(catalogTransport).toContain(
-      "const result = await loadPagedCatalogRows<UomTransportRow>(() =>",
+      'input.operation === "catalog.uoms.list"',
     );
     expect(catalogTransport).toContain(
-      "return await loadPagedCatalogRows<SupplierTableRow>(buildQuery)",
+      'input.operation === "catalog.suppliers.table"',
     );
 
-    expect(catalogTransport).toContain('.order("name", { ascending: true })');
-    expect(catalogTransport).toContain('.order("id", { ascending: true })');
-    expect(catalogTransport).toContain(
-      '.order("contractor_org", { ascending: true })',
-    );
-    expect(catalogTransport).toContain(
-      '.order("company_name", { ascending: true })',
-    );
-    expect(catalogTransport).toContain(
-      '.order("user_id", { ascending: true })',
-    );
-    expect(catalogTransport).toContain('.order("code", { ascending: true })');
+    expect(catalogTransport).toContain("order by name asc, id asc");
+    expect(catalogTransport).toContain("order by contractor_org asc, id asc");
+    expect(catalogTransport).toContain("order by company_name asc, id asc");
+    expect(catalogTransport).toContain("order by user_id asc");
+    expect(catalogTransport).toContain("order by code asc");
     expect(catalogTransport).not.toContain(".limit(5000)");
   });
 
@@ -267,14 +258,13 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "src/lib/catalog/catalog.bff.client.ts",
       "src/lib/catalog/catalog.bff.contract.ts",
       "src/lib/catalog/catalog.bff.handler.ts",
-      "src/lib/catalog/catalog.transport.supabase.ts",
       "src/lib/catalog/catalog.transport.ts",
       "src/lib/catalog/catalog.types.ts",
       "tests/api/topListPaginationBatch3.contract.test.ts",
       "src/shared/scale/bffClient.ts",
       "tests/api/catalogTransportBffHandler.contract.test.ts",
       "tests/api/catalogTransportBffRouting.contract.test.ts",
-      "tests/catalog/catalog.transport.rikItemsBounded.test.ts",
+      "tests/catalog/catalog.transport.noFallback.test.ts",
       "tests/perf/performance-budget.test.ts",
       "tests/scale/bffBoundary.test.ts",
       "tests/scale/bffReadonlyRuntimeConfig.test.ts",

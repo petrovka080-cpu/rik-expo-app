@@ -86,6 +86,8 @@ type ConsumerRepairRequestScreenViewProps = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
   onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition: () => void;
@@ -135,6 +137,8 @@ export function ConsumerRepairRequestScreenView({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onSpecificationChange,
+  onOptionalChange,
   onRemove,
   onAddManual,
   onAddPhotoMaterialRecognition,
@@ -190,7 +194,7 @@ export function ConsumerRepairRequestScreenView({
       style={styles.keyboardRoot}
       testID="consumer-repair-keyboard-boundary"
     >
-    <AppScreen hasStickyAction style={styles.screen}>
+    <AppScreen style={styles.screen}>
       <AppScreenHeader
         title="Смета"
         centerTitle
@@ -221,9 +225,10 @@ export function ConsumerRepairRequestScreenView({
           bundle={renderModel.bundle}
           aiAnswerRu={state.aiAnswerRu}
           statusMessage={state.statusMessage}
+          revisionHistory={state.history}
           approvedHistoryPage={state.approvedHistoryPage}
           selectedHistoryId={state.selectedHistoryId}
-          showPdfAction={false}
+          showPdfAction={Boolean(renderModel.bundle)}
           marketplaceSendErrors={renderModel.marketplaceSendErrors}
           catalogPickerVisible={state.catalogPickerVisible}
           catalogPickerInitialQuery={state.catalogPickerInitialQuery}
@@ -246,6 +251,8 @@ export function ConsumerRepairRequestScreenView({
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          onSpecificationChange={onSpecificationChange}
+          onOptionalChange={onOptionalChange}
           onRemove={onRemove}
           onAddManual={onAddManual}
           onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
@@ -270,23 +277,23 @@ export function ConsumerRepairRequestScreenView({
           onSelectRoadScope={onSelectRoadScope}
           roadScopeSelectionBusy={state.roadScopeSelectionBusy}
         />
+        <ConsumerRepairRequestStickyActions
+          approved={renderModel.approved}
+          sent={renderModel.sent}
+          hasBundle={Boolean(renderModel.bundle)}
+          hasPendingPrompt={state.problemText.trim().length > 0}
+          estimateRequiresRebuild={legacyEstimateRequiresRebuild || canonicalRevisionMissing}
+          hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
+          approvalBlockedByEstimate={approvalBlockedByEstimate}
+          needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
+          onOpenPdf={() => onOpenPdf()}
+          onMakePdf={onMakePdf}
+          onCreateNew={onCreateNew}
+          onDeleteDraft={onDeleteDraft}
+          onApproveDraft={onApproveDraft}
+          onPrepareDraft={onPrepareDraft}
+        />
       </AppScreenScroll>
-      <ConsumerRepairRequestStickyActions
-        approved={renderModel.approved}
-        sent={renderModel.sent}
-        hasBundle={Boolean(renderModel.bundle)}
-        hasPendingPrompt={state.problemText.trim().length > 0}
-        estimateRequiresRebuild={legacyEstimateRequiresRebuild || canonicalRevisionMissing}
-        hasSnapshot={consumerRepairBundleHasPdfEligibleSnapshot(renderModel.bundle)}
-        approvalBlockedByEstimate={approvalBlockedByEstimate}
-        needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
-        onOpenPdf={() => onOpenPdf()}
-        onMakePdf={onMakePdf}
-        onCreateNew={onCreateNew}
-        onDeleteDraft={onDeleteDraft}
-        onApproveDraft={onApproveDraft}
-        onPrepareDraft={onPrepareDraft}
-      />
     </AppScreen>
     </KeyboardAvoidingView>
   );

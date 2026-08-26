@@ -228,6 +228,24 @@ function numericValue(value: ProfessionalParameterValueV4 | undefined): number |
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function rowInclusionSatisfied(
+  condition: string,
+  request: Pick<ProfessionalProjectAssemblyRequestV4, "scope_mode" | "parameter_values">,
+): boolean {
+  const clauses = condition.split(/\s+AND\s+/u).map((clause) => clause.trim());
+  if (clauses.length === 0 || clauses.some((clause) => !/^[a-z0-9_]+=(?:true|false|[A-Z_]+)$/u.test(clause))) {
+    return true;
+  }
+  return clauses.every((clause) => {
+    const [parameterId, expected] = clause.split("=");
+    if (parameterId === "scope_mode") return request.scope_mode === expected;
+    const actual = request.parameter_values[parameterId]?.value;
+    if (expected === "true") return actual === true;
+    if (expected === "false") return actual === false;
+    return actual === expected;
+  });
+}
+
 function requirementCode(role: ProfessionalAssemblyParameterRoleV4): ProfessionalAssemblyRequirementV4["code"] {
   if (role === "SCOPE_TRIGGER") return "SCOPE_CONFIRMATION_REQUIRED";
   if (role === "NORM_RATE") return "NORM_RATE_REQUIRED";
@@ -291,6 +309,7 @@ export function compileProfessionalProjectAssemblyV4(
     }
 
     for (const row of assembly.rows) {
+      if (!rowInclusionSatisfied(row.inclusion_condition, request)) continue;
       const rowRequirements = row.formula.input_parameter_ids
         .map((parameterId) => parameterById.get(parameterId))
         .filter((parameter): parameter is ProfessionalAssemblyParameterDefinitionV4 => Boolean(parameter));

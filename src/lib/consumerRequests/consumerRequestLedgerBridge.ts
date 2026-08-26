@@ -30,8 +30,45 @@ function historyStatusesToLedger(statuses?: ConsumerRepairStatus[]): AiEstimateL
   return statuses?.length ? statuses.map(statusToLedgerStatus) : undefined;
 }
 
+function canonicalBackendBindingForBundle(
+  bundle: ConsumerRepairDraftBundle,
+): { revisionId: string; releaseId: string } | null {
+  if (bundle.items.length === 0) return null;
+  const revisionIds = bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  );
+  const releaseIds = bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  );
+  if (revisionIds.some((value) => !value) || releaseIds.some((value) => !value)) return null;
+  if (new Set(revisionIds).size !== 1 || new Set(releaseIds).size !== 1) return null;
+  return { revisionId: revisionIds[0], releaseId: releaseIds[0] };
+}
+
+function canonicalPdfArtifactForBundle(
+  bundle: ConsumerRepairDraftBundle,
+): { artifactId: string; revisionId: string; createdAt: string } | null {
+  const binding = canonicalBackendBindingForBundle(bundle);
+  if (!binding) return null;
+  const event = [...bundle.events].reverse().find((candidate) =>
+    candidate.eventType === "consumer_approved_canonical_backend_pdf" &&
+    candidate.payload.revisionId === binding.revisionId &&
+    candidate.payload.releaseId === binding.releaseId &&
+    typeof candidate.payload.artifactId === "string" &&
+    candidate.payload.artifactId.trim().length > 0
+  );
+  return event
+    ? {
+      artifactId: String(event.payload.artifactId),
+      revisionId: binding.revisionId,
+      createdAt: event.createdAt,
+    }
+    : null;
+}
+
 function currentRevisionIdForBundle(bundle: ConsumerRepairDraftBundle): string {
-  return bundle.estimateRevisionState?.current_revision_id
+  return canonicalBackendBindingForBundle(bundle)?.revisionId
+    ?? bundle.estimateRevisionState?.current_revision_id
     ?? bundle.estimateDraftRevisionState?.currentRevisionId
     ?? bundle.durableHistorySummary?.sourceRevisionId
     ?? bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated")?.revisionId
@@ -40,6 +77,9 @@ function currentRevisionIdForBundle(bundle: ConsumerRepairDraftBundle): string {
 
 function currentSnapshotIdForBundle(bundle: ConsumerRepairDraftBundle): string {
   const currentRevisionId = currentRevisionIdForBundle(bundle);
+  if (canonicalBackendBindingForBundle(bundle)?.revisionId === currentRevisionId) {
+    return `canonical-backend:${currentRevisionId}`;
+  }
   const currentPdf = bundle.pdfs.find((pdf) =>
     pdf.pdfStatus === "generated" && pdf.revisionId === currentRevisionId
   );
@@ -98,6 +138,11 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
   const updatedAt = bundle.draft.updatedAt ?? bundle.draft.approvedAt ?? bundle.draft.createdAt;
   const existing = consumerRepairEstimateLedgerStore.getRecord(estimateId);
   const rowMetrics = rowMetricsForBundle(bundle);
+  const canonicalPdfArtifact = canonicalPdfArtifactForBundle(bundle);
+  const durablePdfArtifactId = canonicalPdfArtifact?.artifactId
+    ?? latestGeneratedPdfForCurrentRevision(bundle)?.id
+    ?? bundle.durableHistorySummary?.pdfArtifactId
+    ?? null;
   if (existing && existing.currentRevisionId !== currentRevisionId) {
     consumerRepairEstimateLedgerStore.appendRevision({
       estimateId,
@@ -142,7 +187,7 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
     workRowsCount: rowMetrics.workRowsCount,
     artifacts: {
       snapshotId: currentSnapshotId,
-      pdfArtifactId: latestGeneratedPdfForCurrentRevision(bundle)?.id ?? null,
+      pdfArtifactId: durablePdfArtifactId,
       buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
       artifactsValidForRevisionId: currentRevisionId,
     },
@@ -152,17 +197,17 @@ export function syncConsumerRepairBundleToAiEstimateLedger(bundle: ConsumerRepai
   });
 
   const generatedPdf = latestGeneratedPdfForCurrentRevision(bundle);
-  if (generatedPdf) {
+  if (durablePdfArtifactId) {
     consumerRepairEstimateLedgerStore.bindArtifacts({
       estimateId,
       revisionId: currentRevisionId,
-      snapshotId: generatedPdf.snapshotId ?? currentSnapshotId,
-      pdfArtifactId: generatedPdf.id,
+      snapshotId: generatedPdf?.snapshotId ?? currentSnapshotId,
+      pdfArtifactId: durablePdfArtifactId,
       buyerHandoffId: bundle.marketplaceLink.marketplaceDemandId ?? null,
       actorUserId: bundle.draft.consumerUserId,
       sourceLayer: "consumer_request",
-      idempotencyKey: `consumer_repair_artifacts:${estimateId}:${currentRevisionId}:${generatedPdf.id}:${bundle.marketplaceLink.marketplaceDemandId ?? "no_buyer"}`,
-      boundAt: generatedPdf.createdAt,
+      idempotencyKey: `consumer_repair_artifacts:${estimateId}:${currentRevisionId}:${durablePdfArtifactId}:${bundle.marketplaceLink.marketplaceDemandId ?? "no_buyer"}`,
+      boundAt: canonicalPdfArtifact?.createdAt ?? generatedPdf?.createdAt ?? updatedAt,
     });
   }
 

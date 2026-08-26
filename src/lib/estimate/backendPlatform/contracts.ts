@@ -1,3 +1,5 @@
+import type { AdmissionDecision } from "./estimateAdmissionR3";
+
 export const ESTIMATE_PLATFORM_API_VERSION = "2026-08-14.r2" as const;
 
 export type EstimateJobStatus =
@@ -122,10 +124,48 @@ export type CanonicalEstimateArtifactView = {
   byteSize: number | null;
   sha256: string | null;
   metadata: Record<string, unknown>;
+  contentAdmission?: AdmissionDecision;
   errorCode: string | null;
   createdAt: string;
   updatedAt: string;
   readyAt: string | null;
+  signedUrl: string | null;
+  signedUrlExpiresAt: string | null;
+};
+
+export type CanonicalEstimatePhotoAttachmentStatus = "committed" | "deleted";
+
+export type CanonicalEstimatePhotoUploadIntent = {
+  apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
+  uploadId: string;
+  attachmentId: string;
+  status: "staged" | "committed" | "rejected" | "deleted";
+  storageBucket: "private-media";
+  storageObjectKey: string;
+  uploadUrl: string | null;
+  uploadToken: string | null;
+  expiresAt: string;
+  created: boolean;
+};
+
+export type CanonicalEstimatePhotoAttachmentView = {
+  attachmentId: string;
+  attachmentEventId: string;
+  tenantId: string;
+  ownerUserId: string;
+  requestId: string;
+  catalogId: string;
+  rowId: string;
+  parentRevisionId: string;
+  childRevisionId: string | null;
+  storageBucket: "private-media";
+  storageObjectKey: string;
+  contentSha256: string;
+  mimeType: "image/jpeg" | "image/png";
+  sizeBytes: number;
+  status: CanonicalEstimatePhotoAttachmentStatus;
+  createdAt: string;
+  createdBy: string;
   signedUrl: string | null;
   signedUrlExpiresAt: string | null;
 };
@@ -186,6 +226,8 @@ export type CanonicalEstimateRevisionView = {
   parameterSchemaHash?: string | null;
   inputHash?: string | null;
   outputHash?: string | null;
+  contentAdmission?: AdmissionDecision;
+  legacyWarningRu?: string | null;
   createdAt: string;
 };
 
@@ -306,6 +348,7 @@ export type CanonicalEstimateRevisionHistoryPage = {
 export type CanonicalEstimateRevisionRowsPage = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   revisionId: string;
+  contentAdmission?: AdmissionDecision;
   rows: CanonicalEstimateRevisionRowView[];
   nextCursor: string | null;
 };
@@ -343,6 +386,7 @@ export type CanonicalEstimateSearchItem = {
   catalogOrigin: "GLOBAL" | "EXTERNAL_D" | "EXTERNAL_N";
   adjudicationClass: "EFFECTIVE_WORK" | "ALIAS" | "DUPLICATE" | "EXTERNAL_REFERENCE";
   estimateReady: boolean;
+  contentAdmission?: AdmissionDecision | null;
   shortScopeRu: string;
   keyDistinguishingParameters: unknown[];
   requiredInputsCount: number;
@@ -401,7 +445,8 @@ export type CanonicalEstimateSearchGroupPage = {
   totalCount: number;
   shownCount: number;
   items: Array<Pick<CanonicalEstimateSearchItem,
-    "catalogId" | "canonicalNameRu" | "publicationState" | "catalogOrigin" | "operationKind" | "technologyVariant">>;
+    "catalogId" | "canonicalNameRu" | "publicationState" | "catalogOrigin" | "operationKind" | "technologyVariant"
+    | "estimateReady" | "contentAdmission">>;
   nextCursor: string | null;
 };
 
@@ -454,6 +499,7 @@ export type CanonicalEstimateCatalogItem = {
   definitionVersion: number;
   applicability: Record<string, unknown>;
   professionalMetadata: Record<string, unknown>;
+  contentAdmission?: AdmissionDecision;
   parameterSchema: Array<{
     parameterId: string;
     ordinal: number;

@@ -6,6 +6,7 @@ export * from "./drywallArchitecturalElementsProfessionalV4";
 export * from "./drywallArchitecturalElementsMaximumScopeV5";
 export * from "./drywallFlatCeilingExpectedScopeV6";
 export * from "./drywallDomainCompletionProfessionalV7";
+export * from "./drywallDomainCompletionSuccessorR56";
 export * from "./drywallArchitecturalElementsRevisionMigrationV4";
 export * from "./drywallArchitecturalElementsNormativeProofV4";
 export * from "./domainPackage";

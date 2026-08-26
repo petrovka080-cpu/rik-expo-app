@@ -256,7 +256,8 @@ describe("profile membership transport boundary", () => {
     expect(authTransportSource).toContain("supabase.auth.getUser");
     expect(authTransportSource).toContain("supabase.auth.getSession");
     expect(authTransportSource).toContain("supabase.auth.updateUser");
-    expect(authTransportSource).toContain("supabase.auth.signOut");
+    expect(authTransportSource).toContain("signOutSafely");
+    expect(authTransportSource).not.toContain("supabase.auth.signOut");
   });
 
   it("keeps profile rows, listings, and catalog reads behind the data transport", () => {

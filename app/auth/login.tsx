@@ -9,9 +9,14 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Link, router } from "expo-router";
+import {
+  Link,
+  router,
+  useLocalSearchParams,
+  type Href,
+} from "expo-router";
 
-import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
+import { resolvePostAuthReturnTo } from "../../src/lib/authRouting";
 import {
   LOGIN_FALLBACK_ERROR_MESSAGE,
   signInSafe,
@@ -20,6 +25,10 @@ import { getSessionSafe, isSupabaseEnvValid } from "../../src/lib/supabaseClient
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 import { createCancellableDelay } from "../../src/lib/async/mapWithConcurrencyLimit";
+import {
+  isLocalDeveloperReviewEnabled,
+  switchLocalDeveloperConsumerPrincipal,
+} from "../../src/lib/localDeveloperReview";
 
 const POST_AUTH_SESSION_SETTLE_WINDOW_MS = 2500;
 const POST_AUTH_SESSION_POLL_INTERVAL_MS = 200;
@@ -45,10 +54,16 @@ type ReadableSessionResult = {
 };
 
 function LoginScreen() {
+  const routeParams = useLocalSearchParams<{
+    returnTo?: string | string[];
+  }>();
+  const postAuthTarget = resolvePostAuthReturnTo(routeParams.returnTo);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [localConsumerLoading, setLocalConsumerLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const localDeveloperReviewEnabled = isLocalDeveloperReviewEnabled();
 
   const waitForReadableSession = async (): Promise<ReadableSessionResult> => {
     const startedAt = Date.now();
@@ -61,7 +76,7 @@ function LoginScreen() {
       result: "skipped",
       extra: {
         owner: "login_submit",
-        target: POST_AUTH_ENTRY_ROUTE,
+        target: postAuthTarget,
       },
     });
 
@@ -79,7 +94,7 @@ function LoginScreen() {
           result: "success",
           extra: {
             owner: "login_submit",
-            target: POST_AUTH_ENTRY_ROUTE,
+            target: postAuthTarget,
             reason: "session_visible_before_auth_exit",
           },
         });
@@ -98,7 +113,7 @@ function LoginScreen() {
           result: "skipped",
           extra: {
             owner: "login_submit",
-            target: POST_AUTH_ENTRY_ROUTE,
+            target: postAuthTarget,
             reason: "session_read_degraded",
           },
         });
@@ -120,7 +135,7 @@ function LoginScreen() {
       result: "error",
       extra: {
         owner: "login_submit",
-        target: POST_AUTH_ENTRY_ROUTE,
+        target: postAuthTarget,
         reason: "session_absent_after_settle",
       },
     });
@@ -181,7 +196,7 @@ function LoginScreen() {
         extra: {
           owner: "login_submit",
           hasSession: true,
-          target: POST_AUTH_ENTRY_ROUTE,
+          target: postAuthTarget,
         },
       });
 
@@ -193,12 +208,12 @@ function LoginScreen() {
         result: "success",
         extra: {
           owner: "login_submit",
-          target: POST_AUTH_ENTRY_ROUTE,
+          target: postAuthTarget,
           reason: "session_settled",
         },
       });
 
-      router.replace(POST_AUTH_ENTRY_ROUTE);
+      router.replace(postAuthTarget as Href);
     } catch (submitError: unknown) {
       setError(
         submitError instanceof Error && submitError.message.trim()
@@ -207,6 +222,34 @@ function LoginScreen() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onLocalConsumerLogin = async () => {
+    if (loading || localConsumerLoading) return;
+    setError(null);
+    setLocalConsumerLoading(true);
+
+    try {
+      await switchLocalDeveloperConsumerPrincipal();
+      const settledSession = await waitForReadableSession();
+      if (!settledSession.sessionVisible) {
+        setError(
+          settledSession.degraded
+            ? UI_COPY.fallbackError
+            : UI_COPY.sessionSettling,
+        );
+        return;
+      }
+      router.replace(postAuthTarget as Href);
+    } catch (localLoginError: unknown) {
+      setError(
+        localLoginError instanceof Error && localLoginError.message.trim()
+          ? localLoginError.message
+          : UI_COPY.fallbackError,
+      );
+    } finally {
+      setLocalConsumerLoading(false);
     }
   };
 
@@ -260,6 +303,26 @@ function LoginScreen() {
             <Text style={styles.buttonText}>{UI_COPY.submit}</Text>
           )}
         </Pressable>
+
+        {localDeveloperReviewEnabled ? (
+          <Pressable
+            testID="auth.login.local-consumer"
+            style={[styles.button, styles.localConsumerButton]}
+            onPress={onLocalConsumerLogin}
+            disabled={loading || localConsumerLoading}
+            accessibilityRole="button"
+            accessibilityLabel="Войти как Заказчик"
+          >
+            {localConsumerLoading ? (
+              <ActivityIndicator
+                testID="auth.login.local-consumer.loading"
+                color="#fff"
+              />
+            ) : (
+              <Text style={styles.buttonText}>Войти как Заказчик</Text>
+            )}
+          </Pressable>
+        ) : null}
 
         <View style={styles.linksRow}>
           <Link
@@ -338,6 +401,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  localConsumerButton: {
+    backgroundColor: "#15803D",
+    marginTop: 10,
   },
   error: {
     color: "#DC2626",

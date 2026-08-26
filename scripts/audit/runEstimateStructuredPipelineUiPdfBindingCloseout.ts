@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import { buildAiEstimatePdfSourceFromGlobalEstimate, generateAiEstimatePdf } from "../../src/lib/ai/estimatePdf";
@@ -408,9 +409,11 @@ function catalogModalBindingMatrix(payloads: StructuredEstimatePayload[], failur
 }
 
 function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], failures: CloseoutFailure[]) {
-  const rows = payloads.map((payload) => {
+  const rows = payloads.map((payload, payloadIndex) => {
     __resetConsumerRepairRequestStoreForTests();
     const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(payload.sourceEstimate);
+    const revisionId = `10000000-0000-4000-8000-${String(payloadIndex + 1).padStart(12, "0")}`;
+    const releaseId = "20000000-0000-4000-8000-000000000001";
     let bundle = createConsumerRepairRequestDraft({
       consumerUserId: `structured-closeout-${payload.workKey}`,
       problemText: payload.inputText,
@@ -418,7 +421,18 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       city: "Bishkek",
       addressText: "Bishkek, structured closeout test address",
       contactPhone: "+996700000000",
-      aiDraft,
+      aiDraft: {
+        ...aiDraft,
+        items: aiDraft.items.map((item, itemIndex) => ({
+          ...item,
+          sourceParameters: {
+            ...item.sourceParameters,
+            canonicalBackendRevisionId: revisionId,
+            canonicalBackendReleaseId: releaseId,
+            canonicalBackendRowId: `structured-closeout-row-${itemIndex + 1}`,
+          },
+        })),
+      },
     });
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
     bundle = generateConsumerRepairRequestPdfForDraft({
@@ -428,6 +442,13 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
     });
     const pdf = bundle.pdfs[0];
     const object = getConsumerRepairPdfStorageObject({ storageBucket: pdf.storageBucket, storageKey: pdf.storageKey });
+    const canonicalArtifact = {
+      artifactId: `structured-closeout-canonical-pdf:${revisionId}`,
+      revisionId,
+      releaseId,
+      status: "ready" as const,
+      sha256: object ? createHash("sha256").update(object.body).digest("hex") : null,
+    };
     const requestPdfText = object ? extractEstimatePdfText(object.body) : "";
     const requestPdfValidation = object
       ? validateEstimatePdf({ pdf: object.body, requiredText: [payload.rows[0]?.visibleName ?? payload.workTitle] })
@@ -436,11 +457,13 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
       generatedAt: "2026-06-07T00:00:00.000Z",
+      canonicalArtifact,
     });
     bundle = sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
       idempotencyKey: `structured-closeout:${bundle.draft.id}`,
+      canonicalArtifact,
     });
     const marketplacePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
     const history = listConsumerRepairRequestHistory(bundle.draft.consumerUserId);

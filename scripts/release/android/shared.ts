@@ -18,6 +18,19 @@ export const AVD_NAME = "Pixel_7_API_34";
 export const DEFAULT_DEVICE_ID = process.env.E2E_ANDROID_DEVICE_ID ?? "emulator-5554";
 export const DEFAULT_PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 export const MAIN_ACTIVITY = `${DEFAULT_PACKAGE_NAME}/.MainActivity`;
+export const REQUIRED_ANDROID_PUBLIC_RUNTIME_ENV_KEYS = [
+  "EXPO_PUBLIC_SUPABASE_URL",
+  "EXPO_PUBLIC_SUPABASE_ANON_KEY",
+  "EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL",
+  "EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK",
+] as const;
+
+export type AndroidPublicRuntimeEnvProof = {
+  requiredKeys: readonly string[];
+  missingKeys: string[];
+  digest: string | null;
+  values: Record<string, string>;
+};
 
 export type CommandOutput = {
   ok: boolean;
@@ -55,6 +68,36 @@ export function run(command: string, args: string[], timeout = 15_000): CommandO
 
 export function sha256File(filePath: string): string {
   return createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+export function androidPublicRuntimeEnvProof(
+  env: NodeJS.ProcessEnv = process.env,
+): AndroidPublicRuntimeEnvProof {
+  const values: Record<string, string> = {};
+  const missingKeys: string[] = [];
+  for (const key of REQUIRED_ANDROID_PUBLIC_RUNTIME_ENV_KEYS) {
+    const value = env[key]?.trim() ?? "";
+    if (!value) {
+      missingKeys.push(key);
+    } else {
+      values[key] = value;
+    }
+  }
+  const digest = missingKeys.length === 0
+    ? createHash("sha256")
+        .update(
+          JSON.stringify(
+            REQUIRED_ANDROID_PUBLIC_RUNTIME_ENV_KEYS.map((key) => [key, values[key]]),
+          ),
+        )
+        .digest("hex")
+    : null;
+  return {
+    requiredKeys: REQUIRED_ANDROID_PUBLIC_RUNTIME_ENV_KEYS,
+    missingKeys,
+    digest,
+    values,
+  };
 }
 
 export function androidRuntimePath(candidate: ReleaseCandidate, fileName: string): string {
@@ -121,6 +164,7 @@ export function gradleReleaseBuildEnv(candidate: ReleaseCandidate): NodeJS.Proce
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     ...buildIdentityEnv(candidate),
+    NODE_ENV: "production",
     SENTRY_DISABLE_AUTO_UPLOAD: "true",
   };
   // Expo export:embed disables --reset-cache when CI is set, which can reuse
@@ -146,14 +190,29 @@ export function apkContainsEmbeddedBundle(apkPath: string): boolean {
 }
 
 export function releaseBundleContainsCurrentIdentity(candidate: ReleaseCandidate): boolean {
-  const bundlePaths = [
-    path.join(process.cwd(), "android", "app", "build", "generated", "assets", "createBundleReleaseJsAndAssets", "index.android.bundle"),
-    path.join(process.cwd(), "android", "app", "build", "intermediates", "assets", "release", "mergeReleaseAssets", "index.android.bundle"),
-  ];
-  return bundlePaths.some((bundlePath) => {
+  return releaseBundlePaths().some((bundlePath) => {
     if (!fs.existsSync(bundlePath)) return false;
     const bundle = fs.readFileSync(bundlePath, "utf8");
     return bundle.includes(candidate.candidateHash) && bundle.includes(candidate.productSourceHash);
+  });
+}
+
+function releaseBundlePaths(): string[] {
+  return [
+    path.join(process.cwd(), "android", "app", "build", "generated", "assets", "createBundleReleaseJsAndAssets", "index.android.bundle"),
+    path.join(process.cwd(), "android", "app", "build", "intermediates", "assets", "release", "mergeReleaseAssets", "index.android.bundle"),
+  ];
+}
+
+export function releaseBundleContainsRequiredPublicRuntimeEnv(
+  proof: AndroidPublicRuntimeEnvProof,
+): boolean {
+  if (proof.missingKeys.length > 0 || !proof.digest) return false;
+  const requiredValues = proof.requiredKeys.map((key) => proof.values[key]);
+  return releaseBundlePaths().some((bundlePath) => {
+    if (!fs.existsSync(bundlePath)) return false;
+    const bundle = fs.readFileSync(bundlePath, "utf8");
+    return requiredValues.every((value) => Boolean(value) && bundle.includes(value));
   });
 }
 

@@ -96,6 +96,7 @@ function runJestShard(input: {
     const stderr: Buffer[] = [];
     const child = spawn(process.execPath, [
       path.join(input.root, "node_modules", "jest", "bin", "jest.js"),
+      "--runTestsByPath",
       ...input.suites,
       "--runInBand",
       "--detectOpenHandles",

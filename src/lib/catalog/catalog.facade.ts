@@ -29,6 +29,7 @@ export {
   mapRikQuickSearchItemToPickerItem,
   searchCatalogItemsForEstimateBinding,
   searchCatalogItemsForPicker,
+  searchMaterialCatalogItemsForPicker,
 } from "./catalogItemsService";
 export {
   buildCatalogSearchQueriesForEstimateRow,

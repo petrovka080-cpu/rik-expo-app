@@ -1,25 +1,18 @@
 import type { ConsumerRepairAiDraft } from "../../../consumerRequests/consumerRequestTypes";
 import type { GlobalWorkCategory } from "../../../ai/globalEstimate";
-import type { BuildEstimateFromInlineWorkPromptInput } from "../../buildEstimateFromInlineWorkPrompt";
 import type { CanonicalParameterSchema } from "../../canonicalParameters";
 import {
   ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS,
-  ELECTRICAL_COMPLETE_DOMAIN_ID,
-  ELECTRICAL_DOMAIN_INVENTORY,
-  buildElectricalFromInlineInputV1,
-} from "./electricalComplete";
+} from "./electricalComplete/canonicalParameterSchemas";
+import { ELECTRICAL_COMPLETE_DOMAIN_ID, ELECTRICAL_DOMAIN_INVENTORY } from "./electricalComplete/inventory";
 import {
   INTERIOR_FINISHES_CANONICAL_PARAMETER_SCHEMAS,
-  INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
-  INTERIOR_FINISHES_DOMAIN_INVENTORY,
-  buildInteriorFinishesFromInlineInputV1,
-} from "./interiorFinishesComplete";
+} from "./interiorFinishesComplete/canonicalParameterSchemas";
+import { INTERIOR_FINISHES_COMPLETE_DOMAIN_ID, INTERIOR_FINISHES_DOMAIN_INVENTORY } from "./interiorFinishesComplete/inventory";
 import {
   HVAC_CANONICAL_PARAMETER_SCHEMAS,
-  HVAC_COMPLETE_DOMAIN_ID,
-  HVAC_DOMAIN_INVENTORY,
-  buildHvacFromInlineInputV1,
-} from "./heatingVentilationComplete";
+} from "./heatingVentilationComplete/canonicalParameterSchemas";
+import { HVAC_COMPLETE_DOMAIN_ID, HVAC_DOMAIN_INVENTORY } from "./heatingVentilationComplete/inventory";
 
 export const REGISTERED_PROFESSIONAL_ESTIMATE_DOMAINS_VERSION_V1 =
   "registered-professional-estimate-domains:v1" as const;
@@ -132,14 +125,4 @@ export function buildRegisteredProfessionalEstimateParameterCollectionDraftV1(in
       .map((definition) => definition.label),
     dangerousDiyBlocked: false,
   };
-}
-
-export function buildRegisteredProfessionalEstimateFromInlineInputV1(
-  input: BuildEstimateFromInlineWorkPromptInput,
-) {
-  const interior = buildInteriorFinishesFromInlineInputV1(input);
-  if (interior.exact_match) return interior;
-  const electrical = buildElectricalFromInlineInputV1(input);
-  if (electrical.exact_match) return electrical;
-  return buildHvacFromInlineInputV1(input);
 }

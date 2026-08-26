@@ -51,7 +51,7 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
     expect(isProtectedAppRoute(null, undefined)).toBe(false);
     expect(isProtectedAppRoute("/auth/login", ["auth"])).toBe(false);
     expect(isProtectedAppRoute("/", [])).toBe(false);
-    expect(isProtectedAppRoute("/request", [])).toBe(false);
+    expect(isProtectedAppRoute("/request", [])).toBe(true);
     expect(isProtectedAppRoute("/request/123", [])).toBe(true);
     expect(isProtectedAppRoute("/(tabs)/profile", [])).toBe(true);
     expect(isPublicRequestEstimatePath("/request")).toBe(true);
@@ -133,7 +133,7 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
     });
   });
 
-  it("keeps the public request estimate entrypoint open without opening request details", () => {
+  it("keeps request deep-link parsing public while requiring a session for the protected form", () => {
     expect(
       resolveRouteFromAuth({
         sessionLoaded: true,
@@ -141,11 +141,11 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
         inAuthStack: false,
         isPdfViewerRoute: false,
         hasRecentAuthExit: false,
-        isPublicAppRoute: isPublicRequestEstimatePath("/request"),
       }),
     ).toEqual({
-      type: "none",
-      reason: "session_absent_on_public_app_route",
+      type: "redirect_login",
+      target: "/auth/login",
+      reason: "bootstrap_no_session",
     });
 
     expect(
@@ -155,7 +155,6 @@ describe("strict-null phase 1 auth lifecycle slice", () => {
         inAuthStack: false,
         isPdfViewerRoute: false,
         hasRecentAuthExit: false,
-        isPublicAppRoute: isPublicRequestEstimatePath("/request/123"),
       }),
     ).toEqual({
       type: "redirect_login",

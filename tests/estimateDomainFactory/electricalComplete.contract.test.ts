@@ -1,11 +1,12 @@
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
-import { compileProfessionalEstimateDomainV1, constructionNormativeRegistryV1, type ProfessionalDomainParameterDefinitionV1 } from "../../src/lib/estimate/v4/domainFactory";
+import { compileProfessionalEstimateDomainV1, constructionNormativeRegistryV1, createProfessionalEstimateDomainFactoryV1, type ProfessionalDomainParameterDefinitionV1 } from "../../src/lib/estimate/v4/domainFactory";
 import {
   ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS,
   ELECTRICAL_COMPLETE_ALIAS_COUNT,
   ELECTRICAL_COMPLETE_RECORD_COUNT,
   ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT,
   ELECTRICAL_COMPLETENESS_SLOTS_V2,
+  ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1,
   ELECTRICAL_DOMAIN_INVENTORY,
   ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
   ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
@@ -113,6 +114,16 @@ describe("Full Electrical professional domain", () => {
     expect(ELECTRICAL_REVIEWED_EXCLUSIONS).toHaveLength(405);
     expect(ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS).toHaveLength(605);
     expect(electricalCompleteDomainFactory.binding_by_catalog_id.size).toBe(605);
+    expect(electricalCompleteDomainFactory.package_hash).toBe("eh_58ff6f5b1ebbfbe4");
+    expect(ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1).toEqual(expect.objectContaining({
+      hash_contract: "canonical-domain-package-content:v1",
+      domain_id: "electrical_complete",
+      catalog_record_count: 605,
+    }));
+    expect(() => createProfessionalEstimateDomainFactoryV1(
+      electricalCompleteDomainFactory.package,
+      { ...ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1, domain_version: "tampered-version" },
+    )).toThrow("DOMAIN_BUILD_TIME_PACKAGE_HASH_IDENTITY_MISMATCH");
     expect(new Set(ELECTRICAL_DOMAIN_INVENTORY.map((row) => row.candidate_canonical_technology_id)).size).toBe(107);
     expect(new Set(ELECTRICAL_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(605);
   });
@@ -242,7 +253,9 @@ describe("Full Electrical professional domain", () => {
         currency: "KGS",
       });
       if (!production.draft) throw new Error(`TEST_ELECTRICAL_PRODUCTION_BLOCKED:${inventory.catalog_id}`);
-      const cold = JSON.parse(JSON.stringify(production.draft)) as typeof production.draft;
+      const durableJson = JSON.stringify(production.draft);
+      expect(Buffer.byteLength(durableJson, "utf8")).toBeLessThanOrEqual(16 * 1024 * 1024);
+      const cold = JSON.parse(durableJson) as typeof production.draft;
       const compiledRows = production.compile_result.compilation?.compiled_rows ?? [];
       expect(cold.items).toHaveLength(compiledRows.length);
       expect(cold.items.map((item) => item.sourceParameters?.rowCode)).toEqual(compiledRows.map((row) => row.row_id));

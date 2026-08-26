@@ -47,6 +47,9 @@ describe("Android API34 proof environment", () => {
 
   it("accepts UI evidence only after semantic anchors and representative BOQ rows are visible", () => {
     const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+    const routeToScreenAck = read(
+      "scripts/release/android/routeToScreenAck.ts",
+    );
     const waitForCaseUi = liveSmoke.slice(
       liveSmoke.indexOf("async function waitForCaseUi"),
       liveSmoke.indexOf("async function collectUiTextAcrossScrolls"),
@@ -68,27 +71,47 @@ describe("Android API34 proof environment", () => {
     expect(runAndroidCase).toContain(
       "const uiRowsVisible = missingTestIds.length === 0 && missingRepresentativeTokens.length === 0;",
     );
-    expect(liveSmoke).toContain(
-      'requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"]',
+    expect(routeToScreenAck).toContain("request-estimate-summary-card");
+    expect(routeToScreenAck).toContain("request-estimate-items-editor");
+    expect(routeToScreenAck).toContain("consumer-estimate-make-pdf");
+    expect(routeToScreenAck).toContain(
+      'representativeTokens: ["кабель", "розет"]',
     );
-    expect(liveSmoke).toContain('representativeTokens: ["кабель", "розет"]');
-    expect(liveSmoke).toContain('representativeTokens: ["кров", "гидроизоля"]');
-    expect(liveSmoke).toContain(
-      'requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"]',
+    expect(routeToScreenAck).toContain(
+      'representativeTokens: ["кров", "гидроизоля"]',
     );
-    expect(liveSmoke).toContain('representativeTokens: ["кабель", "щит"]');
+    expect(routeToScreenAck).toContain("ai-estimate-table");
+    expect(routeToScreenAck).toContain("ai-estimate-visible-lines");
+    expect(routeToScreenAck).toContain("ai-estimate-make-pdf");
+    expect(routeToScreenAck).toContain(
+      'representativeTokens: ["кабель", "щит"]',
+    );
     expect(liveSmoke).toContain("if (capture()) return snapshots.join");
-    expect(liveSmoke).toContain("CASE_UI_SETTLE_MS = 40_000");
+    expect(liveSmoke).not.toContain("CASE_UI_SETTLE_MS");
     expect(liveSmoke).toContain("CASE_UI_POLL_MS = 8_000");
     expect(liveSmoke).toContain("CASE_UI_MAX_POLLS = 3");
     expect(liveSmoke).not.toContain("for (let attempt = 0; attempt < 30");
-    expect(liveSmoke).toContain('if (testCase.route === "/request")');
-    expect(liveSmoke).toContain(
-      "REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = CASE_UI_SETTLE_MS",
+    expect(
+      runAndroidCase.indexOf(
+        "const promptLifecycle = await waitForRouteToScreenLifecycle",
+      ),
+    ).toBeLessThan(
+      runAndroidCase.indexOf("const promptProbeDeadline"),
+    );
+    expect(
+      runAndroidCase.indexOf(
+        "const estimateLifecycle = await waitForRouteToScreenLifecycle",
+      ),
+    ).toBeLessThan(runAndroidCase.indexOf("const initialUiText"));
+    expect(liveSmoke).not.toContain(
+      "REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS",
     );
     expect(liveSmoke).toContain("PROMPT_PROBE_POLL_MS = 4_000");
-    expect(liveSmoke).toContain(
+    expect(liveSmoke).not.toContain(
       'viewportSwipeArgs(adbPath, deviceId, "down", 400)',
+    );
+    expect(liveSmoke).toContain(
+      'viewportSwipeArgs(adbPath, deviceId, "down", 450)',
     );
     const promptProbeLoop = liveSmoke.slice(
       liveSmoke.indexOf("while (Date.now() < promptProbeDeadline"),
@@ -114,8 +137,12 @@ describe("Android API34 proof environment", () => {
     );
 
     expect(requestRoute).not.toContain("key={`${launchId");
-    expect(requestRoute).toContain("initialDraftId={draftId || undefined}");
+    expect(requestRoute).toContain("initialDraftId={canonicalRevisionId ? undefined : draftId || undefined}");
+    expect(requestRoute).toContain("launchFingerprint={launchFingerprint}");
     expect(requestRoute).toContain("launchId={launchId}");
+    expect(requestOwner).toContain(
+      "this.props.initialCanonicalRevisionId?.trim() === revision.revisionId",
+    );
     expect(requestOwner).toContain(
       "prevProps.initialDraftId !== this.props.initialDraftId",
     );
@@ -135,13 +162,26 @@ describe("Android API34 proof environment", () => {
     expect(requestOwner).toContain("editable={false}");
   });
 
-  it("bounds editable request rows without truncating the professional BOQ", () => {
+  it("keeps work-group deep links warm by never clearing the singleTask activity", () => {
+    const workGroupRunner = read(
+      "scripts/estimate/r4/runR4WorkGroupAndroidSurface.ts",
+    );
+
+    expect(workGroupRunner).not.toContain("0x10008000");
+    expect(workGroupRunner).toContain(
+      'adb(["shell", "am", "start", "-W", "-n", MAIN_ACTIVITY',
+    );
+    expect(workGroupRunner).toContain("isWarmAndroidActivityDelivery(launch)");
+  });
+
+  it("renders every admissible professional BOQ row without a hidden pagination boundary", () => {
     const editor = read("src/features/consumerRepair/RequestEstimateItemsEditor.tsx");
 
-    expect(editor).toContain("ESTIMATE_ROWS_PAGE_SIZE = 6");
-    expect(editor).toContain("section.items.slice(0, Math.max(0, remainingRows))");
-    expect(editor).toContain("state.visibleLimit + ESTIMATE_ROWS_PAGE_SIZE");
-    expect(editor).toContain('testID="request-estimate-items-load-more"');
+    expect(editor).toContain("expandedSections.map");
+    expect(editor).not.toContain("ESTIMATE_ROWS_PAGE_SIZE");
+    expect(editor).not.toContain("section.items.slice(0");
+    expect(editor).not.toContain("visibleLimit");
+    expect(editor).not.toContain('testID="request-estimate-items-load-more"');
     expect(editor).not.toContain("viewModel.sections.slice(");
   });
 

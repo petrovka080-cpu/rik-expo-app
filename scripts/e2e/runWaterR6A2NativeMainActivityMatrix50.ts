@@ -287,6 +287,13 @@ async function waitForId(id: string, timeoutMs: number): Promise<UiSnapshot> {
   return snapshot;
 }
 
+async function deleteConsumerRepairDraftWithConfirmation(maxSwipes: number): Promise<boolean> {
+  if (!await tapById("consumer-repair-delete-draft", maxSwipes)) return false;
+  const confirmation = await waitForId("consumer-repair-delete-confirmation", 15_000);
+  if (!findById(confirmation, "consumer-repair-delete-confirm")) return false;
+  return tapById("consumer-repair-delete-confirm", 8);
+}
+
 async function ensureComposerOpen(r58Mode = false): Promise<boolean> {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     let snapshot = dumpUi();
@@ -549,7 +556,7 @@ async function coldReopenCanonicalRevision(input: {
   if (!findById(snapshot, "consumer-repair-draft")) {
     coldBlockers.push("COLD_REOPEN_SOURCE_REQUEST_DRAFT_MISSING");
   }
-  if (!await tapById("consumer-repair-delete-draft", 20)) {
+  if (!await deleteConsumerRepairDraftWithConfirmation(20)) {
     coldBlockers.push("COLD_REOPEN_SOURCE_REQUEST_DRAFT_DELETE_FAILED");
   }
   snapshot = await waitForId("consumer-repair-problem-input", 30_000);
@@ -741,7 +748,7 @@ async function main(): Promise<void> {
         snapshot = await waitForId("consumer-repair-screen", 30_000);
       }
       if (!findById(snapshot, "consumer-repair-problem-input")) {
-        if (!await tapById("consumer-repair-delete-draft", 16)) caseBlockers.push("PREVIOUS_REQUEST_DRAFT_DELETE_FAILED");
+        if (!await deleteConsumerRepairDraftWithConfirmation(16)) caseBlockers.push("PREVIOUS_REQUEST_DRAFT_DELETE_FAILED");
         snapshot = await waitForId("consumer-repair-problem-input", 30_000);
       }
       const search = await replaceInput("consumer-repair-problem-input", item.search_query!);

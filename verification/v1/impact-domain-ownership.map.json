@@ -48,14 +48,14 @@
       "gate": "estimate-domain-shared-core-impact",
       "levels": ["affected", "pr"],
       "suites": [
-        "src/features/consumerRepair/consumerRepairAsphaltV4Phase1B.test.ts",
+        "tests/estimateBackend/canonicalBackendR3.contract.test.ts",
+        "tests/consumerRepair/platformCoreV2ConsumerFlow.contract.test.ts",
+        "tests/aiEstimateV4/asphalt35TypedBoq.contract.test.ts",
         "tests/estimateInfrastructure/aiEstimateParameterRuntimeMatrix.contract.test.ts",
         "tests/estimateInfrastructure/aiEstimatePlatformCoreV2Matrix.contract.test.ts",
         "tests/estimateInfrastructure/domainResolutionReadiness.contract.test.ts",
         "tests/aiEstimateV4/roadworksWaveAProductionBinding.contract.test.ts",
-        "tests/aiEstimateV4/roadworksWaveACompiler.contract.test.ts",
-        "tests/aiEstimateV4/roadScopeProductionIntegrationV4.contract.test.ts",
-        "tests/requestEstimate/asphalt35WebAndroidVisibleOutput.contract.test.ts"
+        "tests/aiEstimateV4/roadworksWaveACompiler.contract.test.ts"
       ],
       "producers": [
         "scripts/estimate/runAiEstimateParameterRuntimeMatrix.ts",

@@ -4,10 +4,35 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   evaluateFormulaGraph,
-  type FormulaAst,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph.ts";
-import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph.ts";
-import { validateCanonicalEstimateParameters } from "../../../src/lib/estimate/backendPlatform/parameterConstraints.ts";
+import {
+  canonicalRoundDecimal,
+  compileCanonicalEstimateCore,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts";
+import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
+import {
+  CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
+  buildCanonicalRevisionCommitPayload,
+  buildCanonicalRevisionIdentity,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
+import {
+  buildCanonicalArtifactMetadata,
+  buildCanonicalProcurementProjection,
+  canonicalArtifactMoney as professionalMoney,
+  canonicalArtifactQuantity as professionalQuantity,
+  canonicalArtifactSection as professionalSection,
+  canonicalArtifactUnit as professionalUnit,
+  escapeCanonicalArtifactHtml as escapeHtml,
+  selectCanonicalArtifactRows,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
+import {
+  buildCanonicalEstimateRegistryEntry,
+  CanonicalEstimateDefinitionRegistry,
+} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
+import {
+  evaluateEstimateAdmission,
+  type EstimateAdmissionIngress,
+} from "../../../src/lib/estimate/backendPlatform/estimateAdmissionR3.ts";
 import { renderPdfBytes } from "../_shared/canonicalPdf.ts";
 
 const WORKER_VERSION = "canonical-estimate-compiler.r2";
@@ -28,101 +53,15 @@ type ClaimedJob = {
     currencyCode?: string;
     priceSnapshotIds?: string[];
     rowOverrides?: Record<string, Record<string, unknown>>;
-    customRows?: Array<Record<string, unknown>>;
+    customRows?: Record<string, unknown>[];
+    releaseAdmission?: boolean;
+    requestIdentity?: Record<string, unknown>;
   };
   attempt: number;
 };
 
-type ResourceSpec = {
-  id: string;
-  row_id: string;
-  ordinal: number;
-  section: string;
-  category: string;
-  title_ru: string;
-  unit_id: string;
-  formula_id: string;
-  inclusion_ast: Record<string, unknown>;
-  resource_graph: Record<string, unknown>;
-  procurement_eligible: boolean;
-  cost_owner_id: string | null;
-  source_metadata: Record<string, unknown>;
-  row_sha256: string;
-};
-
-function nonNegativeNumericText(value: unknown, field: string, nullable = false): string | null {
-  if (value == null && nullable) return null;
-  const normalized = String(value ?? "").trim();
-  if (!/^\+?\d+(?:\.\d+)?$/.test(normalized) || !Number.isFinite(Number(normalized))) {
-    throw Object.assign(new Error(`invalid ${field}`), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  return normalized;
-}
-
-function manualProvenance(value: unknown, field: string): Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)
-    || (value as Record<string, unknown>).kind !== "manual") {
-    throw Object.assign(new Error(`invalid ${field} provenance`), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  const reason = (value as Record<string, unknown>).reason;
-  if (reason != null && (typeof reason !== "string" || reason.trim().length > 500)) {
-    throw Object.assign(new Error(`invalid ${field} reason`), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  return { kind: "manual", ...(reason == null ? {} : { reason: reason.trim() }) };
-}
-
-function boundedText(value: unknown, field: string, maxLength: number): string {
-  const normalized = String(value ?? "").trim();
-  if (!normalized || normalized.length > maxLength) {
-    throw Object.assign(new Error(`invalid ${field}`), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  return normalized;
-}
-
-function assertOnlyKeys(value: Record<string, unknown>, allowed: string[], field: string): void {
-  const accepted = new Set(allowed);
-  if (Object.keys(value).some((key) => !accepted.has(key))) {
-    throw Object.assign(new Error(`unsupported ${field} field`), { code: "ROW_AMENDMENT_INVALID" });
-  }
-}
-
-function roundDecimal(value: string, scale: number): string {
-  const match = /^([+-]?)(\d+)(?:\.(\d+))?$/.exec(value);
-  if (!match) throw Object.assign(new Error("invalid decimal result"), { code: "DECIMAL_PROJECTION_INVALID" });
-  const sign = match[1] === "-" ? -1n : 1n;
-  const fraction = (match[3] ?? "").padEnd(scale + 1, "0");
-  const factor = 10n ** BigInt(scale);
-  let scaled = BigInt(match[2]) * factor + BigInt(fraction.slice(0, scale) || "0");
-  if (Number(fraction[scale] ?? "0") >= 5) scaled += 1n;
-  scaled *= sign;
-  const negative = scaled < 0n;
-  const absolute = negative ? -scaled : scaled;
-  const integer = absolute / factor;
-  const decimals = String(absolute % factor).padStart(scale, "0").replace(/0+$/, "");
-  return `${negative ? "-" : ""}${integer}${decimals ? `.${decimals}` : ""}`;
-}
-
-function multiply(quantity: string, unitPrice: string | null): string | null {
-  if (unitPrice == null) return null;
-  return roundDecimal(evaluateFormulaGraph({
-      kind: "binary",
-      operator: "*",
-      left: { kind: "literal", value: quantity },
-      right: { kind: "literal", value: unitPrice },
-    }, {}), 2);
-}
-
-function stableJson(value: unknown): string {
-  if (value == null || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
-    return JSON.stringify(value);
-  }
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`).join(",")}}`;
-}
-
 async function sha256(value: unknown): Promise<string> {
-  const bytes = new TextEncoder().encode(typeof value === "string" ? value : stableJson(value));
+  const bytes = new TextEncoder().encode(typeof value === "string" ? value : canonicalEstimateStableJson(value));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -130,57 +69,6 @@ async function sha256(value: unknown): Promise<string> {
 async function sha256Bytes(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function escapeHtml(value: unknown): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function professionalQuantity(value: unknown): string {
-  if (value == null || value === "") return "—";
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return "—";
-  return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(numeric);
-}
-
-function professionalMoney(value: unknown, currencyCode: unknown): string {
-  if (value == null || value === "") return "уточнить";
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return "уточнить";
-  const currency = String(currencyCode ?? "KGS") === "KGS" ? "сом" : String(currencyCode ?? "");
-  return `${new Intl.NumberFormat("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric)} ${currency}`.trim();
-}
-
-function professionalUnit(row: Record<string, unknown>): string {
-  const calculationTrace = row.calculation_trace && typeof row.calculation_trace === "object"
-    ? row.calculation_trace as Record<string, unknown>
-    : {};
-  const displayUnit = String(calculationTrace.displayUnitRu ?? "").trim();
-  if (displayUnit) return displayUnit;
-  const unit = String(row.unit_id ?? "").trim();
-  const localized: Record<string, string> = {
-    set: "компл.", item: "шт.", pcs: "шт.", man_hour: "чел.-ч",
-    machine_hour: "маш.-ч", t_km: "т·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
-    trip: "рейс", document: "док.", ratio: "коэф.", service: "\u0443\u0441\u043b\u0443\u0433\u0430",
-  };
-  if (unit !== "test") return localized[unit] ?? unit;
-  const semanticOwner = `${String(row.category ?? "")} ${String(row.title_ru ?? "")}`.toLocaleLowerCase("ru-RU");
-  if (/при[её]м|контрол|провер/u.test(semanticOwner)) return "проверка";
-  return "испыт.";
-}
-
-function professionalSection(row: Record<string, unknown>): string {
-  const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
-  if (/material|waste/u.test(identity)) return "Материалы";
-  if (/equipment|machine|machinery/u.test(identity)) return "Машины и оборудование";
-  if (/delivery|transport|logistic/u.test(identity)) return "Логистика";
-  if (/test|quality|control/u.test(identity)) return "Испытания и контроль";
-  return "Работы и услуги";
 }
 
 async function secretMatches(request: Request): Promise<boolean> {
@@ -197,6 +85,87 @@ async function secretMatches(request: Request): Promise<boolean> {
   let difference = 0;
   for (let index = 0; index < a.length; index += 1) difference |= a[index] ^ b[index];
   return difference === 0;
+}
+
+function jobAdmissionIngress(operation: ClaimedJob["operation"]): EstimateAdmissionIngress {
+  if (operation === "compile") return "direct_catalog_compile";
+  if (operation === "recalculate") return "parameter_recalculation";
+  if (operation === "procurement") return "procurement_artifact_create";
+  if (operation === "pdf" || operation === "professional_pdf") return "pdf_artifact_create";
+  return "revision_replay_migration";
+}
+
+async function assertClaimedJobAdmission(admin: AdminClient, job: ClaimedJob): Promise<void> {
+  const [{ data: release, error: releaseError }, { data: searchRelease, error: searchReleaseError }] = await Promise.all([
+    admin.from("estimate_definition_release").select("id,status").eq("id", job.target_release_id).maybeSingle(),
+    admin.from("estimate_search_index_release").select("id").eq("status", "active").order("activated_at", { ascending: false }).limit(1).maybeSingle(),
+  ]);
+  if (releaseError || searchReleaseError) {
+    throw Object.assign(new Error("job admission release load failed"), { code: "ADMISSION_LOAD_FAILED" });
+  }
+  const { data: manifest, error: manifestError } = release?.id
+    ? await admin.from("estimate_cumulative_manifest_entry")
+      .select("release_id,catalog_id,definition_version_id,runtime_publication_state,baseline_ready,scenario_ready")
+      .eq("release_id", release.id).eq("catalog_id", job.catalog_id).maybeSingle()
+    : { data: null, error: null };
+  if (manifestError) {
+    throw Object.assign(new Error("job admission manifest load failed"), { code: "ADMISSION_LOAD_FAILED" });
+  }
+  const { data: definition, error: definitionError } = manifest?.definition_version_id
+    ? await admin.from("estimate_definition_version")
+      .select("id,release_id,catalog_id,content_status,content_gate_status,source_metadata")
+      .eq("id", manifest.definition_version_id).maybeSingle()
+    : { data: null, error: null };
+  if (definitionError) {
+    throw Object.assign(new Error("job admission definition load failed"), { code: "ADMISSION_LOAD_FAILED" });
+  }
+  const { data: search, error: searchError } = searchRelease?.id
+    ? await admin.from("estimate_search_document")
+      .select("search_release_id,catalog_id,definition_version_id,definition_release_id,adjudication_class,selectable,canonical_target_catalog_id,replacement_catalog_id")
+      .eq("search_release_id", searchRelease.id).eq("catalog_id", job.catalog_id).maybeSingle()
+    : { data: null, error: null };
+  if (searchError) {
+    throw Object.assign(new Error("job admission search load failed"), { code: "ADMISSION_LOAD_FAILED" });
+  }
+  const registry = new CanonicalEstimateDefinitionRegistry([buildCanonicalEstimateRegistryEntry({
+    catalogId: job.catalog_id,
+    manifestPresent: Boolean(manifest),
+    definitionPresent: Boolean(definition),
+    searchDocumentPresent: Boolean(search),
+    definitionVersionId: definition?.id ?? manifest?.definition_version_id ?? null,
+    definitionReleaseId: manifest && release ? release.id : definition?.release_id ?? null,
+    searchDefinitionVersionId: search?.definition_version_id ?? null,
+    searchReleaseId: search?.search_release_id ?? null,
+    adjudicationClass: search?.adjudication_class ?? null,
+    selectable: search?.selectable,
+    canonicalTargetCatalogId: search?.canonical_target_catalog_id ?? null,
+    replacementCatalogId: search?.replacement_catalog_id ?? null,
+    sourceMetadata: definition?.source_metadata,
+  })]);
+  const registryEntry = registry.get(job.catalog_id)!;
+  const decision = evaluateEstimateAdmission({
+    mode: "production",
+    ingress: jobAdmissionIngress(job.operation),
+    releaseId: release?.id ?? job.target_release_id,
+    definitionVersionId: definition?.id ?? manifest?.definition_version_id ?? null,
+    catalogId: job.catalog_id,
+    releaseStatus: release?.status ?? null,
+    manifestPublicationState: manifest?.runtime_publication_state ?? null,
+    baselineReady: manifest?.baseline_ready === true,
+    scenarioReady: manifest?.scenario_ready === true,
+    definitionContentStatus: definition?.content_status ?? null,
+    contentGateStatus: definition?.content_gate_status ?? null,
+    definitionReleaseId: registryEntry.definitionReleaseId,
+    selectedSearchReleaseId: searchRelease?.id ?? null,
+    definitionSearchReleaseId: registryEntry.searchReleaseId,
+    unresolvedDisposition: registryEntry.unresolvedDisposition,
+    authorizationValid: true,
+  });
+  if (!decision.allowed) {
+    throw Object.assign(new Error("claimed job definition is not admitted"), {
+      code: decision.reasons[0]?.code ?? "ESTIMATE_ADMISSION_DENIED",
+    });
+  }
 }
 
 async function loadPriceItems(admin: AdminClient, snapshotIds: string[]) {
@@ -226,16 +195,60 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("target release load failed"), { code: "DEFINITION_LOAD_FAILED" });
   }
 
-  const { data: definition, error: definitionError } = await admin
-    .from("estimate_definition_version")
-    .select("id")
+  const { data: manifestEntry, error: manifestError } = await admin
+    .from("estimate_cumulative_manifest_entry")
+    .select("definition_version_id,approved_template_baseline_id,baseline_ready,scenario_ready")
     .eq("release_id", release.id)
     .eq("catalog_id", job.catalog_id)
-    .single();
-  if (definitionError) throw Object.assign(new Error("definition load failed"), { code: "DEFINITION_LOAD_FAILED" });
+    .maybeSingle();
+  if (manifestError) throw Object.assign(new Error("definition manifest load failed"), { code: "DEFINITION_LOAD_FAILED" });
+  let definitionVersionId: string | null = null;
+  let cumulativeManifest = false;
+  let approvedTemplateBaselineId: string | null = null;
+  if (manifestEntry?.baseline_ready === true && manifestEntry?.scenario_ready === true) {
+    definitionVersionId = manifestEntry.definition_version_id;
+    cumulativeManifest = true;
+    approvedTemplateBaselineId = manifestEntry.approved_template_baseline_id ?? null;
+  } else {
+    const { data: direct, error: directError } = await admin
+      .from("estimate_definition_version")
+      .select("id")
+      .eq("release_id", release.id)
+      .eq("catalog_id", job.catalog_id)
+      .maybeSingle();
+    if (directError) throw Object.assign(new Error("definition load failed"), { code: "DEFINITION_LOAD_FAILED" });
+    definitionVersionId = direct?.id ?? null;
+  }
+  if (!definitionVersionId) {
+    throw Object.assign(new Error("definition content is not admitted"), { code: "DEFINITION_CONTENT_NOT_ADMITTED" });
+  }
+  const [{ data: definitionVersion, error: definitionError }, { data: identity, error: identityError }] = await Promise.all([
+    admin.from("estimate_definition_version").select("id,definition_version,catalog_id").eq("id", definitionVersionId).single(),
+    admin.from("estimate_work_identity").select("title_ru,domain").eq("catalog_id", job.catalog_id).single(),
+  ]);
+  if (definitionError || identityError) {
+    throw Object.assign(new Error("definition identity load failed"), { code: "DEFINITION_LOAD_FAILED" });
+  }
+  let baselineParameters: Record<string, unknown> = {};
+  if (approvedTemplateBaselineId) {
+    const { data: baseline, error: baselineError } = await admin
+      .from("estimate_approved_template_baseline")
+      .select("input_values")
+      .eq("id", approvedTemplateBaselineId)
+      .single();
+    if (baselineError) throw Object.assign(new Error("definition baseline load failed"), { code: "DEFINITION_LOAD_FAILED" });
+    baselineParameters = baseline.input_values ?? {};
+  }
+  const definition = {
+    ...definitionVersion,
+    title_ru: identity.title_ru,
+    domain: identity.domain,
+    cumulative_manifest: cumulativeManifest,
+    approved_template_baseline_id: approvedTemplateBaselineId,
+  };
 
   const [parameterResult, formulaResult, resourceResult] = await Promise.all([
-    admin.from("estimate_parameter_definition").select("parameter_id,value_type,required,default_value,constraints_json,truth_metadata").eq("definition_version_id", definition.id).order("ordinal"),
+    admin.from("estimate_parameter_definition").select("parameter_id,value_type,required,default_value,constraints_json,truth_metadata,unit_id,approved_template_baseline_id").eq("definition_version_id", definition.id).order("ordinal"),
     admin.from("estimate_formula_graph").select("formula_id,ast,input_parameter_ids,ast_sha256").eq("definition_version_id", definition.id),
     admin.from("estimate_resource_spec").select("id,row_id,ordinal,section,category,title_ru,unit_id,formula_id,inclusion_ast,resource_graph,procurement_eligible,cost_owner_id,source_metadata,row_sha256").eq("definition_version_id", definition.id).order("ordinal").limit(MAX_RESOURCE_ROWS + 1),
   ]);
@@ -246,255 +259,90 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("resource graph row limit exceeded"), { code: "DEFINITION_LIMIT_EXCEEDED" });
   }
 
-  let confirmedParameters: Record<string, unknown> = {};
+  const submittedParameters = { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>;
+  let confirmedParameters: Record<string, unknown> = { ...baselineParameters };
+  let inheritedUserParameters: Record<string, unknown> = {};
+  let parentRevision: Record<string, unknown> | null = null;
   if (job.operation === "recalculate") {
     const { data: parent, error: parentError } = await admin
       .from("estimate_revision")
-      .select("release_id,catalog_id,input_parameters")
+      .select("release_id,catalog_id,input_parameters,amendment_contract,source_request_text,source_request_hash,primary_measure_parameter_id,revision_contract_version")
       .eq("id", job.parent_revision_id)
       .single();
     if (parentError || parent.catalog_id !== job.catalog_id) {
       throw Object.assign(new Error("parent revision parameter source unavailable"), { code: "PARENT_REVISION_INVALID" });
     }
-    if (parent.release_id === release.id) confirmedParameters = parent.input_parameters ?? {};
+    if (parent.release_id === release.id) {
+      confirmedParameters = { ...baselineParameters, ...(parent.input_parameters ?? {}) };
+      inheritedUserParameters = parent.amendment_contract?.parameterSources?.userParameters ?? {};
+    }
+    parentRevision = parent;
   }
-  const parameters = validateCanonicalEstimateParameters(
-    parameterResult.data ?? [],
-    { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>,
-    {
-      confirmedParameters,
-      baselineContext: { catalogId: job.catalog_id },
-    },
-  );
-  const numericParameters = Object.fromEntries(
-    Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string"),
-  ) as Record<string, string | number>;
-  const formulas = new Map((formulaResult.data ?? []).map((formula) => [formula.formula_id, formula]));
+  const effectiveUserParameters = { ...inheritedUserParameters, ...submittedParameters };
   const snapshotIds = Array.isArray(job.input_payload?.priceSnapshotIds) ? job.input_payload.priceSnapshotIds : [];
   const prices = await loadPriceItems(admin, snapshotIds);
-  const currencyCode = String(job.input_payload?.currencyCode ?? "");
-  if (!/^[A-Z]{3}$/.test(currencyCode)) throw Object.assign(new Error("invalid currency"), { code: "PARAMETER_VALIDATION_FAILED" });
-
-  const rawOverrides = job.input_payload?.rowOverrides ?? {};
-  const rawCustomRows = job.input_payload?.customRows ?? [];
-  if (!rawOverrides || typeof rawOverrides !== "object" || Array.isArray(rawOverrides)
-    || Object.keys(rawOverrides).length > MAX_RESOURCE_ROWS
-    || !Array.isArray(rawCustomRows) || rawCustomRows.length > 200) {
-    throw Object.assign(new Error("row amendment payload exceeds limits"), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  if (job.operation !== "recalculate"
-    && (Object.keys(rawOverrides).length > 0 || rawCustomRows.length > 0)) {
-    throw Object.assign(new Error("row amendments require recalculate"), { code: "ROW_AMENDMENT_INVALID" });
-  }
-  const overrides = new Map(Object.entries(rawOverrides));
-  const rows: Array<Record<string, unknown>> = [];
-  const rowIds = new Set<string>();
-  let totalAmount = "0";
-  const addToTotal = (amount: string | null, included: boolean) => {
-    if (amount != null && included) {
-      totalAmount = evaluateFormulaGraph({
-        kind: "binary",
-        operator: "+",
-        left: { kind: "literal", value: totalAmount },
-        right: { kind: "literal", value: amount },
-      }, {});
-    }
-  };
-  for (const resource of (resourceResult.data ?? []) as ResourceSpec[]) {
-    if (!evaluateInclusionGraph(resource.inclusion_ast, parameters)) continue;
-    const formula = formulas.get(resource.formula_id);
-    if (!formula) throw Object.assign(new Error("formula graph reference missing"), { code: "DEFINITION_INTEGRITY_FAILED" });
-    const calculatedQuantity = evaluateFormulaGraph(formula.ast as FormulaAst, numericParameters);
-    const priceKey = resource.cost_owner_id || resource.row_id;
-    const price = prices.get(`${priceKey}:${resource.unit_id}`);
-    if (price && price.currency_code !== currencyCode) {
-      throw Object.assign(new Error("mixed currency snapshot"), { code: "PRICE_CURRENCY_MISMATCH" });
-    }
-    const override = overrides.get(resource.row_id);
-    if (override != null && (!override || typeof override !== "object" || Array.isArray(override))) {
-      throw Object.assign(new Error(`invalid row override ${resource.row_id}`), { code: "ROW_AMENDMENT_INVALID" });
-    }
-    if (override != null) assertOnlyKeys(override, [
-      "titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance",
-    ], `row override ${resource.row_id}`);
-    const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
-    const quantity = override?.quantity == null
-      ? calculatedQuantity
-      : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
-    const snapshotUnitPrice = price ? String(price.unit_price) : null;
-    const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
-      ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
-      : snapshotUnitPrice;
-    const includedInEstimate = override?.includedInEstimate == null ? true : override.includedInEstimate;
-    const includedInProcurement = includedInEstimate
-      && (override?.includedInProcurement == null ? resource.procurement_eligible : override.includedInProcurement);
-    if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
-      || (includedInProcurement && !resource.procurement_eligible)) {
-      throw Object.assign(new Error(`invalid row inclusion ${resource.row_id}`), { code: "ROW_AMENDMENT_INVALID" });
-    }
-    const amount = multiply(quantity, unitPrice);
-    addToTotal(amount, includedInEstimate);
-    const calculationTrace = {
-      compilerVersion: WORKER_VERSION,
-      formulaId: resource.formula_id,
-      formulaAstSha256: formula.ast_sha256,
-      inputParameterIds: formula.input_parameter_ids,
-      resourceGraph: resource.resource_graph,
-      ...(provenance == null ? {} : { manualAmendment: provenance }),
-    };
-    const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)
-      ? resource.source_metadata.normativeTrace
-      : [];
-    const rowBase = {
-      rowId: resource.row_id,
-      ordinal: resource.ordinal,
-      resourceSpecId: resource.id,
-      section: resource.section,
-      category: resource.category,
-      titleRu: override?.titleRu == null
-        ? resource.title_ru
-        : boundedText(override.titleRu, `${resource.row_id}.titleRu`, 2_000),
-      unitId: resource.unit_id,
-      quantity,
-      unitPrice,
-      amount,
-      currencyCode: unitPrice == null ? null : currencyCode,
-      procurementEligible: resource.procurement_eligible,
-      includedInEstimate,
-      includedInProcurement,
-      ownershipStatus: includedInEstimate ? "OWNED" : "OWNED_EXCLUDED",
-      calculationTrace,
-      normativeTrace,
-      sourceRowSha256: resource.row_sha256,
-      priceSnapshotId: provenance != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
-        ? null
-        : price?.snapshot_id ?? null,
-      priceRouteId: provenance != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
-        ? null
-        : price?.estimate_price_snapshot?.route_id ?? null,
-      priceResolutionTrace: provenance != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
-        ? { kind: "manual_override", provenance, resolved: unitPrice != null }
-        : price ? { priceKey, resolved: true } : { priceKey, resolved: false },
-    };
-    const row = {
-      row_id: rowBase.rowId,
-      ordinal: rowBase.ordinal,
-      resource_spec_id: rowBase.resourceSpecId,
-      section: rowBase.section,
-      category: rowBase.category,
-      title_ru: rowBase.titleRu,
-      unit_id: rowBase.unitId,
-      quantity: rowBase.quantity,
-      unit_price: rowBase.unitPrice,
-      amount: rowBase.amount,
-      currency_code: rowBase.currencyCode,
-      procurement_eligible: rowBase.procurementEligible,
-      included_in_estimate: rowBase.includedInEstimate,
-      included_in_procurement: rowBase.includedInProcurement,
-      ownership_status: rowBase.ownershipStatus,
-      calculation_trace: rowBase.calculationTrace,
-      normative_trace: rowBase.normativeTrace,
-      legacy_row_payload: null,
-      price_snapshot_id: rowBase.priceSnapshotId,
-      price_route_id: rowBase.priceRouteId,
-      price_resolution_trace: rowBase.priceResolutionTrace,
-    } as Record<string, unknown>;
-    row.row_sha256 = await sha256(row);
-    rows.push(row);
-    rowIds.add(resource.row_id);
-    overrides.delete(resource.row_id);
-  }
-
-  if (overrides.size > 0) {
-    throw Object.assign(new Error(`row override is not reachable: ${[...overrides.keys()][0]}`), {
-      code: "ROW_OVERRIDE_NOT_REACHED",
-    });
-  }
-  let nextOrdinal = rows.reduce((maximum, row) => Math.max(maximum, Number(row.ordinal)), -1) + 1;
-  for (let index = 0; index < rawCustomRows.length; index += 1) {
-    const custom = rawCustomRows[index];
-    if (!custom || typeof custom !== "object" || Array.isArray(custom)) {
-      throw Object.assign(new Error(`invalid custom row ${index}`), { code: "ROW_AMENDMENT_INVALID" });
-    }
-    assertOnlyKeys(custom, [
-      "clientRowId", "section", "category", "titleRu", "unitId", "quantity", "unitPrice",
-      "includedInEstimate", "includedInProcurement", "provenance",
-    ], `custom row ${index}`);
-    const clientRowId = boundedText(custom.clientRowId, `customRows.${index}.clientRowId`, 200);
-    if (!/^[A-Za-z0-9._:-]+$/.test(clientRowId)) {
-      throw Object.assign(new Error(`invalid custom row identity ${index}`), { code: "ROW_AMENDMENT_INVALID" });
-    }
-    const rowId = `manual:${clientRowId}`;
-    if (rowIds.has(rowId)) throw Object.assign(new Error(`duplicate custom row ${rowId}`), { code: "ROW_AMENDMENT_INVALID" });
-    const provenance = manualProvenance(custom.provenance, `customRows.${index}`);
-    const quantity = nonNegativeNumericText(custom.quantity, `customRows.${index}.quantity`)!;
-    const unitPrice = nonNegativeNumericText(custom.unitPrice, `customRows.${index}.unitPrice`, true);
-    const includedInEstimate = custom.includedInEstimate;
-    const includedInProcurement = custom.includedInProcurement;
-    if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
-      || (includedInProcurement && !includedInEstimate)) {
-      throw Object.assign(new Error(`invalid custom row inclusion ${index}`), { code: "ROW_AMENDMENT_INVALID" });
-    }
-    const amount = multiply(quantity, unitPrice);
-    addToTotal(amount, includedInEstimate);
-    const sourcePayload = { kind: "manual_server_owned_v1", clientRowId, provenance };
-    const row = {
-      row_id: rowId,
-      ordinal: nextOrdinal,
-      resource_spec_id: null,
-      section: boundedText(custom.section, `customRows.${index}.section`, 240),
-      category: boundedText(custom.category, `customRows.${index}.category`, 240),
-      title_ru: boundedText(custom.titleRu, `customRows.${index}.titleRu`, 2_000),
-      unit_id: boundedText(custom.unitId, `customRows.${index}.unitId`, 120),
-      quantity,
-      unit_price: unitPrice,
-      amount,
-      currency_code: unitPrice == null ? null : currencyCode,
-      procurement_eligible: true,
-      included_in_estimate: includedInEstimate,
-      included_in_procurement: includedInProcurement,
-      ownership_status: "MANUAL_SERVER_OWNED",
-      calculation_trace: { compilerVersion: WORKER_VERSION, manualAmendment: provenance },
-      normative_trace: [],
-      legacy_row_payload: sourcePayload,
-      price_snapshot_id: null,
-      price_route_id: null,
-      price_resolution_trace: { kind: "manual_custom_row", provenance, resolved: unitPrice != null },
-    } as Record<string, unknown>;
-    row.row_sha256 = await sha256(row);
-    rows.push(row);
-    rowIds.add(rowId);
-    nextOrdinal += 1;
-  }
-
-  const totals = {
-    amount: totalAmount,
-    includedRowCount: rows.filter((row) => row.included_in_estimate).length,
-    excludedRowCount: rows.filter((row) => !row.included_in_estimate).length,
-    pricedRowCount: rows.filter((row) => row.included_in_estimate && row.unit_price != null).length,
-    unpricedRowCount: rows.filter((row) => row.included_in_estimate && row.unit_price == null).length,
-    currencyCode,
-  };
-  const revisionProjection = {
+  const compiled = await compileCanonicalEstimateCore({
+    operation: job.operation as "compile" | "recalculate",
+    compilerVersion: WORKER_VERSION,
     catalogId: job.catalog_id,
-    parameters,
+    parameterDefinitions: parameterResult.data ?? [],
+    formulaDefinitions: formulaResult.data ?? [],
+    resourceDefinitions: resourceResult.data ?? [],
+    submittedParameters,
+    confirmedParameters,
+    currencyCode: String(job.input_payload?.currencyCode ?? ""),
     priceSnapshotIds: snapshotIds,
+    priceItems: [...prices.values()],
+    rowOverrides: job.input_payload?.rowOverrides ?? {},
+    customRows: job.input_payload?.customRows ?? [],
+    maximumResourceRows: MAX_RESOURCE_ROWS,
+    hashJson: sha256,
+  });
+  const { rows, totals } = compiled;
+  const parameters = compiled.parameters;
+  const currencyCode = compiled.totals.currencyCode;
+  const baselineAssumptions = Object.fromEntries(Object.entries(baselineParameters)
+    .filter(([parameterId, value]) => !(parameterId in effectiveUserParameters)
+      && canonicalEstimateStableJson(parameters[parameterId]) === canonicalEstimateStableJson(value)));
+  const { data: searchRelease } = await admin
+    .from("estimate_search_index_release")
+    .select("id")
+    .eq("status", "active")
+    .order("activated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const identityContract = await buildCanonicalRevisionIdentity({
+    catalogId: job.catalog_id,
+    parentRevisionId: job.parent_revision_id,
+    requestIdentity: job.input_payload?.requestIdentity ?? {},
+    definition,
+    parameterDefinitions: parameterResult.data ?? [],
+    parameters,
+    effectiveUserParameters,
+    baselineAssumptions,
+    parent: parentRevision,
+    searchReleaseId: searchRelease?.id ?? null,
+    compilerVersion: WORKER_VERSION,
+    hashText: sha256,
+  });
+  const revisionProjection = { ...compiled.revisionProjection, identity: identityContract };
+  const commitPayload = buildCanonicalRevisionCommitPayload({
+    rowCount: rows.length,
     currencyCode,
     totals,
-    rows: rows.map((row) => ({ rowId: row.row_id, rowSha256: row.row_sha256 })),
+    checksumSha256: await sha256(revisionProjection),
     compilerVersion: WORKER_VERSION,
-  };
-  const { data: revisionId, error: commitError } = await admin.rpc("estimate_commit_compile_job_v1", {
+    parameters,
+    approvedTemplateBaselineId,
+    baselineAssumptions,
+    effectiveUserParameters,
+    parentRevisionId: job.parent_revision_id,
+    identityContract,
+  });
+  const { data: revisionId, error: commitError } = await admin.rpc(CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION, {
     p_job_id: job.id,
     p_worker_id: workerId,
-    p_revision: {
-      rowCount: rows.length,
-      currencyCode,
-      totals,
-      checksumSha256: await sha256(revisionProjection),
-      compilerVersion: WORKER_VERSION,
-      migrationSource: null,
-    },
+    p_revision: commitPayload,
     p_rows: rows,
   });
   if (commitError) {
@@ -561,7 +409,7 @@ async function compileLegacyRevisionJob(admin: AdminClient, workerId: string, jo
   }
   const specByRowId = new Map((specs ?? []).map((entry) => [String(entry.row_id), entry.id]));
   const seen = new Set<string>();
-  const rows: Array<Record<string, unknown>> = [];
+  const rows: Record<string, unknown>[] = [];
   let totalAmount = "0";
   let matchedRows = 0;
   let unmatchedRows = 0;
@@ -576,9 +424,9 @@ async function compileLegacyRevisionJob(admin: AdminClient, workerId: string, jo
     const sourceQuantity = numericText(source.quantity, `rows[${ordinal}].quantity`, true);
     const sourceUnitPrice = numericText(source.unitPrice, `rows[${ordinal}].unitPrice`, true);
     const sourceAmount = numericText(source.amount, `rows[${ordinal}].amount`, true);
-    const quantity = sourceQuantity == null ? null : roundDecimal(sourceQuantity, 9);
-    const unitPrice = sourceUnitPrice == null ? null : roundDecimal(sourceUnitPrice, 6);
-    const amount = sourceAmount == null ? null : roundDecimal(sourceAmount, 2);
+    const quantity = sourceQuantity == null ? null : canonicalRoundDecimal(sourceQuantity, 9);
+    const unitPrice = sourceUnitPrice == null ? null : canonicalRoundDecimal(sourceUnitPrice, 6);
+    const amount = sourceAmount == null ? null : canonicalRoundDecimal(sourceAmount, 2);
     const sourcePayload = source.sourcePayload && typeof source.sourcePayload === "object" && !Array.isArray(source.sourcePayload)
       ? source.sourcePayload as Record<string, unknown>
       : source;
@@ -656,7 +504,7 @@ async function compileLegacyRevisionJob(admin: AdminClient, workerId: string, jo
     compilerVersion: WORKER_VERSION,
   };
 
-  const { data: revisionId, error: commitError } = await admin.rpc("estimate_commit_compile_job_v1", {
+  const { data: revisionId, error: commitError } = await admin.rpc(CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION, {
     p_job_id: job.id,
     p_worker_id: workerId,
     p_revision: {
@@ -689,7 +537,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   }
   const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError }] = await Promise.all([
     admin.from("estimate_revision")
-      .select("id,release_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,created_at")
+      .select("id,release_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
       .eq("id", job.parent_revision_id).single(),
     admin.from("estimate_revision_row")
       .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
@@ -699,53 +547,19 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     || rowData?.length !== revision.row_count) {
     throw Object.assign(new Error("artifact source revision load failed"), { code: "ARTIFACT_SOURCE_INVALID" });
   }
-  const rows = rowData ?? [];
-  const selectedProcurementRows = rows.filter((row) => row.procurement_eligible && row.included_in_procurement);
+  const selection = selectCanonicalArtifactRows(rowData ?? []);
+  const rows = selection.estimateRows;
+  const selectedProcurementRows = selection.procurementRows;
   let bytes: Uint8Array;
   let contentType: string;
   let extension: string;
   let renderer: string;
   if (job.operation === "procurement") {
-    const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
-    for (const row of selectedProcurementRows) {
-      const key = `${row.section}\u0000${row.category}`;
-      const group = groups.get(key) ?? { section: row.section, category: row.category, rowIds: [] };
-      group.rowIds.push(row.row_id);
-      groups.set(key, group);
-    }
-    const projection = {
-      schemaVersion: "canonical_estimate_procurement_v2",
-      revisionId: revision.id,
-      releaseId: revision.release_id,
-      revisionChecksumSha256: revision.checksum_sha256,
-      catalogId: revision.catalog_id,
-      currencyCode: revision.currency_code,
-      revisionTotals: revision.totals,
-      parameters: revision.input_parameters,
-      amendmentContract: revision.amendment_contract,
-      selectedRowCount: selectedProcurementRows.length,
-      groups: [...groups.values()],
-      rows: rows.map((row) => ({
-        rowId: row.row_id,
-        ordinal: row.ordinal,
-        section: row.section,
-        category: row.category,
-        titleRu: row.title_ru,
-        unitId: row.unit_id,
-        quantity: row.quantity == null ? null : String(row.quantity),
-        unitPrice: row.unit_price == null ? null : String(row.unit_price),
-        amount: row.amount == null ? null : String(row.amount),
-        procurementEligible: row.procurement_eligible,
-        includedInEstimate: row.included_in_estimate,
-        includedInProcurement: row.included_in_procurement,
-        rowSha256: row.row_sha256,
-        ownershipStatus: row.ownership_status,
-        manualAmendment: row.calculation_trace?.manualAmendment ?? null,
-        normativeTrace: row.normative_trace,
-        legacyDisposition: row.legacy_row_payload == null ? null : row.ownership_status,
-      })),
-    };
-    bytes = new TextEncoder().encode(stableJson(projection));
+    const projection = buildCanonicalProcurementProjection({
+      revision,
+      procurementRows: selectedProcurementRows,
+    });
+    bytes = new TextEncoder().encode(canonicalEstimateStableJson(projection));
     contentType = "application/json; charset=utf-8";
     extension = "json";
     renderer = "canonical-procurement-projection.r2";
@@ -803,12 +617,12 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
         : "";
       const manual = row.calculation_trace?.manualAmendment == null
         ? ""
-        : `manual: ${stableJson(row.calculation_trace.manualAmendment)}`;
+        : `manual: ${canonicalEstimateStableJson(row.calculation_trace.manualAmendment)}`;
       const disposition = [row.ownership_status, row.included_in_estimate ? "в смете" : "исключена",
         row.included_in_procurement ? "в закупке" : "не в закупке", manual].filter(Boolean).join(" · ");
       return `<tr><td>${row.ordinal + 1}</td><td>${escapeHtml(row.section)}<br><span class="muted">${escapeHtml(row.category)}</span></td><td>${escapeHtml(row.title_ru)}<br><span class="muted">${escapeHtml(disposition)}</span></td><td>${escapeHtml(row.unit_id)}</td><td>${escapeHtml(row.quantity ?? "—")}</td><td>${escapeHtml(row.unit_price ?? "—")}</td><td>${escapeHtml(row.amount ?? "—")}</td><td>${escapeHtml(normative || "—")}</td></tr>`;
     }).join("");
-    const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111827}h1{font-size:20px;margin:0 0 8px}h2{font-size:14px;margin:12px 0 5px}.meta,.muted{font-size:9px;color:#4b5563;word-break:break-word}.identity{font-size:10px;word-break:break-all}pre{white-space:pre-wrap;word-break:break-word;border:1px solid #e5e7eb;background:#f9fafb;padding:6px;font-size:9px}table{width:100%;border-collapse:collapse;font-size:8px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #d1d5db;padding:4px;text-align:left;vertical-align:top}th{background:#f3f4f6}</style></head><body><h1>Каноническая смета</h1><div class="identity">revision_id: ${escapeHtml(revision.id)}<br>release_id: ${escapeHtml(revision.release_id)}<br>catalog_id: ${escapeHtml(revision.catalog_id)}<br>checksum: ${escapeHtml(revision.checksum_sha256)}<br>compiler: ${escapeHtml(revision.compiler_version)}</div><h2>Параметры</h2><pre>${escapeHtml(stableJson(revision.input_parameters))}</pre><h2>Итоги</h2><pre>${escapeHtml(stableJson(revision.totals))}</pre><h2>Позиции и нормативные ссылки</h2><table><thead><tr><th>№</th><th>Раздел / категория</th><th>Позиция / disposition</th><th>Ед.</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Норматив</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
+    const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111827}h1{font-size:20px;margin:0 0 8px}h2{font-size:14px;margin:12px 0 5px}.meta,.muted{font-size:9px;color:#4b5563;word-break:break-word}.identity{font-size:10px;word-break:break-all}pre{white-space:pre-wrap;word-break:break-word;border:1px solid #e5e7eb;background:#f9fafb;padding:6px;font-size:9px}table{width:100%;border-collapse:collapse;font-size:8px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #d1d5db;padding:4px;text-align:left;vertical-align:top}th{background:#f3f4f6}</style></head><body><h1>Каноническая смета</h1><div class="identity">revision_id: ${escapeHtml(revision.id)}<br>release_id: ${escapeHtml(revision.release_id)}<br>catalog_id: ${escapeHtml(revision.catalog_id)}<br>checksum: ${escapeHtml(revision.checksum_sha256)}<br>compiler: ${escapeHtml(revision.compiler_version)}</div><h2>Параметры</h2><pre>${escapeHtml(canonicalEstimateStableJson(revision.input_parameters))}</pre><h2>Итоги</h2><pre>${escapeHtml(canonicalEstimateStableJson(revision.totals))}</pre><h2>Позиции и нормативные ссылки</h2><table><thead><tr><th>№</th><th>Раздел / категория</th><th>Позиция / disposition</th><th>Ед.</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Норматив</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
     const rendered = await renderPdfBytes(html);
     bytes = rendered.pdfBytes;
     contentType = "application/pdf";
@@ -833,19 +647,14 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
       contentType,
       byteSize: bytes.byteLength,
       sha256: artifactSha256,
-      metadata: {
+      metadata: buildCanonicalArtifactMetadata({
+        operation: job.operation,
         renderer,
-        ...(job.operation === "professional_pdf" ? { templateVersion: "professional-estimate-pdf:3" } : {}),
-        sourceRevisionChecksumSha256: revision.checksum_sha256,
-        sourceReleaseId: revision.release_id,
-        sourceCatalogId: revision.catalog_id,
-        sourceOwnerUserId: revision.owner_user_id,
-        sourceOrganizationId: revision.organization_id ?? null,
-        projectedRowCount: rows.length,
-        selectedProcurementRowCount: job.operation === "procurement" ? selectedProcurementRows.length : null,
-        includesExcludedDisposition: true,
-        includesParametersAndTotals: true,
-      },
+        revision,
+        sourceRowCount: selection.sourceRows.length,
+        projectedRowCount: job.operation === "procurement" ? selectedProcurementRows.length : rows.length,
+        selectedProcurementRowCount: selectedProcurementRows.length,
+      }),
     },
   });
   if (commitError) throw Object.assign(new Error("artifact commit failed"), { code: "ARTIFACT_COMMIT_FAILED" });
@@ -896,9 +705,10 @@ Deno.serve(async (request: Request) => {
   const results = [];
   for (const job of (jobs ?? []) as ClaimedJob[]) {
     try {
+      await assertClaimedJobAdmission(admin, job);
       if (job.operation === "legacy_revision_migration") {
         results.push({ jobId: job.id, revisionId: await compileLegacyRevisionJob(admin, workerId, job), status: "succeeded" });
-      } else if (job.operation === "pdf" || job.operation === "procurement") {
+      } else if (job.operation === "pdf" || job.operation === "professional_pdf" || job.operation === "procurement") {
         results.push({ jobId: job.id, artifactId: await buildArtifactJob(admin, workerId, job), status: "succeeded" });
       } else {
         results.push({ jobId: job.id, revisionId: await compileJob(admin, workerId, job), status: "succeeded" });

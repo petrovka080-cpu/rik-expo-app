@@ -6,17 +6,18 @@ import type {
 } from "../../estimateStructuredPipeline/structuredEstimateTypes";
 import type { GlobalEstimateSectionType, GlobalEstimateResult } from "../../ai/globalEstimate/globalEstimateTypes";
 import type { EstimatePresentationViewModel } from "../../ai/estimatePresentation";
+import { buildStructuredEstimateForemanBinding } from "../../estimateStructuredPipeline/structuredEstimateForemanBinding";
 import type {
   CanonicalEstimateCatalogItem,
   CanonicalEstimateRevisionRowView,
   CanonicalEstimateRevisionView,
 } from "./contracts";
 
-function sectionType(category: string): GlobalEstimateSectionType {
-  const value = category.toLowerCase();
-  if (value.includes("material") || value.includes("waste")) return "materials";
-  if (value.includes("equipment") || value.includes("machinery")) return "equipment";
-  if (value.includes("delivery") || value.includes("transport")) return "delivery";
+function sectionType(section: string, category: string): GlobalEstimateSectionType {
+  const value = `${section} ${category}`.toLocaleLowerCase("ru-RU");
+  if (value.includes("материал") || value.includes("material") || value.includes("отход") || value.includes("waste")) return "materials";
+  if (value.includes("оборудован") || value.includes("equipment") || value.includes("machinery")) return "equipment";
+  if (value.includes("достав") || value.includes("логист") || value.includes("delivery") || value.includes("transport")) return "delivery";
   return "labor";
 }
 
@@ -24,6 +25,26 @@ function finiteNumber(value: string | null): number | null {
   if (value == null) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value != null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function publicNormativeTrace(row: CanonicalEstimateRevisionRowView): Record<string, unknown>[] {
+  return row.normativeTrace.flatMap((value) => {
+    const trace = record(value);
+    if (!trace) return [];
+    const documentCode = String(trace.document_code ?? trace.sourceId ?? trace.source_id ?? "").trim();
+    const exactLocator = String(trace.exact_locator ?? trace.exactLocator ?? "").trim();
+    return [{
+      ...trace,
+      document_code: documentCode,
+      exact_locator: exactLocator,
+    }];
+  });
 }
 
 function sectionTitle(type: GlobalEstimateSectionType): string {
@@ -49,10 +70,15 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const sectionOrder: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
   const currency = input.revision.currencyCode;
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
-    const type = sectionType(row.category);
+    const type = sectionType(row.section, row.category);
     const quantity = finiteNumber(row.quantity) ?? 0;
     const unitPrice = finiteNumber(row.unitPrice);
     const total = finiteNumber(row.amount);
+    const normativeTrace = publicNormativeTrace(row);
+    const parameterDependencies = Array.isArray(row.calculationTrace?.inputParameterIds)
+      ? row.calculationTrace.inputParameterIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      : [];
+    const primaryNormativeSource = normativeTrace[0];
     return {
       rowId: row.rowId,
       sectionNumber: String(sectionOrder.indexOf(type) + 1),
@@ -65,19 +91,34 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       unit: row.unitId,
       displayQuantity: row.quantity == null ? "—" : String(row.quantity),
       unitPrice,
-      displayUnitPrice: unitPrice == null ? "PRICE_MISSING" : String(row.unitPrice),
+      displayUnitPrice: unitPrice == null ? "Цена требует уточнения" : String(row.unitPrice),
       total,
-      displayTotal: total == null ? "PRICE_MISSING" : String(row.amount),
+      displayTotal: total == null ? "Итог после уточнения цены" : String(row.amount),
       currency,
       confidence: "high",
-      visibleSourceLabel: "Canonical Estimate Backend",
-      sourceId: `backend-revision:${input.revision.revisionId}`,
+      visibleSourceLabel: "Утверждённая технологическая карта",
+      sourceId: "canonical-approved-baseline",
       formulaId: String(row.calculationTrace?.formulaId ?? "") || null,
       quantityFormula: null,
       calculationTrace: JSON.stringify(row.calculationTrace),
       sourceParameters: {
         rowCode: row.rowId,
         normativeTrace: row.normativeTrace,
+        normativeRowTraceV3: normativeTrace,
+        priceRouteV3: {
+          kind: unitPrice == null ? "CANONICAL_BACKEND_PRICE_MISSING" : "CANONICAL_BACKEND_ROW_PRICE",
+        },
+        smartEstimateProjectionV2: {
+          progressiveDisclosure: true,
+          stage: row.section,
+          category: row.category,
+          initiallyCollapsed: false,
+          rowReachable: true,
+          formulaExplanation: row.calculationTrace,
+          normativeExplanation: normativeTrace,
+          parameterDependencies,
+          parameterToCostDelta: "quantity_delta * verified_unit_price",
+        },
         rowSha256: row.rowSha256,
         canonicalBackendRevisionId: input.revision.revisionId,
         canonicalBackendReleaseId: input.revision.releaseId,
@@ -86,6 +127,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         includedInEstimate: row.includedInEstimate,
         includedInProcurement: row.includedInProcurement,
       },
+      normSourceId: String(primaryNormativeSource?.document_code ?? "").trim() || null,
+      normSourceTitle: String(primaryNormativeSource?.document_code ?? "").trim() || null,
       catalogItemId: null,
       includedInEstimate: row.includedInEstimate,
       includedInProcurement: row.includedInProcurement,
@@ -124,6 +167,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   const presentationRows = rows.map((row) => ({
     ...row,
     name: row.visibleName,
+    sourceLabel: row.visibleSourceLabel,
     unitPrice: row.unitPrice ?? 0,
     total: row.total ?? 0,
     priceStatus: row.unitPrice == null ? "missing" as const : "resolved" as const,
@@ -149,7 +193,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     totals,
     tax,
     sourceConfidence: "high" as const,
-    sourceLabels: ["Canonical Estimate Backend"],
+    sourceLabels: ["Утверждённая технологическая карта"],
     costIncreaseFactors: [],
     clarifyingQuestions: [],
     actions: [],
@@ -199,6 +243,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       compilerOwner: "backend",
       revisionId: input.revision.revisionId,
       parentRevisionId: input.revision.parentRevisionId,
+      revisionNumber: input.revision.revisionNumber,
       releaseId: input.revision.releaseId,
       catalogId: input.revision.catalogId,
       createdAt: input.revision.createdAt,
@@ -209,5 +254,42 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     },
     visiblePolicy: { noInternalKeysVisible: true, noGenericRowsVisible: true, controlRowsAreNotPaidItems: true, uiPdfSameRows: true },
     fakeGreenClaimed: false,
+  };
+}
+
+function compilationRecord(value: unknown): {
+  catalog: CanonicalEstimateCatalogItem;
+  revision: CanonicalEstimateRevisionView;
+  rows: CanonicalEstimateRevisionRowView[];
+} | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const draft = value as Record<string, unknown>;
+  if (draft.backendCanonical !== true) return null;
+  if (!draft.catalog || typeof draft.catalog !== "object" || Array.isArray(draft.catalog)) return null;
+  if (!draft.revision || typeof draft.revision !== "object" || Array.isArray(draft.revision)) return null;
+  if (!Array.isArray(draft.rows)) return null;
+  const revisionId = String((draft.revision as Record<string, unknown>).revisionId ?? "").trim();
+  const releaseId = String((draft.revision as Record<string, unknown>).releaseId ?? "").trim();
+  const catalogId = String((draft.catalog as Record<string, unknown>).catalogId ?? "").trim();
+  if (!revisionId || !releaseId || !catalogId) return null;
+  return {
+    catalog: draft.catalog as CanonicalEstimateCatalogItem,
+    revision: draft.revision as CanonicalEstimateRevisionView,
+    rows: draft.rows as CanonicalEstimateRevisionRowView[],
+  };
+}
+
+export function adaptCanonicalCompilationToAssistantProjection(
+  draft: unknown,
+  userId?: string,
+) {
+  const compilation = compilationRecord(draft);
+  if (!compilation) return null;
+  const payload = adaptCanonicalRevisionToStructuredEstimate(compilation);
+  const binding = buildStructuredEstimateForemanBinding(payload, userId);
+  return {
+    ...binding,
+    revisionId: compilation.revision.revisionId,
+    releaseId: compilation.revision.releaseId,
   };
 }

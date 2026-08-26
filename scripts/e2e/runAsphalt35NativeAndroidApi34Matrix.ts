@@ -103,7 +103,7 @@ type NativeCaseResult = {
   pdf_full_boq_visible: boolean;
   missing_pdf_boq_row_names: string[];
   immutable_revision_visible: boolean;
-  build_identity_visible: boolean;
+  build_identity_evidence_ready: boolean;
   revision_before_edit: string | null;
   revision_after_edit: string | null;
   precreate_compiled_revision: NativeCompiledRevisionObservation | null;
@@ -1684,10 +1684,13 @@ async function applyEditAndWaitForChangedRevision(
   };
 }
 
-function visibleBuildIdentity(snapshot: ReturnType<typeof dumpUi>): string | null {
-  const node = findNodeById(snapshot, "build-identity")
-    ?? snapshot.nodes.find((candidate) => candidate.contentDesc === "BUILD_IDENTITY");
-  return node?.text || node?.contentDesc || null;
+function buildIdentityEvidenceLog(): string | null {
+  const log = adb(["logcat", "-d", "-v", "brief"], 30_000);
+  if (!log.ok) return null;
+  const evidence = log.output
+    .split(/\r?\n/u)
+    .filter((line) => line.includes("[BuildIdentityEvidence]"));
+  return evidence.at(-1) ?? null;
 }
 
 function capture(caseDir: string, name: string): { screenshot: string | null; uiDump: string | null } {
@@ -1731,7 +1734,7 @@ async function openCurrentDevBundle(port: number, forceReload = false): Promise<
   if (
     !forceReload &&
     (findNodeById(alreadyCurrent, "consumer-repair-screen") || findNodeById(alreadyCurrent, "auth.login.screen"))
-    && findNodeById(alreadyCurrent, "build-identity")
+    && buildIdentityEvidenceLog() != null
   ) {
     return true;
   }
@@ -1767,7 +1770,7 @@ async function openCurrentDevBundle(port: number, forceReload = false): Promise<
       await wait(2_000);
       continue;
     }
-    if (!requestLaunched && (findNodeById(snapshot, "build-identity") || snapshot.text.includes("BUILD_IDENTITY"))) {
+    if (!requestLaunched && buildIdentityEvidenceLog() != null) {
       requestLaunched = launchUri(requestUri()).ok;
       await wait(2_000);
       continue;
@@ -1867,7 +1870,7 @@ function expectedRowsFor(registration: NativeMatrixRegistration): { nameRu: stri
 async function runCase(
   registration: NativeMatrixRegistration,
   artifactDir: string,
-  buildIdentityVisible: boolean,
+  buildIdentityEvidenceReady: boolean,
   devServerPort: number | null,
 ): Promise<NativeCaseResult> {
   const startedAt = Date.now();
@@ -1925,7 +1928,7 @@ async function runCase(
     pdf_full_boq_visible: false,
     missing_pdf_boq_row_names: [],
     immutable_revision_visible: false,
-    build_identity_visible: buildIdentityVisible,
+    build_identity_evidence_ready: buildIdentityEvidenceReady,
     revision_before_edit: revisionBeforeEdit,
     revision_after_edit: null,
     precreate_compiled_revision: precreateCompiledRevision,
@@ -2394,7 +2397,7 @@ async function runCase(
     pdf_full_boq_visible: pdfFullBoqVisible,
     missing_pdf_boq_row_names: missingPdfBoqRowNames,
     immutable_revision_visible: immutableRevisionVisible,
-    build_identity_visible: buildIdentityVisible,
+    build_identity_evidence_ready: buildIdentityEvidenceReady,
     revision_before_edit: revisionBeforeEdit,
     revision_after_edit: revisionAfterEdit,
     precreate_compiled_revision: precreateCompiledRevision,
@@ -2591,6 +2594,7 @@ async function main(): Promise<void> {
     const clear = adb(["shell", "pm", "clear", PACKAGE_NAME], 20_000);
     if (!clear.ok || !clear.output.includes("Success")) failures.push(`app_data_clear_failed:${clear.output.slice(0, 200)}`);
   }
+  if (failures.length === 0) adb(["logcat", "-c"], 20_000);
   if (options.devServerPort && failures.length === 0) {
     if (!await openCurrentDevBundle(options.devServerPort, options.forceDevReload)) {
       failures.push("current_dev_bundle_not_ready");
@@ -2606,11 +2610,12 @@ async function main(): Promise<void> {
     authResult = await ensureAuthenticatedRequestRoute(options.devServerPort ?? 8081);
     if (!authResult.ok) failures.push(authResult.reason ?? "native_authenticated_request_route_missing");
     if (authResult.ok) {
-      const identitySnapshot = await waitForId("build-identity", 30_000);
-      appBuildIdentityMatches = Boolean(
-        (visibleBuildIdentity(identitySnapshot) ?? identitySnapshot.xml).includes(expectedIdentityToken),
-      );
-      if (!appBuildIdentityMatches) failures.push("native_build_identity_expected_commit_missing");
+      const identityDeadline = Date.now() + 30_000;
+      while (Date.now() < identityDeadline && !appBuildIdentityMatches) {
+        appBuildIdentityMatches = buildIdentityEvidenceLog()?.includes(expectedIdentityToken) === true;
+        if (!appBuildIdentityMatches) await wait(WAIT_POLL_MS);
+      }
+      if (!appBuildIdentityMatches) failures.push("native_build_identity_evidence_expected_commit_missing");
     }
   }
 

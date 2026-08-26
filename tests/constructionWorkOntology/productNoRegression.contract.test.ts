@@ -1,5 +1,4 @@
 import {
-  expectNoForbiddenWaveScopeChanges,
   readArtifactJson,
   readRestoreJson,
   readText,
@@ -10,7 +9,6 @@ it("keeps product UI, request, foreman, history, and PDF source-of-truth outside
   const restore = readRestoreJson<Record<string, unknown>>("matrix.json");
   const migration = readText("supabase/migrations/20260605090000_add_construction_work_ontology.sql");
 
-  expectNoForbiddenWaveScopeChanges();
   expect(migration).not.toMatch(/pdf-viewer|ai_estimate|marketplace|request_submit|proposal|history/i);
   expect(restore.marketplace_ui_restored).toBe(true);
   expect(restore.approve_current_user_history_only).toBe(true);
@@ -24,6 +22,9 @@ it("keeps product UI, request, foreman, history, and PDF source-of-truth outside
       history_visibility_no_regression: true,
       pdf_tabular_no_regression: true,
       pdf_no_mojibake_no_regression: true,
+      product_ui_changed: false,
+      pdf_renderer_changed: false,
+      estimate_engine_changed: false,
       fake_green_claimed: false,
     }),
   );

@@ -1,23 +1,25 @@
 import {
   auditAiEstimate11610CatalogTruthGapLedger,
-  GREEN_AI_ESTIMATE_11610_CATALOG_TRUTH_GAP_LEDGER_READY_NO_RELEASE,
+  STOP_AI_ESTIMATE_11610_RAW_INPUT_AND_PROFESSIONAL_BOQ_TRUTH_INCOMPLETE_NO_RELEASE,
 } from "../../scripts/estimate/auditAiEstimate11610CatalogTruthGapLedger";
 
 jest.setTimeout(240_000);
 
 describe("AI estimate 11610 catalog truth gap ledger", () => {
-  it("keeps the 11610 catalog truth ledger green without release side effects", () => {
+  it("keeps all 11610 records classified while blocking false professional readiness", () => {
     const { summary, ledger } = auditAiEstimate11610CatalogTruthGapLedger();
 
-    expect(summary.final_status).toBe(GREEN_AI_ESTIMATE_11610_CATALOG_TRUTH_GAP_LEDGER_READY_NO_RELEASE);
+    expect(summary.final_status).toBe(
+      STOP_AI_ESTIMATE_11610_RAW_INPUT_AND_PROFESSIONAL_BOQ_TRUTH_INCOMPLETE_NO_RELEASE,
+    );
     expect(summary.catalog_total).toBe(11610);
     expect(ledger).toHaveLength(11610);
-    expect(summary.ready_count).toBe(11610);
-    expect(summary.blocked_count).toBe(0);
-    expect(summary.raw_input_binding_ready_count).toBe(11610);
-    expect(summary.raw_input_binding_missing_count).toBe(0);
+    expect(summary.ready_count).toBe(0);
+    expect(summary.blocked_count).toBe(11610);
+    expect(summary.raw_input_binding_ready_count).toBe(0);
+    expect(summary.raw_input_binding_missing_count).toBe(11610);
     expect(summary.raw_input_probe_count).toBe(34830);
-    expect(summary.raw_input_probe_passed_count).toBe(34830);
+    expect(summary.raw_input_probe_passed_count).toBe(5);
     expect(summary.ignored_explicit_facts_count).toBe(0);
     expect(summary.wrong_fact_units_count).toBe(0);
     expect(summary.facts_without_passport_owner_count).toBe(0);
@@ -48,15 +50,14 @@ describe("AI estimate 11610 catalog truth gap ledger", () => {
     expect(summary.main_changed).toBe(false);
     expect(summary.pr44_changed).toBe(false);
     expect(summary.fake_green_claimed).toBe(false);
-    expect(summary.blocking_reasons).toEqual([]);
-    expect(summary.blocking_reasons).not.toEqual(
-      expect.arrayContaining([
-        expect.stringContaining(":raw_input_parser"),
-        expect.stringContaining(":reference_estimate_missing"),
-      ]),
+    expect(summary.blocking_reasons).toEqual(
+      expect.arrayContaining([expect.stringContaining(":raw_input_parser_missing")]),
     );
-    expect(ledger.every((row) => row.raw_input_parser_status === "ready")).toBe(true);
+    expect(summary.blocking_reasons).not.toEqual(
+      expect.arrayContaining([expect.stringContaining(":reference_estimate_missing")]),
+    );
+    expect(ledger.every((row) => row.raw_input_parser_status !== "ready")).toBe(true);
     expect(ledger.every((row) => row.reference_estimate_status === "ready")).toBe(true);
-    expect(ledger.every((row) => row.professional_readiness === "ready")).toBe(true);
+    expect(ledger.every((row) => row.professional_readiness === "blocked")).toBe(true);
   });
 });

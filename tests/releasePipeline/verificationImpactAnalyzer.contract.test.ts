@@ -54,6 +54,59 @@ describe("Verification Architecture V1 impact analyzer", () => {
     expect(result.selected_suites.filter((suite) => !fs.existsSync(path.resolve(suite)))).toEqual([]);
   });
 
+  it("records a deleted test as impact without selecting a missing executable suite", () => {
+    const deletedSuite = "tests/example/retired.contract.test.ts";
+    expect(fs.existsSync(path.resolve(deletedSuite))).toBe(false);
+
+    const result = buildVerificationPlan({
+      baseSha: base,
+      headSha: head,
+      changedFiles: [deletedSuite],
+      level: "affected",
+    });
+
+    expect(result.selected_gates).toContain("changed-test-contracts");
+    expect(result.selections.find((item) => item.gate === "changed-test-contracts")?.matched_files)
+      .toContain(deletedSuite);
+    expect(result.selected_suites).not.toContain(deletedSuite);
+  });
+
+  it("does not treat generated runtime test copies as source changes", () => {
+    const generatedCopy = ".release-runtime/cache/tests/copied.contract.test.ts";
+    const realSuite = "tests/releasePipeline/verificationImpactAnalyzer.contract.test.ts";
+    const result = buildVerificationPlan({
+      baseSha: base,
+      headSha: head,
+      changedFiles: [
+        generatedCopy,
+        "artifacts/S_GENERATED/matrix.json",
+        ".tmp_batch001_current.json",
+        "android/.gradle-pre-final/8.14/cache.bin",
+        "android/app/build-pre-final/intermediates/app.apk",
+        realSuite,
+      ],
+      level: "affected",
+    });
+
+    expect(result.changed_files).toContain(realSuite);
+    expect(result.changed_files).not.toContain(generatedCopy);
+    expect(result.changed_files).not.toContain("artifacts/S_GENERATED/matrix.json");
+    expect(result.changed_files).not.toContain(".tmp_batch001_current.json");
+    expect(result.changed_files).not.toContain("android/.gradle-pre-final/8.14/cache.bin");
+    expect(result.changed_files).not.toContain("android/app/build-pre-final/intermediates/app.apk");
+    expect(result.selected_suites).toContain(realSuite);
+    expect(result.selected_suites).not.toContain(generatedCopy);
+  });
+
+  it("executes selected suites as exact paths instead of regexes that can match generated copies", () => {
+    const runner = fs.readFileSync(
+      path.resolve("scripts/verification/runVerificationGate.ts"),
+      "utf8",
+    );
+
+    expect(runner).toMatch(/"--runTestsByPath",\s*\.\.\.input\.suites/u);
+  });
+
   it.each([
     "src/lib/estimate/createEstimateDraftRevision.ts",
     "src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding.ts",
@@ -63,7 +116,9 @@ describe("Verification Architecture V1 impact analyzer", () => {
     const result = plan(file);
     expect(result.selected_gates).toContain("estimate-domain-shared-core-impact");
     expect(result.selected_suites).toEqual(expect.arrayContaining([
-      "src/features/consumerRepair/consumerRepairAsphaltV4Phase1B.test.ts",
+      "tests/estimateBackend/canonicalBackendR3.contract.test.ts",
+      "tests/consumerRepair/platformCoreV2ConsumerFlow.contract.test.ts",
+      "tests/aiEstimateV4/asphalt35TypedBoq.contract.test.ts",
       "tests/estimateInfrastructure/aiEstimateParameterRuntimeMatrix.contract.test.ts",
       "tests/estimateInfrastructure/aiEstimatePlatformCoreV2Matrix.contract.test.ts",
     ]));

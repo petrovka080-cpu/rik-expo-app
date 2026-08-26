@@ -19,6 +19,22 @@ const redactArgs = (args: unknown[]) => args.map((arg) => redactSensitiveValue(a
 
 export const logger = {
   /**
+   * Redacted, production-visible release evidence. Callers must keep the
+   * payload bounded and free of business content; this exists for exact
+   * lifecycle acknowledgements that an installed release APK must expose to
+   * the local verifier without Metro or a debug client.
+   */
+  releaseEvidence(
+    tag: string,
+    event: string,
+    detail: Record<string, unknown>,
+  ): void {
+    console.info(
+      `[${tag}] ${event} ${JSON.stringify(redactSensitiveValue(detail))}`,
+    );
+  },
+
+  /**
    * Informational trace — dev only.
    * In production, these are silent. Use structured observability for prod events.
    */

@@ -324,7 +324,7 @@ function classifyDirtySnapshot(input: {
     disposition = "USEFUL_UI_AND_AUDIT_BEHAVIOR_PRESERVED_IN_EVOLVED_SUCCESSOR";
     decision = "UI, build identity and acceptance behavior survive in newer successor modules; generated churn and stale assertions remain archived only.";
     proof.push("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
-    proof.push("src/components/BuildIdentityMarker.tsx");
+    proof.push("src/components/BuildIdentityDiagnostic.tsx");
   } else if (normalized.includes("boq-depth-baseline") || normalized.includes("layout-typecheck-hotfix")) {
     disposition = "GENERATED_SECRET_SCAN_REFRESH_PRESERVED_NOT_PROMOTED";
     decision = "Only generated secret-scan output was dirty; the useful commit is patch-equivalent in successor ancestry.";

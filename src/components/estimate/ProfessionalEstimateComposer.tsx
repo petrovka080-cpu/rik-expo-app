@@ -513,7 +513,10 @@ export default function ProfessionalEstimateComposer({
       setTypedRelations(relations.items);
       setBackendDraft(draft);
       lastSavedDraftInputHash.current = "";
-      if (suggestion.selectableMode !== "PROFESSIONAL") {
+      if (suggestion.selectableMode !== "PROFESSIONAL"
+        || suggestion.estimateReady !== true
+        || suggestion.contentAdmission?.allowed !== true
+        || suggestion.contentAdmission.contractVersion !== "estimate-admission-r3") {
         setSelectedCatalog(null);
         setParameterInputs(Object.create(null));
         setMapping(null);
@@ -906,13 +909,13 @@ export default function ProfessionalEstimateComposer({
           <View style={styles.editCell}><Text style={styles.fieldLabel}>{TEXT.qty}</Text><TextInput testID="foreman-ai-estimate-row-qty" value={input.quantity} onChangeText={(value) => setInput("quantity", value)} editable={editable && !loading} keyboardType="decimal-pad" style={styles.fieldInput} /></View>
           <View style={styles.editCell}><Text style={styles.fieldLabel}>{formatEstimateUnit(row.unit)}</Text><Text style={styles.readonlyValue}>{formatEstimateUnit(row.unit)}</Text></View>
           <View style={styles.editCell}><Text style={styles.fieldLabel}>{TEXT.price}</Text><TextInput testID="foreman-ai-estimate-row-price" value={input.unitPrice} onChangeText={(value) => setInput("unitPrice", value)} editable={editable && !loading} keyboardType="decimal-pad" style={styles.fieldInput} /></View>
-          <View style={styles.editCell}><Text style={styles.fieldLabel}>{TEXT.total}</Text><Text style={styles.totalValue}>{row.total == null ? "PRICE_MISSING" : formatMoney(row.total, row.currency)}</Text></View>
+          <View style={styles.editCell}><Text style={styles.fieldLabel}>{TEXT.total}</Text><Text style={styles.totalValue}>{row.total == null ? "Цена не указана" : formatMoney(row.total, row.currency)}</Text></View>
         </View>
         {editable ? <View style={styles.rowActions}>
-          <Pressable testID="canonical-row-apply" disabled={loading} onPress={() => commitRow(row)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Создать child revision</Text></Pressable>
+          <Pressable testID="canonical-row-apply" disabled={loading} onPress={() => commitRow(row)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Сохранить изменение</Text></Pressable>
           <Pressable disabled={loading} onPress={() => commitRow(row, { estimate: !row.includedInEstimate, procurement: row.includedInProcurement })} style={[styles.toggleButton, row.includedInEstimate && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{row.includedInEstimate ? TEXT.remove : TEXT.restore}</Text></Pressable>
           {row.buyerProcurementEligible ? <Pressable disabled={loading || !row.includedInEstimate} onPress={() => commitRow(row, { estimate: row.includedInEstimate, procurement: !row.includedInProcurement })} style={[styles.toggleButton, row.includedInProcurement && styles.toggleButtonActive]}><Text style={styles.toggleButtonText}>{TEXT.procurementFlag}</Text></Pressable> : null}
-        </View> : <Text style={styles.catalogHint}>Legacy unmatched row сохранена, но исключена из totals и недоступна для тихого редактирования.</Text>}
+        </View> : <Text style={styles.catalogHint}>Строка из прежней версии сохранена для истории, но не входит в итог и закупку.</Text>}
       </View>
     );
   };
@@ -1001,20 +1004,19 @@ export default function ProfessionalEstimateComposer({
             <View style={styles.composePanel}>
               <TextInput testID="foreman-ai-estimate-input" value={text} onChangeText={handleTextChange} placeholder={TEXT.inputPlaceholder} multiline style={styles.input} editable={!loading && !saving} />
               {significantSearchLength(text) === 1 && !selectedSearchIdentity
-                ? <Text style={styles.catalogHint}>Введите ещё один символ для полного backend-поиска.</Text>
+                ? <Text style={styles.catalogHint}>Введите ещё один символ для поиска.</Text>
                 : null}
               {catalogLoading ? <ActivityIndicator /> : null}
               {catalogSearchPage ? <View style={styles.workSuggestionsPanel} testID="foreman-ai-estimate-work-suggestions">
-                <Text style={styles.panelTitle}>{catalogSearchPage.resultLevel === "FUZZY" ? "Другие названия (fuzzy)" : TEXT.workSuggestionTitle}</Text>
+                <Text style={styles.panelTitle}>{catalogSearchPage.resultLevel === "FUZZY" ? "Похожие названия" : TEXT.workSuggestionTitle}</Text>
                 <Text style={styles.catalogHint} testID="canonical-estimate-search-total">
-                  Найдено буквально: {catalogSearchPage.literalTotalCount}. Показано: {catalogSuggestions.length}. Подсказок: {catalogSearchPage.suggestionTotalCount}.
+                  Найдено работ: {catalogSearchPage.literalTotalCount}. Показано: {catalogSuggestions.length}.
                 </Text>
                 <Text style={styles.catalogHint} testID="canonical-estimate-search-mode">
-                  Режим {catalogSearchPage.searchMode} · tokens: {catalogSearchPage.searchTokens.join(" · ")}
-                  {catalogSearchPage.parsedQuantity == null ? "" : ` · объём ${catalogSearchPage.parsedQuantity} ${catalogSearchPage.parsedUnit ?? ""}`}
+                  {catalogSearchPage.parsedQuantity == null
+                    ? "Выберите подходящую работу."
+                    : `Распознанный объём: ${catalogSearchPage.parsedQuantity} ${catalogSearchPage.parsedUnit ?? ""}`}
                 </Text>
-                <Text style={styles.catalogHint}>Групп: {catalogSearchPage.groupTotalCount} · fuzzy: {catalogSearchPage.fuzzyTotalCount}</Text>
-                <Text style={styles.catalogHint}>Индекс {catalogSearchPage.searchIndexReleaseId} · taxonomy {catalogSearchPage.taxonomyVersion}</Text>
                 <View style={styles.workSuggestionRows}>{catalogSuggestions.map((suggestion, index) => <Pressable
                   key={suggestion.catalogId}
                   testID={`foreman-ai-estimate-work-suggestion-${index + 1}`}
@@ -1022,9 +1024,8 @@ export default function ProfessionalEstimateComposer({
                   style={styles.workSuggestionButton}
                 >
                   <Text style={styles.workSuggestionName}>{suggestion.canonicalNameRu}</Text>
-                  <Text style={styles.workSuggestionMeta}>{suggestion.groupNameRu} · {suggestion.operationKind} · {suggestion.publicationState}</Text>
-                  <Text style={styles.workSuggestionMeta}>{suggestion.matchType}: «{suggestion.matchedTerm}» · {suggestion.rankingReasonRu}</Text>
-                  <Text style={styles.workSuggestionMeta} numberOfLines={1}>{suggestion.catalogId}</Text>
+                  <Text style={styles.workSuggestionMeta}>{suggestion.groupNameRu}</Text>
+                  <Text style={styles.workSuggestionMeta}>{suggestion.rankingReasonRu}</Text>
                 </Pressable>)}</View>
                 {catalogSearchPage.nextCursor ? <Pressable
                   accessibilityRole="button"
@@ -1035,37 +1036,22 @@ export default function ProfessionalEstimateComposer({
               </View> : null}
               {selectedSearchIdentity && searchGroupPage ? <View style={styles.catalogPanel} testID="canonical-estimate-selected-search-context">
                 <Text style={styles.panelTitle}>Выбрано: {selectedSearchIdentity.canonicalNameRu}</Text>
-                {backendDraft ? <Text style={styles.catalogHint} testID="canonical-estimate-backend-draft-status">Backend draft {backendDraft.draftId} · {backendDraft.status} · версия {backendDraft.optimisticVersion}</Text> : null}
-                <Text style={styles.catalogHint}>{selectedSearchIdentity.domainId} → {selectedSearchIdentity.systemId} → {selectedSearchIdentity.workFamilyId} → {selectedSearchIdentity.operationKind}</Text>
+                {backendDraft ? <Text style={styles.catalogHint} testID="canonical-estimate-backend-draft-status">Черновик расчёта · версия {backendDraft.optimisticVersion}</Text> : null}
                 <Text style={styles.catalogHint}>Все работы группы «{searchGroupPage.groupNameRu}»: {searchGroupPage.totalCount}. Показано {searchGroupPage.items.length}.</Text>
                 <View style={styles.workSuggestionRows}>{searchGroupPage.items.map((item) => <View key={item.catalogId} style={styles.workSuggestionButton}>
                   <Text style={styles.workSuggestionName}>{item.canonicalNameRu}</Text>
-                  <Text style={styles.workSuggestionMeta}>{item.operationKind} · {item.technologyVariant} · {item.publicationState}</Text>
                 </View>)}</View>
                 {searchGroupPage.nextCursor ? <Pressable testID="canonical-estimate-group-load-more" onPress={handleLoadMoreSearchGroup} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Показать все {searchGroupPage.totalCount}</Text></Pressable> : null}
                 <Text style={styles.panelTitle}>Связанные работы</Text>
                 {typedRelations.length ? typedRelations.map((relation) => <View key={`${relation.relationshipType}:${relation.targetCatalogId}`} style={styles.workSuggestionButton}>
                   <Text style={styles.workSuggestionName}>{relation.targetCanonicalNameRu}</Text>
-                  <Text style={styles.workSuggestionMeta}>{relation.relationshipType} · {relation.explanationRu}</Text>
-                  <Text style={styles.workSuggestionMeta}>Основание: {relation.sourceLocator}</Text>
-                </View>) : <Text style={styles.catalogHint}>Применимых связанных работ по активному relation ledger нет.</Text>}
+                  <Text style={styles.workSuggestionMeta}>{relation.explanationRu}</Text>
+                </View>) : <Text style={styles.catalogHint}>Подходящих связанных работ нет.</Text>}
               </View> : null}
-              {history[0] ? <Pressable testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`} disabled={loading} onPress={() => handleOpenHistoryRevision(history[0])} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Latest backend revision · {history[0].revisionId}</Text></Pressable> : null}
-              {bundle ? <View testID="canonical-estimate-native-quick-actions" style={styles.catalogPanel}>
-                <Text testID="canonical-estimate-selected-catalog-id" style={styles.catalogHint}>catalog: {bundle.revision.catalogId}</Text>
-                <Text testID="canonical-estimate-release-id-top" style={styles.catalogHint}>release: {bundle.revision.releaseId}</Text>
-                <Text testID="canonical-estimate-row-count-top" style={styles.catalogHint}>{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
-                <View style={styles.rowActions}>
-                  <Pressable testID="canonical-estimate-recalculate-top" disabled={loading || saving} onPress={handleGenerate} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Recalculate</Text></Pressable>
-                  <Pressable testID="canonical-estimate-artifact-pdf-top" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>PDF</Text></Pressable>
-                  <Pressable testID="canonical-estimate-artifact-procurement-top" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Закупка</Text></Pressable>
-                  {artifactLinks.pdf ? <Pressable testID="canonical-estimate-open-artifact-pdf-top" disabled={saving} onPress={() => handleOpenArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть PDF</Text></Pressable> : null}
-                  {artifactLinks.procurement ? <Pressable testID="canonical-estimate-open-artifact-procurement-top" disabled={saving} onPress={() => handleOpenArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть закупку</Text></Pressable> : null}
-                </View>
-              </View> : null}
+              {history[0] ? <Pressable testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`} disabled={loading} onPress={() => handleOpenHistoryRevision(history[0])} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Открыть последнюю сохранённую версию</Text></Pressable> : null}
               {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-parameter-form">
                 <Text style={styles.panelTitle}>{TEXT.parametersTitle}</Text>
-                <Text style={styles.catalogHint}>{selectedCatalog.titleRu} · active release {selectedCatalog.releaseId} · definition v{selectedCatalog.definitionVersion}</Text>
+                <Text style={styles.catalogHint}>{selectedCatalog.titleRu}</Text>
                 <Text style={styles.catalogHint} testID="canonical-estimate-required-parameter-progress">Заполнено {selectedParameterProgress?.filled ?? 0} из {selectedParameterProgress?.required ?? 0}. Обязательно осталось {selectedParameterProgress?.remaining ?? 0}. Конфликтов 0.</Text>
                 <Pressable testID="canonical-estimate-refine-parameters" onPress={() => setShowParameterPanel((current) => !current)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{showParameterPanel ? "Скрыть параметры" : "Уточнить параметры"}</Text></Pressable>
                 {showParameterPanel ? visibleParameters.slice(0, showAllParameters ? undefined : 8).map((parameter) => {
@@ -1082,8 +1068,8 @@ export default function ProfessionalEstimateComposer({
                   const items = compositeItems(inputValue);
                   return <View key={parameter.parameterId} style={styles.parameterCard} testID={`canonical-estimate-parameter-card-${parameter.ordinal}`}>
                     <Text style={styles.fieldLabel} testID={`canonical-estimate-parameter-label-${parameter.ordinal}`}>{parameter.titleRu}{parameter.required ? " *" : ""}{parameter.unitId ? ` · ${formatEstimateUnit(parameter.unitId)}` : ""}</Text>
-                    {parameter.sharedInputBindingPolicy ? <Text style={styles.sharedInputChip}>Общий ввод · применяется к связанным работам</Text> : null}
-                    {parameter.visibilityRole === "USER_DERIVED_READONLY" ? <Text style={styles.readonlyValue} accessibilityLabel={parameter.titleRu}>{parameter.valueType === "array_object" ? `${items.length} элементов` : inputText || "Рассчитывается backend"}</Text>
+                    {parameter.sharedInputBindingPolicy ? <Text style={styles.sharedInputChip}>Общее значение для связанных работ</Text> : null}
+                    {parameter.visibilityRole === "USER_DERIVED_READONLY" ? <Text style={styles.readonlyValue} accessibilityLabel={parameter.titleRu}>{parameter.valueType === "array_object" ? `${items.length} элементов` : inputText || "Рассчитывается автоматически"}</Text>
                       : parameter.valueType === "array_object" && composite ? <View style={styles.compositeEditor}>
                         <Text style={styles.derivedCount} testID={`canonical-estimate-composite-count-${parameter.ordinal}`}>Количество: {items.length} · вычисляется из элементов</Text>
                         {items.map((item, itemIndex) => <View key={item.itemId} style={styles.compositeItem} testID={`canonical-estimate-composite-item-${parameter.ordinal}-${item.itemId}`}>
@@ -1156,58 +1142,75 @@ export default function ProfessionalEstimateComposer({
                       testID={`canonical-estimate-parameter-truth-${parameter.ordinal}`}
                       style={styles.parameterTruthPanel}
                     >
-                      <Text style={styles.parameterTruthLine}>Почему нужен параметр: {parameter.descriptionRu || "сохранённый immutable Asphalt-паспорт"}</Text>
+                      <Text style={styles.parameterTruthLine}>Почему нужен параметр: {parameter.descriptionRu || "значение влияет на состав и объём работ"}</Text>
                       <Text style={styles.parameterTruthLine}>Источник значения: {sourceRoleRu(parameter.valueSourceRole)}</Text>
                       <Text style={styles.parameterTruthLine}>Когда обязателен: {parameter.requiredWhen || (parameter.required ? "всегда для применимой работы" : "по применимости")}</Text>
                       <Text style={styles.parameterTruthLine}>Путеводитель: {guideText}</Text>
-                      <Text style={styles.parameterTruthLine}>Тип: {parameter.guide?.guideKind ?? "не подтверждён"} · правило проверки: {parameter.guide?.guideValidationPolicy ?? "не подтверждено"}</Text>
-                      <Text style={styles.parameterTruthLine}>Документ: {parameter.guide?.sourceDocument ?? "неприменимо по source role"} · {parameter.guide?.sourceEditionStatus ?? "статус не подтверждён"}</Text>
-                      <Text style={styles.parameterTruthLine}>Точный пункт/таблица/формула: {parameter.guide?.sourceLocator ?? "неприменимо по source role"}</Text>
+                      <Text style={styles.parameterTruthLine}>Документ: {parameter.guide?.sourceDocument ?? "не указан"}</Text>
+                      <Text style={styles.parameterTruthLine}>Точный пункт/таблица/формула: {parameter.guide?.sourceLocator ?? "не указан"}</Text>
                       <Text style={styles.parameterTruthLine}>Применимость: {parameter.guide?.applicability ?? "не подтверждена"}</Text>
                       <Text style={styles.parameterTruthLine}>Исключения: {(parameter.guide?.exclusions ?? []).join(", ") || "нет"}</Text>
-                      <Text style={styles.parameterTruthLine}>Версия guide: {parameter.guide?.guideVersion ?? "не подтверждена"} · source SHA-256: {parameter.guide?.sourceSnapshotHash ?? "не подтверждён"}</Text>
                       <Text style={styles.parameterTruthLine}>Проверено: {parameter.guide?.verifiedAt ?? "не подтверждено"}</Text>
                       {(parameter.normativeLinks ?? []).map((link, index) => <View key={`${link.sourceId}:${link.locator}:${index}`}>
-                        <Text style={styles.parameterTruthLine}>Нормативный документ: {link.documentTitleRu} · {link.editionStatus}</Text>
+                        <Text style={styles.parameterTruthLine}>Нормативный документ: {link.documentTitleRu}</Text>
                         <Text style={styles.parameterTruthLine}>Пункт/таблица/формула: {link.locator}</Text>
                         <Text style={styles.parameterTruthLine}>Применимость: {link.applicabilityRu}</Text>
-                        <Text style={styles.parameterTruthLine}>Проверено: {link.verifiedAt} · {link.verifiedSource}</Text>
+                        <Text style={styles.parameterTruthLine}>Проверено: {link.verifiedAt}</Text>
                       </View>)}
-                      <Text style={styles.parameterTruthLine}>Формулы: {(parameter.formulaConsumers ?? []).join(", ") || "нет"}</Text>
-                      <Text style={styles.parameterTruthLine}>Ветви ресурсов: {(parameter.resourceBranchConsumers ?? []).join(", ") || "нет"}</Text>
-                      {truthMissing.length > 0 ? <Text style={styles.parameterTruthError}>Не подтверждено: {truthMissing.join(", ")}</Text> : null}
+                      <Text style={styles.parameterTruthLine}>Формулы: учтено правил — {(parameter.formulaConsumers ?? []).length}</Text>
+                      <Text style={styles.parameterTruthLine}>Ветви ресурсов: учтено вариантов — {(parameter.resourceBranchConsumers ?? []).length}</Text>
+                      {truthMissing.length > 0 ? <Text style={styles.parameterTruthError}>Инженерное основание заполнено не полностью.</Text> : null}
                     </View> : null}
                   </View>;
                 }) : null}
                 {showParameterPanel && visibleParameters.length > 8 ? <Pressable testID="canonical-estimate-expand-parameters" onPress={() => setShowAllParameters((current) => !current)} style={styles.toggleButton}><Text style={styles.toggleButtonText}>{showAllParameters ? "Свернуть параметры" : `Показать все ${visibleParameters.length}`}</Text></Pressable> : null}
               </View> : null}
-              <Pressable testID="foreman-ai-estimate-generate" onPress={handleGenerate} disabled={loading || saving || !selectedCatalog} style={[styles.button, styles.secondaryButton, (loading || saving || !selectedCatalog) && styles.disabledButton]}>{loading ? <ActivityIndicator /> : <Text style={styles.secondaryButtonText}>{bundle ? "Пересчитать child revision" : TEXT.generate}</Text>}</Pressable>
-              {activeAbort ? <Pressable testID="canonical-estimate-cancel" onPress={handleCancelJob} style={styles.removeButton}><Text style={styles.removeButtonText}>Отменить server job</Text></Pressable> : null}
-              {jobProgress ? <Text style={styles.catalogHint}>Server job: {jobProgress.stage} · {jobProgress.progress}% · release-bound revision</Text> : null}
             </View>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            {pendingMigration ? <Pressable testID="canonical-estimate-explicit-release-migration" disabled={loading} onPress={() => runRecalculate(pendingMigration, true)} style={[styles.button, styles.primaryButton]}><Text style={styles.primaryButtonText}>Явно мигрировать R1 revision в child R2</Text></Pressable> : null}
-            {bundle ? <View style={styles.summary}>
-              <Text style={styles.summaryText} testID="canonical-estimate-release-id">release: {bundle.revision.releaseId}</Text>
-              <Text style={styles.summaryText}>revision: {bundle.revision.revisionId}</Text>
-              <Text style={styles.summaryText} testID="foreman-ai-estimate-row-count">{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
-              <Text style={styles.summaryText}>{TEXT.buyer}: {formatMoney(mapping?.totals.buyerProcurementTotal ?? 0, mapping?.totals.currency ?? bundle.revision.currencyCode)}</Text>
-              <Text style={styles.summaryText}>{TEXT.total}: {formatMoney(mapping?.totals.estimateTotal ?? 0, mapping?.totals.currency ?? bundle.revision.currencyCode)}</Text>
-            </View> : null}
             {bundle && rikQuickSearch ? <View style={styles.catalogPanel} testID="canonical-estimate-manual-catalog">
               <Text style={styles.panelTitle}>{TEXT.catalogTitle}</Text><Text style={styles.catalogHint}>{TEXT.catalogHint}</Text>
               <View style={styles.catalogSearchRow}><TextInput value={catalogQuery} onChangeText={setCatalogQuery} placeholder={TEXT.catalogPlaceholder} style={styles.catalogInput} /><Pressable onPress={handleCatalogSearch} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>Найти</Text></Pressable></View>
               <View style={styles.catalogRows}>{catalogRows.map((item) => <View key={item.rik_code} style={styles.catalogRow}><View style={styles.catalogRowText}><Text style={styles.catalogName}>{displayNameOfCatalogItem(item)}</Text><Text style={styles.catalogMeta}>{item.rik_code} · {item.uom_code ?? "unit"}</Text></View><Pressable onPress={() => handleAddCatalogRow(item)} style={styles.smallPrimaryButton}><Text style={styles.smallPrimaryButtonText}>{TEXT.add}</Text></Pressable></View>)}</View>
             </View> : null}
-            {bundle ? <View style={styles.rowActions} testID="canonical-estimate-artifact-actions"><Pressable testID="canonical-estimate-artifact-pdf" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>PDF</Text></Pressable><Pressable testID="canonical-estimate-artifact-procurement" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Закупка</Text></Pressable>{artifactMessage ? <Text style={styles.catalogHint}>{artifactMessage}</Text> : null}</View> : null}
-            {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-history"><Text style={styles.panelTitle}>История backend revisions</Text>{historyLoading ? <ActivityIndicator /> : history.map((revision) => <Pressable key={revision.revisionId} testID={`canonical-estimate-history-revision-${revision.revisionNumber}-${revision.revisionId}`} onPress={() => handleOpenHistoryRevision(revision)} style={styles.workSuggestionButton}><Text style={styles.workSuggestionName}>Revision {revision.revisionNumber} · release {revision.releaseId}</Text><Text style={styles.workSuggestionMeta}>{revision.revisionId} · {revision.createdAt}</Text></Pressable>)}</View> : null}
           </>}
+          ListFooterComponent={<View style={styles.footer}>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {bundle ? <View style={styles.summary}>
+              <Text style={styles.summaryText} testID="canonical-estimate-release-id">Версия расчёта: {bundle.revision.releaseId}</Text>
+              <Text style={styles.summaryText} testID="foreman-ai-estimate-row-count">{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
+              <Text style={styles.summaryText}>{TEXT.buyer}: {formatMoney(mapping?.totals.buyerProcurementTotal ?? 0, mapping?.totals.currency ?? bundle.revision.currencyCode)}</Text>
+              <Text style={styles.summaryText}>{TEXT.total}: {formatMoney(mapping?.totals.estimateTotal ?? 0, mapping?.totals.currency ?? bundle.revision.currencyCode)}</Text>
+            </View> : null}
+            {selectedCatalog ? <View style={styles.catalogPanel} testID="canonical-estimate-history">
+              <Text style={styles.panelTitle}>История сметы</Text>
+              {historyLoading ? <ActivityIndicator /> : history.map((revision) => <Pressable key={revision.revisionId} testID={`canonical-estimate-history-revision-${revision.revisionNumber}-${revision.revisionId}`} onPress={() => handleOpenHistoryRevision(revision)} style={styles.workSuggestionButton}>
+                <Text style={styles.workSuggestionName}>Версия {revision.revisionNumber} · код {revision.releaseId}</Text>
+                <Text style={styles.workSuggestionMeta}>{revision.createdAt}</Text>
+              </Pressable>)}
+            </View> : null}
+            {pendingMigration ? <Pressable testID="canonical-estimate-explicit-release-migration" disabled={loading} onPress={() => runRecalculate(pendingMigration, true)} style={[styles.button, styles.primaryButton]}><Text style={styles.primaryButtonText}>Перенести расчёт в новую версию</Text></Pressable> : null}
+            {bundle ? <View testID="canonical-estimate-native-quick-actions" style={styles.catalogPanel}>
+              <Text testID="canonical-estimate-selected-catalog-id" style={styles.catalogHint}>Код работы: {bundle.revision.catalogId}</Text>
+              <Text testID="canonical-estimate-release-id-top" style={styles.catalogHint}>Версия расчёта: {bundle.revision.releaseId}</Text>
+              <Text testID="canonical-estimate-row-count-top" style={styles.catalogHint}>{TEXT.rows}: {mapping?.requestDraftLines.length ?? 0}</Text>
+              <View style={styles.rowActions} testID="canonical-estimate-artifact-actions">
+                <Pressable testID="canonical-estimate-artifact-pdf" disabled={saving} onPress={() => handleArtifact("pdf")} style={styles.toggleButton}><Text testID="canonical-estimate-artifact-pdf-top" style={styles.toggleButtonText}>Сформировать PDF</Text></Pressable>
+                <Pressable testID="canonical-estimate-artifact-procurement" disabled={saving} onPress={() => handleArtifact("procurement")} style={styles.toggleButton}><Text testID="canonical-estimate-artifact-procurement-top" style={styles.toggleButtonText}>Сформировать закупку</Text></Pressable>
+                {artifactLinks.pdf ? <Pressable testID="canonical-estimate-open-artifact-pdf-top" disabled={saving} onPress={() => handleOpenArtifact("pdf")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть PDF</Text></Pressable> : null}
+                {artifactLinks.procurement ? <Pressable testID="canonical-estimate-open-artifact-procurement-top" disabled={saving} onPress={() => handleOpenArtifact("procurement")} style={styles.toggleButton}><Text style={styles.toggleButtonText}>Открыть закупку</Text></Pressable> : null}
+              </View>
+              {artifactMessage ? <Text style={styles.catalogHint}>{artifactMessage}</Text> : null}
+            </View> : null}
+            <Pressable testID="canonical-estimate-recalculate-top" onPress={handleGenerate} disabled={loading || saving || !selectedCatalog} style={[styles.button, styles.secondaryButton, (loading || saving || !selectedCatalog) && styles.disabledButton]}>
+              {loading ? <ActivityIndicator /> : <Text testID="foreman-ai-estimate-generate" style={styles.secondaryButtonText}>{bundle ? "Пересчитать смету" : TEXT.generate}</Text>}
+            </Pressable>
+            {activeAbort ? <Pressable testID="canonical-estimate-cancel" onPress={handleCancelJob} style={styles.removeButton}><Text style={styles.removeButtonText}>Отменить расчёт</Text></Pressable> : null}
+            {jobProgress ? <Text style={styles.catalogHint}>Расчёт выполняется: {jobProgress.progress}%</Text> : null}
+            <View style={styles.footerActions}>
+              <Pressable onPress={onClose} style={[styles.button, styles.secondaryButton]}><Text style={styles.secondaryButtonText}>{TEXT.backForeman}</Text></Pressable>
+              <Pressable testID="foreman-ai-estimate-add-draft" onPress={handleAddToDraft} disabled={!mapping || saving || loading} style={[styles.button, styles.primaryButton, (!mapping || saving || loading) && styles.disabledButton]}>{saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{TEXT.addToDraft}</Text>}</Pressable>
+            </View>
+          </View>}
         />
-
-        <View style={styles.footer}>
-          <Pressable onPress={onClose} style={[styles.button, styles.secondaryButton]}><Text style={styles.secondaryButtonText}>{TEXT.backForeman}</Text></Pressable>
-          <Pressable testID="foreman-ai-estimate-add-draft" onPress={handleAddToDraft} disabled={!mapping || saving || loading} style={[styles.button, styles.primaryButton, (!mapping || saving || loading) && styles.disabledButton]}>{saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{TEXT.addToDraft}</Text>}</Pressable>
-        </View>
       </View>
     </Modal>
   );

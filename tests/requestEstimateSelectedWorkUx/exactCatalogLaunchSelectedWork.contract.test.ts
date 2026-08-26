@@ -1,7 +1,6 @@
 import {
   buildConsumerRepairExactCatalogLaunchSelectedWork,
-  buildConsumerRepairSelectedWorkDraftBundle,
-} from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 
 describe("request exact-catalog launch selection", () => {
   test("preserves an existing Roadworks V4 exact owner", () => {
@@ -26,44 +25,30 @@ describe("request exact-catalog launch selection", () => {
     });
 
     expect(selected.selectedWorkKey).toBe(aliasId);
-    expect(selected.selectedTitleRu).toBe(
-      "Асфальтобетонное покрытие мостового сооружения",
-    );
+    expect(selected.selectedTitleRu).toBe("асфальтобетонное покрытие мостового сооружения");
     expect(selected.resolverReGuessed).toBe(false);
   });
 
-  test("fails closed for an unknown exact catalog identifier", () => {
-    expect(() => buildConsumerRepairExactCatalogLaunchSelectedWork({
+  test("keeps a backend-only exact identity for admission without exposing it as the title", () => {
+    const selected = buildConsumerRepairExactCatalogLaunchSelectedWork({
       catalogWorkId: "unknown_asphalt_exact_owner",
       rawInput: "неизвестная асфальтовая работа",
-    })).toThrow("UNSUPPORTED_EXACT_WORK_KEY:unknown_asphalt_exact_owner");
+    });
+    expect(selected.selectedWorkKey).toBe("unknown_asphalt_exact_owner");
+    expect(selected.selectedTitleRu).toBe("неизвестная асфальтовая работа");
+    expect(selected.selectedTitleRu).not.toContain(selected.selectedWorkKey);
   });
 
-  test("keeps an asphalt-concrete expanded alias on the established four-scope boundary", () => {
+  test("keeps an asphalt-concrete expanded alias exact until backend scope admission", () => {
     const aliasId = "asphalt_concrete_pavement_tender_boq_expanded_complex_v1";
     const rawInput = "Устройство асфальтобетонного дорожного покрытия 120 м²";
     const selected = buildConsumerRepairExactCatalogLaunchSelectedWork({
       catalogWorkId: aliasId,
       rawInput,
     });
-    const { bundle } = buildConsumerRepairSelectedWorkDraftBundle({
-      consumerUserId: "exact-catalog-scope-test",
-      problemText: rawInput,
-      repairType: "roadworks",
-      city: "Бишкек",
-      addressText: "",
-      preferredTimeText: "",
-      contactPhone: "",
-      selectedWork: selected,
-    });
-
-    expect(bundle.pendingRoadScopeSelection?.offeredScopes).toEqual([
-      "ROAD_SURFACING_ONLY",
-      "FULL_PAVEMENT_STRUCTURE",
-      "FULL_ROAD_INFRASTRUCTURE",
-      "ROAD_REPAIR_REHABILITATION",
-    ]);
-    expect(bundle.draft.selectedCatalogWorkId).toBe(aliasId);
-    expect(bundle.items).toHaveLength(0);
+    expect(selected.selectedWorkKey).toBe(aliasId);
+    expect(selected.rawInput).toBe(rawInput);
+    expect(selected.selectedTitleRu).toBe("Устройство асфальтобетонного дорожного покрытия");
+    expect(selected.resolverReGuessed).toBe(false);
   });
 });

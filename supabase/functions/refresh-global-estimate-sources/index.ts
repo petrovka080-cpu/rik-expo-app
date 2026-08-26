@@ -2,7 +2,7 @@ import {
   enqueueGlobalEstimateSourceRefresh,
   markGlobalEstimateSourceRefreshCacheWritten,
   type GlobalEstimateSourceRefreshMode,
-} from "../../../src/lib/ai/globalEstimate";
+} from "../../../src/lib/ai/globalEstimate/dataOps/globalEstimateSourceRefreshQueue.ts";
 
 declare const Deno: {
   serve?: (handler: (request: Request) => Response | Promise<Response>) => void;

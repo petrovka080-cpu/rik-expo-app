@@ -1,6 +1,12 @@
 import { Platform } from "react-native";
 
 import { supabase } from "./supabaseClient";
+import { signOutSafely } from "./supabaseClient";
+import {
+  isLocalDeveloperReviewEnabled,
+  LOCAL_DEVELOPER_REVIEW_ROLES,
+  switchLocalDeveloperPrincipal,
+} from "./localDeveloperReview";
 import {
   isRpcBoolean,
   isRpcRecord,
@@ -124,24 +130,12 @@ export function isLocalDeveloperFullAccessAllowed(
 }
 
 export function resolveLocalDeveloperOverrideContext(
-  probe?: LocalDeveloperFullAccessProbe,
+  _probe?: LocalDeveloperFullAccessProbe,
 ): DeveloperOverrideContext | null {
-  if (!isLocalDeveloperFullAccessAllowed(probe)) return null;
-
-  return {
-    actorUserId: null,
-    actorRole: null,
-    entitlement: null,
-    authorizationSource: "local_ui_only",
-    isEnabled: true,
-    isActive: true,
-    allowedRoles: [...DEVELOPER_OVERRIDE_ROLES],
-    activeEffectiveRole: "director",
-    canAccessAllOfficeRoutes: true,
-    canImpersonateForMutations: false,
-    expiresAt: null,
-    reason: "local_dev_full_access",
-  };
+  // R5.5.1: local env/localStorage flags are presentation signals only.
+  // Authorization comes exclusively from developer_override_context_v1 for
+  // a provider-issued principal in the dedicated local test tenant.
+  return null;
 }
 
 export const isDeveloperOverrideContextRpcResponse = (
@@ -207,15 +201,13 @@ export function normalizeDeveloperOverrideContext(
 }
 
 export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideContext> {
-  const localOverride = resolveLocalDeveloperOverrideContext();
-
   const { data, error } = await runContainedRpc<unknown>(
     supabase,
     "developer_override_context_v1",
   );
   if (error) {
     if (__DEV__) console.warn("[developer_override_context_v1]", error.message);
-    return localOverride ?? EMPTY_CONTEXT;
+    return EMPTY_CONTEXT;
   }
   try {
     const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
@@ -226,7 +218,7 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
     const serverContext = normalizeDeveloperOverrideContext(validated);
     return isServerAuthorizedPlatformDeveloper(serverContext)
       ? serverContext
-      : localOverride ?? serverContext;
+      : EMPTY_CONTEXT;
   } catch (validationError) {
     if (__DEV__) {
       console.warn(
@@ -234,7 +226,7 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
         validationError instanceof Error ? validationError.message : String(validationError),
       );
     }
-    return localOverride ?? EMPTY_CONTEXT;
+    return EMPTY_CONTEXT;
   }
 }
 
@@ -254,30 +246,25 @@ export function isServerAuthorizedPlatformDeveloper(
 export async function setDeveloperEffectiveRole(
   role: DeveloperOverrideRole,
 ): Promise<DeveloperOverrideContext> {
-  const { data, error } = await runContainedRpc<unknown>(
-    supabase,
-    "developer_set_effective_role_v1",
-    { p_effective_role: role },
+  if (
+    !isLocalDeveloperReviewEnabled() ||
+    !LOCAL_DEVELOPER_REVIEW_ROLES.includes(
+      role as (typeof LOCAL_DEVELOPER_REVIEW_ROLES)[number],
+    )
+  ) {
+    throw new Error("LOCAL_DEVELOPER_PRINCIPAL_SWITCH_UNAVAILABLE");
+  }
+  await switchLocalDeveloperPrincipal(
+    role as (typeof LOCAL_DEVELOPER_REVIEW_ROLES)[number],
   );
-  if (error) throw error;
-  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
-    rpcName: "developer_set_effective_role_v1",
-    caller: "src/lib/developerOverride.setDeveloperEffectiveRole",
-    domain: "unknown",
-  });
-  return normalizeDeveloperOverrideContext(validated);
+  return loadDeveloperOverrideContext();
 }
 
 export async function clearDeveloperEffectiveRole(): Promise<DeveloperOverrideContext> {
-  const { data, error } = await runContainedRpc<unknown>(
-    supabase,
-    "developer_clear_effective_role_v1",
-  );
-  if (error) throw error;
-  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
-    rpcName: "developer_clear_effective_role_v1",
-    caller: "src/lib/developerOverride.clearDeveloperEffectiveRole",
-    domain: "unknown",
-  });
-  return normalizeDeveloperOverrideContext(validated);
+  if (!isLocalDeveloperReviewEnabled()) {
+    throw new Error("LOCAL_DEVELOPER_PRINCIPAL_SWITCH_UNAVAILABLE");
+  }
+  const result = await signOutSafely("local");
+  if (result.status === "failed") throw new Error(result.message);
+  return EMPTY_CONTEXT;
 }

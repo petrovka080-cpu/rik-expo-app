@@ -1,17 +1,125 @@
 import React from "react";
+import { TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
   buildConsumerRepairProgressiveParameterCards,
+  ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
   InlineParamEditor,
 } from "./ConsumerRepairProgressiveEstimatePanel";
+import { EstimateMaterialSearchAddControl } from "./RequestEstimateItemsEditor";
+import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
 
 jest.mock("@expo/vector-icons", () => ({
   Ionicons: () => null,
 }));
 
 describe("InlineParamEditor R3 parameter guide", () => {
+  it("renders an attached line photo as a viewable thumbnail bound to the canonical row", () => {
+    const noop = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairItemRow
+          item={{
+            id: "request-item-photo",
+            requestDraftId: "draft-photo",
+            itemType: "material",
+            titleRu: "Материал с фото",
+            quantity: 1,
+            unit: "item",
+            unitPrice: null,
+            totalPrice: null,
+            currency: "KGS",
+            source: "ai_suggested",
+            sourceParameters: { rowCode: "canonical-material-row-photo" },
+            editableByConsumer: true,
+            createdAt: "2026-08-19T00:00:00.000Z",
+          }}
+          onDecrease={noop}
+          onIncrease={noop}
+          onQuantityChange={noop}
+          onUnitPriceChange={noop}
+          onRemove={noop}
+          photoThumbnailUri="file:///data/user/0/photo.jpg"
+          showPhotoButton
+        />,
+      );
+    });
+
+    expect(renderer.root.findByProps({
+      testID: "estimate-material-row-photo-attached-canonical-material-row-photo",
+    })).toBeTruthy();
+    expect(renderer.root.findByProps({
+      testID: "estimate-material-row-photo-view-canonical-material-row-photo",
+    }).props.source).toEqual({ uri: "file:///data/user/0/photo.jpg" });
+  });
+
+  it("shows estimate and material-only catalog sections in the unified control", () => {
+    const onSelectExisting = jest.fn();
+    const onSelectCatalogItem = jest.fn();
+    const existingMatch = {
+      itemId: "estimate-row-1",
+      titleRu: "Арматура A500C",
+      sectionId: "materials",
+      sectionTitle: "Материалы",
+    };
+    const catalogItem = {
+      catalogItemId: "catalog-material-1",
+      rikCode: "MAT-001",
+      name: "Арматура A500C, 12 мм",
+      unit: "kg",
+      kind: "material",
+      sourceId: "catalog_items",
+      sourceLabel: "catalog_items",
+    };
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <EstimateMaterialSearchAddControl
+          query="арматура"
+          existingMatches={[existingMatch]}
+          catalogRows={[catalogItem]}
+          catalogLoading={false}
+          catalogError={null}
+          lastCatalogQuery="арматура"
+          onChangeQuery={jest.fn()}
+          onSubmit={jest.fn()}
+          onSelectExisting={onSelectExisting}
+          onSelectCatalogItem={onSelectCatalogItem}
+        />,
+      );
+    });
+
+    expect(renderer.root.findByProps({ testID: "estimate-material-search-existing-section" })).toBeTruthy();
+    expect(renderer.root.findByProps({ testID: "estimate-material-search-catalog-section" })).toBeTruthy();
+    act(() => renderer.root.findByProps({ testID: "estimate-material-search-existing-estimate-row-1" }).props.onPress());
+    act(() => renderer.root.findByProps({ testID: "estimate-material-search-catalog-catalog-material-1" }).props.onPress());
+    expect(onSelectExisting).toHaveBeenCalledWith(existingMatch);
+    expect(onSelectCatalogItem).toHaveBeenCalledWith(catalogItem);
+  });
+
+  it("uses one material search/add field and carries its query into the catalog", () => {
+    const onAddManual = jest.fn();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(
+        <ConsumerRepairDraftQuickActions
+          onAddManual={onAddManual}
+          onAddCustom={jest.fn()}
+        />,
+      );
+    });
+
+    const materialInput = renderer.root.findByType(TextInput);
+    expect(materialInput.props.testID).toBe("consumer-repair-material-search-add-field");
+    act(() => materialInput.props.onChangeText("  Арматура A500C  "));
+    const materialButton = renderer.root.findAllByProps({ testID: "consumer-repair-add-manual-item" })[0]!;
+    act(() => materialButton.props.onPress());
+    expect(onAddManual).toHaveBeenCalledWith("Арматура A500C");
+  });
+
   it("opens, shows the persisted value, refreshes the exact session, and closes again", () => {
     const onRefineCanonicalParameters = jest.fn();
     const noop = jest.fn();

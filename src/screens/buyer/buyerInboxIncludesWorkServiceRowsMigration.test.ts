@@ -5,15 +5,37 @@ const migrationPath = path.join(
   process.cwd(),
   "supabase/migrations/20260626114000_buyer_inbox_include_work_service_rows.sql",
 );
+const predecessorMigrationPath = path.join(
+  process.cwd(),
+  "supabase/migrations/20260617124500_foreman_ai_estimate_kind_chain_v1.sql",
+);
 
 const source = fs.readFileSync(migrationPath, "utf8");
+const predecessorSource = fs.readFileSync(predecessorMigrationPath, "utf8");
 const lowerSource = source.toLowerCase();
+
+const extractListBuyerInboxReturnContract = (
+  migrationSource: string,
+): string => {
+  const normalized = migrationSource.toLowerCase();
+  const signature = "create or replace function public.list_buyer_inbox(";
+  const start = normalized.indexOf(signature);
+  expect(start).toBeGreaterThanOrEqual(0);
+  const match = normalized
+    .slice(start)
+    .match(/returns\s+table\s*\(([\s\S]*?)\)\s*language\s+sql/);
+  expect(match).not.toBeNull();
+  return match![1].replace(/\s+/g, " ").trim();
+};
 
 const extractListBuyerInboxScope = (): string => {
   const signature = "create or replace function public.list_buyer_inbox(";
   const start = lowerSource.indexOf(signature);
   expect(start).toBeGreaterThanOrEqual(0);
-  const end = lowerSource.indexOf("$list_buyer_inbox_include_work_service$;", start);
+  const end = lowerSource.indexOf(
+    "$list_buyer_inbox_include_work_service$;",
+    start,
+  );
   expect(end).toBeGreaterThan(start);
   return lowerSource.slice(start, end);
 };
@@ -22,9 +44,12 @@ describe("buyer inbox material and work/service row migration", () => {
   it("keeps the legacy list_buyer_inbox contract while restoring full request rows", () => {
     const scope = extractListBuyerInboxScope();
 
+    expect(extractListBuyerInboxReturnContract(source)).toBe(
+      extractListBuyerInboxReturnContract(predecessorSource),
+    );
     expect(scope).toContain("returns table (");
     expect(scope).toContain("request_item_id uuid");
-    expect(scope).toContain("request_id_old integer");
+    expect(scope).toContain("request_id_old bigint");
     expect(scope).toContain("where p_company_id is null");
     expect(scope).toContain("'material'");
     expect(scope).toContain("'equipment'");
@@ -56,12 +81,20 @@ describe("buyer inbox material and work/service row migration", () => {
   it("uses request-level approval to keep every child row after director approval", () => {
     const scope = extractListBuyerInboxScope();
 
-    expect(scope).toContain("or lower(trim(coalesce(r.status::text, ''))) like '%закуп%'");
-    expect(scope).toContain("or lower(trim(coalesce(ri.status::text, ''))) like '%закуп%'");
+    expect(scope).toContain(
+      "or lower(trim(coalesce(r.status::text, ''))) like '%закуп%'",
+    );
+    expect(scope).toContain(
+      "or lower(trim(coalesce(ri.status::text, ''))) like '%закуп%'",
+    );
     expect(scope).toContain("when sr.request_ready");
-    expect(scope).toContain("then coalesce(nullif(trim(coalesce(sr.request_status, '')), '')");
+    expect(scope).toContain(
+      "then coalesce(nullif(trim(coalesce(sr.request_status, '')), '')",
+    );
     expect(scope).toContain("where (\n      sr.request_ready");
-    expect(scope).not.toContain("where p_company_id is null\n    and ri.status");
+    expect(scope).not.toContain(
+      "where p_company_id is null\n    and ri.status",
+    );
   });
 
   it("keeps waste/support rows such as cutting allowance visible to buyer after approval", () => {

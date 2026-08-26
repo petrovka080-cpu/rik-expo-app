@@ -109,7 +109,7 @@ describe("BATCH005 maximum-depth user WOW V2", () => {
     expect(JSON.stringify(evidence)).not.toMatch(/formula_id|source_parameters|rowCode|PRICE_MISSING/u);
   });
 
-  it("keeps hundreds of rows reachable through search, stage controls, pagination, and row proof", () => {
+  it("keeps hundreds of rows reachable through search, stage controls, full rendering, and row proof", () => {
     const editor = fs.readFileSync(
       path.join(ROOT, "src/features/consumerRepair/RequestEstimateItemsEditor.tsx"),
       "utf8",
@@ -121,7 +121,8 @@ describe("BATCH005 maximum-depth user WOW V2", () => {
 
     expect(editor).toContain('testID="request-estimate-items-search"');
     expect(editor).toContain("request-estimate-stage-toggle-");
-    expect(editor).toContain('testID="request-estimate-items-load-more"');
+    expect(editor).toContain("expandedSections.map");
+    expect(editor).not.toContain('testID="request-estimate-items-load-more"');
     expect(row).toContain("consumer-repair-item-professional-proof-");
     expect(row).toContain("professionalEvidence.formulaLabel");
     expect(row).toContain("professionalEvidence.normativeLabel");

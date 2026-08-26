@@ -466,4 +466,15 @@ export const electricalCompleteDomainPackage: ProfessionalEstimateDomainPackageV
   resource_completeness_policies: completenessPolicies,
 };
 
-export const electricalCompleteDomainFactory = createProfessionalEstimateDomainFactoryV1(electricalCompleteDomainPackage);
+export const ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1 = Object.freeze({
+  hash_contract: "canonical-domain-package-content:v1" as const,
+  content_hash: "eh_58ff6f5b1ebbfbe4",
+  domain_id: ELECTRICAL_COMPLETE_DOMAIN_ID,
+  domain_version: ELECTRICAL_COMPLETE_DOMAIN_VERSION,
+  catalog_record_count: ELECTRICAL_COMPLETE_RECORD_COUNT,
+});
+
+export const electricalCompleteDomainFactory = createProfessionalEstimateDomainFactoryV1(
+  electricalCompleteDomainPackage,
+  ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1,
+);

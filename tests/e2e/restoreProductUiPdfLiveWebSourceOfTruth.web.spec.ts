@@ -61,9 +61,17 @@ test("restore product UI/PDF live web source-of-truth is current and opens PDF",
   await page.goto(restoreRequestUrl(), { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => undefined);
 
-  const buildIdentityNode = page.locator('[data-testid="build-identity"]').first();
-  await expect(buildIdentityNode).toBeAttached({ timeout: 30_000 });
-  const rawIdentity = (await buildIdentityNode.textContent())?.trim() ?? "";
+  await expect.poll(
+    () => page.evaluate(() => String(
+      (globalThis as typeof globalThis & { __RIK_BUILD_IDENTITY_EVIDENCE__?: string })
+        .__RIK_BUILD_IDENTITY_EVIDENCE__ ?? "",
+    )),
+    { timeout: 30_000 },
+  ).not.toBe("");
+  const rawIdentity = await page.evaluate(() => String(
+    (globalThis as typeof globalThis & { __RIK_BUILD_IDENTITY_EVIDENCE__?: string })
+      .__RIK_BUILD_IDENTITY_EVIDENCE__ ?? "",
+  ));
   const identity = JSON.parse(rawIdentity) as { commit?: string; branch?: string; buildTime?: string; appVersion?: string; runtimeVersion?: string };
   const commitMatches = identity.commit === head;
 
@@ -71,6 +79,9 @@ test("restore product UI/PDF live web source-of-truth is current and opens PDF",
   await expect(page.locator('[data-testid="consumer-estimate-make-pdf"]').first()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('[data-testid="consumer-repair-approve"]').first()).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('[data-testid="consumer-repair-delete-draft"]').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-testid="consumer-estimate-make-pdf"]').first()).toHaveText("PDF");
+  await expect(page.locator('[data-testid="consumer-repair-approve"]').first()).toContainText("Подтвердить смету");
+  await expect(page.locator('[data-testid="consumer-repair-delete-draft"]').first()).toContainText("Удалить черновик");
 
   const pageText = await page.locator("body").innerText();
   expect(pageText).not.toMatch(/catalogItemId|raw catalog item id/i);

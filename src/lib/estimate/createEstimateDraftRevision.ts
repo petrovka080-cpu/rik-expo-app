@@ -1450,9 +1450,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     sourceBindingVersions: sourceBindingVersions(rows),
     semanticOwner:
       stringSourceParameter(rows, [
+        "workSemanticOwner",
+        "professionalEstimatePassportId",
         "semanticOwner",
         "canonicalModelId",
-        "professionalEstimatePassportId",
       ]) ||
       selectedTemplateId,
     originalPrompt: input.rawInput,

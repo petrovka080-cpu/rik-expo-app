@@ -4,7 +4,6 @@ import {
   ANDROID_AUTH_SUBMIT_ID,
   ANDROID_AUTHENTICATED_PROFILE_MARKER_ID,
   ANDROID_AUTHENTICATED_SESSION_READY_MARKER_ID,
-  ANDROID_BUILD_IDENTITY_MARKER_ID,
   ANDROID_CANONICAL_REQUEST_ROUTE_URI,
   ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID,
   ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
@@ -218,12 +217,10 @@ describe("Android post-login route proof", () => {
     <node text="${ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY}" resource-id="${ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY}" />
   </hierarchy>`;
   const requestStableXml = `<hierarchy>
-    <node resource-id="${ANDROID_BUILD_IDENTITY_MARKER_ID}" text="{}" />
     <node resource-id="${ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID}" text="" />
     <node resource-id="tabs.request" selected="true" text="" />
   </hierarchy>`;
   const embeddedAiStableXml = `<hierarchy>
-    <node resource-id="${ANDROID_BUILD_IDENTITY_MARKER_ID}" text="{}" />
     <node resource-id="ai.assistant.screen" text="" />
     <node resource-id="ai.assistant.messages" text="" />
     <node resource-id="ai.assistant.response" text="" />
@@ -236,7 +233,7 @@ describe("Android post-login route proof", () => {
     <node resource-id="ai.assistant.open" text="AI" />
   </hierarchy>`;
   const profileSelectedXml = `<hierarchy>
-    <node resource-id="${ANDROID_BUILD_IDENTITY_MARKER_ID}" text="{}" />
+    <node resource-id="app-bottom-nav" text="" />
     <node resource-id="tabs.request" selected="false" text="" />
     <node resource-id="tabs.profile" selected="true" text="" />
   </hierarchy>`;

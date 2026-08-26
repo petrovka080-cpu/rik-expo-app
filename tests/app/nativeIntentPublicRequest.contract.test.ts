@@ -81,6 +81,19 @@ describe("native intent public request route", () => {
       rootLayoutSource.indexOf("const method = routePublicRequestDeepLink"),
     );
     expect(rootLayoutSource).toContain("ExpoLinking.useLinkingURL()");
+    expect(rootLayoutSource).toContain("expoLinkingProbeKeyRef");
+    expect(rootLayoutSource).toContain(
+      "if (expoLinkingProbeKeyRef.current === probeKey) return;",
+    );
+    expect(rootLayoutSource).toContain("expoLinkingProbeKeyRef.current = probeKey");
+    expect(rootLayoutSource).toContain("nativeIntentInitialDrainStartedRef");
+    expect(rootLayoutSource).toContain("reactNativeInitialUrlReadStartedRef");
+    expect(rootLayoutSource).toContain(
+      "if (!nativeIntentInitialDrainStartedRef.current)",
+    );
+    expect(rootLayoutSource).toContain(
+      "if (!reactNativeInitialUrlReadStartedRef.current)",
+    );
     expect(rootLayoutSource).toContain("addNativeViewUrlListener");
     expect(rootLayoutSource).toContain("getLatestNativeViewUrl");
     expect(rootLayoutSource).toContain("drainLatestNativeViewUrl");

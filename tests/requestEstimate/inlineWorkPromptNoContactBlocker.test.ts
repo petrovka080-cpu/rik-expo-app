@@ -1,8 +1,13 @@
-import { buildConsumerRepairSelectedWorkDraftBundle } from "../../src/features/consumerRepair/requestEstimateLegacyTestActions";
+import {
+  __resetConsumerRepairRequestStoreForTests,
+  createConsumerRepairRequestDraft,
+} from "../../src/lib/consumerRequests";
 
 describe("inline work prompt no contact blocker", () => {
-  it("builds preliminary estimate without city, address or phone", () => {
-    const { bundle, aiDraft } = buildConsumerRepairSelectedWorkDraftBundle({
+  beforeEach(() => __resetConsumerRepairRequestStoreForTests());
+
+  it("creates the request workspace without treating city, address or phone as compile inputs", () => {
+    const bundle = createConsumerRepairRequestDraft({
       consumerUserId: "inline-no-contact",
       problemText: "вентфасад под ключ 1500 кв метров",
       repairType: "estimate",
@@ -13,11 +18,11 @@ describe("inline work prompt no contact blocker", () => {
       selectedWork: null,
     });
 
-    expect(aiDraft.repairType).toBe("ventilated_facade");
-    expect(aiDraft.items.length).toBeGreaterThan(30);
-    expect(bundle.items.length).toBe(aiDraft.items.length);
-    expect(bundle.draft.city).toBeNull();
-    expect(bundle.draft.addressText).toBeNull();
-    expect(bundle.draft.contactPhone).toBeNull();
+    expect(bundle.draft.problemText).toBe("вентфасад под ключ 1500 кв метров");
+    expect(bundle.items).toHaveLength(0);
+    expect(bundle.estimateDraftRevisionState).toBeNull();
+    expect(bundle.draft.city).toBe("");
+    expect(bundle.draft.addressText).toBe("");
+    expect(bundle.draft.contactPhone).toBe("");
   });
 });

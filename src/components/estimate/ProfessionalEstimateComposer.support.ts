@@ -37,7 +37,7 @@ export type RowInputState = {
 };
 
 export const TEXT = {
-  title: "\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430",
+  title: "\u041f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u043c\u0435\u0442\u0430",
   backForeman: "\u041d\u0430\u0437\u0430\u0434 \u043a \u043f\u0440\u043e\u0440\u0430\u0431\u0443",
   openDraft: "\u0427\u0435\u0440\u043d\u043e\u0432\u0438\u043a",
   inputPlaceholder: "\u0412\u0438\u0434 \u0440\u0430\u0431\u043e\u0442, \u043e\u0431\u044a\u0435\u043c, \u0443\u0441\u043b\u043e\u0432\u0438\u044f",
@@ -53,19 +53,19 @@ export const TEXT = {
   remove: "\u0423\u0431\u0440\u0430\u0442\u044c",
   restore: "\u0412\u0435\u0440\u043d\u0443\u0442\u044c",
   emptyInput: "\u041e\u043f\u0438\u0448\u0438\u0442\u0435 \u0440\u0430\u0431\u043e\u0442\u0443 \u0438 \u043e\u0431\u044a\u0435\u043c.",
-  parityError: "\u0421\u043c\u0435\u0442\u0430 \u043d\u0435 \u043f\u0440\u043e\u0448\u043b\u0430 anti-desync gate.",
+  parityError: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0432\u0435\u0440\u0438\u0442\u044c \u0446\u0435\u043b\u043e\u0441\u0442\u043d\u043e\u0441\u0442\u044c \u0441\u043c\u0435\u0442\u044b. \u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u0440\u0430\u0441\u0447\u0451\u0442.",
   catalogNeedsEstimate: "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u0439\u0442\u0435 \u0441\u043c\u0435\u0442\u0443.",
   rows: "\u0421\u0442\u0440\u043e\u043a",
   buyer: "\u0417\u0430\u043a\u0443\u043f\u043a\u0430",
   total: "\u0418\u0442\u043e\u0433",
   qty: "\u041a\u043e\u043b-\u0432\u043e",
   price: "\u0426\u0435\u043d\u0430",
-  selectCanonicalWork: "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0447\u043d\u0443\u044e \u0440\u0430\u0431\u043e\u0442\u0443 \u0438\u0437 backend-\u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
-  parametersTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043a\u0430\u043d\u043e\u043d\u0438\u0447\u0435\u0441\u043a\u043e\u0439 \u0441\u043c\u0435\u0442\u044b",
+  selectCanonicalWork: "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0447\u043d\u0443\u044e \u0440\u0430\u0431\u043e\u0442\u0443 \u0438\u0437 \u0441\u043f\u0438\u0441\u043a\u0430.",
+  parametersTitle: "\u0427\u0442\u043e \u043d\u0443\u0436\u043d\u043e \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c",
   invalidParameter: "\u041d\u0435\u0432\u0435\u0440\u043d\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0430",
   requiredParameters: "\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b",
-  pendingServerAdmission: "\u041d\u0435\u0442 \u0441\u0432\u044f\u0437\u0438: \u0437\u0430\u043f\u0440\u043e\u0441 \u043f\u043e\u043c\u0435\u0447\u0435\u043d PENDING_SERVER_ADMISSION; \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u0430\u044f canonical revision \u043d\u0435 \u0441\u043e\u0437\u0434\u0430\u043d\u0430",
-  backendRevisionImmutable: "\u0421\u0442\u0440\u043e\u043a\u0430 \u0437\u0430\u043f\u0435\u0447\u0430\u0442\u0430\u043d\u0430 backend revision; \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u0447\u0435\u0440\u0435\u0437 \u043d\u043e\u0432\u044b\u0439 server-side recalculate.",
+  pendingServerAdmission: "\u041d\u0435\u0442 \u0441\u0432\u044f\u0437\u0438. \u0417\u0430\u043f\u0440\u043e\u0441 \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d \u0438 \u0431\u0443\u0434\u0435\u0442 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d \u043f\u043e\u0441\u043b\u0435 \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f.",
+  backendRevisionImmutable: "\u0421\u043e\u0445\u0440\u0430\u043d\u0451\u043d\u043d\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430 \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f. \u041f\u043e\u0441\u043b\u0435 \u043f\u0440\u0430\u0432\u043a\u0438 \u0431\u0443\u0434\u0435\u0442 \u0441\u043e\u0437\u0434\u0430\u043d\u0430 \u043d\u043e\u0432\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f \u0441\u043c\u0435\u0442\u044b.",
 } as const;
 
 const normalizeDecimalInput = (value: string) => value.replace(",", ".").trim();
@@ -93,8 +93,11 @@ export const formatEstimateSection = (section: unknown, fallback = "") => {
   switch (normalized) {
     case "material":
     case "materials":
-    case "equipment":
       return "Материалы";
+    case "equipment":
+    case "machine":
+    case "machines":
+      return "Машины и оборудование";
     case "work":
     case "works":
     case "labor":
@@ -103,7 +106,9 @@ export const formatEstimateSection = (section: unknown, fallback = "") => {
     case "services":
       return "Услуги";
     case "delivery":
-      return "Доставка";
+    case "haulage":
+    case "disposal":
+      return "Доставка и вывоз";
     default:
       return String(section ?? fallback).trim() || fallback;
   }
@@ -141,7 +146,7 @@ export const styles = StyleSheet.create({
   draftButton: { minHeight: 42, borderRadius: 6, paddingHorizontal: 14, alignItems: "center", justifyContent: "center", backgroundColor: "#0f172a" },
   draftButtonText: { color: "#fff", fontSize: 13, fontWeight: "800" },
   body: { flex: 1 },
-  bodyContent: { padding: 16, paddingBottom: 112, gap: 12 },
+  bodyContent: { padding: 16, paddingBottom: 24, gap: 12 },
   composePanel: { gap: 10 },
   workSuggestionsPanel: { borderRadius: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: "#cbd5e1", backgroundColor: "#fff", padding: 10, gap: 8 },
   workSuggestionRows: { gap: 8 },
@@ -205,5 +210,6 @@ export const styles = StyleSheet.create({
   toggleButtonActiveText: { color: "#14532d" },
   removeButton: { minHeight: 34, borderRadius: 6, paddingHorizontal: 10, alignItems: "center", justifyContent: "center", backgroundColor: "#fee2e2" },
   removeButtonText: { color: "#991b1b", fontSize: 12, fontWeight: "800" },
-  footer: { minHeight: 70, padding: 12, flexDirection: "row", gap: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#cbd5e1", backgroundColor: "#ffffff" },
+  footer: { marginTop: 12, paddingTop: 14, gap: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#cbd5e1" },
+  footerActions: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
 });

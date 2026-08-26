@@ -141,6 +141,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
   const revision: EstimateDraftRevision = {
     estimateDraftId: input.nextBundle.draft.id,
     revisionId: metadata.revisionId,
+    canonicalRevisionNumber: metadata.revisionNumber,
     createdAt: metadata.createdAt,
     previousRevisionId: metadata.parentRevisionId,
     source: previousRevision ? "param_batch" : "initial_prompt",

@@ -2,11 +2,13 @@ import type {
   CatalogItemsSearchKind,
   CatalogItemsSearchPreviewRow,
   CatalogGroup,
+  CatalogSearchFallbackRow,
   ContractorCounterpartyRow,
   CatalogSearchRpcArgs,
   CatalogSearchRpcName,
   IncomingItem,
   ProfileContractorCompatRow,
+  RikQuickSearchFallbackRow,
   SubcontractCounterpartyRow,
   SupplierCounterpartyRow,
   SupplierTableRow,
@@ -23,28 +25,11 @@ import type {
   CatalogTransportBffReadResultDto,
   CatalogTransportBffRequestDto,
 } from "./catalog.bff.contract";
-import {
-  loadCatalogGroupsRowsFromSupabase,
-  loadCatalogItemsSearchPreviewRowsFromSupabase,
-  loadCatalogSearchFallbackRowsFromSupabase,
-  loadContractorCounterpartyRowsFromSupabase,
-  loadContractorProfileRowsFromSupabase,
-  loadIncomingItemRowsFromSupabase,
-  loadRikQuickSearchFallbackRowsFromSupabase,
-  loadSubcontractCounterpartyRowsFromSupabase,
-  loadSupplierCounterpartyRowsFromSupabase,
-  loadSuppliersTableRowsFromSupabase,
-  loadUomRowsFromSupabase,
-  runCatalogSearchRpcRawFromSupabase,
-  runSuppliersListRpcFromSupabase,
-} from "./catalog.transport.supabase";
 
 type CatalogQueryResult<T> = {
   data: T[] | null;
   error: { message?: string } | null;
 };
-
-type CatalogTransportFallback<T> = () => Promise<CatalogQueryResult<T>>;
 
 type CatalogRawRpcResult = {
   data: unknown;
@@ -72,7 +57,6 @@ const bffResultToCatalogQueryResult = <T,>(
 
 const loadCatalogRowsViaBff = async <T,>(
   request: CatalogTransportBffRequestDto,
-  fallback: CatalogTransportFallback<T>,
 ): Promise<CatalogQueryResult<T>> => {
   const bffResult = await callCatalogTransportBffRead(request);
   if (bffResult.status === "ok") {
@@ -81,7 +65,12 @@ const loadCatalogRowsViaBff = async <T,>(
   if (bffResult.status === "error") {
     return { data: null, error: bffErrorToCatalogError(bffResult.error) };
   }
-  return await fallback();
+  return {
+    data: null,
+    error: {
+      message: `Canonical catalog backend unavailable: ${bffResult.reason}`,
+    },
+  };
 };
 
 export const loadSupplierCounterpartyRows = async (searchTerm: string) =>
@@ -90,7 +79,6 @@ export const loadSupplierCounterpartyRows = async (searchTerm: string) =>
       operation: "catalog.supplier_counterparty.list",
       args: { searchTerm },
     },
-    () => loadSupplierCounterpartyRowsFromSupabase(searchTerm),
   );
 
 export const loadSubcontractCounterpartyRows = async () =>
@@ -99,7 +87,6 @@ export const loadSubcontractCounterpartyRows = async () =>
       operation: "catalog.subcontract_counterparty.list",
       args: {},
     },
-    loadSubcontractCounterpartyRowsFromSupabase,
   );
 
 export const loadContractorCounterpartyRows = async () =>
@@ -108,7 +95,6 @@ export const loadContractorCounterpartyRows = async () =>
       operation: "catalog.contractor_counterparty.list",
       args: {},
     },
-    loadContractorCounterpartyRowsFromSupabase,
   );
 
 export const loadContractorProfileRows = async (withFilter: boolean) =>
@@ -117,7 +103,6 @@ export const loadContractorProfileRows = async (withFilter: boolean) =>
       operation: "catalog.contractor_profile.list",
       args: { withFilter },
     },
-    () => loadContractorProfileRowsFromSupabase(withFilter),
   );
 
 export const runCatalogSearchRpcRaw = async (
@@ -134,7 +119,12 @@ export const runCatalogSearchRpcRaw = async (
   if (bffResult.status === "error") {
     return { data: null, error: bffErrorToCatalogError(bffResult.error) };
   }
-  return await runCatalogSearchRpcRawFromSupabase(fn, args);
+  return {
+    data: null,
+    error: {
+      message: `Canonical catalog backend unavailable: ${bffResult.reason}`,
+    },
+  };
 };
 
 export const loadCatalogSearchFallbackRows = async (
@@ -142,12 +132,11 @@ export const loadCatalogSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) =>
-  await loadCatalogRowsViaBff(
+  await loadCatalogRowsViaBff<CatalogSearchFallbackRow>(
     {
       operation: "catalog.search.fallback",
       args: { searchTerm, tokens, limit },
     },
-    () => loadCatalogSearchFallbackRowsFromSupabase(searchTerm, tokens, limit),
   );
 
 export const loadCatalogGroupsRows = async (): Promise<{
@@ -159,7 +148,6 @@ export const loadCatalogGroupsRows = async (): Promise<{
       operation: "catalog.groups.list",
       args: {},
     },
-    loadCatalogGroupsRowsFromSupabase as CatalogTransportFallback<Record<string, unknown>>,
   );
   return {
     data: result.data === null ? null : normalizeCatalogGroupRows(result.data),
@@ -176,7 +164,6 @@ export const loadUomRows = async (): Promise<{
       operation: "catalog.uoms.list",
       args: {},
     },
-    loadUomRowsFromSupabase as CatalogTransportFallback<Record<string, unknown>>,
   );
   return {
     data: result.data === null ? null : normalizeUomRows(result.data),
@@ -192,8 +179,6 @@ export const loadIncomingItemRows = async (
       operation: "catalog.incoming_items.list",
       args: { incomingId },
     },
-    () =>
-      loadIncomingItemRowsFromSupabase(incomingId) as Promise<CatalogQueryResult<Record<string, unknown>>>,
   );
   return {
     data: result.data === null ? null : normalizeIncomingItemRows(result.data),
@@ -212,7 +197,12 @@ export const runSuppliersListRpc = async (searchTerm: string | null) => {
   if (bffResult.status === "error") {
     return { data: null, error: bffErrorToCatalogError(bffResult.error) };
   }
-  return await runSuppliersListRpcFromSupabase(searchTerm);
+  return {
+    data: null,
+    error: {
+      message: `Canonical catalog backend unavailable: ${bffResult.reason}`,
+    },
+  };
 };
 
 export const loadSuppliersTableRows = async (searchTerm: string) =>
@@ -221,7 +211,6 @@ export const loadSuppliersTableRows = async (searchTerm: string) =>
       operation: "catalog.suppliers.table",
       args: { searchTerm },
     },
-    () => loadSuppliersTableRowsFromSupabase(searchTerm),
   );
 
 export const loadRikQuickSearchFallbackRows = async (
@@ -229,12 +218,11 @@ export const loadRikQuickSearchFallbackRows = async (
   tokens: string[],
   limit: number,
 ) =>
-  await loadCatalogRowsViaBff(
+  await loadCatalogRowsViaBff<RikQuickSearchFallbackRow>(
     {
       operation: "catalog.rik_quick_search.fallback",
       args: { searchTerm, tokens, limit },
     },
-    () => loadRikQuickSearchFallbackRowsFromSupabase(searchTerm, tokens, limit),
   );
 
 export const loadCatalogItemsSearchPreviewRows = async (
@@ -247,5 +235,4 @@ export const loadCatalogItemsSearchPreviewRows = async (
       operation: "catalog.items.search.preview",
       args: { searchTerm, kind, pageSize },
     },
-    () => loadCatalogItemsSearchPreviewRowsFromSupabase(searchTerm, kind, pageSize),
   );

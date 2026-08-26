@@ -14,6 +14,7 @@ import { buildRequestEstimateViewModel, type RequestEstimateViewModel } from "./
 import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 
 type Props = {
+  revisionHistory: ConsumerRepairDraftBundle[];
   approvedHistoryPage: ConsumerRepairApprovedHistoryPage;
   selectedHistoryId: string | null;
   onOpenPdf: (requestDraftId: string) => void;
@@ -37,6 +38,7 @@ function historyRowCount(bundle: ConsumerRepairDraftBundle): number {
 }
 
 export function ConsumerRepairHistory({
+  revisionHistory,
   approvedHistoryPage,
   selectedHistoryId,
   onOpenPdf,
@@ -48,13 +50,25 @@ export function ConsumerRepairHistory({
   onLoadMoreHistory,
 }: Props): React.ReactElement {
   const [visible, setVisible] = React.useState(false);
-  const approvedHistory = approvedHistoryPage.items;
+  const approvedIds = new Set(
+    approvedHistoryPage.records.map((record) => record.approvedEstimateId),
+  );
+  const compiledDraftHistory = revisionHistory.filter((bundle) =>
+    bundle.draft.status === "draft"
+    && primaryConsumerRepairCanonicalBackendBinding(bundle) != null
+    && historyRowCount(bundle) > 0
+    && !approvedIds.has(bundle.draft.id)
+  );
+  const approvedHistory = [
+    ...compiledDraftHistory,
+    ...approvedHistoryPage.items,
+  ];
   const unresolvedRecords = approvedHistoryPage.unresolvedRecords ?? [];
   const approvedHistoryList: ApprovedHistoryListItem[] = [
     ...approvedHistory.map((bundle): ApprovedHistoryListItem => ({ kind: "snapshot", bundle })),
     ...unresolvedRecords.map((record): ApprovedHistoryListItem => ({ kind: "backend_recovery", record })),
   ];
-  const approvedCount = approvedHistoryPage.totalApprovedCount;
+  const approvedCount = approvedHistoryPage.totalApprovedCount + compiledDraftHistory.length;
   const loadedCount = approvedHistoryList.length;
   const remainingCount = Math.max(approvedCount - loadedCount, 0);
   const hasPendingDurableBundles = hasUnhydratedTransactionalConsumerRepairBundles();
@@ -221,9 +235,9 @@ function BackendRecoveryHistoryCard({
       onPress={() => onToggleHistorySnapshot(record.approvedEstimateId)}
       testID={`consumer-repair-history-recovery-row-${record.approvedEstimateId}`}
     >
-      <Text style={styles.snapshotKicker}>Локальный snapshot отсутствует · доступно восстановление backend</Text>
+      <Text style={styles.snapshotKicker}>Сохранённая смета доступна для восстановления</Text>
       <Text style={styles.snapshotTitle}>{record.title}</Text>
-      <Text style={styles.snapshotMeta}>revision {record.sourceRevisionId}{record.sourceReleaseId ? ` / release ${record.sourceReleaseId}` : ""}</Text>
+      <Text style={styles.snapshotMeta}>Можно открыть сохранённую версию без изменения оригинала</Text>
       <Text style={styles.snapshotMeta}>{record.rowCount} позиций · оригинал остаётся неизменным</Text>
     </Pressable>
     {expanded ? <View style={styles.snapshotActions}>
@@ -233,7 +247,7 @@ function BackendRecoveryHistoryCard({
         style={styles.primaryActionButton}
         testID="consumer-repair-history-recover-edit-revision"
       >
-        <Text style={styles.primaryActionText}>Восстановить и редактировать child revision</Text>
+        <Text style={styles.primaryActionText}>Восстановить и редактировать</Text>
       </Pressable>
       <Pressable
         accessibilityRole="button"
@@ -241,7 +255,7 @@ function BackendRecoveryHistoryCard({
         style={styles.actionButton}
         testID="consumer-repair-history-recover-open-pdf"
       >
-        <Text style={styles.actionText}>PDF из backend</Text>
+        <Text style={styles.actionText}>Скачать PDF</Text>
       </Pressable>
     </View> : null}
   </View>;
@@ -282,9 +296,7 @@ function ApprovedHistoryInlineSummary({
         </Text>
       </View>
       {canonical ? (
-        <Text style={styles.selectedMeta} testID="consumer-repair-history-selected-release-id">
-          revision {canonical.revisionId} / release {canonical.releaseId}
-        </Text>
+        <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-selected-release-id" />
       ) : null}
       {previewItems.length > 0 ? (
         <View style={styles.selectedPreview} testID="consumer-repair-history-selected-preview">
@@ -369,22 +381,16 @@ function ApprovedHistorySnapshot({
       <Text style={styles.snapshotTitle}>{viewModel.summary || viewModel.title}</Text>
       <Text style={styles.snapshotMeta}>Итого: {viewModel.totalLabel}</Text>
       {canonical ? (
-        <Text style={styles.snapshotMeta} testID="consumer-repair-history-snapshot-release-id">
-          revision {canonical.revisionId} / release {canonical.releaseId}
-        </Text>
+        <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-snapshot-release-id" />
       ) : null}
       {canonicalPdf ? (
-        <Text style={styles.snapshotMeta} testID="consumer-repair-history-backend-pdf-artifact">
-          PDF artifact: {String(canonicalPdf.payload.artifactId)} / release {canonical?.releaseId}
-        </Text>
+        <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-backend-pdf-artifact" />
       ) : null}
       {canonicalProcurement ? (
-        <Text style={styles.snapshotMeta} testID="consumer-repair-history-backend-procurement-artifact">
-          Procurement artifact: {String(canonicalProcurement.payload.procurementArtifactId)} / release {canonical?.releaseId}
-        </Text>
+        <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-backend-procurement-artifact" />
       ) : null}
       {latestPdf?.revisionId ? (
-        <Text style={styles.snapshotMeta}>PDF revision: {latestPdf.revisionId}</Text>
+        <Text style={styles.snapshotMeta}>PDF готов для этой версии сметы</Text>
       ) : null}
       <View style={styles.snapshotItems}>
         {viewModel.sections.map((section) => (
@@ -528,6 +534,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "800",
+  },
+  identityMarker: {
+    width: 0,
+    height: 0,
+    opacity: 0,
   },
   selectedPreview: {
     gap: 4,

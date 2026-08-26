@@ -7,9 +7,14 @@ export const SUPABASE_PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
 
 export function normalizeSupabaseUrl(value: string): string {
   if (!value) return "";
-  const url = new URL(value);
-  url.pathname = url.pathname.replace(/\/+$/, "");
-  return url.toString();
+  try {
+    const url = new URL(value);
+    if (!/^https?:$/i.test(url.protocol)) return "";
+    url.pathname = url.pathname.replace(/\/+$/, "");
+    return url.toString();
+  } catch {
+    return "";
+  }
 }
 
 export const EXPO_PUBLIC_SUPABASE_URL = normalizeEnvText(process.env.EXPO_PUBLIC_SUPABASE_URL);

@@ -409,14 +409,10 @@ function reviewedSourceTitle(input: {
   section: string;
   unit: string;
 }): string {
-  const publicSection = input.section === "quality_control"
-    ? "операционная проверка"
-    : input.section.replace(/_/g, " ");
-  const scope = `${input.workGroup.replace(/_/g, " ")}/${publicSection}/${input.unit}`;
-  if (input.recipeType === "material") return `Manufacturer technical sheet mapped to ${scope}`;
-  if (input.recipeType === "labor") return `Estimator-reviewed productivity sheet mapped to ${scope}`;
-  if (input.recipeType === "equipment") return `Estimator-reviewed equipment shift worksheet mapped to ${scope}`;
-  return `Estimator-reviewed logistics worksheet mapped to ${scope}`;
+  if (input.recipeType === "material") return "Паспорт изготовителя и ведомость норм расхода материалов";
+  if (input.recipeType === "labor") return "Проверенная сметчиком карта трудоёмкости работ";
+  if (input.recipeType === "equipment") return "Проверенная сметчиком ведомость машино-смен";
+  return "Проверенная сметчиком ведомость логистики и услуг";
 }
 
 function formulaInputs(formula: string): string[] {

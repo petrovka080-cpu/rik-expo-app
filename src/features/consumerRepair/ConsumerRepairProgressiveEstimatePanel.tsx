@@ -26,6 +26,7 @@ import type {
 } from "../../lib/estimate/estimateDraftRevisionContract";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { buildConsumerRepairCanonicalSessionPreview } from "./consumerRepairCanonicalSessionPreview";
 import type { ConsumerRepairParamEditState } from "./requestEstimateScreenActions";
 import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
@@ -43,14 +44,18 @@ type ItemEditorHandlers = {
   onIncrease: (itemId: string) => void;
   onQuantityChange: (itemId: string, value: string, meta?: ConsumerRepairQuantityChangeMeta) => void;
   onUnitPriceChange: (itemId: string, value: string) => void;
+  onSpecificationChange?: (itemId: string, value: string) => void;
+  onOptionalChange?: (itemId: string, optional: boolean) => void;
   onRemove: (itemId: string) => void;
   onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition?: () => void;
   onOpenPhotoForEstimateItem?: (itemId: string) => void;
+  rowPhotoThumbnails?: Readonly<Record<string, string>>;
   onAddCustom: () => void;
   onRestoreLastRemoved?: () => void;
   canRestoreLastRemoved?: boolean;
   onOpenCatalog?: (itemId: string) => void;
+  onSelectCatalogItem?: (item: CatalogItemPickerItem) => void;
 };
 
 type ParameterHandlers = {
@@ -309,19 +314,22 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       showPdfAction,
       onMakePdf,
       onOpenProcurement,
-      onRefineCanonicalParameters,
       onDecrease,
       onIncrease,
       onQuantityChange,
       onUnitPriceChange,
+      onSpecificationChange,
+      onOptionalChange,
       onRemove,
       onAddManual,
       onAddPhotoMaterialRecognition,
       onOpenPhotoForEstimateItem,
+      rowPhotoThumbnails,
       onAddCustom,
       onRestoreLastRemoved,
       canRestoreLastRemoved,
       onOpenCatalog,
+      onSelectCatalogItem,
       editingParam,
       onOpenParamEditor,
       onSaveParamEdit,
@@ -433,14 +441,18 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           onIncrease={onIncrease}
           onQuantityChange={onQuantityChange}
           onUnitPriceChange={onUnitPriceChange}
+          onSpecificationChange={onSpecificationChange}
+          onOptionalChange={onOptionalChange}
           onRemove={onRemove}
           onAddManual={onAddManual}
           onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
           onOpenPhotoForEstimateItem={onOpenPhotoForEstimateItem}
+          rowPhotoThumbnails={rowPhotoThumbnails}
           onAddCustom={onAddCustom}
           onRestoreLastRemoved={onRestoreLastRemoved}
           canRestoreLastRemoved={canRestoreLastRemoved}
           onOpenCatalog={onOpenCatalog}
+          onSelectCatalogItem={onSelectCatalogItem}
         />
       ) : null}
     </View>
@@ -587,6 +599,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                       <Text style={styles.inlineParamEditorTitle}>{field.labelRu}{field.required ? " *" : ""}</Text>
                       {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
                         value={fieldValue}
+                        importantForAutofill="no"
                         onChangeText={(nextValue) => this.updateCompositeField(item.itemId, field.key, nextValue)}
                         onFocus={() => this.setState({ focusedControlId: focusId })}
                         onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === focusId ? null : state.focusedControlId }))}
@@ -641,6 +654,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
             <View>
               <TextInput
                 value={value}
+                importantForAutofill="no"
                 onChangeText={(nextValue) => onChange(paramKey, nextValue)}
                 onFocus={() => this.setState({ focusedControlId: paramKey })}
                 onBlur={() => this.setState((state) => ({ focusedControlId: state.focusedControlId === paramKey ? null : state.focusedControlId }))}
@@ -686,11 +700,16 @@ class ParameterDisclosurePanel extends React.PureComponent<ParameterDisclosurePa
 
   componentDidUpdate(prevProps: ParameterDisclosurePanelProps): void {
     const nextDraftSignature = this.draftSignature(this.buildCards());
-    if (
-      prevProps.revision?.revisionId !== this.props.revision?.revisionId ||
+    const revisionChanged =
+      prevProps.revision?.revisionId !== this.props.revision?.revisionId;
+    const canonicalSessionChanged =
       prevProps.canonicalParameterSession?.fingerprint !==
-        this.props.canonicalParameterSession?.fingerprint ||
-      (this.dirtyKeys().length === 0 && nextDraftSignature !== this.state.draftSignature)
+      this.props.canonicalParameterSession?.fingerprint;
+    const hasUnsavedUserInput = this.dirtyKeys().length > 0;
+    if (
+      revisionChanged ||
+      (!hasUnsavedUserInput &&
+        (canonicalSessionChanged || nextDraftSignature !== this.state.draftSignature))
     ) {
       this.syncDraftFromProps();
     }
@@ -1185,14 +1204,18 @@ function EstimatePositionsPanel({
   onIncrease,
   onQuantityChange,
   onUnitPriceChange,
+  onSpecificationChange,
+  onOptionalChange,
   onRemove,
   onAddManual,
   onAddPhotoMaterialRecognition,
   onOpenPhotoForEstimateItem,
+  rowPhotoThumbnails,
   onAddCustom,
   onRestoreLastRemoved,
   canRestoreLastRemoved,
   onOpenCatalog,
+  onSelectCatalogItem,
 }: ItemEditorHandlers & {
   viewModel: RequestEstimateViewModel;
 }): React.ReactElement {
@@ -1212,6 +1235,7 @@ function EstimatePositionsPanel({
         onAddManual={onAddManual}
         onAddPhotoMaterialRecognition={onAddPhotoMaterialRecognition}
         onAddCustom={onAddCustom}
+        showMaterialControl={false}
       />
       <RequestEstimateItemsEditor
         viewModel={viewModel}
@@ -1220,10 +1244,14 @@ function EstimatePositionsPanel({
         onIncrease={onIncrease}
         onQuantityChange={onQuantityChange}
         onUnitPriceChange={onUnitPriceChange}
+        onSpecificationChange={onSpecificationChange}
+        onOptionalChange={onOptionalChange}
         onRemove={onRemove}
         onOpenCatalog={onOpenCatalog}
+        onSelectCatalogItem={onSelectCatalogItem}
         onOpenPhoto={onOpenPhotoForEstimateItem}
         showPhotoButtons={Boolean(onOpenPhotoForEstimateItem)}
+        rowPhotoThumbnails={rowPhotoThumbnails}
       />
       {canRestoreLastRemoved && onRestoreLastRemoved ? (
         <Pressable
@@ -1245,23 +1273,42 @@ export function ConsumerRepairDraftQuickActions({
   onAddManual,
   onAddPhotoMaterialRecognition,
   onAddCustom,
+  showMaterialControl = true,
 }: {
   onAddManual: (initialQuery?: string) => void;
   onAddPhotoMaterialRecognition?: () => void;
   onAddCustom: () => void;
+  showMaterialControl?: boolean;
 }): React.ReactElement {
+  const [materialQuery, setMaterialQuery] = React.useState("");
+  const openMaterialSearch = React.useCallback(() => {
+    const query = materialQuery.trim();
+    onAddManual(query || undefined);
+  }, [materialQuery, onAddManual]);
   return (
     <View style={styles.quickActions} testID="consumer-repair-draft-quick-actions">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Добавить материал"
-        onPress={() => onAddManual()}
-        style={[styles.quickButton, styles.greenQuickButton]}
-        testID="consumer-repair-add-manual-item"
-      >
-        <Ionicons name="add" size={16} color="#FFFFFF" />
-        <Text style={styles.greenQuickText}>Материал</Text>
-      </Pressable>
+      {showMaterialControl ? <View style={styles.materialSearchAddControl} testID="consumer-repair-material-search-add-control">
+        <TextInput
+          accessibilityLabel="Найти или добавить материал"
+          onChangeText={setMaterialQuery}
+          onSubmitEditing={openMaterialSearch}
+          placeholder="Найти материал или ввести название"
+          returnKeyType="search"
+          style={styles.materialSearchAddInput}
+          testID="consumer-repair-material-search-add-field"
+          value={materialQuery}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Найти или добавить материал"
+          onPress={openMaterialSearch}
+          style={[styles.quickButton, styles.greenQuickButton, styles.materialSearchAddButton]}
+          testID="consumer-repair-add-manual-item"
+        >
+          <Ionicons name="add" size={16} color="#FFFFFF" />
+          <Text style={styles.greenQuickText}>Материал +</Text>
+        </Pressable>
+      </View> : null}
       {onAddPhotoMaterialRecognition ? (
         <Pressable
           accessibilityRole="button"
@@ -1727,6 +1774,32 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
     gap: 7,
+  },
+  materialSearchAddControl: {
+    width: "100%",
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "stretch",
+    borderWidth: 1,
+    borderColor: "#86EFAC",
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+  },
+  materialSearchAddInput: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    color: "#0F172A",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  materialSearchAddButton: {
+    height: 42,
+    minHeight: 42,
+    minWidth: 112,
+    borderRadius: 0,
   },
   quickButton: {
     height: 38,

@@ -12,7 +12,9 @@ export function EstimateRevisionTimeline({
   const currentIndex = state.revisions.findIndex((revision) => revision.revisionId === state.currentRevisionId);
   const current = state.revisions[currentIndex] ?? state.revisions[state.revisions.length - 1];
   if (!current) return null;
-  const currentNumber = currentIndex + 1;
+  const currentNumber = Number.isInteger(current.canonicalRevisionNumber) && Number(current.canonicalRevisionNumber) > 0
+    ? Number(current.canonicalRevisionNumber)
+    : currentIndex + 1;
   const selectedCatalogId = current.resolvedIdentity?.requestedCatalogWorkId
     ?? current.selectedTemplateId;
   const selectedWorkKey = current.professionalWorkId?.trim() ?? "";

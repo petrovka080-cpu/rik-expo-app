@@ -40,9 +40,9 @@ import {
   isDrywallFlatCeilingProfessionalCatalogIdV6,
 } from "./drywallArchitecturalElementsProfessionalV4";
 import {
-  buildDrywallDomainCompletionProfessionalPackagePartsV7,
   isDrywallDomainCompletionCatalogIdV7,
 } from "./drywallDomainCompletionProfessionalV7";
+import { buildDrywallDomainCompletionSuccessorPackagePartsR56 } from "./drywallDomainCompletionSuccessorR56";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
@@ -65,7 +65,7 @@ const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4: readonly InteriorProfessionalO
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
   buildDrywallArchitecturalElementProfessionalPackagePartsV4,
   buildDrywallFlatCeilingProfessionalPackagePartsV6,
-  buildDrywallDomainCompletionProfessionalPackagePartsV7,
+  buildDrywallDomainCompletionSuccessorPackagePartsR56,
 ]);
 
 function resolveInteriorProfessionalOverlayV4(

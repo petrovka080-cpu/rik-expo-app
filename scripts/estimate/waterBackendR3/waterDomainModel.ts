@@ -4,6 +4,7 @@ import {
   compileFormulaGraph,
   type FormulaAst,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
+import { waterMaterialVariantLabelRuR542 } from "../../../src/lib/estimate/backendPlatform/russianTechnologyTitleR542";
 import {
   buildGlobalCatalogInventoryV1,
   type GlobalCatalogInventoryRowV1,
@@ -742,7 +743,7 @@ function resourcesFor(row: GlobalCatalogInventoryRowV1, profile: WaterProfile): 
   add("setting_out", "Подготовка", "survey", "Разбивка трассы, осей, отметок и мест установки", "labor", profile.outputUnitId, q, literal(true), false);
 
   for (const [index, variant] of profile.materialVariants.entries()) {
-    add(`primary_${variant.toLocaleLowerCase("en-US")}`, "Основные материалы", "primary_material", `Основной проектный ресурс: ${variant}`,
+    add(`primary_${variant.toLocaleLowerCase("en-US")}`, "Основные материалы", "primary_material", `Основной проектный ресурс: ${waterMaterialVariantLabelRuR542(variant)}`,
       profile.kind === "PUMP" || profile.kind === "TREATMENT" || profile.kind === "STORAGE" ? "equipment" : "material",
       profile.outputUnitId, `${q} * material_factor * (1 + waste_percent / 100)`, equals("material_variant", variant), true, `primary-material:${variant}`,
       { sourceId: profile.primaryNormSourceId, locator: `${profile.primaryNormLocator};material_variant_index:${index}`, priceSourceId: profile.priceSourceId });
@@ -765,7 +766,7 @@ function resourcesFor(row: GlobalCatalogInventoryRowV1, profile: WaterProfile): 
 
   add("penetration_sleeves", "Проходки", "penetration", "Гильзы проходок точного диаметра", "material", "item", "penetration_count", enabled("include_penetrations"), true, "penetrations:sleeves");
   add("penetration_seals", "Проходки", "penetration", "Эластичная водо- и газонепроницаемая заделка проходок", "material", "item", "penetration_count", enabled("include_penetrations"), true, "penetrations:seals");
-  add("penetration_firestop", "Проходки", "typed_child", "Противопожарная заделка проходок по отдельному Fire Protection owner", "service", "item", "penetration_count", enabled("include_penetrations"), false, "typed-child:FIRE_PROTECTION");
+  add("penetration_firestop", "Проходки", "typed_child", "Противопожарная заделка проходок в смежном разделе пожарной защиты", "service", "item", "penetration_count", enabled("include_penetrations"), false, "typed-child:FIRE_PROTECTION");
   add("penetration_labor", "Проходки", "installation", "Монтаж гильз и заделка проходок", "labor", "man_hour", "penetration_count / crew_productivity_output_per_hour", enabled("include_penetrations"), false, "penetrations:labor");
 
   add("insulation_material", "Изоляция", "insulation", "Проектная тепло-, шумо- или противоконденсатная изоляция", "material", "m2", `${q} * insulation_quantity_per_output`, enabled("include_insulation"), true, "typed-child:INSULATION");

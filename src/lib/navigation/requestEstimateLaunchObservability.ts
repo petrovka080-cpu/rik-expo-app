@@ -46,9 +46,10 @@ export function recordRequestEstimateLaunchStage(input: {
     extra: safeDetail,
   });
   if (Platform.OS === "android") {
-    logger.info(
+    logger.releaseEvidence(
       "RikWarmDeepLink",
-      `${input.stage} ${JSON.stringify(safeDetail)}`,
+      input.stage,
+      safeDetail,
     );
   }
 }

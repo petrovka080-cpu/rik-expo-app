@@ -10,9 +10,13 @@ import {
   SUPABASE_HOST,
   SUPABASE_PROJECT_REF,
   SUPABASE_URL,
-  isClientSupabaseEnvValid,
 } from "./env/clientSupabaseEnv";
-import { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY } from "./developerOverride.constants";
+import {
+  buildSupabaseUnavailableDiagnostic,
+  resolveSupabaseClientAvailabilityConfig,
+  type SupabaseClientEnvironment,
+  type SupabaseClientUnavailableReason,
+} from "./supabaseClientAvailability";
 import { recordPlatformObservability } from "./observability/platformObservability";
 import {
   REQUEST_TIMEOUT_POLICY_MS,
@@ -280,25 +284,6 @@ const fetchSupabaseAuthTokenWithoutTimeout = async (
   }
 };
 
-function assertEnv() {
-  const ok = isClientSupabaseEnvValid();
-  const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
-
-  if (ok && !looksLikeTargetProject) {
-    warnSupabaseEnvOnce(
-      `SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
-    );
-  }
-
-  if (!ok) {
-    const message =
-      "Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
-    warnSupabaseEnvOnce(message);
-  }
-
-  return ok;
-}
-
 function shouldLogSupabaseEnvDiagnostics(): boolean {
   if (!__DEV__) return false;
 
@@ -361,42 +346,161 @@ const supabaseFetch: typeof fetch | undefined = isWeb ? buildSupabaseFetch("web"
 
 const nativeFetch: typeof fetch = buildSupabaseFetch("native", fetch);
 
-function createMissingSupabaseClient(): SupabaseClient<Database> {
-  const err =
-    "[supabaseClient] Supabase client is unavailable: missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
-  return new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(err);
-      },
-    },
-  ) as SupabaseClient<Database>;
+const supabaseClientConfiguration = resolveSupabaseClientAvailabilityConfig({
+  publicUrl: SUPABASE_URL,
+  anonKey: SUPABASE_ANON_KEY,
+  environmentHint:
+    runtimeProcess?.env?.EXPO_PUBLIC_APP_ENV ??
+    runtimeProcess?.env?.EXPO_PUBLIC_ENVIRONMENT,
+  localDeveloperReview: runtimeProcess?.env?.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW,
+});
+
+export const isSupabaseEnvValid = supabaseClientConfiguration.status === "ready";
+
+if (supabaseClientConfiguration.status === "unavailable") {
+  warnSupabaseEnvOnce(
+    `Supabase client unavailable (${supabaseClientConfiguration.reason}).`,
+  );
 }
 
-export const isSupabaseEnvValid = assertEnv();
+type SupabaseUnavailableResult = {
+  data: null;
+  error: {
+    name: "SupabaseUnavailableError";
+    code: "SUPABASE_CLIENT_UNAVAILABLE";
+    message: string;
+  };
+};
+
+const createSupabaseUnavailableResult = (): SupabaseUnavailableResult => ({
+  data: null,
+  error: {
+    name: "SupabaseUnavailableError",
+    code: "SUPABASE_CLIENT_UNAVAILABLE",
+    message: "Сервис авторизации не настроен.",
+  },
+});
+
+function createUnavailableQueryBuilder(): Record<string, unknown> {
+  const result = Promise.resolve(createSupabaseUnavailableResult());
+  const builder: Record<string, unknown> = {
+    then: result.then.bind(result),
+    catch: result.catch.bind(result),
+    finally: result.finally.bind(result),
+  };
+  const chainMethods = [
+    "select",
+    "insert",
+    "upsert",
+    "update",
+    "delete",
+    "eq",
+    "neq",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "like",
+    "ilike",
+    "is",
+    "in",
+    "contains",
+    "containedBy",
+    "rangeGt",
+    "rangeGte",
+    "rangeLt",
+    "rangeLte",
+    "rangeAdjacent",
+    "overlaps",
+    "textSearch",
+    "match",
+    "not",
+    "or",
+    "filter",
+    "order",
+    "limit",
+    "range",
+    "abortSignal",
+    "single",
+    "maybeSingle",
+    "csv",
+    "geojson",
+    "explain",
+    "rollback",
+    "returns",
+    "throwOnError",
+  ];
+  for (const method of chainMethods) {
+    builder[method] = () => builder;
+  }
+  return builder;
+}
+
+function createUnavailableSupabaseClient(): SupabaseClient<Database> {
+  const unavailable = async () => createSupabaseUnavailableResult();
+  const query = () => createUnavailableQueryBuilder();
+  const unsubscribe = () => undefined;
+  const storageBucket = {
+    upload: unavailable,
+    update: unavailable,
+    move: unavailable,
+    copy: unavailable,
+    createSignedUrl: unavailable,
+    createSignedUrls: unavailable,
+    download: unavailable,
+    info: unavailable,
+    exists: unavailable,
+    getPublicUrl: () => ({ data: { publicUrl: "" } }),
+    remove: unavailable,
+    list: unavailable,
+  };
+  const channel = {
+    on: () => channel,
+    subscribe: () => channel,
+    unsubscribe: async () => "ok",
+    send: unavailable,
+    track: unavailable,
+    untrack: unavailable,
+  };
+  const client = {
+    auth: {
+      getSession: unavailable,
+      getUser: unavailable,
+      signOut: unavailable,
+      updateUser: unavailable,
+      refreshSession: unavailable,
+      setSession: unavailable,
+      signInWithPassword: unavailable,
+      signInWithOtp: unavailable,
+      signInAnonymously: unavailable,
+      signUp: unavailable,
+      resetPasswordForEmail: unavailable,
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe } } }),
+    },
+    from: query,
+    schema: () => ({ from: query }),
+    rpc: unavailable,
+    functions: { invoke: unavailable },
+    storage: { from: () => storageBucket },
+    channel: () => channel,
+    getChannels: () => [],
+    removeChannel: async () => "ok",
+    removeAllChannels: async () => [],
+  };
+  return client as unknown as SupabaseClient<Database>;
+}
+
 const authStorage = isWeb
   ? window.localStorage
   : isNodeRuntime
     ? undefined
     : (AsyncStorage as SupabaseAuthStorage);
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
-const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
-
-function isTruthyRuntimeFlag(value: unknown): boolean {
-  return ["1", "true", "yes", "on"].includes(String(value ?? "").trim().toLowerCase());
-}
-
-const isLocalDeveloperFullAccessAuthBypass = (() => {
-  if (!isWeb) return false;
-  try {
-    const storageValue = window.localStorage.getItem(LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY);
-    return isTruthyRuntimeFlag(storageValue);
-  } catch {
-    return false;
-  }
-})();
-const shouldBypassSupabaseAuthPersistence = isLocalDeveloperFullAccessAuthBypass;
+const SUPABASE_AUTH_STORAGE_KEY = `sb-${
+  supabaseClientConfiguration.status === "ready"
+    ? supabaseClientConfiguration.projectRef
+    : SUPABASE_PROJECT_REF
+}-auth-token`;
 
 const recordSupabaseAuthBootstrapFallback = (
   event: string,
@@ -892,9 +996,9 @@ export async function getSessionSafe(
 const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: !shouldBypassSupabaseAuthPersistence,
-      autoRefreshToken: !shouldBypassSupabaseAuthPersistence,
-      detectSessionInUrl: isWeb && !shouldBypassSupabaseAuthPersistence,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: isWeb,
       storage: authStorage,
     },
     realtime: { params: { eventsPerSecond: 5 } },
@@ -903,27 +1007,7 @@ const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
       fetch: supabaseClientFetch,
     },
   })
-  : createMissingSupabaseClient();
-
-// Public catalog reads must not inherit a stale or locally-provisioned user
-// session. Supabase attaches the current access token to every query made by
-// the main client; when that token is no longer accepted, otherwise-public
-// catalog_items/rik_items reads fail with 401 as well. Keep a deliberately
-// sessionless client for the read-only catalog transport. Database RLS remains
-// the authority for which catalog rows are public.
-const rawPublicCatalogSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
-  ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
-      global: {
-        headers: { "x-client-info": "rik-expo-app-public-catalog" },
-        fetch: supabaseClientFetch,
-      },
-    })
-  : rawSupabaseClient;
+  : createUnavailableSupabaseClient();
 
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? (createRpcRateLimitedSupabaseClient(rawSupabaseClient as unknown as RpcCallableClient, {
@@ -934,14 +1018,75 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
     }) as RateLimitedRpcClient<RpcCallableClient> as unknown as SupabaseClient<Database>)
   : rawSupabaseClient;
 
-export const publicCatalogSupabase: SupabaseClient<Database> = isSupabaseEnvValid
-  ? (createRpcRateLimitedSupabaseClient(rawPublicCatalogSupabaseClient as unknown as RpcCallableClient, {
-      context: {
-        owner: "public_catalog_supabase_client",
-        source: "supabase_client_proxy",
-      },
-    }) as RateLimitedRpcClient<RpcCallableClient> as unknown as SupabaseClient<Database>)
-  : rawPublicCatalogSupabaseClient;
+// One canonical GoTrue/Supabase client owns the session. Public catalog access
+// is still governed by RLS; it must not create a second auth client.
+export const publicCatalogSupabase: SupabaseClient<Database> = supabase;
+
+export type SupabaseClientAvailability =
+  | {
+      status: "ready";
+      environment: SupabaseClientEnvironment;
+      projectRef: string;
+      client: SupabaseClient<Database>;
+    }
+  | {
+      status: "unavailable";
+      reason: SupabaseClientUnavailableReason;
+      diagnostic: string;
+    };
+
+export const supabaseClientAvailability: SupabaseClientAvailability =
+  supabaseClientConfiguration.status === "ready"
+    ? {
+        status: "ready",
+        environment: supabaseClientConfiguration.environment,
+        projectRef: supabaseClientConfiguration.projectRef,
+        client: supabase,
+      }
+    : {
+        status: "unavailable",
+        reason: supabaseClientConfiguration.reason,
+        diagnostic: buildSupabaseUnavailableDiagnostic(supabaseClientConfiguration.reason),
+      };
+
+export type SafeSignOutResult =
+  | { status: "signed_out"; providerCalled: true }
+  | {
+      status: "unavailable";
+      providerCalled: false;
+      reason: SupabaseClientUnavailableReason;
+    }
+  | { status: "failed"; providerCalled: true; message: string };
+
+export async function signOutSafely(
+  scope: "global" | "local" | "others" = "local",
+): Promise<SafeSignOutResult> {
+  if (supabaseClientAvailability.status === "unavailable") {
+    return {
+      status: "unavailable",
+      providerCalled: false,
+      reason: supabaseClientAvailability.reason,
+    };
+  }
+
+  try {
+    const { error } = await supabaseClientAvailability.client.auth.signOut({ scope });
+    if (error) {
+      return {
+        status: "failed",
+        providerCalled: true,
+        message: error.message || "supabase_sign_out_failed",
+      };
+    }
+    return { status: "signed_out", providerCalled: true };
+  } catch (error) {
+    return {
+      status: "failed",
+      providerCalled: true,
+      message: error instanceof Error ? error.message : "supabase_sign_out_failed",
+    };
+  }
+}
 
 export async function ensureSignedIn(): Promise<boolean> {
   if (!supabase) return false;

@@ -285,12 +285,14 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     const client = read("src/lib/estimate/backendPlatform/canonicalEstimateClient.ts");
     const localBackend = read("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
     const edgeWorker = read("supabase/functions/canonical-estimate-worker/index.ts");
+    const artifactContract = read("src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts");
     expect(screen).toContain('kind: "pdf"');
     expect(screen).toContain('documentProfile: "professional_v1"');
     expect(screen).not.toContain('kind: "professional_pdf"');
     expect(client).not.toContain('kind: "pdf" | "professional_pdf" | "procurement"');
-    expect(localBackend).toContain('service: "\\u0443\\u0441\\u043b\\u0443\\u0433\\u0430"');
-    expect(edgeWorker).toContain('service: "\\u0443\\u0441\\u043b\\u0443\\u0433\\u0430"');
+    expect(localBackend).toContain("canonicalArtifactUnit as professionalPdfUnit");
+    expect(edgeWorker).toContain("canonicalArtifactUnit as professionalUnit");
+    expect(artifactContract).toContain('service: "услуга"');
     expect(screen).toContain('idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`');
     expect(screen).not.toContain("consumer-approve-professional-pdf");
     const photoOwner = screen.slice(screen.indexOf("private openPhotoRecognition"), screen.indexOf("private addPhotoMaterialRecognition"));

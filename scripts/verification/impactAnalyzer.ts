@@ -63,6 +63,25 @@ function normalize(file: string): string {
   return file.replace(/\\/g, "/").replace(/^\.\//, "");
 }
 
+function isGeneratedVerificationInput(file: string): boolean {
+  if (
+    /^\.tmp(?:[_./-]|$)/.test(file) ||
+    /^android\/\.gradle(?:[/_-]|$)/.test(file) ||
+    /^android\/(?:app\/)?build(?:[/_-]|$)/.test(file)
+  ) {
+    return true;
+  }
+  return [
+    ".release-runtime/",
+    "artifacts/",
+    "coverage/",
+    "dist/",
+    "build/",
+    "android/.gradle/",
+    "android/app/build/",
+  ].some((prefix) => file.startsWith(prefix));
+}
+
 function globRegex(glob: string): RegExp {
   const escaped = glob.replace(/[.+^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`^${escaped.replace(/\*\*/g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, ".*")}$`);
@@ -100,7 +119,9 @@ export function buildVerificationPlan(params: {
   if (!/^[0-9a-f]{40}$/i.test(params.baseSha) || !/^[0-9a-f]{40}$/i.test(params.headSha)) throw new Error("verification_plan_exact_sha_required");
   const ownership = params.map ?? readImpactOwnershipMap();
   validateImpactOwnershipMap(ownership);
-  const changedFiles = unique(params.changedFiles.map(normalize).filter(Boolean));
+  const changedFiles = unique(params.changedFiles
+    .map(normalize)
+    .filter((file) => Boolean(file) && !isGeneratedVerificationInput(file)));
   const selections: GateSelection[] = [];
   for (const gate of ownership.alwaysRunGates) {
     const enabled = (gate.level ?? []).includes(params.level);
@@ -110,7 +131,11 @@ export function buildVerificationPlan(params: {
     const matchedFiles = changedFiles.filter((file) => matches(file, domain.patterns));
     const enabledAtLevel = (domain.levels ?? []).includes(params.level);
     const selected = enabledAtLevel && matchedFiles.length > 0;
-    const suites = domain.suites.flatMap((suite) => suite === "$CHANGED_TESTS" ? matchedFiles.filter((file) => /(?:^|\/)(?:[^/]+\.)?(?:test|spec)\.[cm]?[jt]sx?$/.test(file)) : [suite]);
+    const suites = domain.suites.flatMap((suite) => suite === "$CHANGED_TESTS"
+      ? matchedFiles.filter((file) =>
+        /(?:^|\/)(?:[^/]+\.)?(?:test|spec)\.[cm]?[jt]sx?$/.test(file) &&
+        fs.existsSync(path.resolve(file)))
+      : [suite]);
     selections.push({
       gate: domain.gate,
       selected,

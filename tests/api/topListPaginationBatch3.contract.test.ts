@@ -49,13 +49,12 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(catalogModal).not.toMatch(/supabase\.(from|rpc)\(/);
     expect(catalogModal).not.toContain(".limit(60)");
 
-    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
-    expect(catalogTransport).toContain("loadCatalogItemsSearchPreviewRowsFromSupabase");
-    expect(catalogTransport).toContain(".or(");
-    expect(catalogTransport).toContain("query = query.eq(\"kind\", kind)");
-    expect(catalogTransport).toContain(".order(\"rik_code\", { ascending: true })");
-    expect(catalogTransport).toContain(".order(\"id\", { ascending: true })");
-    expect(catalogTransport).toContain(".range(page.from, page.to)");
+    const catalogTransport = read("scripts/server/stagingBffCatalogTransportReadPort.ts");
+    expect(catalogTransport).toContain('input.operation === "catalog.items.search.preview"');
+    expect(catalogTransport).toContain("from public.catalog_items");
+    expect(catalogTransport).toContain('filters.push(`kind = $${values.length}`)');
+    expect(catalogTransport).toContain("order by rik_code asc, id asc");
+    expect(catalogTransport).toContain("CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.maxRows");
 
     const assistant = read("src/features/ai/assistantActions.transport.ts");
     expect(assistant).toContain("ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS");
@@ -77,15 +76,13 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(chat).toContain(".range(page.from, page.to)");
     expect(chat).not.toContain(".limit(limit)");
 
-    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
-    expect(catalogTransport).toContain("CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {");
-    expect(catalogTransport).toContain("maxRows: 100");
-    expect(catalogTransport.match(/normalizeRikItemsSearchPreviewPage\(limit\)/g)).toHaveLength(2);
-    expect(catalogTransport).toContain("name_human.ilike.%${token}%");
-    expect(catalogTransport).toContain("rik_code.ilike.%${token}%");
-    expect(catalogTransport.match(/\.order\(\"rik_code\", \{ ascending: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
-    expect(catalogTransport.match(/\.order\(\"id\", \{ ascending: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
-    expect(catalogTransport.match(/\.range\(page\.from, page\.to\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    const catalogTransport = read("scripts/server/stagingBffCatalogTransportReadPort.ts");
+    expect(catalogTransport).toContain("CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS.maxRows");
+    expect(catalogTransport).toContain('input.operation === "catalog.search.fallback"');
+    expect(catalogTransport).toContain("const tokenFilters = buildTokenOrFilters");
+    expect(catalogTransport).toContain('buildTokenAndFilters("name_human", "rik_code"');
+    expect(catalogTransport).toContain('buildTokenOrFilters("name_human", "rik_code"');
+    expect(catalogTransport.match(/order by rik_code asc, name_human asc, id asc/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
 
   it("does not cap PDF, report, export, or detail full reads", () => {

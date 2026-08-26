@@ -185,25 +185,15 @@ describe("reload does not restore approved estimate as active draft", () => {
     })).toBe(false);
   });
 
-  it("projects the user status from the canonical DraftSession state", () => {
+  it("does not synthesize a retired legacy DraftSession for a canonical backend draft", () => {
     const draft = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_REPAIR_TEST_USER_ID,
       problemText: "road without confirmed geometry",
       repairType: "road",
       aiDraft: buildConsumerRepairAiDraft("road without confirmed geometry"),
     });
-    const session = draft.estimateDraftSession;
-    expect(session).not.toBeNull();
-    if (!session) throw new Error("TEST_DRAFT_SESSION_MISSING");
-
-    expect(buildEstimateDraftSessionTransitionStatusMessage({
-      ...draft,
-      estimateDraftSession: { ...session, status: "PARAMETERS_REQUIRED" },
-    })).toContain("обязательные параметры");
-    expect(buildEstimateDraftSessionTransitionStatusMessage({
-      ...draft,
-      estimateDraftSession: { ...session, status: "REVIEW" },
-    })).toContain("Смета рассчитана");
+    expect(draft.estimateDraftSession).toBeNull();
+    expect(buildEstimateDraftSessionTransitionStatusMessage(draft)).toBe("Состояние сметы обновлено.");
   });
 
   it("fails closed when an exact draftId is unknown", () => {

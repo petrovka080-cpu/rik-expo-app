@@ -7,6 +7,8 @@ export type LocalDeveloperFullAccessProbe = {
   releaseChannel?: string | null;
   storageValue?: string | null;
   webdriver?: boolean | null;
+  /** Server-verified capability; a browser/env/storage flag alone is never authorization. */
+  serverVerified?: boolean;
 };
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
@@ -43,6 +45,7 @@ const isFalseyFlag = (value: unknown): boolean =>
 export function isLocalDeveloperFullAccessAllowed(
   probe: LocalDeveloperFullAccessProbe,
 ): boolean {
+  if (probe.serverVerified !== true) return false;
   if (isFalseyFlag(probe.envValue) || isFalseyFlag(probe.storageValue)) {
     return false;
   }

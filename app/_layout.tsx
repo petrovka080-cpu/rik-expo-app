@@ -6,10 +6,11 @@ import "../src/lib/runtime/installExpoVectorIconWebFontFace";
 import "../src/lib/runtime/installWebFontTimeoutFallback";
 import * as ExpoLinking from "expo-linking";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, InteractionManager, Linking as RNLinking, Platform } from "react-native";
+import { AppState, DevSettings, InteractionManager, Linking as RNLinking, Platform } from "react-native";
 import {
   Stack,
   router,
+  useGlobalSearchParams,
   usePathname,
   useRootNavigationState,
   useSegments,
@@ -19,12 +20,15 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
-import { BuildIdentityMarker } from "../src/components/BuildIdentityMarker";
+import { BuildIdentityDiagnostic } from "../src/components/BuildIdentityDiagnostic";
+import { ConfigRecoveryState } from "../src/components/auth/ConfigRecoveryState";
+import { LocalDeveloperReviewBanner } from "../src/components/auth/LocalDeveloperReviewBanner";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
 import { AppQueryProvider } from "../src/lib/query/queryClient";
 import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
-import { getSessionSafe } from "../src/lib/supabaseClient";
+import { buildCurrentRouteReturnTo } from "../src/lib/authRouting";
+import { getSessionSafe, supabaseClientAvailability } from "../src/lib/supabaseClient";
 import {
   addNativeViewUrlListener,
   clearLatestNativeViewUrl,
@@ -215,6 +219,10 @@ function DeferredPlatformOfflineStatusHost({ enabled }: { enabled: boolean }) {
 function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
+  const globalRouteParams = useGlobalSearchParams() as Record<
+    string,
+    string | string[] | undefined
+  >;
   const rootNavigationState = useRootNavigationState();
   const rootNavigationReady = Boolean(rootNavigationState?.key);
   const pendingPublicRequestDeepLinkRef = useRef<PendingPublicRequestDeepLink | null>(null);
@@ -223,6 +231,9 @@ function RootLayout() {
     new Map<string, RequestEstimateLaunchTargetV1>(),
   );
   const scheduledRequestEstimateLaunchIdsRef = useRef(new Set<string>());
+  const expoLinkingProbeKeyRef = useRef<string | null>(null);
+  const nativeIntentInitialDrainStartedRef = useRef(false);
+  const reactNativeInitialUrlReadStartedRef = useRef(false);
   const pendingIntentAuthRecoveryLaunchIdRef = useRef<string | null>(null);
   const isPdfViewerRoute = pathname === "/pdf-viewer";
   const expoLinkingUrl = ExpoLinking.useLinkingURL();
@@ -233,19 +244,24 @@ function RootLayout() {
     isPdfViewerRoute,
     segments,
   });
+  const pendingIntentAuthStatus = authState.authSessionState.status;
+  const setPendingIntentAuthSessionState = authState.setAuthSessionState;
+  const loadPendingIntentRole = authState.loadRoleForCurrentSession;
 
   // AUTH-LIFECYCLE: Route-coupled auth guard / redirect decisions
   useAuthGuard({
     ...authState,
     segments,
     pathname,
+    currentReturnTo: buildCurrentRouteReturnTo(pathname, globalRouteParams),
+    authReturnTo: globalRouteParams.returnTo,
   });
 
   const recoverReadableSessionForPendingIntent = useCallback(
     (target: RequestEstimateLaunchTargetV1) => {
       const launchId = target.payload.launchId;
       if (
-        authState.authSessionState.status === "authenticated" ||
+        pendingIntentAuthStatus === "authenticated" ||
         pendingIntentAuthRecoveryLaunchIdRef.current === launchId
       ) {
         return;
@@ -263,11 +279,11 @@ function RootLayout() {
           ) {
             return;
           }
-          authState.setAuthSessionState({
+          setPendingIntentAuthSessionState({
             status: "authenticated",
             reason: "auth_event_authenticated",
           });
-          void authState.loadRoleForCurrentSession(session.user);
+          void loadPendingIntentRole(session.user);
         })
         .catch((error: unknown) => {
           recordPlatformObservability({
@@ -294,9 +310,9 @@ function RootLayout() {
         });
     },
     [
-      authState.authSessionState.status,
-      authState.loadRoleForCurrentSession,
-      authState.setAuthSessionState,
+      loadPendingIntentRole,
+      pendingIntentAuthStatus,
+      setPendingIntentAuthSessionState,
     ],
   );
 
@@ -801,6 +817,9 @@ function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
+    const probeKey = String(expoLinkingUrl ?? "");
+    if (expoLinkingProbeKeyRef.current === probeKey) return;
+    expoLinkingProbeKeyRef.current = probeKey;
     if (Platform.OS !== "android") {
       openRequestEstimateDeepLink(expoLinkingUrl, "expo_linking_url");
       return;
@@ -910,31 +929,37 @@ function RootLayout() {
     const appStateSubscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") drainLatestNativeViewUrl();
     });
-    drainLatestNativeViewUrl();
+    if (!nativeIntentInitialDrainStartedRef.current) {
+      nativeIntentInitialDrainStartedRef.current = true;
+      drainLatestNativeViewUrl();
+    }
 
-    void RNLinking.getInitialURL()
-      .then((url) => {
-        if (active) openRequestEstimateDeepLink(url, "initial_url");
-      })
-      .catch((error: unknown) => {
-        recordPlatformObservability({
-          screen: "request",
-          surface: "startup_bootstrap",
-          category: "ui",
-          event: "public_request_deep_link_read_failed",
-          result: "error",
-          errorStage: "linking_get_initial_url",
-          errorClass: error instanceof Error ? error.name : undefined,
-          errorMessage:
-            error instanceof Error
-              ? error.message
-              : String(error ?? "linking_get_initial_url_failed"),
-          fallbackUsed: true,
-          extra: {
-            owner: "root_layout",
-          },
+    if (!reactNativeInitialUrlReadStartedRef.current) {
+      reactNativeInitialUrlReadStartedRef.current = true;
+      void RNLinking.getInitialURL()
+        .then((url) => {
+          if (active) openRequestEstimateDeepLink(url, "initial_url");
+        })
+        .catch((error: unknown) => {
+          recordPlatformObservability({
+            screen: "request",
+            surface: "startup_bootstrap",
+            category: "ui",
+            event: "public_request_deep_link_read_failed",
+            result: "error",
+            errorStage: "linking_get_initial_url",
+            errorClass: error instanceof Error ? error.name : undefined,
+            errorMessage:
+              error instanceof Error
+                ? error.message
+                : String(error ?? "linking_get_initial_url_failed"),
+            fallbackUsed: true,
+            extra: {
+              owner: "root_layout",
+            },
+          });
         });
-      });
+    }
 
     return () => {
       active = false;
@@ -1041,6 +1066,30 @@ function RootLayout() {
     border: "#1F2A37",
   };
 
+  if (supabaseClientAvailability.status === "unavailable") {
+    const retryConfiguration = () => {
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        window.location.reload();
+        return;
+      }
+      DevSettings.reload();
+    };
+    const goBack = () => {
+      if (router.canGoBack()) router.back();
+    };
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
+          <ConfigRecoveryState
+            diagnostic={supabaseClientAvailability.diagnostic}
+            onBack={goBack}
+            onRetry={retryConfiguration}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <AppQueryProvider>
       <SafeAreaProvider>
@@ -1050,6 +1099,9 @@ function RootLayout() {
               style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
+              <LocalDeveloperReviewBanner
+                authenticatedRole={authState.authenticatedRole}
+              />
               <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.appRoot} />
               {authState.sessionLoaded &&
               authState.authSessionState.status === "authenticated" &&
@@ -1058,7 +1110,7 @@ function RootLayout() {
                   marker={ROUTE_PROOF_MARKERS.authenticatedSession}
                 />
               ) : null}
-              <BuildIdentityMarker />
+              <BuildIdentityDiagnostic />
               <DeferredPlatformOfflineStatusHost
                 enabled={
                   authState.sessionLoaded &&

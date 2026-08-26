@@ -17,6 +17,31 @@ describe("release pipeline source tree hash", () => {
     const files = computeReleaseFingerprintPayloads().proofHarnessHash.files.map((file) => file.path);
     expect(files).toContain("scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts");
     expect(files).toContain("tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts");
+    expect(files).toContain("scripts/release/android/routeToScreenAck.ts");
+    expect(files).toContain(
+      "tests/e2e/androidOfficialRouteToScreenAck.contract.test.ts",
+    );
     expect(files.some((file) => file.startsWith("artifacts/"))).toBe(false);
+  });
+
+  it("binds untracked canonical source while excluding generated Android trees", () => {
+    const payloads = computeReleaseFingerprintPayloads();
+    const productFiles = payloads.productSourceHash.files.map(
+      (file) => file.path,
+    );
+    const nativeFiles = payloads.nativeBuildHash.files.map(
+      (file) => file.path,
+    );
+
+    expect(productFiles).toContain(
+      "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+    );
+    expect(
+      nativeFiles.some(
+        (file) =>
+          file.startsWith("android/.gradle-") ||
+          file.startsWith("android/app/build-"),
+      ),
+    ).toBe(false);
   });
 });

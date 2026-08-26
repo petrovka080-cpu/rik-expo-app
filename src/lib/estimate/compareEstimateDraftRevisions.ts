@@ -14,6 +14,10 @@ function rowQuantity(row: ProfessionalBoqRow | undefined): number | null {
   return row && Number.isFinite(row.quantity) ? row.quantity : null;
 }
 
+function rowUnitPrice(row: ProfessionalBoqRow | undefined): number | null {
+  return row && row.unitPrice != null && Number.isFinite(row.unitPrice) ? row.unitPrice : null;
+}
+
 export function compareEstimateDraftRevisions(
   previous: EstimateDraftRevision,
   next: EstimateDraftRevision,
@@ -35,13 +39,22 @@ export function compareEstimateDraftRevisions(
       const after = nextRows.get(rowId);
       const beforeQuantity = rowQuantity(before);
       const afterQuantity = rowQuantity(after);
-      if (valuesEqual(beforeQuantity, afterQuantity)) return null;
+      const beforeUnitPrice = rowUnitPrice(before);
+      const afterUnitPrice = rowUnitPrice(after);
+      const quantityChanged = !valuesEqual(beforeQuantity, afterQuantity);
+      const unitPriceChanged = !valuesEqual(beforeUnitPrice, afterUnitPrice);
+      if (!quantityChanged && !unitPriceChanged) return null;
       return {
         rowId,
         titleRu: after?.titleRu ?? before?.titleRu ?? rowId,
         beforeQuantity,
         afterQuantity,
         unit: after?.unit ?? before?.unit ?? "",
+        ...(unitPriceChanged ? {
+          beforeUnitPrice,
+          afterUnitPrice,
+          currency: after?.currency ?? before?.currency ?? "",
+        } : {}),
       };
     })
     .filter((row): row is EstimateDraftRevisionDiff["changedRows"][number] => Boolean(row));

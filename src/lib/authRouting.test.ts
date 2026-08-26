@@ -1,4 +1,10 @@
-import { POST_AUTH_ENTRY_ROUTE } from "./authRouting";
+import {
+  POST_AUTH_ENTRY_ROUTE,
+  buildAuthLoginHref,
+  buildCurrentRouteReturnTo,
+  normalizePostAuthReturnTo,
+  resolvePostAuthReturnTo,
+} from "./authRouting";
 import {
   resolveRouteFromAuth,
   shouldApplyLocalDeveloperFullAccess,
@@ -24,6 +30,33 @@ function resolveWith(params: {
 describe("authRouting", () => {
   it("keeps profile as the unified post-auth entry route", () => {
     expect(POST_AUTH_ENTRY_ROUTE).toBe("/(tabs)/profile");
+  });
+
+  it("preserves an internal request deep link through login", () => {
+    const returnTo = buildCurrentRouteReturnTo("/request", {
+      canonicalRevisionId: "11111111-1111-4111-8111-111111111111",
+    });
+    expect(returnTo).toBe(
+      "/request?canonicalRevisionId=11111111-1111-4111-8111-111111111111",
+    );
+    expect(buildAuthLoginHref(returnTo)).toEqual({
+      pathname: "/auth/login",
+      params: { returnTo },
+    });
+    expect(resolvePostAuthReturnTo(returnTo)).toBe(returnTo);
+  });
+
+  it("rejects external, auth-loop, malformed, and protocol-relative return targets", () => {
+    for (const candidate of [
+      "https://evil.invalid/request",
+      "//evil.invalid/request",
+      "/auth/login?returnTo=/request",
+      "/%2F%2Fevil.invalid/request",
+      "/request\\evil",
+    ]) {
+      expect(normalizePostAuthReturnTo(candidate)).toBeNull();
+      expect(resolvePostAuthReturnTo(candidate)).toBe(POST_AUTH_ENTRY_ROUTE);
+    }
   });
 
   it("redirects authenticated auth-stack sessions to the post-auth entry route", () => {

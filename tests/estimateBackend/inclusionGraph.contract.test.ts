@@ -39,8 +39,10 @@ describe("canonical backend InclusionGraph", () => {
 
   it("routes the local HTTP runtime through the same shared fail-closed evaluator as the canonical worker", () => {
     const source = readFileSync("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts", "utf8");
-    expect(source).toContain('import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph"');
-    expect(source).toContain("evaluateInclusionGraph(resource.inclusion_ast as JsonRecord, parameters)");
+    const compiler = readFileSync("src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts", "utf8");
+    expect(source).toContain("compileCanonicalEstimateCore");
+    expect(compiler).toContain('import { evaluateInclusionGraph } from "./inclusionGraph"');
+    expect(compiler).toContain("evaluateInclusionGraph(resource.inclusion_ast, parameters)");
     expect(source).not.toContain("function evaluateCondition(");
   });
 });

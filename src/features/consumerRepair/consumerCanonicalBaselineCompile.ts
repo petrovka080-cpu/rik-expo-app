@@ -26,6 +26,30 @@ type CanonicalBaselinePlan = {
   primaryMeasureParameterId: string;
 };
 
+type PromptParameterRule = {
+  parameterIds: readonly string[];
+  pattern: RegExp;
+};
+
+const PROMPT_PARAMETER_RULES: readonly PromptParameterRule[] = [
+  {
+    parameterIds: ["route_length_m", "cable_length_m"],
+    pattern: /(?:длин[а-яё]*\s+)?(?:кабельн[а-яё]*\s+)?трасс[а-яё]*\s*(\d+(?:[,.]\d+)?)\s*(?:м(?:етр[а-яё]*)?)(?![\p{L}\p{N}])/iu,
+  },
+  {
+    parameterIds: ["outlet_count"],
+    pattern: /(\d+(?:[,.]\d+)?)\s*розет[а-яё]*/iu,
+  },
+  {
+    parameterIds: ["switch_count"],
+    pattern: /(\d+(?:[,.]\d+)?)\s*выключател[а-яё]*/iu,
+  },
+  {
+    parameterIds: ["lighting_point_count"],
+    pattern: /(\d+(?:[,.]\d+)?)\s*(?:точ[а-яё]*\s+)?освещен[а-яё]*/iu,
+  },
+] as const;
+
 const DERIVED_QUANTITY_PARAMETER = /(?:^quantity_|^unit_price_|(?:^|_)(?:compacted_volume|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(?:_|$))/iu;
 const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "USER_MEASURED",
@@ -120,6 +144,27 @@ function baselineValue(
   return undefined;
 }
 
+function promptOwnedNamedParameters(
+  schema: CanonicalEstimateCatalogItem["parameterSchema"],
+  prompt: string,
+): Record<string, CanonicalEstimateParameterInputValue> {
+  const byId = new Map(schema.map((parameter) => [parameter.parameterId, parameter]));
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const rule of PROMPT_PARAMETER_RULES) {
+    const parameterId = rule.parameterIds.find((candidate) => byId.has(candidate));
+    if (!parameterId) continue;
+    const parameter = byId.get(parameterId)!;
+    if ((parameter.valueType !== "decimal" && parameter.valueType !== "integer")
+      || (parameter.visibilityRole != null && parameter.visibilityRole !== "USER_INPUT")
+      || (parameter.valueSourceRole != null
+        && !DIRECT_USER_QUANTITY_SOURCE.has(String(parameter.valueSourceRole)))) continue;
+    const match = rule.pattern.exec(prompt);
+    if (!match) continue;
+    values[parameterId] = match[1].replace(",", ".");
+  }
+  return values;
+}
+
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
@@ -143,6 +188,7 @@ export function buildCanonicalBaselinePlan(input: {
       userQuantityParameterId = target.parameter.parameterId;
     }
   }
+  Object.assign(submittedInputs, promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt));
   const primaryMeasureParameterId = userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")

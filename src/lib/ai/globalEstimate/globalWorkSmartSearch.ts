@@ -8,6 +8,7 @@ import {
 export type GlobalWorkSmartSearchMatchKind =
   | "exact_alias"
   | "exact_title"
+  | "all_tokens"
   | "phrase"
   | "token_overlap"
   | "category_hint";
@@ -22,6 +23,8 @@ export type GlobalWorkSmartSearchSuggestion = {
   matchKind: GlobalWorkSmartSearchMatchKind;
   matchedTokens: string[];
   visibleText: string;
+  estimateReady?: boolean;
+  nonselectableReasonRu?: string | null;
 };
 
 export type GlobalSelectedWorkBinding = {
@@ -35,8 +38,9 @@ export type GlobalSelectedWorkBinding = {
 };
 
 const SMART_SEARCH_MATCH_KIND_RANK: Record<GlobalWorkSmartSearchMatchKind, number> = {
-  exact_alias: 5,
-  exact_title: 4,
+  exact_alias: 6,
+  exact_title: 5,
+  all_tokens: 4,
   phrase: 3,
   token_overlap: 2,
   category_hint: 2,
@@ -245,7 +249,10 @@ function tokenizeSmartSearch(value: string): string[] {
   return unique(
     normalizeSmartSearchText(value)
       .split(" ")
-      .filter((token) => token.length > 1 && !/^\d+$/.test(token) && !STOP_TOKENS.has(token)),
+      // Sizes such as 3x2.5 and 110 are compiler parameters, not catalog
+      // identity tokens. The raw prompt is preserved by the caller for the
+      // parameter extractor after the user selects a canonical work.
+      .filter((token) => token.length > 1 && !/^\d/.test(token) && !STOP_TOKENS.has(token)),
   );
 }
 
@@ -283,6 +290,9 @@ function expandedQueryTokens(input: string): string[] {
   if (/\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442|\bfoundations?\b/.test(normalized)) {
     expansions.push("\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442", "foundation", "strip", "\u0431\u0435\u0442\u043e\u043d");
   }
+  if (/\u0441\u0432\u0430(?:\u0438|\u0439|\u0439\u043d)|\bpiles?\b/.test(normalized)) {
+    expansions.push("\u0441\u0432\u0430\u0438", "\u0441\u0432\u0430\u0439\u043d\u043e\u0435", "\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442", "pile", "foundation");
+  }
   if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|\bwaterproof(?:ing)?\b/.test(normalized)) {
     expansions.push("\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f", "waterproofing", "membrane");
   }
@@ -312,6 +322,10 @@ function queryCategoryHints(normalizedInput: string): Set<GlobalWorkCategory> {
     hints.add("concrete");
     hints.add("waterproofing");
   }
+  if (/\u0441\u0432\u0430(?:\u0438|\u0439|\u0439\u043d)|\bpiles?\b/.test(normalizedInput)) {
+    hints.add("foundation");
+    hints.add("concrete");
+  }
   if (/\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|\bwaterproof(?:ing)?\b/.test(normalizedInput)) {
     hints.add("waterproofing");
   }
@@ -332,23 +346,42 @@ function queryCategoryHints(normalizedInput: string): Set<GlobalWorkCategory> {
 }
 
 function intentWorkKeyBoost(definition: GlobalWorkTypeDefinition, normalizedInput: string, categoryHints: Set<GlobalWorkCategory>): number {
+  if (/\u0441\u0432\u0430(?:\u0438|\u0439|\u0439\u043d)|\bpiles?\b/.test(normalizedInput)) {
+    if (definition.workKey === "foundation_pile_field") return 0.11;
+    if (/pile|\u0441\u0432\u0430/.test(`${definition.workKey} ${normalizeSmartSearchText(definition.names.ru ?? "")}`)) return 0.06;
+  }
+  if (/\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436/.test(normalizedInput) && /\u0430\u0441\u0444\u0430\u043b\u044c\u0442/.test(normalizedInput)) {
+    if (definition.workKey === "asphalt_demolition") return 0.11;
+    if (definition.workKey === "asphalt_paving") return -0.08;
+  }
+  if (/\u043a\u0430\u0431\u0435\u043b/.test(normalizedInput)) {
+    if (definition.workKey === "cable_pulling") return 0.11;
+    if (definition.workKey === "underground_cable_line") return 0.09;
+    if (definition.workKey === "cable_testing") return 0.04;
+  }
+  if (/\u0442\u0440\u0443\u0431/.test(normalizedInput)) {
+    if (/\b110\b/.test(normalizedInput) && definition.workKey === "sewer_pipe_installation") return 0.11;
+    if (definition.workKey === "water_pipe_installation") return 0.09;
+    if (definition.workKey === "sewer_pipe_installation") return 0.08;
+    if (definition.workKey === "pipe_replacement") return 0.03;
+  }
   if (categoryHints.has("electrical") && definition.category === "electrical") {
     if (/(battery|solar|chp)|\u0430\u043a\u043a\u0443\u043c\u0443\u043b|\u0441\u043e\u043b\u043d\u0435\u0447|\u043f\u0430\u043d\u0435\u043b/.test(normalizedInput)) {
       return 0;
     }
     const commonElectricalPriority = new Map<string, number>([
-      ["conduit_installation", 0.12],
-      ["cable_ladder_installation", 0.12],
-      ["cable_tray_installation", 0.12],
-      ["cable_laying", 0.12],
-      ["socket_installation", 0.11],
-      ["switch_installation", 0.1],
-      ["lighting_installation", 0.1],
-      ["distribution_panel_installation", 0.09],
-      ["panel_replacement", 0.09],
-      ["electrical_rough_in", 0.08],
-      ["electrical_basic", 0.07],
-      ["grounding_installation", 0.06],
+      ["conduit_installation", 0.06],
+      ["cable_ladder_installation", 0.06],
+      ["cable_tray_installation", 0.06],
+      ["cable_laying", 0.06],
+      ["socket_installation", 0.055],
+      ["switch_installation", 0.05],
+      ["lighting_installation", 0.05],
+      ["distribution_panel_installation", 0.045],
+      ["panel_replacement", 0.045],
+      ["electrical_rough_in", 0.04],
+      ["electrical_basic", 0.035],
+      ["grounding_installation", 0.03],
     ]);
     if (/battery|solar/.test(definition.workKey)) return -0.12;
     return commonElectricalPriority.get(definition.workKey) ?? 0;
@@ -399,6 +432,15 @@ type CandidateSearchIndex = {
 
 const CANDIDATE_SEARCH_INDEX = new Map<string, CandidateSearchIndex>();
 
+const SMART_SEARCH_SEMANTIC_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
+  foundation_pile_field: ["\u0441\u0432\u0430\u0438", "\u0441\u0432\u0430\u044f", "\u0441\u0432\u0430\u0439\u043d\u043e\u0435 \u043f\u043e\u043b\u0435", "\u0441\u0432\u0430\u0439\u043d\u044b\u0439 \u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442"],
+  asphalt_demolition: ["\u0430\u0441\u0444\u0430\u043b\u044c\u0442 \u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436", "\u0440\u0430\u0437\u0431\u043e\u0440\u043a\u0430 \u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0430"],
+  cable_pulling: ["\u043a\u0430\u0431\u0435\u043b\u044c", "\u043f\u0440\u043e\u043a\u043b\u0430\u0434\u043a\u0430 \u043a\u0430\u0431\u0435\u043b\u044f", "\u043f\u0440\u043e\u0442\u044f\u0436\u043a\u0430 \u043a\u0430\u0431\u0435\u043b\u044f"],
+  underground_cable_line: ["\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u0430\u044f \u043b\u0438\u043d\u0438\u044f", "\u043a\u0430\u0431\u0435\u043b\u044c \u0432 \u0442\u0440\u0430\u043d\u0448\u0435\u0435"],
+  water_pipe_installation: ["\u0442\u0440\u0443\u0431\u0430", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0442\u0440\u0443\u0431\u044b", "\u0432\u043e\u0434\u043e\u043f\u0440\u043e\u0432\u043e\u0434\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430"],
+  sewer_pipe_installation: ["\u0442\u0440\u0443\u0431\u0430 110", "\u043a\u0430\u043d\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u043e\u043d\u043d\u0430\u044f \u0442\u0440\u0443\u0431\u0430"],
+};
+
 function candidateSearchText(definition: GlobalWorkTypeDefinition): string {
   return [
     definition.workKey.replace(/_/g, " "),
@@ -407,6 +449,7 @@ function candidateSearchText(definition: GlobalWorkTypeDefinition): string {
     visibleGlobalWorkTitleRu(definition),
     definition.names.en,
     ...aliasesForWork(definition.workKey),
+    ...(SMART_SEARCH_SEMANTIC_SYNONYMS[definition.workKey] ?? []),
   ]
     .filter(Boolean)
     .map((value) => normalizeSmartSearchText(String(value)))
@@ -471,11 +514,14 @@ function scoreDefinition(params: {
   definition: GlobalWorkTypeDefinition;
   normalizedInput: string;
   queryTokens: string[];
+  literalQueryTokens: string[];
   categoryHints: Set<GlobalWorkCategory>;
 }): Omit<GlobalWorkSmartSearchSuggestion, "visibleText"> | null {
-  const { definition, normalizedInput, queryTokens, categoryHints } = params;
+  const { definition, normalizedInput, queryTokens, literalQueryTokens, categoryHints } = params;
   const index = candidateSearchIndex(definition);
   const matchedTokens = queryTokens.filter((token) => tokenMatches(token, index.candidateTokens));
+  const matchedLiteralTokens = literalQueryTokens.filter((token) => tokenMatches(token, index.candidateTokens));
+  const allLiteralTokens = literalQueryTokens.length > 0 && matchedLiteralTokens.length === literalQueryTokens.length;
   const exactAlias = index.aliases.some((alias) => alias === normalizedInput);
   const exactTitle = index.normalizedTitle === normalizedInput;
   const phrase =
@@ -493,16 +539,21 @@ function scoreDefinition(params: {
     ? "exact_alias"
     : exactTitle
       ? "exact_title"
-      : phrase
-        ? "phrase"
-        : categoryHint
-          ? "category_hint"
-          : "token_overlap";
-  const categoryBoost = categoryHints.has(definition.category) ? 0.2 : 0;
+      : allLiteralTokens
+        ? "all_tokens"
+        : phrase
+          ? "phrase"
+          : categoryHint
+            ? "category_hint"
+            : "token_overlap";
+  const categoryBoost = categoryHints.has(definition.category) ? 0.06 : 0;
   const workKeyBoost = intentWorkKeyBoost(definition, normalizedInput, categoryHints);
   const score = Math.min(
-    1,
-    (exactAlias ? 0.99 : exactTitle ? 0.98 : phrase ? 0.82 : categoryHint ? 0.76 : 0.52) + coverage * 0.18 + categoryBoost + workKeyBoost,
+    0.99,
+    (exactAlias ? 0.9 : exactTitle ? 0.89 : allLiteralTokens ? 0.7 : phrase ? 0.62 : categoryHint ? 0.5 : 0.38) +
+      coverage * 0.12 +
+      categoryBoost +
+      workKeyBoost,
   );
   return {
     workKey: definition.workKey,
@@ -522,12 +573,13 @@ export function searchGlobalWorkSmartSuggestions(input: {
 }): GlobalWorkSmartSearchSuggestion[] {
   const normalizedInput = normalizeSmartSearchText(input.query);
   if (normalizedInput.length < 2) return [];
+  const literalQueryTokens = tokenizeSmartSearch(input.query);
   const queryTokens = expandedQueryTokens(input.query);
   const categoryHints = queryCategoryHints(normalizedInput);
   const limit = Math.max(3, Math.min(input.limit ?? 8, 8));
 
   const scored = GLOBAL_WORK_TYPE_DEFINITIONS
-    .map((definition) => scoreDefinition({ definition, normalizedInput, queryTokens, categoryHints }))
+    .map((definition) => scoreDefinition({ definition, normalizedInput, queryTokens, literalQueryTokens, categoryHints }))
     .filter((suggestion): suggestion is Omit<GlobalWorkSmartSearchSuggestion, "visibleText"> => suggestion !== null)
     .sort((left, right) => {
       const rightRank = SMART_SEARCH_MATCH_KIND_RANK[right.matchKind];

@@ -1,4 +1,5 @@
 import type { GlobalCatalogInventoryRowV1 } from "../../../src/lib/estimate/v4/domainFactory/globalCatalogInventoryV1";
+import { waterMaterialVariantLabelRuR542 } from "../../../src/lib/estimate/backendPlatform/russianTechnologyTitleR542";
 
 export type WaterR5Complexity = "L1" | "L2" | "L3" | "L4" | "L5";
 export type WaterR5RowType = "material" | "labor" | "equipment" | "service" | "waste" | "other";
@@ -1309,7 +1310,7 @@ export function buildWaterR5ProfessionalPlan(row: GlobalCatalogInventoryRowV1, p
           key: `${component.key}:${action.key}${variantKey}`,
           section: action.section,
           category: action.category,
-          titleRu: `${action.titlePrefix}: ${component.titleRu}${variant ? ` — ${variant}` : ""}`,
+          titleRu: `${action.titlePrefix}: ${component.titleRu}${variant ? ` — ${waterMaterialVariantLabelRuR542(variant)}` : ""}`,
           rowType: action.rowType,
           unitId,
           expression,

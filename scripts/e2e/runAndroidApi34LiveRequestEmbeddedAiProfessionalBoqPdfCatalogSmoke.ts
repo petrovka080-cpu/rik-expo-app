@@ -10,6 +10,12 @@ import {
 } from "./androidDeepLinkLaunchContract";
 import { ensureAndroidApi34DeviceReady } from "./ensureAndroidApi34DeviceReady";
 import { verifyProofLineage } from "../release/proofLineageVerifier";
+import {
+  OFFICIAL_ROUTE_TO_SCREEN_ACK_CASES,
+  collectRouteToScreenLifecycleEvidence,
+  isWarmAndroidActivityDelivery,
+  type RouteToScreenLifecycleEvidence,
+} from "../release/android/routeToScreenAck";
 
 const ARTIFACT_DIR = path.join(
   process.cwd(),
@@ -22,11 +28,10 @@ const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
 const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEOUT_MS ?? "300000");
-const CASE_UI_SETTLE_MS = 40_000;
 const CASE_UI_POLL_MS = 8_000;
 const CASE_UI_MAX_POLLS = 3;
-const REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS = CASE_UI_SETTLE_MS;
 const PROMPT_PROBE_POLL_MS = 4_000;
+const ROUTE_TO_SCREEN_LIFECYCLE_TIMEOUT_MS = 35_000;
 const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
@@ -55,6 +60,12 @@ type AndroidCaseResult = {
   backendRows: string[];
   backendPassed: boolean;
   launchPassed: boolean;
+  promptLaunchId: string;
+  estimateLaunchId: string;
+  promptWarmDelivery: boolean;
+  estimateWarmDelivery: boolean;
+  promptLifecycle: RouteToScreenLifecycleEvidence;
+  estimateLifecycle: RouteToScreenLifecycleEvidence;
   promptProbeVisible: boolean;
   promptProbeDiagnostics: {
     ok: boolean;
@@ -78,60 +89,45 @@ type AndroidCaseResult = {
   failures: string[];
 };
 
-const CASES: AndroidCase[] = [
-  {
-    caseId: "android_request_electrical_cable_outlets_switches",
-    route: "/request",
-    context: "request",
-    prompt: "электрика под ключ 100 кв метров площадь длина трассы 500 метров 10 розеток 10 выключателей 10 точек освещения",
+const CASE_VALIDATION: Record<
+  string,
+  Pick<AndroidCase, "expectedWorkKeys" | "requiredTokens" | "forbiddenTokens">
+> = {
+  android_request_electrical_cable_outlets_switches: {
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "розет", "выключател", "провер"],
-    uiContract: {
-      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
-      representativeTokens: ["кабель", "розет"],
-    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
-  {
-    caseId: "android_request_roof_waterproofing",
-    route: "/request",
-    context: "request",
-    prompt: "гидроизоляция крыши 100 кв м",
+  android_request_roof_waterproofing: {
     expectedWorkKeys: ["roof_waterproofing"],
     requiredTokens: ["кров", "праймер", "гидроизоля", "примыкан"],
-    uiContract: {
-      requiredTestIds: ["request-estimate-summary-card", "request-estimate-items-editor", "consumer-estimate-make-pdf"],
-      representativeTokens: ["кров", "гидроизоля"],
-    },
     forbiddenTokens: ["ванн", "сануз", "душев"],
   },
-  {
-    caseId: "android_foreman_paving_stone",
-    route: "/ai",
-    context: "foreman",
-    prompt: "смета на укладку брусчатки на 587 кв м",
-    expectedWorkKeys: ["dynamic_paving_landscaping_estimate", "paving_stone_laying"],
+  android_foreman_paving_stone: {
+    expectedWorkKeys: [
+      "dynamic_paving_landscaping_estimate",
+      "paving_stone_laying",
+    ],
     requiredTokens: ["брусчат", "геотекст", "щеб", "уклад"],
-    uiContract: {
-      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
-      representativeTokens: ["брусчат"],
-    },
     forbiddenTokens: ["кирпич", "кладоч"],
   },
-  {
-    caseId: "android_foreman_house_electrical",
-    route: "/ai",
-    context: "foreman",
-    prompt: "смета на электромонтаж дома 180 кв м",
+  android_foreman_house_electrical: {
     expectedWorkKeys: ["electrical_area_installation", "socket_installation"],
     requiredTokens: ["кабель", "щит", "розет", "провер"],
-    uiContract: {
-      requiredTestIds: ["ai-estimate-table", "ai-estimate-visible-lines", "ai-estimate-make-pdf"],
-      representativeTokens: ["кабель", "щит"],
-    },
     forbiddenTokens: ["кирпич", "кладоч", "masonry wall"],
   },
-];
+};
+
+const CASES: AndroidCase[] = OFFICIAL_ROUTE_TO_SCREEN_ACK_CASES.map(
+  (testCase) => ({
+    ...testCase,
+    ...CASE_VALIDATION[testCase.caseId]!,
+    uiContract: {
+      requiredTestIds: [...testCase.requiredTestIds],
+      representativeTokens: [...testCase.representativeTokens],
+    },
+  }),
+);
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
@@ -224,6 +220,19 @@ function verifyExistingAndroidEvidenceReadOnly(): void {
     artifact.fake_green_claimed !== false
   ) {
     throw new Error("ANDROID_API34_LIVE_BOQ_EXISTING_EVIDENCE_NOT_GREEN");
+  }
+  const routeToScreenAck = artifact.route_to_screen_ack;
+  if (
+    !routeToScreenAck ||
+    typeof routeToScreenAck !== "object" ||
+    Array.isArray(routeToScreenAck) ||
+    (routeToScreenAck as Record<string, unknown>).status !==
+      "GREEN_ANDROID_ROUTE_TO_SCREEN_ACK" ||
+    (routeToScreenAck as Record<string, unknown>).expected_cases !==
+      CASES.length ||
+    (routeToScreenAck as Record<string, unknown>).passed_cases !== CASES.length
+  ) {
+    throw new Error("ANDROID_API34_ROUTE_TO_SCREEN_ACK_EVIDENCE_NOT_GREEN");
   }
 }
 
@@ -382,17 +391,48 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   return { reachable: false, started: true };
 }
 
-function deepLinkFor(testCase: AndroidCase): string {
+function deepLinkFor(testCase: AndroidCase, launchId: string): string {
   return buildAndroidRouteDeepLink({
     route: testCase.route,
     prompt: testCase.prompt,
     context: testCase.context === "foreman" ? "foreman" : undefined,
+    launchId,
     automaticParam: testCase.route === "/request" ? "autoPrepare" : "autoSend",
   });
 }
 
 function launchDeepLink(adbPath: string, deviceId: string, uri: string): { ok: boolean; output: string } {
   return runText(adbPath, buildAndroidDeepLinkLaunchArgs(deviceId, uri, PACKAGE_NAME), 20_000);
+}
+
+function readRouteToScreenLifecycle(
+  adbPath: string,
+  deviceId: string,
+  launchId: string,
+): RouteToScreenLifecycleEvidence {
+  const logcat = runText(
+    adbPath,
+    ["-s", deviceId, "logcat", "-d", "-v", "time", "ReactNativeJS:I", "*:S"],
+    20_000,
+  );
+  return collectRouteToScreenLifecycleEvidence(
+    logcat.ok ? logcat.output : "",
+    launchId,
+  );
+}
+
+async function waitForRouteToScreenLifecycle(
+  adbPath: string,
+  deviceId: string,
+  launchId: string,
+): Promise<RouteToScreenLifecycleEvidence> {
+  const deadline = Date.now() + ROUTE_TO_SCREEN_LIFECYCLE_TIMEOUT_MS;
+  let evidence = readRouteToScreenLifecycle(adbPath, deviceId, launchId);
+  while (!evidence.acknowledged && Date.now() < deadline) {
+    await wait(1_500);
+    evidence = readRouteToScreenLifecycle(adbPath, deviceId, launchId);
+  }
+  return evidence;
 }
 
 function launchDevClientBundle(adbPath: string, deviceId: string): { ok: boolean; output: string } {
@@ -544,7 +584,6 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
     }
     if (
       lastText.includes("ROUTE_PROOF_APP_ROOT_READY") ||
-      lastText.includes("BUILD_IDENTITY") ||
       lastText.includes("auth.login.screen") ||
       lastText.includes("com.facebook.react.views") ||
       lastText.includes("ai.assistant") ||
@@ -565,10 +604,8 @@ async function waitForCaseUi(adbPath: string, deviceId: string, testCase: Androi
     ...testCase.uiContract.requiredTestIds,
     ...testCase.uiContract.representativeTokens,
   ];
-  // uiautomator dump temporarily owns Android's UI thread. Let navigation and
-  // estimate rendering settle first, then probe sparsely so the proof itself
-  // cannot starve the route transition it is observing.
-  await wait(CASE_UI_SETTLE_MS);
+  // The exact lifecycle ACK is the readiness barrier. UI polling below proves
+  // the semantic payload; it is not a timer-based substitute for readiness.
   for (let attempt = 0; attempt < CASE_UI_MAX_POLLS; attempt += 1) {
     const dumped = dumpUiText(adbPath, deviceId);
     if (!dumped.ok) {
@@ -671,28 +708,21 @@ function validateBackend(testCase: AndroidCase): {
 
 async function runAndroidCase(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<AndroidCaseResult> {
   const backend = validateBackend(testCase);
-  const uri = deepLinkFor(testCase);
-  const probeUrl = new URL(uri);
+  const caseRunId = `android-official:${Date.now().toString(36)}:${testCase.caseId}`;
+  const promptLaunchId = `${caseRunId}:prompt`;
+  const estimateLaunchId = `${caseRunId}:estimate`;
+  const uri = deepLinkFor(testCase, estimateLaunchId);
+  const probeUrl = new URL(deepLinkFor(testCase, promptLaunchId));
   probeUrl.searchParams.delete(testCase.route === "/request" ? "autoPrepare" : "autoSend");
   const probeLaunch = launchDeepLink(adbPath, deviceId, probeUrl.toString());
+  const promptLifecycle = await waitForRouteToScreenLifecycle(
+    adbPath,
+    deviceId,
+    promptLaunchId,
+  );
   let promptProbeVisible = false;
   const promptProbeDiagnostics: AndroidCaseResult["promptProbeDiagnostics"] = [];
   const promptProbeStartedAt = Date.now();
-  // A preceding 80+ row request can still be yielding the JS thread when the
-  // next deep link arrives. UIAutomator accessibility dumps synchronously walk
-  // that same native tree, so first leave a bounded quiet window for React
-  // Native to commit the new launch instead of starving it with proof reads.
-  if (testCase.route === "/request") {
-    await wait(REQUEST_PROMPT_PROBE_QUIET_SETTLE_MS);
-    for (let scroll = 0; scroll < 3; scroll += 1) {
-      runText(
-        adbPath,
-        ["-s", deviceId, "shell", "input", "swipe", ...viewportSwipeArgs(adbPath, deviceId, "down", 400)],
-        10_000,
-      );
-      await wait(250);
-    }
-  }
   const promptProbeDeadline = Date.now() + 30_000;
   while (Date.now() < promptProbeDeadline && !promptProbeVisible) {
     const probeDump = dumpUiText(adbPath, deviceId);
@@ -723,6 +753,11 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     ? null
     : captureUiDump(adbPath, deviceId, failedPromptProbeArtifactId).path;
   const launch = launchDeepLink(adbPath, deviceId, uri);
+  const estimateLifecycle = await waitForRouteToScreenLifecycle(
+    adbPath,
+    deviceId,
+    estimateLaunchId,
+  );
   const dumpsys = runText(adbPath, ["-s", deviceId, "shell", "dumpsys", "activity"], 20_000);
   const dumpsysIntentReceived =
     dumpsys.ok &&
@@ -748,8 +783,12 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
   const failures = [
     ...backend.failures,
     ...(probeLaunch.ok ? [] : [`prompt_probe_launch_failed:${probeLaunch.output.slice(0, 300)}`]),
+    ...(isWarmAndroidActivityDelivery(probeLaunch.output) ? [] : ["prompt_launch_not_warm_delivery"]),
+    ...(promptLifecycle.acknowledged ? [] : ["prompt_route_to_screen_lifecycle_red"]),
     ...(promptProbeVisible ? [] : ["app_visible_prompt_probe_missing"]),
     ...(launch.ok ? [] : [`launch_failed:${launch.output.slice(0, 300)}`]),
+    ...(isWarmAndroidActivityDelivery(launch.output) ? [] : ["estimate_launch_not_warm_delivery"]),
+    ...(estimateLifecycle.acknowledged ? [] : ["estimate_route_to_screen_lifecycle_red"]),
     ...(dumpsysIntentReceived ? [] : ["dumpsys_full_intent_missing"]),
     ...(missingTestIds.length === 0 ? [] : [`ui_semantic_contract_missing:${missingTestIds.join(",")}`]),
     ...(missingRepresentativeTokens.length === 0 ? [] : [`ui_representative_rows_missing:${missingRepresentativeTokens.join(",")}`]),
@@ -766,6 +805,12 @@ async function runAndroidCase(adbPath: string, deviceId: string, testCase: Andro
     backendRows: backend.rows,
     backendPassed: backend.failures.length === 0,
     launchPassed: launch.ok,
+    promptLaunchId,
+    estimateLaunchId,
+    promptWarmDelivery: isWarmAndroidActivityDelivery(probeLaunch.output),
+    estimateWarmDelivery: isWarmAndroidActivityDelivery(launch.output),
+    promptLifecycle,
+    estimateLifecycle,
     promptProbeVisible,
     promptProbeDiagnostics,
     promptProbeScreenshotPath,
@@ -832,6 +877,7 @@ async function main(): Promise<void> {
 
   const cases: AndroidCaseResult[] = [];
   if (failures.length === 0 && device.adb_path && device.device_id) {
+    runText(device.adb_path, ["-s", device.device_id, "logcat", "-c"], 20_000);
     const selectedCases = process.argv.includes("--legacy-only") ? CASES.slice(0, 3) : CASES;
     for (const testCase of selectedCases) {
       const result = await runAndroidCase(device.adb_path, device.device_id, testCase);
@@ -840,6 +886,21 @@ async function main(): Promise<void> {
     }
   }
 
+  const routeToScreenAckPassed = cases.filter(
+    (item) =>
+      item.promptWarmDelivery &&
+      item.estimateWarmDelivery &&
+      item.promptLifecycle.acknowledged &&
+      item.estimateLifecycle.acknowledged,
+  ).length;
+  if (
+    cases.length !== CASES.length ||
+    routeToScreenAckPassed !== CASES.length
+  ) {
+    failures.push(
+      `official_route_to_screen_ack_incomplete:${routeToScreenAckPassed}/${CASES.length}`,
+    );
+  }
   const passed = failures.length === 0;
   const screenshotPaths = cases.flatMap((item) => (item.screenshotPath ? [{ caseId: item.caseId, path: item.screenshotPath }] : []));
   const uiDumpPaths = cases.flatMap((item) => (item.uiDumpPath ? [{ caseId: item.caseId, path: item.uiDumpPath }] : []));
@@ -873,6 +934,27 @@ async function main(): Promise<void> {
       text_sample: devClientReady.text.slice(0, 1000),
     } : null,
     metro,
+    route_to_screen_ack: {
+      status:
+        routeToScreenAckPassed === CASES.length && cases.length === CASES.length
+          ? "GREEN_ANDROID_ROUTE_TO_SCREEN_ACK"
+          : "RED_ANDROID_ROUTE_TO_SCREEN_ACK",
+      expected_cases: CASES.length,
+      passed_cases: routeToScreenAckPassed,
+      lifecycle_stages: [
+        "INTENT_RECEIVED",
+        "URL_PARSED",
+        "AUTH_RESOLVED",
+        "INTENT_APPLIED",
+        "DRAFT_SESSION_READY",
+        "UI_READY",
+        "INTENT_ACKNOWLEDGED",
+      ],
+      exact_order_required: true,
+      exactly_once_required: true,
+      warm_delivery_required: true,
+      isolated_probe_substitution_allowed: false,
+    },
     cases,
     failures,
     fake_green_claimed: false,

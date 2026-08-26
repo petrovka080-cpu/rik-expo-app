@@ -274,8 +274,16 @@ function buildAsphaltV4Draft(input: {
     input.parseResult.matchedTemplate?.family,
   ].filter((value): value is string => Boolean(value));
   const promptMatches = /(?:асфальтирован|асфальтобетон[а-яё]*(?:\s+(?:дорожн[а-яё]*\s+)?покрыти|\s+дорог)|asphalt(?:\s+concrete)?\s+(?:pav|road)|нов[а-яё]*\s+парковк|парковк[а-яё]*.*(?:дорожн[а-яё]*\s+покрыти|двухслойн|нов[а-яё]*\s+основан))/iu.test(input.parseResult.rawInput);
-  const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:(?:автомобильн[а-яё]*\s+)?дорог|дорожн[а-яё]*\s+одежд)|строительств[оа]\s+автомобильн[а-яё]*\s+дорог|new\s+(?:full\s+)?road\s+construction)/iu
+  const fullRoadConstructionMatches = /(?:полное\s+строительств[оа]\s+(?:(?:автомобильн[а-яё]*\s+)?дорог|дорожн[а-яё]*\s+одежд)|строительств[оа]\s+(?:автомобильн[а-яё]*\s+)?дорог|new\s+(?:full\s+)?road\s+construction)/iu
     .test(input.parseResult.rawInput);
+  const explicitlySelectedAsphaltPavement = [
+    input.sourceInput.selectedTemplateId,
+    input.sourceInput.selectedWorkKey,
+  ].filter((value): value is string => Boolean(value)).some((value) =>
+    value === ASPHALT_WORK_ID_V4 ||
+    value === ASPHALT_V4_RUNTIME_TEMPLATE_ID ||
+    value.startsWith(`${ASPHALT_WORK_ID_V4}_`)
+  );
   const selectedAsphaltAlias = selectedIds.some((value) =>
     value === "asphalt_paving" ||
     value === ASPHALT_FAMILY_ID_V4 ||
@@ -293,6 +301,11 @@ function buildAsphaltV4Draft(input: {
     /(?:цементобетон|бетонн[а-яё]*\s+дорог|cement(?:\s+concrete)?\s+pavement|concrete\s+road)/iu
       .test(input.parseResult.rawInput);
   if (!selectedAsphaltAlias && explicitlyDifferentPavementTechnology) return null;
+  // A request for construction of the whole road owns earthworks, drainage,
+  // subbase, base and pavement as one road-construction technology. The word
+  // "асфальт" inside that scope must not collapse it to the narrower pavement
+  // passport. An explicit user-selected pavement work still wins.
+  if (fullRoadConstructionMatches && !explicitlySelectedAsphaltPavement) return null;
   if (!selectedAsphaltAlias && !promptMatches && !fullRoadConstructionMatches) return null;
   if (input.roadScopeResolution.resolverStatus !== "RESOLVED") return null;
   const {
@@ -1195,25 +1208,26 @@ export function buildEstimateFromInlineWorkPrompt(
   // the broader registered-domain inventory intercept the same catalog ID.
   const exactRegisteredDomain = exactRouting.status === "NOT_ASPHALT_RELATED"
     ? loadRegisteredProfessionalEstimateDomainDraftBuilder()
-      .buildRegisteredProfessionalEstimateFromInlineInputV1(input)
+      .resolveRegisteredProfessionalEstimateSelectionV1(explicitExactId)
     : null;
-  if (exactRegisteredDomain?.exact_match && exactRegisteredDomain.inventory) {
+  if (exactRegisteredDomain) {
     const parseResult = buildExactRegisteredProfessionalDomainParseResult({
       rawInput: input.rawInput,
-      catalogId: exactRegisteredDomain.inventory.catalog_id,
-      workKey: exactRegisteredDomain.inventory.work_key,
-      templateId: `domain-passport:${exactRegisteredDomain.inventory.catalog_id}:v1`,
-      titleRu: exactRegisteredDomain.inventory.localized_name_ru,
-      missingParameterIds: exactRegisteredDomain.missing_parameter_ids,
+      catalogId: exactRegisteredDomain.catalog_id,
+      workKey: exactRegisteredDomain.work_key,
+      templateId: exactRegisteredDomain.template_id,
+      titleRu: exactRegisteredDomain.title_ru,
+      missingParameterIds: exactRegisteredDomain.canonical_parameter_schema.definitions
+        .filter((definition) => definition.requiredLevel === "BLOCKING_REQUIRED")
+        .map((definition) => definition.parameterId),
     });
-    const draft = exactRegisteredDomain.production?.draft ?? null;
     return {
       parseResult,
-      draft,
-      canBuildPreliminaryEstimate: Boolean(draft?.items.length),
-      blockingReason: draft?.items.length ? undefined : "NEEDS_REQUIRED_INPUTS",
-      pdfMappingValid: Boolean(draft?.items.length),
-      buyerHandoffMappingValid: Boolean(draft?.items.some((item) => item.itemType !== "work")),
+      draft: null,
+      canBuildPreliminaryEstimate: false,
+      blockingReason: "CANONICAL_BACKEND_REQUIRED",
+      pdfMappingValid: false,
+      buyerHandoffMappingValid: false,
       v4ClarificationExperience: null,
       roadScopeResolution: null,
     };

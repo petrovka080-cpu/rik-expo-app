@@ -38,6 +38,7 @@ describe("history click expands read-only snapshot only", () => {
       renderer = TestRenderer.create(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={null}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
@@ -64,6 +65,7 @@ describe("history click expands read-only snapshot only", () => {
       renderer.update(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={approved.draft.id}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
@@ -117,6 +119,7 @@ describe("history click expands read-only snapshot only", () => {
       renderer = TestRenderer.create(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={null}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}
@@ -168,6 +171,7 @@ describe("history click expands read-only snapshot only", () => {
       renderer = TestRenderer.create(
         <ConsumerRepairHistory
           approvedHistoryPage={approvedHistoryPage}
+          revisionHistory={[]}
           selectedHistoryId={null}
           onOpenPdf={onOpenPdf}
           onOpenDraft={onOpenDraft}

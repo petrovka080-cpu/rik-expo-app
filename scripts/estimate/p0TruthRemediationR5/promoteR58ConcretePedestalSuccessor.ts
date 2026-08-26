@@ -61,8 +61,9 @@ const multiply = (...parts: Json[]): Json => parts.reduce((left, right) => ({ ki
 const add = (left: Json, right: Json): Json => ({ kind: "binary", operator: "+", left, right });
 const divide = (left: Json, right: Json): Json => ({ kind: "binary", operator: "/", left, right });
 
-const WORK: WorkSpec = {
+export const WORK: WorkSpec = {
   catalogId: "r58-real:reinforced-concrete-equipment-pedestal",
+  workGroupId: "canonical-technology:r58:reinforced-concrete-equipment-pedestal",
   domain: "concrete",
   title: "Устройство монолитных железобетонных тумб под оборудование и опоры",
   aliases: ["бетонные тумбы", "железобетонная тумба", "тумба под оборудование", "бетонный постамент"],
@@ -215,7 +216,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch((error: unknown) => {
+if (process.argv[1]?.endsWith("promoteR58ConcretePedestalSuccessor.ts")) void main().catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.stack : String(error)}\n`);
   process.exitCode = 1;
 });

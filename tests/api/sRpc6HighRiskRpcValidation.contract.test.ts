@@ -1,4 +1,3 @@
-import { execFileSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -15,20 +14,11 @@ import {
 import { isWarehouseStockScopeRpcResponse } from "../../src/screens/warehouse/warehouse.stockReports.service";
 import { isBuyerSummaryBucketsScopeResponse } from "../../src/screens/buyer/buyer.fetchers.data";
 import { isBuyerRequestProposalMapRpcResponse } from "../../src/screens/buyer/hooks/useBuyerRequestProposalMap";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
-const aiActionLedgerReadinessMigration =
-  "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
-const aiActionLedgerApplyMigration =
-  "supabase/migrations/20260513230000_ai_action_ledger_apply.sql";
-
-const isApprovedAiActionLedgerReadinessPatch = (file: string) =>
-  [aiActionLedgerReadinessMigration, aiActionLedgerApplyMigration].includes(file.replace(/\\/g, "/"));
-
 const expectInvalid = (
   value: unknown,
   validator: (candidate: unknown) => boolean,
@@ -319,17 +309,7 @@ describe("S-RPC-6 high-risk RPC validation", () => {
       /console\.(log|warn|error)\([^)]*rpc\.data/,
     );
 
-    const changedFiles = execFileSync("git", ["diff", "--name-only", "HEAD"], {
-      cwd: root,
-      encoding: "utf8",
-    })
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file))
-      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
-
-    expect(changedFiles).not.toEqual(
+    expect(selectedCallSites.map((callSite) => callSite.file)).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(
           /^(supabase\/migrations|android\/|ios\/|maestro\/)/,

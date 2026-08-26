@@ -382,18 +382,51 @@ function persistConsumerRepairDurableRecord(
     const checksum = stableDurableChecksum(serialized);
     const pointerKey = durablePointerKey(bundle.draft.id);
     const previous = parseDurablePointer(storage.getItem(pointerKey));
+    const compatibilityKey = durableBundleKey(bundle.draft.id);
+    const previousCurrentRaw = previous?.currentChecksum
+      ? storage.getItem(durableSnapshotKey(bundle.draft.id, previous.currentChecksum))
+      : null;
+    const previousCurrentIsValid = Boolean(
+      previous?.currentChecksum
+      && previousCurrentRaw
+      && stableDurableChecksum(previousCurrentRaw) === previous.currentChecksum,
+    );
+    // A normal V3 record already owns two full localStorage copies: the
+    // committed snapshot and the V2 compatibility record. Writing the next
+    // snapshot before releasing that redundant V2 copy needs three full
+    // records and crosses the common Web Storage quota for ~1.7 MiB drafts.
+    // Keep the last committed V3 snapshot as the recovery owner, discard only
+    // redundant/stale copies, then atomically append and point to the new one.
+    if (
+      previousCurrentIsValid
+      && previous?.currentChecksum !== checksum
+    ) {
+      storage.removeItem(compatibilityKey);
+      if (
+        previous?.previousChecksum
+        && previous.previousChecksum !== previous.currentChecksum
+      ) {
+        storage.removeItem(durableSnapshotKey(bundle.draft.id, previous.previousChecksum));
+      }
+    }
     storage.setItem(durableSnapshotKey(bundle.draft.id, checksum), serialized);
-    storage.setItem(pointerKey, safeJsonStringify({
-      version: 3,
-      currentChecksum: checksum,
-      previousChecksum: previous?.currentChecksum ?? null,
-    }, "{}"));
+    const nextPointer: DurablePointerV3 =
+      previous?.currentChecksum === checksum
+        ? previous
+        : {
+            version: 3,
+            currentChecksum: checksum,
+            previousChecksum: previousCurrentIsValid
+              ? previous?.currentChecksum ?? null
+              : null,
+          };
+    storage.setItem(pointerKey, safeJsonStringify(nextPointer, "{}"));
     try {
-      storage.setItem(durableBundleKey(bundle.draft.id), serialized);
+      storage.setItem(compatibilityKey, serialized);
     } catch {
       // V3 is already committed. The V2 record is compatibility-only.
     }
-    const retained = new Set([checksum, previous?.currentChecksum].filter(Boolean));
+    const retained = new Set([nextPointer.currentChecksum, nextPointer.previousChecksum].filter(Boolean));
     const ownPrefix = `${CONSUMER_REPAIR_DURABLE_STORE_SNAPSHOT_KEY_PREFIX}${encodeURIComponent(bundle.draft.id)}:`;
     for (const key of listDurableStorageKeys(storage)) {
       if (key.startsWith(ownPrefix) && !retained.has(key.slice(ownPrefix.length))) storage.removeItem(key);

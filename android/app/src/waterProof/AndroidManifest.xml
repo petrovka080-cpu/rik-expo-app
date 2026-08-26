@@ -6,5 +6,16 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:usesCleartextTraffic"
-        tools:targetApi="28" />
+        tools:targetApi="28">
+        <!-- The isolated API-34 proof must execute the embedded candidate only.
+             It must not check, download, or apply an OTA update. -->
+        <meta-data
+            android:name="expo.modules.updates.ENABLED"
+            android:value="false"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH"
+            android:value="NEVER"
+            tools:replace="android:value" />
+    </application>
 </manifest>

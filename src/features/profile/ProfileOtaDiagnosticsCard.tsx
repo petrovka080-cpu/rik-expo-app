@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -14,6 +14,12 @@ import {
 } from "@/src/lib/navigation/warehouseBackBreadcrumbs";
 import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
 import { buildPdfCrashBreadcrumbsText, getPdfCrashBreadcrumbs } from "@/src/lib/pdf/pdfCrashBreadcrumbs";
+import {
+  embeddedWebBuildIdentity,
+  loadWebBuildIdentity,
+  type WebBuildIdentity,
+} from "@/src/lib/release/webBuildIdentity";
+import { readableUnknownError } from "@/src/lib/auth/protectedIdentity";
 import { styles, UI } from "./ProfileOtaDiagnosticsCard.styles";
 
 type RowProps = {
@@ -65,12 +71,7 @@ function normalizeBatch<T>(results: PromiseSettledResult<T>[]): BatchResult<T>[]
 }
 
 function toBatchErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message || error.name || "unknown batch error";
-  }
-
-  const text = String(error ?? "").trim();
-  return text || "unknown batch error";
+  return readableUnknownError(error) ?? "неизвестная ошибка диагностики";
 }
 
 async function loadPdfCrashBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
@@ -269,7 +270,51 @@ function BulletList(props: { items: string[]; emptyLabel: string }) {
   );
 }
 
-export function ProfileOtaDiagnosticsCard() {
+function ProfileWebBuildDiagnosticsCard() {
+  const [identity, setIdentity] = useState<WebBuildIdentity>(() => embeddedWebBuildIdentity());
+
+  useEffect(() => {
+    let active = true;
+    void loadWebBuildIdentity().then((next) => {
+      if (active) setIdentity(next);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <View style={styles.section} testID="profile-web-build-diagnostics">
+      <View style={[styles.card, { borderColor: "#22C55E" }]}>
+        <View style={styles.header}>
+          <View style={styles.headerTitleWrap}>
+            <Ionicons name="globe-outline" size={18} color="#86EFAC" />
+            <Text style={styles.headerTitle}>Диагностика Web-сборки</Text>
+          </View>
+          <View style={[styles.badge, { borderColor: "#22C55E", backgroundColor: "rgba(21,128,61,0.14)" }]}>
+            <Text style={[styles.badgeText, { color: "#86EFAC" }]}>WEB</Text>
+          </View>
+        </View>
+        <View style={styles.grid}>
+          <DiagnosticsRow label="Source SHA" value={identity.sourceSha256} />
+          <DiagnosticsRow label="Web build SHA" value={identity.webBuildSha256 ?? "Не встроен"} />
+          <DiagnosticsRow
+            label="Источник идентичности"
+            value={identity.source === "release-manifest" ? "Манифест Web-сборки" : "Встроенный fingerprint"}
+          />
+          <DiagnosticsRow label="Native / EAS / OTA" value="Не применяется для Web" last />
+        </View>
+        <View style={[styles.callout, { borderColor: "#22C55E", backgroundColor: "rgba(21,128,61,0.14)" }]}>
+          <Text style={[styles.calloutText, { color: "#86EFAC" }]}>
+            Для Web отдельно проверяются полный source SHA и SHA основного Web bundle. Отсутствие native runtime или EAS channel не является ошибкой.
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function ProfileNativeOtaDiagnosticsCard() {
   const [loading, setLoading] = useState(false);
   const [lastActionMessage, setLastActionMessage] = useState("");
 
@@ -308,7 +353,7 @@ export function ProfileOtaDiagnosticsCard() {
       setLastActionMessage(OTA_DIAGNOSTICS_COPIED_MESSAGE);
       Alert.alert("OTA diagnostics", OTA_DIAGNOSTICS_COPIED_MESSAGE);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = readableUnknownError(error) ?? "Не удалось скопировать диагностику.";
       setLastActionMessage(message);
       Alert.alert("OTA diagnostics", message);
     }
@@ -443,4 +488,10 @@ export function ProfileOtaDiagnosticsCard() {
       </View>
     </View>
   );
+}
+
+export function ProfileOtaDiagnosticsCard() {
+  return Platform.OS === "web"
+    ? <ProfileWebBuildDiagnosticsCard />
+    : <ProfileNativeOtaDiagnosticsCard />;
 }

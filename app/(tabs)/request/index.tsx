@@ -3,6 +3,11 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
 import {
+  ProtectedIdentityBoundary,
+  VerifiedIdentitySummary,
+} from "../../../src/components/auth/ProtectedIdentityBoundary";
+import { buildCurrentRouteReturnTo } from "../../../src/lib/authRouting";
+import {
   REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
   RequestEstimateLaunchPayloadError,
   buildRequestEstimateLaunchReadyMarkerId,
@@ -33,6 +38,7 @@ function RequestRoute() {
     prompt?: string | string[];
   }>();
   const encodedPayload = getParam(params[REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM]);
+  const returnTo = buildCurrentRouteReturnTo("/request", params) ?? "/request";
   let launchPayload = null;
   let launchError = getParam(params.launchError).trim();
   const rawCanonicalRevisionId = getParam(params.canonicalRevisionId).trim();
@@ -80,32 +86,44 @@ function RequestRoute() {
 
   if (launchError) {
     return (
-      <View style={styles.launchError} testID="request-estimate-launch-error">
-        <Text style={styles.launchErrorTitle}>Не удалось открыть параметры сметы.</Text>
-        <Text style={styles.launchErrorCode}>{launchError}</Text>
-      </View>
+      <ProtectedIdentityBoundary returnTo={returnTo} surface="request">
+        {(identity) => (
+          <>
+            <VerifiedIdentitySummary identity={identity} compact />
+        <View style={styles.launchError} testID="request-estimate-launch-error">
+          <Text style={styles.launchErrorTitle}>Не удалось открыть параметры сметы.</Text>
+          <Text style={styles.launchErrorCode}>{launchError}</Text>
+        </View>
+          </>
+        )}
+      </ProtectedIdentityBoundary>
     );
   }
 
   return (
-    <>
-      <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
-      {launchId ? (
-        <RouteReadyMarker
-          marker={buildRequestEstimateLaunchReadyMarkerId(launchId)}
+    <ProtectedIdentityBoundary returnTo={returnTo} surface="request">
+      {(identity) => (
+        <>
+        <VerifiedIdentitySummary identity={identity} compact />
+        <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
+        {launchId ? (
+          <RouteReadyMarker
+            marker={buildRequestEstimateLaunchReadyMarkerId(launchId)}
+          />
+        ) : null}
+        <ConsumerRepairRequestScreen
+          initialProblemText={canonicalRevisionId ? undefined : prompt || undefined}
+          initialDraftId={canonicalRevisionId ? undefined : draftId || undefined}
+          initialSelectedCatalogWorkId={canonicalRevisionId ? undefined : catalogWorkId || undefined}
+          initialCanonicalRevisionId={canonicalRevisionId || undefined}
+          launchFingerprint={launchFingerprint}
+          launchId={launchId}
+          autoPrepare={!canonicalRevisionId && (autoPrepare || autoPdf)}
+          autoPdf={!canonicalRevisionId && autoPdf}
         />
-      ) : null}
-      <ConsumerRepairRequestScreen
-        initialProblemText={canonicalRevisionId ? undefined : prompt || undefined}
-        initialDraftId={canonicalRevisionId ? undefined : draftId || undefined}
-        initialSelectedCatalogWorkId={canonicalRevisionId ? undefined : catalogWorkId || undefined}
-        initialCanonicalRevisionId={canonicalRevisionId || undefined}
-        launchFingerprint={canonicalRevisionId ? undefined : launchFingerprint}
-        launchId={canonicalRevisionId ? undefined : launchId}
-        autoPrepare={!canonicalRevisionId && (autoPrepare || autoPdf)}
-        autoPdf={!canonicalRevisionId && autoPdf}
-      />
-    </>
+        </>
+      )}
+    </ProtectedIdentityBoundary>
   );
 }
 

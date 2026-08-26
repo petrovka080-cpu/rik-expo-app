@@ -1,5 +1,6 @@
 import type { CanonicalEstimateCatalogItem } from "./contracts";
 import { hasHumanReadableAiEstimateParameterPassport } from "../aiEstimateRuParameterDictionary";
+import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
@@ -46,5 +47,13 @@ export function canonicalEstimateParameterChoiceLabelRu(
     if (normalized === "MINIMAL_EXPLICIT_SCOPE") return "Базовый состав";
     if (normalized === "FULL_APPLICABLE_SCOPE") return "Полный применимый состав";
   }
+  if (parameterId === "material_variant") {
+    return waterMaterialVariantLabelRuR542(normalized);
+  }
+  if (parameterId === "installation_method") {
+    if (normalized === "OPEN_TRENCH") return "Открытая траншея";
+    if (normalized === "TRENCHLESS") return "Бестраншейная прокладка";
+  }
+  if (normalized === "PROJECT_SPECIFIED") return "По проектной документации";
   return fallback?.trim() || normalized;
 }

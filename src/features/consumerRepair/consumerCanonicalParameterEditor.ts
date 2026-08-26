@@ -6,6 +6,7 @@ import {
   getAllCanonicalEstimateRevisionRows,
   recalculateCanonicalEstimateAndLoad,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
+import { canonicalEstimateRecalculateIdempotencyKey } from "../../lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
 import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import {
@@ -13,6 +14,7 @@ import {
   type CanonicalEstimateCatalogItem,
   type CanonicalEstimateCustomRow,
   type CanonicalEstimateParameterInputValue,
+  type CanonicalEstimateRowOverride,
   type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
 import {
@@ -20,7 +22,7 @@ import {
   type CanonicalParameter,
   type CanonicalParameterSession,
   type CanonicalParameterValue,
-} from "../../lib/estimate/canonicalParameters";
+} from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { estimateDeterministicHash } from "../../lib/estimate/estimateDeterministicHash";
 import {
   aiEstimateRuLabelForParameter,
@@ -345,6 +347,7 @@ export async function recalculateConsumerCanonicalEstimate(input: {
   draftId: string;
   problemText: string;
   patches: ConsumerRepairDraftRevisionParamBatchPatch[];
+  rowOverrides?: Record<string, CanonicalEstimateRowOverride>;
 }): Promise<{ mapping: ForemanAiEstimateDraftMapping; session: CanonicalParameterSession }> {
   const revision = await getCanonicalEstimateRevision(input.revisionId);
   const catalog = await getCanonicalEstimateCatalogItem(revision.catalogId, null, revision.releaseId);
@@ -369,16 +372,26 @@ export async function recalculateConsumerCanonicalEstimate(input: {
     catalog,
     problemText: input.problemText,
   });
+  const rowOverrides = { ...revision.amendmentContract.rowOverrides };
+  for (const [rowId, override] of Object.entries(input.rowOverrides ?? {})) {
+    rowOverrides[rowId] = { ...rowOverrides[rowId], ...override };
+  }
+  const customRows = revision.amendmentContract.customRows;
   const result = await recalculateCanonicalEstimateAndLoad({
     request: {
-      idempotencyKey: `consumer-inline-recalc-${estimateDeterministicHash({ parent: revision.revisionId, parameters })}`,
+      idempotencyKey: canonicalEstimateRecalculateIdempotencyKey({
+        parentRevisionId: revision.revisionId,
+        parameters,
+        rowOverrides,
+        customRows,
+      }),
       catalogId: revision.catalogId,
       parentRevisionId: revision.revisionId,
       ...requestIdentity,
       parameters,
       currencyCode: revision.currencyCode,
-      rowOverrides: revision.amendmentContract.rowOverrides,
-      customRows: revision.amendmentContract.customRows,
+      rowOverrides,
+      customRows,
     },
   });
   if (result.revision.parentRevisionId !== revision.revisionId) {

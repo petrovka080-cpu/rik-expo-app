@@ -1,6 +1,7 @@
 import type { ConsumerRepairDraftBundle } from "../consumerRequests/consumerRequestTypes";
 import { createEstimateRevisionDurableStore } from "./estimateRevisionDurableStore.factory";
 import {
+  estimateRevisionUtf8ByteLength,
   serializeRevisionBundle,
   type DurableWriteResult,
   type EstimateRevisionDurableStore,
@@ -15,11 +16,33 @@ export const CONSUMER_REPAIR_TRANSACTIONAL_POINTER_KEY_PREFIX =
 
 export const CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD = 500;
 // Keep the historical synchronous path for ordinary (<500-row) estimates.
-// Four megabytes leaves margin below the common ~5 MiB Web Storage quota.
+// A crash-safe V3 update temporarily retains both the last valid snapshot and
+// its successor. 2.4 million serialized characters per generation leaves
+// margin for two generations, pointers, auth and other origin metadata below
+// the common ~5 MiB Web Storage quota. Larger records use the transactional
+// adapter before the synchronous localStorage commit is attempted.
 // Measure the actual compact encoded record written by the synchronous adapter;
 // the runtime bundle intentionally contains several richer in-memory projections.
 // The row threshold still routes the 702-row maximum to transactional storage.
-const LARGE_REVISION_SERIALIZED_THRESHOLD = 4_000_000;
+export const CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD = 2_400_000;
+export const CONSUMER_REPAIR_TRANSACTIONAL_CANONICAL_LENGTH_METRIC =
+  "JSON_UTF16_CODE_UNITS" as const;
+export type ConsumerRepairDurableStorageRoutingPlan = {
+  route: "LOCAL_STORAGE_V3" | "TRANSACTIONAL_DURABLE_STORE";
+  reason:
+    | "BELOW_ALL_TRANSACTIONAL_THRESHOLDS"
+    | "ROW_THRESHOLD_GTE"
+    | "CANONICAL_LENGTH_THRESHOLD_GTE"
+    | "CANONICAL_SERIALIZATION_FAILED_CLOSED";
+  canonicalLengthMetric: typeof CONSUMER_REPAIR_TRANSACTIONAL_CANONICAL_LENGTH_METRIC;
+  canonicalLength: number | null;
+  canonicalUtf8Bytes: number | null;
+  serializedThreshold: typeof CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD;
+  serializedThresholdOperator: "GTE";
+  rowCount: number;
+  rowThreshold: typeof CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD;
+  rowThresholdOperator: "GTE";
+};
 const FORBIDDEN_DURABLE_KEYS = /^(?:base64|binary|bytes|blob|dataUrl|privateUrl|signedUrl|accessToken|refreshToken|secret)$/i;
 const PRIVATE_URL = /^(?:data:|blob:)|:\/\/[^/?#]*@|[?&](?:token|signature|sig|x-amz-credential)=/i;
 
@@ -64,26 +87,77 @@ export function sanitizeConsumerRepairTransactionalBundle(
   return sanitizeDurableValue(bundle) as ConsumerRepairDraftBundle;
 }
 
-export function isLargeConsumerRepairRevisionBundle(
+export function buildConsumerRepairDurableStorageRoutingPlan(
   bundle: ConsumerRepairDraftBundle,
-): boolean {
+): ConsumerRepairDurableStorageRoutingPlan {
   const currentRevision = bundle.estimateDraftRevisionState?.revisions.find((revision) =>
     revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId
   );
-  if (
-    (currentRevision?.boq.rows.length ?? bundle.items.length) >=
-    CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD
-  ) {
-    return true;
-  }
+  const rowCount = currentRevision?.boq.rows.length ?? bundle.items.length;
+  const base: Pick<
+    ConsumerRepairDurableStorageRoutingPlan,
+    | "canonicalLengthMetric"
+    | "serializedThreshold"
+    | "serializedThresholdOperator"
+    | "rowCount"
+    | "rowThreshold"
+    | "rowThresholdOperator"
+  > = {
+    canonicalLengthMetric: CONSUMER_REPAIR_TRANSACTIONAL_CANONICAL_LENGTH_METRIC,
+    serializedThreshold: CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD,
+    serializedThresholdOperator: "GTE" as const,
+    rowCount,
+    rowThreshold: CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD,
+    rowThresholdOperator: "GTE" as const,
+  };
   try {
     const durableRecord = encodeConsumerRepairBundleForDurableStorage(
       compactConsumerRepairBundleForDurableStorage(bundle),
     );
-    return JSON.stringify(durableRecord).length >= LARGE_REVISION_SERIALIZED_THRESHOLD;
+    const canonicalSerializedRecord = JSON.stringify(durableRecord);
+    const canonicalLength = canonicalSerializedRecord.length;
+    const canonicalUtf8Bytes = estimateRevisionUtf8ByteLength(canonicalSerializedRecord);
+    if (rowCount >= CONSUMER_REPAIR_TRANSACTIONAL_ROW_THRESHOLD) {
+      return {
+        ...base,
+        route: "TRANSACTIONAL_DURABLE_STORE",
+        reason: "ROW_THRESHOLD_GTE",
+        canonicalLength,
+        canonicalUtf8Bytes,
+      };
+    }
+    if (canonicalLength >= CONSUMER_REPAIR_TRANSACTIONAL_SERIALIZED_THRESHOLD) {
+      return {
+        ...base,
+        route: "TRANSACTIONAL_DURABLE_STORE",
+        reason: "CANONICAL_LENGTH_THRESHOLD_GTE",
+        canonicalLength,
+        canonicalUtf8Bytes,
+      };
+    }
+    return {
+      ...base,
+      route: "LOCAL_STORAGE_V3",
+      reason: "BELOW_ALL_TRANSACTIONAL_THRESHOLDS",
+      canonicalLength,
+      canonicalUtf8Bytes,
+    };
   } catch {
-    return true;
+    return {
+      ...base,
+      route: "TRANSACTIONAL_DURABLE_STORE",
+      reason: "CANONICAL_SERIALIZATION_FAILED_CLOSED",
+      canonicalLength: null,
+      canonicalUtf8Bytes: null,
+    };
   }
+}
+
+export function isLargeConsumerRepairRevisionBundle(
+  bundle: ConsumerRepairDraftBundle,
+): boolean {
+  return buildConsumerRepairDurableStorageRoutingPlan(bundle).route ===
+    "TRANSACTIONAL_DURABLE_STORE";
 }
 
 export function listTransactionalConsumerRepairBundleIds(storage: Storage): string[] {

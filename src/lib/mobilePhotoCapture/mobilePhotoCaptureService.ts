@@ -3,7 +3,12 @@ import { recordPlatformObservability } from "../observability/platformObservabil
 import { createMobileCameraCapabilityService, type MobileCameraCapabilityService } from "./mobileCameraCapabilityService";
 import { createMobileCameraPermissionService, type MobileCameraPermissionService } from "./mobileCameraPermissionService";
 import { createMobilePhotoNormalizationService, type MobilePhotoNormalizationService } from "./mobilePhotoNormalizationService";
-import { createMobilePhotoLocalRepository, type MobilePhotoLocalRepository } from "./mobilePhotoLocalRepository";
+import {
+  createMobilePhotoLocalRepository,
+  mobilePhotoStagingRelativePath,
+  type MobilePhotoLocalRepository,
+  type MobilePhotoStorageIdentity,
+} from "./mobilePhotoLocalRepository";
 import { createMobilePhotoUploadQueue, type MobilePhotoUploadQueue } from "./mobilePhotoUploadQueue";
 import { createMobilePhotoUploadService, type MobilePhotoUploadService } from "./mobilePhotoUploadService";
 import { createMobilePhotoRecoveryService, type MobilePhotoRecoveryService } from "./mobilePhotoRecoveryService";
@@ -40,6 +45,8 @@ export type CapturedPhotoAsset = {
   orientationNormalized: boolean;
   metadataStripped: boolean;
   createdAt: string;
+  localStorageKey?: string;
+  storageIdentity?: MobilePhotoStorageIdentity;
 };
 
 export type OpenMobileCameraInput = {
@@ -59,12 +66,14 @@ export type CapturePhotoInput = {
     height?: number | null;
   } | null | undefined>;
   now?: string;
+  storageIdentity?: MobilePhotoStorageIdentity;
 };
 
 export type SystemCameraInput = {
   scanId: string;
   kind: PhotoCaptureKind;
   now?: string;
+  storageIdentity?: MobilePhotoStorageIdentity;
 };
 
 export type PhotoLibraryInput = SystemCameraInput & {
@@ -141,6 +150,7 @@ async function stageRawPhoto(params: {
   now?: string;
   normalizer: MobilePhotoNormalizationService;
   repository: MobilePhotoLocalRepository;
+  storageIdentity?: MobilePhotoStorageIdentity;
 }): Promise<CapturedPhotoAsset> {
   const createdAt = nowIso(params.now);
   const captureId = makeCaptureId(params.scanId, params.kind, createdAt);
@@ -164,6 +174,7 @@ async function stageRawPhoto(params: {
     orientationNormalized: normalized.orientationNormalized,
     metadataStripped: normalized.metadataStripped,
     createdAt,
+    storageIdentity: params.storageIdentity,
   });
 }
 
@@ -230,6 +241,7 @@ export function createMobilePhotoCaptureService(
         now: input.now,
         normalizer,
         repository,
+        storageIdentity: input.storageIdentity,
       });
       recordMobilePhotoEvent("mobile_photo_staged", "success", {
         scanId: input.scanId,
@@ -251,6 +263,7 @@ export function createMobilePhotoCaptureService(
         now: input.now,
         normalizer,
         repository,
+        storageIdentity: input.storageIdentity,
       });
     },
 
@@ -267,6 +280,7 @@ export function createMobilePhotoCaptureService(
         now: input.now,
         normalizer,
         repository,
+        storageIdentity: input.storageIdentity,
       });
     },
 
@@ -283,6 +297,7 @@ export function createMobilePhotoCaptureService(
           now: input.now,
           normalizer,
           repository,
+          storageIdentity: input.storageIdentity,
         })
       ));
     },
@@ -301,6 +316,7 @@ export function createMobilePhotoCaptureService(
         now: input.now,
         normalizer,
         repository,
+        storageIdentity: input.storageIdentity,
       });
     },
 
@@ -312,6 +328,16 @@ export function createMobilePhotoCaptureService(
         throw createMobilePhotoCaptureError("PHOTO_ORIENTATION_NORMALIZATION_FAILED");
       }
       const storagePathPrefix = input.storagePathPrefix ?? "photo-material";
+      const localStorageKey = input.asset.localStorageKey ?? mobilePhotoStagingRelativePath({
+        ...(input.asset.storageIdentity ?? {
+          tenantId: `unscoped:${input.asset.scanId}`,
+          requestId: input.asset.scanId,
+          revisionId: input.asset.scanId,
+          rowId: input.asset.scanId,
+        }),
+        captureId: input.asset.captureId,
+        mimeType: input.asset.mimeType,
+      });
       const storedImage: PhotoMaterialStoredImage = {
         imageId: input.asset.captureId,
         scanId: input.asset.scanId,
@@ -323,7 +349,7 @@ export function createMobilePhotoCaptureService(
         decodedPixelCount: input.asset.width * input.asset.height,
         contentSha256: input.asset.contentSha256,
         storageBucket: "private-media",
-        storagePath: `${storagePathPrefix}/${input.asset.scanId}/${input.asset.captureId}.jpg`,
+        storagePath: `${storagePathPrefix}/${localStorageKey}`,
         privateObject: true,
         exifGpsStripped: true,
         signedUrlExposed: false,

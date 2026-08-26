@@ -1,12 +1,13 @@
 {
   "schema": "verification-affected-jest-runtime-calibration/v1",
-  "source_gate": "affected-verification-gate:duration-only-red",
-  "source_sha": "da9096a741e1b9ac43c15fc974c3f866f66d1796",
+  "source_gate": "affected-verification-gate:r555-performance-attribution",
+  "source_sha": "6b8e612cba45884c0dce88f333dfb3d10a054ae6",
   "suites": {
-    "src/features/consumerRepair/consumerRepairAsphaltV4Phase1B.test.ts": 166767,
-    "tests/aiEstimateV4/roadScopeProductionIntegrationV4.contract.test.ts": 31016,
     "tests/consumerRepair/approvedHistoryDurableStorageMigration.contract.test.ts": 248305,
+    "tests/estimateDomainFactory/electricalComplete.contract.test.ts": 300000,
     "tests/estimateInfrastructure/aiEstimateParameterRuntimeMatrix.contract.test.ts": 109571,
-    "tests/estimateInfrastructure/aiEstimatePlatformCoreV2Matrix.contract.test.ts": 506629
+    "tests/estimateInfrastructure/aiEstimatePlatformCoreV2Matrix.contract.test.ts": 506629,
+    "tests/estimateNorms/aiEstimate11610CatalogTruthGapLedger.contract.test.ts": 240000,
+    "tests/aiEstimateV4/roadworksWaveAProductionBinding.contract.test.ts": 100000
   }
 }

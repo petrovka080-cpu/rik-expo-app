@@ -13,6 +13,15 @@ const originalFetch = globalThis.fetch;
 
 type LoadedSupabaseModule = {
   isSupabaseEnvValid: boolean;
+  supabaseClientAvailability:
+    | { status: "ready"; client: unknown }
+    | { status: "unavailable"; reason: string; diagnostic: string };
+  publicCatalogSupabase: unknown;
+  signOutSafely: () => Promise<{
+    status: string;
+    providerCalled: boolean;
+    reason?: string;
+  }>;
   getSessionSafe: (extra?: Record<string, unknown>) => Promise<{
     session: unknown;
     degraded: boolean;
@@ -26,6 +35,7 @@ type LoadedSupabaseModule = {
   supabase: {
     auth: {
       getSession: jest.Mock;
+      signOut: jest.Mock;
     };
   };
 };
@@ -143,6 +153,7 @@ const loadSupabaseModule = (options: {
               data: { session: null },
             },
           ),
+      signOut: jest.fn().mockResolvedValue({ error: null }),
     },
     realtime: {},
   };
@@ -153,7 +164,9 @@ const loadSupabaseModule = (options: {
     createClient: (...args: any[]) => mockCreateClient(...args),
   }));
   jest.doMock("./env/clientSupabaseEnv", () => ({
-    SUPABASE_ANON_KEY: options.supabaseAnonKey ?? "anon-key",
+    SUPABASE_ANON_KEY:
+      options.supabaseAnonKey ??
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.signature",
     SUPABASE_HOST: options.supabaseHost ?? "project.supabase.co",
     SUPABASE_PROJECT_REF: options.supabaseProjectRef ?? "project",
     SUPABASE_URL: options.supabaseUrl ?? "https://project.supabase.co",
@@ -210,7 +223,7 @@ describe("supabaseClient runtime contract", () => {
     expect(options.global.fetch).toEqual(expect.any(Function));
   });
 
-  it("disables persisted auth bootstrap in explicit local developer full-access web mode", () => {
+  it("keeps real provider session persistence in local developer review mode", () => {
     loadSupabaseModule({
       web: true,
       localDeveloperFullAccessStorage: "1",
@@ -218,9 +231,10 @@ describe("supabaseClient runtime contract", () => {
 
     const options = mockCreateClient.mock.calls[0]?.[2];
 
-    expect(options.auth.persistSession).toBe(false);
-    expect(options.auth.autoRefreshToken).toBe(false);
-    expect(options.auth.detectSessionInUrl).toBe(false);
+    expect(options.auth.persistSession).toBe(true);
+    expect(options.auth.autoRefreshToken).toBe(true);
+    expect(options.auth.detectSessionInUrl).toBe(true);
+    expect(mockCreateClient).toHaveBeenCalledTimes(1);
   });
 
   it("uses AsyncStorage and disables detectSessionInUrl in native-like runtime", () => {
@@ -244,10 +258,25 @@ describe("supabaseClient runtime contract", () => {
     });
 
     expect(module.isSupabaseEnvValid).toBe(false);
-    expect(mockCreateClient).not.toHaveBeenCalled();
-    expect(() => (module.supabase as any).from).toThrow(
-      "[supabaseClient] Supabase client is unavailable",
+    expect(module.supabaseClientAvailability).toEqual(
+      expect.objectContaining({
+        status: "unavailable",
+        reason: "missing_public_url",
+      }),
     );
+    expect(mockCreateClient).not.toHaveBeenCalled();
+    const unavailableQuery = await (module.supabase as any).from("profiles").select("id");
+    expect(unavailableQuery).toEqual(
+      expect.objectContaining({
+        data: null,
+        error: expect.objectContaining({ code: "SUPABASE_CLIENT_UNAVAILABLE" }),
+      }),
+    );
+    await expect(module.signOutSafely()).resolves.toEqual({
+      status: "unavailable",
+      providerCalled: false,
+      reason: "missing_public_url",
+    });
     await expect(
       module.getSessionSafe({ caller: "missing_env_regression" }),
     ).resolves.toEqual({ session: null, degraded: true });
@@ -272,10 +301,22 @@ describe("supabaseClient runtime contract", () => {
 
     expect(warnSpy).toHaveBeenCalledWith(
       "[supabaseClient]",
-      "Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.",
+      "Supabase client unavailable (missing_public_url).",
     );
 
     warnSpy.mockRestore();
+  });
+
+  it("creates one canonical client and calls the provider once for safe sign-out", async () => {
+    const { module, mockSupabase } = loadSupabaseModule({ web: true });
+
+    expect(mockCreateClient).toHaveBeenCalledTimes(1);
+    expect(module.publicCatalogSupabase).toBe(module.supabase);
+    await expect(module.signOutSafely()).resolves.toEqual({
+      status: "signed_out",
+      providerCalled: true,
+    });
+    expect(mockSupabase.auth.signOut).toHaveBeenCalledTimes(1);
   });
 
   it("detects a persisted native auth token without exposing token material", async () => {

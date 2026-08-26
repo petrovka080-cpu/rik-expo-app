@@ -3,6 +3,10 @@ import {
   type FormulaAst,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
+  hvacComponentTitleRuR542,
+  localizeTechnologyTitleRu,
+} from "../../../src/lib/estimate/backendPlatform/russianTechnologyTitleR542";
+import {
   HVAC_DOMAIN_INVENTORY,
   hvacTechnologyProfile,
   type HvacDomainInventoryRow,
@@ -109,7 +113,7 @@ const componentLines = (source: string): HvacComponent[] => source.trim().split(
   .map((line) => line.trim()).filter(Boolean).map((line) => {
     const [kind, key, titleRu, unitId] = line.split("|");
     if (!kind || !key || !titleRu || !unitId) throw new Error(`HVAC_COMPONENT_LINE_RED:${line}`);
-    return { kind: kind as HvacComponentKind, key, titleRu, unitId };
+    return { kind: kind as HvacComponentKind, key, titleRu: hvacComponentTitleRuR542(titleRu), unitId };
   });
 
 const COMMON_COMPONENTS = componentLines(`
@@ -745,6 +749,21 @@ DOCUMENT|tunnel_sensor_calibration_register|реестр поверки датч
 `),
 });
 
+const CANONICAL_RESOURCE_ROW_TYPE: Readonly<Record<string, string>> = Object.freeze({
+  material: "material",
+  labor: "labor",
+  work: "labor",
+  equipment: "equipment",
+  service: "service",
+  document: "service",
+  transport: "service",
+  testing: "service",
+  commissioning: "service",
+  interface: "service",
+  waste: "waste",
+  other: "other",
+});
+
 const activity = (
   key: string,
   action: string,
@@ -754,11 +773,15 @@ const activity = (
   titlePrefixRu: string,
   formulaMode: HvacActivity["formulaMode"],
   procurementEligible = false,
-): HvacActivity => ({ key, action, stage, category, rowType, titlePrefixRu, formulaMode, procurementEligible });
+): HvacActivity => {
+  const canonicalRowType = CANONICAL_RESOURCE_ROW_TYPE[rowType];
+  if (!canonicalRowType) throw new Error(`HVAC_RESOURCE_ROW_TYPE_UNMAPPED:${rowType}`);
+  return { key, action, stage, category, rowType: canonicalRowType, titlePrefixRu, formulaMode, procurementEligible };
+};
 
 const STANDARD_ACTIVITIES = [
   activity("takeoff", "DESIGN", "PROJECT_DATA_AND_SURVEY", "SPECIAL_SERVICE", "service", "Проверка количества и применимости:", "FIXED"),
-  activity("submittal", "SUBMITTAL", "PROJECT_DATA_AND_SURVEY", "DOCUMENTATION", "document", "Проверка submittal:", "FIXED"),
+  activity("submittal", "SUBMITTAL", "PROJECT_DATA_AND_SURVEY", "DOCUMENTATION", "document", "Проверка технического представления:", "FIXED"),
   activity("supply", "SUPPLY", "MATERIALS_AND_EQUIPMENT", "MATERIAL", "material", "Поставка:", "QUANTITY", true),
   activity("delivery", "DELIVERY", "DELIVERY_UNLOADING_RIGGING", "LOGISTICS", "transport", "Внешняя логистика:", "LOGISTICS"),
   activity("receiving", "INSPECT", "DELIVERY_UNLOADING_RIGGING", "SPECIAL_SERVICE", "service", "Входной контроль:", "FIXED"),
@@ -775,7 +798,7 @@ const STANDARD_ACTIVITIES = [
 
 const DEMOLITION_ACTIVITIES = Object.freeze([
   activity("shutdown_isolation", "ISOLATE", "DECOMMISSION_AND_ISOLATION", "CONSTRUCTION_WORK", "work", "Остановка и подтверждённая изоляция:", "LABOR"),
-  activity("service_disconnection", "DISCONNECT", "DECOMMISSION_AND_ISOLATION", "CONSTRUCTION_WORK", "work", "Отсоединение в границах HVAC owner:", "LABOR"),
+  activity("service_disconnection", "DISCONNECT", "DECOMMISSION_AND_ISOLATION", "CONSTRUCTION_WORK", "work", "Отсоединение в границах ответственности раздела ОВиК:", "LABOR"),
   activity("contained_recovery", "RECOVER", "DECOMMISSION_AND_ISOLATION", "SPECIAL_SERVICE", "service", "Контролируемое извлечение фактически присутствующей рабочей среды:", "FIXED"),
   activity("dismantling", "DEMOLISH", "DEMOLITION", "CONSTRUCTION_WORK", "work", "Поэлементный демонтаж:", "LABOR"),
   activity("dismantling_machine", "DEMOLISH", "DEMOLITION", "MACHINE", "equipment", "Механизация безопасного демонтажа при подтверждённой применимости:", "MACHINE"),
@@ -793,7 +816,7 @@ const SPECIAL_OPERATION_ACTIVITIES: Readonly<Record<string, readonly HvacActivit
   RECOMMISSION: [activity("exact_recommission", "RECOMMISSION", "TAB_COMMISSIONING", "TAB_COMMISSIONING", "commissioning", "Повторная пусконаладка:", "TEST")],
   SERVICE: [activity("exact_service", "SERVICE", "SERVICE", "SPECIAL_SERVICE", "service", "Самостоятельная сервисная операция:", "LABOR")],
   RECOVERY: [activity("exact_recovery", "RECOVER", "CONTROLLED_MEDIA_RECOVERY", "WASTE", "waste", "Контролируемое извлечение рабочей среды:", "WASTE")],
-  CALIBRATE: [activity("exact_calibration", "CALIBRATE", "CALIBRATION", "TESTING", "testing", "Калибровка as-found/as-left:", "TEST")],
+  CALIBRATE: [activity("exact_calibration", "CALIBRATE", "CALIBRATION", "TESTING", "testing", "Калибровка до и после регулировки:", "TEST")],
   CONSERVE: [activity("exact_conservation", "CONSERVE", "PRESERVATION", "SPECIAL_SERVICE", "service", "Консервация:", "LABOR")],
   DECONSERVE: [activity("exact_deconservation", "DECONSERVE", "PRESERVATION", "SPECIAL_SERVICE", "service", "Расконсервация:", "LABOR")],
 });
@@ -1007,11 +1030,11 @@ function parameter(
     ordinal,
     valueType,
     unitId,
-    titleRu,
+    titleRu: localizeTechnologyTitleRu(titleRu),
     required: true,
     defaultValue: null,
     constraints: {
-      min: valueType === "decimal" || valueType === "integer" ? Number.EPSILON : null,
+      min: valueType === "decimal" || valueType === "integer" ? 0.000_001 : null,
       max: null,
       values: valueType === "enum" ? ["PROJECT_SPECIFIED"] : null,
       source,
@@ -1205,6 +1228,7 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
           priceStatus: priceRoute === "CHILD_OWNER_ESTIMATE" ? "CHILD_OWNER" : priceRoute === "PRICE_INPUT_REQUIRED" ? "PRICE_INPUT_REQUIRED" : "RATE_SELECTION_INPUT_REQUIRED",
           priceSnapshotStatus: priceRoute === "PRICE_INPUT_REQUIRED" ? "CURRENT_DATED_MARKET_SNAPSHOT_REQUIRED" : "NOT_APPLICABLE_UNTIL_RATE_OR_CHILD_SELECTION",
           applicabilityPredicate: `work_included && ${component.key}_quantity > 0`,
+          engineeringInputBindings: designInputsFor(inventory),
           ownerBoundary: component.kind === "INTERFACE" ? {
             child_owner: component.key.replace(/_boundary$/, "").toLocaleUpperCase("en-US"),
             child_scope_key: component.key,
@@ -1223,9 +1247,13 @@ function buildRows(inventory: HvacDomainInventoryRow, components: readonly HvacC
   }
   const generalParameters: Array<[string, string, HvacParameter["valueType"], string | null, string]> = [
     ["work_included", "Работа включена в проектный scope", "boolean", null, "PROJECT_INPUT_REQUIRED"],
-    ["system_count", "Количество проектных систем", "integer", "system", "PROJECT_INPUT_REQUIRED"],
-    ["delivery_distance_km", "Проверенное расстояние доставки", "decimal", "km", "PROJECT_INPUT_REQUIRED"],
   ];
+  if (components.some((component) => component.kind === "INTERFACE")) {
+    generalParameters.push(["system_count", "Количество проектных систем", "integer", "system", "PROJECT_INPUT_REQUIRED"]);
+  }
+  if (parameterConsumers.has("delivery_distance_km")) {
+    generalParameters.push(["delivery_distance_km", "Проверенное расстояние доставки", "decimal", "km", "PROJECT_INPUT_REQUIRED"]);
+  }
   for (const input of designInputsFor(inventory)) {
     generalParameters.push([input, input.replaceAll("_", " "), input.includes("reference") || input.includes("material") || input.includes("class") || input.includes("type") || input.includes("profile") ? "text" : "decimal", null, `${input.toLocaleUpperCase("en-US")}_REQUIRED`]);
   }
@@ -1314,7 +1342,7 @@ const HVAC_EXTERNAL_DEMOLITION_SPECS = Object.freeze([
   },
   {
     catalogId: "external-hvac:chiller-refrigerant-system-demolition:r4",
-    titleRu: "Декомиссия, recovery хладагента и демонтаж chiller-контура",
+    titleRu: "Вывод из эксплуатации, сбор хладагента и демонтаж контура холодильной машины",
     technologyClass: "REFRIGERANT_SYSTEM" as HvacTechnologyClass,
   },
 ]);

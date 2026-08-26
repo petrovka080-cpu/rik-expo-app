@@ -8,7 +8,6 @@ const DEFAULT_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const EXPO_PACKAGE = "host.exp.exponent";
 const DEV_LAUNCHER_LABELS = ["Development Build", "DEVELOPMENT SERVERS"];
 const LOGIN_LABEL_FALLBACK_RE = /Войти|Login|Р’РѕР№С‚Рё|Р’С…РѕРґ/i;
-const PASSWORD_LABEL_RE = /Пароль|password|РџР°СЂРѕР»СЊ|РїР°СЂРѕР»СЊ/i;
 const LOGIN_LABEL_RE = /Р’РѕР№С‚Рё|Login|ГђВ’ГђВѕГђВ№Г‘вЂљГђВё/i;
 
 type AndroidNode = {
@@ -52,7 +51,6 @@ export const ANDROID_ROUTE_PROOF_APP_ROOT_READY = "ROUTE_PROOF_APP_ROOT_READY";
 export const ANDROID_ROUTE_PROOF_REQUEST_ROUTE_READY = "ROUTE_PROOF_REQUEST_ROUTE_READY";
 export const ANDROID_ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY = "ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY";
 export const ANDROID_CANONICAL_REQUEST_ROUTE_URI = "rik:///request?autoPrepare=1";
-export const ANDROID_BUILD_IDENTITY_MARKER_ID = "build-identity";
 export const ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID = "consumer-repair-screen";
 export const ANDROID_EMBEDDED_AI_ROUTE_SCREEN_MARKER_IDS = [
   "ai.assistant.screen",
@@ -269,7 +267,6 @@ export function isAndroidAppRootSurfaceXml(xml: string) {
     !isAndroidAuthLoginScreenXml(xml) &&
     !isAndroidPageNotFoundXml(xml) &&
     (androidXmlHasRouteMarker(xml, ANDROID_ROUTE_PROOF_APP_ROOT_READY) ||
-      androidXmlHasResourceId(xml, ANDROID_BUILD_IDENTITY_MARKER_ID) ||
       isAndroidAuthenticatedShellSurfaceXml(xml))
   );
 }
@@ -515,28 +512,49 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
   };
 
   const dumpAndroidScreen = (name: string): DumpedAndroidScreen => {
-    const xmlDevicePath = `/sdcard/${name}.xml`;
-    const xmlFallbackDevicePath = "/sdcard/window_dump.xml";
+    const deviceSafeName = name.replace(/[^A-Za-z0-9._-]/g, "_");
+    const xmlDevicePath = `/data/local/tmp/${deviceSafeName}-${process.pid}.xml`;
     const xmlArtifactPath = path.join(options.projectRoot, "artifacts", `${name}.xml`);
-    const pngDevicePath = `/sdcard/${name}.png`;
+    const pngDevicePath = `/data/local/tmp/${deviceSafeName}-${process.pid}.png`;
     const pngArtifactPath = path.join(options.projectRoot, "artifacts", `${name}.png`);
     fs.mkdirSync(path.dirname(xmlArtifactPath), { recursive: true });
     let lastDumpError: unknown = null;
-    for (let attempt = 0; attempt < 4; attempt += 1) {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
       try {
-        adb(["shell", "uiautomator", "dump", xmlDevicePath]);
-        adb(["pull", xmlDevicePath, xmlArtifactPath]);
+        adb(["shell", "rm", "-f", xmlDevicePath], "utf8", 5_000);
+        adb([
+          "shell", "timeout", "12", "uiautomator", "dump", "--compressed", xmlDevicePath,
+        ], "utf8", 16_000);
+        const nativeDataXml = String(adb(["exec-out", "cat", xmlDevicePath], "utf8", 20_000));
+        if (!nativeDataXml.includes("<hierarchy")) {
+          throw new Error(`android native-data UI hierarchy missing: ${nativeDataXml.slice(0, 500)}`);
+        }
+        fs.writeFileSync(xmlArtifactPath, nativeDataXml, "utf8");
+        try { adb(["shell", "rm", "-f", xmlDevicePath], "utf8", 5_000); } catch { /* best effort */ }
         lastDumpError = null;
         break;
       } catch (error) {
         lastDumpError = error;
+        try { adb(["shell", "pkill", "-9", "uiautomator"], "utf8", 5_000); } catch { /* no stale process */ }
         try {
-          adb(["shell", "uiautomator", "dump"]);
-          adb(["pull", xmlFallbackDevicePath, xmlArtifactPath]);
+          const streamed = String(adb([
+            "exec-out", "timeout", "12", "uiautomator", "dump", "--compressed", "/dev/tty",
+          ], "utf8", 16_000));
+          const xmlStart = streamed.indexOf("<?xml");
+          const hierarchyEnd = streamed.lastIndexOf("</hierarchy>");
+          if (xmlStart < 0 || hierarchyEnd < xmlStart) {
+            throw new Error(`android streamed UI hierarchy missing: ${streamed.slice(0, 500)}`);
+          }
+          fs.writeFileSync(
+            xmlArtifactPath,
+            streamed.slice(xmlStart, hierarchyEnd + "</hierarchy>".length),
+            "utf8",
+          );
           lastDumpError = null;
           break;
         } catch (fallbackError) {
           lastDumpError = fallbackError;
+          try { adb(["shell", "pkill", "-9", "uiautomator"], "utf8", 5_000); } catch { /* no stale process */ }
         }
         Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
       }
@@ -549,6 +567,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       try {
         adb(["shell", "screencap", "-p", pngDevicePath]);
         adb(["pull", pngDevicePath, pngArtifactPath]);
+        try { adb(["shell", "rm", "-f", pngDevicePath], "utf8", 5_000); } catch { /* best effort */ }
       } catch {
         fs.writeFileSync(pngArtifactPath, "");
       }
@@ -588,6 +607,14 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     await sleep(150);
     typeAndroidText(value);
     await sleep(250);
+  };
+  const appendAndroidFieldText = async (node: AndroidNode, value: string) => {
+    tapAndroidBounds(node.bounds);
+    await sleep(250);
+    pressAndroidKey(123);
+    await sleep(100);
+    typeAndroidText(value);
+    await sleep(350);
   };
 
   const ensureAndroidReverseProxy = (port: number) => {
@@ -667,16 +694,6 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
   const findAndroidNode = (nodes: AndroidNode[], matcher: (node: AndroidNode) => boolean): AndroidNode | null =>
     nodes.find((node) => matcher(node)) ?? null;
-
-  const findAndroidLoginNode = (nodes: AndroidNode[]) =>
-    findAndroidNode(
-      nodes,
-      (node) =>
-        node.clickable &&
-        node.enabled &&
-        (LOGIN_LABEL_RE.test(`${node.text} ${node.contentDesc}`) ||
-          LOGIN_LABEL_FALLBACK_RE.test(`${node.text} ${node.contentDesc}`)),
-    );
 
   const findAndroidDevServerNode = (nodes: AndroidNode[]) =>
     nodes
@@ -1141,13 +1158,21 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         /content-desc="(?:Войти|Login)"[^>]*enabled="false"/i.test(xml));
     const isAuthenticatedSessionReady = (xml: string) =>
       isAndroidAuthenticatedSessionSurfaceXml(xml);
-    const submitLoginAction = async (loginNode: AndroidNode | null) => {
-      pressAndroidKey(66);
-      await sleep(300);
-      if (loginNode) {
-        tapAndroidBounds(loginNode.bounds);
-        await sleep(300);
+    const submitLoginAction = async (_loginNode: AndroidNode | null) => {
+      // The password IME can cover the submit button while the accessibility
+      // tree still exposes its pre-keyboard bounds. A tap on that stale node
+      // is then consumed by the keyboard and no auth request is made. Close
+      // the IME first and reacquire the exact submit control from a fresh
+      // native snapshot before performing the real login action.
+      pressAndroidKey(4);
+      await sleep(600);
+      const stableSubmitScreen = dumpAndroidScreen(`${params.artifactBase}-before-login-submit`);
+      const stableLoginNode = findAndroidAuthSubmitNode(parseAndroidNodes(stableSubmitScreen.xml));
+      if (!stableLoginNode) {
+        throw new Error("Android login submit control disappeared after keyboard dismissal");
       }
+      tapAndroidBounds(stableLoginNode.bounds);
+      await sleep(300);
     };
     const waitForStableLoginScreen = async (stage: string, timeoutMs = 12_000) =>
       poll(
@@ -1287,7 +1312,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     ) => {
       const verifyExact = options.verifyExact ?? true;
       let current = await readLoginField(`${stage}-baseline`, fieldId);
-      for (let attempt = 0; attempt <= 1; attempt += 1) {
+      const maximumAttempts = verifyExact ? 6 : 2;
+      for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
         if (verifyExact && verifyAndroidAuthFieldValue(current.node, expected).ok) {
           return current;
         }
@@ -1296,7 +1322,21 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
           return current;
         }
         const focused = await focusLoginField(`${stage}-focus-${attempt + 1}`, fieldId);
-        await replaceAndroidFieldText(focused.node, expected);
+        // A controlled React Native TextInput can remount while `adb input
+        // text` is still emitting a long value. The native field then keeps a
+        // valid prefix and drops only the remaining characters. Preserve that
+        // accepted prefix and append the missing suffix in bounded passes;
+        // clearing and replaying the whole credential merely repeats the same
+        // truncation point.
+        const appendAcceptedPrefix = verifyExact
+          && valueBeforeInput.length > 0
+          && valueBeforeInput.length < expected.length
+          && expected.startsWith(valueBeforeInput);
+        if (appendAcceptedPrefix) {
+          await appendAndroidFieldText(focused.node, expected.slice(valueBeforeInput.length));
+        } else {
+          await replaceAndroidFieldText(focused.node, expected);
+        }
         current = await readLoginField(`${stage}-typed-${attempt + 1}`, fieldId);
         if (verifyExact && verifyAndroidAuthFieldValue(current.node, expected).ok) {
           return current;
@@ -1427,10 +1467,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      if (
-        isAuthenticatedSessionReady(current.xml) &&
-        params.successPredicate(current.xml)
-      ) {
+      // The caller's success predicate can identify a protected feature
+      // surface (for example an exact canonical revision) that deliberately
+      // has none of the generic profile/shell markers. Requiring the generic
+      // marker after that exact proof makes the harness route away from an
+      // already successful login.
+      if (params.successPredicate(current.xml)) {
         return current;
       }
       if (isAndroidLauncherHome(current.xml) || isAndroidDevLauncherHome(current.xml) || isAndroidBlankAppSurface(current.xml)) {
@@ -1462,9 +1504,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     if (isLoginScreen(current.xml)) {
       throw new Error(`android login did not complete for ${params.protectedRoute}`);
     }
+    if (params.successPredicate(current.xml)) {
+      return current;
+    }
     if (
       isAuthenticatedSessionReady(current.xml) &&
-      (params.successPredicate(current.xml) || params.renderablePredicate(current.xml))
+      params.renderablePredicate(current.xml)
     ) {
       return current;
     }

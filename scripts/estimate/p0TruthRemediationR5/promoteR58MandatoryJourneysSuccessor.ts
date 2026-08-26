@@ -19,7 +19,7 @@ type Resource = {
   procurement?: boolean; inclusion?: Ast;
 };
 export type WorkSpec = {
-  catalogId: string; domain: string; title: string; aliases: string[];
+  catalogId: string; workGroupId: string; domain: string; title: string; aliases: string[];
   included: string[]; excluded: string[]; standard: string; standardTitle: string;
   standardUrl: string; parameters: Parameter[]; formulas: Formula[]; resources: Resource[];
 };
@@ -78,9 +78,9 @@ const percent = (base: Ast, percentage: Ast): Ast => mul(base, add(n(1), div(per
 const literalTrue: Ast = { kind: "literal", value: true };
 const eq = (parameterId: string, value: string | boolean): Ast => ({ kind: "equals", parameterId, value });
 
-const WORKS: WorkSpec[] = [
+export const WORKS: WorkSpec[] = [
   {
-    catalogId: "r58-real:concrete-bollard-installation", domain: "site_improvement",
+    catalogId: "r58-real:concrete-bollard-installation", workGroupId: "canonical-technology:r58:concrete-bollard-installation", domain: "site_improvement",
     title: "Устройство монолитных бетонных боллардов", aliases: ["бетонный боллард", "бетонные столбики", "антипарковочный столбик"],
     included: ["разметка", "локальная разработка грунта", "арматурный каркас", "бетонирование", "установка и уход за бетоном"],
     excluded: ["перенос подземных коммуникаций", "декоративная облицовка", "силовое противотаранное проектирование"],
@@ -113,7 +113,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:bridge-bored-pile-installation", domain: "bridges",
+    catalogId: "r58-real:bridge-bored-pile-installation", workGroupId: "canonical-technology:r58:bridge-bored-pile-installation", domain: "bridges",
     title: "Устройство буронабивных свай мостовой опоры", aliases: ["мостовая свая", "сваи моста", "буронабивные сваи опоры"],
     included: ["бурение", "временная обсадка", "арматурный каркас", "бетонирование методом ВПТ", "контроль сплошности"],
     excluded: ["ростверк", "испытание статической нагрузкой без отдельного назначения", "постоянная обсадная труба"],
@@ -147,7 +147,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:wall-plaster-application", domain: "interior_finishes",
+    catalogId: "r58-real:wall-plaster-application", workGroupId: "canonical-technology:r58:wall-plaster-application", domain: "interior_finishes",
     title: "Нанесение штукатурки на стены", aliases: ["штукатурка стен", "оштукатуривание стен", "штукатурка 100 м2"],
     included: ["грунтование", "установка маяков", "нанесение и выравнивание раствора", "локальная сетка при выбранной опции"],
     excluded: ["демонтаж старой штукатурки", "сплошное шпаклевание", "окраска", "ремонт основания"],
@@ -175,7 +175,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:gabion-wall-construction", domain: "hydraulic_and_retaining",
+    catalogId: "r58-real:gabion-wall-construction", workGroupId: "canonical-technology:r58:gabion-wall-construction", domain: "hydraulic_and_retaining",
     title: "Устройство габионной подпорной стены", aliases: ["габион", "габионная стена", "устройство габионов"],
     included: ["подготовка основания", "геотекстиль", "сборка коробов", "каменное заполнение", "вязка и стяжки", "дренаж при выборе"],
     excluded: ["расчёт устойчивости стены", "анкеры", "массовая разработка грунта", "перенос русла"],
@@ -208,7 +208,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:roofing-membrane-system", domain: "roofing",
+    catalogId: "r58-real:roofing-membrane-system", workGroupId: "canonical-technology:r58:roofing-membrane-system", domain: "roofing",
     title: "Устройство рулонной кровельной системы", aliases: ["кровля", "рулонная кровля", "мембранная кровля"],
     included: ["пароизоляция", "теплоизоляция", "слои кровельного ковра", "примыкания", "линейный водоотвод"],
     excluded: ["несущая плита", "разуклонка без заданного объёма", "воронки без проекта", "демонтаж существующей кровли"],
@@ -242,7 +242,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:monolithic-reinforced-concrete", domain: "concrete",
+    catalogId: "r58-real:monolithic-reinforced-concrete", workGroupId: "canonical-technology:r58:monolithic-reinforced-concrete", domain: "concrete",
     title: "Устройство монолитной железобетонной конструкции", aliases: ["монолитный железобетон", "опалубка арматура бетон", "железобетонная конструкция"],
     included: ["опалубка", "армирование", "бетонирование", "виброуплотнение", "уход за бетоном"],
     excluded: ["земляные работы", "гидроизоляция", "закладные без ведомости", "испытания сверх входного контроля"],
@@ -272,7 +272,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:masonry-wall-openings-lintels", domain: "masonry",
+    catalogId: "r58-real:masonry-wall-openings-lintels", workGroupId: "canonical-technology:r58:masonry-wall-openings-lintels", domain: "masonry",
     title: "Кладка стены с проёмами и перемычками", aliases: ["кладка с проемами", "кирпичная стена с перемычками", "перемычки над проемами"],
     included: ["кладка чистого объёма", "раствор", "армирование кладки", "монтаж заданных перемычек"],
     excluded: ["штукатурка", "утепление", "дверные и оконные блоки", "монолитные пояса"],
@@ -303,7 +303,7 @@ const WORKS: WorkSpec[] = [
     ],
   },
   {
-    catalogId: "r58-real:finish-coating-application", domain: "interior_finishes",
+    catalogId: "r58-real:finish-coating-application", workGroupId: "canonical-technology:r58:finish-coating-application", domain: "interior_finishes",
     title: "Нанесение финишного защитно-декоративного покрытия", aliases: ["финишное покрытие", "окраска поверхности", "защитное покрытие"],
     included: ["контроль основания", "грунтование при выборе", "межслойная выдержка", "нанесение заданного числа слоёв"],
     excluded: ["удаление старого покрытия", "выравнивание основания", "ремонт трещин", "огнезащита без отдельной системы"],
@@ -385,7 +385,7 @@ export async function insertWork(client: Client, spec: WorkSpec, releaseId: stri
       scope: { included: spec.included, excluded: spec.excluded },
       assumptions: ["Исходная смета построена на явно показанных baseline-значениях.",
         "До подтверждения проекта и TDS количества являются предварительными; цены не выдумываются."] }),
-    JSON.stringify({ aliases: spec.aliases, mandatoryJourney: true, standard: spec.standard }), definitionSha256,
+    JSON.stringify({ aliases: spec.aliases, workGroupId: spec.workGroupId, mandatoryJourney: true, standard: spec.standard }), definitionSha256,
     JSON.stringify({ authority: "P0_ONE_MONOLITH_ESTIMATE_PLATFORM_R5.8", specSha256: SPEC_SHA256,
       normativeSource: { sourceKey: spec.standard, titleRu: spec.standardTitle, officialUrl: spec.standardUrl },
       pricePolicy: "PRICE_REQUIRED", generatedTemplate: false, universalEstimator: false })]);

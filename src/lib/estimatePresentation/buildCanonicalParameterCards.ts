@@ -20,6 +20,17 @@ const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze(
   asphalt_layers: "asphalt_layer_count",
 });
 
+function publicParameterText(value: string | null | undefined): string {
+  return String(value ?? "")
+    .replace(/\s*Проверочный\s+объект\s+BATCH[-\s]*\d+\s*\.?/giu, "")
+    .replace(/\b(?:backend|release|revision|child|server(?:-side)?)\b/gi, "")
+    .replace(/\bBATCH[-\s]*\d+\b\.?/gi, "")
+    .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi, "")
+    .replace(/\b[0-9a-f]{64}\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function revisionCardSource(
   source: EstimateDraftRevision["params"][string]["source"] | null,
 ): AiEstimateParameterCard["source"] {
@@ -75,7 +86,7 @@ export function buildRevisionParameterCards(
     if (isAiEstimateTechnicalHiddenParam(key) || !hasHumanReadableAiEstimateParameterPassport(key, fallbackLabel)) {
       return [];
     }
-    const labelRu = aiEstimateRuLabelForParameter(key, fallbackLabel);
+    const labelRu = publicParameterText(aiEstimateRuLabelForParameter(key, fallbackLabel));
     if (!labelRu || containsForbiddenAiEstimateVisibleToken(labelRu) || /[a-z]+_[a-z0-9_]+/iu.test(labelRu)) {
       return [];
     }
@@ -110,12 +121,13 @@ export function buildRevisionParameterCards(
       affectsRowIds: affectedRowIds,
       affectsRowTitlesRu: affectedRowIds
         .map((rowId) => rowTitleById.get(rowId))
-        .filter((title): title is string => Boolean(title)),
+        .filter((title): title is string => Boolean(title))
+        .map(publicParameterText),
       formulaRefs: [...new Set(formulaRefs)],
       clarificationTier: requiredFor === "contract_ready"
         ? "critical"
         : requiredFor === "safety_review" ? "recommended" : "optional",
-      provenanceRu: parameter?.sourceText,
+      provenanceRu: publicParameterText(parameter?.sourceText),
       guideShortRu: parameter?.canonicalUnit
         ? `По проекту или обмеру: введите подтверждённое значение, ${unitRu}`
         : "По проекту: укажите подтверждённое значение.",
@@ -139,7 +151,7 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
     guideShortRu = `Добавьте каждый ${asphalt.structured_group.item_label_ru.toLocaleLowerCase("ru-RU")} отдельно; количество рассчитывается автоматически`;
     guideKind = "DERIVED_VALUE_RULE";
   } else if (parameter.allowedValues.length > 0 || parameter.valueType === "boolean") {
-    guideShortRu = `Правило выбора: ${parameter.description}`;
+    guideShortRu = `Правило выбора: ${publicParameterText(parameter.description)}`;
     guideKind = "ENUM_DECISION_RULE";
   } else if (source && parameter.validation.min != null && parameter.validation.max != null) {
     guideShortRu = `Нормативный диапазон: ${parameter.validation.min}–${parameter.validation.max}${unit ? ` ${unit}` : ""}`;
@@ -158,16 +170,16 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
     guideKind = "NO_NUMERIC_NORM";
   }
   return {
-    guideShortRu,
+    guideShortRu: publicParameterText(guideShortRu),
     guideKind,
     guideDetailsRu: [
-      `Почему нужен параметр: ${parameter.description}`,
+      `Почему нужен параметр: ${publicParameterText(parameter.description)}`,
       source
-        ? `Нормативный документ: ${source.document}; редакция ${source.revision}; точный locator ${source.locator}.`
+        ? `Нормативный документ: ${publicParameterText(source.document)}; редакция ${publicParameterText(source.revision)}; точный пункт ${publicParameterText(source.locator)}.`
         : "Источник значения: проект, обмер, изготовитель или инженерное решение; универсальный числовой норматив не заявлен.",
-      source ? `Source snapshot: ${source.sourceHash}; проверено ${source.checkedAt}.` : "Число не подставляется автоматически и требует provenance пользователя.",
-      `Применимость: ${applicability}.`,
-      `Изменяемые формулы/строки: ${affected}.`,
+      source ? `Источник проверен ${source.checkedAt}.` : "Число не подставляется автоматически и требует подтверждённого источника пользователя.",
+      `Применимость: ${publicParameterText(applicability)}.`,
+      `Изменяемые формулы/строки: ${publicParameterText(affected)}.`,
     ],
   };
 }
@@ -274,7 +286,7 @@ export function buildCanonicalParameterCards(input: {
       : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: choice.label }));
     return {
       key: parameter.parameterId,
-      labelRu: parameter.label,
+      labelRu: publicParameterText(parameter.label),
       value: parameter.value,
       displayValueRu: displayValue(parameter),
       unitRu: aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit),
@@ -294,16 +306,17 @@ export function buildCanonicalParameterCards(input: {
       affectsRowIds: affectedRowIds,
       affectsRowTitlesRu: affectedRowIds
         .map((rowId) => rowTitleById.get(rowId))
-        .filter((title): title is string => Boolean(title)),
+        .filter((title): title is string => Boolean(title))
+        .map(publicParameterText),
       formulaRefs: [...parameter.affectsFormula],
-      whyItMattersRu: parameter.description,
+      whyItMattersRu: publicParameterText(parameter.description),
       changesInEstimateRu: affectedRowIds.length > 0
         ? `Пересчитывает связанные позиции: ${affectedRowIds.length}.`
         : "Уточняет состав и уровень доверия расчёта.",
       missingValueConsequenceRu: parameter.requiredLevel === "BLOCKING_REQUIRED"
         ? "Без этого параметра профессиональный итог не рассчитывается."
         : "Предварительная смета остаётся доступной с явно показанным ограничением.",
-      provenanceRu: parameter.assumption ?? parameter.sourceText ?? sourceLabel(parameter),
+      provenanceRu: publicParameterText(parameter.assumption ?? parameter.sourceText ?? sourceLabel(parameter)),
       clarificationTier: parameter.requiredLevel === "BLOCKING_REQUIRED"
         ? "critical"
         : parameter.requiredLevel === "CONTRACT_REQUIRED" || parameter.requiredLevel === "CONDITIONAL"

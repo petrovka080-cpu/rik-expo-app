@@ -31,7 +31,38 @@ function collectJsonTestIds(tree: JsonTree): { type: string; testID: string }[] 
   );
 }
 
+function visibleText(tree: JsonTree): string {
+  if (!tree) return "";
+  if (Array.isArray(tree)) return tree.map(visibleText).join("");
+  return (tree.children ?? []).map((child) =>
+    typeof child === "string" ? child : visibleText(child)
+  ).join("");
+}
+
 describe("estimate revision diff UI", () => {
+  it("shows the immutable backend revision ordinal instead of renumbering a loaded history slice", () => {
+    const revision = {
+      ...createEstimateDraftRevision({
+        estimateDraftId: "backend-ordinal-ui",
+        rawInput: "Ремонт фасада 120 м2",
+        createdAt: "2026-08-22T00:00:00.000Z",
+      }),
+      canonicalRevisionNumber: 4,
+    };
+    let renderer!: TestRenderer.ReactTestRenderer;
+    act(() => {
+      renderer = TestRenderer.create(<EstimateRevisionTimeline state={{
+        estimateDraftId: revision.estimateDraftId,
+        currentRevisionId: revision.revisionId,
+        revisions: [revision],
+        diffs: [],
+      }} />);
+    });
+    const tree = renderer.toJSON();
+    expect(visibleText(tree)).toContain("Текущая версия: 4");
+    expect(collectJsonTestIds(tree).some(({ testID }) => testID.includes("--ordinal-4--"))).toBe(true);
+  });
+
   it("shows changed params, changed rows and current revision artifact status", () => {
     const r1 = createEstimateDraftRevision({
       estimateDraftId: "diff-ui",

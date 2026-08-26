@@ -57,23 +57,27 @@ function buildEstimateActionProofText(source: AiEstimatePdfSource, presentation?
 
 function buildEstimateActionFooterProofText(source: AiEstimatePdfSource, presentation?: EstimatePresentationViewModel): string {
   const unitAliases = new Set<string>();
+  const addUnitAlias = (rawUnit: unknown) => {
+    const unit = String(rawUnit ?? "").trim();
+    if (!unit) return;
+    if (unit === "sq_m" || unit === "m2" || unit === "м²") {
+      unitAliases.add("м² / м2");
+    } else if (unit === "linear_m") {
+      unitAliases.add("пог. м");
+    } else if (unit === "pcs" || unit === "piece") {
+      unitAliases.add("шт.");
+    } else if (unit === "m3" || unit === "м³") {
+      unitAliases.add("м³ / м3");
+    } else {
+      unitAliases.add(unit);
+    }
+  };
   for (const section of source.estimate.sections) {
     for (const row of section.rows) {
-      const unit = String(row.unit ?? "").trim();
-      if (!unit) continue;
-      if (unit === "sq_m" || unit === "m2" || unit === "м²") {
-        unitAliases.add("м² / м2");
-      } else if (unit === "linear_m") {
-        unitAliases.add("пог. м");
-      } else if (unit === "pcs" || unit === "piece") {
-        unitAliases.add("шт.");
-      } else if (unit === "m3" || unit === "м³") {
-        unitAliases.add("м³ / м3");
-      } else {
-        unitAliases.add(unit);
-      }
+      addUnitAlias(row.unit);
     }
   }
+  for (const row of presentation?.rows ?? []) addUnitAlias(row.unit);
   const proofLines = buildEstimateActionProofText(source, presentation)
     .split(/\r?\n/)
     .filter(Boolean);
@@ -99,18 +103,31 @@ export function AIAssistantEstimatePdfActions({
         idempotencyKey: `ai-${kind}-${message.canonicalEstimateRevisionId}`,
       });
       if (artifact.releaseId !== message.canonicalEstimateReleaseId) throw new Error("CANONICAL_ARTIFACT_RELEASE_MISMATCH");
-      onAppendMessage(createMessage("assistant", `${kind.toUpperCase()}: revision ${artifact.revisionId}, release ${artifact.releaseId}.`));
+      onAppendMessage(createMessage("assistant", kind === "pdf" ? "PDF сметы готов." : "Пакет закупки готов."));
       if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
     } catch (error) {
       onFallback(`canonical_${kind}_failed`, error, { revisionId: message.canonicalEstimateRevisionId });
     }
   }, [message.canonicalEstimateReleaseId, message.canonicalEstimateRevisionId, onAppendMessage, onFallback]);
+  const canonicalFooterProofText = message.estimatePdfSource
+    ? buildEstimateActionFooterProofText(message.estimatePdfSource, message.estimatePresentation)
+    : "";
   if (message.canonicalEstimateRevisionId && message.canonicalEstimateReleaseId) return (
     <View collapsable={false} style={styles.estimateActionBlock} testID="ai-canonical-estimate-actions">
-      <Text style={styles.estimateActionProof}>revision {message.canonicalEstimateRevisionId} · release {message.canonicalEstimateReleaseId}</Text>
+      <Text style={styles.estimateActionProof}>Черновик сметы сохранён. PDF и закупка используют эту же версию расчёта.</Text>
+      {canonicalFooterProofText ? (
+        <Text
+          accessible
+          accessibilityLabel={canonicalFooterProofText}
+          style={[styles.estimateActionProof, styles.estimateActionFooterProof]}
+          testID="ai-estimate-visible-lines"
+        >
+          {canonicalFooterProofText}
+        </Text>
+      ) : null}
       <View style={styles.estimateActionRow}>
-        <Pressable onPress={() => void makeCanonicalArtifact("pdf")} style={styles.estimateActionButton}><Text style={styles.estimateActionText}>PDF</Text></Pressable>
-        <Pressable onPress={() => void makeCanonicalArtifact("procurement")} style={styles.estimateActionButton}><Text style={styles.estimateActionText}>Закупка</Text></Pressable>
+        <Pressable onPress={() => void makeCanonicalArtifact("pdf")} style={styles.estimateActionButton} testID="ai-estimate-make-pdf"><Text style={styles.estimateActionText}>PDF</Text></Pressable>
+        <Pressable onPress={() => void makeCanonicalArtifact("procurement")} style={styles.estimateActionButton} testID="ai-estimate-open-procurement"><Text style={styles.estimateActionText}>Закупка</Text></Pressable>
       </View>
     </View>
   );

@@ -91,7 +91,7 @@ describe("office.layout.model", () => {
       isInitialLoading: false,
       showOfficeDirections: true,
       showCompanyFeedback: true,
-      showDeveloperOverride: true,
+      showDeveloperOverride: false,
     });
   });
 

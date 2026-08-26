@@ -4,7 +4,7 @@ import path from "node:path";
 import {
   CATALOG_TRANSPORT_BFF_CONTRACT,
   CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS,
-  CATALOG_TRANSPORT_BFF_DIRECT_FALLBACK_REASON,
+  CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY,
   CATALOG_TRANSPORT_BFF_OPERATION_CONTRACTS,
   CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS,
   CATALOG_TRANSPORT_BFF_RIK_ITEMS_PREVIEW_DEFAULTS,
@@ -67,35 +67,34 @@ describe("catalog transport BFF routing contract", () => {
     ).toBe(true);
   });
 
-  it("removes direct Supabase rpc/from calls from the target transport file only", () => {
+  it("keeps the app transport on the canonical BFF owner and fails closed", () => {
     const transportSource = readProjectFile("src/lib/catalog/catalog.transport.ts");
-    const fallbackSource = readProjectFile("src/lib/catalog/catalog.transport.supabase.ts");
 
     expect(transportSource).toContain("callCatalogTransportBffRead");
+    expect(transportSource).toContain("Canonical catalog backend unavailable");
+    expect(transportSource).not.toContain("catalog.transport.supabase");
+    expect(transportSource).not.toContain("FromSupabase");
     expect(transportSource).not.toContain("supabase.rpc(");
     expect(transportSource).not.toContain("supabase.from(");
     expect(transportSource).not.toContain(".rpc(");
     expect(transportSource).not.toContain(".from(");
-
-    expect(fallbackSource.match(/\.rpc\(/g) ?? []).toHaveLength(4);
-    expect(fallbackSource.match(/\.from\(/g) ?? []).toHaveLength(11);
-    expect(CATALOG_TRANSPORT_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");
+    expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("fails closed");
+    expect(CATALOG_TRANSPORT_BFF_FAIL_CLOSED_POLICY).toContain("without a direct client database fallback");
   });
 
   it("routes the map catalog search modal through the catalog transport boundary", () => {
     const modalSource = readProjectFile("src/components/map/CatalogSearchModal.tsx");
     const transportSource = readProjectFile("src/lib/catalog/catalog.transport.ts");
-    const fallbackSource = readProjectFile("src/lib/catalog/catalog.transport.supabase.ts");
+    const serverPortSource = readProjectFile("scripts/server/stagingBffCatalogTransportReadPort.ts");
 
     expect(modalSource).toContain("loadCatalogItemsSearchPreviewRows");
     expect(modalSource).not.toContain("react-hooks/exhaustive-deps");
     expect(modalSource).not.toMatch(/supabase\.(from|rpc)\(/);
     expect(modalSource).not.toContain(".from(\"catalog_items\")");
     expect(transportSource).toContain('operation: "catalog.items.search.preview"');
-    expect(fallbackSource).toContain('from("catalog_items")');
-    expect(fallbackSource).toContain(".order(\"rik_code\", { ascending: true })");
-    expect(fallbackSource).toContain(".order(\"id\", { ascending: true })");
-    expect(fallbackSource).toContain(".range(page.from, page.to)");
+    expect(serverPortSource).toContain("from public.catalog_items");
+    expect(serverPortSource).toContain("order by rik_code asc, id asc");
+    expect(serverPortSource).toContain("CATALOG_TRANSPORT_BFF_CATALOG_ITEMS_PREVIEW_DEFAULTS.maxRows");
   });
 
   it("wires the mobile BFF route without enabling production traffic", () => {

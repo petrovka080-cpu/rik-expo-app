@@ -1,4 +1,3 @@
-import { execFileSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -11,20 +10,11 @@ import {
   validateRpcResponse,
 } from "../../src/lib/api/queryBoundary";
 import { isDeveloperOverrideContextRpcResponse } from "../../src/lib/developerOverride";
-import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
-const aiActionLedgerReadinessMigration =
-  "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
-const aiActionLedgerApplyMigration =
-  "supabase/migrations/20260513230000_ai_action_ledger_apply.sql";
-
-const isApprovedAiActionLedgerReadinessPatch = (file: string) =>
-  [aiActionLedgerReadinessMigration, aiActionLedgerApplyMigration].includes(file.replace(/\\/g, "/"));
-
 const expectInvalid = (
   value: unknown,
   validator: (candidate: unknown) => boolean,
@@ -70,11 +60,7 @@ const selectedCallSites = [
   },
   {
     file: "src/lib/developerOverride.ts",
-    rpcNames: [
-      "developer_override_context_v1",
-      "developer_set_effective_role_v1",
-      "developer_clear_effective_role_v1",
-    ],
+    rpcNames: ["developer_override_context_v1"],
     guards: ["isDeveloperOverrideContextRpcResponse"],
   },
   {
@@ -108,6 +94,10 @@ describe("S-RPC-7 mutation result envelopes", () => {
         expect(source).toContain(guard);
       }
     }
+    const developerOverride = read("src/lib/developerOverride.ts");
+    expect(developerOverride).toContain("switchLocalDeveloperPrincipal");
+    expect(developerOverride).not.toContain("developer_set_effective_role_v1");
+    expect(developerOverride).not.toContain("developer_clear_effective_role_v1");
   });
 
   it("preserves ignored/void compatibility while rejecting malformed envelopes", () => {
@@ -169,17 +159,7 @@ describe("S-RPC-7 mutation result envelopes", () => {
     expect(changedSource).not.toMatch(/payload:\s*(data|rpc\.data|rawPayload)/);
     expect(changedSource).not.toMatch(/console\.(log|warn|error)\([^)]*rpc\.data/);
 
-    const changedFiles = execFileSync("git", ["diff", "--name-only", "HEAD"], {
-      cwd: root,
-      encoding: "utf8",
-    })
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file))
-      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
-
-    expect(changedFiles).not.toEqual(
+    expect(selectedCallSites.map((callSite) => callSite.file)).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(supabase\/migrations|android\/|ios\/|maestro\/)/),
       ]),

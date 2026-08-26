@@ -170,7 +170,11 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     parameter.parameter_id,
     professionalDomainVisibleParameterMetadataV1(parameter, input.parameter_values[parameter.parameter_id]),
   ]));
-  const items: ElectricalProductionDraftItemV1[] = compilation.compiled_rows.map((row) => {
+  const parameterKeys = schema.parameters.map((parameter) => parameter.parameter_id);
+  const parameterSourceTypes = Object.fromEntries(
+    Object.entries(input.parameter_values).map(([key, value]) => [key, value.source_type]),
+  );
+  const items: ElectricalProductionDraftItemV1[] = compilation.compiled_rows.map((row, rowIndex) => {
     const informationalOutput = row.cost_ownership === "informational_output";
     const rowParameterSnapshot = Object.fromEntries(
       Object.keys(row.formula_input_values).map((parameterId) => [
@@ -216,14 +220,19 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       priceBasisDate: row.price_basis_date,
       parameterSchemaId: `canonical:${schema.schema_id}:${input.catalog_id}`,
       parameterSchemaVersion: schema.schema_version,
-      parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
-      professionalDomainParameterMetadata: parameterMetadata,
-      parameterSnapshot,
+      // Schema-level state owns the whole revision and is intentionally stored
+      // once. Repeating it on every BOQ row made large electrical revisions
+      // exceed V8's serializable string limit and the durable envelope budget.
+      parameterKeys: rowIndex === 0 ? parameterKeys : undefined,
+      professionalDomainParameterMetadata: rowIndex === 0 ? parameterMetadata : undefined,
+      parameterSnapshot: rowIndex === 0 ? parameterSnapshot : undefined,
       rowParameterSnapshot,
-      assumptionKeys,
-      explicitParameterKeys,
-      parameterSourceTypes: Object.fromEntries(Object.entries(input.parameter_values).map(([key, value]) => [key, value.source_type])),
-      professionalDomainVisibleBaselineVersion: PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1,
+      assumptionKeys: rowIndex === 0 ? assumptionKeys : undefined,
+      explicitParameterKeys: rowIndex === 0 ? explicitParameterKeys : undefined,
+      parameterSourceTypes: rowIndex === 0 ? parameterSourceTypes : undefined,
+      professionalDomainVisibleBaselineVersion: rowIndex === 0
+        ? PROFESSIONAL_DOMAIN_VISIBLE_BASELINE_VERSION_V1
+        : undefined,
       smartEstimateProjectionV2: {
         progressiveDisclosure: true,
         stage: row.section,

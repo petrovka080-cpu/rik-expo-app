@@ -77,6 +77,7 @@ export {
   selectConsumerRepairRequestItemCatalogCandidate,
   selectConsumerRepairRequestItemCatalogItem,
   selectConsumerRepairRoadScopeV4,
+  synchronizeConsumerRepairAuthoritativePhotoAttachments,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   updateConsumerRepairRequestItemUnitPrice,

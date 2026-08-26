@@ -1,7 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
-import { supabase } from "../../lib/supabaseClient";
+import { signOutSafely, supabase } from "../../lib/supabaseClient";
 
 export async function loadCurrentAuthUser(): Promise<User> {
   try {
@@ -36,6 +36,6 @@ export async function updateProfileAuthAvatar(
 }
 
 export async function signOutProfileSession(): Promise<void> {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  const result = await signOutSafely("local");
+  if (result.status === "failed") throw new Error(result.message);
 }

@@ -104,19 +104,37 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     }
   });
 
-  it("shows only the actual position name after the operation prefix", () => {
-    const item = (titleRu: string) => ({
+  it("preserves the complete public position name and technical designation around a colon", () => {
+    const item = (titleRu: string, sourceParameters: Record<string, unknown> = {}) => ({
       id: titleRu,
       titleRu,
-      sourceParameters: {},
+      sourceParameters,
     }) as unknown as ConsumerRepairRequestItem;
 
     expect(requestEstimatePublicItemTitle(item("Учёт технологических обрезков: Опора напорного трубопровода")))
-      .toBe("Опора напорного трубопровода");
+      .toBe("Учёт технологических обрезков: Опора напорного трубопровода");
     expect(requestEstimatePublicItemTitle(item("Механизированное выполнение: Всасывающий коллектор")))
-      .toBe("Всасывающий коллектор");
+      .toBe("Механизированное выполнение: Всасывающий коллектор");
     expect(requestEstimatePublicItemTitle(item("Рабочий насосный агрегат")))
       .toBe("Рабочий насосный агрегат");
+
+    const technicalNames = [
+      "Трубопровод: труба ПЭ100 SDR 11 PN16 DN110×10 мм",
+      "Металлоконструкция: сталь С345, лист 12×1500×6000 мм",
+      "Монолитная конструкция: бетон класса B25 W6 F200",
+      "Электроснабжение: кабель ВВГнг-LS 5×6 мм²",
+      "Перегородка: профиль CW 100, толщина 0,6 мм",
+    ];
+    const visibleNames = technicalNames.map((titleRu) =>
+      requestEstimatePublicItemTitle(item(titleRu, {
+        rowCode: `internal_row_${technicalNames.indexOf(titleRu)}`,
+        specification: "Отдельная спецификация не заменяет публичное название",
+      }))
+    );
+
+    expect(visibleNames).toEqual(technicalNames);
+    expect(new Set(visibleNames).size).toBe(technicalNames.length);
+    expect(visibleNames.join(" ")).not.toMatch(/internal_row_|template_id|rowCode/iu);
   });
 
   it("shows all seven accepted asphalt baseline inputs without calling them user-confirmed", () => {
@@ -266,6 +284,7 @@ describe("P0 canonical parameter editor and professional PDF", () => {
   it("keeps the raw PDF internal and routes the professional artifact through the product viewer", () => {
     const screen = readFileSync(resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"), "utf8");
     const runtime = readFileSync(resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), "utf8");
+    const artifactContract = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts"), "utf8");
     const pdfFlow = screen.slice(screen.indexOf("private completePdfOpen"), screen.indexOf("private openDraftFromHistory"));
 
     expect(pdfFlow).toContain('kind: "pdf"');
@@ -275,9 +294,10 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(screen).toContain("context?.definitionId ?? revision.catalogId");
     expect(screen).toContain("historyRecord?.title");
     expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
-    expect(runtime).toContain('templateVersion: "professional-estimate-pdf:3"');
+    expect(runtime).toContain("buildCanonicalArtifactMetadata");
+    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:4"');
     expect(runtime).toContain("Профессиональная смета");
-    expect(runtime).toContain('man_hour: "чел.-ч"');
+    expect(artifactContract).toContain('man_hour: "чел.-ч"');
     expect(runtime).not.toContain("?token=local-dev-signed-artifact-r1");
   });
 

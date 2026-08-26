@@ -15,6 +15,12 @@ export type MobilePhotoCaptureErrorCode =
   | "PHOTO_PICKER_ASSET_UNAVAILABLE"
   | "PHOTO_LOCAL_COPY_FAILED"
   | "PHOTO_LOCAL_FILE_MISSING"
+  | "PHOTO_LOCAL_INTEGRITY_INVALID"
+  | "PHOTO_LOCAL_SIZE_MISMATCH"
+  | "PHOTO_LOCAL_HASH_MISMATCH"
+  | "PHOTO_LOCAL_MIME_MISMATCH"
+  | "PHOTO_LOCAL_COLLISION"
+  | "PHOTO_LOCAL_RECORD_WRITE_FAILED"
   | "PHOTO_DECODE_FAILED"
   | "PHOTO_ORIENTATION_NORMALIZATION_FAILED"
   | "PHOTO_METADATA_STRIP_FAILED"
@@ -162,6 +168,42 @@ export const MOBILE_PHOTO_CAPTURE_ERROR_COPY: Record<
     retryable: false,
     recoveryAction: "PICK_PHOTO",
     analyticsEvent: "mobile_capture_recovered_after_restart",
+  },
+  PHOTO_LOCAL_INTEGRITY_INVALID: {
+    safeMessageRu: "Не удалось подтвердить целостность снимка.",
+    retryable: false,
+    recoveryAction: "PICK_PHOTO",
+    analyticsEvent: "mobile_photo_local_integrity_failed",
+  },
+  PHOTO_LOCAL_SIZE_MISMATCH: {
+    safeMessageRu: "Размер сохранённого снимка не совпал.",
+    retryable: true,
+    recoveryAction: "FREE_DEVICE_SPACE",
+    analyticsEvent: "mobile_photo_local_integrity_failed",
+  },
+  PHOTO_LOCAL_HASH_MISMATCH: {
+    safeMessageRu: "Контрольная сумма сохранённого снимка не совпала.",
+    retryable: false,
+    recoveryAction: "PICK_PHOTO",
+    analyticsEvent: "mobile_photo_local_integrity_failed",
+  },
+  PHOTO_LOCAL_MIME_MISMATCH: {
+    safeMessageRu: "Формат сохранённого снимка не подтверждён.",
+    retryable: false,
+    recoveryAction: "PICK_PHOTO",
+    analyticsEvent: "mobile_photo_local_integrity_failed",
+  },
+  PHOTO_LOCAL_COLLISION: {
+    safeMessageRu: "Не удалось безопасно сохранить снимок из-за конфликта файлов.",
+    retryable: false,
+    recoveryAction: "CONTACT_SUPPORT",
+    analyticsEvent: "mobile_photo_local_collision",
+  },
+  PHOTO_LOCAL_RECORD_WRITE_FAILED: {
+    safeMessageRu: "Не удалось сохранить запись снимка.",
+    retryable: true,
+    recoveryAction: "FREE_DEVICE_SPACE",
+    analyticsEvent: "mobile_photo_local_record_failed",
   },
   PHOTO_DECODE_FAILED: {
     safeMessageRu: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u0442\u044c \u0444\u043e\u0442\u043e.",

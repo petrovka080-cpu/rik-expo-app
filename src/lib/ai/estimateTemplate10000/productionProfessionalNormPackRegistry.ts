@@ -93,7 +93,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 25,
     sourceId: sourceId("tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1"),
-    sourceTitle: "Ceresit CM 11 PLUS technical data sheet",
+    sourceTitle: "Технический паспорт плиточного клея Ceresit CM 11 Plus",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
     sourcePage: "technical data, approximate consumption table",
     match: {
@@ -112,7 +112,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 5,
     sourceId: sourceId("tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1"),
-    sourceTitle: "Ceresit CT 17 Profi primer technical data sheet",
+    sourceTitle: "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
     sourcePage: "technical data, consumption",
     match: {
@@ -131,7 +131,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 10,
     packageSize: 25,
     sourceId: sourceId("plaster_ceresit_ct29_kg_m2_mm_v1"),
-    sourceTitle: "Ceresit CT 29 plaster filler technical data sheet",
+    sourceTitle: "Технический паспорт ремонтной штукатурно-шпаклёвочной смеси Ceresit CT 29",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
     sourcePage: "technical data, assumed consumption",
     match: {
@@ -150,7 +150,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 8,
     packageSize: 20,
     sourceId: sourceId("putty_ceresit_ct126_kg_m2_mm_v1"),
-    sourceTitle: "Ceresit CT 126 technical data sheet",
+    sourceTitle: "Технический паспорт финишной шпаклёвки Ceresit CT 126",
     sourceUrl: "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
     sourcePage: "technical data, approximate consumption",
     match: {
@@ -169,7 +169,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 8,
     packageSize: 20,
     sourceId: sourceId("putty_ceresit_ct127_finish_layer_max_2mm_v1"),
-    sourceTitle: "Ceresit CT 127 technical data sheet",
+    sourceTitle: "Технический паспорт финишной шпаклёвки Ceresit CT 127",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
     sourcePage: "scope of use and layer thickness",
     match: {
@@ -188,7 +188,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 15,
     sourceId: sourceId("paint_ceresit_ct54_silicate_two_coats_l_m2_v1"),
-    sourceTitle: "Ceresit CT 54 Silicate Aero technical data sheet",
+    sourceTitle: "Технический паспорт силикатной краски Ceresit CT 54 Silicate Aero",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
     sourcePage: "technical data, assumed consumption",
     match: {
@@ -208,7 +208,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 5,
     sourceId: sourceId("paint_ceresit_ct17_primer_l_m2_before_paint_v1"),
-    sourceTitle: "Ceresit CT 17 Profi primer technical data sheet",
+    sourceTitle: "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
     sourcePage: "technical data, consumption",
     match: {
@@ -228,7 +228,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 25,
     sourceId: sourceId("flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1"),
-    sourceTitle: "Ceresit CN 69 floor levelling compound technical data sheet",
+    sourceTitle: "Технический паспорт самовыравнивающейся смеси для пола Ceresit CN 69",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
     sourcePage: "scope of use and layer thickness",
     match: {
@@ -247,7 +247,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 5,
     sourceId: sourceId("flooring_ceresit_ct17_primer_flooring_l_m2_v1"),
-    sourceTitle: "Ceresit CT 17 Profi primer technical data sheet",
+    sourceTitle: "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
     sourcePage: "technical data, consumption",
     match: {
@@ -266,7 +266,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 8,
     packageSize: 25,
     sourceId: sourceId("drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1"),
-    sourceTitle: "Knauf Fugenfuller Leicht technical data sheet",
+    sourceTitle: "Технический паспорт гипсовой шпаклёвки Knauf Fugenfuller Leicht",
     sourceUrl: "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
     sourcePage: "material requirement consumption table",
     match: {
@@ -285,7 +285,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 8,
     packageSize: 25,
     sourceId: sourceId("drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"),
-    sourceTitle: "Knauf Fugenfuller Leicht technical data sheet",
+    sourceTitle: "Технический паспорт гипсовой шпаклёвки Knauf Fugenfuller Leicht",
     sourceUrl: "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
     sourcePage: "perimeter connection jointing consumption",
     match: {
@@ -304,7 +304,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 8,
     packageSize: 15,
     sourceId: sourceId("waterproofing_ceresit_cl51_two_coats_kg_m2_v1"),
-    sourceTitle: "Ceresit CL 51 Express 1-K technical data sheet",
+    sourceTitle: "Технический паспорт эластичной гидроизоляционной мастики Ceresit CL 51 Express 1-K",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
     sourcePage: "technical data, amount required for two coats",
     match: {
@@ -323,7 +323,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 60,
     sourceId: sourceId("masonry_aac_block_600_200_200_piece_m2_wall_v1"),
-    sourceTitle: "Autoclaved aerated concrete block layout engineering takeoff table",
+    sourceTitle: "Расчётная ведомость раскладки блоков из автоклавного газобетона",
     sourceUrl: "https://www.ytong-silka.de/",
     sourcePage: "block geometry 600 x 200 mm face area, reviewed estimator takeoff",
     match: {
@@ -342,7 +342,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 500,
     sourceId: sourceId("masonry_brick_250_120_65_piece_m2_half_brick_v1"),
-    sourceTitle: "Clay brick wall takeoff table 250 x 120 x 65 mm",
+    sourceTitle: "Расчётная ведомость кладки из керамического кирпича 250 × 120 × 65 мм",
     sourceUrl: "https://www.gobrick.com/",
     sourcePage: "brick dimensions and estimator-reviewed wall consumption table",
     match: {
@@ -361,7 +361,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 25,
     sourceId: sourceId("masonry_thin_bed_block_adhesive_kg_m2_200mm_v1"),
-    sourceTitle: "Thin-bed block adhesive consumption table for AAC/block masonry",
+    sourceTitle: "Таблица расхода тонкошовного клея для кладки блоков из автоклавного газобетона",
     sourceUrl: "https://www.ytong-silka.de/",
     sourcePage: "thin-bed mortar / block adhesive estimator table",
     match: {
@@ -380,7 +380,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 1,
     sourceId: sourceId("masonry_cement_lime_mortar_m3_m2_brick_v1"),
-    sourceTitle: "Brick masonry mortar quantity estimator table",
+    sourceTitle: "Расчётная таблица расхода кладочного раствора",
     sourceUrl: "https://www.gobrick.com/",
     sourcePage: "mortar volume by brick wall area, reviewed estimator takeoff",
     match: {
@@ -399,7 +399,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 3,
     packageSize: 50,
     sourceId: sourceId("masonry_reinforcement_mesh_m2_m2_wall_v1"),
-    sourceTitle: "Masonry reinforcement mesh reviewed method statement",
+    sourceTitle: "Проверенная технологическая карта армирования кладки сеткой",
     sourceUrl: "https://www.concrete.org/",
     sourcePage: "masonry reinforcement allowance, reviewed estimator method statement",
     match: {
@@ -418,7 +418,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 2,
     packageSize: 1,
     sourceId: sourceId("concrete_ready_mix_m3_m3_placed_v1"),
-    sourceTitle: "Ready-mix concrete placed volume allowance",
+    sourceTitle: "Таблица учёта объёма уложенной товарной бетонной смеси",
     sourceUrl: "https://www.nrmca.org/",
     sourcePage: "ready-mixed concrete volume takeoff with placement waste allowance",
     match: {
@@ -437,7 +437,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 1000,
     sourceId: sourceId("reinforcement_rebar_kg_m3_concrete_element_v1"),
-    sourceTitle: "Reinforcement steel estimator kg per m3 concrete element table",
+    sourceTitle: "Проверенная сметчиком таблица расхода арматурной стали на 1 м³ бетонной конструкции",
     sourceUrl: "https://www.engineeringtoolbox.com/reinforcing-bars-d_1341.html",
     sourcePage: "reinforcing bar weights and estimator-reviewed kg per concrete volume allowance",
     match: {
@@ -456,7 +456,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 5,
     packageSize: 50,
     sourceId: sourceId("formwork_contact_area_m2_m3_concrete_element_v1"),
-    sourceTitle: "Concrete formwork contact area estimator method statement",
+    sourceTitle: "Проверенная сметчиком методика расчёта площади контакта опалубки",
     sourceUrl: "https://www.concrete.org/",
     sourcePage: "formwork contact area by concrete element, reviewed estimator method statement",
     match: {
@@ -475,7 +475,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     wastePercent: 7,
     packageSize: 25,
     sourceId: sourceId("screed_cement_sand_mix_kg_m2_50mm_v1"),
-    sourceTitle: "Cement-sand screed dry mix estimator table for 50 mm layer",
+    sourceTitle: "Расчётная таблица расхода сухой цементно-песчаной смеси для стяжки толщиной 50 мм",
     sourceUrl: "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
     sourcePage: "floor layer thickness scope with estimator-reviewed cement-sand dry mix density",
     match: {

@@ -2,6 +2,7 @@ import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnEx
 import { createAiEstimatePlugin } from "../../lib/aiPlatform/plugins/estimate/AiEstimatePlugin";
 import { resolveAiLiveScreenId } from "../../lib/ai/liveScreenCopilot";
 import { classifyCanonicalEstimateIntent } from "../../lib/estimate/backendPlatform/canonicalEstimateIntent";
+import { adaptCanonicalCompilationToAssistantProjection } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
@@ -17,15 +18,6 @@ type AssistantAnswerInput = {
 function platformRole(role: AssistantRole) {
   if (role === "foreman" || role === "director" || role === "buyer") return role;
   return "consumer" as const;
-}
-
-function canonicalIdentity(draft: unknown): { revisionId: string; releaseId: string } | null {
-  if (!draft || typeof draft !== "object" || Array.isArray(draft)) return null;
-  const revision = (draft as { revision?: unknown }).revision;
-  if (!revision || typeof revision !== "object" || Array.isArray(revision)) return null;
-  const revisionId = String((revision as { revisionId?: unknown }).revisionId ?? "").trim();
-  const releaseId = String((revision as { releaseId?: unknown }).releaseId ?? "").trim();
-  return revisionId && releaseId ? { revisionId, releaseId } : null;
 }
 
 export async function createBuiltInAiAssistantMessage(input: AssistantAnswerInput): Promise<AssistantMessage | null> {
@@ -44,13 +36,16 @@ export async function createBuiltInAiAssistantMessage(input: AssistantAnswerInpu
       runtimeVersion: "ai-platform-kernel-v1",
     },
   });
-  const identity = canonicalIdentity(result.draft);
+  const projection = adaptCanonicalCompilationToAssistantProjection(result.draft, input.userId ?? undefined);
   return createMessage(
     "assistant",
     sanitizeAssistantUserFacingCopy(result.userVisibleAnswerRu ?? "Backend сметы не вернул результат."),
-    identity ? {
-      canonicalEstimateRevisionId: identity.revisionId,
-      canonicalEstimateReleaseId: identity.releaseId,
+    projection ? {
+      estimatePdfSource: projection.estimatePdfSource,
+      estimatePresentation: projection.presentation,
+      actions: projection.actions,
+      canonicalEstimateRevisionId: projection.revisionId,
+      canonicalEstimateReleaseId: projection.releaseId,
     } : {},
   );
 }

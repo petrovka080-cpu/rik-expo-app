@@ -204,6 +204,14 @@ export type ConsumerRepairEstimateAttachment = {
   deleted: boolean;
   privacy: "private" | "organization" | "redacted";
   redacted: boolean;
+  serverCommitted?: boolean;
+  authoritativeAttachmentEventId?: string | null;
+  authoritativeTenantId?: string | null;
+  authoritativeOwnerUserId?: string | null;
+  authoritativeRequestId?: string | null;
+  authoritativeCatalogId?: string | null;
+  authoritativeStorageBucket?: string | null;
+  signedUrlExpiresAt?: string | null;
   legacyOrigin?: { revisionId: string; rowId: string | null } | null;
 };
 

@@ -33,6 +33,10 @@ import type {
   DrywallArchitecturalElementVariantV4,
   DrywallArchitecturalElementWorkContractV4,
 } from "./drywallArchitecturalElementsContractV4";
+import {
+  buildDrywallFlatCeilingEngineeringSourcePackR56,
+  type DrywallFlatCeilingEngineeringSourcePackR56,
+} from "./drywallFlatCeilingEngineeringSourcePackR56";
 
 export type {
   DrywallArchitecturalElementOperationV4,
@@ -127,6 +131,7 @@ export type IndividualProfessionalEstimatePassportV6 = {
   candidateCoveragePercent: 100;
   shownButUnusedParameterCount: 0;
   hiddenQuantitativeAssumptionCount: 0;
+  engineeringSourcePack: DrywallFlatCeilingEngineeringSourcePackR56;
   identityHash: string;
   parameterSchemaHash: string;
   formulaGraphHash: string;
@@ -753,6 +758,7 @@ export function buildIndividualDrywallFlatCeilingEstimatePassportV6(
     candidateCoveragePercent: 100,
     shownButUnusedParameterCount: 0,
     hiddenQuantitativeAssumptionCount: 0,
+    engineeringSourcePack: buildDrywallFlatCeilingEngineeringSourcePackR56(inventory.catalog_id, parts),
     identityHash: estimateDeterministicHash({ catalogId: inventory.catalog_id, titleRu: inventory.localized_name_ru, operation, variant }),
     parameterSchemaHash: estimateDeterministicHash(parts.schema),
     formulaGraphHash: estimateDeterministicHash(formulaSummary),

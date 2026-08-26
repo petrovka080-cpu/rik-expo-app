@@ -10,6 +10,21 @@ const mockLoadProfileScreenData = jest.fn();
 const mockLoadStoredActiveContext = jest.fn();
 const mockSignOutProfileSession = jest.fn();
 
+const verifiedIdentity = {
+  userId: "user-1",
+  email: "aybek@example.com",
+  organizationId: "company-1",
+  membershipId: "membership-1",
+  role: "director",
+  profileEnsured: true as const,
+  source: "verified_company_membership" as const,
+};
+
+const providerVerifiedIdentity = {
+  ...verifiedIdentity,
+  source: "provider_verified_claims" as const,
+};
+
 let capturedMainProps: Record<string, unknown> | null = null;
 let capturedEditModalProps: Record<string, unknown> | null = null;
 
@@ -135,7 +150,7 @@ describe("ProfileContent composition shell", () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ProfileContent />);
+      renderer = TestRenderer.create(<ProfileContent verifiedIdentity={verifiedIdentity} />);
     });
 
     await act(async () => {
@@ -205,6 +220,29 @@ describe("ProfileContent composition shell", () => {
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/office");
   });
 
+  it("does not query legacy profile tables for provider-verified identity", async () => {
+    let renderer: ReactTestRenderer;
+
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <ProfileContent verifiedIdentity={providerVerifiedIdentity} />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      renderer!.root.findByProps({ testID: "profile-main-sections" }),
+    ).toBeTruthy();
+    expect(mockLoadProfileScreenData).not.toHaveBeenCalled();
+    expect(mockLoadStoredActiveContext).toHaveBeenCalledWith("user-1");
+    expect(capturedMainProps?.profileName).toBe("aybek@example.com");
+    expect(capturedMainProps?.profileEmail).toBe("aybek@example.com");
+    expect(capturedMainProps?.canEditProfile).toBe(false);
+  });
+
   it("keeps seller entry hidden when there are no own listings", async () => {
     mockLoadStoredActiveContext.mockResolvedValue(null);
     mockLoadProfileScreenData.mockResolvedValue({
@@ -236,7 +274,7 @@ describe("ProfileContent composition shell", () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ProfileContent />);
+      renderer = TestRenderer.create(<ProfileContent verifiedIdentity={verifiedIdentity} />);
     });
 
     await act(async () => {
@@ -269,7 +307,7 @@ describe("ProfileContent composition shell", () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ProfileContent />);
+      renderer = TestRenderer.create(<ProfileContent verifiedIdentity={verifiedIdentity} />);
     });
 
     await act(async () => {
@@ -335,7 +373,7 @@ describe("ProfileContent composition shell", () => {
     let renderer: ReactTestRenderer;
 
     await act(async () => {
-      renderer = TestRenderer.create(<ProfileContent />);
+      renderer = TestRenderer.create(<ProfileContent verifiedIdentity={verifiedIdentity} />);
     });
 
     await act(async () => {
@@ -367,7 +405,7 @@ describe("ProfileContent composition shell", () => {
 
     try {
       await act(async () => {
-        TestRenderer.create(<ProfileContent />);
+        TestRenderer.create(<ProfileContent verifiedIdentity={verifiedIdentity} />);
       });
 
       await act(async () => {

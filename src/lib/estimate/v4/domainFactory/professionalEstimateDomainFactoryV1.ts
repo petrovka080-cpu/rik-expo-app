@@ -144,6 +144,14 @@ export type ProfessionalEstimateDomainPackageV1 = {
   resource_completeness_policies: readonly ProfessionalResourceCompletenessPolicyV1[];
 };
 
+export type ProfessionalEstimateDomainBuildTimeHashV1 = {
+  hash_contract: "canonical-domain-package-content:v1";
+  content_hash: string;
+  domain_id: string;
+  domain_version: string;
+  catalog_record_count: number;
+};
+
 export type ProfessionalEstimateDomainFactoryV1 = {
   package: ProfessionalEstimateDomainPackageV1;
   package_hash: string;
@@ -310,6 +318,7 @@ function schemaBlockers(
 
 export function createProfessionalEstimateDomainFactoryV1(
   domainPackage: ProfessionalEstimateDomainPackageV1,
+  buildTimeHash?: ProfessionalEstimateDomainBuildTimeHashV1,
 ): ProfessionalEstimateDomainFactoryV1 {
   const bindings = uniqueBy(domainPackage.catalog_bindings, (item) => item.catalog_id, "DOMAIN_CATALOG_BINDING_DUPLICATE");
   const technologies = uniqueBy(domainPackage.canonical_technologies, (item) => item.technology_id, "DOMAIN_TECHNOLOGY_DUPLICATE");
@@ -323,6 +332,15 @@ export function createProfessionalEstimateDomainFactoryV1(
   if (technologies.size !== domainPackage.manifest.canonical_technology_count) throw new Error("DOMAIN_MANIFEST_TECHNOLOGY_COUNT_MISMATCH");
   if (domainPackage.manifest.alias_count !== domainPackage.catalog_bindings.filter((item) => item.alias_of !== null).length) {
     throw new Error("DOMAIN_MANIFEST_ALIAS_COUNT_MISMATCH");
+  }
+  if (buildTimeHash && (
+    buildTimeHash.hash_contract !== "canonical-domain-package-content:v1" ||
+    !/^eh_[0-9a-f]{16}$/u.test(buildTimeHash.content_hash) ||
+    buildTimeHash.domain_id !== domainPackage.manifest.domain_id ||
+    buildTimeHash.domain_version !== domainPackage.manifest.domain_version ||
+    buildTimeHash.catalog_record_count !== domainPackage.manifest.catalog_record_count
+  )) {
+    throw new Error("DOMAIN_BUILD_TIME_PACKAGE_HASH_IDENTITY_MISMATCH");
   }
   for (const schema of domainPackage.parameter_schemas) validateSchema(schema);
   for (const binding of domainPackage.catalog_bindings) {
@@ -339,9 +357,17 @@ export function createProfessionalEstimateDomainFactoryV1(
     }
   }
 
+  let packageHash: string | null = null;
   return {
     package: domainPackage,
-    package_hash: estimateDeterministicHash(domainPackage),
+    // Large generated packages are sealed once at their build/content audit
+    // boundary. Runtime consumers validate the seal identity above and reuse
+    // the exact content hash instead of traversing the same immutable package
+    // on every process start. Hand-authored packages keep the lazy fallback.
+    get package_hash(): string {
+      packageHash ??= buildTimeHash?.content_hash ?? estimateDeterministicHash(domainPackage);
+      return packageHash;
+    },
     binding_by_catalog_id: bindings,
     technology_by_id: technologies,
     schema_by_id: schemas,
@@ -452,8 +478,12 @@ export function compileProfessionalEstimateDomainV1(
   const compilation = {
     ...compilationWithoutHash,
     deterministic_hash: estimateDeterministicHash({
-      ...compilationWithoutHash,
-      deterministic_hash: undefined,
+      hash_contract: "professional-domain-compilation-merkle:v1",
+      raw_compilation_hash: rawCompilation.deterministic_hash,
+      normative_source_projection: compilationWithoutHash.compiled_rows.map((row) => ({
+        row_id: row.row_id,
+        normative_source_ids: row.normative_source_ids,
+      })),
     }),
   };
   const emptyCompilation = compilation.requirements.length === 0 && compilation.compiled_rows.length === 0;
@@ -470,5 +500,15 @@ export function compileProfessionalEstimateDomainV1(
     blockers: compilationBlockers,
     status: compilationBlockers.length === 0 ? "COMPILED" as const : "NEEDS_REQUIRED_INPUTS" as const,
   };
-  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+  return {
+    ...withoutHash,
+    deterministic_hash: estimateDeterministicHash({
+      hash_contract: "professional-domain-result-merkle:v1",
+      exact_identity: exactIdentity,
+      normative_resolution_hash: normativeResolution.deterministic_hash,
+      compilation_hash: compilation.deterministic_hash,
+      blockers: compilationBlockers,
+      status: withoutHash.status,
+    }),
+  };
 }

@@ -10,12 +10,16 @@ describe("Android deep-link launch contract", () => {
     const uri = buildAndroidRouteDeepLink({
       route: "/request",
       prompt,
+      launchId: "android:official:request-0001",
       automaticParam: "autoPrepare",
     });
     const parsed = new URL(uri);
 
     expect(parsed.pathname).toBe("/request");
     expect(parsed.searchParams.get("prompt")).toBe(prompt);
+    expect(parsed.searchParams.get("launchId")).toBe(
+      "android:official:request-0001",
+    );
     expect(parsed.searchParams.get("autoPrepare")).toBe("1");
     expect(uri).toContain("&autoPrepare=1");
 

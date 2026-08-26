@@ -12,9 +12,17 @@ describe("architecture: Global Estimate Data Ops no live web blocking", () => {
       path.join(root, "src/lib/ai/globalEstimate/globalEstimateCalculator.ts"),
       "utf8",
     );
+    const refreshEdge = fs.readFileSync(
+      path.join(root, "supabase/functions/refresh-global-estimate-sources/index.ts"),
+      "utf8",
+    );
 
     expect(refreshQueue).toContain("blocksUserEstimate: false");
     expect(calculator).not.toMatch(/\bfetch\s*\(/);
     expect(calculator).not.toContain("refresh-global-estimate-sources");
+    expect(refreshEdge).toContain(
+      'from "../../../src/lib/ai/globalEstimate/dataOps/globalEstimateSourceRefreshQueue.ts"',
+    );
+    expect(refreshEdge).not.toContain('from "../../../src/lib/ai/globalEstimate"');
   });
 });

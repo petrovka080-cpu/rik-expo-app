@@ -11,6 +11,8 @@ import { Ionicons } from "@expo/vector-icons";
 
 import type { AppAccessModel, AppContext } from "../../../lib/appAccessModel";
 import { ProfileOtaDiagnosticsCard } from "@/src/features/profile/ProfileOtaDiagnosticsCard";
+import { VerifiedIdentitySummary } from "@/src/components/auth/ProtectedIdentityBoundary";
+import type { ProtectedIdentity } from "../../../lib/auth/protectedIdentity";
 import { PROFILE_UI as UI } from "../profile.helpers";
 import { profileStyles } from "../profile.styles";
 import type { Company, UserProfile } from "../profile.types";
@@ -86,6 +88,8 @@ type ProfileMainSectionsProps = {
   onSelectActiveContext: (context: AppContext) => void;
   onOpenActiveContext: () => void;
   onSignOut: () => void;
+  verifiedIdentity: ProtectedIdentity;
+  canEditProfile: boolean;
 };
 
 const formatAccessValue = (value: boolean): string => (value ? COPY.yes : COPY.no);
@@ -113,6 +117,8 @@ export function ProfileMainSections({
   onSelectActiveContext,
   onOpenActiveContext,
   onSignOut,
+  verifiedIdentity,
+  canEditProfile,
 }: ProfileMainSectionsProps) {
   const profileHeaderAvatarToneStyle = useMemo<ViewStyle>(
     () => ({
@@ -157,6 +163,7 @@ export function ProfileMainSections({
         <Pressable
           testID="profile-edit-open"
           onPress={onOpenEditProfile}
+          disabled={!canEditProfile}
           style={styles.profileHeaderAvatarWrap}
           accessibilityRole="button"
           accessibilityLabel={COPY.edit}
@@ -173,9 +180,11 @@ export function ProfileMainSections({
               <Text style={styles.profileHeaderAvatarText}>{avatarLetter}</Text>
             )}
           </View>
-          <View style={styles.profileHeaderBadge}>
-            <Ionicons name="camera" size={15} color={UI.accent} />
-          </View>
+          {canEditProfile ? (
+            <View style={styles.profileHeaderBadge}>
+              <Ionicons name="camera" size={15} color={UI.accent} />
+            </View>
+          ) : null}
         </Pressable>
         <Text style={styles.profileHeaderName}>{profileName}</Text>
         <View
@@ -186,19 +195,23 @@ export function ProfileMainSections({
         <Text style={styles.profileHeaderSubtitle}>{accountSubtitle}</Text>
       </View>
 
+      <VerifiedIdentitySummary identity={verifiedIdentity} compact />
+
       <View style={styles.profileTitleRow}>
         <View style={styles.profileTitleMeta}>
           <Text style={styles.profileTitle}>{COPY.profileTitle}</Text>
           <Text style={styles.profileTitleSubtitle}>{COPY.profileSubtitle}</Text>
         </View>
-        <Pressable
-          style={styles.profileEditButton}
-          onPress={onOpenEditProfile}
-          accessibilityRole="button"
-          accessibilityLabel={COPY.edit}
-        >
-          <Text style={styles.profileEditButtonText}>{COPY.edit}</Text>
-        </Pressable>
+        {canEditProfile ? (
+          <Pressable
+            style={styles.profileEditButton}
+            onPress={onOpenEditProfile}
+            accessibilityRole="button"
+            accessibilityLabel={COPY.edit}
+          >
+            <Text style={styles.profileEditButtonText}>{COPY.edit}</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.section}>
@@ -442,18 +455,20 @@ export function ProfileMainSections({
         <View style={styles.sectionCard}>
           <RowItem label="User ID" value={accessModel.userId || COPY.unknown} />
           <RowItem label="Account" value={profileEmail || COPY.unknown} last />
-          <View style={styles.companyActionsRow}>
-            <Pressable
-              style={[styles.companyBtn, styles.companyBtnSecondary]}
-              onPress={onOpenEditProfile}
-              accessibilityRole="button"
-              accessibilityLabel={COPY.editData}
-            >
-              <Text style={styles.companyBtnTextSecondary}>
-                {COPY.editData}
-              </Text>
-            </Pressable>
-          </View>
+          {canEditProfile ? (
+            <View style={styles.companyActionsRow}>
+              <Pressable
+                style={[styles.companyBtn, styles.companyBtnSecondary]}
+                onPress={onOpenEditProfile}
+                accessibilityRole="button"
+                accessibilityLabel={COPY.editData}
+              >
+                <Text style={styles.companyBtnTextSecondary}>
+                  {COPY.editData}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
           <View style={[styles.companyActionsRow, styles.companyActionsRowTop]}>
             <MenuActionRow
               icon="log-out-outline"

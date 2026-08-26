@@ -4,7 +4,12 @@ import {
   getCanonicalEstimateRevision,
   searchCanonicalEstimateCatalog,
 } from "../../../estimate/backendPlatform/canonicalEstimateClient";
-import type { CanonicalEstimateCatalogItem } from "../../../estimate/backendPlatform/contracts";
+import { canonicalWorkSearchQueryFromPrompt } from "../../../estimate/backendPlatform/canonicalEstimateSearchInput";
+import type {
+  CanonicalEstimateCatalogItem,
+  CanonicalEstimateSearchItem,
+  CanonicalEstimateSearchPage,
+} from "../../../estimate/backendPlatform/contracts";
 import type { AiRunResult } from "../../kernel/AiRuntimeKernelContract";
 import type { AiEstimatePlugin } from "./AiEstimatePluginContract";
 
@@ -31,6 +36,20 @@ function failed(flowId: string, error: unknown): AiRunResult {
   };
 }
 
+export function selectExactProfessionalCanonicalItem(
+  search: Pick<CanonicalEstimateSearchPage, "items" | "literalTotalCount">,
+): CanonicalEstimateSearchItem | null {
+  const exact = search.items.filter((item) =>
+    (item.matchType === "T1_EXACT" || item.matchType === "T2_EXACT_ALIAS")
+    && item.publicationState === "ADMITTED_BACKEND"
+    && item.selectableMode === "PROFESSIONAL"
+    && item.estimateReady
+    && item.contentAdmission?.allowed === true);
+  return search.literalTotalCount === 1 && exact.length === 1
+    ? exact[0]
+    : null;
+}
+
 export function createAiEstimatePlugin(): AiEstimatePlugin {
   return {
     pluginId: "ai_estimate",
@@ -52,25 +71,27 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
           return {
             flowId: runInput.flowId,
             status: "completed",
-            userVisibleAnswerRu: `Открыта immutable revision ${revision.revisionId}, release ${revision.releaseId}.`,
+            userVisibleAnswerRu: "Сохранённая версия сметы открыта без пересчёта.",
             draft: { backendCanonical: true, revision },
           };
         }
         const query = String(runInput.userText ?? runInput.intent).trim();
-        const search = await searchCanonicalEstimateCatalog({ query, pageSize: 50 });
-        const exact = search.items.filter((item) =>
-          item.matchType === "T1_EXACT"
-          && item.canonicalNameRu.trim().toLocaleLowerCase("ru") === query.toLocaleLowerCase("ru")
-          && item.selectableMode === "PROFESSIONAL");
-        if (exact.length !== 1) return {
+        const searchQuery = canonicalWorkSearchQueryFromPrompt(query);
+        const search = await searchCanonicalEstimateCatalog({
+          query: searchQuery,
+          mode: "PHRASE",
+          pageSize: 50,
+        });
+        const exact = selectExactProfessionalCanonicalItem(search);
+        if (!exact) return {
           flowId: runInput.flowId,
           status: "needs_more_input",
           userVisibleAnswerRu: search.items.length
-            ? `Выберите точную работу backend-каталога: ${search.items.map((item) => item.canonicalNameRu).join("; ")}.`
-            : "Работа не найдена в canonical backend-каталоге. Уточните вид работ.",
+            ? `Выберите точную работу из каталога: ${search.items.map((item) => item.canonicalNameRu).join("; ")}.`
+            : "Работа не найдена в каталоге. Уточните вид работ.",
           draft: { backendCanonical: true, admitted: false, suggestions: search.items },
         };
-        const catalog = await getCanonicalEstimateCatalogItem(exact[0].catalogId);
+        const catalog = await getCanonicalEstimateCatalogItem(exact.catalogId);
         const defaults = defaultParameters(catalog);
         if (defaults.missing.length) return {
           flowId: runInput.flowId,
@@ -81,7 +102,7 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
         if (runInput.mode === "approval_required") return {
           flowId: runInput.flowId,
           status: "needs_approval",
-          userVisibleAnswerRu: `Подтвердите создание backend revision для ${catalog.titleRu}, release ${catalog.releaseId}.`,
+          userVisibleAnswerRu: `Подтвердите создание черновика сметы: ${catalog.titleRu}.`,
           draft: { backendCanonical: true, admitted: false, catalogId: catalog.catalogId, parameters: defaults.parameters },
         };
         const result = await compileCanonicalEstimateAndLoad({
@@ -99,8 +120,13 @@ export function createAiEstimatePlugin(): AiEstimatePlugin {
         return {
           flowId: runInput.flowId,
           status: "completed",
-          userVisibleAnswerRu: `Создана backend revision ${result.revision.revisionId}, release ${result.revision.releaseId}.`,
-          draft: { backendCanonical: true, revision: result.revision, rows: result.rows },
+          userVisibleAnswerRu: "Профессиональный черновик сметы создан.",
+          draft: {
+            backendCanonical: true,
+            catalog,
+            revision: result.revision,
+            rows: result.rows,
+          },
         };
       } catch (error) {
         return failed(runInput.flowId, error);

@@ -8,12 +8,12 @@ const read = (relativePath: string) =>
 
 describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
   it("keeps catalog reference list reads paged with an explicit fail-closed ceiling", () => {
-    const source = read("src/lib/catalog/catalog.transport.supabase.ts");
+    const source = read("scripts/server/stagingBffCatalogTransportReadPort.ts");
 
-    expect(source).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
-    expect(source).toContain("loadPagedRowsWithCeiling<T>");
-    expect(source).toContain("toCatalogQueryError");
-    expect(source).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
+    expect(source).toContain("CATALOG_TRANSPORT_BFF_REFERENCE_PAGE_DEFAULTS.maxRows + 1");
+    expect(source).toContain("return { data: null, error: READ_ERROR }");
+    expect(source).toContain("result.rows.length > queryPlan.maxRows");
+    expect(source).toContain('client.query("begin read only")');
   });
 
   it("keeps catalog request reads on the shared bounded reference reader", () => {

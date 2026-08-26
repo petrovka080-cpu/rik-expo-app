@@ -24,7 +24,7 @@ describe("history PDF regenerates from approved snapshot", () => {
 
     expect(opened.requestId).toBe(approved.draft.id);
     expect(opened.contentType).toBe("application/pdf");
-    expect(regenerated.revisionId).toBe(approved.estimateRevisionState?.current_revision_id);
+    expect(regenerated.revisionId).toBe(originalPdf.revisionId);
     expect(consumerRepairPdfStorageObjectExists(regenerated.storageBucket, regenerated.storageKey)).toBe(true);
   });
 });

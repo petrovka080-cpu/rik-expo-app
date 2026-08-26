@@ -2,11 +2,13 @@ export function buildAndroidRouteDeepLink(input: {
   route: "/request" | "/ai";
   prompt: string;
   context?: string;
+  launchId?: string;
   automaticParam: "autoPrepare" | "autoSend";
 }): string {
   const url = new URL(`rik:///${input.route.replace(/^\//, "")}`);
   url.searchParams.set("prompt", input.prompt);
   if (input.context) url.searchParams.set("context", input.context);
+  if (input.launchId) url.searchParams.set("launchId", input.launchId);
   url.searchParams.set(input.automaticParam, "1");
   return url.toString();
 }

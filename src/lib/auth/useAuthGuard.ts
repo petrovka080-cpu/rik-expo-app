@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useRef } from "react";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 
 import { createCancellableDelay, type CancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { getSessionSafe } from "../supabaseClient";
@@ -22,12 +22,15 @@ import {
   stopQueueWorker,
 } from "../../workers/queueBootstrap";
 import { recordPlatformObservability } from "../observability/platformObservability";
-import { POST_AUTH_ENTRY_ROUTE } from "../authRouting";
+import {
+  POST_AUTH_ENTRY_ROUTE,
+  buildAuthLoginHref,
+  resolvePostAuthReturnTo,
+} from "../authRouting";
 import {
   resolveRouteFromAuth,
   type AuthRouteDecision,
   isProtectedAppRoute,
-  isPublicRequestEstimatePath,
   type AuthLifecycleState,
 } from "./useAuthLifecycle";
 
@@ -47,6 +50,8 @@ export function useAuthGuard(
   auth: AuthLifecycleState & {
     segments: readonly string[];
     pathname: string;
+    currentReturnTo?: string | null;
+    authReturnTo?: string | string[];
   },
 ) {
   const {
@@ -64,6 +69,8 @@ export function useAuthGuard(
     authExitSessionProbeInFlightRef,
     segments,
     pathname,
+    currentReturnTo,
+    authReturnTo,
   } = auth;
 
   const previousInAuthStackRef = useRef(segments?.[0] === "auth");
@@ -86,8 +93,13 @@ export function useAuthGuard(
         { type: "redirect_login" | "redirect_post_auth_entry" }
       >;
     }): "replace" | "navigate_fallback" | "failed" => {
+      const transitionTarget = (
+        args.decision.type === "redirect_login"
+          ? buildAuthLoginHref(currentReturnTo)
+          : resolvePostAuthReturnTo(authReturnTo)
+      ) as Href;
       try {
-        router.replace(args.decision.target);
+        router.replace(transitionTarget);
         return "replace";
       } catch (replaceError) {
         recordPlatformObservability({
@@ -108,6 +120,7 @@ export function useAuthGuard(
             owner: "root_layout",
             pathname,
             target: args.decision.target,
+            returnTo: currentReturnTo ?? null,
             decision: args.decision.type,
             reason: args.decision.reason,
           },
@@ -120,9 +133,10 @@ export function useAuthGuard(
         }
 
         try {
-          router.navigate(args.decision.target);
+          router.navigate(transitionTarget);
           recordAuthGateEvent("auth_navigation_fallback_used", "success", {
             target: args.decision.target,
+            returnTo: currentReturnTo ?? null,
             reason: args.decision.reason,
             method: "router_navigate",
           });
@@ -145,6 +159,7 @@ export function useAuthGuard(
               owner: "root_layout",
               pathname,
               target: args.decision.target,
+              returnTo: currentReturnTo ?? null,
               decision: args.decision.type,
               reason: args.decision.reason,
               replaceErrorMessage:
@@ -165,7 +180,7 @@ export function useAuthGuard(
         }
       }
     },
-    [pathname, recordAuthGateEvent],
+    [authReturnTo, currentReturnTo, pathname, recordAuthGateEvent],
   );
 
   const executeRouteDecision = useCallback(
@@ -267,7 +282,6 @@ export function useAuthGuard(
       sessionState: authSessionState,
       inAuthStack,
       isPdfViewerRoute: isPdfViewerRouteRef.current,
-      isPublicAppRoute: isPublicRequestEstimatePath(pathname),
       hasRecentAuthExit:
         authSessionState.status === "unauthenticated" &&
         authExitAgeMs != null &&

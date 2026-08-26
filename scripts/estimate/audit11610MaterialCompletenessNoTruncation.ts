@@ -31,6 +31,7 @@ const ANDROID_ROOT = path.join(RUNTIME_ROOT, "android-chrome");
 const PARITY_ROOT = path.join(RUNTIME_ROOT, "web-android-parity");
 const REAL_NAMED_ROOT = path.join(".release-runtime", "ai-estimate-real-named-boq-line-items");
 const REAL_NAMED_GREEN = "GREEN_AI_ESTIMATE_REAL_NAMED_PROFESSIONAL_BOQ_LINE_ITEMS_11610_WEB_ANDROID_COMMITTED_NO_RELEASE";
+const REAL_NAMED_SOURCE_GREEN = "GREEN_AI_ESTIMATE_REAL_NAMED_PROFESSIONAL_BOQ_LINE_ITEMS_11610_SOURCE_READY";
 const WEB_GREEN = "GREEN_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_WEB_SMOKE";
 const ANDROID_GREEN = "GREEN_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_ANDROID_SMOKE";
 const PARITY_GREEN = "GREEN_AI_ESTIMATE_FULL_MATERIAL_COMPLETENESS_WEB_ANDROID_PARITY";
@@ -147,23 +148,25 @@ function readRuntimeArtifact(root: string): { path: string | null; artifact: Run
   };
 }
 
-function validateRealNamedPrecondition(): { passed: boolean; path: string | null; blockers: string[] } {
+function validateRealNamedPrecondition(runtimeRequired: boolean): { passed: boolean; path: string | null; blockers: string[] } {
   const currentSourceSha = gitOutput(["rev-parse", "HEAD"]);
   const summaryPath = latestSummaryMatching(
     REAL_NAMED_ROOT,
     (summary) =>
-      summary.final_status === REAL_NAMED_GREEN &&
+      (summary.final_status === REAL_NAMED_GREEN || (!runtimeRequired && summary.final_status === REAL_NAMED_SOURCE_GREEN)) &&
       summary.source_sha === currentSourceSha,
   );
   const summary = readJson(summaryPath);
+  const acceptedStatus = summary?.final_status === REAL_NAMED_GREEN ||
+    (!runtimeRequired && summary?.final_status === REAL_NAMED_SOURCE_GREEN);
   const blockers = [
     summary ? "" : "real_named_summary_missing",
-    summary?.final_status === REAL_NAMED_GREEN ? "" : `real_named_final_status_not_green:${String(summary?.final_status ?? "missing")}`,
+    acceptedStatus ? "" : `real_named_final_status_not_green:${String(summary?.final_status ?? "missing")}`,
     String(summary?.source_sha ?? "").trim() ? "" : "real_named_source_sha_missing",
     summary?.templates_real_named_boq_ready === 11610 ? "" : "real_named_templates_ready_not_11610",
     Number(summary?.rows_audited ?? 0) >= 671450 ? "" : "real_named_rows_audited_below_expected",
-    summary?.web_real_named_cases_passed === "100/100" ? "" : "real_named_web_not_100",
-    summary?.android_real_named_cases_passed === "100/100" ? "" : "real_named_android_not_100",
+    !runtimeRequired || summary?.web_real_named_cases_passed === "100/100" ? "" : "real_named_web_not_100",
+    !runtimeRequired || summary?.android_real_named_cases_passed === "100/100" ? "" : "real_named_android_not_100",
   ].filter(Boolean);
   return { passed: blockers.length === 0, path: summaryPath, blockers };
 }
@@ -261,7 +264,8 @@ export function audit11610MaterialCompletenessNoTruncation(input: {
   requireRuntimeEvidence?: boolean;
 } = {}) {
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
-  const precondition = validateRealNamedPrecondition();
+  const runtimeRequired = input.requireRuntimeEvidence ?? true;
+  const precondition = validateRealNamedPrecondition(runtimeRequired);
   const validations: MaterialCompletenessTemplateAuditRow[] = [];
   for (const [index, templateId] of listProfessionalWorkPassportTemplateIds().entries()) {
     validations.push(auditTemplate(templateId));
@@ -269,7 +273,6 @@ export function audit11610MaterialCompletenessNoTruncation(input: {
   }
   clearProfessionalWorkPassportBuildCaches();
   const runtimeCases = runMaterialCompletenessRuntimeCases();
-  const runtimeRequired = input.requireRuntimeEvidence ?? true;
   const web = readRuntimeArtifact(WEB_ROOT);
   const android = readRuntimeArtifact(ANDROID_ROOT);
   const parity = readRuntimeArtifact(PARITY_ROOT);

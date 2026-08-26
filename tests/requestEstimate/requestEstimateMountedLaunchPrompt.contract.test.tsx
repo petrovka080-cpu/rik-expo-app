@@ -87,6 +87,7 @@ function renderContent(currentBundle: ConsumerRepairDraftBundle) {
         pageSize: 20,
         totalCountSource: "durable_store",
       }}
+      revisionHistory={[]}
       selectedHistoryId={null}
       showPdfAction={false}
       marketplaceSendErrors={[]}

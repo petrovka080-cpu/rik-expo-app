@@ -2,6 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { compileFormulaGraph, type FormulaAst } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
+import { concreteParameterTitleRuR542 } from "../../../src/lib/estimate/backendPlatform/russianTechnologyTitleR542";
+import {
+  buildR555MaterialFirstDefinition,
+  isR555RegressionCatalogId,
+} from "../r555/materialFirstConcreteRegressionR555";
 import { assertExact, evidenceRoot, semanticSha256, sha256 } from "./support";
 
 export type ConcreteComplexity = "L1" | "L2" | "L3" | "L4" | "L5";
@@ -102,14 +107,6 @@ export type ConcretePassport = {
   passportSha256: string;
 };
 
-type OwnerRow = {
-  obligationId: string;
-  title: string;
-  exactSpecLocator: string;
-  owner: string;
-  disposition: string;
-};
-
 type NormativeRow = {
   normativeItemId: string;
   kind: string;
@@ -122,7 +119,7 @@ type NormativeRow = {
   pageTextSha256: string;
 };
 
-const FLOOR: Readonly<Record<ConcreteComplexity, number>> = Object.freeze({ L1: 80, L2: 180, L3: 350, L4: 700, L5: 1_500 });
+const MATERIAL_FIRST_MINIMUM_TECHNOLOGICAL_ROWS = 1;
 
 const INPUTS = Object.freeze([
   ["operation_type", "PROJECT_INPUT_REQUIRED"], ["structure_type", "PROJECT_INPUT_REQUIRED"], ["quantity", "PROJECT_INPUT_REQUIRED"],
@@ -153,14 +150,14 @@ const FORBIDDEN_DEFAULTS = Object.freeze([
 
 const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object.freeze({
   STRUCTURE: [
-    ["survey", "обмер и подтверждение", "Изыскания", "LABOR", "labor", "LABOR", false],
-    ["detail", "рабочая детализация", "Проектирование", "LABOR", "labor", "LABOR", false],
-    ["supply", "поставка состава для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
-    ["execute", "выполнение", "Производство работ", "LABOR", "work", "LABOR", false],
-    ["plant", "работа механизма для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
-    ["inspect", "операционный контроль", "Контроль качества", "TEST", "testing", "TEST", false],
-    ["record", "исполнительная запись для", "Документация", "DOCUMENT", "document", "DOCUMENT", false],
-    ["waste", "учёт технологических отходов для", "Отходы", "WASTE", "waste", "WASTE", false],
+    ["survey", "Обмер геометрии и отметок для", "Изыскания", "LABOR", "labor", "LABOR", false],
+    ["detail", "Проверка рабочих чертежей для", "Проектирование", "LABOR", "labor", "LABOR", false],
+    ["supply", "Бетонная смесь проектного класса для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
+    ["execute", "Укладка и уплотнение бетонной смеси при", "Производство работ", "LABOR", "work", "LABOR", false],
+    ["plant", "Глубинный вибратор для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
+    ["inspect", "Контроль геометрии и качества поверхности после", "Контроль качества", "TEST", "testing", "TEST", false],
+    ["record", "Исполнительная запись для", "Документация", "DOCUMENT", "document", "DOCUMENT", false],
+    ["waste", "Сбор и вывоз технологических отходов после", "Отходы", "WASTE", "waste", "WASTE", false],
   ].map(activity),
   REINFORCEMENT: [
     ["schedule", "проверка ведомости для", "Проектирование", "LABOR", "labor", "LABOR", false],
@@ -174,7 +171,7 @@ const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object
   ].map(activity),
   PRESTRESSING: [
     ["design", "проверка проекта преднапряжения для", "Проектирование", "LABOR", "labor", "LABOR", false],
-    ["supply", "поставка системы для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
+    ["supply", "Комплект напрягаемой арматуры с анкерами для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
     ["install", "монтаж системы", "Предварительное напряжение", "LABOR", "work", "LABOR", false],
     ["stress", "натяжение и фиксация", "Предварительное напряжение", "LABOR", "work", "LABOR", false],
     ["plant", "работа домкратов и насосов для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
@@ -205,7 +202,7 @@ const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object
   PLACEMENT: [
     ["plan", "планирование захватки для", "Проектирование", "LABOR", "labor", "LABOR", false],
     ["setup", "подготовка оборудования для", "Подготовка", "LABOR", "work", "LABOR", false],
-    ["execute", "выполнение операции", "Укладка", "LABOR", "work", "LABOR", false],
+    ["execute", "Укладка и уплотнение бетонной смеси для", "Укладка", "LABOR", "work", "LABOR", false],
     ["plant", "работа укладочного оборудования для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
     ["logistics", "подача к месту работ для", "Логистика", "LOGISTICS", "transport", "LOGISTICS", false],
     ["inspect", "операционный контроль", "Контроль качества", "TEST", "testing", "TEST", false],
@@ -236,7 +233,7 @@ const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object
     ["plan", "планирование контроля", "Контроль качества", "LABOR", "labor", "LABOR", false],
     ["sample", "отбор и идентификация для", "Контроль качества", "TEST", "testing", "TEST", false],
     ["setup", "подготовка оснащения для", "Контроль качества", "MACHINE", "equipment", "MACHINE", false],
-    ["perform", "выполнение испытания", "Испытания", "TEST", "testing", "TEST", false],
+    ["perform", "Проведение назначенного испытания для", "Испытания", "TEST", "testing", "TEST", false],
     ["witness", "освидетельствование", "Испытания", "LABOR", "labor", "LABOR", false],
     ["evaluate", "оценка результатов", "Контроль качества", "LABOR", "labor", "LABOR", false],
     ["protocol", "оформление протокола", "Документация", "DOCUMENT", "document", "DOCUMENT", false],
@@ -245,9 +242,9 @@ const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object
   REPAIR: [
     ["survey", "обследование и картирование для", "Обследование", "LABOR", "labor", "LABOR", false],
     ["prepare", "подготовка дефекта для", "Ремонт", "LABOR", "work", "LABOR", false],
-    ["supply", "поставка ремонтной системы для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
-    ["execute", "выполнение ремонта", "Ремонт", "LABOR", "work", "LABOR", false],
-    ["plant", "работа ремонтного оборудования для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
+    ["supply", "Ремонтный состав по проектной спецификации для", "Материалы", "MATERIAL", "material", "QUANTITY", true],
+    ["execute", "Нанесение и уплотнение ремонтного состава для", "Ремонт", "LABOR", "work", "LABOR", false],
+    ["plant", "Смеситель и нагнетательное оборудование для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
     ["test", "контроль качества ремонта для", "Контроль качества", "TEST", "testing", "TEST", false],
     ["record", "карта и акт ремонта для", "Документация", "DOCUMENT", "document", "DOCUMENT", false],
     ["waste", "сбор удалённого материала для", "Отходы", "WASTE", "waste", "WASTE", false],
@@ -256,21 +253,29 @@ const ACTIVITIES: Readonly<Record<string, readonly ConcreteActivity[]>> = Object
     ["survey", "подтверждение сохраняемых границ для", "Обследование", "LABOR", "labor", "LABOR", false],
     ["plan", "методика безопасного демонтажа для", "Проектирование", "LABOR", "labor", "LABOR", false],
     ["isolate", "изоляция зоны для", "Подготовка", "LABOR", "work", "LABOR", false],
-    ["execute", "выполнение демонтажа", "Демонтаж", "LABOR", "work", "LABOR", false],
-    ["plant", "работа демонтажного оборудования для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
+    ["execute", "Разборка бетонной конструкции при", "Демонтаж", "LABOR", "work", "LABOR", false],
+    ["plant", "Гидромолот или бетонорезная машина для", "Механизмы", "MACHINE", "equipment", "MACHINE", false],
     ["monitor", "мониторинг устойчивости и воздействий для", "Контроль качества", "TEST", "testing", "TEST", false],
     ["haul", "внутриплощадочная перевозка для", "Логистика", "LOGISTICS", "transport", "LOGISTICS", false],
     ["waste", "сортировка и учёт отходов для", "Отходы", "WASTE", "waste", "WASTE", false],
   ].map(activity),
 });
 
+function canonicalResourceRowType(rowType: string): string | undefined {
+  if (["material", "labor", "equipment", "service", "waste", "other"].includes(rowType)) return rowType;
+  if (rowType === "work") return "labor";
+  if (["document", "transport", "testing", "commissioning", "interface"].includes(rowType)) return "service";
+  return undefined;
+}
+
 function activity(row: readonly unknown[]): ConcreteActivity {
   const [key, titlePrefixRu, stage, category, rowType, formulaMode, procurementEligible] = row;
-  return { key, titlePrefixRu, stage, category, rowType, formulaMode, procurementEligible } as ConcreteActivity;
+  const canonicalRowType = canonicalResourceRowType(String(rowType));
+  assertExact(canonicalRowType, `CONCRETE_RESOURCE_ROW_TYPE_UNMAPPED:${String(rowType)}`);
+  return { key, titlePrefixRu, stage, category, rowType: canonicalRowType, formulaMode, procurementEligible } as ConcreteActivity;
 }
 
 let identityCache: ConcreteIdentity[] | undefined;
-let ownerCache: OwnerRow[] | undefined;
 let normativeCache: NormativeRow[] | undefined;
 
 function jsonl<T>(path: string): T[] {
@@ -280,11 +285,6 @@ function jsonl<T>(path: string): T[] {
 export function concreteIdentities(): ConcreteIdentity[] {
   identityCache ??= jsonl<ConcreteIdentity>(join(evidenceRoot, "01-discovery", "CONCRETE_IDENTITY_SET.jsonl"));
   return identityCache;
-}
-
-function ownerRows(): OwnerRow[] {
-  ownerCache ??= jsonl<OwnerRow>(join(evidenceRoot, "01-discovery", "OWNER_BOUNDARY_MATRIX.jsonl"));
-  return ownerCache;
 }
 
 function normativeRows(): NormativeRow[] {
@@ -318,21 +318,6 @@ function kindForSection(section: number): string {
 
 function componentPool(identity: ConcreteIdentity): ConcreteComponent[] {
   const identitySection = sectionFromIdentity(identity);
-  const all = ownerRows().filter((row) => !["CANONICAL_ADJACENT_OWNER_BOUNDARY", "TYPED_CHILD_OR_INTERFACE_BOUNDARY", "PREDECESSOR_OWNER_PRESERVED"].includes(row.disposition));
-  const mapped = all.map((row) => {
-    const match = row.obligationId.match(/:8\.(\d+):/u);
-    const section = match ? Number(match[1]) : 1;
-    return {
-      key: `s${String(section).padStart(2, "0")}_${sha256(row.obligationId).slice(0, 12)}`,
-      titleRu: row.title,
-      kind: kindForSection(section),
-      unitId: [1, 2, 3, 4, 5, 10, 11, 12, 15, 16].includes(section) ? "m3" : [7, 8].includes(section) ? "kg" : [9, 13].includes(section) ? "m2" : "test",
-      section,
-      sourceLocator: row.exactSpecLocator,
-      sourceObligationId: row.obligationId,
-      primary: false,
-    };
-  });
   const primary: ConcreteComponent = {
     key: `primary_${sha256(identity.catalog_id).slice(0, 16)}`,
     titleRu: identity.canonical_title,
@@ -343,15 +328,11 @@ function componentPool(identity: ConcreteIdentity): ConcreteComponent[] {
     sourceObligationId: `identity:${identity.catalog_id}`,
     primary: true,
   };
-  const preferred = identitySection ? mapped.filter((row) => row.section === identitySection) : mapped.filter((row) => [1, 2, 3, 6, 7, 9, 10, 11, 12, 13, 14].includes(row.section));
-  const common = mapped.filter((row) => [7, 9, 10, 11, 12, 13, 14].includes(row.section));
-  const candidates = [...preferred, ...common, ...mapped].filter((row, index, rows) => rows.findIndex((item) => item.key === row.key) === index);
-  const offset = Number.parseInt(sha256(identity.catalog_id).slice(0, 8), 16) % candidates.length;
-  const rotated = [...candidates.slice(offset), ...candidates.slice(0, offset)];
-  const activityCount = identity.complexity_class === "L1" ? 4 : identity.complexity_class === "L2" ? 5 : identity.complexity_class === "L3" ? 5 : identity.complexity_class === "L4" ? 7 : 8;
-  const componentTarget = Math.ceil(FLOOR[identity.complexity_class] / activityCount);
-  assertExact(rotated.length >= componentTarget - 1, `CONCRETE_COMPONENT_POOL_TOO_SMALL:${identity.catalog_id}:${rotated.length}:${componentTarget}`);
-  return [primary, ...rotated.slice(0, componentTarget - 1)];
+  // R5.5.5: a selected work may not inherit the complete domain obligation
+  // dictionary. Additional modules are connected later only by an explicit,
+  // typed work-specific dependency. The primary passport is therefore the
+  // only unconditional component.
+  return [primary];
 }
 
 function activitiesFor(component: ConcreteComponent, complexity: ConcreteComplexity): readonly ConcreteActivity[] {
@@ -441,6 +422,7 @@ function sourceMetadata(identity: ConcreteIdentity, component: ConcreteComponent
     },
     sourceObligationId: component.sourceObligationId,
     sourceSpecLocator: component.sourceLocator,
+    engineeringInputBindings: INPUTS.map(([parameterId]) => parameterId),
   };
 }
 
@@ -493,13 +475,13 @@ function buildRows(identity: ConcreteIdentity, components: readonly ConcreteComp
       });
     }
   }
-  assertExact(resources.length >= FLOOR[identity.complexity_class], `CONCRETE_DEPTH_FLOOR_RED:${identity.catalog_id}:${identity.complexity_class}:${resources.length}`);
-  assertExact(resources.every((row) => new Set(["material", "labor", "equipment", "service", "waste", "other", "document", "interface", "transport", "work", "testing", "commissioning"]).has(row.rowType)), `CONCRETE_BACKEND_ROW_TYPE_RED:${identity.catalog_id}`);
+  assertExact(resources.length >= MATERIAL_FIRST_MINIMUM_TECHNOLOGICAL_ROWS, `CONCRETE_EMPTY_TECHNOLOGY_PASSPORT:${identity.catalog_id}`);
+  assertExact(resources.every((row) => new Set(["material", "labor", "equipment", "service", "waste", "other"]).has(row.rowType)), `CONCRETE_BACKEND_ROW_TYPE_RED:${identity.catalog_id}`);
   assertExact(new Set(resources.map((row) => row.rowId)).size === resources.length, `CONCRETE_DUPLICATE_ROW_RED:${identity.catalog_id}`);
   assertExact(new Set(resources.map((row) => row.semanticOwner)).size === resources.length, `CONCRETE_DUPLICATE_SEMANTIC_OWNER_RED:${identity.catalog_id}`);
 
   const inputStatus = new Map<string, string>(INPUTS.map(([id, status]) => [id, status]));
-  const parameterIds = [...new Set(["work_included", ...INPUTS.map(([id]) => id), ...formulas.flatMap((formula) => formula.inputParameterIds)])].sort();
+  const parameterIds = [...new Set(["work_included", ...formulas.flatMap((formula) => formula.inputParameterIds)])].sort();
   const parameters = parameterIds.map((parameterId, index): ConcreteParameter => {
     const boolean = parameterId === "work_included";
     const integer = /(?:count|interval|lot)$/u.test(parameterId);
@@ -513,16 +495,125 @@ function buildRows(identity: ConcreteIdentity, components: readonly ConcreteComp
       ordinal: index,
       valueType,
       unitId: parameterId.endsWith("quantity") ? component?.unitId ?? null : parameterId.endsWith("labor_norm") ? "worker_h_per_unit" : parameterId.endsWith("machine_norm") ? "machine_h_per_unit" : parameterId.endsWith("mass_kg_per_unit") ? "kg_per_unit" : parameterId === "delivery_distance_km" ? "km" : null,
-      titleRu: component ? `${parameterId.slice(component.key.length + 1)} — ${component.titleRu}` : parameterId,
+      titleRu: concreteParameterTitleRuR542(
+        component ? parameterId.slice(component.key.length + 1) : parameterId,
+        component?.titleRu,
+      ),
       required: true,
       defaultValue: null,
-      constraints: { minExclusive: valueType === "decimal" || valueType === "integer" ? 0 : null, values: valueType === "enum" ? ["PROJECT_SPECIFIED"] : null, missingStatus: status, hiddenDefault: false, consumers: [...(parameterConsumers.get(parameterId) ?? [])].sort() },
+      constraints: { min: valueType === "integer" ? 1 : valueType === "decimal" ? 0.01 : null, values: valueType === "enum" ? ["PROJECT_SPECIFIED"] : null, missingStatus: status, hiddenDefault: false, consumers: [...(parameterConsumers.get(parameterId) ?? [])].sort() },
     };
   });
   return { parameters, formulas, resources };
 }
 
 export function buildConcretePassport(identity: ConcreteIdentity): ConcretePassport {
+  if (isR555RegressionCatalogId(identity.catalog_id)) {
+    const definition = buildR555MaterialFirstDefinition(identity.catalog_id);
+    const parameters: ConcreteParameter[] = definition.parameters.map((row) => ({
+      catalogId: definition.catalogId,
+      parameterId: row.parameterId,
+      ordinal: row.ordinal,
+      valueType: row.valueType,
+      unitId: row.unitId,
+      titleRu: row.titleRu,
+      required: row.required,
+      defaultValue: null,
+      constraints: row.constraints,
+    }));
+    const formulas: ConcreteFormula[] = definition.formulas.map((row) => ({
+      catalogId: definition.catalogId,
+      formulaId: row.formulaId,
+      outputUnitId: row.outputUnitId,
+      expressionSource: row.expressionSource,
+      ast: row.ast,
+      inputParameterIds: row.inputParameterIds,
+      dimensionalSignature: `${row.outputUnitId}:${row.expressionSource}`,
+    }));
+    const resources: ConcreteResource[] = definition.resources.map((row) => ({
+      catalogId: definition.catalogId,
+      rowId: row.rowId,
+      ordinal: row.ordinal,
+      section: row.section,
+      category: row.category,
+      titleRu: row.titleRu,
+      rowType: row.rowType,
+      unitId: row.unitId,
+      formulaId: row.formulaId,
+      inclusionAst: row.inclusionAst,
+      resourceGraph: row.resourceGraph,
+      semanticOwner: row.semanticOwner,
+      costOwnerId: row.costOwnerId,
+      procurementEligible: row.procurementEligible,
+      sourceMetadata: row.sourceMetadata,
+    }));
+    const withoutHash = {
+      catalogId: definition.catalogId,
+      titleRu: definition.titleRu,
+      familyKey: identity.family,
+      subfamilyKey: `${identity.source_domain_id}:${identity.operation}`,
+      operation: identity.operation,
+      complexity: identity.complexity_class,
+      namespace: identity.namespace,
+      denominatorEligible: identity.denominator_eligible,
+      expectedStages: [...new Set(resources.map((row) => row.section))].sort(),
+      expectedCategories: [...new Set(resources.map((row) => row.category))].sort(),
+      engineeringInputs: parameters.map((row) => ({
+        parameterId: row.parameterId,
+        statusWhenMissing: "PROJECT_INPUT_REQUIRED",
+        consumerRole: "WORK_SPECIFIC_FORMULA_OR_INCLUSION",
+      })),
+      forbiddenDefaults: [...FORBIDDEN_DEFAULTS],
+      components: [{
+        key: `r555_${sha256(identity.catalog_id).slice(0, 16)}`,
+        titleRu: definition.titleRu,
+        kind: "STRUCTURE",
+        unitId: "m3",
+        section: sectionFromIdentity(identity) ?? 3,
+        sourceLocator: "R555_MATERIAL_FIRST_WORK_SPECIFIC_PASSPORT",
+        sourceObligationId: `identity:${identity.catalog_id}`,
+        primary: true,
+      }],
+      parameters,
+      formulas,
+      resources,
+      scenarios: {
+        valid: 10,
+        invalid: 12,
+        obligations: [
+          "default_material_first_valid",
+          "refined_material_first_valid",
+          "purchase_rounding_valid",
+          "delivery_formula_valid",
+          "test_lot_rounding_valid",
+          "price_snapshot_valid",
+          "minimum_reasonable_quantity_valid",
+          "large_quantity_valid",
+          "input_reordering_valid",
+          "deterministic_recompile_valid",
+          "missing_required_input_invalid",
+          "zero_quantity_invalid",
+          "negative_quantity_invalid",
+          "epsilon_quantity_invalid",
+          "unknown_parameter_invalid",
+          "invalid_currency_invalid",
+          "stale_price_invalid",
+          "cross_tenant_invalid",
+          "duplicate_cost_owner_invalid",
+          "unpriced_final_invalid",
+          "inapplicable_module_invalid",
+          "mixed_language_title_invalid",
+        ],
+      },
+    };
+    return {
+      ...withoutHash,
+      passportSha256: semanticSha256({
+        ...withoutHash,
+        materialFirstDefinitionSha256: definition.definitionSha256,
+      }),
+    };
+  }
   const components = componentPool(identity);
   const { parameters, formulas, resources } = buildRows(identity, components);
   const withoutHash = {
@@ -576,9 +667,10 @@ export function buildConcretePassport(identity: ConcreteIdentity): ConcretePassp
 }
 
 export function concreteDepthFloor(complexity: ConcreteComplexity): number {
-  return FLOOR[complexity];
+  void complexity;
+  return MATERIAL_FIRST_MINIMUM_TECHNOLOGICAL_ROWS;
 }
 
 export function concreteModelFingerprint(): string {
-  return semanticSha256({ identities: concreteIdentities().map((row) => row.identitySha256), ownerRows: ownerRows(), normativeRows: normativeRows().map((row) => [row.normativeItemId, row.officialPdfSha256, row.exactLocator]), floor: FLOOR, inputs: INPUTS, activities: ACTIVITIES });
+  return semanticSha256({ identities: concreteIdentities().map((row) => row.identitySha256), normativeRows: normativeRows().map((row) => [row.normativeItemId, row.officialPdfSha256, row.exactLocator]), passportIsolation: "PRIMARY_PLUS_EXPLICIT_TYPED_DEPENDENCIES_ONLY", minimumTechnologicalRows: MATERIAL_FIRST_MINIMUM_TECHNOLOGICAL_ROWS, inputs: INPUTS, activities: ACTIVITIES });
 }

@@ -20,14 +20,14 @@ function read(filePath: string): string {
 }
 
 describe("production-safe selected work catalog UX closeout contracts", () => {
-  it("keeps only the request estimate entrypoint public for Android API34 route proof", () => {
+  it("keeps request deep-link resolution while protecting the rendered estimate form", () => {
     const guard = read("src/lib/auth/useAuthGuard.ts");
     const lifecycle = read("src/lib/auth/useAuthLifecycle.ts");
     const androidSmoke = read("scripts/e2e/runAndroidApi34RequestEstimateSelectedWorkActiveInputCatalogScrollSmoke.ts");
     const androidHarness = read("scripts/_shared/androidHarness.ts");
 
-    expect(guard).toContain("isPublicAppRoute: isPublicRequestEstimatePath(pathname)");
-    expect(lifecycle).toContain("isPublicAppRoute?: boolean");
+    expect(guard).toContain("buildAuthLoginHref(currentReturnTo)");
+    expect(lifecycle).not.toContain("session_absent_on_public_app_route");
     expect(androidSmoke).not.toContain("expo-development-client/?url=${encodeURIComponent(devClientRequestUrl)}");
     expect(androidSmoke).not.toContain("const devClientRequestUrl");
     expect(androidSmoke.indexOf("`rik:///request?${query.toString()}`")).toBeGreaterThanOrEqual(0);
@@ -40,8 +40,8 @@ describe("production-safe selected work catalog UX closeout contracts", () => {
     expect(androidSmoke).not.toContain('query.set("autoPrepare"');
     expect(androidHarness).toContain("const isLastRouteCandidate = index === params.routes.length - 1");
     expect(androidHarness).toContain("isLastRouteCandidate &&");
-    expect(isProtectedAppRoute("/request", [])).toBe(false);
-    expect(isProtectedAppRoute("/(tabs)/request", [])).toBe(false);
+    expect(isProtectedAppRoute("/request", [])).toBe(true);
+    expect(isProtectedAppRoute("/(tabs)/request", [])).toBe(true);
     expect(isProtectedAppRoute("/request/123", [])).toBe(true);
     expect(isPublicRequestEstimatePath("/request")).toBe(true);
     expect(isPublicRequestEstimatePath("/(tabs)/request")).toBe(true);
@@ -54,11 +54,11 @@ describe("production-safe selected work catalog UX closeout contracts", () => {
         inAuthStack: false,
         isPdfViewerRoute: false,
         hasRecentAuthExit: false,
-        isPublicAppRoute: isPublicRequestEstimatePath("/request"),
       }),
     ).toEqual({
-      type: "none",
-      reason: "session_absent_on_public_app_route",
+      type: "redirect_login",
+      target: "/auth/login",
+      reason: "bootstrap_no_session",
     });
   });
 

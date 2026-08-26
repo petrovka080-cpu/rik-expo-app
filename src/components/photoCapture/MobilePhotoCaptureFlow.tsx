@@ -8,7 +8,9 @@ import {
   type MobilePhotoCaptureService,
   type PhotoCaptureKind,
 } from "../../lib/mobilePhotoCapture/mobilePhotoCaptureService";
+import type { MobilePhotoStorageIdentity } from "../../lib/mobilePhotoCapture/mobilePhotoLocalRepository";
 import type { PhotoMaterialStoredImage } from "../../lib/ai/photoMaterialExistingRow";
+import type { CanonicalEstimatePhotoAttachmentView } from "../../lib/estimate/backendPlatform/contracts";
 import { MobilePhotoCameraScreen } from "./MobilePhotoCameraScreen";
 import { MobilePhotoPermissionGate } from "./MobilePhotoPermissionGate";
 import { MobilePhotoReviewScreen } from "./MobilePhotoReviewScreen";
@@ -23,9 +25,15 @@ export type MobilePhotoCaptureFlowProps = {
   onCaptured: (result: {
     asset: CapturedPhotoAsset;
     storedImage: PhotoMaterialStoredImage;
+    authoritativeAttachment?: CanonicalEstimatePhotoAttachmentView;
   }) => void;
   onError?: (messageRu: string) => void;
   queueUploadOnUse?: boolean;
+  storageIdentity?: MobilePhotoStorageIdentity;
+  commitPhotoOnUse?: (asset: CapturedPhotoAsset) => Promise<{
+    storedImage: PhotoMaterialStoredImage;
+    authoritativeAttachment: CanonicalEstimatePhotoAttachmentView;
+  }>;
 };
 
 type RecoveryBannerProps = {
@@ -117,6 +125,8 @@ export function MobilePhotoCaptureFlow({
   onCaptured,
   onError,
   queueUploadOnUse = true,
+  storageIdentity,
+  commitPhotoOnUse,
 }: MobilePhotoCaptureFlowProps): React.ReactElement {
   const [cameraState, setCameraState] = React.useState<MobileCameraState>("IDLE");
   const [cameraReady, setCameraReady] = React.useState(false);
@@ -192,6 +202,7 @@ export function MobilePhotoCaptureFlow({
         source: "IN_APP_CAMERA",
         cameraReady,
         takePictureAsync,
+        storageIdentity,
       });
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -208,7 +219,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handleSystemCamera = async () => {
-    const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind });
+    const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -216,7 +227,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handlePickPhoto = async () => {
-    const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind });
+    const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -224,7 +235,7 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handleRestorePending = async () => {
-    const nextAsset = await service.restorePendingSystemResult({ scanId, kind: selectedKind });
+    const nextAsset = await service.restorePendingSystemResult({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
       setAsset(nextAsset);
       setCameraState("REVIEWING");
@@ -235,6 +246,17 @@ export function MobilePhotoCaptureFlow({
     if (!asset) return;
     setCameraState("STAGING");
     try {
+      if (commitPhotoOnUse) {
+        const committed = await commitPhotoOnUse(asset);
+        setUploadCompleted(true);
+        setCameraState("COMPLETED");
+        onCaptured({
+          asset,
+          storedImage: committed.storedImage,
+          authoritativeAttachment: committed.authoritativeAttachment,
+        });
+        return;
+      }
       if (queueUploadOnUse) {
         await service.queueUpload(asset);
         setQueued(true);

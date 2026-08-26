@@ -85,18 +85,20 @@ export function WorkTemplateSuggestions({
           key={suggestion.workKey}
           accessibilityRole="button"
           accessibilityLabel={suggestion.visibleText}
+          accessibilityState={{ disabled: suggestion.estimateReady !== true }}
+          disabled={suggestion.estimateReady !== true}
           onPress={() => onSelectLegacyWorkSuggestion?.(suggestion)}
-          style={styles.button}
+          style={[styles.button, suggestion.estimateReady !== true && styles.disabledButton]}
           testID={`consumer-repair-work-suggestion-${index + 1}`}
         >
           <Text style={styles.title}>{suggestion.titleRu}</Text>
           <Text style={styles.meta}>{suggestion.categoryTitleRu}</Text>
-          <Text
-            style={styles.identity}
-            testID={`consumer-repair-work-suggestion-catalog-${index + 1}`}
-          >
-            {suggestion.workKey}
-          </Text>
+          {suggestion.estimateReady !== true ? (
+            <Text style={styles.unavailable} testID={`consumer-repair-work-suggestion-unavailable-${index + 1}`}>
+              {suggestion.nonselectableReasonRu
+                || "Эта смета проходит обновление состава и временно недоступна для нового расчёта."}
+            </Text>
+          ) : null}
         </Pressable>
       ))}
       {errorRu ? <Text style={styles.error} testID="consumer-repair-work-search-error">{errorRu}</Text> : null}
@@ -128,10 +130,6 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 8,
   },
-  identity: {
-    color: "#64748B",
-    fontSize: 10,
-  },
   summary: {
     borderRadius: 8,
     backgroundColor: "#EFF6FF",
@@ -159,6 +157,17 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     justifyContent: "center",
     gap: 2,
+  },
+  disabledButton: {
+    opacity: 0.72,
+    borderColor: "#F59E0B",
+    backgroundColor: "#FFFBEB",
+  },
+  unavailable: {
+    color: "#92400E",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "800",
   },
   row: {
     flexDirection: "row",

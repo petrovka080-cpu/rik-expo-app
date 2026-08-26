@@ -1,4 +1,7 @@
-import { gradleReleaseBuildEnv } from "../../scripts/release/android/shared";
+import {
+  androidPublicRuntimeEnvProof,
+  gradleReleaseBuildEnv,
+} from "../../scripts/release/android/shared";
 import { expectFileToContain } from "./releasePipelineContractUtils";
 
 describe("Android API34 build proof stale bundle guard", () => {
@@ -13,6 +16,10 @@ describe("Android API34 build proof stale bundle guard", () => {
     expectFileToContain("scripts/release/android/buildProofApk.ts", "cacheHit = prebuildCache.valid");
     expectFileToContain("scripts/release/android/buildProofApk.ts", "EMBEDDED_JS_BUNDLE_IDENTITY_MISMATCH");
     expectFileToContain("scripts/release/android/buildProofApk.ts", "android_apk_embedded_identity_matches");
+    expectFileToContain("scripts/release/android/buildProofApk.ts", "PUBLIC_RUNTIME_ENV_MISSING");
+    expectFileToContain("scripts/release/android/buildProofApk.ts", "EMBEDDED_PUBLIC_RUNTIME_ENV_MISMATCH");
+    expectFileToContain("scripts/release/android/buildProofApk.ts", "cachedBuildEnvDigestMatches");
+    expectFileToContain("scripts/release/android/buildProofApk.ts", "raw_values_persisted: false");
   });
 
   it("builds Gradle proof env with candidate identity and without CI cache suppression", () => {
@@ -34,6 +41,7 @@ describe("Android API34 build proof stale bundle guard", () => {
       expect(env.EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH).toBe("product-source-hash");
       expect(env.EXPO_PUBLIC_RELEASE_CANDIDATE_HASH).toBe("candidate-hash");
       expect(env.EXPO_PUBLIC_RELEASE_APK_BUILD_KEY).toBe("apk-build-key");
+      expect(env.NODE_ENV).toBe("production");
       expect(env.SENTRY_DISABLE_AUTO_UPLOAD).toBe("true");
     } finally {
       if (originalCi === undefined) {
@@ -42,5 +50,34 @@ describe("Android API34 build proof stale bundle guard", () => {
         process.env.CI = originalCi;
       }
     }
+  });
+
+  it("hashes the required public runtime build env without persisting raw values", () => {
+    const first = androidPublicRuntimeEnvProof({
+      NODE_ENV: "test",
+      EXPO_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: "public-anon-value",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL: "http://10.0.2.2:8765/canonical-estimate",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK: "true",
+    });
+    const second = androidPublicRuntimeEnvProof({
+      NODE_ENV: "test",
+      EXPO_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: "another-public-anon-value",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL: "http://10.0.2.2:8765/canonical-estimate",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK: "true",
+    });
+    const missing = androidPublicRuntimeEnvProof({ NODE_ENV: "test" });
+
+    expect(first.missingKeys).toEqual([]);
+    expect(first.digest).toMatch(/^[a-f0-9]{64}$/);
+    expect(second.digest).not.toBe(first.digest);
+    expect(missing.digest).toBeNull();
+    expect(missing.missingKeys).toEqual([
+      "EXPO_PUBLIC_SUPABASE_URL",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK",
+    ]);
   });
 });
