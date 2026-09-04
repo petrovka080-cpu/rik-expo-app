@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import type { ProfessionalBoqGroupedSection } from "../../../lib/estimate/professionalBoqSectionPolicy";
 import { ProfessionalBoqLineItem } from "./ProfessionalBoqLineItem";
@@ -12,7 +12,6 @@ export function professionalBoqSectionSummaryText(section: ProfessionalBoqGroupe
 export function ProfessionalBoqSectionSummary({ section }: { section: ProfessionalBoqGroupedSection }) {
   return (
     <View testID={`professional-boq-section-${section.id}`}>
-      <Text>{professionalBoqSectionSummaryText(section)}</Text>
       {section.visibleRows.map((row) => (
         <ProfessionalBoqLineItem key={row.rowId} row={row} />
       ))}

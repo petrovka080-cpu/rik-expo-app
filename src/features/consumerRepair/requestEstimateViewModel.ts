@@ -615,11 +615,15 @@ function buildAsphaltV4AssumptionRows(bundle: ConsumerRepairDraftBundle): Reques
   }
   const state = bundle.estimateDraftRevisionState;
   const revision = state?.revisions.find((candidate) => candidate.revisionId === state.currentRevisionId);
-  if (revision && revision.missingInputs.length > 0) {
+  const revisionMissingInputs = revision?.missingInputs.map((input) => input.label) ?? [];
+  const missingInputs = revisionMissingInputs.length > 0
+    ? revisionMissingInputs
+    : bundle.draft.missingData;
+  if (missingInputs.length > 0) {
     rows.push({
       id: "asphalt_v4_missing_inputs",
       label: "\u041d\u0435\u0434\u043e\u0441\u0442\u0430\u044e\u0449\u0438\u0435 \u0432\u0432\u043e\u0434\u043d\u044b\u0435",
-      value: revision.missingInputs.slice(0, 5).map((input) => input.label).join("; "),
+      value: missingInputs.slice(0, 5).join("; "),
     });
   }
   rows.push({
@@ -794,8 +798,8 @@ function fullTotalPublicLabel(fullTotalStatus: string, missingPrices: number): s
 function summaryWorkTitle(bundle: ConsumerRepairDraftBundle): string {
   return sentenceCaseRu(
     publicRequestEstimateTitle(
-      bundle.draft.selectedWorkTitleRu
-        || bundle.structuredEstimatePayload?.workTitle
+      bundle.structuredEstimatePayload?.workTitle
+        || bundle.draft.selectedWorkTitleRu
         || bundle.draft.title
         || "",
     ),
@@ -1011,11 +1015,17 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
   });
   const canonicalBlocking =
     bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED";
+  const currentCanonicalRevision = bundle.estimateDraftRevisionState?.revisions.find(
+    (revision) => revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId,
+  );
+  const canonicalSnapshotHash = currentCanonicalRevision?.applicableBoqSignature?.slice(0, 8)
+    ?? bundle.structuredEstimatePayload?.canonicalBackend?.checksumSha256.slice(0, 8)
+    ?? null;
 
   return {
     title: publicRequestEstimateTitle(
-      bundle.draft.selectedWorkTitleRu
-        || bundle.structuredEstimatePayload?.workTitle
+      bundle.structuredEstimatePayload?.workTitle
+        || bundle.draft.selectedWorkTitleRu
         || bundle.draft.title
         || "",
     ),
@@ -1076,7 +1086,7 @@ export function buildRequestEstimateViewModel(bundle: ConsumerRepairDraftBundle 
         confidence: item.confidence ?? "high",
         addedBy: "user",
       })),
-    snapshotHash: bundle.editableEstimateSnapshot?.hash ?? null,
+    snapshotHash: bundle.editableEstimateSnapshot?.hash ?? canonicalSnapshotHash,
     ...revisionViewLabels(bundle),
   };
 }

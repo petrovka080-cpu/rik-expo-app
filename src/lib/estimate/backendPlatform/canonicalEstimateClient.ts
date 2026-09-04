@@ -15,6 +15,7 @@ import {
   type CanonicalEstimateRevisionRowsPage,
   type CanonicalEstimateRevisionHistoryPage,
   type CanonicalEstimateRevisionView,
+  type CanonicalEstimateResourceSearchPage,
   type CanonicalEstimateSearchGroupPage,
   type CanonicalEstimateSearchPage,
   type CanonicalEstimateTypedRelation,
@@ -42,6 +43,97 @@ type ApiErrorEnvelope = {
 
 const ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 10;
 let accessTokenRefreshInflight: Promise<string> | null = null;
+let runtimeCompatibilityInflight: Promise<void> | null = null;
+let runtimeCompatibilityVerifiedAt = 0;
+const RUNTIME_COMPATIBILITY_CACHE_MS = 30_000;
+
+export function resetCanonicalEstimateRuntimeCompatibilityForTests(): void {
+  runtimeCompatibilityInflight = null;
+  runtimeCompatibilityVerifiedAt = 0;
+}
+
+type CanonicalEstimateRuntimeManifest = {
+  runtimeRole?: string;
+  authMode?: string;
+  activeCompileJobCount?: number;
+  capability?: { status?: string; ttlSeconds?: number } | null;
+  compatibilityTuple?: Record<string, unknown>;
+};
+
+function localDeveloperRuntimeExpectedTuple(): Record<string, string> | null {
+  if (process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW !== "1") return null;
+  const expected = {
+    definitionReleaseId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID ?? "").trim(),
+    searchReleaseId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID ?? "").trim(),
+    sourceHead: String(process.env.EXPO_PUBLIC_BUILD_COMMIT ?? "").trim(),
+    sourceTree: String(process.env.EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH ?? "").trim(),
+    frontendSourceTreeHash: String(process.env.EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH ?? "").trim(),
+    frontendProductSourceHash: String(process.env.EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH ?? "").trim(),
+    frontendJsBundleFingerprint: String(process.env.EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT ?? "").trim(),
+    capabilityId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID ?? "").trim(),
+  };
+  if (Object.values(expected).some((value) => !value)) {
+    throw new CanonicalEstimateApiError("Локальная версия приложения не привязана к версии расчётного backend.", {
+      code: "RUNTIME_COMPATIBILITY_CONFIG_MISSING",
+      httpStatus: 503,
+      retryable: true,
+    });
+  }
+  return expected;
+}
+
+async function ensureLocalDeveloperRuntimeCompatibility(token: string): Promise<void> {
+  const expected = localDeveloperRuntimeExpectedTuple();
+  if (!expected) return;
+  if (Date.now() - runtimeCompatibilityVerifiedAt < RUNTIME_COMPATIBILITY_CACHE_MS) return;
+  if (runtimeCompatibilityInflight) return runtimeCompatibilityInflight;
+  runtimeCompatibilityInflight = (async () => {
+    const response = await fetchWithRequestTimeout(
+      `${resolveFunctionUrl()}/runtime-manifest`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+      {
+        // This manifest joins the model release, search release, capability and
+        // active-job state. Treating it as an 8 s scalar lookup caused valid
+        // approval clicks to fail during a transient database slowdown.
+        requestClass: "ui_scope_load",
+        owner: "canonical_estimate_client",
+        operation: "runtime-manifest",
+        screen: "request",
+        surface: "canonical_estimate_backend",
+        sourceKind: "canonical_estimate_edge_function",
+      },
+    );
+    const manifest = await response.json().catch(() => null) as CanonicalEstimateRuntimeManifest | null;
+    const tuple = manifest?.compatibilityTuple ?? {};
+    const mismatch = Object.entries(expected).find(([key, value]) => String(tuple[key] ?? "") !== value);
+    const manifestHealthy = response.ok &&
+      manifest?.runtimeRole === "FULL_CANONICAL_ESTIMATE_BACKEND" &&
+      manifest?.authMode === "STRICT_SESSION_INTROSPECTION" &&
+      manifest?.capability?.status === "ACTIVE" &&
+      Number(manifest.capability.ttlSeconds ?? 0) >= 60 * 60 &&
+      Number(manifest.activeCompileJobCount ?? -1) === 0;
+    if (!manifestHealthy || mismatch) {
+      throw new CanonicalEstimateApiError("Версии приложения и расчётного backend не совпадают. Перезапустите локальный контур.", {
+        code: mismatch ? `RUNTIME_COMPATIBILITY_MISMATCH_${mismatch[0]}` : "RUNTIME_MANIFEST_NOT_READY",
+        httpStatus: 503,
+        retryable: true,
+      });
+    }
+    runtimeCompatibilityVerifiedAt = Date.now();
+  })();
+  try {
+    await runtimeCompatibilityInflight;
+  } finally {
+    runtimeCompatibilityInflight = null;
+  }
+}
 
 async function refreshAccessToken(): Promise<string> {
   if (accessTokenRefreshInflight) return accessTokenRefreshInflight;
@@ -108,9 +200,14 @@ async function invoke<T>(path: string, options: {
       sourceKind: "canonical_estimate_edge_function",
     },
   );
-  let response = await execute(await accessToken());
+  let token = await accessToken();
+  await ensureLocalDeveloperRuntimeCompatibility(token);
+  let response = await execute(token);
   if (response.status === 401) {
-    response = await execute(await accessToken(true));
+    token = await accessToken(true);
+    runtimeCompatibilityVerifiedAt = 0;
+    await ensureLocalDeveloperRuntimeCompatibility(token);
+    response = await execute(token);
   }
   let payload: unknown = null;
   try { payload = await response.json(); } catch { /* normalized below */ }
@@ -151,6 +248,23 @@ export function searchCanonicalEstimateCatalog(input: {
   return invoke<CanonicalEstimateSearchPage>(
     `search/catalog?${params.toString()}`,
     { signal: input.signal, requestClass: "lightweight_lookup" },
+  );
+}
+
+export function searchCanonicalEstimateResources(input: {
+  query: string;
+  kind?: "all" | "material" | "labor" | "equipment" | "service";
+  pageSize?: number;
+  signal?: AbortSignal | null;
+}) {
+  const params = new URLSearchParams({
+    query: input.query,
+    kind: input.kind ?? "all",
+    pageSize: String(input.pageSize ?? 50),
+  });
+  return invoke<CanonicalEstimateResourceSearchPage>(
+    `search/resources?${params.toString()}`,
+    { signal: input.signal, requestClass: "ui_scope_load" },
   );
 }
 

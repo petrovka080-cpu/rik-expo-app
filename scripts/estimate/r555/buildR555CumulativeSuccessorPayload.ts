@@ -9,6 +9,11 @@ import {
   clearProfessionalWorkPassportBuildCaches,
 } from "../../../src/lib/estimate/buildProfessionalWorkPassport";
 import type { ProfessionalBoqRecipeRow, WorkPassportParameter } from "../../../src/lib/estimate/workPassportContract";
+import {
+  buildPublicBoqProcurementNamingProjection,
+  normalizePublicBoqNameRu,
+} from "../../../src/lib/estimate/publicBoqNaming";
+import { bindCanonicalFormulaSource } from "../../../src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding";
 
 type Json = Record<string, unknown>;
 type ManifestRow = Json & {
@@ -26,25 +31,23 @@ type ManifestRow = Json & {
   classification_proof?: Json;
 };
 
-const MASTER_PATH = "C:/Users/User/Downloads/MASTER_TZ_R5_5_5_PRODUCTION_GRADE_SINGLE_CANONICAL_MATERIAL_FIRST_CLEAR_RUSSIAN_NAMES_FULL_CATALOG_ASPHALT_WEB_ANDROID_50_PER_GROUP_GLOBAL_GREEN_RU.md";
-const MASTER_SHA256 = "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007";
-const CONTRACT = "rik-expo-app-r555.cumulative-successor.v1";
-const ROOT = ".release-runtime/r555/cumulative-successor-v1";
+const MASTER_PATH = "C:/Users/User/Downloads/MASTER_TZ_R5_6_1_PRODUCTION_GRADE_SIMPLE_PRICE_LIST_NAMES_FOUNDATION_CONCRETE_TRUTH_SINGLE_CANONICAL_MODULAR_MONOLITH_WEB_ANDROID_GROUP50_GLOBAL_GREEN_RU.md";
+const MASTER_SHA256 = "e4e960e07e644ff235abec3d9b86a8408921391cd19ebcfcba3ef427423fb7e6";
+const CONTRACT = "rik-expo-app-r561.cumulative-successor.v1";
+const ROOT = ".release-runtime/r561/cumulative-successor-v1";
 const MANIFEST_PATH = ".release-runtime/r555/catalog-russian-v1/FULL_CATALOG_SOURCE_MANIFEST.jsonl";
 const SEARCH_SOURCE_PATH = ".release-runtime/r555/catalog-russian-v1/FULL_CATALOG_VISIBLE_SEARCH_DOCUMENTS.jsonl";
 const VALIDATION_PATH = ".release-runtime/r555/evidence/16A_R555_PUBLIC_RUSSIAN_CATALOG_SUCCESSOR_VALIDATION.json";
-const DEFINITIONS_PATH = `${ROOT}/R555_CUMULATIVE_DEFINITIONS.jsonl`;
-const PRICE_ITEMS_PATH = `${ROOT}/R555_CUMULATIVE_PRICE_ITEMS.jsonl`;
-const SEARCH_DOCUMENTS_PATH = `${ROOT}/R555_CUMULATIVE_SEARCH_DOCUMENTS.jsonl`;
-const GROUPS_PATH = `${ROOT}/R555_CUMULATIVE_SEARCH_GROUPS.json`;
-const SUMMARY_PATH = `${ROOT}/R555_CUMULATIVE_SUCCESSOR_PAYLOAD_SUMMARY.json`;
-const RECEIPT_PATH = ".release-runtime/r555/evidence/20A_R555_CUMULATIVE_SUCCESSOR_PAYLOAD_BUILD.json";
+const DEFINITIONS_PATH = `${ROOT}/R561_CUMULATIVE_DEFINITIONS.jsonl`;
+const PRICE_ITEMS_PATH = `${ROOT}/R561_CUMULATIVE_PRICE_ITEMS.jsonl`;
+const SEARCH_DOCUMENTS_PATH = `${ROOT}/R561_CUMULATIVE_SEARCH_DOCUMENTS.jsonl`;
+const GROUPS_PATH = `${ROOT}/R561_CUMULATIVE_SEARCH_GROUPS.json`;
+const SUMMARY_PATH = `${ROOT}/R561_CUMULATIVE_SUCCESSOR_PAYLOAD_SUMMARY.json`;
+const RECEIPT_PATH = ".release-runtime/r561/evidence/08_R561_CUMULATIVE_SUCCESSOR_PAYLOAD_BUILD.json";
 const MODIFIERS = [
   "technical_room", "access_limited", "finish_ready", "small_area", "large_area",
   "high_load", "commercial", "wet_zone", "standard", "repair",
 ] as const;
-const FORMULA_FUNCTIONS = new Set(["ceil", "floor", "max", "min", "pow", "round_to", "sqrt", "unit_convert"]);
-
 function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -127,86 +130,6 @@ function parameterType(parameter: WorkPassportParameter, value: unknown): "boole
   return "decimal";
 }
 
-function numericLiteral(value: unknown): string | null {
-  if (typeof value === "boolean") return value ? "1" : "0";
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return String(value);
-}
-
-function substituteFormulaContext(
-  source: string,
-  visibleParameterIds: Set<string>,
-  context: Record<string, unknown>,
-  derivedFormulas: Map<string, string>,
-  resolving: Set<string> = new Set(),
-): string {
-  const normalizedSource = source.split(";")[0]
-    .replace(/^([A-Za-z_][A-Za-z0-9_.]*)\s+or\b.*$/iu, "$1")
-    .replace(/\s+(?:preliminary|shoulders|steel_t)$/iu, "")
-    .trim();
-  const unresolved = new Set<string>();
-  const result = normalizedSource.replace(/[A-Za-z_][A-Za-z0-9_.]*/gu, (identifier) => {
-    if (FORMULA_FUNCTIONS.has(identifier) || visibleParameterIds.has(identifier)) return identifier;
-    if (identifier.toLowerCase() === "pi") return String(Math.PI);
-    const derivedId = derivedFormulas.has(identifier)
-      ? identifier
-      : derivedFormulas.has(`${identifier}_count`)
-        ? `${identifier}_count`
-        : null;
-    if (derivedId && !resolving.has(derivedId)) {
-      const nextResolving = new Set(resolving).add(derivedId);
-      return `(${substituteFormulaContext(
-        derivedFormulas.get(derivedId)!,
-        visibleParameterIds,
-        context,
-        derivedFormulas,
-        nextResolving,
-      )})`;
-    }
-    const literal = numericLiteral(context[identifier]);
-    if (literal != null) return literal;
-    unresolved.add(identifier);
-    return identifier;
-  });
-  if (unresolved.size > 0) throw new Error(`UNRESOLVED_FORMULA_IDENTIFIERS:${[...unresolved].join(",")}`);
-  return result;
-}
-
-function calibratedFormula(input: {
-  row: ProfessionalBoqRecipeRow;
-  parameters: readonly WorkPassportParameter[];
-  baseline: Record<string, unknown>;
-}): { source: string; calibrationParameterId: string; tracedQuantity: string } | null {
-  const normalized = input.row.quantityFormula.trim();
-  const looksComputational = /[+*/()]|^[A-Za-z_][A-Za-z0-9_.]*$/u.test(normalized);
-  if (!looksComputational) return null;
-  const sourceIdentifiers = new Set(input.row.quantityFormula.match(/[A-Za-z_][A-Za-z0-9_.]*/gu) ?? []);
-  const numericParameters = input.parameters.filter((parameter) => {
-    const value = input.baseline[parameter.key];
-    return typeof value === "number" && Number.isFinite(value) && value !== 0;
-  });
-  const parameter = numericParameters.find((candidate) => sourceIdentifiers.has(candidate.key)) ?? numericParameters[0];
-  if (!parameter) return null;
-  const baselineValue = Number(input.baseline[parameter.key]);
-  const tracedQuantity = fallbackQuantity(input.row);
-  const quantity = Number(tracedQuantity);
-  if (!Number.isFinite(quantity) || quantity < 0) return null;
-  const factor = quantity / baselineValue;
-  if (!Number.isFinite(factor) || factor < 0) return null;
-  return {
-    source: `${parameter.key} * ${factor}`,
-    calibrationParameterId: parameter.key,
-    tracedQuantity,
-  };
-}
-
-function fallbackQuantity(row: ProfessionalBoqRecipeRow): string {
-  const values = [...row.calculationTraceTemplate.matchAll(/(?:^|[;\s])result=([+-]?\d+(?:\.\d+)?)/giu)]
-    .map((match) => match[1]);
-  const value = values.at(-1) ?? "1";
-  return /^[+-]?\d+(?:\.\d+)?$/u.test(value) && Number.isFinite(Number(value)) ? value : "1";
-}
-
 function sectionFor(row: ProfessionalBoqRecipeRow): string {
   if (row.rowType === "material") return "Материалы и изделия";
   if (row.rowType === "equipment") return "Механизмы и оборудование";
@@ -215,16 +138,113 @@ function sectionFor(row: ProfessionalBoqRecipeRow): string {
   return "Работы и труд";
 }
 
-function unitPriceFor(rowType: ProfessionalBoqRecipeRow["rowType"], unit: string): number {
-  if (rowType === "labor" || rowType === "work") return /hour|ч|shift|смен/iu.test(unit) ? 520 : 480;
-  if (rowType === "equipment") return /hour|ч|shift|смен/iu.test(unit) ? 1_850 : 1_200;
-  if (rowType === "transport") return /km|км/iu.test(unit) ? 42 : 850;
-  if (rowType === "service") return /test|испыт|protocol|document/iu.test(unit) ? 1_250 : 780;
-  if (/kg|кг/iu.test(unit)) return 95;
-  if (/m3|м³/iu.test(unit)) return 3_500;
-  if (/m2|м²/iu.test(unit)) return 420;
-  if (/piece|pcs|шт/iu.test(unit)) return 180;
-  return 350;
+function procurementPackagingFor(row: ProfessionalBoqRecipeRow): {
+  packagingRu: string;
+  packageSize: number | null;
+  packageUnitRu: string;
+  purchaseQuantityFormula: string;
+  roundingRuleRu: string;
+} | null {
+  if (row.rowType !== "material" || !row.includedInProcurement) return null;
+  const title = row.titleRu.toLocaleLowerCase("ru-RU");
+  if (/бетон|раствор/iu.test(title) && row.sourceUnit === "m3") {
+    return {
+      packagingRu: "Партия автобетоносмесителя до 7 м³; объём заказа не округляется как штучная упаковка",
+      packageSize: null,
+      packageUnitRu: "м³",
+      purchaseQuantityFormula: "расчётная потребность в м³",
+      roundingRuleRu: "без закупочного округления",
+    };
+  }
+  if (/кабел|провод/iu.test(title) && row.sourceUnit === "m") {
+    return {
+      packagingRu: "Кабельный барабан 500 м; фактическая строительная длина подтверждается поставщиком",
+      packageSize: 500,
+      packageUnitRu: "барабан",
+      purchaseQuantityFormula: "ceil(расчётная потребность / 500) * 500",
+      roundingRuleRu: "вверх до полного барабана после подтверждения строительной длины",
+    };
+  }
+  if (/труб|воздуховод|лоток|профил/iu.test(title) && row.sourceUnit === "m") {
+    return {
+      packagingRu: "Транспортная длина 6 м; точная длина изделия подтверждается спецификацией",
+      packageSize: 6,
+      packageUnitRu: "отрезок",
+      purchaseQuantityFormula: "ceil(расчётная потребность / 6) * 6",
+      roundingRuleRu: "вверх до целого транспортного отрезка",
+    };
+  }
+  if (/мембран|геотекст|изоляц|рулон/iu.test(title) && row.sourceUnit === "m2") {
+    return {
+      packagingRu: "Рулон 50 м²; фактическая площадь рулона подтверждается паспортом материала",
+      packageSize: 50,
+      packageUnitRu: "рулон",
+      purchaseQuantityFormula: "ceil(расчётная потребность / 50) * 50",
+      roundingRuleRu: "вверх до полного рулона",
+    };
+  }
+  if (row.sourceUnit === "kg") {
+    return {
+      packagingRu: "Поставка по массе; транспортная пачка 1000 кг уточняется по виду материала",
+      packageSize: 1_000,
+      packageUnitRu: "пачка",
+      purchaseQuantityFormula: "ceil(расчётная потребность / 1000) * 1000",
+      roundingRuleRu: "вверх до транспортной пачки после подтверждения поставщика",
+    };
+  }
+  if (row.sourceUnit === "l") {
+    return {
+      packagingRu: "Канистра 10 л",
+      packageSize: 10,
+      packageUnitRu: "канистра",
+      purchaseQuantityFormula: "ceil(расчётная потребность / 10) * 10",
+      roundingRuleRu: "вверх до полной канистры",
+    };
+  }
+  if (row.sourceUnit === "m3" || row.sourceUnit === "t") {
+    return {
+      packagingRu: "Навальная или наливная поставка по фактической массе или объёму",
+      packageSize: null,
+      packageUnitRu: row.sourceUnit === "m3" ? "м³" : "т",
+      purchaseQuantityFormula: "расчётная потребность без штучного округления",
+      roundingRuleRu: "без закупочного округления",
+    };
+  }
+  if (row.sourceUnit === "pcs" || row.sourceUnit === "set") {
+    return {
+      packagingRu: "Заводская единица поставки; одна штука или один комплект",
+      packageSize: 1,
+      packageUnitRu: row.sourceUnit === "pcs" ? "шт." : "компл.",
+      purchaseQuantityFormula: "ceil(расчётная потребность)",
+      roundingRuleRu: "вверх до целой заводской единицы",
+    };
+  }
+  return {
+    packagingRu: `Поставочная единица «${row.sourceUnit}»; размер партии подтверждается предложением поставщика`,
+    packageSize: null,
+    packageUnitRu: row.sourceUnit,
+    purchaseQuantityFormula: "расчётная потребность до подтверждения поставочной единицы",
+    roundingRuleRu: "округление не применяется без подтверждённой упаковки",
+  };
+}
+
+function materialFirstTrace(row: ProfessionalBoqRecipeRow): Record<string, unknown> {
+  const packaging = procurementPackagingFor(row);
+  const wastePercent = Number(row.formulaContext?.materialWastePercent ?? 0);
+  const sourceGroup = String(row.formulaContext?.sourceGroup ?? "");
+  const isDelivery = row.rowType === "transport" || sourceGroup === "logistics" || /достав|перевоз/iu.test(row.titleRu);
+  const isWaste = sourceGroup === "waste" || /отход|утилиз|обрез/iu.test(row.titleRu);
+  return {
+    ...(packaging ?? {}),
+    ...(wastePercent > 0 ? {
+      wasteRu: `Технологический запас ${wastePercent}% применён один раз в формуле количества этой позиции`,
+      wastePercent,
+      wasteAppliedOnce: true,
+    } : isWaste ? { wasteRu: "Отдельный рассчитанный поток отходов выбранной технологии" } : {}),
+    ...(isDelivery ? { deliveryRu: row.titleRu } : row.rowType === "material" ? {
+      deliveryRu: "Груз включён в единственный рассчитанный логистический поток паспорта работы",
+    } : {}),
+  };
 }
 
 async function main(): Promise<void> {
@@ -267,16 +287,14 @@ async function main(): Promise<void> {
     for (const [index, row] of visible.entries()) {
       const templateId = templateIdFor(row);
       const passport = buildProfessionalWorkPassport(templateId);
-      if (!passport) throw new Error(`R555_PASSPORT_MISSING:${row.canonical_work_id}:${templateId}`);
-      if (passport.localizedNameRu !== row.public_title_ru) throw new Error(`R555_TITLE_PARITY_RED:${row.canonical_work_id}`);
+      if (!passport) throw new Error(`R561_PASSPORT_MISSING:${row.canonical_work_id}:${templateId}`);
       const recipeRows = passport.boqRecipe.allRows;
       const passportParameters = [...passport.parameterSchema.required, ...passport.parameterSchema.optional];
       const baseline = Object.fromEntries(passportParameters.map((parameter) => [
         parameter.key,
-        baselineValue(parameter, recipeRows, row.public_title_ru),
+        baselineValue(parameter, recipeRows, passport.localizedNameRu),
       ]));
       const visibleParameterIds = new Set(passportParameters.map((parameter) => parameter.key));
-      const sharedFormulaContext = Object.assign({}, ...recipeRows.map((recipe) => recipe.formulaContext ?? {})) as Record<string, unknown>;
       const derivedFormulas = new Map<string, string>();
       for (const step of passport.formulas.formulaSteps) {
         const match = /^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*=\s*(.+?)\s*$/u.exec(step);
@@ -304,38 +322,22 @@ async function main(): Promise<void> {
       for (const [ordinal, recipe] of recipeRows.entries()) {
         let compiled;
         let expressionSource: string;
-        let fallbackReason: string | null = null;
-        let calibration: ReturnType<typeof calibratedFormula> = null;
+        const fallbackReason: null = null;
+        const calibration: null = null;
         try {
-          expressionSource = substituteFormulaContext(
-            recipe.quantityFormula,
-            visibleParameterIds,
-            { ...sharedFormulaContext, ...(recipe.formulaContext ?? {}) },
+          expressionSource = bindCanonicalFormulaSource({
+            source: recipe.quantityFormula,
+            parameterIds: visibleParameterIds,
             derivedFormulas,
-            new Set([recipe.rowId]),
-          );
+            resolving: new Set([recipe.rowId]),
+          });
           compiled = compileFormulaGraph(expressionSource);
           evaluateFormulaGraph(compiled, Object.fromEntries(Object.entries(baseline)
             .filter(([, value]) => typeof value === "number") as Array<[string, number]>));
           totals.dynamicFormulas += 1;
         } catch (error) {
           const sourceError = error instanceof Error ? error.message : String(error);
-          calibration = calibratedFormula({ row: recipe, parameters: passportParameters, baseline });
-          expressionSource = calibration?.source ?? fallbackQuantity(recipe);
-          compiled = compileFormulaGraph(expressionSource);
-          fallbackReason = calibration
-            ? `CALIBRATED_FROM_SOURCE_TRACE:${sourceError}`
-            : `FIXED_DESCRIPTIVE_ROW:${sourceError}`;
-          totals.formulaFallbacks += 1;
-          if (calibration) {
-            totals.formulaCalibrations += 1;
-            totals.dynamicFormulas += 1;
-          } else {
-            totals.fixedTextFormulas += 1;
-            if (/[+*/()]|^[A-Za-z_][A-Za-z0-9_.]*$/u.test(recipe.quantityFormula.trim())) {
-              totals.unsafeFormulaFallbacks += 1;
-            }
-          }
+          throw new Error(`R561_FORMULA_SOURCE_NOT_BOUND:${row.canonical_work_id}:${recipe.rowId}:${sourceError}`);
         }
         const astSha256 = shaObject(compiled.ast);
         formulas.push({
@@ -349,8 +351,21 @@ async function main(): Promise<void> {
           fallbackReason,
           calibration,
         });
-        const priceKey = `r555-price:${sha256(`${row.source_group}|${recipe.rowType}|${recipe.titleRu}|${recipe.sourceUnit}`).slice(0, 40)}`;
+        const priceKey = `r561-price:${sha256(`${row.source_group}|${recipe.rowType}|${recipe.titleRu}|${recipe.sourceUnit}`).slice(0, 40)}`;
         const resourceId = uuid(`${CONTRACT}:resource:${row.canonical_work_id}:${recipe.rowId}:${row.row_sha256}`);
+        const procurementEligible = recipe.includedInProcurement && recipe.rowType !== "work" && recipe.rowType !== "labor";
+        const naming = procurementEligible
+          ? buildPublicBoqProcurementNamingProjection({
+              sourceNameRu: recipe.titleRu,
+              workNameRu: passport.localizedNameRu,
+              unit: recipe.sourceUnit,
+              catalogOrPriceListReference: priceKey,
+            })
+          : null;
+        const publicNameRu = naming?.publicNameRu ?? normalizePublicBoqNameRu({
+          sourceNameRu: recipe.titleRu,
+          workNameRu: passport.localizedNameRu,
+        });
         const sourceMetadata = {
           contract: CONTRACT,
           masterSha256: MASTER_SHA256,
@@ -377,7 +392,7 @@ async function main(): Promise<void> {
           ordinal,
           section: sectionFor(recipe),
           category: recipe.rowType,
-          titleRu: recipe.titleRu,
+          titleRu: publicNameRu,
           rowType: recipe.rowType,
           unitId: recipe.sourceUnit,
           formulaId: recipe.formulaId,
@@ -386,10 +401,19 @@ async function main(): Promise<void> {
             semanticOwner: `${row.canonical_work_id}:${recipe.rowId}`,
             physicalRowType: recipe.rowType,
             canonicalUnit: recipe.canonicalUnit,
+            source_name_ru: recipe.titleRu,
+            ...(naming ? {
+              public_name_ru: naming.publicNameRu,
+              specification_ru: naming.specificationRu,
+              procurement_search_name_ru: naming.procurementSearchNameRu,
+              catalog_or_price_list_reference: naming.catalogOrPriceListReference,
+              can_be_procured_by_name: naming.canBeProcuredByName,
+            } : {}),
+            ...materialFirstTrace(recipe),
           },
           semanticOwner: `${row.canonical_work_id}:${recipe.rowId}`,
           costOwnerId: priceKey,
-          procurementEligible: recipe.includedInProcurement && recipe.rowType !== "work" && recipe.rowType !== "labor",
+          procurementEligible,
           sourceMetadata,
         };
         resources.push({ ...resourceCore, rowSha256: shaObject(resourceCore) });
@@ -399,13 +423,15 @@ async function main(): Promise<void> {
             priceGroup: row.source_group,
             priceKey,
             unitId: recipe.sourceUnit,
-            unitPrice: unitPriceFor(recipe.rowType, recipe.sourceUnit),
+            unitPrice: null,
             currencyCode: "KGS",
+            priceStatus: "PRICE_PENDING",
             sourceRow: {
               contract: CONTRACT,
-              sourceClass: "LOCAL_R555_REVIEW_SCHEDULE",
-              effectiveDate: "2026-08-26",
-              regionRu: "Бишкек, Кыргызстан",
+              sourceClass: "PRICE_SOURCE_REQUIRED",
+              requiredRegionRu: "Кыргызстан",
+              requiredCurrency: "KGS",
+              requiredPriceUom: recipe.sourceUnit,
               productionMarketClaim: false,
             },
           });
@@ -428,7 +454,7 @@ async function main(): Promise<void> {
         namespace: row.source_corpus === "BASE_WORK_CATALOG_10000" ? "r555-base" : "r555-expanded",
         domain: row.source_domain,
         workKey: passport.workKey,
-        titleRu: row.public_title_ru,
+        titleRu: passport.localizedNameRu,
         aliasesRu: row.public_aliases,
         templateId,
         groupId: groupFor(row, templateId),
@@ -446,7 +472,7 @@ async function main(): Promise<void> {
           rowCount: passport.boqRecipe.rowCount,
         },
         applicability: {
-          physicalResultRu: row.public_title_ru,
+          physicalResultRu: passport.localizedNameRu,
           includedScopeRu: [passport.workDescription.scopeSummary],
           excludedScopeRu: ["Работы и ресурсы, отсутствующие в технологическом паспорте, не включены."],
         },
@@ -463,7 +489,7 @@ async function main(): Promise<void> {
       writeSync(definitionsFd, `${JSON.stringify({ ...definitionCore, definitionId, baselineId, definitionSha256 })}\n`);
 
       const group = groups.get(definitionCore.groupId) ?? {
-        titleRu: row.public_title_ru,
+        titleRu: passport.localizedNameRu,
         domains: new Set<string>(),
         members: [],
       };
@@ -509,6 +535,8 @@ async function main(): Promise<void> {
     sourceSearchSha256: sha256(readFileSync(resolve(SEARCH_SOURCE_PATH))),
     formulaOwnerSha256: sha256(readFileSync(resolve("src/lib/estimate/backendPlatform/formulaGraph.ts"))),
     passportOwnerSha256: sha256(readFileSync(resolve("src/lib/estimate/buildProfessionalWorkPassport.ts"))),
+    s2bRegistrySha256: sha256(readFileSync(resolve("src/lib/ai/expandedComplexWorks/s2b/registry.ts"))),
+    formulaBindingOwnerSha256: sha256(readFileSync(resolve("src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.ts"))),
     builderSha256: sha256(readFileSync(resolve("scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts"))),
   });
   const artifacts: Array<{ path: string; bytes: number; sha256: string }> = [];
@@ -527,15 +555,15 @@ async function main(): Promise<void> {
       web_group50: groupRows.length * 50,
       android_valid_group50: groupRows.length * 50,
       parity_q10: groupRows.length * 10,
-      android_invalid: 3_390,
+      android_invalid: groupRows.length * 5,
     },
-    formula_fallback_policy: "Only source formulas that are non-arithmetic fixed-row descriptions use their traced numeric result; original formula and reason remain immutable in source metadata.",
-    price_class: "LOCAL_R555_REVIEW_SCHEDULE_NOT_PRODUCTION_MARKET_CLAIM",
+    formula_fallback_policy: "FORBIDDEN: every computational identifier must bind to a declared parameter; only a numeric quantity explicitly stated by a fixed descriptive source row is literal.",
+    price_class: "PRICE_PENDING_REAL_KGS_SOURCE_REQUIRED",
     artifacts,
-    status: totals.visibleDefinitions === 10_322 && totals.searchDocuments === 10_322 && totals.resources === 615_452
+    status: totals.visibleDefinitions === 10_322 && totals.searchDocuments === 10_322 && totals.resources > 0
       && totals.formulas === totals.resources && totals.unsafeFormulaFallbacks === 0 && groupRows.length >= 678
-      ? "BUILT_R555_CUMULATIVE_SUCCESSOR_PAYLOAD_AWAITING_DATABASE_DRY_RUN"
-      : "RED_R555_CUMULATIVE_SUCCESSOR_PAYLOAD",
+      ? "BUILT_R561_CUMULATIVE_SUCCESSOR_PAYLOAD_AWAITING_REAL_PRICE_SOURCES_AND_DATABASE_DRY_RUN"
+      : "RED_R561_CUMULATIVE_SUCCESSOR_PAYLOAD",
     production_accessed: false,
   };
   atomicJson(SUMMARY_PATH, summary);

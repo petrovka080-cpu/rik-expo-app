@@ -2,6 +2,7 @@ import { evaluateFormulaGraph, type FormulaAst } from "./formulaGraph";
 import { evaluateInclusionGraph } from "./inclusionGraph";
 import { validateCanonicalEstimateParameters } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
+import { canonicalFixedQuantityStatedBySource } from "./canonicalFormulaSourceBinding";
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -49,6 +50,43 @@ export type CanonicalEstimatePriceItem = {
   estimate_price_snapshot?: { route_id?: string | null } | null;
 };
 
+export type CanonicalEstimateResourcePriceBinding = {
+  resource_spec_id: string;
+  price_key: string;
+};
+
+/**
+ * Нормализует price owner до входа в pure compiler. В таблице ресурса
+ * cost_owner_id исторически nullable, поэтому единственная однозначная
+ * route binding является каноническим владельцем цены. Несколько разных price key
+ * для одного ресурса без явного cost owner — дефект определения, а не повод
+ * молча выбрать первый маршрут.
+ */
+export function bindCanonicalEstimateResourcePriceKeys(
+  resources: readonly CanonicalEstimateResourceDefinition[],
+  bindings: readonly CanonicalEstimateResourcePriceBinding[],
+): CanonicalEstimateResourceDefinition[] {
+  const priceKeysByResource = new Map<string, Set<string>>();
+  for (const binding of bindings) {
+    const resourceId = String(binding.resource_spec_id ?? "").trim();
+    const priceKey = String(binding.price_key ?? "").trim();
+    if (!resourceId || !priceKey) {
+      throw compilerError("resource price binding is incomplete", "DEFINITION_INTEGRITY_FAILED");
+    }
+    const keys = priceKeysByResource.get(resourceId) ?? new Set<string>();
+    keys.add(priceKey);
+    priceKeysByResource.set(resourceId, keys);
+  }
+  return resources.map((resource) => {
+    if (String(resource.cost_owner_id ?? "").trim()) return { ...resource };
+    const keys = [...(priceKeysByResource.get(resource.id) ?? [])];
+    if (keys.length > 1) {
+      throw compilerError(`ambiguous resource price binding ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    return keys.length === 1 ? { ...resource, cost_owner_id: keys[0] } : { ...resource };
+  });
+}
+
 export type CanonicalEstimateCompiledRow = Record<string, unknown> & {
   row_id: string;
   ordinal: number;
@@ -66,6 +104,8 @@ export type CanonicalEstimateCompileCoreInput = {
   operation: CanonicalEstimateCompileOperation;
   compilerVersion: string;
   catalogId: string;
+  /** Required by R6 callers; omitted only by explicit legacy/test projections. */
+  primaryMeasureParameterId?: string | null;
   parameterDefinitions: CanonicalEstimateParameterDefinition[];
   formulaDefinitions: CanonicalEstimateFormulaDefinition[];
   resourceDefinitions: CanonicalEstimateResourceDefinition[];
@@ -166,6 +206,33 @@ export async function compileCanonicalEstimateCore(
 ): Promise<CanonicalEstimateCompileCoreResult> {
   if (input.resourceDefinitions.length > input.maximumResourceRows) {
     throw compilerError("resource graph row limit exceeded", "DEFINITION_LIMIT_EXCEEDED");
+  }
+  const primaryMeasureParameterId = String(input.primaryMeasureParameterId ?? "").trim();
+  if (primaryMeasureParameterId) {
+    const primaryParameterExists = input.parameterDefinitions.some(
+      (parameter) => parameter.parameter_id === primaryMeasureParameterId,
+    );
+    const primaryMeasureHasFormulaConsumer = input.formulaDefinitions.some(
+      (formula) => formula.input_parameter_ids.includes(primaryMeasureParameterId),
+    );
+    if (!primaryParameterExists || !primaryMeasureHasFormulaConsumer) {
+      throw compilerError(
+        `primary measure is disconnected from formula graph ${primaryMeasureParameterId}`,
+        "PRIMARY_MEASURE_FORMULA_DEPENDENCY_MISSING",
+      );
+    }
+    const formulaById = new Map(input.formulaDefinitions.map((formula) => [formula.formula_id, formula]));
+    for (const resource of input.resourceDefinitions) {
+      const formula = formulaById.get(resource.formula_id);
+      const source = String(resource.source_metadata?.originalQuantityFormula ?? "").trim();
+      if (formula && formula.input_parameter_ids.length === 0 && source
+        && canonicalFixedQuantityStatedBySource(source) == null) {
+        throw compilerError(
+          `resource formula lost its source parameters ${resource.row_id}`,
+          "FORMULA_PARAMETER_DEPENDENCY_MISSING",
+        );
+      }
+    }
   }
   const parameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,

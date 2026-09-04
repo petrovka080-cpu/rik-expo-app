@@ -12,6 +12,26 @@ import type {
   RequestEstimateViewModel,
 } from "./requestEstimateViewModel";
 
+export type RequestEstimateCategoryFilterId =
+  | "all"
+  | "materials"
+  | "labor"
+  | "machinery"
+  | "services"
+  | "delivery";
+
+export const REQUEST_ESTIMATE_CATEGORY_FILTERS: ReadonlyArray<{
+  id: RequestEstimateCategoryFilterId;
+  label: string;
+}> = [
+  { id: "all", label: "Все" },
+  { id: "materials", label: "Материалы" },
+  { id: "labor", label: "Работы" },
+  { id: "machinery", label: "Механизмы" },
+  { id: "services", label: "Услуги" },
+  { id: "delivery", label: "Доставка" },
+];
+
 type Props = {
   viewModel: RequestEstimateViewModel;
   onDecrease: (itemId: string) => void;
@@ -36,14 +56,13 @@ type State = {
   catalogLoading: boolean;
   catalogError: string | null;
   lastCatalogQuery: string | null;
-  collapsedSectionIds: Record<string, true>;
+  collapsedCategoryIds: Partial<Record<Exclude<RequestEstimateCategoryFilterId, "all">, true>>;
 };
 
 type ExistingEstimateSearchMatch = {
   itemId: string;
   titleRu: string;
-  sectionId: string;
-  sectionTitle: string;
+  categoryFilterId: Exclude<RequestEstimateCategoryFilterId, "all">;
 };
 
 type EstimateMaterialSearchAddControlProps = {
@@ -104,13 +123,12 @@ export function EstimateMaterialSearchAddControl({
             {existingMatches.slice(0, 12).map((match) => (
               <Pressable
                 accessibilityRole="button"
-                key={`${match.sectionId}:${match.itemId}`}
+                key={match.itemId}
                 onPress={() => onSelectExisting(match)}
                 style={styles.searchResultRow}
                 testID={`estimate-material-search-existing-${match.itemId}`}
               >
                 <Text numberOfLines={2} style={styles.searchResultTitle}>{match.titleRu}</Text>
-                <Text style={styles.searchResultMeta}>{match.sectionTitle}</Text>
               </Pressable>
             ))}
             {existingMatches.length === 0 ? (
@@ -156,6 +174,51 @@ function estimateIdentity(viewModel: RequestEstimateViewModel): string {
     .join("|");
 }
 
+type CategoryFilterItem = RequestEstimateSectionViewModel["items"][number];
+
+function categorySignals(item: CategoryFilterItem): string[] {
+  const source = item.sourceParameters ?? {};
+  const smartProjection = source.smartEstimateProjectionV2;
+  const smartCategory = smartProjection && typeof smartProjection === "object"
+    ? (smartProjection as { category?: unknown }).category
+    : null;
+  return [
+    source.rowKind,
+    source.row_kind,
+    source.section,
+    source.sectionType,
+    source.asphaltV4ProfessionalCategory,
+    smartCategory,
+    item.category,
+  ]
+    .map((value) => String(value ?? "").trim().toLocaleLowerCase("ru-RU"))
+    .filter(Boolean);
+}
+
+export function requestEstimateCategoryFilterForItem(
+  item: CategoryFilterItem,
+  sectionId: string,
+): Exclude<RequestEstimateCategoryFilterId, "all"> {
+  const signals = categorySignals(item);
+  const hasIn = (candidates: string[], ...values: string[]) => candidates.some((signal) =>
+    values.some((value) => signal === value || signal.includes(`_${value}`) || signal.includes(`${value}_`)));
+
+  if (hasIn(signals, "delivery", "logistics", "transport", "freight", "haul")) return "delivery";
+  if (hasIn(signals, "machinery", "machine", "mechanism", "equipment", "tool")) return "machinery";
+  if (hasIn(signals, "service", "services", "testing", "test", "documentation", "commissioning", "overhead", "supervision")) {
+    return "services";
+  }
+  if (hasIn(signals, "labor", "work", "works", "temporary_work") || item.itemType === "work") return "labor";
+  if (hasIn(signals, "material", "materials", "product", "waste") || item.itemType === "material") return "materials";
+
+  const sectionSignals = [sectionId.trim().toLocaleLowerCase("ru-RU")];
+  if (hasIn(sectionSignals, "delivery", "logistics", "transport")) return "delivery";
+  if (hasIn(sectionSignals, "machinery", "equipment")) return "machinery";
+  if (hasIn(sectionSignals, "labor", "work")) return "labor";
+  if (hasIn(sectionSignals, "material")) return "materials";
+  return item.itemType === "service" ? "services" : "materials";
+}
+
 export class RequestEstimateItemsEditor extends React.PureComponent<Props, State> {
   private searchSequence = 0;
   private searchTimer: TimerRegistryHandle | null = null;
@@ -167,7 +230,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     catalogLoading: false,
     catalogError: null,
     lastCatalogQuery: null,
-    collapsedSectionIds: {},
+    collapsedCategoryIds: {},
   };
 
   static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
@@ -181,7 +244,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           catalogLoading: false,
           catalogError: null,
           lastCatalogQuery: null,
-          collapsedSectionIds: {},
+          collapsedCategoryIds: {},
         };
   }
 
@@ -241,15 +304,6 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     }
   };
 
-  private toggleSection = (sectionId: string): void => {
-    this.setState((state) => {
-      const collapsedSectionIds = { ...state.collapsedSectionIds };
-      if (collapsedSectionIds[sectionId]) delete collapsedSectionIds[sectionId];
-      else collapsedSectionIds[sectionId] = true;
-      return { collapsedSectionIds };
-    });
-  };
-
   private openCatalogForCurrentQuery = (): void => {
     const explicitQuery = this.state.searchQuery.trim();
     const recommendedMaterial = this.props.viewModel.sections
@@ -268,9 +322,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
 
   private selectExistingMatch = (match: ExistingEstimateSearchMatch): void => {
     this.setState((state) => {
-      const collapsedSectionIds = { ...state.collapsedSectionIds };
-      delete collapsedSectionIds[match.sectionId];
-      return { collapsedSectionIds };
+      const collapsedCategoryIds = { ...state.collapsedCategoryIds };
+      delete collapsedCategoryIds[match.categoryFilterId];
+      return { collapsedCategoryIds };
     }, () => {
       if (typeof document === "undefined") return;
       const testId = `request-estimate-item-anchor-${match.itemId}`;
@@ -278,6 +332,30 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         .find((element) => element.getAttribute("data-testid") === testId);
       target?.scrollIntoView({ behavior: "smooth", block: "center" });
       target?.focus?.();
+    });
+  };
+
+  private toggleCategory = (categoryId: RequestEstimateCategoryFilterId): void => {
+    if (categoryId === "all") {
+      this.setState((state) => {
+        const anyCollapsed = Object.keys(state.collapsedCategoryIds).length > 0;
+        return {
+          collapsedCategoryIds: anyCollapsed
+            ? {}
+            : Object.fromEntries(
+                REQUEST_ESTIMATE_CATEGORY_FILTERS
+                  .filter((filter) => filter.id !== "all")
+                  .map((filter) => [filter.id, true]),
+              ) as State["collapsedCategoryIds"],
+        };
+      });
+      return;
+    }
+    this.setState((state) => {
+      const collapsedCategoryIds = { ...state.collapsedCategoryIds };
+      if (collapsedCategoryIds[categoryId]) delete collapsedCategoryIds[categoryId];
+      else collapsedCategoryIds[categoryId] = true;
+      return { collapsedCategoryIds };
     });
   };
 
@@ -305,10 +383,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     } = this.props;
     const normalizedQuery = this.state.searchQuery.trim().toLocaleLowerCase("ru-RU");
     const filteredSections = viewModel.sections.map((section) => {
-      const stageMatches = section.title.toLocaleLowerCase("ru-RU").includes(normalizedQuery);
       return {
         ...section,
-        items: normalizedQuery && !stageMatches
+        items: normalizedQuery
           ? section.items.filter((item) => [
               item.titleRu,
               item.category,
@@ -318,14 +395,26 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           : section.items,
       };
     }).filter((section) => section.items.length > 0);
-    const expandedSections = filteredSections.filter((section) =>
-      Boolean(normalizedQuery) || !this.state.collapsedSectionIds[section.id]);
+    const filteredEntries = filteredSections.flatMap((section) => section.items.map((item) => ({
+      item,
+      categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
+    })));
+    const categoryCounts = filteredEntries.reduce<Partial<Record<RequestEstimateCategoryFilterId, number>>>(
+      (counts, entry) => ({
+        ...counts,
+        all: (counts.all ?? 0) + 1,
+        [entry.categoryFilterId]: (counts[entry.categoryFilterId] ?? 0) + 1,
+      }),
+      {},
+    );
+    const visibleItems = filteredEntries
+      .filter((entry) => !this.state.collapsedCategoryIds[entry.categoryFilterId])
+      .map((entry) => entry.item);
     const existingMatches: ExistingEstimateSearchMatch[] = filteredSections.flatMap((section) =>
       section.items.map((item) => ({
         itemId: item.id,
         titleRu: item.titleRu,
-        sectionId: section.id,
-        sectionTitle: section.title,
+        categoryFilterId: requestEstimateCategoryFilterForItem(item, section.id),
       })));
 
     return (
@@ -348,54 +437,64 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           onSelectExisting={this.selectExistingMatch}
           onSelectCatalogItem={this.selectCatalogItem}
         />
-        {(normalizedQuery ? filteredSections : viewModel.sections).map((section) => {
-          const isCollapsed = !normalizedQuery && this.state.collapsedSectionIds[section.id] === true;
-          return (
-            <Pressable
-              accessibilityLabel={`${section.title}: ${section.items.length} ${"\u043f\u043e\u0437\u0438\u0446\u0438\u0439"}`}
-              accessibilityRole="button"
-              key={`stage-${section.id}`}
-              onPress={() => this.toggleSection(section.id)}
-              style={styles.stageToggle}
-              testID={`request-estimate-stage-toggle-${section.id}`}
-            >
-              <Text style={styles.stageToggleText}>{`${isCollapsed ? "\u25b8" : "\u25be"} ${section.title}`}</Text>
-              <Text style={styles.stageToggleCount}>{section.items.length}</Text>
-            </Pressable>
-          );
-        })}
+        <View
+          accessibilityRole="tablist"
+          style={styles.categoryFilters}
+          testID="request-estimate-category-filters"
+        >
+          {REQUEST_ESTIMATE_CATEGORY_FILTERS.map((filter) => {
+            const selected = filter.id === "all"
+              ? Object.keys(this.state.collapsedCategoryIds).length === 0
+              : !this.state.collapsedCategoryIds[filter.id];
+            return (
+              <Pressable
+                accessibilityLabel={filter.id === "all"
+                  ? "Показать все позиции"
+                  : `${selected ? "Скрыть" : "Показать"}: ${filter.label}`}
+                accessibilityRole="tab"
+                accessibilityState={{ selected }}
+                key={filter.id}
+                onPress={() => this.toggleCategory(filter.id)}
+                style={styles.categoryFilter}
+                testID={`request-estimate-category-filter-${filter.id}`}
+              >
+                <Text style={styles.categoryFilterText}>
+                  {`${selected ? "▾" : "▸"} ${filter.label}`}
+                </Text>
+                <Text style={styles.categoryFilterCount}>{categoryCounts[filter.id] ?? 0}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
         {normalizedQuery && filteredSections.length === 0 ? (
           <Text style={styles.emptySearch} testID="request-estimate-items-search-empty">
             {"\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e. \u0418\u0437\u043c\u0435\u043d\u0438\u0442\u0435 \u0437\u0430\u043f\u0440\u043e\u0441."}
           </Text>
         ) : null}
-        {expandedSections.map((section: RequestEstimateSectionViewModel) => (
-          <View key={section.id} style={styles.section} testID={`request-estimate-section-${section.id}`}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            {section.items.map((item, index) => (
-              <View
-                focusable
-                key={`${item.id}-${index}`}
-                testID={`request-estimate-item-anchor-${item.id}`}
-              >
-                <ConsumerRepairItemRow
-                  item={item}
-                  onDecrease={onDecrease}
-                  onIncrease={onIncrease}
-                  onQuantityChange={onQuantityChange}
-                  onUnitPriceChange={onUnitPriceChange}
-                  onSpecificationChange={onSpecificationChange}
-                  onOptionalChange={onOptionalChange}
-                  onRemove={onRemove}
-                  onOpenCatalog={onOpenCatalog}
-                  onOpenPhoto={onOpenPhoto}
-                  showPhotoButton={showPhotoButtons === true}
-                  photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
-                />
-              </View>
-            ))}
-          </View>
-        ))}
+        <View style={styles.section} testID="request-estimate-flat-row-list">
+          {visibleItems.map((item, index) => (
+            <View
+              focusable
+              key={`${item.id}-${index}`}
+              testID={`request-estimate-item-anchor-${item.id}`}
+            >
+              <ConsumerRepairItemRow
+                item={item}
+                onDecrease={onDecrease}
+                onIncrease={onIncrease}
+                onQuantityChange={onQuantityChange}
+                onUnitPriceChange={onUnitPriceChange}
+                onSpecificationChange={onSpecificationChange}
+                onOptionalChange={onOptionalChange}
+                onRemove={onRemove}
+                onOpenCatalog={onOpenCatalog}
+                onOpenPhoto={onOpenPhoto}
+                showPhotoButton={showPhotoButtons === true}
+                photoThumbnailUri={this.props.rowPhotoThumbnails?.[item.id] ?? null}
+              />
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
@@ -534,7 +633,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
   },
-  stageToggle: {
+  categoryFilters: {
+    alignItems: "stretch",
+    gap: 6,
+  },
+  categoryFilter: {
     minHeight: 40,
     flexDirection: "row",
     alignItems: "center",
@@ -546,13 +649,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFF6FF",
     paddingHorizontal: 12,
   },
-  stageToggleText: {
+  categoryFilterText: {
     flex: 1,
     color: "#1E3A8A",
     fontSize: 12,
     fontWeight: "900",
   },
-  stageToggleCount: {
+  categoryFilterCount: {
     minWidth: 28,
     color: "#1D4ED8",
     fontSize: 12,
@@ -568,10 +671,5 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 2,
-  },
-  sectionTitle: {
-    color: "#334155",
-    fontSize: 13,
-    fontWeight: "900",
   },
 });

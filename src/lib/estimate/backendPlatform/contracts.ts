@@ -434,6 +434,32 @@ export type CanonicalEstimateSearchPage = {
   durationMs: number;
 };
 
+export type CanonicalEstimateResourceSearchItem = {
+  resourceId: string;
+  definitionVersionId: string;
+  definitionReleaseId: string;
+  sourceCatalogId: string | null;
+  rowId: string;
+  titleRu: string;
+  rowType: "material" | "labor" | "equipment" | "service" | "waste";
+  unitId: string;
+  semanticOwnerId: string;
+  procurementEligible: boolean;
+  matchType: "EXACT" | "PREFIX" | "SUBSTRING";
+};
+
+export type CanonicalEstimateResourceSearchPage = {
+  apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
+  definitionReleaseId: string;
+  searchIndexReleaseId: string;
+  normalizedQuery: string;
+  resourceIndexContractVersion: "canonical-resource-search.r568.v1";
+  totalCount: number;
+  shownCount: number;
+  items: CanonicalEstimateResourceSearchItem[];
+  durationMs: number;
+};
+
 export type CanonicalEstimateSearchGroupPage = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   searchIndexReleaseId: string;

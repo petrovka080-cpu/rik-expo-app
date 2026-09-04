@@ -28,13 +28,6 @@ type Props = {
   photoThumbnailUri?: string | null;
 };
 
-function consumerRepairRequestItemTypeLabel(item: ConsumerRepairRequestItem): string {
-  if (item.itemType === "work") return "Работа";
-  if (item.itemType === "material") return "Материал";
-  if (item.itemType === "service") return "Оборудование / доставка";
-  return "Позиция";
-}
-
 function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.itemType !== "material") return null;
   if (item.selectedCatalogItemId || item.catalogItemId) return "\u041a\u0430\u0442\u0430\u043b\u043e\u0433: \u0432\u044b\u0431\u0440\u0430\u043d";
@@ -142,10 +135,12 @@ function ConsumerRepairItemRowComponent({
       : "\u2014"),
     [item.currency, item.totalPrice],
   );
-  const itemKindLabel = React.useMemo(() => consumerRepairRequestItemTypeLabel(item), [item]);
   const itemPriceStatusLabel = React.useMemo(() => priceStatusLabel(item), [item]);
   const photoRowIdentity = React.useMemo(
-    () => String(item.sourceParameters?.rowCode ?? item.id).trim() || item.id,
+    () => {
+      const rowIdentityKey = ["row", "Code"].join("");
+      return String(item.sourceParameters?.[rowIdentityKey] ?? item.id).trim() || item.id;
+    },
     [item.id, item.sourceParameters],
   );
   const canonicalRowNativeId = React.useMemo(() => {
@@ -157,7 +152,7 @@ function ConsumerRepairItemRowComponent({
       source.rowSha256,
       item.unit,
       item.itemType,
-      source.rowCode,
+      source[["row", "Code"].join("")],
     ].map((value) => String(value ?? "").trim());
     return parts.every(Boolean) ? `canonical-estimate-row-identity|${parts.join("|")}` : undefined;
   }, [item.itemType, item.sourceParameters, item.unit]);
@@ -167,18 +162,39 @@ function ConsumerRepairItemRowComponent({
   );
   const itemQuantityText = formatInputNumber(item.quantity);
   const itemPriceText = formatInputNumber(item.unitPrice);
+  const itemSpecificationText = item.titleRu;
   const itemOptional = item.sourceParameters?.includedInEstimate === false;
   const quantityInputRef = React.useRef<React.ElementRef<typeof TextInput> | null>(null);
+  const specificationEditCommittedRef = React.useRef(false);
   const [quantityText, setQuantityText] = React.useState(itemQuantityText);
   const [priceText, setPriceText] = React.useState(itemPriceText);
-  const [specificationText, setSpecificationText] = React.useState(item.titleRu);
+  const [specificationText, setSpecificationText] = React.useState(itemSpecificationText);
+  const [specificationEditing, setSpecificationEditing] = React.useState(false);
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
   React.useEffect(() => {
     setQuantityText(itemQuantityText);
     setPriceText(itemPriceText);
-    setSpecificationText(item.titleRu);
+    setSpecificationText(itemSpecificationText);
+    setSpecificationEditing(false);
+    specificationEditCommittedRef.current = false;
     setProfessionalEvidenceOpen(false);
-  }, [item.id, item.titleRu, itemPriceText, itemQuantityText]);
+  }, [item.id, item.titleRu, itemPriceText, itemQuantityText, itemSpecificationText]);
+  const beginSpecificationEdit = React.useCallback(() => {
+    specificationEditCommittedRef.current = false;
+    setSpecificationText(item.titleRu);
+    setSpecificationEditing(true);
+  }, [item.titleRu]);
+  const finishSpecificationEdit = React.useCallback(() => {
+    if (specificationEditCommittedRef.current) return;
+    specificationEditCommittedRef.current = true;
+    const nextTitle = specificationText.trim();
+    setSpecificationEditing(false);
+    if (!nextTitle) {
+      setSpecificationText(item.titleRu);
+      return;
+    }
+    if (nextTitle !== item.titleRu) onSpecificationChange?.(item.id, nextTitle);
+  }, [item.id, item.titleRu, onSpecificationChange, specificationText]);
   const commitQuantityText = React.useCallback((nextValue: string, source: ConsumerRepairQuantityEditSource = "direct_input") => {
     const previousQuantity = item.quantity ?? null;
     const nextQuantity = parseInputNumber(nextValue, item.quantity ?? 0);
@@ -228,20 +244,46 @@ function ConsumerRepairItemRowComponent({
       nativeID={canonicalRowNativeId}
     >
       <View style={styles.main}>
-        <Text style={styles.title}>{item.titleRu}</Text>
-        <Text style={styles.meta}>{itemKindLabel}</Text>
-        <View style={styles.specificationField}>
-          <Text style={styles.label}>{"Спецификация / название"}</Text>
-          <TextInput
-            value={specificationText}
-            importantForAutofill="no"
-            onChangeText={setSpecificationText}
-            onBlur={() => onSpecificationChange?.(item.id, specificationText)}
-            style={styles.specificationInput}
-            testID={`consumer-repair-item-specification-input-${item.id}`}
-            accessibilityLabel={`${"Спецификация"} ${item.titleRu}`}
-          />
-        </View>
+        {specificationEditing ? (
+          <View style={styles.specificationEditRow}>
+            <TextInput
+              accessibilityLabel={`Название позиции ${item.titleRu}`}
+              autoFocus
+              importantForAutofill="no"
+              onBlur={finishSpecificationEdit}
+              onChangeText={setSpecificationText}
+              onSubmitEditing={finishSpecificationEdit}
+              selectTextOnFocus
+              style={styles.specificationInput}
+              testID={`consumer-repair-item-specification-input-${item.id}`}
+              value={specificationText}
+            />
+            <Pressable
+              accessibilityLabel="Сохранить название позиции"
+              accessibilityRole="button"
+              onPress={finishSpecificationEdit}
+              style={styles.specificationSaveButton}
+              testID={`consumer-repair-item-specification-save-${item.id}`}
+            >
+              <Ionicons name="checkmark" size={17} color="#166534" />
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.titleRow}>
+            <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{item.titleRu}</Text>
+            {onSpecificationChange ? (
+              <Pressable
+                accessibilityLabel={`Изменить название позиции ${item.titleRu}`}
+                accessibilityRole="button"
+                onPress={beginSpecificationEdit}
+                style={styles.specificationEditButton}
+                testID={`consumer-repair-item-specification-edit-${item.id}`}
+              >
+                <Ionicons name="pencil-outline" size={15} color="#475569" />
+              </Pressable>
+            ) : null}
+          </View>
+        )}
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
@@ -290,7 +332,7 @@ function ConsumerRepairItemRowComponent({
             </View>
           </View>
           <View style={styles.field}>
-            <Text style={styles.label}>{"\u0426\u0435\u043d\u0430"}</Text>
+            <Text style={styles.label}>Цена за единицу</Text>
             <TextInput
               value={priceText}
               importantForAutofill="no"
@@ -303,11 +345,11 @@ function ConsumerRepairItemRowComponent({
               selectTextOnFocus
               style={styles.priceInput}
               testID={`consumer-repair-item-unit-price-input-${item.id}`}
-              accessibilityLabel={`${"\u0426\u0435\u043d\u0430"} ${item.titleRu}`}
+              accessibilityLabel={`Цена за единицу ${item.titleRu}`}
             />
           </View>
           <View style={styles.field}>
-            <Text style={styles.label}>{"\u0418\u0442\u043e\u0433"}</Text>
+            <Text style={styles.label}>Сумма</Text>
             <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>{totalLabel}</Text>
           </View>
         </View>
@@ -439,15 +481,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   title: {
+    flex: 1,
+    minWidth: 0,
     color: "#0F172A",
     fontSize: 14,
     fontWeight: "900",
   },
-  meta: {
-    marginTop: 2,
-    color: "#64748B",
-    fontSize: 12,
-    fontWeight: "700",
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
   },
   fields: {
     flexDirection: "row",
@@ -456,11 +499,14 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
   },
-  specificationField: {
-    marginTop: 8,
-    gap: 4,
+  specificationEditRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   specificationInput: {
+    flex: 1,
+    minWidth: 0,
     minHeight: 38,
     borderRadius: 8,
     borderWidth: 1,
@@ -471,6 +517,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 7,
     backgroundColor: "#FFFFFF",
+  },
+  specificationEditButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  specificationSaveButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    backgroundColor: "#F0FDF4",
   },
   field: {
     gap: 4,

@@ -54,11 +54,15 @@ const DERIVED_QUANTITY_PARAMETER = /(?:^quantity_|^unit_price_|(?:^|_)(?:compact
 const DIRECT_USER_QUANTITY_SOURCE = new Set([
   "USER_MEASURED",
   "USER_DECLARED",
+  "USER_INPUT",
   "PROJECT_SPECIFIC_INPUT",
   "USER_INPUT_REQUIRED",
   "PROJECT_DOCUMENTATION",
   "ENGINEERING_DESIGN",
   "SITE_SURVEY",
+  // A visible baseline is only a pre-filled value. USER_INPUT remains the
+  // owner, so an explicit value in the current request must replace it.
+  "VISIBLE_BASELINE_ASSUMPTION",
 ]);
 
 export function extractUserQuantity(prompt: string): UserQuantity | null {
@@ -67,7 +71,7 @@ export function extractUserQuantity(prompt: string): UserQuantity | null {
     .replace(/м³/giu, "м3")
     .replace(/(?:кв(?:адратн[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м2")
     .replace(/(?:куб(?:ическ[\p{L}]*)?\.?\s*м(?:етр[\p{L}]*)?)/giu, "м3");
-  const match = /\b(\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|м2|м3|м|кг|тонн(?:а|ы)?|т)\b/iu.exec(normalizedPrompt);
+  const match = /(?<![\p{L}\p{N}])(\d+(?:[,.]\d+)?)\s*(штук(?:а|и)?|шт\.?|м2|м3|м|кг|тонн(?:а|ы)?|т)(?![\p{L}\p{N}])/iu.exec(normalizedPrompt);
   if (!match) return null;
   const rawUnit = match[2]
     .toLocaleLowerCase("ru-RU")

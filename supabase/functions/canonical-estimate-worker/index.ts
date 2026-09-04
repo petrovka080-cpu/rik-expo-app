@@ -6,11 +6,13 @@ import {
   evaluateFormulaGraph,
 } from "../../../src/lib/estimate/backendPlatform/formulaGraph.ts";
 import {
+  bindCanonicalEstimateResourcePriceKeys,
   canonicalRoundDecimal,
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts";
 import {
+  CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
   buildCanonicalRevisionIdentity,
@@ -258,6 +260,20 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
   if ((resourceResult.data?.length ?? 0) > MAX_RESOURCE_ROWS) {
     throw Object.assign(new Error("resource graph row limit exceeded"), { code: "DEFINITION_LIMIT_EXCEEDED" });
   }
+  const resourceIds = (resourceResult.data ?? []).map((resource) => resource.id);
+  const resourceBindingResult = resourceIds.length === 0
+    ? { data: [], error: null }
+    : await admin
+      .from("estimate_resource_price_route_binding")
+      .select("resource_spec_id,price_key")
+      .in("resource_spec_id", resourceIds);
+  if (resourceBindingResult.error) {
+    throw Object.assign(new Error("definition price binding load failed"), { code: "DEFINITION_LOAD_FAILED" });
+  }
+  const resources = bindCanonicalEstimateResourcePriceKeys(
+    resourceResult.data ?? [],
+    resourceBindingResult.data ?? [],
+  );
 
   const submittedParameters = { ...(job.input_payload?.parameters ?? {}) } as Record<string, unknown>;
   let confirmedParameters: Record<string, unknown> = { ...baselineParameters };
@@ -285,9 +301,14 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     operation: job.operation as "compile" | "recalculate",
     compilerVersion: WORKER_VERSION,
     catalogId: job.catalog_id,
+    primaryMeasureParameterId: String(
+      (parentRevision?.revision_contract_version === CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION
+        ? parentRevision.primary_measure_parameter_id
+        : job.input_payload?.requestIdentity?.primaryMeasureParameterId) ?? "",
+    ).trim() || null,
     parameterDefinitions: parameterResult.data ?? [],
     formulaDefinitions: formulaResult.data ?? [],
-    resourceDefinitions: resourceResult.data ?? [],
+    resourceDefinitions: resources,
     submittedParameters,
     confirmedParameters,
     currencyCode: String(job.input_payload?.currencyCode ?? ""),

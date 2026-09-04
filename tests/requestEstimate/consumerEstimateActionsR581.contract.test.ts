@@ -112,6 +112,37 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(inputs).not.toHaveProperty("asphalt_paver_layer_1_coverage_area_m2");
   });
 
+  it.each([
+    ["area_m2", "m2", "Кровля 200 квадратных метров", "200"],
+    ["length_m", "m", "Трубопровод 37 м", "37"],
+    ["count", "pcs", "Монтаж 12 шт.", "12"],
+  ] as const)(
+    "lets explicit user input replace a visible baseline for %s",
+    (parameterId, unitId, prompt, expected) => {
+      const catalog = {
+        parameterSchema: [{
+          parameterId,
+          ordinal: 0,
+          valueType: "decimal",
+          unitId,
+          titleRu: parameterId,
+          required: true,
+          defaultValue: 100,
+          constraints: { min: Number.EPSILON },
+          semanticParameterKey: parameterId,
+          visibilityRole: "USER_INPUT",
+          valueSourceRole: "VISIBLE_BASELINE_ASSUMPTION",
+          formulaConsumers: ["formula:primary-measure"],
+          resourceBranchConsumers: ["row:primary-resource"],
+        }],
+      } as unknown as CanonicalEstimateCatalogItem;
+
+      expect(buildCanonicalBaselineInputs({ catalog, prompt })).toEqual({
+        [parameterId]: expected,
+      });
+    },
+  );
+
   it("fails closed when a frozen definition exposes derived coverage as required user input", () => {
     const catalog = {
       parameterSchema: [{

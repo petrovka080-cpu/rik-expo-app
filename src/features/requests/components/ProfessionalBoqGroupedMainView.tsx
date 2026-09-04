@@ -6,17 +6,18 @@ import {
   buildProfessionalBoqGroupedMainViewModel,
   PROFESSIONAL_BOQ_MAIN_UI_MAX_ROWS,
 } from "../../../lib/estimate/professionalBoqSectionPolicy";
-import { ProfessionalBoqSectionSummary } from "./ProfessionalBoqSectionSummary";
+import { ProfessionalBoqLineItem } from "./ProfessionalBoqLineItem";
 
 export { buildProfessionalBoqGroupedMainViewModel, PROFESSIONAL_BOQ_MAIN_UI_MAX_ROWS };
 
 export function ProfessionalBoqGroupedMainView({ rows }: { rows: readonly ProfessionalBoqLineItemQuality[] }) {
   const model = buildProfessionalBoqGroupedMainViewModel(rows);
+  const visibleRows = model.sections.flatMap((section) => section.visibleRows);
   return (
     <View testID="professional-boq-grouped-main-view">
       <Text>{String(model.visibleRowsCount)}</Text>
-      {model.sections.map((section) => (
-        <ProfessionalBoqSectionSummary key={section.id} section={section} />
+      {visibleRows.map((row) => (
+        <ProfessionalBoqLineItem key={row.rowId} row={row} />
       ))}
     </View>
   );

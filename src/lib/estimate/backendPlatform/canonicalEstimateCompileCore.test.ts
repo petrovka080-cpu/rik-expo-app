@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import {
+  bindCanonicalEstimateResourcePriceKeys,
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreInput,
 } from "./canonicalEstimateCompileCore";
@@ -23,6 +24,7 @@ function baseInput(): CanonicalEstimateCompileCoreInput {
     operation: "compile",
     compilerVersion: "canonical-test.r1",
     catalogId: "test_catalog",
+    primaryMeasureParameterId: "area_m2",
     parameterDefinitions: [{
       parameter_id: "area_m2",
       value_type: "number",
@@ -75,6 +77,86 @@ function baseInput(): CanonicalEstimateCompileCoreInput {
 }
 
 describe("canonicalEstimateCompileCore", () => {
+  it("uses one normalized route binding when a legacy resource has no explicit cost owner", async () => {
+    const input = baseInput();
+    input.resourceDefinitions = bindCanonicalEstimateResourcePriceKeys(
+      input.resourceDefinitions.map((resource) => ({ ...resource, cost_owner_id: null })),
+      [{ resource_spec_id: "resource-spec-1", price_key: "price:board" }],
+    );
+
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]).toMatchObject({
+      unit_price: "125.50",
+      amount: "1380.5",
+      price_resolution_trace: { priceKey: "price:board", resolved: true },
+    });
+  });
+
+  it("rejects ambiguous route price keys when a resource has no explicit cost owner", () => {
+    const resources = baseInput().resourceDefinitions.map((resource) => ({ ...resource, cost_owner_id: null }));
+    expect(() => bindCanonicalEstimateResourcePriceKeys(resources, [
+      { resource_spec_id: "resource-spec-1", price_key: "price:board:first" },
+      { resource_spec_id: "resource-spec-1", price_key: "price:board:second" },
+    ])).toThrow(expect.objectContaining({ code: "DEFINITION_INTEGRITY_FAILED" }));
+  });
+
+  it("fails closed when the primary project measure is disconnected from every quantity formula", async () => {
+    const input = baseInput();
+    input.formulaDefinitions = [{
+      formula_id: "material_quantity",
+      ast: { kind: "literal", value: "11" },
+      input_parameter_ids: [],
+      ast_sha256: "literal-formula-ast-sha",
+    }];
+
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "PRIMARY_MEASURE_FORMULA_DEPENDENCY_MISSING",
+    });
+  });
+
+  it("fails closed when any computational source formula was frozen as a literal", async () => {
+    const input = baseInput();
+    input.formulaDefinitions.push({
+      formula_id: "insulation_quantity",
+      ast: { kind: "literal", value: "40" },
+      input_parameter_ids: [],
+      ast_sha256: "frozen-insulation-formula-sha",
+    });
+    input.resourceDefinitions.push({
+      ...input.resourceDefinitions[0]!,
+      id: "resource-spec-2",
+      row_id: "material:insulation",
+      ordinal: 1,
+      formula_id: "insulation_quantity",
+      source_metadata: { originalQuantityFormula: "roof_area_m2 * insulation_mm / 1000" },
+    });
+
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "FORMULA_PARAMETER_DEPENDENCY_MISSING",
+    });
+  });
+
+  it("allows a fixed row only when its source explicitly states the numeric quantity", async () => {
+    const input = baseInput();
+    input.formulaDefinitions.push({
+      formula_id: "handover_set",
+      ast: { kind: "literal", value: "1" },
+      input_parameter_ids: [],
+      ast_sha256: "fixed-handover-formula-sha",
+    });
+    input.resourceDefinitions.push({
+      ...input.resourceDefinitions[0]!,
+      id: "resource-spec-2",
+      row_id: "service:handover",
+      ordinal: 1,
+      formula_id: "handover_set",
+      source_metadata: { originalQuantityFormula: "1 handover documentation set" },
+    });
+
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows.map((row) => row.quantity)).toEqual(["11", "1"]);
+  });
+
   it("produces the same canonical rows for sync Node and async edge hash adapters", async () => {
     const nodeResult = await compileCanonicalEstimateCore(baseInput());
     const edgeResult = await compileCanonicalEstimateCore({

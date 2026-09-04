@@ -1,4 +1,7 @@
-import { getCanonicalEstimateRevision } from "./canonicalEstimateClient";
+import {
+  getCanonicalEstimateRevision,
+  resetCanonicalEstimateRuntimeCompatibilityForTests,
+} from "./canonicalEstimateClient";
 
 const mockGetSession = jest.fn();
 const mockRefreshSession = jest.fn();
@@ -30,6 +33,17 @@ describe("canonicalEstimateClient access-token refresh", () => {
     mockGetSession.mockReset();
     mockRefreshSession.mockReset();
     mockFetchWithRequestTimeout.mockReset();
+    resetCanonicalEstimateRuntimeCompatibilityForTests();
+    for (const name of [
+      "EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID",
+      "EXPO_PUBLIC_BUILD_COMMIT",
+      "EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH",
+      "EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH",
+      "EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT",
+      "EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID",
+    ]) delete process.env[name];
   });
 
   it("refreshes a session that is inside the expiry skew before transport", async () => {
@@ -144,5 +158,78 @@ describe("canonicalEstimateClient access-token refresh", () => {
         headers: expect.objectContaining({ Authorization: "Bearer shared-fresh-token" }),
       });
     }
+  });
+
+  it("checks the exact local runtime tuple before the first estimate request", async () => {
+    Object.assign(process.env, {
+      EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW: "1",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "definition-release",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-release",
+      EXPO_PUBLIC_BUILD_COMMIT: "source-head",
+      EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH: "source-tree",
+      EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH: "product-tree",
+      EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT: "bundle-fingerprint",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID: "capability-id",
+    });
+    mockGetSession.mockResolvedValue({
+      data: { session: { access_token: "token", expires_at: Math.floor(Date.now() / 1_000) + 60 } },
+      error: null,
+    });
+    mockFetchWithRequestTimeout
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
+        authMode: "STRICT_SESSION_INTROSPECTION",
+        activeCompileJobCount: 0,
+        capability: { status: "ACTIVE", ttlSeconds: 7200 },
+        compatibilityTuple: {
+          definitionReleaseId: "definition-release",
+          searchReleaseId: "search-release",
+          sourceHead: "source-head",
+          sourceTree: "source-tree",
+          frontendSourceTreeHash: "source-tree",
+          frontendProductSourceHash: "product-tree",
+          frontendJsBundleFingerprint: "bundle-fingerprint",
+          capabilityId: "capability-id",
+        },
+      }), { status: 200, headers: { "Content-Type": "application/json" } }))
+      .mockResolvedValueOnce(successfulResponse());
+
+    await expect(getCanonicalEstimateRevision(revisionId)).resolves.toMatchObject({ revisionId });
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+    expect(String(mockFetchWithRequestTimeout.mock.calls[0]?.[0])).toContain("runtime-manifest");
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[2]).toMatchObject({
+      requestClass: "ui_scope_load",
+      owner: "canonical_estimate_client",
+      operation: "runtime-manifest",
+    });
+  });
+
+  it("fails closed when the local frontend and backend tuples differ", async () => {
+    Object.assign(process.env, {
+      EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW: "1",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "definition-release",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-release",
+      EXPO_PUBLIC_BUILD_COMMIT: "source-head",
+      EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH: "source-tree",
+      EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH: "product-tree",
+      EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT: "bundle-fingerprint",
+      EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID: "capability-id",
+    });
+    mockGetSession.mockResolvedValue({
+      data: { session: { access_token: "token", expires_at: Math.floor(Date.now() / 1_000) + 60 } },
+      error: null,
+    });
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify({
+      runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
+      authMode: "STRICT_SESSION_INTROSPECTION",
+      activeCompileJobCount: 0,
+      capability: { status: "ACTIVE", ttlSeconds: 7200 },
+      compatibilityTuple: { definitionReleaseId: "stale-release" },
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({
+      code: "RUNTIME_COMPATIBILITY_MISMATCH_definitionReleaseId",
+    });
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
   });
 });

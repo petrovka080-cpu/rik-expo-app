@@ -12,6 +12,7 @@ import type {
   CanonicalEstimateRevisionRowView,
   CanonicalEstimateRevisionView,
 } from "./contracts";
+import { CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION } from "./canonicalEstimateRevisionWriter";
 
 function sectionType(section: string, category: string): GlobalEstimateSectionType {
   const value = `${section} ${category}`.toLocaleLowerCase("ru-RU");
@@ -55,6 +56,33 @@ function sectionTitle(type: GlobalEstimateSectionType): string {
   return "Работы и услуги";
 }
 
+function canonicalProjectMeasure(
+  revision: CanonicalEstimateRevisionView,
+  rows: readonly CanonicalEstimateRevisionRowView[],
+): { quantity: number; unit: string } {
+  if (revision.revisionContractVersion !== CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION) {
+    return {
+      quantity: finiteNumber(rows[0]?.quantity) ?? 0,
+      unit: rows[0]?.unitId ?? "item",
+    };
+  }
+
+  const parameterId = String(revision.primaryMeasureParameterId ?? "").trim();
+  const rawValue = String(revision.primaryMeasureValue ?? "").trim();
+  const quantity = finiteNumber(rawValue);
+  const resolvedParameter = parameterId ? revision.parameters[parameterId] : null;
+  if (!parameterId || quantity == null
+    || finiteNumber(resolvedParameter == null ? null : String(resolvedParameter)) !== quantity) {
+    throw Object.assign(new Error("canonical revision primary measure identity is invalid"), {
+      code: "CANONICAL_REVISION_IDENTITY_INVALID",
+    });
+  }
+  return {
+    quantity,
+    unit: String(revision.primaryMeasureUnitId ?? "").trim() || "item",
+  };
+}
+
 export function adaptCanonicalRevisionToStructuredEstimate(input: {
   catalog: CanonicalEstimateCatalogItem;
   revision: CanonicalEstimateRevisionView;
@@ -69,6 +97,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     || input.catalog.titleRu;
   const sectionOrder: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
   const currency = input.revision.currencyCode;
+  const projectMeasure = canonicalProjectMeasure(input.revision, input.rows);
   const rows: StructuredEstimateRow[] = input.rows.map((row, index) => {
     const type = sectionType(row.section, row.category);
     const quantity = finiteNumber(row.quantity) ?? 0;
@@ -206,7 +235,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       taxIncludedByDefault: false, source: "project_address", confidence: "high",
     },
     work: { workKey: input.catalog.workKey, title: displayTitleRu, category: input.catalog.domain },
-    input: { volume: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", originalText: sourceRequestText },
+    input: { volume: projectMeasure.quantity, unit: projectMeasure.unit, originalText: sourceRequestText },
     assumptions: input.assumptions ?? [], sections: [], tax, totals, regionalRisks: [], costIncreaseFactors: [],
     clarifyingQuestions: [], sources: [], confidence: "high", requiresReview: false,
   } as unknown as GlobalEstimateResult;
@@ -223,7 +252,7 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     locale: sourceEstimate.locale,
     sourceEstimate,
     classification: { status: "accepted", workKey: input.catalog.workKey, domainKey: input.catalog.domain, titleRu: displayTitleRu, confidence: 1, evidence: [] },
-    quantity: { status: "accepted", quantity: rows[0]?.quantity ?? 0, unit: rows[0]?.unit ?? "item", measurementKind: "backend_formula_graph", assumptions: input.assumptions ?? [] },
+    quantity: { status: "accepted", quantity: projectMeasure.quantity, unit: projectMeasure.unit, measurementKind: "backend_primary_measure", assumptions: input.assumptions ?? [] },
     boq: {
       sections,
       totals: {

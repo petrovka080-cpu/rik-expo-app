@@ -25,11 +25,13 @@ import { chromium, type Browser } from "playwright";
 
 import { evaluateFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
+  bindCanonicalEstimateResourcePriceKeys,
   canonicalRoundDecimal,
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import {
+  CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
   buildCanonicalRevisionIdentity,
@@ -58,6 +60,11 @@ import {
   type IsolatedCandidateCapability,
 } from "../../../src/lib/estimate/backendPlatform/estimateAdmissionR3";
 import { canonicalEstimateCandidateAdmissionIdempotencyKey } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
+import { normalizePublicBoqNameRu } from "../../../src/lib/estimate/publicBoqNaming";
+import {
+  isGenericPublicBoqResourceName,
+  isPublicBoqNameStructurallyValid,
+} from "../../../src/lib/estimate/semanticBoqGate";
 
 const API_VERSION = "2026-08-14.r2";
 const COMPILER_VERSION = "canonical-estimate-local-runtime.r6";
@@ -226,6 +233,18 @@ const R45_RUNTIME_SOURCE_TREE = String(
 const R45_RUNTIME_SPEC_SHA256 = String(
   process.env.R45_RUNTIME_SPEC_SHA256 ??
     "4ffc00413c14458730823a90950b80d5191073e26f3bea4201f665953ed1eefa",
+).trim();
+const R568_FRONTEND_SOURCE_TREE_HASH = String(
+  process.env.R568_FRONTEND_SOURCE_TREE_HASH ?? R45_RUNTIME_SOURCE_TREE,
+).trim();
+const R568_FRONTEND_PRODUCT_SOURCE_HASH = String(
+  process.env.R568_FRONTEND_PRODUCT_SOURCE_HASH ?? "UNSET",
+).trim();
+const R568_FRONTEND_JS_BUNDLE_FINGERPRINT = String(
+  process.env.R568_FRONTEND_JS_BUNDLE_FINGERPRINT ?? "UNSET",
+).trim();
+const R568_FRONTEND_BUILD_COMMIT = String(
+  process.env.R568_FRONTEND_BUILD_COMMIT ?? R45_RUNTIME_SOURCE_HEAD,
 ).trim();
 const CONFIGURED_ARTIFACT_TOKEN_SECRET = String(
   process.env.CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET ?? "",
@@ -1811,12 +1830,29 @@ async function compileClaimedJob(
       [definition.id],
     )
   ).rows;
-  const resources = (
+  const resourceRows = (
     await client.query(
-      "select * from public.estimate_resource_spec where definition_version_id=$1 order by ordinal limit $2",
+      `select resource.*,
+        coalesce(binding.price_keys,'{}'::text[]) _binding_price_keys
+       from public.estimate_resource_spec resource
+       left join lateral (
+         select array_agg(distinct route_binding.price_key order by route_binding.price_key) price_keys
+         from public.estimate_resource_price_route_binding route_binding
+         where route_binding.resource_spec_id=resource.id
+       ) binding on true
+       where resource.definition_version_id=$1
+       order by resource.ordinal
+       limit $2`,
       [definition.id, MAX_ROWS + 1],
     )
   ).rows;
+  const resources = bindCanonicalEstimateResourcePriceKeys(
+    resourceRows,
+    resourceRows.flatMap((resource) => (resource._binding_price_keys as string[]).map((priceKey) => ({
+      resource_spec_id: String(resource.id),
+      price_key: String(priceKey),
+    }))),
+  );
   const currencyCode = String(payload.currencyCode ?? "");
   const priceSnapshotIds = Array.isArray(payload.priceSnapshotIds)
     ? payload.priceSnapshotIds.filter(
@@ -1842,6 +1878,11 @@ async function compileClaimedJob(
     operation: String(job.operation) as "compile" | "recalculate",
     compilerVersion: COMPILER_VERSION,
     catalogId: String(job.catalog_id),
+    primaryMeasureParameterId: String(
+      (parentRevision?.revision_contract_version === CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION
+        ? parentRevision.primary_measure_parameter_id
+        : (payload.requestIdentity as JsonRecord | undefined)?.primaryMeasureParameterId) ?? "",
+    ).trim() || null,
     parameterDefinitions,
     formulaDefinitions: formulas,
     resourceDefinitions: resources,
@@ -2762,6 +2803,108 @@ function normalizeSearchQuery(value: string): string {
     .trim();
 }
 
+type LocalCanonicalResourceSearchRow = {
+  resourceId: string;
+  definitionVersionId: string;
+  sourceCatalogId: string | null;
+  rowId: string;
+  titleRu: string;
+  rowType: "material" | "labor" | "equipment" | "service" | "waste";
+  unitId: string;
+  semanticOwnerId: string;
+  procurementEligible: boolean;
+  sourceSearchText: string;
+  publicSearchText: string;
+};
+
+let localCanonicalResourceIndexPromise: Promise<LocalCanonicalResourceSearchRow[]> | null = null;
+
+function catalogIdFromResourceSemanticOwner(semanticOwnerId: string): string | null {
+  return /^(canonical-work:(?:base|expanded):[^:]+):/u.exec(semanticOwnerId)?.[1] ?? null;
+}
+
+function resourceSearchTokens(query: string): string[] {
+  return [...new Set(normalizeSearchQuery(query)
+    .split(/\s+/u)
+    .filter((token) => token.length >= 2)
+    .map((token) => token.length > 4 ? token.slice(0, 4) : token))];
+}
+
+function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[]> {
+  if (localCanonicalResourceIndexPromise) return localCanonicalResourceIndexPromise;
+  localCanonicalResourceIndexPromise = withSearchClient(async (client) => {
+    const release = await localSearchRelease(client);
+    const definitionVersionIds = (await client.query(`
+      select distinct definition_version_id::text id
+      from public.estimate_search_document
+      where search_release_id=$1 and adjudication_class='EFFECTIVE_WORK'
+        and selectable and definition_version_id is not null
+      order by id
+    `, [release.id])).rows.map((row) => String(row.id));
+    return definitionVersionIds;
+  }).then((definitionVersionIds) => Promise.all([
+    withClient(async (client) => (await client.query(`
+      select distinct on(lower(title_ru),row_type,unit_id)
+        id::text resource_id,definition_version_id::text,row_id,title_ru,row_type,unit_id,
+        semantic_owner,procurement_eligible
+      from public.estimate_resource_spec
+      where definition_version_id=any($1::uuid[]) and trim(title_ru)<>''
+      order by lower(title_ru),row_type,unit_id,definition_version_id,row_id
+    `, [definitionVersionIds])).rows),
+    withClient(async (client) => (await client.query(`
+      select catalog_id,title_ru from public.estimate_work_identity
+      where retired_at is null
+      order by catalog_id
+    `)).rows),
+  ])).then(([resources, identities]) => {
+    const workTitleByCatalogId = new Map(
+      identities.map((identity: Record<string, any>) => [
+        String(identity.catalog_id),
+        String(identity.title_ru),
+      ]),
+    );
+    const unique = new Map<string, LocalCanonicalResourceSearchRow>();
+    for (const resource of resources as Record<string, any>[]) {
+      const semanticOwnerId = String(resource.semantic_owner ?? "").trim();
+      const sourceCatalogId = catalogIdFromResourceSemanticOwner(semanticOwnerId);
+      const workTitleRu = sourceCatalogId
+        ? workTitleByCatalogId.get(sourceCatalogId) ?? null
+        : null;
+      const titleRu = normalizePublicBoqNameRu({
+        sourceNameRu: String(resource.title_ru),
+        workNameRu: workTitleRu,
+      });
+      if (
+        !isPublicBoqNameStructurallyValid(titleRu, workTitleRu) ||
+        isGenericPublicBoqResourceName(titleRu)
+      ) continue;
+      const rowType = String(resource.row_type) as LocalCanonicalResourceSearchRow["rowType"];
+      if (!["material", "labor", "equipment", "service", "waste"].includes(rowType)) continue;
+      const unitId = String(resource.unit_id ?? "").trim() || "pcs";
+      const key = `${normalizeSearchQuery(titleRu)}\u001f${rowType}\u001f${unitId}`;
+      if (unique.has(key)) continue;
+      unique.set(key, {
+        resourceId: String(resource.resource_id),
+        definitionVersionId: String(resource.definition_version_id),
+        sourceCatalogId,
+        rowId: String(resource.row_id),
+        titleRu,
+        rowType,
+        unitId,
+        semanticOwnerId,
+        procurementEligible: resource.procurement_eligible === true,
+        sourceSearchText: normalizeSearchQuery(String(resource.title_ru)),
+        publicSearchText: normalizeSearchQuery(titleRu),
+      });
+    }
+    return [...unique.values()];
+  }).catch((error) => {
+    localCanonicalResourceIndexPromise = null;
+    throw error;
+  });
+  return localCanonicalResourceIndexPromise;
+}
+
 type LocalSearchMode = "ANY" | "ALL" | "PHRASE";
 
 function parseSearchIntent(
@@ -3631,15 +3774,40 @@ async function route(
         (
           await client.query(`
         select id,status,source_manifest_sha256 from public.estimate_definition_release
-        where status='active' order by activated_at desc nulls last,created_at desc limit 1
-      `)
+        where (($1::uuid is not null and id=$1) or ($1::uuid is null and status='active'))
+        order by case when id=$1 then 0 else 1 end,activated_at desc nulls last,created_at desc limit 1
+      `, [TARGET_RELEASE_ID || null])
         ).rows[0] ?? null;
       const counts = (
         await client.query(`select
-        (select count(*)::integer from public.estimate_definition_version d join public.estimate_definition_release r on r.id=d.release_id where r.status='active') active_definitions
-      `)
+        (select count(*)::integer from public.estimate_definition_version d
+          join public.estimate_definition_release r on r.id=d.release_id
+          where (($1::uuid is not null and r.id=$1) or ($1::uuid is null and r.status='active'))) active_definitions,
+        (select count(*)::integer from public.estimate_compile_job
+          where upper(status) in ('QUEUED','RUNNING','CLAIMED','RETRY_WAIT')) active_compile_jobs
+      `, [TARGET_RELEASE_ID || null])
       ).rows[0];
-      return { definitionRelease, counts };
+      const capability = (
+        await client.query(`
+          select id::text,environment,tenant_id::text,release_id::text,search_release_id::text,
+                 source_head,source_tree,purpose,expires_at,revoked_at,issued_by,created_at
+          from public.estimate_candidate_capability_r3
+          where (($1::uuid is not null and id=$1) or (
+            $1::uuid is null and environment=$2 and tenant_id=$3 and release_id=$4
+            and search_release_id=$5 and source_head=$6 and source_tree=$7
+          ))
+          order by created_at desc,id limit 1
+        `, [
+          R3_CAPABILITY_ID || null,
+          R3_CAPABILITY_ENVIRONMENT,
+          currentTenantId(),
+          R3_CAPABILITY_RELEASE_ID || null,
+          R3_CAPABILITY_SEARCH_RELEASE_ID || null,
+          R3_CAPABILITY_SOURCE_HEAD,
+          R3_CAPABILITY_SOURCE_TREE,
+        ])
+      ).rows[0] ?? null;
+      return { definitionRelease, counts, capability };
     });
     const searchDatabase = await withSearchClient(async (client) => {
       const searchRelease =
@@ -3656,15 +3824,27 @@ async function route(
         ).rows[0] ?? null;
       const counts = (
         await client.query(`select
-        (select count(*)::integer from public.estimate_search_document d join public.estimate_search_index_release r on r.id=d.search_release_id where r.status='active') active_search_documents
-      `)
+        (select count(*)::integer from public.estimate_search_document d
+          join public.estimate_search_index_release r on r.id=d.search_release_id
+          where (($1::uuid is not null and r.id=$1) or ($1::uuid is null and r.status='active'))) active_search_documents
+      `, [TARGET_SEARCH_RELEASE_ID || null])
       ).rows[0];
       return { searchRelease, counts };
     });
     const parsedDatabaseUrl = new URL(DATABASE_URL);
     const parsedSearchDatabaseUrl = new URL(SEARCH_DATABASE_URL);
+    const capabilityExpiresAt = modelDatabase.capability?.expires_at
+      ? new Date(modelDatabase.capability.expires_at).getTime()
+      : Number.NaN;
+    const capabilityStatus = !modelDatabase.capability
+      ? "MISSING"
+      : modelDatabase.capability.revoked_at
+        ? "REVOKED"
+        : !Number.isFinite(capabilityExpiresAt) || capabilityExpiresAt <= Date.now()
+          ? "EXPIRED"
+          : "ACTIVE";
     return send(response, 200, {
-      schemaVersion: "p0-estimate-truth-remediation-r4.5-runtime-manifest.v1",
+      schemaVersion: "p0-estimate-truth-remediation-r568-r4-a4-runtime-manifest.v1",
       runtimeRole: "FULL_CANONICAL_ESTIMATE_BACKEND",
       processId: process.pid,
       parentProcessId: process.ppid,
@@ -3680,6 +3860,27 @@ async function route(
           ? SUPABASE_PRINCIPAL_RPC
           : null,
       capabilityTenantBinding: R3_CAPABILITY_TENANT_BINDING,
+      capability: modelDatabase.capability ? {
+        id: modelDatabase.capability.id,
+        environment: modelDatabase.capability.environment,
+        tenantId: modelDatabase.capability.tenant_id,
+        releaseId: modelDatabase.capability.release_id,
+        searchReleaseId: modelDatabase.capability.search_release_id,
+        sourceHead: modelDatabase.capability.source_head,
+        sourceTree: modelDatabase.capability.source_tree,
+        purpose: modelDatabase.capability.purpose,
+        expiresAt: modelDatabase.capability.expires_at,
+        status: capabilityStatus,
+        ttlSeconds: Number.isFinite(capabilityExpiresAt)
+          ? Math.max(0, Math.floor((capabilityExpiresAt - Date.now()) / 1_000))
+          : 0,
+      } : null,
+      frontendBuildIdentity: {
+        sourceTreeHash: R568_FRONTEND_SOURCE_TREE_HASH,
+        productSourceHash: R568_FRONTEND_PRODUCT_SOURCE_HASH,
+        jsBundleFingerprint: R568_FRONTEND_JS_BUNDLE_FINGERPRINT,
+        buildCommit: R568_FRONTEND_BUILD_COMMIT,
+      },
       databasePoolMaximum: LOCAL_DATABASE_POOL_MAX,
       database: {
         host: parsedDatabaseUrl.hostname,
@@ -3700,6 +3901,94 @@ async function route(
       activeSearchDocumentCount: Number(
         searchDatabase.counts?.active_search_documents ?? 0,
       ),
+      activeCompileJobCount: Number(modelDatabase.counts?.active_compile_jobs ?? 0),
+      compatibilityTuple: {
+        definitionReleaseId: modelDatabase.definitionRelease?.id ?? null,
+        searchReleaseId: searchDatabase.searchRelease?.id ?? null,
+        sourceHead: R45_RUNTIME_SOURCE_HEAD,
+        sourceTree: R45_RUNTIME_SOURCE_TREE,
+        frontendSourceTreeHash: R568_FRONTEND_SOURCE_TREE_HASH,
+        frontendProductSourceHash: R568_FRONTEND_PRODUCT_SOURCE_HASH,
+        frontendJsBundleFingerprint: R568_FRONTEND_JS_BUNDLE_FINGERPRINT,
+        capabilityId: modelDatabase.capability?.id ?? null,
+      },
+    });
+  }
+  if (
+    request.method === "GET" &&
+    path.length === 2 &&
+    path[0] === "search" &&
+    path[1] === "resources"
+  ) {
+    const startedAt = performance.now();
+    const query = String(url.searchParams.get("query") ?? "")
+      .trim()
+      .slice(0, 240);
+    const normalizedQuery = normalizeSearchQuery(query);
+    const tokens = resourceSearchTokens(query);
+    if ((normalizedQuery.match(/[\p{L}\p{N}]/gu) ?? []).length < 2 || tokens.length === 0) {
+      throw Object.assign(new Error("Введите не менее двух значимых символов."), {
+        code: "SEARCH_MIN_SIGNIFICANT_CHARS",
+        httpStatus: 400,
+      });
+    }
+    const requestedKind = String(url.searchParams.get("kind") ?? "all")
+      .trim()
+      .toLocaleLowerCase("en-US");
+    if (!["all", "material", "labor", "equipment", "service"].includes(requestedKind)) {
+      throw Object.assign(new Error("invalid resource kind"), {
+        code: "INVALID_ARGUMENT",
+        httpStatus: 400,
+      });
+    }
+    const limit = Math.min(
+      100,
+      Math.max(1, Number(url.searchParams.get("pageSize") ?? 50) || 50),
+    );
+    const candidates = (await localCanonicalResourceIndex())
+      .filter((row) => requestedKind === "all"
+        ? row.rowType !== "waste"
+        : row.rowType === requestedKind)
+      .filter((row) => tokens.every((token) =>
+        row.publicSearchText.includes(token) || row.sourceSearchText.includes(token)))
+      .map((row) => ({
+        row,
+        matchType: row.publicSearchText === normalizedQuery
+          ? "EXACT" as const
+          : row.publicSearchText.startsWith(normalizedQuery)
+            ? "PREFIX" as const
+            : "SUBSTRING" as const,
+      }))
+      .sort((left, right) => {
+        const rank = { EXACT: 0, PREFIX: 1, SUBSTRING: 2 } as const;
+        return rank[left.matchType] - rank[right.matchType]
+          || left.row.titleRu.localeCompare(right.row.titleRu, "ru")
+          || left.row.rowType.localeCompare(right.row.rowType)
+          || left.row.unitId.localeCompare(right.row.unitId)
+          || left.row.resourceId.localeCompare(right.row.resourceId);
+      });
+    return send(response, 200, {
+      apiVersion: API_VERSION,
+      definitionReleaseId: TARGET_RELEASE_ID,
+      searchIndexReleaseId: TARGET_SEARCH_RELEASE_ID,
+      normalizedQuery,
+      resourceIndexContractVersion: "canonical-resource-search.r568.v1",
+      totalCount: candidates.length,
+      shownCount: Math.min(candidates.length, limit),
+      items: candidates.slice(0, limit).map(({ row, matchType }) => ({
+        resourceId: row.resourceId,
+        definitionVersionId: row.definitionVersionId,
+        definitionReleaseId: TARGET_RELEASE_ID,
+        sourceCatalogId: row.sourceCatalogId,
+        rowId: row.rowId,
+        titleRu: row.titleRu,
+        rowType: row.rowType,
+        unitId: row.unitId,
+        semanticOwnerId: row.semanticOwnerId,
+        procurementEligible: row.procurementEligible,
+        matchType,
+      })),
+      durationMs: Number((performance.now() - startedAt).toFixed(3)),
     });
   }
   if (
@@ -5176,4 +5465,11 @@ server.listen(PORT, "0.0.0.0", () => {
       process.stderr.write(`[canonical-local-worker] ${String(error)}\n`),
     );
   }
+  void localCanonicalResourceIndex()
+    .then((rows) => process.stderr.write(
+      `[canonical-resource-search] READY rows=${rows.length} release=${TARGET_RELEASE_ID}\n`,
+    ))
+    .catch((error) => process.stderr.write(
+      `[canonical-resource-search] FAILED ${String(error)}\n`,
+    ));
 });

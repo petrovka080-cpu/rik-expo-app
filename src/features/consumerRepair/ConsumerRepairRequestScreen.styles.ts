@@ -158,6 +158,8 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     fontWeight: "900",
   },
   bottomActions: {
+    flexDirection: "column",
+    alignItems: "stretch",
     gap: 10,
     borderRadius: 12,
     borderWidth: 1,

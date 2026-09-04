@@ -1,39 +1,53 @@
 import { buildRequestEstimateProfessionalRowEvidence } from "../../../features/consumerRepair/requestEstimateViewModel";
 import type { ConsumerRepairRequestItem } from "../../consumerRequests/consumerRequestTypes";
 import { buildStructuredEstimateRequestDraft } from "../../estimateStructuredPipeline/structuredEstimateRequestBinding";
-import type {
-  CanonicalEstimateCatalogItem,
-  CanonicalEstimateRevisionRowView,
-  CanonicalEstimateRevisionView,
+import {
+  ESTIMATE_PLATFORM_API_VERSION,
+  type CanonicalEstimateCatalogItem,
+  type CanonicalEstimateRevisionRowView,
+  type CanonicalEstimateRevisionView,
 } from "./contracts";
 import {
   adaptCanonicalCompilationToAssistantProjection,
   adaptCanonicalRevisionToStructuredEstimate,
 } from "./canonicalEstimateForemanAdapter";
+import { CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION } from "./canonicalEstimateRevisionWriter";
 
 describe("canonical estimate consumer professional proof", () => {
   it("projects backend formula dependencies and exact normative locator into the consumer row", () => {
-    const catalog = {
+    const catalog: CanonicalEstimateCatalogItem = {
       catalogId: "drywall-test",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
       workKey: "drywall-test",
       titleRu: "Заделка стыков",
       domain: "interior_finishes",
-    } as unknown as CanonicalEstimateCatalogItem;
-    const revision = {
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [],
+    };
+    const revision: CanonicalEstimateRevisionView = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
       revisionId: "revision-child",
       parentRevisionId: "revision-parent",
       releaseId: "release-test",
       catalogId: catalog.catalogId,
+      revisionNumber: 2,
+      status: "ready",
       sourceRequestText: "Заделать стыки",
       displayTitleRu: catalog.titleRu,
       currencyCode: "KGS",
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
       totals: { amount: "1255" },
+      rowCount: 1,
       checksumSha256: "a".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
       formulaGraphVersion: "formula-r1",
       parameterSchemaHash: "b".repeat(64),
       parameters: { joint_length_m: 10 },
       createdAt: "2026-08-19T00:00:00.000Z",
-    } as unknown as CanonicalEstimateRevisionView;
+    };
     const row = {
       rowId: "material:joint-compound",
       ordinal: 0,
@@ -61,7 +75,17 @@ describe("canonical estimate consumer professional proof", () => {
     } satisfies CanonicalEstimateRevisionRowView;
 
     const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [row] });
-    const item = buildStructuredEstimateRequestDraft(payload).items[0] as unknown as ConsumerRepairRequestItem;
+    const draftItem = buildStructuredEstimateRequestDraft(payload).items[0];
+    if (!draftItem) throw new Error("canonical adapter did not project a request item");
+    const item: ConsumerRepairRequestItem = {
+      ...draftItem,
+      id: "request-item-1",
+      requestDraftId: "request-draft-1",
+      currency: draftItem.currency ?? "KGS",
+      source: draftItem.source ?? "reference_price_book",
+      editableByConsumer: true,
+      createdAt: "2026-08-19T00:00:00.000Z",
+    };
     const proof = buildRequestEstimateProfessionalRowEvidence(item);
 
     expect(item.titleRu).toBe(row.titleRu);
@@ -73,28 +97,39 @@ describe("canonical estimate consumer professional proof", () => {
   });
 
   it("projects backend sections and AI surface from one immutable compilation", () => {
-    const catalog = {
+    const catalog: CanonicalEstimateCatalogItem = {
       catalogId: "r41-surface-test",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
       workKey: "paving-stone",
       titleRu: "Укладка брусчатки",
       domain: "landscaping",
-    } as unknown as CanonicalEstimateCatalogItem;
-    const revision = {
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [],
+    };
+    const revision: CanonicalEstimateRevisionView = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
       revisionId: "11111111-1111-4111-8111-111111111111",
       parentRevisionId: null,
       releaseId: "22222222-2222-4222-8222-222222222222",
       catalogId: catalog.catalogId,
       revisionNumber: 1,
+      status: "ready",
       sourceRequestText: "смета на укладку брусчатки на 587 кв м",
       displayTitleRu: catalog.titleRu,
       currencyCode: "KGS",
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
       totals: { amount: "0" },
+      rowCount: 3,
       checksumSha256: "d".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
       formulaGraphVersion: "formula-r1",
       parameterSchemaHash: "e".repeat(64),
       parameters: { area_m2: 587 },
       createdAt: "2026-08-23T00:00:00.000Z",
-    } as unknown as CanonicalEstimateRevisionView;
+    };
     const makeRow = (
       rowId: string,
       section: string,
@@ -144,5 +179,109 @@ describe("canonical estimate consumer professional proof", () => {
     expect(projection?.estimatePdfSource).toBeTruthy();
     expect(projection?.revisionId).toBe(revision.revisionId);
     expect(projection?.releaseId).toBe(revision.releaseId);
+  });
+
+  it("projects the immutable primary measure instead of treating the first BOM row as project scope", () => {
+    const catalog = {
+      catalogId: "roof-test",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
+      workKey: "roof-test",
+      titleRu: "Кровельные работы",
+      domain: "roofing",
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [],
+    } satisfies CanonicalEstimateCatalogItem;
+    const revision = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+      revisionId: "11111111-1111-4111-8111-111111111111",
+      parentRevisionId: null,
+      releaseId: catalog.releaseId,
+      catalogId: catalog.catalogId,
+      revisionNumber: 1,
+      status: "ready",
+      sourceRequestText: "Кровельные работы 200 квадратных метров",
+      displayTitleRu: "Кровельные работы — 200 м²",
+      primaryMeasureParameterId: "area_m2",
+      primaryMeasureValue: "200",
+      primaryMeasureUnitId: "m2",
+      revisionContractVersion: CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
+      currencyCode: "KGS",
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
+      totals: { amount: "0" },
+      rowCount: 1,
+      checksumSha256: "d".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
+      formulaGraphVersion: "formula-r1",
+      parameterSchemaHash: "e".repeat(64),
+      parameters: { area_m2: 200 },
+      createdAt: "2026-09-04T00:00:00.000Z",
+    } satisfies CanonicalEstimateRevisionView;
+    const row = {
+      rowId: "material:covering",
+      ordinal: 0,
+      section: "Материалы",
+      category: "material",
+      titleRu: "Металлочерепица",
+      unitId: "m2",
+      quantity: "216",
+      unitPrice: null,
+      amount: null,
+      currencyCode: "KGS",
+      procurementEligible: true,
+      includedInEstimate: true,
+      includedInProcurement: true,
+      ownershipStatus: "OWNED",
+      calculationTrace: { inputParameterIds: ["area_m2"] },
+      normativeTrace: [],
+      rowSha256: "f".repeat(64),
+    } satisfies CanonicalEstimateRevisionRowView;
+
+    const payload = adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [row] });
+
+    expect(payload.quantity).toMatchObject({ quantity: 200, unit: "m2" });
+    expect(payload.sourceEstimate.input).toMatchObject({ volume: 200, unit: "m2" });
+    expect(payload.rows[0]?.quantity).toBe(216);
+  });
+
+  it("fails closed when an R6 primary identity disagrees with resolved parameters", () => {
+    const catalog = {
+      catalogId: "identity-test",
+      releaseId: "22222222-2222-4222-8222-222222222222",
+      namespace: "global",
+      workKey: "identity-test",
+      titleRu: "Работа",
+      domain: "test",
+      definitionVersion: 1,
+      applicability: {},
+      professionalMetadata: {},
+      parameterSchema: [],
+    } satisfies CanonicalEstimateCatalogItem;
+    const revision = {
+      apiVersion: ESTIMATE_PLATFORM_API_VERSION,
+      revisionId: "11111111-1111-4111-8111-111111111111",
+      parentRevisionId: null,
+      releaseId: catalog.releaseId,
+      catalogId: catalog.catalogId,
+      revisionNumber: 1,
+      status: "ready",
+      currencyCode: "KGS",
+      parameters: { area_m2: 100 },
+      primaryMeasureParameterId: "area_m2",
+      primaryMeasureValue: "200",
+      primaryMeasureUnitId: "m2",
+      revisionContractVersion: CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION,
+      amendmentContract: { rowOverrides: {}, customRows: [], releaseMigration: null },
+      totals: { amount: "0" },
+      rowCount: 0,
+      checksumSha256: "d".repeat(64),
+      compilerVersion: "canonical-estimate-compile-core-r1",
+      createdAt: "2026-09-04T00:00:00.000Z",
+    } satisfies CanonicalEstimateRevisionView;
+
+    expect(() => adaptCanonicalRevisionToStructuredEstimate({ catalog, revision, rows: [] }))
+      .toThrow(expect.objectContaining({ code: "CANONICAL_REVISION_IDENTITY_INVALID" }));
   });
 });
