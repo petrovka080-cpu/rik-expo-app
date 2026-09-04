@@ -80,7 +80,7 @@ function unknownEnglishTokens(value: string): string[] {
     "Ceresit", "CM", "Plus", "PLUS", "CT", "Profi", "Silicate", "Aero", "CN",
     "Knauf", "Fugenfuller", "Leicht", "CL", "Express",
   ]);
-  const tokens = value.match(/[A-Za-z]{2,}/gu) ?? [];
+  const tokens: string[] = Array.from(value.matchAll(/[A-Za-z]{2,}/gu), (match) => match[0]);
   return tokens.filter((token) => {
     const offset = value.indexOf(token);
     const around = value.slice(Math.max(0, offset - 12), offset + token.length + 12);

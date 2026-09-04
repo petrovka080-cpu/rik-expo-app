@@ -62,8 +62,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
     const existingMatch = {
       itemId: "estimate-row-1",
       titleRu: "Арматура A500C",
-      sectionId: "materials",
-      sectionTitle: "Материалы",
+      categoryFilterId: "materials" as const,
     };
     const catalogItem = {
       catalogItemId: "catalog-material-1",
