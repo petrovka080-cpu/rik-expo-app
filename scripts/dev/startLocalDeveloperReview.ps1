@@ -383,38 +383,60 @@ if (-not $BrokerReady) {
 }
 Write-Host "auth_broker_pid=$($Broker.Id)"
 
-try {
-  $MetroRuntime = Split-Path -Parent $MetroReceiptPath
-  New-Item -ItemType Directory -Path $MetroRuntime -Force | Out-Null
-  $MetroStdout = Join-Path $MetroRuntime "metro.stdout.log"
-  $MetroStderr = Join-Path $MetroRuntime "metro.stderr.log"
-  $Metro = Start-Process -FilePath $Node -ArgumentList @(
-    $ExpoCli,
-    "start",
-    "--web",
-    "--port",
-    "$Port",
-    "--clear"
-  ) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
-  @{
-    schema_version = "rik-expo-app.r568.metro-runtime.v1"
-    generated_utc = (Get-Date).ToUniversalTime().ToString("o")
-    pid = $Metro.Id
-    source_tree_hash = [string]$Identity.sourceTreeHash
-    product_source_hash = [string]$Identity.productSourceHash
-    js_bundle_fingerprint = [string]$Identity.jsBundleFingerprint
-    build_commit = $BuildCommit
-    definition_release_id = [string]$BackendManagerResult.definition_release_id
-    search_release_id = [string]$BackendManagerResult.search_release_id
-    capability_id = [string]$BackendManagerResult.capability_id
-  } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $MetroReceiptPath -Encoding UTF8
-  Write-Host "metro_pid=$($Metro.Id)"
-  $Metro.WaitForExit()
-  $MetroExitCode = $Metro.ExitCode
-}
-finally {
-  if ($Broker -and -not $Broker.HasExited) {
-    Stop-Process -Id $Broker.Id -ErrorAction SilentlyContinue
+$MetroRuntime = Split-Path -Parent $MetroReceiptPath
+New-Item -ItemType Directory -Path $MetroRuntime -Force | Out-Null
+$MetroStdout = Join-Path $MetroRuntime "metro.stdout.log"
+$MetroStderr = Join-Path $MetroRuntime "metro.stderr.log"
+$Metro = Start-Process -FilePath $Node -ArgumentList @(
+  $ExpoCli,
+  "start",
+  "--web",
+  "--port",
+  "$Port",
+  "--clear"
+) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
+
+$MetroReady = $false
+$MetroDeadline = (Get-Date).AddSeconds(90)
+while ((Get-Date) -lt $MetroDeadline) {
+  if ($Metro.HasExited) { break }
+  try {
+    $MetroHealth = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$Port/status" -TimeoutSec 2
+    $MetroHealthContent = if ($MetroHealth.Content -is [byte[]]) {
+      [System.Text.Encoding]::UTF8.GetString($MetroHealth.Content)
+    }
+    else {
+      [string]$MetroHealth.Content
+    }
+    if ($MetroHealth.StatusCode -eq 200 -and $MetroHealthContent -match "packager-status:running") {
+      $MetroReady = $true
+      break
+    }
+  }
+  catch {
+    Start-Sleep -Milliseconds 250
   }
 }
-exit $MetroExitCode
+if (-not $MetroReady) {
+  if (-not $Metro.HasExited) { Stop-Process -Id $Metro.Id -ErrorAction SilentlyContinue }
+  if ($Broker -and -not $Broker.HasExited) { Stop-Process -Id $Broker.Id -ErrorAction SilentlyContinue }
+  Fail-Preflight "LOCAL_DEVELOPER_METRO_START_RED" "проверьте metro stderr в runtime evidence"
+}
+
+@{
+  schema_version = "rik-expo-app.r568.metro-runtime.v1"
+  generated_utc = (Get-Date).ToUniversalTime().ToString("o")
+  pid = $Metro.Id
+  source_tree_hash = [string]$Identity.sourceTreeHash
+  product_source_hash = [string]$Identity.productSourceHash
+  js_bundle_fingerprint = [string]$Identity.jsBundleFingerprint
+  build_commit = $BuildCommit
+  definition_release_id = [string]$BackendManagerResult.definition_release_id
+  search_release_id = [string]$BackendManagerResult.search_release_id
+  capability_id = [string]$BackendManagerResult.capability_id
+} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $MetroReceiptPath -Encoding UTF8
+Write-Host "runtime_action=started_exact_healthy_runtime"
+Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"
+Write-Host "auth_broker_pid=$($Broker.Id)"
+Write-Host "metro_pid=$($Metro.Id)"
+exit 0

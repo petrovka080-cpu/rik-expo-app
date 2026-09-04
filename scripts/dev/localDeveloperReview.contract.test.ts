@@ -22,6 +22,12 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(launcher).toContain("[int]$ProvisionResult.office_green -ne 9");
     expect(launcher).toContain("[int]$ProvisionResult.consumer_green -ne 1");
     expect(launcher).toContain("[int]$BrokerHealth.principal_count -eq 10");
+    expect(launcher).toContain("LOCAL_DEVELOPER_METRO_START_RED");
+    expect(launcher).toContain("packager-status:running");
+    expect(launcher).toContain("[System.Text.Encoding]::UTF8.GetString($MetroHealth.Content)");
+    expect(launcher).toContain("$MetroHealthContent -match");
+    expect(launcher).toContain("runtime_action=started_exact_healthy_runtime");
+    expect(launcher).not.toContain("$Metro.WaitForExit()");
     expect(launcher).not.toMatch(/Write-Host[^\n]*(PublicKey|ANON_KEY)/u);
   });
 

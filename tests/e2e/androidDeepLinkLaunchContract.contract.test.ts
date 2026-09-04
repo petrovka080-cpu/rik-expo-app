@@ -31,4 +31,20 @@ describe("Android deep-link launch contract", () => {
     expect(args.at(-2)).toBe(escaped);
     expect(args.at(-1)).toBe("com.example.app");
   });
+
+  it("supports explicit catalog identity without enabling an automatic action", () => {
+    const uri = buildAndroidRouteDeepLink({
+      route: "/request",
+      prompt: "Кровля 200 м²",
+      launchId: "android:r4-a6:manual-selection",
+      catalogWorkId: "canonical-work:expanded:battens_counterbattens",
+    });
+    const parsed = new URL(uri);
+
+    expect(parsed.searchParams.get("catalogWorkId")).toBe(
+      "canonical-work:expanded:battens_counterbattens",
+    );
+    expect(parsed.searchParams.has("autoPrepare")).toBe(false);
+    expect(parsed.searchParams.has("autoSend")).toBe(false);
+  });
 });

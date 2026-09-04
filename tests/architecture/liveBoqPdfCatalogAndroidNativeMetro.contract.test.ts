@@ -11,7 +11,7 @@ describe("live BOQ PDF catalog Android API34 native Metro proof", () => {
 
     expect(source).toContain('process.env.LIVE_ANDROID_DEV_PORT ?? "8100"');
     expect(source).not.toContain('process.env.LIVE_ANDROID_DEV_PORT ?? "8081"');
-    expect(source).toContain('"expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"');
+    expect(source).toContain('"expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--clear", "--non-interactive"');
     expect(source).not.toContain('"expo", "start", "--web", "--port", String(ANDROID_DEV_PORT)');
     expect(source).toContain('"/node_modules/expo-router/entry.bundle?platform=android');
     expect(source).toContain('sample.includes("__BUNDLE_START_TIME__")');

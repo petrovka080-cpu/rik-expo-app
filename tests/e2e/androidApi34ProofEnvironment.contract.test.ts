@@ -28,6 +28,7 @@ describe("Android API34 proof environment", () => {
 
     expect(liveSmoke).toContain("ANDROID_DEV_PORT");
     expect(liveSmoke).toContain("--dev-client");
+    expect(liveSmoke).toContain('"--clear"');
     expect(liveSmoke).toContain("entry.bundle?platform=android");
     expect(liveSmoke).toContain("uiautomator");
     expect(liveSmoke).toContain("20_000");
@@ -37,6 +38,27 @@ describe("Android API34 proof environment", () => {
     expect(harness).toContain("uiautomator");
     expect(harness).toContain("8000");
     expect(harness).toContain("isBlankOrSystemSurface");
+  });
+
+  it("requires the exact local canonical backend tuple and reverses its port", () => {
+    const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+    const replay = read("scripts/e2e/androidApi34Replay.ts");
+
+    expect(liveSmoke).toContain("validateCanonicalAndroidRuntimeEnv");
+    expect(liveSmoke).toContain("ANDROID_CANONICAL_RUNTIME_ENV_MISSING");
+    expect(liveSmoke).toContain("ANDROID_CANONICAL_RUNTIME_HEAD_MISMATCH");
+    expect(liveSmoke).toContain("CANONICAL_BACKEND_PORT = 8765");
+    expect(liveSmoke).toContain("LOCAL_PROVIDER_PORT = 54321");
+    expect(liveSmoke).toContain("ANDROID_LOCAL_PROVIDER_REVERSE_RED");
+    expect(liveSmoke).toContain("ANDROID_CANONICAL_BACKEND_REVERSE_RED");
+    expect(liveSmoke).toContain('`tcp:${port}`');
+    expect(liveSmoke).toContain("ANDROID_LOCAL_PROVIDER_URL_NOT_EXACT_LOOPBACK");
+    expect(liveSmoke).toContain("ANDROID_LOCAL_PROVIDER_PUBLIC_KEY_RED");
+    expect(replay).toContain("exactReplayEnvironment");
+    expect(replay).toContain("ANDROID_API34_CANONICAL_BACKEND_TUPLE_DRIFT");
+    expect(replay).toContain("ANDROID_API34_LOCAL_PROVIDER_CREDENTIALS_MISSING");
+    expect(replay).toContain("delete childEnv[secretName]");
+    expect(replay).toContain("shell: false");
   });
 
   it("binds evidence to the exact Git SHA", () => {
@@ -192,5 +214,110 @@ describe("Android API34 proof environment", () => {
     expect(assistant).toContain('routeAutoSend === "1"');
     expect(assistant).toContain("setBooting(false)");
     expect(assistant).toContain("initialize(hasAutoSendPrompt)");
+  });
+
+  it("establishes a real Android UI session before exercising protected routes", () => {
+    const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+
+    expect(liveSmoke).toContain("resolveExplicitAiRoleAuthEnv");
+    expect(liveSmoke).toContain("createAndroidHarness");
+    expect(liveSmoke).toContain("replaceAndroidFieldText");
+    expect(liveSmoke).toContain('startAndroidRouteSafe(PACKAGE_NAME, "rik:///request")');
+    expect(liveSmoke).toContain('"explicit_foreman_env"');
+    expect(liveSmoke).toContain('"local_developer_seeded_consumer"');
+    expect(liveSmoke).toContain("loadAndroidProofPrincipal");
+    expect(liveSmoke).toContain("ANDROID_API34_PROOF_PRINCIPAL_PROVIDER_DRIFT");
+    expect(liveSmoke).toContain("isAndroidAuthenticatedRequestEstimateXml");
+    expect(liveSmoke).toContain("ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID");
+    expect(liveSmoke).toContain('!xml.includes("protected-identity-state-")');
+    expect(liveSmoke).toContain("persistentSeed: true");
+    expect(liveSmoke).toContain("cleanupRequired: false");
+    expect(liveSmoke).toContain("serviceRoleExposedToApp: false");
+    expect(liveSmoke).toContain("ANDROID_R4_A6_CLEAN_STATE_RED");
+    expect(liveSmoke).toContain('node.resourceId === "protected-identity-sign-out"');
+    expect(liveSmoke).toContain("isAndroidAuthLoginScreenXml");
+    expect(liveSmoke).toContain("redactE2eSecrets");
+    expect(liveSmoke).toContain("BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED");
+    expect(liveSmoke).toContain("without another bootstrap launch");
+    expect(liveSmoke).not.toContain("signInWithPassword");
+    expect(liveSmoke).not.toContain("createVerifierAdmin");
+    expect(liveSmoke).not.toContain("createTempUser");
+    expect(liveSmoke).not.toContain("loginAndroidWithProtectedRoute");
+  });
+
+  it("replays the exact accepted R4-A6 Android journey instead of substituting legacy catalog cases", () => {
+    const liveSmoke = read("scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts");
+    const journey = read("scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts");
+
+    expect(liveSmoke).toContain("runR4A6AndroidAcceptedUiRuntime");
+    expect(liveSmoke).toContain("exact_catalog_ui_selection_required: true");
+    expect(journey).toContain('"canonical-work:expanded:battens_counterbattens"');
+    expect(journey).toContain('"Кровля, мансарды и кровельные окна: обрешётка и контробрешётка 200 кв метров"');
+    expect(journey).toContain("selectExactSuggestion");
+    expect(journey).toContain("activateExactPromptSearch");
+    expect(journey).toContain('"KEYCODE_SPACE"');
+    expect(journey).toContain('"KEYCODE_DEL"');
+    expect(journey).toContain("search/catalog?query=");
+    expect(journey).toContain("visibleSuggestionMatched");
+    expect(journey).toContain("revisionCatalogMatched");
+    expect(journey).toContain("stagnantSnapshots >= 3");
+    expect(journey).toContain("expectedSelectedDisplayTitle");
+    expect(journey).toContain("— 200 м²");
+    expect(journey).not.toContain("consumer-repair-work-suggestion-catalog-");
+    expect(journey).toContain("EXPECTED_CATEGORY_COUNTS");
+    expect(journey).toContain('"delivery",\n  "all",');
+    expect(journey).toContain("stableRestoredControl");
+    expect(journey).toContain("fullyVisible(node)");
+    expect(journey).toContain('beforeQuantity !== "216"');
+    expect(journey).toContain("FIRST_FORMULA_ROW_TITLE");
+    expect(journey).toContain('node.text === "216"');
+    expect(journey).toContain("waitForChildRevisionId");
+    expect(journey).toContain("waitForPhotoPermissionGate");
+    expect(journey).toContain("APP_CONTENT_BOTTOM = 1828");
+    expect(journey).toContain("cameraPermissionDialogDismissed");
+    expect(journey).toContain("tapNodeIncludingBottomSheet");
+    expect(journey).toContain('node.contentDesc.startsWith("Прикреплённое фото ")');
+    expect(journey).toContain("childRevisionId: changedRevisionId");
+    expect(journey).toContain("R4_A6_ANDROID_PHOTO_ATOMIC_AUDIT_RED");
+    expect(journey).toContain("approvalTapCount = 1");
+    expect(journey).toContain("consumer-repair-history-readonly-snapshot");
+    expect(journey).toContain('"consumer-repair-history-pdf"');
+    expect(journey).toContain('"pdf-viewer-back"');
+    expect(journey).toContain('"consumer-estimate-open-procurement"');
+    expect(journey).toContain("historyDismissedForProcurement");
+    expect(journey).toContain("procurementSummaryAnchor");
+    expect(journey).toContain("procurementLaunchMarker");
+    expect(journey).toContain("procurementRouteApplied");
+    expect(journey).not.toContain('"consumer-repair-history-open-pdf-expanded"');
+    expect(journey).not.toContain('"consumer-repair-history-send-market"');
+    expect(journey).not.toContain('"consumer-repair-history-send-market-inline"');
+    expect(journey.indexOf("const historyCapture")).toBeLessThan(
+      journey.indexOf("const pdfTapped"),
+    );
+    expect(journey.indexOf("const pdfTapped")).toBeLessThan(
+      journey.indexOf("const procurementAuditStart"),
+    );
+    expect(journey).toContain("R4_A6_ANDROID_BACKGROUND_FOREGROUND_RED");
+    expect(journey).toContain("R4_A6_ANDROID_COLD_RESTART_RED");
+    expect(journey).toContain("bootstrapFreshDevClient");
+    expect(journey).toContain("expo-development-client");
+    const coldRestart = journey.slice(
+      journey.indexOf("const coldAuditStart"),
+      journey.indexOf("const coldCapture"),
+    );
+    expect(coldRestart.indexOf('"force-stop"')).toBeLessThan(
+      coldRestart.indexOf("bootstrapFreshDevClient"),
+    );
+    expect(coldRestart.indexOf("bootstrapFreshDevClient")).toBeLessThan(
+      coldRestart.indexOf("const coldLaunchId"),
+    );
+    expect(coldRestart).toContain("buildRequestEstimateLaunchReadyMarkerId");
+    expect(coldRestart).toContain("coldSummaryReady");
+    expect(coldRestart).toContain("await scrollToStart");
+    expect(coldRestart).toContain("coldSelectedTitle");
+    expect(coldRestart).toContain("coldRowCount");
+    expect(coldRestart).not.toContain("await waitForLifecycle");
+    expect(journey).toContain("R4_A6_ANDROID_WEB_PARITY_RED");
+    expect(journey).not.toContain("answerBuiltInAi");
   });
 });

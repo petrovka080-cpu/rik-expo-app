@@ -5,8 +5,16 @@
   "include": [
     "android/app/src/debug/res/xml/network_security_config.xml",
     "data/estimate-benchmarks/r568-r4-a6-runtime-closeout-include-manifest.json",
+    "scripts/dev/localDeveloperReview.contract.test.ts",
+    "scripts/dev/startLocalDeveloperReview.ps1",
+    "scripts/e2e/androidApi34Replay.ts",
+    "scripts/e2e/androidDeepLinkLaunchContract.ts",
+    "scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts",
+    "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
     "tests/architecture/androidDebugDevClientNetworkSecurity.contract.test.ts",
-    "tests/e2e/androidApi34ProofEnvironment.contract.test.ts"
+    "tests/architecture/liveBoqPdfCatalogAndroidNativeMetro.contract.test.ts",
+    "tests/e2e/androidApi34ProofEnvironment.contract.test.ts",
+    "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts"
   ],
   "excludePolicy": {
     "broadAddForbidden": true,

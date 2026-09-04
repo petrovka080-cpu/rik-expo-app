@@ -3,13 +3,15 @@ export function buildAndroidRouteDeepLink(input: {
   prompt: string;
   context?: string;
   launchId?: string;
-  automaticParam: "autoPrepare" | "autoSend";
+  automaticParam?: "autoPrepare" | "autoSend";
+  catalogWorkId?: string;
 }): string {
   const url = new URL(`rik:///${input.route.replace(/^\//, "")}`);
   url.searchParams.set("prompt", input.prompt);
   if (input.context) url.searchParams.set("context", input.context);
   if (input.launchId) url.searchParams.set("launchId", input.launchId);
-  url.searchParams.set(input.automaticParam, "1");
+  if (input.catalogWorkId) url.searchParams.set("catalogWorkId", input.catalogWorkId);
+  if (input.automaticParam) url.searchParams.set(input.automaticParam, "1");
   return url.toString();
 }
 

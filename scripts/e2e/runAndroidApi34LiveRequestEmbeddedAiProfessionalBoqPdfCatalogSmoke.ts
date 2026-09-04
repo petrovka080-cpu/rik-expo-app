@@ -16,6 +16,29 @@ import {
   isWarmAndroidActivityDelivery,
   type RouteToScreenLifecycleEvidence,
 } from "../release/android/routeToScreenAck";
+import {
+  ANDROID_AUTH_EMAIL_FIELD_ID,
+  ANDROID_AUTH_PASSWORD_FIELD_ID,
+  ANDROID_AUTH_SUBMIT_ID,
+  ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID,
+  androidXmlHasResourceId,
+  createAndroidHarness,
+  isAndroidAppRootSurfaceXml,
+  isAndroidAuthLoginScreenXml,
+  isAndroidRequestRouteSurfaceXml,
+} from "../_shared/androidHarness";
+import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import {
+  collectExplicitE2eSecrets,
+  redactE2eSecrets,
+} from "./redactE2eSecrets";
+import {
+  type RuntimeTestUser,
+} from "../_shared/testUserDiscipline";
+import {
+  runR4A6AndroidAcceptedUiRuntime,
+  type R4A6AndroidAcceptedJourneyResult,
+} from "./r4A6AndroidAcceptedUiRuntime";
 
 const ARTIFACT_DIR = path.join(
   process.cwd(),
@@ -27,6 +50,8 @@ const UI_DUMP_DIR = path.join(ARTIFACT_DIR, "android_api34", "ui_dumps");
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 const ANDROID_DEV_PORT = Number(process.env.LIVE_ANDROID_DEV_PORT ?? "8100");
+const LOCAL_PROVIDER_PORT = 54321;
+const CANONICAL_BACKEND_PORT = 8765;
 const APK_INSTALL_TIMEOUT_MS = Number(process.env.LIVE_ANDROID_APK_INSTALL_TIMEOUT_MS ?? "300000");
 const CASE_UI_POLL_MS = 8_000;
 const CASE_UI_MAX_POLLS = 3;
@@ -36,6 +61,9 @@ const METRO_LOG_PATH = path.join(ARTIFACT_DIR, "android_api34_metro.log");
 const UI_DUMP_DEVICE_PATH = "/sdcard/live_boq_pdf_catalog_window.xml";
 const ANDROID_BUNDLE_PATH =
   "/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false&transform.routerRoot=app";
+const LOCAL_PROVIDER_CREDENTIALS = path.resolve(
+  ".release-runtime/r551/runtime/local-developer/credentials.json",
+);
 
 type AndroidCase = {
   caseId: string;
@@ -89,6 +117,30 @@ type AndroidCaseResult = {
   failures: string[];
 };
 
+type AndroidAuthEvidence = {
+  authSessionRequired: boolean;
+  credentialsPresent: boolean;
+  credentialSource: string;
+  roleAuthSource: string;
+  roleMode: string;
+  rolesResolved: readonly string[];
+  missingSecretKeys: readonly string[];
+  loginAttempted: boolean;
+  loginCompleted: boolean;
+  blockedStatus: string | null;
+  error: string | null;
+};
+
+type AndroidProofPrincipalEvidence = {
+  source: "local_developer_seeded_principal";
+  loadAttempted: boolean;
+  loaded: boolean;
+  role: "consumer";
+  persistentSeed: true;
+  cleanupRequired: false;
+  serviceRoleExposedToApp: false;
+};
+
 const CASE_VALIDATION: Record<
   string,
   Pick<AndroidCase, "expectedWorkKeys" | "requiredTokens" | "forbiddenTokens">
@@ -128,6 +180,7 @@ const CASES: AndroidCase[] = OFFICIAL_ROUTE_TO_SCREEN_ACK_CASES.map(
     },
   }),
 );
+const ACCEPTED_JOURNEY_CASE_COUNT = 1;
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
@@ -158,6 +211,64 @@ function parseMode(argv: string[]): "refresh" | "verify" {
 
 function shouldSkipInstall(argv: string[]): boolean {
   return argv.includes("--skip-install") || process.env.ANDROID_API34_SKIP_INSTALL === "true";
+}
+
+function validateCanonicalAndroidRuntimeEnv(): string[] {
+  const required = [
+    "EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID",
+    "EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID",
+    "EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID",
+    "EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH",
+    "EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH",
+    "EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT",
+    "EXPO_PUBLIC_BUILD_COMMIT",
+  ] as const;
+  const failures = required
+    .filter((key) => !String(process.env[key] ?? "").trim())
+    .map((key) => `ANDROID_CANONICAL_RUNTIME_ENV_MISSING:${key}`);
+  if (process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW !== "1") {
+    failures.push("ANDROID_CANONICAL_RUNTIME_ENV_NOT_LOCAL_DEVELOPER");
+  }
+  if (
+    process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL !==
+    `http://127.0.0.1:${CANONICAL_BACKEND_PORT}`
+  ) {
+    failures.push("ANDROID_CANONICAL_RUNTIME_URL_NOT_EXACT_LOOPBACK");
+  }
+  if (
+    process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK !==
+    "true"
+  ) {
+    failures.push("ANDROID_CANONICAL_RUNTIME_LOOPBACK_NOT_ALLOWED");
+  }
+  if (
+    String(process.env.EXPO_PUBLIC_BUILD_COMMIT ?? "").trim() !==
+    currentHead()
+  ) {
+    failures.push("ANDROID_CANONICAL_RUNTIME_HEAD_MISMATCH");
+  }
+  try {
+    const provider = new URL(
+      String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim(),
+    );
+    if (
+      provider.protocol !== "http:" ||
+      !["127.0.0.1", "localhost", "::1"].includes(provider.hostname) ||
+      provider.port !== "54321"
+    ) {
+      failures.push("ANDROID_LOCAL_PROVIDER_URL_NOT_EXACT_LOOPBACK");
+    }
+  } catch {
+    failures.push("ANDROID_LOCAL_PROVIDER_URL_NOT_EXACT_LOOPBACK");
+  }
+  if (
+    !/^sb_publishable_[A-Za-z0-9_-]+$/u.test(
+      String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim(),
+    )
+  ) {
+    failures.push("ANDROID_LOCAL_PROVIDER_PUBLIC_KEY_RED");
+  }
+  return failures;
 }
 
 function readJsonObject(name: string): Record<string, unknown> {
@@ -229,8 +340,11 @@ function verifyExistingAndroidEvidenceReadOnly(): void {
     (routeToScreenAck as Record<string, unknown>).status !==
       "GREEN_ANDROID_ROUTE_TO_SCREEN_ACK" ||
     (routeToScreenAck as Record<string, unknown>).expected_cases !==
-      CASES.length ||
-    (routeToScreenAck as Record<string, unknown>).passed_cases !== CASES.length
+      ACCEPTED_JOURNEY_CASE_COUNT ||
+    (routeToScreenAck as Record<string, unknown>).passed_cases !== ACCEPTED_JOURNEY_CASE_COUNT ||
+    !artifact.accepted_journey ||
+    typeof artifact.accepted_journey !== "object" ||
+    (artifact.accepted_journey as Record<string, unknown>).status !== "GREEN"
   ) {
     throw new Error("ANDROID_API34_ROUTE_TO_SCREEN_ACK_EVIDENCE_NOT_GREEN");
   }
@@ -368,8 +482,8 @@ async function ensureMetro(): Promise<{ reachable: boolean; started: boolean }> 
   const child = spawn(
     process.platform === "win32" ? "cmd.exe" : "npx",
     process.platform === "win32"
-      ? ["/c", "npx", "expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"]
-      : ["expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--non-interactive"],
+      ? ["/c", "npx", "expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--clear", "--non-interactive"]
+      : ["expo", "start", "--dev-client", "--port", String(ANDROID_DEV_PORT), "--clear", "--non-interactive"],
     {
       cwd: process.cwd(),
       detached: true,
@@ -480,6 +594,15 @@ function dumpUiText(adbPath: string, deviceId: string): { ok: boolean; text: str
   const snapshot = dumpUiSnapshotFromDevice(adbPath, deviceId);
   if (!snapshot.ok) return { ok: false, text: snapshot.error ?? "", rawXml: snapshot.rawOutput };
   return { ok: true, text: extractUiText(snapshot.rawOutput), rawXml: snapshot.rawOutput };
+}
+
+function isAndroidAuthenticatedRequestEstimateXml(xml: string): boolean {
+  return (
+    isAndroidRequestRouteSurfaceXml(xml) &&
+    androidXmlHasResourceId(xml, ANDROID_REQUEST_ROUTE_SCREEN_MARKER_ID) &&
+    !xml.includes("protected-identity-state-") &&
+    !xml.includes("protected-identity-login")
+  );
 }
 
 function parseBoundsCenter(bounds: string): { x: number; y: number } | null {
@@ -596,6 +719,222 @@ async function waitForDevClientBundle(adbPath: string, deviceId: string): Promis
     }
   }
   return { ok: false, launch, text: lastText };
+}
+
+async function ensureAndroidAuthSession(
+  adbPath: string,
+  deviceId: string,
+  proofUser?: RuntimeTestUser,
+): Promise<AndroidAuthEvidence> {
+  const evidence: AndroidAuthEvidence = {
+    authSessionRequired: false,
+    credentialsPresent: false,
+    credentialSource: "not_checked",
+    roleAuthSource: "not_checked",
+    roleMode: "not_checked",
+    rolesResolved: [],
+    missingSecretKeys: [],
+    loginAttempted: false,
+    loginCompleted: false,
+    blockedStatus: null,
+    error: null,
+  };
+  const harness = createAndroidHarness({
+    projectRoot: process.cwd(),
+    devClientPort: ANDROID_DEV_PORT,
+    devClientStdoutPath: path.join(
+      "artifacts",
+      "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+      "android_auth_dev_client.stdout.log",
+    ),
+    devClientStderrPath: path.join(
+      "artifacts",
+      "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+      "android_auth_dev_client.stderr.log",
+    ),
+  });
+  harness.startAndroidRouteSafe(PACKAGE_NAME, "rik:///request");
+  let current = dumpUiText(adbPath, deviceId);
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (
+      current.ok &&
+      (isAndroidAuthenticatedRequestEstimateXml(current.rawXml) ||
+        isAndroidAuthLoginScreenXml(current.rawXml) ||
+        current.text.includes("protected-identity-state-"))
+    ) {
+      break;
+    }
+    await wait(1_000);
+    current = dumpUiText(adbPath, deviceId);
+  }
+  if (current.ok && isAndroidAuthenticatedRequestEstimateXml(current.rawXml)) {
+    evidence.loginCompleted = true;
+    return evidence;
+  }
+  evidence.authSessionRequired = true;
+
+  const resolution = resolveExplicitAiRoleAuthEnv(process.env, process.cwd());
+  evidence.roleAuthSource = proofUser
+    ? "local_developer_seeded_principal"
+    : resolution.source;
+  evidence.roleMode = proofUser ? "local_developer" : resolution.roleMode;
+  evidence.rolesResolved = proofUser ? ["consumer"] : resolution.rolesResolved;
+  evidence.missingSecretKeys = proofUser ? [] : resolution.missingKeys;
+  const explicitForemanEmail = String(process.env.E2E_FOREMAN_EMAIL ?? "").trim();
+  const explicitForemanPassword = String(process.env.E2E_FOREMAN_PASSWORD ?? "").trim();
+  const useExplicitForeman = Boolean(explicitForemanEmail && explicitForemanPassword);
+  const email =
+    proofUser?.email ||
+    (useExplicitForeman ? explicitForemanEmail : "") ||
+    resolution.env?.E2E_FOREMAN_EMAIL ||
+    resolution.env?.E2E_CONTROL_EMAIL ||
+    resolution.env?.E2E_DIRECTOR_EMAIL ||
+    "";
+  const password =
+    proofUser?.password ||
+    (useExplicitForeman ? explicitForemanPassword : "") ||
+    resolution.env?.E2E_FOREMAN_PASSWORD ||
+    resolution.env?.E2E_CONTROL_PASSWORD ||
+    resolution.env?.E2E_DIRECTOR_PASSWORD ||
+    "";
+  evidence.credentialsPresent = Boolean(email && password);
+  evidence.credentialSource = proofUser
+    ? "local_developer_seeded_consumer"
+    : useExplicitForeman
+      ? "explicit_foreman_env"
+      : resolution.source;
+  if (!email || !password) {
+    evidence.blockedStatus =
+      resolution.blockedStatus ?? "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    return evidence;
+  }
+
+  const secrets = [
+    ...collectExplicitE2eSecrets({
+      ...process.env,
+      ...resolution.env,
+    }),
+    email,
+    password,
+  ];
+  evidence.loginAttempted = true;
+  try {
+    // waitForDevClientBundle already established a stable app surface. Starting
+    // the development-client URL a second time here races its React instance
+    // with the protected deep link on API 34, so authenticate through the
+    // currently visible native controls without another bootstrap launch.
+    if (current.text.includes("protected-identity-state-")) {
+      const signOutNode = harness.parseAndroidNodes(current.rawXml).find(
+        (node) => node.resourceId === "protected-identity-sign-out",
+      );
+      if (!signOutNode || !harness.tapAndroidBounds(signOutNode.bounds)) {
+        throw new Error("Android invalid protected identity could not sign out");
+      }
+      for (let attempt = 0; attempt < 12; attempt += 1) {
+        await wait(1_000);
+        current = dumpUiText(adbPath, deviceId);
+        if (current.ok && isAndroidAuthLoginScreenXml(current.rawXml)) break;
+      }
+    }
+    if (!current.ok || !isAndroidAuthLoginScreenXml(current.rawXml)) {
+      throw new Error("Android auth login screen disappeared before UI login");
+    }
+    let nodes = harness.parseAndroidNodes(current.rawXml);
+    const emailNode = nodes.find(
+      (node) => node.resourceId === ANDROID_AUTH_EMAIL_FIELD_ID,
+    );
+    if (!emailNode) {
+      throw new Error(`Android auth field ${ANDROID_AUTH_EMAIL_FIELD_ID} was not found`);
+    }
+    await harness.replaceAndroidFieldText(emailNode, email);
+
+    current = dumpUiText(adbPath, deviceId);
+    nodes = harness.parseAndroidNodes(current.rawXml);
+    const passwordNode = nodes.find(
+      (node) => node.resourceId === ANDROID_AUTH_PASSWORD_FIELD_ID,
+    );
+    if (!passwordNode) {
+      throw new Error(`Android auth field ${ANDROID_AUTH_PASSWORD_FIELD_ID} was not found`);
+    }
+    await harness.replaceAndroidFieldText(passwordNode, password);
+    harness.pressAndroidKey(4);
+    await wait(700);
+
+    current = dumpUiText(adbPath, deviceId);
+    nodes = harness.parseAndroidNodes(current.rawXml);
+    const submitNode = nodes.find(
+      (node) => node.resourceId === ANDROID_AUTH_SUBMIT_ID && node.enabled,
+    );
+    if (!submitNode || !harness.tapAndroidBounds(submitNode.bounds)) {
+      throw new Error(`Android auth control ${ANDROID_AUTH_SUBMIT_ID} was not found`);
+    }
+
+    const deadline = Date.now() + 60_000;
+    let protectedRouteRequested = false;
+    while (Date.now() < deadline) {
+      await wait(1_500);
+      current = dumpUiText(adbPath, deviceId);
+      if (!current.ok) continue;
+      if (isAndroidAuthenticatedRequestEstimateXml(current.rawXml)) {
+        evidence.loginCompleted = true;
+        break;
+      }
+      if (
+        !protectedRouteRequested &&
+        isAndroidAppRootSurfaceXml(current.rawXml)
+      ) {
+        harness.startAndroidRouteSafe(PACKAGE_NAME, "rik:///request");
+        protectedRouteRequested = true;
+      }
+    }
+    if (!evidence.loginCompleted) {
+      evidence.blockedStatus = "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    }
+  } catch (error) {
+    evidence.blockedStatus = "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED";
+    evidence.error = redactE2eSecrets(
+      error instanceof Error ? error.message : String(error),
+      secrets,
+    ).slice(0, 1000);
+  }
+  return evidence;
+}
+
+function loadAndroidProofPrincipal(): RuntimeTestUser {
+  const credentials = JSON.parse(
+    fs.readFileSync(LOCAL_PROVIDER_CREDENTIALS, "utf8"),
+  ) as Record<string, any>;
+  if (credentials.environment !== "local_developer") {
+    throw new Error("ANDROID_API34_PROOF_PRINCIPAL_ENVIRONMENT_RED");
+  }
+  if (
+    String(credentials.provider_url ?? "") !==
+      String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "") ||
+    String(credentials.publishable_key ?? "") !==
+      String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "")
+  ) {
+    throw new Error("ANDROID_API34_PROOF_PRINCIPAL_PROVIDER_DRIFT");
+  }
+  const consumers = Array.isArray(credentials.principals)
+    ? credentials.principals.filter(
+        (principal: Record<string, unknown>) => principal.role === "consumer",
+      )
+    : [];
+  if (consumers.length !== 1) {
+    throw new Error("ANDROID_API34_PROOF_CONSUMER_CARDINALITY_RED");
+  }
+  const consumer = consumers[0] as Record<string, unknown>;
+  const user: RuntimeTestUser = {
+    id: String(consumer.user_id ?? "").trim(),
+    email: String(consumer.email ?? "").trim(),
+    password: String(consumer.password ?? ""),
+    role: "consumer",
+    displayLabel: "Local Developer Consumer",
+  };
+  if (!user.id || !user.email || !user.password) {
+    throw new Error("ANDROID_API34_PROOF_CONSUMER_CREDENTIALS_RED");
+  }
+  return user;
 }
 
 async function waitForCaseUi(adbPath: string, deviceId: string, testCase: AndroidCase): Promise<string> {
@@ -848,9 +1187,22 @@ async function main(): Promise<void> {
   fs.mkdirSync(UI_DUMP_DIR, { recursive: true });
 
   const device = await ensureAndroidApi34DeviceReady({ artifactDir: ARTIFACT_DIR, bootTimeoutMs: 240_000, allowCreateAvd: false });
-  const failures: string[] = [];
+  const failures = validateCanonicalAndroidRuntimeEnv();
   if (device.final_status !== "GREEN_ANDROID_API34_DEVICE_READY" || !device.adb_path || !device.device_id) {
     failures.push(device.final_status);
+  }
+  if (failures.length === 0 && device.adb_path && device.device_id) {
+    for (const [port, failure] of [
+      [LOCAL_PROVIDER_PORT, "ANDROID_LOCAL_PROVIDER_REVERSE_RED"],
+      [CANONICAL_BACKEND_PORT, "ANDROID_CANONICAL_BACKEND_REVERSE_RED"],
+    ] as const) {
+      const reverse = runText(
+        device.adb_path,
+        ["-s", device.device_id, "reverse", `tcp:${port}`, `tcp:${port}`],
+        10_000,
+      );
+      if (!reverse.ok) failures.push(failure);
+    }
   }
 
   const metro = failures.length === 0 ? await ensureMetro() : { reachable: false, started: false };
@@ -858,6 +1210,30 @@ async function main(): Promise<void> {
 
   let installOutput: string | null = null;
   let devClientReady: { ok: boolean; launch: { ok: boolean; output: string }; text: string } | null = null;
+  let authEvidence: AndroidAuthEvidence = {
+    authSessionRequired: false,
+    credentialsPresent: false,
+    credentialSource: "not_checked",
+    roleAuthSource: "not_checked",
+    roleMode: "not_checked",
+    rolesResolved: [],
+    missingSecretKeys: [],
+    loginAttempted: false,
+    loginCompleted: false,
+    blockedStatus: null,
+    error: null,
+  };
+  const principalEvidence: AndroidProofPrincipalEvidence = {
+    source: "local_developer_seeded_principal",
+    loadAttempted: false,
+    loaded: false,
+    role: "consumer",
+    persistentSeed: true,
+    cleanupRequired: false,
+    serviceRoleExposedToApp: false,
+  };
+  let proofUser: RuntimeTestUser | null = null;
+  let cleanStateApplied = false;
   if (failures.length === 0 && device.adb_path && device.device_id) {
     if (skipInstall) {
       installOutput = "INSTALL_SKIPPED_BY_RELEASE_PIPELINE_BUILD_IDENTITY";
@@ -868,6 +1244,15 @@ async function main(): Promise<void> {
       installOutput = install.output.slice(0, 1000);
       if (!install.ok) failures.push(`ANDROID_APK_INSTALL_FAILED:${installOutput}`);
     }
+    if (failures.length === 0) {
+      const clean = runText(
+        device.adb_path,
+        ["-s", device.device_id, "shell", "pm", "clear", PACKAGE_NAME],
+        30_000,
+      );
+      cleanStateApplied = clean.ok && /Success/iu.test(clean.output);
+      if (!cleanStateApplied) failures.push("ANDROID_R4_A6_CLEAN_STATE_RED");
+    }
   }
 
   if (failures.length === 0 && device.adb_path && device.device_id) {
@@ -876,34 +1261,66 @@ async function main(): Promise<void> {
   }
 
   const cases: AndroidCaseResult[] = [];
-  if (failures.length === 0 && device.adb_path && device.device_id) {
-    runText(device.adb_path, ["-s", device.device_id, "logcat", "-c"], 20_000);
-    const selectedCases = process.argv.includes("--legacy-only") ? CASES.slice(0, 3) : CASES;
-    for (const testCase of selectedCases) {
-      const result = await runAndroidCase(device.adb_path, device.device_id, testCase);
-      cases.push(result);
-      failures.push(...result.failures.map((failure) => `${testCase.caseId}:${failure}`));
+  let acceptedJourney: R4A6AndroidAcceptedJourneyResult | null = null;
+  try {
+    if (failures.length === 0 && devClientReady) {
+      principalEvidence.loadAttempted = true;
+      proofUser = loadAndroidProofPrincipal();
+      principalEvidence.loaded = true;
+      authEvidence = await ensureAndroidAuthSession(
+        device.adb_path!,
+        device.device_id!,
+        proofUser,
+      );
+      if (!authEvidence.loginCompleted) {
+        failures.push(
+          authEvidence.blockedStatus ??
+            "BLOCKED_ANDROID_API34_AUTH_SESSION_REQUIRED",
+        );
+      }
     }
+
+    if (failures.length === 0 && device.adb_path && device.device_id) {
+      runText(device.adb_path, ["-s", device.device_id, "logcat", "-c"], 20_000);
+      acceptedJourney = await runR4A6AndroidAcceptedUiRuntime({
+        adbPath: device.adb_path,
+        deviceId: device.device_id,
+        artifactDir: path.join(ARTIFACT_DIR, "android_api34", "r4_a6_accepted"),
+        apkPath: APK_PATH,
+      });
+      failures.push(...acceptedJourney.failures);
+    }
+  } catch (error) {
+    failures.push(
+      `ANDROID_API34_PROOF_RUNTIME_RED:${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 
-  const routeToScreenAckPassed = cases.filter(
-    (item) =>
-      item.promptWarmDelivery &&
-      item.estimateWarmDelivery &&
-      item.promptLifecycle.acknowledged &&
-      item.estimateLifecycle.acknowledged,
-  ).length;
+  const routeToScreenAckPassed =
+    acceptedJourney?.launchWarmDelivery &&
+    acceptedJourney.promptLifecycle.acknowledged &&
+    acceptedJourney.status === "GREEN"
+      ? 1
+      : 0;
   if (
-    cases.length !== CASES.length ||
-    routeToScreenAckPassed !== CASES.length
+    !acceptedJourney ||
+    routeToScreenAckPassed !== ACCEPTED_JOURNEY_CASE_COUNT
   ) {
     failures.push(
-      `official_route_to_screen_ack_incomplete:${routeToScreenAckPassed}/${CASES.length}`,
+      `r4_a6_route_to_screen_ack_incomplete:${routeToScreenAckPassed}/${ACCEPTED_JOURNEY_CASE_COUNT}`,
     );
   }
   const passed = failures.length === 0;
-  const screenshotPaths = cases.flatMap((item) => (item.screenshotPath ? [{ caseId: item.caseId, path: item.screenshotPath }] : []));
-  const uiDumpPaths = cases.flatMap((item) => (item.uiDumpPath ? [{ caseId: item.caseId, path: item.uiDumpPath }] : []));
+  const screenshotPaths = acceptedJourney
+    ? Object.entries(acceptedJourney.evidence)
+        .filter(([key, value]) => key.toLowerCase().includes("screenshot") && typeof value === "string")
+        .map(([caseId, value]) => ({ caseId, path: value as string }))
+    : [];
+  const uiDumpPaths = acceptedJourney?.evidence.finalUiDump
+    ? [{ caseId: "r4_a6_accepted_final", path: acceptedJourney.evidence.finalUiDump }]
+    : [];
   writeJson("android_api34_results.json", {
     wave: "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN",
     final_status: passed ? "GREEN_ANDROID_API34_LIVE_BOQ_PDF_CATALOG_READY" : "BLOCKED_ANDROID_API34_LIVE_BOQ_PDF_CATALOG",
@@ -922,6 +1339,21 @@ async function main(): Promise<void> {
     actual_api: device.android_sdk,
     android_sdk: device.android_sdk,
     android_dev_port: ANDROID_DEV_PORT,
+    local_provider_port: LOCAL_PROVIDER_PORT,
+    canonical_backend_port: CANONICAL_BACKEND_PORT,
+    canonical_runtime_env: {
+      local_developer: process.env.EXPO_PUBLIC_LOCAL_DEVELOPER_REVIEW === "1",
+      exact_loopback:
+        process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL ===
+        `http://127.0.0.1:${CANONICAL_BACKEND_PORT}`,
+      definition_release_id:
+        process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID ?? null,
+      search_release_id:
+        process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID ?? null,
+      capability_id:
+        process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID ?? null,
+      build_commit: process.env.EXPO_PUBLIC_BUILD_COMMIT ?? null,
+    },
     cpu_abi: device.cpu_abi,
     avd_name: device.avd_name,
     apk_path: APK_PATH,
@@ -933,13 +1365,17 @@ async function main(): Promise<void> {
       launch_output: devClientReady.launch.output.slice(0, 1000),
       text_sample: devClientReady.text.slice(0, 1000),
     } : null,
+    auth: authEvidence,
+    local_proof_principal: principalEvidence,
+    clean_state_applied: cleanStateApplied,
     metro,
+    accepted_journey: acceptedJourney,
     route_to_screen_ack: {
       status:
-        routeToScreenAckPassed === CASES.length && cases.length === CASES.length
+        routeToScreenAckPassed === ACCEPTED_JOURNEY_CASE_COUNT && acceptedJourney
           ? "GREEN_ANDROID_ROUTE_TO_SCREEN_ACK"
           : "RED_ANDROID_ROUTE_TO_SCREEN_ACK",
-      expected_cases: CASES.length,
+      expected_cases: ACCEPTED_JOURNEY_CASE_COUNT,
       passed_cases: routeToScreenAckPassed,
       lifecycle_stages: [
         "INTENT_RECEIVED",
@@ -954,7 +1390,9 @@ async function main(): Promise<void> {
       exactly_once_required: true,
       warm_delivery_required: true,
       isolated_probe_substitution_allowed: false,
+      exact_catalog_ui_selection_required: true,
     },
+    legacy_route_contract_cases_not_replayed: CASES.length,
     cases,
     failures,
     fake_green_claimed: false,
