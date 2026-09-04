@@ -3,6 +3,7 @@
   "masterSha256": "2e668d93b531acab14636f02df9528164ba844404021d5c96ce93533c180e7a1",
   "scope": "live 100/200/300 parameter sensitivity, accepted vertical controls, durable Web photo storage, exact confirmation, and distinct PDF/procurement identity",
   "include": [
+    "app/(tabs)/request/index.tsx",
     "data/estimate-benchmarks/r568-r4-a5-runtime-closeout-include-manifest.json",
     "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
     "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts",
@@ -30,6 +31,7 @@
     "tests/e2e/requestEstimateCategoryFiltersDurable.web.spec.ts",
     "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
     "tests/officeEstimate/durableLedgerPdfBuyer.contract.test.ts",
+    "tests/requestEstimate/productionEstimateUiNoiseBlockers.contract.test.ts",
     "tests/requestEstimate/requestEstimateCategoryFiltersDurable.contract.test.tsx"
   ],
   "excludePolicy": {

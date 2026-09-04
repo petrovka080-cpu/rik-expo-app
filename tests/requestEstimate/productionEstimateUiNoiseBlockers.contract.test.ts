@@ -14,6 +14,7 @@ describe("production estimate UI noise blockers", () => {
     const panel = source("src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx");
     const row = source("src/features/consumerRepair/ConsumerRepairItemRow.tsx");
     const chrome = source("src/features/consumerRepair/ConsumerRepairRequestChrome.tsx");
+    const requestRoute = source("app/(tabs)/request/index.tsx");
     const visibleSources = [prompt, summary, panel, row, chrome].join("\n");
 
     expect(prompt).not.toContain("<ProfessionalEstimateDraftPreview");
@@ -27,6 +28,8 @@ describe("production estimate UI noise blockers", () => {
     expect(row).not.toContain("consumer-repair-item-price-trace");
     expect(chrome).not.toContain('testID="request-estimate-top-proof"');
     expect(chrome).not.toContain('testID="estimate-pilot-badge"');
+    expect(requestRoute).not.toContain("VerifiedIdentitySummary");
+    expect(requestRoute).not.toContain("verified-identity-summary");
 
     expect(visibleSources).not.toMatch(
       /\b(?:PRICE_MISSING|formula_id|template_version|source_parameters|snapshot_hash|rowCode)\b/u,

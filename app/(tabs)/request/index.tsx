@@ -2,10 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer";
-import {
-  ProtectedIdentityBoundary,
-  VerifiedIdentitySummary,
-} from "../../../src/components/auth/ProtectedIdentityBoundary";
+import { ProtectedIdentityBoundary } from "../../../src/components/auth/ProtectedIdentityBoundary";
 import { buildCurrentRouteReturnTo } from "../../../src/lib/authRouting";
 import {
   REQUEST_ESTIMATE_LAUNCH_PAYLOAD_PARAM,
@@ -87,24 +84,17 @@ function RequestRoute() {
   if (launchError) {
     return (
       <ProtectedIdentityBoundary returnTo={returnTo} surface="request">
-        {(identity) => (
-          <>
-            <VerifiedIdentitySummary identity={identity} compact />
         <View style={styles.launchError} testID="request-estimate-launch-error">
           <Text style={styles.launchErrorTitle}>Не удалось открыть параметры сметы.</Text>
           <Text style={styles.launchErrorCode}>{launchError}</Text>
         </View>
-          </>
-        )}
       </ProtectedIdentityBoundary>
     );
   }
 
   return (
     <ProtectedIdentityBoundary returnTo={returnTo} surface="request">
-      {(identity) => (
-        <>
-        <VerifiedIdentitySummary identity={identity} compact />
+      <>
         <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
         {launchId ? (
           <RouteReadyMarker
@@ -121,8 +111,7 @@ function RequestRoute() {
           autoPrepare={!canonicalRevisionId && (autoPrepare || autoPdf)}
           autoPdf={!canonicalRevisionId && autoPdf}
         />
-        </>
-      )}
+      </>
     </ProtectedIdentityBoundary>
   );
 }
