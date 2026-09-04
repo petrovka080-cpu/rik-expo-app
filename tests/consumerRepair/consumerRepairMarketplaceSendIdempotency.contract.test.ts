@@ -33,7 +33,7 @@ describe("consumer repair marketplace idempotency contract", () => {
     expect(second.events.some((event) => event.eventType === "marketplace_send_idempotent_replay")).toBe(true);
   });
 
-  it("rejects a ready artifact whose id differs from the immutable approval event", () => {
+  it("rejects a procurement artifact whose revision differs from the immutable approval event", () => {
     const bundle = createApprovedConsumerRepairRequest();
     const canonicalArtifact = canonicalArtifactForApprovedConsumerRepairTestBundle(bundle);
     const send = () => sendConsumerRepairRequestToMarketplace({
@@ -41,7 +41,7 @@ describe("consumer repair marketplace idempotency contract", () => {
       userId: CONSUMER_REPAIR_TEST_USER_ID,
       canonicalArtifact: {
         ...canonicalArtifact,
-        artifactId: `${canonicalArtifact.artifactId}:different`,
+        revisionId: `${canonicalArtifact.revisionId}:different`,
       },
     });
 

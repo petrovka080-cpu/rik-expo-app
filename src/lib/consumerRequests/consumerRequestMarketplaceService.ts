@@ -41,6 +41,7 @@ export function sendConsumerRepairRequestToMarketplace(input: {
   idempotencyKey?: string | null;
   canonicalArtifact?: {
     artifactId: string;
+    kind: "procurement";
     revisionId: string;
     releaseId: string;
     status: "ready";
@@ -158,6 +159,7 @@ export function sendConsumerRepairRequestToMarketplace(input: {
           canonicalRevisionId: canonicalRevisionId || null,
           canonicalReleaseId: canonicalReleaseId || null,
           procurementArtifactId: input.canonicalArtifact?.artifactId ?? null,
+          procurementArtifactKind: input.canonicalArtifact?.kind ?? null,
           procurementArtifactSha256: input.canonicalArtifact?.sha256 ?? null,
         },
       }),

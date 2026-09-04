@@ -5,15 +5,24 @@ import { expect, test, type Locator, type Page } from "playwright/test";
 import { BASE_URL, ensureLiveWebApp } from "./liveEstimateReality.shared";
 
 const STORE_KEY = "rik.consumer_repair.request_bundles.v1";
-const PROMPT = "мансардная крыша 200 м2 с 6 окнами металлочерепица утепление 200 мм";
+const PROMPT = "Кровля, мансарды и кровельные окна: обрешётка и контробрешётка 200 кв метров";
+const CATALOG_ID = "canonical-work:expanded:battens_counterbattens";
 const ARTIFACT_DIR = path.resolve(
   process.cwd(),
   "artifacts",
   "S_REQUEST_ESTIMATE_CATEGORY_FILTERS_DURABLE_WEB",
 );
 
-const FILTER_IDS = ["all", "materials", "labor", "machinery", "services", "delivery"] as const;
+const CATEGORY_FILTER_IDS = ["materials", "labor", "machinery", "services", "delivery"] as const;
+const FILTER_IDS = ["all", ...CATEGORY_FILTER_IDS] as const;
 const FILTER_LABELS = ["Все", "Материалы", "Работы", "Механизмы", "Услуги", "Доставка"] as const;
+const EXPECTED_CATEGORY_COUNTS = {
+  materials: 22,
+  labor: 4,
+  machinery: 7,
+  services: 9,
+  delivery: 3,
+} as const;
 
 async function ensureConsumerSession(page: Page): Promise<void> {
   await page.goto(new URL("/request", BASE_URL).toString(), {
@@ -45,19 +54,33 @@ test.describe("durable request estimate category controls", () => {
     await ensureLiveWebApp();
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
-      if (message.type() === "error") consoleErrors.push(message.text());
+      if (message.type() === "error") {
+        consoleErrors.push(message.text());
+      }
     });
-    page.on("pageerror", (error) => consoleErrors.push(error.message));
+    page.on("pageerror", (error) => {
+      consoleErrors.push(error.message);
+    });
 
     await ensureConsumerSession(page);
     await page.evaluate((key) => window.localStorage.removeItem(key), STORE_KEY);
-
-    const url = new URL("/request", BASE_URL);
-    url.searchParams.set("prompt", PROMPT);
-    url.searchParams.set("autoPrepare", "1");
-    await page.goto(url.toString(), { waitUntil: "domcontentloaded", timeout: 60_000 });
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60_000 });
+    const problemInput = page.getByTestId("consumer-repair-problem-input");
+    await expect(problemInput).toBeVisible({ timeout: 60_000 });
+    const searchResponsePromise = page.waitForResponse((response) => {
+      if (!response.url().startsWith("http://127.0.0.1:8765/search/catalog?")) return false;
+      return response.status() === 200;
+    }, { timeout: 60_000 });
+    await problemInput.fill(PROMPT);
+    const searchResponse = await searchResponsePromise;
+    const searchBody = await searchResponse.json() as { items?: Array<{ catalogId?: string }> };
+    const selectedIndex = (searchBody.items ?? []).findIndex((item) => item.catalogId === CATALOG_ID);
+    expect(selectedIndex).toBeGreaterThanOrEqual(0);
+    await page.getByTestId(`consumer-repair-work-suggestion-${selectedIndex + 1}`).click();
+    await page.getByTestId("consumer-repair-prepare-draft").click();
 
     await expect(page.getByTestId("request-estimate-summary-card")).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByTestId("request-estimate-summary-card")).toContainText("200 м²");
     await expect(page.getByTestId("request-estimate-items-total-count")).toHaveText("45 позиций", {
       timeout: 30_000,
     });
@@ -77,6 +100,10 @@ test.describe("durable request estimate category controls", () => {
       expect(Math.abs(filterBoxes[index].width - filterBoxes[0].width)).toBeLessThanOrEqual(1);
       expect(filterBoxes[index].y).toBeGreaterThan(filterBoxes[index - 1].y);
     }
+    fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+    const filterScreenshotPath = path.join(ARTIFACT_DIR, "vertical-filters.png");
+    await filter(page, "all").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: filterScreenshotPath });
 
     await filter(page, "all").click();
     await expect(rows(page)).toHaveCount(0);
@@ -84,12 +111,12 @@ test.describe("durable request estimate category controls", () => {
     await expect(rows(page)).toHaveCount(45);
 
     const categoryResults: Record<string, { categoryCount: number; hiddenCount: number; restoredCount: number }> = {};
-    for (const id of FILTER_IDS.slice(1)) {
+    for (const id of CATEGORY_FILTER_IDS) {
       const text = (await filter(page, id).textContent()) ?? "";
       const countMatch = text.match(/(\d+)\s*$/u);
       expect(countMatch).not.toBeNull();
       const categoryCount = Number(countMatch![1]);
-      expect(categoryCount).toBeGreaterThan(0);
+      expect(categoryCount).toBe(EXPECTED_CATEGORY_COUNTS[id]);
       await filter(page, id).click();
       await expect(rows(page)).toHaveCount(45 - categoryCount);
       const hiddenCount = await rows(page).count();
@@ -101,6 +128,7 @@ test.describe("durable request estimate category controls", () => {
     const firstAnchor = rows(page).first();
     const firstAnchorTestId = await firstAnchor.getAttribute("data-testid");
     const firstItemId = String(firstAnchorTestId).replace("request-estimate-item-anchor-", "");
+    await expect(page.getByTestId(`consumer-repair-item-quantity-input-${firstItemId}`)).toHaveValue("216");
     await expect(page.getByTestId(`consumer-repair-item-title-${firstItemId}`)).toHaveCount(1);
     await expect(page.getByTestId(`consumer-repair-item-specification-input-${firstItemId}`)).toHaveCount(0);
     await page.getByTestId(`consumer-repair-item-specification-edit-${firstItemId}`).click();
@@ -134,21 +162,58 @@ test.describe("durable request estimate category controls", () => {
       expect(actionBoxes[index].y).toBeGreaterThan(actionBoxes[index - 1].y);
     }
 
+    await page.getByTestId(`estimate-material-row-photo-button-${firstItemId}`).click();
+    await expect(page.getByTestId("mobile-photo-capture-flow")).toBeVisible({ timeout: 30_000 });
+    const photoPicker = page.locator(
+      '[data-testid="mobile-photo-gallery"], [data-testid="mobile-photo-pick-library"]',
+    ).first();
+    await expect(photoPicker).toBeVisible({ timeout: 30_000 });
+    const fileChooserPromise = page.waitForEvent("filechooser", { timeout: 30_000 });
+    await photoPicker.click();
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: "r4-a5-line-evidence.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    await expect(page.getByTestId("mobile-photo-review-screen")).toBeVisible({ timeout: 30_000 });
+    await page.getByTestId("mobile-photo-use").click();
+    await expect(page.getByTestId("mobile-photo-capture-flow")).toHaveCount(0, { timeout: 90_000 });
+    await expect(page.locator('[data-testid^="estimate-material-row-photo-attached-"]').first()).toBeVisible();
+
     await page.getByTestId("consumer-repair-city-input").fill("Bishkek");
+    await page.getByTestId("consumer-repair-address-input").fill("64 Manas Avenue");
     await page.getByTestId("consumer-repair-phone-input").fill("+996700000000");
     await page.getByTestId("consumer-repair-approve").last().click();
-    await expect(page.getByTestId("consumer-repair-send-market")).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByTestId("consumer-repair-status")).toContainText("Заявка утверждена", { timeout: 90_000 });
+    await expect(page.getByTestId("consumer-repair-history-approved-count")).toHaveText("1");
+    await page.getByTestId("consumer-repair-history-button").click();
+    await expect(page.getByTestId("consumer-repair-history-modal")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("consumer-repair-history-row").first()).toBeVisible();
+    await page.getByTestId("consumer-repair-history-main").first().click();
+    await expect(page.getByTestId("consumer-repair-history-readonly-snapshot")).toBeVisible();
+    await expect(page.getByTestId("consumer-repair-history-readonly-item")).toHaveCount(45);
+    await expect(page.getByTestId("consumer-repair-history-snapshot-release-id")).toHaveCount(1);
+    await expect(page.getByTestId("consumer-repair-history-backend-pdf-artifact")).toHaveCount(1);
+    await expect(page.getByTestId("consumer-repair-history-send-market")).toBeVisible();
+    await page.getByTestId("consumer-repair-history-send-market").click();
+    await expect(page.getByTestId("consumer-repair-status")).toContainText("отправлена в маркет", { timeout: 90_000 });
+    await expect(page.getByTestId("consumer-repair-history-backend-procurement-artifact")).toHaveCount(1);
     expect(consoleErrors.join("\n")).not.toMatch(/runtime-manifest request timed out|ConsumerRepairApprove.*failed/iu);
 
-    fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-    const screenshotPath = path.join(ARTIFACT_DIR, "vertical-filters-approved.png");
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    const approvedScreenshotPath = path.join(ARTIFACT_DIR, "approved-history.png");
+    await page.screenshot({ path: approvedScreenshotPath, fullPage: true });
     fs.writeFileSync(
       path.join(ARTIFACT_DIR, "web_result.json"),
       `${JSON.stringify({
         status: "GREEN",
         prompt: PROMPT,
         initialRowCount: 45,
+        primaryMeasureM2: 200,
+        firstMaterialQuantityM2: 216,
         finalRowCountBeforeApproval: 45,
         filterLabels: FILTER_LABELS,
         filterLayout: "vertical_top_to_bottom",
@@ -157,8 +222,14 @@ test.describe("durable request estimate category controls", () => {
         titleSingleDisplayAndEditMode: true,
         bottomActionsLayout: "vertical_top_to_bottom",
         approvalSucceeded: true,
+        approvedHistoryRowCount: 45,
+        canonicalPdfArtifactReady: true,
+        canonicalProcurementArtifactReady: true,
         runtimeManifestTimeoutObserved: false,
-        screenshotPath: path.relative(process.cwd(), screenshotPath).replace(/\\/g, "/"),
+        screenshots: {
+          verticalFilters: path.relative(process.cwd(), filterScreenshotPath).replace(/\\/g, "/"),
+          approvedHistory: path.relative(process.cwd(), approvedScreenshotPath).replace(/\\/g, "/"),
+        },
       }, null, 2)}\n`,
       "utf8",
     );

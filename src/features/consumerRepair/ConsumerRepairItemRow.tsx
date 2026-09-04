@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -173,12 +173,18 @@ function ConsumerRepairItemRowComponent({
   const [professionalEvidenceOpen, setProfessionalEvidenceOpen] = React.useState(false);
   React.useEffect(() => {
     setQuantityText(itemQuantityText);
+  }, [item.id, itemQuantityText]);
+  React.useEffect(() => {
     setPriceText(itemPriceText);
+  }, [item.id, itemPriceText]);
+  React.useEffect(() => {
     setSpecificationText(itemSpecificationText);
     setSpecificationEditing(false);
     specificationEditCommittedRef.current = false;
+  }, [item.id, itemSpecificationText]);
+  React.useEffect(() => {
     setProfessionalEvidenceOpen(false);
-  }, [item.id, item.titleRu, itemPriceText, itemQuantityText, itemSpecificationText]);
+  }, [item.id]);
   const beginSpecificationEdit = React.useCallback(() => {
     specificationEditCommittedRef.current = false;
     setSpecificationText(item.titleRu);
@@ -250,7 +256,7 @@ function ConsumerRepairItemRowComponent({
               accessibilityLabel={`Название позиции ${item.titleRu}`}
               autoFocus
               importantForAutofill="no"
-              onBlur={finishSpecificationEdit}
+              onBlur={Platform.OS === "web" ? undefined : finishSpecificationEdit}
               onChangeText={setSpecificationText}
               onSubmitEditing={finishSpecificationEdit}
               selectTextOnFocus

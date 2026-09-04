@@ -171,7 +171,7 @@ export function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayloa
   });
   const pdf = bundle.pdfs[0];
   const object = getConsumerRepairPdfStorageObject({ storageBucket: pdf.storageBucket, storageKey: pdf.storageKey });
-  const canonicalArtifact = {
+  const canonicalPdfArtifact = {
     artifactId: `structured-pipeline-canonical-pdf:${revisionId}`,
     revisionId,
     releaseId,
@@ -182,13 +182,18 @@ export function buildApprovedMarketplaceBundle(payload: StructuredEstimatePayloa
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     generatedAt: "2026-06-07T00:00:00.000Z",
-    canonicalArtifact,
+    canonicalArtifact: canonicalPdfArtifact,
   });
+  const canonicalProcurementArtifact = {
+    ...canonicalPdfArtifact,
+    artifactId: `structured-pipeline-canonical-procurement:${revisionId}`,
+    kind: "procurement" as const,
+  };
   return sendConsumerRepairRequestToMarketplace({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     idempotencyKey: `structured-pipeline:${bundle.draft.id}`,
-    canonicalArtifact,
+    canonicalArtifact: canonicalProcurementArtifact,
   });
 }
 

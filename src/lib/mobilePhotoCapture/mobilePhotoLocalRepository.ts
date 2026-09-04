@@ -1,4 +1,5 @@
 import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 
 import { getFileSystemPaths } from "../fileSystemPaths";
 import {
@@ -14,6 +15,11 @@ import {
   mobilePhotoSha256Hex,
   mobilePhotoUtf8Bytes,
 } from "./mobilePhotoNormalizationService";
+import {
+  createMobilePhotoWebPreviewUri,
+  createMobilePhotoWebFileSystem,
+  MOBILE_PHOTO_WEB_DOCUMENT_DIR,
+} from "./mobilePhotoWebFileSystem";
 
 const RECORDS_KEY = "mobile_photo_capture:records:v1";
 const MOBILE_PHOTO_STORAGE_VERSION = "v2" as const;
@@ -215,10 +221,20 @@ async function writeRecords(storage: OfflineStorageAdapter, records: MobilePhoto
   await writeJsonToStorage(storage, RECORDS_KEY, records);
 }
 
+function defaultMobilePhotoFileSystem(): MobilePhotoLocalFileSystem {
+  return Platform.OS === "web" ? createMobilePhotoWebFileSystem() : FileSystem;
+}
+
+function defaultMobilePhotoDocumentDir(): string {
+  return Platform.OS === "web"
+    ? MOBILE_PHOTO_WEB_DOCUMENT_DIR
+    : getFileSystemPaths().documentDir;
+}
+
 export function createMobilePhotoLocalRepository(
   storage: OfflineStorageAdapter = createDefaultOfflineStorage(),
-  fileSystem: MobilePhotoLocalFileSystem = FileSystem,
-  documentDir: string = getFileSystemPaths().documentDir,
+  fileSystem: MobilePhotoLocalFileSystem = defaultMobilePhotoFileSystem(),
+  documentDir: string = defaultMobilePhotoDocumentDir(),
 ): MobilePhotoLocalRepository {
   return {
     async stage(input) {
@@ -259,7 +275,7 @@ export function createMobilePhotoLocalRepository(
         if (error instanceof Error && error.name === "MobilePhotoCaptureError") throw error;
         throw createMobilePhotoCaptureError("PHOTO_LOCAL_COPY_FAILED", error);
       }
-      const asset: CapturedPhotoAsset = {
+      const persistedAsset: CapturedPhotoAsset = {
         captureId: input.captureId,
         scanId: input.scanId,
         source: input.source,
@@ -279,7 +295,7 @@ export function createMobilePhotoLocalRepository(
       const records = await readRecords(storage);
       const next = records.filter((record) => record.captureId !== input.captureId);
       next.push({
-        ...asset,
+        ...persistedAsset,
         attachedToScan: false,
         uploaded: false,
         deleted: false,
@@ -295,7 +311,11 @@ export function createMobilePhotoLocalRepository(
       if (input.normalizedUri !== targetUri) {
         await safeDelete(input.normalizedUri, fileSystem);
       }
-      return asset;
+      if (Platform.OS !== "web") return persistedAsset;
+      return {
+        ...persistedAsset,
+        localUri: await createMobilePhotoWebPreviewUri(targetUri, input.mimeType),
+      };
     },
     async markAttached(captureId) {
       const records = await readRecords(storage);
@@ -314,8 +334,23 @@ export function createMobilePhotoLocalRepository(
       let changed = false;
       const migrated: MobilePhotoLocalRecord[] = [];
       for (const record of records) {
-        if (record.deleted || record.storageVersion === "v2") {
+        if (record.deleted) {
           migrated.push(record);
+          continue;
+        }
+        if (record.storageVersion === "v2") {
+          if (Platform.OS === "web" && record.localUri.startsWith(MOBILE_PHOTO_WEB_DOCUMENT_DIR)) {
+            try {
+              migrated.push({
+                ...record,
+                localUri: await createMobilePhotoWebPreviewUri(record.localUri, record.mimeType),
+              });
+            } catch {
+              migrated.push(record);
+            }
+          } else {
+            migrated.push(record);
+          }
           continue;
         }
         const targetUri = `${documentDir}${mobilePhotoLegacyMigrationRelativePath(record)}`;

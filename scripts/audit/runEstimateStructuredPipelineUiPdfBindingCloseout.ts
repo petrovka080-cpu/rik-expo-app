@@ -459,11 +459,16 @@ function requestMarketplaceHistoryProof(payloads: StructuredEstimatePayload[], f
       generatedAt: "2026-06-07T00:00:00.000Z",
       canonicalArtifact,
     });
+    const canonicalProcurementArtifact = {
+      ...canonicalArtifact,
+      artifactId: `structured-closeout-canonical-procurement:${revisionId}`,
+      kind: "procurement" as const,
+    };
     bundle = sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: bundle.draft.consumerUserId,
       idempotencyKey: `structured-closeout:${bundle.draft.id}`,
-      canonicalArtifact,
+      canonicalArtifact: canonicalProcurementArtifact,
     });
     const marketplacePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");
     const history = listConsumerRepairRequestHistory(bundle.draft.consumerUserId);

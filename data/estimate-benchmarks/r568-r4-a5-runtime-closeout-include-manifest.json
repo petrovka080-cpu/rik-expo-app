@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "r568-r4-a5-runtime-closeout-include-manifest.v1",
+  "masterSha256": "2e668d93b531acab14636f02df9528164ba844404021d5c96ce93533c180e7a1",
+  "scope": "live 100/200/300 parameter sensitivity, accepted vertical controls, durable Web photo storage, exact confirmation, and distinct PDF/procurement identity",
+  "include": [
+    "data/estimate-benchmarks/r568-r4-a5-runtime-closeout-include-manifest.json",
+    "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts",
+    "scripts/dev/probeLocalDeveloperCanonicalBackend.ts",
+    "scripts/dev/runR4A5LiveAreaSensitivity.ts",
+    "scripts/dev/startLocalDeveloperReview.ps1",
+    "src/features/consumerRepair/ConsumerRepairItemRow.tsx",
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+    "src/features/consumerRepair/requestEstimateScreenActions.ts",
+    "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+    "src/lib/consumerRequests/consumerRequestValidationService.ts",
+    "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts",
+    "src/lib/mobilePhotoCapture/mobilePhotoLocalRepository.ts",
+    "src/lib/mobilePhotoCapture/mobilePhotoNormalizationService.ts",
+    "src/lib/mobilePhotoCapture/mobilePhotoWebFileSystem.ts",
+    "tests/consumerRepair/canonicalBackendArtifactParity.contract.test.ts",
+    "tests/consumerRepair/consumerRepairMarketplaceLink.contract.test.ts",
+    "tests/consumerRepair/consumerRepairMarketplaceSendIdempotency.contract.test.ts",
+    "tests/consumerRepair/consumerRepairTestHelpers.ts",
+    "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts",
+    "tests/e2e/requestEstimateCategoryFiltersDurable.web.spec.ts",
+    "tests/estimateStructuredPipeline/structuredPipelineTestHelpers.ts",
+    "tests/officeEstimate/durableLedgerPdfBuyer.contract.test.ts",
+    "tests/requestEstimate/requestEstimateCategoryFiltersDurable.contract.test.tsx"
+  ],
+  "excludePolicy": {
+    "broadAddForbidden": true,
+    "unrelatedDirtyFilesPreserved": true,
+    "forcePushForbidden": true,
+    "formulaFallbackByTitleOrIdForbidden": true,
+    "acceptedCategoryControlsMayBeChangedOnlyAfterNewReproducibleLiveRed": true,
+    "acceptedConfirmFlowMayBeChangedOnlyAfterNewReproducibleLiveRed": true
+  }
+}

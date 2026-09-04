@@ -1,4 +1,5 @@
 import { createMobilePhotoCaptureError } from "./mobilePhotoCaptureErrors";
+import { Platform } from "react-native";
 
 export type MobilePhotoNormalizationInput = {
   captureId: string;
@@ -235,6 +236,16 @@ async function hashLocalFile(uri: string, fileSystem: FileSystemModule | null): 
   }
 }
 
+async function readWebPhotoBytes(uri: string): Promise<Uint8Array> {
+  const response = await fetch(uri);
+  if (!response.ok && response.status !== 0) {
+    throw createMobilePhotoCaptureError("PHOTO_DECODE_FAILED");
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.byteLength < 1) throw createMobilePhotoCaptureError("PHOTO_DECODE_FAILED");
+  return bytes;
+}
+
 export function createMobilePhotoNormalizationService(
   loadManipulator: () => ImageManipulatorModule | null = loadImageManipulator,
   loadFs: () => FileSystemModule | null = loadFileSystem,
@@ -252,18 +263,21 @@ export function createMobilePhotoNormalizationService(
           format: manipulator.SaveFormat?.JPEG ?? "jpeg",
           base64: false,
         });
-        const info = await fileSystem?.getInfoAsync?.(normalized.uri, { size: true });
-        if (info && info.exists === false) throw createMobilePhotoCaptureError("PHOTO_LOCAL_FILE_MISSING");
+        const webBytes = Platform.OS === "web" ? await readWebPhotoBytes(normalized.uri) : null;
+        const info = webBytes ? null : await fileSystem?.getInfoAsync?.(normalized.uri, { size: true });
+        if (!webBytes && info && info.exists === false) throw createMobilePhotoCaptureError("PHOTO_LOCAL_FILE_MISSING");
         const width = Math.max(1, Math.round(normalized.width ?? input.width ?? 1));
         const height = Math.max(1, Math.round(normalized.height ?? input.height ?? 1));
-        const byteSize = Math.max(1, Math.round(info?.size ?? 1));
+        const byteSize = webBytes?.byteLength ?? Math.max(1, Math.round(info?.size ?? 1));
         return {
           uri: normalized.uri,
           mimeType: "image/jpeg",
           width,
           height,
           byteSize,
-          contentSha256: await hashLocalFile(normalized.uri, fileSystem),
+          contentSha256: webBytes
+            ? mobilePhotoSha256Hex(webBytes)
+            : await hashLocalFile(normalized.uri, fileSystem),
           orientationNormalized: true,
           metadataStripped: true,
         };

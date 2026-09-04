@@ -1,5 +1,6 @@
 import { decode } from "base64-arraybuffer";
 import * as FileSystem from "expo-file-system/legacy";
+import { Platform } from "react-native";
 
 import type { PhotoMaterialStoredImage } from "../../ai/photoMaterialExistingRow";
 import type { CapturedPhotoAsset } from "../../mobilePhotoCapture/mobilePhotoCaptureService";
@@ -8,6 +9,7 @@ import {
   mobilePhotoSha256Hex,
   mobilePhotoUtf8Bytes,
 } from "../../mobilePhotoCapture/mobilePhotoNormalizationService";
+import { readMobilePhotoWebUriAsBase64 } from "../../mobilePhotoCapture/mobilePhotoWebFileSystem";
 import {
   createCanonicalEstimatePhotoUpload,
   finalizeCanonicalEstimatePhotoUpload,
@@ -50,7 +52,9 @@ export function canonicalEstimatePhotoIdempotencyKey(input: Pick<
 }
 
 async function readAndVerifyLocalAsset(asset: CapturedPhotoAsset): Promise<ArrayBuffer> {
-  const base64 = await FileSystem.readAsStringAsync(asset.localUri, { encoding: "base64" });
+  const base64 = Platform.OS === "web"
+    ? await readMobilePhotoWebUriAsBase64(asset.localUri)
+    : await FileSystem.readAsStringAsync(asset.localUri, { encoding: "base64" });
   const bytes = mobilePhotoBase64Bytes(base64);
   if (bytes.byteLength !== asset.byteSize) {
     throw new CanonicalEstimateApiError("Размер локального снимка изменился.", {

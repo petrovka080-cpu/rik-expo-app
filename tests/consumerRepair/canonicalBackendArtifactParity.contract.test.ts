@@ -1,7 +1,7 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   approveConsumerRepairRequestDraft,
-  attachConsumerRepairMedia,
+  attachConsumerRepairEstimateRowPhoto,
   createConsumerRepairRequestDraft,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
@@ -13,6 +13,7 @@ describe("canonical backend artifact parity", () => {
     const userId = "canonical-artifact-owner";
     const revisionId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const releaseId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const catalogId = "canonical-work:test:artifact-parity";
     let bundle = createConsumerRepairRequestDraft({
       consumerUserId: userId,
       problemText: "Canonical backend estimate with exact immutable release identity.",
@@ -35,13 +36,33 @@ describe("canonical backend artifact parity", () => {
             canonicalBackendRevisionId: revisionId,
             canonicalBackendReleaseId: releaseId,
             canonicalBackendRowId: "row-001",
+            canonicalBackendCatalogId: catalogId,
           },
         }],
         missingData: [],
         dangerousDiyBlocked: false,
       },
     });
-    bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
+    bundle = attachConsumerRepairEstimateRowPhoto({
+      requestDraftId: bundle.draft.id,
+      ownerUserId: userId,
+      revisionId,
+      releaseId,
+      requestItemId: bundle.items[0].id,
+      rowId: "row-001",
+      fileName: "artifact-parity.png",
+      mimeType: "image/png",
+      sizeBytes: 68,
+      contentHash: "2".repeat(64),
+      storageReference: `estimate-photo/r55/committed/22/${"2".repeat(64)}.png`,
+      authoritativeAttachmentId: "backend-photo-attachment",
+      authoritativeAttachmentEventId: "backend-photo-event",
+      authoritativeTenantId: "canonical-test-tenant",
+      authoritativeOwnerUserId: userId,
+      authoritativeRequestId: bundle.draft.id,
+      authoritativeCatalogId: catalogId,
+      authoritativeStorageBucket: "private-media",
+    });
     bundle = approveConsumerRepairRequestDraft({
       requestDraftId: bundle.draft.id,
       userId,
@@ -58,10 +79,11 @@ describe("canonical backend artifact parity", () => {
       userId,
       canonicalArtifact: {
         artifactId: "backend-procurement-artifact",
+        kind: "procurement",
         revisionId,
         releaseId,
         status: "ready",
-        sha256: "2".repeat(64),
+        sha256: "1".repeat(64),
       },
     });
 
@@ -79,6 +101,7 @@ describe("canonical backend artifact parity", () => {
           canonicalRevisionId: revisionId,
           canonicalReleaseId: releaseId,
           procurementArtifactId: "backend-procurement-artifact",
+          procurementArtifactKind: "procurement",
         }),
       }),
     ]));

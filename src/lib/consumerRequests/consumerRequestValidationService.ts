@@ -48,6 +48,27 @@ function latestGeneratedPdf(bundle: ConsumerRepairDraftBundle) {
   return bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
 }
 
+function hasCommittedCanonicalEstimatePhoto(bundle: ConsumerRepairDraftBundle): boolean {
+  const revisionIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim(),
+  ).filter(Boolean));
+  if (revisionIds.size !== 1) return false;
+  const revisionId = [...revisionIds][0];
+  return (bundle.estimateAttachments ?? []).some((attachment) =>
+    attachment.ownerScope === "row" &&
+    attachment.revisionId === revisionId &&
+    attachment.serverCommitted === true &&
+    attachment.deleted === false &&
+    attachment.redacted === false &&
+    attachment.authoritativeOwnerUserId === bundle.draft.consumerUserId &&
+    attachment.authoritativeRequestId === bundle.draft.id &&
+    attachment.authoritativeStorageBucket === "private-media" &&
+    Boolean(attachment.authoritativeAttachmentEventId) &&
+    /^image\/(?:jpeg|png)$/u.test(attachment.mimeType) &&
+    /^[0-9a-f]{64}$/u.test(attachment.contentHash)
+  );
+}
+
 function result(errors: ConsumerRequestValidationErrorItem[]): ConsumerRequestValidationResult {
   return { ok: errors.length === 0, errors };
 }
@@ -121,14 +142,17 @@ export function validateConsumerRepairRequestForApprove(
   const errors: ConsumerRequestValidationErrorItem[] = [];
   const ownerMismatch = ownerError(bundle, userId);
   if (ownerMismatch) errors.push(ownerMismatch);
+  const currentRevision = bundle.estimateDraftRevisionState?.revisions.find(
+    (revision) => revision.revisionId === bundle.estimateDraftRevisionState?.currentRevisionId,
+  );
+  const contractInputsMissing = currentRevision?.missingInputs.some((input) =>
+    input.requiredFor === "contract_ready" || input.requiredFor === "safety_review"
+  ) ?? false;
 
   if (
     bundle.canonicalParameterSession?.status === "BLOCKING_REQUIRED" ||
-    bundle.estimateDraftRevisionState?.revisions.find(
-      (revision) =>
-        revision.revisionId ===
-        bundle.estimateDraftRevisionState?.currentRevisionId,
-    )?.status === "blocking_required"
+    currentRevision?.status === "blocking_required" ||
+    contractInputsMissing
   ) {
     errors.push({
       code: "ESTIMATE_PARAMETERS_REQUIRED",
@@ -163,6 +187,7 @@ export function validateConsumerRepairRequestForMarketplace(
   userId: string,
   canonicalArtifact?: {
     artifactId: string;
+    kind: "procurement";
     revisionId: string;
     releaseId: string;
     status: "ready";
@@ -210,7 +235,7 @@ export function validateConsumerRepairRequestForMarketplace(
     });
   }
 
-  if (bundle.media.length < 1) {
+  if (bundle.media.length < 1 && !hasCommittedCanonicalEstimatePhoto(bundle)) {
     errors.push({
       code: "MEDIA_REQUIRED",
       messageRu: "Добавьте хотя бы одно фото, видео или документ.",
@@ -253,8 +278,8 @@ export function validateConsumerRepairRequestForMarketplace(
     : null;
   const canonicalArtifactValid = Boolean(
     canonicalRevisionId && canonicalReleaseId && canonicalPdfEvent && canonicalArtifact &&
+    canonicalArtifact.kind === "procurement" &&
     canonicalArtifact.status === "ready" && canonicalArtifact.artifactId.trim() &&
-    canonicalArtifact.artifactId === canonicalPdfEvent.payload.artifactId &&
     canonicalArtifact.revisionId === canonicalRevisionId &&
     canonicalArtifact.releaseId === canonicalReleaseId,
   );

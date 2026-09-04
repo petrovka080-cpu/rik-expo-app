@@ -1608,6 +1608,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         userId: this.props.consumerUserId,
         canonicalArtifact: {
           artifactId: canonicalArtifact.artifactId,
+          kind: "procurement" as const,
           revisionId: canonicalArtifact.revisionId,
           releaseId: canonicalArtifact.releaseId,
           status: "ready" as const,

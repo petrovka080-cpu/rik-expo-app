@@ -5,7 +5,7 @@ import {
   generateConsumerRepairRequestPdfForDraft,
   type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
+import { buildCanonicalConsumerRepairRevisionFixture } from "./canonicalConsumerRepairRevisionFixture";
 
 export const CONSUMER_REPAIR_TEST_USER_ID = "consumer-1";
 export const CONSUMER_REPAIR_VALID_PROBLEM = "Хочу уложить ламинат на 100 кв м в комнате, нужен ремонт пола";
@@ -20,6 +20,7 @@ export function canonicalArtifactForApprovedConsumerRepairTestBundle(
   bundle: ConsumerRepairDraftBundle,
 ): {
   artifactId: string;
+  kind: "procurement";
   revisionId: string;
   releaseId: string;
   status: "ready";
@@ -35,7 +36,8 @@ export function canonicalArtifactForApprovedConsumerRepairTestBundle(
     throw new Error("CANONICAL_APPROVED_TEST_ARTIFACT_MISSING");
   }
   return {
-    artifactId,
+    artifactId: `procurement:${artifactId}`,
+    kind: "procurement",
     revisionId,
     releaseId,
     status: "ready",
@@ -54,7 +56,7 @@ export function createApprovedConsumerRepairRequest(input: {
   userId?: string;
 } = {}): ConsumerRepairDraftBundle {
   const problemText = input.problemText ?? CONSUMER_REPAIR_VALID_PROBLEM;
-  const canonicalDraft = buildConsumerRepairAiDraft(problemText);
+  const canonicalDraft = buildCanonicalConsumerRepairRevisionFixture(problemText);
   canonicalTestRevisionSequence += 1;
   const canonicalRevisionId = `c1111111-2222-4333-8444-${String(canonicalTestRevisionSequence).padStart(12, "0")}`;
   let bundle = createConsumerRepairRequestDraft({

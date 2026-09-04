@@ -123,6 +123,7 @@ export function sendConsumerRepairHistoryToMarketplaceFromScreen(input: {
   userId: string;
   canonicalArtifact: {
     artifactId: string;
+    kind: "procurement";
     revisionId: string;
     releaseId: string;
     status: "ready";

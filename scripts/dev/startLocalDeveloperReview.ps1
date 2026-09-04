@@ -10,6 +10,12 @@ function Fail-Preflight([string]$Code, [string]$Recovery) {
   exit 1
 }
 
+function Get-OptionalProviderValue([object]$Provider, [string]$Name) {
+  $Property = $Provider.PSObject.Properties[$Name]
+  if ($null -eq $Property) { return "" }
+  return [string]$Property.Value
+}
+
 function Get-Sha256([string]$Value) {
   $algorithm = [System.Security.Cryptography.SHA256]::Create()
   try {
@@ -69,14 +75,32 @@ catch {
 }
 
 $ApiUrl = [string]$Provider.API_URL
-$PublicKey = if ([string]$Provider.PUBLISHABLE_KEY) {
-  [string]$Provider.PUBLISHABLE_KEY
+$PublishableKey = Get-OptionalProviderValue $Provider "PUBLISHABLE_KEY"
+$AnonKey = Get-OptionalProviderValue $Provider "ANON_KEY"
+$PublicKey = if (-not [string]::IsNullOrWhiteSpace($PublishableKey)) {
+  $PublishableKey
 }
 else {
-  [string]$Provider.ANON_KEY
+  $AnonKey
 }
-$ForbiddenKeys = @([string]$Provider.SERVICE_ROLE_KEY, [string]$Provider.SECRET_KEY) |
+$ForbiddenKeys = @(
+  (Get-OptionalProviderValue $Provider "SERVICE_ROLE_KEY"),
+  (Get-OptionalProviderValue $Provider "SECRET_KEY")
+) |
   Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+if ([string]::IsNullOrWhiteSpace($PublicKey)) {
+  try {
+    $KongConfig = & docker exec supabase_kong_rik-r52-a7-provider-20260824 cat /home/kong/kong.yml 2>$null
+    $PublicKey = [regex]::Match([string]$KongConfig, "sb_publishable_[A-Za-z0-9_-]+").Value
+    $LocalSecretKey = [regex]::Match([string]$KongConfig, "sb_secret_[A-Za-z0-9_-]+").Value
+    if (-not [string]::IsNullOrWhiteSpace($LocalSecretKey)) {
+      $ForbiddenKeys = @($ForbiddenKeys) + $LocalSecretKey
+    }
+  }
+  catch {
+    $PublicKey = ""
+  }
+}
 
 try {
   $ApiUri = [Uri]$ApiUrl
@@ -112,29 +136,6 @@ catch {
 }
 
 $CanonicalBackendUrl = "http://127.0.0.1:8765"
-$BackendListeners = @(Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue)
-if ($BackendListeners.Count -ne 1) {
-  Fail-Preflight "CANONICAL_BACKEND_LISTENER_RED" "запустите один canonical estimate backend на 127.0.0.1:8765"
-}
-$BackendPid = [int]$BackendListeners[0].OwningProcess
-$BackendOwner = Get-CimInstance Win32_Process -Filter "ProcessId=$BackendPid" -ErrorAction SilentlyContinue
-if (
-  -not $BackendOwner -or
-  $BackendOwner.Name -ne "node.exe" -or
-  [string]$BackendOwner.CommandLine -notmatch "serveCanonicalEstimateLocalR1\.ts"
-) {
-  Fail-Preflight "CANONICAL_BACKEND_OWNER_RED_PID_$BackendPid" "проверьте exact owner порта 8765"
-}
-try {
-  Invoke-WebRequest -UseBasicParsing -Uri "$CanonicalBackendUrl/search/catalog?query=preflight&pageSize=1" -TimeoutSec 5 | Out-Null
-  Fail-Preflight "CANONICAL_BACKEND_AUTH_GUARD_RED" "backend обязан отклонять запрос без provider session"
-}
-catch {
-  $BackendResponse = $_.Exception.Response
-  if (-not $BackendResponse -or [int]$BackendResponse.StatusCode -ne 401) {
-    Fail-Preflight "CANONICAL_BACKEND_PREFLIGHT_RED" "восстановите strict-session backend на порту 8765"
-  }
-}
 
 $Node = (Get-Command node -ErrorAction Stop).Source
 $IdentityTool = Join-Path $Root "scripts\dev\printLocalDeveloperBuildIdentity.ts"
@@ -149,10 +150,31 @@ foreach ($Name in @("sourceTreeHash", "productSourceHash", "jsBundleFingerprint"
     Fail-Preflight "SOURCE_IDENTITY_${Name}_RED" "исправьте canonical fingerprint calculator"
   }
 }
+$BuildCommit = (& git -C $Root rev-parse HEAD).Trim()
+$BuildBranch = (& git -C $Root branch --show-current).Trim()
+$env:LOCAL_DEVELOPER_PROVIDER_URL = $ApiUrl
+$env:LOCAL_DEVELOPER_PROVIDER_PUBLIC_KEY = $PublicKey
+$env:LOCAL_DEVELOPER_BUILD_COMMIT = $BuildCommit
+$ExactCandidateReceiptPath = Join-Path $Root ".release-runtime\r568\rc09-r4-production-closeout\r4-a5-exact-ui-confirm-durability-1\12_FORMULA_DEPENDENCY_SUCCESSOR.json"
+if (-not (Test-Path -LiteralPath $ExactCandidateReceiptPath)) {
+  Fail-Preflight "EXACT_CANDIDATE_RECEIPT_MISSING" "подготовьте immutable R4-A5 successor и повторите запуск"
+}
+$ExactCandidateReceipt = Get-Content -LiteralPath $ExactCandidateReceiptPath -Raw | ConvertFrom-Json
+if ($ExactCandidateReceipt.status -ne "GREEN_SUCCESSOR_PREPARED_NOT_ACTIVE") {
+  Fail-Preflight "EXACT_CANDIDATE_RECEIPT_RED" "повторно проверьте и подготовьте R4-A5 successor"
+}
+$env:LOCAL_DEVELOPER_DEFINITION_RELEASE_ID = [string]$ExactCandidateReceipt.successor.releaseId
+$env:LOCAL_DEVELOPER_SEARCH_RELEASE_ID = [string]$ExactCandidateReceipt.successor.searchReleaseId
+$env:LOCAL_DEVELOPER_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
+$env:LOCAL_DEVELOPER_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
+$env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
 
 $Port = 8081
 $ExistingListeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
 $ExistingPids = @($ExistingListeners | Select-Object -ExpandProperty OwningProcess -Unique)
+$ExistingMetroPid = 0
+$MetroIdentityMatches = $false
+$MetroReceiptPath = Join-Path $Root ".release-runtime\r568\rc09-r4-production-closeout\r4-a5-exact-ui-confirm-durability-1\runtime\metro.json"
 foreach ($ExistingPid in $ExistingPids) {
   $ExistingProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$ExistingPid" -ErrorAction SilentlyContinue
   if (-not $ExistingProcess) { continue }
@@ -168,14 +190,19 @@ foreach ($ExistingPid in $ExistingPids) {
   if (-not $OwnedMetro) {
     Fail-Preflight "PORT_8081_FOREIGN_OWNER_PID_$ExistingPid" "освободите порт 8081 вручную после проверки владельца"
   }
-  if (-not $PreflightOnly) {
-    Stop-Process -Id $ExistingPid -ErrorAction Stop
-    $Deadline = (Get-Date).AddSeconds(10)
-    while ((Get-Process -Id $ExistingPid -ErrorAction SilentlyContinue) -and (Get-Date) -lt $Deadline) {
-      Start-Sleep -Milliseconds 100
+  $ExistingMetroPid = [int]$ExistingPid
+  if (Test-Path -LiteralPath $MetroReceiptPath) {
+    try {
+      $MetroReceipt = Get-Content -LiteralPath $MetroReceiptPath -Raw | ConvertFrom-Json
+      $MetroIdentityMatches =
+        [int]$MetroReceipt.pid -eq $ExistingMetroPid -and
+        [string]$MetroReceipt.source_tree_hash -eq [string]$Identity.sourceTreeHash -and
+        [string]$MetroReceipt.product_source_hash -eq [string]$Identity.productSourceHash -and
+        [string]$MetroReceipt.js_bundle_fingerprint -eq [string]$Identity.jsBundleFingerprint -and
+        [string]$MetroReceipt.build_commit -eq $BuildCommit
     }
-    if (Get-Process -Id $ExistingPid -ErrorAction SilentlyContinue) {
-      Fail-Preflight "OWNED_METRO_STOP_TIMEOUT_PID_$ExistingPid" "остановите exact Metro PID вручную"
+    catch {
+      $MetroIdentityMatches = $false
     }
   }
 }
@@ -191,6 +218,12 @@ Write-Host "provider_public_fingerprint=$PublicFingerprint"
 Write-Host "source_fingerprint=$SourceFingerprint"
 Write-Host "bundle_fingerprint=$BundleFingerprint"
 if ($PreflightOnly) {
+  $BackendManager = Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts"
+  $BackendManagerRaw = & $Node $TsxCli $BackendManager --preflight 2>$null
+  if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
+    Fail-Preflight "CANONICAL_BACKEND_MANAGER_PREFLIGHT_RED" "проверьте capability, release tuple и владельца порта 8765"
+  }
+  Write-Host "backend=$BackendManagerRaw"
   Write-Host "mode=preflight_only"
   exit 0
 }
@@ -214,6 +247,39 @@ if (
   Fail-Preflight "LOCAL_DEVELOPER_PRINCIPAL_MATRIX_RED" "повторите безопасный local provisioning"
 }
 
+$BackendManager = Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts"
+$PreviousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+$BackendManagerRaw = & $Node $TsxCli $BackendManager 2>$null
+$BackendManagerExitCode = $LASTEXITCODE
+$ErrorActionPreference = $PreviousErrorActionPreference
+if ($BackendManagerExitCode -ne 0 -or -not $BackendManagerRaw) {
+  Fail-Preflight "CANONICAL_BACKEND_MANAGER_RED" "проверьте exact runtime tuple, capability TTL и активные compile jobs"
+}
+$BackendManagerResult = $BackendManagerRaw | ConvertFrom-Json
+if (
+  $BackendManagerResult.status -ne "GREEN_R568_LOCAL_DEVELOPER_CANONICAL_BACKEND_EXACT" -or
+  [int]$BackendManagerResult.active_compile_jobs -ne 0 -or
+  [int]$BackendManagerResult.production_requests -ne 0
+) {
+  Fail-Preflight "CANONICAL_BACKEND_MANAGER_RESULT_RED" "не используйте frontend до exact runtime-manifest GREEN"
+}
+
+$ReuseMetro = $MetroIdentityMatches -and
+  [string]$MetroReceipt.definition_release_id -eq [string]$BackendManagerResult.definition_release_id -and
+  [string]$MetroReceipt.search_release_id -eq [string]$BackendManagerResult.search_release_id -and
+  [string]$MetroReceipt.capability_id -eq [string]$BackendManagerResult.capability_id
+if ($ExistingMetroPid -gt 0 -and -not $ReuseMetro) {
+  Stop-Process -Id $ExistingMetroPid -ErrorAction Stop
+  $Deadline = (Get-Date).AddSeconds(10)
+  while ((Get-Process -Id $ExistingMetroPid -ErrorAction SilentlyContinue) -and (Get-Date) -lt $Deadline) {
+    Start-Sleep -Milliseconds 100
+  }
+  if (Get-Process -Id $ExistingMetroPid -ErrorAction SilentlyContinue) {
+    Fail-Preflight "OWNED_METRO_STOP_TIMEOUT_PID_$ExistingMetroPid" "остановите exact Metro PID вручную"
+  }
+}
+
 $BackendProbe = Join-Path $Root "scripts\dev\probeLocalDeveloperCanonicalBackend.ts"
 $BackendProbeRaw = & $Node $TsxCli $BackendProbe 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $BackendProbeRaw) {
@@ -223,6 +289,7 @@ $BackendProbeResult = $BackendProbeRaw | ConvertFrom-Json
 if (
   $BackendProbeResult.status -ne "GREEN_LOCAL_DEVELOPER_CANONICAL_BACKEND" -or
   [int]$BackendProbeResult.returned_items -lt 1 -or
+  [int]$BackendProbeResult.ready_items -lt 1 -or
   [int]$BackendProbeResult.production_requests -ne 0
 ) {
   Fail-Preflight "LOCAL_DEVELOPER_CANONICAL_BACKEND_RESULT_RED" "восстановите поиск canonical backend"
@@ -241,9 +308,12 @@ $env:EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK = "true"
 $env:EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
 $env:EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
-$env:EXPO_PUBLIC_BUILD_COMMIT = (& git -C $Root rev-parse HEAD).Trim()
-$env:EXPO_PUBLIC_BUILD_BRANCH = (& git -C $Root branch --show-current).Trim()
+$env:EXPO_PUBLIC_BUILD_COMMIT = $BuildCommit
+$env:EXPO_PUBLIC_BUILD_BRANCH = $BuildBranch
 $env:EXPO_PUBLIC_BUILD_TIME = (Get-Date).ToUniversalTime().ToString("o")
+$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID = [string]$BackendManagerResult.definition_release_id
+$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID = [string]$BackendManagerResult.search_release_id
+$env:EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID = [string]$BackendManagerResult.capability_id
 
 foreach ($SecretName in @(
   "SUPABASE_SERVICE_ROLE_KEY",
@@ -252,6 +322,13 @@ foreach ($SecretName in @(
   "EXPO_PUBLIC_SUPABASE_SECRET_KEY"
 )) {
   Remove-Item -LiteralPath "Env:\$SecretName" -ErrorAction SilentlyContinue
+}
+
+if ($ReuseMetro) {
+  Write-Host "runtime_action=reuse_exact_healthy_runtime"
+  Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"
+  Write-Host "metro_pid=$ExistingMetroPid"
+  exit 0
 }
 
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
@@ -307,6 +384,10 @@ if (-not $BrokerReady) {
 Write-Host "auth_broker_pid=$($Broker.Id)"
 
 try {
+  $MetroRuntime = Split-Path -Parent $MetroReceiptPath
+  New-Item -ItemType Directory -Path $MetroRuntime -Force | Out-Null
+  $MetroStdout = Join-Path $MetroRuntime "metro.stdout.log"
+  $MetroStderr = Join-Path $MetroRuntime "metro.stderr.log"
   $Metro = Start-Process -FilePath $Node -ArgumentList @(
     $ExpoCli,
     "start",
@@ -314,7 +395,19 @@ try {
     "--port",
     "$Port",
     "--clear"
-  ) -WorkingDirectory $Root -NoNewWindow -PassThru
+  ) -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $MetroStdout -RedirectStandardError $MetroStderr -PassThru
+  @{
+    schema_version = "rik-expo-app.r568.metro-runtime.v1"
+    generated_utc = (Get-Date).ToUniversalTime().ToString("o")
+    pid = $Metro.Id
+    source_tree_hash = [string]$Identity.sourceTreeHash
+    product_source_hash = [string]$Identity.productSourceHash
+    js_bundle_fingerprint = [string]$Identity.jsBundleFingerprint
+    build_commit = $BuildCommit
+    definition_release_id = [string]$BackendManagerResult.definition_release_id
+    search_release_id = [string]$BackendManagerResult.search_release_id
+    capability_id = [string]$BackendManagerResult.capability_id
+  } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $MetroReceiptPath -Encoding UTF8
   Write-Host "metro_pid=$($Metro.Id)"
   $Metro.WaitForExit()
   $MetroExitCode = $Metro.ExitCode

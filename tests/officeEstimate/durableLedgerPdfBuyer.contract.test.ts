@@ -21,9 +21,12 @@ describe("office estimate durable ledger pdf buyer refs", () => {
       canonicalArtifact,
     });
     const history = listConsumerRepairApprovedHistory("office-ledger-owner", { limit: 20 });
+    const approvedPdfArtifactId = approved.events.find(
+      (event) => event.eventType === "consumer_approved_canonical_backend_pdf",
+    )?.payload.artifactId;
 
     expect(history.records[0]?.approvedEstimateId).toBe(approved.draft.id);
-    expect(history.records[0]?.pdfArtifactId).toBe(canonicalArtifact.artifactId);
+    expect(history.records[0]?.pdfArtifactId).toBe(approvedPdfArtifactId);
     expect(history.records[0]?.buyerHandoffId).toBe(sent.marketplaceLink.marketplaceDemandId);
     expect(history.records[0]?.status).toBe("approved");
   });

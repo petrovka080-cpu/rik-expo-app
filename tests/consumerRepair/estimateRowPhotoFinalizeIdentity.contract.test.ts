@@ -15,6 +15,10 @@ describe("R5.5 estimate row photo finalize identity", () => {
       process.cwd(),
       "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
     ), "utf8");
+    const backendManager = fs.readFileSync(path.join(
+      process.cwd(),
+      "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts",
+    ), "utf8");
 
     for (const field of [
       "attachment_event_id uuid",
@@ -48,5 +52,9 @@ describe("R5.5 estimate row photo finalize identity", () => {
     expect(localBackend).toContain("ownerUserId: row.owner_user_id");
     expect(localBackend).toContain("requestId: row.request_id");
     expect(localBackend).toContain("catalogId: row.catalog_id");
+    expect(localBackend).toContain("x-idempotency-key,x-upsert");
+    expect(localBackend).toContain("backendRuntimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256");
+    expect(backendManager).toContain("tuple.backendRuntimeSourceSha256 === desired.backendRuntimeSourceSha256");
+    expect(backendManager).toContain("backendRuntimeSourceSha256: sha256File(BACKEND_SOURCE)");
   });
 });

@@ -173,11 +173,29 @@ describe("durable request estimate category filters", () => {
 
     act(() => renderer.root.findByProps({ testID: `consumer-repair-item-specification-edit-${row.id}` }).props.onPress());
     expect(renderer.root.findAllByProps({ testID: `consumer-repair-item-title-${row.id}` })).toHaveLength(0);
-    const input = renderer.root.findByProps({ testID: `consumer-repair-item-specification-input-${row.id}` });
+    let input = renderer.root.findByProps({ testID: `consumer-repair-item-specification-input-${row.id}` });
     expect(input.type).toBe(TextInput);
     expect(input.props.value).toBe(row.titleRu);
+
+    act(() => {
+      renderer.update(
+        <ConsumerRepairItemRow
+          item={{ ...row, quantity: 2, unitPrice: 50 }}
+          onDecrease={noop}
+          onIncrease={noop}
+          onQuantityChange={noop}
+          onUnitPriceChange={noop}
+          onSpecificationChange={onSpecificationChange}
+          onRemove={noop}
+        />,
+      );
+    });
+    expect(renderer.root.findAllByProps({ testID: `consumer-repair-item-title-${row.id}` })).toHaveLength(0);
+    input = renderer.root.findByProps({ testID: `consumer-repair-item-specification-input-${row.id}` });
+    expect(input.props.value).toBe(row.titleRu);
+
     act(() => input.props.onChangeText("Новое точное название"));
-    act(() => renderer.root.findByProps({ testID: `consumer-repair-item-specification-input-${row.id}` }).props.onBlur());
+    act(() => renderer.root.findByProps({ testID: `consumer-repair-item-specification-save-${row.id}` }).props.onPress());
     expect(onSpecificationChange).toHaveBeenCalledWith(row.id, "Новое точное название");
   });
 });

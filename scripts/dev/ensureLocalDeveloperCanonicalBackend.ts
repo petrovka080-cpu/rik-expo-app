@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { closeSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { connect } from "node:net";
@@ -11,6 +11,7 @@ type Json = Record<string, any>;
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const BACKEND_URL = "http://127.0.0.1:8765";
 const BACKEND_PORT = 8765;
+const BACKEND_SOURCE = resolve("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
 const PURPOSE = "estimate_candidate_admission_r3";
 const ENVIRONMENT = "local-developer-r568";
 const MINIMUM_TTL_SECONDS = 6 * 60 * 60;
@@ -38,6 +39,10 @@ function atomicJson(path: string, value: unknown): void {
   const temporary = `${path}.${process.pid}.tmp`;
   writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   renameSync(temporary, path);
+}
+
+function sha256File(path: string): string {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
 function portOwner(): { pid: number; name: string; commandLine: string } | null {
@@ -133,6 +138,7 @@ function manifestMatches(manifest: Json | null, desired: Json): boolean {
     tuple.frontendSourceTreeHash === desired.frontendSourceTreeHash &&
     tuple.frontendProductSourceHash === desired.frontendProductSourceHash &&
     tuple.frontendJsBundleFingerprint === desired.frontendJsBundleFingerprint &&
+    tuple.backendRuntimeSourceSha256 === desired.backendRuntimeSourceSha256 &&
     tuple.capabilityId === desired.capabilityId;
 }
 
@@ -188,6 +194,7 @@ function startBackend(input: {
       R568_FRONTEND_PRODUCT_SOURCE_HASH: input.desired.frontendProductSourceHash,
       R568_FRONTEND_JS_BUNDLE_FINGERPRINT: input.desired.frontendJsBundleFingerprint,
       R568_FRONTEND_BUILD_COMMIT: input.desired.sourceHead,
+      CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256: input.desired.backendRuntimeSourceSha256,
       CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET: randomBytes(48).toString("base64url"),
       CANONICAL_ESTIMATE_REQUEST_AUDIT_LOG: resolve(runtimeDirectory, "request-audit.jsonl"),
     },
@@ -293,6 +300,7 @@ async function main(): Promise<void> {
     frontendSourceTreeHash: sourceTree,
     frontendProductSourceHash,
     frontendJsBundleFingerprint,
+    backendRuntimeSourceSha256: sha256File(BACKEND_SOURCE),
     capabilityId: String(capability!.id ?? ""),
   };
   const ownerBefore = portOwner();

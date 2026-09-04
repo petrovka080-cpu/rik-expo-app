@@ -3,9 +3,13 @@ import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
+  generateConsumerRepairRequestPdfForDraft,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
+import {
+  buildCanonicalConsumerRepairRevisionFixture,
+  canonicalArtifactForConsumerRepairRevisionFixture,
+} from "./canonicalConsumerRepairRevisionFixture";
 import {
   CONSUMER_REPAIR_TEST_USER_ID,
   CONSUMER_REPAIR_VALID_ADDRESS,
@@ -25,7 +29,7 @@ describe("consumer repair marketplace link contract", () => {
       city: CONSUMER_REPAIR_VALID_CITY,
       addressText: CONSUMER_REPAIR_VALID_ADDRESS,
       repairType: "flooring",
-      aiDraft: buildConsumerRepairAiDraft(CONSUMER_REPAIR_VALID_PROBLEM),
+      aiDraft: buildCanonicalConsumerRepairRevisionFixture(CONSUMER_REPAIR_VALID_PROBLEM),
     });
 
     expect(() => sendConsumerRepairRequestToMarketplace({
@@ -34,10 +38,25 @@ describe("consumer repair marketplace link contract", () => {
     })).toThrow("Сначала утвердите заявку.");
 
     attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-    approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: CONSUMER_REPAIR_TEST_USER_ID });
+    const withPdf = generateConsumerRepairRequestPdfForDraft({
+      requestDraftId: bundle.draft.id,
+      userId: CONSUMER_REPAIR_TEST_USER_ID,
+    });
+    const canonicalArtifact = canonicalArtifactForConsumerRepairRevisionFixture(withPdf);
+    approveConsumerRepairRequestDraft({
+      requestDraftId: bundle.draft.id,
+      userId: CONSUMER_REPAIR_TEST_USER_ID,
+      canonicalArtifact,
+    });
+    const procurementArtifact = {
+      ...canonicalArtifact,
+      artifactId: `procurement:${canonicalArtifact.artifactId}`,
+      kind: "procurement" as const,
+    };
     const sent = sendConsumerRepairRequestToMarketplace({
       requestDraftId: bundle.draft.id,
       userId: CONSUMER_REPAIR_TEST_USER_ID,
+      canonicalArtifact: procurementArtifact,
     });
 
     expect(sent.draft.status).toBe("sent_to_marketplace");
