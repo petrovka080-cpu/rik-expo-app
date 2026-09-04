@@ -246,6 +246,9 @@ const R568_FRONTEND_JS_BUNDLE_FINGERPRINT = String(
 const R568_FRONTEND_BUILD_COMMIT = String(
   process.env.R568_FRONTEND_BUILD_COMMIT ?? R45_RUNTIME_SOURCE_HEAD,
 ).trim();
+const CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256 = String(
+  process.env.CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256 ?? "UNSET",
+).trim();
 const CONFIGURED_ARTIFACT_TOKEN_SECRET = String(
   process.env.CANONICAL_ESTIMATE_LOCAL_ARTIFACT_SECRET ?? "",
 ).trim();
@@ -343,7 +346,7 @@ function send(
   response.writeHead(status, {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers":
-      "authorization,apikey,content-type,x-idempotency-key",
+      "authorization,apikey,content-type,x-idempotency-key,x-upsert",
     "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
     "Cache-Control": "no-store",
     "Content-Type": "application/json; charset=utf-8",
@@ -3852,6 +3855,7 @@ async function route(
       workingDirectory: process.cwd(),
       sourceHead: R45_RUNTIME_SOURCE_HEAD,
       sourceTree: R45_RUNTIME_SOURCE_TREE,
+      runtimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256,
       specSha256: R45_RUNTIME_SPEC_SHA256,
       authMode: LOCAL_AUTH_MODE,
       authPrincipalContractVersion: "r52-a7.strict-principal.v1",
@@ -3910,6 +3914,7 @@ async function route(
         frontendSourceTreeHash: R568_FRONTEND_SOURCE_TREE_HASH,
         frontendProductSourceHash: R568_FRONTEND_PRODUCT_SOURCE_HASH,
         frontendJsBundleFingerprint: R568_FRONTEND_JS_BUNDLE_FINGERPRINT,
+        backendRuntimeSourceSha256: CANONICAL_ESTIMATE_RUNTIME_SOURCE_SHA256,
         capabilityId: modelDatabase.capability?.id ?? null,
       },
     });
