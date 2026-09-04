@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "r568-r4-a6-runtime-closeout-include-manifest.v1",
+  "masterSha256": "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6",
+  "scope": "R4-A6 exact Android API 34, formula remediation, professional BOQ, print/PDF, Group50, Platform30, M2, and global seal",
+  "include": [
+    "android/app/src/debug/res/xml/network_security_config.xml",
+    "data/estimate-benchmarks/r568-r4-a6-runtime-closeout-include-manifest.json",
+    "tests/architecture/androidDebugDevClientNetworkSecurity.contract.test.ts",
+    "tests/e2e/androidApi34ProofEnvironment.contract.test.ts"
+  ],
+  "excludePolicy": {
+    "broadAddForbidden": true,
+    "unrelatedDirtyFilesPreserved": true,
+    "forcePushForbidden": true,
+    "productionNetworkSecurityWeakeningForbidden": true,
+    "acceptedUiAndConfirmMayChangeOnlyAfterNewReproducibleLiveRed": true
+  }
+}

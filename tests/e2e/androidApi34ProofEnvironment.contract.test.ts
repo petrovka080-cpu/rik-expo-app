@@ -177,7 +177,8 @@ describe("Android API34 proof environment", () => {
   it("renders every admissible professional BOQ row without a hidden pagination boundary", () => {
     const editor = read("src/features/consumerRepair/RequestEstimateItemsEditor.tsx");
 
-    expect(editor).toContain("expandedSections.map");
+    expect(editor).toContain('testID="request-estimate-flat-row-list"');
+    expect(editor).toContain("visibleItems.map");
     expect(editor).not.toContain("ESTIMATE_ROWS_PAGE_SIZE");
     expect(editor).not.toContain("section.items.slice(0");
     expect(editor).not.toContain("visibleLimit");
