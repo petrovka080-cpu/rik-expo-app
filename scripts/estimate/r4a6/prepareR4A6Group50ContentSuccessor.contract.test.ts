@@ -25,4 +25,13 @@ describe("R4-A6 Group50 forward-only content successor", () => {
     expect(source).toContain("estimate_resource_price_route_binding");
     expect(source).toContain("Object.values(audit.blockingCounters).every");
   });
+
+  it("rebuilds the full runtime-approved default binding from immutable baseline payload", () => {
+    expect(source).toContain("approvedTemplateBinding");
+    expect(source).toContain("inputClassification");
+    expect(source).toContain("formulaConsumerIds");
+    expect(source).toContain("resourceConsumerRowIds");
+    expect(source).toContain("normativeSourceIds");
+    expect(source).toContain("defaultBindingRed");
+  });
 });

@@ -14,19 +14,21 @@ const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
 );
 const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const PREDECESSOR_RELEASE_ID = "ad825133-a41e-527d-a2f2-e1dd0e65ea86";
-const PREDECESSOR_SEARCH_RELEASE_ID = "0a1f5b96-24c1-5e2f-8ac4-edecab5ed3b6";
-const CONTRACT = "rik-expo-app.r568.r4-a6-group50-content-remediation.v1";
+const PREDECESSOR_RELEASE_ID = "de952048-ed95-50c9-b776-68e5280a7e0d";
+const PREDECESSOR_SEARCH_RELEASE_ID = "5f1efe11-683b-51b9-980a-41acd5f449ee";
+const CONTRACT = "rik-expo-app.r568.r4-a6-group50-default-binding-remediation.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const EXPECTED_VISIBLE_RESOURCES = 615_438;
-const EXPECTED_GENERIC_APPLICABLE = 10_750;
-const EXPECTED_SEMANTIC_APPLICABLE = 2;
-const EXPECTED_BASELINE_DEFECTS = 85;
+const EXPECTED_GENERIC_APPLICABLE = 0;
+const EXPECTED_SEMANTIC_APPLICABLE = 0;
+const EXPECTED_BASELINE_DEFECTS = 0;
+const EXPECTED_DEFAULT_BINDING_DEFECTS = 11_725;
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
 const MANAGED_SOURCE_PATHS = [
   "scripts/estimate/r4a6/auditR4A6Group50Blockers.ts",
+  "scripts/estimate/r4a6/auditR4A6Group50DefaultBindings.ts",
   "scripts/estimate/r4a6/group50ScenarioContract.test.ts",
   "scripts/estimate/r4a6/group50ScenarioContract.ts",
   "scripts/estimate/r4a6/prepareR4A6Group50ContentSuccessor.contract.test.ts",
@@ -117,6 +119,59 @@ async function sourceSnapshot(client: Client): Promise<Json> {
     from public.estimate_definition_release release where release.id=$1`, [PREDECESSOR_RELEASE_ID])).rows[0] as Json;
 }
 
+async function defaultBindingDefects(client: Client, releaseId: string): Promise<{
+  defaultParameters: number;
+  defects: number;
+  catalogIds: string[];
+}> {
+  const rows = (await client.query(`select manifest.catalog_id,parameter.parameter_id
+    from public.estimate_cumulative_manifest_entry manifest
+    join public.estimate_parameter_definition parameter
+      on parameter.definition_version_id=manifest.definition_version_id
+    join public.estimate_approved_template_baseline baseline
+      on baseline.id=manifest.approved_template_baseline_id
+    where manifest.release_id=$1 and parameter.default_value is not null
+      and parameter.truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54'
+      and (
+        parameter.approved_template_baseline_id::text is distinct from manifest.approved_template_baseline_id::text
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBaselineId}'
+          is distinct from parameter.approved_template_baseline_id::text
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,baselineId}'
+          is distinct from parameter.approved_template_baseline_id::text
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,catalogId}'
+          is distinct from manifest.catalog_id
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,parameterId}'
+          is distinct from parameter.parameter_id
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,definitionVersionId}'
+          is distinct from parameter.truth_metadata#>>'{provenance,sourceDefinitionVersionId}'
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,parameterSchemaSha256}'
+          is distinct from baseline.parameter_schema_sha256
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,acceptanceEvidenceSha256}'
+          is distinct from baseline.acceptance_evidence_sha256
+        or parameter.truth_metadata#>>'{provenance,approvedTemplateBinding,inputClassification}'
+          is distinct from baseline.input_classification->>parameter.parameter_id
+        or parameter.truth_metadata#>'{provenance,approvedTemplateBinding,formulaConsumerIds}'
+          is distinct from parameter.truth_metadata->'formula_consumers'
+        or parameter.truth_metadata#>'{provenance,approvedTemplateBinding,resourceConsumerRowIds}'
+          is distinct from parameter.truth_metadata->'resource_branch_consumers'
+        or parameter.truth_metadata#>'{provenance,approvedTemplateBinding,normativeSourceIds}'
+          is distinct from baseline.normative_source_ids->parameter.parameter_id
+        or parameter.truth_metadata#>'{provenance,approvedTemplateBinding,value}'
+          is distinct from parameter.default_value
+      ) order by manifest.catalog_id,parameter.ordinal`, [releaseId])).rows as Json[];
+  const defaultParameters = Number((await client.query(`select count(*) value
+    from public.estimate_cumulative_manifest_entry manifest
+    join public.estimate_parameter_definition parameter
+      on parameter.definition_version_id=manifest.definition_version_id
+    where manifest.release_id=$1 and parameter.default_value is not null
+      and parameter.truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54'`, [releaseId])).rows[0].value);
+  return {
+    defaultParameters,
+    defects: rows.length,
+    catalogIds: [...new Set(rows.map((row) => String(row.catalog_id)))],
+  };
+}
+
 async function preflight(client: Client, fingerprint: string): Promise<{
   predecessor: Json;
   maps: DefinitionMap[];
@@ -172,7 +227,14 @@ async function preflight(client: Client, fingerprint: string): Promise<{
       and trim(baseline.input_values->>parameter.parameter_id)='')>0
     order by manifest.catalog_id`, [PREDECESSOR_RELEASE_ID])).rows.map((row) => String(row.catalog_id));
   invariant(baselineCatalogs.length === EXPECTED_BASELINE_DEFECTS, "STOP_GROUP50_SUCCESSOR_BASELINE_DENOMINATOR");
-  const affectedCatalogs = new Set([...failures.map((row) => row.catalogId), ...baselineCatalogs]);
+  const defaultBindings = await defaultBindingDefects(client, PREDECESSOR_RELEASE_ID);
+  invariant(defaultBindings.defects === EXPECTED_DEFAULT_BINDING_DEFECTS,
+    "STOP_GROUP50_SUCCESSOR_DEFAULT_BINDING_DENOMINATOR");
+  const affectedCatalogs = new Set([
+    ...failures.map((row) => row.catalogId),
+    ...baselineCatalogs,
+    ...defaultBindings.catalogIds,
+  ]);
   const manifestRows = (await client.query(`select catalog_id,definition_version_id::text,
       approved_template_baseline_id::text
     from public.estimate_cumulative_manifest_entry
@@ -200,6 +262,9 @@ async function preflight(client: Client, fingerprint: string): Promise<{
       failingResources: failures.length,
       affectedContentDefinitions: new Set(failures.map((row) => row.catalogId)).size,
       baselineDefects: baselineCatalogs.length,
+      defaultParameters: defaultBindings.defaultParameters,
+      defaultBindingDefects: defaultBindings.defects,
+      affectedDefaultDefinitions: defaultBindings.catalogIds.length,
       affectedDefinitions: maps.length,
     },
   };
@@ -427,14 +492,26 @@ async function applySuccessor(client: Client, input: {
         source.constraints_json,
         case when source.default_value is not null
           and source.truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54'
-        then jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(
+        then jsonb_set(jsonb_set(jsonb_set(jsonb_set(
           source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$1::text),
           '{baseline_assumption_id}',to_jsonb(map.new_baseline_id::text||':'||source.parameter_id),true),
           '{provenance,approvedTemplateBaselineId}',to_jsonb(map.new_baseline_id::text),true),
           '{provenance,acceptanceEvidenceSha256}',to_jsonb(baseline.acceptance_evidence_sha256),true),
-          '{provenance,approvedTemplateBinding,baselineId}',to_jsonb(map.new_baseline_id::text),true),
-          '{provenance,approvedTemplateBinding,acceptanceEvidenceSha256}',
-          to_jsonb(baseline.acceptance_evidence_sha256),true)
+          '{provenance,approvedTemplateBinding}',
+          coalesce(source.truth_metadata#>'{provenance,approvedTemplateBinding}','{}'::jsonb)
+            || jsonb_build_object(
+              'contract',$1::text,
+              'baselineId',map.new_baseline_id::text,
+              'catalogId',map.catalog_id,
+              'parameterId',source.parameter_id,
+              'definitionVersionId',source.truth_metadata#>>'{provenance,sourceDefinitionVersionId}',
+              'parameterSchemaSha256',baseline.parameter_schema_sha256,
+              'acceptanceEvidenceSha256',baseline.acceptance_evidence_sha256,
+              'inputClassification',baseline.input_classification->>source.parameter_id,
+              'formulaConsumerIds',source.truth_metadata->'formula_consumers',
+              'resourceConsumerRowIds',source.truth_metadata->'resource_branch_consumers',
+              'normativeSourceIds',baseline.normative_source_ids->source.parameter_id,
+              'value',source.default_value),true)
         else source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$1::text) end,
         case when source.approved_template_baseline_id is not null then map.new_baseline_id else null end
       from r4a6_group50_definition_map map
@@ -591,6 +668,7 @@ async function applySuccessor(client: Client, input: {
         having count(*) filter(where parameter.value_type='text' and not parameter.required
           and baseline.input_values ? parameter.parameter_id
           and trim(baseline.input_values->>parameter.parameter_id)='')>0) defect`, [input.releaseId])).rows[0].value);
+    const targetDefaultBindings = await defaultBindingDefects(client, input.releaseId);
     const linkage = (await client.query(`select
         (select count(*)::int from r4a6_group50_resource_map map
           join public.estimate_work_normative_binding binding on binding.resource_spec_id=map.old_resource_id) normative_before,
@@ -613,12 +691,15 @@ async function applySuccessor(client: Client, input: {
       genericApplicable,
       semanticApplicable,
       baselineDefects,
+      defaultParameters: targetDefaultBindings.defaultParameters,
+      defaultBindingDefects: targetDefaultBindings.defects,
       linkage,
       predecessorUnchanged: shaObject(predecessorAfter) === shaObject(input.predecessor),
       blockingCounters: {
         genericFillerRed: genericApplicable,
         semanticNameRed: semanticApplicable,
         baselineValidationRed: baselineDefects,
+        defaultBindingRed: targetDefaultBindings.defects,
         normativeBindingDrift: Number(linkage.normative_before) - Number(linkage.normative_after),
         priceBindingDrift: Number(linkage.price_before) - Number(linkage.price_after),
         formulaOrphanRed: Number(linkage.orphan_formulas),
