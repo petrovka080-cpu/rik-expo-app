@@ -476,6 +476,7 @@ function casePriceItems(
 async function compileCase(input: {
   member: ManifestMember;
   item: R4A6Group50Case;
+  parameters: R4A6Group50Parameter[];
   formulas: CanonicalEstimateFormulaDefinition[];
   resources: CanonicalEstimateResourceDefinition[];
   parameterPatch?: Json;
@@ -492,7 +493,7 @@ async function compileCase(input: {
     compilerVersion: "canonical-estimate-group50.r4-a6",
     catalogId: input.member.catalogId,
     primaryMeasureParameterId: null,
-    parameterDefinitions: input.member.parameters,
+    parameterDefinitions: input.parameters,
     formulaDefinitions: input.formulas,
     resourceDefinitions: input.resources,
     submittedParameters: input.parameterPatch ?? input.item.parameterPatch,
@@ -529,6 +530,7 @@ async function executeCase(input: {
   group: ManifestGroup;
   member: ManifestMember;
   item: R4A6Group50Case;
+  parameters: R4A6Group50Parameter[];
   formulas: CanonicalEstimateFormulaDefinition[];
   resources: CanonicalEstimateResourceDefinition[];
 }): Promise<Json> {
@@ -690,7 +692,14 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
   const groups = manifest.groups.filter((group) => groupSet.has(group.groupId));
   const members = new Map(groups.flatMap((group) => group.members.map((member) => [member.catalogId, member])));
   const definitionIds = [...new Set([...members.values()].map((member) => member.definitionVersionId))];
-  const [formulaRows, resourceRows] = await Promise.all([
+  const [parameterRows, formulaRows, resourceRows] = await Promise.all([
+    client.query(
+      `select definition_version_id::text,parameter_id,value_type,required,default_value,
+        constraints_json,truth_metadata,approved_template_baseline_id::text
+      from public.estimate_parameter_definition
+      where definition_version_id=any($1::uuid[]) order by definition_version_id,ordinal`,
+      [definitionIds],
+    ),
     client.query(
       "select definition_version_id::text,formula_id,ast,input_parameter_ids,ast_sha256 from public.estimate_formula_graph where definition_version_id=any($1::uuid[]) order by definition_version_id,formula_id",
       [definitionIds],
@@ -700,6 +709,14 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
       [definitionIds],
     ),
   ]);
+  const parametersByDefinition = new Map<string, R4A6Group50Parameter[]>();
+  for (const parameter of parameterRows.rows as Json[]) {
+    const id = String(parameter.definition_version_id);
+    parametersByDefinition.set(id, [
+      ...(parametersByDefinition.get(id) ?? []),
+      parameter as R4A6Group50Parameter,
+    ]);
+  }
   const formulasByDefinition = new Map<string, CanonicalEstimateFormulaDefinition[]>();
   for (const formula of formulaRows.rows as Json[]) {
     const id = String(formula.definition_version_id);
@@ -733,6 +750,7 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
         group,
         member,
         item,
+        parameters: parametersByDefinition.get(item.definitionVersionId) ?? [],
         formulas: formulasByDefinition.get(item.definitionVersionId) ?? [],
         resources: resourcesByDefinition.get(item.definitionVersionId) ?? [],
       });

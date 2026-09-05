@@ -234,7 +234,9 @@ export function buildR4A6Group50Case(input: {
   } else if (scenarioKind === "missing_p0") {
     missingParameterId = missingOwner.parameter_id;
     delete parameterPatch[missingParameterId];
-    expectedOutcome = "PARAMETER_VALIDATION_FAILED";
+    expectedOutcome = missingOwner.default_value == null
+      ? "PARAMETER_VALIDATION_FAILED"
+      : "GREEN";
   }
   const effectiveParameters = { ...input.baseline, ...parameterPatch };
   if (missingParameterId) delete effectiveParameters[missingParameterId];

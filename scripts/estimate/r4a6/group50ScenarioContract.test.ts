@@ -97,4 +97,27 @@ describe("R4-A6 Group50 scenario contract", () => {
       "STOP_GROUP50_DUPLICATE_INPUT_FINGERPRINT",
     );
   });
+
+  it("resolves a missing submitted P0 from its accepted baseline default", () => {
+    const item = buildR4A6Group50Case({
+      groupId: "group-default",
+      caseOrdinal: R4_A6_GROUP50_SCENARIO_KINDS.indexOf("missing_p0"),
+      catalogId: "work-default",
+      definitionVersionId: "definition-default",
+      parameters: [{
+        parameter_id: "area_m2",
+        value_type: "decimal",
+        required: true,
+        default_value: 100,
+        constraints_json: { min: 0.001, max: 1_000_000 },
+      }],
+      baseline: { area_m2: 100 },
+    });
+    expect(item).toMatchObject({
+      scenarioKind: "missing_p0",
+      missingParameterId: "area_m2",
+      expectedOutcome: "GREEN",
+    });
+    expect(item.parameterPatch).not.toHaveProperty("area_m2");
+  });
 });
