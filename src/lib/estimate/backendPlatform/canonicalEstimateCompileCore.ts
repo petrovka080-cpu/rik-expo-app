@@ -2,7 +2,10 @@ import { evaluateFormulaGraph, type FormulaAst } from "./formulaGraph";
 import { evaluateInclusionGraph } from "./inclusionGraph";
 import { validateCanonicalEstimateParameters } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
-import { canonicalFixedQuantityStatedBySource } from "./canonicalFormulaSourceBinding";
+import {
+  canonicalFixedQuantityStatedBySource,
+  canonicalNormConstantQuantityBinding,
+} from "./canonicalFormulaSourceBinding";
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -225,8 +228,15 @@ export async function compileCanonicalEstimateCore(
     for (const resource of input.resourceDefinitions) {
       const formula = formulaById.get(resource.formula_id);
       const source = String(resource.source_metadata?.originalQuantityFormula ?? "").trim();
+      const normConstant = canonicalNormConstantQuantityBinding({
+        source,
+        runtimeExpressionSource: resource.source_metadata?.runtimeExpressionSource,
+      });
+      const normConstantMatchesFormula = formula && normConstant != null
+        && Number(evaluateFormulaGraph(formula.ast, {})) === Number(normConstant);
       if (formula && formula.input_parameter_ids.length === 0 && source
-        && canonicalFixedQuantityStatedBySource(source) == null) {
+        && canonicalFixedQuantityStatedBySource(source) == null
+        && !normConstantMatchesFormula) {
         throw compilerError(
           `resource formula lost its source parameters ${resource.row_id}`,
           "FORMULA_PARAMETER_DEPENDENCY_MISSING",

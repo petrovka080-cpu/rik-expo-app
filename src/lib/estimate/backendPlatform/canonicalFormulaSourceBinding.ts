@@ -23,6 +23,20 @@ export function canonicalFixedQuantityStatedBySource(source: string): string | n
   return match?.[1] ?? null;
 }
 
+/**
+ * `minQty` is a row-level normative constant, not a user/project parameter.
+ * The admitted resource metadata must carry its already resolved numeric
+ * runtime expression; accepting the token without that binding would hide a
+ * genuinely frozen or incomplete formula.
+ */
+export function canonicalNormConstantQuantityBinding(input: {
+  source: string;
+  runtimeExpressionSource: unknown;
+}): string | null {
+  if (normalizedFormulaSource(input.source) !== "minQty") return null;
+  return canonicalFixedQuantityStatedBySource(String(input.runtimeExpressionSource ?? ""));
+}
+
 function parameterAlias(identifier: string, parameterIds: ReadonlySet<string>): string | null {
   const candidates = [...parameterIds].filter((parameterId) => {
     if (NON_MEASURE_PARAMETER.test(parameterId) || parameterId.length < 4) return false;

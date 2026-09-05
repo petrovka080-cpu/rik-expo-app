@@ -1,6 +1,7 @@
 import {
   bindCanonicalFormulaSource,
   CanonicalFormulaSourceBindingError,
+  canonicalNormConstantQuantityBinding,
 } from "./canonicalFormulaSourceBinding";
 
 describe("canonical formula source binding", () => {
@@ -33,5 +34,20 @@ describe("canonical formula source binding", () => {
       source: "roof_area_m2 * insulation_mm / 1000",
       parameterIds: new Set(["area_m2"]),
     })).toThrow(CanonicalFormulaSourceBindingError);
+  });
+
+  it("recognizes minQty only through an explicit numeric runtime binding", () => {
+    expect(canonicalNormConstantQuantityBinding({
+      source: "minQty",
+      runtimeExpressionSource: "1",
+    })).toBe("1");
+    expect(canonicalNormConstantQuantityBinding({
+      source: "minQty",
+      runtimeExpressionSource: null,
+    })).toBeNull();
+    expect(canonicalNormConstantQuantityBinding({
+      source: "area_m2",
+      runtimeExpressionSource: "1",
+    })).toBeNull();
   });
 });

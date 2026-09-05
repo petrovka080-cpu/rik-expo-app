@@ -157,6 +157,55 @@ describe("canonicalEstimateCompileCore", () => {
     expect(result.rows.map((row) => row.quantity)).toEqual(["11", "1"]);
   });
 
+  it("allows an admitted minQty norm constant only when its runtime binding matches the formula", async () => {
+    const input = baseInput();
+    input.formulaDefinitions.push({
+      formula_id: "overhead_quantity",
+      ast: { kind: "literal", value: "1" },
+      input_parameter_ids: [],
+      ast_sha256: "fixed-overhead-formula-sha",
+    });
+    input.resourceDefinitions.push({
+      ...input.resourceDefinitions[0]!,
+      id: "resource-spec-2",
+      row_id: "service:overhead",
+      ordinal: 1,
+      formula_id: "overhead_quantity",
+      source_metadata: {
+        originalQuantityFormula: "minQty",
+        runtimeExpressionSource: "1",
+      },
+    });
+
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows.map((row) => row.quantity)).toEqual(["11", "1"]);
+  });
+
+  it("rejects minQty when its admitted runtime binding does not match the formula", async () => {
+    const input = baseInput();
+    input.formulaDefinitions.push({
+      formula_id: "overhead_quantity",
+      ast: { kind: "literal", value: "2" },
+      input_parameter_ids: [],
+      ast_sha256: "mismatched-overhead-formula-sha",
+    });
+    input.resourceDefinitions.push({
+      ...input.resourceDefinitions[0]!,
+      id: "resource-spec-2",
+      row_id: "service:overhead",
+      ordinal: 1,
+      formula_id: "overhead_quantity",
+      source_metadata: {
+        originalQuantityFormula: "minQty",
+        runtimeExpressionSource: "1",
+      },
+    });
+
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "FORMULA_PARAMETER_DEPENDENCY_MISSING",
+    });
+  });
+
   it("produces the same canonical rows for sync Node and async edge hash adapters", async () => {
     const nodeResult = await compileCanonicalEstimateCore(baseInput());
     const edgeResult = await compileCanonicalEstimateCore({
