@@ -83,6 +83,7 @@ describe("R5.5.1 local developer review tooling", () => {
 
   it("proves role-independent access without replacing the owner actor", () => {
     const roleMatrix = source("scripts/dev/runLocalDeveloperRoleMatrixSmoke.ts");
+    const routeManifest = source("scripts/dev/runLocalDeveloperRouteManifestSmoke.ts");
     expect(roleMatrix).toContain("developer_set_effective_role_v1");
     expect(roleMatrix).toContain("serverEntitlementGreen");
     expect(roleMatrix).toContain("providerActorStable");
@@ -91,5 +92,16 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(roleMatrix).toContain('getByTestId("local-developer-role-toggle").waitFor');
     expect(roleMatrix).toContain("presentation_role_must_not_replace_provider_role");
     expect(roleMatrix).not.toContain("app_metadata?.role === expectedRole");
+    expect(routeManifest).toContain("developer_set_effective_role_v1");
+    expect(routeManifest).toContain("R555_ROUTE_PROVIDER_ACTOR_CHANGED");
+    expect(routeManifest).toContain("provider_actor_stable: true");
+    expect(routeManifest).toContain("can_access_all_office_routes");
+    expect(routeManifest).not.toContain('app_metadata?.role === "director"');
+    const rootLayout = source("app/_layout.tsx");
+    const banner = source("src/components/auth/LocalDeveloperReviewBanner.tsx");
+    expect(rootLayout).toContain("authSessionResolved=");
+    expect(rootLayout).toContain("hasAuthenticatedSession=");
+    expect(banner).toContain("!enabled || !authSessionResolved");
+    expect(banner).toContain("!authenticatedSession");
   });
 });

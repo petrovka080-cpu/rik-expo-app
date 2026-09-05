@@ -10,10 +10,12 @@ import { computeReleaseFingerprints } from "../release/computeReleaseFingerprint
 type Json = Record<string, any>;
 
 const MASTER_SHA256 =
+  process.env.R4_A8_MASTER_SHA256 ??
   "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007";
 const ORIGIN = process.env.R555_WEB_ORIGIN ?? "http://localhost:8081";
 const OUTPUT = resolve(
-  ".release-runtime/r555/evidence/23B_R555_LOCAL_DEVELOPER_ROUTE_MANIFEST.json",
+  process.env.R4_A8_DEVELOPER_ROUTE_MANIFEST_OUTPUT ??
+    ".release-runtime/r555/evidence/23B_R555_LOCAL_DEVELOPER_ROUTE_MANIFEST.json",
 );
 
 function sha256(value: string | Buffer): string {
@@ -41,19 +43,84 @@ async function signInDirector(page: Page) {
   await page.goto(`${ORIGIN}/request`, { waitUntil: "domcontentloaded", timeout: 180_000 });
   await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
   await page.getByTestId("auth.login.screen").waitFor({ timeout: 60_000 });
-  await page.getByTestId("local-developer-role-toggle").click();
-  await page.getByTestId("local-developer-role-director").click();
-  await page.waitForFunction(() => {
+  await page.getByTestId("local-developer-role-toggle").waitFor({
+    state: "visible",
+    timeout: 180_000,
+  });
+  const actorBefore = await page.evaluate(() => {
     const raw = window.localStorage.getItem("sb-127-auth-token");
-    if (!raw) return false;
     try {
-      return JSON.parse(raw)?.user?.app_metadata?.role === "director";
+      const session = raw ? JSON.parse(raw) : null;
+      return {
+        userId:
+          typeof session?.user?.id === "string" ? session.user.id : null,
+        providerRole:
+          typeof session?.user?.app_metadata?.role === "string"
+            ? session.user.app_metadata.role
+            : null,
+      };
     } catch {
-      return false;
+      return { userId: null, providerRole: null };
     }
-  }, undefined, { timeout: 120_000 });
+  });
+  invariant(actorBefore.userId, "R555_ROUTE_OWNER_ACTOR_ID_MISSING");
+  await page.getByTestId("local-developer-role-toggle").click();
+  const serverRoleResponse = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname.endsWith(
+        "/rest/v1/rpc/developer_set_effective_role_v1",
+      ) && response.request().method() === "POST",
+    { timeout: 120_000 },
+  );
+  await page.getByTestId("local-developer-role-director").click();
+  const roleResponse = await serverRoleResponse;
+  invariant(roleResponse.ok(), "R555_ROUTE_EFFECTIVE_ROLE_RPC_RED");
+  const serverContext = (await roleResponse.json()) as Record<string, unknown>;
+  const allowedRoles = Array.isArray(serverContext.allowedRoles)
+    ? serverContext.allowedRoles.map(String)
+    : [];
+  invariant(
+    serverContext.actorUserId === actorBefore.userId &&
+      serverContext.actorRole === "platform_developer" &&
+      serverContext.entitlement === "platform_developer" &&
+      serverContext.authorizationSource === "server_entitlement" &&
+      serverContext.activeEffectiveRole === "director" &&
+      serverContext.canAccessAllOfficeRoutes === true &&
+      serverContext.canImpersonateForMutations === true,
+    "R555_ROUTE_SERVER_ENTITLEMENT_RED",
+  );
+  await page.waitForFunction(
+    () =>
+      document.querySelector(
+        '[data-testid="local-developer-active-role"]',
+      )?.textContent?.trim() === "Директор",
+    undefined,
+    { timeout: 120_000 },
+  );
   await page.waitForURL((url) => url.pathname === "/request", { timeout: 120_000 });
   await page.getByTestId("consumer-repair-problem-input").waitFor({ timeout: 180_000 });
+  const actorAfter = await page.evaluate(() => {
+    const raw = window.localStorage.getItem("sb-127-auth-token");
+    try {
+      const session = raw ? JSON.parse(raw) : null;
+      return {
+        userId:
+          typeof session?.user?.id === "string" ? session.user.id : null,
+        providerRole:
+          typeof session?.user?.app_metadata?.role === "string"
+            ? session.user.app_metadata.role
+            : null,
+      };
+    } catch {
+      return { userId: null, providerRole: null };
+    }
+  });
+  invariant(
+    actorAfter.userId === actorBefore.userId &&
+      actorAfter.providerRole === actorBefore.providerRole,
+    "R555_ROUTE_PROVIDER_ACTOR_CHANGED",
+  );
+  return { actorBefore, serverContext, allowedRoles };
 }
 
 async function verifyRoute(
@@ -168,7 +235,7 @@ async function main() {
   const context = await browser.newContext();
   try {
     const loginPage = await context.newPage();
-    await signInDirector(loginPage);
+    const developerIdentity = await signInDirector(loginPage);
     await loginPage.close();
 
     const routes: Json[] = [];
@@ -191,7 +258,17 @@ async function main() {
       },
       principal: {
         provider_issued: true,
-        role: "director",
+        actor_user_id_sha256: sha256(developerIdentity.actorBefore.userId!),
+        provider_role: developerIdentity.actorBefore.providerRole,
+        provider_actor_stable: true,
+        actor_role: developerIdentity.serverContext.actorRole,
+        entitlement: developerIdentity.serverContext.entitlement,
+        authorization_source:
+          developerIdentity.serverContext.authorizationSource,
+        effective_role: developerIdentity.serverContext.activeEffectiveRole,
+        allowed_roles: developerIdentity.allowedRoles.length,
+        can_access_all_office_routes:
+          developerIdentity.serverContext.canAccessAllOfficeRoutes === true,
         tenant_class: "dedicated_local_test_tenant",
         credentials_captured: false,
       },

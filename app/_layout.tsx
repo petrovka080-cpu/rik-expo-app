@@ -1101,6 +1101,15 @@ function RootLayout() {
             >
               <LocalDeveloperReviewBanner
                 authenticatedRole={authState.authenticatedRole}
+                authSessionResolved={
+                  authState.sessionLoaded &&
+                  authState.authSessionState.status !== "unknown"
+                }
+                hasAuthenticatedSession={
+                  authState.sessionLoaded &&
+                  authState.authSessionState.status === "authenticated" &&
+                  Boolean(authState.authenticatedUserId)
+                }
               />
               <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.appRoot} />
               {authState.sessionLoaded &&

@@ -27,10 +27,16 @@ const ROLE_LABELS: Record<LocalDeveloperReviewRole, string> = {
 
 export function LocalDeveloperReviewBanner({
   authenticatedRole = null,
+  authSessionResolved = true,
+  hasAuthenticatedSession,
 }: {
   authenticatedRole?: string | null;
+  authSessionResolved?: boolean;
+  hasAuthenticatedSession?: boolean;
 }) {
   const enabled = isLocalDeveloperReviewEnabled();
+  const authenticatedSession =
+    hasAuthenticatedSession ?? Boolean(authenticatedRole);
   const [expanded, setExpanded] = useState(false);
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [savingRole, setSavingRole] = useState<LocalDeveloperReviewRole | null>(null);
@@ -40,7 +46,7 @@ export function LocalDeveloperReviewBanner({
   const automaticLoginAttempted = useRef(false);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !authSessionResolved) return;
     let mounted = true;
     const applyServerContext = async () => {
       const context = await loadDeveloperOverrideContext();
@@ -57,7 +63,11 @@ export function LocalDeveloperReviewBanner({
     setCheckingAccess(true);
     setError(false);
     const establishAccess = async () => {
-      if (!authenticatedRole && !automaticLoginAttempted.current) {
+      if (
+        !authenticatedSession &&
+        !authenticatedRole &&
+        !automaticLoginAttempted.current
+      ) {
         automaticLoginAttempted.current = true;
         setSavingRole("director");
         await restoreLocalDeveloperOwnerSession();
@@ -80,7 +90,7 @@ export function LocalDeveloperReviewBanner({
     return () => {
       mounted = false;
     };
-  }, [authenticatedRole, enabled]);
+  }, [authenticatedRole, authenticatedSession, authSessionResolved, enabled]);
 
   if (!enabled) return null;
 

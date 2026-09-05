@@ -77,6 +77,48 @@ describe("LocalDeveloperReviewBanner", () => {
     expect(mockLoadDeveloperOverrideContext).toHaveBeenCalledTimes(1);
   });
 
+  it("waits for canonical auth hydration before restoring the owner", async () => {
+    let renderer: ReactTestRenderer;
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <LocalDeveloperReviewBanner
+          authenticatedRole={null}
+          authSessionResolved={false}
+          hasAuthenticatedSession={false}
+        />,
+      );
+    });
+    expect(mockRestoreLocalDeveloperOwnerSession).not.toHaveBeenCalled();
+    expect(mockLoadDeveloperOverrideContext).not.toHaveBeenCalled();
+
+    await act(async () => {
+      renderer!.update(
+        <LocalDeveloperReviewBanner
+          authenticatedRole={null}
+          authSessionResolved
+          hasAuthenticatedSession={false}
+        />,
+      );
+    });
+    expect(mockRestoreLocalDeveloperOwnerSession).toHaveBeenCalledTimes(1);
+    expect(mockLoadDeveloperOverrideContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not replace an authenticated actor while role metadata is warming", async () => {
+    await act(async () => {
+      TestRenderer.create(
+        <LocalDeveloperReviewBanner
+          authenticatedRole={null}
+          authSessionResolved
+          hasAuthenticatedSession
+        />,
+      );
+    });
+
+    expect(mockRestoreLocalDeveloperOwnerSession).not.toHaveBeenCalled();
+    expect(mockLoadDeveloperOverrideContext).toHaveBeenCalledTimes(1);
+  });
+
   it("changes only the server-owned effective role, not the provider principal", async () => {
     let renderer: ReactTestRenderer;
     await act(async () => {
