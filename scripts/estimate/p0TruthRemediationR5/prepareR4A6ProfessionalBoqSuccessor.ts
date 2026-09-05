@@ -997,17 +997,19 @@ async function auditSuccessor(input: {
   const content = (await client.query(`select count(*)::int passports,
       count(*) filter(where definition.content_status='CANDIDATE_READY'
         and definition.content_gate_status='GREEN' and passport.decision->>'status'='GREEN')::int green
-    from public.estimate_definition_version definition
+    from public.estimate_cumulative_manifest_entry manifest
+    join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
     join public.estimate_content_passport_r3 passport on passport.definition_version_id=definition.id
-    where definition.release_id=$1 and definition.source_metadata->>'contract'=$2`, [
+    where manifest.release_id=$1 and definition.source_metadata->>'contract'=$2`, [
     input.releaseId,
     CONTRACT_ID,
   ])).rows[0] as Json;
   const missingBindings = (await client.query(`select count(*)::int count from (
-      select resource.id from public.estimate_definition_version definition
+      select resource.id from public.estimate_cumulative_manifest_entry manifest
+      join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
       join public.estimate_resource_spec resource on resource.definition_version_id=definition.id
       left join public.estimate_resource_price_route_binding binding on binding.resource_spec_id=resource.id
-      where definition.release_id=$1 and definition.source_metadata->>'contract'=$2
+      where manifest.release_id=$1 and definition.source_metadata->>'contract'=$2
       group by resource.id having count(binding.*)=0) missing`, [input.releaseId, CONTRACT_ID])).rows[0] as Json;
 
   invariant(release?.status === "prepared"
@@ -1138,6 +1140,17 @@ async function main(): Promise<void> {
       "select * from public.estimate_definition_release where release_key=$1",
       [releaseKey],
     )).rows[0] as Json | undefined;
+    const reusable = existing ? undefined : (await client.query(`select *
+      from public.estimate_definition_release
+      where status='prepared' and metadata->>'contract'=$1
+      order by created_at desc limit 1`, [CONTRACT_ID])).rows[0] as Json | undefined;
+    const reusableManagedDelta = reusable
+      ? git(["diff", "--name-only", `${reusable.source_commit}..HEAD`, "--", ...MANAGED_SOURCE_PATHS])
+        .split(/\r?\n/u).filter(Boolean)
+      : [];
+    const canReuseSemanticPayload = reusable != null
+      && reusableManagedDelta.length === 1
+      && reusableManagedDelta[0] === "scripts/estimate/p0TruthRemediationR5/prepareR4A6ProfessionalBoqSuccessor.ts";
     if (existing) {
       invariant(existing.id === releaseId && existing.status === "prepared",
         "R4_A6_PROFESSIONAL_EXISTING_SUCCESSOR_DRIFT");
@@ -1151,6 +1164,101 @@ async function main(): Promise<void> {
         source: { branch, head, tree, fingerprint },
         successor: { releaseId, searchReleaseId },
         audit,
+        professionalBoqGateReady: true,
+        productionReady: false,
+      };
+    } else if (canReuseSemanticPayload) {
+      const reusableMetadata = object(reusable.metadata);
+      const reusableSearchReleaseId = String(reusableMetadata.searchReleaseId ?? "");
+      invariant(reusableSearchReleaseId.length > 0, "R4_A6_PROFESSIONAL_REUSABLE_SEARCH_MISSING");
+      await auditSuccessor({
+        client,
+        contract,
+        releaseId: String(reusable.id),
+        searchReleaseId: reusableSearchReleaseId,
+      });
+      const manifestSha256 = shaObject({
+        contract: CONTRACT_ID,
+        predecessor: reusable.source_manifest_sha256,
+        sourceFingerprint: fingerprint,
+        semanticPayloadReusedFrom: reusable.id,
+      });
+      await client.query(`insert into public.estimate_definition_release(
+          id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
+          definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,
+          parameter_count,formula_count)
+        values($1,$2,6,'draft',$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12)`, [
+        releaseId,
+        releaseKey,
+        head,
+        tree,
+        manifestSha256,
+        contract.denominator.definitionRecords,
+        contract.denominator.successorResourceRows,
+        JSON.stringify({
+          ...reusableMetadata,
+          lifecycle: "PREPARED_NOT_ACTIVE",
+          parentReleaseId: reusable.id,
+          sourceFingerprint: fingerprint,
+          manifestCounts: {
+            definitions: contract.denominator.definitionRecords,
+            ready: contract.denominator.definitionRecords,
+            quarantined: 0,
+            repaired: contract.denominator.formulaDefinitions,
+          },
+          semanticPayloadReusedFrom: reusable.id,
+          activationAllowed: false,
+          productionEligible: false,
+        }),
+        reusable.id,
+        shaObject({ manifestSha256, sourceFingerprint: fingerprint }),
+        contract.denominator.successorParameters,
+        contract.denominator.successorFormulaGraphs,
+      ]);
+      await client.query(`insert into public.estimate_cumulative_manifest_entry(
+          release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
+          publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,
+          definition_hash,entry_sha256,runtime_publication_state)
+        select $1,catalog_id,definition_version_id,$2,source_release_id,domain_id,
+          publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,
+          definition_hash,encode(extensions.digest(convert_to(
+            $2||':'||($1::uuid)::text||':'||catalog_id||':'||entry_sha256,'UTF8'),'sha256'),'hex'),
+          runtime_publication_state
+        from public.estimate_cumulative_manifest_entry where release_id=$3`, [
+        releaseId,
+        CONTRACT_ID,
+        reusable.id,
+      ]);
+      const searchSnapshot = await cloneCanonicalSearch({
+        client,
+        contract,
+        releaseId,
+        searchReleaseId,
+        releaseKey,
+        fingerprint,
+        head,
+        tree,
+      });
+      await client.query(`update public.estimate_definition_release set
+          status='prepared',sealed_at=clock_timestamp(),metadata=metadata||$2::jsonb
+        where id=$1 and status='draft'`, [
+        releaseId,
+        JSON.stringify({ searchReleaseId, searchSnapshot }),
+      ]);
+      const audit = await auditSuccessor({ client, contract, releaseId, searchReleaseId });
+      proof = {
+        schemaVersion: "r568-r4-a6-professional-boq-successor-receipt.v1",
+        capturedAt: new Date().toISOString(),
+        mode: APPLY ? "APPLY" : "DRY_RUN",
+        idempotent: false,
+        source: { branch, head, tree, fingerprint, managedPaths: MANAGED_SOURCE_PATHS },
+        predecessor: { definitionReleaseId: reusable.id, searchReleaseId: reusableSearchReleaseId },
+        successor: { releaseId, searchReleaseId },
+        semanticPayloadReusedFrom: reusable.id,
+        audit,
+        status: APPLY
+          ? "GREEN_R4_A6_PROFESSIONAL_BOQ_METADATA_SUCCESSOR_PREPARED_NOT_ACTIVE"
+          : "GREEN_R4_A6_PROFESSIONAL_BOQ_METADATA_SUCCESSOR_DRY_RUN_ROLLED_BACK",
         professionalBoqGateReady: true,
         productionReady: false,
       };
