@@ -550,14 +550,16 @@ function main(): void {
   writeJsonAtomic(path.join(runningRoot, "32_performance.json"), performanceReceipt);
   writeJsonAtomic(path.join(runningRoot, "30_security_performance_terminal.json"), combinedReceipt);
   fs.renameSync(runningRoot, terminalRoot);
-  for (const [name, value] of [
-    ["30_pdf_print_matrix.json", physicalPdf],
-    ["31_security.json", securityReceipt],
-    ["32_performance.json", performanceReceipt],
-  ] as const) {
-    const target = path.join(EVIDENCE_ROOT, name);
-    if (fs.existsSync(target)) throw new Error(`immutable root receipt already exists:${target}`);
-    writeJsonAtomic(target, value);
+  if (combinedStatus === "GREEN_R4_A6_SECURITY_PERFORMANCE") {
+    for (const [name, value] of [
+      ["30_pdf_print_matrix.json", physicalPdf],
+      ["31_security.json", securityReceipt],
+      ["32_performance.json", performanceReceipt],
+    ] as const) {
+      const target = path.join(EVIDENCE_ROOT, name);
+      if (fs.existsSync(target)) throw new Error(`immutable root receipt already exists:${target}`);
+      writeJsonAtomic(target, value);
+    }
   }
   console.info(JSON.stringify({
     status: combinedStatus,

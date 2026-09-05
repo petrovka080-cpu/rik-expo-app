@@ -27,6 +27,7 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain("ALLOWED_DIRTY_PATHS");
     expect(source).toContain(".trimEnd()");
     expect(source).not.toContain('git(["status", "--porcelain=v1"');
+    expect(source).toContain('if (combinedStatus === "GREEN_R4_A6_SECURITY_PERFORMANCE")');
     expect(source).toContain("productionAccessed: false");
     expect(source).toContain("fakeGreenClaimed: false");
   });
