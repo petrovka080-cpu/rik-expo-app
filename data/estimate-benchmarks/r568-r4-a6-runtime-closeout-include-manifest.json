@@ -5,6 +5,7 @@
   "include": [
     "android/app/src/debug/res/xml/network_security_config.xml",
     "data/estimate-benchmarks/r568-r4-a6-formula-remediation-contract.json",
+    "data/estimate-benchmarks/r568-r4-a6-professional-boq-contract.json",
     "data/estimate-benchmarks/r568-r4-a6-runtime-closeout-include-manifest.json",
     "scripts/dev/localDeveloperReview.contract.test.ts",
     "scripts/dev/startLocalDeveloperReview.ps1",
@@ -13,13 +14,20 @@
     "scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts",
     "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
     "scripts/estimate/p0TruthRemediationR5/prepareR4A6FormulaDependencySuccessor.ts",
+    "scripts/estimate/p0TruthRemediationR5/prepareR4A6ProfessionalBoqSuccessor.ts",
     "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts",
     "src/lib/ai/expandedComplexWorks/index.ts",
+    "src/lib/ai/expandedComplexWorks/s2b/registry.ts",
+    "src/lib/ai/expandedComplexWorks/s2b/types.ts",
+    "src/lib/estimate/buildProfessionalWorkPassport.ts",
+    "src/lib/estimate/r4A6PumpStationProfessional.ts",
     "tests/architecture/androidDebugDevClientNetworkSecurity.contract.test.ts",
     "tests/architecture/liveBoqPdfCatalogAndroidNativeMetro.contract.test.ts",
     "tests/e2e/androidApi34ProofEnvironment.contract.test.ts",
     "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts",
-    "tests/estimateExpandedComplex/formulaDependencyOwnersR4A6.contract.test.ts"
+    "tests/estimateExpandedComplex/formulaDependencyOwnersR4A6.contract.test.ts",
+    "tests/estimateExpandedComplex/professionalContentR4A6.contract.test.ts",
+    "tests/estimateExpandedComplex/s2bInfrastructureEngineeringWave2.contract.test.ts"
   ],
   "excludePolicy": {
     "broadAddForbidden": true,

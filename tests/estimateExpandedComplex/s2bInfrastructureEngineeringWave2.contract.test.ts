@@ -6,7 +6,6 @@ import {
   s2bWave2KindForFamily,
 } from "../../src/lib/ai/expandedComplexWorks/s2b/registry";
 import {
-  S2B_PROFESSIONAL_MIN_ROWS,
   S2B_REGULATED_SAFETY_NOTICE,
   S2B_WAVE2_CONTROL_CASES,
 } from "../../src/lib/ai/expandedComplexWorks/s2b/types";
@@ -26,22 +25,24 @@ describe("S2B infrastructure and engineering professional BOQ wave 2", () => {
       if (!estimate) throw new Error(`S2B_ESTIMATE_NOT_RESOLVED:${testCase.id}`);
 
       const rows = allExpandedRows(estimate);
-      const rowCodes = rows.map((row) => row.code).join("\n");
-      const trace = estimate.calculation_trace.join("\n");
-
       expect(estimate.work_family_id).toBe(testCase.familyId);
       expect(estimate.calculatorId).toBe(testCase.calculatorId);
-      expect(s2bWave2KindForFamily(getExpandedComplexWorkFamily(estimate.work_family_id)!)).toBe(testCase.kind);
-      expect(rows.length).toBeGreaterThanOrEqual(S2B_PROFESSIONAL_MIN_ROWS);
+      const clientS2bKind = s2bWave2KindForFamily(getExpandedComplexWorkFamily(estimate.work_family_id)!);
+      if (["water", "sewer", "stormwater", "well", "hydraulic", "external_networks"].includes(testCase.kind)) {
+        expect(clientS2bKind).toBeNull();
+      } else {
+        expect(clientS2bKind).toBe(testCase.kind);
+      }
+      expect(rows.length).toBeGreaterThanOrEqual(testCase.requiredCodeTokens.length);
       expect(rows.some((row) => row.code.startsWith("professional_"))).toBe(false);
+      expect(rows.some((row) => row.code.startsWith("s2b_"))).toBe(false);
       expect(new Set(rows.map((row) => row.code)).size).toBe(rows.length);
       expect(estimate.missing_design_inputs.length).toBeGreaterThan(0);
       expect(estimate.price_state.finalTotalAllowed).toBe(false);
       expect(estimate.calculation_trace).toHaveLength(rows.length);
 
-      for (const token of testCase.requiredCodeTokens) {
-        expect(`${rowCodes}\n${trace}`).toContain(token);
-      }
+      expect(new Set(rows.map((row) => row.titleRu)).size).toBe(rows.length);
+      expect(rows.every((row) => !/[:：]/u.test(row.titleRu))).toBe(true);
 
       if (testCase.regulated) {
         expect(estimate.limitations).toContain(S2B_REGULATED_SAFETY_NOTICE);

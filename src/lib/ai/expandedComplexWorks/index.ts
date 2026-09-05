@@ -9,7 +9,6 @@ import {
   type S2BCalculatorContext,
 } from "./s2b/domainCalculators";
 import {
-  ensureS2BProfessionalDepth,
   isS2BRegulatedKind,
   s2bWave2KindForFamily,
 } from "./s2b/registry";
@@ -18,8 +17,15 @@ import {
   resolveExpandedPublicRussianCategoryTitleR555,
   resolveExpandedPublicRussianIdentityR555,
 } from "../../estimate/publicRussianLexiconR555";
+import {
+  evaluateR4A6PumpStationRows,
+  missingR4A6PumpStationP0,
+  R4_A6_PUMP_STATION_PARAMETERS,
+  R4_A6_PUMP_STATION_TITLE_RU,
+} from "../../estimate/r4A6PumpStationProfessional";
 
 export type ExpandedComplexEstimateLevel =
+  | "NEEDS_INPUT"
   | "ROM_CONCEPT"
   | "PRELIMINARY_BOQ"
   | "DETAILED_BOQ_FROM_DRAWINGS"
@@ -64,7 +70,11 @@ export type ExpandedComplexUnit =
   | "kV"
   | "MW"
   | "m3_day"
-  | "m3_h";
+  | "m3_h"
+  | "km"
+  | "kW"
+  | "V"
+  | "test";
 
 export type ExpandedComplexParameterSchemaField = {
   key: string;
@@ -819,6 +829,15 @@ function schemaFor(
     requiredFor: preliminaryAndDetailed,
     missingBlocksDetailed: true,
   });
+  if (calculatorId === "pumpingStationCalculator") {
+    return R4_A6_PUMP_STATION_PARAMETERS.map((parameter) => ({
+      key: parameter.parameterId,
+      labelRu: parameter.titleRu,
+      ...(parameter.unitId ? { unit: parameter.unitId as ExpandedComplexUnit } : {}),
+      requiredFor: parameter.required && !parameter.requiredWhen ? preliminaryAndDetailed : detailed,
+      missingBlocksDetailed: parameter.tier !== "P2",
+    }));
+  }
   if (["wastewaterTreatmentCalculator", "waterTreatmentPlantCalculator"].includes(calculatorId)) {
     return [...common, exactMeasure("capacity_m3_day", "Суточная производительность", "m3_day")];
   }
@@ -933,7 +952,9 @@ export const EXPANDED_COMPLEX_WORK_FAMILIES: readonly ExpandedComplexWorkFamilyD
         work_family_id: seed.id,
         professionalNameRu: sourceProfessionalNameRu,
       });
-      const professionalNameRu = publicIdentity.titleRu;
+      const professionalNameRu = seed.id === "booster_pumping_station"
+        ? R4_A6_PUMP_STATION_TITLE_RU
+        : publicIdentity.titleRu;
       const calculatorId = calculatorFor(seed, block);
       return {
         work_family_id: seed.id,
@@ -1222,84 +1243,46 @@ function row(input: {
   };
 }
 
-export const EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS = 45;
-
-type ExpandedComplexDepthSeed = {
+type AcceptedRoofWitnessSupplement = {
   code: string;
   titleRu: string;
   lineType: ExpandedComplexLineType;
   group: string;
   unit: ExpandedComplexUnit;
-  quantity: (baseQuantity: number) => number;
-  formula: (baseParameterKey: string) => string;
+  quantity: (areaM2: number) => number;
+  formula: string;
   materialKey?: string;
   procurement?: boolean;
 };
 
-const EXPANDED_COMPLEX_DEPTH_BASE_KEYS = [
-  "road_area_m2",
-  "facade_area_m2",
-  "glazing_area_m2",
-  "roof_area_m2",
-  "deck_area_m2",
-  "area_m2",
-  "slope_area_m2",
-  "wall_face_area_m2",
-  "gabion_volume_m3",
-  "volume_m3",
-  "structural_concrete_m3",
-  "length_m",
-  "channel_length_m",
-  "poles_count",
-  "capacity_mw",
-  "capacity_m3_day",
-  "capacity_m3_h",
-] as const;
-
-const EXPANDED_COMPLEX_DEPTH_SEEDS: readonly ExpandedComplexDepthSeed[] = [
-  { code: "survey_setting_out_hours", titleRu: "Инженерная разбивка, обмеры и оси", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.05, formula: (key) => `${key} * 0.05` },
-  { code: "site_access_preparation_hours", titleRu: "Подготовка доступа и рабочей зоны", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.04, formula: (key) => `${key} * 0.04` },
-  { code: "temporary_protection_m2", titleRu: "Временная защита смежных зон и покрытий", lineType: "material", group: "materials", unit: "m2", quantity: (base) => base * 0.08, formula: (key) => `${key} * 0.08`, materialKey: "temporary_protection" },
-  { code: "layout_marking_consumables_set", titleRu: "Разметочные материалы и расходники для геодезии", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)`, materialKey: "layout_marking_consumables" },
-  { code: "primary_material_waste_allowance_set", titleRu: "Технологический запас основных материалов", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 300), formula: (key) => `ceil(${key} / 300)`, materialKey: "primary_material_waste_allowance" },
-  { code: "fasteners_and_fixings_set", titleRu: "Крепеж, метизы и фиксаторы узлов", lineType: "material", group: "materials", unit: "set", quantity: (base) => Math.ceil(base / 250), formula: (key) => `ceil(${key} / 250)`, materialKey: "fasteners_and_fixings" },
-  { code: "sealants_joint_materials_l", titleRu: "Герметики и материалы примыканий", lineType: "material", group: "materials", unit: "l", quantity: (base) => base * 0.02, formula: (key) => `${key} * 0.02`, materialKey: "sealants_joint_materials" },
-  { code: "primer_contact_layer_l", titleRu: "Грунтовочный или контактный слой", lineType: "material", group: "materials", unit: "l", quantity: (base) => base * 0.03, formula: (key) => `${key} * 0.03`, materialKey: "primer_contact_layer" },
-  { code: "embedded_parts_pcs", titleRu: "Закладные и доборные элементы по месту", lineType: "material", group: "components", unit: "pcs", quantity: (base) => Math.ceil(base / 80), formula: (key) => `ceil(${key} / 80)`, materialKey: "embedded_parts" },
-  { code: "connection_nodes_set", titleRu: "Комплект узлов соединения и примыкания", lineType: "material", group: "components", unit: "set", quantity: (base) => Math.ceil(base / 200), formula: (key) => `ceil(${key} / 200)`, materialKey: "connection_nodes" },
-  { code: "temporary_power_set", titleRu: "Временное электропитание и кабельная оснастка", lineType: "equipment", group: "equipment", unit: "set", quantity: () => 1, formula: () => "1 set per work package", materialKey: "temporary_power_set", procurement: true },
-  { code: "small_tools_set", titleRu: "Комплект ручного инструмента и оснастки", lineType: "equipment", group: "equipment", unit: "set", quantity: (base) => Math.ceil(base / 1000), formula: (key) => `ceil(${key} / 1000)`, materialKey: "small_tools_set", procurement: true },
-  { code: "measuring_equipment_shift", titleRu: "Измерительное оборудование и контрольные приборы", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 800), formula: (key) => `ceil(${key} / 800)`, materialKey: "measuring_equipment", procurement: true },
-  { code: "lifting_equipment_shift", titleRu: "Подъемное оборудование для подачи материалов", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 600), formula: (key) => `ceil(${key} / 600)`, materialKey: "lifting_equipment", procurement: true },
-  { code: "cutting_drilling_tool_shift", titleRu: "Режущий и сверлильный инструмент", lineType: "equipment", group: "equipment", unit: "shift", quantity: (base) => Math.ceil(base / 700), formula: (key) => `ceil(${key} / 700)`, materialKey: "cutting_drilling_tool", procurement: true },
-  { code: "dust_control_set", titleRu: "Пылеподавление и уборочная оснастка", lineType: "equipment", group: "equipment", unit: "set", quantity: (base) => Math.ceil(base / 1200), formula: (key) => `ceil(${key} / 1200)`, materialKey: "dust_control_set", procurement: true },
-  { code: "mobilization_trip", titleRu: "Мобилизация бригады и инструмента", lineType: "service", group: "logistics", unit: "trip", quantity: () => 1, formula: () => "1 mobilization trip", procurement: true },
-  { code: "material_delivery_trip", titleRu: "Доставка основных материалов", lineType: "service", group: "logistics", unit: "trip", quantity: (base) => Math.ceil(base / 120), formula: (key) => `ceil(${key} / 120)`, procurement: true },
-  { code: "site_handling_set", titleRu: "Внутриплощадочная подача и складирование", lineType: "service", group: "logistics", unit: "set", quantity: (base) => Math.ceil(base / 250), formula: (key) => `ceil(${key} / 250)`, procurement: true },
-  { code: "waste_sorting_set", titleRu: "Сортировка отходов и упаковки", lineType: "service", group: "waste", unit: "set", quantity: (base) => Math.ceil(base / 300), formula: (key) => `ceil(${key} / 300)`, procurement: true },
-  { code: "waste_removal_trip", titleRu: "Вывоз строительных отходов и тары", lineType: "service", group: "waste", unit: "trip", quantity: (base) => Math.ceil(base / 180), formula: (key) => `ceil(${key} / 180)`, procurement: true },
-  { code: "hse_briefing_set", titleRu: "Охрана труда, допуски и инструктаж", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 HSE set per work package" },
-  { code: "incoming_material_control_set", titleRu: "Входной контроль материалов", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)` },
-  { code: "hidden_works_act_set", titleRu: "Акты скрытых работ и фотофиксация", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 400), formula: (key) => `ceil(${key} / 400)` },
-  { code: "quality_checklist_set", titleRu: "Контрольная карта качества", lineType: "service", group: "quality", unit: "set", quantity: (base) => Math.ceil(base / 600), formula: (key) => `ceil(${key} / 600)` },
-  { code: "as_built_measurement_hours", titleRu: "Исполнительные обмеры", lineType: "work", group: "quality", unit: "hour", quantity: (base) => base * 0.025, formula: (key) => `${key} * 0.025` },
-  { code: "handover_documentation_set", titleRu: "Передаточная документация заказчику", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 handover documentation set" },
-  { code: "engineering_review_hours", titleRu: "Проверка сметчика и инженера по исходным данным", lineType: "work", group: "engineering", unit: "hour", quantity: (base) => Math.max(2, base * 0.01), formula: (key) => `max(2, ${key} * 0.01)` },
-  { code: "procurement_coordination_hours", titleRu: "Координация спецификаций и поставок", lineType: "work", group: "engineering", unit: "hour", quantity: (base) => Math.max(2, base * 0.012), formula: (key) => `max(2, ${key} * 0.012)` },
-  { code: "workfront_acceptance_hours", titleRu: "Приемка фронта работ перед стартом", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => Math.max(1, base * 0.018), formula: (key) => `max(1, ${key} * 0.018)` },
-  { code: "surface_preparation_hours", titleRu: "Подготовка основания и очистка зоны", lineType: "work", group: "preparation", unit: "hour", quantity: (base) => base * 0.08, formula: (key) => `${key} * 0.08` },
-  { code: "primary_installation_labor_hours", titleRu: "Основной монтажный цикл", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.12, formula: (key) => `${key} * 0.12` },
-  { code: "node_installation_labor_hours", titleRu: "Монтаж узлов, примыканий и доборных элементов", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.06, formula: (key) => `${key} * 0.06` },
-  { code: "adjustment_alignment_hours", titleRu: "Выверка, регулировка и подгонка", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.04, formula: (key) => `${key} * 0.04` },
-  { code: "finish_cleaning_hours", titleRu: "Финишная уборка зоны работ", lineType: "work", group: "labor", unit: "hour", quantity: (base) => base * 0.025, formula: (key) => `${key} * 0.025` },
-  { code: "crew_supervision_hours", titleRu: "Производственный контроль бригадира", lineType: "work", group: "labor", unit: "hour", quantity: (base) => Math.max(2, base * 0.02), formula: (key) => `max(2, ${key} * 0.02)` },
-  { code: "temporary_storage_set", titleRu: "Временное хранение и защита материалов", lineType: "service", group: "logistics", unit: "set", quantity: (base) => Math.ceil(base / 500), formula: (key) => `ceil(${key} / 500)`, procurement: true },
-  { code: "demobilization_trip", titleRu: "Демобилизация и вывоз инструмента", lineType: "service", group: "logistics", unit: "trip", quantity: () => 1, formula: () => "1 demobilization trip", procurement: true },
-  { code: "testing_commissioning_set", titleRu: "Испытания, проверка работоспособности и пуск", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 testing and commissioning set" },
-  { code: "site_overhead_set", titleRu: "Организация участка и календарное сопровождение", lineType: "service", group: "overhead", unit: "set", quantity: () => 1, formula: () => "1 site overhead set" },
-  { code: "material_reconciliation_set", titleRu: "Сверка материалов с ведомостью закупки", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 material reconciliation set" },
-  { code: "final_acceptance_hours", titleRu: "Итоговая приемка результата", lineType: "work", group: "quality", unit: "hour", quantity: (base) => Math.max(1, base * 0.015), formula: (key) => `max(1, ${key} * 0.015)` },
-  { code: "maintenance_recommendations_set", titleRu: "Рекомендации по эксплуатации и обслуживанию", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: () => "1 operation recommendations set" },
+const ACCEPTED_ROOF_WITNESS_SUPPLEMENT: readonly AcceptedRoofWitnessSupplement[] = [
+  { code: "temporary_protection_m2", titleRu: "Защитная плёнка зоны складирования кровельных материалов", lineType: "material", group: "materials", unit: "m2", quantity: (area) => area * 0.08, formula: "area_m2 * 0.08", materialKey: "roof_storage_protection" },
+  { code: "layout_marking_consumables_set", titleRu: "Разметочный шнур и маркеры кровельной раскладки", lineType: "material", group: "materials", unit: "set", quantity: (area) => Math.ceil(area / 500), formula: "ceil(area_m2 / 500)", materialKey: "roof_layout_markers" },
+  { code: "primary_material_waste_allowance_set", titleRu: "Резервные элементы обрешётки по карте раскроя", lineType: "material", group: "materials", unit: "set", quantity: (area) => Math.ceil(area / 300), formula: "ceil(area_m2 / 300)", materialKey: "battens_cutting_reserve" },
+  { code: "fasteners_and_fixings_set", titleRu: "Оцинкованные саморезы для крепления обрешётки", lineType: "material", group: "materials", unit: "set", quantity: (area) => Math.ceil(area / 250), formula: "ceil(area_m2 / 250)", materialKey: "battens_fasteners" },
+  { code: "sealants_joint_materials_l", titleRu: "Кровельный герметик узлов примыкания", lineType: "material", group: "materials", unit: "l", quantity: (area) => area * 0.02, formula: "area_m2 * 0.02", materialKey: "roof_joint_sealant" },
+  { code: "primer_contact_layer_l", titleRu: "Антисептическая грунтовка деревянной обрешётки", lineType: "material", group: "materials", unit: "l", quantity: (area) => area * 0.03, formula: "area_m2 * 0.03", materialKey: "battens_antiseptic_primer" },
+  { code: "embedded_parts_pcs", titleRu: "Кронштейны крепления доборных элементов кровли", lineType: "material", group: "components", unit: "pcs", quantity: (area) => Math.ceil(area / 80), formula: "ceil(area_m2 / 80)", materialKey: "roof_trim_brackets" },
+  { code: "connection_nodes_set", titleRu: "Соединительные пластины узлов обрешётки", lineType: "material", group: "components", unit: "set", quantity: (area) => Math.ceil(area / 200), formula: "ceil(area_m2 / 200)", materialKey: "battens_connection_plates" },
+  { code: "survey_setting_out_hours", titleRu: "Геодезическая проверка плоскости кровельных скатов", lineType: "work", group: "preparation", unit: "hour", quantity: (area) => area * 0.05, formula: "area_m2 * 0.05" },
+  { code: "site_access_preparation_hours", titleRu: "Подготовка безопасного фронта кровельных работ", lineType: "work", group: "preparation", unit: "hour", quantity: (area) => area * 0.04, formula: "area_m2 * 0.04" },
+  { code: "as_built_measurement_hours", titleRu: "Исполнительный обмер смонтированной обрешётки", lineType: "work", group: "quality", unit: "hour", quantity: (area) => area * 0.025, formula: "area_m2 * 0.025" },
+  { code: "temporary_power_set", titleRu: "Временный распределительный щит кровельной бригады", lineType: "equipment", group: "equipment", unit: "set", quantity: () => 1, formula: "1", materialKey: "roof_temporary_distribution_board", procurement: true },
+  { code: "small_tools_set", titleRu: "Шуруповёрты и ручная кровельная оснастка", lineType: "equipment", group: "equipment", unit: "set", quantity: (area) => Math.ceil(area / 1000), formula: "ceil(area_m2 / 1000)", materialKey: "roof_hand_tools", procurement: true },
+  { code: "measuring_equipment_shift", titleRu: "Лазерный построитель плоскостей", lineType: "equipment", group: "equipment", unit: "shift", quantity: (area) => Math.ceil(area / 800), formula: "ceil(area_m2 / 800)", materialKey: "roof_laser_level", procurement: true },
+  { code: "lifting_equipment_shift", titleRu: "Строительная лебёдка для кровельных материалов", lineType: "equipment", group: "equipment", unit: "shift", quantity: (area) => Math.ceil(area / 600), formula: "ceil(area_m2 / 600)", materialKey: "roof_material_hoist", procurement: true },
+  { code: "cutting_drilling_tool_shift", titleRu: "Торцовочная пила для элементов обрешётки", lineType: "equipment", group: "equipment", unit: "shift", quantity: (area) => Math.ceil(area / 700), formula: "ceil(area_m2 / 700)", materialKey: "battens_mitre_saw", procurement: true },
+  { code: "dust_control_set", titleRu: "Промышленный пылесос зоны раскроя", lineType: "equipment", group: "equipment", unit: "set", quantity: (area) => Math.ceil(area / 1200), formula: "ceil(area_m2 / 1200)", materialKey: "roof_cutting_vacuum", procurement: true },
+  { code: "mobilization_trip", titleRu: "Доставка кровельного инструмента на объект", lineType: "service", group: "preparation", unit: "trip", quantity: () => 1, formula: "1", procurement: true },
+  { code: "material_delivery_trip", titleRu: "Доставка доборных элементов и крепежа", lineType: "service", group: "logistics", unit: "trip", quantity: (area) => Math.ceil(area / 120), formula: "ceil(area_m2 / 120)", procurement: true },
+  { code: "site_handling_set", titleRu: "Складирование пиломатериалов обрешётки под навесом", lineType: "service", group: "site_operations", unit: "set", quantity: (area) => Math.ceil(area / 250), formula: "ceil(area_m2 / 250)", procurement: true },
+  { code: "waste_sorting_set", titleRu: "Сортировка обрезков пиломатериалов и упаковки", lineType: "service", group: "waste", unit: "set", quantity: (area) => Math.ceil(area / 300), formula: "ceil(area_m2 / 300)", procurement: true },
+  { code: "waste_removal_trip", titleRu: "Вывоз обрезков обрешётки и кровельной упаковки", lineType: "service", group: "waste", unit: "trip", quantity: (area) => Math.ceil(area / 180), formula: "ceil(area_m2 / 180)", procurement: true },
+  { code: "hse_briefing_set", titleRu: "Инструктаж по безопасным кровельным работам", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: "1" },
+  { code: "incoming_material_control_set", titleRu: "Входной контроль пиломатериалов обрешётки", lineType: "service", group: "quality", unit: "set", quantity: (area) => Math.ceil(area / 500), formula: "ceil(area_m2 / 500)" },
+  { code: "hidden_works_act_set", titleRu: "Освидетельствование скрытых элементов кровельного пирога", lineType: "service", group: "quality", unit: "set", quantity: (area) => Math.ceil(area / 400), formula: "ceil(area_m2 / 400)" },
+  { code: "quality_checklist_set", titleRu: "Контроль геометрии и шага обрешётки", lineType: "service", group: "quality", unit: "set", quantity: (area) => Math.ceil(area / 600), formula: "ceil(area_m2 / 600)" },
+  { code: "handover_documentation_set", titleRu: "Исполнительная документация кровельных работ", lineType: "service", group: "quality", unit: "set", quantity: () => 1, formula: "1" },
 ];
 
 function positiveNumber(value: number | string | boolean | null | undefined): number | null {
@@ -1307,50 +1290,35 @@ function positiveNumber(value: number | string | boolean | null | undefined): nu
   return null;
 }
 
-function expandedComplexDepthBase(
-  parameters: Record<string, number | string | boolean | null>,
-): { key: string; value: number } {
-  for (const key of EXPANDED_COMPLEX_DEPTH_BASE_KEYS) {
-    const value = positiveNumber(parameters[key]);
-    if (value) return { key, value };
-  }
-  return { key: "work_package", value: 1 };
-}
-
-function ensureExpandedComplexProfessionalDepth(input: {
+function appendAcceptedRoofWitnessComposition(input: {
   family: ExpandedComplexWorkFamilyDefinition;
   rows: ExpandedComplexBoqRow[];
   parameters: Record<string, number | string | boolean | null>;
 }): ExpandedComplexBoqRow[] {
-  const activeCount = input.rows.filter((item) => item.quantity > 0).length;
-  if (activeCount >= EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS) return input.rows;
-
-  const { key: baseParameterKey, value: baseQuantity } = expandedComplexDepthBase(input.parameters);
+  if (input.family.work_family_id !== "battens_counterbattens") return input.rows;
+  const areaM2 = positiveNumber(input.parameters.roof_area_m2);
+  if (!areaM2) return input.rows;
   const existingCodes = new Set(input.rows.map((item) => item.code));
   const rows = [...input.rows];
-
-  for (const seed of EXPANDED_COMPLEX_DEPTH_SEEDS) {
-    if (rows.filter((item) => item.quantity > 0).length >= EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS) break;
+  for (const seed of ACCEPTED_ROOF_WITNESS_SUPPLEMENT) {
     const code = `professional_${seed.code}`;
     if (existingCodes.has(code)) continue;
     existingCodes.add(code);
     rows.push(row({
       family: input.family,
       code,
-      titleRu: `${seed.titleRu}: ${input.family.professionalNameRu}`,
+      titleRu: seed.titleRu,
       lineType: seed.lineType,
       group: seed.group,
-      quantity: seed.quantity(baseQuantity),
+      quantity: seed.quantity(areaM2),
       unit: seed.unit,
-      formula: seed.formula(baseParameterKey),
+      formula: seed.formula.replace(/\barea_m2\b/gu, "roof_area_m2"),
       materialKey: seed.materialKey ? `${input.family.work_family_id}_${seed.materialKey}` : undefined,
       procurement: seed.procurement,
       sourceParameters: {
         ...input.parameters,
-        professionalDepthSupplement: true,
-        professionalDepthMinRows: EXPANDED_COMPLEX_PROFESSIONAL_MIN_ROWS,
-        professionalDepthBaseParameterKey: baseParameterKey,
-        professionalDepthBaseQuantity: baseQuantity,
+        acceptedRoofWitnessComposition: true,
+        acceptedRoofWitnessAreaParameter: "roof_area_m2",
       },
     }));
   }
@@ -1370,33 +1338,25 @@ function output(input: {
   estimateLevel?: ExpandedComplexEstimateLevel;
   skipProfessionalDepth?: boolean;
 }): ExpandedComplexCalculatorOutput {
-  const s2bRows = ensureS2BProfessionalDepth({
+  // R4-A6 forbids padding every estimate to a fixed row count. Only the
+  // already accepted roof witness has a separately authored, scoped recipe.
+  const rows = appendAcceptedRoofWitnessComposition({
     family: input.family,
     rows: input.rows,
     parameters: input.parameters,
-    createRow: (rowInput) => row({
-      family: input.family,
-      ...rowInput,
-      sourceParameters: {
-        ...input.parameters,
-        ...rowInput.sourceParameters,
-      },
-    }),
   });
-  const rows = input.skipProfessionalDepth
-    ? input.rows
-    : s2bRows ?? ensureExpandedComplexProfessionalDepth({
-      family: input.family,
-      rows: input.rows,
-      parameters: input.parameters,
-    });
   const activeRows = rows.filter((item) => item.quantity > 0);
   const material_rows = activeRows.filter((item) => item.lineType === "material");
   const work_rows = activeRows.filter((item) => item.lineType === "work");
   const equipment_rows = activeRows.filter((item) => item.lineType === "equipment");
   const service_rows = activeRows.filter((item) => item.lineType === "service");
   const s2bKind = s2bWave2KindForFamily(input.family);
-  const regulatedLimitations = s2bKind && isS2BRegulatedKind(s2bKind) ? [S2B_REGULATED_SAFETY_NOTICE] : [];
+  const regulatedFamily = (s2bKind && isS2BRegulatedKind(s2bKind)) ||
+    input.family.categoryGroup === "hydraulic" ||
+    input.family.categoryGroup === "bridges_tunnels" ||
+    input.family.categoryGroup === "gas_heat_pipelines" ||
+    /(?:well|borehole)/iu.test(input.family.work_family_id);
+  const regulatedLimitations = regulatedFamily ? [S2B_REGULATED_SAFETY_NOTICE] : [];
   return {
     source_prompt: input.sourcePrompt,
     work_family_id: input.family.work_family_id,
@@ -1548,16 +1508,74 @@ export function wastewaterTreatmentCalculator(input: CalcInput): ExpandedComplex
 export function pumpingStationCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "pumping_station");
   const text = normalizePrompt(input.prompt);
-  const capacity = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м3\/ч|м³\/ч|m3\/h)/i], 100);
-  const rows = [
-    row({ family, code: "station_slab_concrete_m3", titleRu: "Фундамент насосной станции", lineType: "material", group: "materials", quantity: Math.max(12, capacity * 0.08), unit: "m3", formula: "max(12, capacity_m3_h * 0.08)", materialKey: "ready_mix_concrete" }),
-    row({ family, code: "pump_equipment_pcs", titleRu: "Насосные агрегаты", lineType: "equipment", group: "equipment", quantity: 2, unit: "pcs", formula: "working pump + reserve pump; price missing until specification", materialKey: "pump_unit" }),
-    row({ family, code: "valves_and_manifold_set", titleRu: "Коллекторы и арматура насосной", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 manifold set", materialKey: "pump_manifold" }),
-    row({ family, code: "electrical_automation_set", titleRu: "Шкаф управления и автоматика", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 automation set; price missing until specification", materialKey: "pump_automation" }),
-    row({ family, code: "commissioning_services", titleRu: "ПНР насосной станции", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
-    row({ family, code: "labor_hours", titleRu: "Монтаж насосной станции", lineType: "work", group: "labor", quantity: 120 + capacity * 0.4, unit: "hour", formula: "120 + capacity_m3_h * 0.4" }),
-  ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { capacity_m3_h: capacity }, rows, assumptions: ["Насосы и автоматика выводятся с PRICE_MISSING до подбора производителя."], formulaSteps: ["foundation concrete = max(12, capacity_m3_h * 0.08)", "labor_hours = 120 + capacity_m3_h * 0.4"], missingInputs: [...commonMissingInputs(family), "Напор насосов", "Схема резервирования"] });
+  const numeric = (patterns: RegExp[]): number | undefined => {
+    const value = numberFromText(text, patterns, Number.NaN);
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  };
+  const foundation = /(?:фундамент\w*|плит\w*)\D{0,24}(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)/iu.exec(text);
+  const parsedValues: Record<string, number | string | boolean | null | undefined> = {
+    design_flow_m3_h: numeric([/(?:расход|подач|производительност)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м3\/ч|м³\/ч|m3\/h)/iu]),
+    design_head_m: numeric([/(?:напор)\D{0,16}(\d+(?:[,.]\d+)?)\s*(?:м|m)\b/iu]),
+    duty_pump_count: numeric([/(\d+)\s*(?:рабоч(?:их|ий)|основн(?:ых|ой))\s+насос/iu]),
+    standby_pump_count: numeric([/(\d+)\s*(?:резервн(?:ых|ый))\s+насос/iu]),
+    pump_power_kw: numeric([/(?:мощност\w*\s+(?:одного\s+)?насос\w*|насос\w*\s+мощност\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:квт|kw)/iu]),
+    suction_manifold_diameter_mm: numeric([/(?:всасывающ\w*\s+коллектор\w*|коллектор\w*\s+всасывающ\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu]),
+    discharge_manifold_diameter_mm: numeric([/(?:напорн\w*\s+коллектор\w*|коллектор\w*\s+напорн\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu]),
+    suction_manifold_length_m: numeric([/(?:длина\s+)?всасывающ\w*\s+коллектор\w*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)\b/iu]),
+    discharge_manifold_length_m: numeric([/(?:длина\s+)?напорн\w*\s+коллектор\w*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)\b/iu]),
+    power_cable_length_m: numeric([/(?:силов\w*\s+кабел\w*|кабельн\w*\s+трасс\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)\b/iu]),
+    foundation_length_m: foundation ? parseLocalizedNumber(foundation[1]) : undefined,
+    foundation_width_m: foundation ? parseLocalizedNumber(foundation[2]) : undefined,
+    foundation_thickness_m: foundation ? parseLocalizedNumber(foundation[3]) : undefined,
+    automation_scope: /автоматик|диспетчер|шкаф\s+управлен/iu.test(text) ? input.prompt.trim() : undefined,
+    power_supply_voltage_v: numeric([/(?:напряжен\w*|питан\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:в|v)\b/iu]),
+    ventilation_required: /без\s+(?:механическ\w*\s+)?вентиляц/iu.test(text) ? false : /вентиляц/iu.test(text) ? true : undefined,
+    ventilation_airflow_m3_h: numeric([/(?:вентиляц\w*|расход\s+воздух\w*)\D{0,24}(\d+(?:[,.]\d+)?)\s*(?:м3\/ч|м³\/ч|m3\/h)/iu]),
+    drainage_required: /без\s+(?:дренаж\w*|приямк\w*)/iu.test(text) ? false : /дренаж|приям/iu.test(text) ? true : undefined,
+    drainage_sump_volume_m3: numeric([/(?:дренаж\w*\s+приям\w*|приям\w*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/iu]),
+    lifting_device_required: /кран-балк|тельфер|грузоподъ[её]мн/iu.test(text),
+    delivery_required: /достав/iu.test(text),
+    delivery_distance_km: numeric([/достав\w*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:км|km)/iu]),
+  };
+  const values = Object.fromEntries(
+    Object.entries(parsedValues).filter((entry): entry is [string, number | string | boolean | null] => entry[1] !== undefined),
+  );
+  const missingIds = missingR4A6PumpStationP0(values);
+  if (missingIds.length > 0) {
+    const labels = new Map(R4_A6_PUMP_STATION_PARAMETERS.map((parameter) => [parameter.parameterId, parameter.titleRu]));
+    return output({
+      family,
+      sourcePrompt: input.prompt,
+      parameters: values,
+      rows: [],
+      assumptions: [],
+      missingInputs: missingIds.map((id) => labels.get(id) ?? id),
+      formulaSteps: [],
+      estimateLevel: "NEEDS_INPUT",
+    });
+  }
+  const rows = evaluateR4A6PumpStationRows(values).map((candidate) => row({
+    family,
+    code: candidate.rowId,
+    titleRu: candidate.titleRu,
+    lineType: candidate.rowType === "labor" ? "work" : candidate.rowType,
+    group: candidate.category === "delivery" ? "logistics" : candidate.category,
+    quantity: candidate.quantity,
+    unit: candidate.unitId as ExpandedComplexUnit,
+    formula: candidate.expression,
+    materialKey: candidate.procurementEligible ? candidate.scopeOwner : undefined,
+    procurement: candidate.procurementEligible,
+    sourceParameters: { ...values, specificationRu: candidate.specificationRu, scopeOwner: candidate.scopeOwner },
+  }));
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: values,
+    rows,
+    assumptions: ["Марки оборудования и цены не подставляются до подтверждённой спецификации и price source."],
+    formulaSteps: rows.map((candidate) => `${candidate.code} = ${candidate.quantityFormula}`),
+    missingInputs: [],
+  });
 }
 
 export function wellConstructionCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {

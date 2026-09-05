@@ -10,8 +10,6 @@ export const S2B_INFRASTRUCTURE_ENGINEERING_GREEN_STATUS =
 export const S2B_REGULATED_SAFETY_NOTICE =
   "Предварительная смета не заменяет проект, инженерный расчёт и обязательную экспертизу.";
 
-export const S2B_PROFESSIONAL_MIN_ROWS = 45;
-
 export type S2BWave2Kind =
   | "road"
   | "bridge"

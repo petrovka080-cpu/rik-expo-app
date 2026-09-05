@@ -3,6 +3,10 @@ import {
   clearProfessionalWorkPassportBuildCaches,
 } from "../../src/lib/estimate/buildProfessionalWorkPassport";
 import {
+  calculateExpandedComplexEstimate,
+  getExpandedComplexWorkFamily,
+} from "../../src/lib/ai/expandedComplexWorks";
+import {
   bindCanonicalFormulaSource,
   canonicalFixedQuantityStatedBySource,
 } from "../../src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding";
@@ -37,6 +41,20 @@ function passportFor(familyId: string) {
   return passport;
 }
 
+function calculatorBaselineFor(familyId: string): Record<string, number> {
+  const family = getExpandedComplexWorkFamily(familyId);
+  if (!family) throw new Error(`R4_A6_FAMILY_MISSING:${familyId}`);
+  const estimate = calculateExpandedComplexEstimate({
+    prompt: family.aliases[0] ?? family.professionalNameRu,
+    familyId,
+  });
+  if (!estimate) throw new Error(`R4_A6_ESTIMATE_MISSING:${familyId}`);
+  return Object.fromEntries(
+    Object.entries(estimate.input_parameters)
+      .filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1])),
+  );
+}
+
 describe("R4-A6 expanded formula dependency owners", () => {
   it.each(CASES)("binds every %s formula to its semantic inputs or an explicit fixed quantity", (
     familyId,
@@ -46,7 +64,7 @@ describe("R4-A6 expanded formula dependency owners", () => {
     const parameters = [...passport.parameterSchema.required, ...passport.parameterSchema.optional];
     const parameterIds = new Set(parameters.map((parameter) => parameter.key));
     const derivedFormulas = new Map<string, string>();
-    const baseline: Record<string, number> = {};
+    const baseline: Record<string, number> = calculatorBaselineFor(familyId);
     for (const step of passport.formulas.formulaSteps) {
       const assignment = /^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*=\s*(.+?)\s*$/u.exec(step);
       if (assignment) derivedFormulas.set(assignment[1]!, assignment[2]!);

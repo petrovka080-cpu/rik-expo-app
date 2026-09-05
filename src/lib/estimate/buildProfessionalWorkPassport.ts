@@ -29,6 +29,11 @@ import type {
 import {
   resolveBasePublicRussianTitleR555,
 } from "./publicRussianLexiconR555";
+import {
+  R4_A6_PUMP_STATION_CATALOG_ID,
+  R4_A6_PUMP_STATION_METHOD_ID,
+  R4_A6_PUMP_STATION_ROWS,
+} from "./r4A6PumpStationProfessional";
 
 export type BaseWorkTemplateManifestRow = {
   template_id: string;
@@ -341,6 +346,35 @@ function expandedRows(estimate: ExpandedComplexCalculatorOutput): ProfessionalBo
   ].map(expandedRecipeRow);
 }
 
+function r4A6PumpStationRows(): ProfessionalBoqRecipeRow[] {
+  return R4_A6_PUMP_STATION_ROWS.map((row) => {
+    const rowType: WorkPassportRowType = row.category === "delivery" ? "transport" : row.rowType === "labor" ? "work" : row.rowType;
+    return {
+      rowId: row.rowId,
+      rowType,
+      titleRu: row.titleRu,
+      canonicalUnit: canonicalUnit(row.unitId, row.rowId),
+      sourceUnit: row.unitId,
+      quantityFormula: row.expression,
+      formulaId: `r4_a6_pump_station_${row.rowId}_formula_v1`,
+      normId: `${R4_A6_PUMP_STATION_METHOD_ID}:${row.rowId}`,
+      normFamilyId: R4_A6_PUMP_STATION_METHOD_ID,
+      normSourceId: R4_A6_PUMP_STATION_METHOD_ID,
+      normSourceTitle: "Расчётная методика предварительной BOQ повысительной насосной станции",
+      normVersion: "2026-09-04",
+      normReviewStatus: "engineering_assumption_not_mandatory_norm",
+      calculationTraceTemplate: `${row.expression}; scopeOwner=${row.scopeOwner}`,
+      formulaContext: { specificationRu: row.specificationRu, scopeOwner: row.scopeOwner },
+      includedInEstimate: true,
+      includedInProcurement: row.procurementEligible,
+      priceStatus: "PRICE_MISSING",
+      buyerHandoffRole: row.procurementEligible && rowType !== "work"
+        ? "procurement_item"
+        : "estimate_only",
+    };
+  });
+}
+
 export function buildProfessionalWorkPassportForExpandedTemplate(
   template: ExpandedComplexTemplate,
 ): ProfessionalWorkPassport {
@@ -352,7 +386,9 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
   });
   if (!estimate) throw new Error(`WORK_PASSPORT_EXPANDED_ESTIMATE_MISSING:${template.template_id}`);
   const coverage = expandedCoverageByTemplateId.get(template.template_id);
-  const rows = expandedRows(estimate);
+  const rows = template.work_family_id === R4_A6_PUMP_STATION_CATALOG_ID.replace("canonical-work:expanded:", "")
+    ? r4A6PumpStationRows()
+    : expandedRows(estimate);
   const grouped = groupRecipeRows(rows);
   const parameters = expandedParameters(family);
   const highRisk = isHighRiskFamily(`${family.work_family_id} ${family.categoryGroup} ${family.calculatorId}`);
