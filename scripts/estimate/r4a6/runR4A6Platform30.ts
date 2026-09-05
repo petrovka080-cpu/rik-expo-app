@@ -214,6 +214,8 @@ async function databaseIdentity(client: Client): Promise<Json> {
     `select release.id::text release_id,release.status release_status,release.release_key,
       search.id::text search_release_id,search.status search_status,search.snapshot_sha256,
       (select count(*)::int from public.estimate_cumulative_manifest_entry where release_id=$1) manifest_count,
+      (select count(*)::int from public.estimate_cumulative_manifest_entry where release_id=$1
+        and baseline_ready and scenario_ready) ready_count,
       (select count(*)::int from public.estimate_search_group where search_release_id=$2) group_count,
       (select count(*)::int from public.estimate_search_document where search_release_id=$2
         and selectable and adjudication_class='EFFECTIVE_WORK') visible_count,
@@ -236,6 +238,7 @@ async function databaseIdentity(client: Client): Promise<Json> {
     [RELEASE_ID, SEARCH_RELEASE_ID],
   )).rows[0] as Json;
   if (!row || Number(row.manifest_count) !== 10_331
+    || Number(row.ready_count) !== 10_331
     || Number(row.group_count) !== EXPECTED_GROUPS
     || Number(row.visible_count) !== EXPECTED_VISIBLE_WORKS
     || Number(row.membership_count) !== EXPECTED_VISIBLE_WORKS) {
