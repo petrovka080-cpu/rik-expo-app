@@ -38,7 +38,11 @@ const MASTER_PATH = resolve(
 const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
 const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
 const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
-const GROUP50_SOURCE_SHA = "7514da1240ae99a5ad4aedf912a7075296cd55b4";
+const GROUP50_SOURCE_SHA = process.env.R4_A6_GROUP50_SOURCE_SHA
+  ?? "7514da1240ae99a5ad4aedf912a7075296cd55b4";
+if (!/^[0-9a-f]{40}$/u.test(GROUP50_SOURCE_SHA)) {
+  throw new Error("STOP_PLATFORM30_GROUP50_SOURCE_SHA_INVALID");
+}
 const GROUP50_ROOT = resolve(
   `.release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1/group50-${GROUP50_SOURCE_SHA}-terminal`,
 );
