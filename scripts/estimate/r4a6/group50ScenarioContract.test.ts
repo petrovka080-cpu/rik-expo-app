@@ -27,6 +27,17 @@ const parameters: R4A6Group50Parameter[] = [
     default_value: null,
     constraints_json: { values: ["standard", "enhanced"] },
   },
+  {
+    parameter_id: "delivery_distance_km",
+    value_type: "decimal",
+    required: false,
+    default_value: null,
+    constraints_json: {
+      min: 1,
+      max: 10_000,
+      requiredWhen: { parameterId: "delivery_required", equals: true },
+    },
+  },
 ];
 
 describe("R4-A6 Group50 scenario contract", () => {
@@ -68,7 +79,7 @@ describe("R4-A6 Group50 scenario contract", () => {
       missingParameterId: "area_m2",
     });
     expect(cases.find((item) => item.scenarioKind === "inclusion_branch_on")?.parameterPatch)
-      .toMatchObject({ delivery_required: true });
+      .toMatchObject({ delivery_required: true, delivery_distance_km: 1 });
   });
 
   it("fails closed on a duplicate fingerprint", () => {

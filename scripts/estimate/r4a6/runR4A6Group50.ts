@@ -196,7 +196,13 @@ function completeScenarioInputSeed(
   const values = { ...approvedBaseline };
   let generated = false;
   for (const parameter of parameters) {
-    if (!parameter.required || values[parameter.parameter_id] != null) continue;
+    if (values[parameter.parameter_id] != null && values[parameter.parameter_id] !== "") continue;
+    if (parameter.default_value != null) {
+      values[parameter.parameter_id] = parameter.default_value;
+      generated = true;
+      continue;
+    }
+    if (!parameter.required) continue;
     const constraints = parameter.constraints_json ?? {};
     if (parameter.value_type === "decimal" || parameter.value_type === "integer") {
       const minimum = Number(constraints.min);
@@ -313,7 +319,13 @@ async function buildFrozenManifest(client: Client, source: ReturnType<typeof exa
   for (const parameter of parameterRows) {
     const id = String(parameter.definition_version_id);
     const list = parametersByDefinition.get(id) ?? [];
-    list.push(parameter as R4A6Group50Parameter);
+    list.push({
+      parameter_id: String(parameter.parameter_id),
+      value_type: String(parameter.value_type),
+      required: parameter.required === true,
+      default_value: parameter.default_value,
+      constraints_json: parameter.constraints_json as Record<string, unknown> | null,
+    });
     parametersByDefinition.set(id, list);
   }
   const groupMap = new Map<string, ManifestGroup>();
@@ -431,11 +443,15 @@ function definitionStaticFailures(input: {
     if (!formulaById.has(resource.formula_id)) failures.push({ code: "orphanRed", detail: resource.row_id });
     if (!String(resource.unit_id ?? "").trim()) failures.push({ code: "unitRed", detail: resource.row_id });
     if (!String((resource as Json).semantic_owner ?? "").trim()) failures.push({ code: "scopeOverreachRed", detail: resource.row_id });
-    if (!isPublicBoqNameStructurallyValid(resource.title_ru, input.member.titleRu)) {
+    const applicable = !(resource.inclusion_ast?.kind === "literal" && resource.inclusion_ast?.value === false)
+      && (resource.resource_graph as Json)?.r4A6ProfessionalBoq?.applicable !== false;
+    if (applicable && !isPublicBoqNameStructurallyValid(resource.title_ru, input.member.titleRu)) {
       failures.push({ code: "semanticNameRed", detail: resource.row_id });
     }
-    if (isGenericPublicBoqResourceName(resource.title_ru)) failures.push({ code: "genericFillerRed", detail: resource.row_id });
-    if (/[:：]/u.test(resource.title_ru)) failures.push({ code: "colonSuffixRed", detail: resource.row_id });
+    if (applicable && isGenericPublicBoqResourceName(resource.title_ru)) {
+      failures.push({ code: "genericFillerRed", detail: resource.row_id });
+    }
+    if (applicable && /[:：]/u.test(resource.title_ru)) failures.push({ code: "colonSuffixRed", detail: resource.row_id });
   }
   return failures;
 }
@@ -527,6 +543,16 @@ async function executeCase(input: {
       if (rowIds.length === 0) failures.push({ code: "compileRed", detail: "zero rows" });
       if (new Set(rowIds).size !== rowIds.length) failures.push({ code: "doubleCountRed", detail: "duplicate compiled row" });
       if (compiled.rows.some((row) => !String(row.unit_id ?? "").trim())) failures.push({ code: "unitRed", detail: "empty unit" });
+      if (compiled.rows.some((row) => !isPublicBoqNameStructurallyValid(
+        String(row.title_ru ?? ""),
+        input.member.titleRu,
+      ))) failures.push({ code: "semanticNameRed", detail: "invalid compiled public name" });
+      if (compiled.rows.some((row) => isGenericPublicBoqResourceName(String(row.title_ru ?? "")))) {
+        failures.push({ code: "genericFillerRed", detail: "generic compiled public name" });
+      }
+      if (compiled.rows.some((row) => /[:：]/u.test(String(row.title_ru ?? "")))) {
+        failures.push({ code: "colonSuffixRed", detail: "colon in compiled public name" });
+      }
       if (compiled.rows.some((row) => !Number.isFinite(Number(row.quantity)) || Number(row.quantity) < 0)) {
         failures.push({ code: "dimensionRed", detail: "invalid quantity" });
       }
@@ -697,6 +723,7 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
   }
   const results: Json[] = [];
   const durations: number[] = [];
+  const initialRssBytes = process.memoryUsage().rss;
   let maximumRssBytes = process.memoryUsage().rss;
   for (const group of groups) {
     const memberById = new Map(group.members.map((member) => [member.catalogId, member]));
@@ -715,7 +742,9 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
       maximumRssBytes = Math.max(maximumRssBytes, process.memoryUsage().rss);
     }
   }
-  if (maximumRssBytes > 1_610_612_736 || percentile(durations, 0.99) > 5_000) shardCounters.performanceRed += 1;
+  const rssGrowthBytes = Math.max(0, maximumRssBytes - initialRssBytes);
+  if (maximumRssBytes > 1_610_612_736 || rssGrowthBytes > 805_306_368
+    || percentile(durations, 0.99) > 5_000) shardCounters.performanceRed += 1;
   const body = {
     schemaVersion: "r568-r4-a6-content-group50-shard.v1",
     shardId: shard.shardId,
@@ -737,7 +766,9 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
       p95Ms: percentile(durations, 0.95),
       p99Ms: percentile(durations, 0.99),
       maximumMs: Math.max(...durations),
+      initialRssBytes,
       maximumRssBytes,
+      rssGrowthBytes,
     },
     results,
   };
@@ -783,12 +814,12 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
       works.add(String(result.catalogId));
     }
   }
-  const groupsGreen = manifest.groups.filter((group) => {
-    const groupCaseIds = new Set(group.cases.map((item) => item.caseId));
-    const results = receipts.flatMap((receipt) => receipt.results as Json[])
-      .filter((result) => groupCaseIds.has(String(result.caseId)));
-    return results.length === 50 && results.every((result) => result.passed);
-  }).length;
+  const resultByCaseId = new Map<string, Json>();
+  for (const receipt of receipts) {
+    for (const result of receipt.results as Json[]) resultByCaseId.set(String(result.caseId), result);
+  }
+  const groupsGreen = manifest.groups.filter((group) => group.cases.every((item) =>
+    resultByCaseId.get(item.caseId)?.passed === true)).length;
   const denominatorGreen = receipts.length === SHARD_COUNT
     && cases === EXPECTED_CASES
     && passedCases === EXPECTED_CASES

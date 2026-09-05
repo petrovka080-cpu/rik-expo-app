@@ -69,6 +69,25 @@ function finite(value: unknown): number | null {
   return Number.isFinite(numeric) ? numeric : null;
 }
 
+function explicitScenarioValue(parameter: R4A6Group50Parameter): unknown {
+  const constraints = record(parameter.constraints_json);
+  if (parameter.value_type === "decimal" || parameter.value_type === "integer") {
+    const minimum = finite(constraints.min);
+    const maximum = finite(constraints.max);
+    let value = minimum == null ? 1 : Math.max(minimum, 1);
+    if (maximum != null) value = Math.min(maximum, value);
+    return parameter.value_type === "integer" ? Math.ceil(value) : value;
+  }
+  if (parameter.value_type === "boolean") return false;
+  if (parameter.value_type === "enum") {
+    const values = Array.isArray(constraints.values) ? constraints.values : [];
+    if (values.length === 0) throw new Error(`GROUP50_ENUM_SEED_MISSING:${parameter.parameter_id}`);
+    return values[0];
+  }
+  if (parameter.value_type === "text") return "Явно задано сценарием Group50";
+  throw new Error(`GROUP50_INPUT_SEED_UNSUPPORTED:${parameter.parameter_id}:${parameter.value_type}`);
+}
+
 function comparisonPeers(parameters: readonly R4A6Group50Parameter[]): Set<string> {
   const peers = new Set<string>();
   for (const parameter of parameters) {
@@ -158,9 +177,19 @@ function optionalBranchPatch(
     const boolean = parameters.find((parameter) =>
       parameter.value_type === "boolean"
       && Object.keys(record(parameter.constraints_json)).length === 0);
-    return boolean
-      ? { [boolean.parameter_id]: scenarioKind === "inclusion_branch_on" }
-      : {};
+    if (!boolean) return {};
+    const enabled = scenarioKind === "inclusion_branch_on";
+    const patch: Record<string, unknown> = { [boolean.parameter_id]: enabled };
+    if (enabled) {
+      for (const parameter of parameters) {
+        const requiredWhen = record(record(parameter.constraints_json).requiredWhen);
+        if (requiredWhen.parameterId === boolean.parameter_id && requiredWhen.equals === true
+          && (baseline[parameter.parameter_id] == null || baseline[parameter.parameter_id] === "")) {
+          patch[parameter.parameter_id] = explicitScenarioValue(parameter);
+        }
+      }
+    }
+    return patch;
   }
   if (scenarioKind === "optional_p1_combination") {
     const enumeration = parameters.find((parameter) => {
