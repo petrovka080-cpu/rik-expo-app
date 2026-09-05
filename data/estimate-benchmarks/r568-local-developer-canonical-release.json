@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "r568-local-developer-canonical-release.v1",
+  "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
+  "definitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+  "searchReleaseId": "3bb74464-9773-5364-a4f0-4e542b45f62a",
+  "definitionReleaseStatus": "prepared",
+  "searchReleaseStatus": "draft",
+  "definitionSnapshotSha256": "fa8d38683d422ac0757b07127a2c172069281503d269f43e2b480aea211f8fb8",
+  "manifestHashChainSha256": "ffab43d9e22c2bc26c1e3015b3a2c6b4668d7637ebc3218acd90294a9e23a5e7",
+  "searchHashChainSha256": "97ef385a63600651bcc494f5d171f4194d324facfd21a2e621718c958442f73e",
+  "identities": 11610,
+  "visibleCanonicalDefinitions": 10322,
+  "aliasesRedirects": 1288,
+  "owner": "R4_A6_GROUP50_CANONICAL_MONOLITH",
+  "productionAccessed": false,
+  "fakeGreenClaimed": false
+}

@@ -16,6 +16,9 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(launcher).toContain("provisionLocalDeveloperReview.ts");
     expect(launcher).toContain("serveLocalDeveloperAuthBroker.ts");
     expect(launcher).toContain("probeLocalDeveloperCanonicalBackend.ts");
+    expect(launcher).toContain("r568-local-developer-canonical-release.json");
+    expect(launcher).toContain("ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE");
+    expect(launcher).toContain(".release-runtime\\r568\\runtime\\local-developer-current");
     expect(launcher).toContain('EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL = $CanonicalBackendUrl');
     expect(launcher).toContain('EXPO_PUBLIC_CANONICAL_ESTIMATE_ALLOW_INSECURE_LOOPBACK = "true"');
     expect(launcher).toContain("GREEN_R555_LOCAL_DEVELOPER_PROVIDER_PRINCIPALS_9_OFFICE_PLUS_1_CONSUMER");
@@ -29,6 +32,17 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(launcher).toContain("runtime_action=started_exact_healthy_runtime");
     expect(launcher).not.toContain("$Metro.WaitForExit()");
     expect(launcher).not.toMatch(/Write-Host[^\n]*(PublicKey|ANON_KEY)/u);
+  });
+
+  it("keeps mutable current runtime receipts outside immutable acceptance evidence", () => {
+    const launcher = source("scripts/dev/startLocalDeveloperReview.ps1");
+    const backendManager = source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts");
+    const androidJourney = source("scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts");
+    expect(backendManager).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
+    expect(backendManager).toContain('resolve(EVIDENCE_ROOT, "backend.json")');
+    expect(backendManager).toContain("request_audit_path");
+    expect(launcher).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
+    expect(androidJourney).toContain("R4_A6_ANDROID_BACKEND_AUDIT_PATH");
   });
 
   it("keeps credentials in ignored runtime and broker origins on developer 8081", () => {

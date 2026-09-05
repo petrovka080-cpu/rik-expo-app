@@ -163,18 +163,33 @@ $ExactCandidateReceipt = Get-Content -LiteralPath $ExactCandidateReceiptPath -Ra
 if ($ExactCandidateReceipt.status -ne "GREEN_SUCCESSOR_PREPARED_NOT_ACTIVE") {
   Fail-Preflight "EXACT_CANDIDATE_RECEIPT_RED" "повторно проверьте и подготовьте R4-A5 successor"
 }
-$env:LOCAL_DEVELOPER_DEFINITION_RELEASE_ID = [string]$ExactCandidateReceipt.successor.releaseId
-$env:LOCAL_DEVELOPER_SEARCH_RELEASE_ID = [string]$ExactCandidateReceipt.successor.searchReleaseId
+$CanonicalReleaseManifestPath = Join-Path $Root "data\estimate-benchmarks\r568-local-developer-canonical-release.json"
+if (-not (Test-Path -LiteralPath $CanonicalReleaseManifestPath)) {
+  Fail-Preflight "CANONICAL_RELEASE_MANIFEST_MISSING" "restore the tracked current-release manifest"
+}
+$CanonicalReleaseManifest = Get-Content -LiteralPath $CanonicalReleaseManifestPath -Raw | ConvertFrom-Json
+if (
+  $CanonicalReleaseManifest.schemaVersion -ne "r568-local-developer-canonical-release.v1" -or
+  $CanonicalReleaseManifest.status -ne "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE" -or
+  [string]$CanonicalReleaseManifest.definitionReleaseId -notmatch "^[0-9a-f-]{36}$" -or
+  [string]$CanonicalReleaseManifest.searchReleaseId -notmatch "^[0-9a-f-]{36}$"
+) {
+  Fail-Preflight "CANONICAL_RELEASE_MANIFEST_RED" "verify the exact definition/search release tuple"
+}
+$env:LOCAL_DEVELOPER_DEFINITION_RELEASE_ID = [string]$CanonicalReleaseManifest.definitionReleaseId
+$env:LOCAL_DEVELOPER_SEARCH_RELEASE_ID = [string]$CanonicalReleaseManifest.searchReleaseId
 $env:LOCAL_DEVELOPER_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:LOCAL_DEVELOPER_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
 $env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
+$RuntimeEvidenceRoot = Join-Path $Root ".release-runtime\r568\runtime\local-developer-current"
+$env:LOCAL_DEVELOPER_EVIDENCE_ROOT = $RuntimeEvidenceRoot
 
 $Port = 8081
 $ExistingListeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
 $ExistingPids = @($ExistingListeners | Select-Object -ExpandProperty OwningProcess -Unique)
 $ExistingMetroPid = 0
 $MetroIdentityMatches = $false
-$MetroReceiptPath = Join-Path $Root ".release-runtime\r568\rc09-r4-production-closeout\r4-a5-exact-ui-confirm-durability-1\runtime\metro.json"
+$MetroReceiptPath = Join-Path $RuntimeEvidenceRoot "metro.json"
 foreach ($ExistingPid in $ExistingPids) {
   $ExistingProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$ExistingPid" -ErrorAction SilentlyContinue
   if (-not $ExistingProcess) { continue }
@@ -353,7 +368,7 @@ foreach ($BrokerPid in @($BrokerListeners | Select-Object -ExpandProperty Owning
   Stop-Process -Id $BrokerPid -ErrorAction Stop
 }
 
-$BrokerRuntime = Join-Path $Root ".release-runtime\r551\runtime\local-developer\broker"
+$BrokerRuntime = Join-Path $RuntimeEvidenceRoot "broker"
 New-Item -ItemType Directory -Path $BrokerRuntime -Force | Out-Null
 $BrokerStdout = Join-Path $BrokerRuntime "stdout.log"
 $BrokerStderr = Join-Path $BrokerRuntime "stderr.log"

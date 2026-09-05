@@ -19,9 +19,10 @@ const CAPABILITY_TTL_HOURS = 24;
 const MASTER_SHA256 = "2e668d93b531acab14636f02df9528164ba844404021d5c96ce93533c180e7a1";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const EVIDENCE_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1",
+  String(process.env.LOCAL_DEVELOPER_EVIDENCE_ROOT ?? "").trim() ||
+    ".release-runtime/r568/runtime/local-developer-current",
 );
-const OUTPUT = resolve(EVIDENCE_ROOT, "10_LOCAL_DEVELOPER_CANONICAL_BACKEND.json");
+const OUTPUT = resolve(EVIDENCE_ROOT, "backend.json");
 const PREFLIGHT_ONLY = process.argv.includes("--preflight");
 
 function invariant(value: unknown, code: string): asserts value {
@@ -372,6 +373,13 @@ async function main(): Promise<void> {
     search_release_id: desired.searchReleaseId,
     capability_id: desired.capabilityId,
     capability_expires_at: receipt.capability.expires_at,
+    evidence_root: EVIDENCE_ROOT,
+    request_audit_path: resolve(
+      EVIDENCE_ROOT,
+      "runtime",
+      `backend-${desired.sourceTree.slice(0, 12)}`,
+      "request-audit.jsonl",
+    ),
     production_requests: 0,
   })}\n`);
 }

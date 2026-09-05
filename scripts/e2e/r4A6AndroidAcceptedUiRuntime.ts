@@ -46,7 +46,8 @@ const LOCAL_PROVIDER_CREDENTIALS = path.resolve(
   ".release-runtime/r551/runtime/local-developer/credentials.json",
 );
 const BACKEND_AUDIT = path.resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/runtime/backend-4976352da510/request-audit.jsonl",
+  String(process.env.R4_A6_ANDROID_BACKEND_AUDIT_PATH ?? "").trim() ||
+    ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/runtime/backend-4976352da510/request-audit.jsonl",
 );
 const PHOTO_PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
