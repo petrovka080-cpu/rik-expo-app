@@ -15,12 +15,24 @@ import { benchmarkEstimatePdfBuyerPackages } from "../benchmarkEstimatePdfBuyerP
 import { searchAiEstimateCatalogIndex } from "../../../src/lib/estimate/catalog/searchAiEstimateCatalogIndex";
 import { percentile } from "../../../src/lib/platform/aiEstimatePerformanceBudget";
 
-const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
+const DEFAULT_MASTER_PATH = "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md";
+const DEFAULT_MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
+const DEFAULT_EVIDENCE_ROOT = ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1";
+const GATE_SERIES = process.env.R4_SECURITY_PERFORMANCE_GATE_SERIES === "R4_A7" ? "R4_A7" : "R4_A6";
+const MASTER_PATH = process.env.R4_SECURITY_PERFORMANCE_MASTER_PATH ?? DEFAULT_MASTER_PATH;
+const MASTER_SHA256 = process.env.R4_SECURITY_PERFORMANCE_MASTER_SHA256 ?? DEFAULT_MASTER_SHA256;
 const EVIDENCE_ROOT = path.resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1",
+  process.env.R4_SECURITY_PERFORMANCE_EVIDENCE_ROOT ?? DEFAULT_EVIDENCE_ROOT,
 );
+const UPSTREAM_EVIDENCE_ROOT = path.resolve(
+  process.env.R4_SECURITY_PERFORMANCE_UPSTREAM_EVIDENCE_ROOT ?? DEFAULT_EVIDENCE_ROOT,
+);
+const SCHEMA_SERIES = GATE_SERIES.toLowerCase().replaceAll("_", "-");
+const GREEN_SECURITY_STATUS = `GREEN_${GATE_SERIES}_SECURITY`;
+const GREEN_PERFORMANCE_STATUS = `GREEN_${GATE_SERIES}_PERFORMANCE`;
+const GREEN_COMBINED_STATUS = `GREEN_${GATE_SERIES}_SECURITY_PERFORMANCE`;
 const PLATFORM_ROOT = path.join(
-  EVIDENCE_ROOT,
+  UPSTREAM_EVIDENCE_ROOT,
   "platform30-ac533d03427ae09a5afa9db38ad8845f69a47e97-terminal",
 );
 const PLATFORM_TERMINAL = path.join(PLATFORM_ROOT, "29_platform_71040_terminal.json");
@@ -264,8 +276,7 @@ function main(): void {
   const unexpectedDirty = dirty.filter((file) => !ALLOWED_DIRTY_PATHS.has(file));
   if (unexpectedDirty.length > 0) throw new Error(`STOP_UNCLASSIFIED_DIRTY_PATH:${unexpectedDirty.join(",")}`);
   if (!fs.existsSync(PLATFORM_TERMINAL) || !fs.existsSync(PDF_MATRIX)) throw new Error("required upstream evidence is missing");
-  const masterPath = "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md";
-  if (fileSha256(masterPath) !== MASTER_SHA256) throw new Error("master SHA-256 mismatch");
+  if (fileSha256(MASTER_PATH) !== MASTER_SHA256) throw new Error("master SHA-256 mismatch");
 
   const terminalRoot = path.join(EVIDENCE_ROOT, `security-performance-${sourceCommitSha}-terminal`);
   const runningRoot = path.join(EVIDENCE_ROOT, `security-performance-${sourceCommitSha}-running-${process.pid}`);
@@ -303,7 +314,8 @@ function main(): void {
     "tests/officeEstimate/pdfBuyerPerformance.contract.test.ts",
   ];
   const executableManifest = receipt({
-    schemaVersion: "r568-r4-a6-security-performance-manifest.v1",
+    schemaVersion: `r568-${SCHEMA_SERIES}-security-performance-manifest.v1`,
+    gateSeries: GATE_SERIES,
     sourceCommitSha,
     sourceTreeSha,
     masterSha256: MASTER_SHA256,
@@ -451,8 +463,9 @@ function main(): void {
     unexpectedDirtyPaths: unexpectedDirty,
   };
   const securityPayload = {
-    schemaVersion: "r568-r4-a6-security.v1",
-    status: securityBlockers.length === 0 ? "GREEN_R4_A6_SECURITY" : "STOP_SECURITY_GATE",
+    schemaVersion: `r568-${SCHEMA_SERIES}-security.v1`,
+    gateSeries: GATE_SERIES,
+    status: securityBlockers.length === 0 ? GREEN_SECURITY_STATUS : "STOP_SECURITY_GATE",
     capturedAt: new Date().toISOString(),
     masterSha256: MASTER_SHA256,
     source,
@@ -475,8 +488,9 @@ function main(): void {
     fakeGreenClaimed: false,
   };
   const performancePayload = {
-    schemaVersion: "r568-r4-a6-performance.v1",
-    status: performanceBlockers.length === 0 ? "GREEN_R4_A6_PERFORMANCE" : "STOP_PERFORMANCE_GATE",
+    schemaVersion: `r568-${SCHEMA_SERIES}-performance.v1`,
+    gateSeries: GATE_SERIES,
+    status: performanceBlockers.length === 0 ? GREEN_PERFORMANCE_STATUS : "STOP_PERFORMANCE_GATE",
     capturedAt: new Date().toISOString(),
     masterSha256: MASTER_SHA256,
     source,
@@ -528,12 +542,13 @@ function main(): void {
   const inMemorySecretFindings = forbiddenReceiptFindings([securityPayload, performancePayload]);
   if (inMemorySecretFindings.length > 0) securityBlockers.push(...inMemorySecretFindings);
   const combinedStatus = securityBlockers.length === 0 && performanceBlockers.length === 0
-    ? "GREEN_R4_A6_SECURITY_PERFORMANCE"
+    ? GREEN_COMBINED_STATUS
     : securityBlockers.length > 0 ? "STOP_SECURITY_GATE" : "STOP_PERFORMANCE_GATE";
-  const securityReceipt = receipt({ ...securityPayload, status: securityBlockers.length === 0 ? "GREEN_R4_A6_SECURITY" : "STOP_SECURITY_GATE", blockers: securityBlockers, receiptPayloadSecretFindings: inMemorySecretFindings });
+  const securityReceipt = receipt({ ...securityPayload, status: securityBlockers.length === 0 ? GREEN_SECURITY_STATUS : "STOP_SECURITY_GATE", blockers: securityBlockers, receiptPayloadSecretFindings: inMemorySecretFindings });
   const performanceReceipt = receipt(performancePayload);
   const combinedReceipt = receipt({
-    schemaVersion: "r568-r4-a6-security-performance-terminal.v1",
+    schemaVersion: `r568-${SCHEMA_SERIES}-security-performance-terminal.v1`,
+    gateSeries: GATE_SERIES,
     status: combinedStatus,
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     capturedAt: new Date().toISOString(),
@@ -550,7 +565,7 @@ function main(): void {
   writeJsonAtomic(path.join(runningRoot, "32_performance.json"), performanceReceipt);
   writeJsonAtomic(path.join(runningRoot, "30_security_performance_terminal.json"), combinedReceipt);
   fs.renameSync(runningRoot, terminalRoot);
-  if (combinedStatus === "GREEN_R4_A6_SECURITY_PERFORMANCE") {
+  if (combinedStatus === GREEN_COMBINED_STATUS) {
     for (const [name, value] of [
       ["30_pdf_print_matrix.json", physicalPdf],
       ["31_security.json", securityReceipt],
@@ -573,7 +588,7 @@ function main(): void {
     memory: memory.final_status,
     blockers: [...securityBlockers, ...performanceBlockers],
   }, null, 2));
-  if (combinedStatus !== "GREEN_R4_A6_SECURITY_PERFORMANCE") process.exitCode = 1;
+  if (combinedStatus !== GREEN_COMBINED_STATUS) process.exitCode = 1;
 }
 
 main();

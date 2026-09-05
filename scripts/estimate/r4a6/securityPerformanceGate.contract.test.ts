@@ -18,7 +18,9 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain("physicalPdfByRowCount");
     expect(source).toContain("coldStartAndroidApi34");
     expect(source).toContain("history50000Compatible");
-    expect(source).toContain("GREEN_R4_A6_SECURITY_PERFORMANCE");
+    expect(source).toContain('`GREEN_${GATE_SERIES}_SECURITY_PERFORMANCE`');
+    expect(source).toContain('R4_SECURITY_PERFORMANCE_GATE_SERIES === "R4_A7"');
+    expect(source).toContain("GREEN_COMBINED_STATUS");
   });
 
   it("keeps secrets out of receipts and preserves unrelated dirty artifacts", () => {
@@ -27,7 +29,7 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain("ALLOWED_DIRTY_PATHS");
     expect(source).toContain(".trimEnd()");
     expect(source).not.toContain('git(["status", "--porcelain=v1"');
-    expect(source).toContain('if (combinedStatus === "GREEN_R4_A6_SECURITY_PERFORMANCE")');
+    expect(source).toContain("if (combinedStatus === GREEN_COMBINED_STATUS)");
     expect(source).toContain("productionAccessed: false");
     expect(source).toContain("fakeGreenClaimed: false");
   });
