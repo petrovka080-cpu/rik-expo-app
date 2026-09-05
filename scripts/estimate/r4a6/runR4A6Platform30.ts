@@ -33,25 +33,28 @@ import {
 } from "./platform30ScenarioContract";
 
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
-const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
-const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
-const GROUP50_SOURCE_SHA = process.env.R4_A6_GROUP50_SOURCE_SHA
-  ?? "7514da1240ae99a5ad4aedf912a7075296cd55b4";
+const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const CURRENT_RELEASE = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
+const RELEASE_ID = String(CURRENT_RELEASE.definitionReleaseId);
+const SEARCH_RELEASE_ID = String(CURRENT_RELEASE.searchReleaseId);
+const GROUP50_SOURCE_SHA = process.env.R4_A8_GROUP50_SOURCE_SHA
+  ?? process.env.R4_A6_GROUP50_SOURCE_SHA
+  ?? "ecc56a429dd7fac4e0079463af4a46e6340db5a1";
 if (!/^[0-9a-f]{40}$/u.test(GROUP50_SOURCE_SHA)) {
   throw new Error("STOP_PLATFORM30_GROUP50_SOURCE_SHA_INVALID");
 }
 const GROUP50_ROOT = resolve(
-  `.release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1/group50-${GROUP50_SOURCE_SHA}-terminal`,
+  `.release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale/group50-${GROUP50_SOURCE_SHA}-terminal`,
 );
 const LIVE_CANARY_SOURCE_SHA = "0a51c28c8376fb97f334afd455fa4f7941194992";
 const LIVE_CANARY_PATH = resolve(
   `.release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence/android-${LIVE_CANARY_SOURCE_SHA}-terminal-green/17_android_replay.json`,
 );
 const ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1",
+  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale",
 );
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
@@ -67,6 +70,7 @@ const EXACT_SOURCE_PATHS = [
   "scripts/estimate/r4a6/runR4A6Platform30.ts",
   "scripts/estimate/r4a6/platform30ScenarioContract.ts",
   "scripts/estimate/r4a6/group50ScenarioContract.ts",
+  "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
@@ -199,6 +203,10 @@ function writeImmutableJson(path: string, value: Json): void {
     return;
   }
   atomicWrite(path, content);
+}
+
+function loadJson<T>(path: string): T {
+  return JSON.parse(readFileSync(path, "utf8")) as T;
 }
 
 function withoutHash(value: Json, key: string): Json {
@@ -663,7 +671,7 @@ async function executeShard(input: {
   upstream: UpstreamManifest;
   root: string;
   shard: PlatformManifest["shards"][number];
-}): Promise<Json> {
+}): Promise<string> {
   const path = resolve(input.root, "28_platform_71040_shards", `${input.shard.shardId}.json`);
   if (existsSync(path)) {
     const existing = JSON.parse(readFileSync(path, "utf8")) as Json;
@@ -672,7 +680,7 @@ async function executeShard(input: {
       || existing.receiptSha256 !== sha256(withoutHash(existing, "receiptSha256"))) {
       throw new Error(`STOP_PLATFORM30_SHARD_RECEIPT_INVALID:${input.shard.shardId}`);
     }
-    return existing;
+    return path;
   }
   const groupIds = new Set(input.shard.groupIds);
   const groups = input.manifest.groups.filter((group) => groupIds.has(group.groupId));
@@ -681,29 +689,27 @@ async function executeShard(input: {
   const members = new Map([...upstreamGroups.values()]
     .flatMap((group) => group.members.map((member) => [member.catalogId, member] as const)));
   const definitionIds = [...new Set([...members.values()].map((member) => member.definitionVersionId))];
-  const [parameterRows, formulaRows, resourceRows] = await Promise.all([
-    input.client.query(
+  const parameterRows = await input.client.query(
       `select definition_version_id::text,parameter_id,value_type,required,default_value,
         constraints_json,truth_metadata,approved_template_baseline_id::text
       from public.estimate_parameter_definition where definition_version_id=any($1::uuid[])
       order by definition_version_id,ordinal`,
       [definitionIds],
-    ),
-    input.client.query(
+    );
+  const formulaRows = await input.client.query(
       `select definition_version_id::text,formula_id,ast,input_parameter_ids,ast_sha256
       from public.estimate_formula_graph where definition_version_id=any($1::uuid[])
       order by definition_version_id,formula_id`,
       [definitionIds],
-    ),
-    input.client.query(
+    );
+  const resourceRows = await input.client.query(
       `select id::text,definition_version_id::text,row_id,ordinal,section,category,title_ru,row_type,
         unit_id,formula_id,inclusion_ast,resource_graph,semantic_owner,cost_owner_id,
         procurement_eligible,source_metadata,row_sha256
       from public.estimate_resource_spec where definition_version_id=any($1::uuid[])
       order by definition_version_id,ordinal`,
       [definitionIds],
-    ),
-  ]);
+    );
   const parameters = new Map<string, R4A6Group50Parameter[]>();
   for (const row of parameterRows.rows as Json[]) {
     const id = String(row.definition_version_id);
@@ -778,14 +784,14 @@ async function executeShard(input: {
     p99Ms: receipt.performance.p99Ms,
     maximumRssBytes,
   })}\n`);
-  return receipt;
+  return path;
 }
 
 async function finalize(input: {
   client: Client;
   manifest: PlatformManifest;
   root: string;
-  receipts: Json[];
+  receiptPaths: string[];
 }): Promise<Json> {
   const currentSource = exactSourceIdentity();
   const currentDatabase = await databaseIdentity(input.client);
@@ -798,10 +804,13 @@ async function finalize(input: {
   const webExecutionIds = new Set<string>();
   const androidExecutionIds = new Set<string>();
   const visibleWorks = new Set<string>();
+  const passedCaseIds = new Set<string>();
   const scenarioCounts = new Map<string, number>();
+  const performanceReceipts: Json[] = [];
   let pairs = 0;
   let passedPairs = 0;
-  for (const [index, receipt] of input.receipts.entries()) {
+  for (const [index, receiptPath] of input.receiptPaths.entries()) {
+    const receipt = loadJson<Json>(receiptPath);
     const shard = input.manifest.shards[index]!;
     if (receipt.proofSnapshotSha256 !== input.manifest.proofSnapshotSha256
       || receipt.membershipSha256 !== shard.membershipSha256
@@ -810,6 +819,7 @@ async function finalize(input: {
     }
     pairs += Number(receipt.executedPairs);
     passedPairs += Number(receipt.passedPairs);
+    performanceReceipts.push(receipt.performance as Json);
     for (const key of COUNTER_KEYS) aggregateCounters[key] += Number(receipt.counters[key] ?? 0);
     for (const result of receipt.results as Json[]) {
       const fingerprint = String(result.inputFingerprint);
@@ -823,16 +833,19 @@ async function finalize(input: {
       webExecutionIds.add(webExecutionId);
       androidExecutionIds.add(androidExecutionId);
       visibleWorks.add(String(result.catalogId));
+      if (result.webPassed && result.androidPassed && result.parityPassed) {
+        passedCaseIds.add(String(result.caseId));
+      }
       const scenarioKind = String(result.scenarioKind);
       scenarioCounts.set(scenarioKind, (scenarioCounts.get(scenarioKind) ?? 0) + 1);
     }
+    global.gc!();
   }
   const groupsGreen = input.manifest.groups.filter((group) => group.cases.every((item) =>
-    input.receipts.some((receipt) => (receipt.results as Json[]).some((result) =>
-      result.caseId === item.caseId && result.webPassed && result.androidPassed && result.parityPassed)))).length;
+    passedCaseIds.has(item.caseId))).length;
   const scenarioCoverageGreen = R4_A6_PLATFORM30_SCENARIO_KINDS.every((scenario) =>
     scenarioCounts.get(scenario) === EXPECTED_GROUPS);
-  const denominatorGreen = input.receipts.length === SHARD_COUNT
+  const denominatorGreen = input.receiptPaths.length === SHARD_COUNT
     && groupsGreen === EXPECTED_GROUPS
     && visibleWorks.size === EXPECTED_VISIBLE_WORKS
     && pairs === EXPECTED_PARITY_PAIRS
@@ -884,14 +897,14 @@ async function finalize(input: {
         + (scenarioCounts.get("background_foreground_restore") ?? 0),
     },
     shardsExpected: SHARD_COUNT,
-    shardsExecuted: input.receipts.length,
+    shardsExecuted: input.receiptPaths.length,
     counters: aggregateCounters,
     performance: {
-      p50Ms: percentile(input.receipts.map((receipt) => Number(receipt.performance.p50Ms)), 0.5),
-      p95Ms: percentile(input.receipts.map((receipt) => Number(receipt.performance.p95Ms)), 0.95),
-      p99Ms: percentile(input.receipts.map((receipt) => Number(receipt.performance.p99Ms)), 0.99),
-      maximumMs: Math.max(...input.receipts.map((receipt) => Number(receipt.performance.maximumMs))),
-      maximumRssBytes: Math.max(...input.receipts.map((receipt) => Number(receipt.performance.maximumRssBytes))),
+      p50Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p50Ms)), 0.5),
+      p95Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p95Ms)), 0.95),
+      p99Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p99Ms)), 0.99),
+      maximumMs: Math.max(...performanceReceipts.map((receipt) => Number(receipt.maximumMs))),
+      maximumRssBytes: Math.max(...performanceReceipts.map((receipt) => Number(receipt.maximumRssBytes))),
     },
     liveCanary: input.manifest.liveCanary,
     productionAccessed: false,
@@ -906,6 +919,7 @@ async function finalize(input: {
 }
 
 async function main(): Promise<void> {
+  if (typeof global.gc !== "function") throw new Error("STOP_PLATFORM30_EXPLICIT_GC_REQUIRED");
   if (!existsSync(MASTER_PATH) || sha256Bytes(readFileSync(MASTER_PATH)) !== MASTER_SHA256) {
     throw new Error("STOP_MASTER_TZ_HASH_MISMATCH");
   }
@@ -918,7 +932,7 @@ async function main(): Promise<void> {
   await client.connect();
   try {
     const manifest = existsSync(manifestPath)
-      ? JSON.parse(readFileSync(manifestPath, "utf8")) as PlatformManifest
+      ? loadJson<PlatformManifest>(manifestPath)
       : buildPlatformManifest({
         source,
         database: await databaseIdentity(client),
@@ -930,11 +944,12 @@ async function main(): Promise<void> {
       throw new Error("STOP_PLATFORM30_MANIFEST_HASH");
     }
     if (!existsSync(manifestPath)) writeImmutableJson(manifestPath, manifest as Json);
-    const receipts: Json[] = [];
+    const receiptPaths: string[] = [];
     for (const shard of manifest.shards) {
-      receipts.push(await executeShard({ client, manifest, upstream: upstream.manifest, root, shard }));
+      receiptPaths.push(await executeShard({ client, manifest, upstream: upstream.manifest, root, shard }));
+      global.gc();
     }
-    const terminal = await finalize({ client, manifest, root, receipts });
+    const terminal = await finalize({ client, manifest, root, receiptPaths });
     process.stdout.write(`${JSON.stringify({
       root,
       status: terminal.status,

@@ -14,23 +14,26 @@ import {
 } from "./identityDag11610Contract";
 
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
-const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
-const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
+const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const CURRENT_RELEASE = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
+const RELEASE_ID = String(CURRENT_RELEASE.definitionReleaseId);
+const SEARCH_RELEASE_ID = String(CURRENT_RELEASE.searchReleaseId);
 const EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS = 9;
 const IDENTITY_PATH = resolve(
   ".release-runtime/r568/rc09-identity-v1/current-identity-manifest-11610.jsonl",
 );
 const ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1",
+  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale",
 );
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const EXACT_SOURCE_PATHS = [
   "scripts/estimate/r4a6/auditR4A6IdentityDag11610.ts",
   "scripts/estimate/r4a6/identityDag11610Contract.ts",
+  "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
 ] as const;
