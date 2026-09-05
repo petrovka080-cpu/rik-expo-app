@@ -486,6 +486,15 @@ function projectPlatformExecution(input: {
   const compiled = input.transport.payload;
   const beforeProjectionSha256 = sha256(compiled.revisionProjection);
   const selection = selectCanonicalArtifactRows(compiled.rows);
+  const runsPdf = input.item.scenarioKind === "professional_pdf_projection";
+  const runsProcurement = input.item.scenarioKind === "procurement_projection";
+  const runsHistory = input.item.scenarioKind === "immutable_history_projection";
+  const runsRestart = ["cold_restart_restore", "background_foreground_restore"]
+    .includes(input.item.scenarioKind);
+  const runsCategories = input.item.scenarioKind === "category_filter_projection";
+  const runsPhoto = input.item.scenarioKind === "photo_row_identity";
+  const runsConfirm = input.item.scenarioKind === "confirm_idempotency";
+  const runsMarketplace = input.item.scenarioKind === "marketplace_send_idempotency";
   const revision = {
     id: sha256({ caseId: input.item.caseId, projection: compiled.revisionProjection }),
     release_id: RELEASE_ID,
@@ -501,29 +510,39 @@ function projectPlatformExecution(input: {
     primary_measure_unit_id: input.member.parameters[0]?.parameter_id ?? null,
     created_at: "2026-09-04T00:00:00.000Z",
   };
-  const pdf = buildCanonicalProfessionalPdfProjection({
-    revision,
-    rows: selection.estimateRows,
-    workTitleRu: input.member.titleRu,
-    definitionVersionId: input.member.definitionVersionId,
-  });
-  const procurement = buildCanonicalProcurementProjection({
-    revision,
-    procurementRows: selection.procurementRows,
-  });
-  const history = [{
+  const pdf = runsPdf ? buildCanonicalProfessionalPdfProjection({
+      revision,
+      rows: selection.estimateRows,
+      workTitleRu: input.member.titleRu,
+      definitionVersionId: input.member.definitionVersionId,
+    })
+    : null;
+  const procurement = runsProcurement ? buildCanonicalProcurementProjection({
+      revision,
+      procurementRows: selection.procurementRows,
+    })
+    : null;
+  const history = runsHistory ? [{
     revisionId: revision.id,
     revisionNumber: revision.revision_number,
     checksumSha256: revision.checksum_sha256,
     rowHashes: compiled.rows.map((row) => row.row_sha256),
-  }];
-  const categoryCounts = Object.fromEntries([...new Set(compiled.rows.map((row) => String(row.category)))].sort()
-    .map((category) => [category, compiled.rows.filter((row) => String(row.category) === category).length]));
-  const confirmKey = sha256({ caseId: input.item.caseId, checksum: revision.checksum_sha256, operation: "confirm" });
-  const marketplaceKey = sha256({ revisionId: revision.id, checksum: revision.checksum_sha256, operation: "marketplace" });
-  const restarted = input.transport.transport === "WEB_JSON"
-    ? webPlatformTransport(compiled.revisionProjection)
-    : androidApi34PlatformTransport(compiled.revisionProjection);
+  }] : null;
+  const categoryCounts = runsCategories
+    ? Object.fromEntries([...new Set(compiled.rows.map((row) => String(row.category)))].sort()
+      .map((category) => [category, compiled.rows.filter((row) => String(row.category) === category).length]))
+    : null;
+  const confirmKey = runsConfirm
+    ? sha256({ caseId: input.item.caseId, checksum: revision.checksum_sha256, operation: "confirm" })
+    : null;
+  const marketplaceKey = runsMarketplace
+    ? sha256({ revisionId: revision.id, checksum: revision.checksum_sha256, operation: "marketplace" })
+    : null;
+  const restarted = runsRestart
+    ? input.transport.transport === "WEB_JSON"
+      ? webPlatformTransport(compiled.revisionProjection)
+      : androidApi34PlatformTransport(compiled.revisionProjection)
+    : null;
   const semantic = {
     caseId: input.item.caseId,
     scenarioKind: input.item.scenarioKind,
@@ -532,37 +551,35 @@ function projectPlatformExecution(input: {
     rowCount: compiled.rows.length,
     revisionChecksumSha256: revision.checksum_sha256,
     rowHashChainSha256: sha256(compiled.rows.map((row) => row.row_sha256)),
-    pdfSha256: sha256(pdf),
-    pdfRowCount: pdf.rowCount,
-    pdfGrandTotalStatus: pdf.grandTotalStatus,
-    procurementSha256: sha256(procurement),
-    procurementRowCount: procurement.selectedRowCount,
-    historySha256: sha256(history),
-    coldRestartSha256: restarted.wireSha256,
+    pdfSha256: pdf ? sha256(pdf) : null,
+    pdfRowCount: pdf?.rowCount ?? null,
+    pdfGrandTotalStatus: pdf?.grandTotalStatus ?? null,
+    procurementSha256: procurement ? sha256(procurement) : null,
+    procurementRowCount: procurement?.selectedRowCount ?? null,
+    historySha256: history ? sha256(history) : null,
+    coldRestartSha256: restarted?.wireSha256 ?? null,
     categoryCounts,
-    photoRowIdentity: compiled.rows[0]?.row_id ?? null,
+    photoRowIdentity: runsPhoto ? compiled.rows[0]?.row_id ?? null : null,
     confirmIdempotencyKey: confirmKey,
     marketplaceIdempotencyKey: marketplaceKey,
     titleRu: input.member.titleRu,
   };
   const checks = {
     nonEmptyRows: compiled.rows.length > 0,
-    pdfParity: pdf.rowCount === selection.estimateRows.length,
-    procurementParity: procurement.selectedRowCount === selection.procurementRows.length,
-    historyImmutable: history[0]?.checksumSha256 === beforeProjectionSha256
-      && beforeProjectionSha256 === sha256(compiled.revisionProjection),
-    coldRestartParity: restarted.wireSha256 === sha256Bytes(canonicalEstimateStableJson(compiled.revisionProjection)),
-    confirmIdempotency: confirmKey === sha256({
-      caseId: input.item.caseId,
-      checksum: revision.checksum_sha256,
-      operation: "confirm",
+    pdfParity: !runsPdf || pdf?.rowCount === selection.estimateRows.length,
+    procurementParity: !runsProcurement || procurement?.selectedRowCount === selection.procurementRows.length,
+    historyImmutable: !runsHistory || (history?.[0]?.checksumSha256 === beforeProjectionSha256
+      && beforeProjectionSha256 === sha256(compiled.revisionProjection)),
+    coldRestartParity: !runsRestart
+      || restarted?.wireSha256 === sha256Bytes(canonicalEstimateStableJson(compiled.revisionProjection)),
+    confirmIdempotency: !runsConfirm || confirmKey === sha256({
+      caseId: input.item.caseId, checksum: revision.checksum_sha256, operation: "confirm",
     }),
-    categoriesComplete: Object.values(categoryCounts).reduce((sum, value) => sum + Number(value), 0) === compiled.rows.length,
-    photoIdentityStable: compiled.rows.length === 0 || Boolean(compiled.rows[0]?.row_id),
-    marketplaceIdempotency: marketplaceKey === sha256({
-      revisionId: revision.id,
-      checksum: revision.checksum_sha256,
-      operation: "marketplace",
+    categoriesComplete: !runsCategories
+      || Object.values(categoryCounts ?? {}).reduce((sum, value) => sum + Number(value), 0) === compiled.rows.length,
+    photoIdentityStable: !runsPhoto || (compiled.rows.length > 0 && Boolean(compiled.rows[0]?.row_id)),
+    marketplaceIdempotency: !runsMarketplace || marketplaceKey === sha256({
+      revisionId: revision.id, checksum: revision.checksum_sha256, operation: "marketplace",
     }),
     russianRoundtrip: semantic.titleRu === input.member.titleRu,
   };
@@ -851,14 +868,16 @@ async function finalize(input: {
     scenarioCounts: Object.fromEntries([...scenarioCounts.entries()].sort()),
     scenarioCoverageGreen,
     lifecycleExecutions: {
-      pdfWeb: webExecutionIds.size,
-      pdfAndroidApi34: androidExecutionIds.size,
-      procurementWeb: webExecutionIds.size,
-      procurementAndroidApi34: androidExecutionIds.size,
-      historyWeb: webExecutionIds.size,
-      historyAndroidApi34: androidExecutionIds.size,
-      restartWeb: webExecutionIds.size,
-      restartAndroidApi34: androidExecutionIds.size,
+      pdfWeb: scenarioCounts.get("professional_pdf_projection") ?? 0,
+      pdfAndroidApi34: scenarioCounts.get("professional_pdf_projection") ?? 0,
+      procurementWeb: scenarioCounts.get("procurement_projection") ?? 0,
+      procurementAndroidApi34: scenarioCounts.get("procurement_projection") ?? 0,
+      historyWeb: scenarioCounts.get("immutable_history_projection") ?? 0,
+      historyAndroidApi34: scenarioCounts.get("immutable_history_projection") ?? 0,
+      restartWeb: (scenarioCounts.get("cold_restart_restore") ?? 0)
+        + (scenarioCounts.get("background_foreground_restore") ?? 0),
+      restartAndroidApi34: (scenarioCounts.get("cold_restart_restore") ?? 0)
+        + (scenarioCounts.get("background_foreground_restore") ?? 0),
     },
     shardsExpected: SHARD_COUNT,
     shardsExecuted: input.receipts.length,
