@@ -168,7 +168,8 @@ async function preflight(client: Client, fingerprint: string): Promise<{
     where manifest.release_id=$1
     group by manifest.catalog_id,baseline.id,baseline.input_values
     having count(*) filter(where parameter.value_type='text' and not parameter.required
-      and coalesce(baseline.input_values->>parameter.parameter_id,'')='')>0
+      and baseline.input_values ? parameter.parameter_id
+      and trim(baseline.input_values->>parameter.parameter_id)='')>0
     order by manifest.catalog_id`, [PREDECESSOR_RELEASE_ID])).rows.map((row) => String(row.catalog_id));
   invariant(baselineCatalogs.length === EXPECTED_BASELINE_DEFECTS, "STOP_GROUP50_SUCCESSOR_BASELINE_DENOMINATOR");
   const affectedCatalogs = new Set([...failures.map((row) => row.catalogId), ...baselineCatalogs]);
@@ -410,7 +411,8 @@ async function applySuccessor(client: Client, input: {
         from public.estimate_parameter_definition parameter
         where parameter.definition_version_id=map.old_definition_id
           and parameter.value_type='text' and not parameter.required
-          and coalesce(source.input_values->>parameter.parameter_id,'')='') blank on true`, [
+          and source.input_values ? parameter.parameter_id
+          and trim(source.input_values->>parameter.parameter_id)='') blank on true`, [
       input.releaseId,
       CONTRACT,
       input.fingerprint,
@@ -587,7 +589,8 @@ async function applySuccessor(client: Client, input: {
         join public.estimate_parameter_definition parameter on parameter.definition_version_id=manifest.definition_version_id
         where manifest.release_id=$1 group by manifest.catalog_id,baseline.id,baseline.input_values
         having count(*) filter(where parameter.value_type='text' and not parameter.required
-          and coalesce(baseline.input_values->>parameter.parameter_id,'')='')>0) defect`, [input.releaseId])).rows[0].value);
+          and baseline.input_values ? parameter.parameter_id
+          and trim(baseline.input_values->>parameter.parameter_id)='')>0) defect`, [input.releaseId])).rows[0].value);
     const linkage = (await client.query(`select
         (select count(*)::int from r4a6_group50_resource_map map
           join public.estimate_work_normative_binding binding on binding.resource_spec_id=map.old_resource_id) normative_before,

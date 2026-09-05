@@ -25,7 +25,8 @@ async function main(): Promise<void> {
         manifest.catalog_id,baseline.id::text baseline_id,baseline.input_values,
         array_agg(parameter.parameter_id order by parameter.ordinal)
           filter(where parameter.value_type='text' and not parameter.required
-            and coalesce(baseline.input_values->>parameter.parameter_id,'')='') empty_optional_text
+            and baseline.input_values ? parameter.parameter_id
+            and trim(baseline.input_values->>parameter.parameter_id)='') empty_optional_text
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_approved_template_baseline baseline
         on baseline.id=manifest.approved_template_baseline_id
@@ -34,7 +35,8 @@ async function main(): Promise<void> {
       where manifest.release_id=$1
       group by manifest.catalog_id,baseline.id,baseline.input_values
       having count(*) filter(where parameter.value_type='text' and not parameter.required
-        and coalesce(baseline.input_values->>parameter.parameter_id,'')='')>0
+        and baseline.input_values ? parameter.parameter_id
+        and trim(baseline.input_values->>parameter.parameter_id)='')>0
       order by manifest.catalog_id`, [RELEASE_ID])).rows as Json[];
     const resourceRows = (await client.query(`select
         manifest.catalog_id,document.canonical_name_ru work_title_ru,
