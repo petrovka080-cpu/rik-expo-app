@@ -1,10 +1,14 @@
 import React from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
 import type { GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate";
 
 const WORK_TEMPLATE_SUGGESTION_MAX_ITEMS = 12;
+
+function legacyWorkSuggestionKey(suggestion: GlobalWorkSmartSearchSuggestion): string {
+  return suggestion.workKey;
+}
 
 export type WorkTemplateSuggestionsProps = {
   candidateTemplates: InlineWorkTemplateCandidate[];
@@ -49,40 +53,13 @@ export function WorkTemplateSuggestions({
 }: WorkTemplateSuggestionsProps): React.ReactElement | null {
   if (candidateTemplates.length === 0 && legacyWorkSuggestions.length === 0 && !loading && !errorRu) return null;
   return (
-    <ScrollView
+    <FlatList
       style={styles.scroll}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
-      nestedScrollEnabled
-      showsVerticalScrollIndicator
-      testID="consumer-repair-work-suggestions"
-    >
-      {literalTotalCount > 0 || suggestionTotalCount > 0 ? (
-        <View style={styles.summary} testID="consumer-repair-work-search-total">
-          <Text style={styles.summaryTitle}>Найдено буквально: {literalTotalCount}</Text>
-          <Text style={styles.summaryMeta}>Основной каталог: {globalLiteralTotalCount} · справочные: {externalLiteralTotalCount}</Text>
-          <Text style={styles.summaryMeta}>Показано: {shownCount}{suggestionTotalCount ? ` · отдельных подсказок: ${suggestionTotalCount}` : ""}</Text>
-        </View>
-      ) : null}
-      {candidateTemplates.slice(0, WORK_TEMPLATE_SUGGESTION_MAX_ITEMS).map((candidate, index) => (
+      data={legacyWorkSuggestions}
+      keyExtractor={legacyWorkSuggestionKey}
+      renderItem={({ item: suggestion, index }) => (
         <Pressable
-          key={candidate.templateId}
-          accessibilityRole="button"
-          accessibilityLabel={candidate.templateName}
-          onPress={() => onSelectTemplateCandidate?.(candidate)}
-          style={styles.button}
-          testID={`inline-work-template-candidate-${index + 1}`}
-        >
-          <View style={styles.row}>
-            <Text style={styles.title} numberOfLines={2}>{candidate.templateName}</Text>
-            <Text style={styles.confidence}>{Math.round(candidate.confidence * 100)}%</Text>
-          </View>
-          <Text style={styles.meta} numberOfLines={1}>{candidate.family} · {candidate.reason}</Text>
-        </Pressable>
-      ))}
-      {legacyWorkSuggestions.map((suggestion, index) => (
-        <Pressable
-          key={suggestion.workKey}
           accessibilityRole="button"
           accessibilityLabel={suggestion.visibleText}
           accessibilityState={{ disabled: suggestion.estimateReady !== true }}
@@ -100,21 +77,61 @@ export function WorkTemplateSuggestions({
             </Text>
           ) : null}
         </Pressable>
-      ))}
-      {errorRu ? <Text style={styles.error} testID="consumer-repair-work-search-error">{errorRu}</Text> : null}
-      {loading ? <View style={styles.loading} testID="consumer-repair-work-search-loading"><ActivityIndicator /><Text style={styles.summaryMeta}>Ищем по полному каталогу…</Text></View> : null}
-      {hasMore && !loading ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Показать ещё работы. Сейчас показано ${shownCount} из ${literalTotalCount + suggestionTotalCount}`}
-          onPress={onLoadMore}
-          style={styles.loadMore}
-          testID="consumer-repair-work-search-load-more"
-        >
-          <Text style={styles.loadMoreText}>Показать ещё ({shownCount} из {literalTotalCount + suggestionTotalCount})</Text>
-        </Pressable>
-      ) : null}
-    </ScrollView>
+      )}
+      ListHeaderComponent={(
+        <>
+          {literalTotalCount > 0 || suggestionTotalCount > 0 ? (
+            <View style={styles.summary} testID="consumer-repair-work-search-total">
+              <Text style={styles.summaryTitle}>Найдено буквально: {literalTotalCount}</Text>
+              <Text style={styles.summaryMeta}>Основной каталог: {globalLiteralTotalCount} · справочные: {externalLiteralTotalCount}</Text>
+              <Text style={styles.summaryMeta}>Показано: {shownCount}{suggestionTotalCount ? ` · отдельных подсказок: ${suggestionTotalCount}` : ""}</Text>
+            </View>
+          ) : null}
+          {candidateTemplates.slice(0, WORK_TEMPLATE_SUGGESTION_MAX_ITEMS).map((candidate, index) => (
+            <Pressable
+              key={candidate.templateId}
+              accessibilityRole="button"
+              accessibilityLabel={candidate.templateName}
+              onPress={() => onSelectTemplateCandidate?.(candidate)}
+              style={styles.button}
+              testID={`inline-work-template-candidate-${index + 1}`}
+            >
+              <View style={styles.row}>
+                <Text style={styles.title} numberOfLines={2}>{candidate.templateName}</Text>
+                <Text style={styles.confidence}>{Math.round(candidate.confidence * 100)}%</Text>
+              </View>
+              <Text style={styles.meta} numberOfLines={1}>{candidate.family} · {candidate.reason}</Text>
+            </Pressable>
+          ))}
+        </>
+      )}
+      ListFooterComponent={(
+        <>
+          {errorRu ? <Text style={styles.error} testID="consumer-repair-work-search-error">{errorRu}</Text> : null}
+          {loading ? <View style={styles.loading} testID="consumer-repair-work-search-loading"><ActivityIndicator /><Text style={styles.summaryMeta}>Ищем по полному каталогу…</Text></View> : null}
+          {hasMore && !loading ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Показать ещё работы. Сейчас показано ${shownCount} из ${literalTotalCount + suggestionTotalCount}`}
+              onPress={onLoadMore}
+              style={styles.loadMore}
+              testID="consumer-repair-work-search-load-more"
+            >
+              <Text style={styles.loadMoreText}>Показать ещё ({shownCount} из {literalTotalCount + suggestionTotalCount})</Text>
+            </Pressable>
+          ) : null}
+        </>
+      )}
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled
+      showsVerticalScrollIndicator
+      testID="consumer-repair-work-suggestions"
+      initialNumToRender={20}
+      maxToRenderPerBatch={20}
+      windowSize={7}
+      onEndReachedThreshold={0.5}
+      removeClippedSubviews
+    />
   );
 }
 

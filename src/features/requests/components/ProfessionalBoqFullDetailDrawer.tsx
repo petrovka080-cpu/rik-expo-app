@@ -5,6 +5,10 @@ import type { ProfessionalBoqLineItemQuality } from "../../../lib/estimate/profe
 import { buildProfessionalBoqGroupedMainViewModel } from "../../../lib/estimate/professionalBoqSectionPolicy";
 import { ProfessionalBoqLineItem } from "./ProfessionalBoqLineItem";
 
+function professionalBoqRowKey(row: ProfessionalBoqLineItemQuality): string {
+  return row.rowId;
+}
+
 export function buildProfessionalBoqFullDetailDrawerModel(rows: readonly ProfessionalBoqLineItemQuality[]) {
   return buildProfessionalBoqGroupedMainViewModel(rows, Number.MAX_SAFE_INTEGER);
 }
@@ -16,7 +20,7 @@ export function ProfessionalBoqFullDetailDrawer({ rows }: { rows: readonly Profe
     <FlatList
       testID="professional-boq-full-detail-drawer"
       data={visibleRows}
-      keyExtractor={(row) => row.rowId}
+      keyExtractor={professionalBoqRowKey}
       renderItem={({ item }) => <ProfessionalBoqLineItem row={item} />}
       ListHeaderComponent={<Text>{String(model.rawRowsCount)}</Text>}
       ListEmptyComponent={<Text>Нет строк</Text>}
