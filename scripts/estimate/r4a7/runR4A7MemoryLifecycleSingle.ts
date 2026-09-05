@@ -301,6 +301,10 @@ async function main(): Promise<void> {
 
   clearCaches();
   capture("t0_after_subject_import_and_cache_clear");
+  if (passportModule.listProfessionalWorkPassportTemplateIndex().length
+    !== passportModule.listProfessionalWorkPassportTemplateIds().length) {
+    throw new Error("professional_template_index_denominator_mismatch");
+  }
   for (const templateId of representativeIds(ids, Math.min(64, ids.length))) {
     passportModule.buildProfessionalWorkPassport(templateId);
     parameterModule.buildAiEstimateParameterSchema(templateId);
@@ -313,6 +317,10 @@ async function main(): Promise<void> {
   capture("warmup_complete");
 
   for (let cycle = 1; cycle <= cycles; cycle += 1) {
+    if (passportModule.listProfessionalWorkPassportTemplateIndex().length
+      !== passportModule.listProfessionalWorkPassportTemplateIds().length) {
+      throw new Error("professional_template_index_denominator_mismatch");
+    }
     for (const templateId of ids) {
       if (!passportModule.buildProfessionalWorkPassport(templateId)) {
         throw new Error(`professional_passport_missing:${templateId}`);
@@ -367,7 +375,7 @@ async function main(): Promise<void> {
       cacheClearBetweenCycles: false,
       cacheClearBeforeAndAfter: true,
       idleCheckpointsMs: [IDLE_60_MS, IDLE_300_MS],
-      operationChain: ["compile_passport", "edit_parameter_schema", "photo_buffer_hash", "confirm_idempotency", "professional_pdf_projection", "procurement_projection", "immutable_history_projection", "close_dispose", "background_foreground_serialization", "cold_restore_serialization"],
+      operationChain: ["catalog_template_index", "compile_passport", "edit_parameter_schema", "photo_buffer_hash", "confirm_idempotency", "professional_pdf_projection", "procurement_projection", "immutable_history_projection", "close_dispose", "background_foreground_serialization", "cold_restore_serialization"],
       productionFixUsesManualGc: false,
     },
     cachesBeforeDispose,
