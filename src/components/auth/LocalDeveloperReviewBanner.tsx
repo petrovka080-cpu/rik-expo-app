@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -30,10 +30,32 @@ export function LocalDeveloperReviewBanner({
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [savingRole, setSavingRole] = useState<LocalDeveloperReviewRole | null>(null);
   const [error, setError] = useState(false);
+  const automaticLoginAttempted = useRef(false);
 
   useEffect(() => {
     setActiveRole(authenticatedRole);
   }, [authenticatedRole]);
+
+  useEffect(() => {
+    if (!enabled || authenticatedRole || automaticLoginAttempted.current) return;
+    automaticLoginAttempted.current = true;
+    let mounted = true;
+    setError(false);
+    setSavingRole("director");
+    void switchLocalDeveloperPrincipal("director")
+      .then(() => {
+        if (mounted) setActiveRole("director");
+      })
+      .catch(() => {
+        if (mounted) setError(true);
+      })
+      .finally(() => {
+        if (mounted) setSavingRole(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [authenticatedRole, enabled]);
 
   if (!enabled) return null;
 
