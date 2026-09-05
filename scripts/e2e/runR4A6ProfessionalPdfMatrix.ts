@@ -14,8 +14,8 @@ const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
 );
 const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const OUTPUT_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/pdf-r4-a6-matrix",
+const EVIDENCE_ROOT = resolve(
+  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence",
 );
 const MATRIX = [1, 45, 100, 500, 1001] as const;
 const EXACT_SOURCE_PATHS = [
@@ -136,7 +136,11 @@ async function extractPdfText(bytes: Uint8Array): Promise<{ pageCount: number; t
 async function main(): Promise<void> {
   invariant(sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256, "R4_A6_PDF_MASTER_SHA256_DRIFT");
   const source = exactSourceIdentity();
-  mkdirSync(OUTPUT_ROOT, { recursive: true });
+  const outputRoot = resolve(
+    EVIDENCE_ROOT,
+    `pdf-${source.commitSha}-terminal-green`,
+  );
+  mkdirSync(outputRoot, { recursive: true });
   const browser = await chromium.launch({ headless: true });
   const cases: Record<string, unknown>[] = [];
   try {
@@ -154,7 +158,7 @@ async function main(): Promise<void> {
       await page.setContent(projection.html, { waitUntil: "load" });
       await page.emulateMedia({ media: "print" });
       if (rowCount === 45) {
-        await page.screenshot({ path: resolve(OUTPUT_ROOT, "45-client-preview.png"), fullPage: false });
+        await page.screenshot({ path: resolve(outputRoot, "45-client-preview.png"), fullPage: false });
       }
       const pdf = await page.pdf({
         format: "A4",
@@ -167,7 +171,7 @@ async function main(): Promise<void> {
       const durationMs = Math.round(performance.now() - startedAt);
       const rssDeltaBytes = Math.max(0, process.memoryUsage().rss - rssBefore);
       await page.close();
-      const pdfPath = resolve(OUTPUT_ROOT, `${rowCount}-rows.pdf`);
+      const pdfPath = resolve(outputRoot, `${rowCount}-rows.pdf`);
       writeFileSync(pdfPath, pdf);
       const extracted = await extractPdfText(new Uint8Array(pdf));
       const normalizedText = extracted.text.replace(/\s+/gu, " ").trim();
@@ -227,7 +231,7 @@ async function main(): Promise<void> {
   const pageCounts = cases.map((item) => Number(item.pageCount));
   invariant(pageCounts.every((count, index) => index === 0 || count >= pageCounts[index - 1]),
     "R4_A6_PDF_PAGINATION_NON_MONOTONIC");
-  atomicJson(resolve(OUTPUT_ROOT, "matrix.json"), {
+  atomicJson(resolve(outputRoot, "matrix.json"), {
     schemaVersion: "r568-r4-a6-professional-pdf-matrix.v1",
     capturedAt: new Date().toISOString(),
     masterSha256: MASTER_SHA256,
@@ -240,7 +244,7 @@ async function main(): Promise<void> {
     fakeGreenClaimed: false,
   });
   process.stdout.write(`${JSON.stringify({
-    output: resolve(OUTPUT_ROOT, "matrix.json"),
+    output: resolve(outputRoot, "matrix.json"),
     matrix: cases.map((item) => ({
       rowCount: item.rowCount,
       pageCount: item.pageCount,
