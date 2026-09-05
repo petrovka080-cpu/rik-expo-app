@@ -423,7 +423,7 @@ async function applySuccessor(client: Client, input: {
         case when source.default_value is not null
           and source.truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54'
         then jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(
-          source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$2::text),
+          source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$1::text),
           '{baseline_assumption_id}',to_jsonb(map.new_baseline_id::text||':'||source.parameter_id),true),
           '{provenance,approvedTemplateBaselineId}',to_jsonb(map.new_baseline_id::text),true),
           '{provenance,acceptanceEvidenceSha256}',to_jsonb(baseline.acceptance_evidence_sha256),true),
@@ -435,7 +435,6 @@ async function applySuccessor(client: Client, input: {
       from r4a6_group50_definition_map map
       join public.estimate_parameter_definition source on source.definition_version_id=map.old_definition_id
       join public.estimate_approved_template_baseline baseline on baseline.id=map.new_baseline_id`, [
-      input.releaseId,
       CONTRACT,
     ]);
     await client.query(`insert into public.estimate_formula_graph(
