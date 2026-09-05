@@ -5,6 +5,18 @@ const apiSource = readFileSync(
   resolve(process.cwd(), "supabase/functions/canonical-estimate/index.ts"),
   "utf8",
 );
+const admissionMigration = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260819090000_estimate_admission_r3.sql"),
+  "utf8",
+);
+const tenantRevisionMigration = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260825180000_r541_strict_tenant_revision_access.sql"),
+  "utf8",
+);
+const photoMigration = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260819220000_estimate_revision_photo_attachment_r55.sql"),
+  "utf8",
+);
 
 describe("R4-A6 canonical estimate security boundary", () => {
   it("uses an exact origin allowlist and never emits a wildcard CORS origin", () => {
@@ -48,5 +60,25 @@ describe("R4-A6 canonical estimate security boundary", () => {
     expect(apiSource).toContain("assertUuid(revisionId");
     expect(apiSource).toContain("assertUuid(attachmentId");
     expect(apiSource).toContain("new URL(request.url).pathname.split");
+  });
+
+  it("fails closed on capability scope, expiry, revocation, and source identity", () => {
+    expect(admissionMigration).toContain("capability.revoked_at is null");
+    expect(admissionMigration).toContain("capability.expires_at>clock_timestamp()");
+    expect(admissionMigration).toContain("capability.tenant_id=new.organization_id");
+    expect(admissionMigration).toContain("capability.release_id=v_release.id");
+    expect(admissionMigration).toContain("capability.environment=new.input_payload#>>'{estimateAdmission,environment}'");
+    expect(admissionMigration).toContain("capability.source_head=new.input_payload#>>'{estimateAdmission,sourceHead}'");
+    expect(admissionMigration).toContain("capability.source_tree=new.input_payload#>>'{estimateAdmission,sourceTree}'");
+  });
+
+  it("enforces revision tenant visibility and row-photo ownership in database code", () => {
+    expect(tenantRevisionMigration).toContain("revision.owner_user_id = auth.uid()");
+    expect(tenantRevisionMigration).toContain("public.rls_current_user_company_member_v1(revision.organization_id)");
+    expect(tenantRevisionMigration).toContain("request.estimate_tenant_id_r541");
+    expect(photoMigration).toContain("where u.id = p_upload_id and u.owner_user_id = p_actor_user_id");
+    expect(photoMigration).toContain("a.tenant_id = v_upload.tenant_id");
+    expect(photoMigration).toContain("a.parent_revision_id = v_upload.parent_revision_id");
+    expect(photoMigration).toContain("a.row_id = v_upload.row_id");
   });
 });
