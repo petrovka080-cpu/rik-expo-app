@@ -72,6 +72,7 @@ describe("RLS dynamic cross-tenant proof contract", () => {
     expect(source).toContain("rollback");
     expect(source).toContain("cross_tenant_attempts_live");
     expect(source).not.toContain("await client.query(\"commit");
+    expect(source).toContain("RLS_DYNAMIC_OUTPUT_DIR");
   });
 
   it("selects live company proof users without shared existing company membership", () => {

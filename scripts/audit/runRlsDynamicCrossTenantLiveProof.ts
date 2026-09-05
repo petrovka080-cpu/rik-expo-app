@@ -88,7 +88,9 @@ function safeError(error: unknown): string {
 function writeTypedParamsArtifacts(reachedPolicyAssertions: boolean): void {
   const fs = require("node:fs") as typeof import("node:fs");
   const path = require("node:path") as typeof import("node:path");
-  const artifactDir = path.join(process.cwd(), "artifacts");
+  const artifactDir = String(process.env.RLS_DYNAMIC_OUTPUT_DIR ?? "").trim()
+    ? path.resolve(String(process.env.RLS_DYNAMIC_OUTPUT_DIR))
+    : path.join(process.cwd(), "artifacts");
   const matrix = {
     final_status: "GREEN_RLS_RUNNER_TYPED_PARAMS_READY",
     requests_created_by_type: "uuid",

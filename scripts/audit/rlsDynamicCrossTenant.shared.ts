@@ -161,17 +161,22 @@ const STORAGE_BUCKETS = [
   { id: "public-marketplace-media", expectedPublic: true, assertion: "public_marketplace_media_only_for_published_safe_assets" },
 ] as const;
 
+function artifactDirectory(): string {
+  const isolatedOutput = String(process.env.RLS_DYNAMIC_OUTPUT_DIR ?? "").trim();
+  return isolatedOutput ? path.resolve(isolatedOutput) : path.join(ROOT, "artifacts");
+}
+
 function artifactPath(name: string): string {
-  return path.join(ROOT, "artifacts", `${ARTIFACT_PREFIX}_${name}`);
+  return path.join(artifactDirectory(), `${ARTIFACT_PREFIX}_${name}`);
 }
 
 export function writeRlsJson(name: string, value: unknown): void {
-  fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
+  fs.mkdirSync(artifactDirectory(), { recursive: true });
   fs.writeFileSync(artifactPath(`${name}.json`), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 export function writeRlsProof(markdown: string): void {
-  fs.mkdirSync(path.join(ROOT, "artifacts"), { recursive: true });
+  fs.mkdirSync(artifactDirectory(), { recursive: true });
   fs.writeFileSync(artifactPath("proof.md"), markdown, "utf8");
 }
 
