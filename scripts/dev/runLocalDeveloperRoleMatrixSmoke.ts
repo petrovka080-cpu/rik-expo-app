@@ -10,10 +10,12 @@ import {
 } from "../../src/lib/localDeveloperReviewRoles";
 
 const MASTER_SHA256 =
+  process.env.R4_A8_MASTER_SHA256 ??
   "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007";
 const ORIGIN = process.env.R555_WEB_ORIGIN ?? "http://localhost:8081";
 const OUTPUT = resolve(
-  ".release-runtime/r555/evidence/23A_R555_LOCAL_DEVELOPER_ROLE_MATRIX.json",
+  process.env.R4_A8_DEVELOPER_ROLE_MATRIX_OUTPUT ??
+    ".release-runtime/r555/evidence/23A_R555_LOCAL_DEVELOPER_ROLE_MATRIX.json",
 );
 const ROLE_LABELS: Record<LocalDeveloperReviewRole, string> = {
   foreman: "Прораб",
@@ -60,24 +62,51 @@ async function signInAs(page: Page, role: LocalDeveloperReviewRole) {
   });
   await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
   await page.getByTestId("auth.login.screen").waitFor({ timeout: 60_000 });
+  const actorBefore = await page.evaluate(() => {
+    const raw = window.localStorage.getItem("sb-127-auth-token");
+    try {
+      const session = raw ? JSON.parse(raw) : null;
+      return {
+        userId:
+          typeof session?.user?.id === "string" ? session.user.id : null,
+        providerRole:
+          typeof session?.user?.app_metadata?.role === "string"
+            ? session.user.app_metadata.role
+            : null,
+      };
+    } catch {
+      return { userId: null, providerRole: null };
+    }
+  });
+  invariant(actorBefore.userId, "R551_OWNER_ACTOR_ID_MISSING");
   await page.getByTestId("local-developer-role-toggle").click();
+  const serverRoleResponse = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname.endsWith(
+        "/rest/v1/rpc/developer_set_effective_role_v1",
+      ) && response.request().method() === "POST",
+    { timeout: 120_000 },
+  );
   await page.getByTestId(`local-developer-role-${role}`).click();
+  const roleResponse = await serverRoleResponse;
+  invariant(roleResponse.ok(), `R551_EFFECTIVE_ROLE_RPC_RED_${role}`);
+  const serverContext = (await roleResponse.json()) as Record<string, unknown>;
+  await page.getByTestId("local-developer-active-role").waitFor({
+    state: "visible",
+    timeout: 120_000,
+  });
   await page.waitForFunction(
-    ({ expectedRole }) => {
-      const raw = window.localStorage.getItem("sb-127-auth-token");
-      if (!raw) return false;
-      try {
-        return JSON.parse(raw)?.user?.app_metadata?.role === expectedRole;
-      } catch {
-        return false;
-      }
-    },
-    { expectedRole: role },
+    ({ expectedLabel }) =>
+      document.querySelector(
+        '[data-testid="local-developer-active-role"]',
+      )?.textContent?.trim() === expectedLabel,
+    { expectedLabel: ROLE_LABELS[role] },
     { timeout: 120_000 },
   );
   await page.waitForURL((url) => url.pathname === "/request", { timeout: 120_000 });
   await page.getByTestId("consumer-repair-problem-input").waitFor({ timeout: 180_000 });
   await page.waitForTimeout(1_000);
+  return { actorBefore, serverContext };
 }
 
 async function verifyRole(
@@ -117,7 +146,7 @@ async function verifyRole(
   });
 
   try {
-    await signInAs(page, role);
+    const roleSwitch = await signInAs(page, role);
     const target = ROLE_ROUTES[role];
     invariant(target, `R551_ROLE_ROUTE_MISSING_${role}`);
     if (target.route !== "/request") {
@@ -162,10 +191,30 @@ async function verifyRole(
       };
     });
 
+    const serverAllowedRoles = Array.isArray(roleSwitch.serverContext.allowedRoles)
+      ? roleSwitch.serverContext.allowedRoles.map(String)
+      : [];
+    const serverEntitlementGreen =
+      roleSwitch.serverContext.actorUserId === roleSwitch.actorBefore.userId &&
+      roleSwitch.serverContext.actorRole === "platform_developer" &&
+      roleSwitch.serverContext.entitlement === "platform_developer" &&
+      roleSwitch.serverContext.authorizationSource === "server_entitlement" &&
+      roleSwitch.serverContext.isEnabled === true &&
+      roleSwitch.serverContext.isActive === true &&
+      roleSwitch.serverContext.activeEffectiveRole === role &&
+      roleSwitch.serverContext.canAccessAllOfficeRoutes === true &&
+      roleSwitch.serverContext.canImpersonateForMutations === true &&
+      LOCAL_DEVELOPER_REVIEW_ROLES.every((allowedRole) =>
+        serverAllowedRoles.includes(allowedRole),
+      );
+    const providerActorStable =
+      state.userId === roleSwitch.actorBefore.userId &&
+      state.role === roleSwitch.actorBefore.providerRole;
     const green =
       state.pathname === target.route &&
       state.storageKeyPresent &&
-      state.role === role &&
+      providerActorStable &&
+      serverEntitlementGreen &&
       Boolean(state.userId && state.tenantId && state.membershipId) &&
       !state.protectedFailure &&
       !state.redOverlay &&
@@ -181,9 +230,20 @@ async function verifyRole(
       final_path: state.pathname,
       provider_session: state.storageKeyPresent,
       provider_user_id_sha256: state.userId ? sha256(state.userId) : null,
+      provider_actor_stable: providerActorStable,
+      provider_role_unchanged: state.role === roleSwitch.actorBefore.providerRole,
+      provider_role: state.role,
       tenant_metadata_present: Boolean(state.tenantId),
       membership_metadata_present: Boolean(state.membershipId),
-      role_metadata_matches: state.role === role,
+      server_entitlement: roleSwitch.serverContext.entitlement ?? null,
+      server_authorization_source:
+        roleSwitch.serverContext.authorizationSource ?? null,
+      server_effective_role:
+        roleSwitch.serverContext.activeEffectiveRole ?? null,
+      server_effective_role_matches:
+        roleSwitch.serverContext.activeEffectiveRole === role,
+      server_allowed_roles: serverAllowedRoles.length,
+      server_entitlement_green: serverEntitlementGreen,
       console_errors: consoleErrors.length,
       console_error_messages: consoleErrors,
       page_errors: pageErrors.length,
@@ -230,6 +290,8 @@ async function main() {
       green,
       red: roles.length - green,
       real_provider_sessions: true,
+      actor_identity_must_remain_stable: true,
+      presentation_role_must_not_replace_provider_role: true,
       storage_values_captured: false,
       credentials_captured: false,
       cases,

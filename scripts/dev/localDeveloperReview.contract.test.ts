@@ -80,4 +80,15 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(broker).toContain('actor: ownerRequest ? "owner" : "strict_test_principal"');
     expect(broker).toContain('credentials_printed: false');
   });
+
+  it("proves role-independent access without replacing the owner actor", () => {
+    const roleMatrix = source("scripts/dev/runLocalDeveloperRoleMatrixSmoke.ts");
+    expect(roleMatrix).toContain("developer_set_effective_role_v1");
+    expect(roleMatrix).toContain("serverEntitlementGreen");
+    expect(roleMatrix).toContain("providerActorStable");
+    expect(roleMatrix).toContain("provider_actor_stable");
+    expect(roleMatrix).toContain("provider_role_unchanged");
+    expect(roleMatrix).toContain("presentation_role_must_not_replace_provider_role");
+    expect(roleMatrix).not.toContain("app_metadata?.role === expectedRole");
+  });
 });
