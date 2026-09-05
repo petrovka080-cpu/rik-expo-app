@@ -226,7 +226,7 @@ function identitySnapshot(): Json {
   const aliases = rows.filter((row) => row.disposition !== "VISIBLE_CANONICAL");
   const visibleTargets = new Set(rows.filter((row) => row.disposition === "VISIBLE_CANONICAL")
     .map((row) => String(row.canonical_work_id)));
-  const orphanAliases = aliases.filter((row) => !visibleTargets.has(String(row.redirect_target_catalog_id)));
+  const orphanAliases = aliases.filter((row) => !visibleTargets.has(String(row.canonical_work_id)));
   if (rows.length !== EXPECTED_IDENTITIES || aliases.length !== EXPECTED_ALIASES || orphanAliases.length > 0) {
     throw new Error("STOP_GROUP50_IDENTITY_DENOMINATOR");
   }
