@@ -546,6 +546,67 @@ async function scrollToStart(
   await wait(750);
 }
 
+async function seekNodeForwardFromAnchor(
+  adbPath: string,
+  deviceId: string,
+  anchorPredicate: (node: UiNode) => boolean,
+  targetPredicate: (node: UiNode) => boolean,
+  maxForwardSwipes = 12,
+): Promise<{ snapshot: UiSnapshot; node: UiNode | null }> {
+  await scrollToStart(adbPath, deviceId);
+  const anchor = await seekNode(adbPath, deviceId, anchorPredicate, 55);
+  if (!anchor.node) return { snapshot: anchor.snapshot, node: null };
+
+  let snapshot = anchor.snapshot;
+  for (let index = 0; index <= maxForwardSwipes; index += 1) {
+    const node =
+      snapshot.nodes.find(
+        (candidate) => targetPredicate(candidate) && visiblePoint(candidate),
+      ) ?? null;
+    if (node) return { snapshot, node };
+    if (index < maxForwardSwipes) {
+      swipe(adbPath, deviceId, "up");
+      await wait(450);
+      snapshot = dumpUi(adbPath, deviceId);
+    }
+  }
+  return { snapshot, node: null };
+}
+
+async function ensureEstimatePositionsExpanded(
+  adbPath: string,
+  deviceId: string,
+): Promise<boolean> {
+  const found = await seekNode(
+    adbPath,
+    deviceId,
+    (node) =>
+      nodeHasId(node, "request-estimate-items-editor") &&
+      node.enabled &&
+      /(?:Показать|Скрыть) позиции/u.test(node.contentDesc),
+    16,
+  );
+  if (!found.node) return false;
+  if (/Скрыть позиции/u.test(found.node.contentDesc)) return true;
+  if (!tapNode(adbPath, deviceId, found.node)) return false;
+  const expanded = await waitForSnapshot(
+    adbPath,
+    deviceId,
+    (snapshot) =>
+      snapshot.nodes.some(
+        (node) =>
+          nodeHasId(node, "request-estimate-items-editor") &&
+          /Скрыть позиции/u.test(node.contentDesc),
+      ),
+    10_000,
+  );
+  return expanded.nodes.some(
+    (node) =>
+      nodeHasId(node, "request-estimate-items-editor") &&
+      /Скрыть позиции/u.test(node.contentDesc),
+  );
+}
+
 async function tapById(
   adbPath: string,
   deviceId: string,
@@ -1392,20 +1453,27 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   );
 
   await scrollToStart(adbPath, deviceId);
-  const firstQuantity = await seekNode(
+  const positionsExpandedForEdit = await ensureEstimatePositionsExpanded(
     adbPath,
     deviceId,
+  );
+  const firstQuantity = await seekNodeForwardFromAnchor(
+    adbPath,
+    deviceId,
+    (node) =>
+      nodeHasId(node, "request-estimate-selected-work-title") &&
+      node.text.trim() === expectedSelectedDisplayTitle,
     (node) =>
       node.resourceId.startsWith("consumer-repair-item-quantity-input-") &&
       node.contentDesc.startsWith(`Количество ${FIRST_FORMULA_ROW_TITLE}:`) &&
       node.text === "216",
-    24,
+    12,
   );
   const quantityFieldId = firstQuantity.node?.resourceId ?? null;
   const beforeQuantity = firstQuantity.node?.text ?? null;
   let changedQuantity: string | null = null;
   let changedRevisionId: string | null = null;
-  if (!quantityFieldId || beforeQuantity !== "216") {
+  if (!positionsExpandedForEdit || !quantityFieldId || beforeQuantity !== "216") {
     failures.push("R4_A6_ANDROID_FIRST_FORMULA_QUANTITY_RED");
   } else {
     const changeAuditStart = readAudit().length;
@@ -1934,13 +2002,21 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   const coldSummaryReady = Boolean(
     coldSelectedTitle.node && coldRowCount.node,
   );
-  const coldFirstQuantity = await seekNode(
+  const coldPositionsExpanded = await ensureEstimatePositionsExpanded(
+    adbPath,
+    deviceId,
+  );
+  const coldFirstQuantity = await seekNodeForwardFromAnchor(
     adbPath,
     deviceId,
     (node) =>
+      nodeHasId(node, "request-estimate-selected-work-title") &&
+      node.text.trim() === expectedSelectedDisplayTitle,
+    (node) =>
       node.resourceId.startsWith("consumer-repair-item-quantity-input-") &&
+      node.contentDesc.startsWith(`Количество ${FIRST_FORMULA_ROW_TITLE}:`) &&
       node.text === "217",
-    24,
+    12,
   );
   const coldAudit = readAudit().slice(coldAuditStart);
   const coldMutationPosts = coldAudit.filter((row) => row.method === "POST").length;
@@ -1948,6 +2024,7 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
     coldBootstrapReady &&
       coldLaunch.ok &&
       coldSummaryReady &&
+      coldPositionsExpanded &&
       coldRouteApplied.text.includes(coldLaunchMarker) &&
       coldFirstQuantity.node &&
       coldAudit.some(

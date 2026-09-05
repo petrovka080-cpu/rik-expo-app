@@ -276,6 +276,9 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain('beforeQuantity !== "216"');
     expect(journey).toContain("FIRST_FORMULA_ROW_TITLE");
     expect(journey).toContain('node.text === "216"');
+    expect(journey).toContain("seekNodeForwardFromAnchor");
+    expect(journey).toContain("ensureEstimatePositionsExpanded");
+    expect(journey).toContain("positionsExpandedForEdit");
     expect(journey.indexOf('await scrollToStart(adbPath, deviceId);')).toBeLessThan(
       journey.indexOf("const firstQuantity"),
     );
@@ -326,6 +329,9 @@ describe("Android API34 proof environment", () => {
     expect(coldRestart).toContain("await scrollToStart");
     expect(coldRestart).toContain("coldSelectedTitle");
     expect(coldRestart).toContain("coldRowCount");
+    expect(coldRestart).toContain("coldPositionsExpanded");
+    expect(coldRestart).toContain('node.text === "217"');
+    expect(coldRestart).toContain("FIRST_FORMULA_ROW_TITLE");
     expect(coldRestart).not.toContain("await waitForLifecycle");
     expect(journey).toContain("R4_A6_ANDROID_WEB_PARITY_RED");
     expect(journey).not.toContain("answerBuiltInAi");
