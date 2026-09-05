@@ -4,9 +4,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   isLocalDeveloperReviewEnabled,
   LOCAL_DEVELOPER_REVIEW_ROLES,
-  switchLocalDeveloperPrincipal,
+  restoreLocalDeveloperOwnerSession,
   type LocalDeveloperReviewRole,
 } from "../../lib/localDeveloperReview";
+import {
+  isServerAuthorizedPlatformDeveloper,
+  loadDeveloperOverrideContext,
+  setDeveloperEffectiveRole,
+} from "../../lib/developerOverride";
 
 const ROLE_LABELS: Record<LocalDeveloperReviewRole, string> = {
   foreman: "Прораб",
@@ -29,28 +34,48 @@ export function LocalDeveloperReviewBanner({
   const [expanded, setExpanded] = useState(false);
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [savingRole, setSavingRole] = useState<LocalDeveloperReviewRole | null>(null);
+  const [developerAuthorized, setDeveloperAuthorized] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [error, setError] = useState(false);
   const automaticLoginAttempted = useRef(false);
 
   useEffect(() => {
-    setActiveRole(authenticatedRole);
-  }, [authenticatedRole]);
-
-  useEffect(() => {
-    if (!enabled || authenticatedRole || automaticLoginAttempted.current) return;
-    automaticLoginAttempted.current = true;
+    if (!enabled) return;
     let mounted = true;
+    const applyServerContext = async () => {
+      const context = await loadDeveloperOverrideContext();
+      if (!mounted) return;
+      const authorized = isServerAuthorizedPlatformDeveloper(context);
+      setDeveloperAuthorized(authorized);
+      setActiveRole(
+        authorized
+          ? context.activeEffectiveRole ?? authenticatedRole
+          : authenticatedRole,
+      );
+    };
+
+    setCheckingAccess(true);
     setError(false);
-    setSavingRole("director");
-    void switchLocalDeveloperPrincipal("director")
-      .then(() => {
-        if (mounted) setActiveRole("director");
-      })
+    const establishAccess = async () => {
+      if (!authenticatedRole && !automaticLoginAttempted.current) {
+        automaticLoginAttempted.current = true;
+        setSavingRole("director");
+        await restoreLocalDeveloperOwnerSession();
+      }
+      await applyServerContext();
+    };
+    void establishAccess()
       .catch(() => {
-        if (mounted) setError(true);
+        if (!mounted) return;
+        setDeveloperAuthorized(false);
+        setActiveRole(authenticatedRole);
+        setError(true);
       })
       .finally(() => {
-        if (mounted) setSavingRole(null);
+        if (mounted) {
+          setSavingRole(null);
+          setCheckingAccess(false);
+        }
       });
     return () => {
       mounted = false;
@@ -60,11 +85,13 @@ export function LocalDeveloperReviewBanner({
   if (!enabled) return null;
 
   const selectRole = (role: LocalDeveloperReviewRole) => {
+    if (!developerAuthorized) return;
     setError(false);
     setSavingRole(role);
-    void switchLocalDeveloperPrincipal(role)
-      .then(() => {
-        setActiveRole(role);
+    void setDeveloperEffectiveRole(role)
+      .then((context) => {
+        setDeveloperAuthorized(isServerAuthorizedPlatformDeveloper(context));
+        setActiveRole(context.activeEffectiveRole);
       })
       .catch(() => setError(true))
       .finally(() => setSavingRole(null));
@@ -75,33 +102,53 @@ export function LocalDeveloperReviewBanner({
       <View style={styles.summary}>
         <Text style={styles.label}>Локальный режим разработчика — не production</Text>
         <Text style={styles.role} testID="local-developer-active-role">
-          {activeRole && activeRole in ROLE_LABELS
+          {checkingAccess
+            ? "Проверяем доступ"
+            : activeRole && activeRole in ROLE_LABELS
             ? ROLE_LABELS[activeRole as LocalDeveloperReviewRole]
-            : "Вход не выполнен"}
+            : activeRole ?? "Вход не выполнен"}
         </Text>
-        {!activeRole ? (
+        {!activeRole && !checkingAccess ? (
           <Pressable
             accessibilityRole="button"
             disabled={Boolean(savingRole)}
-            onPress={() => selectRole("director")}
+            onPress={() => {
+              automaticLoginAttempted.current = false;
+              setCheckingAccess(true);
+              setSavingRole("director");
+              void restoreLocalDeveloperOwnerSession()
+                .then(loadDeveloperOverrideContext)
+                .then((context) => {
+                  setDeveloperAuthorized(isServerAuthorizedPlatformDeveloper(context));
+                  setActiveRole(context.activeEffectiveRole);
+                  setError(false);
+                })
+                .catch(() => setError(true))
+                .finally(() => {
+                  setSavingRole(null);
+                  setCheckingAccess(false);
+                });
+            }}
             style={styles.directorLogin}
             testID="local-developer-director-login"
           >
             <Text style={styles.directorLoginText}>
-              {savingRole === "director" ? "Входим…" : "Войти как Директор"}
+              {savingRole === "director" ? "Входим…" : "Войти как владелец"}
             </Text>
           </Pressable>
         ) : null}
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => setExpanded((current) => !current)}
-          style={styles.toggle}
-          testID="local-developer-role-toggle"
-        >
-          <Text style={styles.toggleText}>{expanded ? "Скрыть роли" : "Сменить роль"}</Text>
-        </Pressable>
+        {developerAuthorized ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setExpanded((current) => !current)}
+            style={styles.toggle}
+            testID="local-developer-role-toggle"
+          >
+            <Text style={styles.toggleText}>{expanded ? "Скрыть роли" : "Сменить роль"}</Text>
+          </Pressable>
+        ) : null}
       </View>
-      {expanded ? (
+      {expanded && developerAuthorized ? (
         <View style={styles.roles} testID="local-developer-role-list">
           {LOCAL_DEVELOPER_REVIEW_ROLES.map((role) => (
             <Pressable
@@ -119,7 +166,7 @@ export function LocalDeveloperReviewBanner({
           ))}
           {error ? (
             <Text style={styles.error} testID="local-developer-role-error">
-              Не удалось войти под выбранной локальной ролью. Повторите запуск среды.
+              Не удалось применить выбранную роль разработчика. Проверьте entitlement и повторите запуск среды.
             </Text>
           ) : null}
         </View>

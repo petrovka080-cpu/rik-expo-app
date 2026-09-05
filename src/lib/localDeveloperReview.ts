@@ -49,22 +49,20 @@ export function isLocalDeveloperReviewEnabled(input: {
 }
 
 type BrokerSession = {
+  actor?: unknown;
   role?: unknown;
   access_token?: unknown;
   refresh_token?: unknown;
 };
 
-async function switchLocalDeveloperProviderPrincipal(
-  role: LocalDeveloperPrincipalRole,
-  runtimeProbe?: Parameters<typeof isLocalDeveloperReviewEnabled>[0],
-): Promise<void> {
-  if (
-    role !== LOCAL_DEVELOPER_CONSUMER_ROLE &&
-    !LOCAL_DEVELOPER_REVIEW_ROLES.includes(role)
-  ) {
-    throw new Error("LOCAL_DEVELOPER_ROLE_NOT_ALLOWED");
-  }
-  if (!isLocalDeveloperReviewEnabled(runtimeProbe)) {
+async function installLocalDeveloperBrokerSession(params: {
+  path: "/owner-session" | "/session";
+  body: Record<string, unknown>;
+  expectedActor?: "owner";
+  expectedRole?: LocalDeveloperPrincipalRole;
+  runtimeProbe?: Parameters<typeof isLocalDeveloperReviewEnabled>[0];
+}): Promise<void> {
+  if (!isLocalDeveloperReviewEnabled(params.runtimeProbe)) {
     throw new Error("LOCAL_DEVELOPER_REVIEW_NOT_AVAILABLE");
   }
   if (supabaseClientAvailability.status !== "ready") {
@@ -79,19 +77,25 @@ async function switchLocalDeveloperProviderPrincipal(
     throw new Error("LOCAL_DEVELOPER_SUPABASE_UNAVAILABLE");
   }
 
-  const response = await fetch(`${BROKER_URL}/session`, {
+  const response = await fetch(`${BROKER_URL}${params.path}`, {
     method: "POST",
     cache: "no-store",
     credentials: "omit",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role }),
+    body: JSON.stringify(params.body),
   });
   const payload = (await response.json().catch(() => ({}))) as BrokerSession;
   const accessToken =
     typeof payload.access_token === "string" ? payload.access_token : "";
   const refreshToken =
     typeof payload.refresh_token === "string" ? payload.refresh_token : "";
-  if (!response.ok || payload.role !== role || !accessToken || !refreshToken) {
+  const actorMatches = params.expectedActor
+    ? payload.actor === params.expectedActor
+    : true;
+  const roleMatches = params.expectedRole
+    ? payload.role === params.expectedRole
+    : true;
+  if (!response.ok || !actorMatches || !roleMatches || !accessToken || !refreshToken) {
     throw new Error("LOCAL_DEVELOPER_PROVIDER_LOGIN_FAILED");
   }
 
@@ -100,6 +104,35 @@ async function switchLocalDeveloperProviderPrincipal(
     refresh_token: refreshToken,
   });
   if (error) throw new Error("LOCAL_DEVELOPER_PROVIDER_SESSION_REJECTED");
+}
+
+async function switchLocalDeveloperProviderPrincipal(
+  role: LocalDeveloperPrincipalRole,
+  runtimeProbe?: Parameters<typeof isLocalDeveloperReviewEnabled>[0],
+): Promise<void> {
+  if (
+    role !== LOCAL_DEVELOPER_CONSUMER_ROLE &&
+    !LOCAL_DEVELOPER_REVIEW_ROLES.includes(role)
+  ) {
+    throw new Error("LOCAL_DEVELOPER_ROLE_NOT_ALLOWED");
+  }
+  return installLocalDeveloperBrokerSession({
+    path: "/session",
+    body: { role },
+    expectedRole: role,
+    runtimeProbe,
+  });
+}
+
+export async function restoreLocalDeveloperOwnerSession(
+  runtimeProbe?: Parameters<typeof isLocalDeveloperReviewEnabled>[0],
+): Promise<void> {
+  return installLocalDeveloperBrokerSession({
+    path: "/owner-session",
+    body: {},
+    expectedActor: "owner",
+    runtimeProbe,
+  });
 }
 
 export async function switchLocalDeveloperPrincipal(

@@ -14,6 +14,7 @@ jest.mock("./supabaseClient", () => ({
 import {
   isLocalDeveloperReviewEnabled,
   LOCAL_DEVELOPER_REVIEW_ROLES,
+  restoreLocalDeveloperOwnerSession,
   switchLocalDeveloperPrincipal,
 } from "./localDeveloperReview";
 
@@ -90,6 +91,37 @@ describe("localDeveloperReview", () => {
       }),
     );
     expect(request[1].body).not.toMatch(/password|email|service/i);
+  });
+
+  it("restores the dedicated owner without accepting a role from the browser", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        actor: "owner",
+        role: "platform_developer",
+        access_token: "owner-access-token",
+        refresh_token: "owner-refresh-token",
+      }),
+    });
+
+    await expect(
+      restoreLocalDeveloperOwnerSession({
+        publicFlag: "1",
+        platform: "web",
+        hostname: "localhost",
+        port: "8081",
+        clientEnvironment: "local_developer",
+      }),
+    ).resolves.toBeUndefined();
+
+    const request = (global.fetch as jest.Mock).mock.calls[0];
+    expect(request[0]).toBe("http://127.0.0.1:54329/owner-session");
+    expect(request[1].body).toBe("{}");
+    expect(request[1].body).not.toMatch(/role|password|email|service/i);
+    expect(mockSetSession).toHaveBeenCalledWith({
+      access_token: "owner-access-token",
+      refresh_token: "owner-refresh-token",
+    });
   });
 
   it("does not contact the broker when canonical sign-out fails", async () => {

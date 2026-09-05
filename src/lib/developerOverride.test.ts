@@ -40,7 +40,7 @@ describe("developerOverride", () => {
     expect(isServerAuthorizedPlatformDeveloper(legacy)).toBe(false);
   });
 
-  it("keeps the legacy office role list explicit while authorization stays server-owned", () => {
+  it("keeps every selectable developer presentation role explicit while authorization stays server-owned", () => {
     expect(DEVELOPER_OVERRIDE_ROLES).toEqual([
       "foreman",
       "director",
@@ -50,6 +50,7 @@ describe("developerOverride", () => {
       "contractor",
       "security",
       "engineer",
+      "estimator",
     ]);
   });
 
@@ -146,15 +147,15 @@ describe("developerOverride", () => {
     expect(isServerAuthorizedPlatformDeveloper(server)).toBe(true);
   });
 
-  it("keeps only capability lookup in RPC and switches roles through real principals", () => {
+  it("keeps capability and role selection in contained server RPCs", () => {
     const source = readFileSync(join(__dirname, "developerOverride.ts"), "utf8");
     const forbiddenAnyCast = [" as", " any"].join("");
 
     expect(source).toContain("runContainedRpc");
     expect(source).toContain("developer_override_context_v1");
-    expect(source).toContain("switchLocalDeveloperPrincipal");
-    expect(source).not.toContain('"developer_set_effective_role_v1"');
-    expect(source).not.toContain('"developer_clear_effective_role_v1"');
+    expect(source).toContain('"developer_set_effective_role_v1"');
+    expect(source).toContain('"developer_clear_effective_role_v1"');
+    expect(source).not.toContain("switchLocalDeveloperPrincipal");
     expect(source).not.toContain(forbiddenAnyCast);
     expect(source).not.toMatch(/supabase\s*\.\s*rpc/);
   });

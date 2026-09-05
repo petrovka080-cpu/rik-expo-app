@@ -255,9 +255,11 @@ if ($ProvisionExitCode -ne 0 -or -not $ProvisionResultRaw) {
 $ProvisionResult = $ProvisionResultRaw | ConvertFrom-Json
 if (
   $ProvisionResult.status -ne "GREEN_R555_LOCAL_DEVELOPER_PROVIDER_PRINCIPALS_9_OFFICE_PLUS_1_CONSUMER" -or
-  [int]$ProvisionResult.green -ne 10 -or
+  [int]$ProvisionResult.green -ne 11 -or
   [int]$ProvisionResult.office_green -ne 9 -or
-  [int]$ProvisionResult.consumer_green -ne 1
+  [int]$ProvisionResult.consumer_green -ne 1 -or
+  [int]$ProvisionResult.owner_green -ne 1 -or
+  [int]$ProvisionResult.owner_effective_role_green -ne 9
 ) {
   Fail-Preflight "LOCAL_DEVELOPER_PRINCIPAL_MATRIX_RED" "повторите безопасный local provisioning"
 }
@@ -339,13 +341,6 @@ foreach ($SecretName in @(
   Remove-Item -LiteralPath "Env:\$SecretName" -ErrorAction SilentlyContinue
 }
 
-if ($ReuseMetro) {
-  Write-Host "runtime_action=reuse_exact_healthy_runtime"
-  Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"
-  Write-Host "metro_pid=$ExistingMetroPid"
-  exit 0
-}
-
 $ExpoCli = Join-Path $Root "node_modules\expo\bin\cli"
 if (-not (Test-Path -LiteralPath $ExpoCli)) {
   Fail-Preflight "EXPO_CLI_MISSING" "выполните npm install и повторите запуск"
@@ -383,7 +378,11 @@ while ((Get-Date) -lt $BrokerDeadline) {
   if ($Broker.HasExited) { break }
   try {
     $BrokerHealth = Invoke-RestMethod -Uri "http://127.0.0.1:$BrokerPort/health" -TimeoutSec 1
-    if ($BrokerHealth.status -eq "ready" -and [int]$BrokerHealth.principal_count -eq 10) {
+    if (
+      $BrokerHealth.status -eq "ready" -and
+      [int]$BrokerHealth.principal_count -eq 10 -and
+      $BrokerHealth.owner_available -eq $true
+    ) {
       $BrokerReady = $true
       break
     }
@@ -397,6 +396,13 @@ if (-not $BrokerReady) {
   Fail-Preflight "LOCAL_DEVELOPER_AUTH_BROKER_RED" "проверьте broker stderr в .release-runtime/r551/runtime/local-developer/broker"
 }
 Write-Host "auth_broker_pid=$($Broker.Id)"
+
+if ($ReuseMetro) {
+  Write-Host "runtime_action=reuse_exact_healthy_runtime"
+  Write-Host "backend_pid=$($BackendManagerResult.backend_pid)"
+  Write-Host "metro_pid=$ExistingMetroPid"
+  exit 0
+}
 
 $MetroRuntime = Split-Path -Parent $MetroReceiptPath
 New-Item -ItemType Directory -Path $MetroRuntime -Force | Out-Null

@@ -1,12 +1,6 @@
 import { Platform } from "react-native";
 
 import { supabase } from "./supabaseClient";
-import { signOutSafely } from "./supabaseClient";
-import {
-  isLocalDeveloperReviewEnabled,
-  LOCAL_DEVELOPER_REVIEW_ROLES,
-  switchLocalDeveloperPrincipal,
-} from "./localDeveloperReview";
 import {
   isRpcBoolean,
   isRpcRecord,
@@ -24,7 +18,10 @@ import {
   type LocalDeveloperFullAccessProbe,
 } from "./developerOverridePolicy";
 
-export const DEVELOPER_OVERRIDE_ROLES = OFFICE_DEVELOPER_FULL_ACCESS_ROLES;
+export const DEVELOPER_OVERRIDE_ROLES = [
+  ...OFFICE_DEVELOPER_FULL_ACCESS_ROLES,
+  "estimator",
+] as const;
 export const PLATFORM_DEVELOPER_ENTITLEMENT = "platform_developer" as const;
 export { LOCAL_DEVELOPER_FULL_ACCESS_STORAGE_KEY };
 
@@ -246,25 +243,41 @@ export function isServerAuthorizedPlatformDeveloper(
 export async function setDeveloperEffectiveRole(
   role: DeveloperOverrideRole,
 ): Promise<DeveloperOverrideContext> {
-  if (
-    !isLocalDeveloperReviewEnabled() ||
-    !LOCAL_DEVELOPER_REVIEW_ROLES.includes(
-      role as (typeof LOCAL_DEVELOPER_REVIEW_ROLES)[number],
-    )
-  ) {
-    throw new Error("LOCAL_DEVELOPER_PRINCIPAL_SWITCH_UNAVAILABLE");
+  if (!DEVELOPER_OVERRIDE_ROLES.includes(role)) {
+    throw new Error("DEVELOPER_EFFECTIVE_ROLE_NOT_ALLOWED");
   }
-  await switchLocalDeveloperPrincipal(
-    role as (typeof LOCAL_DEVELOPER_REVIEW_ROLES)[number],
+  const { data, error } = await runContainedRpc<unknown>(
+    supabase,
+    "developer_set_effective_role_v1",
+    { p_effective_role: role },
   );
-  return loadDeveloperOverrideContext();
+  if (error) throw new Error(error.message);
+  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
+    rpcName: "developer_set_effective_role_v1",
+    caller: "src/lib/developerOverride.setDeveloperEffectiveRole",
+    domain: "unknown",
+  });
+  const context = normalizeDeveloperOverrideContext(validated);
+  if (!isServerAuthorizedPlatformDeveloper(context)) {
+    throw new Error("PLATFORM_DEVELOPER_ENTITLEMENT_REQUIRED");
+  }
+  return context;
 }
 
 export async function clearDeveloperEffectiveRole(): Promise<DeveloperOverrideContext> {
-  if (!isLocalDeveloperReviewEnabled()) {
-    throw new Error("LOCAL_DEVELOPER_PRINCIPAL_SWITCH_UNAVAILABLE");
+  const { data, error } = await runContainedRpc<unknown>(
+    supabase,
+    "developer_clear_effective_role_v1",
+  );
+  if (error) throw new Error(error.message);
+  const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
+    rpcName: "developer_clear_effective_role_v1",
+    caller: "src/lib/developerOverride.clearDeveloperEffectiveRole",
+    domain: "unknown",
+  });
+  const context = normalizeDeveloperOverrideContext(validated);
+  if (!isServerAuthorizedPlatformDeveloper(context)) {
+    throw new Error("PLATFORM_DEVELOPER_ENTITLEMENT_REQUIRED");
   }
-  const result = await signOutSafely("local");
-  if (result.status === "failed") throw new Error(result.message);
-  return EMPTY_CONTEXT;
+  return context;
 }

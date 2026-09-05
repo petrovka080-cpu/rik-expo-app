@@ -65,6 +65,13 @@ function loadCredentials() {
     "BROKER_PUBLISHABLE_KEY_RED",
   );
   invariant(Array.isArray(credentials.principals), "BROKER_PRINCIPALS_RED");
+  invariant(
+    credentials.owner &&
+      typeof credentials.owner.email === "string" &&
+      typeof credentials.owner.password === "string" &&
+      typeof credentials.owner.user_id === "string",
+    "BROKER_OWNER_RED",
+  );
   return credentials;
 }
 
@@ -84,6 +91,7 @@ const server = createServer(async (request, response) => {
       status: "ready",
       environment: "local_developer",
       principal_count: roles.length,
+      owner_available: true,
       credential_fingerprint: credentialFingerprint,
     });
     return;
@@ -114,13 +122,19 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "POST" && requestUrl.pathname === "/session") {
+  if (
+    request.method === "POST" &&
+    ["/owner-session", "/session"].includes(requestUrl.pathname)
+  ) {
     try {
+      const ownerRequest = requestUrl.pathname === "/owner-session";
       const body = await readJson(request);
-      const role = String(body.role ?? "").trim().toLowerCase();
-      const principal = credentials.principals.find(
-        (candidate: Json) => candidate.role === role,
-      );
+      const role = ownerRequest
+        ? String(credentials.owner.role ?? "platform_developer")
+        : String(body.role ?? "").trim().toLowerCase();
+      const principal = ownerRequest
+        ? credentials.owner
+        : credentials.principals.find((candidate: Json) => candidate.role === role);
       if (!principal) {
         send(response, 400, { error: "role_not_allowed" }, origin);
         return;
@@ -149,6 +163,7 @@ const server = createServer(async (request, response) => {
         response,
         200,
         {
+          actor: ownerRequest ? "owner" : "strict_test_principal",
           role,
           access_token: payload.access_token,
           refresh_token: payload.refresh_token,
