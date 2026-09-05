@@ -19,6 +19,7 @@ const MASTER_PATH = resolve(
 const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
 const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
 const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
+const EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS = 9;
 const IDENTITY_PATH = resolve(
   ".release-runtime/r568/rc09-identity-v1/current-identity-manifest-11610.jsonl",
 );
@@ -108,7 +109,8 @@ async function main(): Promise<void> {
     )).rows as Json[];
     const manifestRows = (await client.query(
       `select manifest.catalog_id,manifest.definition_version_id::text,manifest.entry_sha256,
-        manifest.baseline_ready,manifest.scenario_ready
+        manifest.baseline_ready,manifest.scenario_ready,manifest.publication_state,
+        manifest.runtime_publication_state,manifest.source_batch
       from public.estimate_cumulative_manifest_entry manifest
       where manifest.release_id=$1 order by manifest.catalog_id`,
       [RELEASE_ID],
@@ -218,6 +220,11 @@ async function main(): Promise<void> {
       return !manifest || String(manifest.definition_version_id) !== String(row.definition_version_id);
     });
     const notReady = manifestRows.filter((row) => row.baseline_ready !== true || row.scenario_ready !== true);
+    const retainedNonSearchDefinitions = manifestWithoutSearch
+      .map((catalogId) => manifestByCatalog.get(catalogId)!)
+      .filter(Boolean);
+    const retainedNonSearchIdentityCollisions = retainedNonSearchDefinitions
+      .filter((row) => visibleCanonicalWorkIds.has(String(row.catalog_id)));
     const zeroParameters = definitionStats.filter((row) => Number(row.parameter_count) === 0);
     const zeroFormulas = definitionStats.filter((row) => Number(row.formula_count) === 0);
     const zeroResources = definitionStats.filter((row) => Number(row.resource_count) === 0);
@@ -230,7 +237,14 @@ async function main(): Promise<void> {
       - new Set([...zeroParameters, ...zeroFormulas, ...zeroResources].map((row) => row.catalog_id)).size;
 
     if (releaseRows.length !== 1) failures.push("STOP_IDENTITY_RELEASE_NOT_FOUND");
-    if (manifestRows.length !== searchRows.length || manifestWithoutSearch.length || searchWithoutManifest.length) {
+    // The cumulative definition release deliberately contains the 10,322 public
+    // canonical owners plus nine retained non-search definitions documented by
+    // the master denominator (10,331 definitions total). Published parity means
+    // every search row resolves to the same release definition; it does not make
+    // those nine legacy owners public identities.
+    if (searchWithoutManifest.length > 0
+      || manifestWithoutSearch.length !== EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS
+      || retainedNonSearchIdentityCollisions.length > 0) {
       failures.push("STOP_IDENTITY_RELEASE_SEARCH_MEMBERSHIP_DRIFT");
     }
     if (definitionMismatches.length) failures.push("STOP_IDENTITY_RELEASE_SEARCH_DEFINITION_DRIFT");
@@ -286,6 +300,10 @@ async function main(): Promise<void> {
       },
       releaseSearchParity: {
         manifestWithoutSearch: manifestWithoutSearch.length,
+        expectedRetainedNonSearchDefinitions: EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS,
+        retainedNonSearchDefinitions: retainedNonSearchDefinitions.length,
+        retainedNonSearchIdentityCollisions: retainedNonSearchIdentityCollisions.length,
+        retainedNonSearchCatalogIdsSha256: sha256(manifestWithoutSearch),
         searchWithoutManifest: searchWithoutManifest.length,
         definitionMismatches: definitionMismatches.length,
         identityWithoutSelectable: identityWithoutSelectable.length,
