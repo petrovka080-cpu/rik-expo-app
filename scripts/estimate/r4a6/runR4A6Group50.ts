@@ -69,6 +69,7 @@ type ManifestMember = {
   titleRu: string;
   baseline: Json;
   baselineSha256: string;
+  inputSeedPolicy: "APPROVED_BASELINE" | "EXPLICIT_GROUP50_SCENARIO_INPUT";
   parameters: R4A6Group50Parameter[];
 };
 
@@ -188,6 +189,42 @@ function percentile(values: readonly number[], ratio: number): number {
   return ordered[Math.min(ordered.length - 1, Math.ceil(ordered.length * ratio) - 1)]!;
 }
 
+function completeScenarioInputSeed(
+  parameters: readonly R4A6Group50Parameter[],
+  approvedBaseline: Json,
+): { values: Json; policy: ManifestMember["inputSeedPolicy"] } {
+  const values = { ...approvedBaseline };
+  let generated = false;
+  for (const parameter of parameters) {
+    if (!parameter.required || values[parameter.parameter_id] != null) continue;
+    const constraints = parameter.constraints_json ?? {};
+    if (parameter.value_type === "decimal" || parameter.value_type === "integer") {
+      const minimum = Number(constraints.min);
+      const maximum = Number(constraints.max);
+      let value = Number.isFinite(minimum) ? Math.max(minimum, 1) : 1;
+      if (Number.isFinite(maximum)) value = Math.min(maximum, value);
+      values[parameter.parameter_id] = parameter.value_type === "integer"
+        ? Math.max(1, Math.ceil(value))
+        : Number(value.toFixed(6));
+    } else if (parameter.value_type === "boolean") {
+      values[parameter.parameter_id] = false;
+    } else if (parameter.value_type === "enum") {
+      const options = Array.isArray(constraints.values) ? constraints.values : [];
+      if (options.length === 0) throw new Error(`GROUP50_ENUM_SEED_MISSING:${parameter.parameter_id}`);
+      values[parameter.parameter_id] = options[0];
+    } else if (parameter.value_type === "text") {
+      values[parameter.parameter_id] = "Указано в проекте для приёмочного сценария";
+    } else {
+      throw new Error(`GROUP50_INPUT_SEED_UNSUPPORTED:${parameter.parameter_id}:${parameter.value_type}`);
+    }
+    generated = true;
+  }
+  return {
+    values,
+    policy: generated ? "EXPLICIT_GROUP50_SCENARIO_INPUT" : "APPROVED_BASELINE",
+  };
+}
+
 async function databaseIdentity(client: Client): Promise<Json> {
   const row = (await client.query(
     `select
@@ -283,7 +320,9 @@ async function buildFrozenManifest(client: Client, source: ReturnType<typeof exa
   for (const row of memberRows) {
     const groupId = String(row.group_id);
     const definitionVersionId = String(row.definition_version_id);
-    const baseline = row.baseline_input_values as Json;
+    const parameters = parametersByDefinition.get(definitionVersionId) ?? [];
+    const seed = completeScenarioInputSeed(parameters, row.baseline_input_values as Json);
+    const baseline = seed.values;
     const member: ManifestMember = {
       catalogId: String(row.catalog_id),
       definitionVersionId,
@@ -291,7 +330,8 @@ async function buildFrozenManifest(client: Client, source: ReturnType<typeof exa
       titleRu: String(row.canonical_name_ru),
       baseline,
       baselineSha256: sha256(baseline),
-      parameters: parametersByDefinition.get(definitionVersionId) ?? [],
+      inputSeedPolicy: seed.policy,
+      parameters,
     };
     const group = groupMap.get(groupId) ?? {
       groupId,
