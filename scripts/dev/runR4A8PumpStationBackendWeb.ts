@@ -299,7 +299,9 @@ async function completeWebCase(input: {
   const audit = observePage(page);
   try {
     const identityHash = await openRequest(page);
-    const selection = await selectPump(page, input.fixture.fullPromptRu, input.fixture.catalogId);
+    const selection = await selectPump(page, input.fixture.barePromptRu, input.fixture.catalogId);
+    await page.getByTestId("consumer-repair-problem-input").fill(input.fixture.fullPromptRu);
+    await page.waitForTimeout(250);
     const compileResponsePromise = page.waitForResponse(
       (response) => response.request().method() === "POST" && response.url() === `${BACKEND_ORIGIN}/jobs/compile`,
       { timeout: 180_000 },
