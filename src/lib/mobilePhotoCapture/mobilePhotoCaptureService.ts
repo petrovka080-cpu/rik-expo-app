@@ -184,7 +184,11 @@ export function createMobilePhotoCaptureService(
   const capability = deps.capability ?? createMobileCameraCapabilityService();
   const permissions = deps.permissions ?? createMobileCameraPermissionService();
   const normalizer = deps.normalizer ?? createMobilePhotoNormalizationService();
-  const repository = deps.repository ?? createMobilePhotoLocalRepository();
+  let repository = deps.repository;
+  const getRepository = (): MobilePhotoLocalRepository => {
+    repository ??= createMobilePhotoLocalRepository();
+    return repository;
+  };
   const uploadQueue = deps.uploadQueue ?? createMobilePhotoUploadQueue();
   const uploader = deps.uploader ?? createMobilePhotoUploadService();
   const recovery = deps.recovery ?? createMobilePhotoRecoveryService();
@@ -240,7 +244,7 @@ export function createMobilePhotoCaptureService(
         height: picture?.height,
         now: input.now,
         normalizer,
-        repository,
+        repository: getRepository(),
         storageIdentity: input.storageIdentity,
       });
       recordMobilePhotoEvent("mobile_photo_staged", "success", {
@@ -262,7 +266,7 @@ export function createMobilePhotoCaptureService(
         height: result.height,
         now: input.now,
         normalizer,
-        repository,
+        repository: getRepository(),
         storageIdentity: input.storageIdentity,
       });
     },
@@ -279,7 +283,7 @@ export function createMobilePhotoCaptureService(
         height: result.height,
         now: input.now,
         normalizer,
-        repository,
+        repository: getRepository(),
         storageIdentity: input.storageIdentity,
       });
     },
@@ -296,7 +300,7 @@ export function createMobilePhotoCaptureService(
           height: result.height,
           now: input.now,
           normalizer,
-          repository,
+          repository: getRepository(),
           storageIdentity: input.storageIdentity,
         })
       ));
@@ -315,7 +319,7 @@ export function createMobilePhotoCaptureService(
         height: result.height,
         now: input.now,
         normalizer,
-        repository,
+        repository: getRepository(),
         storageIdentity: input.storageIdentity,
       });
     },
@@ -354,7 +358,7 @@ export function createMobilePhotoCaptureService(
         exifGpsStripped: true,
         signedUrlExposed: false,
       };
-      await repository.markAttached(input.asset.captureId);
+      await getRepository().markAttached(input.asset.captureId);
       recordMobilePhotoEvent("mobile_photo_confirmed", "success", {
         scanId: input.asset.scanId,
         kind: input.asset.kind,
@@ -390,7 +394,7 @@ export function createMobilePhotoCaptureService(
         try {
           await uploader.uploadQueuedItem(item);
           await uploadQueue.markUploaded(item.idempotencyKey);
-          await repository.markUploaded(item.captureId);
+          await getRepository().markUploaded(item.captureId);
         } catch (error) {
           await uploadQueue.markFailed(item.idempotencyKey);
           throw error;
@@ -405,7 +409,7 @@ export function createMobilePhotoCaptureService(
 
     async discardCapture(captureId) {
       await uploadQueue.removeByCaptureId(captureId);
-      await repository.discard(captureId);
+      await getRepository().discard(captureId);
     },
   };
 }
