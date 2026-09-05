@@ -90,7 +90,7 @@ async function cloneSearch(client: Client, input: {
       source_commit,source_tree,snapshot_sha256,global_count,external_count,discovered_count,metadata)
     select $1,$2,'draft',taxonomy_version,group_relation_version,ranking_contract_version,
       $3,$4,$5,global_count,external_count,discovered_count,
-      metadata||jsonb_build_object('contract',$6::text,'parentSearchReleaseId',$7::text,
+      metadata||jsonb_build_object('contract',$6::text,'parentSearchReleaseId',$7::uuid::text,
         'definitionReleaseId',$8::text,'sourceFingerprint',$9::text,
         'activationAllowed',false,'productionEligible',false)
     from public.estimate_search_index_release where id=$7::uuid`, [
@@ -138,8 +138,8 @@ async function cloneSearch(client: Client, input: {
       source.normalized_canonical_name,source.normalized_aliases,source.normalized_search_terms,
       source.normalized_search_blob,
       source.source_provenance||jsonb_build_object('contract',$3::text,
-        'parentSearchReleaseId',$4::text,'definitionReleaseId',$2::text,'sourceFingerprint',$5::text),
-      encode(extensions.digest(convert_to(source.document_sha256||':'||$3||':'||$2::text,
+        'parentSearchReleaseId',$4::uuid::text,'definitionReleaseId',$2::uuid::text,'sourceFingerprint',$5::text),
+      encode(extensions.digest(convert_to(source.document_sha256||':'||$3||':'||$2::uuid::text,
         'UTF8'),'sha256'),'hex'),source.adjudication_class,source.selectable,
       source.canonical_target_catalog_id,manifest.definition_version_id
     from public.estimate_search_document source
@@ -361,7 +361,7 @@ async function main(): Promise<void> {
             definition_hash,entry_sha256,runtime_publication_state)
           select $1,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
             publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,definition_hash,
-            encode(extensions.digest(convert_to($2||':'||$1::text||':'||catalog_id||':'||entry_sha256,
+            encode(extensions.digest(convert_to($2||':'||$1::uuid::text||':'||catalog_id||':'||entry_sha256,
               'UTF8'),'sha256'),'hex'),runtime_publication_state
           from public.estimate_cumulative_manifest_entry where release_id=$3`, [
           releaseId,
@@ -398,7 +398,7 @@ async function main(): Promise<void> {
             approved_template_baseline_id=$3,baseline_ready=true,scenario_ready=true,
             source_batch=$2,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
             entry_sha256=encode(extensions.digest(convert_to(
-              $2||':'||$1::text||':'||catalog_id||':'||definition_hash||':'||$3::text,
+              $2||':'||$1::uuid::text||':'||catalog_id||':'||definition_hash||':'||$3::uuid::text,
               'UTF8'),'sha256'),'hex'),runtime_publication_state='CANDIDATE'
           where release_id=$1 and catalog_id=$4`, [releaseId, CONTRACT, baselineId, PUMP_CATALOG_ID]);
         const search = await cloneSearch(client, { releaseId, searchReleaseId, releaseKey, head, tree, fingerprint });
