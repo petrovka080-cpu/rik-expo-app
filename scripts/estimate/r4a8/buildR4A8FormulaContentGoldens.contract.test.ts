@@ -26,6 +26,6 @@ describe("R4-A8 protected goldens and formula content receipt", () => {
     expect(source).toContain("assertNoRelevantSourceDrift(group50");
     expect(source).toContain("assertNoRelevantSourceDrift(identity");
     expect(source).toContain("assertNoRelevantSourceDrift(platform30");
-    expect(source).toContain("11_formula_content_goldens.json");
+    expect(source).toContain("11_formula_content_goldens_${source.commitSha}.json");
   });
 });

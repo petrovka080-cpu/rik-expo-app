@@ -25,18 +25,17 @@ const HISTORIC_GOLDEN_MANIFEST_SHA256 = "01c3282fbfc416e26f2815ac7858f9fc6c14cb2
 const A8_ROOT = resolve(
   ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1",
 );
-const OUTPUT_PATH = resolve(A8_ROOT, "11_formula_content_goldens.json");
 const GROUP50_PATH = resolve(
   A8_ROOT,
-  "15_scale/group50-ecc56a429dd7fac4e0079463af4a46e6340db5a1-terminal/TERMINAL_SUMMARY.json",
+  "15_scale/group50-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/TERMINAL_SUMMARY.json",
 );
 const IDENTITY_PATH = resolve(
   A8_ROOT,
-  "15_scale/26_identity_11610_487efe2e713ec386f3bce3e22a19c3648b82699f.json",
+  "15_scale/26_identity_11610_5f12064eb9f70a6f1f473c4aa2ed06f06a50e974.json",
 );
 const PLATFORM30_PATH = resolve(
   A8_ROOT,
-  "15_scale/platform30-487efe2e713ec386f3bce3e22a19c3648b82699f-terminal/29_platform_71040_terminal.json",
+  "15_scale/platform30-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/29_platform_71040_terminal.json",
 );
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
@@ -184,6 +183,7 @@ function auditHistoricGoldens(): { audit: Json; templateIds: string[] } {
 async function main(): Promise<void> {
   if (sha256Bytes(readFileSync(MASTER_PATH)) !== MASTER_SHA256) throw new Error("STOP_MASTER_TZ_HASH_MISMATCH");
   const source = exactSourceIdentity();
+  const outputPath = resolve(A8_ROOT, `11_formula_content_goldens_${source.commitSha}.json`);
   const currentRelease = loadJson<Json>(CURRENT_RELEASE_PATH);
   const formulaContract = loadJson<Json>(FORMULA_CONTRACT_PATH);
   const professionalContract = loadJson<Json>(PROFESSIONAL_CONTRACT_PATH);
@@ -380,11 +380,11 @@ async function main(): Promise<void> {
       fakeGreenClaimed: false,
     };
     const receipt = { ...body, receiptSha256: sha256(body) };
-    writeImmutableJson(OUTPUT_PATH, receipt);
+    writeImmutableJson(outputPath, receipt);
     process.stdout.write(`${JSON.stringify({
       status: receipt.status,
-      outputPath: OUTPUT_PATH,
-      receiptFileSha256: sha256Bytes(readFileSync(OUTPUT_PATH)),
+      outputPath,
+      receiptFileSha256: sha256Bytes(readFileSync(outputPath)),
       protectedGoldens: receipt.protectedGoldens,
       formulaProtection: receipt.formulaProtection,
       blockers,
