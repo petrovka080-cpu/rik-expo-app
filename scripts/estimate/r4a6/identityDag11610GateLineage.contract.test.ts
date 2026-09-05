@@ -16,4 +16,10 @@ describe("R4-A8 Identity/DAG evidence lineage", () => {
     expect(source).toContain("R4_A6_EXPECTED_VISIBLE_CANONICAL");
     expect(source).toContain("EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS = 9");
   });
+
+  it("audits the explicit full definition set without a misestimated selected CTE", () => {
+    expect(source).toContain("const selectedDefinitionIds = selectedDefinitions.map");
+    expect(source).toContain("definition_version_id=any($1::uuid[])");
+    expect(source).not.toContain("with selected as(");
+  });
 });

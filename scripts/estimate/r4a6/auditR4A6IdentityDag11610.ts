@@ -125,85 +125,87 @@ async function main(): Promise<void> {
       where document.search_release_id=$1 order by document.catalog_id`,
       [SEARCH_RELEASE_ID],
     )).rows as Json[];
-    const definitionStats = (await client.query(
-      `with selected as(
-          select manifest.catalog_id,manifest.definition_version_id
-          from public.estimate_cumulative_manifest_entry manifest
-          join public.estimate_search_document document
-            on document.search_release_id=$2 and document.catalog_id=manifest.catalog_id
-            and document.definition_version_id=manifest.definition_version_id
-          where manifest.release_id=$1 and document.selectable
-            and document.adjudication_class='EFFECTIVE_WORK'
-        ), parameter_counts as(
-          select parameter.definition_version_id,count(*)::int parameter_count
-          from public.estimate_parameter_definition parameter
-          join selected on selected.definition_version_id=parameter.definition_version_id
-          group by parameter.definition_version_id
-        ), formula_counts as(
-          select formula.definition_version_id,count(*)::int formula_count,
-            count(*) filter(where formula.ast_sha256 !~ '^[a-f0-9]{64}$')::int invalid_formula_hashes
-          from public.estimate_formula_graph formula
-          join selected on selected.definition_version_id=formula.definition_version_id
-          group by formula.definition_version_id
-        ), resource_counts as(
-          select resource.definition_version_id,count(*)::int resource_count,
-            count(*) filter(where resource.row_sha256 !~ '^[a-f0-9]{64}$')::int invalid_resource_hashes,
-            count(*) filter(where nullif(btrim(resource.unit_id),'') is null)::int missing_units
-          from public.estimate_resource_spec resource
-          join selected on selected.definition_version_id=resource.definition_version_id
-          group by resource.definition_version_id
-        )
-        select selected.catalog_id,selected.definition_version_id::text,
-          coalesce(parameter_counts.parameter_count,0)::int parameter_count,
-          coalesce(formula_counts.formula_count,0)::int formula_count,
-          coalesce(resource_counts.resource_count,0)::int resource_count,
-          coalesce(formula_counts.invalid_formula_hashes,0)::int invalid_formula_hashes,
-          coalesce(resource_counts.invalid_resource_hashes,0)::int invalid_resource_hashes,
-          coalesce(resource_counts.missing_units,0)::int missing_units
-        from selected
-        left join parameter_counts using(definition_version_id)
-        left join formula_counts using(definition_version_id)
-        left join resource_counts using(definition_version_id)
-        order by selected.catalog_id`,
-      [RELEASE_ID, SEARCH_RELEASE_ID],
+    const manifestDefinitionByCatalog = new Map(manifestRows
+      .map((row) => [String(row.catalog_id), String(row.definition_version_id)] as const));
+    const selectedDefinitions = searchRows
+      .filter((row) => row.selectable === true && row.adjudication_class === "EFFECTIVE_WORK")
+      .filter((row) => manifestDefinitionByCatalog.get(String(row.catalog_id)) === String(row.definition_version_id))
+      .map((row) => ({
+        catalog_id: String(row.catalog_id),
+        definition_version_id: String(row.definition_version_id),
+      }));
+    const selectedDefinitionIds = selectedDefinitions.map((row) => row.definition_version_id);
+    const parameterCountRows = (await client.query(
+      `select parameter.definition_version_id::text,count(*)::int parameter_count
+      from public.estimate_parameter_definition parameter
+      where parameter.definition_version_id=any($1::uuid[])
+      group by parameter.definition_version_id`,
+      [selectedDefinitionIds],
     )).rows as Json[];
+    const formulaCountRows = (await client.query(
+      `select formula.definition_version_id::text,count(*)::int formula_count,
+        count(*) filter(where formula.ast_sha256 !~ '^[a-f0-9]{64}$')::int invalid_formula_hashes
+      from public.estimate_formula_graph formula
+      where formula.definition_version_id=any($1::uuid[])
+      group by formula.definition_version_id`,
+      [selectedDefinitionIds],
+    )).rows as Json[];
+    const resourceCountRows = (await client.query(
+      `select resource.definition_version_id::text,count(*)::int resource_count,
+        count(*) filter(where resource.row_sha256 !~ '^[a-f0-9]{64}$')::int invalid_resource_hashes,
+        count(*) filter(where nullif(btrim(resource.unit_id),'') is null)::int missing_units
+      from public.estimate_resource_spec resource
+      where resource.definition_version_id=any($1::uuid[])
+      group by resource.definition_version_id`,
+      [selectedDefinitionIds],
+    )).rows as Json[];
+    const parameterCounts = new Map(parameterCountRows
+      .map((row) => [String(row.definition_version_id), Number(row.parameter_count)] as const));
+    const formulaCounts = new Map(formulaCountRows
+      .map((row) => [String(row.definition_version_id), row] as const));
+    const resourceCounts = new Map(resourceCountRows
+      .map((row) => [String(row.definition_version_id), row] as const));
+    const definitionStats = selectedDefinitions.map((row) => {
+      const formula = formulaCounts.get(row.definition_version_id);
+      const resource = resourceCounts.get(row.definition_version_id);
+      return {
+        ...row,
+        parameter_count: parameterCounts.get(row.definition_version_id) ?? 0,
+        formula_count: Number(formula?.formula_count ?? 0),
+        resource_count: Number(resource?.resource_count ?? 0),
+        invalid_formula_hashes: Number(formula?.invalid_formula_hashes ?? 0),
+        invalid_resource_hashes: Number(resource?.invalid_resource_hashes ?? 0),
+        missing_units: Number(resource?.missing_units ?? 0),
+      };
+    });
     const dagDefects = (await client.query(
-      `with selected as(
-          select manifest.definition_version_id
-          from public.estimate_cumulative_manifest_entry manifest
-          join public.estimate_search_document document
-            on document.search_release_id=$2 and document.catalog_id=manifest.catalog_id
-            and document.definition_version_id=manifest.definition_version_id
-          where manifest.release_id=$1 and document.selectable
-            and document.adjudication_class='EFFECTIVE_WORK'
-        ), missing_formula_inputs as(
+      `with missing_formula_inputs as(
           select count(*)::int count
-          from selected
-          join public.estimate_formula_graph formula using(definition_version_id)
+          from public.estimate_formula_graph formula
           cross join lateral unnest(formula.input_parameter_ids) input_parameter_id
           left join public.estimate_parameter_definition parameter
             on parameter.definition_version_id=formula.definition_version_id
             and parameter.parameter_id=input_parameter_id
-          where parameter.parameter_id is null
+          where formula.definition_version_id=any($1::uuid[]) and parameter.parameter_id is null
         ), orphan_resources as(
           select count(*)::int count
-          from selected
-          join public.estimate_resource_spec resource using(definition_version_id)
+          from public.estimate_resource_spec resource
           left join public.estimate_formula_graph formula
             on formula.definition_version_id=resource.definition_version_id
             and formula.formula_id=resource.formula_id
-          where formula.formula_id is null
+          where resource.definition_version_id=any($1::uuid[]) and formula.formula_id is null
         ), duplicate_resource_rows as(
           select count(*)::int count from(
             select resource.definition_version_id,resource.row_id
-            from selected join public.estimate_resource_spec resource using(definition_version_id)
+            from public.estimate_resource_spec resource
+            where resource.definition_version_id=any($1::uuid[])
             group by resource.definition_version_id,resource.row_id having count(*)>1
           ) duplicate
         )
         select (select count from missing_formula_inputs) missing_formula_inputs,
           (select count from orphan_resources) orphan_resources,
           (select count from duplicate_resource_rows) duplicate_resource_rows`,
-      [RELEASE_ID, SEARCH_RELEASE_ID],
+      [selectedDefinitionIds],
     )).rows[0] as Json;
 
     const failures = [...identityAudit.failures];
