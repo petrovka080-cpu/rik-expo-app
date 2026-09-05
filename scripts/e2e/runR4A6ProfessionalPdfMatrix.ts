@@ -11,11 +11,11 @@ import {
 } from "../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
 
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
-const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
+const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
 const EVIDENCE_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence",
+  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/16_web_android",
 );
 const MATRIX = [1, 45, 100, 500, 1001] as const;
 const EXACT_SOURCE_PATHS = [
@@ -240,6 +240,11 @@ async function main(): Promise<void> {
     matrix: MATRIX,
     cases,
     gate: "GREEN_R4_A6_PRINT_PDF_PRODUCTION_GRADE",
+    globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
+    productionAccessed: false,
+    deployPerformed: false,
+    releasePerformed: false,
+    otaPerformed: false,
     productionReady: false,
     fakeGreenClaimed: false,
   });
