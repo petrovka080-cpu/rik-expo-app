@@ -254,7 +254,12 @@ function main(): void {
   const sourceCommitSha = git(["rev-parse", "HEAD"]);
   const sourceTreeSha = git(["write-tree"]);
   const branch = git(["branch", "--show-current"]);
-  const dirty = git(["status", "--porcelain=v1", "--untracked-files=all"])
+  const dirty = execFileSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    timeout: 120_000,
+  }).trimEnd()
     .split(/\r?\n/u).filter(Boolean).map((line) => normalize(line.slice(3)));
   const unexpectedDirty = dirty.filter((file) => !ALLOWED_DIRTY_PATHS.has(file));
   if (unexpectedDirty.length > 0) throw new Error(`STOP_UNCLASSIFIED_DIRTY_PATH:${unexpectedDirty.join(",")}`);

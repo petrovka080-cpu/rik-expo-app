@@ -25,6 +25,8 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain("forbiddenReceiptFindings");
     expect(source).toContain("scanCloseoutArtifactsForSecrets.ts");
     expect(source).toContain("ALLOWED_DIRTY_PATHS");
+    expect(source).toContain(".trimEnd()");
+    expect(source).not.toContain('git(["status", "--porcelain=v1"');
     expect(source).toContain("productionAccessed: false");
     expect(source).toContain("fakeGreenClaimed: false");
   });
