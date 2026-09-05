@@ -36,7 +36,7 @@ describe("R4-A8 pump empty-baseline successor", () => {
     expect(successor).toContain("insert into public.estimate_resource_spec");
     expect(successor).toContain("insert into public.estimate_work_normative_binding");
     expect(successor).toContain("insert into public.estimate_resource_price_route_binding");
-    expect(successor).not.toContain("update public.estimate_definition_version");
+    expect(successor).toContain("where target.id=$1 and source.id=$2");
     expect(successor).not.toContain("update public.estimate_parameter_definition");
   });
 

@@ -415,7 +415,7 @@ async function main(): Promise<void> {
             applicability,$4,
             source_metadata||jsonb_build_object('r4A8PumpSemanticOwnerContract',$3::text,
               'sourceDefinitionVersionId',source.id::text,'sourceFingerprint',$5::text),
-            content_status,content_gate_status
+            'QUARANTINED','RED'
           from public.estimate_definition_version source where source.id=$6`, [
           definitionId,
           releaseId,
@@ -529,6 +529,10 @@ async function main(): Promise<void> {
           tree,
           pump.definition_version_id,
         ]);
+        await client.query(`update public.estimate_definition_version target set
+            content_status=source.content_status,content_gate_status=source.content_gate_status
+          from public.estimate_definition_version source
+          where target.id=$1 and source.id=$2`, [definitionId, pump.definition_version_id]);
         await client.query(`update public.estimate_cumulative_manifest_entry set
             definition_version_id=$5,approved_template_baseline_id=$3,baseline_ready=true,scenario_ready=true,
             source_batch=$2,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
