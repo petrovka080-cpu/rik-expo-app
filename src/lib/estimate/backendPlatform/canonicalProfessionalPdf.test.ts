@@ -150,7 +150,7 @@ describe("R4-A6 canonical professional PDF", () => {
     maliciousRows[0]!.title_ru = '<script>alert("row")</script><a href="javascript:alert(1)">link</a>';
     maliciousRows[0]!.calculation_trace = {
       specificationRu: '<img src=x onerror="alert(2)">',
-      formulaExplanationRu: "safe formula trace",
+      inputParameterIds: ["safe_parameter"],
     };
     const projection = buildCanonicalProfessionalPdfProjection({
       revision: revision(1),
