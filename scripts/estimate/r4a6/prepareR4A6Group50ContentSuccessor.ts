@@ -299,11 +299,11 @@ async function cloneSearch(client: Client, input: {
       count(*)::int documents,count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
       encode(extensions.digest(convert_to(string_agg(document_sha256,'' order by catalog_id),'UTF8'),'sha256'),'hex') snapshot_sha256
     from public.estimate_search_document where search_release_id=$1`, [input.searchReleaseId])).rows[0] as Json;
-  await client.query(`update public.estimate_search_index_release set status='prepared',sealed_at=clock_timestamp(),
+  await client.query(`update public.estimate_search_index_release set
       snapshot_sha256=$2,metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
     input.searchReleaseId,
     snapshot.snapshot_sha256,
-    JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", documentCount: snapshot.documents, visibleCount: snapshot.visible }),
+    JSON.stringify({ lifecycle: "FROZEN_NOT_ACTIVE", documentCount: snapshot.documents, visibleCount: snapshot.visible }),
   ]);
   return snapshot;
 }
