@@ -1,6 +1,6 @@
 import { Client } from "pg";
 
-const RELEASE_ID = "de952048-ed95-50c9-b776-68e5280a7e0d";
+const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 

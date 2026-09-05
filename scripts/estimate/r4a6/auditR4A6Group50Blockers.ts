@@ -5,8 +5,8 @@ import {
   isPublicBoqNameStructurallyValid,
 } from "../../../src/lib/estimate/semanticBoqGate";
 
-const RELEASE_ID = "ad825133-a41e-527d-a2f2-e1dd0e65ea86";
-const SEARCH_RELEASE_ID = "0a1f5b96-24c1-5e2f-8ac4-edecab5ed3b6";
+const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
+const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 
