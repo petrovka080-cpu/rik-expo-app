@@ -99,6 +99,8 @@ function localizedBaseTemplateTitle(manifestRow: BaseWorkTemplateManifestRow): s
 }
 
 export function clearProfessionalWorkPassportBuildCaches(): void {
+  professionalWorkPassportTemplateIndexCache = null;
+  professionalWorkPassportRegistryFingerprintCache = null;
   clearProductionExpandedEstimate10000Caches();
 }
 

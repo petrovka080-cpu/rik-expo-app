@@ -1,4 +1,9 @@
 import { evaluateR4A7MemoryLifecycle } from "./runR4A7MemoryLifecycleSingle";
+import {
+  clearProfessionalWorkPassportBuildCaches,
+  getProfessionalWorkPassportBuildCacheStats,
+  listProfessionalWorkPassportTemplateIndex,
+} from "../../../src/lib/estimate/buildProfessionalWorkPassport";
 
 const emptyCaches = {
   professionalWorkPassport: {
@@ -14,6 +19,29 @@ const emptyCaches = {
 };
 
 describe("R4-A7 memory lifecycle evaluation", () => {
+  it("disposes the mutable professional template index at its owner boundary", () => {
+    clearProfessionalWorkPassportBuildCaches();
+    expect(getProfessionalWorkPassportBuildCacheStats()).toMatchObject({
+      templateIndexLoaded: false,
+      templateIndexEntryCount: 0,
+      registryFingerprintLoaded: false,
+    });
+
+    expect(listProfessionalWorkPassportTemplateIndex()).toHaveLength(11_610);
+    expect(getProfessionalWorkPassportBuildCacheStats()).toMatchObject({
+      templateIndexLoaded: true,
+      templateIndexEntryCount: 11_610,
+      registryFingerprintLoaded: true,
+    });
+
+    clearProfessionalWorkPassportBuildCaches();
+    expect(getProfessionalWorkPassportBuildCacheStats()).toMatchObject({
+      templateIndexLoaded: false,
+      templateIndexEntryCount: 0,
+      registryFingerprintLoaded: false,
+    });
+  });
+
   it("accepts a stable retained set with disposed caches and handles", () => {
     expect(evaluateR4A7MemoryLifecycle({
       cyclePostGcHeapBytes: [100, 101, 102, 102, 103, 103, 103, 104].map((value) => value * 1024 * 1024),
