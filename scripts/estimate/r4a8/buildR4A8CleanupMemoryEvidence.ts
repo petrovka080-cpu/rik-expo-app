@@ -26,14 +26,12 @@ const CURRENT_MEMORY_SOURCE_SHA = "48be1e98be9ada45a6ec0bba8ff1b7c888382265";
 const CURRENT_MEMORY_ROOT = resolve(A8_ROOT, `13_memory/current-${CURRENT_MEMORY_SOURCE_SHA}`);
 const GROUP50_SUMMARY = resolve(
   A8_ROOT,
-  "15_scale/group50-ecc56a429dd7fac4e0079463af4a46e6340db5a1-terminal/TERMINAL_SUMMARY.json",
+  "15_scale/group50-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/TERMINAL_SUMMARY.json",
 );
 const PLATFORM30_SUMMARY = resolve(
   A8_ROOT,
-  "15_scale/platform30-487efe2e713ec386f3bce3e22a19c3648b82699f-terminal/29_platform_71040_terminal.json",
+  "15_scale/platform30-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/29_platform_71040_terminal.json",
 );
-const DEAD_SOURCE_OUTPUT = resolve(A8_ROOT, "12_dead_source_summary.json");
-const MEMORY_OUTPUT = resolve(A8_ROOT, "13_memory/summary.json");
 const RELEVANT_MEMORY_PATHS = [
   "src/lib/estimate/buildProfessionalWorkPassport.ts",
   "src/lib/estimate/aiEstimateParameterSchema.ts",
@@ -124,6 +122,8 @@ function main(): void {
   requireFileHash(A7_TOMBSTONES, A7_TOMBSTONES_SHA256, "TOMBSTONES");
   requireFileHash(A7_MEMORY_AFTER, A7_MEMORY_AFTER_SHA256, "MEMORY_AFTER");
   const source = exactSourceIdentity();
+  const deadSourceOutput = resolve(A8_ROOT, `12_dead_source_summary_${source.commitSha}.json`);
+  const memoryOutput = resolve(A8_ROOT, `13_memory/summary_${source.commitSha}.json`);
   requireAncestor(CACHE_FIX_SHA, "CACHE_FIX");
   requireAncestor(CURRENT_MEMORY_SOURCE_SHA, "CURRENT_MEMORY_SOURCE");
 
@@ -315,12 +315,12 @@ function main(): void {
     fakeGreenClaimed: false,
   };
 
-  writeImmutableJson(DEAD_SOURCE_OUTPUT, deadSourceReceipt);
-  writeImmutableJson(MEMORY_OUTPUT, memoryReceipt);
-  console.log(JSON.stringify({
+  writeImmutableJson(deadSourceOutput, deadSourceReceipt);
+  writeImmutableJson(memoryOutput, memoryReceipt);
+  console.info(JSON.stringify({
     deadSource: { status: deadSourceReceipt.status, blockers: cleanupBlockers },
     memory: { status: memoryReceipt.status, blockers: memoryBlockers },
-    outputs: { deadSource: DEAD_SOURCE_OUTPUT, memory: MEMORY_OUTPUT },
+    outputs: { deadSource: deadSourceOutput, memory: memoryOutput },
   }, null, 2));
   if (cleanupBlockers.length > 0 || memoryBlockers.length > 0) process.exitCode = 1;
 }
