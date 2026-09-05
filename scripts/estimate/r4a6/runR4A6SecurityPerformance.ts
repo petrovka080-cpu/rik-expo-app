@@ -18,7 +18,10 @@ import { percentile } from "../../../src/lib/platform/aiEstimatePerformanceBudge
 const DEFAULT_MASTER_PATH = "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md";
 const DEFAULT_MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
 const DEFAULT_EVIDENCE_ROOT = ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1";
-const GATE_SERIES = process.env.R4_SECURITY_PERFORMANCE_GATE_SERIES === "R4_A7" ? "R4_A7" : "R4_A6";
+const requestedGateSeries = process.env.R4_SECURITY_PERFORMANCE_GATE_SERIES;
+const GATE_SERIES = requestedGateSeries === "R4_A8" || requestedGateSeries === "R4_A7"
+  ? requestedGateSeries
+  : "R4_A6";
 const MASTER_PATH = process.env.R4_SECURITY_PERFORMANCE_MASTER_PATH ?? DEFAULT_MASTER_PATH;
 const MASTER_SHA256 = process.env.R4_SECURITY_PERFORMANCE_MASTER_SHA256 ?? DEFAULT_MASTER_SHA256;
 const EVIDENCE_ROOT = path.resolve(
@@ -42,10 +45,13 @@ const PLATFORM_ROOT = path.join(
 );
 const PLATFORM_TERMINAL = path.join(PLATFORM_ROOT, "29_platform_71040_terminal.json");
 const PLATFORM_SHARDS = path.join(PLATFORM_ROOT, "28_platform_71040_shards");
-const PDF_MATRIX = path.resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence/pdf-0ecb526b2a2ca7d7ab3d5963aba6c68e891f82b4-terminal-green/matrix.json",
-);
-const PDF_SOURCE_SHA = "0ecb526b2a2ca7d7ab3d5963aba6c68e891f82b4";
+const PDF_MATRIX = path.resolve(process.env.R4_SECURITY_PERFORMANCE_PDF_MATRIX_PATH
+  ?? ".release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence/pdf-0ecb526b2a2ca7d7ab3d5963aba6c68e891f82b4-terminal-green/matrix.json");
+const PDF_SOURCE_SHA = process.env.R4_SECURITY_PERFORMANCE_PDF_SOURCE_SHA
+  ?? "0ecb526b2a2ca7d7ab3d5963aba6c68e891f82b4";
+if (!/^[0-9a-f]{40}$/u.test(PDF_SOURCE_SHA)) {
+  throw new Error("STOP_SECURITY_PERFORMANCE_PDF_SOURCE_SHA_INVALID");
+}
 const ALLOWED_DIRTY_PATHS = new Set([
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
   "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
@@ -292,6 +298,10 @@ function main(): void {
     ...listTests(path.resolve("tests/security")),
     "scripts/estimate/r4a6/canonicalSecurityLiveProof.contract.test.ts",
     "src/lib/developerOverride.test.ts",
+    "src/lib/localDeveloperReview.test.ts",
+    "src/components/auth/LocalDeveloperReviewBanner.test.tsx",
+    "src/screens/office/officeAccess.services.localDeveloper.test.ts",
+    "scripts/dev/localDeveloperReview.contract.test.ts",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
     "src/lib/estimate/backendPlatform/estimateAdmissionR3.test.ts",
@@ -490,6 +500,9 @@ function main(): void {
     requirementMatrix,
     blockers: securityBlockers,
     productionAccessed: false,
+    deployPerformed: false,
+    releasePerformed: false,
+    otaPerformed: false,
     fakeGreenClaimed: false,
   };
   const performancePayload = {
@@ -542,6 +555,9 @@ function main(): void {
     },
     blockers: performanceBlockers,
     productionAccessed: false,
+    deployPerformed: false,
+    releasePerformed: false,
+    otaPerformed: false,
     fakeGreenClaimed: false,
   };
   const inMemorySecretFindings = forbiddenReceiptFindings([securityPayload, performancePayload]);
@@ -564,6 +580,9 @@ function main(): void {
     securityBlockers,
     performanceBlockers,
     productionAccessed: false,
+    deployPerformed: false,
+    releasePerformed: false,
+    otaPerformed: false,
     fakeGreenClaimed: false,
   });
   writeJsonAtomic(path.join(runningRoot, "31_security.json"), securityReceipt);

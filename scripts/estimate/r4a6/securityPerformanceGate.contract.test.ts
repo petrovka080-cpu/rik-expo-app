@@ -19,10 +19,17 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain("coldStartAndroidApi34");
     expect(source).toContain("history50000Compatible");
     expect(source).toContain('`GREEN_${GATE_SERIES}_SECURITY_PERFORMANCE`');
-    expect(source).toContain('R4_SECURITY_PERFORMANCE_GATE_SERIES === "R4_A7"');
+    expect(source).toContain('requestedGateSeries === "R4_A7"');
+    expect(source).toContain('requestedGateSeries === "R4_A8"');
     expect(source).toContain("GREEN_COMBINED_STATUS");
     expect(source).toContain("R4_SECURITY_PERFORMANCE_PLATFORM_SOURCE_SHA");
     expect(source).toContain("STOP_SECURITY_PERFORMANCE_PLATFORM_SOURCE_SHA_INVALID");
+    expect(source).toContain("R4_SECURITY_PERFORMANCE_PDF_MATRIX_PATH");
+    expect(source).toContain("R4_SECURITY_PERFORMANCE_PDF_SOURCE_SHA");
+    expect(source).toContain("STOP_SECURITY_PERFORMANCE_PDF_SOURCE_SHA_INVALID");
+    expect(source).toContain('"src/lib/localDeveloperReview.test.ts"');
+    expect(source).toContain('"src/components/auth/LocalDeveloperReviewBanner.test.tsx"');
+    expect(source).toContain('"scripts/dev/localDeveloperReview.contract.test.ts"');
   });
 
   it("keeps secrets out of receipts and preserves unrelated dirty artifacts", () => {
@@ -33,6 +40,9 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).not.toContain('git(["status", "--porcelain=v1"');
     expect(source).toContain("if (combinedStatus === GREEN_COMBINED_STATUS)");
     expect(source).toContain("productionAccessed: false");
+    expect(source).toContain("deployPerformed: false");
+    expect(source).toContain("releasePerformed: false");
+    expect(source).toContain("otaPerformed: false");
     expect(source).toContain("fakeGreenClaimed: false");
   });
 });
