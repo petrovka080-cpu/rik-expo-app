@@ -212,7 +212,8 @@ function percentile(values: readonly number[], ratio: number): number {
 async function databaseIdentity(client: Client): Promise<Json> {
   const row = (await client.query(
     `select release.id::text release_id,release.status release_status,release.release_key,
-      search.id::text search_release_id,search.status search_status,search.snapshot_sha256,
+      search.id::text search_release_id,search.status search_status,
+      search.snapshot_sha256 search_snapshot_sha256,
       (select count(*)::int from public.estimate_cumulative_manifest_entry where release_id=$1) manifest_count,
       (select count(*)::int from public.estimate_cumulative_manifest_entry where release_id=$1
         and baseline_ready and scenario_ready) ready_count,
