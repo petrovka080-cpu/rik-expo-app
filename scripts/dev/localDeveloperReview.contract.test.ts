@@ -47,6 +47,7 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(backendManager).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(backendManager).toContain('resolve(EVIDENCE_ROOT, "backend.json")');
     expect(backendManager).toContain("request_audit_path");
+    expect(backendManager).toContain("cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1");
     expect(launcher).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(androidJourney).toContain("R4_A6_ANDROID_BACKEND_AUDIT_PATH");
   });
