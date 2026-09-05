@@ -88,6 +88,7 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(roleMatrix).toContain("providerActorStable");
     expect(roleMatrix).toContain("provider_actor_stable");
     expect(roleMatrix).toContain("provider_role_unchanged");
+    expect(roleMatrix).toContain('getByTestId("local-developer-role-toggle").waitFor');
     expect(roleMatrix).toContain("presentation_role_must_not_replace_provider_role");
     expect(roleMatrix).not.toContain("app_metadata?.role === expectedRole");
   });

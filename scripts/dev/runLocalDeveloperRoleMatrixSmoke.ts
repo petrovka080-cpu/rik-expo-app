@@ -62,6 +62,10 @@ async function signInAs(page: Page, role: LocalDeveloperReviewRole) {
   });
   await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
   await page.getByTestId("auth.login.screen").waitFor({ timeout: 60_000 });
+  await page.getByTestId("local-developer-role-toggle").waitFor({
+    state: "visible",
+    timeout: 180_000,
+  });
   const actorBefore = await page.evaluate(() => {
     const raw = window.localStorage.getItem("sb-127-auth-token");
     try {
