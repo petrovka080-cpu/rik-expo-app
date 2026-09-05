@@ -582,7 +582,7 @@ async function main(): Promise<void> {
               'r4A8OperationScopeContract',$2::text),source.applicability,map.definition_sha256,
             source.source_metadata||jsonb_build_object('r4A8OperationScopeContract',$2::text,
               'sourceDefinitionVersionId',source.id::text,'sourceCatalogId',source.catalog_id,
-              'sourceFingerprint',$3::text),source.content_status,source.content_gate_status
+              'sourceFingerprint',$3::text),'QUARANTINED','RED'
           from r4a8_drywall_map map join public.estimate_definition_version source
             on source.id=map.source_definition_id`, [releaseId, CONTRACT, fingerprint]);
         await client.query(`insert into public.estimate_approved_template_baseline(
@@ -677,6 +677,11 @@ async function main(): Promise<void> {
               'UTF8'),'sha256'),'hex'),$3,$4
           from r4a8_drywall_map map join public.estimate_content_passport_r3 source
             on source.definition_version_id=map.source_definition_id`, [releaseId, CONTRACT, head, tree]);
+        await client.query(`update public.estimate_definition_version target set
+            content_status=source.content_status,content_gate_status=source.content_gate_status
+          from r4a8_drywall_map map join public.estimate_definition_version source
+            on source.id=map.source_definition_id
+          where target.id=map.definition_id`);
         await client.query(`update public.estimate_cumulative_manifest_entry target set
             definition_version_id=map.definition_id,approved_template_baseline_id=map.baseline_id,
             source_batch=$2,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
