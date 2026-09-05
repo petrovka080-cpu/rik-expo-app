@@ -22,6 +22,7 @@ type Scenario = {
   sourceCatalogId: string;
   catalogId: string;
   prompt: string;
+  historyNeedle: string;
   quantity: number;
   expectedRows: number;
 };
@@ -32,6 +33,7 @@ const SCENARIOS: readonly Scenario[] = [
     sourceCatalogId: "drywall_ceiling_interior_drywall_ceiling_align_large_area",
     catalogId: "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_align_large_area",
     prompt: "выравнивание потолка из гипсокартона на большой площади 500 кв метров",
+    historyNeedle: "выравнивание потолка из гипсокартона",
     quantity: 500,
     expectedRows: 9,
   },
@@ -40,6 +42,7 @@ const SCENARIOS: readonly Scenario[] = [
     sourceCatalogId: "drywall_ceiling_interior_drywall_ceiling_frame_standard",
     catalogId: "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_standard",
     prompt: "устройство каркаса потолка из гипсокартона в стандартной зоне 50 кв метров",
+    historyNeedle: "устройство каркаса потолка из гипсокартона",
     quantity: 50,
     expectedRows: 20,
   },
@@ -141,7 +144,7 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
     });
 
     fs.mkdirSync(EVIDENCE_ROOT, { recursive: true });
-    for (const scenario of SCENARIOS) {
+    for (const [scenarioIndex, scenario] of SCENARIOS.entries()) {
       await resetRequest(page);
       const selection = await selectExactCatalog(page, scenario);
       const compileResponsePromise = page.waitForResponse((response) =>
@@ -198,10 +201,17 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
       await expect(page.getByTestId("consumer-repair-status")).toContainText(/утверждена/iu, {
         timeout: 180_000,
       });
-      await expect(page.getByTestId("consumer-repair-history-approved-count")).toHaveText("1", { timeout: 180_000 });
+      await expect(page.getByTestId("consumer-repair-history-approved-count")).toHaveText(
+        String(scenarioIndex + 1),
+        { timeout: 180_000 },
+      );
       await page.getByTestId("consumer-repair-history-button").click();
       await expect(page.getByTestId("consumer-repair-history-modal")).toBeVisible({ timeout: 60_000 });
-      const approvedHistoryMain = page.getByTestId("consumer-repair-history-main").first();
+      const approvedHistoryRow = page.getByTestId("consumer-repair-history-row")
+        .filter({ hasText: scenario.historyNeedle })
+        .first();
+      await expect(approvedHistoryRow).toBeVisible({ timeout: 60_000 });
+      const approvedHistoryMain = approvedHistoryRow.getByTestId("consumer-repair-history-main");
       await expect(approvedHistoryMain).toHaveAttribute("aria-label", /историю заявки/iu, { timeout: 60_000 });
       await approvedHistoryMain.click();
       await expect(page.getByTestId("consumer-repair-history-readonly-snapshot")).toBeVisible({ timeout: 60_000 });
