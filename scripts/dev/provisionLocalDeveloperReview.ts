@@ -756,6 +756,37 @@ async function provisionPrincipal<T extends ProviderPrincipalRole>(
   };
 }
 
+async function ensureAndroidInputSafeConsumer(
+  principal: Principal,
+  keys: ReturnType<typeof providerKeys>,
+): Promise<Principal> {
+  const inputSafe =
+    principal.email.length <= 48 &&
+    /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/u.test(principal.email) &&
+    /^[A-Za-z0-9]+$/u.test(principal.password);
+  if (inputSafe) return principal;
+
+  const email = `local-consumer-${randomBytes(5).toString("hex")}@example.test`;
+  const password = `Local${randomBytes(18).toString("hex")}9z`;
+  const updated = await jsonRequest(
+    `${PROVIDER_URL}/auth/v1/admin/users/${principal.user_id}`,
+    {
+      method: "PUT",
+      headers: {
+        apikey: keys.secret,
+        Authorization: `Bearer ${keys.secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, email_confirm: true }),
+    },
+  );
+  invariant(
+    updated.status === 200 && updated.body?.id === principal.user_id,
+    `R551_ANDROID_SAFE_CONSUMER_${updated.status}`,
+  );
+  return { ...principal, email, password };
+}
+
 async function verifyPrincipal(principal: Principal, publishable: string) {
   const login = await jsonRequest(`${PROVIDER_URL}/auth/v1/token?grant_type=password`, {
     method: "POST",
@@ -964,7 +995,12 @@ async function main(): Promise<void> {
     const existing = Array.isArray(previous?.principals)
       ? previous.principals.find((candidate: Json) => candidate.role === role)
       : undefined;
-    principals.push(await provisionPrincipal(role, existing, keys));
+    const principal = await provisionPrincipal(role, existing, keys);
+    principals.push(
+      role === LOCAL_DEVELOPER_CONSUMER_ROLE
+        ? await ensureAndroidInputSafeConsumer(principal, keys)
+        : principal,
+    );
   }
   const owner = await provisionPrincipal(
     OWNER_ROLE,

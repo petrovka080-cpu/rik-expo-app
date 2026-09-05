@@ -67,6 +67,9 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(provisioner).toContain('const OWNER_ROLE = "platform_developer"');
     expect(provisioner).toContain("owner_effective_role_green");
     expect(provisioner).toContain("Strict local role principal; developer entitlement forbidden");
+    expect(provisioner).toContain("ensureAndroidInputSafeConsumer");
+    expect(provisioner).toContain("principal.email.length <= 48");
+    expect(provisioner).toContain("/^[A-Za-z0-9]+$/u.test(principal.password)");
     expect(roleRegistry).toContain('"security"');
     expect(provisioner).toContain("service_key_in_browser: false");
     expect(broker).toContain('"http://localhost:8081"');
