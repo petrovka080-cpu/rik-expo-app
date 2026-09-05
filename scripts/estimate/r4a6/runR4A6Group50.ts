@@ -31,16 +31,18 @@ import {
 } from "./group50ScenarioContract";
 
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
-const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
-const SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
+const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
+const CURRENT_RELEASE = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
+const RELEASE_ID = String(CURRENT_RELEASE.definitionReleaseId);
+const SEARCH_RELEASE_ID = String(CURRENT_RELEASE.searchReleaseId);
 const IDENTITY_PATH = resolve(
   ".release-runtime/r568/rc09-identity-v1/current-identity-manifest-11610.jsonl",
 );
 const ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1",
+  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale",
 );
 const SHARD_COUNT = 32;
 const EXPECTED_GROUPS = 2_368;
@@ -53,6 +55,7 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
 const EXACT_SOURCE_PATHS = [
   "scripts/estimate/r4a6/group50ScenarioContract.ts",
   "scripts/estimate/r4a6/runR4A6Group50.ts",
+  "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
@@ -677,7 +680,7 @@ async function executeCase(input: {
   };
 }
 
-async function executeShard(client: Client, manifest: FrozenManifest, root: string, shard: FrozenManifest["shards"][number]): Promise<Json> {
+async function executeShard(client: Client, manifest: FrozenManifest, root: string, shard: FrozenManifest["shards"][number]): Promise<string> {
   const path = resolve(root, "shards", `${shard.shardId}.json`);
   if (existsSync(path)) {
     const existing = loadJson<Json>(path);
@@ -686,7 +689,7 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
       || existing.receiptSha256 !== sha256(withoutSelfHash(existing))) {
       throw new Error(`STOP_GROUP50_SHARD_RECEIPT_INVALID:${shard.shardId}`);
     }
-    return existing;
+    return path;
   }
   const groupSet = new Set(shard.groupIds);
   const groups = manifest.groups.filter((group) => groupSet.has(group.groupId));
@@ -740,6 +743,7 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
   }
   const results: Json[] = [];
   const durations: number[] = [];
+  global.gc!();
   const initialRssBytes = process.memoryUsage().rss;
   let maximumRssBytes = process.memoryUsage().rss;
   for (const group of groups) {
@@ -763,6 +767,8 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
   const rssGrowthBytes = Math.max(0, maximumRssBytes - initialRssBytes);
   if (maximumRssBytes > 1_610_612_736 || rssGrowthBytes > 805_306_368
     || percentile(durations, 0.99) > 5_000) shardCounters.performanceRed += 1;
+  const passedCaseIds = new Set(results.filter((result) => result.passed).map((result) => String(result.caseId)));
+  const groupsGreen = groups.filter((group) => group.cases.every((item) => passedCaseIds.has(item.caseId))).length;
   const body = {
     schemaVersion: "r568-r4-a6-content-group50-shard.v1",
     shardId: shard.shardId,
@@ -771,6 +777,8 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
     membershipSha256: shard.membershipSha256,
     expectedGroups: groups.length,
     executedGroups: groups.length,
+    groupsGreen,
+    groupsRed: groups.length - groupsGreen,
     expectedCases: shard.expectedCases,
     executedCases: results.length,
     passedCases: results.filter((result) => result.passed).length,
@@ -799,10 +807,10 @@ async function executeShard(client: Client, manifest: FrozenManifest, root: stri
     p99Ms: receipt.performance.p99Ms,
     maximumRssBytes,
   })}\n`);
-  return receipt;
+  return path;
 }
 
-async function finalize(client: Client, manifest: FrozenManifest, root: string, receipts: Json[]): Promise<Json> {
+async function finalize(client: Client, manifest: FrozenManifest, root: string, receiptPaths: string[]): Promise<Json> {
   const source = exactSourceIdentity();
   if (sha256(source) !== sha256(manifest.source)) throw new Error("STOP_GROUP50_SOURCE_DRIFT");
   const currentDatabase = await databaseIdentity(client);
@@ -814,7 +822,10 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
   const works = new Set<string>();
   let cases = 0;
   let passedCases = 0;
-  for (const [index, receipt] of receipts.entries()) {
+  let groupsGreen = 0;
+  const performanceReceipts: Json[] = [];
+  for (const [index, receiptPath] of receiptPaths.entries()) {
+    const receipt = loadJson<Json>(receiptPath);
     const shard = manifest.shards[index]!;
     if (receipt.proofSnapshotSha256 !== manifest.proofSnapshotSha256
       || receipt.membershipSha256 !== shard.membershipSha256
@@ -823,6 +834,8 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
     }
     cases += Number(receipt.executedCases);
     passedCases += Number(receipt.passedCases);
+    groupsGreen += Number(receipt.groupsGreen);
+    performanceReceipts.push(receipt.performance as Json);
     for (const key of BLOCKING_COUNTER_KEYS) aggregateCounters[key] += Number(receipt.counters[key] ?? 0);
     for (const result of receipt.results as Json[]) {
       if (fingerprints.has(String(result.inputFingerprint))) {
@@ -831,14 +844,9 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
       fingerprints.add(String(result.inputFingerprint));
       works.add(String(result.catalogId));
     }
+    global.gc!();
   }
-  const resultByCaseId = new Map<string, Json>();
-  for (const receipt of receipts) {
-    for (const result of receipt.results as Json[]) resultByCaseId.set(String(result.caseId), result);
-  }
-  const groupsGreen = manifest.groups.filter((group) => group.cases.every((item) =>
-    resultByCaseId.get(item.caseId)?.passed === true)).length;
-  const denominatorGreen = receipts.length === SHARD_COUNT
+  const denominatorGreen = receiptPaths.length === SHARD_COUNT
     && cases === EXPECTED_CASES
     && passedCases === EXPECTED_CASES
     && fingerprints.size === EXPECTED_CASES
@@ -868,14 +876,14 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
     failedCases: cases - passedCases,
     uniqueInputFingerprints: fingerprints.size,
     shardsExpected: SHARD_COUNT,
-    shardsExecuted: receipts.length,
+    shardsExecuted: receiptPaths.length,
     counters: aggregateCounters,
     performance: {
-      p50Ms: percentile(receipts.map((receipt) => Number(receipt.performance.p50Ms)), 0.5),
-      p95Ms: percentile(receipts.map((receipt) => Number(receipt.performance.p95Ms)), 0.95),
-      p99Ms: percentile(receipts.map((receipt) => Number(receipt.performance.p99Ms)), 0.99),
-      maximumMs: Math.max(...receipts.map((receipt) => Number(receipt.performance.maximumMs))),
-      maximumRssBytes: Math.max(...receipts.map((receipt) => Number(receipt.performance.maximumRssBytes))),
+      p50Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p50Ms)), 0.5),
+      p95Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p95Ms)), 0.95),
+      p99Ms: percentile(performanceReceipts.map((receipt) => Number(receipt.p99Ms)), 0.99),
+      maximumMs: Math.max(...performanceReceipts.map((receipt) => Number(receipt.maximumMs))),
+      maximumRssBytes: Math.max(...performanceReceipts.map((receipt) => Number(receipt.maximumRssBytes))),
     },
     productionAccessed: false,
     deployPerformed: false,
@@ -889,6 +897,7 @@ async function finalize(client: Client, manifest: FrozenManifest, root: string, 
 }
 
 async function main(): Promise<void> {
+  if (typeof global.gc !== "function") throw new Error("STOP_GROUP50_EXPLICIT_GC_REQUIRED");
   if (sha256Bytes(readFileSync(MASTER_PATH)) !== MASTER_SHA256) {
     throw new Error("STOP_MASTER_SHA256_DRIFT");
   }
@@ -905,9 +914,13 @@ async function main(): Promise<void> {
     const { proofSnapshotSha256: _proofSnapshotSha256, ...manifestBody } = manifest;
     if (manifest.proofSnapshotSha256 !== sha256(manifestBody)) throw new Error("STOP_GROUP50_MANIFEST_HASH");
     if (!existsSync(manifestPath)) writeImmutableJson(manifestPath, manifest);
-    const receipts: Json[] = [];
-    for (const shard of manifest.shards) receipts.push(await executeShard(client, manifest, root, shard));
-    const summary = await finalize(client, manifest, root, receipts);
+    global.gc();
+    const receiptPaths: string[] = [];
+    for (const shard of manifest.shards) {
+      receiptPaths.push(await executeShard(client, manifest, root, shard));
+      global.gc();
+    }
+    const summary = await finalize(client, manifest, root, receiptPaths);
     process.stdout.write(`${JSON.stringify({
       root,
       status: summary.status,
