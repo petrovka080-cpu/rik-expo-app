@@ -71,6 +71,34 @@ async function resetRequest(page: Page): Promise<void> {
   await expect(page.getByTestId("consumer-repair-problem-input")).toBeVisible({ timeout: 120_000 });
 }
 
+async function attachMaterialProofPhoto(page: Page, scenarioId: Scenario["id"]): Promise<void> {
+  const photoButton = page.locator('[data-testid^="estimate-material-row-photo-button-"]').first();
+  await expect(photoButton).toBeVisible({ timeout: 60_000 });
+  await photoButton.click();
+  await expect(page.getByTestId("mobile-photo-capture-flow")).toBeVisible({ timeout: 30_000 });
+  const photoPicker = page.locator(
+    '[data-testid="mobile-photo-gallery"], [data-testid="mobile-photo-pick-library"]',
+  ).first();
+  await expect(photoPicker).toBeVisible({ timeout: 30_000 });
+  const fileChooserPromise = page.waitForEvent("filechooser", { timeout: 30_000 });
+  await photoPicker.click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({
+    name: `r4-a8-${scenarioId.toLowerCase()}-material-proof.png`,
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
+  await expect(page.getByTestId("mobile-photo-review-screen")).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId("mobile-photo-use").click();
+  await expect(page.getByTestId("mobile-photo-capture-flow")).toHaveCount(0, { timeout: 120_000 });
+  await expect(page.locator('[data-testid^="estimate-material-row-photo-attached-"]').first()).toBeVisible({
+    timeout: 120_000,
+  });
+}
+
 async function selectExactCatalog(page: Page, scenario: Scenario): Promise<{
   selectedText: string;
   searchRequestId: string | null;
@@ -154,9 +182,14 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
       await page.getByTestId(`consumer-repair-item-specification-save-${firstAnchorId}`).click();
       await expect(page.getByTestId(`consumer-repair-item-title-${firstAnchorId}`)).toBeVisible();
 
+      await attachMaterialProofPhoto(page, scenario.id);
+
       await page.reload({ waitUntil: "domcontentloaded", timeout: 120_000 });
       await expect(page.getByTestId("request-estimate-summary-card")).toBeVisible({ timeout: 120_000 });
       await expect(page.locator("[data-testid^='request-estimate-item-anchor-']")).toHaveCount(scenario.expectedRows);
+      await expect(page.locator('[data-testid^="estimate-material-row-photo-attached-"]').first()).toBeVisible({
+        timeout: 120_000,
+      });
 
       await page.getByTestId("consumer-repair-city-input").fill("Бишкек");
       await page.getByTestId("consumer-repair-address-input").fill("проспект Манаса, 64");
@@ -179,6 +212,9 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
       );
       await expect(page.getByTestId("consumer-repair-history-backend-pdf-artifact")).toHaveCount(1);
       await page.getByTestId("consumer-repair-history-send-market").click();
+      await expect(page.getByTestId("consumer-repair-status")).toContainText(/отправлена в маркет/iu, {
+        timeout: 180_000,
+      });
       await expect(page.getByTestId("consumer-repair-history-backend-procurement-artifact")).toHaveCount(1, {
         timeout: 180_000,
       });
@@ -200,6 +236,7 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
         rowTitles: visibleTitles,
         operationScopeExact: true,
         persistedAfterReload: true,
+        photoAttachedAndPersisted: true,
         editModeRoundTrip: true,
         approvedHistoryRows: scenario.expectedRows,
         pdfArtifactReady: true,
