@@ -1222,6 +1222,12 @@ async function main(): Promise<void> {
           parentReleaseId: contract.predecessorDefinitionReleaseId,
           canonicalVisibleParentReleaseId: contract.canonicalVisibleDefinitionReleaseId,
           sourceFingerprint: fingerprint,
+          manifestCounts: {
+            definitions: contract.denominator.definitionRecords,
+            ready: contract.denominator.definitionRecords,
+            quarantined: 0,
+            repaired: contract.denominator.formulaDefinitions,
+          },
           legacySyntheticDefinitions: contract.denominator.legacySyntheticDefinitions,
           artificialMinimumRows: "FORBIDDEN",
           legacySyntheticDisposition: "PRESERVED_IMMUTABLY_BUT_NOT_APPLICABLE",
