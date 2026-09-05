@@ -14,6 +14,7 @@ const TABLES = [
   "estimate_revision_photo_attachment",
   "estimate_revision_photo_attachment_event",
   "estimate_revision_photo_upload",
+  "estimate_revision_request_binding",
   "estimate_revision_row",
   "estimate_revision_row_price",
 ] as const;
@@ -141,7 +142,8 @@ async function main(): Promise<void> {
         (select count(*)::int from public.estimate_revision_artifact a where a.revision_id=r.id) as artifact_count,
         (select count(*)::int from public.estimate_revision_photo_attachment a where a.parent_revision_id=r.id) as photo_count,
         (select count(*)::int from public.estimate_revision_photo_attachment_event e where e.parent_revision_id=r.id) as photo_event_count,
-        (select count(*)::int from public.estimate_revision_photo_upload u where u.parent_revision_id=r.id) as upload_count
+        (select count(*)::int from public.estimate_revision_photo_upload u where u.parent_revision_id=r.id) as upload_count,
+        (select count(*)::int from public.estimate_revision_request_binding b where b.revision_id=r.id) as request_binding_count
       from public.estimate_revision r
       where r.owner_user_id is not null
       order by
@@ -170,6 +172,7 @@ async function main(): Promise<void> {
       ["estimate_revision_photo_attachment", "parent_revision_id", Number(target.photo_count)],
       ["estimate_revision_photo_attachment_event", "parent_revision_id", Number(target.photo_event_count)],
       ["estimate_revision_photo_upload", "parent_revision_id", Number(target.upload_count)],
+      ["estimate_revision_request_binding", "revision_id", Number(target.request_binding_count)],
     ] as const) {
       const count = await visibleCount(client, relation, predicate, revisionId);
       attempts.push({
@@ -193,6 +196,7 @@ async function main(): Promise<void> {
       ["estimate_revision_photo_attachment", "parent_revision_id"],
       ["estimate_revision_photo_attachment_event", "parent_revision_id"],
       ["estimate_revision_photo_upload", "parent_revision_id"],
+      ["estimate_revision_request_binding", "revision_id"],
     ] as const) {
       const count = await visibleCount(client, relation, predicate, revisionId);
       attempts.push({
@@ -264,8 +268,9 @@ async function main(): Promise<void> {
         photoCount: Number(target.photo_count),
         photoEventCount: Number(target.photo_event_count),
         uploadCount: Number(target.upload_count),
+        requestBindingCount: Number(target.request_binding_count),
       },
-      attemptsExpected: 17,
+      attemptsExpected: 19,
       attemptsExecuted: attempts.length,
       attemptsPassed: attempts.filter((attempt) => attempt.passed).length,
       attempts,
