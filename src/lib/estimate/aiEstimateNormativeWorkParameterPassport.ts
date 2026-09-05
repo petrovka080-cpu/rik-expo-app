@@ -331,6 +331,16 @@ export function clearAiEstimateNormativeWorkParameterPassportCache(): void {
   clearProfessionalWorkPassportBuildCaches();
 }
 
+export function getAiEstimateNormativeWorkParameterPassportCacheStats(): {
+  size: number;
+  limit: number;
+} {
+  return {
+    size: passportCache.size,
+    limit: NORMATIVE_PARAMETER_PASSPORT_CACHE_LIMIT,
+  };
+}
+
 export function listAiEstimateNormativeWorkParameterPassportTemplateIds(): string[] {
   return listProfessionalWorkPassportTemplateIds();
 }

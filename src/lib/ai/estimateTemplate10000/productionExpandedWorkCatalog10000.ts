@@ -878,6 +878,18 @@ export function clearProductionExpandedEstimate10000Caches(options: { compiledOn
   if (options.compiledOnly !== true) EXPANDED_TEMPLATE_CACHE.clear();
 }
 
+export function getProductionExpandedEstimate10000CacheStats(): {
+  expandedTemplateCacheSize: number;
+  compiledEstimateCacheSize: number;
+  limitPerCache: number;
+} {
+  return {
+    expandedTemplateCacheSize: EXPANDED_TEMPLATE_CACHE.size,
+    compiledEstimateCacheSize: COMPILED_ESTIMATE_CACHE.size,
+    limitPerCache: PRODUCTION_EXPANDED_CACHE_LIMIT,
+  };
+}
+
 function aliasTermsFor(definition: ProductionWorkDefinition): { element: Term; operation: Term; modifier: Term } {
   const packItem = CATEGORY_PACKS[definition.category];
   const element = packItem.elements.find((item) => item.key === definition.elementKey) ?? packItem.elements[0];

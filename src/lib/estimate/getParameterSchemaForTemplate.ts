@@ -71,3 +71,13 @@ export function getParameterSchemaForTemplate(templateId: string): InlineWorkFam
 export function clearInlineWorkParameterSchemaCache(): void {
   schemaCache.clear();
 }
+
+export function getInlineWorkParameterSchemaCacheStats(): {
+  size: number;
+  limit: number;
+} {
+  return {
+    size: schemaCache.size,
+    limit: INLINE_WORK_PARAMETER_SCHEMA_CACHE_LIMIT,
+  };
+}

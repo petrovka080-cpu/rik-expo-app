@@ -12,6 +12,7 @@ import {
 import {
   clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
+  getProductionExpandedEstimate10000CacheStats,
   getProductionExpandedTemplate10000,
   getProductionWorkDefinition10000,
   type ProductionCompiledExpandedRow,
@@ -579,4 +580,32 @@ export function listProfessionalWorkPassportTemplateIds(): string[] {
     ...baseManifestTemplates.map((template) => template.template_id),
     ...expandedTemplates.map((template) => template.template_id),
   ];
+}
+
+export function getProfessionalWorkPassportBuildCacheStats(): {
+  immutableRegistrySizes: {
+    baseManifestTemplates: number;
+    expandedTemplates: number;
+    baseManifestTemplateById: number;
+    expandedTemplateById: number;
+    expandedCoverageByTemplateId: number;
+  };
+  templateIndexLoaded: boolean;
+  templateIndexEntryCount: number;
+  registryFingerprintLoaded: boolean;
+  productionExpanded: ReturnType<typeof getProductionExpandedEstimate10000CacheStats>;
+} {
+  return {
+    immutableRegistrySizes: {
+      baseManifestTemplates: baseManifestTemplates.length,
+      expandedTemplates: expandedTemplates.length,
+      baseManifestTemplateById: baseManifestTemplateById.size,
+      expandedTemplateById: expandedTemplateById.size,
+      expandedCoverageByTemplateId: expandedCoverageByTemplateId.size,
+    },
+    templateIndexLoaded: professionalWorkPassportTemplateIndexCache !== null,
+    templateIndexEntryCount: professionalWorkPassportTemplateIndexCache?.entries.length ?? 0,
+    registryFingerprintLoaded: professionalWorkPassportRegistryFingerprintCache !== null,
+    productionExpanded: getProductionExpandedEstimate10000CacheStats(),
+  };
 }

@@ -331,6 +331,16 @@ export function clearAiEstimateParameterSchemaCache(): void {
   schemaCache.clear();
 }
 
+export function getAiEstimateParameterSchemaCacheStats(): {
+  size: number;
+  limit: number;
+} {
+  return {
+    size: schemaCache.size,
+    limit: AI_ESTIMATE_PARAMETER_SCHEMA_CACHE_LIMIT,
+  };
+}
+
 export function buildAiEstimateMissingInputs(input: {
   selectedTemplateId: string | null | undefined;
   params: Record<string, EstimateDraftRevisionParam>;
