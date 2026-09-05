@@ -52,6 +52,7 @@ export type ExpandedComplexUnit =
   | "m"
   | "m2"
   | "m3"
+  | "mm"
   | "pcs"
   | "set"
   | "kg"
@@ -60,6 +61,7 @@ export type ExpandedComplexUnit =
   | "shift"
   | "trip"
   | "hour"
+  | "kV"
   | "MW"
   | "m3_day"
   | "m3_h";
@@ -788,6 +790,7 @@ function titleFromId(id: string, blockTitle: string): string {
 function schemaFor(
   blockKey: string,
   calculatorId: ExpandedComplexCalculatorId,
+  familyId: string,
 ): ExpandedComplexParameterSchemaField[] {
   const detailed: ExpandedComplexEstimateLevel[] = ["DETAILED_BOQ_FROM_DRAWINGS", "TENDER_BOQ", "AS_BUILT_ESTIMATE"];
   const preliminaryAndDetailed: ExpandedComplexEstimateLevel[] = ["PRELIMINARY_BOQ", ...detailed];
@@ -805,6 +808,63 @@ function schemaFor(
   const geologyProfile: ExpandedComplexParameterSchemaField = { key: "geology_profile", labelRu: "Геология / профиль", requiredFor: detailed, missingBlocksDetailed: true };
   const equipmentSpecification: ExpandedComplexParameterSchemaField = { key: "equipment_specification", labelRu: "Спецификация оборудования", requiredFor: detailed, missingBlocksDetailed: true };
   const loads: ExpandedComplexParameterSchemaField = { key: "loads", labelRu: "Нагрузки", requiredFor: detailed, missingBlocksDetailed: true };
+  const exactMeasure = (
+    key: string,
+    labelRu: string,
+    unit?: ExpandedComplexUnit,
+  ): ExpandedComplexParameterSchemaField => ({
+    key,
+    labelRu,
+    ...(unit ? { unit } : {}),
+    requiredFor: preliminaryAndDetailed,
+    missingBlocksDetailed: true,
+  });
+  if (["wastewaterTreatmentCalculator", "waterTreatmentPlantCalculator"].includes(calculatorId)) {
+    return [...common, exactMeasure("capacity_m3_day", "Суточная производительность", "m3_day")];
+  }
+  if (calculatorId === "mansardRoofWindowsCalculator") {
+    return [
+      ...common,
+      exactMeasure("roof_area_m2", "Площадь кровли", "m2"),
+      exactMeasure("insulation_mm", "Толщина утеплителя", "mm"),
+      exactMeasure("roof_windows_count", "Количество кровельных окон", "pcs"),
+    ];
+  }
+  if (calculatorId === "highRiseGlazingCalculator") {
+    return [
+      ...common,
+      familyId === "ventilated_facade"
+        ? exactMeasure("facade_area_m2", "Площадь фасада", "m2")
+        : exactMeasure("glazing_area_m2", "Площадь остекления", "m2"),
+      exactMeasure("floors", "Количество этажей", "pcs"),
+    ];
+  }
+  if (["miningEarthworksCalculator", "tankSiloCalculator"].includes(calculatorId)) {
+    return [...common, exactMeasure("volume_m3", "Объём", "m3")];
+  }
+  if (calculatorId === "pipeRackCalculator") {
+    return [...common, exactMeasure("length_m", "Длина", "m")];
+  }
+  if (calculatorId === "solarWindEnergyCalculator") {
+    return [...common, exactMeasure("capacity_mw", "Установленная мощность", "MW")];
+  }
+  if (calculatorId === "boilerHouseCalculator") {
+    return [
+      ...common,
+      exactMeasure("capacity_mw", "Тепловая мощность", "MW"),
+      exactMeasure("boiler_count", "Количество котлов", "pcs"),
+    ];
+  }
+  if (["substationCalculator", "transformerSubstationCalculator"].includes(calculatorId)) {
+    return [...common, exactMeasure("voltage_kv", "Класс напряжения", "kV")];
+  }
+  if (calculatorId === "utilityConnectionCalculator") {
+    return [
+      ...common,
+      exactMeasure("length_m", "Длина сетей", "m"),
+      exactMeasure("network_count", "Количество инженерных сетей", "pcs"),
+    ];
+  }
   if (calculatorId === "retainingWallCalculator") {
     return [
       ...common,
@@ -881,7 +941,7 @@ export const EXPANDED_COMPLEX_WORK_FAMILIES: readonly ExpandedComplexWorkFamilyD
         aliases: publicIdentity.aliasesRu,
         categoryGroup: block.key,
         globalCategory: block.globalCategory,
-        parameterSchema: schemaFor(block.key, calculatorId),
+        parameterSchema: schemaFor(block.key, calculatorId, seed.id),
         calculatorId,
         formulaFamily: `${calculatorId}:deterministic_reference_formula_v1`,
         materialRecipe: recipeFor(block.key, "material"),
@@ -1479,7 +1539,7 @@ export function wastewaterTreatmentCalculator(input: CalcInput): ExpandedComplex
     row({ family, code: "rebar_t", titleRu: "Арматура ёмкостей", lineType: "material", group: "materials", quantity: concrete * 0.11, unit: "t", formula: "concrete_m3 * 0.11", materialKey: "rebar" }),
     row({ family, code: "aeration_equipment_set", titleRu: "Аэрационное оборудование", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 set; price missing until specification", materialKey: "aeration_equipment" }),
     row({ family, code: "pumps_set", titleRu: "Насосное оборудование", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 set; price missing until specification", materialKey: "pumping_equipment" }),
-    row({ family, code: "commissioning_services", titleRu: "Пусконаладка очистных", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "commissioning_services", titleRu: "Пусконаладка очистных", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
     row({ family, code: "labor_hours", titleRu: "Монтаж очистных сооружений", lineType: "work", group: "labor", quantity: capacity * 0.9, unit: "hour", formula: "capacity_m3_day * 0.9" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_m3_day: capacity }, rows, assumptions: ["Схема очистки принята укрупнённо; оборудование без цены до спецификации."], formulaSteps: ["concrete_m3 = capacity_m3_day * 0.18", "rebar_t = concrete_m3 * 0.11"], missingInputs: [...commonMissingInputs(family), "Технологическая схема очистки", "Состав стоков"] });
@@ -1494,7 +1554,7 @@ export function pumpingStationCalculator(input: CalcInput): ExpandedComplexCalcu
     row({ family, code: "pump_equipment_pcs", titleRu: "Насосные агрегаты", lineType: "equipment", group: "equipment", quantity: 2, unit: "pcs", formula: "working pump + reserve pump; price missing until specification", materialKey: "pump_unit" }),
     row({ family, code: "valves_and_manifold_set", titleRu: "Коллекторы и арматура насосной", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 manifold set", materialKey: "pump_manifold" }),
     row({ family, code: "electrical_automation_set", titleRu: "Шкаф управления и автоматика", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 automation set; price missing until specification", materialKey: "pump_automation" }),
-    row({ family, code: "commissioning_services", titleRu: "ПНР насосной станции", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "commissioning_services", titleRu: "ПНР насосной станции", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
     row({ family, code: "labor_hours", titleRu: "Монтаж насосной станции", lineType: "work", group: "labor", quantity: 120 + capacity * 0.4, unit: "hour", formula: "120 + capacity_m3_h * 0.4" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_m3_h: capacity }, rows, assumptions: ["Насосы и автоматика выводятся с PRICE_MISSING до подбора производителя."], formulaSteps: ["foundation concrete = max(12, capacity_m3_h * 0.08)", "labor_hours = 120 + capacity_m3_h * 0.4"], missingInputs: [...commonMissingInputs(family), "Напор насосов", "Схема резервирования"] });
@@ -1659,7 +1719,7 @@ export function powerLinePolesCalculator(input: CalcInput): ExpandedComplexCalcu
     row({ family, code: "crane_shifts", titleRu: "Автокран / манипулятор для опор", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 12), unit: "shift", formula: "ceil(poles_count / 12)" }),
     row({ family, code: "drilling_machine_shifts", titleRu: "Бурильно-крановая машина", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 14), unit: "shift", formula: "ceil(poles_count / 14)" }),
     row({ family, code: "bucket_truck_shifts", titleRu: "Автовышка для монтажа проводов и арматуры СИП", lineType: "equipment", group: "equipment", quantity: Math.ceil(poles / 16), unit: "shift", formula: "ceil(poles_count / 16)" }),
-    row({ family, code: "electrical_testing_services", titleRu: "Электролаборатория и испытания", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "electrical_testing_services", titleRu: "Электролаборатория и испытания", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, pole_step_m: stepM, poles_count: poles, phases }, rows, assumptions: ["Схема ЛЭП и тип опор приняты предварительно; оборудование без цены до спецификации."], formulaSteps: ["poles_count = floor(length_m / pole_step_m) + 1", "conductor_lm = length_m * phases * 1.03"], missingInputs: [...commonMissingInputs(family), "Трасса ЛЭП", "Тип опор", "Проект РЗА/испытаний"] });
 }
@@ -1681,14 +1741,14 @@ export function substationCalculator(input: CalcInput): ExpandedComplexCalculato
   const text = normalizePrompt(input.prompt);
   const voltage = numberFromText(text, [/([\d\s]+(?:[,.]\d+)?)\s*кв\b/i], 10);
   const rows = [
-    row({ family, code: "transformer_foundation_m3", titleRu: "Фундамент под трансформатор / оборудование", lineType: "material", group: "materials", quantity: voltage >= 110 ? 80 : 12, unit: "m3", formula: "voltage class foundation coefficient", materialKey: "ready_mix_concrete" }),
+    row({ family, code: "transformer_foundation_m3", titleRu: "Фундамент под трансформатор / оборудование", lineType: "material", group: "materials", quantity: voltage >= 110 ? 80 : 12, unit: "m3", formula: "12 + min(1, floor(voltage_kv / 110)) * 68", materialKey: "ready_mix_concrete" }),
     row({ family, code: "switchgear_equipment_set", titleRu: "Комплект РУ / КТП", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 set; price missing until equipment specification", materialKey: "switchgear" }),
     row({ family, code: "grounding_system_set", titleRu: "Контур заземления", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 grounding system", materialKey: "grounding_system" }),
-    row({ family, code: "cable_trench_m", titleRu: "Кабельные траншеи подстанции", lineType: "work", group: "earthworks", quantity: voltage >= 110 ? 300 : 60, unit: "m", formula: "voltage class cable trench allowance" }),
-    row({ family, code: "electrical_testing_commissioning", titleRu: "Испытания и ПНР подстанции", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
-    row({ family, code: "crane_shifts", titleRu: "Кран для монтажа оборудования", lineType: "equipment", group: "equipment", quantity: voltage >= 110 ? 6 : 1, unit: "shift", formula: "voltage class crane allowance" }),
+    row({ family, code: "cable_trench_m", titleRu: "Кабельные траншеи подстанции", lineType: "work", group: "earthworks", quantity: voltage >= 110 ? 300 : 60, unit: "m", formula: "60 + min(1, floor(voltage_kv / 110)) * 240" }),
+    row({ family, code: "electrical_testing_commissioning", titleRu: "Испытания и ПНР подстанции", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
+    row({ family, code: "crane_shifts", titleRu: "Кран для монтажа оборудования", lineType: "equipment", group: "equipment", quantity: voltage >= 110 ? 6 : 1, unit: "shift", formula: "1 + min(1, floor(voltage_kv / 110)) * 5" }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { voltage_kv: voltage }, rows, assumptions: ["Трансформаторы, РУ и автоматика выводятся как PRICE_MISSING до спецификации."], formulaSteps: ["equipment foundations and cable trench allowances depend on voltage class"], missingInputs: [...commonMissingInputs(family), "Однолинейная схема", "Спецификация оборудования"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { voltage_kv: voltage }, rows, assumptions: ["Трансформаторы, РУ и автоматика выводятся как PRICE_MISSING до спецификации."], formulaSteps: ["transformer_foundation_m3 = 12 + min(1, floor(voltage_kv / 110)) * 68", "cable_trench_m = 60 + min(1, floor(voltage_kv / 110)) * 240", "crane_shifts = 1 + min(1, floor(voltage_kv / 110)) * 5"], missingInputs: [...commonMissingInputs(family), "Однолинейная схема", "Спецификация оборудования"] });
 }
 
 export function utilityConnectionCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -2122,7 +2182,7 @@ export function thermalPowerPlantCalculator(input: CalcInput): ExpandedComplexCa
     row({ family, code: "painting_m2", titleRu: "Антикоррозионная окраска", lineType: "work", group: "coating", quantity: capacityMw * 60, unit: "m2", formula: "capacity_mw * 60" }),
     row({ family, code: "turbine_boiler_generator_equipment", titleRu: "Турбина, котёл, генератор, трансформатор", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "equipment set; PRICE_MISSING until ratebook/source selected", materialKey: "tpp_main_equipment" }),
     row({ family, code: "equipment_installation_services", titleRu: "Монтаж основного оборудования", lineType: "service", group: "installation_services", quantity: 1, unit: "set", formula: "installation services set; price missing", procurement: true }),
-    row({ family, code: "commissioning_services", titleRu: "Пусконаладка ТЭЦ", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "commissioning_services", titleRu: "Пусконаладка ТЭЦ", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
     row({ family, code: "heavy_crane_shifts", titleRu: "Тяжёлые краны", lineType: "equipment", group: "equipment", quantity: Math.ceil(capacityMw / 10), unit: "shift", formula: "ceil(capacity_mw / 10)" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_mw: capacityMw }, rows, assumptions: ["Турбины, котлы, генераторы и трансформаторы не оцениваются по цене без выбранного источника."], formulaSteps: ["civil_concrete_m3 = capacity_mw * 18", "steel_structure_t = capacity_mw * 3.2"], missingInputs: [...commonMissingInputs(family), "Тепловая схема", "Спецификация турбины/котла/генератора", "Генплан и КЖ/КМ"] });
@@ -2145,7 +2205,7 @@ export function hydroPowerPlantCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "turbines_pcs", titleRu: "Гидроагрегаты / турбины", lineType: "equipment", group: "equipment", quantity: Math.max(1, Math.ceil(capacityMw / 5)), unit: "pcs", formula: "ceil(capacity_mw / 5); PRICE_MISSING until specification", materialKey: "hydro_turbine" }),
     row({ family, code: "gates_valves", titleRu: "Затворы и гидромеханика", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "hydromechanical set; PRICE_MISSING until specification", materialKey: "hydromechanical_equipment" }),
     row({ family, code: "crane_equipment_shifts", titleRu: "Краны и монтажное оборудование", lineType: "equipment", group: "equipment", quantity: Math.ceil(capacityMw / 2), unit: "shift", formula: "ceil(capacity_mw / 2)" }),
-    row({ family, code: "commissioning_services", titleRu: "ПНР ГЭС", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "commissioning_services", titleRu: "ПНР ГЭС", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { capacity_mw: capacityMw, channel_length_m: channelLength }, rows, assumptions: ["Напор, расход и турбины не придумываются; оборудование только с PRICE_MISSING до спецификации."], formulaSteps: ["earthworks_m3 = capacity_mw * 1200 + channel_length_m * 4", "concrete_m3 = capacity_mw * 80 + channel_length_m * 0.08"], missingInputs: [...commonMissingInputs(family), "Расход и напор", "Тип гидроагрегата", "Гидрология"] });
 }
@@ -2160,13 +2220,13 @@ export function boilerHouseCalculator(input: CalcInput): ExpandedComplexCalculat
     row({ family, code: "boiler_heat_load_kw", titleRu: "Тепловая нагрузка котельной", lineType: "work", group: "engineering", quantity: heatLoadKw, unit: "set", formula: "capacity_mw * 1000" }),
     row({ family, code: "boiler_room_civil_m3", titleRu: "Строительная часть котельной", lineType: "material", group: "civil", quantity: Math.max(10, heatLoadMw * 12), unit: "m3", formula: "max(10, capacity_mw * 12)", materialKey: "boiler_civil_concrete" }),
     row({ family, code: "boiler_units_set", titleRu: "Котлы без цены до спецификации", lineType: "equipment", group: "equipment", quantity: boilerCount, unit: "pcs", formula: "boiler_count; price missing until equipment specification", materialKey: "boiler_units" }),
-    row({ family, code: "boiler_pumps_set", titleRu: "Насосные группы", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "pump group set; price missing", materialKey: "boiler_pumps" }),
+    row({ family, code: "boiler_pumps_set", titleRu: "Насосные группы", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 pump group set; price missing", materialKey: "boiler_pumps" }),
     row({ family, code: "boiler_piping_lm", titleRu: "Трубопроводная обвязка котельной", lineType: "material", group: "piping", quantity: Math.max(35, heatLoadMw * 45), unit: "m", formula: "max(35, capacity_mw * 45)", materialKey: "boiler_piping" }),
-    row({ family, code: "fuel_system_set", titleRu: "Топливное хозяйство", lineType: "equipment", group: "fuel", quantity: 1, unit: "set", formula: "fuel system set; price missing", materialKey: "boiler_fuel_system" }),
+    row({ family, code: "fuel_system_set", titleRu: "Топливное хозяйство", lineType: "equipment", group: "fuel", quantity: 1, unit: "set", formula: "1 fuel system set; price missing", materialKey: "boiler_fuel_system" }),
     row({ family, code: "chimney_lm", titleRu: "Дымоход и газоходы", lineType: "material", group: "chimney", quantity: Math.max(8, heatLoadMw * 8), unit: "m", formula: "max(8, capacity_mw * 8)", materialKey: "boiler_chimney" }),
-    row({ family, code: "water_treatment_set", titleRu: "Водоподготовка котельной", lineType: "equipment", group: "water_treatment", quantity: 1, unit: "set", formula: "water treatment set; price missing", materialKey: "boiler_water_treatment" }),
-    row({ family, code: "boiler_automation_set", titleRu: "Автоматика безопасности котельной", lineType: "equipment", group: "automation", quantity: 1, unit: "set", formula: "automation set; price missing", materialKey: "boiler_automation" }),
-    row({ family, code: "boiler_commissioning_set", titleRu: "Режимная наладка и ПНР котельной", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "water_treatment_set", titleRu: "Водоподготовка котельной", lineType: "equipment", group: "water_treatment", quantity: 1, unit: "set", formula: "1 water treatment set; price missing", materialKey: "boiler_water_treatment" }),
+    row({ family, code: "boiler_automation_set", titleRu: "Автоматика безопасности котельной", lineType: "equipment", group: "automation", quantity: 1, unit: "set", formula: "1 automation set; price missing", materialKey: "boiler_automation" }),
+    row({ family, code: "boiler_commissioning_set", titleRu: "Режимная наладка и ПНР котельной", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
   ];
   return output({
     family,
@@ -2192,7 +2252,7 @@ export function tankSiloCalculator(input: CalcInput): ExpandedComplexCalculatorO
     row({ family, code: "steel_shell_t", titleRu: "Стальная стенка и днище", lineType: "equipment", group: "materials", quantity: volumeM3 * 0.018, unit: "t", formula: "volume_m3 * 0.018", materialKey: "steel_tank_shell" }),
     row({ family, code: "tank_coating_m2", titleRu: "Антикоррозионное покрытие резервуара", lineType: "material", group: "materials", quantity: Math.pow(volumeM3, 2 / 3) * 18, unit: "m2", formula: "pow(volume_m3, 2/3) * 18", materialKey: "tank_coating" }),
     row({ family, code: "tank_erection_labor_hours", titleRu: "Монтаж корпуса и обвязки резервуара", lineType: "work", group: "labor", quantity: volumeM3 * 0.9, unit: "hour", formula: "volume_m3 * 0.9" }),
-    row({ family, code: "tank_testing", titleRu: "Испытания резервуара", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "testing set", procurement: true }),
+    row({ family, code: "tank_testing", titleRu: "Испытания резервуара", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 testing set", procurement: true }),
     row({ family, code: "crane_shifts", titleRu: "Кран монтажный", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 250), unit: "shift", formula: "ceil(volume_m3 / 250)" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { volume_m3: volumeM3 }, rows, assumptions: ["Марка стали, класс опасности и покрытие уточняются проектом."], formulaSteps: ["steel_shell_t = volume_m3 * 0.018"], missingInputs: [...commonMissingInputs(family), "Тип резервуара", "Среда хранения", "Расчёт стенки"] });
@@ -2234,7 +2294,7 @@ function solarUtilityScaleRows(input: {
     row({ family, code: "utility_solar_security_fence_m", titleRu: "Ограждение и периметровая безопасность СЭС", lineType: "material", group: "security", quantity: capacityMw * 40, unit: "m", formula: "capacity_mw * 40; requires site perimeter", materialKey: "solar_security_fence", sourceParameters: common }),
     row({ family, code: "utility_solar_foundation_piles_pcs", titleRu: "Свайные или винтовые основания опорных конструкций СЭС", lineType: "material", group: "foundations", quantity: capacityMw * 900, unit: "pcs", formula: "capacity_mw * 900; final count from module table and geotechnics", materialKey: "solar_mount_foundations", sourceParameters: common }),
     row({ family, code: "utility_solar_mounting_steel_t", titleRu: "Несущие металлоконструкции фотоэлектрического поля", lineType: "material", group: "structures", quantity: capacityMw * 45, unit: "t", formula: "capacity_mw * 45; mounting system pending fixed/tracker selection", materialKey: "solar_mounting_steel", sourceParameters: common }),
-    row({ family, code: "utility_solar_pv_modules_mw", titleRu: "Фотоэлектрические модули по установленной мощности", lineType: "equipment", group: "pv_field", quantity: capacityMw, unit: "MW", formula: "capacity_mw from user raw input", materialKey: "solar_pv_modules", sourceParameters: common }),
+    row({ family, code: "utility_solar_pv_modules_mw", titleRu: "Фотоэлектрические модули по установленной мощности", lineType: "equipment", group: "pv_field", quantity: capacityMw, unit: "MW", formula: "capacity_mw", materialKey: "solar_pv_modules", sourceParameters: common }),
     row({ family, code: "utility_solar_string_architecture_hours", titleRu: "Стринговая архитектура и расключение модульного поля", lineType: "work", group: "dc_system", quantity: capacityMw * 22, unit: "hour", formula: "capacity_mw * 22; requires module and inverter topology", sourceParameters: common }),
     row({ family, code: "utility_solar_dc_cable_m", titleRu: "DC-кабельная сеть фотоэлектрического поля", lineType: "material", group: "dc_system", quantity: capacityMw * 4500, unit: "m", formula: "capacity_mw * 4500; final route lengths from layout", materialKey: "solar_dc_cable", sourceParameters: common }),
     row({ family, code: "utility_solar_ac_cable_m", titleRu: "AC-кабельная сеть от инверторных станций", lineType: "material", group: "ac_system", quantity: capacityMw * 900, unit: "m", formula: "capacity_mw * 900; final route lengths from layout", materialKey: "solar_ac_cable", sourceParameters: common }),
@@ -2311,11 +2371,11 @@ export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalc
   }
   const rows = [
     row({ family, code: "equipment_foundations_m3", titleRu: "Фундаменты энергооборудования", lineType: "material", group: "materials", quantity: capacityMw * 20, unit: "m3", formula: "capacity_mw * 20", materialKey: "ready_mix_concrete" }),
-    row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели, ВЭУ и аккумуляторная система накопления энергии", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
+    row({ family, code: "energy_equipment_set", titleRu: "Солнечные панели, ВЭУ и аккумуляторная система накопления энергии", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 main equipment set; PRICE_MISSING until specification", materialKey: "renewable_energy_equipment" }),
     row({ family, code: "cable_m", titleRu: "Кабельные линии", lineType: "material", group: "materials", quantity: capacityMw * 180, unit: "m", formula: "capacity_mw * 180", materialKey: "power_cable" }),
     row({ family, code: "grounding_system_set", titleRu: "Заземление площадки", lineType: "material", group: "materials", quantity: 1, unit: "set", formula: "1 set", materialKey: "grounding_system" }),
     row({ family, code: "energy_installation_labor_hours", titleRu: "Монтаж энергооборудования и кабельных линий", lineType: "work", group: "labor", quantity: capacityMw * 42, unit: "hour", formula: "capacity_mw * 42" }),
-    row({ family, code: "commissioning_services", titleRu: "ПНР энергоустановки", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "commissioning set", procurement: true }),
+    row({ family, code: "commissioning_services", titleRu: "ПНР энергоустановки", lineType: "service", group: "commissioning", quantity: 1, unit: "set", formula: "1 commissioning set", procurement: true }),
   ];
   return output({
     family,
@@ -2353,13 +2413,13 @@ export function miningEarthworksCalculator(input: CalcInput): ExpandedComplexCal
   const text = normalizePrompt(input.prompt);
   const volumeM3 = numberFromText(text, [/(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/i], 50000);
   const rows = [
-    row({ family, code: "large_scale_excavation_m3", titleRu: "Крупная выемка грунта / породы", lineType: "work", group: "earthworks", quantity: volumeM3, unit: "m3", formula: "input volume_m3" }),
+    row({ family, code: "large_scale_excavation_m3", titleRu: "Крупная выемка грунта / породы", lineType: "work", group: "earthworks", quantity: volumeM3, unit: "m3", formula: "volume_m3" }),
     row({ family, code: "temporary_stabilization_geotextile_m2", titleRu: "Временный геотекстиль для технологических дорог и откосов", lineType: "material", group: "materials", quantity: Math.max(1000, Math.sqrt(volumeM3) * 18), unit: "m2", formula: "max(1000, sqrt(volume_m3) * 18)", materialKey: "geotextile" }),
     row({ family, code: "dust_suppression_water_l", titleRu: "Техническая вода для пылеподавления", lineType: "material", group: "materials", quantity: volumeM3 * 0.4, unit: "l", formula: "volume_m3 * 0.4", materialKey: "process_water" }),
     row({ family, code: "haulage_trips", titleRu: "Вывоз / перемещение горной массы", lineType: "equipment", group: "logistics", quantity: Math.ceil(volumeM3 / 18), unit: "trip", formula: "ceil(volume_m3 / 18)" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаваторы", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 2500), unit: "shift", formula: "ceil(volume_m3 / 2500)" }),
     row({ family, code: "bulldozer_shifts", titleRu: "Бульдозеры", lineType: "equipment", group: "equipment", quantity: Math.ceil(volumeM3 / 3500), unit: "shift", formula: "ceil(volume_m3 / 3500)" }),
-    row({ family, code: "survey_control", titleRu: "Геодезический контроль", lineType: "service", group: "quality", quantity: 1, unit: "set", formula: "survey control set", procurement: true }),
+    row({ family, code: "survey_control", titleRu: "Геодезический контроль", lineType: "service", group: "quality", quantity: 1, unit: "set", formula: "1 survey control set", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { volume_m3: volumeM3 }, rows, assumptions: ["Буровзрывные работы и откосы требуют ППР и проекта."], formulaSteps: ["excavator_shifts = ceil(volume_m3 / 2500)"], missingInputs: [...commonMissingInputs(family), "Категория грунта/породы", "ППР", "Транспортное плечо"] });
 }

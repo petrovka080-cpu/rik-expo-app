@@ -116,6 +116,7 @@ function baselineValue(parameter: WorkPassportParameter, rows: readonly Professi
     if (typeof candidate === "boolean" || (typeof candidate === "string" && candidate.trim())) return candidate;
   }
   if (parameter.key === "source_prompt") return titleRu;
+  if (/^(?:project_location|drawings_or_specification|equipment_specification|material_specification|geology_profile|loads|site_access|work_complexity)$/u.test(parameter.key)) return "";
   if (/(?:enabled|included|required|needed|existing|demolition|removal|testing)$/iu.test(parameter.key)) return false;
   if (/(?:count|quantity|units|number)$/iu.test(parameter.key)) return 1;
   return /(?:area|length|volume|capacity|weight|mass|power|flow|distance|height|width|depth|q)(?:_|$)/iu.test(parameter.key)

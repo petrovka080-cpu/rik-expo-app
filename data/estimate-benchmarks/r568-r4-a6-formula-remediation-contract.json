@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "r568-r4-a6-formula-remediation-contract.v1",
+  "masterSha256": "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6",
+  "predecessorDefinitionReleaseId": "fbfa7578-567e-5a42-818b-59ae7eb8c5e1",
+  "predecessorSearchReleaseId": "d6cbc196-28aa-547b-b9c1-e46adae6cca1",
+  "preQuarantineSearchReleaseId": "af2ccc6e-7739-500a-af96-8f763f74d05c",
+  "alreadyRepairedCatalogId": "canonical-work:expanded:battens_counterbattens",
+  "alreadyRepairedDefinitionVersionId": "cd6cbc08-0ce4-51ea-9663-af0b63f02c9d",
+  "denominator": {
+    "definitions": 86,
+    "definitionsAlreadyRepaired": 1,
+    "definitionsToRepair": 85,
+    "affectedRows": 3205,
+    "formulas": 3998,
+    "dynamicFormulas": 3152,
+    "explicitFixedFormulas": 846
+  },
+  "calculatorHistogram": {
+    "boilerHouseCalculator": 2,
+    "highRiseGlazingCalculator": 18,
+    "mansardRoofWindowsCalculator": 19,
+    "miningEarthworksCalculator": 11,
+    "pipeRackCalculator": 2,
+    "solarWindEnergyCalculator": 3,
+    "substationCalculator": 5,
+    "tankSiloCalculator": 13,
+    "transformerSubstationCalculator": 2,
+    "utilityConnectionCalculator": 3,
+    "wastewaterTreatmentCalculator": 5,
+    "waterTreatmentPlantCalculator": 3
+  },
+  "policy": {
+    "unresolvedFormulaParameter": "REJECT",
+    "baselineNumberSubstitution": "FORBIDDEN",
+    "calibrationByExpectedTotal": "FORBIDDEN",
+    "sourceDefinitionsImmutable": true,
+    "preserveRowsByIdAndOrdinal": true,
+    "preservePriceRoutes": true,
+    "referenceParity": "3998/3998",
+    "sensitivity": "LOWER_NOMINAL_UPPER_PER_NUMERIC_PARAMETER",
+    "activationAllowed": false
+  }
+}

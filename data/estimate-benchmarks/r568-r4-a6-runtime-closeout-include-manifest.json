@@ -4,6 +4,7 @@
   "scope": "R4-A6 exact Android API 34, formula remediation, professional BOQ, print/PDF, Group50, Platform30, M2, and global seal",
   "include": [
     "android/app/src/debug/res/xml/network_security_config.xml",
+    "data/estimate-benchmarks/r568-r4-a6-formula-remediation-contract.json",
     "data/estimate-benchmarks/r568-r4-a6-runtime-closeout-include-manifest.json",
     "scripts/dev/localDeveloperReview.contract.test.ts",
     "scripts/dev/startLocalDeveloperReview.ps1",
@@ -11,10 +12,14 @@
     "scripts/e2e/androidDeepLinkLaunchContract.ts",
     "scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts",
     "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts",
+    "scripts/estimate/p0TruthRemediationR5/prepareR4A6FormulaDependencySuccessor.ts",
+    "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts",
+    "src/lib/ai/expandedComplexWorks/index.ts",
     "tests/architecture/androidDebugDevClientNetworkSecurity.contract.test.ts",
     "tests/architecture/liveBoqPdfCatalogAndroidNativeMetro.contract.test.ts",
     "tests/e2e/androidApi34ProofEnvironment.contract.test.ts",
-    "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts"
+    "tests/e2e/androidDeepLinkLaunchContract.contract.test.ts",
+    "tests/estimateExpandedComplex/formulaDependencyOwnersR4A6.contract.test.ts"
   ],
   "excludePolicy": {
     "broadAddForbidden": true,
