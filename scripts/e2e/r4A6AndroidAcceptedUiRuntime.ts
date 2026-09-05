@@ -1201,7 +1201,18 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   if (!nodeById(estimateReady, "request-estimate-summary-card")) {
     failures.push("R4_A6_ANDROID_SUMMARY_MISSING");
   }
-  const expectedSelectedDisplayTitle = selection.expectedTitle ?? "";
+  let compiledRevision: Json | null = null;
+  try {
+    const token = await backendSessionToken();
+    compiledRevision = compiledRevisionId
+      ? await backendJson(token, `revisions/${compiledRevisionId}`)
+      : null;
+  } catch {
+    compiledRevision = null;
+  }
+  const expectedSelectedDisplayTitle = String(
+    compiledRevision?.displayTitleRu ?? "",
+  ).trim();
   const selectedWork = await seekNode(
     adbPath,
     deviceId,
@@ -1216,19 +1227,17 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   if (!selectedWorkTitleMatched) {
     failures.push("R4_A6_ANDROID_SELECTED_WORK_TITLE_RED");
   }
-  let revisionCatalogMatched = false;
-  try {
-    const token = await backendSessionToken();
-    const compiledRevision = compiledRevisionId
-      ? await backendJson(token, `revisions/${compiledRevisionId}`)
-      : null;
-    revisionCatalogMatched = compiledRevision?.catalogId === CATALOG_ID;
-  } catch {
-    revisionCatalogMatched = false;
-  }
+  const selectedTitleAuthorityMatched = Boolean(
+    selection.expectedTitle &&
+    String(compiledRevision?.canonicalWorkTitleRu ?? "")
+      .toLocaleLowerCase("ru-RU")
+      .includes(selection.expectedTitle.toLocaleLowerCase("ru-RU")),
+  );
+  const revisionCatalogMatched = compiledRevision?.catalogId === CATALOG_ID;
   const selectedCatalogMarker = Boolean(
     selection.searchCatalogMatched &&
       selection.visibleSuggestionMatched &&
+      selectedTitleAuthorityMatched &&
       selectedWorkTitleMatched &&
       revisionCatalogMatched,
   );
@@ -1382,6 +1391,7 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
     "accepted-estimate-categories",
   );
 
+  await scrollToStart(adbPath, deviceId);
   const firstQuantity = await seekNode(
     adbPath,
     deviceId,
@@ -1389,7 +1399,7 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
       node.resourceId.startsWith("consumer-repair-item-quantity-input-") &&
       node.contentDesc.startsWith(`Количество ${FIRST_FORMULA_ROW_TITLE}:`) &&
       node.text === "216",
-    16,
+    24,
   );
   const quantityFieldId = firstQuantity.node?.resourceId ?? null;
   const beforeQuantity = firstQuantity.node?.text ?? null;

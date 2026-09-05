@@ -264,7 +264,9 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain("revisionCatalogMatched");
     expect(journey).toContain("stagnantSnapshots >= 3");
     expect(journey).toContain("expectedSelectedDisplayTitle");
-    expect(journey).toContain("selection.expectedTitle ??");
+    expect(journey).toContain("compiledRevision?.displayTitleRu");
+    expect(journey).toContain("compiledRevision?.canonicalWorkTitleRu");
+    expect(journey).toContain("selectedTitleAuthorityMatched");
     expect(journey).toContain("R4_A8_ACCEPTED_WEB_REVISION_ID");
     expect(journey).not.toContain("consumer-repair-work-suggestion-catalog-");
     expect(journey).toContain("EXPECTED_CATEGORY_COUNTS");
@@ -274,6 +276,9 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain('beforeQuantity !== "216"');
     expect(journey).toContain("FIRST_FORMULA_ROW_TITLE");
     expect(journey).toContain('node.text === "216"');
+    expect(journey.indexOf('await scrollToStart(adbPath, deviceId);')).toBeLessThan(
+      journey.indexOf("const firstQuantity"),
+    );
     expect(journey).toContain("waitForChildRevisionId");
     expect(journey).toContain("waitForPhotoPermissionGate");
     expect(journey).toContain("APP_CONTENT_BOTTOM = 1828");
