@@ -101,6 +101,13 @@ function expectedPublishedParameterIds(definition: Batch003R56CanonicalSuccessor
     .sort();
 }
 
+function publishedResourceCategory(category: string): string {
+  if (category === "labor") return "construction_work";
+  if (category === "equipment") return "machine_equipment";
+  if (category === "material") return "material";
+  return "delivery";
+}
+
 async function verifyBatch003Source(client: Client, definitions: readonly Batch003R56CanonicalSuccessorDefinition[]): Promise<Json> {
   const sourceCatalogIds = definitions.map((definition) => definition.catalogId);
   const sourceDefinitions = (await client.query(`select definition.id::text,definition.catalog_id,
@@ -156,7 +163,7 @@ async function verifyBatch003Source(client: Client, definitions: readonly Batch0
     const expectedResources = definition.resources.map((resource) => ({
       row_id: resource.rowId,
       ordinal: resource.ordinal,
-      category: resource.category,
+      category: publishedResourceCategory(resource.category),
       title_ru: resource.titleRu,
       unit_id: resource.outputUnitId,
       formula_id: resource.formulaId,
