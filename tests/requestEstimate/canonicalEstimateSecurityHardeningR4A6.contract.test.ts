@@ -17,6 +17,10 @@ const photoMigration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/20260819220000_estimate_revision_photo_attachment_r55.sql"),
   "utf8",
 );
+const revisionVisibilityGrantMigration = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260905133000_r4a6_revision_visibility_execute_grant.sql"),
+  "utf8",
+);
 
 describe("R4-A6 canonical estimate security boundary", () => {
   it("uses an exact origin allowlist and never emits a wildcard CORS origin", () => {
@@ -80,5 +84,11 @@ describe("R4-A6 canonical estimate security boundary", () => {
     expect(photoMigration).toContain("a.tenant_id = v_upload.tenant_id");
     expect(photoMigration).toContain("a.parent_revision_id = v_upload.parent_revision_id");
     expect(photoMigration).toContain("a.row_id = v_upload.row_id");
+    expect(revisionVisibilityGrantMigration).toContain(
+      "revoke all on function public.estimate_revision_visible_v1(uuid) from public, anon",
+    );
+    expect(revisionVisibilityGrantMigration).toContain(
+      "grant execute on function public.estimate_revision_visible_v1(uuid) to authenticated",
+    );
   });
 });
