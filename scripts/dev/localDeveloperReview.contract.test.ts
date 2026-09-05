@@ -103,5 +103,8 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(rootLayout).toContain("hasAuthenticatedSession=");
     expect(banner).toContain("!enabled || !authSessionResolved");
     expect(banner).toContain("!authenticatedSession");
+    expect(banner).toContain("ownerSessionRestoreInFlight");
+    expect(banner).toContain("restoreOwnerSessionSingleFlight");
+    expect(banner).toContain("LOCAL_DEVELOPER_OWNER_SESSION_NOT_ESTABLISHED");
   });
 });

@@ -44,6 +44,22 @@ export function LocalDeveloperReviewBanner({
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [error, setError] = useState(false);
   const automaticLoginAttempted = useRef(false);
+  const ownerSessionRestoreInFlight = useRef<Promise<void> | null>(null);
+
+  const restoreOwnerSessionSingleFlight = (): Promise<void> => {
+    const existing = ownerSessionRestoreInFlight.current;
+    if (existing) return existing;
+    automaticLoginAttempted.current = true;
+    const restore = restoreLocalDeveloperOwnerSession();
+    ownerSessionRestoreInFlight.current = restore;
+    const clearInFlight = () => {
+      if (ownerSessionRestoreInFlight.current === restore) {
+        ownerSessionRestoreInFlight.current = null;
+      }
+    };
+    void restore.then(clearInFlight, clearInFlight);
+    return restore;
+  };
 
   useEffect(() => {
     if (!enabled || !authSessionResolved) return;
@@ -68,9 +84,16 @@ export function LocalDeveloperReviewBanner({
         !authenticatedRole &&
         !automaticLoginAttempted.current
       ) {
-        automaticLoginAttempted.current = true;
         setSavingRole("director");
-        await restoreLocalDeveloperOwnerSession();
+        await restoreOwnerSessionSingleFlight();
+      } else if (
+        !authenticatedSession &&
+        !authenticatedRole &&
+        ownerSessionRestoreInFlight.current
+      ) {
+        await ownerSessionRestoreInFlight.current;
+      } else if (!authenticatedSession && !authenticatedRole) {
+        throw new Error("LOCAL_DEVELOPER_OWNER_SESSION_NOT_ESTABLISHED");
       }
       await applyServerContext();
     };
@@ -126,7 +149,7 @@ export function LocalDeveloperReviewBanner({
               automaticLoginAttempted.current = false;
               setCheckingAccess(true);
               setSavingRole("director");
-              void restoreLocalDeveloperOwnerSession()
+              void restoreOwnerSessionSingleFlight()
                 .then(loadDeveloperOverrideContext)
                 .then((context) => {
                   setDeveloperAuthorized(isServerAuthorizedPlatformDeveloper(context));
