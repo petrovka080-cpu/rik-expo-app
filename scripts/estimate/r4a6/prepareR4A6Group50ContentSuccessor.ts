@@ -419,7 +419,10 @@ async function applySuccessor(client: Client, input: {
         definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
         default_value,constraints_json,truth_metadata,approved_template_baseline_id)
       select map.new_definition_id,source.parameter_id,source.ordinal,source.value_type,source.unit_id,
-        source.title_ru,source.required,source.default_value,source.constraints_json,
+        source.title_ru,source.required,
+        case when source.value_type='text' and not source.required
+          and coalesce(source.default_value#>>'{}','')='' then null else source.default_value end,
+        source.constraints_json,
         case when source.default_value is not null
           and source.truth_metadata#>>'{provenance,baselineOwner}'='approved-template-baseline:r54'
         then jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(
