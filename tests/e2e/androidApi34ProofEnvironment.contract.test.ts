@@ -277,6 +277,9 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain("FIRST_FORMULA_ROW_TITLE");
     expect(journey).toContain('node.text === "216"');
     expect(journey).toContain("seekNodeForwardFromAnchor");
+    expect(journey).toContain("swipeCount = 72");
+    expect(journey).toContain("anchorVisible");
+    expect(journey).toContain("anchorPredicate(candidate) && visiblePoint(candidate)");
     expect(journey).toContain("ensureEstimatePositionsExpanded");
     expect(journey).toContain("positionsExpandedForEdit");
     expect(journey.indexOf('await scrollToStart(adbPath, deviceId);')).toBeLessThan(

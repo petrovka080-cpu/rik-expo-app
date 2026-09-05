@@ -538,10 +538,11 @@ async function seekNode(
 async function scrollToStart(
   adbPath: string,
   deviceId: string,
-  swipeCount = 36,
+  swipeCount = 72,
 ): Promise<void> {
   for (let index = 0; index < swipeCount; index += 1) {
     swipe(adbPath, deviceId, "down");
+    if ((index + 1) % 8 === 0) await wait(120);
   }
   await wait(750);
 }
@@ -554,10 +555,19 @@ async function seekNodeForwardFromAnchor(
   maxForwardSwipes = 12,
 ): Promise<{ snapshot: UiSnapshot; node: UiNode | null }> {
   await scrollToStart(adbPath, deviceId);
-  const anchor = await seekNode(adbPath, deviceId, anchorPredicate, 55);
-  if (!anchor.node) return { snapshot: anchor.snapshot, node: null };
+  let snapshot = dumpUi(adbPath, deviceId);
+  let anchorVisible = snapshot.nodes.some(
+    (candidate) => anchorPredicate(candidate) && visiblePoint(candidate),
+  );
+  if (!anchorVisible) {
+    await scrollToStart(adbPath, deviceId, 24);
+    snapshot = dumpUi(adbPath, deviceId);
+    anchorVisible = snapshot.nodes.some(
+      (candidate) => anchorPredicate(candidate) && visiblePoint(candidate),
+    );
+  }
+  if (!anchorVisible) return { snapshot, node: null };
 
-  let snapshot = anchor.snapshot;
   for (let index = 0; index <= maxForwardSwipes; index += 1) {
     const node =
       snapshot.nodes.find(
