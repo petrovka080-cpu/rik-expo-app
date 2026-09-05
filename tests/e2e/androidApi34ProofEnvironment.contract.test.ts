@@ -250,6 +250,8 @@ describe("Android API34 proof environment", () => {
     const journey = read("scripts/e2e/r4A6AndroidAcceptedUiRuntime.ts");
 
     expect(liveSmoke).toContain("runR4A6AndroidAcceptedUiRuntime");
+    expect(liveSmoke).toContain("process.env.R4_A8_ANDROID_ARTIFACT_DIR");
+    expect(liveSmoke).toContain("DEFAULT_ARTIFACT_DIR");
     expect(liveSmoke).toContain("exact_catalog_ui_selection_required: true");
     expect(journey).toContain('"canonical-work:expanded:battens_counterbattens"');
     expect(journey).toContain('"Кровля, мансарды и кровельные окна: обрешётка и контробрешётка 200 кв метров"');

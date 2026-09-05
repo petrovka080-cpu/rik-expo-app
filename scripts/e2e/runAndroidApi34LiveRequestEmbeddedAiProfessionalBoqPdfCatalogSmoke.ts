@@ -40,10 +40,14 @@ import {
   type R4A6AndroidAcceptedJourneyResult,
 } from "./r4A6AndroidAcceptedUiRuntime";
 
-const ARTIFACT_DIR = path.join(
+const DEFAULT_ARTIFACT_DIR = path.join(
   process.cwd(),
   "artifacts",
   "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG",
+);
+const ARTIFACT_DIR = path.resolve(
+  process.cwd(),
+  String(process.env.R4_A8_ANDROID_ARTIFACT_DIR ?? "").trim() || DEFAULT_ARTIFACT_DIR,
 );
 const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "android_api34", "screenshots");
 const UI_DUMP_DIR = path.join(ARTIFACT_DIR, "android_api34", "ui_dumps");
