@@ -192,8 +192,8 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
     from public.estimate_cumulative_manifest_entry where release_id=$1`, [releaseId])).rows[0] as Json;
   const pump = (await client.query(`select manifest.definition_version_id::text,
       manifest.approved_template_baseline_id::text,
-      jsonb_object_length(baseline.input_values)::int baseline_values,
-      jsonb_object_length(baseline.input_classification)::int baseline_classifications,
+      (select count(*)::int from jsonb_object_keys(baseline.input_values)) baseline_values,
+      (select count(*)::int from jsonb_object_keys(baseline.input_classification)) baseline_classifications,
       (select count(*)::int from public.estimate_parameter_definition parameter
         where parameter.definition_version_id=manifest.definition_version_id) parameters,
       (select count(*)::int from public.estimate_parameter_definition parameter
