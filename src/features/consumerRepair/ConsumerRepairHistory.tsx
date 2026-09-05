@@ -381,7 +381,12 @@ function ApprovedHistorySnapshot({
       <Text style={styles.snapshotTitle}>{viewModel.summary || viewModel.title}</Text>
       <Text style={styles.snapshotMeta}>Итого: {viewModel.totalLabel}</Text>
       {canonical ? (
-        <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-snapshot-release-id" />
+        <View
+          accessible={false}
+          nativeID={`consumer-repair-history-snapshot-release-id|${canonical.revisionId}|${canonical.releaseId}`}
+          style={styles.identityMarker}
+          testID="consumer-repair-history-snapshot-release-id"
+        />
       ) : null}
       {canonicalPdf ? (
         <View accessible={false} style={styles.identityMarker} testID="consumer-repair-history-backend-pdf-artifact" />

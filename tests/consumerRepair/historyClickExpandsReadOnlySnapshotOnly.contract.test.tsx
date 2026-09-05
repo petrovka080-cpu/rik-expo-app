@@ -3,6 +3,7 @@ import { Text } from "react-native";
 import TestRenderer, { act } from "react-test-renderer";
 
 import { ConsumerRepairHistory } from "../../src/features/consumerRepair/ConsumerRepairHistory";
+import { primaryConsumerRepairCanonicalBackendBinding } from "../../src/features/consumerRepair/consumerRepairBackendOwnership";
 import {
   __resetConsumerRepairRequestStoreForTests,
   listConsumerRepairApprovedHistory,
@@ -25,6 +26,8 @@ describe("history click expands read-only snapshot only", () => {
 
   it("does not restore an approved history item into the active draft editor", () => {
     const approved = createApprovedConsumerRepairRequest();
+    const canonical = primaryConsumerRepairCanonicalBackendBinding(approved);
+    expect(canonical).not.toBeNull();
     const approvedHistoryPage = listConsumerRepairApprovedHistory(CONSUMER_REPAIR_TEST_USER_ID);
     const onOpenPdf = jest.fn();
     const onOpenDraft = jest.fn();
@@ -94,6 +97,9 @@ describe("history click expands read-only snapshot only", () => {
     expect(
       renderer.root.findAllByProps({ testID: "consumer-repair-history-readonly-snapshot" }).length,
     ).toBeGreaterThan(0);
+    expect(
+      renderer.root.findByProps({ testID: "consumer-repair-history-snapshot-release-id" }).props.nativeID,
+    ).toBe(`consumer-repair-history-snapshot-release-id|${canonical?.revisionId}|${canonical?.releaseId}`);
     expect(renderer.root.findAllByProps({ testID: "consumer-repair-history-readonly-item" }).length).toBeGreaterThan(0);
     expect(renderer.root.findAllByProps({ testID: "request-estimate-items-editor" })).toHaveLength(0);
     expect(JSON.stringify(renderer.toJSON()).toLocaleLowerCase("ru-RU")).toContain("ламинат");

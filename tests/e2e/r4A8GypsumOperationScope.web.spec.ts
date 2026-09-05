@@ -162,14 +162,20 @@ test.describe("R4-A8 W3/W4 exact gypsum operation scope", () => {
       await page.getByTestId("consumer-repair-address-input").fill("проспект Манаса, 64");
       await page.getByTestId("consumer-repair-phone-input").fill("+996700000000");
       await page.getByTestId("consumer-repair-approve").last().click();
+      await expect(page.getByTestId("consumer-repair-status")).toContainText(/утверждена/iu, {
+        timeout: 180_000,
+      });
       await expect(page.getByTestId("consumer-repair-history-approved-count")).toHaveText("1", { timeout: 180_000 });
       await page.getByTestId("consumer-repair-history-button").click();
       await expect(page.getByTestId("consumer-repair-history-modal")).toBeVisible({ timeout: 60_000 });
-      await page.getByTestId("consumer-repair-history-main").first().click();
+      const approvedHistoryMain = page.getByTestId("consumer-repair-history-main").first();
+      await expect(approvedHistoryMain).toHaveAttribute("aria-label", /историю заявки/iu, { timeout: 60_000 });
+      await approvedHistoryMain.click();
       await expect(page.getByTestId("consumer-repair-history-readonly-snapshot")).toBeVisible({ timeout: 60_000 });
       await expect(page.getByTestId("consumer-repair-history-readonly-item")).toHaveCount(scenario.expectedRows);
-      await expect(page.getByTestId("consumer-repair-history-snapshot-release-id")).toContainText(
-        CURRENT_RELEASE.definitionReleaseId,
+      await expect(page.getByTestId("consumer-repair-history-snapshot-release-id")).toHaveAttribute(
+        "id",
+        `consumer-repair-history-snapshot-release-id|${revisionId}|${CURRENT_RELEASE.definitionReleaseId}`,
       );
       await expect(page.getByTestId("consumer-repair-history-backend-pdf-artifact")).toHaveCount(1);
       await page.getByTestId("consumer-repair-history-send-market").click();
