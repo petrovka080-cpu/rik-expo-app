@@ -3,8 +3,10 @@ import { pumpingStationCalculator } from "../ai/expandedComplexWorks";
 import {
   evaluateR4A6PumpStationRows,
   missingR4A6PumpStationP0,
+  parseR4A6PumpStationPrompt,
   R4_A6_PUMP_STATION_CATALOG_ID,
   R4_A6_PUMP_STATION_PARAMETERS,
+  R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID,
   R4_A6_PUMP_STATION_ROWS,
 } from "./r4A6PumpStationProfessional";
 
@@ -52,6 +54,7 @@ describe("R4-A8 W5 professional pump station", () => {
   });
 
   it("parses normal Russian units in the full W5 prompt and exposes all 31 rows", () => {
+    const parsed = parseR4A6PumpStationPrompt(fixture.fullPromptRu);
     const output = pumpingStationCalculator({ prompt: fixture.fullPromptRu });
     const rows = outputRows(output);
 
@@ -59,7 +62,9 @@ describe("R4-A8 W5 professional pump station", () => {
     expect(output.missing_design_inputs).toEqual([]);
     expect(rows).toHaveLength(fixture.expectedRowCount);
     expect(new Set(rows.map((row) => row.code)).size).toBe(fixture.expectedRowCount);
+    expect(parsed).toEqual(fixture.parameters);
     expect(Object.keys(output.input_parameters)).toHaveLength(fixture.expectedParameterCount);
+    expect(R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID).toBe("duty_pump_count");
     expect(output.input_parameters).toMatchObject({
       design_flow_m3_h: 120,
       design_head_m: 55,

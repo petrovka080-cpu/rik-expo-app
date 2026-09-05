@@ -18,6 +18,11 @@ import {
   verifyForemanAiEstimatePayloadParity,
   type ForemanAiEstimateDraftMapping,
 } from "../../lib/foremanAiEstimate";
+import {
+  parseR4A6PumpStationPrompt,
+  R4_A6_PUMP_STATION_CATALOG_ID,
+  R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID,
+} from "../../lib/estimate/r4A6PumpStationProfessional";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -179,7 +184,10 @@ export function buildCanonicalBaselinePlan(input: {
     if (value !== undefined) baselineInputs[parameter.parameterId] = value;
   }
   const submittedInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
-  const userQuantity = extractUserQuantity(input.prompt);
+  const pumpStationInput = input.catalog.catalogId === R4_A6_PUMP_STATION_CATALOG_ID
+    ? parseR4A6PumpStationPrompt(input.prompt)
+    : null;
+  const userQuantity = pumpStationInput == null ? extractUserQuantity(input.prompt) : null;
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const candidates = input.catalog.parameterSchema
@@ -192,8 +200,13 @@ export function buildCanonicalBaselinePlan(input: {
       userQuantityParameterId = target.parameter.parameterId;
     }
   }
-  Object.assign(submittedInputs, promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt));
-  const primaryMeasureParameterId = userQuantityParameterId
+  Object.assign(
+    submittedInputs,
+    pumpStationInput ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
+  );
+  const primaryMeasureParameterId = pumpStationInput != null
+    ? R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID
+    : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
       .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")

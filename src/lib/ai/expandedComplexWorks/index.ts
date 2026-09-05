@@ -20,6 +20,7 @@ import {
 import {
   evaluateR4A6PumpStationRows,
   missingR4A6PumpStationP0,
+  parseR4A6PumpStationPrompt,
   R4_A6_PUMP_STATION_PARAMETERS,
   R4_A6_PUMP_STATION_TITLE_RU,
 } from "../../estimate/r4A6PumpStationProfessional";
@@ -1507,49 +1508,7 @@ export function wastewaterTreatmentCalculator(input: CalcInput): ExpandedComplex
 
 export function pumpingStationCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   const family = familyForCalculator(input, "pumping_station");
-  const text = normalizePrompt(input.prompt);
-  const numeric = (patterns: RegExp[]): number | undefined => {
-    const value = numberFromText(text, patterns, Number.NaN);
-    return Number.isFinite(value) && value > 0 ? value : undefined;
-  };
-  const explicitText = (pattern: RegExp): string | undefined => {
-    const value = pattern.exec(input.prompt)?.[1]?.trim();
-    return value || undefined;
-  };
-  const foundation = /(?:фундамент[\p{L}\p{M}-]*|плит[\p{L}\p{M}-]*)\D{0,24}(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)\s*[xх×]\s*(\d+(?:[,.]\d+)?)/iu.exec(text);
-  const parsedValues: Record<string, number | string | boolean | null | undefined> = {
-    design_flow_m3_h: numeric([/(?:расход|подач|производительност)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м3\/ч|м³\/ч|m3\/h)/iu]),
-    design_head_m: numeric([/(?:напор)\D{0,16}(\d+(?:[,.]\d+)?)\s*(?:м|m)(?=$|[\s,.;:()])/iu]),
-    duty_pump_count: numeric([/(\d+)\s*(?:рабоч(?:их|ий)|основн(?:ых|ой))\s+насос/iu]),
-    standby_pump_count: numeric([/(\d+)\s*(?:резервн(?:ых|ый))\s+насос/iu]),
-    pump_power_kw: numeric([/(?:мощност[\p{L}\p{M}-]*\s+(?:одного\s+)?насос[\p{L}\p{M}-]*|насос[\p{L}\p{M}-]*\s+мощност[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:квт|kw)(?=$|[\s,.;:()])/iu]),
-    suction_manifold_diameter_mm: numeric([/(?:всасывающ[\p{L}\p{M}-]*\s+коллектор[\p{L}\p{M}-]*|коллектор[\p{L}\p{M}-]*\s+всасывающ[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:мм|mm)(?=$|[\s,.;:()])/iu]),
-    discharge_manifold_diameter_mm: numeric([/(?:напорн[\p{L}\p{M}-]*\s+коллектор[\p{L}\p{M}-]*|коллектор[\p{L}\p{M}-]*\s+напорн[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:мм|mm)(?=$|[\s,.;:()])/iu]),
-    suction_manifold_length_m: numeric([/(?:длина\s+)?всасывающ[\p{L}\p{M}-]*\s+коллектор[\p{L}\p{M}-]*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)(?=$|[\s,.;:()])/iu]),
-    discharge_manifold_length_m: numeric([/(?:длина\s+)?напорн[\p{L}\p{M}-]*\s+коллектор[\p{L}\p{M}-]*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)(?=$|[\s,.;:()])/iu]),
-    power_cable_length_m: numeric([/(?:силов[\p{L}\p{M}-]*\s+кабел[\p{L}\p{M}-]*|кабельн[\p{L}\p{M}-]*\s+трасс[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м|m)(?=$|[\s,.;:()])/iu]),
-    foundation_length_m: foundation ? parseLocalizedNumber(foundation[1]) : undefined,
-    foundation_width_m: foundation ? parseLocalizedNumber(foundation[2]) : undefined,
-    foundation_thickness_m: foundation ? parseLocalizedNumber(foundation[3]) : undefined,
-    automation_scope: explicitText(/автоматик[\p{L}\p{M}-]*\s*[:=-]\s*([^.;\n]{3,300})/iu),
-    power_supply_voltage_v: numeric([/(?:напряжен[\p{L}\p{M}-]*|питан[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:в|v)(?=$|[\s,.;:()])/iu]),
-    ventilation_required: /без\s+(?:механическ[\p{L}\p{M}-]*\s+)?вентиляц/iu.test(text) ? false : /вентиляц/iu.test(text) ? true : undefined,
-    ventilation_airflow_m3_h: numeric([/(?:вентиляц[\p{L}\p{M}-]*|расход\s+воздух[\p{L}\p{M}-]*)\D{0,24}(\d+(?:[,.]\d+)?)\s*(?:м3\/ч|м³\/ч|m3\/h)/iu]),
-    drainage_required: /без\s+(?:дренаж[\p{L}\p{M}-]*|приямк[\p{L}\p{M}-]*)/iu.test(text) ? false : /дренаж|приям/iu.test(text) ? true : undefined,
-    drainage_sump_volume_m3: numeric([/(?:дренаж[\p{L}\p{M}-]*\s+приям[\p{L}\p{M}-]*|приям[\p{L}\p{M}-]*)\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:м3|м³|m3)/iu]),
-    lifting_device_required: /без\s+(?:кран-балк|тельфер|грузоподъ[её]мн)/iu.test(text)
-      ? false
-      : /кран-балк|тельфер|грузоподъ[её]мн/iu.test(text)
-        ? true
-        : undefined,
-    delivery_required: /без\s+достав/iu.test(text) ? false : /достав/iu.test(text) ? true : undefined,
-    delivery_distance_km: numeric([/достав[\p{L}\p{M}-]*\D{0,20}(\d+(?:[,.]\d+)?)\s*(?:км|km)/iu]),
-    project_location: explicitText(/площадк[\p{L}\p{M}-]*(?:\s+строительств[\p{L}\p{M}-]*)?\s*[:=-]\s*([^.;\n]{3,200})/iu),
-    equipment_specification: explicitText(/спецификац[\p{L}\p{M}-]*\s+насос[\p{L}\p{M}-]*\s+оборудован[\p{L}\p{M}-]*\s*[:=-]\s*([^.;\n]{3,300})/iu),
-  };
-  const values = Object.fromEntries(
-    Object.entries(parsedValues).filter((entry): entry is [string, number | string | boolean | null] => entry[1] !== undefined),
-  );
+  const values = parseR4A6PumpStationPrompt(input.prompt);
   const missingIds = missingR4A6PumpStationP0(values);
   if (missingIds.length > 0) {
     const labels = new Map(R4_A6_PUMP_STATION_PARAMETERS.map((parameter) => [parameter.parameterId, parameter.titleRu]));
