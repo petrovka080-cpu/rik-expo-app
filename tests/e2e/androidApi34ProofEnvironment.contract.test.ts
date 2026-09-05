@@ -264,7 +264,8 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain("revisionCatalogMatched");
     expect(journey).toContain("stagnantSnapshots >= 3");
     expect(journey).toContain("expectedSelectedDisplayTitle");
-    expect(journey).toContain("— 200 м²");
+    expect(journey).toContain("selection.expectedTitle ??");
+    expect(journey).toContain("R4_A8_ACCEPTED_WEB_REVISION_ID");
     expect(journey).not.toContain("consumer-repair-work-suggestion-catalog-");
     expect(journey).toContain("EXPECTED_CATEGORY_COUNTS");
     expect(journey).toContain('"delivery",\n  "all",');
@@ -278,6 +279,8 @@ describe("Android API34 proof environment", () => {
     expect(journey).toContain("APP_CONTENT_BOTTOM = 1828");
     expect(journey).toContain("cameraPermissionDialogDismissed");
     expect(journey).toContain("tapNodeIncludingBottomSheet");
+    expect(journey).toContain("dismissReactNativeWarningOverlay");
+    expect(journey).toContain("tapBottomSheetPrimaryAction");
     expect(journey).toContain('node.contentDesc.startsWith("Прикреплённое фото ")');
     expect(journey).toContain("childRevisionId: changedRevisionId");
     expect(journey).toContain("R4_A6_ANDROID_PHOTO_ATOMIC_AUDIT_RED");

@@ -9,5 +9,7 @@ describe("photo review gate", () => {
     expect(flow.indexOf("service.queueUpload")).toBeGreaterThan(flow.indexOf("handleUsePhoto"));
     expect(flow.indexOf("service.completeQueuedUploads")).toBeGreaterThan(flow.indexOf("service.queueUpload"));
     expect(flow.indexOf("service.attachCapturedPhotoToScan")).toBeGreaterThan(flow.indexOf("service.completeQueuedUploads"));
+    expect(flow.match(/if \(nextAsset\) \{\s*setErrorMessage\(null\);/gu)).toHaveLength(3);
+    expect(flow).toMatch(/if \(!asset\) return;\s*setErrorMessage\(null\);\s*setCameraState\("STAGING"\);/u);
   });
 });

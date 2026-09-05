@@ -221,6 +221,7 @@ export function MobilePhotoCaptureFlow({
   const handleSystemCamera = async () => {
     const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
+      setErrorMessage(null);
       setAsset(nextAsset);
       setCameraState("REVIEWING");
     }
@@ -229,6 +230,7 @@ export function MobilePhotoCaptureFlow({
   const handlePickPhoto = async () => {
     const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
+      setErrorMessage(null);
       setAsset(nextAsset);
       setCameraState("REVIEWING");
     }
@@ -237,6 +239,7 @@ export function MobilePhotoCaptureFlow({
   const handleRestorePending = async () => {
     const nextAsset = await service.restorePendingSystemResult({ scanId, kind: selectedKind, storageIdentity });
     if (nextAsset) {
+      setErrorMessage(null);
       setAsset(nextAsset);
       setCameraState("REVIEWING");
     }
@@ -244,6 +247,7 @@ export function MobilePhotoCaptureFlow({
 
   const handleUsePhoto = async () => {
     if (!asset) return;
+    setErrorMessage(null);
     setCameraState("STAGING");
     try {
       if (commitPhotoOnUse) {

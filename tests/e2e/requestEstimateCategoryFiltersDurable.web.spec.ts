@@ -8,9 +8,11 @@ const STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const PROMPT = "Кровля, мансарды и кровельные окна: обрешётка и контробрешётка 200 кв метров";
 const CATALOG_ID = "canonical-work:expanded:battens_counterbattens";
 const ARTIFACT_DIR = path.resolve(
-  process.cwd(),
-  "artifacts",
-  "S_REQUEST_ESTIMATE_CATEGORY_FILTERS_DURABLE_WEB",
+  String(process.env.R4_A8_WEB_ARTIFACT_DIR ?? "").trim() || path.join(
+    process.cwd(),
+    "artifacts",
+    "S_REQUEST_ESTIMATE_CATEGORY_FILTERS_DURABLE_WEB",
+  ),
 );
 
 const CATEGORY_FILTER_IDS = ["materials", "labor", "machinery", "services", "delivery"] as const;
@@ -60,6 +62,15 @@ test.describe("durable request estimate category controls", () => {
     });
     page.on("pageerror", (error) => {
       consoleErrors.push(error.message);
+    });
+    const acceptedArtifactRevisions = new Map<string, string>();
+    page.on("response", (response) => {
+      const match = new URL(response.url()).pathname.match(
+        /^\/revisions\/([0-9a-f-]{36})\/artifacts\/(pdf|procurement)$/iu,
+      );
+      if (match && response.request().method() === "POST" && response.status() === 202) {
+        acceptedArtifactRevisions.set(match[2], match[1]);
+      }
     });
 
     await ensureConsumerSession(page);
@@ -202,6 +213,10 @@ test.describe("durable request estimate category controls", () => {
     await page.getByTestId("consumer-repair-history-send-market").click();
     await expect(page.getByTestId("consumer-repair-status")).toContainText("отправлена в маркет", { timeout: 90_000 });
     await expect(page.getByTestId("consumer-repair-history-backend-procurement-artifact")).toHaveCount(1);
+    const pdfRevisionId = acceptedArtifactRevisions.get("pdf") ?? null;
+    const procurementRevisionId = acceptedArtifactRevisions.get("procurement") ?? null;
+    expect(pdfRevisionId).toMatch(/^[0-9a-f-]{36}$/iu);
+    expect(procurementRevisionId).toBe(pdfRevisionId);
     expect(consoleErrors.join("\n")).not.toMatch(/runtime-manifest request timed out|ConsumerRepairApprove.*failed/iu);
 
     const approvedScreenshotPath = path.join(ARTIFACT_DIR, "approved-history.png");
@@ -225,6 +240,7 @@ test.describe("durable request estimate category controls", () => {
         approvedHistoryRowCount: 45,
         canonicalPdfArtifactReady: true,
         canonicalProcurementArtifactReady: true,
+        acceptedRevisionId: pdfRevisionId,
         runtimeManifestTimeoutObserved: false,
         screenshots: {
           verticalFilters: path.relative(process.cwd(), filterScreenshotPath).replace(/\\/g, "/"),

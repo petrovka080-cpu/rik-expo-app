@@ -24,7 +24,9 @@ const PROMPT =
 const CATALOG_ID = "canonical-work:expanded:battens_counterbattens";
 const FIRST_FORMULA_ROW_TITLE =
   "Металлочерепица кровельного покрытия мансарды";
-const ACCEPTED_WEB_REVISION_ID = "a30c6367-bf9c-4003-b638-8dc4173d1228";
+const ACCEPTED_WEB_REVISION_ID = String(
+  process.env.R4_A8_ACCEPTED_WEB_REVISION_ID ?? "",
+).trim();
 const EXPECTED_CATEGORY_COUNTS = {
   all: 45,
   materials: 22,
@@ -401,6 +403,68 @@ function tapNodeIncludingBottomSheet(
       "tap",
       String(Math.round((box.left + box.right) / 2)),
       String(Math.round((top + bottom) / 2)),
+    ],
+    10_000,
+  ).ok;
+}
+
+async function dismissReactNativeWarningOverlay(
+  adbPath: string,
+  deviceId: string,
+): Promise<boolean> {
+  const snapshot = dumpUi(adbPath, deviceId);
+  const overlay = snapshot.nodes.find((node) =>
+    node.contentDesc.includes("VirtualizedLists should never be nested"),
+  );
+  if (!overlay) return true;
+  const box = bounds(overlay);
+  if (!box) return false;
+  const dismissed = runText(
+    adbPath,
+    [
+      "-s",
+      deviceId,
+      "shell",
+      "input",
+      "tap",
+      String(Math.max(box.left + 1, box.right - 58)),
+      String(Math.round((box.top + box.bottom) / 2)),
+    ],
+    10_000,
+  ).ok;
+  if (!dismissed) return false;
+  const cleared = await waitForSnapshot(
+    adbPath,
+    deviceId,
+    (candidate) => !candidate.nodes.some((node) =>
+      node.contentDesc.includes("VirtualizedLists should never be nested"),
+    ),
+    10_000,
+  );
+  return !cleared.nodes.some((node) =>
+    node.contentDesc.includes("VirtualizedLists should never be nested"),
+  );
+}
+
+function tapBottomSheetPrimaryAction(
+  adbPath: string,
+  deviceId: string,
+  node: UiNode,
+): boolean {
+  const box = bounds(node);
+  if (!box) return false;
+  const y = Math.min(box.bottom - 24, 2320);
+  if (y <= box.top) return false;
+  return runText(
+    adbPath,
+    [
+      "-s",
+      deviceId,
+      "shell",
+      "input",
+      "tap",
+      String(Math.round((box.left + box.right) / 2)),
+      String(Math.round(y)),
     ],
     10_000,
   ).ok;
@@ -1036,7 +1100,10 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   const auditStart = auditBefore.length;
   const acceptedWebRevisionIds = revisionIdsWithAcceptedArtifacts(auditBefore);
   const previousAcceptedWebRevisionId = ACCEPTED_WEB_REVISION_ID;
-  if (!acceptedWebRevisionIds.includes(previousAcceptedWebRevisionId)) {
+  if (
+    !/^[0-9a-f-]{36}$/iu.test(previousAcceptedWebRevisionId) ||
+    !acceptedWebRevisionIds.includes(previousAcceptedWebRevisionId)
+  ) {
     failures.push("R4_A6_ACCEPTED_WEB_ARTIFACT_BASELINE_RED");
   }
   const localApkSha256 = sha256File(apkPath);
@@ -1134,9 +1201,7 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
   if (!nodeById(estimateReady, "request-estimate-summary-card")) {
     failures.push("R4_A6_ANDROID_SUMMARY_MISSING");
   }
-  const expectedSelectedDisplayTitle = selection.expectedTitle
-    ? `${selection.expectedTitle} — 200 м²`
-    : "";
+  const expectedSelectedDisplayTitle = selection.expectedTitle ?? "";
   const selectedWork = await seekNode(
     adbPath,
     deviceId,
@@ -1436,8 +1501,17 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
     30_000,
   );
   const reviewOpened = Boolean(nodeById(review, "mobile-photo-review-screen"));
-  const usePhoto = nodeById(review, "mobile-photo-use");
-  if (!usePhoto || !tapNodeIncludingBottomSheet(adbPath, deviceId, usePhoto)) {
+  const warningOverlayDismissed = await dismissReactNativeWarningOverlay(
+    adbPath,
+    deviceId,
+  );
+  const reviewAfterOverlay = dumpUi(adbPath, deviceId);
+  const usePhoto = nodeById(reviewAfterOverlay, "mobile-photo-use");
+  if (
+    !warningOverlayDismissed ||
+    !usePhoto ||
+    !tapBottomSheetPrimaryAction(adbPath, deviceId, usePhoto)
+  ) {
     failures.push("R4_A6_ANDROID_PHOTO_COMMIT_ACTION_RED");
   }
   const attached = await seekNode(
