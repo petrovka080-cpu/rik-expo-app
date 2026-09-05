@@ -34,8 +34,8 @@ const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6_CANONICAL_MONOLITH_PROFESSIONAL_ESTIMATE_PRINT_PDF_FORMULA_REMEDIATION_ANDROID_API34_GROUP50_71040_GLOBAL_GREEN_RU.md",
 );
 const MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
-const RELEASE_ID = "ad825133-a41e-527d-a2f2-e1dd0e65ea86";
-const SEARCH_RELEASE_ID = "0a1f5b96-24c1-5e2f-8ac4-edecab5ed3b6";
+const RELEASE_ID = "de952048-ed95-50c9-b776-68e5280a7e0d";
+const SEARCH_RELEASE_ID = "5f1efe11-683b-51b9-980a-41acd5f449ee";
 const IDENTITY_PATH = resolve(
   ".release-runtime/r568/rc09-identity-v1/current-identity-manifest-11610.jsonl",
 );
