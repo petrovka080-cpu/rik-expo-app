@@ -46,6 +46,7 @@ describe("R4-A8 W5 professional pump station", () => {
     expect(R4_A6_PUMP_STATION_ROWS).toHaveLength(fixture.expectedRowCount);
     expect(rows).toHaveLength(fixture.expectedRowCount);
     expect(new Set(rows.map((row) => row.rowId)).size).toBe(fixture.expectedRowCount);
+    expect(new Set(rows.map((row) => row.scopeOwner)).size).toBe(fixture.expectedRowCount);
     expect(rows.every((row) => Number.isFinite(row.quantity) && row.quantity > 0)).toBe(true);
     expect(rows.find((row) => row.rowId === "foundation_concrete_m3")?.quantity).toBe(14.4);
     expect(rows.find((row) => row.rowId === "duty_pump_units")?.quantity).toBe(2);

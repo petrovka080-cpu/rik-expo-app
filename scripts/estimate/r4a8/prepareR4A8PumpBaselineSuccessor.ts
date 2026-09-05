@@ -5,16 +5,18 @@ import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
 
+import { R4_A6_PUMP_STATION_ROWS } from "../../../src/lib/estimate/r4A6PumpStationProfessional";
+
 type Json = Record<string, any>;
 
 const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
 const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
-const PREDECESSOR_RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979";
-const PREDECESSOR_SEARCH_RELEASE_ID = "3bb74464-9773-5364-a4f0-4e542b45f62a";
+const PREDECESSOR_RELEASE_ID = "73c11949-d5c9-5e41-8aba-d437ba31cdf6";
+const PREDECESSOR_SEARCH_RELEASE_ID = "d823f96f-b085-533d-b7e6-9097fdbe402a";
 const PUMP_CATALOG_ID = "canonical-work:expanded:booster_pumping_station";
-const CONTRACT = "rik-expo-app.r568.r4-a8-pump-empty-baseline-successor.v1";
+const CONTRACT = "rik-expo-app.r568.r4-a8-pump-empty-baseline-successor.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const ACCEPTANCE_FIXTURE_PATH = resolve(
   "data/estimate-benchmarks/r568-r4-a8-pump-station-acceptance.json",
@@ -205,7 +207,11 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
       (select count(*)::int from public.estimate_formula_graph formula
         where formula.definition_version_id=manifest.definition_version_id) formulas,
       (select count(*)::int from public.estimate_resource_spec resource
-        where resource.definition_version_id=manifest.definition_version_id) resources
+        where resource.definition_version_id=manifest.definition_version_id) resources,
+      (select count(distinct resource.semantic_owner)::int from public.estimate_resource_spec resource
+        where resource.definition_version_id=manifest.definition_version_id) semantic_owners,
+      (select count(distinct resource.cost_owner_id)::int from public.estimate_resource_spec resource
+        where resource.definition_version_id=manifest.definition_version_id) cost_owners
     from public.estimate_cumulative_manifest_entry manifest
     join public.estimate_approved_template_baseline baseline
       on baseline.id=manifest.approved_template_baseline_id
@@ -225,7 +231,8 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
   `STOP_R4_A8_PUMP_MANIFEST_AUDIT:${stableJson(manifest)}`);
   invariant(Number(pump.baseline_values) === 0 && Number(pump.baseline_classifications) === 0
     && Number(pump.parameters) === 24 && Number(pump.p0_parameters) === 19 && Number(pump.defaults) === 0
-    && Number(pump.formulas) === 31 && Number(pump.resources) === 31,
+    && Number(pump.formulas) === 31 && Number(pump.resources) === 31
+    && Number(pump.semantic_owners) === 31 && Number(pump.cost_owners) === 31,
   `STOP_R4_A8_PUMP_BASELINE_AUDIT:${stableJson(pump)}`);
   invariant(Number(search.documents) === 10_322 && Number(search.visible) === 10_322
     && Number(search.release_binding_drift) === 0,
@@ -257,6 +264,7 @@ async function main(): Promise<void> {
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
   const baselineId = uuid(`${CONTRACT}:${fingerprint}:baseline:${PUMP_CATALOG_ID}`);
+  const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${PUMP_CATALOG_ID}`);
   const releaseKey = `r568-r4-a8-pump-baseline-${fingerprint.slice(0, 16)}`;
   const client = new Client({ connectionString: DATABASE_URL });
   await client.connect();
@@ -272,7 +280,8 @@ async function main(): Promise<void> {
       '{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb) allowed`)).rows[0]?.allowed;
     invariant(emptyBaselineAllowed === true, "STOP_R4_A8_EMPTY_BASELINE_MIGRATION_NOT_APPLIED");
     const pump = (await client.query(`select manifest.definition_version_id::text,
-        manifest.approved_template_baseline_id::text,definition.source_metadata,
+        manifest.approved_template_baseline_id::text,definition.definition_sha256,definition.source_metadata,
+        (select count(*)::int from jsonb_object_keys(baseline.input_values)) baseline_values,
         (select count(*)::int from public.estimate_parameter_definition parameter
           where parameter.definition_version_id=manifest.definition_version_id) parameters,
         (select count(*)::int from public.estimate_parameter_definition parameter
@@ -287,8 +296,10 @@ async function main(): Promise<void> {
           where resource.definition_version_id=manifest.definition_version_id) resources
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
+      join public.estimate_approved_template_baseline baseline on baseline.id=manifest.approved_template_baseline_id
       where manifest.release_id=$1 and manifest.catalog_id=$2`, [PREDECESSOR_RELEASE_ID, PUMP_CATALOG_ID])).rows[0] as Json;
-    invariant(pump && pump.approved_template_baseline_id == null && Number(pump.parameters) === 24
+    invariant(pump && typeof pump.approved_template_baseline_id === "string" && Number(pump.baseline_values) === 0
+      && Number(pump.parameters) === 24
       && Number(pump.p0_parameters) === 19 && Number(pump.defaults) === 0
       && Number(pump.formulas) === 31 && Number(pump.resources) === 31,
     `STOP_R4_A8_PUMP_PREDECESSOR_WITNESS:${stableJson(pump)}`);
@@ -298,6 +309,45 @@ async function main(): Promise<void> {
       pump.definition_version_id,
     ])).rows as Json[];
     const parameterSchemaSha256 = shaObject(parameterSchema);
+    const sourceResources = (await client.query(`select id::text,row_id,row_sha256
+      from public.estimate_resource_spec where definition_version_id=$1 order by ordinal`, [
+      pump.definition_version_id,
+    ])).rows as Json[];
+    const ownerByRowId = new Map(R4_A6_PUMP_STATION_ROWS.map((row) => [row.rowId, row.scopeOwner]));
+    invariant(sourceResources.length === 31 && ownerByRowId.size === 31
+      && new Set(ownerByRowId.values()).size === 31,
+    "STOP_R4_A8_PUMP_SEMANTIC_OWNER_SOURCE_RED");
+    const resourceMaps = sourceResources.map((resource) => {
+      const rowId = String(resource.row_id);
+      const owner = ownerByRowId.get(rowId);
+      invariant(owner, `STOP_R4_A8_PUMP_RESOURCE_OWNER_MISSING:${rowId}`);
+      return {
+        oldResourceId: String(resource.id),
+        newResourceId: uuid(`${CONTRACT}:${fingerprint}:resource:${rowId}`),
+        rowId,
+        semanticOwner: owner,
+        costOwnerId: owner,
+        rowSha256: shaObject({
+          contract: CONTRACT,
+          sourceRowSha256: resource.row_sha256,
+          rowId,
+          semanticOwner: owner,
+          costOwnerId: owner,
+          fingerprint,
+        }),
+      };
+    });
+    const definitionSha256 = shaObject({
+      contract: CONTRACT,
+      sourceDefinitionSha256: pump.definition_sha256,
+      resourceRows: resourceMaps.map((resource) => ({
+        rowId: resource.rowId,
+        semanticOwner: resource.semanticOwner,
+        costOwnerId: resource.costOwnerId,
+        rowSha256: resource.rowSha256,
+      })),
+      fingerprint,
+    });
     const acceptanceEvidenceSha256 = shaObject({
       contract: CONTRACT,
       masterSha256: MASTER_SHA256,
@@ -312,7 +362,7 @@ async function main(): Promise<void> {
       receipt = {
         status: "GREEN_R4_A8_PUMP_EMPTY_BASELINE_ALREADY_PREPARED_NOT_ACTIVE",
         idempotent: true,
-        successor: { releaseId, searchReleaseId, baselineId },
+        successor: { releaseId, searchReleaseId, baselineId, definitionId },
         audit: result,
       };
     } else if (!APPLY) {
@@ -321,7 +371,7 @@ async function main(): Promise<void> {
         idempotent: false,
         source: { branch, head, tree, fingerprint },
         predecessor: { definitionReleaseId: PREDECESSOR_RELEASE_ID, searchReleaseId: PREDECESSOR_SEARCH_RELEASE_ID },
-        successor: { releaseId, searchReleaseId, baselineId, releaseKey },
+        successor: { releaseId, searchReleaseId, baselineId, definitionId, releaseKey },
         witness: { parameters: pump.parameters, p0Parameters: pump.p0_parameters, defaults: pump.defaults, formulas: pump.formulas, resources: pump.resources },
       };
     } else {
@@ -355,6 +405,25 @@ async function main(): Promise<void> {
           PREDECESSOR_RELEASE_ID,
           shaObject({ contract: CONTRACT, fingerprint }),
         ]);
+        await client.query(`insert into public.estimate_definition_version(
+            id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
+            source_metadata,content_status,content_gate_status)
+          select $1,$2,catalog_id,
+            (select max(peer.definition_version)+1 from public.estimate_definition_version peer
+              where peer.catalog_id=source.catalog_id),
+            passport||jsonb_build_object('r4A8PumpSemanticOwnerContract',$3::text),
+            applicability,$4,
+            source_metadata||jsonb_build_object('r4A8PumpSemanticOwnerContract',$3::text,
+              'sourceDefinitionVersionId',source.id::text,'sourceFingerprint',$5::text),
+            content_status,content_gate_status
+          from public.estimate_definition_version source where source.id=$6`, [
+          definitionId,
+          releaseId,
+          CONTRACT,
+          definitionSha256,
+          fingerprint,
+          pump.definition_version_id,
+        ]);
         await client.query(`insert into public.estimate_cumulative_manifest_entry(
             release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
             publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,
@@ -376,11 +445,11 @@ async function main(): Promise<void> {
             accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
           values($1,$2,$3,$4,$4,$5,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,
             '{}'::jsonb,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,$6::jsonb,$7::jsonb,$8,
-            $9,clock_timestamp(),null,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
+            $9,clock_timestamp(),$10,'APPROVED_TEMPLATE_BASELINE_R54_V1')`, [
           baselineId,
           `${CONTRACT}:${fingerprint.slice(0, 16)}:${PUMP_CATALOG_ID}`,
           PUMP_CATALOG_ID,
-          pump.definition_version_id,
+          definitionId,
           parameterSchemaSha256,
           JSON.stringify([{ contract: CONTRACT, masterSha256: MASTER_SHA256, policy: "NO_HIDDEN_DEFAULTS" }]),
           JSON.stringify([{
@@ -393,14 +462,88 @@ async function main(): Promise<void> {
           }]),
           acceptanceEvidenceSha256,
           releaseId,
+          pump.approved_template_baseline_id,
+        ]);
+        await client.query(`insert into public.estimate_parameter_definition(
+            definition_version_id,parameter_id,ordinal,value_type,unit_id,title_ru,required,
+            default_value,constraints_json,truth_metadata,approved_template_baseline_id)
+          select $1,parameter_id,ordinal,value_type,unit_id,title_ru,required,default_value,
+            constraints_json,truth_metadata,$2
+          from public.estimate_parameter_definition where definition_version_id=$3`, [
+          definitionId,
+          baselineId,
+          pump.definition_version_id,
+        ]);
+        await client.query(`insert into public.estimate_formula_graph(
+            definition_version_id,formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256)
+          select $1,formula_id,output_unit_id,expression_source,ast,input_parameter_ids,ast_sha256
+          from public.estimate_formula_graph where definition_version_id=$2`, [definitionId, pump.definition_version_id]);
+        await client.query(`create temporary table r4a8_pump_resource_map(
+            old_resource_id uuid primary key,new_resource_id uuid not null unique,row_id text not null unique,
+            semantic_owner text not null,cost_owner_id text not null,row_sha256 text not null) on commit drop`);
+        await client.query(`insert into r4a8_pump_resource_map(
+            old_resource_id,new_resource_id,row_id,semantic_owner,cost_owner_id,row_sha256)
+          select x."oldResourceId",x."newResourceId",x."rowId",x."semanticOwner",x."costOwnerId",x."rowSha256"
+          from jsonb_to_recordset($1::jsonb) as x(
+            "oldResourceId" uuid,"newResourceId" uuid,"rowId" text,"semanticOwner" text,
+            "costOwnerId" text,"rowSha256" text)`, [JSON.stringify(resourceMaps)]);
+        await client.query(`insert into public.estimate_resource_spec(
+            id,definition_version_id,row_id,ordinal,section,category,title_ru,row_type,unit_id,
+            formula_id,inclusion_ast,resource_graph,semantic_owner,cost_owner_id,
+            procurement_eligible,source_metadata,row_sha256)
+          select map.new_resource_id,$1,source.row_id,source.ordinal,source.section,source.category,
+            source.title_ru,source.row_type,source.unit_id,source.formula_id,source.inclusion_ast,
+            source.resource_graph,map.semantic_owner,map.cost_owner_id,source.procurement_eligible,
+            source.source_metadata||jsonb_build_object('r4A8PumpSemanticOwnerContract',$2::text,
+              'sourceResourceId',source.id::text,'sourceFingerprint',$3::text),map.row_sha256
+          from r4a8_pump_resource_map map
+          join public.estimate_resource_spec source on source.id=map.old_resource_id`, [
+          definitionId,
+          CONTRACT,
+          fingerprint,
+        ]);
+        await client.query(`insert into public.estimate_work_normative_binding(
+            definition_version_id,resource_spec_id,locator_id,applicability)
+          select $1,map.new_resource_id,binding.locator_id,binding.applicability
+          from r4a8_pump_resource_map map
+          join public.estimate_work_normative_binding binding on binding.resource_spec_id=map.old_resource_id`, [definitionId]);
+        await client.query(`insert into public.estimate_resource_price_route_binding(
+            resource_spec_id,route_id,price_key,priority)
+          select map.new_resource_id,binding.route_id,binding.price_key,binding.priority
+          from r4a8_pump_resource_map map
+          join public.estimate_resource_price_route_binding binding on binding.resource_spec_id=map.old_resource_id`);
+        await client.query(`insert into public.estimate_content_passport_r3(
+            definition_version_id,release_id,catalog_id,contract_version,identity_mode,redirect_catalog_id,
+            physical_result_ru,included_scope_ru,excluded_scope_ru,capability_matrix,parameter_count,
+            formula_count,resource_count,decision,payload_sha256,source_head,source_tree)
+          select $1,$2,catalog_id,contract_version,identity_mode,redirect_catalog_id,physical_result_ru,
+            included_scope_ru,excluded_scope_ru,capability_matrix,parameter_count,formula_count,resource_count,
+            decision||jsonb_build_object('r4A8PumpSemanticOwnerContract',$3::text),
+            encode(extensions.digest(convert_to(payload_sha256||':'||$3||':'||$1::uuid::text,
+              'UTF8'),'sha256'),'hex'),$4,$5
+          from public.estimate_content_passport_r3 where definition_version_id=$6`, [
+          definitionId,
+          releaseId,
+          CONTRACT,
+          head,
+          tree,
+          pump.definition_version_id,
         ]);
         await client.query(`update public.estimate_cumulative_manifest_entry set
-            approved_template_baseline_id=$3,baseline_ready=true,scenario_ready=true,
+            definition_version_id=$5,approved_template_baseline_id=$3,baseline_ready=true,scenario_ready=true,
             source_batch=$2,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
+            definition_hash=$6,
             entry_sha256=encode(extensions.digest(convert_to(
-              $2||':'||$1::uuid::text||':'||catalog_id||':'||definition_hash||':'||$3::uuid::text,
+              $2||':'||$1::uuid::text||':'||catalog_id||':'||$6||':'||$3::uuid::text,
               'UTF8'),'sha256'),'hex'),runtime_publication_state='CANDIDATE'
-          where release_id=$1 and catalog_id=$4`, [releaseId, CONTRACT, baselineId, PUMP_CATALOG_ID]);
+          where release_id=$1 and catalog_id=$4`, [
+          releaseId,
+          CONTRACT,
+          baselineId,
+          PUMP_CATALOG_ID,
+          definitionId,
+          definitionSha256,
+        ]);
         const search = await cloneSearch(client, { releaseId, searchReleaseId, releaseKey, head, tree, fingerprint });
         const manifest = (await client.query(`select encode(extensions.digest(convert_to(
             string_agg(entry_sha256,'' order by catalog_id),'UTF8'),'sha256'),'hex') manifest_sha256
@@ -415,6 +558,7 @@ async function main(): Promise<void> {
             searchReleaseId,
             searchSnapshotSha256: search.snapshot_sha256,
             approvedBaselineCount: 10_331,
+            pumpSemanticOwners: "31/31",
           }),
         ]);
         const result = await audit(client, releaseId, searchReleaseId);
@@ -424,7 +568,7 @@ async function main(): Promise<void> {
           idempotent: false,
           source: { branch, head, tree, fingerprint, managedPaths: MANAGED_SOURCE_PATHS },
           predecessor: { definitionReleaseId: PREDECESSOR_RELEASE_ID, searchReleaseId: PREDECESSOR_SEARCH_RELEASE_ID },
-          successor: { releaseId, searchReleaseId, baselineId, releaseKey },
+          successor: { releaseId, searchReleaseId, baselineId, definitionId, releaseKey },
           audit: result,
           productionAccessed: false,
           deployPerformed: false,

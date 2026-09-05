@@ -26,12 +26,16 @@ describe("R4-A8 pump empty-baseline successor", () => {
   });
 
   it("adds no project value and retains immutable current monolith content", () => {
-    expect(successor).toContain('const PREDECESSOR_RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979"');
+    expect(successor).toContain('const PREDECESSOR_RELEASE_ID = "73c11949-d5c9-5e41-8aba-d437ba31cdf6"');
     expect(successor).toContain("'{}'::jsonb,'{}'::jsonb,'{}'::jsonb");
     expect(successor).toContain("Number(pump.defaults) === 0");
     expect(successor).toContain("Number(pump.formulas) === 31");
     expect(successor).toContain("Number(pump.resources) === 31");
     expect(successor).toContain("from public.estimate_cumulative_manifest_entry where release_id=$3");
+    expect(successor).toContain("insert into public.estimate_definition_version");
+    expect(successor).toContain("insert into public.estimate_resource_spec");
+    expect(successor).toContain("insert into public.estimate_work_normative_binding");
+    expect(successor).toContain("insert into public.estimate_resource_price_route_binding");
     expect(successor).not.toContain("update public.estimate_definition_version");
     expect(successor).not.toContain("update public.estimate_parameter_definition");
   });
