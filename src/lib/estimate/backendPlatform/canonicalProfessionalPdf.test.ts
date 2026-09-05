@@ -145,6 +145,26 @@ describe("R4-A6 canonical professional PDF", () => {
     })).toThrow("row count differs");
   });
 
+  it("escapes title and specification markup without creating embedded links", () => {
+    const maliciousRows = rows(1);
+    maliciousRows[0]!.title_ru = '<script>alert("row")</script><a href="javascript:alert(1)">link</a>';
+    maliciousRows[0]!.calculation_trace = {
+      specificationRu: '<img src=x onerror="alert(2)">',
+      formulaExplanationRu: "safe formula trace",
+    };
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision: revision(1),
+      rows: maliciousRows,
+      workTitleRu: '<iframe src="https://attacker.invalid"></iframe>',
+    });
+
+    expect(projection.html).toContain("&lt;script&gt;");
+    expect(projection.html).toContain("&lt;img src=x onerror=&quot;alert(2)&quot;&gt;");
+    expect(projection.html).toContain("&lt;iframe src=&quot;https://attacker.invalid&quot;&gt;");
+    expect(projection.html).not.toMatch(/<script|<iframe|<img\s|<a\s+href/iu);
+    expect(projection.html).not.toMatch(/href=["']javascript:/iu);
+  });
+
   it("maps every public row to one of the five accepted categories", () => {
     expect(canonicalProfessionalPdfCategory({ category: "material" })).toBe("material");
     expect(canonicalProfessionalPdfCategory({ category: "labor" })).toBe("work");
