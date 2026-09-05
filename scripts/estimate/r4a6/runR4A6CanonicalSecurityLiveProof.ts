@@ -81,6 +81,29 @@ async function visibleCount(client: Client, relation: string, predicate: string,
   return Number(result.rows[0]?.count ?? 0);
 }
 
+async function blockedRead(
+  client: Client,
+  relation: string,
+  predicate: string,
+  value: string,
+): Promise<{ rows: number; blocked: boolean; detail: string }> {
+  const savepoint = "r4a6_blocked_read";
+  await client.query(`savepoint ${savepoint}`);
+  try {
+    const rows = await visibleCount(client, relation, predicate, value);
+    return {
+      rows,
+      blocked: rows === 0,
+      detail: rows === 0 ? "zero_rows_visible" : "unexpected_rows_visible",
+    };
+  } catch (error) {
+    await client.query(`rollback to savepoint ${savepoint}`);
+    return { rows: 0, blocked: true, detail: `blocked_by_database:${safeError(error)}` };
+  } finally {
+    await client.query(`release savepoint ${savepoint}`);
+  }
+}
+
 async function blockedMutation(
   client: Client,
   operation: "update" | "delete",
@@ -224,15 +247,15 @@ async function main(): Promise<void> {
     await resetActor(client);
 
     await setActor(client, "anon", null);
-    const anonymousRows = await visibleCount(client, "estimate_revision", "id", revisionId).catch(() => 0);
+    const anonymousRead = await blockedRead(client, "estimate_revision", "id", revisionId);
     attempts.push({
       actor: "anonymous",
       relation: "estimate_revision",
       operation: "select",
       expected: "blocked",
-      actualRows: anonymousRows,
-      passed: anonymousRows === 0,
-      detail: anonymousRows === 0 ? "zero_rows_visible" : "anonymous_rows_visible",
+      actualRows: anonymousRead.rows,
+      passed: anonymousRead.blocked,
+      detail: anonymousRead.detail,
     });
     await resetActor(client);
     await client.query("rollback");

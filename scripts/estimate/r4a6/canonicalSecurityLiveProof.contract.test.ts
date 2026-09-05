@@ -13,6 +13,7 @@ describe("R4-A6 canonical security live proof", () => {
     expect(source).not.toContain('await client.query("commit")');
     expect(source).toContain('await setActor(client, "authenticated", ownerId)');
     expect(source).toContain('await setActor(client, "authenticated", foreignUserId)');
+    expect(source).toContain("rollback to savepoint");
     expect(source).toContain('"estimate_revision_artifact"');
     expect(source).toContain('"estimate_revision_photo_attachment"');
     expect(source).toContain('"estimate_revision_photo_upload"');
