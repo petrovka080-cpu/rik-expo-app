@@ -259,7 +259,7 @@ async function cloneSearch(client: Client, input: {
       source.work_family_id,source.group_id,source.subgroup_id,source.element_type,source.operation_kind,
       source.technology_variant,source.construction_state,source.primary_uom,source.canonical_name_ru,
       source.aliases,source.normative_classifiers,source.applicability_tags,source.publication_state,
-      source.catalog_origin,$2,source.short_scope_ru,source.key_distinguishing_parameters,
+      source.catalog_origin,$2::uuid,source.short_scope_ru,source.key_distinguishing_parameters,
       source.required_inputs_count,source.clarification_fields,source.included_boundaries,
       source.excluded_boundaries,source.replacement_catalog_id,source.normalized_catalog_id,
       source.normalized_canonical_name,source.normalized_aliases,source.normalized_search_terms,
@@ -271,8 +271,8 @@ async function cloneSearch(client: Client, input: {
       source.canonical_target_catalog_id,manifest.definition_version_id
     from public.estimate_search_document source
     join public.estimate_cumulative_manifest_entry manifest
-      on manifest.release_id=$2 and manifest.catalog_id=source.catalog_id
-    where source.search_release_id=$4`, [
+      on manifest.release_id=$2::uuid and manifest.catalog_id=source.catalog_id
+    where source.search_release_id=$4::uuid`, [
     input.searchReleaseId,
     input.releaseId,
     CONTRACT,
