@@ -20,13 +20,13 @@ import {
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
-  canonicalArtifactMoney as professionalMoney,
-  canonicalArtifactQuantity as professionalQuantity,
-  canonicalArtifactSection as professionalSection,
-  canonicalArtifactUnit as professionalUnit,
   escapeCanonicalArtifactHtml as escapeHtml,
   selectCanonicalArtifactRows,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
+import {
+  buildCanonicalProfessionalPdfProjection,
+  CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+} from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts";
 import {
   buildCanonicalEstimateRegistryEntry,
   CanonicalEstimateDefinitionRegistry,
@@ -558,7 +558,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   }
   const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError }] = await Promise.all([
     admin.from("estimate_revision")
-      .select("id,release_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
+      .select("id,release_id,definition_version_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
       .eq("id", job.parent_revision_id).single(),
     admin.from("estimate_revision_row")
       .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
@@ -575,6 +575,9 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   let contentType: string;
   let extension: string;
   let renderer: string;
+  let pageCount: number | null = null;
+  let definitionVersionId: string | null = null;
+  let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
   if (job.operation === "procurement") {
     const projection = buildCanonicalProcurementProjection({
       revision,
@@ -590,41 +593,25 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
       .select("title_ru")
       .eq("catalog_id", revision.catalog_id)
       .maybeSingle();
-    if (identityError) {
+    if (identityError || !revision.definition_version_id) {
       throw Object.assign(new Error("professional artifact identity load failed"), { code: "ARTIFACT_IDENTITY_LOAD_FAILED" });
     }
-    const groups = new Map<string, Record<string, unknown>[]>();
-    for (const row of rows) {
-      const section = professionalSection(row);
-      groups.set(section, [...(groups.get(section) ?? []), row]);
-    }
-    const sections = [...groups.entries()].map(([section, sectionRows]) => `
-      <section><h2>${escapeHtml(section)}</h2><table>
-        <thead><tr><th>№</th><th>Позиция</th><th>Ед.</th><th>Количество</th><th>Цена</th><th>Сумма</th></tr></thead>
-        <tbody>${sectionRows.map((row) => `<tr><td>${Number(row.ordinal) + 1}</td><td>${escapeHtml(row.title_ru)}</td><td>${escapeHtml(professionalUnit(row))}</td><td>${professionalQuantity(row.quantity)}</td><td>${professionalMoney(row.unit_price, row.currency_code ?? revision.currency_code)}</td><td>${professionalMoney(row.amount, row.currency_code ?? revision.currency_code)}</td></tr>`).join("")}</tbody>
-      </table></section>`).join("");
-    const pricedRows = rows.filter((row) => row.unit_price != null).length;
-    const createdDate = new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(new Date(revision.created_at));
-    const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
-      @page{size:A4;margin:18mm 14mm 18mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;font-size:10px;line-height:1.35}
-      header{border-bottom:3px solid #176b45;padding-bottom:12px;margin-bottom:16px}h1{font-size:24px;margin:0 0 7px;color:#10253d}h2{font-size:14px;color:#176b45;margin:18px 0 7px}
-      .subtitle{font-size:14px;font-weight:700}.meta,.notice{color:#526174}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.summary div{background:#eef7f2;border-radius:6px;padding:9px}
-      table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#e7edf4;text-align:left}td,th{border:1px solid #cbd4df;padding:5px;vertical-align:top}th:nth-child(1){width:6%}th:nth-child(3){width:10%}th:nth-child(4){width:13%}th:nth-child(5),th:nth-child(6){width:14%}
-      tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
-      footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}
-    </style></head><body>
-      <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeHtml(identity?.title_ru ?? "Строительно-монтажные работы")}</div><div class="meta">Сформировано ${escapeHtml(createdDate)} из сохранённой версии сметы</div></header>
-      <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalMoney(revision.totals?.amount, revision.currency_code)}</div></div>
-      ${sections}
-      <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
-      <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
-      <footer>Профессиональная смета</footer>
-    </body></html>`;
-    const rendered = await renderPdfBytes(html);
+    definitionVersionId = String(revision.definition_version_id);
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision,
+      rows,
+      workTitleRu: String(identity?.title_ru ?? revision.display_title_ru ?? "Строительно-монтажные работы"),
+      definitionVersionId,
+    });
+    const rendered = await renderPdfBytes(projection.html, {
+      footerTemplate: projection.footerTemplate,
+    });
     bytes = rendered.pdfBytes;
+    pageCount = rendered.pageCount;
+    grandTotalStatus = projection.grandTotalStatus;
     contentType = "application/pdf";
     extension = "pdf";
-    renderer = "canonical-professional-pdf.r3";
+    renderer = CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION;
   } else {
     const tableRows = rows.map((row) => {
       const normative = Array.isArray(row.normative_trace)
@@ -646,6 +633,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#111827}h1{font-size:20px;margin:0 0 8px}h2{font-size:14px;margin:12px 0 5px}.meta,.muted{font-size:9px;color:#4b5563;word-break:break-word}.identity{font-size:10px;word-break:break-all}pre{white-space:pre-wrap;word-break:break-word;border:1px solid #e5e7eb;background:#f9fafb;padding:6px;font-size:9px}table{width:100%;border-collapse:collapse;font-size:8px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #d1d5db;padding:4px;text-align:left;vertical-align:top}th{background:#f3f4f6}</style></head><body><h1>Каноническая смета</h1><div class="identity">revision_id: ${escapeHtml(revision.id)}<br>release_id: ${escapeHtml(revision.release_id)}<br>catalog_id: ${escapeHtml(revision.catalog_id)}<br>checksum: ${escapeHtml(revision.checksum_sha256)}<br>compiler: ${escapeHtml(revision.compiler_version)}</div><h2>Параметры</h2><pre>${escapeHtml(canonicalEstimateStableJson(revision.input_parameters))}</pre><h2>Итоги</h2><pre>${escapeHtml(canonicalEstimateStableJson(revision.totals))}</pre><h2>Позиции и нормативные ссылки</h2><table><thead><tr><th>№</th><th>Раздел / категория</th><th>Позиция / disposition</th><th>Ед.</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th>Норматив</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`;
     const rendered = await renderPdfBytes(html);
     bytes = rendered.pdfBytes;
+    pageCount = rendered.pageCount;
     contentType = "application/pdf";
     extension = "pdf";
     renderer = rendered.renderer;
@@ -675,6 +663,9 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
         sourceRowCount: selection.sourceRows.length,
         projectedRowCount: job.operation === "procurement" ? selectedProcurementRows.length : rows.length,
         selectedProcurementRowCount: selectedProcurementRows.length,
+        definitionVersionId,
+        pageCount,
+        grandTotalStatus,
       }),
     },
   });
@@ -683,10 +674,16 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
 }
 
 async function failJob(admin: AdminClient, workerId: string, job: ClaimedJob, error: unknown) {
-  const code = typeof error === "object" && error && "code" in error ? String(error.code) : "COMPILER_FAILED";
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const code = typeof error === "object" && error && "code" in error
+    ? String(error.code)
+    : /timed?\s*out|timeout/iu.test(message)
+      ? "ARTIFACT_RENDER_TIMEOUT"
+      : "COMPILER_FAILED";
   const retryDelay = Math.min(300, 2 ** Math.min(job.attempt, 8));
   const retryable = code.endsWith("_LOAD_FAILED")
     || code.endsWith("_STORAGE_FAILED")
+    || code === "ARTIFACT_RENDER_TIMEOUT"
     || code === "REVISION_COMMIT_RETRYABLE";
   const { error: failError } = await admin.rpc("estimate_fail_compile_job_v2", {
     p_job_id: job.id,

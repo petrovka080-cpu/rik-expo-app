@@ -321,8 +321,10 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(screen).toContain('documentProfile: "professional_v1"');
     expect(screen).not.toContain('kind: "professional_pdf"');
     expect(client).not.toContain('kind: "pdf" | "professional_pdf" | "procurement"');
-    expect(localBackend).toContain("canonicalArtifactUnit as professionalPdfUnit");
-    expect(edgeWorker).toContain("canonicalArtifactUnit as professionalUnit");
+    expect(localBackend).toContain("buildCanonicalProfessionalPdfProjection");
+    expect(edgeWorker).toContain("buildCanonicalProfessionalPdfProjection");
+    expect(localBackend).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
+    expect(edgeWorker).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
     expect(artifactContract).toContain('service: "услуга"');
     expect(screen).toContain('idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`');
     expect(screen).not.toContain("consumer-approve-professional-pdf");

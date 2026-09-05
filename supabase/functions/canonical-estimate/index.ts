@@ -17,6 +17,7 @@ import {
   buildCanonicalEstimateRegistryEntry,
   CanonicalEstimateDefinitionRegistry,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
+import { canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -860,7 +861,10 @@ async function readArtifact(
     || (sourceMetadata.sourceRowCount != null && Number(sourceMetadata.sourceRowCount) !== Number(revision.row_count))
     || (sourceMetadata.sourceOwnerUserId != null && sourceMetadata.sourceOwnerUserId !== revision.owner_user_id)
     || (sourceMetadata.sourceOrganizationId != null && sourceMetadata.sourceOrganizationId !== (revision.organization_id ?? null))
-    || (kind === "professional_pdf" && !String(sourceMetadata.templateVersion ?? "").startsWith("professional-estimate-pdf:"))
+    || (kind === "professional_pdf" && !canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata: sourceMetadata,
+      revision,
+    }))
   )) {
     throw new CanonicalEstimateApiError("artifact revision identity mismatch", {
       code: "ARTIFACT_REVISION_IDENTITY_MISMATCH",

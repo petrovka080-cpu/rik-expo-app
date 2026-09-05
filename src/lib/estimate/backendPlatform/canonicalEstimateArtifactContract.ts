@@ -1,5 +1,5 @@
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:4";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5";
 
 export type CanonicalArtifactRow = Record<string, unknown> & {
   row_id: unknown;
@@ -119,13 +119,19 @@ export function buildCanonicalArtifactMetadata(input: {
   sourceRowCount: number;
   projectedRowCount: number;
   selectedProcurementRowCount: number;
+  definitionVersionId?: string | null;
+  pageCount?: number | null;
+  grandTotalStatus?: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null;
 }) {
   return {
+    artifactKind: input.operation,
     renderer: input.renderer,
     ...(input.operation === "professional_pdf"
       ? { templateVersion: CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION }
       : {}),
     sourceRevisionChecksumSha256: String(input.revision.checksum_sha256),
+    revisionId: String(input.revision.id),
+    definitionVersionId: nullableText(input.definitionVersionId),
     sourceReleaseId: String(input.revision.release_id),
     sourceCatalogId: String(input.revision.catalog_id),
     sourceRequestHash: nullableText(input.revision.source_request_hash),
@@ -134,12 +140,38 @@ export function buildCanonicalArtifactMetadata(input: {
     sourceOrganizationId: nullableText(input.revision.organization_id),
     sourceRowCount: input.sourceRowCount,
     projectedRowCount: input.projectedRowCount,
+    rowCount: input.projectedRowCount,
+    grandTotalStatus: input.grandTotalStatus ?? null,
+    pageCount: input.pageCount ?? null,
+    generatorVersion: input.renderer,
     selectedProcurementRowCount: input.operation === "procurement"
       ? input.selectedProcurementRowCount
       : null,
     includesExcludedDisposition: false,
     includesParametersAndTotals: true,
   };
+}
+
+export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
+  metadata: unknown;
+  revision: CanonicalArtifactRevision;
+}): boolean {
+  const metadata = objectValue(input.metadata);
+  const templateVersion = nullableText(metadata.templateVersion);
+  if (!templateVersion?.startsWith("professional-estimate-pdf:")) return false;
+  if (templateVersion !== CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION) return true;
+  const definitionVersionId = nullableText(metadata.definitionVersionId);
+  const expectedDefinitionVersionId = nullableText(
+    input.revision.definition_version_id ?? input.revision.definitionVersionId,
+  );
+  const pageCount = Number(metadata.pageCount);
+  return metadata.artifactKind === "professional_pdf"
+    && nullableText(metadata.revisionId) === nullableText(input.revision.id)
+    && definitionVersionId != null
+    && (!expectedDefinitionVersionId || definitionVersionId === expectedDefinitionVersionId)
+    && Number.isInteger(pageCount)
+    && pageCount > 0
+    && ["COMPLETE", "PARTIAL_NEEDS_PRICE"].includes(String(metadata.grandTotalStatus ?? ""));
 }
 
 export function escapeCanonicalArtifactHtml(value: unknown): string {
@@ -194,9 +226,9 @@ export function canonicalArtifactUnit(row: Record<string, unknown>): string {
 
 export function canonicalArtifactSection(row: Record<string, unknown>): string {
   const identity = `${String(row.section ?? "")} ${String(row.category ?? "")}`.toLowerCase();
-  if (/material|waste/u.test(identity)) return "Материалы";
-  if (/equipment|machine|machinery/u.test(identity)) return "Машины и оборудование";
-  if (/delivery|transport|logistic/u.test(identity)) return "Логистика";
-  if (/test|quality|control/u.test(identity)) return "Испытания и контроль";
-  return "Работы и услуги";
+  if (/delivery|transport|logistic|достав|логист/u.test(identity)) return "Доставка";
+  if (/equipment|machine|machinery|mechanism|механ|техник|оборуд/u.test(identity)) return "Механизмы";
+  if (/material|product|waste|материал|издел/u.test(identity)) return "Материалы";
+  if (/service|test|quality|control|document|услуг|испыт|контрол|пнр/u.test(identity)) return "Услуги";
+  return "Работы";
 }

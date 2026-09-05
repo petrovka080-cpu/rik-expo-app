@@ -20,6 +20,7 @@ import {
   type CanonicalEstimateSearchPage,
   type CanonicalEstimateTypedRelation,
 } from "./contracts";
+import { canonicalProfessionalArtifactMetadataIdentityMatches } from "./canonicalEstimateArtifactContract";
 
 function resolveFunctionUrl(): string {
   const configured = String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL ?? "").trim();
@@ -540,6 +541,17 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
   const metadataTemplateVersion = String(input.artifact.metadata?.templateVersion ?? "").trim();
   const metadataDocumentProfile = String(input.artifact.metadata?.documentProfile ?? "").trim();
   const metadataOwnerUserId = String(input.artifact.metadata?.sourceOwnerUserId ?? "").trim();
+  const professionalIdentityMatches = canonicalProfessionalArtifactMetadataIdentityMatches({
+    metadata: input.artifact.metadata,
+    revision: {
+      ...input.revision,
+      id: input.revision.revisionId,
+      release_id: input.revision.releaseId,
+      catalog_id: input.revision.catalogId,
+      checksum_sha256: input.revision.checksumSha256,
+      row_count: input.revision.rowCount,
+    },
+  });
   const expectedCatalogId = input.expectedCatalogId?.trim() || input.revision.catalogId;
   const expectedRowCount = input.expectedRowCount ?? input.revision.rowCount;
   const matches =
@@ -553,7 +565,8 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
     (!input.expectedDocumentProfile || metadataDocumentProfile === input.expectedDocumentProfile) &&
     (input.expectedDocumentProfile !== "professional_v1" || (
       metadataTemplateVersion.startsWith("professional-estimate-pdf:") &&
-      metadataOwnerUserId.length > 0
+      metadataOwnerUserId.length > 0 &&
+      professionalIdentityMatches
     ));
   if (matches) return;
   throw new CanonicalEstimateApiError(

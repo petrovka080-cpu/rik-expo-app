@@ -39,14 +39,13 @@ import {
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
-  canonicalArtifactMoney as professionalPdfMoney,
-  canonicalArtifactParameterValue,
-  canonicalArtifactQuantity as professionalPdfQuantity,
-  canonicalArtifactSection as professionalPdfSection,
-  canonicalArtifactUnit as professionalPdfUnit,
-  escapeCanonicalArtifactHtml as escapeArtifactHtml,
+  canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+import {
+  CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+  buildCanonicalProfessionalPdfProjection,
+} from "../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
 import {
   buildCanonicalEstimateRegistryEntry,
   CanonicalEstimateDefinitionRegistry,
@@ -1666,7 +1665,11 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
               const code =
                 typeof error === "object" && error && "code" in error
                   ? String((error as { code: unknown }).code)
-                  : "COMPILER_FAILED";
+                  : /timed?\s*out|timeout/iu.test(
+                        error instanceof Error ? error.message : String(error),
+                      )
+                    ? "ARTIFACT_RENDER_TIMEOUT"
+                    : "COMPILER_FAILED";
               const message =
                 error instanceof Error ? error.message : String(error);
               const expectedOptimisticLoser =
@@ -1688,6 +1691,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                 ["40P01", "55P03"].includes(code) ||
                 code.endsWith("_LOAD_FAILED") ||
                 code.endsWith("_STORAGE_FAILED") ||
+                code === "ARTIFACT_RENDER_TIMEOUT" ||
                 code === "REVISION_COMMIT_RETRYABLE";
               const retryDelaySeconds = Math.min(
                 300,
@@ -2522,6 +2526,36 @@ function artifactBrowser(): Promise<Browser> {
   return artifactBrowserPromise;
 }
 
+async function withArtifactRenderTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              Object.assign(new Error("PDF render timed out"), {
+                code: "ARTIFACT_RENDER_TIMEOUT",
+              }),
+            ),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function countPdfPages(bytes: Buffer): number {
+  const markers = bytes.toString("latin1").match(/\/Type\s*\/Page(?!s)\b/g);
+  return Math.max(1, markers?.length ?? 0);
+}
+
 function professionalArtifactToken(input: {
   artifactId: string;
   expiresAt: number;
@@ -2581,6 +2615,9 @@ async function buildArtifactClaimedJob(
   let contentType: string;
   let extension: string;
   let renderer: string;
+  let pageCount: number | null = null;
+  let definitionVersionId: string | null = null;
+  let grandTotalStatus: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null = null;
   if (job.operation === "procurement") {
     bytes = Buffer.from(
       canonicalEstimateStableJson(
@@ -2601,107 +2638,55 @@ async function buildArtifactClaimedJob(
         [revision.catalog_id],
       )
     ).rows[0];
-    const parameterDefinitionsForPdf = (
-      await client.query(
-        `
-      select parameter.*
-      from public.estimate_parameter_definition parameter
-      where parameter.definition_version_id=(
-        select candidate.definition_version_id from (
-          select direct.id definition_version_id,0 priority
-          from public.estimate_definition_version direct
-          where direct.release_id=$1 and direct.catalog_id=$2
-          union all
-          select manifest.definition_version_id,1 priority
-          from public.estimate_cumulative_manifest_entry manifest
-          where manifest.release_id=$1 and manifest.catalog_id=$2
-        ) candidate order by candidate.priority limit 1
-      ) order by parameter.ordinal
-    `,
-        [revision.release_id, revision.catalog_id],
-      )
-    ).rows as JsonRecord[];
-    const groups = new Map<string, JsonRecord[]>();
-    for (const row of rows as JsonRecord[]) {
-      const section = professionalPdfSection(row);
-      groups.set(section, [...(groups.get(section) ?? []), row]);
+    definitionVersionId =
+      String(revision.definition_version_id ?? "").trim() || null;
+    if (!definitionVersionId) {
+      throw Object.assign(
+        new Error("professional artifact identity load failed"),
+        { code: "ARTIFACT_IDENTITY_LOAD_FAILED" },
+      );
     }
-    const sections = [...groups.entries()]
-      .map(
-        ([section, sectionRows]) => `
-      <section><h2>${escapeArtifactHtml(section)}</h2><table>
-        <thead><tr><th>№</th><th>Позиция</th><th>Ед.</th><th>Количество</th><th>Цена</th><th>Сумма</th></tr></thead>
-        <tbody>${sectionRows.map((row) => `<tr><td>${Number(row.ordinal) + 1}</td><td>${escapeArtifactHtml(row.title_ru)}</td><td>${escapeArtifactHtml(professionalPdfUnit(row))}</td><td>${professionalPdfQuantity(row.quantity)}</td><td>${professionalPdfMoney(row.unit_price, row.currency_code ?? revision.currency_code)}</td><td>${professionalPdfMoney(row.amount, row.currency_code ?? revision.currency_code)}</td></tr>`).join("")}</tbody>
-      </table></section>`,
-      )
-      .join("");
-    const pricedRows = rows.filter((row) => row.unit_price != null).length;
-    const createdDate = new Intl.DateTimeFormat("ru-RU", {
-      dateStyle: "long",
-    }).format(new Date(revision.created_at));
-    const total = revision.totals?.amount ?? null;
-    const displayTitleRu =
-      revision.display_title_ru ||
-      identity?.title_ru ||
-      "Строительно-монтажные работы";
-    const sourceRequestText =
-      revision.source_request_text ||
-      identity?.title_ru ||
-      "Задание не сохранено в исторической версии";
-    const userInputs =
-      revision.user_input_snapshot &&
-      typeof revision.user_input_snapshot === "object"
-        ? Object.entries(revision.user_input_snapshot as JsonRecord)
-        : [];
-    const parameterRows = userInputs
-      .map(([parameterId, value]) => {
-        const parameter = parameterDefinitionsForPdf.find(
-          (item) => item.parameter_id === parameterId,
-        );
-        const label = parameter?.title_ru ?? parameterId;
-        const unit = parameter?.unit_id
-          ? ` ${professionalPdfUnit({ unit_id: parameter.unit_id })}`
-          : "";
-        return `<tr><td>${escapeArtifactHtml(label)}</td><td>${escapeArtifactHtml(canonicalArtifactParameterValue(value))}${escapeArtifactHtml(unit)}</td></tr>`;
-      })
-      .join("");
-    const optionalScopeEnabled = [
-      "curb_required",
-      "drainage_required",
-      "storm_sewer_required",
-      "road_marking_required",
-      "traffic_signs_required",
-      "lighting_required",
-    ].some((key) => revision.input_parameters?.[key] === true);
-    const scopeTitle = optionalScopeEnabled
-      ? "Полный применимый состав по выбранным параметрам"
-      : "Только указанная работа";
+    const projection = buildCanonicalProfessionalPdfProjection({
+      revision,
+      rows,
+      workTitleRu: String(
+        identity?.title_ru ??
+          revision.display_title_ru ??
+          "Строительно-монтажные работы",
+      ),
+      definitionVersionId,
+    });
     const browser = await artifactBrowser();
-    const page = await browser.newPage();
+    const page = await browser.newPage({
+      viewport: { width: 1240, height: 1754 },
+    });
     try {
-      await page.setContent(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><style>
-        @page{size:A4;margin:18mm 14mm 18mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;font-size:10px;line-height:1.35}
-        header{border-bottom:3px solid #176b45;padding-bottom:12px;margin-bottom:16px}h1{font-size:24px;margin:0 0 7px;color:#10253d}h2{font-size:14px;color:#176b45;margin:18px 0 7px}
-        .subtitle{font-size:14px;font-weight:700}.meta,.notice{color:#526174}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.summary div{background:#eef7f2;border-radius:6px;padding:9px}
-        table{width:100%;border-collapse:collapse;table-layout:fixed}th{background:#e7edf4;text-align:left}td,th{border:1px solid #cbd4df;padding:5px;vertical-align:top}th:nth-child(1){width:6%}th:nth-child(3){width:10%}th:nth-child(4){width:13%}th:nth-child(5),th:nth-child(6){width:14%}
-        tr{break-inside:avoid}.notice{margin-top:18px;padding:10px;border:1px solid #d5dde6;border-radius:6px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:38px}.signature{border-top:1px solid #758195;padding-top:5px}
-        footer{position:fixed;bottom:-10mm;left:0;right:0;text-align:center;color:#7b8797;font-size:9px}
-      </style></head><body>
-        <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeArtifactHtml(displayTitleRu)}</div><div class="source-request"><strong>Исходное задание:</strong> ${escapeArtifactHtml(sourceRequestText)}</div><div class="meta">Сформировано ${escapeArtifactHtml(createdDate)} из сохранённой версии сметы</div></header>
-        <div class="summary"><div><strong>Позиций</strong><br>${rows.length}</div><div><strong>Цены подтверждены</strong><br>${pricedRows} из ${rows.length}</div><div><strong>Итого</strong><br>${professionalPdfMoney(total, revision.currency_code)}</div></div>
-        <section><h2>Параметры и состав</h2><p><strong>Состав:</strong> ${escapeArtifactHtml(scopeTitle)}</p>${parameterRows ? `<table><tbody>${parameterRows}</tbody></table>` : "<p>Пользовательские параметры сохранены в исходной версии.</p>"}</section>
-        ${sections}
-        <div class="notice"><strong>Основание и допущения.</strong> Документ отображает сохранённые параметры, объёмы и цены выбранной версии. PDF не выполняет повторный расчёт. Неподтверждённые цены отмечены словом «уточнить».</div>
-        <div class="signatures"><div class="signature">Заказчик / дата</div><div class="signature">Исполнитель / дата</div></div>
-        <footer>Профессиональная смета</footer>
-      </body></html>`);
-      bytes = await page.pdf({ format: "A4", printBackground: true });
+      await withArtifactRenderTimeout(
+        page.setContent(projection.html, { waitUntil: "load" }),
+        60_000,
+      );
+      bytes = Buffer.from(
+        await withArtifactRenderTimeout(
+          page.pdf({
+            format: "A4",
+            printBackground: true,
+            preferCSSPageSize: true,
+            displayHeaderFooter: true,
+            headerTemplate: "<span></span>",
+            footerTemplate: projection.footerTemplate,
+          }),
+          90_000,
+        ),
+      );
     } finally {
       await page.close();
     }
+    pageCount = countPdfPages(bytes);
+    grandTotalStatus = projection.grandTotalStatus;
     contentType = "application/pdf";
     extension = "pdf";
-    renderer = "canonical-professional-pdf-local.r3";
+    renderer = CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION;
+
   } else {
     const body = rows
       .map(
@@ -2748,6 +2733,9 @@ async function buildArtifactClaimedJob(
           sourceRowCount: selection.sourceRows.length,
           projectedRowCount: rows.length,
           selectedProcurementRowCount: selection.procurementRows.length,
+          definitionVersionId,
+          pageCount,
+          grandTotalStatus,
         }),
       }),
     ],
@@ -5063,9 +5051,14 @@ async function route(
             sourceMetadata.sourceOrganizationId !==
               (artifact.organization_id ?? null)) ||
           (kind === "professional_pdf" &&
-            !String(sourceMetadata.templateVersion ?? "").startsWith(
-              "professional-estimate-pdf:",
-            )))
+            !canonicalProfessionalArtifactMetadataIdentityMatches({
+              metadata: sourceMetadata,
+              revision: {
+                ...artifact,
+                id: artifact.revision_id,
+                checksum_sha256: artifact.revision_checksum_sha256,
+              },
+            })))
       )
         throw Object.assign(new Error("artifact revision identity mismatch"), {
           code: "ARTIFACT_REVISION_IDENTITY_MISMATCH",

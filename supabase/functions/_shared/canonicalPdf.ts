@@ -17,6 +17,22 @@ const UNIX_LOCAL_BROWSER_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
 ];
 
+async function withRenderTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, reject) => {
+        timer = setTimeout(() => reject(Object.assign(new Error("PDF render timed out"), {
+          code: "ARTIFACT_RENDER_TIMEOUT",
+        })), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 export function cleanText(value: unknown) {
   return String(value ?? "").trim();
 }
@@ -129,7 +145,7 @@ async function resolveLocalBrowserExecutable() {
   return "";
 }
 
-export async function renderPdfBytes(html: string) {
+export async function renderPdfBytes(html: string, options: { footerTemplate?: string } = {}) {
   const browserWsEndpoint = resolveBrowserWsEndpoint();
   const browserUrl = browserWsEndpoint ? "" : resolveBrowserUrl();
   const executablePath = await resolveLocalBrowserExecutable();
@@ -159,17 +175,24 @@ export async function renderPdfBytes(html: string) {
 
     page = await browser.newPage();
     await page.setViewport({ width: 1240, height: 1754, deviceScaleFactor: 1 });
-    await page.setContent(html, {
+    await withRenderTimeout(page.setContent(html, {
       waitUntil: "load",
-    });
+    }), 60_000);
 
     const client = await page.target().createCDPSession();
-    const result = await client.send("Page.printToPDF", {
+    const result = await withRenderTimeout(client.send("Page.printToPDF", {
       printBackground: true,
       preferCSSPageSize: true,
       paperWidth: 8.27,
       paperHeight: 11.69,
-    });
+      ...(options.footerTemplate
+        ? {
+          displayHeaderFooter: true,
+          headerTemplate: "<span></span>",
+          footerTemplate: options.footerTemplate,
+        }
+        : {}),
+    }), 90_000);
     const base64 = cleanText(result?.data);
     if (!base64) {
       throw new Error("Page.printToPDF returned empty data");
@@ -181,8 +204,23 @@ export async function renderPdfBytes(html: string) {
       pdfBytes[index] = binary.charCodeAt(index);
     }
 
+    const pageMarker = new TextEncoder().encode("/Type /Page");
+    let pageCount = 0;
+    for (let offset = 0; offset <= pdfBytes.length - pageMarker.length; offset += 1) {
+      let matches = true;
+      for (let index = 0; index < pageMarker.length; index += 1) {
+        if (pdfBytes[offset + index] !== pageMarker[index]) {
+          matches = false;
+          break;
+        }
+      }
+      const next = pdfBytes[offset + pageMarker.length];
+      if (matches && next !== 0x73) pageCount += 1;
+    }
+
     return {
       pdfBytes,
+      pageCount: Math.max(1, pageCount),
       renderer: browserWsEndpoint ? "browserless_puppeteer" : "local_browser_puppeteer",
     };
   } finally {

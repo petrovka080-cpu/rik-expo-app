@@ -2,6 +2,7 @@ import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
   canonicalArtifactQuantity,
+  canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
 } from "./canonicalEstimateArtifactContract";
 
@@ -43,5 +44,48 @@ describe("canonical estimate artifact contract", () => {
       projectedRowCount: selection.procurementRows.length,
       selectedProcurementRowCount: selection.procurementRows.length,
     })).toMatchObject({ sourceRowCount: 3, projectedRowCount: 1, selectedProcurementRowCount: 1 });
+  });
+
+  it("records the complete production identity for the professional PDF artifact", () => {
+    const metadata = buildCanonicalArtifactMetadata({
+      operation: "professional_pdf",
+      renderer: "canonical-professional-pdf.r4-a6",
+      revision,
+      sourceRowCount: 3,
+      projectedRowCount: 2,
+      selectedProcurementRowCount: 1,
+      definitionVersionId: "definition-version-1",
+      pageCount: 4,
+      grandTotalStatus: "PARTIAL_NEEDS_PRICE",
+    });
+    expect(metadata).toMatchObject({
+      artifactKind: "professional_pdf",
+      revisionId: "revision-1",
+      definitionVersionId: "definition-version-1",
+      sourceReleaseId: "release-1",
+      sourceRevisionChecksumSha256: "a".repeat(64),
+      sourceRowCount: 3,
+      rowCount: 2,
+      grandTotalStatus: "PARTIAL_NEEDS_PRICE",
+      pageCount: 4,
+      generatorVersion: "canonical-professional-pdf.r4-a6",
+      templateVersion: "professional-estimate-pdf:5",
+    });
+    expect(canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata,
+      revision: { ...revision, definition_version_id: "definition-version-1" },
+    })).toBe(true);
+    expect(canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata: { ...metadata, pageCount: null },
+      revision: { ...revision, definition_version_id: "definition-version-1" },
+    })).toBe(false);
+    expect(canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata: { ...metadata, definitionVersionId: "wrong-definition" },
+      revision: { ...revision, definition_version_id: "definition-version-1" },
+    })).toBe(false);
+    expect(canonicalProfessionalArtifactMetadataIdentityMatches({
+      metadata: { templateVersion: "professional-estimate-pdf:4" },
+      revision,
+    })).toBe(true);
   });
 });

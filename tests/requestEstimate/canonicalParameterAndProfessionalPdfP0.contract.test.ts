@@ -271,6 +271,31 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       expectedKind: "pdf",
       expectedDocumentProfile: "professional_v1",
     })).not.toThrow();
+    const r4A6Revision = { ...pipeline, definitionVersionId: "definition-version-r4-a6" };
+    const r4A6Artifact: CanonicalEstimateArtifactView = {
+      ...artifact,
+      metadata: {
+        ...artifact.metadata,
+        templateVersion: "professional-estimate-pdf:5",
+        artifactKind: "professional_pdf",
+        revisionId: PIPELINE_REVISION_ID,
+        definitionVersionId: "definition-version-r4-a6",
+        pageCount: 8,
+        grandTotalStatus: "PARTIAL_NEEDS_PRICE",
+      },
+    };
+    expect(() => assertCanonicalEstimateArtifactIdentity({
+      artifact: r4A6Artifact,
+      revision: r4A6Revision,
+      expectedKind: "pdf",
+      expectedDocumentProfile: "professional_v1",
+    })).not.toThrow();
+    expect(() => assertCanonicalEstimateArtifactIdentity({
+      artifact: { ...r4A6Artifact, metadata: { ...r4A6Artifact.metadata, pageCount: null } },
+      revision: r4A6Revision,
+      expectedKind: "pdf",
+      expectedDocumentProfile: "professional_v1",
+    })).toThrow("документ не принадлежит выбранной версии");
     const asphalt = revision({ revisionId: ASPHALT_REVISION_ID, catalogId: ASPHALT_CATALOG_ID, parameters: {} });
     expect(() => assertCanonicalEstimateArtifactIdentity({
       artifact,
@@ -284,6 +309,9 @@ describe("P0 canonical parameter editor and professional PDF", () => {
   it("keeps the raw PDF internal and routes the professional artifact through the product viewer", () => {
     const screen = readFileSync(resolve(process.cwd(), "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"), "utf8");
     const runtime = readFileSync(resolve(process.cwd(), "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), "utf8");
+    const api = readFileSync(resolve(process.cwd(), "supabase/functions/canonical-estimate/index.ts"), "utf8");
+    const worker = readFileSync(resolve(process.cwd(), "supabase/functions/canonical-estimate-worker/index.ts"), "utf8");
+    const professionalProjection = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts"), "utf8");
     const artifactContract = readFileSync(resolve(process.cwd(), "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts"), "utf8");
     const pdfFlow = screen.slice(screen.indexOf("private completePdfOpen"), screen.indexOf("private openDraftFromHistory"));
 
@@ -295,8 +323,17 @@ describe("P0 canonical parameter editor and professional PDF", () => {
     expect(screen).toContain("historyRecord?.title");
     expect(screen).not.toContain("локальный контекст исторической версии отсутствует");
     expect(runtime).toContain("buildCanonicalArtifactMetadata");
-    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:4"');
-    expect(runtime).toContain("Профессиональная смета");
+    expect(artifactContract).toContain('CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5"');
+    expect(runtime).toContain("buildCanonicalProfessionalPdfProjection");
+    expect(worker).toContain("buildCanonicalProfessionalPdfProjection");
+    expect(runtime).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
+    expect(worker).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
+    expect(runtime).not.toContain("canonical-professional-pdf-local.r3");
+    expect(runtime).toContain("canonicalProfessionalArtifactMetadataIdentityMatches");
+    expect(api).toContain("canonicalProfessionalArtifactMetadataIdentityMatches");
+    expect(professionalProjection).toContain("Профессиональная смета");
+    expect(professionalProjection).toContain("Техническое приложение");
+    expect(professionalProjection).toContain('CANONICAL_PROFESSIONAL_PDF_CATEGORY_ORDER');
     expect(artifactContract).toContain('man_hour: "чел.-ч"');
     expect(runtime).not.toContain("?token=local-dev-signed-artifact-r1");
   });
