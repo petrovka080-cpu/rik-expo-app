@@ -430,7 +430,7 @@ async function applySuccessor(client: Client, input: {
           '{provenance,approvedTemplateBinding,baselineId}',to_jsonb(map.new_baseline_id::text),true),
           '{provenance,approvedTemplateBinding,acceptanceEvidenceSha256}',
           to_jsonb(baseline.acceptance_evidence_sha256),true)
-        else source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$2::text) end,
+        else source.truth_metadata||jsonb_build_object('r4A6Group50RemediationContract',$1::text) end,
         case when source.approved_template_baseline_id is not null then map.new_baseline_id else null end
       from r4a6_group50_definition_map map
       join public.estimate_parameter_definition source on source.definition_version_id=map.old_definition_id
