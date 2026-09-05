@@ -220,7 +220,7 @@ async function cloneSearch(client: Client, input: {
       metadata||jsonb_build_object('contract',$6::text,'parentSearchReleaseId',$7::text,
         'definitionReleaseId',$8::text,'sourceFingerprint',$9::text,
         'activationAllowed',false,'productionEligible',false)
-    from public.estimate_search_index_release where id=$7`, [
+    from public.estimate_search_index_release where id=$7::uuid`, [
     input.searchReleaseId,
     `${input.releaseKey}-search`,
     input.head,
