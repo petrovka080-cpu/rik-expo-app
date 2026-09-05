@@ -607,6 +607,52 @@ async function ensureEstimatePositionsExpanded(
   );
 }
 
+async function openFirstFormulaRowPhotoFlow(
+  adbPath: string,
+  deviceId: string,
+  expectedSelectedDisplayTitle: string,
+): Promise<boolean> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const photoButton = await seekNodeForwardFromAnchor(
+      adbPath,
+      deviceId,
+      (node) =>
+        nodeHasId(node, "request-estimate-selected-work-title") &&
+        node.text.trim() === expectedSelectedDisplayTitle,
+      (node) =>
+        node.resourceId.startsWith("estimate-material-row-photo-button-") &&
+        node.contentDesc === `Фото товара ${FIRST_FORMULA_ROW_TITLE}`,
+      12,
+    );
+    if (!photoButton.node || !tapNode(adbPath, deviceId, photoButton.node)) {
+      continue;
+    }
+    const opened = await waitForSnapshot(
+      adbPath,
+      deviceId,
+      (snapshot) =>
+        Boolean(nodeById(snapshot, "mobile-photo-capture-flow")) ||
+        snapshot.nodes.some(
+          (node) =>
+            node.packageName.includes("permissioncontroller") ||
+            node.resourceId.includes("permissioncontroller"),
+        ),
+      12_000,
+    );
+    if (
+      nodeById(opened, "mobile-photo-capture-flow") ||
+      opened.nodes.some(
+        (node) =>
+          node.packageName.includes("permissioncontroller") ||
+          node.resourceId.includes("permissioncontroller"),
+      )
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function tapById(
   adbPath: string,
   deviceId: string,
@@ -1531,16 +1577,20 @@ export async function runR4A6AndroidAcceptedUiRuntime(input: {
     20_000,
   );
   if (!pushed.ok) failures.push("R4_A6_ANDROID_PHOTO_PUSH_RED");
-  const photoButton = await seekNode(
+  const photoActionOpened = await openFirstFormulaRowPhotoFlow(
     adbPath,
     deviceId,
-    (node) => node.resourceId.startsWith("estimate-material-row-photo-button-"),
-    16,
+    expectedSelectedDisplayTitle,
   );
-  if (!photoButton.node || !tapNode(adbPath, deviceId, photoButton.node)) {
+  if (!photoActionOpened) {
     failures.push("R4_A6_ANDROID_PHOTO_ACTION_RED");
   }
-  const permissionGate = await waitForPhotoPermissionGate(adbPath, deviceId);
+  const permissionGate = photoActionOpened
+    ? await waitForPhotoPermissionGate(adbPath, deviceId)
+    : {
+        snapshot: dumpUi(adbPath, deviceId),
+        cameraPermissionDialogDismissed: false,
+      };
   const photoGate = permissionGate.snapshot;
   const pickerButton =
     nodeById(photoGate, "mobile-photo-pick-library") ??

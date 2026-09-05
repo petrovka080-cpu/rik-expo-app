@@ -284,6 +284,12 @@ describe("Android API34 proof environment", () => {
     );
     expect(journey).toContain("waitForChildRevisionId");
     expect(journey).toContain("waitForPhotoPermissionGate");
+    expect(journey).toContain("openFirstFormulaRowPhotoFlow");
+    expect(journey).toContain(
+      'node.contentDesc === `Фото товара ${FIRST_FORMULA_ROW_TITLE}`',
+    );
+    expect(journey).toContain('nodeById(snapshot, "mobile-photo-capture-flow")');
+    expect(journey).toContain("photoActionOpened");
     expect(journey).toContain("APP_CONTENT_BOTTOM = 1828");
     expect(journey).toContain("cameraPermissionDialogDismissed");
     expect(journey).toContain("tapNodeIncludingBottomSheet");
