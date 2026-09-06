@@ -18,6 +18,7 @@ describe("real named BOQ grouped request UI", () => {
     const rows = [
       ...passportRows("ventilated_facade_rom_concept_expanded_complex_v1"),
       ...passportRows("village_water_supply_rom_concept_expanded_complex_v1"),
+      ...passportRows("demolition_interior_tile_remove_standard_professional_expanded_v1"),
     ];
     const model = buildProfessionalBoqGroupedMainViewModel(rows);
 

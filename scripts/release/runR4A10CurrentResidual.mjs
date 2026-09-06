@@ -141,14 +141,32 @@ function directDependencies(suitePath) {
 }
 
 function historicalRootOwner(suitePath, suite) {
+  const normalizedWorkspace = workspace.replace(/\\/gu, "/").replace(/\/+$/u, "");
   const failure = stripAnsi([
     suite.message,
     ...(suite.assertionResults ?? []).flatMap((assertion) => assertion.failureMessages ?? []),
-  ].join("\n")).replace(/\\/gu, "/");
-  const ownerMatch = failure.match(/(?:at\s+[^ ]+\s+\()?((?:src|app|scripts|supabase)\/[A-Za-z0-9_./-]+\.(?:ts|tsx|js|mjs|sql))(?::\d+)?/u);
+  ].join("\n"))
+    .replace(/\\/gu, "/")
+    .replaceAll(`${normalizedWorkspace}/`, "");
+  const ownerMatch = failure.match(/(?:^|[\s(])((?:src|app|scripts|supabase)\/[A-Za-z0-9_./-]+\.(?:ts|tsx|js|mjs|sql))(?::\d+)?/u);
   if (ownerMatch) return ownerMatch[1];
   const parts = suitePath.split("/");
   return parts.length >= 2 ? parts.slice(0, 2).join("/") : suitePath;
+}
+
+function assertHistoricalRootOwnerBoundary() {
+  const suitePath = "tests/example.test.ts";
+  const outsideWorkspace = historicalRootOwner(suitePath, {
+    message: "at Object.<anonymous> (C:/dev/rik-expo-app/node_modules/example/index.js:1:1)",
+    assertionResults: [],
+  });
+  const insideWorkspace = historicalRootOwner(suitePath, {
+    message: `at Object.<anonymous> (${workspace}/src/lib/estimate/example.ts:1:1)`,
+    assertionResults: [],
+  });
+  if (outsideWorkspace !== "tests/example.test.ts" || insideWorkspace !== "src/lib/estimate/example.ts") {
+    throw new Error(`R4_A10_RESIDUAL_ROOT_OWNER_BOUNDARY_INVALID:${outsideWorkspace}:${insideWorkspace}`);
+  }
 }
 
 function assertionId(assertion) {
@@ -346,6 +364,7 @@ async function runShard(outputRoot, shard, subjectSha) {
   return { terminal, jest };
 }
 
+assertHistoricalRootOwnerBoundary();
 const combinedHistorical = assertHistoricalEvidence();
 const historical = historicalJestResults();
 const suites = [...new Set(combinedHistorical.failedSuites.concat(combinedHistorical.passedSuites))].sort();

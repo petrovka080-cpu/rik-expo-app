@@ -1239,7 +1239,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     ? buildProfessionalWorkPassportIfApplicable(requestedTemplateId)
     : null;
   const selectedTemplateId = exactProfessionalDomainConsumerDraft
-    ? requestedTemplateId || draftCatalogId || draftTemplateId
+    ? draftTemplateId || requestedTemplateId || draftCatalogId
     : multiDomainReferenceConsumerDraft && draftTemplateId
       ? draftTemplateId
     : requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft

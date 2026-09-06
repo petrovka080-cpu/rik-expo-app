@@ -282,6 +282,7 @@ export function buildProfessionalDomainVisibleBaselineV1(input: {
   scopeCapability: string;
   rawInput: string;
   supplied?: Readonly<Record<string, InlineOverride>>;
+  requireExplicitNormativeRateCode?: boolean;
 }): ProfessionalDomainVisibleBaselineV1 {
   const values: Record<string, ProfessionalParameterValueV4> = {};
   const assumptionKeys = new Set<string>();
@@ -331,6 +332,7 @@ export function buildProfessionalDomainVisibleBaselineV1(input: {
     ...input.schema.parameters
       .filter((parameter) => parameter.priority === "P0" &&
         !inactiveAlternativeQuantityIds.has(parameter.parameter_id) &&
+        !(input.requireExplicitNormativeRateCode && parameter.parameter_id === "normative_rate_code") &&
         !isPriceParameter(parameter.parameter_id))
       .map((parameter) => parameter.parameter_id),
     ...selectedQuantityAlternative,

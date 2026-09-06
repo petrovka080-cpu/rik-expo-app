@@ -1,18 +1,20 @@
 import { buildAiEstimateParameterCards } from "../../src/lib/estimate/buildAiEstimateParameterCards";
 import { buildNormativeParameterCompletenessModel } from "../../src/lib/estimate/buildNormativeParameterCompletenessModel";
-import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import {
+  createRegisteredProfessionalDomainAuditRevision,
+  recalculateRegisteredProfessionalDomainAuditRevision,
+} from "../../scripts/estimate/registeredProfessionalDomainAuditAdapter";
 
 export function expectProfessionalDomainVisibleBaselineJourney(input: {
   templateId: string;
   titleRu: string;
 }): void {
-  const runtime = createAiEstimateRuntime();
-  const initial = runtime.createDraft({
+  const initial = createRegisteredProfessionalDomainAuditRevision({
     estimateDraftId: `visible-baseline-${input.templateId}`,
     rawInput: `${input.titleRu} 84 m2`,
-    selectedTemplateId: input.templateId,
+    templateId: input.templateId,
     createdAt: "2026-08-17T00:00:00.000Z",
-  }).revision;
+  });
 
   expect(initial.estimateLevel).toBe("PRELIMINARY_QUANTITY_BOQ");
   expect(initial.status).toBe("draft_ready");
@@ -35,6 +37,11 @@ export function expectProfessionalDomainVisibleBaselineJourney(input: {
     (row) => row.sourceParameters?.professionalDomainFactoryV1 === true,
   )?.sourceParameters;
   expect(source).toBeTruthy();
+  expect(initial.selectedTemplateId).toBe(source?.professionalEstimatePassportId);
+  expect(initial.resolvedIdentity?.passportId).toBe(source?.professionalEstimatePassportId);
+  expect(initial.resolvedIdentity?.requestedCatalogWorkId).toBe(source?.requestedCatalogWorkId);
+  expect(source?.requestedCatalogWorkId).toBe(source?.workKey);
+  expect([source?.workKey, `expanded-template:${source?.workKey}`]).toContain(source?.catalogId);
   expect(source?.professionalDomainVisibleBaselineVersion).toBe("registered-professional-visible-baseline:v1");
   const metadata = source?.professionalDomainParameterMetadata as Record<string, Record<string, unknown>>;
   expect(parameterKeys.every((key) => metadata[key] != null)).toBe(true);
@@ -71,8 +78,8 @@ export function expectProfessionalDomainVisibleBaselineJourney(input: {
   expect(candidate).toBeTruthy();
   expect(initial.assumptions.some((assumption) => assumption.key === candidate.key)).toBe(true);
   const before = Number(initial.params[candidate.key].value);
-  const recalculated = runtime.applyParameterOverride({
-    revision: initial,
+  const recalculated = recalculateRegisteredProfessionalDomainAuditRevision({
+    previous: initial,
     operation: "update_param",
     paramKey: candidate.key,
     rawValue: String(before + 5),
@@ -83,6 +90,10 @@ export function expectProfessionalDomainVisibleBaselineJourney(input: {
   expect(recalculated.revision.params[candidate.key].source).toBe("edited_by_user");
   expect(recalculated.revision.params[candidate.key].value).toBe(before + 5);
   expect(recalculated.diff.changedRowsCount).toBeGreaterThan(0);
+  expect(recalculated.revision.selectedTemplateId).toBe(initial.selectedTemplateId);
+  expect(recalculated.revision.resolvedIdentity?.passportId).toBe(initial.resolvedIdentity?.passportId);
+  expect(recalculated.revision.resolvedIdentity?.requestedCatalogWorkId)
+    .toBe(initial.resolvedIdentity?.requestedCatalogWorkId);
   expect(recalculated.revision.assumptions
     .find((assumption) => assumption.key === candidate.key)?.replacedByUserInput).toBe(true);
 }

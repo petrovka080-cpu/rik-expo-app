@@ -4,6 +4,7 @@ import path from "node:path";
 import { auditDiamondDrillingCalculatorP0 } from "../../src/features/estimates/calculator/families/diamondDrillingCalculator";
 import { professionalWorkPassportRegistryStats } from "../../src/lib/estimate/professionalWorkPassportRegistry";
 import {
+  PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT,
   validateProfessionalWorkPassportRegistry,
   type WorkPassportRegistryValidationSummary,
 } from "../../src/lib/estimate/validateProfessionalWorkPassport";
@@ -249,9 +250,9 @@ function writePassportSampleOutputs(input: {
       source_sha: input.sourceSha,
       template_id: row.template_id,
       ready_professional_work_passport: row.ready_professional_work_passport,
-      minimum_professional_boq_rows_required: 45,
+      minimum_professional_boq_rows_required: PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT,
       row_count: row.row_count,
-      professional_depth_passed: row.row_count >= 45,
+      professional_depth_passed: row.ready_professional_work_passport,
       required_row_types: row.required_row_types,
       counts: {
         work: row.work_rows_count + row.labor_rows_count,

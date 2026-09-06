@@ -596,6 +596,13 @@ function buildDefinitionWithoutHash(catalogId: string): Omit<Batch004R56Canonica
     ["waste_haul_required", parameter({ parameterId: "waste_haul_required", labelRu: "Вывоз отходов входит в scope", inputType: "boolean" })],
     ["access_equipment_required", parameter({ parameterId: "access_equipment_required", labelRu: "Требуется оборудование доступа по ППР", inputType: "boolean" })],
   ]);
+  if (parsed.operation === "REPAIR") {
+    candidates.set("normative_rate_code", parameter({
+      parameterId: "normative_rate_code",
+      labelRu: "Точный применимый код расценки КРЕРр-2015",
+      inputType: "text",
+    }));
+  }
   const requiredIds = new Set(candidates.keys());
   const consumers = new Map<string, Set<string>>();
   for (const formula of formulas) for (const input of formula.inputParameterIds) {
@@ -692,6 +699,7 @@ const BOTH_SCOPE_MODES_R56: readonly ProfessionalEstimateScopeModeV4[] = [
 
 function assemblyRole(parameterId: string): ProfessionalAssemblyParameterDefinitionV4["role"] {
   if (parameterId === "work_included") return "SCOPE_TRIGGER";
+  if (parameterId === "normative_rate_code") return "NORM_RATE";
   if (parameterId === "price_basis_reference" || parameterId === "price_basis_date") return "PRICE_SOURCE_REFERENCE";
   if (parameterId.startsWith("unit_price_")) return "PRICE_INPUT";
   if (parameterId.startsWith("delivery_") || parameterId.startsWith("waste_") || parameterId.startsWith("access_equipment_")) {

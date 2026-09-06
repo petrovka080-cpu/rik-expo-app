@@ -2,6 +2,7 @@ import {
   buildProfessionalWorkPassportV2,
   buildProfessionalWorkPassportV2AcceptanceCases,
 } from "../../src/lib/estimate/buildProfessionalWorkPassportV2";
+import { buildProfessionalWorkPassport } from "../../src/lib/estimate/buildProfessionalWorkPassport";
 
 describe("ProfessionalWorkPassportV2 progressive question window", () => {
   test.each([
@@ -15,6 +16,13 @@ describe("ProfessionalWorkPassportV2 progressive question window", () => {
     expect(passport?.parameter_graph.visible_question_limit).toBe(5);
     expect(passport?.presentation.max_questions_shown).toBe(5);
     expect(passport?.quantity_formulas).toHaveLength(31);
+    const sharedPassport = buildProfessionalWorkPassport(templateId);
+    expect(sharedPassport?.boqRecipe.allRows).toHaveLength(31);
+    expect(sharedPassport?.boqRecipe.allRows.every((row) =>
+      row.formulaId.trim().length > 0 &&
+      row.quantityFormula.trim().length > 0 &&
+      row.calculationTraceTemplate.includes(`formula=${row.quantityFormula}`)
+    )).toBe(true);
     expect(passport?.validation).toMatchObject({
       status: "SOFTWARE_SEALED_READY_FOR_EXPERT_REVIEW",
       blockers: [],

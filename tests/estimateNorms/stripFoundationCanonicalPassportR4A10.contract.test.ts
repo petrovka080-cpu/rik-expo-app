@@ -5,6 +5,9 @@ import {
   STRIP_FOUNDATION_ROWS as COMPATIBILITY_ROWS,
 } from "../../scripts/estimate/concreteBackendR6/reinforcedConcreteStripFoundationR1";
 import { calculateExpandedComplexEstimate } from "../../src/lib/ai/expandedComplexWorks";
+import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
+import { parseUserParamPatch } from "../../src/lib/estimate/parseUserParamPatch";
+import { recalculateEstimateDraftRevision } from "../../src/lib/estimate/recalculateEstimateDraftRevision";
 import {
   buildProfessionalWorkPassport,
   listProfessionalWorkPassportTemplateIds,
@@ -115,6 +118,38 @@ describe("R4-A10 canonical strip-foundation catalog passport", () => {
       const serialized = JSON.stringify(passport);
       for (const fingerprint of WRONG_BUILDING_FINGERPRINTS) expect(serialized).not.toContain(fingerprint);
     }
+  });
+
+  test("keeps an explicitly selected foundation sub-operation template locked across recalculation", () => {
+    const catalogTemplateId =
+      "concrete_foundation_interior_strip_foundation_pour_standard_professional_expanded_v1";
+    const passport = buildProfessionalWorkPassport(catalogTemplateId);
+    if (!passport) throw new Error("explicit_foundation_sub_operation_passport_missing");
+    const first = createEstimateDraftRevision({
+      estimateDraftId: "strip-foundation-explicit-sub-operation",
+      rawInput: `${passport.localizedNameRu} 100 м2`,
+      selectedTemplateId: catalogTemplateId,
+      selectedTemplateName: passport.localizedNameRu,
+      createdAt: "2026-09-06T00:00:00.000Z",
+    });
+    const patch = parseUserParamPatch({
+      revision: first,
+      operation: first.params.area_m2 ? "update_param" : "add_param",
+      paramKey: "area_m2",
+      rawValue: "80 м2",
+    });
+    const second = recalculateEstimateDraftRevision(first, patch, {
+      createdAt: "2026-09-06T00:01:00.000Z",
+      revisionIndex: 2,
+    }).revision;
+
+    expect(first.selectedTemplateId).toBe(catalogTemplateId);
+    expect(second.selectedTemplateId).toBe(catalogTemplateId);
+    expect(first.boq.rows).toHaveLength(passport.boqRecipe.rowCount);
+    expect(second.boq.rows).toHaveLength(passport.boqRecipe.rowCount);
+    expect(second.previousRevisionId).toBe(first.revisionId);
+    expect(second.params.area_m2?.value).toBe(80);
+    expect(second.selectedTemplateId).not.toBe("professional-estimate-passport:v4:strip_foundation");
   });
 
   test("exposes typed technological questions and condition dependencies without building defaults", () => {

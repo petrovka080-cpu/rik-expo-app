@@ -16,10 +16,17 @@ describe("real named BOQ rows avoid raw dumps and generic names", () => {
     expect(critical.flatMap((result) => result.row_names_sample).filter(isGenericProfessionalBoqLineItemName)).toEqual([]);
     expect(critical.flatMap((result) => result.row_names_sample).filter(containsRawFormulaOrDebugProfessionalBoqName)).toEqual([]);
 
-    const passport = buildProfessionalWorkPassport("ventilated_facade_rom_concept_expanded_complex_v1");
-    if (!passport) throw new Error("passport_missing");
-    const rows = passport.boqRecipe.allRows.map((row) => buildProfessionalBoqLineItemQualityFromPassportRow(passport, row));
-    const model = buildProfessionalBoqGroupedMainViewModel([...rows, ...rows], 40);
+    const templateIds = [
+      "ventilated_facade_rom_concept_expanded_complex_v1",
+      "village_water_supply_rom_concept_expanded_complex_v1",
+      "demolition_interior_tile_remove_standard_professional_expanded_v1",
+    ];
+    const rows = templateIds.flatMap((templateId) => {
+      const passport = buildProfessionalWorkPassport(templateId);
+      if (!passport) throw new Error(`passport_missing:${templateId}`);
+      return passport.boqRecipe.allRows.map((row) => buildProfessionalBoqLineItemQualityFromPassportRow(passport, row));
+    });
+    const model = buildProfessionalBoqGroupedMainViewModel(rows, 40);
 
     expect(model.rawRowsCount).toBeGreaterThan(model.visibleRowsCount);
     expect(model.noRawDump).toBe(true);

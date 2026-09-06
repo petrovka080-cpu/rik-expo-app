@@ -14,7 +14,11 @@ import type {
   WorkPassportValidationResult,
 } from "./workPassportContract";
 
-export const PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT = 45;
+// A universal row quota cannot establish technological completeness: the
+// applicable operations and resources differ by work family. Keep only the
+// non-empty structural guard here; family-specific completeness is proved by
+// the authored recipe, semantic fixtures, sources, formulas and row quality.
+export const PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT = 1;
 
 export type WorkPassportRegistryValidationSummary = WorkPassportValidationCounters & {
   templates_total: number;
@@ -140,6 +144,10 @@ export function validateProfessionalWorkPassport(
     };
   }
   const rows = passport.boqRecipe.allRows;
+  const requiredRowTypes = new Set(passport.boqRecipe.requiredRowTypes);
+  const missingRequiredRowTypes = passport.boqRecipe.requiredRowTypes.filter((rowType) =>
+    !rows.some((row) => row.rowType === rowType)
+  );
   const counters: WorkPassportValidationCounters = {
     ...ZERO_COUNTERS,
     passport_has_only_template_name: passportOnlyHasTemplateName(passport) ? 1 : 0,
@@ -150,8 +158,12 @@ export function validateProfessionalWorkPassport(
     rows_without_formula_count: countRowsWithoutFormula(rows),
     wrong_unit_rows_count: countWrongUnits(rows, passport),
     short_professional_boq_count: rows.length < PROFESSIONAL_WORK_PASSPORT_MIN_ROW_COUNT ? 1 : 0,
-    missing_material_rows_count: passport.boqRecipe.materialRows.length === 0 ? 1 : 0,
-    missing_equipment_or_service_rows_count: passport.boqRecipe.equipmentRows.length === 0 && passport.boqRecipe.serviceRows.length === 0 ? 1 : 0,
+    missing_material_rows_count: requiredRowTypes.has("material") && passport.boqRecipe.materialRows.length === 0 ? 1 : 0,
+    missing_equipment_or_service_rows_count:
+      (requiredRowTypes.has("equipment") && passport.boqRecipe.equipmentRows.length === 0) ||
+      (requiredRowTypes.has("service") && passport.boqRecipe.serviceRows.length === 0)
+        ? 1
+        : 0,
     missing_pdf_mapping_count: passport.outputMappings.pdfRowsEqualSnapshotRows &&
       passport.outputMappings.pdfIncludesAssumptionsTraceAndSources ? 0 : 1,
     missing_buyer_handoff_mapping_count: passport.outputMappings.buyerHandoffProcurementSubset &&
@@ -161,6 +173,8 @@ export function validateProfessionalWorkPassport(
   };
   const blockingReasons: string[] = [];
   if (rows.length === 0) pushReason(blockingReasons, "empty_boq_recipe");
+  if (passport.boqRecipe.requiredRowTypes.length === 0) pushReason(blockingReasons, "required_row_types_missing");
+  for (const rowType of missingRequiredRowTypes) pushReason(blockingReasons, `missing_required_row_type:${rowType}`);
   if (passport.parameterSchema.required.length === 0) pushReason(blockingReasons, "parameter_schema_missing");
   if (!passport.parameterSchema.freeOrderWorkParamsSupported) pushReason(blockingReasons, "free_order_work_params_not_supported");
   if (!passport.parameterSchema.professionalDefaultsApplied) pushReason(blockingReasons, "professional_defaults_missing");

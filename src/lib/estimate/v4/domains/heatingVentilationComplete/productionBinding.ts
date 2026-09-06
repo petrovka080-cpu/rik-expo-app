@@ -162,6 +162,8 @@ export function buildHvacProductionDraftV1(
       projectAssemblyId: compilation.project_assembly_id,
       childRevisionId: row.child_revision_id,
       semanticOwner: row.semantic_owner,
+      workSemanticOwner: passportId,
+      professionalEstimatePassportId: passportId,
       rowCode: row.row_id,
       normativeSourceIds: row.normative_source_ids,
       parameterSourceIds: row.parameter_source_ids,

@@ -373,7 +373,7 @@ function r4A6PumpStationRows(): ProfessionalBoqRecipeRow[] {
       normSourceTitle: "Расчётная методика предварительной BOQ повысительной насосной станции",
       normVersion: "2026-09-04",
       normReviewStatus: "engineering_assumption_not_mandatory_norm",
-      calculationTraceTemplate: `${row.expression}; scopeOwner=${row.scopeOwner}`,
+      calculationTraceTemplate: `formula=${row.expression}; scopeOwner=${row.scopeOwner}`,
       formulaContext: { specificationRu: row.specificationRu, scopeOwner: row.scopeOwner },
       includedInEstimate: true,
       includedInProcurement: row.procurementEligible,

@@ -11,7 +11,8 @@ describe("real named BOQ line item quality", () => {
     const { result, items } = auditProfessionalWorkPassportLineItemQuality(passport);
 
     expect(result.ready_real_named_professional_boq_line_items).toBe(true);
-    expect(result.row_count).toBeGreaterThanOrEqual(45);
+    expect(result.row_count).toBeGreaterThan(0);
+    expect([...new Set(items.map((row) => row.rowType))].sort()).toEqual(passport.boqRecipe.requiredRowTypes);
     expect(result.generic_rows_count).toBe(0);
     expect(result.template_only_rows_count).toBe(0);
     expect(result.raw_formula_or_debug_rows_count).toBe(0);

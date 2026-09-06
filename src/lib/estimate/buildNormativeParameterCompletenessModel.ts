@@ -65,7 +65,11 @@ function professionalDomainPassport(
   )?.sourceParameters;
   if (!source) return null;
   const catalogId = typeof source.catalogId === "string" ? source.catalogId : "";
+  const workKey = typeof source.workKey === "string" ? source.workKey : "";
   const requestedCatalogWorkId = typeof source.requestedCatalogWorkId === "string" ? source.requestedCatalogWorkId : "";
+  const professionalEstimatePassportId = typeof source.professionalEstimatePassportId === "string"
+    ? source.professionalEstimatePassportId
+    : "";
   const parameterSchemaId = typeof source.parameterSchemaId === "string" ? source.parameterSchemaId : "";
   const canonicalTechnologyId = typeof source.canonicalTechnologyId === "string" ? source.canonicalTechnologyId : "";
   const projectAssemblyId = typeof source.projectAssemblyId === "string" ? source.projectAssemblyId : "";
@@ -76,7 +80,10 @@ function professionalDomainPassport(
     ? source.parameterKeys.filter((key): key is string => typeof key === "string" && key.trim().length > 0)
     : [];
   const exactIdentity = Boolean(
-    catalogId && requestedCatalogWorkId === revision.selectedTemplateId &&
+    workKey && requestedCatalogWorkId === workKey &&
+    (catalogId === workKey || catalogId === `expanded-template:${workKey}`) &&
+    professionalEstimatePassportId && professionalEstimatePassportId === revision.selectedTemplateId &&
+    revision.resolvedIdentity?.passportId === professionalEstimatePassportId &&
     canonicalTechnologyId && projectAssemblyId && parameterSchemaId &&
     parameterSchemaId === revision.workSpecificParameterSchemaId &&
     parameterSchemaId === revision.resolvedIdentity?.parameterSchemaId &&

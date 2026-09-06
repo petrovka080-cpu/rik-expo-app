@@ -1508,7 +1508,8 @@ export function buildEstimateFromInlineWorkPrompt(
     /ленточн\p{L}*\s+фундамент\p{L}*/iu.test(parseResult.rawInput),
   );
   const allowMultiDomainReferenceDraft =
-    exactMultiDomainReferencePrompt || explicitMultiDomainPassport || explicitStripFoundationAssembly;
+    !exactSelectedProfessionalWorkId &&
+    (exactMultiDomainReferencePrompt || explicitMultiDomainPassport || explicitStripFoundationAssembly);
   // A resolved V4 scope is authoritative regardless of row count. Using an
   // arbitrary >50 threshold sent valid narrow scopes to the 200-row generic
   // legacy BOQ and lost their assembly/revision identity.

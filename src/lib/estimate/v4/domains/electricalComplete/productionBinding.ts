@@ -157,6 +157,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
   const requestedCatalogWorkId = input.catalog_id.startsWith("expanded-template:")
     ? input.catalog_id.slice("expanded-template:".length)
     : inventory.template_id;
+  const passportId = `domain-passport:${input.catalog_id}:v1`;
   const parameterSnapshot = primitiveParameterSnapshot(input.parameter_values);
   const assumptionKeys = Object.entries(input.parameter_values)
     .filter(([, value]) => value.source_type === "VISIBLE_BASELINE_ASSUMPTION")
@@ -249,12 +250,14 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       childRevisionId: row.child_revision_id,
       rowCode: row.row_id,
       semanticOwner: row.semantic_owner,
+      workSemanticOwner: passportId,
+      professionalEstimatePassportId: passportId,
       costOwnerId: row.cost_owner_id,
       includedInProcurement: row.procurement_eligible,
       professionalBoqCategory: row.category,
       applicableSourceIds,
     },
-    templateId: `domain-passport:${input.catalog_id}:v1`,
+    templateId: passportId,
     templateVersion: electricalCompleteDomainFactory.package.manifest.domain_version,
     normSourceId: row.normative_source_ids[0] ?? null,
     normSourceTitle: row.normative_source_ids.join(", "),

@@ -336,6 +336,7 @@ export function buildInteriorFinishesFromInlineInputV1(
     scopeCapability: inventory.scope_capability,
     rawInput: input.rawInput,
     supplied: input.paramOverrides,
+    requireExplicitNormativeRateCode: constructionState(inventory) === "REPAIR",
   });
   const parameterValues = baseline.parameter_values;
   const scopeMode = parameterValues.estimate_scope_mode?.value;
