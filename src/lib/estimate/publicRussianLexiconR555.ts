@@ -167,7 +167,7 @@ const PUBLIC_RUSSIAN_REVIEWED_ADDITIONAL_TITLES_R555: Readonly<Record<string, st
   basement_construction: "Здания и жилые комплексы: устройство подвала",
   foundation_pile_field: "Здания и жилые комплексы: устройство свайного поля фундамента",
   foundation_slab: "Здания и жилые комплексы: устройство фундаментной плиты",
-  strip_foundation: "Здания и жилые комплексы: устройство ленточного фундамента",
+  strip_foundation: "Устройство монолитного железобетонного ленточного фундамента",
   raft_foundation: "Здания и жилые комплексы: устройство плитного фундамента",
   high_rise_glazing: title("facade", "высотное фасадное остекление"),
   curtain_wall_system: title("facade", "устройство навесной фасадной системы"),
@@ -463,6 +463,7 @@ const APPROVED_PUBLIC_ALIASES_R555: Readonly<Record<string, readonly string[]>> 
   bridge_asphalt: ["асфальтирование моста", "асфальтобетонное покрытие моста"],
   parking_structure: ["парковка", "строительство парковки", "многоуровневая парковка"],
   underground_parking: ["подземная парковка", "строительство подземной парковки"],
+  strip_foundation: ["ленточный фундамент", "железобетонная лента", "монолитный ленточный фундамент"],
 });
 
 export const PUBLIC_RUSSIAN_LEXICON_VERSION_R555 = "PUBLIC_RUSSIAN_LEXICON_R555_V1" as const;

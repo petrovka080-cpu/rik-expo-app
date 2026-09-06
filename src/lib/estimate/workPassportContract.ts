@@ -25,6 +25,10 @@ export type WorkPassportParameter = {
   required: boolean;
   source: "user_measurement" | "source_prompt" | "norm_record" | "professional_default";
   missingBlocksDetailedEstimate: boolean;
+  inputKind?: "number" | "text" | "boolean" | "select";
+  allowedValues?: readonly string[];
+  dependencies?: readonly string[];
+  guideRu?: string;
 };
 
 export type WorkPassportRiskPolicy = {

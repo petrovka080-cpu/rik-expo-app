@@ -225,6 +225,7 @@ export const EXPANDED_COMPLEX_REQUIRED_CALCULATOR_IDS = [
   "gasHeatNetworkCalculator",
   "lowRiseBuildingCalculator",
   "highRiseBuildingCalculator",
+  "stripFoundationCanonicalBackendHandoff",
   "highRiseGlazingCalculator",
   "mansardRoofWindowsCalculator",
   "bridgeCalculator",
@@ -294,7 +295,13 @@ export const EXPANDED_COMPLEX_FAMILY_BLOCKS: readonly FamilyBlock[] = [
     "apartment_complex", "administrative_building", "school_building", "hospital_building", "shopping_center",
     "hotel_building", "parking_structure", "underground_parking", "monolithic_frame", "precast_concrete_frame",
     "steel_frame_building", "composite_frame", "slab_column_frame", "shear_walls", "elevator_core", "stair_core",
-    "basement_construction", "foundation_pile_field", "foundation_slab", "strip_foundation", "raft_foundation",
+    "basement_construction", "foundation_pile_field", "foundation_slab",
+    {
+      id: "strip_foundation",
+      nameRu: "Устройство монолитного железобетонного ленточного фундамента",
+      aliases: ["ленточный фундамент", "железобетонная лента", "монолитный ленточный фундамент"],
+      calculatorId: "stripFoundationCanonicalBackendHandoff",
+    }, "raft_foundation",
   ]),
   b("facade_glazing", "Фасады, высотное остекление и доступ", "facade", "highRiseGlazingCalculator", [
     "high_rise_glazing", "curtain_wall_system", "aluminum_window_wall", "stained_glass_facade", "unitized_facade",
@@ -2102,6 +2109,49 @@ export function highRiseBuildingCalculator(input: CalcInput): ExpandedComplexCal
   return buildingLikeCalculator(input, "multi_storey_residential_building");
 }
 
+export function stripFoundationCanonicalBackendHandoff(input: CalcInput): ExpandedComplexCalculatorOutput {
+  const family = familyForCalculator(input, "strip_foundation");
+  const text = normalizePrompt(input.prompt);
+  const meterToken = "(?:м|метр(?:а|ов)?)";
+  const sourceLengthMentionM = numberFromText(text, [
+    new RegExp(`([\\d\\s]+(?:[,.]\\d+)?)\\s*${meterToken}\\s+длин`, "iu"),
+    new RegExp(`длин(?:а|ы|ой)\\s*([\\d\\s]+(?:[,.]\\d+)?)\\s*${meterToken}`, "iu"),
+  ], Number.NaN);
+  const sourceWidthMentionM = numberFromText(text, [
+    new RegExp(`([\\d\\s]+(?:[,.]\\d+)?)\\s*${meterToken}\\s+ширин`, "iu"),
+    new RegExp(`ширин(?:а|ы|ой)\\s*([\\d\\s]+(?:[,.]\\d+)?)\\s*${meterToken}`, "iu"),
+  ], Number.NaN);
+  return output({
+    family,
+    sourcePrompt: input.prompt,
+    parameters: {
+      source_length_mention_m: Number.isFinite(sourceLengthMentionM) ? sourceLengthMentionM : null,
+      source_width_mention_m: Number.isFinite(sourceWidthMentionM) ? sourceWidthMentionM : null,
+      total_axis_length_m: null,
+      strip_width_m: null,
+      strip_height_m: null,
+      canonical_backend_handoff_required: true,
+    },
+    rows: [],
+    assumptions: [
+      "Указанные габариты сохранены как исходные упоминания и не приняты автоматически за длину и ширину фундаментной ленты.",
+      "Новая ревизия рассчитывается только canonical backend definition r6-concrete:reinforced-concrete-strip-foundation.",
+    ],
+    missingInputs: [
+      "Подтвердите общую длину фундаментных лент по осям.",
+      "Укажите ширину и высоту сечения фундаментной ленты.",
+      "Выберите полный конструктив или только укладку бетонной смеси.",
+      "Подтвердите применимость земляных работ, подготовки, гидроизоляции и обратной засыпки.",
+      "Укажите проектную массу арматуры и требуемые характеристики бетона для полного конструктива.",
+    ],
+    formulaSteps: [
+      "legacy expanded-complex compilation disabled for canonical strip foundation",
+      "source dimensions remain unbound until their technological meaning is confirmed",
+    ],
+    estimateLevel: "NEEDS_INPUT",
+  });
+}
+
 export function multiStoreyFrameCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
   return buildingLikeCalculator(input, "monolithic_frame");
 }
@@ -2441,6 +2491,7 @@ export function calculateExpandedComplexEstimate(input: CalcInput): ExpandedComp
     gasHeatNetworkCalculator,
     lowRiseBuildingCalculator,
     highRiseBuildingCalculator,
+    stripFoundationCanonicalBackendHandoff,
     highRiseGlazingCalculator,
     mansardRoofWindowsCalculator,
     bridgeCalculator,

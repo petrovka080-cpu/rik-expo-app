@@ -566,6 +566,26 @@
       "rule_id": "r4_a6_pump_station_engineering_method",
       "norm_source_id_pattern": "^r4-a6-pump-station-engineering-method-2026-09-04$",
       "source_id": "expanded_complex_engineering_reference_formula_2026_07"
+    },
+    {
+      "rule_id": "r4_a10_strip_foundation_krer_sources",
+      "norm_source_id_pattern": "^krer_(06|application_guide)_2015$",
+      "source_id": "professional_public_reference_takeoff_sheet_2026_07"
+    },
+    {
+      "rule_id": "r4_a10_strip_foundation_concrete_norm_source",
+      "norm_source_id_pattern": "^sn_kr_52_02_2024$",
+      "source_id": "kg_minstroy_public_discussion_sn_kr_52_02_2024_concrete_2026_07"
+    },
+    {
+      "rule_id": "r4_a10_strip_foundation_project_source",
+      "norm_source_id_pattern": "^project_documentation$",
+      "source_id": "professional_public_reference_takeoff_sheet_2026_07"
+    },
+    {
+      "rule_id": "r4_a10_strip_foundation_equipment_source",
+      "norm_source_id_pattern": "^selected_equipment_passport$",
+      "source_id": "professional_equipment_shift_sheet_2026_07"
     }
   ]
 }

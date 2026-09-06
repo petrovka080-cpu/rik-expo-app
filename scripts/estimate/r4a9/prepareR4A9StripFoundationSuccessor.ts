@@ -33,6 +33,7 @@ const OUTPUT_ROOT = resolve(".release-runtime/r568/rc09-r4-production-closeout/r
 const SOURCE_PATHS = [
   "scripts/estimate/concreteBackendR6/buildStripFoundationContentPassportR3.ts",
   "scripts/estimate/concreteBackendR6/reinforcedConcreteStripFoundationR1.ts",
+  "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
   "scripts/estimate/r4a9/prepareR4A9StripFoundationSuccessor.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",

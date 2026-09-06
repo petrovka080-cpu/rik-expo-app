@@ -35,6 +35,13 @@ import {
   R4_A6_PUMP_STATION_METHOD_ID,
   R4_A6_PUMP_STATION_ROWS,
 } from "./r4A6PumpStationProfessional";
+import {
+  REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
+  STRIP_FOUNDATION_FORMULAS,
+  STRIP_FOUNDATION_INPUTS,
+  STRIP_FOUNDATION_ROWS,
+  type StripFoundationInput,
+} from "./v4/reinforcedConcreteStripFoundationR1";
 
 export type BaseWorkTemplateManifestRow = {
   template_id: string;
@@ -378,11 +385,193 @@ function r4A6PumpStationRows(): ProfessionalBoqRecipeRow[] {
   });
 }
 
+const R4_A10_STRIP_FOUNDATION_FAMILY_ID = "strip_foundation";
+
+function stripFoundationConditionDependencies(
+  ast: StripFoundationInput["requiredWhen"],
+): string[] {
+  if (!ast) return [];
+  const kind = String(ast.kind ?? "");
+  if (kind === "parameter") return [String(ast.id ?? "")].filter(Boolean);
+  if (
+    kind === "equals" ||
+    kind === "not_equals" ||
+    kind === "in" ||
+    kind === "greater_than" ||
+    kind === "greater_than_or_equal" ||
+    kind === "less_than" ||
+    kind === "less_than_or_equal"
+  ) return [String(ast.parameterId ?? "")].filter(Boolean);
+  if (kind === "not" && ast.operand && typeof ast.operand === "object" && !Array.isArray(ast.operand)) {
+    return stripFoundationConditionDependencies(ast.operand as StripFoundationInput["requiredWhen"]);
+  }
+  if ((kind === "and" || kind === "or") && Array.isArray(ast.operands)) {
+    return uniqueSorted(ast.operands.flatMap((operand) =>
+      operand && typeof operand === "object" && !Array.isArray(operand)
+        ? stripFoundationConditionDependencies(operand as StripFoundationInput["requiredWhen"])
+        : []
+    ));
+  }
+  return [];
+}
+
+function r4A10StripFoundationRows(): ProfessionalBoqRecipeRow[] {
+  const formulaById = new Map(STRIP_FOUNDATION_FORMULAS.map((formula) => [formula.formulaId, formula]));
+  return STRIP_FOUNDATION_ROWS.map((row): ProfessionalBoqRecipeRow => {
+    const formula = formulaById.get(row.formulaId);
+    if (!formula) throw new Error(`WORK_PASSPORT_STRIP_FOUNDATION_FORMULA_MISSING:${row.rowId}:${row.formulaId}`);
+    const rowType: WorkPassportRowType = row.category === "construction_work"
+      ? "work"
+      : row.category === "machine_equipment"
+        ? "equipment"
+        : row.category === "delivery"
+          ? "transport"
+          : "material";
+    const includedInProcurement = row.procurementMode !== "none" && !row.includedInParentRate;
+    const normVersion = row.normSource.documentCode || "project_specific_current_revision";
+    return {
+      rowId: row.rowId,
+      rowType,
+      titleRu: row.canonicalRuName,
+      canonicalUnit: canonicalUnit(row.normalizedUom, row.rowId),
+      sourceUnit: row.normalizedUom,
+      quantityFormula: formula.source,
+      formulaId: row.formulaId,
+      normId: `${row.normSource.sourceKey}:${row.normSource.rateCode ?? row.normSource.tableCode ?? row.rowId}`,
+      normFamilyId: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.definitionId,
+      normSourceId: row.normSource.sourceKey,
+      normSourceTitle: `${row.normSource.documentCode}: ${row.normSource.locator}`,
+      normVersion,
+      normReviewStatus: row.normSource.artifactSha256
+        ? "source_artifact_hash_bound"
+        : "project_or_equipment_source_required",
+      calculationTraceTemplate: [
+        `formulaId=${row.formulaId}`,
+        `formula=${formula.source}`,
+        `semanticOwner=${row.semanticOwnerId}`,
+        `costOwner=${row.costOwner}`,
+        `applicability=${JSON.stringify(row.applicabilityExpression)}`,
+        `normSource=${row.normSource.sourceKey}`,
+        `normVersion=${normVersion}`,
+      ].join("; "),
+      formulaContext: {
+        inputParameterIds: formula.inputParameterIds,
+        applicabilityExpression: row.applicabilityExpression,
+        semanticOwnerId: row.semanticOwnerId,
+        resourceId: row.resourceId,
+        costOwner: row.costOwner,
+        includedInParentRate: row.includedInParentRate,
+        visibility: row.visibility,
+        procurementMode: row.procurementMode,
+        ...(row.cargo ? { cargo: row.cargo } : {}),
+      },
+      includedInEstimate: true,
+      includedInProcurement,
+      priceStatus: "PRICE_MISSING",
+      buyerHandoffRole: includedInProcurement ? "procurement_item" : "estimate_only",
+    };
+  });
+}
+
+function buildR4A10StripFoundationPassport(
+  template: ExpandedComplexTemplate,
+): ProfessionalWorkPassport {
+  const rows = r4A10StripFoundationRows();
+  const grouped = groupRecipeRows(rows);
+  const parameters: WorkPassportParameter[] = STRIP_FOUNDATION_INPUTS
+    .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
+    .map((parameter) => ({
+      key: parameter.parameterId,
+      labelRu: parameter.titleRu,
+      unit: parameter.unitId,
+      required: parameter.required && parameter.defaultValue == null && !parameter.requiredWhen,
+      source: parameter.defaultValue == null ? "user_measurement" : "professional_default",
+      missingBlocksDetailedEstimate: parameter.required,
+      inputKind: parameter.valueType === "decimal"
+        ? "number"
+        : parameter.valueType === "boolean"
+          ? "boolean"
+          : "select",
+      allowedValues: parameter.choices,
+      dependencies: stripFoundationConditionDependencies(parameter.requiredWhen),
+      guideRu: parameter.guideRu,
+    }));
+  const name = REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName;
+  const definitionId = REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.definitionId;
+  return {
+    templateId: template.template_id,
+    templateKind: "expanded_complex_1610",
+    workKey: R4_A10_STRIP_FOUNDATION_FAMILY_ID,
+    familyId: R4_A10_STRIP_FOUNDATION_FAMILY_ID,
+    category: "concrete_foundation",
+    localizedNameRu: name,
+    aliases: [...REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.searchAliases],
+    workDescription: {
+      titleRu: name,
+      workType: "ASSEMBLY",
+      scopeSummary: `${name}; условный полный конструктив или укладка бетонной смеси; ${rows.length} технологических ресурсных строк`,
+    },
+    estimateLevel: template.template_level as WorkEstimateLevel,
+    parameterSchema: {
+      schemaId: `${definitionId}:parameter-schema:r4-a10`,
+      required: parameters.filter((parameter) => parameter.required),
+      optional: parameters.filter((parameter) => !parameter.required),
+      freeOrderWorkParamsSupported: true,
+      professionalDefaultsApplied: true,
+      drawingsNotRequiredForPreliminaryBoq: true,
+      missingInputPolicy: "show_missing_and_continue_preliminary_boq",
+    },
+    riskPolicy: {
+      dangerousWorkNotRefused: true,
+      drawingsRequiredForPreliminaryBoq: false,
+      specialistReviewNoteRequired: true,
+      contractReadyWithoutReview: false,
+      finalTotalAllowedWhenPricesMissing: false,
+    },
+    boqRecipe: grouped,
+    formulas: {
+      formulaFamilyId: definitionId,
+      quantityFormulas: quantityFormulas(rows),
+      formulaSteps: STRIP_FOUNDATION_FORMULAS.map((formula) => `${formula.formulaId}=${formula.source}`),
+      unitConversions: uniqueSorted(rows.map((row) => `${row.sourceUnit}->${row.canonicalUnit}`)),
+    },
+    sources: {
+      normPackId: `${definitionId}:norm-pack:r4-a10`,
+      normVersion: "R4-A10",
+      sourceRegistryIds: uniqueSorted(rows.map((row) => row.normSourceId)),
+      sourceTitles: uniqueSorted(rows.map((row) => row.normSourceTitle)),
+      sourceQuality: "source_backed",
+    },
+    outputMappings: {
+      groupedUiSections: true,
+      pdfRowsEqualSnapshotRows: true,
+      pdfIncludesAssumptionsTraceAndSources: true,
+      buyerHandoffProcurementSubset: true,
+      buyerHandoffExcludesWorkRows: true,
+      missingPricesVisibleWithoutFakeTotal: true,
+    },
+    contentPack: {
+      calculatorId: definitionId,
+      materialRecipeId: `${definitionId}:materials:r4-a10`,
+      laborRecipeId: `${definitionId}:operations:r4-a10`,
+      serviceRecipeId: `${definitionId}:delivery:r4-a10`,
+      equipmentRecipeId: `${definitionId}:equipment:r4-a10`,
+      unitPolicyId: `${definitionId}:units:r4-a10`,
+      pricePolicyId: `${definitionId}:price-missing:r4-a10`,
+      pdfPolicyId: `${definitionId}:pdf-snapshot-parity:r4-a10`,
+      buyerHandoffPolicyId: `${definitionId}:procurement-subset:r4-a10`,
+    },
+  };
+}
+
 export function buildProfessionalWorkPassportForExpandedTemplate(
   template: ExpandedComplexTemplate,
 ): ProfessionalWorkPassport {
   const family = getExpandedComplexWorkFamily(template.work_family_id);
   if (!family) throw new Error(`WORK_PASSPORT_EXPANDED_FAMILY_MISSING:${template.work_family_id}`);
+  if (template.work_family_id === R4_A10_STRIP_FOUNDATION_FAMILY_ID) {
+    return buildR4A10StripFoundationPassport(template);
+  }
   const estimate = calculateExpandedComplexEstimate({
     prompt: family.aliases[0] ?? family.professionalNameRu ?? template.work_family_id,
     familyId: template.work_family_id,

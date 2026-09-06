@@ -121,6 +121,7 @@ function parameterQuestion(field: AiEstimateParameterSchemaField): string {
 }
 
 function parameterHelp(field: AiEstimateParameterSchemaField): string {
+  if (field.helpRu) return field.helpRu;
   const affected = field.affectsRowTitlesRu.slice(0, 3).join("; ");
   return affected
     ? `Влияет на строки сметы: ${affected}.`
@@ -155,14 +156,17 @@ function parameterFromField(
     help_ru: parameterHelp(field),
     unit: field.unit,
     input_type: field.inputKind,
-    allowed_values: field.inputKind === "select" ? ["base", "detailed", "expert_review_required"] : [],
+    allowed_values: field.inputKind === "select" ? field.allowedValues ?? [] : [],
     required: field.required,
     priority: field.priority,
     minimum: range.minimum,
     maximum: range.maximum,
     default_policy: defaultPolicyForField(field, role),
     source_type: field.source,
-    dependencies: uniqueSorted(extractFormulaInputKeys(field.formulaRefs.join(" ")).filter((key) => key !== field.key)),
+    dependencies: uniqueSorted([
+      ...(field.dependencies ?? []),
+      ...extractFormulaInputKeys(field.formulaRefs.join(" ")).filter((key) => key !== field.key),
+    ]),
     affected_formulas: uniqueSorted(field.formulaRefs),
     affected_materials: affectedRows.filter((row) => row.rowType === "material").map((row) => row.rowId),
     affected_operations: affectedRows.filter((row) => row.rowType !== "material").map((row) => row.rowId),
@@ -199,7 +203,7 @@ function hiddenParameterFromPassportParam(
 }
 
 function buildParameterGraph(passport: ProfessionalWorkPassport): ProfessionalWorkPassportV2["parameter_graph"] {
-  const schema = buildAiEstimateParameterSchema(passport.templateId);
+  const schema = buildAiEstimateParameterSchema(passport.templateId, { professionalPassport: passport });
   const rows = passport.boqRecipe.allRows;
   const visibleParameters = (schema?.fields ?? []).map((field) => parameterFromField(field, rows));
   const existing = new Set(visibleParameters.map((param) => param.canonical_key));

@@ -47,6 +47,9 @@ export type AiEstimateParameterSchemaField = {
   affectsRowTitlesRu: string[];
   formulaRefs: string[];
   aliasesRu: string[];
+  allowedValues?: string[];
+  dependencies?: string[];
+  helpRu?: string | null;
   suggestWhenMissing: boolean;
   priority: number;
 };
@@ -185,6 +188,10 @@ function fieldFromPassportParam(
     source,
     rows,
     priority: param.required ? 10 : 20,
+    inputKind: param.inputKind,
+    allowedValues: param.allowedValues,
+    dependencies: param.dependencies,
+    helpRu: param.guideRu,
   });
 }
 
@@ -197,6 +204,10 @@ function buildField(input: {
   source: AiEstimateParameterSchemaFieldSource;
   rows: readonly ProfessionalBoqRecipeRow[];
   priority: number;
+  inputKind?: AiEstimateParameterInputKind;
+  allowedValues?: readonly string[];
+  dependencies?: readonly string[];
+  helpRu?: string;
 }): AiEstimateParameterSchemaField {
   const dictionary = aiEstimateRuDictionaryEntry(input.key);
   const unit = input.unit ?? dictionary?.unit ?? unitFromKey(input.key);
@@ -208,13 +219,16 @@ function buildField(input: {
     unitRu: aiEstimateRuUnitForParameter(input.key, unit),
     required: input.required,
     requiredFor: input.requiredFor,
-    inputKind: inputKindFor(input.key, unit),
+    inputKind: input.inputKind ?? inputKindFor(input.key, unit),
     editable: true,
     source: input.source,
     affectsRowIds: affected.map((row) => row.rowId),
     affectsRowTitlesRu: affected.map((row) => row.titleRu).slice(0, 12),
     formulaRefs: formulasForParam(input.rows, input.key),
     aliasesRu: dictionary?.aliasesRu ?? [],
+    allowedValues: [...(input.allowedValues ?? [])],
+    dependencies: [...(input.dependencies ?? [])],
+    helpRu: input.helpRu?.trim() || null,
     suggestWhenMissing: !isAiEstimateTechnicalHiddenParam(input.key),
     priority: input.priority,
   };
@@ -250,10 +264,15 @@ export function buildAiEstimateParameterSchema(
 ): AiEstimateParameterSchema | null {
   const key = String(templateId ?? "").trim();
   if (!key) return null;
-  if (schemaCache.has(key)) return schemaCache.get(key) ?? null;
+  const authoritativeSharedCorePassport = input.professionalPassport?.contentPack.calculatorId ===
+    "r6-concrete:reinforced-concrete-strip-foundation";
+  const cacheKey = authoritativeSharedCorePassport ? `${key}:authoritative-shared-core` : key;
+  if (schemaCache.has(cacheKey)) return schemaCache.get(cacheKey) ?? null;
 
-  const referencePassport = MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find((item) =>
-    item.professionalEstimatePassportId === key || item.catalogWorkId === key);
+  const referencePassport = authoritativeSharedCorePassport
+    ? undefined
+    : MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find((item) =>
+      item.professionalEstimatePassportId === key || item.catalogWorkId === key);
   if (referencePassport && referencePassport.catalogWorkId !== "asphalt_pavement") {
     const fields: AiEstimateParameterSchemaField[] = referencePassport.parameters.map((parameter, index) => ({
       key: parameter.parameterId,
@@ -273,6 +292,9 @@ export function buildAiEstimateParameterSchema(
         .map((row) => row.professionalNameRu),
       formulaRefs: [...parameter.formulaConsumers],
       aliasesRu: [parameter.labelRu, parameter.parameterId],
+      allowedValues: [],
+      dependencies: [],
+      helpRu: null,
       suggestWhenMissing: true,
       priority: parameter.requiredLevel === "P0" ? index : 100 + index,
     }));
@@ -288,14 +310,14 @@ export function buildAiEstimateParameterSchema(
       requiredFields: fields.filter((field) => field.required),
       optionalFields: fields.filter((field) => !field.required),
     };
-    return rememberParameterSchema(key, schema);
+    return rememberParameterSchema(cacheKey, schema);
   }
 
   const passport = input.professionalPassport?.templateId === key
     ? input.professionalPassport
     : buildProfessionalWorkPassport(key);
   if (!passport) {
-    return rememberParameterSchema(key, null);
+    return rememberParameterSchema(cacheKey, null);
   }
 
   const rows = passport.boqRecipe.allRows;
@@ -324,7 +346,7 @@ export function buildAiEstimateParameterSchema(
     requiredFields: fields.filter((field) => field.required),
     optionalFields: fields.filter((field) => !field.required),
   };
-  return rememberParameterSchema(key, schema);
+  return rememberParameterSchema(cacheKey, schema);
 }
 
 export function clearAiEstimateParameterSchemaCache(): void {
