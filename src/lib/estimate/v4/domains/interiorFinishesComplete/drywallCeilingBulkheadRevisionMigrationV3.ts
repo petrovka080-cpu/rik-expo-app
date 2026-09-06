@@ -2,8 +2,10 @@ import { resolvedEstimateIdentityChecksum } from "../../../resolvedEstimateIdent
 import type { EstimateDraftRevision, EstimateResolvedIdentity } from "../../../estimateDraftRevisionContract";
 import {
   DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3,
+  buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
   drywallCeilingBulkheadCalculationStrategyIdV3,
   drywallCeilingBulkheadProfessionalOwnerIdV3,
+  drywallCeilingBulkheadRowSemanticOwnerIdV3,
 } from "./drywallCeilingBulkheadProfessionalV3";
 import { interiorFinishesDomainFactory } from "./domainPackage";
 import {
@@ -56,6 +58,19 @@ export function migrateDrywallCeilingBulkheadRevisionV3(
   const owner = drywallCeilingBulkheadProfessionalOwnerIdV3(catalogId);
   const calculationStrategyId = drywallCeilingBulkheadCalculationStrategyIdV3(catalogId);
   const canonicalSchemaId = `canonical:${schema.schema_id}:${catalogId}`;
+  const parts = buildDrywallCeilingBulkheadProfessionalPackagePartsV3(inventory);
+  if (!parts) throw new Error(`DRYWALL_CEILING_BULKHEAD_MIGRATION_PARTS_MISSING:${catalogId}`);
+  const semanticOwnerByRowId = new Map(parts.child_assemblies.flatMap((assembly) =>
+    assembly.rows.map((row) => [row.row_id, row.semantic_owner] as const)));
+  const semanticOwnerForRow = (row: EstimateDraftRevision["boq"]["rows"][number], index: number): string => {
+    const currentOwner = semanticOwnerByRowId.get(row.rowId);
+    if (currentOwner) return currentOwner;
+    const previousOwner = row.sourceParameters?.semanticOwner;
+    if (typeof previousOwner === "string" && (
+      previousOwner.startsWith(`${owner}:row:`) || previousOwner.startsWith(`${owner}:legacy-row:`)
+    )) return previousOwner;
+    return `${owner}:legacy-row:${index + 1}`;
+  };
   const previousIdentity = revision.resolvedIdentity;
   const alreadyCanonical =
     previousIdentity?.requestedCatalogWorkId === catalogId &&
@@ -64,10 +79,10 @@ export function migrateDrywallCeilingBulkheadRevisionV3(
     previousIdentity.calculationStrategyId === calculationStrategyId &&
     previousIdentity.legacyFallbackUsed !== true &&
     revision.boq.rows.length > 0 &&
-    revision.boq.rows.every((row) =>
+    revision.boq.rows.every((row, index) =>
       row.sourceParameters?.professionalDomainFactoryV1 === true &&
       row.sourceParameters?.catalogId === catalogId &&
-      row.sourceParameters?.semanticOwner === owner &&
+      row.sourceParameters?.semanticOwner === semanticOwnerForRow(row, index) &&
       row.sourceParameters?.calculationStrategyId === calculationStrategyId,
     );
   if (alreadyCanonical) return revision;
@@ -115,7 +130,7 @@ export function migrateDrywallCeilingBulkheadRevisionV3(
     resolvedIdentity,
     boq: {
       sections: revision.boq.sections.map((section) => ({ ...section, rowIds: [...section.rowIds] })),
-      rows: revision.boq.rows.map((row) => ({
+      rows: revision.boq.rows.map((row, index) => ({
         ...row,
         templateId: owner,
         sourceParameters: {
@@ -132,7 +147,7 @@ export function migrateDrywallCeilingBulkheadRevisionV3(
           parameterSchemaId: canonicalSchemaId,
           parameterSchemaVersion: schema.schema_version,
           parameterKeys: schema.parameters.map((parameter) => parameter.parameter_id),
-          semanticOwner: owner,
+          semanticOwner: semanticOwnerForRow(row, index),
           professionalEstimatePassportId: owner,
           calculationStrategyId,
         },

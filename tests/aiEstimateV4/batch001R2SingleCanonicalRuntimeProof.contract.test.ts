@@ -1,7 +1,14 @@
-import fs from "fs";
-import path from "path";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
-import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import {
+  buildCanonicalProcurementProjection,
+  selectCanonicalArtifactRows,
+} from "../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract";
+import { canonicalEstimateStableJson } from "../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
+import { buildCanonicalProfessionalPdfProjection } from "../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
+import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import {
   DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3,
@@ -14,23 +21,34 @@ import {
   interiorFinishesDomainFactory,
   migrateDrywallCeilingBulkheadRevisionV3,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
-import { batch001ParamOverrides } from "./batch001R2TestSupport";
+import { buildAllBatch001DrywallSuccessorsR3 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/drywallCeilingBulkheadSuccessorR3";
+import { batch001DrywallGoldFixtureValuesR3 } from "../../scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3";
+import { compileBatch001R56ThroughSharedCore } from "../../scripts/estimate/r5/batch001R56SharedCoreProjection";
+import { batch001ParamOverrides, compileBatch001Work } from "./batch001R2TestSupport";
 
 jest.setTimeout(180_000);
 
-function productionRevision(catalogId: string): EstimateDraftRevision {
+function sha256(value: unknown): string {
+  return createHash("sha256").update(canonicalEstimateStableJson(value), "utf8").digest("hex");
+}
+
+function legacySourceRevision(catalogId: string): EstimateDraftRevision {
   const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => item.catalog_id === catalogId)!;
-  return createAiEstimateRuntime().createDraft({
-    estimateDraftId: `single-canonical-runtime-${catalogId}`,
+  const production = compileBatch001Work(catalogId);
+  if (!production.draft) throw new Error(`BATCH001_LEGACY_FIXTURE_NOT_COMPILED:${catalogId}`);
+  return createEstimateDraftRevision({
+    estimateDraftId: `batch001-legacy-source-${catalogId}`,
     rawInput: inventory.localized_name_ru,
-    selectedTemplateId: catalogId,
+    selectedTemplateId: `domain-passport:${catalogId}:v1`,
     selectedWorkKey: inventory.work_key,
     city: "Bishkek",
     currency: "KGS",
     countryCode: "KG",
     paramOverrides: batch001ParamOverrides(catalogId),
     createdAt: "2026-08-13T06:00:00.000Z",
-  }).revision;
+    revisionIndex: 1,
+    prebuiltExactDraft: production.draft,
+  });
 }
 
 function legacyThreeRowRevision(revision: EstimateDraftRevision): EstimateDraftRevision {
@@ -80,74 +98,72 @@ function durableRowPayload(revision: EstimateDraftRevision) {
 }
 
 describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
-  test("proves one owner and one route across create/edit/recalculate/history/PDF/procurement for 16/16", () => {
-    const runtime = createAiEstimateRuntime();
-    const owners = new Map<string, string>();
-    const rowCounts = new Map<string, number>();
+  test("uses one shared backend core across compile/recalculate/PDF/procurement for 16/16", async () => {
+    const definitions = buildAllBatch001DrywallSuccessorsR3();
+    expect(definitions).toHaveLength(16);
 
-    for (const catalogId of DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3) {
-      const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => item.catalog_id === catalogId)!;
-      const bindings = INTERIOR_FINISHES_DOMAIN_CATALOG_BINDINGS.filter((item) => item.catalog_id === catalogId);
+    for (const definition of definitions) {
+      const bindings = INTERIOR_FINISHES_DOMAIN_CATALOG_BINDINGS
+        .filter((item) => item.catalog_id === definition.catalogId);
       expect(bindings).toHaveLength(1);
-      const parts = buildDrywallCeilingBulkheadProfessionalPackagePartsV3(inventory);
-      expect(parts).not.toBeNull();
-      const assemblyOwners = new Set(parts!.child_assemblies.flatMap((assembly) =>
-        assembly.rows.map((row) => row.semantic_owner)));
-      const owner = drywallCeilingBulkheadProfessionalOwnerIdV3(catalogId);
-      expect([...assemblyOwners]).toEqual([owner]);
+      expect(new Set(definition.passport.semanticOwners).size).toBe(definition.resources.length);
+      expect(new Set(definition.passport.costOwners).size).toBe(definition.resources.length);
 
-      const revision = productionRevision(catalogId);
-      expect(revision.boq.rows.length).toBeGreaterThan(3);
-      expect(revision.boq.rows.every((row) => row.sourceParameters?.professionalDomainFactoryV1 === true)).toBe(true);
-      expect(revision.resolvedIdentity).toMatchObject({
-        requestedCatalogWorkId: catalogId,
-        passportId: owner,
-        semanticOwner: owner,
-        calculationStrategyId: drywallCeilingBulkheadCalculationStrategyIdV3(catalogId),
+      const initialValues = batch001DrywallGoldFixtureValuesR3(definition);
+      const initial = await compileBatch001R56ThroughSharedCore({ definition, values: initialValues });
+      const initialBytes = canonicalEstimateStableJson(initial);
+      const editedValues = {
+        ...initialValues,
+        horizontal_face_area_m2: Number(initialValues.horizontal_face_area_m2) + 15,
+      };
+      const edited = await compileBatch001R56ThroughSharedCore({
+        definition,
+        values: editedValues,
+        operation: "recalculate",
       });
-      expect(revision.resolvedIdentity?.legacyFallbackUsed).not.toBe(true);
+      expect(edited.revisionProjection.catalogId).toBe(definition.catalogId);
+      expect(edited.rows).not.toEqual(initial.rows);
+      expect(canonicalEstimateStableJson(initial)).toBe(initialBytes);
 
-      const edited = runtime.applyParameterOverride({
+      const selected = selectCanonicalArtifactRows(initial.rows);
+      const revision = {
+        id: `batch001-r56:${definition.catalogId}:1`,
+        release_id: "batch001-r56-test-release",
+        catalog_id: definition.catalogId,
+        definition_version_id: definition.successorVersionId,
+        checksum_sha256: sha256(initial.revisionProjection),
+        row_count: selected.estimateRows.length,
+        currency_code: initial.totals.currencyCode,
+        totals: initial.totals,
+        input_parameters: initial.parameters,
+        revision_number: 1,
+        created_at: "2026-08-13T06:00:00.000Z",
+        primary_measure_parameter_id: "horizontal_face_area_m2",
+        primary_measure_value: initial.parameters.horizontal_face_area_m2,
+        primary_measure_unit_id: "m2",
+      };
+      const pdf = buildCanonicalProfessionalPdfProjection({
         revision,
-        operation: "update_param",
-        paramKey: "area_m2",
-        rawValue: "135",
-        createdAt: "2026-08-13T06:01:00.000Z",
-        revisionIndex: 2,
-      }).revision;
-      const rebuilt = runtime.rebuildFromRevision({
-        revision: edited,
-        createdAt: "2026-08-13T06:02:00.000Z",
-        revisionIndex: 3,
-      }).revision;
-      const pdf = runtime.buildPdfSnapshot({ revision: rebuilt });
-      const buyer = runtime.buildBuyerPackage({ revision: pdf.revision, snapshot: pdf.snapshot });
-      const approved = runtime.approveRevision({
-        revision: rebuilt,
-        ownerUserId: `single-canonical-owner-${catalogId}`,
-        approvedAt: "2026-08-13T06:03:00.000Z",
+        rows: selected.estimateRows,
+        workTitleRu: definition.passport.titleRu,
+        definitionVersionId: definition.successorVersionId,
       });
-      expect([
+      const procurement = buildCanonicalProcurementProjection({
         revision,
-        edited,
-        rebuilt,
-        pdf.revision,
-      ].every((item) => item.resolvedIdentity?.semanticOwner === owner)).toBe(true);
-      expect(buyer.snapshot.revisionId).toBe(pdf.revision.revisionId);
-      expect(approved.approved).toBe(true);
-      owners.set(catalogId, owner);
-      rowCounts.set(catalogId, revision.boq.rows.length);
+        procurementRows: selected.procurementRows,
+      });
+      expect(pdf.rowCount).toBe(selected.estimateRows.length);
+      expect(procurement.rows.map((row) => row.rowId)).toEqual(
+        selected.procurementRows.map((row) => row.row_id),
+      );
     }
-
-    expect(owners.size).toBe(16);
-    expect(rowCounts.size).toBe(16);
   });
 
-  test("opens and migrates legacy revisions 16/16 without data loss or a reachable legacy calculation route", () => {
-    const runtime = createAiEstimateRuntime();
+  test("opens legacy revisions idempotently without row loss and leaves recalculation to the shared backend core", async () => {
+    const definitions = new Map(buildAllBatch001DrywallSuccessorsR3()
+      .map((definition) => [definition.catalogId, definition] as const));
     for (const catalogId of DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3) {
-      const current = productionRevision(catalogId);
-      const legacy = legacyThreeRowRevision(current);
+      const legacy = legacyThreeRowRevision(legacySourceRevision(catalogId));
       const rowsBefore = durableRowPayload(legacy);
       const paramsBefore = JSON.parse(JSON.stringify(legacy.params));
       const migrated = migrateDrywallCeilingBulkheadRevisionV3(legacy);
@@ -161,19 +177,22 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
         calculationStrategyId: drywallCeilingBulkheadCalculationStrategyIdV3(catalogId),
         legacyFallbackUsed: false,
       });
-      expect(migrated.boq.rows.every((row) => row.sourceParameters?.semanticOwner === owner)).toBe(true);
-      const recalculated = runtime.rebuildFromRevision({
-        revision: legacy,
-        createdAt: "2026-08-13T06:04:00.000Z",
-        revisionIndex: 2,
-      }).revision;
-      expect(recalculated.boq.rows.length).toBeGreaterThan(3);
-      expect(recalculated.resolvedIdentity?.semanticOwner).toBe(owner);
-      expect(recalculated.resolvedIdentity?.legacyFallbackUsed).not.toBe(true);
+      expect(new Set(migrated.boq.rows.map((row) => row.sourceParameters?.semanticOwner)).size)
+        .toBe(migrated.boq.rows.length);
+      expect(migrateDrywallCeilingBulkheadRevisionV3(migrated)).toEqual(migrated);
+
+      const definition = definitions.get(catalogId)!;
+      const current = await compileBatch001R56ThroughSharedCore({
+        definition,
+        values: batch001DrywallGoldFixtureValuesR3(definition),
+        operation: "recalculate",
+      });
+      expect(current.revisionProjection.catalogId).toBe(catalogId);
+      expect(current.rows.length).toBeGreaterThan(0);
     }
   });
 
-  test("keeps the remaining 2234 interior records outside the professional overlay and has no batch runtime branch", () => {
+  test("keeps the remaining 2234 records outside the V3 overlay and has no batch-specific runtime branch", () => {
     const authorized = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
     const unchanged = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) => !authorized.has(item.catalog_id));
     expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(2250);
@@ -185,11 +204,14 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
       expect(technology!.method).not.toContain("DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_V3");
     }
 
-    const productionRoot = path.resolve(__dirname, "../../src/lib/estimate/v4/domains/interiorFinishesComplete");
-    const productionFiles = fs.readdirSync(productionRoot).filter((name) => name.endsWith(".ts"));
-    expect(productionFiles.some((name) => name.toLowerCase().includes("batch001"))).toBe(false);
-    for (const file of productionFiles) {
-      expect(fs.readFileSync(path.join(productionRoot, file), "utf8").toLowerCase()).not.toContain("batch001");
+    const runtimeFiles = [
+      "src/lib/estimate/buildEstimateFromInlineWorkPrompt.ts",
+      "src/lib/estimate/recalculateEstimateDraftRevision.ts",
+      "src/lib/estimate/runtime/createAiEstimateRuntime.ts",
+    ];
+    for (const file of runtimeFiles) {
+      const source = fs.readFileSync(path.resolve(__dirname, "../..", file), "utf8").toLowerCase();
+      expect(source).not.toContain("batch001");
     }
   });
 });

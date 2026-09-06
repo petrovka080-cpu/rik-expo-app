@@ -1,4 +1,4 @@
-import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
+import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import {
   DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3 as BATCH001_DRYWALL_BULKHEAD_CATALOG_IDS_V3,
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
@@ -6,12 +6,10 @@ import {
 import { batch001ParamOverrides } from "./batch001R2TestSupport";
 
 describe("BATCH001 R2 Web runtime matrix", () => {
-  test("the platform-neutral production runtime compiles exact identities and editable BOQs for 16/16", () => {
-    const runtime = createAiEstimateRuntime();
+  test("the Web runtime preserves exact identities and delegates all 16 compiles to the canonical backend", () => {
     const matrix = BATCH001_DRYWALL_BULKHEAD_CATALOG_IDS_V3.map((catalogId) => {
       const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => item.catalog_id === catalogId)!;
-      const revision = runtime.createDraft({
-        estimateDraftId: `batch001-web-${catalogId}`,
+      const result = buildEstimateFromInlineWorkPrompt({
         rawInput: inventory.localized_name_ru,
         selectedTemplateId: `domain-passport:${catalogId}:v1`,
         selectedWorkKey: inventory.work_key,
@@ -19,26 +17,25 @@ describe("BATCH001 R2 Web runtime matrix", () => {
         currency: "KGS",
         countryCode: "KG",
         paramOverrides: batch001ParamOverrides(catalogId),
-        createdAt: "2026-08-13T06:00:00.000Z",
-      }).revision;
+      });
       return {
         catalogId,
-        requestedCatalogId: revision.resolvedIdentity?.requestedCatalogWorkId,
-        professionalWorkId: revision.professionalWorkId,
-        rows: revision.boq.rows.length,
-        missing: revision.missingInputs.length,
-        formulas: revision.boq.rows.filter((row) => row.sourceParameters?.formulaGraphV3).length,
-        priceRoutes: revision.boq.rows.filter((row) => row.sourceParameters?.priceRouteV3).length,
+        matchedTemplateId: result.parseResult.matchedTemplate?.templateId,
+        matchedWorkKey: result.parseResult.matchedTemplate?.family,
+        blockingReason: result.blockingReason,
+        localDraft: result.draft,
+        localCompileAllowed: result.canBuildPreliminaryEstimate,
+        backendParameterCount: result.parseResult.missingInputs.length,
       };
     });
     expect(matrix).toHaveLength(16);
     expect(matrix.every((item) =>
-      item.requestedCatalogId === item.catalogId &&
-      item.professionalWorkId != null &&
-      item.rows > 11 &&
-      item.missing === 0 &&
-      item.formulas === item.rows &&
-      item.priceRoutes === item.rows,
+      item.matchedTemplateId === `domain-passport:${item.catalogId}:v1` &&
+      item.matchedWorkKey != null &&
+      item.blockingReason === "CANONICAL_BACKEND_REQUIRED" &&
+      item.localDraft === null &&
+      item.localCompileAllowed === false &&
+      item.backendParameterCount > 0,
     )).toBe(true);
   });
 });

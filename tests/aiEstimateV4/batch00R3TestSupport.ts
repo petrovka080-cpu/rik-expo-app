@@ -5,6 +5,7 @@ import path from "node:path";
 
 export const ROOT = path.resolve(process.env.BATCH00_R3_EVIDENCE_ROOT ?? ".tmp/batch00-dev");
 export const PREDECESSOR_HEAD = "6f59d0278e7c08a8811263c7fabe56e1423d1f1d";
+export const BATCH00_SCOPE_HEAD = "d32fc3c5aaa786f439500c834a45dfc2155677e8";
 
 export function readJson<T = Record<string, any>>(relative: string): T {
   return JSON.parse(readFileSync(path.join(ROOT, relative), "utf8")) as T;
