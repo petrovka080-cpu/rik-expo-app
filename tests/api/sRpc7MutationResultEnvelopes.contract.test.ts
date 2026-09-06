@@ -95,9 +95,10 @@ describe("S-RPC-7 mutation result envelopes", () => {
       }
     }
     const developerOverride = read("src/lib/developerOverride.ts");
-    expect(developerOverride).toContain("switchLocalDeveloperPrincipal");
-    expect(developerOverride).not.toContain("developer_set_effective_role_v1");
-    expect(developerOverride).not.toContain("developer_clear_effective_role_v1");
+    expect(developerOverride).toContain("setDeveloperEffectiveRole");
+    expect(developerOverride).toContain("clearDeveloperEffectiveRole");
+    expect(developerOverride).toContain("developer_set_effective_role_v1");
+    expect(developerOverride).toContain("developer_clear_effective_role_v1");
   });
 
   it("preserves ignored/void compatibility while rejecting malformed envelopes", () => {

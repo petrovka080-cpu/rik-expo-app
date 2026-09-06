@@ -14,6 +14,9 @@ describe("production grade /request runtime contract", () => {
 
     expect(fixtureBlockers).toEqual([]);
     expect(summary.critical_cases_passed).toBe(100);
+    expect(summary.expected_estimate_ready_count).toBe(99);
+    expect(summary.expected_needs_input_count).toBe(1);
+    expect(summary.needs_input_contract_failure_count).toBe(0);
     expect(summary.empty_estimate_count).toBe(0);
     expect(summary.refusal_count).toBe(0);
     expect(summary.drawings_required_stop_count).toBe(0);

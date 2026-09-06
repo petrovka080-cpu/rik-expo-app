@@ -99,11 +99,16 @@ describe("BATCH-006 Water backend R6 A2 contracts", () => {
     expect(composer).toContain('testID={`canonical-estimate-open-latest-revision-${history[0].revisionId}`}');
     expect(composer).toContain('testID="canonical-estimate-recalculate-top"');
     expect(composer).toContain('testID="canonical-estimate-expand-parameters"');
-    expect(localGateway).toContain("catalog_id ilike");
-    expect(localGateway).toContain("let drainRequested = false");
-    expect(localGateway).toContain("drainRequested = true");
-    expect(localGateway).toContain("while (drainRequested)");
-    expect(edgeGateway).toContain("catalog_id.ilike");
+    expect(localGateway).toContain("estimate_search_document");
+    expect(localGateway).toContain("position(token.q in source.normalized_search_blob)>0");
+    expect(localGateway).toContain("document.catalog_id=page.resolved_catalog_id");
+    expect(localGateway).not.toContain("catalog_id ilike");
+    expect(localGateway).toContain("drainRequested: boolean");
+    expect(localGateway).toContain("state.drainRequested = true");
+    expect(localGateway).toContain("while (state.drainRequested)");
+    expect(edgeGateway).toContain('.from("estimate_search_document")');
+    expect(edgeGateway).toContain('.in("catalog_id", uniqueIds)');
+    expect(edgeGateway).not.toContain("catalog_id.ilike");
   });
 
   it("keeps local Android cleartext proof isolated from the production release manifest", () => {

@@ -39,6 +39,11 @@ const mockClearLocalDraftId = jest.fn();
 const mockInvalidateRequestsReadCapabilitiesCache = jest.fn();
 const mockResetQueryCache = jest.fn();
 
+const loginTransitionCalls = () => mockReplace.mock.calls.filter(([target]) =>
+  target === "/auth/login" ||
+  (target && typeof target === "object" && target.pathname === "/auth/login")
+);
+
 // ─── Mocks (same as rootLayout.recovery.test.tsx) ────────────────
 
 jest.mock("../../src/lib/runtime/installWeakRefPolyfill", () => ({}));
@@ -54,6 +59,7 @@ jest.mock("expo-router", () => ({
   },
   useSegments: (...args: unknown[]) => mockUseSegments(...args),
   usePathname: (...args: unknown[]) => mockUsePathname(...args),
+  useGlobalSearchParams: () => ({}),
   useRootNavigationState: (...args: unknown[]) =>
     mockUseRootNavigationState(...args),
 }));
@@ -78,6 +84,16 @@ jest.mock("../../src/lib/cache/clearAppCache", () => ({
 }));
 
 jest.mock("../../src/lib/supabaseClient", () => ({
+  supabaseClientAvailability: {
+    status: "ready",
+    environment: "test",
+    client: {
+      auth: {
+        onAuthStateChange: (...args: unknown[]) =>
+          mockOnAuthStateChange(...args),
+      },
+    },
+  },
   isSupabaseEnvValid: true,
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   supabase: {
@@ -337,7 +353,10 @@ describe("NAV-P0 regression: auth listener lifecycle", () => {
     // Auth cleanup should have happened (proves listener was alive)
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/(tabs)/profile" },
+    });
   });
 
   it("auth listener responds to SIGNED_IN after navigating to office child and back", async () => {
@@ -384,6 +403,6 @@ describe("NAV-P0 regression: auth listener lifecycle", () => {
     });
 
     // The listener was alive: it should NOT trigger login redirect
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
   });
 });

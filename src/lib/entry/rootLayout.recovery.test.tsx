@@ -28,6 +28,11 @@ const mockClearLocalDraftId = jest.fn();
 const mockInvalidateRequestsReadCapabilitiesCache = jest.fn();
 const mockResetQueryCache = jest.fn();
 
+const loginTransitionCalls = () => mockReplace.mock.calls.filter(([target]) =>
+  target === "/auth/login" ||
+  (target && typeof target === "object" && target.pathname === "/auth/login")
+);
+
 jest.mock("../runtime/installWeakRefPolyfill", () => ({}));
 
 jest.mock("expo-router", () => ({
@@ -42,6 +47,7 @@ jest.mock("expo-router", () => ({
   },
   useSegments: (...args: unknown[]) => mockUseSegments(...args),
   usePathname: (...args: unknown[]) => mockUsePathname(...args),
+  useGlobalSearchParams: () => ({}),
   useRootNavigationState: (...args: unknown[]) =>
     mockUseRootNavigationState(...args),
 }));
@@ -66,6 +72,15 @@ jest.mock("../cache/clearAppCache", () => ({
 }));
 
 jest.mock("../supabaseClient", () => ({
+  supabaseClientAvailability: {
+    status: "ready",
+    environment: "test",
+    client: {
+      auth: {
+        onAuthStateChange: (...args: unknown[]) => mockOnAuthStateChange(...args),
+      },
+    },
+  },
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   hasPersistedAuthSessionHint: (...args: unknown[]) =>
     mockHasPersistedAuthSessionHint(...args),
@@ -213,7 +228,7 @@ describe("RootLayout recovery bootstrap", () => {
     });
 
     expect(renderer!.root.findByProps({ testID: "root-stack" })).toBeTruthy();
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
     expect(mockStopQueueWorker).not.toHaveBeenCalled();
     expect(mockClearDocumentSessions).not.toHaveBeenCalled();
     expect(mockClearCurrentSessionRoleCache).not.toHaveBeenCalled();
@@ -238,7 +253,10 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/" },
+    });
     expect(mockStopQueueWorker).toHaveBeenCalledTimes(1);
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
@@ -307,7 +325,10 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/office/warehouse" },
+    });
     expect(mockStopQueueWorker).toHaveBeenCalledTimes(1);
     expect(mockClearDocumentSessions).toHaveBeenCalledTimes(1);
     expect(mockClearCurrentSessionRoleCache).toHaveBeenCalledTimes(1);
@@ -339,7 +360,7 @@ describe("RootLayout recovery bootstrap", () => {
       await Promise.resolve();
     });
 
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
     expect(mockStopQueueWorker).not.toHaveBeenCalled();
     expect(mockClearDocumentSessions).not.toHaveBeenCalled();
     expect(mockClearCurrentSessionRoleCache).not.toHaveBeenCalled();
@@ -478,7 +499,7 @@ let renderer: TestRenderer.ReactTestRenderer;
     });
 
     // The critical assertion: after SIGNED_IN, the route guard must NOT send user back to login.
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
   });
 
   it("treats non-terminal null auth events as unknown on office routes", async () => {
@@ -523,7 +544,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       await Promise.resolve();
     });
 
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
     expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
       expect.objectContaining({
         event: "auth_redirect_blocked",
@@ -566,7 +587,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       await Promise.resolve();
     });
 
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
 
     await act(async () => {
       jest.advanceTimersByTime(3_000);
@@ -578,7 +599,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       caller: "root_layout_post_auth_exit",
     });
     expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
   });
 
   it("keeps post-auth settle read failures controlled without redirecting to login", async () => {
@@ -619,7 +640,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       caller: "root_layout_post_auth_exit",
     });
     expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
     expect(mockRecordPlatformObservability).toHaveBeenCalledWith(
       expect.objectContaining({
         event: "auth_gate_session_settle_result",
@@ -659,7 +680,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       await Promise.resolve();
     });
 
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
 
     await act(async () => {
       jest.advanceTimersByTime(3_000);
@@ -668,7 +689,10 @@ let renderer: TestRenderer.ReactTestRenderer;
     });
 
     expect(mockGetSessionSafe).toHaveBeenCalledTimes(2);
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/(tabs)/profile" },
+    });
   });
 
   it("keeps a persisted session on protected office cold start without redirecting to login", async () => {
@@ -690,7 +714,7 @@ let renderer: TestRenderer.ReactTestRenderer;
       await Promise.resolve();
     });
 
-    expect(mockReplace).not.toHaveBeenCalledWith("/auth/login");
+    expect(loginTransitionCalls()).toHaveLength(0);
     expect(mockEnsureQueueWorker).toHaveBeenCalledTimes(1);
     expect(mockWarmCurrentSessionProfile).toHaveBeenCalledWith("root_layout", {
       id: "user-1",
@@ -778,7 +802,10 @@ let renderer: TestRenderer.ReactTestRenderer;
       await Promise.resolve();
     });
 
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/office/warehouse" },
+    });
     expect(mockStopQueueWorker).toHaveBeenCalled();
   });
 
@@ -879,7 +906,10 @@ let renderer: TestRenderer.ReactTestRenderer;
     });
 
     expect(mockReplace).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith("/auth/login");
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/auth/login",
+      params: { returnTo: "/office/warehouse" },
+    });
 
     await act(async () => {
       jest.advanceTimersByTime(3_000);

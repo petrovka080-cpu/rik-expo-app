@@ -16,8 +16,6 @@ import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate/globa
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
@@ -26,6 +24,10 @@ import { buildStructuredEstimatePayload, type StructuredEstimatePayload } from "
 import type { StructuredEstimateRow } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 
 export const GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS =
   "GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_100_WORK_CASES_CERTIFICATION_NO_BUILDS" as const;
@@ -509,7 +511,7 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
   __resetConsumerRepairRequestStoreForTests();
   const { estimate, payload } = buildExtendedProfessionalEstimateForCase(testCase);
   const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(estimate);
-  const bundle = createConsumerRepairRequestDraft({
+  const bundle = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `extended-100-${testCase.case_id}`,
     problemText: testCase.prompt,
     repairType: testCase.expected_work_group,
@@ -519,8 +521,8 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
     aiDraft,
   });
   const requestViewModel = buildRequestEstimateViewModel(bundle);
-  const approved = approveConsumerRepairRequestDraft({
-    requestDraftId: bundle.draft.id,
+  const approved = approveCanonicalConsumerRepairAuditDraft({
+    bundle,
     userId: bundle.draft.consumerUserId,
     generatedAt: GENERATED_AT,
   });

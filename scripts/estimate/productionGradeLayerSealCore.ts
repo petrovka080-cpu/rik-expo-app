@@ -4,12 +4,15 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests/consumerRequestService";
 import { getConsumerRepairPdfStorageObject } from "../../src/lib/consumerRequests/consumerRequestPdfStorage";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
+import { pumpingStationCalculator } from "../../src/lib/ai/expandedComplexWorks";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 
 export const PRODUCTION_GRADE_CRITICAL_CASE_SET = "production-grade-critical" as const;
 export const GREEN_AI_ESTIMATE_PRODUCTION_GRADE_LAYER_SEAL_WEB_ANDROID_COMMITTED_NO_RELEASE =
@@ -54,6 +57,7 @@ export type ProductionGradeCriticalCase = {
   forbidden_drawings_required_stop: boolean;
   forbidden_raw_dump: boolean;
   forbidden_fake_final_total: boolean;
+  expected_outcome?: "estimate_ready" | "needs_input";
 };
 
 export type ProductionGradeCriticalCasesFixture = {
@@ -72,11 +76,13 @@ export type ProductionGradeCaseProof = {
   source: string;
   expected_family: string;
   expected_template_id: string | null;
+  expected_outcome: "estimate_ready" | "needs_input";
+  actual_outcome: "estimate_ready" | "needs_input";
   actual_family: string;
   repair_type: string;
   selected_work_key: string | null;
   selected_template_id: string | null;
-  draft_source: "ai_estimate_runtime" | "legacy_consumer_repair_adapter";
+  draft_source: "ai_estimate_runtime" | "legacy_consumer_repair_adapter" | "canonical_needs_input";
   row_count: number;
   work_rows_count: number;
   material_rows_count: number;
@@ -174,7 +180,7 @@ const ASSUMPTION_RE =
 const MISSING_INPUT_RE =
   /(?:недостающ|вводн|missing|input|assumed)/i;
 
-function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestDraft>) {
+function currentRevision(bundle: ReturnType<typeof approveCanonicalConsumerRepairAuditDraft>) {
   return bundle.estimateRevisionState?.revisions.find(
     (candidate) => candidate.revision_id === bundle.estimateRevisionState?.current_revision_id,
   ) ?? null;
@@ -293,7 +299,7 @@ export function loadProductionGradeCriticalCases(): ProductionGradeCriticalCase[
 
 export function productionGradeCorpusFingerprint(cases = loadProductionGradeCriticalCases()): string {
   return cases.map((testCase) =>
-    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
+    `${testCase.case_id}:${testCase.source}:${testCase.coverage_group}:${testCase.expected_outcome ?? "estimate_ready"}:${testCase.expected_family}:${testCase.expected_template_id ?? ""}:${testCase.selected_template_id ?? ""}:${testCase.selected_work_key ?? ""}:${testCase.prompt}`
   ).join("\n");
 }
 
@@ -319,11 +325,19 @@ export function validateProductionGradeCriticalCases(
     if (testCase.selected_template_id != null && !testCase.selected_template_id.trim()) blockers.push(`fixture_empty_selected_template_id:${testCase.case_id}`);
     if (testCase.selected_work_key != null && !testCase.selected_work_key.trim()) blockers.push(`fixture_empty_selected_work_key:${testCase.case_id}`);
     if (!PRODUCTION_GRADE_COVERAGE_GROUPS.includes(testCase.coverage_group)) blockers.push(`fixture_bad_coverage_group:${testCase.case_id}`);
-    if (!Array.isArray(testCase.required_row_types) || testCase.required_row_types.length === 0) blockers.push(`fixture_missing_required_row_types:${testCase.case_id}`);
-    if (!Array.isArray(testCase.expected_units) || testCase.expected_units.length === 0) blockers.push(`fixture_missing_expected_units:${testCase.case_id}`);
+    const expectedOutcome = testCase.expected_outcome ?? "estimate_ready";
+    if (expectedOutcome === "estimate_ready") {
+      if (!Array.isArray(testCase.required_row_types) || testCase.required_row_types.length === 0) blockers.push(`fixture_missing_required_row_types:${testCase.case_id}`);
+      if (!Array.isArray(testCase.expected_units) || testCase.expected_units.length === 0) blockers.push(`fixture_missing_expected_units:${testCase.case_id}`);
+      if (testCase.pdf_required !== true) blockers.push(`fixture_pdf_not_required:${testCase.case_id}`);
+      if (testCase.buyer_handoff_required !== true) blockers.push(`fixture_buyer_handoff_not_required:${testCase.case_id}`);
+    } else {
+      if (testCase.required_row_types.length !== 0) blockers.push(`fixture_needs_input_has_required_row_types:${testCase.case_id}`);
+      if (testCase.expected_units.length !== 0) blockers.push(`fixture_needs_input_has_expected_units:${testCase.case_id}`);
+      if (testCase.pdf_required !== false) blockers.push(`fixture_needs_input_pdf_must_be_blocked:${testCase.case_id}`);
+      if (testCase.buyer_handoff_required !== false) blockers.push(`fixture_needs_input_buyer_must_be_blocked:${testCase.case_id}`);
+    }
     if (!Array.isArray(testCase.forbidden_units)) blockers.push(`fixture_missing_forbidden_units:${testCase.case_id}`);
-    if (testCase.pdf_required !== true) blockers.push(`fixture_pdf_not_required:${testCase.case_id}`);
-    if (testCase.buyer_handoff_required !== true) blockers.push(`fixture_buyer_handoff_not_required:${testCase.case_id}`);
     if (testCase.forbidden_refusal !== true) blockers.push(`fixture_refusal_not_forbidden:${testCase.case_id}`);
     if (testCase.forbidden_drawings_required_stop !== true) blockers.push(`fixture_drawings_stop_not_forbidden:${testCase.case_id}`);
     if (testCase.forbidden_raw_dump !== true) blockers.push(`fixture_raw_dump_not_forbidden:${testCase.case_id}`);
@@ -334,12 +348,102 @@ export function validateProductionGradeCriticalCases(
   return blockers;
 }
 
+function runProductionGradeNeedsInputCase(
+  testCase: ProductionGradeCriticalCase,
+): ProductionGradeCaseProof {
+  const output = pumpingStationCalculator({ prompt: testCase.prompt });
+  const rows = [
+    ...output.material_rows,
+    ...output.work_rows,
+    ...output.equipment_rows,
+    ...output.service_rows,
+  ];
+  const blockers = [
+    output.work_family_id === testCase.expected_family
+      ? ""
+      : `family_mismatch:${output.work_family_id}:${testCase.expected_family}`,
+    output.estimate_level === "NEEDS_INPUT"
+      ? ""
+      : `expected_needs_input:${output.estimate_level}`,
+    rows.length === 0 ? "" : `needs_input_rows_generated:${rows.length}`,
+    Object.keys(output.input_parameters).length === 0
+      ? ""
+      : `needs_input_invented_parameters:${Object.keys(output.input_parameters).length}`,
+    output.missing_design_inputs.length > 0 ? "" : "needs_input_questions_missing",
+    output.assumptions.length === 0 ? "" : `needs_input_assumptions_generated:${output.assumptions.length}`,
+    output.formula_steps.length === 0 ? "" : `needs_input_formulas_generated:${output.formula_steps.length}`,
+  ].filter(Boolean);
+  return {
+    case_id: testCase.case_id,
+    prompt: testCase.prompt,
+    coverage_group: testCase.coverage_group,
+    source: testCase.source,
+    expected_family: testCase.expected_family,
+    expected_template_id: testCase.expected_template_id ?? null,
+    expected_outcome: "needs_input",
+    actual_outcome: output.estimate_level === "NEEDS_INPUT" ? "needs_input" : "estimate_ready",
+    actual_family: output.work_family_id,
+    repair_type: output.work_family_id,
+    selected_work_key: output.work_family_id,
+    selected_template_id: null,
+    draft_source: "canonical_needs_input",
+    row_count: rows.length,
+    work_rows_count: output.work_rows.length,
+    material_rows_count: output.material_rows.length,
+    service_rows_count: output.service_rows.length,
+    equipment_rows_count: output.equipment_rows.length,
+    other_rows_count: 0,
+    grouped_sections_count: 0,
+    assumption_rows_count: 0,
+    missing_inputs_count: output.missing_design_inputs.length,
+    units: [],
+    required_row_types_present: true,
+    expected_units_present: true,
+    forbidden_units_absent: true,
+    required_keywords_present: true,
+    first_work_title: null,
+    first_material_title: null,
+    first_service_title: null,
+    first_equipment_title: null,
+    risk_level: testCase.high_risk_expected ? "regulated" : null,
+    high_risk_contract_present: true,
+    dangerous_work_not_refused: true,
+    drawings_not_required_for_preliminary_boq: true,
+    assumptions_visible: true,
+    risk_notes_visible: true,
+    missing_inputs_visible: output.missing_design_inputs.length > 0,
+    final_contract_status_blocked_until_review: true,
+    all_rows_have_row_type: true,
+    all_rows_have_canonical_unit: true,
+    all_rows_have_norm_source: true,
+    all_rows_have_calculation_trace: true,
+    all_rows_have_runtime_contract_marker: true,
+    no_raw_dump: true,
+    no_fake_final_total_without_source: output.price_state.finalTotalAllowed === false,
+    snapshot_created: false,
+    snapshot_row_count: 0,
+    pdf_generated_from_snapshot: false,
+    pdf_rows_bound_to_snapshot: false,
+    pdf_storage_object_exists: false,
+    pdf_body_length: 0,
+    buyer_handoff_created: false,
+    buyer_handoff_procurement_subset_valid: false,
+    buyer_handoff_items_count: 0,
+    buyer_work_rows_count: 0,
+    passed: blockers.length === 0,
+    blocking_reasons: blockers,
+  };
+}
+
 export function runProductionGradeEstimateCase(
   testCase: ProductionGradeCriticalCase,
 ): ProductionGradeCaseProof {
+  if (testCase.expected_outcome === "needs_input") {
+    return runProductionGradeNeedsInputCase(testCase);
+  }
   __resetConsumerRepairRequestStoreForTests();
   const { aiDraft, draftSource } = buildProductionGradeAiDraft(testCase);
-  const draft = createConsumerRepairRequestDraft({
+  const draft = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `production-grade-${testCase.case_id}`,
     problemText: testCase.prompt,
     repairType: aiDraft.repairType,
@@ -349,8 +453,8 @@ export function runProductionGradeEstimateCase(
     contactPhone: "0700000000",
     aiDraft,
   });
-  const approved = approveConsumerRepairRequestDraft({
-    requestDraftId: draft.draft.id,
+  const approved = approveCanonicalConsumerRepairAuditDraft({
+    bundle: draft,
     userId: draft.draft.consumerUserId,
     generatedAt: "2026-07-05T00:00:00.000Z",
   });
@@ -483,6 +587,8 @@ export function runProductionGradeEstimateCase(
     source: testCase.source,
     expected_family: testCase.expected_family,
     expected_template_id: testCase.expected_template_id ?? null,
+    expected_outcome: "estimate_ready",
+    actual_outcome: "estimate_ready",
     actual_family: actualFamily,
     repair_type: aiDraft.repairType,
     selected_work_key: aiDraft.selectedWork?.selectedWorkKey ?? null,
@@ -543,21 +649,28 @@ export function runProductionGradeCriticalCases(
 
 export function summarizeProductionGradeCaseProofs(proofs: readonly ProductionGradeCaseProof[]) {
   const failed = proofs.filter((proof) => !proof.passed);
+  const estimateReady = proofs.filter((proof) => proof.expected_outcome === "estimate_ready");
+  const needsInput = proofs.filter((proof) => proof.expected_outcome === "needs_input");
   return {
     critical_cases_count: proofs.length,
     critical_cases_passed: proofs.filter((proof) => proof.passed).length,
     critical_cases_failed: failed.length,
-    empty_estimate_count: proofs.filter((proof) => proof.row_count === 0).length,
+    expected_estimate_ready_count: estimateReady.length,
+    expected_needs_input_count: needsInput.length,
+    needs_input_contract_failure_count: needsInput.filter((proof) =>
+      !proof.passed || proof.actual_outcome !== "needs_input"
+    ).length,
+    empty_estimate_count: estimateReady.filter((proof) => proof.row_count === 0).length,
     refusal_count: proofs.filter((proof) => !proof.dangerous_work_not_refused).length,
     drawings_required_stop_count: proofs.filter((proof) => !proof.drawings_not_required_for_preliminary_boq).length,
     raw_dump_ui_count: proofs.filter((proof) => !proof.no_raw_dump).length,
-    pdf_missing_count: proofs.filter((proof) => !proof.pdf_generated_from_snapshot || !proof.pdf_storage_object_exists).length,
-    buyer_handoff_missing_count: proofs.filter((proof) => !proof.buyer_handoff_created || !proof.buyer_handoff_procurement_subset_valid).length,
+    pdf_missing_count: estimateReady.filter((proof) => !proof.pdf_generated_from_snapshot || !proof.pdf_storage_object_exists).length,
+    buyer_handoff_missing_count: estimateReady.filter((proof) => !proof.buyer_handoff_created || !proof.buyer_handoff_procurement_subset_valid).length,
     wrong_family_count: proofs.filter((proof) => proof.actual_family !== proof.expected_family).length,
     wrong_template_count: proofs.filter((proof) =>
       proof.expected_template_id != null && proof.selected_template_id !== proof.expected_template_id
     ).length,
-    wrong_units_count: proofs.filter((proof) => !proof.expected_units_present || !proof.forbidden_units_absent).length,
+    wrong_units_count: estimateReady.filter((proof) => !proof.expected_units_present || !proof.forbidden_units_absent).length,
     blockers: failed.flatMap((proof) => proof.blocking_reasons.map((reason) => `${proof.case_id}:${reason}`)),
   };
 }

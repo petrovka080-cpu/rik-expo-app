@@ -3,11 +3,13 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
   getConsumerRepairPdfStorageObject,
 } from "../../src/lib/consumerRequests";
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 
 export const PROFESSIONAL_BOQ_RUNTIME_CONTRACT_CASE_SET = "professional-boq-runtime-contract-18" as const;
 
@@ -138,7 +140,7 @@ const DRAWINGS_REQUIRED_STOP_RE =
 const SPECIALIST_NOTE_RE =
   /(?:специалист|подрядчик|допуск|обследован|инженер|проект)/i;
 
-function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestDraft>) {
+function currentRevision(bundle: ReturnType<typeof approveCanonicalConsumerRepairAuditDraft>) {
   return bundle.estimateRevisionState?.revisions.find(
     (candidate) => candidate.revision_id === bundle.estimateRevisionState?.current_revision_id,
   ) ?? null;
@@ -220,7 +222,7 @@ export function runProfessionalBoqRuntimeContractCase(
 ): ProfessionalBoqRuntimeContractCaseProof {
   __resetConsumerRepairRequestStoreForTests();
   const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" });
-  const draft = createConsumerRepairRequestDraft({
+  const draft = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `professional-boq-runtime-${testCase.case_id}`,
     problemText: testCase.prompt,
     repairType: aiDraft.repairType,
@@ -230,8 +232,8 @@ export function runProfessionalBoqRuntimeContractCase(
     contactPhone: "0700000000",
     aiDraft,
   });
-  const approved = approveConsumerRepairRequestDraft({
-    requestDraftId: draft.draft.id,
+  const approved = approveCanonicalConsumerRepairAuditDraft({
+    bundle: draft,
     userId: draft.draft.consumerUserId,
     generatedAt: "2026-07-05T00:00:00.000Z",
   });

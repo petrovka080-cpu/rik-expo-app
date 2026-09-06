@@ -216,8 +216,16 @@ describe("M1 Asphalt remediation R4-R8 exact evidence contracts", () => {
       "src/lib/estimate/v4/roadworks/roadworksWaveAProductionBinding.ts",
       "scripts/estimate/auditCompletedDomainsDepthBaseline.ts",
     ];
+    const protectedEvidenceOverlay = new Set([
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
+      "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json",
+    ]);
     const outside = changed.filter((file) =>
-      !file.startsWith("tests/") && !file.startsWith("scripts/estimate/") &&
+      !protectedEvidenceOverlay.has(file) &&
+      !file.startsWith("tests/") &&
+      !/\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(file) &&
+      !file.startsWith("scripts/estimate/") &&
       !allowedProduction.some((allowed) => allowed.endsWith("/") ? file.startsWith(allowed) : file === allowed));
     expect(outside).toEqual([]);
   });

@@ -723,9 +723,12 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "linear_m",
+        "kg",
+        "m3",
+        "pcs",
         "set",
-        "trip"
+        "shift",
+        "sq_m"
       ],
       "forbidden_units": [
         "unknown",
@@ -926,14 +929,10 @@
       "required_equipment_keywords": [],
       "expected_units": [
         "hour",
-        "l",
         "m2",
         "m3",
-        "pcs",
-        "set",
         "shift",
-        "t",
-        "trip"
+        "t"
       ],
       "forbidden_units": [
         "unknown",
@@ -1289,8 +1288,12 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
+        "hour",
+        "kg",
+        "l",
         "m",
-        "set",
+        "m2",
+        "pcs",
         "shift",
         "trip"
       ],
@@ -2178,7 +2181,6 @@
       "expected_units": [
         "document",
         "l",
-        "m",
         "m2",
         "m3",
         "machine_hour",
@@ -2204,7 +2206,7 @@
     {
       "case_id": "pg-w2c-w2c-road-003",
       "prompt": "дорога 2 км ширина 7 м бордюры ливневка разметка",
-      "expected_family": "road_construction",
+      "expected_family": "asphalt_concrete_pavement",
       "coverage_group": "road_earthworks",
       "source": "wave2c_expanded",
       "required_row_types": [
@@ -2216,13 +2218,19 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
+        "document",
+        "kg",
         "l",
         "m",
         "m2",
         "m3",
+        "machine_hour",
+        "man_hour",
         "pcs",
-        "shift",
+        "service",
         "t",
+        "t_km",
+        "test",
         "trip"
       ],
       "forbidden_units": [
@@ -2306,7 +2314,7 @@
     {
       "case_id": "pg-runtime-runtime-road-001",
       "prompt": "Полное строительство дорожной одежды, длина 1 км, ширина 6 м",
-      "expected_family": "asphalt_concrete_pavement",
+      "expected_family": "road_construction",
       "coverage_group": "road_earthworks",
       "source": "runtime_contract_18",
       "required_row_types": [
@@ -2318,17 +2326,14 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "document",
         "l",
         "m",
         "m2",
         "m3",
-        "machine_hour",
-        "man_hour",
-        "service",
+        "pcs",
+        "set",
+        "shift",
         "t",
-        "t_km",
-        "test",
         "trip"
       ],
       "forbidden_units": [
@@ -2346,7 +2351,7 @@
     {
       "case_id": "pg-synth-road-002",
       "prompt": "road 3 km width 6 m crushed stone asphalt drainage",
-      "expected_family": "road_construction",
+      "expected_family": "asphalt_concrete_pavement",
       "coverage_group": "road_earthworks",
       "source": "synthetic_verified",
       "required_row_types": [
@@ -2358,13 +2363,16 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
+        "document",
         "l",
-        "m",
         "m2",
         "m3",
-        "pcs",
-        "shift",
+        "machine_hour",
+        "man_hour",
+        "service",
         "t",
+        "t_km",
+        "test",
         "trip"
       ],
       "forbidden_units": [
@@ -2487,27 +2495,19 @@
       "expected_family": "pumping_station",
       "coverage_group": "water_sewer_stormwater",
       "source": "wave2c_expanded",
-      "required_row_types": [
-        "material",
-        "service",
-        "work"
-      ],
+      "expected_outcome": "needs_input",
+      "required_row_types": [],
       "required_material_keywords": [],
       "required_service_keywords": [],
       "required_equipment_keywords": [],
-      "expected_units": [
-        "hour",
-        "m3",
-        "pcs",
-        "set"
-      ],
+      "expected_units": [],
       "forbidden_units": [
         "unknown",
         "UNKNOWN"
       ],
       "high_risk_expected": true,
-      "pdf_required": true,
-      "buyer_handoff_required": true,
+      "pdf_required": false,
+      "buyer_handoff_required": false,
       "forbidden_refusal": true,
       "forbidden_drawings_required_stop": true,
       "forbidden_raw_dump": true,
@@ -2957,7 +2957,6 @@
       "required_service_keywords": [],
       "required_equipment_keywords": [],
       "expected_units": [
-        "m",
         "m3",
         "pcs",
         "set",

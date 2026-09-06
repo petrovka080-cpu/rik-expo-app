@@ -32,9 +32,9 @@ export function isLocalDeveloperReviewEnabled(input: {
   const platform = input.platform ??
     (typeof window === "undefined" ? "native" : "web");
   const hostname = input.hostname ??
-    (typeof window !== "undefined" ? window.location.hostname : null);
+    (typeof window !== "undefined" ? window.location?.hostname ?? null : null);
   const port = input.port ??
-    (typeof window !== "undefined" ? window.location.port : null);
+    (typeof window !== "undefined" ? window.location?.port ?? null : null);
   const clientEnvironment = input.clientEnvironment ??
     (supabaseClientAvailability.status === "ready"
       ? supabaseClientAvailability.environment

@@ -7,13 +7,13 @@ describe("canonical inline work template classifier", () => {
       prompt: "ленточный фундамент длиной 53 метра",
       family: "strip_foundation",
       templateId: "strip_foundation_preliminary_boq_expanded_complex_v1",
-      reasonPrefix: "phrase:strip_foundation",
+      reasonPrefix: "expanded_complex_resolver",
     },
     {
       prompt: "монолитная фундаментная плита площадью 76 м2",
       family: "raft_foundation",
       templateId: "raft_foundation_preliminary_boq_expanded_complex_v1",
-      reasonPrefix: "category_hint:foundation_concrete",
+      reasonPrefix: "expanded_complex_resolver",
     },
     {
       prompt: "external sewer 3 km pipe 200 mm manholes every 60 m",

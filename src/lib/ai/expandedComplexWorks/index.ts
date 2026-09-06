@@ -1042,6 +1042,9 @@ function defaultGlobalUnitForFamily(family: ExpandedComplexWorkFamilyDefinition)
 }
 
 const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
+  { familyId: "strip_foundation", pattern: /\u043b\u0435\u043d\u0442\u043e\u0447\u043d[\p{L}\p{M}-]*\s+\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442[\p{L}\p{M}-]*|strip\s+foundation/iu },
+  { familyId: "raft_foundation", pattern: /(?:\u043c\u043e\u043d\u043e\u043b\u0438\u0442\u043d[\p{L}\p{M}-]*\s+)?\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442\u043d[\p{L}\p{M}-]*\s+\u043f\u043b\u0438\u0442[\p{L}\p{M}-]*|raft\s+foundation|foundation\s+slab/iu },
+  { familyId: "road_construction", pattern: /\u0434\u043e\u0440\u043e\u0436\u043d[\p{L}\p{M}-]*\s+\u043e\u0434\u0435\u0436\u0434[\p{L}\p{M}-]*|road\s+pavement\s+structure/iu },
   { familyId: "private_house_construction", pattern: /(частн(?:ый|ого|ому|ым)\s+дом|индивидуальн(?:ый|ого)\s+жил(?:ой|ого)\s+дом|дом\s+ижс|private house)/i },
   { familyId: "cottage_construction", pattern: /(коттедж|cottage)/i },
   { familyId: "low_voltage_system", pattern: /(электрик(?:а|у)\s+здан|электромонтаж.*здан|электроснабжен.*здан|building electrical)/i },

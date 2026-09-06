@@ -177,7 +177,8 @@ describe("request estimate intent lifecycle owners", () => {
     );
     expect(root).toContain('status: "authenticated"');
     expect(root).toContain(
-      "authState.loadRoleForCurrentSession(session.user)",
+      "const loadPendingIntentRole = authState.loadRoleForCurrentSession",
     );
+    expect(root).toContain("loadPendingIntentRole(session.user)");
   });
 });
