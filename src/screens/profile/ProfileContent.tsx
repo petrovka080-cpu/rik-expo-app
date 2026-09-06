@@ -28,24 +28,18 @@ import {
 } from "./profile.helpers";
 import { profileStyles } from "./profile.styles";
 import {
-  loadProfileScreenData,
   saveProfileDetails,
   signOutProfileSession,
 } from "./profile.services";
 import type { Company, UserProfile } from "./profile.types";
 import { EditProfileModal } from "./components/EditProfileModal";
-import {
-  ProfileLoadErrorState,
-} from "./components/ProfileContentLoadState";
+import { ProfileLoadErrorState } from "./components/ProfileContentLoadState";
 import { ProfileMainSections } from "./components/ProfileMainSections";
 import { useProfileForm } from "./hooks/useProfileForm";
 import type { ProtectedIdentity } from "../../lib/auth/protectedIdentity";
-import { buildProviderVerifiedProfileScreenData } from "./profile.canonicalIdentity";
+import { loadProfileScreenDataForIdentity } from "./profile.canonicalIdentity";
 
 const styles = profileStyles;
-
-const isMissingAuthSessionError = (message: string): boolean =>
-  /auth session missing/i.test(message);
 
 const buildOfficeRolesLabel = (roles: string[]): string => {
   if (roles.length === 0) return "Нет";
@@ -63,22 +57,11 @@ const buildActiveContextDescription = (params: {
       ? "Сейчас активен Market. Office-доступ сохранён, но не выбран как текущий контекст."
       : "Сейчас активен Market. Это единственный доступный контекст для текущего аккаунта.";
 
-type ProfileContentProps = {
-  verifiedIdentity: ProtectedIdentity;
-};
+type ProfileContentProps = { verifiedIdentity: ProtectedIdentity };
 
 export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
   const router = useRouter();
   const { replace: replaceRoute } = router;
-  const {
-    email: verifiedEmail,
-    membershipId: verifiedMembershipId,
-    organizationId: verifiedOrganizationId,
-    role: verifiedRole,
-    source: verifiedSource,
-    userId: verifiedUserId,
-  } = verifiedIdentity;
-
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
@@ -125,17 +108,7 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
         setLoading(true);
         setRedirectingToAuth(false);
         setProfileLoadError(null);
-        const result = verifiedSource === "provider_verified_claims"
-          ? buildProviderVerifiedProfileScreenData({
-              userId: verifiedUserId,
-              email: verifiedEmail,
-              organizationId: verifiedOrganizationId,
-              membershipId: verifiedMembershipId,
-              role: verifiedRole,
-              profileEnsured: true,
-              source: verifiedSource,
-            })
-          : await loadProfileScreenData();
+        const result = await loadProfileScreenDataForIdentity(verifiedIdentity);
         const storedActiveContext = await loadStoredActiveContext(
           result.profile.user_id,
         );
@@ -143,8 +116,8 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
 
         setProfile(result.profile);
         setCompany(result.company);
-        setProfileRole(result.profileRole ?? verifiedRole);
-        setProfileEmail(result.profileEmail ?? verifiedEmail);
+        setProfileRole(result.profileRole ?? verifiedIdentity.role);
+        setProfileEmail(result.profileEmail ?? verifiedIdentity.email);
         setProfileAvatarUrl(result.profileAvatarUrl);
         setProfileAvatarDraft(result.profileAvatarUrl);
         setAccessSourceSnapshot(result.accessSourceSnapshot);
@@ -153,7 +126,7 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
       } catch (error: unknown) {
         if (!alive) return;
         const errorMessage = getErrorMessage(error);
-        if (isMissingAuthSessionError(errorMessage)) {
+        if (/auth session missing/i.test(errorMessage)) {
           setRedirectingToAuth(true);
           setProfileLoadError(null);
           replaceRoute(AUTH_LOGIN_ROUTE);
@@ -174,12 +147,7 @@ export function ProfileContent({ verifiedIdentity }: ProfileContentProps) {
     profileLoadAttempt,
     replaceRoute,
     setProfileAvatarDraft,
-    verifiedEmail,
-    verifiedMembershipId,
-    verifiedOrganizationId,
-    verifiedRole,
-    verifiedSource,
-    verifiedUserId,
+    verifiedIdentity,
   ]);
 
   const accessModel = useMemo(

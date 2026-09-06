@@ -1,5 +1,5 @@
 import { fetchWithRequestTimeout } from "../../requestTimeoutPolicy";
-import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../../supabaseClient";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../supabaseClient";
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateArtifactView,
@@ -21,6 +21,10 @@ import {
   type CanonicalEstimateTypedRelation,
 } from "./contracts";
 import { canonicalProfessionalArtifactMetadataIdentityMatches } from "./canonicalEstimateArtifactContract";
+import {
+  readCanonicalEstimateSession,
+  refreshCanonicalEstimateSession,
+} from "./canonicalEstimateAuth.transport";
 
 function resolveFunctionUrl(): string {
   const configured = String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_FUNCTION_URL ?? "").trim();
@@ -139,7 +143,7 @@ async function ensureLocalDeveloperRuntimeCompatibility(token: string): Promise<
 async function refreshAccessToken(): Promise<string> {
   if (accessTokenRefreshInflight) return accessTokenRefreshInflight;
   accessTokenRefreshInflight = (async () => {
-    const { data, error } = await supabase.auth.refreshSession();
+    const { data, error } = await refreshCanonicalEstimateSession();
     if (error || !data.session?.access_token) {
       throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", {
         code: "AUTH_REQUIRED",
@@ -156,7 +160,7 @@ async function refreshAccessToken(): Promise<string> {
 }
 
 async function accessToken(forceRefresh = false): Promise<string> {
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await readCanonicalEstimateSession();
   if (error || !data.session?.access_token) {
     throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", {
       code: "AUTH_REQUIRED",

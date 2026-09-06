@@ -9,7 +9,7 @@ describe("build identity diagnostic is not customer UI", () => {
     expect(layout).toContain("BuildIdentityDiagnostic");
     expect(layout).not.toContain("BuildIdentityMarker");
     expect(diagnostic).toContain("__RIK_BUILD_IDENTITY_EVIDENCE__");
-    expect(diagnostic).toContain("[BuildIdentityEvidence]");
+    expect(diagnostic).toContain('logger.releaseEvidence("BuildIdentityEvidence"');
     expect(diagnostic).toContain("return null");
     expect(diagnostic).not.toMatch(/<(?:View|Text)\b/u);
     expect(diagnostic).not.toMatch(

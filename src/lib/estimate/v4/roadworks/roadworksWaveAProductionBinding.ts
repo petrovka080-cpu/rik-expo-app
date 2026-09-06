@@ -31,6 +31,7 @@ import {
 } from "../../estimateDraftRevisionContract";
 import { applyProfessionalBoqRuntimeContract } from "../../professionalBoqAssumptions";
 import { resolveAsphaltM1NormativeBindingV1 } from "../asphalt/asphaltM1NormativeBindingsV1";
+import { logger } from "../../../logger";
 
 export const ROADWORKS_WAVE_A_MIGRATION_VERSION = "roadworks-wave-a-v4.3";
 export const ROADWORKS_WAVE_A_BASELINE_ASSUMPTION_VERSION =
@@ -401,7 +402,7 @@ function professionalCategoryFor(row: RoadworksWaveARow): string {
 function recordRoadworksWaveABuildTiming(stage: string, startedAt: number): void {
   if (typeof __DEV__ === "undefined" || !__DEV__) return;
   if (typeof navigator === "undefined" || navigator.product !== "ReactNative") return;
-  console.info("[RikRoadworksBuild]", JSON.stringify({
+  logger.info("RikRoadworksBuild", JSON.stringify({
     stage,
     elapsedMs: Date.now() - startedAt,
   }));

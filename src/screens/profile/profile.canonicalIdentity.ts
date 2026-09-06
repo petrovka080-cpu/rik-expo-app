@@ -1,5 +1,6 @@
 import type { ProtectedIdentity } from "../../lib/auth/protectedIdentity";
 import type { ProfileScreenLoadResult } from "./profile.types";
+import { loadProfileScreenData } from "./profile.services";
 
 export function buildProviderVerifiedProfileScreenData(
   identity: ProtectedIdentity,
@@ -38,4 +39,12 @@ export function buildProviderVerifiedProfileScreenData(
       listingsCount: 0,
     },
   };
+}
+
+export async function loadProfileScreenDataForIdentity(
+  identity: ProtectedIdentity,
+): Promise<ProfileScreenLoadResult> {
+  return identity.source === "provider_verified_claims"
+    ? buildProviderVerifiedProfileScreenData(identity)
+    : loadProfileScreenData();
 }

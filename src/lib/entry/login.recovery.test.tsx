@@ -18,11 +18,13 @@ jest.mock("expo-router", () => ({
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
   },
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock("../supabaseClient", () => ({
   getSessionSafe: jest.fn(),
   isSupabaseEnvValid: true,
+  supabaseClientAvailability: { status: "ready", environment: "remote" },
   supabase: {
     auth: {
       signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
@@ -55,9 +57,7 @@ describe("LoginScreen recovery", () => {
     });
 
     const inputs = renderer!.root.findAllByType(TextInput);
-    const button = renderer!.root.find(
-      (node) => typeof node.props?.onPress === "function",
-    );
+    const button = renderer!.root.findByProps({ testID: "auth.login.submit" });
 
     await act(async () => {
       inputs[0]?.props.onChangeText("petrovka080@gmail.com");

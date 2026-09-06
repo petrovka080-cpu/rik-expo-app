@@ -1298,7 +1298,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           buildEstimateDraftSessionTransitionStatusMessage(bundle),
         );
       } catch (error) {
-        console.error("[ConsumerRepairRoadScope] scope calculation failed", error);
+        logger.error("ConsumerRepairRoadScope", "scope calculation failed", error);
         this.setState({ statusMessage: "Не удалось выполнить расчёт. Выберите состав ещё раз." });
       } finally {
         this.setState({ roadScopeSelectionBusy: false });
@@ -1392,7 +1392,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       if (error instanceof ConsumerRepairValidationError) {
         this.handleValidationError(error);
       } else {
-        console.error("[ConsumerRepairApprove] durable approval commit failed", error);
+        logger.error("ConsumerRepairApprove", "durable approval commit failed", error);
         this.setState({
           statusMessage: "Не удалось надёжно сохранить утверждённую смету. Повторите подтверждение.",
         });

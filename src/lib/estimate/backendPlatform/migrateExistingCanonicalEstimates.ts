@@ -7,7 +7,7 @@ import {
 } from "../../consumerRequests/consumerRequestRepository";
 import type { ConsumerRepairDraftBundle } from "../../consumerRequests/consumerRequestTypes";
 import { stableEstimateRevisionChecksum } from "../../platform/estimateRevisionDurableStore.contract";
-import { supabase } from "../../supabaseClient";
+import { readCanonicalEstimateAuthenticatedUser } from "./canonicalEstimateAuth.transport";
 import {
   getCanonicalEstimateCatalogItem,
   migrateCanonicalEstimateLegacyRevision,
@@ -151,7 +151,7 @@ async function drainTransactionalHistory(): Promise<void> {
 export async function migrateExistingEstimatesToCanonicalBackend(
   signal?: AbortSignal | null,
 ): Promise<ExistingCanonicalEstimateMigrationResult> {
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await readCanonicalEstimateAuthenticatedUser();
   if (error || !data.user) throw new Error("AUTH_REQUIRED");
   await drainTransactionalHistory();
   const bundles = listAllConsumerRepairBundlesForBackendMigration(data.user.id);

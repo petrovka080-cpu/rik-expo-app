@@ -8,13 +8,14 @@ function readProjectFile(relativePath: string) {
 }
 
 describe("entry/bootstrap contract", () => {
-  it("routes every post-auth entry through the profile access hub", () => {
+  it("routes default post-auth entry through the access hub and validates explicit return targets", () => {
     const rootLayout = readProjectFile("app/_layout.tsx");
     // AUTH-LIFECYCLE: POST_AUTH_ENTRY_ROUTE moved from _layout.tsx to useAuthGuard.ts
     const authGuard = readProjectFile("src/lib/auth/useAuthGuard.ts");
     const indexScreen = readProjectFile("app/index.tsx");
     const loginScreen = readProjectFile("app/auth/login.tsx");
     const registerScreen = readProjectFile("app/auth/register.tsx");
+    const authRouting = readProjectFile("src/lib/authRouting.ts");
 
     // Root layout delegates to useAuthGuard which owns POST_AUTH_ENTRY_ROUTE
     expect(rootLayout).toContain("useAuthGuard");
@@ -26,9 +27,14 @@ describe("entry/bootstrap contract", () => {
     expect(indexScreen).not.toContain("resolveCurrentSessionRole");
     expect(indexScreen).not.toContain("postAuthPathForRole");
 
-    expect(loginScreen).toContain("POST_AUTH_ENTRY_ROUTE");
+    expect(loginScreen).toContain("resolvePostAuthReturnTo");
+    expect(loginScreen).toContain("routeParams.returnTo");
     expect(loginScreen).not.toContain("resolveCurrentSessionRole");
     expect(loginScreen).not.toContain("postAuthPathForRole");
+
+    expect(authRouting).toContain("normalizePostAuthReturnTo(value) ?? POST_AUTH_ENTRY_ROUTE");
+    expect(authRouting).toContain('decodedPathname.startsWith("/auth/")');
+    expect(authRouting).toContain('candidate.startsWith("//")');
 
     expect(registerScreen).toContain("POST_AUTH_ENTRY_ROUTE");
     expect(registerScreen).not.toContain("resolveCurrentSessionRole");

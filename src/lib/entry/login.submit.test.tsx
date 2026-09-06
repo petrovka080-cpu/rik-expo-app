@@ -28,6 +28,7 @@ jest.mock("expo-router", () => ({
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
   },
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock("../auth/signInSafe", () => ({
@@ -38,6 +39,7 @@ jest.mock("../auth/signInSafe", () => ({
 jest.mock("../supabaseClient", () => ({
   getSessionSafe: (...args: unknown[]) => mockGetSessionSafe(...args),
   isSupabaseEnvValid: true,
+  supabaseClientAvailability: { status: "ready", environment: "remote" },
   supabase: {
     auth: {
       signUp: (...args: unknown[]) => mockSignUp(...args),
@@ -48,11 +50,7 @@ jest.mock("../supabaseClient", () => ({
 }));
 
 const findSubmitButton = (renderer: TestRenderer.ReactTestRenderer) =>
-  renderer.root.find(
-    (node) =>
-      typeof node.props?.onPress === "function" &&
-      typeof node.props?.disabled === "boolean",
-  );
+  renderer.root.findByProps({ testID: "auth.login.submit" });
 
 describe("LoginScreen submit handling", () => {
   beforeEach(() => {
