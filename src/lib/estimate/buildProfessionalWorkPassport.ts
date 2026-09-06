@@ -389,7 +389,10 @@ export function buildProfessionalWorkPassportForExpandedTemplate(
   });
   if (!estimate) throw new Error(`WORK_PASSPORT_EXPANDED_ESTIMATE_MISSING:${template.template_id}`);
   const coverage = expandedCoverageByTemplateId.get(template.template_id);
-  const rows = template.work_family_id === R4_A6_PUMP_STATION_CATALOG_ID.replace("canonical-work:expanded:", "")
+  const rows = [
+    "pumping_station",
+    R4_A6_PUMP_STATION_CATALOG_ID.replace("canonical-work:expanded:", ""),
+  ].includes(template.work_family_id)
     ? r4A6PumpStationRows()
     : expandedRows(estimate);
   const grouped = groupRecipeRows(rows);

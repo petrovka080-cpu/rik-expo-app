@@ -1631,6 +1631,7 @@ export function roadDrainageCulvertCalculator(input: CalcInput): ExpandedComplex
     row({ family, code: "headwalls_concrete_m3", titleRu: "Оголовки и бетонные работы", lineType: "material", group: "materials", quantity: sectionM2 * 4, unit: "m3", formula: "section_m2 * 4", materialKey: "ready_mix_concrete" }),
     row({ family, code: "crane_shifts", titleRu: "Кран для монтажа звеньев", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 20), unit: "shift", formula: "ceil(length_m / 20)" }),
     row({ family, code: "labor_hours", titleRu: "Монтаж водопропускной трубы", lineType: "work", group: "labor", quantity: lengthM * 6, unit: "hour", formula: "length_m * 6" }),
+    row({ family, code: "culvert_level_acceptance_set", titleRu: "Исполнительная съёмка и проверка отметок лотка водопропускной трубы", lineType: "service", group: "quality", quantity: 1, unit: "set", formula: "one culvert level acceptance set" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, section_m2: sectionM2 }, rows, assumptions: ["Гидравлический расчёт пропускной способности не выполняется без проекта."], formulaSteps: ["culvert_excavation_m3 = length_m * section_m2 * 1.5"], missingInputs: [...commonMissingInputs(family), "Расход воды", "Отметки лотка"] });
 }
@@ -1683,6 +1684,7 @@ export function irrigationCanalCalculator(input: CalcInput): ExpandedComplexCalc
     row({ family, code: "water_control_gates_pcs", titleRu: "Водорегулирующие затворы", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 500), unit: "pcs", formula: "ceil(length_m / 500)", materialKey: "water_control_gate" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil((lengthM * widthM * 1.2) / 600), unit: "shift", formula: "ceil(excavation_m3 / 600)" }),
     row({ family, code: "labor_hours", titleRu: "Устройство канала", lineType: "work", group: "labor", quantity: lengthM * 0.5, unit: "hour", formula: "length_m * 0.5" }),
+    row({ family, code: "channel_hydraulic_acceptance_set", titleRu: "Гидравлическая проверка и исполнительная съёмка профиля канала", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 1000)), unit: "set", formula: "max(1, ceil(length_m / 1000))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, width_m: widthM }, rows, assumptions: ["Гидравлическое сечение канала принято предварительно."], formulaSteps: ["canal_excavation_m3 = length_m * width_m * 1.2"], missingInputs: [...commonMissingInputs(family), "Расход воды", "Профиль канала"] });
 }
@@ -1914,6 +1916,7 @@ export function bridgeCalculator(input: CalcInput): ExpandedComplexCalculatorOut
     row({ family, code: "crane_shifts", titleRu: "Тяжёлый кран для балок", lineType: "equipment", group: "equipment", quantity: Math.ceil(Math.ceil(widthM / 2.5) / 2), unit: "shift", formula: "ceil(girders_pcs / 2)" }),
     row({ family, code: "drilling_rig_shifts", titleRu: "Буровая установка", lineType: "equipment", group: "equipment", quantity: Math.ceil((Math.ceil(lengthM / 6) * 2) / 4), unit: "shift", formula: "ceil(piles_pcs / 4)" }),
     row({ family, code: "labor_hours", titleRu: "Мостовая бригада", lineType: "work", group: "labor", quantity: deckArea * 2.2, unit: "hour", formula: "deck_area_m2 * 2.2" }),
+    row({ family, code: "bridge_geometry_acceptance_set", titleRu: "Геодезический контроль опор и исполнительная съёмка пролётного строения", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, width_m: widthM, lanes, deck_area_m2: deckArea }, rows, assumptions: ["Это предварительный BOQ для моста; несущая схема, балки и основания требуют проектного расчёта."], formulaSteps: ["deck_area_m2 = length_m * width_m", "deck_concrete_m3 = deck_area_m2 * 0.22"], missingInputs: [...commonMissingInputs(family), "Расчётная схема пролёта", "Геология опор", "Нагрузки и габариты"] });
 }
@@ -1931,6 +1934,7 @@ export function tunnelCalculator(input: CalcInput): ExpandedComplexCalculatorOut
     row({ family, code: "ventilation_equipment_set", titleRu: "Система вентиляции тоннеля", lineType: "equipment", group: "equipment", quantity: 1, unit: "set", formula: "1 set; price missing until design", materialKey: "tunnel_ventilation" }),
     row({ family, code: "drainage_lm", titleRu: "Дренаж тоннеля", lineType: "material", group: "materials", quantity: lengthM * 2, unit: "m", formula: "length_m * 2", materialKey: "drainage_pipe" }),
     row({ family, code: "special_equipment_shifts", titleRu: "Тоннельная спецтехника", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 20), unit: "shift", formula: "ceil(length_m / 20)" }),
+    row({ family, code: "tunnel_geodetic_monitoring_set", titleRu: "Геодезический мониторинг профиля и исполнительная съёмка тоннеля", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, section_m2: sectionM2 }, rows, assumptions: ["Метод проходки не выбран; расчёт предварительный и не заменяет проект."], formulaSteps: ["tunnel_excavation_m3 = length_m * section_m2", "lining_concrete_m3 = length_m * section_m2 * 0.18"], missingInputs: [...commonMissingInputs(family), "Геология", "Метод проходки", "Вентиляционная схема"] });
 }
@@ -1959,6 +1963,7 @@ export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalcul
     row({ family, code: "geotextile_m2", titleRu: "Геотекстиль за стеной", lineType: "material", group: "materials", quantity: wallFaceAreaM2 * 1.15, unit: "m2", formula: "wall_face_area_m2 * 1.15", materialKey: "geotextile" }),
     row({ family, code: "formwork_m2", titleRu: "Опалубка подпорной стены", lineType: "work", group: "labor", quantity: isGabion ? 0 : wallFaceAreaM2 * 2, unit: "m2", formula: isGabion ? "0" : "wall_face_area_m2 * 2" }),
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil(wallFaceAreaM2 / 80), unit: "shift", formula: "ceil(wall_face_area_m2 / 80)" }),
+    row({ family, code: "retaining_wall_acceptance_set", titleRu: "Исполнительная съёмка геометрии и дренажа подпорного сооружения", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, thickness_m: thicknessM, wall_face_area_m2: wallFaceAreaM2, gabion_volume_m3: isGabion ? wallVolumeM3 : 0, is_gabion: isGabion }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_face_area_m2 = length_m * height_m", "gabion_volume_m3 = length_m * height_m * thickness_m", "wall_concrete_m3 = is_gabion ? 0 : length_m * height_m * thickness_m"], missingInputs: [...commonMissingInputs(family), "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });
 }
@@ -1977,6 +1982,7 @@ function buildingLikeCalculator(input: CalcInput, fallbackFamily: string): Expan
     row({ family, code: "envelope_m2", titleRu: "Ограждающие конструкции / фасад", lineType: "material", group: "materials", quantity: areaM2 * 0.45, unit: "m2", formula: "area_m2 * 0.45", materialKey: "building_envelope" }),
     row({ family, code: "crane_shifts", titleRu: "Башенный / автокран", lineType: "equipment", group: "equipment", quantity: Math.ceil(areaM2 / 900), unit: "shift", formula: "ceil(area_m2 / 900)" }),
     row({ family, code: "labor_hours", titleRu: "Общестроительные работы каркаса", lineType: "work", group: "labor", quantity: areaM2 * 1.8, unit: "hour", formula: "area_m2 * 1.8" }),
+    row({ family, code: "construction_geometry_acceptance_set", titleRu: `Исполнительная геодезическая съёмка и контроль качества работ «${family.professionalNameRu}»`, lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(areaM2 / 1000)), unit: "set", formula: "max(1, ceil(area_m2 / 1000))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { area_m2: areaM2, floors, structural_concrete_m3: concrete }, rows, assumptions: ["Укрупнённый предварительный расчёт каркаса; детальный BOQ требует КЖ/КМ."], formulaSteps: ["structural_concrete_m3 = area_m2 * coefficient", "rebar_t = structural_concrete_m3 * 0.11"], missingInputs: [...commonMissingInputs(family), "КЖ/КМ чертежи", "Нагрузки", "Сетка колонн"] });
 }
@@ -2121,6 +2127,7 @@ export function equipmentFoundationCalculator(input: CalcInput): ExpandedComplex
     row({ family, code: "anchor_bolts_pcs", titleRu: "Анкерные болты", lineType: "material", group: "materials", quantity: count * 8, unit: "pcs", formula: "count * 8", materialKey: "anchor_bolts" }),
     row({ family, code: "formwork_m2", titleRu: "Опалубка фундаментов", lineType: "work", group: "labor", quantity: concrete * 3.5, unit: "m2", formula: "concrete_m3 * 3.5" }),
     row({ family, code: "crane_shifts", titleRu: "Кран / такелаж", lineType: "equipment", group: "equipment", quantity: Math.ceil(count / 4), unit: "shift", formula: "ceil(count / 4)" }),
+    row({ family, code: "anchor_axis_acceptance_set", titleRu: "Геодезическая проверка анкерных осей и отметок фундаментов оборудования", lineType: "service", group: "quality", quantity: Math.max(1, count), unit: "set", formula: "max(1, count)" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { count, volume_each_m3: volumeEach, concrete_m3: concrete }, rows, assumptions: ["Фундамент рассчитан по введённым или типовым габаритам; нагрузки оборудования нужны для детального расчёта."], formulaSteps: ["concrete_m3 = count * length * width * height", "rebar_t = concrete_m3 * 0.12"], missingInputs: [...commonMissingInputs(family), "Паспорт оборудования", "Динамические нагрузки", "Анкерный план"] });
 }
@@ -2135,6 +2142,7 @@ export function pipeRackCalculator(input: CalcInput): ExpandedComplexCalculatorO
     row({ family, code: "cable_trays_lm", titleRu: "Кабельные лотки / полки", lineType: "material", group: "materials", quantity: lengthM * 2, unit: "m", formula: "length_m * 2", materialKey: "cable_trays" }),
     row({ family, code: "painting_m2", titleRu: "Антикоррозионная окраска", lineType: "work", group: "coating", quantity: lengthM * 12, unit: "m2", formula: "length_m * 12" }),
     row({ family, code: "crane_shifts", titleRu: "Кран монтажный", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 80), unit: "shift", formula: "ceil(length_m / 80)" }),
+    row({ family, code: "rack_connection_ndt_set", titleRu: "Неразрушающий контроль монтажных соединений технологической эстакады", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM }, rows, assumptions: ["Сечение и нагрузка эстакады приняты укрупнённо."], formulaSteps: ["steel_structure_t = length_m * 0.12"], missingInputs: [...commonMissingInputs(family), "Нагрузки лотков/труб", "Схема опор"] });
 }
@@ -2149,6 +2157,7 @@ export function technologicalPipelineCalculator(input: CalcInput): ExpandedCompl
     row({ family, code: "pipe_supports_pcs", titleRu: "Опоры трубопровода", lineType: "material", group: "materials", quantity: Math.ceil(lengthM / 6), unit: "pcs", formula: "ceil(length_m / 6)", materialKey: "pipe_supports" }),
     row({ family, code: "welds_pcs", titleRu: "Сварные стыки", lineType: "work", group: "labor", quantity: Math.ceil(lengthM / 12), unit: "pcs", formula: "ceil(length_m / 12)" }),
     row({ family, code: "pipeline_insulation_m2", titleRu: "Теплоизоляция трубопровода", lineType: "material", group: "materials", quantity: lengthM * Math.PI * diameterMm / 1000, unit: "m2", formula: "length_m * pi * diameter_m", materialKey: "pipe_insulation" }),
+    row({ family, code: "pipe_welding_equipment_shifts", titleRu: "Сварочное и монтажное оборудование для технологического трубопровода", lineType: "equipment", group: "equipment", quantity: Math.max(1, Math.ceil(lengthM / 120)), unit: "shift", formula: "max(1, ceil(length_m / 120))" }),
     row({ family, code: "pressure_testing_lm", titleRu: "Испытания трубопровода", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
   ];
   return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, diameter_mm: diameterMm }, rows, assumptions: ["Материал трубы, давление и категория трубопровода требуют проекта."], formulaSteps: ["process_piping_lm = length_m * 1.02"], missingInputs: [...commonMissingInputs(family), "Материал трубы", "Рабочее давление", "Категория трубопровода"] });

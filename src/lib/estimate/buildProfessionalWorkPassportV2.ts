@@ -579,7 +579,7 @@ function buildValidation(input: {
   );
   const blockers = [
     input.passport.localizedNameRu.trim() ? "" : "canonical_name_missing",
-    input.parameterGraph.p0_required.length <= 5 ? "" : `too_many_p0_questions:${input.parameterGraph.p0_required.length}`,
+    input.parameterGraph.visible_question_limit <= 5 ? "" : `question_window_too_large:${input.parameterGraph.visible_question_limit}`,
     input.parameterGraph.parameters.length > 0 ? "" : "parameter_graph_missing",
     input.materials.length > 0 ? "" : "material_assemblies_missing",
     input.operations.length > 0 ? "" : "work_operations_missing",
@@ -800,7 +800,7 @@ function acceptanceCase(
 export function buildProfessionalWorkPassportV2AcceptanceCases(
   passport: ProfessionalWorkPassportV2,
 ): ProfessionalWorkPassportV2AcceptanceCase[] {
-  const visibleQuestions = passport.parameter_graph.parameters.filter((param) =>
+  const requiredQuestions = passport.parameter_graph.parameters.filter((param) =>
     param.role !== "SYSTEM_HIDDEN" && param.required
   );
   const variant = passport.material_variants.find((item) =>
@@ -811,8 +811,10 @@ export function buildProfessionalWorkPassportV2AcceptanceCases(
   return [
     acceptanceCase(passport, "A_MINIMAL_REQUEST", {
       resolved_passport_exists: passport.validation.status === "SOFTWARE_SEALED_READY_FOR_EXPERT_REVIEW",
-      p0_questions_not_more_than_five: visibleQuestions.length <= 5,
-      p0_questions_have_ru_labels: visibleQuestions.every((param) => Boolean(param.label_ru)),
+      progressive_question_window_not_more_than_five:
+        passport.parameter_graph.visible_question_limit <= 5 &&
+        passport.presentation.max_questions_shown <= 5,
+      p0_questions_have_ru_labels: requiredQuestions.every((param) => Boolean(param.label_ru)),
     }),
     acceptanceCase(passport, "B_FULL_REQUEST", {
       professional_boq_created: passport.quantity_formulas.length > 0,

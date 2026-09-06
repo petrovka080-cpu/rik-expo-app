@@ -50,6 +50,25 @@ function sourceForPatch(patch: UserParamPatch): EstimateDraftRevisionSource {
   return "param_edit";
 }
 
+function retargetPatchAfterRevisionMigration(
+  original: EstimateDraftRevision,
+  migrated: EstimateDraftRevision,
+  patch: UserParamPatch,
+): UserParamPatch {
+  if (
+    original === migrated ||
+    patch.revisionId !== original.revisionId ||
+    patch.selectedTemplateId !== original.selectedTemplateId
+  ) {
+    return patch;
+  }
+  return {
+    ...patch,
+    revisionId: migrated.revisionId,
+    selectedTemplateId: migrated.selectedTemplateId,
+  };
+}
+
 function selectedWorkKeyForRecalculation(
   previous: EstimateDraftRevision,
   exactRoadworks: RoadworksWaveAProductionRegistration | null,
@@ -127,7 +146,9 @@ export function recalculateEstimateDraftRevision(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
-  previous = migrateInteriorFinishesProfessionalRevisionV4(previous);
+  const originalPrevious = previous;
+  previous = migrateInteriorFinishesProfessionalRevisionV4(originalPrevious);
+  patch = retargetPatchAfterRevisionMigration(originalPrevious, previous, patch);
   const changedAt = input.createdAt ?? new Date().toISOString();
   const patched = applyUserParamPatch(previous, patch, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
@@ -222,12 +243,14 @@ export function recalculateEstimateDraftRevisionBatch(
     revisionIndex?: number;
   } = {},
 ): RecalculateEstimateDraftRevisionResult {
-  previous = migrateInteriorFinishesProfessionalRevisionV4(previous);
+  const originalPrevious = previous;
+  previous = migrateInteriorFinishesProfessionalRevisionV4(originalPrevious);
   if (patches.length === 0) {
     throw new Error("USER_PARAM_BATCH_EMPTY");
   }
 
   const changedAt = input.createdAt ?? new Date().toISOString();
+  patches = patches.map((patch) => retargetPatchAfterRevisionMigration(originalPrevious, previous, patch));
   const patched = applyUserParamPatches(previous, patches, changedAt);
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const exactRoadworks = exactRoadworksWaveARegistration(previous);

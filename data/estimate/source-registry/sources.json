@@ -561,6 +561,11 @@
       "rule_id": "expanded_complex_formula_sources",
       "norm_source_id_pattern": "^src_expanded_complex_.*_reference_formula_v1$",
       "source_id": "expanded_complex_engineering_reference_formula_2026_07"
+    },
+    {
+      "rule_id": "r4_a6_pump_station_engineering_method",
+      "norm_source_id_pattern": "^r4-a6-pump-station-engineering-method-2026-09-04$",
+      "source_id": "expanded_complex_engineering_reference_formula_2026_07"
     }
   ]
 }
