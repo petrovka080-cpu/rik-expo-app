@@ -90,11 +90,11 @@ const WORKFLOWS: WorkflowRule[] = [
       "src/lib/consumerRequests/consumerRequestPdfService.ts",
       "src/lib/consumerRequests/consumerRequestPdfStorage.ts",
     ],
-    idempotencyTokens: ["existingPdfIsFresh", "consumer_approved"],
+    idempotencyTokens: ["bundle.draft.status === \"consumer_approved\"", "cloneConsumerRepairValue(bundle)"],
     retryTokens: ["return cloneConsumerRepairValue(bundle)", "consumerRepairPdfStorageObjectExists"],
     transactionTokens: ["saveConsumerRepairBundle", "generateConsumerRepairRequestPdf"],
     rollbackTokens: ["validateConsumerRepairRequestForApprove", "throw new ConsumerRepairValidationError"],
-    auditTokens: ["consumer_approved_pdf_generated", "consumer_approve_blocked"],
+    auditTokens: ["consumer_approved_canonical_backend_pdf", "consumer_approve_blocked"],
   },
   {
     id: "b2c_send_to_marketplace",

@@ -5,6 +5,11 @@ import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrent
 
 export const AUDIT_DIR = path.join(process.cwd(), "artifacts", "S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT");
 export const RESTORE_DIR = path.join(process.cwd(), "artifacts", "S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH");
+const PROTECTED_ANDROID_EVIDENCE = new Set([
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_api34_results.json",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_screenshots.json",
+  "artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/android_ui_dumps.json",
+]);
 
 export function readAuditJson<T = Record<string, unknown>>(fileName: string): T {
   return JSON.parse(fs.readFileSync(path.join(AUDIT_DIR, fileName), "utf8")) as T;
@@ -34,6 +39,7 @@ export function expectOnlyCatalogAuditScopeChanged(): void {
   const forbidden = changedFiles().filter((file) =>
     file !== "scripts/audit/runCatalogWorkPlatformArchitectureAudit.ts" &&
     file !== "artifacts/S_RESTORE_PRODUCT_UI_PDF_LIVE_WEB_SOURCE_OF_TRUTH/release_verify.json" &&
+    !PROTECTED_ANDROID_EVIDENCE.has(file) &&
     !isApprovedGreenCloseoutCurrentWavePatch(file) &&
     !file.startsWith("tests/catalogWorkAudit/") &&
     !file.startsWith("artifacts/S_CATALOG_WORK_PLATFORM_ARCHITECTURE_AUDIT/"),

@@ -1,6 +1,7 @@
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
 import { parseUserParamPatch } from "../../src/lib/estimate/parseUserParamPatch";
 import { recalculateEstimateDraftRevision } from "../../src/lib/estimate/recalculateEstimateDraftRevision";
+import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 import { compareEstimateDraftRevisions } from "../../src/lib/estimate/compareEstimateDraftRevisions";
 import { validateEstimateDraftRevision } from "../../src/lib/estimate/validateEstimateDraftRevision";
 import { createSnapshotFromDraftRevision } from "../../src/features/estimates/createSnapshotFromDraftRevision";
@@ -12,6 +13,10 @@ import type {
   EstimateDraftRevisionParamValue,
 } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import type { UserParamPatchOperation } from "../../src/lib/estimate/validateUserParamPatch";
+import {
+  createRegisteredProfessionalDomainAuditRevision,
+  recalculateRegisteredProfessionalDomainAuditRevision,
+} from "./registeredProfessionalDomainAuditAdapter";
 
 export const EDITABLE_PARAM_REVISION_CASE_SET = "editable-param-critical-v1" as const;
 
@@ -122,7 +127,7 @@ function roadCase(index: number): EditableParamRevisionAcceptanceCase {
     operation: "update_param",
     paramKey: "length_m",
     rawValue: `${nextMeters} m`,
-    expectedFamily: "road_construction",
+    expectedFamily: "asphalt_concrete_pavement",
     expectedParamAfter: nextMeters,
   };
 }
@@ -169,10 +174,10 @@ export function buildEditableParamRevisionAcceptanceCases(count = 400): Editable
       selectedTemplateId: "overhead_power_line_10kv_preliminary_boq_expanded_complex_v1",
       selectedTemplateName: "power line 10 kV",
       operation: "update_param",
-      paramKey: "length_m",
-      rawValue: "1000 m",
-      expectedFamily: "overhead_power_line_10kv",
-      expectedParamAfter: 1000,
+      paramKey: "quantity_ohl_pole",
+      rawValue: "20 pcs",
+      expectedFamily: "overhead_power_line_10kv_preliminary_boq_expanded_complex_v1",
+      expectedParamAfter: 20,
     },
     {
       id: "mandatory-assumption-replacement",
@@ -221,13 +226,23 @@ export function runEditableParamRevisionAcceptanceCase(
   testCase: EditableParamRevisionAcceptanceCase,
 ): EditableParamRevisionCaseResult {
   const blockers: string[] = [];
-  let r1 = createEstimateDraftRevision({
-    estimateDraftId: `editable-${testCase.id}`,
-    rawInput: testCase.prompt,
-    selectedTemplateId: testCase.selectedTemplateId,
-    selectedTemplateName: testCase.selectedTemplateName,
-    createdAt: "2026-07-07T00:00:00.000Z",
-  });
+  const registeredSelection = testCase.selectedTemplateId
+    ? resolveRegisteredProfessionalEstimateSelectionV1(testCase.selectedTemplateId)
+    : null;
+  let r1 = registeredSelection
+    ? createRegisteredProfessionalDomainAuditRevision({
+        templateId: registeredSelection.catalog_id,
+        estimateDraftId: `editable-${testCase.id}`,
+        rawInput: testCase.prompt,
+        createdAt: "2026-07-07T00:00:00.000Z",
+      })
+    : createEstimateDraftRevision({
+        estimateDraftId: `editable-${testCase.id}`,
+        rawInput: testCase.prompt,
+        selectedTemplateId: testCase.selectedTemplateId,
+        selectedTemplateName: testCase.selectedTemplateName,
+        createdAt: "2026-07-07T00:00:00.000Z",
+      });
   if (testCase.seedAssumption && !r1.assumptions.some((assumption) => assumption.key === testCase.seedAssumption?.key)) {
     r1 = {
       ...r1,
@@ -247,16 +262,24 @@ export function runEditableParamRevisionAcceptanceCase(
   if (!r1Validation.valid) blockers.push(...r1Validation.failures.map((failure) => `r1:${failure}`));
   r1 = bindInitialArtifacts(r1);
 
-  const patch = parseUserParamPatch({
-    revision: r1,
-    operation: testCase.operation,
-    paramKey: testCase.paramKey,
-    rawValue: testCase.rawValue,
-  });
-  const { revision: r2, diff } = recalculateEstimateDraftRevision(r1, patch, {
-    createdAt: "2026-07-07T00:01:00.000Z",
-    revisionIndex: 2,
-  });
+  const { revision: r2, diff } = registeredSelection
+    ? recalculateRegisteredProfessionalDomainAuditRevision({
+        previous: r1,
+        operation: testCase.operation,
+        paramKey: testCase.paramKey,
+        rawValue: testCase.rawValue,
+        createdAt: "2026-07-07T00:01:00.000Z",
+        revisionIndex: 2,
+      })
+    : recalculateEstimateDraftRevision(r1, parseUserParamPatch({
+        revision: r1,
+        operation: testCase.operation,
+        paramKey: testCase.paramKey,
+        rawValue: testCase.rawValue,
+      }), {
+        createdAt: "2026-07-07T00:01:00.000Z",
+        revisionIndex: 2,
+      });
   const staleDiff = compareEstimateDraftRevisions(r1, r2);
   const r2Validation = validateEstimateDraftRevision(r2);
   const r2Snapshot = createSnapshotFromDraftRevision(r2);

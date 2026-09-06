@@ -1,13 +1,11 @@
-import { expectRoleQaRoutesToGlobalEstimate } from "./anyEstimateTestHelpers";
+import { expectRoleQaRoutesToCanonicalBackendEstimate } from "./anyEstimateTestHelpers";
 
 describe("no generic draft for resolved estimate", () => {
-  it("uses global estimate rows and totals for resolved work", () => {
-    const answer = expectRoleQaRoutesToGlobalEstimate("плитка в ванной 40 м2", "consumer");
-    const result = answer.globalEstimateResult;
+  it("does not synthesize a generic local draft before backend catalog selection", () => {
+    const answer = expectRoleQaRoutesToCanonicalBackendEstimate("плитка в ванной 40 м2", "consumer");
 
-    expect(result?.work.workKey).toBe("bathroom_tile_full");
-    expect(result?.sections.flatMap((section) => section.rows).length).toBeGreaterThanOrEqual(4);
-    expect(result?.totals.grandTotal).toBeGreaterThan(0);
+    expect(answer.globalEstimateResult).toBeUndefined();
+    expect(answer.sections[0]?.items[0]?.status).toBe("requires_review");
     expect(answer.shortAnswerRu).toContain("backend");
   });
 });

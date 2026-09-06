@@ -47,6 +47,7 @@ describe("foreman AI estimate editing and catalog rows", () => {
     ]);
     const editedRow = edited.rows.find((row) => row.rowId === target!.rowId)!;
     const draftLine = edited.requestDraftLines.find((row) => row.rik_code === editedRow.rik_code)!;
+    const draftNote = draftLine.meta.note ?? "";
 
     expect(editedRow.visibleName).toBe("Edited laminate");
     expect(editedRow.quantity).toBe(10);
@@ -54,10 +55,12 @@ describe("foreman AI estimate editing and catalog rows", () => {
     expect(editedRow.total).toBe(500);
     expect(draftLine.qty).toBe(10);
     expect(draftLine.meta.name_human).toBe("Edited laminate");
-    expect(draftLine.meta.note).toBe(
+    expect(draftNote.startsWith(
       "Объект: Administrative building; Этаж / уровень: 1; Система / раздел: All; Зона: Room 101",
-    );
-    expect(draftLine.meta.note).not.toContain('"source"');
+    )).toBe(true);
+    expect(draftNote).toContain("canonical revision ");
+    expect(draftNote).toContain("legacy release unbound");
+    expect(draftNote).not.toContain('"source"');
   });
 
   it("adds catalog material as editable procurement-safe row", () => {

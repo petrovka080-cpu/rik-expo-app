@@ -116,13 +116,43 @@ export function validateProfessionalBoqRuntimeContract(
     failures.push(`canonical_unit_blockers:${unitValidation.blocking_reasons.slice(0, 5).join(",")}`);
   }
   if (input.approvedBundle) {
-    const revision = input.approvedBundle.estimateRevisionState?.revisions.find(
-      (candidate) => candidate.revision_id === input.approvedBundle?.estimateRevisionState?.current_revision_id,
-    );
-    if (!input.approvedBundle.editableEstimateSnapshot || !revision) failures.push("snapshot_missing");
     const pdf = input.approvedBundle.pdfs[0];
     if (!pdf) failures.push("pdf_missing");
-    if (pdf && revision && pdf.revisionRowsHash !== revision.rows_hash) failures.push("pdf_not_bound_to_snapshot_rows");
+    const canonicalRevisionIds = new Set(input.approvedBundle.items.map((item) =>
+      String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+    ));
+    const canonicalReleaseIds = new Set(input.approvedBundle.items.map((item) =>
+      String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+    ));
+    canonicalRevisionIds.delete("");
+    canonicalReleaseIds.delete("");
+    const canonicalRevisionId = canonicalRevisionIds.size === 1 ? [...canonicalRevisionIds][0] : null;
+    const canonicalReleaseId = canonicalReleaseIds.size === 1 ? [...canonicalReleaseIds][0] : null;
+    if (canonicalRevisionId && canonicalReleaseId) {
+      const approvalEvent = input.approvedBundle.events.find((event) =>
+        event.eventType === "consumer_approved_canonical_backend_pdf" &&
+        event.payload.artifactId === pdf?.id &&
+        event.payload.revisionId === canonicalRevisionId &&
+        event.payload.releaseId === canonicalReleaseId
+      );
+      if (
+        !pdf ||
+        pdf.revisionId !== canonicalRevisionId ||
+        pdf.snapshotId !== `canonical_backend_snapshot:${canonicalRevisionId}` ||
+        !pdf.revisionRowsHash ||
+        !pdf.revisionTotalsHash ||
+        !pdf.revisionFullSnapshotHash ||
+        !approvalEvent
+      ) {
+        failures.push("pdf_not_bound_to_canonical_backend_revision");
+      }
+    } else {
+      const revision = input.approvedBundle.estimateRevisionState?.revisions.find(
+        (candidate) => candidate.revision_id === input.approvedBundle?.estimateRevisionState?.current_revision_id,
+      );
+      if (!input.approvedBundle.editableEstimateSnapshot || !revision) failures.push("snapshot_missing");
+      if (pdf && revision && pdf.revisionRowsHash !== revision.rows_hash) failures.push("pdf_not_bound_to_snapshot_rows");
+    }
   }
   if (input.buyerHandoff) {
     if (input.buyerHandoff.items.length === 0) failures.push("buyer_handoff_empty");

@@ -259,6 +259,7 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "solar_panel_installation", language: "ru", alias: "солнечные панели" },
   { workKey: "solar_panel_installation", language: "ru", alias: "solar_panel_installation" },
   { workKey: "solar_panel_installation", language: "en", alias: "solar panel installation" },
+  { workKey: "solar_power_plant", language: "en", alias: "solar power plant" },
   { workKey: "battery_storage_installation", language: "ru", alias: "аккумуляторный накопитель" },
   { workKey: "battery_storage_installation", language: "ru", alias: "battery_storage_installation" },
   { workKey: "battery_storage_installation", language: "en", alias: "battery storage installation" },

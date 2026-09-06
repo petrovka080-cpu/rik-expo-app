@@ -8,7 +8,7 @@ import {
 import { validateProfessionalBoqRuntimeContract } from "../../src/lib/estimate/professionalBoqRuntimeValidator";
 import {
   approveCanonicalConsumerRepairAuditDraft,
-  createCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairResolvedRowsAuditDraft,
 } from "./canonicalConsumerRepairAuditHarness";
 
 export const PROFESSIONAL_BOQ_RUNTIME_CONTRACT_CASE_SET = "professional-boq-runtime-contract-18" as const;
@@ -222,7 +222,7 @@ export function runProfessionalBoqRuntimeContractCase(
 ): ProfessionalBoqRuntimeContractCaseProof {
   __resetConsumerRepairRequestStoreForTests();
   const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" });
-  const draft = createCanonicalConsumerRepairAuditDraft({
+  const draft = createCanonicalConsumerRepairResolvedRowsAuditDraft({
     consumerUserId: `professional-boq-runtime-${testCase.case_id}`,
     problemText: testCase.prompt,
     repairType: aiDraft.repairType,
@@ -240,6 +240,35 @@ export function runProfessionalBoqRuntimeContractCase(
   const revision = currentRevision(approved);
   const snapshotRows = revision?.editable_estimate_snapshot.rows.filter((row) => !row.removed) ?? [];
   const requestPdf = approved.pdfs[0] ?? null;
+  const canonicalRevisionIds = new Set(approved.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const canonicalReleaseIds = new Set(approved.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  ));
+  canonicalRevisionIds.delete("");
+  canonicalReleaseIds.delete("");
+  const canonicalRevisionId = canonicalRevisionIds.size === 1 ? [...canonicalRevisionIds][0] : null;
+  const canonicalReleaseId = canonicalReleaseIds.size === 1 ? [...canonicalReleaseIds][0] : null;
+  const canonicalApprovalEvent = approved.events.find((event) =>
+    event.eventType === "consumer_approved_canonical_backend_pdf" &&
+    event.payload.artifactId === requestPdf?.id &&
+    event.payload.revisionId === canonicalRevisionId &&
+    event.payload.releaseId === canonicalReleaseId
+  );
+  const pdfGeneratedFromCanonicalRevision = Boolean(
+    canonicalRevisionId &&
+    canonicalReleaseId &&
+    requestPdf?.revisionId === canonicalRevisionId &&
+    requestPdf.snapshotId === `canonical_backend_snapshot:${canonicalRevisionId}` &&
+    canonicalApprovalEvent,
+  );
+  const pdfRowsBoundToCanonicalRevision = Boolean(
+    pdfGeneratedFromCanonicalRevision &&
+    requestPdf?.revisionRowsHash &&
+    requestPdf.revisionTotalsHash &&
+    requestPdf.revisionFullSnapshotHash,
+  );
   const pdfStorage = requestPdf
     ? getConsumerRepairPdfStorageObject({
       storageBucket: requestPdf.storageBucket,
@@ -314,8 +343,8 @@ export function runProfessionalBoqRuntimeContractCase(
     allRowsHaveMarker ? "" : "runtime_contract_marker_missing",
     pricedRowsWithoutAcceptedSource === 0 ? "" : `priced_rows_without_source:${pricedRowsWithoutAcceptedSource}`,
     approved.editableEstimateSnapshot && revision ? "" : "snapshot_missing",
-    requestPdf?.revisionId && requestPdf.revisionId === revision?.revision_id ? "" : "pdf_not_bound_to_revision",
-    requestPdf?.revisionRowsHash && requestPdf.revisionRowsHash === revision?.rows_hash ? "" : "pdf_rows_hash_mismatch",
+    pdfGeneratedFromCanonicalRevision ? "" : "pdf_not_bound_to_canonical_backend_revision",
+    pdfRowsBoundToCanonicalRevision ? "" : "pdf_canonical_snapshot_hash_missing",
     pdfStorage ? "" : "pdf_storage_missing",
     handoff.items.length > 0 ? "" : "buyer_handoff_missing",
     buyerWorkRowsCount === 0 ? "" : `buyer_handoff_contains_work_rows:${buyerWorkRowsCount}`,
@@ -353,8 +382,8 @@ export function runProfessionalBoqRuntimeContractCase(
     no_fake_final_total_without_source: pricedRowsWithoutAcceptedSource === 0,
     snapshot_created: Boolean(approved.editableEstimateSnapshot && revision),
     snapshot_row_count: snapshotRows.length,
-    pdf_generated_from_snapshot: Boolean(requestPdf?.revisionId && requestPdf.revisionId === revision?.revision_id),
-    pdf_rows_bound_to_snapshot: Boolean(requestPdf?.revisionRowsHash && requestPdf.revisionRowsHash === revision?.rows_hash),
+    pdf_generated_from_snapshot: pdfGeneratedFromCanonicalRevision,
+    pdf_rows_bound_to_snapshot: pdfRowsBoundToCanonicalRevision,
     pdf_storage_object_exists: Boolean(pdfStorage),
     buyer_handoff_created: handoff.items.length > 0,
     buyer_handoff_procurement_subset_valid: handoff.items.length > 0 && buyerWorkRowsCount === 0,

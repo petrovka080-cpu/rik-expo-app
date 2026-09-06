@@ -1061,6 +1061,25 @@ export function createCanonicalConsumerRepairAuditDraft(
   return bundle;
 }
 
+/**
+ * Audit-only binding for a fixture that already carries a resolved normative
+ * row set. Clarification notes remain visible, but they do not erase those
+ * rows or transfer compilation back to the frontend.
+ */
+export function createCanonicalConsumerRepairResolvedRowsAuditDraft(
+  input: Parameters<typeof createConsumerRepairRequestDraft>[0],
+  namespace = input.consumerUserId,
+): ConsumerRepairDraftBundle {
+  if (!input.aiDraft || input.aiDraft.items.length === 0) {
+    throw new Error("CANONICAL_AUDIT_RESOLVED_ROWS_REQUIRED");
+  }
+  const binding = bindCanonicalBackendAuditRevision(input.aiDraft, namespace);
+  return createConsumerRepairRequestDraft({
+    ...input,
+    aiDraft: binding.aiDraft,
+  });
+}
+
 export function approveCanonicalConsumerRepairAuditDraft(input: {
   bundle: ConsumerRepairDraftBundle;
   userId?: string;

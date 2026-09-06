@@ -66,7 +66,7 @@ export function expectEstimateIntent(prompt: string): EstimateIntentRoute {
   return route;
 }
 
-export function expectRoleQaRoutesToGlobalEstimate(prompt: string, role = "director") {
+export function expectRoleQaRoutesToCanonicalBackendEstimate(prompt: string, role = "director") {
   const answer = answerUniversalRoleQa({
     questionRu: prompt,
     role,
@@ -75,9 +75,22 @@ export function expectRoleQaRoutesToGlobalEstimate(prompt: string, role = "direc
     cityOrRegion: "Bishkek",
   });
   expect(answer.intent).toBe("construction_estimate");
-  expect(answer.globalEstimateResult).toBeDefined();
-  expect(answer.estimateRoute?.shouldCallEstimateTool).toBe(true);
-  expect(answer.estimateActions?.some((action) => action.id === "make_pdf" && action.visible)).toBe(true);
-  expect(answer.sections[0]?.items[0]?.textRu).toContain("Сделать PDF");
+  expect(answer.answerKind).toBe("backend_estimate_handoff");
+  expect(answer.globalEstimateResult).toBeUndefined();
+  expect(answer.estimateRoute).toBeUndefined();
+  expect(answer.estimateActions).toEqual([
+    expect.objectContaining({ id: "create_request", visible: true }),
+  ]);
+  expect(answer.openLinks).toEqual([
+    expect.objectContaining({
+      sourceRefId: "canonical-estimate-backend",
+      enabled: true,
+      route: "/request",
+    }),
+  ]);
+  expect(answer.sections[0]?.titleRu).toBe("Каноническая backend-смета");
+  expect(answer.sections[0]?.items[0]?.status).toBe("requires_review");
+  expect(answer.sections[0]?.items[0]?.textRu.toLowerCase()).toContain("backend");
+  expect(answer.sourceDisclosure.generalKnowledge).toBe("not_used");
   return answer;
 }

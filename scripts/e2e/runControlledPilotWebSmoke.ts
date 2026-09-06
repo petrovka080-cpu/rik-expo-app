@@ -9,11 +9,13 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
   getConsumerRepairPdfStorageObject,
   type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../estimate/canonicalConsumerRepairAuditHarness";
 import {
   CONTROLLED_PILOT_WEB_ROOT,
   gitOutput,
@@ -248,6 +250,35 @@ export function runControlledPilotDomainProof(scenario: ControlledPilotScenario)
     storageKey: pdf.storageKey,
   }) : null;
   const pdfText = pdfObject?.body ?? "";
+  const canonicalRevisionIds = new Set(approved.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const canonicalReleaseIds = new Set(approved.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  ));
+  canonicalRevisionIds.delete("");
+  canonicalReleaseIds.delete("");
+  const canonicalRevisionId = canonicalRevisionIds.size === 1 ? [...canonicalRevisionIds][0] : null;
+  const canonicalReleaseId = canonicalReleaseIds.size === 1 ? [...canonicalReleaseIds][0] : null;
+  const canonicalApprovalEvent = approved.events.find((event) =>
+    event.eventType === "consumer_approved_canonical_backend_pdf" &&
+    event.payload.artifactId === pdf?.id &&
+    event.payload.revisionId === canonicalRevisionId &&
+    event.payload.releaseId === canonicalReleaseId
+  );
+  const pdfGeneratedFromCanonicalRevision = Boolean(
+    canonicalRevisionId &&
+    canonicalReleaseId &&
+    pdf?.revisionId === canonicalRevisionId &&
+    pdf.snapshotId === `canonical_backend_snapshot:${canonicalRevisionId}` &&
+    canonicalApprovalEvent,
+  );
+  const pdfRowsBoundToCanonicalRevision = Boolean(
+    pdfGeneratedFromCanonicalRevision &&
+    pdf?.revisionRowsHash &&
+    pdf.revisionTotalsHash &&
+    pdf.revisionFullSnapshotHash,
+  );
   const handoff = buildConsumerRepairProcurementHandoffFromSnapshot(approved);
   const snapshotByRequestItemId = new Map(snapshotRows.map((row) => [row.requestItemId ?? row.rowId, row]));
   const buyerReceivesWorkRows = handoff.items.some((item) => String(item.itemType) === "work");
@@ -266,8 +297,8 @@ export function runControlledPilotDomainProof(scenario: ControlledPilotScenario)
     groupedPreviewRows > 0 ? "" : "grouped_preview_rows_missing",
     snapshot ? "" : "snapshot_missing",
     snapshotRows.length >= scenario.expected_min_rows ? "" : `snapshot_rows_below_expected:${snapshotRows.length}<${scenario.expected_min_rows}`,
-    pdf?.revisionId && pdf.revisionId === revision?.revision_id ? "" : "pdf_not_bound_to_snapshot",
-    pdf?.revisionRowsHash && pdf.revisionRowsHash === revision?.rows_hash ? "" : "pdf_rows_hash_mismatch",
+    pdfGeneratedFromCanonicalRevision ? "" : "pdf_not_bound_to_canonical_backend_revision",
+    pdfRowsBoundToCanonicalRevision ? "" : "pdf_canonical_snapshot_hash_missing",
     pdfObject ? "" : "pdf_storage_object_missing",
     pdfText.trim().length > 0 ? "" : "pdf_text_missing",
     handoff.items.length > 0 ? "" : "buyer_handoff_missing",
@@ -283,10 +314,10 @@ export function runControlledPilotDomainProof(scenario: ControlledPilotScenario)
     grouped_preview_rows: groupedPreviewRows,
     missing_design_inputs_count: aiDraft.missingData.length,
     snapshot_created: Boolean(snapshot),
-    snapshot_id: revision?.snapshot_id ?? snapshot?.snapshotId ?? null,
+    snapshot_id: pdf?.snapshotId ?? revision?.snapshot_id ?? snapshot?.snapshotId ?? null,
     snapshot_row_count: snapshotRows.length,
-    pdf_generated_from_snapshot: Boolean(pdf?.revisionId && pdf.revisionId === revision?.revision_id),
-    pdf_rows_equal_snapshot_rows: Boolean(pdf?.revisionRowsHash && pdf.revisionRowsHash === revision?.rows_hash),
+    pdf_generated_from_snapshot: pdfGeneratedFromCanonicalRevision,
+    pdf_rows_equal_snapshot_rows: pdfRowsBoundToCanonicalRevision,
     pdf_text_extracted: pdfText.trim().length > 0,
     pdf_text_sample: pdfText.slice(0, 1000),
     buyer_handoff_created: handoff.items.length > 0,

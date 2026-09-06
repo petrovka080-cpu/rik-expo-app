@@ -13,8 +13,9 @@ describe("Android acceptance requires API 34", () => {
     expect(smoke).toContain("GREEN_ANDROID_API34_PIPELINE_SMOKE_READY");
     expect(smoke).toContain("android_build_identity_matches");
     expect(smoke).toContain("android_uses_metro: false");
-    expect(smoke).toContain("business_route_opened: false");
-    expect(smoke).toContain("auth_login_attempted: false");
+    expect(smoke).toContain("business_route_opened: routeToScreenAckGreen");
+    expect(smoke).toContain("auth_login_attempted: authLoginAttempted");
+    expect(smoke).toContain("route_to_screen_ack:");
     expect(verifier).toContain("preflight.android_actual_api !== 34");
     expect(verifier).toContain("preflight.api36_used === true");
     expect(verifier).toContain("GREEN_ANDROID_API34_PIPELINE_READY");

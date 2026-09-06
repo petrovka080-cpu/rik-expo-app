@@ -29,7 +29,10 @@ export const STOP_AI_ESTIMATE_10K_PROFESSIONAL_BOQ_TRUTH_AUDIT_INCOMPLETE_NO_GRE
   "STOP_AI_ESTIMATE_10K_PROFESSIONAL_BOQ_TRUTH_AUDIT_INCOMPLETE_NO_GREEN" as const;
 
 const RUNTIME_ROOT = path.join(".release-runtime", "ai-estimate-10k-professional-boq-truth-audit");
-export const PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT = 45;
+// R4-A10 forbids a cross-technology row quota. This threshold only rejects an
+// empty compiled BOQ; technological completeness is enforced by each work's
+// parameter, formula, resource-role and source contracts below.
+export const PROFESSIONAL_BOQ_TRUTH_MIN_ROW_COUNT = 1;
 
 type StrictBoqStatus =
   | "READY_PROFESSIONAL_BOQ"
