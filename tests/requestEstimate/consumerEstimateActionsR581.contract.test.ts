@@ -80,6 +80,26 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(buildMultiDomainReferenceSelectedWorkBinding("ремонт фасада здания")).toBeNull();
   });
 
+  it("routes asphalt drainage as its own canonical owner without widening it to full road infrastructure", () => {
+    const fragment = "водоотвод для асфальтового покрытия на большой площади";
+    expect(buildMultiDomainReferenceSelectedWorkBinding(fragment)).toMatchObject({
+      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      selectedTitleRu: "Устройство системы водоотвода асфальтированного покрытия",
+      selectedCategoryKey: "roadworks",
+      rawInput: fragment,
+      resolverReGuessed: false,
+    });
+    expect(buildMultiDomainReferenceSelectedWorkBinding(
+      `${fragment}; тип системы: линейный лоток; проектная длина трассы 180 м`,
+    )?.selectedWorkKey).toBe(
+      "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+    );
+    expect(buildMultiDomainReferenceSelectedWorkBinding(
+      "полное строительство дороги с водоотводом, освещением, знаками и разметкой",
+    )).toBeNull();
+    expect(buildMultiDomainReferenceSelectedWorkBinding("водоотвод с кровли здания")).toBeNull();
+  });
+
   it("turns backend parameter identifiers into actionable Russian P0 questions", () => {
     expect(canonicalBaselineContractMissingStatusMessage(
       "CANONICAL_BASELINE_CONTRACT_MISSING:total_axis_length_m,strip_width_m,strip_height_m,groundworks_included",

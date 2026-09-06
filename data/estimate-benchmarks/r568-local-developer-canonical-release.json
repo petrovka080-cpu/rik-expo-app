@@ -1,17 +1,17 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "d12a3ad5-10e1-5381-af18-7f2a56f899f7",
-  "searchReleaseId": "5ff23280-4915-58a0-b9df-1214b45c6490",
+  "definitionReleaseId": "4d454761-0295-5ec4-8519-bf71f0065be5",
+  "searchReleaseId": "5bf4e4f1-0294-51d9-ac2a-d240165f31b1",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "16406e004636b3ec73d00f791b9d1335fd2f9615df52008d3e533012630f1f6b",
-  "manifestHashChainSha256": "16406e004636b3ec73d00f791b9d1335fd2f9615df52008d3e533012630f1f6b",
-  "searchHashChainSha256": "b59ba43d88871f80dd777e15ee9061db7b9507ec3fdb7ae01d8c948b76e5576b",
+  "definitionSnapshotSha256": "25bb5a70a5bc05727e680dc453cde9c2f0aba9a7a18321de8fe3dd896b114293",
+  "manifestHashChainSha256": "25bb5a70a5bc05727e680dc453cde9c2f0aba9a7a18321de8fe3dd896b114293",
+  "searchHashChainSha256": "0fd5dca96bc465d687a6b58a08b2a4e83abfb1747b3a18cd41d5004a7e8d5e8d",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
-  "owner": "R4_A10_FOUNDATION_PUBLIC_TECHNOLOGICAL_IDENTITY",
+  "owner": "R4_A10_ASPHALT_SURFACE_DRAINAGE_TECHNOLOGICAL_OWNER",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }

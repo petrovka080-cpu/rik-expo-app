@@ -525,6 +525,20 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
   const normalized = normalizeEditableWorkText(rawInput);
+  const asphaltDrainageIntent =
+    /^(?:(?:нужн\p{L}*|смет\p{L}*)\s+)?(?:с\s+)?(?:(?:устройств|монтаж|прокладк)\p{L}*\s+)?(?:(?:систем\p{L}*|линейн\p{L}*)\s+)?(?:водоотвод\p{L}*|дренаж\p{L}*|ливнев\p{L}*)/iu.test(normalized)
+    && /асфальт\p{L}*(?:\s+покрыт\p{L}*|\s+площад\p{L}*|\s+территор\p{L}*)?/iu.test(normalized);
+  if (asphaltDrainageIntent) {
+    return {
+      selectedWorkKey: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      selectedTitleRu: "Устройство системы водоотвода асфальтированного покрытия",
+      selectedCategoryKey: "roadworks",
+      selectedCategoryTitleRu: "Дорожные работы и водоотвод",
+      rawInput: rawInput.trim(),
+      source: "user_selected",
+      resolverReGuessed: false,
+    };
+  }
   const stripFoundationIntent =
     /(?:устройств|возвед|бетонирован|заливк|монтаж)[^.;]{0,80}ленточн\p{L}*\s+фундамент\p{L}*/iu.test(normalized) ||
     /ленточн\p{L}*\s+фундамент\p{L}*[^.;]{0,80}(?:устройств|возвед|бетонирован|заливк|монтаж)/iu.test(normalized);
@@ -555,6 +569,17 @@ const CANONICAL_BASELINE_MISSING_LABEL_RU: Readonly<Record<string, string>> = {
   waterproofing_included: "входит ли гидроизоляция",
   backfill_included: "входит ли обратная засыпка",
   soil_disposal_included: "входит ли вывоз лишнего грунта",
+  system_type: "тип системы: линейные лотки, подземный дренаж или дождевая сеть",
+  route_length_m: "проектная длина трассы водоотвода",
+  design_slope_percent: "проектный продольный уклон",
+  trench_width_m: "ширина траншеи",
+  trench_depth_m: "средняя глубина траншеи",
+  bedding_material: "материал подготовки",
+  bedding_thickness_m: "толщина подготовки",
+  backfill_cross_section_m2: "сечение обратной засыпки",
+  outlet_connection_count: "количество подключений к выпуску",
+  outfall_status: "подтверждённый выпуск",
+  surface_restoration_scope: "граница восстановления асфальта",
 };
 
 export function canonicalBaselineContractMissingStatusMessage(code: string): string {
@@ -564,8 +589,15 @@ export function canonicalBaselineContractMissingStatusMessage(code: string): str
   }
   const labels = [...new Set(code.slice(prefix.length).split(",").map((parameterId) => parameterId.trim()).filter(Boolean))]
     .map((parameterId) => CANONICAL_BASELINE_MISSING_LABEL_RU[parameterId] ?? parameterId.replace(/_/gu, " "));
+  const foundationMissing = code.includes("total_axis_length_m") || code.includes("strip_width_m") || code.includes("strip_height_m");
+  const drainageMissing = code.includes("system_type") || code.includes("route_length_m") || code.includes("design_slope_percent");
+  const scopeGuard = foundationMissing
+    ? " Размеры здания не используются как размеры фундаментной ленты."
+    : drainageMissing
+      ? " Площадь покрытия не используется как длина, сечение или количество узлов водоотвода."
+      : "";
   return labels.length > 0
-    ? `Нужно уточнить обязательные параметры: ${labels.join("; ")}. Размеры здания не используются как размеры фундаментной ленты.`
+    ? `Нужно уточнить обязательные параметры: ${labels.join("; ")}.${scopeGuard}`
     : "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт.";
 }
 

@@ -23,6 +23,11 @@ import {
   R4_A6_PUMP_STATION_CATALOG_ID,
   R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A6PumpStationProfessional";
+import {
+  parseR4A10AsphaltDrainagePrompt,
+  R4_A10_ASPHALT_DRAINAGE_CATALOG_ID,
+  R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
+} from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -270,7 +275,12 @@ export function buildCanonicalBaselinePlan(input: {
   const stripFoundationInput = input.catalog.catalogId === R4_A10_STRIP_FOUNDATION_CATALOG_ID
     ? parseR4A10StripFoundationPrompt(input.prompt)
     : null;
-  const userQuantity = pumpStationInput == null && stripFoundationInput == null ? extractUserQuantity(input.prompt) : null;
+  const asphaltDrainageInput = input.catalog.catalogId === R4_A10_ASPHALT_DRAINAGE_CATALOG_ID
+    ? parseR4A10AsphaltDrainagePrompt(input.prompt)
+    : null;
+  const userQuantity = pumpStationInput == null && stripFoundationInput == null && asphaltDrainageInput == null
+    ? extractUserQuantity(input.prompt)
+    : null;
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const candidates = input.catalog.parameterSchema
@@ -285,12 +295,15 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    pumpStationInput ?? stripFoundationInput ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
+    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput
+      ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
     ? R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID
     : stripFoundationInput != null
       ? "total_axis_length_m"
+      : asphaltDrainageInput != null
+        ? R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID
     : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")

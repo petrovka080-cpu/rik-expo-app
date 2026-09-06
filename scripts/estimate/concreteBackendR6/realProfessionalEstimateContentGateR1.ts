@@ -1,7 +1,14 @@
-import type {
-  StripFoundationBoqRow,
-  StripFoundationCompiledRow,
-} from "./reinforcedConcreteStripFoundationR1";
+type RealProfessionalEstimateRow = {
+  rowId: string;
+  category: string;
+  canonicalRuName: string;
+  normalizedUom: string;
+  formulaId: string;
+  semanticOwnerId: string;
+  normSource: { sourceKey: string; locator: string };
+  cargo?: { cargoRu: string; distanceParameterId: string; vehicleRu: string };
+  evaluatedQuantity?: string;
+};
 
 export type RealProfessionalEstimateGateIssue = {
   code:
@@ -26,7 +33,7 @@ const NON_BILLABLE_TITLE = /(?:контрол|надзор|журнал|акт\b
 const RAW_LABOR = /(?:worker_h|man_hour|чел\.?-?ч|трудо[её]мкост)/iu;
 
 export function auditRealProfessionalRowsR1(
-  rows: readonly (StripFoundationBoqRow | StripFoundationCompiledRow)[],
+  rows: readonly RealProfessionalEstimateRow[],
 ): readonly RealProfessionalEstimateGateIssue[] {
   const issues: RealProfessionalEstimateGateIssue[] = [];
   const owners = new Set<string>();
@@ -59,7 +66,7 @@ export function auditRealProfessionalRowsR1(
       if (!row.cargo?.distanceParameterId.trim()) issues.push({ code: "DELIVERY_WITHOUT_DISTANCE", rowId: row.rowId, detail: title });
       if (!row.cargo?.vehicleRu.trim()) issues.push({ code: "DELIVERY_WITHOUT_VEHICLE", rowId: row.rowId, detail: title });
     }
-    if ("evaluatedQuantity" in row && Number(row.evaluatedQuantity) <= 0) {
+    if (row.evaluatedQuantity != null && Number(row.evaluatedQuantity) <= 0) {
       issues.push({ code: "NON_POSITIVE_QUANTITY", rowId: row.rowId, detail: row.evaluatedQuantity });
     }
   }
