@@ -11,10 +11,12 @@ import {
 } from "../architecture/auditAiEstimateLayeredArchitecture";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
   getConsumerRepairPdfStorageObject,
 } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 import {
   buildProfessionalWorkPassport,
   clearProfessionalWorkPassportBuildCaches,
@@ -798,7 +800,7 @@ export function auditProfessionalBoq11610PriceTrust(): SectionSummary {
   });
 }
 
-function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestDraft>) {
+function currentRevision(bundle: ReturnType<typeof approveCanonicalConsumerRepairAuditDraft>) {
   return bundle.estimateRevisionState?.revisions.find(
     (candidate) => candidate.revision_id === bundle.estimateRevisionState?.current_revision_id,
   ) ?? null;
@@ -1527,7 +1529,7 @@ export function runOneBrowserComparableCase(): {
   __resetConsumerRepairRequestStoreForTests();
   const testCase = loadProductionGradeCriticalCases()[0];
   const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" });
-  const draft = createConsumerRepairRequestDraft({
+  const draft = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: "professional-boq-11610-web-android-parity",
     problemText: testCase.prompt,
     repairType: aiDraft.repairType,
@@ -1536,10 +1538,9 @@ export function runOneBrowserComparableCase(): {
     preferredTimeText: "today",
     contactPhone: "0700000000",
     aiDraft,
-  });
-  const approved = approveConsumerRepairRequestDraft({
-    requestDraftId: draft.draft.id,
-    userId: draft.draft.consumerUserId,
+  }, "professional-boq-11610-web-android-parity");
+  const approved = approveCanonicalConsumerRepairAuditDraft({
+    bundle: draft,
     generatedAt: "2026-07-11T00:00:00.000Z",
   });
   const revision = currentRevision(approved);

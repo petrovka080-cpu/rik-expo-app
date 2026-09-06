@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { approveConsumerRepairRequestDraft, buildApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
+import { buildApprovedEstimateHistoryRecord } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   buildApprovedConsumerRepairWorkspaceClearedState,
   emptyConsumerRepairCanonicalWorkSearchState,
@@ -22,9 +23,8 @@ describe("capital renovation 98 PDF button state", () => {
       "utf8",
     );
     const draft = capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT);
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: draft.draft.id,
-      userId: draft.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle: draft,
       generatedAt: "2026-07-04T00:00:00.000Z",
     });
     const approvedHistoryPage = {

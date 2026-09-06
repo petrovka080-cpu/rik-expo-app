@@ -1,11 +1,11 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   addConsumerRepairRequestItem,
-  approveConsumerRepairRequestDraft,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
   sendConsumerRepairRequestToMarketplace,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 
 describe("consumer estimate approval boundary", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());

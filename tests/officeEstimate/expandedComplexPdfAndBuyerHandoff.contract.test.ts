@@ -2,9 +2,9 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/co
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   buildExpandedComplexBuyerHandoff,
@@ -65,6 +65,9 @@ describe("expanded complex PDF and buyer handoff", () => {
     });
     if (!pdf) throw new Error("PDF view model missing.");
     const handoff = buildConsumerRepairProcurementHandoffFromSnapshot(approved);
+    const canonicalRevisionId = String(
+      approved.items[0]?.sourceParameters?.canonicalBackendRevisionId ?? "",
+    );
     const snapshotRows = revision?.editable_estimate_snapshot.rows.filter((row) => !row.removed) ?? [];
     const pdfRows = pdf.sections.flatMap((section) => section.rows);
     const publicText = pdfRows.flatMap((row) => [
@@ -78,7 +81,10 @@ describe("expanded complex PDF and buyer handoff", () => {
 
     expect(snapshotRows.length).toBe(approved.items.length);
     expect(pdfRows.length).toBeGreaterThan(0);
-    expect(approved.pdfs[0]?.revisionRowsHash).toBe(revision?.rows_hash);
+    expect(canonicalRevisionId).toBeTruthy();
+    expect(approved.pdfs[0]?.revisionId).toBe(canonicalRevisionId);
+    expect(handoff.revisionId).toBe(canonicalRevisionId);
+    expect(handoff.rowsHash).toBe(approved.pdfs[0]?.revisionRowsHash);
     expect(handoff.items.length).toBeGreaterThan(0);
     expect(handoff.items.every((item) => String(item.itemType) !== "work")).toBe(true);
     expect(handoff.items.every((item) => item.requestItemId)).toBe(true);

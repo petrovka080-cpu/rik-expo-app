@@ -2,10 +2,12 @@ import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/pro
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamBatchPatch,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamBatchPatch as applyConsumerRepairDraftRevisionParamBatchPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   compileProfessionalEstimateDomainV1,
   constructionNormativeRegistryV1,

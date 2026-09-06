@@ -1,11 +1,13 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamBatchPatch,
   commitPreparedConsumerRepairRequestBundle,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamBatchPatch as applyConsumerRepairDraftRevisionParamBatchPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   createEstimateRevisionState,
   getBoundEstimateRevisionCalculationState,
@@ -21,7 +23,6 @@ import {
 } from "../../src/lib/estimate/v4/roadworks";
 import type { RoadworksWaveAProductionRegistration } from "../../src/lib/estimate/v4/roadworks";
 import {
-  EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION,
   getConsumerRepairCalculationStateForReadOnlyDisplay,
 } from "../../src/lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import { consumerRepairBundleHasPdfEligibleSnapshot } from "../../src/features/consumerRepair/ConsumerRepairRequestScreenView";
@@ -110,18 +111,18 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
 
   test("vector A: hands a fresh exact runtime revision to the canonical owner and edits after cold remount", () => {
     const created = createRuntimeBundle("calculation-handoff-owner");
-    const initialCalculationState = getBoundEstimateRevisionCalculationState(
-      created.bundle.estimateRevisionState,
-    );
-    expect(initialCalculationState?.currentRevisionId).toBe(created.runtimeRevisionId);
-    expect(created.bundle.estimateDraftRevisionState).toEqual(initialCalculationState);
+    const initialCalculationState = created.bundle.estimateDraftRevisionState;
+    expect(initialCalculationState?.currentRevisionId).toBeTruthy();
+    expect(initialCalculationState?.currentRevisionId).not.toBe(created.runtimeRevisionId);
+    expect(getBoundEstimateRevisionCalculationState(created.bundle.estimateRevisionState))
+      .toEqual(initialCalculationState);
     expect(consumerRepairBundleHasPdfEligibleSnapshot(created.bundle)).toBe(true);
     const immutableInitialRevision = JSON.stringify(initialCalculationState?.revisions[0]);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const restored = getConsumerRepairRequest(created.bundle.draft.id);
-    expect(getBoundEstimateRevisionCalculationState(restored.estimateRevisionState)?.currentRevisionId)
-      .toBe(created.runtimeRevisionId);
+    expect(restored.estimateDraftRevisionState?.currentRevisionId)
+      .toBe(initialCalculationState?.currentRevisionId);
 
     const edited = applyConsumerRepairDraftRevisionParamBatchPatch({
       requestDraftId: restored.draft.id,
@@ -129,11 +130,12 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
       createdAt: "2026-08-07T01:01:00.000Z",
       patches: [{ operation: "update_param", paramKey: "area_m2", rawValue: "220" }],
     });
-    const editedCalculationState = getBoundEstimateRevisionCalculationState(edited.estimateRevisionState);
+    const editedCalculationState = edited.estimateDraftRevisionState;
     expect(editedCalculationState?.revisions).toHaveLength(2);
-    expect(editedCalculationState?.currentRevisionId).not.toBe(created.runtimeRevisionId);
+    expect(editedCalculationState?.currentRevisionId).not.toBe(initialCalculationState?.currentRevisionId);
     expect(JSON.stringify(editedCalculationState?.revisions[0])).toBe(immutableInitialRevision);
-    expect(edited.estimateDraftRevisionState).toEqual(editedCalculationState);
+    expect(getBoundEstimateRevisionCalculationState(edited.estimateRevisionState))
+      .toEqual(editedCalculationState);
     expect(edited.draft.selectedWorkKey).toBe(created.work.workId);
     expect(editedCalculationState?.revisions.at(-1)?.params.area_m2?.value).toBe(220);
   });
@@ -142,11 +144,12 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
     const created = createRuntimeBundle("canonical-only-calculation-handoff-owner");
     const canonicalOnly = commitPreparedConsumerRepairRequestBundle({
       ...created.bundle,
-      estimateDraftRevisionState: null,
+      estimateRevisionState: undefined,
+      editableEstimateSnapshot: undefined,
     });
-    expect(canonicalOnly.estimateDraftRevisionState).toBeNull();
-    expect(getBoundEstimateRevisionCalculationState(canonicalOnly.estimateRevisionState)?.currentRevisionId)
-      .toBe(created.runtimeRevisionId);
+    expect(canonicalOnly.estimateRevisionState).toBeUndefined();
+    expect(canonicalOnly.estimateDraftRevisionState?.currentRevisionId)
+      .toBe(created.bundle.estimateDraftRevisionState?.currentRevisionId);
 
     __simulateConsumerRepairRequestStoreReloadForTests();
     const edited = applyConsumerRepairDraftRevisionParamBatchPatch({
@@ -162,7 +165,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
     );
   });
 
-  test("vector C: migrates a historical prepared exact snapshot without parser or generic compiler reconstruction", () => {
+  test("vector C: keeps a historical snapshot read-only and blocks mutation without backend projection", () => {
     const created = createRuntimeBundle("historical-calculation-handoff-owner");
     if (!created.bundle.estimateRevisionState) throw new Error("TEST_CANONICAL_STATE_MISSING");
     const historicalPrepared = commitPreparedConsumerRepairRequestBundle({
@@ -183,22 +186,14 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
     expect(getBoundEstimateRevisionCalculationState(historicalPrepared.estimateRevisionState)).toBeNull();
 
     __simulateConsumerRepairRequestStoreReloadForTests();
-    const edited = applyConsumerRepairDraftRevisionParamBatchPatch({
+    const before = JSON.stringify(getConsumerRepairRequest(historicalPrepared.draft.id));
+    expect(() => applyConsumerRepairDraftRevisionParamBatchPatch({
       requestDraftId: historicalPrepared.draft.id,
       userId: historicalPrepared.draft.consumerUserId,
       createdAt: "2026-08-07T01:02:00.000Z",
       patches: [{ operation: "update_param", paramKey: "area_m2", rawValue: "260" }],
-    });
-    const calculationState = getBoundEstimateRevisionCalculationState(edited.estimateRevisionState);
-    expect(calculationState?.revisions).toHaveLength(2);
-    expect(calculationState?.revisions[0]?.resolvedIdentity).toMatchObject({
-      requestedCatalogWorkId: created.work.workId,
-      compilerVersion: EXACT_ROADWORKS_CALCULATION_STATE_MIGRATION_VERSION,
-      legacyFallbackUsed: false,
-      fallbackReason: null,
-    });
-    expect(calculationState?.revisions.at(-1)?.params.area_m2?.value).toBe(260);
-    expect(edited.draft.selectedWorkKey).toBe(created.work.workId);
+    })).toThrow(ConsumerRepairValidationError);
+    expect(JSON.stringify(getConsumerRepairRequest(historicalPrepared.draft.id))).toBe(before);
   });
 
   test("vector D: fails closed before mutation when an isolated prepared snapshot is unrecoverable", () => {
@@ -281,9 +276,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
     for (const [index, work] of RoadworksWaveAProductionRegistry.entries()) {
       __resetConsumerRepairRequestStoreForTests();
       const created = createRuntimeBundle(`calculation-batch-${index}`, work);
-      const initialState = getBoundEstimateRevisionCalculationState(
-        created.bundle.estimateRevisionState,
-      );
+      const initialState = created.bundle.estimateDraftRevisionState;
       if (!initialState) throw new Error(`TEST_INITIAL_CALCULATION_STATE_MISSING:${work.workId}`);
       if (initialState.revisions.length !== 1) counts.duplicateInitialRevisions += 1;
       const initialRevision = initialState.revisions[0];
@@ -301,7 +294,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
 
       __simulateConsumerRepairRequestStoreReloadForTests();
       const cold = getConsumerRepairRequest(created.bundle.draft.id);
-      const coldState = getBoundEstimateRevisionCalculationState(cold.estimateRevisionState);
+      const coldState = cold.estimateDraftRevisionState;
       if (coldState?.currentRevisionId === initialRevision.revisionId) counts.stateRecovery += 1;
       const nextArea = 200 + index * 7;
       let edited;
@@ -317,7 +310,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
         throw error;
       }
       counts.paramBatchApply += 1;
-      const editedState = getBoundEstimateRevisionCalculationState(edited.estimateRevisionState);
+      const editedState = edited.estimateDraftRevisionState;
       if (!editedState) throw new Error(`TEST_EDITED_CALCULATION_STATE_MISSING:${work.workId}`);
       const nextRevision = editedState.revisions.at(-1);
       const diff = editedState.diffs.at(-1);
@@ -350,7 +343,7 @@ describe("ConsumerRepairCalculationStateHandoffContract", () => {
 
       __simulateConsumerRepairRequestStoreReloadForTests();
       const reopened = getConsumerRepairRequest(edited.draft.id);
-      const reopenedState = getBoundEstimateRevisionCalculationState(reopened.estimateRevisionState);
+      const reopenedState = reopened.estimateDraftRevisionState;
       if (
         reopenedState?.currentRevisionId === nextRevision.revisionId &&
         reopenedState.revisions.at(-1)?.params.area_m2?.value === nextArea &&

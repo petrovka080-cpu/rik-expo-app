@@ -1,9 +1,9 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
   getConsumerRepairRequestPdf,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { ConsumerRepairValidationError } from "../../src/lib/consumerRequests/consumerRequestMarketplaceService";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
 

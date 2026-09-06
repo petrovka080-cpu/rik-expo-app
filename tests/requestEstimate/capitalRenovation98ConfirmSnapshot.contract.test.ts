@@ -1,12 +1,11 @@
-import { approveConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("capital renovation 98 confirm snapshot", () => {
   it("freezes a revision snapshot with prompt lineage, parameters, rows, formulas and price state", () => {
     const bundle = capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT);
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       generatedAt: "2026-07-04T00:00:00.000Z",
     });
 

@@ -1,15 +1,12 @@
-import {
-  approveConsumerRepairRequestDraft,
-} from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { capitalRenovationBundle } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("director PDF price sources contract", () => {
   it("shows missing price state and norm source per capital renovation row without raw debug text", () => {
     const bundle = capitalRenovationBundle();
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       generatedAt: "2026-07-02T00:00:00.000Z",
     });
 

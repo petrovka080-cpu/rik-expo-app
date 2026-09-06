@@ -1,13 +1,15 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamPatch,
   buildConsumerRepairCanonicalDraftPayload,
   commitPreparedConsumerRepairRequestBundle,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
   updateConsumerRepairRequestItemUnitPrice,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamPatch as applyConsumerRepairDraftRevisionParamPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 import { RoadworksWaveAProductionRegistry } from "../../src/lib/estimate/v4/roadworks";

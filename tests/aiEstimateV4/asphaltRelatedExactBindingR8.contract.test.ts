@@ -7,9 +7,11 @@ import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import type { EstimateDraftRevisionParam } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
@@ -354,7 +356,12 @@ describe("Asphalt-related R63 exact binding matrix", () => {
         city: "Bishkek",
         aiDraft: runtime!,
       });
-      expect(bundle.estimateDraftRevisionState?.currentRevisionId).toBe(revision!.revisionId);
+      expect(bundle.estimateDraftRevisionState?.currentRevisionId).toBeTruthy();
+      expect(bundle.estimateDraftRevisionState?.currentRevisionId).not.toBe(revision!.revisionId);
+      expect(bundle.items.every((item) =>
+        item.sourceParameters?.canonicalBackendRevisionId ===
+          bundle.estimateDraftRevisionState?.currentRevisionId
+      )).toBe(true);
       persisted.push({
         id: bundle.draft.id,
         owner: expectedOwner,

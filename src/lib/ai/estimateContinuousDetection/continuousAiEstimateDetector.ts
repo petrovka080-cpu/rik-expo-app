@@ -5,6 +5,7 @@ import {
   approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
   detectConsumerRepairLegacyFakeEstimateRevision,
+  generateConsumerRepairRequestPdfForDraft,
   listConsumerRepairApprovedHistory,
   type ConsumerRepairAiDraft,
   type ConsumerRepairRequestItem,
@@ -16,6 +17,7 @@ import {
 import { buildProjectExecutionDraftFromRevision } from "../../projectExecution";
 import type { ProfessionalBoqRow } from "../../estimate/estimateDraftRevisionContract";
 import type { StructuredEstimateRow } from "../../estimateStructuredPipeline";
+import { createEstimateDraftRevision } from "../../estimate/createEstimateDraftRevision";
 
 export const GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_GATE =
   "GREEN_AI_ESTIMATE_CONTINUOUS_DETECT_TEST_AND_APPLICATION_GUARD_NO_BUILDS" as const;
@@ -749,6 +751,35 @@ function buildRequestFlowForApartment54() {
   __resetConsumerRepairRequestStoreForTests();
   const prompt = STARTER_PROMPTS[0].prompt;
   const aiDraft = buildConsumerRepairAiDraft(prompt);
+  const revision = createEstimateDraftRevision({
+    estimateDraftId: "continuous-detect-apartment-54",
+    rawInput: prompt,
+    selectedWorkKey: aiDraft.selectedWork?.selectedWorkKey ?? aiDraft.repairType,
+    city: "Bishkek",
+    currency: "KGS",
+    countryCode: "KG",
+    createdAt: "2026-07-02T00:00:00.000Z",
+  });
+  const releaseId = "c0a71000-0000-4000-8000-000000000054";
+  const canonicalAiDraft: ConsumerRepairAiDraft = {
+    ...aiDraft,
+    runtimeEstimateDraftRevision: undefined,
+    items: aiDraft.items.map((item, index) => ({
+      ...item,
+      sourceParameters: {
+        ...(item.sourceParameters ?? {}),
+        canonicalBackendRevisionId: revision.revisionId,
+        canonicalBackendReleaseId: releaseId,
+        canonicalBackendCatalogId:
+          aiDraft.selectedWork?.selectedCatalogWorkId
+          ?? aiDraft.selectedWork?.selectedWorkKey
+          ?? aiDraft.repairType,
+        canonicalBackendRowId: revision.boq.rows[index]?.rowId ?? `continuous-detect-row-${index + 1}`,
+        canonicalBackendOwnershipStatus: "OWNED",
+        compilerOwner: "backend",
+      },
+    })),
+  };
   const bundle = createConsumerRepairRequestDraft({
     consumerUserId: "continuous-detect-apartment-54",
     problemText: prompt,
@@ -756,16 +787,27 @@ function buildRequestFlowForApartment54() {
     city: "Bishkek",
     addressText: "Bishkek, continuous detect address 54",
     contactPhone: "+996700000000",
-    aiDraft,
+    aiDraft: canonicalAiDraft,
   });
-  const approved = approveConsumerRepairRequestDraft({
+  const withPdf = generateConsumerRepairRequestPdfForDraft({
     requestDraftId: bundle.draft.id,
     userId: bundle.draft.consumerUserId,
     generatedAt: "2026-07-02T00:00:00.000Z",
   });
-  const revisionState = approved.estimateDraftRevisionState;
-  const revision = revisionState?.revisions.find((item) => item.revisionId === revisionState.currentRevisionId);
-  if (!revision) throw new Error("CONTINUOUS_DETECT_APARTMENT_54_REVISION_MISSING");
+  const artifactId = withPdf.pdfs[0]?.id;
+  if (!artifactId) throw new Error("CONTINUOUS_DETECT_APARTMENT_54_PDF_MISSING");
+  const approved = approveConsumerRepairRequestDraft({
+    requestDraftId: withPdf.draft.id,
+    userId: bundle.draft.consumerUserId,
+    generatedAt: "2026-07-02T00:00:00.000Z",
+    canonicalArtifact: {
+      artifactId,
+      revisionId: revision.revisionId,
+      releaseId,
+      status: "ready",
+      sha256: null,
+    },
+  });
   const history = listConsumerRepairApprovedHistory(bundle.draft.consumerUserId, { limit: 5 });
   const pdf = buildConsumerRepairStructuredEstimatePdfViewModel({
     draft: approved.draft,

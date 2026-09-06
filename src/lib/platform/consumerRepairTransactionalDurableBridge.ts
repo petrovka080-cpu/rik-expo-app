@@ -48,7 +48,20 @@ const PRIVATE_URL = /^(?:data:|blob:)|:\/\/[^/?#]*@|[?&](?:token|signature|sig|x
 
 let storeOverride: EstimateRevisionDurableStore | null = null;
 let runtimeStore: EstimateRevisionDurableStore | null = null;
+type TransactionalConsumerRepairWriteInput = {
+  bundle: ConsumerRepairDraftBundle;
+  storage: Pick<Storage, "setItem"> | null;
+  onCommitted?: (result: Extract<DurableWriteResult, { status: "WRITTEN" | "UNCHANGED" }>) => void;
+  onFailed?: (result: Extract<DurableWriteResult, { status: "FAILED" }>) => void;
+};
 const writeQueues = new Map<string, Promise<DurableWriteResult>>();
+const pendingWrites = new Map<string, TransactionalConsumerRepairWriteInput>();
+
+export function hasPendingTransactionalConsumerRepairBundleWrite(
+  requestDraftId: string,
+): boolean {
+  return writeQueues.has(requestDraftId) || pendingWrites.has(requestDraftId);
+}
 
 function activeStore(): EstimateRevisionDurableStore {
   if (storeOverride) return storeOverride;
@@ -184,20 +197,11 @@ export async function readTransactionalConsumerRepairBundle(
   return activeStore().recoverLastValid(requestDraftId);
 }
 
-export function queueTransactionalConsumerRepairBundleWrite(input: {
-  bundle: ConsumerRepairDraftBundle;
-  storage: Pick<Storage, "setItem"> | null;
-  onCommitted?: (result: Extract<DurableWriteResult, { status: "WRITTEN" | "UNCHANGED" }>) => void;
-  onFailed?: (result: Extract<DurableWriteResult, { status: "FAILED" }>) => void;
-}): Promise<DurableWriteResult> {
+async function commitTransactionalConsumerRepairBundleWrite(
+  input: TransactionalConsumerRepairWriteInput,
+): Promise<DurableWriteResult> {
   const key = input.bundle.draft.id;
-  const previousQueue = writeQueues.get(key) ?? Promise.resolve({
-    status: "UNCHANGED",
-    version: "",
-    previousVersion: null,
-    checksum: "",
-  } satisfies DurableWriteResult);
-  const next = previousQueue.then(async () => {
+  try {
     const store = activeStore();
     const current = await store.readBundle(key);
     const expectedVersion = current
@@ -224,7 +228,7 @@ export function queueTransactionalConsumerRepairBundleWrite(input: {
     }));
     input.onCommitted?.(result);
     return result;
-  }).catch((error: unknown): DurableWriteResult => {
+  } catch (error: unknown) {
     const result: Extract<DurableWriteResult, { status: "FAILED" }> = {
       status: "FAILED",
       version: null,
@@ -236,7 +240,39 @@ export function queueTransactionalConsumerRepairBundleWrite(input: {
     };
     input.onFailed?.(result);
     return result;
-  });
+  }
+}
+
+async function drainTransactionalConsumerRepairBundleWrites(
+  key: string,
+): Promise<DurableWriteResult> {
+  let result: DurableWriteResult = {
+    status: "UNCHANGED",
+    version: "",
+    previousVersion: null,
+    checksum: "",
+  };
+  while (true) {
+    const pending = pendingWrites.get(key);
+    if (!pending) return result;
+    pendingWrites.delete(key);
+    result = await commitTransactionalConsumerRepairBundleWrite(pending);
+  }
+}
+
+export function queueTransactionalConsumerRepairBundleWrite(
+  input: TransactionalConsumerRepairWriteInput,
+): Promise<DurableWriteResult> {
+  const key = input.bundle.draft.id;
+  // UI actions can synchronously save draft, media, PDF and approval before
+  // the first durable microtask starts. Only the latest not-yet-started state
+  // needs a write; an already running atomic commit is never cancelled.
+  pendingWrites.set(key, input);
+  const queued = writeQueues.get(key);
+  if (queued) return queued;
+  const next = Promise.resolve().then(() =>
+    drainTransactionalConsumerRepairBundleWrites(key)
+  );
   writeQueues.set(key, next);
   void next.finally(() => {
     if (writeQueues.get(key) === next) writeQueues.delete(key);
@@ -245,7 +281,9 @@ export function queueTransactionalConsumerRepairBundleWrite(input: {
 }
 
 export async function flushTransactionalConsumerRepairWrites(): Promise<void> {
-  await Promise.all([...writeQueues.values()]);
+  while (writeQueues.size > 0) {
+    await Promise.all([...writeQueues.values()]);
+  }
 }
 
 export async function awaitTransactionalConsumerRepairBundleCommit(input: {
@@ -271,4 +309,5 @@ export function setConsumerRepairTransactionalStoreForTests(
   storeOverride = store;
   runtimeStore = null;
   writeQueues.clear();
+  pendingWrites.clear();
 }

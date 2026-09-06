@@ -7,33 +7,86 @@ import {
   encodeConsumerRepairBundleForDurableStorage,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
 import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
+import {
+  createEstimateDraftSession,
+  selectEstimateDraftWork,
+} from "../../src/lib/estimate/draftSession/estimateDraftSession";
+
+function createScopeRequiredAuditBundle(input: {
+  consumerUserId: string;
+  problemText: string;
+  lengthM: number;
+  widthM: number;
+}) {
+  const createdAt = "2026-07-26T00:00:00.000Z";
+  const bundle = createConsumerRepairRequestDraft({
+    consumerUserId: input.consumerUserId,
+    problemText: input.problemText,
+    repairType: "road_construction",
+    selectedWork: {
+      selectedWorkKey: "asphalt_concrete_pavement",
+      selectedWorkTitleRu: "Асфальтобетонное покрытие",
+      selectedWorkCategoryKey: "road_construction",
+      selectedWorkCategoryTitleRu: "Дорожные работы",
+      selectedWorkRawInput: input.problemText,
+      selectedWorkSource: "user_selected",
+      selectedWorkResolverReGuessed: false,
+    },
+  });
+  const parameters = {
+    length_m: {
+      value: input.lengthM,
+      origin: "USER_ENTERED" as const,
+      confirmedAt: createdAt,
+      sourceText: String(input.lengthM),
+    },
+    width_m: {
+      value: input.widthM,
+      origin: "USER_ENTERED" as const,
+      confirmedAt: createdAt,
+      sourceText: String(input.widthM),
+    },
+    area_m2: {
+      value: input.lengthM * input.widthM,
+      origin: "PROJECT_DERIVED" as const,
+      confirmedAt: createdAt,
+      sourceText: "length_m * width_m",
+      derivedFrom: ["length_m", "width_m"],
+    },
+  };
+  const estimateDraftSession = selectEstimateDraftWork(
+    createEstimateDraftSession({ draftId: bundle.draft.id }),
+    {
+      catalogWorkId: "asphalt_concrete_pavement",
+      canonicalWorkKey: "asphalt_concrete_pavement",
+      source: "EXPLICIT_SELECTION",
+      scopeRequired: true,
+      parameters,
+      scopeRequirement: {
+        originalUserText: input.problemText,
+        requestedCatalogWorkId: "asphalt_concrete_pavement",
+        offeredScopePresetIds: ["ROAD_SURFACING_ONLY", "FULL_ROAD_INFRASTRUCTURE"],
+        resolverEvidence: ["scope_not_explicit"],
+        resolverVersion: "road-scope-v4",
+        createdAt,
+      },
+    },
+  );
+  return saveConsumerRepairBundle({
+    ...bundle,
+    estimateDraftSession,
+  });
+}
 
 describe("estimate draft session durable persistence", () => {
   beforeEach(() => __resetConsumerRepairRequestStoreForTests());
 
   test("round-trips the exact scope-required session and its derived compatibility view", () => {
-    const bundle = createConsumerRepairRequestDraft({
+    const bundle = createScopeRequiredAuditBundle({
       consumerUserId: "session-persistence-user",
       problemText: "асфальт 5400 метров длина и 15 метров ширина",
-      repairType: "road_construction",
-      selectedWork: {
-        selectedWorkKey: "asphalt_concrete_pavement",
-        selectedWorkTitleRu: "Асфальтобетонное покрытие",
-        selectedWorkCategoryKey: "road_construction",
-        selectedWorkCategoryTitleRu: "Дорожные работы",
-        selectedWorkRawInput: "асфальт 5400 метров длина и 15 метров ширина",
-        selectedWorkSource: "user_selected",
-        selectedWorkResolverReGuessed: false,
-      },
-      pendingRoadScopeSelection: {
-        pendingIntentId: "pending-a",
-        originalUserText: "асфальт 5400 метров длина и 15 метров ширина",
-        requestedCatalogWorkId: "asphalt_concrete_pavement",
-        offeredScopes: ["ROAD_SURFACING_ONLY", "FULL_ROAD_INFRASTRUCTURE"],
-        resolverEvidence: ["scope_not_explicit"],
-        resolverVersion: "road-scope-v4",
-        createdAt: "2026-07-26T00:00:00.000Z",
-      },
+      lengthM: 5400,
+      widthM: 15,
     });
 
     const decoded = decodeConsumerRepairBundleFromDurableStorage(
@@ -92,19 +145,11 @@ describe("estimate draft session durable persistence", () => {
   });
 
   test("repository overwrites a tampered compatibility projection from DraftSession", () => {
-    const bundle = createConsumerRepairRequestDraft({
+    const bundle = createScopeRequiredAuditBundle({
       consumerUserId: "session-projection-user",
       problemText: "асфальт 2000 x 32",
-      repairType: "road_construction",
-      pendingRoadScopeSelection: {
-        pendingIntentId: "canonical-pending",
-        originalUserText: "асфальт 2000 x 32",
-        requestedCatalogWorkId: "asphalt_concrete_pavement",
-        offeredScopes: ["ROAD_SURFACING_ONLY", "FULL_ROAD_INFRASTRUCTURE"],
-        resolverEvidence: ["scope_not_explicit"],
-        resolverVersion: "road-scope-v4",
-        createdAt: "2026-07-26T00:00:00.000Z",
-      },
+      lengthM: 2000,
+      widthM: 32,
     });
     const saved = saveConsumerRepairBundle({
       ...bundle,

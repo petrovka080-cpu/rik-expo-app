@@ -2,9 +2,9 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/co
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 
 describe("request estimate procurement handoff from structured estimate", () => {
   beforeEach(() => {

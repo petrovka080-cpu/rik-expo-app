@@ -4,8 +4,8 @@ import {
 } from "../../scripts/estimate/auditConsumerRepairDurableSaveFallback";
 
 describe("consumer repair durable save fallback", () => {
-  it("keeps current draft and approved history under storage pressure", () => {
-    const { summary } = auditConsumerRepairDurableSaveFallback();
+  it("keeps current draft and approved history under storage pressure", async () => {
+    const { summary } = await auditConsumerRepairDurableSaveFallback();
 
     expect(summary.final_status).toBe(GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY);
     expect(summary.CONSUMER_REPAIR_DURABLE_SAVE_FAILED_no_longer_crashes_request).toBe(true);

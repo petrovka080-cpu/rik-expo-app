@@ -112,7 +112,7 @@ function parameterCardsDoNotUsePlusMinus(): boolean {
 export async function auditAiEstimateParameterCardsDurableHistoryRuntimeHardening(input: { writeSummary?: boolean } = {}) {
   const sourceSha = gitOutput(["rev-parse", "HEAD"]);
   const coverage = auditAiEstimateParameterCoverage11610({ writeSummary: true }).summary;
-  const durable = auditConsumerRepairDurableSaveFallback({ writeSummary: true }).summary;
+  const durable = (await auditConsumerRepairDurableSaveFallback({ writeSummary: true })).summary;
   const history = (await auditApprovedHistoryGrowthAfterParameterCards({ writeSummary: true })).summary;
   const extraction = auditAiEstimateParameterExtractionPriority({ writeSummary: true }).summary;
   const runtime = runAiEstimateParameterRuntimeMatrix({ writeSummary: true }).summary;

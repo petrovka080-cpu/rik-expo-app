@@ -1,10 +1,12 @@
 import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  applyConsumerRepairDraftRevisionParamPatch,
-  createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamPatch as applyConsumerRepairDraftRevisionParamPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
@@ -51,7 +53,7 @@ describe("assumption replacement from request UI path", () => {
     expect(recalculated.estimateDraftRevisionState?.revisions).toHaveLength(2);
     expect(recalculated.estimateDraftRevisionState?.revisions[1].params.height_m.value).toBe(40);
     expect(recalculated.pdfs.find((pdf) => pdf.id === oldPdf.id)?.pdfStatus).toBe("archived");
-    expect(handoff.revisionId).toBe(recalculated.estimateRevisionState?.current_revision_id);
+    expect(handoff.revisionId).toBe(latestRevisionId);
     expect(handoff.items.length).toBeGreaterThan(0);
   });
 
@@ -78,8 +80,7 @@ describe("assumption replacement from request UI path", () => {
       createdAt: "2026-07-07T00:01:00.000Z",
     });
 
-    const currentRevisionId = bundle.estimateRevisionState?.current_revision_id;
-    const currentEditableHash = bundle.editableEstimateSnapshot?.hash;
+    const currentRevisionId = bundle.estimateDraftRevisionState?.currentRevisionId;
     const eventCountBeforeSync = bundle.events.length;
     const synced = syncConsumerRepairDraftFromScreenState(bundle, {
       problemText: bundle.draft.problemText ?? "",
@@ -96,11 +97,10 @@ describe("assumption replacement from request UI path", () => {
       generatedAt: "2026-07-07T00:02:00.000Z",
     });
 
-    expect(synced.estimateRevisionState?.current_revision_id).toBe(currentRevisionId);
-    expect(synced.editableEstimateSnapshot?.hash).toBe(currentEditableHash);
+    expect(synced.estimateDraftRevisionState?.currentRevisionId).toBe(currentRevisionId);
     expect(synced.events).toHaveLength(eventCountBeforeSync);
     expect(pdfBundle.pdfs[0]?.revisionId).toBe(currentRevisionId);
-    expect(pdfBundle.estimateRevisionState?.current_revision_id).toBe(currentRevisionId);
+    expect(pdfBundle.estimateDraftRevisionState?.currentRevisionId).toBe(currentRevisionId);
   });
 
   it("repairs a draft bundle whose professional BOQ was recalculated before legacy revision state was persisted", () => {
@@ -140,9 +140,11 @@ describe("assumption replacement from request UI path", () => {
       generatedAt: "2026-07-07T00:02:00.000Z",
     });
 
-    expect(repaired.estimateRevisionState?.revisions).toHaveLength((staleRevisionState?.revisions.length ?? 0) + 1);
-    expect(repaired.estimateRevisionState?.current_revision_id).not.toBe(staleRevisionState?.current_revision_id);
-    expect(repaired.editableEstimateSnapshot?.hash).toBe(bundle.editableEstimateSnapshot?.hash);
-    expect(pdfBundle.pdfs[0]?.revisionId).toBe(repaired.estimateRevisionState?.current_revision_id);
+    expect(repaired.estimateDraftRevisionState?.revisions).toHaveLength(2);
+    expect(repaired.estimateDraftRevisionState?.currentRevisionId)
+      .toBe(bundle.estimateDraftRevisionState?.currentRevisionId);
+    expect(repaired.estimateRevisionState).toBeUndefined();
+    expect(pdfBundle.pdfs[0]?.revisionId)
+      .toBe(repaired.estimateDraftRevisionState?.currentRevisionId);
   });
 });

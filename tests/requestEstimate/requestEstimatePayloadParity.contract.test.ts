@@ -1,12 +1,14 @@
 import {
-  approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   buildConsumerRepairCanonicalDraftPayload,
   compareConsumerRepairPayloadParity,
-  generateConsumerRepairRequestPdfForDraft,
-  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  reprojectCanonicalConsumerRepairAuditDraft,
+  sendCanonicalConsumerRepairAuditDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   foundationDraftWithManualCatalogItem,
   MANUAL_CATALOG_ITEM,
@@ -23,16 +25,15 @@ describe("request estimate payload parity", () => {
         contactPhone: "+996700000000",
       },
     });
+    bundle = reprojectCanonicalConsumerRepairAuditDraft(bundle, "request-estimate-payload-parity");
     const savePayload = buildConsumerRepairCanonicalDraftPayload(bundle, "draft_save");
 
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-    bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+    bundle = approveCanonicalConsumerRepairAuditDraft({ bundle });
     const pdfPayload = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");
 
-    bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-    bundle = sendConsumerRepairRequestToMarketplace({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    bundle = sendCanonicalConsumerRepairAuditDraft({
+      bundle,
       idempotencyKey: `payload-parity:${bundle.draft.id}`,
     });
     const sendPayload = buildConsumerRepairCanonicalDraftPayload(bundle, "marketplace_send");

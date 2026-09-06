@@ -1,13 +1,12 @@
-import { approveConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("capital renovation 98 grouped PDF", () => {
   it("builds the PDF view model from the saved snapshot rows with grouped sections and quantities", () => {
     const bundle = capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT);
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       generatedAt: "2026-07-04T00:00:00.000Z",
     });
 

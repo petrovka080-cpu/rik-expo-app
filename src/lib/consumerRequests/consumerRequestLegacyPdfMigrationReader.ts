@@ -85,6 +85,52 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
     canonicalPayload: buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation"),
     generatedAt: input.generatedAt,
   });
+  const canonicalRevisionIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const canonicalReleaseIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  ));
+  const canonicalRevisionId = canonicalRevisionIds.size === 1
+    ? [...canonicalRevisionIds][0]
+    : "";
+  const canonicalReleaseId = canonicalReleaseIds.size === 1
+    ? [...canonicalReleaseIds][0]
+    : "";
+  if (canonicalRevisionId && canonicalReleaseId) {
+    const calculationRevision = bundle.estimateDraftRevisionState?.revisions.find(
+      (revision) => revision.revisionId === canonicalRevisionId,
+    );
+    const checksum = calculationRevision?.applicableBoqSignature
+      ?? calculationRevision?.resolvedIdentity?.checksum
+      ?? canonicalRevisionId;
+    const revisionPdf = {
+      ...pdf,
+      revisionId: canonicalRevisionId,
+      snapshotId: calculationRevision?.artifacts.snapshotId
+        ?? `canonical_backend_snapshot:${canonicalRevisionId}`,
+      revisionRowsHash: checksum,
+      revisionTotalsHash: checksum,
+      revisionFullSnapshotHash: checksum,
+    };
+    return saveConsumerRepairBundle({
+      ...bundle,
+      pdfs: [revisionPdf, ...bundle.pdfs],
+      events: [...bundle.events, createConsumerRepairEvent({
+        requestDraftId: input.requestDraftId,
+        eventType: "consumer_pdf_generated_without_marketplace_send",
+        actorType: "consumer",
+        actorUserId: userId,
+        payload: {
+          pdfId: revisionPdf.id,
+          revisionId: canonicalRevisionId,
+          releaseId: canonicalReleaseId,
+          migrationReader: true,
+          canonicalBackendProjection: true,
+        },
+      })],
+    });
+  }
   const bound = bindConsumerRepairEstimateRevisionPdf({
     bundle,
     pdf_id: pdf.id,

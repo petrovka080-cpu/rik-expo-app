@@ -1,9 +1,11 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
-  applyConsumerRepairDraftRevisionParamBatchPatch,
-  createConsumerRepairRequestDraft,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamBatchPatch as applyConsumerRepairDraftRevisionParamBatchPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { ConsumerRepairValidationError } from "../../src/lib/consumerRequests/consumerRequestMarketplaceService";
 import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import {
@@ -153,7 +155,11 @@ describe("PRODUCT RED APPLY_WITHOUT_COMPILED_REVISION", () => {
     expect(applied.draft.selectedCatalogWorkId).toBe("built-in-ai-1000:0702");
     expect(applied.draft.selectedWorkKey).toBe("asphalt_parking_lot");
     expect(revision?.professionalWorkId).toBe("asphalt_parking_lot");
-    expect(applied.canonicalParameterSession?.blockingMissingParameterIds).toHaveLength(0);
+    expect(applied.canonicalParameterSession).toBeNull();
+    expect(applied.items.every((item) =>
+      item.sourceParameters?.canonicalBackendRevisionId ===
+        applied.estimateDraftRevisionState?.currentRevisionId
+    )).toBe(true);
   });
 
   test("length_m plus width_m closes the same geometry oneOf without area_m2 input", () => {
@@ -173,7 +179,11 @@ describe("PRODUCT RED APPLY_WITHOUT_COMPILED_REVISION", () => {
     expect(applied.estimateDraftRevisionState?.revisions).toHaveLength(1);
     expect(revision?.quantityBasis?.area_m2).toBe(5000);
     expect(revision?.boq.rows.length).toBeGreaterThan(0);
-    expect(applied.canonicalParameterSession?.blockingMissingParameterIds).toHaveLength(0);
+    expect(applied.canonicalParameterSession).toBeNull();
+    expect(applied.items.every((item) =>
+      item.sourceParameters?.canonicalBackendRevisionId ===
+        applied.estimateDraftRevisionState?.currentRevisionId
+    )).toBe(true);
   });
 
   test("editing an existing revision appends exactly one immutable revision", () => {

@@ -6,10 +6,12 @@ import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/art
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamBatchPatch,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamBatchPatch as applyConsumerRepairDraftRevisionParamBatchPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { saveConsumerRepairBundle } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import {
   compileProfessionalEstimateDomainV1,

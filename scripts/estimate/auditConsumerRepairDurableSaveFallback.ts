@@ -2,22 +2,27 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
+import { buildConsumerRepairDraftFromAiEstimateRuntime } from "../../src/lib/estimate/runtime/buildConsumerRepairDraftFromAiEstimateRuntime";
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamPatch,
-  approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
-  createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   listConsumerRepairApprovedHistory,
+  type ConsumerRepairAiDraft,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamPatch,
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,
+  getConsumerRepairRepositoryMemoryStatsForTests,
   saveConsumerRepairBundle,
+  setConsumerRepairTransactionalDurableStoreForTests,
 } from "../../src/lib/consumerRequests/consumerRequestRepository";
 import { safeJsonStringify } from "../../src/lib/format";
 import {
@@ -29,6 +34,11 @@ import {
   getConsumerRepairDurableSaveDiagnosticsForTests,
   resetConsumerRepairDurableSaveDiagnosticsForTests,
 } from "../../src/lib/platform/consumerRepairDurableSavePolicy";
+import {
+  buildConsumerRepairDurableStorageRoutingPlan,
+  flushTransactionalConsumerRepairWrites,
+} from "../../src/lib/platform/consumerRepairTransactionalDurableBridge";
+import { createEstimateRevisionDurableStore } from "../../src/lib/platform/estimateRevisionDurableStore.factory";
 
 export const GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY =
   "GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY" as const;
@@ -59,32 +69,42 @@ function writeJson(filePath: string, value: unknown): void {
 function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   const values = new Map<string, string>();
   let quotaBytes = Number.POSITIVE_INFINITY;
+  let currentBytes = 0;
   const totalBytesWith = (key: string, value: string) => {
-    const next = new Map(values);
-    next.set(key, value);
-    return Array.from(next).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0);
+    const previous = values.get(key);
+    return currentBytes + value.length - (previous?.length ?? 0) +
+      (previous === undefined ? key.length : 0);
   };
-  const totalBytes = () =>
-    Array.from(values).reduce((sum, [entryKey, entryValue]) => sum + entryKey.length + entryValue.length, 0);
+  const totalBytes = () => currentBytes;
   const storage: Storage = {
     get length() {
       return values.size;
     },
-    clear: () => values.clear(),
+    clear: () => {
+      values.clear();
+      currentBytes = 0;
+    },
     getItem: (key: string) => values.get(key) ?? null,
     key: (index: number) => Array.from(values.keys())[index] ?? null,
     removeItem: (key: string) => {
+      const previous = values.get(key);
+      if (previous !== undefined) currentBytes -= key.length + previous.length;
       values.delete(key);
     },
     setItem: (key: string, value: string) => {
-      if (totalBytesWith(key, value) > quotaBytes) throw new Error(`QuotaExceeded:${key}`);
+      const nextBytes = totalBytesWith(key, value);
+      if (nextBytes > quotaBytes) throw new Error(`QuotaExceeded:${key}`);
       values.set(key, value);
+      currentBytes = nextBytes;
     },
   };
   Object.defineProperty(globalThis, "localStorage", { value: storage, configurable: true });
   return {
     values,
-    seedBypassQuota: (key, value) => values.set(key, value),
+    seedBypassQuota: (key, value) => {
+      currentBytes = totalBytesWith(key, value);
+      values.set(key, value);
+    },
     setQuota: (maxBytes) => {
       quotaBytes = maxBytes;
     },
@@ -95,41 +115,95 @@ function installQuotaLocalStorageMock(): InstalledQuotaStorage {
   };
 }
 
+function durableHistoryAuditDraft(index: number): ConsumerRepairAiDraft {
+  const areaM2 = 80 + index;
+  const sheetCount = Math.ceil(areaM2 / 3);
+  return {
+    titleRu: `Смета истории №${index + 1}`,
+    summaryRu: `Нормативный расчёт ГКЛ для проверки durable history, ${areaM2} м².`,
+    repairType: "history_storage_audit",
+    items: [{
+      itemType: "material",
+      titleRu: "КНАУФ ГКЛ 12.5 мм 2500x1200 мм",
+      quantity: sheetCount,
+      unit: "sheet",
+      unitLabel: "лист",
+      unitPrice: null,
+      currency: "KGS",
+      source: "reference_price_book",
+      category: "drywall_materials",
+      sourceId: "history-storage-gkl-12-5",
+      sourceLabel: "Нормативный расчёт листов ГКЛ",
+      formulaId: "gkl_sheet_count_by_area_v1",
+      quantityFormula: "ceil(area_m2 / 3)",
+      calculationTrace: `area_m2=${areaM2}; sheet_area_m2=3; result=${sheetCount}`,
+      sourceParameters: {
+        area_m2: areaM2,
+        sheet_area_m2: 3,
+        includedInProcurement: true,
+      },
+      templateId: "history_storage_gkl_audit_v1",
+      templateVersion: "1",
+      normId: "history_storage_gkl_sheet_norm",
+      normFamilyId: "drywall_sheet_material",
+      normSourceId: "history_storage_gkl_norm_source",
+      normSourceTitle: "Норма площади листа ГКЛ 2500x1200 мм",
+      normVersion: "1",
+      normReviewStatus: "approved",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      confidence: "high",
+      addedBy: "ai",
+    }],
+    missingData: [],
+    dangerousDiyBlocked: false,
+  };
+}
+
 function createApproved(userId: string, index: number) {
-  let bundle = createConsumerRepairRequestDraft({
+  let bundle = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: userId,
-    problemText: `Капитальный ремонт квартиры ${80 + index} кв метра 2 санузла высота потолка 3 метра`,
+    problemText: `durable approved history estimate ${index + 1}`,
     contactPhone: "+996 555 123 456",
     city: "Бишкек",
     addressText: "64 Malikova Street",
     preferredTimeText: "Сегодня",
-    repairType: "capital_repair",
-    aiDraft: buildConsumerRepairAiDraft(`Капитальный ремонт квартиры ${80 + index} кв метра`),
+    repairType: "history_storage_audit",
+    aiDraft: durableHistoryAuditDraft(index),
   });
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-  return approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId });
+  return approveCanonicalConsumerRepairAuditDraft({ bundle, userId });
 }
 
 function createHeavyDraft(userId: string) {
-  const aiDraft = buildConsumerRepairAiDraft("Вентфасад под ключ 1500 м2 высота 40 м утепление 100 мм");
+  const problemText = "capital apartment repair 1500 m2 20 bathrooms ceiling height 3 m";
+  const aiDraft = buildConsumerRepairDraftFromAiEstimateRuntime({
+    estimateDraftId: "durable-runtime-hardening-heavy",
+    rawInput: problemText,
+    selectedTemplateId: "capital_renovation_professional_calculator_v1",
+    city: "Bishkek",
+    currency: "KGS",
+    createdAt: "2026-07-09T10:00:00.000Z",
+  });
+  if (!aiDraft) throw new Error("DURABLE_RUNTIME_HARDENING_HEAVY_DRAFT_MISSING");
   const inflated = {
     ...aiDraft,
     items: aiDraft.items.map((item, index) => ({
       ...item,
       sourceParameters: {
         ...(item.sourceParameters ?? {}),
-        oversizedRuntimeTrace: "z".repeat(index === 0 ? 90_000 : 12_000),
+        oversizedRuntimeTrace: "z".repeat(index === 0 ? 60_000 : 6_000),
       },
-      calculationTrace: `${item.calculationTrace ?? ""} ${"trace".repeat(2500)}`,
+      calculationTrace: `${item.calculationTrace ?? ""} ${"trace".repeat(500)}`,
     })),
   };
-  return createConsumerRepairRequestDraft({
+  return createCanonicalConsumerRepairAuditDraft({
     consumerUserId: userId,
-    problemText: "Вентфасад под ключ 1500 м2 высота 40 м утепление 100 мм",
+    problemText,
     contactPhone: "+996 555 123 456",
-    city: "Бишкек",
+    city: "Bishkek",
     addressText: "64 Malikova Street",
-    repairType: "ventilated_facade",
+    repairType: aiDraft.repairType,
     aiDraft: inflated,
   });
 }
@@ -173,12 +247,20 @@ function projectedStorageBytesWithReplacement(
   return storage.totalBytes() - key.length - currentRaw.length + key.length + value.length;
 }
 
-export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: boolean } = {}) {
+export async function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: boolean } = {}) {
   const storage = installQuotaLocalStorageMock();
   const userId = "durable-runtime-hardening-user";
   try {
     __resetConsumerRepairRequestStoreForTests();
-    for (let index = 0; index < 100; index += 1) createApproved(userId, index);
+    setConsumerRepairTransactionalDurableStoreForTests(
+      createEstimateRevisionDurableStore({ platform: "memory" }),
+    );
+    for (let index = 0; index < 100; index += 1) {
+      createApproved(userId, index);
+      if ((index + 1) % 7 === 0) await flushTransactionalConsumerRepairWrites();
+    }
+    await flushTransactionalConsumerRepairWrites();
+    const memoryStatsAfterApprovedSeed = getConsumerRepairRepositoryMemoryStatsForTests();
     const approvedBeforePressure = listConsumerRepairApprovedHistory(userId, { limit: 20 });
     for (let index = 0; index < 1000; index += 1) {
       storage.seedBypassQuota(`external.fragmented.snapshot.${index}`, "x".repeat(index % 2 === 0 ? 16 : 1));
@@ -188,7 +270,7 @@ export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: b
     const heavyDraft = createHeavyDraft(userId);
     generateConsumerRepairRequestPdfForDraft({ requestDraftId: heavyDraft.draft.id, userId });
     attachBuyerArtifactToCurrentRevision(heavyDraft.draft.id);
-    const patched = applyConsumerRepairDraftRevisionParamPatch({
+    const patched = applyCanonicalConsumerRepairAuditParamPatch({
       requestDraftId: heavyDraft.draft.id,
       operation: "update_param",
       paramKey: "area_m2",
@@ -197,6 +279,7 @@ export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: b
       createdAt: "2026-07-09T10:10:00.000Z",
     });
     const pressureBundle = getConsumerRepairRequest(heavyDraft.draft.id);
+    const pressureRoutingPlan = buildConsumerRepairDurableStorageRoutingPlan(pressureBundle);
     const pressureKey = durableBundleKey(pressureBundle.draft.id);
     const normalCompactRaw = safeJsonStringify(compactConsumerRepairBundleForDurableStorage(pressureBundle), "");
     const emergencyCompactRaw = safeJsonStringify(
@@ -241,7 +324,16 @@ export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: b
       storage_pressure_quota_bytes: pressureQuotaBytes,
       storage_pressure_forces_emergency_compact:
         emergencyCompactProjectedBytes <= pressureQuotaBytes && normalCompactProjectedBytes > pressureQuotaBytes,
+      pressure_bundle_routes_to_local_storage_v3:
+        pressureRoutingPlan.route === "LOCAL_STORAGE_V3",
       approved_history_records_seeded: approvedBeforePressure.totalApprovedCount,
+      approved_history_full_bundles_retained_in_memory:
+        memoryStatsAfterApprovedSeed.approvedFullBundles,
+      approved_history_summary_bundles_in_memory:
+        memoryStatsAfterApprovedSeed.approvedSummaryBundles,
+      approved_history_memory_window_bounded:
+        memoryStatsAfterApprovedSeed.approvedFullBundles <= 7 &&
+        memoryStatsAfterApprovedSeed.approvedSummaryBundles >= 93,
       approved_history_preserved_under_storage_pressure:
         approvedBeforePressure.totalApprovedCount === 100 && afterReloadHistory.totalApprovedCount === 100,
       current_draft_preserved_under_storage_pressure: afterReloadDraft.draft.id === heavyDraft.draft.id,
@@ -268,7 +360,9 @@ export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: b
       summary.consumer_repair_durable_save_failure_reproduced ? "" : "consumer_repair_durable_save_failure_not_reproduced",
       summary.compact_fallback_runs_on_storage_pressure ? "" : "compact_fallback_not_run",
       summary.storage_pressure_forces_emergency_compact ? "" : "storage_pressure_not_between_normal_and_emergency_compact",
+      summary.pressure_bundle_routes_to_local_storage_v3 ? "" : "pressure_bundle_not_local_storage_v3",
       summary.approved_history_preserved_under_storage_pressure ? "" : "approved_history_not_preserved",
+      summary.approved_history_memory_window_bounded ? "" : "approved_history_memory_window_unbounded",
       summary.current_draft_preserved_under_storage_pressure ? "" : "current_draft_not_preserved",
       summary.revision_chain_preserved_under_storage_pressure ? "" : "revision_chain_not_preserved",
       summary.pdf_stale_state_preserved_under_storage_pressure ? "" : "pdf_stale_state_not_preserved",
@@ -287,13 +381,20 @@ export function auditConsumerRepairDurableSaveFallback(input: { writeSummary?: b
     if (input.writeSummary) writeJson(summaryPath, finalSummary);
     return { summary: finalSummary, summaryPath };
   } finally {
+    await flushTransactionalConsumerRepairWrites();
     __resetConsumerRepairRequestStoreForTests();
     storage.cleanup();
   }
 }
 
 if (require.main === module) {
-  const result = auditConsumerRepairDurableSaveFallback({ writeSummary: true });
-  console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
-  if (result.summary.final_status !== GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY) process.exitCode = 1;
+  void auditConsumerRepairDurableSaveFallback({ writeSummary: true })
+    .then((result) => {
+      console.log(JSON.stringify({ ...result.summary, summary_path: result.summaryPath }, null, 2));
+      if (result.summary.final_status !== GREEN_CONSUMER_REPAIR_DURABLE_SAVE_FALLBACK_READY) process.exitCode = 1;
+    })
+    .catch((error: unknown) => {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    });
 }

@@ -7,11 +7,13 @@ import { buildCapitalRenovationRows } from "../../src/features/estimates/calcula
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
-  applyConsumerRepairDraftRevisionParamBatchPatch,
-  createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  applyCanonicalConsumerRepairAuditParamBatchPatch as applyConsumerRepairDraftRevisionParamBatchPatch,
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { matchWorkTemplateFromPrompt } from "../../src/lib/ai/matchWorkTemplateFromPrompt";
 
 const PROMPT = "Капитальный ремонт квартиры 101 кв метр";
@@ -171,7 +173,7 @@ describe("capital renovation batch parameter apply", () => {
         generatedAt: "2026-07-12T10:00:00.000Z",
       });
       const oldRevisionId = withOldPdf.estimateDraftRevisionState?.currentRevisionId;
-      const oldPdfRevisionId = withOldPdf.estimateRevisionState?.current_revision_id;
+      const oldPdfRevisionId = withOldPdf.estimateDraftRevisionState?.currentRevisionId;
       const oldPdf = withOldPdf.pdfs[0];
 
       expect(oldPdf?.pdfStatus).toBe("generated");
@@ -188,7 +190,7 @@ describe("capital renovation batch parameter apply", () => {
         ],
       });
       const newRevisionId = updated.estimateDraftRevisionState?.currentRevisionId;
-      const newPdfRevisionId = updated.estimateRevisionState?.current_revision_id;
+      const newPdfRevisionId = updated.estimateDraftRevisionState?.currentRevisionId;
 
       expect(newRevisionId).toBeTruthy();
       expect(newRevisionId).not.toBe(oldRevisionId);

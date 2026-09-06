@@ -9,6 +9,7 @@ import {
 import {
   compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage,
   compactConsumerRepairBundleForDurableStorage,
+  compactConsumerRepairBundleForEmergencyDurableStorage,
   decodeConsumerRepairBundleFromDurableStorage,
   encodeConsumerRepairBundleForDurableStorage,
 } from "../platform/compactConsumerRepairDurableState";
@@ -25,6 +26,7 @@ import {
 } from "./consumerRequestLedgerBridge";
 import {
   awaitTransactionalConsumerRepairBundleCommit,
+  hasPendingTransactionalConsumerRepairBundleWrite,
   isLargeConsumerRepairRevisionBundle,
   listTransactionalConsumerRepairBundleIds,
   listTransactionalConsumerRepairDurableBundleIds,
@@ -370,10 +372,13 @@ function persistConsumerRepairDurableManifest(storage: Storage): boolean {
 function persistConsumerRepairDurableRecord(
   storage: Storage,
   bundle: ConsumerRepairDraftBundle,
+  options: { emergency?: boolean } = {},
 ): boolean {
   const serialized = safeJsonStringify(
     encodeConsumerRepairBundleForDurableStorage(
-      compactConsumerRepairBundleForDurableStorage(bundle),
+      options.emergency
+        ? compactConsumerRepairBundleForEmergencyDurableStorage(bundle)
+        : compactConsumerRepairBundleForDurableStorage(bundle),
     ),
     "",
   );
@@ -514,22 +519,38 @@ function compactOlderApprovedHistoryRecordsForStorage(
   let migrated = false;
   for (const candidate of approved.slice(APPROVED_HISTORY_FULL_DURABLE_RECORD_LIMIT)) {
     if (isApprovedHistorySummaryOnlyBundle(candidate)) continue;
+    const compactCommittedCandidate = () => {
+      const latest = store.bundles.get(candidate.draft.id) ?? candidate;
+      persistConsumerRepairDurableApprovedSummaryRecord(storage, latest, {
+        updateMemoryStore: true,
+      });
+      hydratedTransactionalDurableBundleIds.delete(candidate.draft.id);
+      if (
+        transactionalDurableBundleIndexInitialized &&
+        !transactionalDurableBundleIds.includes(candidate.draft.id)
+      ) {
+        transactionalDurableBundleIds = [
+          ...transactionalDurableBundleIds,
+          candidate.draft.id,
+        ].sort(newestTransactionalDraftIdsFirst);
+      }
+      removeLocalPayloadForTransactionalBundle(storage, candidate.draft.id, true);
+      persistConsumerRepairDurableManifest(storage);
+    };
     // A transactional pointer is written only after an atomic full-snapshot
     // commit. Re-queueing the same approved bundle on every newer approval
     // made history growth quadratic and delayed the user's acknowledgement.
-    if (transactionallyCommittedIds.has(candidate.draft.id)) continue;
+    if (transactionallyCommittedIds.has(candidate.draft.id)) {
+      migrated = true;
+      compactCommittedCandidate();
+      continue;
+    }
+    if (hasPendingTransactionalConsumerRepairBundleWrite(candidate.draft.id)) continue;
     migrated = true;
     void queueTransactionalConsumerRepairBundleWrite({
       bundle: candidate,
       storage,
-      onCommitted: () => {
-        const latest = store.bundles.get(candidate.draft.id) ?? candidate;
-        persistConsumerRepairDurableApprovedSummaryRecord(storage, latest, {
-          updateMemoryStore: false,
-        });
-        removeLocalPayloadForTransactionalBundle(storage, candidate.draft.id, true);
-        persistConsumerRepairDurableManifest(storage);
-      },
+      onCommitted: compactCommittedCandidate,
     });
   }
   return migrated;
@@ -695,6 +716,7 @@ function persistConsumerRepairBundleRecord(bundle: ConsumerRepairDraftBundle): b
     persistConsumerRepairDurableRecord(storage, bundle) ||
     (compactOlderApprovedHistoryRecordsForStorage(storage, bundle) &&
       persistConsumerRepairDurableRecord(storage, bundle)) ||
+    persistConsumerRepairDurableRecord(storage, bundle, { emergency: true }) ||
     pruneDurableDraftRecordsForBundle(storage, bundle);
   persistConsumerRepairDurableManifest(storage);
   return recordPersisted;
@@ -1107,6 +1129,24 @@ export function resetConsumerRepairRequestStoreForTests(): void {
   } catch {
     // Test cleanup should not fail when web storage is unavailable.
   }
+}
+
+export function getConsumerRepairRepositoryMemoryStatsForTests(): {
+  totalBundles: number;
+  approvedFullBundles: number;
+  approvedSummaryBundles: number;
+} {
+  const bundles = [...store.bundles.values()];
+  const approved = bundles.filter((bundle) =>
+    isConsumerRepairApprovedHistoryStatus(bundle.draft.status)
+  );
+  return {
+    totalBundles: bundles.length,
+    approvedFullBundles: approved.filter((bundle) =>
+      !isApprovedHistorySummaryOnlyBundle(bundle)
+    ).length,
+    approvedSummaryBundles: approved.filter(isApprovedHistorySummaryOnlyBundle).length,
+  };
 }
 
 export function simulateConsumerRepairRequestStoreReloadForTests(): void {

@@ -55,10 +55,82 @@ function isAllowedBuyerRow(row: EditableEstimateRow): row is EditableEstimateRow
 export function buildConsumerRepairProcurementHandoffFromSnapshot(
   bundle: ConsumerRepairDraftBundle,
 ): ConsumerRepairProcurementHandoff {
+  const calculationState = bundle.estimateDraftRevisionState;
+  const calculationRevision = calculationState?.revisions.find(
+    (candidate) => candidate.revisionId === calculationState.currentRevisionId,
+  );
+  if (calculationRevision) {
+    const requestItemByRowId = new Map(bundle.items.flatMap((item) => {
+      const keys = [
+        item.id,
+        String(item.sourceParameters?.rowCode ?? "").trim(),
+        String(item.sourceParameters?.canonicalBackendRowId ?? "").trim(),
+      ].filter(Boolean);
+      return keys.map((key) => [key, item] as const);
+    }));
+    const snapshotId = calculationRevision.artifacts.snapshotId
+      ?? `canonical_backend_snapshot:${calculationRevision.revisionId}`;
+    const rowsHash = calculationRevision.applicableBoqSignature
+      ?? calculationRevision.resolvedIdentity?.checksum
+      ?? calculationRevision.revisionId;
+    const sourcePrompt = bundle.draft.problemText ?? calculationRevision.rawInput;
+    const items = calculationRevision.boq.rows
+      .filter((row) => row.includedInProcurement)
+      .filter((row) => ["material", "service", "document", "other"].includes(row.rowType))
+      .map((row): ConsumerRepairProcurementHandoffItem => {
+        const requestItem = requestItemByRowId.get(row.rowId);
+        return {
+          sourceEstimateRowId: row.rowId,
+          requestItemId: requestItem?.id ?? null,
+          titleRu: row.titleRu,
+          quantity: row.quantity,
+          unit: row.unit,
+          itemType: row.rowType as ConsumerRepairProcurementHandoffItem["itemType"],
+          materialKey: row.materialKey ?? null,
+          priceStatus: row.priceStatus ?? "PRICE_MISSING",
+          sourcePrompt,
+          revisionId: calculationRevision.revisionId,
+          snapshotId,
+          rowsHash,
+          normId: row.normId ?? null,
+          normSourceId: row.normSourceId ?? null,
+          normVersion: row.normVersion ?? null,
+        };
+      });
+    return {
+      sourceRequestDraftId: bundle.draft.id,
+      sourcePrompt,
+      revisionId: calculationRevision.revisionId,
+      snapshotId,
+      rowsHash,
+      items,
+      fakeGreenClaimed: false,
+    };
+  }
   const revision = currentRevision(bundle);
   const snapshot = revision?.editable_estimate_snapshot ?? bundle.editableEstimateSnapshot ?? null;
   const rows = snapshot?.rows ?? [];
   const sourcePrompt = bundle.draft.problemText ?? "";
+  const canonicalRevisionIds = new Set(bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const canonicalRevisionId = canonicalRevisionIds.size === 1
+    ? [...canonicalRevisionIds][0] || null
+    : null;
+  const canonicalPdf = canonicalRevisionId
+    ? bundle.pdfs.find((pdf) =>
+        pdf.pdfStatus === "generated" && pdf.revisionId === canonicalRevisionId
+      ) ?? null
+    : null;
+  const revisionId = canonicalRevisionId ?? revision?.revision_id ?? null;
+  const snapshotId = canonicalPdf?.snapshotId
+    ?? revision?.snapshot_id
+    ?? snapshot?.snapshotId
+    ?? null;
+  const rowsHash = canonicalPdf?.revisionRowsHash
+    ?? revision?.rows_hash
+    ?? snapshot?.hash
+    ?? null;
   const items = rows
     .filter((row) => !row.removed)
     .filter(isProcurementRow)
@@ -73,9 +145,9 @@ export function buildConsumerRepairProcurementHandoffFromSnapshot(
       materialKey: row.materialKey ?? null,
       priceStatus: row.priceStatus,
       sourcePrompt,
-      revisionId: revision?.revision_id ?? null,
-      snapshotId: revision?.snapshot_id ?? snapshot?.snapshotId ?? null,
-      rowsHash: revision?.rows_hash ?? snapshot?.hash ?? null,
+      revisionId,
+      snapshotId,
+      rowsHash,
       normId: row.normId ?? null,
       normSourceId: row.normSourceId ?? null,
       normVersion: row.normVersion ?? null,
@@ -84,9 +156,9 @@ export function buildConsumerRepairProcurementHandoffFromSnapshot(
   return {
     sourceRequestDraftId: bundle.draft.id,
     sourcePrompt,
-    revisionId: revision?.revision_id ?? null,
-    snapshotId: revision?.snapshot_id ?? snapshot?.snapshotId ?? null,
-    rowsHash: revision?.rows_hash ?? snapshot?.hash ?? null,
+    revisionId,
+    snapshotId,
+    rowsHash,
     items,
     fakeGreenClaimed: false,
   };

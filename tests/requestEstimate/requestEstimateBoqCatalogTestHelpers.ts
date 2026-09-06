@@ -1,15 +1,18 @@
 import {
   addConsumerRepairRequestItem,
-  approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
-  sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   __resetConsumerRepairRequestStoreForTests,
   type ConsumerRepairDraftBundle,
 } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  reprojectCanonicalConsumerRepairAuditDraft,
+  sendCanonicalConsumerRepairAuditDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   calculateGlobalConstructionEstimateSync,
@@ -50,6 +53,7 @@ export function allRows(result = foundationEstimate()) {
 
 export function foundationDraftBundle(): ConsumerRepairDraftBundle {
   __resetConsumerRepairRequestStoreForTests();
+  const aiDraft = buildConsumerRepairAiDraft(FOUNDATION_PROMPT);
   return createConsumerRepairRequestDraft({
     consumerUserId: "request-estimate-test-user",
     problemText: FOUNDATION_PROMPT,
@@ -57,7 +61,9 @@ export function foundationDraftBundle(): ConsumerRepairDraftBundle {
     city: "Бишкек",
     addressText: "Bishkek, request estimate test address",
     contactPhone: "+996700000000",
-    aiDraft: buildConsumerRepairAiDraft(FOUNDATION_PROMPT),
+    // This helper intentionally exercises legacy UI edits before explicitly
+    // projecting the result as a backend child revision.
+    aiDraft: { ...aiDraft, runtimeEstimateDraftRevision: undefined },
   });
 }
 
@@ -86,7 +92,10 @@ export function foundationDraftWithManualCatalogItem(): ConsumerRepairDraftBundl
 }
 
 export function foundationPdfBundleWithManualCatalogItem(): ConsumerRepairDraftBundle {
-  const bundle = foundationDraftWithManualCatalogItem();
+  const bundle = reprojectCanonicalConsumerRepairAuditDraft(
+    foundationDraftWithManualCatalogItem(),
+    "request-estimate-manual-catalog-pdf",
+  );
   return generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
 }
 
@@ -101,11 +110,9 @@ export function foundationSendBundleWithManualCatalogItem(): ConsumerRepairDraft
       repairType: "foundation",
     },
   });
-  bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
-  return sendConsumerRepairRequestToMarketplace({
-    requestDraftId: bundle.draft.id,
-    userId: bundle.draft.consumerUserId,
+  bundle = approveCanonicalConsumerRepairAuditDraft({ bundle });
+  return sendCanonicalConsumerRepairAuditDraft({
+    bundle,
     idempotencyKey: `test:${bundle.draft.id}`,
   });
 }

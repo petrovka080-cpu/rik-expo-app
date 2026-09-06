@@ -1,6 +1,7 @@
 import { buildGlobalEstimateFixture } from "./globalEstimateTestHarness";
 import {
-  __resetConsumerRepairRequestStoreForTests, approveConsumerRepairRequestDraft, attachConsumerRepairMedia, getConsumerRepairRequestPdf } from "../../src/lib/consumerRequests";
+  __resetConsumerRepairRequestStoreForTests, attachConsumerRepairMedia, getConsumerRepairRequestPdf } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { createConsumerRepairDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestEstimateApplicationService";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 
@@ -18,7 +19,7 @@ describe("global estimate PDF integration contract", () => {
       contactPhone: "+1 214 555 0100",
     });
     bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-    bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+    bundle = approveCanonicalConsumerRepairAuditDraft({ bundle });
 
     const opened = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
     const summary = buildConsumerRepairPdfSummary({ draft: bundle.draft, items: bundle.items, media: bundle.media });

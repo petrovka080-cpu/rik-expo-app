@@ -1,8 +1,8 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
 import {
   CONSUMER_REPAIR_VALID_ADDRESS,
@@ -29,6 +29,6 @@ describe("consumer repair approve creates PDF contract", () => {
     expect(approved.pdfs).toHaveLength(1);
     expect(approved.pdfs[0].pdfStatus).toBe("generated");
     expect(approved.pdfs[0].contentType).toBe("application/pdf");
-    expect(approved.events.some((event) => event.eventType === "consumer_approved_pdf_generated")).toBe(true);
+    expect(approved.events.some((event) => event.eventType === "consumer_approved_canonical_backend_pdf")).toBe(true);
   });
 });

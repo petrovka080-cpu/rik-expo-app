@@ -1,10 +1,10 @@
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair";
 import {
   CONSUMER_REPAIR_VALID_ADDRESS,

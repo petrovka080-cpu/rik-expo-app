@@ -223,18 +223,24 @@ describe("Heating / Ventilation complete professional domain", () => {
     expect(owners).toContain("demolition");
   });
 
-  test("one Apply creates one revision and edit/reload preserves exact identity and BOQ", () => {
+  test("one Apply creates one revision and edit/reload preserves exact identity and BOQ", async () => {
     const {
       __resetConsumerRepairRequestStoreForTests,
       __simulateConsumerRepairRequestStoreReloadForTests,
-      applyConsumerRepairDraftRevisionParamBatchPatch,
-      createConsumerRepairRequestDraft,
       getConsumerRepairRequest,
+      initializeConsumerRepairTransactionalDurableStorage,
     } = require("../../src/lib/consumerRequests") as typeof import("../../src/lib/consumerRequests");
+    const {
+      applyCanonicalConsumerRepairAuditParamBatchPatch: applyConsumerRepairDraftRevisionParamBatchPatch,
+      createCanonicalConsumerRepairAuditDraft: createConsumerRepairRequestDraft,
+    } = require("../../scripts/estimate/canonicalConsumerRepairAuditHarness") as typeof import("../../scripts/estimate/canonicalConsumerRepairAuditHarness");
     const {
       buildRegisteredProfessionalEstimateParameterCollectionDraftV1,
       resolveRegisteredProfessionalEstimateSelectionV1,
     } = require("../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1") as typeof import("../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1");
+    const { awaitConsumerRepairBundleDurableCommit } = require(
+      "../../src/lib/consumerRequests/consumerRequestRepository"
+    ) as typeof import("../../src/lib/consumerRequests/consumerRequestRepository");
     const uninstall = installLocalStorageMock();
     __resetConsumerRepairRequestStoreForTests();
     const inventory = HVAC_DOMAIN_INVENTORY.find((row) => row.source_domain_id === "heating_hvac" && row.primary_material_or_system === "HEATING_PIPE" && row.scope_capability === "standard");
@@ -282,7 +288,13 @@ describe("Heating / Ventilation complete professional domain", () => {
     const r2 = r2Bundle.estimateDraftRevisionState?.revisions[1];
     expect(r2?.previousRevisionId).toBe(r1?.revisionId);
     expect(r2?.resolvedIdentity?.requestedCatalogWorkId).toBe(inventory.catalog_id);
+    await awaitConsumerRepairBundleDurableCommit({
+      requestDraftId: created.draft.id,
+      expectedStatus: "draft",
+      expectedRevisionId: r2?.revisionId ?? null,
+    });
     __simulateConsumerRepairRequestStoreReloadForTests();
+    await initializeConsumerRepairTransactionalDurableStorage();
     const cold = getConsumerRepairRequest(created.draft.id);
     expect(cold.estimateDraftRevisionState?.currentRevisionId).toBe(r2?.revisionId);
     expect(cold.estimateDraftRevisionState?.revisions).toHaveLength(2);

@@ -1,13 +1,12 @@
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
-import { approveConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { capitalRenovationBundle, CAPITAL_RENOVATION_98_PROMPT } from "../estimateCalculator/capitalRenovationTestHelpers";
 
 describe("capital renovation 98 buyer handoff", () => {
   it("sends only procurement rows with professional material and delivery quantities", () => {
     const bundle = capitalRenovationBundle(CAPITAL_RENOVATION_98_PROMPT);
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       generatedAt: "2026-07-04T00:00:00.000Z",
     });
     const handoff = buildConsumerRepairProcurementHandoffFromSnapshot(approved);
@@ -16,14 +15,18 @@ describe("capital renovation 98 buyer handoff", () => {
     );
     const snapshotRows = revision?.editable_estimate_snapshot.rows.filter((row) => !row.removed) ?? [];
     const snapshotByRequestItemId = new Map(snapshotRows.map((row) => [row.requestItemId ?? row.rowId, row]));
+    const pdf = approved.pdfs[0];
     const codes = new Map(handoff.items.map((item) => [
       String(snapshotByRequestItemId.get(item.requestItemId ?? item.sourceEstimateRowId)?.sourceParameters?.rowCode ?? item.sourceEstimateRowId),
       item,
     ]));
 
-    expect(handoff.revisionId).toBe(revision?.revision_id);
-    expect(handoff.snapshotId).toBe(revision?.snapshot_id);
-    expect(handoff.rowsHash).toBe(revision?.rows_hash);
+    expect(handoff.revisionId).toBe(pdf?.revisionId);
+    expect(handoff.snapshotId).toBe(pdf?.snapshotId);
+    expect(handoff.rowsHash).toBe(pdf?.revisionRowsHash);
+    expect(approved.items.every((item) =>
+      item.sourceParameters?.canonicalBackendRevisionId === handoff.revisionId
+    )).toBe(true);
     expect(handoff.items.length).toBeGreaterThan(30);
     expect(handoff.items.every((item) => String(item.itemType) !== "work")).toBe(true);
     expect(handoff.items.every((item) => item.sourcePrompt === CAPITAL_RENOVATION_98_PROMPT)).toBe(true);

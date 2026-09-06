@@ -6,10 +6,12 @@ import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair
 import { buildConsumerRepairProcurementHandoffFromSnapshot } from "../../src/features/procurement/consumerRepairProcurementHandoff";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
-  createConsumerRepairRequestDraft,
   getConsumerRepairPdfStorageObject,
 } from "../../src/lib/consumerRequests";
+import {
+  approveCanonicalConsumerRepairAuditDraft,
+  createCanonicalConsumerRepairAuditDraft,
+} from "./canonicalConsumerRepairAuditHarness";
 import {
   buildExpandedComplexBuyerHandoff,
   buildExpandedComplexPdfModel,
@@ -322,7 +324,7 @@ function countSections(rows: readonly ExpandedComplexBoqRow[]): number {
   return new Set(rows.map((row) => row.group)).size;
 }
 
-function currentRevision(bundle: ReturnType<typeof approveConsumerRepairRequestDraft>) {
+function currentRevision(bundle: ReturnType<typeof approveCanonicalConsumerRepairAuditDraft>) {
   return bundle.estimateRevisionState?.revisions.find(
     (candidate) => candidate.revision_id === bundle.estimateRevisionState?.current_revision_id,
   ) ?? null;
@@ -356,7 +358,7 @@ export function runWave2CExpandedCaseDomainProof(testCase: Wave2CExpandedCase): 
   const buyerRows = buyer
     ? [...buyer.procurement_materials, ...buyer.equipment_to_purchase, ...buyer.delivery_procurement_services]
     : [];
-  const draft = createConsumerRepairRequestDraft({
+  const draft = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `wave2c-expanded-${testCase.case_id}`,
     problemText: testCase.prompt,
     repairType: aiDraft.repairType,
@@ -365,10 +367,9 @@ export function runWave2CExpandedCaseDomainProof(testCase: Wave2CExpandedCase): 
     preferredTimeText: "today",
     contactPhone: "0700000000",
     aiDraft,
-  });
-  const approved = approveConsumerRepairRequestDraft({
-    requestDraftId: draft.draft.id,
-    userId: draft.draft.consumerUserId,
+  }, `wave2c-domain:${testCase.case_id}`);
+  const approved = approveCanonicalConsumerRepairAuditDraft({
+    bundle: draft,
     generatedAt: "2026-07-05T00:00:00.000Z",
   });
   const revision = currentRevision(approved);
@@ -497,7 +498,7 @@ export function writeWave2CSampleOutputs(outputDir: string, sampleCount = 30): W
     });
     if (!estimate) continue;
     const aiDraft = buildConsumerRepairAiDraft(testCase.prompt, { city: "Bishkek", currency: "KGS" });
-    const draft = createConsumerRepairRequestDraft({
+    const draft = createCanonicalConsumerRepairAuditDraft({
       consumerUserId: `wave2c-sample-${testCase.case_id}`,
       problemText: testCase.prompt,
       repairType: aiDraft.repairType,
@@ -506,10 +507,9 @@ export function writeWave2CSampleOutputs(outputDir: string, sampleCount = 30): W
       preferredTimeText: "today",
       contactPhone: "0700000000",
       aiDraft,
-    });
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: draft.draft.id,
-      userId: draft.draft.consumerUserId,
+    }, `wave2c-sample:${testCase.case_id}`);
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle: draft,
       generatedAt: "2026-07-05T00:00:00.000Z",
     });
     const revision = currentRevision(approved);

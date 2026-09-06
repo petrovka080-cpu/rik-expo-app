@@ -5,9 +5,9 @@ import {
 } from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  approveConsumerRepairRequestDraft,
   createConsumerRepairRequestDraft,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditRequest as approveConsumerRepairRequestDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 
 describe("professional BOQ runtime dynamic selected work sync", () => {
   it("preserves runtime selectedWorkKey through screen sync and approval PDF generation", () => {

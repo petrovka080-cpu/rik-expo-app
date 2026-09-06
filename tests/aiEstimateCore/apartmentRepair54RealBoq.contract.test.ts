@@ -1,8 +1,8 @@
 import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
-  approveConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory,
 } from "../../src/lib/consumerRequests";
+import { approveCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import {
   capitalRenovationBundle,
@@ -41,9 +41,8 @@ describe("apartment repair 54 real BOQ", () => {
     const bundle = capitalRenovationBundle();
     const vm = buildRequestEstimateViewModel(bundle);
     if (!vm) throw new Error("request estimate view model missing");
-    const approved = approveConsumerRepairRequestDraft({
-      requestDraftId: bundle.draft.id,
-      userId: bundle.draft.consumerUserId,
+    const approved = approveCanonicalConsumerRepairAuditDraft({
+      bundle,
       generatedAt: "2026-07-02T00:00:00.000Z",
     });
     const history = listConsumerRepairApprovedHistory(bundle.draft.consumerUserId, { limit: 5 });

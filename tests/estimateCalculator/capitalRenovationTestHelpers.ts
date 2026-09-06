@@ -2,10 +2,10 @@ import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/co
 import type { ConsumerRepairAiDraft } from "../../src/lib/consumerRequests";
 import {
   __resetConsumerRepairRequestStoreForTests,
-  createConsumerRepairRequestDraft,
   type ConsumerRepairDraftBundle,
   type ConsumerRepairRequestItem,
 } from "../../src/lib/consumerRequests";
+import { createCanonicalConsumerRepairAuditDraft } from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import type { ContinuousEstimateDetectorRow } from "../../src/lib/ai/estimateContinuousDetection";
 
 export const CAPITAL_RENOVATION_54_PROMPT = "Капитальный ремонт квартиры 54 кв метра";
@@ -16,7 +16,7 @@ export function capitalRenovationDraft(prompt = CAPITAL_RENOVATION_54_PROMPT): C
 }
 export function capitalRenovationBundle(prompt = CAPITAL_RENOVATION_54_PROMPT): ConsumerRepairDraftBundle {
   __resetConsumerRepairRequestStoreForTests();
-  return createConsumerRepairRequestDraft({
+  return createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `capital-renovation-test-${prompt.length}`,
     problemText: prompt,
     repairType: "apartment_capital_renovation",
@@ -24,7 +24,7 @@ export function capitalRenovationBundle(prompt = CAPITAL_RENOVATION_54_PROMPT): 
     addressText: "Бишкек, тестовый адрес",
     contactPhone: "+996700000000",
     aiDraft: capitalRenovationDraft(prompt),
-  });
+  }, `capital-renovation:${prompt}`);
 }
 
 export function rowCode(item: Pick<ConsumerRepairRequestItem, "sourceParameters" | "id">): string {
