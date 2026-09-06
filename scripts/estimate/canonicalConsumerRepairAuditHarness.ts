@@ -976,8 +976,9 @@ export function createCanonicalConsumerRepairAuditDraft(
     : null;
   // Infrastructure audits may supply an already resolved normative row set
   // without a frontend runtime revision. Bind that immutable fixture directly
-  // to an audit backend identity; preliminary runtime revisions still have a
-  // candidateRevision and must complete their required parameters first.
+  // to an audit backend identity. A row-bearing preliminary revision must also
+  // be persisted: its missing parameters are completed by editing that exact
+  // backend revision, not by requiring the client to compile a second one.
   if (
     !input.aiDraft.structuredEstimatePayload &&
     !candidateRevision &&
@@ -989,7 +990,9 @@ export function createCanonicalConsumerRepairAuditDraft(
       aiDraft: binding.aiDraft,
     });
   }
-  const runtimeRevision = candidateRevision?.status === "draft_ready" &&
+  const runtimeRevision = candidateRevision &&
+      candidateRevision.status !== "failed" &&
+      candidateRevision.status !== "blocking_required" &&
       candidateRevision.boq.rows.length > 0 &&
       !hasUnresolvedExactAsphaltRequirements(input.aiDraft, candidateRevision)
     ? candidateRevision

@@ -505,7 +505,7 @@ function mergeCalculatorInputParams(
             : revisionDerivedKeys.has(key)
               ? "derived"
               : "user_input"
-          : "derived",
+          : genericArea?.source ?? "derived",
         sourceText: genericArea?.sourceText ?? (source.asphaltV4 === true
           ? revisionAssumptionKeys.has(key)
             ? "asphalt_v4_declared_assembly_assumption"

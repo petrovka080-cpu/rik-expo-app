@@ -18,6 +18,12 @@ describe("AI estimate parameter recalculation", () => {
       },
     };
 
+    expect(initial.params.facade_area_m2?.value).toBe(1500);
+    expect(initial.params.facade_area_m2?.source).toBe("user_input");
+    expect(initial.missingInputs.map((item) => item.key)).not.toContain("facade_area_m2");
+    expect(initial.boq.rows.find((row) => row.rowId.includes("vent_facade_brackets_pcs"))?.quantity)
+      .toBe(4800);
+
     const result = applyAiEstimateParameterOverride({
       revision: revisionWithArtifacts,
       operation: "update_param",

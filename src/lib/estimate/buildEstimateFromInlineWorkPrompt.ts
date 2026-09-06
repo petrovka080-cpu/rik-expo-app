@@ -1583,8 +1583,12 @@ export function buildEstimateFromInlineWorkPrompt(
       : capitalRenovationDraft ??
       (preferExpandedCalculatorDraft ? expandedCalculatorDraft : null) ??
       exactProfessionalTemplateDraft ??
-      passportBackedDraft ??
+      // A recognized complex family already has a work-specific quantity
+      // calculator. The universal passport is only its catalog fallback; if it
+      // wins here, facade/roof/network parameters collapse to generic q and
+      // the displayed technology no longer matches the user's dimensions.
       expandedCalculatorDraft ??
+      passportBackedDraft ??
       buildProductionDraft({ parseResult, currency, countryCode: input.countryCode }) ??
       fallbackDraft);
   const contractedDraft = draft && draft.items.every((item) =>

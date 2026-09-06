@@ -1341,7 +1341,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           // The user-facing PDF button independently requests the professional profile;
           // approval must not be blocked by presentation-route rollout order.
           kind: "pdf",
-          idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`,
+          // v1 of this key was previously reused for a professional_pdf
+          // request. Existing backend jobs therefore reject the current
+          // archival-pdf payload as a conflict. Keep the payload semantics in
+          // a new namespace; retries of this exact approval remain idempotent.
+          idempotencyKey: `consumer-approve-archival-pdf-v2-${canonical.revisionId}`,
         });
       if (
         canonicalArtifact.status !== "ready" ||

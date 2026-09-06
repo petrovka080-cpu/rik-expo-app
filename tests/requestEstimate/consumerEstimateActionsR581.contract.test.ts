@@ -420,7 +420,8 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(localBackend).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
     expect(edgeWorker).toContain("CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION");
     expect(artifactContract).toContain('service: "услуга"');
-    expect(screen).toContain('idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`');
+    expect(screen).toContain('idempotencyKey: `consumer-approve-archival-pdf-v2-${canonical.revisionId}`');
+    expect(screen).not.toContain('idempotencyKey: `consumer-approve-pdf-${canonical.revisionId}`');
     expect(screen).not.toContain("consumer-approve-professional-pdf");
     const photoOwner = screen.slice(screen.indexOf("private openPhotoRecognition"), screen.indexOf("private addPhotoMaterialRecognition"));
     const catalogOwner = screen.slice(screen.indexOf("private openCatalogForEstimateItem"), screen.indexOf("private createNew"));

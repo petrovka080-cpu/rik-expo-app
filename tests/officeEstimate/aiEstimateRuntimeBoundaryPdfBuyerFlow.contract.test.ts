@@ -11,7 +11,7 @@ describe("AI estimate runtime boundary office PDF buyer flow", () => {
     });
     const changed = runtime.applyParameterOverride({
       revision: draft.revision,
-      operation: "update_param",
+      operation: "add_param",
       paramKey: "q",
       rawValue: "1500",
       createdAt: "2026-07-10T00:01:00.000Z",

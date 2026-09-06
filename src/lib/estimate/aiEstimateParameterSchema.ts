@@ -375,7 +375,9 @@ export function buildAiEstimateMissingInputs(input: {
   const presentKeys = new Set(Object.keys(input.params).filter((key) => !isAiEstimateTechnicalHiddenParam(key)));
   const rows = new Map<string, EstimateDraftRevisionMissingInput>();
   for (const item of existing) {
-    if (!isAiEstimateTechnicalHiddenParam(item.key)) rows.set(item.key, item);
+    if (!isAiEstimateTechnicalHiddenParam(item.key) && !presentKeys.has(item.key)) {
+      rows.set(item.key, item);
+    }
   }
   for (const field of schema.fields) {
     if (!field.suggestWhenMissing || presentKeys.has(field.key)) continue;
