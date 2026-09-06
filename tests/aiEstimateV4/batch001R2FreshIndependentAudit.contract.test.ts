@@ -13,6 +13,7 @@ describe("BATCH001 R2 fresh independent audit", () => {
     expect(envelope).toMatchObject({
       production_entrypoint: "REGISTERED_PROFESSIONAL_DOMAIN",
       production_owner: "interior_finishes",
+      unproved_constant_count: 0,
       android_runtime: "NATIVE_API34",
       outside_scope_mutation_count: 0,
       full_jest_count: 0,
@@ -20,5 +21,24 @@ describe("BATCH001 R2 fresh independent audit", () => {
     });
     expect(result).toMatchObject({ status: "GREEN", blockers: [], detected_count: 0 });
     expect(result.envelope_hash).toMatch(/^eh_[0-9a-f]{16}$/);
+  });
+
+  test("rejects a hidden quantitative literal while retaining proven unit conversions", () => {
+    const [first, ...remaining] = allBatch001ContractParts();
+    const [firstAssembly, ...remainingAssemblies] = first.child_assemblies;
+    const [firstRow, ...remainingRows] = firstAssembly.rows;
+    const mutated = [{
+      ...first,
+      child_assemblies: [{
+        ...firstAssembly,
+        rows: [{
+          ...firstRow,
+          formula: { ...firstRow.formula, expression: `${firstRow.formula.expression} × 2` },
+        }, ...remainingRows],
+      }, ...remainingAssemblies],
+    }, ...remaining];
+    const envelope = buildBatch001IndependentAuditEnvelopeV3(mutated);
+    expect(envelope.unproved_constant_count).toBeGreaterThan(0);
+    expect(auditBatch001IndependentEnvelopeV3(envelope).blockers).toContain("UNPROVED_CONSTANT");
   });
 });

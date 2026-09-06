@@ -1,15 +1,15 @@
 import { buildAsphaltRelatedR8Inventory } from "../../scripts/estimate/buildAsphaltRelatedR8Inventory";
 
-describe("Asphalt-related global domain R8 deterministic inventory", () => {
+describe("Asphalt-related global domain R8/R9 deterministic inventory", () => {
   test("seals N/R/M/A/E with exact typed identities and no ownership gaps", () => {
     const inventory = buildAsphaltRelatedR8Inventory();
     expect(inventory.selection_method).toBe("EXACT_TYPED_IDENTIFIERS_NO_REGEX");
     expect(inventory.summary).toMatchObject({
       previous_records: 35,
-      inventory_candidates_N: 56,
-      asphalt_related_R: 53,
+      inventory_candidates_N: 66,
+      asphalt_related_R: 63,
       unique_technologies_M: 44,
-      aliases_A: 9,
+      aliases_A: 19,
       exclusions_E: 3,
       blocked: 0,
       orphan: 0,
@@ -32,9 +32,9 @@ describe("Asphalt-related global domain R8 deterministic inventory", () => {
     const additional = related.filter((entry) => !entry.previous_35);
     const aliases = related.filter((entry) => entry.classification === "ALIAS");
     const exclusions = inventory.records.filter((entry) => entry.exclusion_type !== null);
-    expect(additional).toHaveLength(18);
+    expect(additional).toHaveLength(28);
     expect(inventory.technologies).toHaveLength(44);
-    expect(aliases).toHaveLength(9);
+    expect(aliases).toHaveLength(19);
     expect(exclusions.map((entry) => entry.work_key).sort()).toEqual([
       "asphalt_paver_service",
       "asphalt_supplier_search",
@@ -62,6 +62,6 @@ describe("Asphalt-related global domain R8 deterministic inventory", () => {
       "revision_compatibility",
       "pdf_procurement_mappings",
     ]));
-    expect(inventory.source_scans.reduce((sum, entry) => sum + entry.new_inventory_candidates, 0)).toBe(56);
+    expect(inventory.source_scans.reduce((sum, entry) => sum + entry.new_inventory_candidates, 0)).toBe(66);
   });
 });

@@ -138,6 +138,29 @@ function allRows(parts: readonly DrywallCeilingBulkheadProfessionalPackagePartsV
   return parts.flatMap((part) => part.child_assemblies.flatMap((assembly) => assembly.rows));
 }
 
+type Batch001FormulaRow = ReturnType<typeof allRows>[number];
+
+function hasUnprovedNumericConstant(row: Batch001FormulaRow): boolean {
+  const expression = row.formula.expression;
+  const values = [...expression.matchAll(/(?:^|[^a-z_])(\d+(?:\.\d+)?)(?=[^a-z_]|$)/gi)]
+    .map((match) => Number(match[1]))
+    .filter(Number.isFinite);
+  const hasPercentInput = row.formula.input_parameter_ids.some((id) => id.includes("percent"));
+  const hasPercentDivisor = /(?:÷|\/)\s*100\b/u.test(expression);
+  const hasMassInput = row.formula.input_parameter_ids.some((id) => /(?:^|_)mass_kg(?:_|$)/u.test(id));
+  const convertsKgToTonnes = hasMassInput && /^(?:t|tonne)(?:_|$)/u.test(row.formula.output_unit_id);
+  return values.some((value) => {
+    // These values are proven arithmetic/unit identities, not quantity norms:
+    // 0 = absent component; 1 = base factor in (1 + percent / 100);
+    // 100 = percent basis; 1000 = kg-to-tonne conversion for t/t_km output.
+    if (value === 0) return false;
+    if (value === 1 && hasPercentInput && hasPercentDivisor && /\(\s*1\s*\+/u.test(expression)) return false;
+    if (value === 100 && hasPercentInput && hasPercentDivisor) return false;
+    if (value === 1000 && convertsKgToTonnes && /(?:÷|\/)\s*1000\b/u.test(expression)) return false;
+    return true;
+  });
+}
+
 export function buildBatch001IndependentAuditEnvelopeV3(
   parts: readonly DrywallCeilingBulkheadProfessionalPackagePartsV3[],
 ): Batch001IndependentAuditEnvelopeV3 {
@@ -205,8 +228,7 @@ export function buildBatch001IndependentAuditEnvelopeV3(
       parameter.input_type === "number" && "default_value" in parameter).length,
     unbounded_project_input_count: unboundedInputs.length,
     formula_dimension_failure_count: rows.filter((row) => row.formula.output_unit_id !== row.formula.output_unit_id.trim()).length,
-    unproved_constant_count: rows.filter((row) => /(?:^|[^a-z_])\d+(?:\.\d+)?(?:[^a-z_]|$)/i.test(row.formula.expression) &&
-      !row.formula.expression.includes("100")).length,
+    unproved_constant_count: rows.filter(hasUnprovedNumericConstant).length,
     missing_required_resource_count: requiredCategories.filter((key) => !presentCategories.has(key)).length,
     orphan_resource_count: rows.filter((row) => !row.semantic_owner || !row.cost_owner_id || !row.resource_graph_node_v3).length,
     row_without_normative_trace_count: rows.filter((row) => (row.normative_trace_v3?.length ?? 0) === 0).length,

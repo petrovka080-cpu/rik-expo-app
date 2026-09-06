@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import {
   compileCanonicalEstimateCore,
+  type CanonicalEstimateCompileOperation,
   type CanonicalEstimateCompileCoreResult,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
@@ -58,6 +59,7 @@ function inclusionAst(input: {
 export async function compileBatch001R56ThroughSharedCore(input: {
   definition: Batch001DrywallSuccessorDefinitionR3;
   values: Readonly<Record<string, string | number | boolean>>;
+  operation?: CanonicalEstimateCompileOperation;
 }): Promise<CanonicalEstimateCompileCoreResult> {
   const parameterDefinitions = input.definition.passport.parameters.map((parameter) => {
     const value = input.values[parameter.parameterId];
@@ -130,7 +132,7 @@ export async function compileBatch001R56ThroughSharedCore(input: {
     parameterDefinitions.map((parameter) => [parameter.parameter_id, input.values[parameter.parameter_id]]),
   );
   return compileCanonicalEstimateCore({
-    operation: "compile",
+    operation: input.operation ?? "compile",
     compilerVersion: "canonical-estimate-compile-core-r1",
     catalogId: input.definition.catalogId,
     parameterDefinitions,

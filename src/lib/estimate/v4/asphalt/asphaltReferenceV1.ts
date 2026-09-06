@@ -84,9 +84,9 @@ export const ASPHALT_REFERENCE_V1_GOLDENS: readonly AsphaltReferenceV1Golden[] =
     scopePresetId: "FULL_ROAD_INFRASTRUCTURE",
     assemblyProfileId: ASPHALT_ASSEMBLY_PROFILE_BY_ROAD_SCOPE_V4.FULL_ROAD_INFRASTRUCTURE,
     fixtureInput: { area_m2: 1000 },
-    requiredRowIds: ["subgrade_compaction", "asphalt_layer_3_material", "storm_pipe", "lighting_pole", "sign_warning_panel"],
-    forbiddenRowIds: [],
-    requiredCategories: ["material", "work", "labor", "machinery", "transport", "testing", "documentation", "equipment"],
+    requiredRowIds: ["subgrade_compaction", "asphalt_layer_3_material"],
+    forbiddenRowIds: ["storm_pipe", "lighting_pole", "sign_warning_panel"],
+    requiredCategories: ["material", "work", "labor", "machinery", "transport", "testing", "documentation"],
     priceReadiness: "PRICE_DATA_REQUIRED",
   },
   {

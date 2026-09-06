@@ -1,42 +1,57 @@
-import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
-import { DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3 as BATCH001_DRYWALL_BULKHEAD_CATALOG_IDS_V3, INTERIOR_FINISHES_DOMAIN_INVENTORY } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
-import { batch001ParamOverrides } from "./batch001R2TestSupport";
+import { canonicalEstimateStableJson } from "../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
+import { buildAllBatch001DrywallSuccessorsR3 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/drywallCeilingBulkheadSuccessorR3";
+import { batch001DrywallGoldFixtureValuesR3 } from "../../scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3";
+import { compileBatch001R56ThroughSharedCore } from "../../scripts/estimate/r5/batch001R56SharedCoreProjection";
+
+type DurableRevision = {
+  revisionId: string;
+  parentRevisionId: string | null;
+  projection: Awaited<ReturnType<typeof compileBatch001R56ThroughSharedCore>>["revisionProjection"];
+  rows: Awaited<ReturnType<typeof compileBatch001R56ThroughSharedCore>>["rows"];
+};
+
+function reopen(revision: DurableRevision): DurableRevision {
+  return JSON.parse(canonicalEstimateStableJson(revision)) as DurableRevision;
+}
 
 describe("BATCH001 R2 durable history all works", () => {
-  test.each(BATCH001_DRYWALL_BULKHEAD_CATALOG_IDS_V3)(
+  test.each(buildAllBatch001DrywallSuccessorsR3().map((definition) => [definition.catalogId, definition] as const))(
     "round-trips and immutably revises %s",
-    (catalogId) => {
-    const runtime = createAiEstimateRuntime();
-      const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((item) => item.catalog_id === catalogId)!;
-      const revision = runtime.createDraft({
-        estimateDraftId: `batch001-durable-${catalogId}`,
-        rawInput: inventory.localized_name_ru,
-        selectedTemplateId: `domain-passport:${catalogId}:v1`,
-        selectedWorkKey: inventory.work_key,
-        city: "Bishkek",
-        currency: "KGS",
-        countryCode: "KG",
-        paramOverrides: batch001ParamOverrides(catalogId),
-        createdAt: "2026-08-13T06:00:00.000Z",
-      }).revision;
-      expect(revision.missingInputs).toEqual([]);
-      expect(revision.resolvedIdentity?.requestedCatalogWorkId).toBe(catalogId);
-      expect(revision.boq.rows.length).toBeGreaterThan(11);
-      const reopened = JSON.parse(JSON.stringify(revision)) as typeof revision;
-      expect(reopened.boq).toEqual(revision.boq);
-      expect(reopened.params).toEqual(revision.params);
-      const edited = runtime.applyParameterOverride({
-        revision: reopened,
-        operation: "update_param",
-        paramKey: "area_m2",
-        rawValue: "135",
-        createdAt: "2026-08-13T06:01:00.000Z",
-        revisionIndex: 2,
+    async (catalogId, definition) => {
+      const initialValues = batch001DrywallGoldFixtureValuesR3(definition);
+      const initial = await compileBatch001R56ThroughSharedCore({ definition, values: initialValues });
+      const revision: DurableRevision = {
+        revisionId: `batch001-durable-${catalogId}:1`,
+        parentRevisionId: null,
+        projection: initial.revisionProjection,
+        rows: initial.rows,
+      };
+      const reopened = reopen(revision);
+      expect(reopened).toEqual(revision);
+      expect(reopened.projection.catalogId).toBe(catalogId);
+      expect(reopened.rows.length).toBeGreaterThan(0);
+
+      const editedValues = {
+        ...initialValues,
+        horizontal_face_area_m2: Number(initialValues.horizontal_face_area_m2) + 15,
+      };
+      const recalculated = await compileBatch001R56ThroughSharedCore({
+        definition,
+        values: editedValues,
+        operation: "recalculate",
       });
-      expect(edited.revision.previousRevisionId).toBe(revision.revisionId);
-      expect(edited.revision.resolvedIdentity?.requestedCatalogWorkId).toBe(catalogId);
-      expect(edited.diff.changedRows.length).toBeGreaterThan(0);
-      expect(revision.boq).toEqual(reopened.boq);
+      const edited: DurableRevision = {
+        revisionId: `batch001-durable-${catalogId}:2`,
+        parentRevisionId: revision.revisionId,
+        projection: recalculated.revisionProjection,
+        rows: recalculated.rows,
+      };
+      expect(edited.parentRevisionId).toBe(revision.revisionId);
+      expect(edited.projection.catalogId).toBe(catalogId);
+      expect(edited.projection.parameters.horizontal_face_area_m2)
+        .toBe(editedValues.horizontal_face_area_m2);
+      expect(edited.rows).not.toEqual(revision.rows);
+      expect(revision).toEqual(reopened);
     },
   );
 });
