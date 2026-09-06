@@ -88,7 +88,7 @@ function rawParameterValue(
   scopeCapability: string,
   scope: Scope,
 ): string | number | boolean {
-  if (parameter.parameter_id === "work_included") return "true";
+  if (parameter.parameter_id === "work_included") return true;
   if (parameter.parameter_id === "estimate_scope_mode") return scope;
   if (parameter.parameter_id === "scope_capability") return scopeCapability;
   if (parameter.parameter_id === "funding_source") return "PRIVATE_RECOMMENDED";

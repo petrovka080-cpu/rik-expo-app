@@ -1,11 +1,13 @@
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
+import { buildEstimateFromInlineWorkPrompt } from "../../src/lib/estimate/buildEstimateFromInlineWorkPrompt";
 import { projectEstimateDraftRevisionToCanonicalSession } from "../../src/lib/estimate/canonicalParameters/projectEstimateDraftRevisionToCanonicalSession";
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 import { validateAiEstimateBuyerPackageParity } from "../../src/lib/estimate/artifacts/validateAiEstimateBuyerPackageParity";
 import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
+  createConsumerRepairRequestDraft as createEmptyConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
 import {
@@ -306,7 +308,7 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
       },
     );
     expect(missing.status).toBe("NEEDS_REQUIRED_INPUTS");
-    expect(missing.blockers).toContain("PROJECT_VALUE_REQUIRED:area_m2");
+    expect(missing.blockers).toContain("PROJECT_VALUE_REQUIRED_ONE_OF:area_m2");
     expect(() => compileProfessionalEstimateDomainV1(
       interiorFinishesWave1DomainFactory,
       constructionNormativeRegistryV1,
@@ -325,14 +327,13 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
     )).toThrow(`DOMAIN_EXACT_WORK_KEY_MISMATCH:${first.catalog_id}:foreign-work-key`);
   });
 
-  test("routes six representative exact selections through the production inline entry", () => {
+  test("routes six representative exact selections to the canonical backend boundary", () => {
     const representatives = INTERIOR_FINISHES_WAVE_1_INVENTORY.filter((row) => row.scope_capability === "standard").slice(0, 6);
     expect(representatives).toHaveLength(6);
     for (const [index, inventory] of representatives.entries()) {
       const values = parameterValues(inventory.catalog_id, "FULL_APPLICABLE_SCOPE");
       const createdAt = `2026-08-11T00:0${index}:00.000Z`;
-      const revision = createEstimateDraftRevision({
-        estimateDraftId: `interior-inline-${index + 1}`,
+      const result = buildEstimateFromInlineWorkPrompt({
         rawInput: inventory.localized_name_ru,
         selectedTemplateId: inventory.template_id,
         selectedWorkKey: inventory.work_key,
@@ -340,8 +341,6 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
         city: "Bishkek",
         currency: "KGS",
         countryCode: "KG",
-        createdAt,
-        revisionIndex: 1,
         paramOverrides: Object.fromEntries(Object.entries(values).map(([key, parameter]) => [key, {
           value: parameter.value,
           ...(parameter.unit_id ? { canonicalUnit: parameter.unit_id } : {}),
@@ -350,11 +349,19 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
           lastChangedAt: createdAt,
         }])),
       });
-      expect(revision.status).toBe("draft_ready");
-      expect(revision.professionalWorkId).toBe(inventory.work_key);
-      expect(revision.resolvedIdentity?.requestedCatalogWorkId).toBe(inventory.catalog_id);
-      expect(revision.boq.rows.length).toBeGreaterThan(0);
-      expect(revision.legacyRowsCount).toBe(0);
+      expect(result.blockingReason).toBe("CANONICAL_BACKEND_REQUIRED");
+      expect(result.canBuildPreliminaryEstimate).toBe(false);
+      expect(result.draft).toBeNull();
+      expect(result.parseResult.matchedTemplate).toMatchObject({
+        templateId: `domain-passport:${inventory.catalog_id}:v1`,
+        family: inventory.work_key,
+        matchSource: "user_selected",
+      });
+      expect(result.parseResult.candidateTemplates[0]).toMatchObject({
+        workKey: inventory.work_key,
+        reason: `exact_professional_domain_binding:${inventory.catalog_id}`,
+      });
+      expect(result.parseResult.missingInputs.length).toBeGreaterThan(0);
     }
   });
 
@@ -432,7 +439,7 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
     __resetConsumerRepairRequestStoreForTests();
     const inventory = INTERIOR_FINISHES_WAVE_1_INVENTORY.find((row) => row.scope_capability === "standard");
     if (!inventory) throw new Error("TEST_STANDARD_INVENTORY_NOT_FOUND");
-    const baseBundle = createConsumerRepairRequestDraft({
+    const baseBundle = createEmptyConsumerRepairRequestDraft({
       consumerUserId: "interior-wave1-durable-user",
       problemText: inventory.localized_name_ru,
       repairType: inventory.work_key,

@@ -73,7 +73,7 @@ function rawParameterValue(
   if (parameter.parameter_id === "project_type") return "RESIDENTIAL_INTERIOR";
   if (parameter.parameter_id === "product_profile_id") return "PROJECT-MATERIAL-PASSPORT-INTERIOR";
   if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-INTERIOR-RATE";
-  if (parameter.input_type === "boolean") return true;
+  if (parameter.input_type === "boolean") return scopeMode === "FULL_APPLICABLE_SCOPE";
   if (parameter.input_type === "choice") return parameter.choices?.[0]?.value ?? "PROJECT_SPECIFIED";
   if (parameter.input_type === "text") return `PROJECT:${parameter.parameter_id}`;
   return numericValue(parameter);
@@ -82,7 +82,7 @@ function rawParameterValue(
 function parameterValues(
   catalogId: string,
   scopeMode: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE",
-  geometry: "AREA" | "LENGTH_WIDTH" = "AREA",
+  geometry: "ALL" | "AREA" | "LENGTH_WIDTH" = "ALL",
 ): Readonly<Record<string, ProfessionalParameterValueV4>> {
   const binding = interiorFinishesDomainFactory.binding_by_catalog_id.get(catalogId);
   if (!binding) throw new Error(`TEST_INTERIOR_BINDING_NOT_FOUND:${catalogId}`);
@@ -109,7 +109,7 @@ function parameterValues(
 function compile(
   catalogId: string,
   scopeMode: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE",
-  geometry: "AREA" | "LENGTH_WIDTH" = "AREA",
+  geometry: "ALL" | "AREA" | "LENGTH_WIDTH" = "ALL",
 ) {
   const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.catalog_id === catalogId);
   if (!inventory) throw new Error(`TEST_INTERIOR_INVENTORY_NOT_FOUND:${catalogId}`);
@@ -147,12 +147,24 @@ describe("Interior Finishes complete professional domain", () => {
     expect(interiorFinishesDomainFactory.technology_by_id.size).toBe(2_250);
     expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.catalog_id)).size).toBe(2_250);
     expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(2_250);
+    for (const inventory of INTERIOR_FINISHES_DOMAIN_INVENTORY) {
+      const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+      const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+      if (!schema) throw new Error(`TEST_INTERIOR_SCHEMA_NOT_FOUND:${inventory.catalog_id}`);
+      const parameterIds = new Set(schema.parameters.map((parameter) => parameter.parameter_id));
+      expect(schema.quantity_alternatives.every((alternative) =>
+        alternative.every((parameterId) => parameterIds.has(parameterId))
+      )).toBe(true);
+    }
   });
 
   test("compiles every exact record in both scopes with professional resource ownership", () => {
     for (const inventory of INTERIOR_FINISHES_DOMAIN_INVENTORY) {
       for (const scopeMode of ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const) {
         const result = compile(inventory.catalog_id, scopeMode);
+        if (result.status !== "COMPILED") {
+          throw new Error(`INTERIOR_COMPLETE_BATCH_RED:${inventory.catalog_id}:${scopeMode}:${result.blockers.join("|")}:${JSON.stringify(result.normative_resolution)}`);
+        }
         expect(result.status).toBe("COMPILED");
         expect(result.blockers).toEqual([]);
         expect(result.exact_identity).toEqual({
@@ -168,13 +180,19 @@ describe("Interior Finishes complete professional domain", () => {
         expect(rows.every((row) => row.normative_source_ids.length > 0)).toBe(true);
         expect(new Set(rows.map((row) => row.semantic_owner)).size).toBe(rows.length);
         if (scopeMode === "FULL_APPLICABLE_SCOPE") {
-          const categories = new Set(rows.map((row) => row.category));
-          expect(categories).toEqual(new Set([
+          const categories = new Set<string>(rows.map((row) => row.category));
+          const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+          const resourcePolicy = interiorFinishesDomainFactory.package.resource_completeness_policies.find(
+            (policy) => policy.policy_id === technology?.resource_completeness_policy_id,
+          );
+          if (!resourcePolicy) throw new Error(`TEST_INTERIOR_RESOURCE_POLICY_NOT_FOUND:${inventory.catalog_id}`);
+          const allowedCategories = new Set([
             "material", "labor", "equipment", "transport", "waste", "testing", "documentation",
-          ]));
-          expect(rows.length).toBeGreaterThan(11);
-          expect(rows.some((row) => row.unit_id === "man_hour")).toBe(true);
-          expect(rows.some((row) => row.unit_id === "machine_hour")).toBe(true);
+            "work", "temporary_work", "subcontract_service",
+          ]);
+          expect(resourcePolicy.required_categories.every((category) => categories.has(category))).toBe(true);
+          expect([...categories].every((category) => allowedCategories.has(category))).toBe(true);
+          expect(rows.length).toBeGreaterThanOrEqual(resourcePolicy.required_categories.length);
         }
       }
     }

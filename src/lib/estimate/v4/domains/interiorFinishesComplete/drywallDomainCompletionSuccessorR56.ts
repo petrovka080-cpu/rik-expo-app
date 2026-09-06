@@ -796,7 +796,15 @@ export function buildDrywallDomainCompletionSuccessorPackagePartsR56(
       profile_version: "5.6.0",
       technology_id: inventory.canonical_technology_id,
       jurisdiction: "KG",
-      requested_source_ids: definition.passport.engineeringSourcePack.sources.map((source) => source.sourceId),
+      // The applicability registry owns published normative sources. Project
+      // passports and supplier prices remain fail-closed parameter/price
+      // routes on the rows and must not be presented as normative documents.
+      requested_source_ids: [...new Set([
+        ...definition.passport.engineeringSourcePack.sources
+          .filter((source) => source.sourceRole === "WORK_EXECUTION" || source.sourceRole === "QUANTITY_NORM")
+          .map((source) => source.sourceId),
+        "KG_DRYWALL_MATERIAL_CONFORMITY_ROUTE",
+      ])],
       requested_source_types: ["WORK_EXECUTION_STANDARD", "RESOURCE_ESTIMATE_NORM", "MATERIAL_STANDARD"],
       rejected_foreign_source_ids: ["RU_GESN_10", "RU_FER_10", "ISO_6308_WITHDRAWN"],
     },
@@ -814,8 +822,9 @@ export function buildDrywallDomainCompletionSuccessorPackagePartsR56(
 }
 
 function r56MeasureParameterId(definition: Batch004R56CanonicalSuccessorDefinition): string {
-  if (definition.family === "joint" || definition.operation === "FINISH_JOINT") return "joint_length_m";
+  if (definition.family === "joint") return "joint_length_m";
   if (definition.family === "revision_hatch") return "opening_count_item";
+  if (definition.operation === "FINISH_JOINT") return "joint_length_m";
   if (definition.operation === "REPAIR") return "defect_area_m2";
   return "area_m2";
 }
