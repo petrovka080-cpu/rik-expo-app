@@ -32,6 +32,22 @@ export const R4_A6_PUMP_STATION_TITLE_RU = "Строительство повы�
 export const R4_A6_PUMP_STATION_METHOD_ID = "r4-a6-pump-station-engineering-method-2026-09-04";
 export const R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID = "duty_pump_count";
 
+/**
+ * Parameters that change a resource specification or a service route without
+ * changing its arithmetic quantity. The canonical compiler still owns the
+ * value mutation; this metadata keeps UI parameter cards connected to the
+ * exact rows whose title/specification/procurement trace changes.
+ */
+export const R4_A6_PUMP_STATION_TRACE_PARAMETER_IDS_BY_ROW_ID: Readonly<
+  Record<string, readonly string[]>
+> = Object.freeze({
+  duty_pump_units: ["design_flow_m3_h", "design_head_m"],
+  control_panel_set: ["automation_scope"],
+  ventilation_unit_set: ["ventilation_airflow_m3_h"],
+  pump_equipment_delivery_service: ["delivery_distance_km"],
+  manifold_delivery_service: ["delivery_distance_km"],
+});
+
 function parseLocalizedPromptNumber(value: string): number {
   return Number(value.replace(/\s+/gu, "").replace(",", "."));
 }

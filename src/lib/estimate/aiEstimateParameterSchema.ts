@@ -119,6 +119,7 @@ function formulaText(row: ProfessionalBoqRecipeRow): string {
     row.quantityFormula,
     row.calculationTraceTemplate,
     row.formulaId,
+    JSON.stringify(row.formulaContext ?? {}),
   ].join(" ");
 }
 

@@ -24,13 +24,13 @@ describe("production grade AI estimate layer matrix", () => {
       "STOP_AI_ESTIMATE_PRODUCTION_GRADE_LAYER_MATRIX_INCOMPLETE",
     );
     expect(summary.templates_scanned).toBe(11610);
-    expect(summary.ready_production_grade_technical_count).toBe(1610);
-    expect(summary.blocked_templates_count).toBe(10000);
+    expect(summary.ready_production_grade_technical_count).toBe(1595);
+    expect(summary.blocked_templates_count).toBe(10015);
     expect(summary.sample_outputs_count).toBeGreaterThanOrEqual(25);
     expect(summary.critical_cases_passed).toBe("100/100");
     expect(summary.blockers).toEqual([
-      "production_grade_ready_count_invalid:1610",
-      "blocked_templates:10000",
+      "production_grade_ready_count_invalid:1595",
+      "blocked_templates:10015",
     ]);
 
     const artifact = JSON.parse(

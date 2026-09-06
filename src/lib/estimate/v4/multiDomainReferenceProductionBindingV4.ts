@@ -63,6 +63,11 @@ function stripFoundationValues(input: {
   for (const [parameterId, pattern] of Object.entries(explicitDimension)) {
     if (!explicitlyOverridden.has(parameterId) && !pattern.test(input.rawInput)) delete result[parameterId];
   }
+  // The generic parser derives area_m2 from any adjacent length/width pair.
+  // Those values can describe the building footprint and are deliberately not
+  // accepted as strip geometry above, so their derived area must not leak into
+  // the canonical P0 gate either.
+  if (result.length_m === undefined || result.width_m === undefined) delete result.area_m2;
   return result;
 }
 

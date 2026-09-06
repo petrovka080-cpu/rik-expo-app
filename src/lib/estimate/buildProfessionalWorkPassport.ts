@@ -34,6 +34,7 @@ import {
   R4_A6_PUMP_STATION_CATALOG_ID,
   R4_A6_PUMP_STATION_METHOD_ID,
   R4_A6_PUMP_STATION_ROWS,
+  R4_A6_PUMP_STATION_TRACE_PARAMETER_IDS_BY_ROW_ID,
 } from "./r4A6PumpStationProfessional";
 import {
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT,
@@ -374,7 +375,12 @@ function r4A6PumpStationRows(): ProfessionalBoqRecipeRow[] {
       normVersion: "2026-09-04",
       normReviewStatus: "engineering_assumption_not_mandatory_norm",
       calculationTraceTemplate: `formula=${row.expression}; scopeOwner=${row.scopeOwner}`,
-      formulaContext: { specificationRu: row.specificationRu, scopeOwner: row.scopeOwner },
+      formulaContext: {
+        specificationRu: row.specificationRu,
+        scopeOwner: row.scopeOwner,
+        inclusionAst: row.inclusionAst,
+        traceParameterIds: R4_A6_PUMP_STATION_TRACE_PARAMETER_IDS_BY_ROW_ID[row.rowId] ?? [],
+      },
       includedInEstimate: true,
       includedInProcurement: row.procurementEligible,
       priceStatus: "PRICE_MISSING",
@@ -463,6 +469,15 @@ function r4A10StripFoundationRows(): ProfessionalBoqRecipeRow[] {
         includedInParentRate: row.includedInParentRate,
         visibility: row.visibility,
         procurementMode: row.procurementMode,
+        ...(row.titleSpecificationParameterIds
+          ? { titleSpecificationParameterIds: row.titleSpecificationParameterIds }
+          : {}),
+        ...(row.titleSpecificationMode
+          ? { titleSpecificationMode: row.titleSpecificationMode }
+          : {}),
+        ...(row.titleSpecificationSeparator
+          ? { titleSpecificationSeparator: row.titleSpecificationSeparator }
+          : {}),
         ...(row.cargo ? { cargo: row.cargo } : {}),
       },
       includedInEstimate: true,

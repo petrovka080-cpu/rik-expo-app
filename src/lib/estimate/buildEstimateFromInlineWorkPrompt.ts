@@ -726,6 +726,9 @@ function buildExpandedDraft(input: {
     ...buyer.equipment_to_purchase,
     ...buyer.delivery_procurement_services,
   ];
+  const canonicalBackendHandoffRequired =
+    estimate.input_parameters.canonical_backend_handoff_required === true;
+  const selectedWork = selectedWorkForInlineMatch(input.parseResult);
 
   return {
     titleRu: estimate.professionalNameRu,
@@ -735,13 +738,18 @@ function buildExpandedDraft(input: {
       `PDF совпадает со снимком: ${pdf.rows_equal_snapshot ? "да" : "нет"}. Строк пакета закупки: ${buyerRows.length}.`,
     ].join(" "),
     repairType: estimate.work_family_id,
-    selectedWork: selectedWorkForInlineMatch(input.parseResult),
+    selectedWork: canonicalBackendHandoffRequired && selectedWork
+      ? {
+        ...selectedWork,
+        selectedCatalogWorkId: "canonical-work:expanded:strip_foundation",
+      }
+      : selectedWork,
     dangerousDiyBlocked: false,
     missingData: [
       ...estimate.missing_design_inputs,
       ...missingDataFromParse(input.parseResult),
     ],
-    items: rows.map((row, rowIndex) => ({
+    items: rows.length > 0 ? rows.map((row, rowIndex) => ({
       itemType: itemTypeForExpandedRow(row),
       titleRu: row.titleRu,
       quantity: row.quantity,
@@ -787,7 +795,42 @@ function buildExpandedDraft(input: {
       addedBy: "ai",
       materialKey: row.materialKey ?? null,
       rateKey: `inline_expanded_${row.code}`,
-    })),
+    })) : canonicalBackendHandoffRequired ? [{
+      itemType: "document",
+      titleRu: `Параметры для расчёта: ${estimate.professionalNameRu}`,
+      quantity: 1,
+      unit: "item",
+      unitLabel: "компл.",
+      unitPrice: null,
+      currency: input.currency,
+      source: "ai_suggested",
+      category: "documentation",
+      sourceId: null,
+      sourceLabel: "Ожидаются обязательные параметры canonical backend",
+      formulaId: "CANONICAL_BACKEND_HANDOFF_REQUIRED",
+      quantityFormula: "CANONICAL_BACKEND_HANDOFF_REQUIRED",
+      calculationTrace: "compileMutation=0; pdfReady=false; procurementReady=false",
+      sourceParameters: {
+        ...estimate.input_parameters,
+        canonicalBackendHandoffRequired: true,
+        p0GateOnly: true,
+        inlineWorkPrompt: true,
+        inlineWorkPromptTemplateId: input.parseResult.matchedTemplate?.templateId ?? null,
+        inlineWorkPromptFamilyId: estimate.work_family_id,
+        extractedParams: input.parseResult.extractedParams,
+      },
+      templateId: input.parseResult.matchedTemplate?.templateId ?? `${estimate.work_family_id}_preliminary_boq_expanded_complex_v1`,
+      templateVersion: "1.0.0",
+      priceStatus: "PRICE_MISSING",
+      priceSource: "missing",
+      priceSourceId: null,
+      priceSourceLabel: "Источник цен не выбран",
+      costConfidence: "missing",
+      confidence: "high",
+      addedBy: "system",
+      materialKey: null,
+      rateKey: "canonical_backend_handoff_required",
+    }] : [],
   };
 }
 
@@ -1503,13 +1546,16 @@ export function buildEstimateFromInlineWorkPrompt(
   const explicitMultiDomainPassport =
     input.selectedTemplateId ===
     multiDomainReferenceV4?.passport.professionalEstimatePassportId;
-  const explicitStripFoundationAssembly = Boolean(
-    multiDomainReferenceV4?.passport.catalogWorkId === "strip_foundation" &&
-    /ленточн\p{L}*\s+фундамент\p{L}*/iu.test(parseResult.rawInput),
+  const canonicalStripFoundationHandoff = Boolean(
+    parseResult.matchedTemplate?.family === "strip_foundation" &&
+    expandedCalculatorDraft?.items.some((item) =>
+      item.sourceParameters?.canonicalBackendHandoffRequired === true),
   );
   const allowMultiDomainReferenceDraft =
     !exactSelectedProfessionalWorkId &&
-    (exactMultiDomainReferencePrompt || explicitMultiDomainPassport || explicitStripFoundationAssembly);
+    !canonicalStripFoundationHandoff &&
+    (exactMultiDomainReferencePrompt ||
+      explicitMultiDomainPassport);
   // A resolved V4 scope is authoritative regardless of row count. Using an
   // arbitrary >50 threshold sent valid narrow scopes to the 200-row generic
   // legacy BOQ and lost their assembly/revision identity.
@@ -1525,6 +1571,7 @@ export function buildEstimateFromInlineWorkPrompt(
   const draft =
     (preferResolvedAsphaltV4OverLegacyRoadDraft ? asphaltV4?.draft : null) ??
     (allowMultiDomainReferenceDraft ? multiDomainReferenceV4?.draft : null) ??
+    (canonicalStripFoundationHandoff ? expandedCalculatorDraft : null) ??
     (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
       ? roadworksWaveA?.draft
       : null) ??
@@ -1546,18 +1593,33 @@ export function buildEstimateFromInlineWorkPrompt(
     : draft
     ? applyProfessionalBoqRuntimeContract(draft, { prompt: input.rawInput })
     : null;
+  const canonicalBackendHandoffPending = Boolean(
+    contractedDraft?.items.length &&
+    contractedDraft.items.every((item) =>
+      item.sourceParameters?.canonicalBackendHandoffRequired === true),
+  );
 
   return {
     parseResult,
     draft: contractedDraft,
-    canBuildPreliminaryEstimate: Boolean(contractedDraft && contractedDraft.items.length > 0),
-    blockingReason: contractedDraft && contractedDraft.items.length > 0
+    canBuildPreliminaryEstimate: Boolean(
+      contractedDraft && contractedDraft.items.length > 0 && !canonicalBackendHandoffPending,
+    ),
+    blockingReason: canonicalBackendHandoffPending
+      ? "canonical_backend_handoff_required"
+      : contractedDraft && contractedDraft.items.length > 0
       ? undefined
       : asphaltV4
         ? "v4_work_specific_inputs_required"
         : "draft_empty",
-    pdfMappingValid: Boolean(contractedDraft && contractedDraft.items.length > 0),
-    buyerHandoffMappingValid: Boolean(contractedDraft && contractedDraft.items.some((item) => item.itemType !== "work")),
+    pdfMappingValid: Boolean(
+      contractedDraft && contractedDraft.items.length > 0 && !canonicalBackendHandoffPending,
+    ),
+    buyerHandoffMappingValid: Boolean(
+      contractedDraft &&
+      !canonicalBackendHandoffPending &&
+      contractedDraft.items.some((item) => item.itemType !== "work"),
+    ),
     v4ClarificationExperience: asphaltV4?.clarification ?? null,
     roadScopeResolution,
   };

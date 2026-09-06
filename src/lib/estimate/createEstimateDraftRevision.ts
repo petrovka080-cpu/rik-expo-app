@@ -999,7 +999,8 @@ function resolveEstimateLevel(input: {
 }): EstimateDraftRevisionEstimateLevel {
   if (
     (input.result.parseResult.mustAskUserToSelectTemplate && !input.exactSelectionConfirmed) ||
-    input.rows.length === 0
+    input.rows.length === 0 ||
+    input.rows.every((row) => row.sourceParameters?.canonicalBackendHandoffRequired === true)
   ) return "NEEDS_INPUT";
   const scaleClass = rawInputFactStringValue(input.result.parseResult.rawInputFacts, "scale_class");
   if (input.matchedFamily === "solar_power_plant" && scaleClass === "utility_scale" && input.missingInputs.length > 0) {

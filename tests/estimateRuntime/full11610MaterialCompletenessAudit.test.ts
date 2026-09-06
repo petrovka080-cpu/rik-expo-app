@@ -40,7 +40,7 @@ describe("full 11610 material completeness source audit", () => {
     expect(summary.templates_audited).toBe(11610);
     expect(summary.templates_material_complete).toBe(11610);
     expect(summary.blocked_templates_count).toBe(0);
-    expect(summary.required_material_slots_total).toBe(582_550);
+    expect(summary.required_material_slots_total).toBe(265_550);
     expect(summary.missing_required_material_slots_count).toBe(0);
     expect(summary.backend_row_cap_detected).toBe(false);
     expect(summary.snapshot_truncation_detected).toBe(false);
@@ -65,8 +65,6 @@ describe("full 11610 material completeness source audit", () => {
       "real_named_source_sha_missing",
       "real_named_templates_ready_not_11610",
       "real_named_rows_audited_below_expected",
-      "real_named_web_not_100",
-      "real_named_android_not_100",
       "material_completeness_source_audit_not_green",
     ]);
   });

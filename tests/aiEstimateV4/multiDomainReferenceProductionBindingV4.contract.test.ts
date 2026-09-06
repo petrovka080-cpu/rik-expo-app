@@ -12,35 +12,52 @@ describe("multi-domain reference production binding V4", () => {
   test("ordinary owner prompt stays on strip-foundation clarification and never enters the high-rise calculator", () => {
     const prompt = "устройство ленточного фундамента 100 метров длина и 20 метров ширина";
     const result = buildEstimateFromInlineWorkPrompt({ rawInput: prompt, currency: "KGS" });
-    expect(result.draft?.titleRu).toBe("Устройство монолитного ленточного фундамента");
+    expect(result.draft?.titleRu).toBe("Устройство монолитного железобетонного ленточного фундамента");
     expect(result.draft?.selectedWork).toMatchObject({
       selectedCatalogWorkId: "canonical-work:expanded:strip_foundation",
       selectedWorkKey: "strip_foundation",
     });
     expect(result.draft?.missingData).toEqual(expect.arrayContaining([
-      "Суммарная длина самой ленты (не длина здания)",
-      "Ширина самой ленты (не ширина здания)",
-      "Высота бетонной части ленты",
-      "Расход арматуры по проекту",
+      "Подтвердите общую длину фундаментных лент по осям.",
+      "Укажите ширину и высоту сечения фундаментной ленты.",
+      "Выберите полный конструктив или только укладку бетонной смеси.",
+      "Подтвердите применимость земляных работ, подготовки, гидроизоляции и обратной засыпки.",
+      "Укажите проектную массу арматуры и требуемые характеристики бетона для полного конструктива.",
     ]));
     const serialized = JSON.stringify(result.draft).toLocaleLowerCase("ru-RU");
     expect(serialized).not.toMatch(/12\s*000|12\s+этаж|несущий каркас|ограждающие конструкции|фасад/iu);
-    const parameterValues = result.draft?.items[0]?.sourceParameters?.parameterValues;
-    expect(parameterValues).not.toHaveProperty("length_m");
-    expect(parameterValues).not.toHaveProperty("width_m");
+    expect(result.canBuildPreliminaryEstimate).toBe(false);
+    expect(result.pdfMappingValid).toBe(false);
+    expect(result.buyerHandoffMappingValid).toBe(false);
+    expect(result.blockingReason).toBe("canonical_backend_handoff_required");
+    expect(result.draft?.items).toEqual([
+      expect.objectContaining({
+        templateId: "strip_foundation_preliminary_boq_expanded_complex_v1",
+        sourceParameters: expect.objectContaining({
+          canonicalBackendHandoffRequired: true,
+          p0GateOnly: true,
+          source_length_mention_m: 100,
+          source_width_mention_m: 20,
+          total_axis_length_m: null,
+          strip_width_m: null,
+          strip_height_m: null,
+        }),
+      }),
+    ]);
 
     const revision = createEstimateDraftRevision({
       rawInput: prompt,
       currency: "KGS",
       createdAt: "2026-09-06T00:00:00.000Z",
     });
-    expect(revision.selectedTemplateId).toBe("professional-estimate-passport:v4:strip_foundation");
+    expect(revision.selectedTemplateId).toBe("strip_foundation_preliminary_boq_expanded_complex_v1");
     expect(revision.matchedFamily).toBe("strip_foundation");
+    expect(revision.estimateLevel).toBe("NEEDS_INPUT");
     expect(revision.missingInputs.map((item) => item.key)).toEqual(expect.arrayContaining([
-      "length_m", "width_m", "height_m", "rebar_rate_kg_m3",
+      "total_axis_length_m", "strip_width_m", "strip_height_m",
     ]));
     expect(revision.missingInputs.map((item) => item.key)).not.toEqual(expect.arrayContaining([
-      "area_m2", "project_location", "drawings_or_specification", "structural_concrete_m3",
+      "area_m2", "length_m", "width_m", "floors", "structural_concrete_m3",
     ]));
     expect(revision.status).toBe("needs_more_params_but_preliminary_available");
   });
@@ -61,6 +78,35 @@ describe("multi-domain reference production binding V4", () => {
         paramOverrides,
         currency: "KGS",
       });
+      if (passport.catalogWorkId === "strip_foundation") {
+        expect(result).toMatchObject({
+          canBuildPreliminaryEstimate: false,
+          blockingReason: "canonical_backend_handoff_required",
+          pdfMappingValid: false,
+          buyerHandoffMappingValid: false,
+        });
+        expect(result.draft?.items).toEqual([
+          expect.objectContaining({
+            templateId: "strip_foundation_preliminary_boq_expanded_complex_v1",
+            sourceParameters: expect.objectContaining({
+              canonicalBackendHandoffRequired: true,
+              p0GateOnly: true,
+            }),
+          }),
+        ]);
+        const revision = createEstimateDraftRevision({
+          rawInput: prompt.text,
+          paramOverrides,
+          currency: "KGS",
+          createdAt: "2026-07-23T00:00:00.000Z",
+        });
+        expect(revision).toMatchObject({
+          selectedTemplateId: "strip_foundation_preliminary_boq_expanded_complex_v1",
+          matchedFamily: "strip_foundation",
+          estimateLevel: "NEEDS_INPUT",
+        });
+        return;
+      }
       expect(result.canBuildPreliminaryEstimate).toBe(true);
       if (passport.catalogWorkId !== "asphalt_pavement") {
         expect(result.draft?.selectedWork?.selectedWorkKey).toBe(passport.catalogWorkId);
@@ -119,6 +165,11 @@ describe("multi-domain reference production binding V4", () => {
       const prompt = MULTI_DOMAIN_REFERENCE_NLP_PROMPTS_V4.find((item) =>
         item.catalogWorkId === passport.catalogWorkId && item.variant === "professional")!;
       const result = buildEstimateFromInlineWorkPrompt({ rawInput: prompt.text, currency: "KGS" });
+      if (passport.catalogWorkId === "strip_foundation") {
+        expect(result.blockingReason).toBe("canonical_backend_handoff_required");
+        expect(result.draft?.items[0]?.sourceParameters?.canonicalBackendHandoffRequired).toBe(true);
+        return;
+      }
       if (passport.catalogWorkId === "asphalt_pavement") {
         expect(result.v4ClarificationExperience).not.toBeNull();
         return;

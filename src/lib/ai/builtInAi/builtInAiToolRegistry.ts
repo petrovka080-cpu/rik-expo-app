@@ -13,6 +13,7 @@ import {
   calculateGlobalConstructionEstimateSync,
   formatGlobalEstimateAnswer,
   GLOBAL_RATE_MATERIALS,
+  resolveGlobalWorkType,
   type EstimateRowSourceEvidence,
 } from "../globalEstimate";
 import { buildLocalContextWarning, resolveCountryRegionCity } from "../globalLocalContext";
@@ -160,6 +161,12 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     explicitWorkKey: input.explicitWorkKey,
   });
   recordStage("input_built");
+  const textResolvedWorkKey = input.explicitWorkKey
+    ? undefined
+    : resolveGlobalWorkType({
+        text: input.text,
+        language: estimateRoute.language,
+      }).workKey;
   if (input.explicitWorkKey && isProfessionalExpandedWorkSupported(input.explicitWorkKey)) {
     return {
       estimate: buildProfessionalExpandedGlobalEstimate({
@@ -173,7 +180,13 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
       worldClassification: "EXPLICIT_WORK_KEY_PROFESSIONAL_EXPANDED",
     };
   }
-  if (!input.explicitWorkKey && isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
+  if (
+    !input.explicitWorkKey &&
+    isAmbiguousWaterproofingSurfacePrompt(
+      input.text,
+      estimateRoute.resolvedWorkKey ?? textResolvedWorkKey,
+    )
+  ) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
       safeMessageRu: withPromptLocalContextWarning(
