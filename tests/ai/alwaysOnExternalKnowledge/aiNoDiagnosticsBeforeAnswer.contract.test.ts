@@ -3,7 +3,7 @@ import { answerAlwaysOnExternalKnowledgeQuestion } from "../../../src/lib/ai/alw
 describe("AI no diagnostics before answer", () => {
   it("keeps source diagnostics collapsed at the bottom", () => {
     const result = answerAlwaysOnExternalKnowledgeQuestion({
-      questionRu: "дай смету на паркет 100 м²",
+      questionRu: "как проверить влажность стяжки перед укладкой паркета",
       role: "foreman",
       screenId: "foreman",
     });

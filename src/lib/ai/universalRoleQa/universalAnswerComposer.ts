@@ -379,6 +379,8 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
   const backendEstimateRequested =
     classifyCanonicalEstimateIntent(input.questionRu) !== null ||
     intent === "construction_estimate";
+  const backendEstimateSubjectRu =
+    filters.material?.nameRu ?? filters.workType?.labelRu ?? "выбранная работа";
   let estimateRoute: EstimateIntentRoute | undefined;
   let globalEstimateResult: GlobalEstimateResult | undefined;
   const shouldUseGlobalEstimate = false;
@@ -421,7 +423,7 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     sections = [{
       titleRu: "Каноническая backend-смета",
       items: [{
-        textRu: "Откройте редактор сметы: каталог, параметры, расчёт, revision, PDF и закупка выполняются на backend.",
+        textRu: `Запрос: ${backendEstimateSubjectRu}. Откройте редактор сметы: каталог, параметры, расчёт, revision, PDF и закупка выполняются на backend.`,
         sourceRefIds: [],
         status: "requires_review",
       }],
@@ -474,7 +476,7 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
   ]);
 
   const shortAnswerRu = backendEstimateRequested
-    ? "Расчёт передан каноническому backend-компилятору. Откройте редактор сметы для выбора catalog_id и параметров."
+    ? `Расчёт для «${backendEstimateSubjectRu}» передан каноническому backend-компилятору. Откройте редактор сметы для выбора catalog_id и параметров.`
     : globalEstimateResult
     ? `Ниже профессиональная смета на ${globalEstimateResult.work.title} — ${globalEstimateResult.input.volume} ${globalEstimateResult.input.unit}. Расчет выполнен backend-движком по source-backed ставкам.`
     : shortAnswerFor({ intent, entity, filters, app, web });
