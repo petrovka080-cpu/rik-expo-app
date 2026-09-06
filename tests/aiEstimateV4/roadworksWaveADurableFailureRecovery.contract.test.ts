@@ -2,9 +2,11 @@ import {
   __resetConsumerRepairRequestStoreForTests,
   __simulateConsumerRepairRequestStoreReloadForTests,
   commitPreparedConsumerRepairRequestBundle,
-  createConsumerRepairRequestDraft,
   getConsumerRepairRequest,
 } from "../../src/lib/consumerRequests";
+import {
+  createCanonicalConsumerRepairAuditDraft as createConsumerRepairRequestDraft,
+} from "../../scripts/estimate/canonicalConsumerRepairAuditHarness";
 import {
   CONSUMER_REPAIR_DURABLE_STORE_BUNDLE_KEY_PREFIX,
   CONSUMER_REPAIR_DURABLE_STORE_MANIFEST_KEY,

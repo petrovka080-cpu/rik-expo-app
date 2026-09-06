@@ -9,6 +9,7 @@ import {
   isDrywallDomainCompletionCatalogIdV7,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
 import { allDomainCompletionParts, compileAllDomainCompletionWorks } from "./domainCompletionV7TestSupport";
+import { buildAllBatch004R56CanonicalSuccessorDefinitions } from "../../scripts/estimate/r5/batch004R56SharedCoreProjection";
 
 describe("BATCH-004 drywall full-domain completion V7 production", () => {
   test("owns exact remaining 393 identities / 75 groups without changing 107 prior owners", () => {
@@ -49,13 +50,20 @@ describe("BATCH-004 drywall full-domain completion V7 production", () => {
     expect(passports.every((passport) => passport.candidateCoveragePercent === 100 && passport.hiddenAggregateRows === 0)).toBe(true);
   });
 
-  test("compiles all 393 identities in the single interior_finishes runtime", () => {
+  test("compiles all 393 identities through the work-owned R5.6 projection", () => {
     const results = compileAllDomainCompletionWorks();
+    const definitions = new Map(buildAllBatch004R56CanonicalSuccessorDefinitions()
+      .map((definition) => [definition.catalogId, definition] as const));
     expect(results).toHaveLength(393);
     for (const result of results) {
+      const definition = definitions.get(result.inventory.catalog_id)!;
       expect(result.compile_result.status).toBe("COMPILED");
       expect(result.compile_result.blockers).toEqual([]);
-      expect(result.draft?.items.length).toBeGreaterThanOrEqual(45);
+      expect(result.draft?.items.map((item) => item.sourceParameters?.rowCode))
+        .toEqual(definition.resources.map((resource) => resource.rowId));
+      expect(result.draft?.items.length).toBe(definition.resources.length);
+      expect(new Set(definition.resources.map((resource) => resource.category)))
+        .toEqual(new Set(["material", "labor", "transport", "equipment"]));
       expect(result.draft?.items.every((item) => String(item.sourceParameters?.semanticOwner).includes("drywall-domain-completion-v7"))).toBe(true);
       expect(result.draft?.items.every((item) => item.sourceParameters?.legacyFallbackUsed !== true)).toBe(true);
       expect(result.draft?.items.every((item) => item.sourceParameters?.priceRouteV3)).toBe(true);

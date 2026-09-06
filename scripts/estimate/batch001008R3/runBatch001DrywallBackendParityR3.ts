@@ -21,6 +21,7 @@ import {
   type Batch002DrywallSuccessorDefinitionR3,
 } from "../../../src/lib/estimate/v4/domains/interiorFinishesComplete/drywallArchitecturalElementsSuccessorR3";
 import { batch002DrywallGoldFixtureValuesR3 } from "./batch002DrywallGoldFixtureR3";
+import { compileBatch002R56ThroughSharedCore } from "../r5/batch002R56SharedCoreProjection";
 import {
   buildCanonicalSourceIdentityR56,
   CANONICAL_R56_DEFAULT_SOURCE_PATHS,
@@ -571,9 +572,29 @@ async function compileLocal(definition: DrywallDefinition, values: Readonly<Reco
       }),
     };
   }
-  return IS_BATCH002
-    ? compileBatch002DrywallSuccessorR3(definition as Batch002DrywallSuccessorDefinitionR3, values)
-    : compileBatch001DrywallSuccessorR3(definition as Batch001DrywallSuccessorDefinitionR3, values);
+  if (IS_BATCH002) {
+    const batch002 = definition as Batch002DrywallSuccessorDefinitionR3;
+    const compiled = await compileBatch002R56ThroughSharedCore({ definition: batch002, values });
+    const resourceById = new Map(batch002.resources.map((resource) => [resource.rowId, resource]));
+    return {
+      status: "GREEN" as const,
+      catalogId: batch002.catalogId,
+      rows: compiled.rows.map((row) => {
+        const resource = resourceById.get(row.row_id)!;
+        return {
+          rowId: row.row_id,
+          group: resource.group,
+          titleRu: String(row.title_ru),
+          unitId: String(row.unit_id),
+          quantity: Number(row.quantity),
+          semanticOwnerId: resource.semanticOwnerId,
+          costOwnerId: resource.costOwnerId,
+          procurementEligible: row.procurement_eligible,
+        };
+      }),
+    };
+  }
+  return compileBatch001DrywallSuccessorR3(definition as Batch001DrywallSuccessorDefinitionR3, values);
 }
 
 function definitionGroup(definition: DrywallDefinition): string {

@@ -18,8 +18,14 @@ describe("road composite ownership V4", () => {
       ROAD_COMPOSITE_OWNERS_V4.flatMap((owner) => owner.wbsIds.map((wbsId) => [wbsId, owner] as const)),
     );
 
-    expect(rows.length).toBeGreaterThan(600);
-    expect(wbsIds.size).toBe(30);
+    // Full-road definitions contain 30 possible WBS branches, but an area-only
+    // request must project only branches backed by known geometry and visible
+    // preliminary assumptions. Re-introducing all 600+ definition rows here
+    // would bill non-applicable lighting, drainage and linear geometry.
+    expect(rows).toHaveLength(118);
+    expect([...wbsIds].sort()).toEqual([
+      "01", "02", "03", "04", "05", "08", "09", "10", "11", "28", "29", "30",
+    ]);
     expect([...wbsIds].every((wbsId) => ownerByWbs.has(wbsId))).toBe(true);
     expect(rows.every((row) => row.definition.semantic_owner_id === ownerByWbs.get(row.definition.wbs_code)?.ownerId)).toBe(true);
     expect(rows.every((row) => row.definition.semantic_owner_class !== "PASSPORT_GAP")).toBe(true);
@@ -49,6 +55,8 @@ describe("road composite ownership V4", () => {
     const confirmedGeometryIds = new Set(
       confirmedGeometry.compiled_rows.map((row) => row.definition.row_id),
     );
+    expect(confirmedGeometry.compiled_rows).toHaveLength(123);
+    expect(new Set(confirmedGeometry.compiled_rows.map((row) => row.definition.wbs_code)).size).toBe(13);
     expect([
       "longitudinal_joints",
       "transverse_joints",

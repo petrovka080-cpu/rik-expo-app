@@ -1321,8 +1321,14 @@ export function auditAsphalt35ScaledCloneIntegrityV5() {
   const historical780ById = new Map(historical780.map((row) => [row.rowId, row]));
   const historicalChanged = historical900.filter((row) => historical780ById.get(row.rowId)?.quantity !== row.quantity);
   const historicalUnexpectedChanges = historicalChanged.filter((row) => !row.affectedBy.includes("area_m2"));
-  const historicalConstantRows = historical900.filter((row) => row.affectedBy.length === 0);
-  const historicalConstantRowsPreserved = historicalConstantRows.every((row) =>
+  // Every production quantity must retain an explicit input/formula trace, so
+  // the canonical projection deliberately has no rows with an empty
+  // `affectedBy`.  For the 900 -> 780 regression the invariant is instead that
+  // rows whose formula is independent of area remain byte-for-byte stable.
+  const historicalAreaIndependentRows = historical900.filter((row) =>
+    !row.affectedBy.includes("area_m2")
+  );
+  const historicalConstantRowsPreserved = historicalAreaIndependentRows.every((row) =>
     historical780ById.get(row.rowId)?.quantity === row.quantity
   );
   const historicalLotRowsNotBlindScaled = historical900
@@ -1339,7 +1345,7 @@ export function auditAsphalt35ScaledCloneIntegrityV5() {
   const historicalPairPassed = historical900.length === historical780.length &&
     historicalChanged.length > 0 &&
     historicalUnexpectedChanges.length === 0 &&
-    historicalConstantRows.length > 0 &&
+    historicalAreaIndependentRows.length > 0 &&
     historicalConstantRowsPreserved &&
     historicalLotRowsNotBlindScaled &&
     historicalAreaOnlyLengthRows.length === 0;
