@@ -43,6 +43,36 @@ describe("canonicalEstimateRevisionWriter", () => {
     expect(identity.sourceRequestHash).toMatch(/^[0-9a-f]{64}$/u);
   });
 
+  it("uses the immutable definition passport title instead of a legacy generic work identity", async () => {
+    const identity = await buildCanonicalRevisionIdentity({
+      catalogId: "canonical-work:expanded:strip_foundation",
+      parentRevisionId: null,
+      requestIdentity: {
+        sourceRequestText: "Устройство ленточного фундамента длиной 40 м",
+        primaryMeasureParameterId: "total_axis_length_m",
+      },
+      definition: {
+        id: "definition-foundation-1",
+        title_ru: "Здания и жилые комплексы: устройство ленточного фундамента",
+        passport: { canonicalRuName: "Устройство монолитного железобетонного ленточного фундамента" },
+        domain: "buildings",
+      },
+      parameterDefinitions: [{ parameter_id: "total_axis_length_m", unit_id: "m" }],
+      parameters: { total_axis_length_m: 40 },
+      effectiveUserParameters: { total_axis_length_m: 40 },
+      baselineAssumptions: {},
+      parent: null,
+      searchReleaseId: "search-release-foundation-1",
+      compilerVersion: "compiler.r1",
+      hashText,
+    });
+
+    expect(identity).toMatchObject({
+      canonicalWorkTitleRu: "Устройство монолитного железобетонного ленточного фундамента",
+      displayTitleRu: "Устройство монолитного железобетонного ленточного фундамента — 40 м",
+    });
+  });
+
   it("selects one commit contract and one canonical payload shape", () => {
     expect(CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION).toBe("estimate_commit_compile_job_v1");
     expect(buildCanonicalRevisionCommitPayload({

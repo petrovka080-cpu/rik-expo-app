@@ -629,6 +629,27 @@ function missingInputsFromParse(
   }));
 }
 
+function missingInputsFromMultiDomainReference(
+  draft: ConsumerRepairAiDraft | null,
+): EstimateDraftRevision["missingInputs"] {
+  const metadata = draft?.items.find((item) => item.sourceParameters?.multiDomainReferenceV4 === true)
+    ?.sourceParameters;
+  const catalogWorkId = typeof metadata?.catalogWorkId === "string" ? metadata.catalogWorkId : null;
+  const missingP0 = Array.isArray(metadata?.missingP0)
+    ? metadata.missingP0.filter((value): value is string => typeof value === "string")
+    : [];
+  const passport = catalogWorkId
+    ? MULTI_DOMAIN_REFERENCE_PASSPORTS_V4.find((item) => item.catalogWorkId === catalogWorkId)
+    : null;
+  const labels = new Map(passport?.parameters.map((parameter) => [parameter.parameterId, parameter.labelRu]) ?? []);
+  return missingP0.map((key) => ({
+    key,
+    label: labels.get(key) ?? key,
+    blocksPreliminaryEstimate: true,
+    requiredFor: "contract_ready" as const,
+  }));
+}
+
 function asphaltV4ParameterKey(parameterId: string): string {
   const match = parameterId.match(/^asphalt_concrete_pavement:parameter:([a-z0-9_]+):v4$/i);
   return match?.[1] ?? parameterId;
@@ -1194,6 +1215,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     Boolean(result.v4ClarificationExperience) ||
     Boolean(result.draft?.items.some((item) => item.sourceParameters?.asphaltV4 === true)));
   const draftSelectedWorkKey = result.draft?.selectedWork?.selectedWorkKey?.trim() ?? "";
+  const multiDomainReferenceConsumerDraft = Boolean(
+    result.draft?.items.length &&
+    result.draft.items.every((item) => item.sourceParameters?.multiDomainReferenceV4 === true),
+  );
   // Exact Roadworks Wave A already owns its passport, parameter schema and
   // calculation identity in the compiled row metadata. Re-entering the broad
   // professional catalog here performs a second generic catalog scan on the
@@ -1215,6 +1240,8 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
     : null;
   const selectedTemplateId = exactProfessionalDomainConsumerDraft
     ? requestedTemplateId || draftCatalogId || draftTemplateId
+    : multiDomainReferenceConsumerDraft && draftTemplateId
+      ? draftTemplateId
     : requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID || isAsphaltV4Draft
     ? ASPHALT_V4_RUNTIME_TEMPLATE_ID
     : requestedReferencePassport
@@ -1307,7 +1334,7 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       existingMissingInputs: (isAsphaltV4Draft || requestedTemplateId === ASPHALT_V4_RUNTIME_TEMPLATE_ID
         ? missingInputsFromAsphaltV4(result)
         : isMultiDomainReferenceV4Draft
-          ? []
+          ? missingInputsFromMultiDomainReference(result.draft)
         : missingInputsFromParse(result.parseResult.missingInputs)
       ).filter((item, index, values) => values.findIndex((candidate) => candidate.key === item.key) === index),
     }),

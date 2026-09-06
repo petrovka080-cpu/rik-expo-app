@@ -9,6 +9,42 @@ import { buildAiEstimateParameterCards } from "../../src/lib/estimate/buildAiEst
 import { createAiEstimateRuntime } from "../../src/lib/estimate/runtime/createAiEstimateRuntime";
 
 describe("multi-domain reference production binding V4", () => {
+  test("ordinary owner prompt stays on strip-foundation clarification and never enters the high-rise calculator", () => {
+    const prompt = "устройство ленточного фундамента 100 метров длина и 20 метров ширина";
+    const result = buildEstimateFromInlineWorkPrompt({ rawInput: prompt, currency: "KGS" });
+    expect(result.draft?.titleRu).toBe("Устройство монолитного ленточного фундамента");
+    expect(result.draft?.selectedWork).toMatchObject({
+      selectedCatalogWorkId: "canonical-work:expanded:strip_foundation",
+      selectedWorkKey: "strip_foundation",
+    });
+    expect(result.draft?.missingData).toEqual(expect.arrayContaining([
+      "Суммарная длина самой ленты (не длина здания)",
+      "Ширина самой ленты (не ширина здания)",
+      "Высота бетонной части ленты",
+      "Расход арматуры по проекту",
+    ]));
+    const serialized = JSON.stringify(result.draft).toLocaleLowerCase("ru-RU");
+    expect(serialized).not.toMatch(/12\s*000|12\s+этаж|несущий каркас|ограждающие конструкции|фасад/iu);
+    const parameterValues = result.draft?.items[0]?.sourceParameters?.parameterValues;
+    expect(parameterValues).not.toHaveProperty("length_m");
+    expect(parameterValues).not.toHaveProperty("width_m");
+
+    const revision = createEstimateDraftRevision({
+      rawInput: prompt,
+      currency: "KGS",
+      createdAt: "2026-09-06T00:00:00.000Z",
+    });
+    expect(revision.selectedTemplateId).toBe("professional-estimate-passport:v4:strip_foundation");
+    expect(revision.matchedFamily).toBe("strip_foundation");
+    expect(revision.missingInputs.map((item) => item.key)).toEqual(expect.arrayContaining([
+      "length_m", "width_m", "height_m", "rebar_rate_kg_m3",
+    ]));
+    expect(revision.missingInputs.map((item) => item.key)).not.toEqual(expect.arrayContaining([
+      "area_m2", "project_location", "drawings_or_specification", "structural_concrete_m3",
+    ]));
+    expect(revision.status).toBe("needs_more_params_but_preliminary_available");
+  });
+
   test.each(MULTI_DOMAIN_REFERENCE_PASSPORTS_V4)(
     "$catalogWorkId enters the production prompt builder and revision flow",
     (passport) => {

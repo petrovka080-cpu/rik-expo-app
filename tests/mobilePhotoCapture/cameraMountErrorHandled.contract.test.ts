@@ -7,4 +7,11 @@ describe("camera mount error handling", () => {
     expect(camera).toContain("onMountError={onMountError}");
     expect(flow).toContain("setCameraState(\"FAILED\")");
   });
+
+  it("does not let a late in-app camera result overwrite an explicit gallery review", () => {
+    const flow = readSource("src/components/photoCapture/MobilePhotoCaptureFlow.tsx");
+    expect(flow).toContain("alternativeCaptureOwnsTransitionRef.current = true");
+    expect(flow).toContain("cancelled || alternativeCaptureOwnsTransitionRef.current");
+    expect(flow).toContain('setCameraState("REVIEWING")');
+  });
 });

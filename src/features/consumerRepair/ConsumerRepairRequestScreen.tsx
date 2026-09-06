@@ -55,6 +55,7 @@ import {
   appendNextApprovedHistoryPage,
   addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection, buildDeletedConsumerRepairDraftState,
   buildApprovedConsumerRepairWorkspaceClearedState,
+  canonicalBaselineContractMissingStatusMessage,
   buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
   buildEmptyConsumerRepairApprovedHistoryPage, buildInitialConsumerRepairRequestState,
   buildConsumerRepairExactCatalogLaunchSelectedWork, buildMultiDomainReferenceSelectedWorkBinding, buildNewConsumerRepairRequestState, buildSelectedWorkFromSuggestion, buildSelectedWorkFromTemplateCandidate, catalogInitialQueryForRequestItem,
@@ -1184,6 +1185,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       });
     }
     if (!selectedWork) {
+      selectedWork = buildMultiDomainReferenceSelectedWorkBinding(problemText);
+      if (selectedWork) {
+        this.setState({ selectedWork, repairType: selectedWork.selectedCategoryKey });
+      }
+    }
+    if (!selectedWork) {
       try {
         const searchQuery = canonicalWorkSearchQueryFromPrompt(problemText);
         const page = this.state.canonicalWorkSearch.query === searchQuery
@@ -1251,7 +1258,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         message: code.startsWith("CANONICAL_BACKEND_DEFINITION_MISSING:")
           ? "Работа найдена, но её расчётная модель временно недоступна. Черновик сохранён — повторите расчёт."
           : code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
-            ? "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт."
+            ? canonicalBaselineContractMissingStatusMessage(code)
             : "Не удалось рассчитать смету. Черновик сохранён — повторите расчёт.",
       };
     }

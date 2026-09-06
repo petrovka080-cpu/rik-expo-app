@@ -16,7 +16,7 @@ const PURPOSE = "estimate_candidate_admission_r3";
 const ENVIRONMENT = "local-developer-r568";
 const MINIMUM_TTL_SECONDS = 6 * 60 * 60;
 const CAPABILITY_TTL_HOURS = 24;
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_SHA256 = "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const EVIDENCE_ROOT = resolve(
   String(process.env.LOCAL_DEVELOPER_EVIDENCE_ROOT ?? "").trim() ||

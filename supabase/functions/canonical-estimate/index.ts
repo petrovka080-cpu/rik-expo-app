@@ -18,6 +18,7 @@ import {
   CanonicalEstimateDefinitionRegistry,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts";
 import { canonicalProfessionalArtifactMetadataIdentityMatches } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts";
+import { canonicalDefinitionTitleRu } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts";
 
 const FUNCTION_NAME = "canonical-estimate";
 const MAX_ROWS_PAGE = 500;
@@ -1539,7 +1540,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
   if (releaseError) normalizeDbError(releaseError);
   const { data: definition, error: definitionError } = await requester
     .from("estimate_definition_version")
-    .select("id,definition_version,applicability,source_metadata")
+    .select("id,definition_version,passport,applicability,source_metadata")
     .eq("release_id", release.id)
     .eq("catalog_id", catalogId)
     .single();
@@ -1558,7 +1559,7 @@ async function readCatalogItem(requester: ReturnType<typeof createClient>, rawCa
       namespace: identity.namespace,
       domain: identity.domain,
       workKey: identity.work_key,
-      titleRu: identity.title_ru,
+      titleRu: canonicalDefinitionTitleRu({ ...definition, title_ru: identity.title_ru }),
       definitionVersion: definition.definition_version,
       applicability: definition.applicability,
       professionalMetadata: definition.source_metadata,

@@ -524,8 +524,49 @@ export function preserveSelectedWorkResolverInput(
 export function buildMultiDomainReferenceSelectedWorkBinding(
   rawInput: string,
 ): GlobalSelectedWorkBinding | null {
-  void rawInput;
+  const normalized = normalizeEditableWorkText(rawInput);
+  const stripFoundationIntent =
+    /(?:устройств|возвед|бетонирован|заливк|монтаж)[^.;]{0,80}ленточн\p{L}*\s+фундамент\p{L}*/iu.test(normalized) ||
+    /ленточн\p{L}*\s+фундамент\p{L}*[^.;]{0,80}(?:устройств|возвед|бетонирован|заливк|монтаж)/iu.test(normalized);
+  if (stripFoundationIntent) {
+    return {
+      selectedWorkKey: "canonical-work:expanded:strip_foundation",
+      selectedTitleRu: "Устройство монолитного железобетонного ленточного фундамента",
+      selectedCategoryKey: "concrete",
+      selectedCategoryTitleRu: "Бетонные и железобетонные работы",
+      rawInput: rawInput.trim(),
+      source: "user_selected",
+      resolverReGuessed: false,
+    };
+  }
   return null;
+}
+
+const CANONICAL_BASELINE_MISSING_LABEL_RU: Readonly<Record<string, string>> = {
+  total_axis_length_m: "общая длина ленты по оси",
+  strip_width_m: "ширина ленты",
+  strip_height_m: "высота бетонной ленты",
+  preparation_thickness_m: "толщина бетонной подготовки",
+  reinforcement_mass_t: "масса арматуры по проектной ведомости",
+  binding_wire_mass_kg: "масса вязальной проволоки",
+  formwork_transport_mass_t: "транспортная масса опалубки",
+  groundworks_included: "входит ли разработка грунта",
+  foundation_bedding_included: "входит ли подушка основания",
+  waterproofing_included: "входит ли гидроизоляция",
+  backfill_included: "входит ли обратная засыпка",
+  soil_disposal_included: "входит ли вывоз лишнего грунта",
+};
+
+export function canonicalBaselineContractMissingStatusMessage(code: string): string {
+  const prefix = "CANONICAL_BASELINE_CONTRACT_MISSING:";
+  if (!code.startsWith(prefix)) {
+    return "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт.";
+  }
+  const labels = [...new Set(code.slice(prefix.length).split(",").map((parameterId) => parameterId.trim()).filter(Boolean))]
+    .map((parameterId) => CANONICAL_BASELINE_MISSING_LABEL_RU[parameterId] ?? parameterId.replace(/_/gu, " "));
+  return labels.length > 0
+    ? `Нужно уточнить обязательные параметры: ${labels.join("; ")}. Размеры здания не используются как размеры фундаментной ленты.`
+    : "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт.";
 }
 
 export function shouldPreserveSelectedWorkForProblemText(

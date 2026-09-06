@@ -35,6 +35,7 @@ import {
   CANONICAL_ESTIMATE_REVISION_COMMIT_FUNCTION,
   buildCanonicalRevisionCommitPayload,
   buildCanonicalRevisionIdentity,
+  canonicalDefinitionTitleRu,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter";
 import {
   buildCanonicalArtifactMetadata,
@@ -264,6 +265,7 @@ const LOCAL_AUTHENTICATED_USER_ID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const LOCAL_AUTHENTICATED_ROLE_RE = /^[a-z][a-z0-9_-]{0,63}$/u;
 let artifactBrowserPromise: Promise<Browser> | null = null;
+let artifactBrowserInstance: Browser | null = null;
 
 type JsonRecord = Record<string, unknown>;
 type LocalPrincipal = {
@@ -1555,7 +1557,10 @@ async function createArtifactJob(
             sourceHead: R45_RUNTIME_SOURCE_HEAD,
             sourceTree: R45_RUNTIME_SOURCE_TREE,
             contractVersion: contentAdmission.decision.contractVersion,
-            decision: contentAdmission.decision,
+            // Evaluation time is audit metadata, not artifact request identity.
+            // Keeping it in the durable job payload makes an otherwise identical
+            // approval retry collide with its first idempotency key.
+            decision: persistedAdmissionDecision(contentAdmission.decision),
           }),
         ],
       );
@@ -1692,6 +1697,7 @@ async function drainJobs(connectionString = DATABASE_URL): Promise<void> {
                 code.endsWith("_LOAD_FAILED") ||
                 code.endsWith("_STORAGE_FAILED") ||
                 code === "ARTIFACT_RENDER_TIMEOUT" ||
+                code === "ARTIFACT_BROWSER_DISCONNECTED" ||
                 code === "REVISION_COMMIT_RETRYABLE";
               const retryDelaySeconds = Math.min(
                 300,
@@ -1748,7 +1754,7 @@ async function compileClaimedJob(
     await client.query(
       `
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
-      resolved.definition_version,identity.title_ru,identity.domain,
+      resolved.definition_version,resolved.passport,identity.title_ru,identity.domain,
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values
     from public.estimate_definition_release release
     cross join lateral (
@@ -2521,9 +2527,50 @@ async function finalizeLocalRevisionPhotoUpload(
   }
 }
 
-function artifactBrowser(): Promise<Browser> {
-  artifactBrowserPromise ??= chromium.launch({ headless: true });
-  return artifactBrowserPromise;
+async function artifactBrowser(): Promise<Browser> {
+  if (artifactBrowserInstance?.isConnected()) return artifactBrowserInstance;
+  artifactBrowserInstance = null;
+  if (artifactBrowserPromise) return artifactBrowserPromise;
+
+  const launch = chromium.launch({ headless: true });
+  artifactBrowserPromise = launch;
+  try {
+    const browser = await launch;
+    artifactBrowserInstance = browser;
+    browser.once("disconnected", () => {
+      if (artifactBrowserInstance === browser) artifactBrowserInstance = null;
+    });
+    return browser;
+  } finally {
+    if (artifactBrowserPromise === launch) artifactBrowserPromise = null;
+  }
+}
+
+function artifactBrowserDisconnected(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Target page, context or browser has been closed|browser.*(?:closed|disconnected)|Connection closed/iu.test(
+    message,
+  );
+}
+
+async function newArtifactPage(
+  options?: Parameters<Browser["newPage"]>[0],
+): ReturnType<Browser["newPage"]> {
+  let lastError: unknown = new Error("artifact browser is unavailable");
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const browser = await artifactBrowser();
+    try {
+      return await browser.newPage(options);
+    } catch (error) {
+      lastError = error;
+      if (browser.isConnected() && !artifactBrowserDisconnected(error)) throw error;
+      if (artifactBrowserInstance === browser) artifactBrowserInstance = null;
+    }
+  }
+  throw Object.assign(
+    new Error(lastError instanceof Error ? lastError.message : String(lastError)),
+    { code: "ARTIFACT_BROWSER_DISCONNECTED", cause: lastError },
+  );
 }
 
 async function withArtifactRenderTimeout<T>(
@@ -2650,14 +2697,14 @@ async function buildArtifactClaimedJob(
       revision,
       rows,
       workTitleRu: String(
-        identity?.title_ru ??
-          revision.display_title_ru ??
-          "Строительно-монтажные работы",
+        revision.canonical_work_title_ru
+          ?? revision.display_title_ru
+          ?? identity?.title_ru
+          ?? "Строительно-монтажные работы",
       ),
       definitionVersionId,
     });
-    const browser = await artifactBrowser();
-    const page = await browser.newPage({
+    const page = await newArtifactPage({
       viewport: { width: 1240, height: 1754 },
     });
     try {
@@ -2694,8 +2741,7 @@ async function buildArtifactClaimedJob(
           `<tr><td>${Number(row.ordinal) + 1}</td><td>${String(row.title_ru).replace(/[<>&]/g, "")}</td><td>${row.unit_id}</td><td>${row.quantity ?? "—"}</td><td>${row.amount ?? "—"}</td></tr>`,
       )
       .join("");
-    const browser = await artifactBrowser();
-    const page = await browser.newPage();
+    const page = await newArtifactPage();
     try {
       await page.setContent(
         `<!doctype html><html lang="ru"><meta charset="utf-8"><style>@page{size:A4;margin:14mm}body{font-family:Arial}table{width:100%;border-collapse:collapse;font-size:10px}td,th{border:1px solid #ccc;padding:4px}</style><h1>Каноническая смета</h1><p>Ревизия ${revisionId} · release ${revision.release_id}</p><table>${body}</table></html>`,
@@ -3514,7 +3560,7 @@ async function localParameterSessionSnapshot(revisionId: string) {
         namespace: identity.namespace,
         domain: identity.domain,
         workKey: identity.work_key,
-        titleRu: identity.title_ru,
+        titleRu: canonicalDefinitionTitleRu({ ...definition, title_ru: identity.title_ru }),
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,
@@ -5192,7 +5238,7 @@ async function route(
         namespace: identity.namespace,
         domain: identity.domain,
         workKey: identity.work_key,
-        titleRu: identity.title_ru,
+        titleRu: canonicalDefinitionTitleRu({ ...definition, title_ru: identity.title_ru }),
         definitionVersion: definition.definition_version,
         applicability: definition.applicability,
         professionalMetadata: definition.source_metadata,

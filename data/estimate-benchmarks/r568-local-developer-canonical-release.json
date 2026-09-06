@@ -1,17 +1,17 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "da690b42-1fe2-535b-a52e-5fa98ff9fded",
-  "searchReleaseId": "162ee1a0-a1af-5639-a743-3856753c6a6e",
+  "definitionReleaseId": "d12a3ad5-10e1-5381-af18-7f2a56f899f7",
+  "searchReleaseId": "5ff23280-4915-58a0-b9df-1214b45c6490",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "09b0fc6bc3ee497d4d184757d2efa0d837393e704f3ce6d561e39f3d362c9a8b",
-  "manifestHashChainSha256": "97c85007b39ed97b7f7493bd268b61985f9ab12db8ce0bbb2c61a116a749347d",
-  "searchHashChainSha256": "a722fb589eb0d34ff23165cf60c4682be0f43cdd4f6f778943558db3f049c86a",
+  "definitionSnapshotSha256": "16406e004636b3ec73d00f791b9d1335fd2f9615df52008d3e533012630f1f6b",
+  "manifestHashChainSha256": "16406e004636b3ec73d00f791b9d1335fd2f9615df52008d3e533012630f1f6b",
+  "searchHashChainSha256": "b59ba43d88871f80dd777e15ee9061db7b9507ec3fdb7ae01d8c948b76e5576b",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
-  "owner": "R4_A8_DRYWALL_OPERATION_SCOPE_CANONICAL_MONOLITH",
+  "owner": "R4_A10_FOUNDATION_PUBLIC_TECHNOLOGICAL_IDENTITY",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }

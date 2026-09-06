@@ -8,6 +8,7 @@ import {
 import {
   buildCanonicalBaselineInputs,
   extractUserQuantity,
+  parseR4A10StripFoundationPrompt,
 } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import {
   buildConsumerCanonicalParameterSession,
@@ -15,6 +16,10 @@ import {
   normalizedCanonicalNumericValidation,
 } from "../../src/features/consumerRepair/consumerCanonicalParameterEditor";
 import { canonicalConsumerParameterPlaceholder } from "../../src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel";
+import {
+  buildMultiDomainReferenceSelectedWorkBinding,
+  canonicalBaselineContractMissingStatusMessage,
+} from "../../src/features/consumerRepair/requestEstimateScreenActions";
 import type { ConsumerRepairDraftBundle } from "../../src/lib/consumerRequests";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 
@@ -64,6 +69,75 @@ function canonicalBundle(): ConsumerRepairDraftBundle {
 }
 
 describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
+  it("recognizes ordinary strip-foundation construction text without requiring an exact catalog title", () => {
+    expect(buildMultiDomainReferenceSelectedWorkBinding(
+      "устройство ленточного фундамента 100 метров длина и 20 метров ширина",
+    )).toMatchObject({
+      selectedWorkKey: "canonical-work:expanded:strip_foundation",
+      selectedCategoryKey: "concrete",
+      resolverReGuessed: false,
+    });
+    expect(buildMultiDomainReferenceSelectedWorkBinding("ремонт фасада здания")).toBeNull();
+  });
+
+  it("turns backend parameter identifiers into actionable Russian P0 questions", () => {
+    expect(canonicalBaselineContractMissingStatusMessage(
+      "CANONICAL_BASELINE_CONTRACT_MISSING:total_axis_length_m,strip_width_m,strip_height_m,groundworks_included",
+    )).toContain("общая длина ленты по оси; ширина ленты; высота бетонной ленты; входит ли разработка грунта");
+  });
+
+  it("does not reinterpret generic building dimensions as strip-foundation geometry", () => {
+    expect(parseR4A10StripFoundationPrompt(
+      "устройство ленточного фундамента 100 метров длина и 20 метров ширина",
+    )).toEqual({});
+  });
+
+  it("extracts only explicitly named strip-foundation parameters for canonical backend handoff", () => {
+    const prompt = [
+      "устройство ленточного фундамента",
+      "суммарная длина ленты 40 м; ширина ленты 0,5 м; высота ленты 1,5 м; бетонная подготовка входит; толщина бетонной подготовки 0,1 м",
+      "класс бетона B25; водонепроницаемость W6; морозостойкость F150; подвижность смеси P4; запас бетонной смеси 2%",
+      "масса арматуры 2,4 т; масса вязальной проволоки 28,8 кг; транспортная масса опалубки 12 т",
+      "доставка бетонной смеси 18 км; доставка арматуры 18 км; доставка опалубки 18 км",
+      "земляные работы входят; объём разработки грунта 54 м3",
+      "подушка основания входит; материал подушки песок; объём материала подушки 4 м3; доставка материала подушки 12 км",
+      "гидроизоляция входит; система гидроизоляции обмазочная; площадь гидроизоляции 120 м2",
+      "обратная засыпка входит; объём обратной засыпки 20 м3",
+      "вывоз грунта входит; плотность грунта 1,8 т/м3; расстояние вывоза грунта 15 км",
+    ].join(". ");
+    expect(parseR4A10StripFoundationPrompt(prompt)).toMatchObject({
+      total_axis_length_m: "40",
+      strip_width_m: "0.5",
+      strip_height_m: "1.5",
+      preparation_thickness_m: "0.1",
+      concrete_class: "B25",
+      watertightness: "W6",
+      frost_resistance: "F150",
+      mobility: "P4",
+      concrete_order_allowance_percent: "2",
+      reinforcement_mass_t: "2.4",
+      binding_wire_mass_kg: "28.8",
+      formwork_transport_mass_t: "12",
+      concrete_delivery_distance_km: "18",
+      reinforcement_delivery_distance_km: "18",
+      formwork_delivery_distance_km: "18",
+      groundworks_included: true,
+      excavation_volume_m3: "54",
+      foundation_bedding_included: true,
+      foundation_bedding_type: "sand",
+      foundation_bedding_volume_m3: "4",
+      bedding_delivery_distance_km: "12",
+      waterproofing_included: true,
+      waterproofing_system: "bituminous_coating",
+      waterproofing_area_m2: "120",
+      backfill_included: true,
+      backfill_volume_m3: "20",
+      soil_disposal_included: true,
+      excavated_soil_density_t_m3: "1.8",
+      soil_disposal_distance_km: "15",
+    });
+  });
+
   it("recognizes the exact typoed 500 square metre request", () => {
     expect(extractUserQuantity("Асфальтирование парковки 500 кв метрово")).toEqual({
       value: "500",

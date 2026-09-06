@@ -46,6 +46,25 @@ describe("MASTER R3 BATCH-001..008 fail-closed estimate admission", () => {
     expect(localRuntime).toContain("PREPARED_RELEASE_USER_RUNTIME_BLOCKED");
   });
 
+  it("keeps local artifact retries idempotent across admission evaluation times", () => {
+    const artifactOwner = localRuntime.slice(
+      localRuntime.indexOf("async function createArtifactJob("),
+      localRuntime.indexOf("type DrainState ="),
+    );
+
+    expect(artifactOwner).toContain("persistedAdmissionDecision(contentAdmission.decision)");
+    expect(artifactOwner).not.toContain("decision: contentAdmission.decision,");
+  });
+
+  it("relaunches the shared artifact browser after a renderer disconnect", () => {
+    expect(localRuntime).toContain("artifactBrowserInstance?.isConnected()");
+    expect(localRuntime).toContain('browser.once("disconnected"');
+    expect(localRuntime).toContain("async function newArtifactPage(");
+    expect(localRuntime).toContain('code: "ARTIFACT_BROWSER_DISCONNECTED"');
+    expect(localRuntime).toContain('code === "ARTIFACT_BROWSER_DISCONNECTED"');
+    expect(localRuntime).not.toContain("const page = await browser.newPage(");
+  });
+
   it("uses the same evaluator in the production edge and all mutation routes", () => {
     expect(productionEdge).toContain("evaluateEstimateAdmission({");
     expect(productionEdge).toContain('operation === "compile" ? "direct_catalog_compile" : "parameter_recalculation"');

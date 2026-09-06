@@ -339,22 +339,46 @@ export async function compileCanonicalEstimateCore(
       ? resource.source_metadata.normativeTrace
       : [];
     const titleSpecificationParameterId = String(resource.resource_graph?.titleSpecificationParameterId ?? "").trim();
+    const rawTitleSpecificationParameterIds = resource.resource_graph?.titleSpecificationParameterIds;
+    if (rawTitleSpecificationParameterIds != null && !Array.isArray(rawTitleSpecificationParameterIds)) {
+      throw compilerError(`title specification parameters invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    const titleSpecificationParameterIds = rawTitleSpecificationParameterIds == null
+      ? (titleSpecificationParameterId ? [titleSpecificationParameterId] : [])
+      : rawTitleSpecificationParameterIds.map((value) => typeof value === "string" ? value.trim() : "");
+    if (
+      (titleSpecificationParameterId && rawTitleSpecificationParameterIds != null)
+      || titleSpecificationParameterIds.length > 8
+      || titleSpecificationParameterIds.some((parameterId) => !parameterId)
+      || new Set(titleSpecificationParameterIds).size !== titleSpecificationParameterIds.length
+    ) {
+      throw compilerError(`title specification parameters invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
     const titleSpecificationMode = String(resource.resource_graph?.titleSpecificationMode ?? "APPEND").trim();
-    if (titleSpecificationParameterId && !["APPEND", "REPLACE"].includes(titleSpecificationMode)) {
+    const titleSpecificationSeparator = String(resource.resource_graph?.titleSpecificationSeparator ?? " — ");
+    if (titleSpecificationParameterIds.length > 0 && !["APPEND", "REPLACE"].includes(titleSpecificationMode)) {
       throw compilerError(`title specification mode invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
     }
-    const titleSpecificationValue = titleSpecificationParameterId ? parameters[titleSpecificationParameterId] : null;
-    if (titleSpecificationParameterId && typeof titleSpecificationValue !== "string") {
+    if (titleSpecificationParameterIds.length > 0 && ![" — ", " "].includes(titleSpecificationSeparator)) {
+      throw compilerError(`title specification separator invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    const titleSpecificationValues = titleSpecificationParameterIds.map((parameterId) => parameters[parameterId]);
+    if (titleSpecificationValues.some((value) => typeof value !== "string")) {
       throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
     }
-    const boundedTitleSpecification = typeof titleSpecificationValue === "string" && titleSpecificationValue.trim()
-      ? boundedText(titleSpecificationValue.trim(), `${resource.row_id}.titleSpecification`, 500)
+    const normalizedTitleSpecificationValues = titleSpecificationValues.map((value) => String(value).trim());
+    if (titleSpecificationParameterIds.length > 1 && normalizedTitleSpecificationValues.some((value) => !value)) {
+      throw compilerError(`title specification parameter empty ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    const joinedTitleSpecification = normalizedTitleSpecificationValues.filter(Boolean).join(", ");
+    const boundedTitleSpecification = joinedTitleSpecification
+      ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
       : null;
     const canonicalTitleRu = boundedTitleSpecification == null
       ? resource.title_ru
       : titleSpecificationMode === "REPLACE"
         ? boundedTitleSpecification
-        : `${resource.title_ru} — ${boundedTitleSpecification}`;
+        : `${resource.title_ru}${titleSpecificationSeparator}${boundedTitleSpecification}`;
     const manuallyPriced = provenance != null && Object.prototype.hasOwnProperty.call(override!, "unitPrice");
     const rowWithoutHash: Record<string, unknown> = {
       row_id: resource.row_id,

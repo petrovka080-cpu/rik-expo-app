@@ -58,6 +58,9 @@ export type StripFoundationBoqRow = {
   includedInParentRate: boolean;
   visibility: "customer" | "expanded_resource";
   procurementMode: "buy" | "rent" | "transport" | "none";
+  titleSpecificationParameterIds?: readonly string[];
+  titleSpecificationMode?: "APPEND" | "REPLACE";
+  titleSpecificationSeparator?: " — " | " ";
   cargo?: {
     cargoRu: string;
     vehicleRu: string;
@@ -85,6 +88,7 @@ const trueAst: InclusionGraphAst = Object.freeze({ kind: "literal", value: true 
 const eq = (parameterId: string, value: StripFoundationInputValue): InclusionGraphAst => ({ kind: "equals", parameterId, value });
 const gt = (parameterId: string, value: number): InclusionGraphAst => ({ kind: "greater_than", parameterId, value });
 const and = (...operands: InclusionGraphAst[]): InclusionGraphAst => ({ kind: "and", operands });
+const or = (...operands: InclusionGraphAst[]): InclusionGraphAst => ({ kind: "or", operands });
 
 const fullScope = eq("scope_variant", "full_reinforced_structure");
 const readyMix = eq("concrete_supply", "ready_mix");
@@ -95,6 +99,16 @@ const membraneCuring = eq("curing_method", "membrane");
 const winter = eq("winter_mode", true);
 const siteFabricatedRebar = and(fullScope, eq("reinforcement_fabrication", "site_fabricated"));
 const separateDelivery = eq("delivery_separately_priced", true);
+const groundworks = and(fullScope, eq("groundworks_included", true));
+const bedding = and(fullScope, eq("foundation_bedding_included", true));
+const sandBedding = and(bedding, eq("foundation_bedding_type", "sand"));
+const crushedStoneBedding = and(bedding, eq("foundation_bedding_type", "crushed_stone"));
+const waterproofing = and(fullScope, eq("waterproofing_included", true));
+const coatingWaterproofing = and(waterproofing, eq("waterproofing_system", "bituminous_coating"));
+const membraneWaterproofing = and(waterproofing, eq("waterproofing_system", "sheet_membrane"));
+const backfill = and(fullScope, eq("backfill_included", true));
+const disposal = and(groundworks, eq("soil_disposal_included", true));
+const compaction = or(bedding, backfill);
 
 const KRER_060100109: StripFoundationNormSource = Object.freeze({
   sourceKey: "krer_06_2015",
@@ -209,6 +223,22 @@ export const STRIP_FOUNDATION_INPUTS: readonly StripFoundationInput[] = Object.f
   input("concrete_delivery_distance_km", "Доставка бетонной смеси", "km", "Маршрут автобетоносмесителя от РБУ до объекта.", { defaultValue: 0 }),
   input("reinforcement_delivery_distance_km", "Доставка арматуры", "km", "Маршрут бортового автомобиля от поставщика до объекта.", { defaultValue: 0 }),
   input("formwork_delivery_distance_km", "Доставка опалубки", "km", "Маршрут бортового автомобиля с выбранной опалубочной системой.", { defaultValue: 0 }),
+  input("groundworks_included", "Разработка грунта входит в состав", null, "Подтвердите по границе работ, включает ли смета разработку котлована или траншей под ленту.", { valueType: "boolean", defaultValue: null, requiredWhen: fullScope }),
+  input("excavation_volume_m3", "Проектный объём разработки грунта", "m3", "Укажите объём по проектному профилю котлована или траншей с учётом откосов и рабочих зон.", { requiredWhen: groundworks }),
+  input("excavator_productivity_m3_h", "Производительность экскаватора", "m3_per_hour", "Берётся из паспорта выбранного экскаватора и технологической схемы разработки грунта.", { visibilityRole: "INTERNAL_ONLY", requiredWhen: groundworks, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
+  input("foundation_bedding_included", "Подушка основания входит в состав", null, "Подтвердите по проекту, нужна ли отдельная песчаная или щебёночная подушка под подготовкой.", { valueType: "boolean", defaultValue: null, requiredWhen: fullScope }),
+  input("foundation_bedding_type", "Материал подушки основания", null, "Выберите только предусмотренный проектом материал подушки; песок и щебень взаимоисключающие.", { valueType: "enum", defaultValue: null, choices: ["sand", "crushed_stone"], requiredWhen: bedding }),
+  input("foundation_bedding_volume_m3", "Объём материала подушки", "m3", "Укажите объём поставляемого материала по геометрии и принятому коэффициенту уплотнения.", { requiredWhen: bedding }),
+  input("compactor_productivity_m3_h", "Производительность уплотняющей машины", "m3_per_hour", "Берётся из паспорта выбранной виброплиты или катка и технологической карты уплотнения.", { visibilityRole: "INTERNAL_ONLY", requiredWhen: compaction, sourceRole: "SELECTED_EQUIPMENT_PASSPORT" }),
+  input("bedding_delivery_distance_km", "Расстояние доставки материала подушки", "km", "Маршрут от подтверждённого поставщика песка или щебня до объекта.", { requiredWhen: bedding }),
+  input("waterproofing_included", "Гидроизоляция входит в состав", null, "Подтвердите по проектной границе работ необходимость гидроизоляции бетонной ленты.", { valueType: "boolean", defaultValue: null, requiredWhen: fullScope }),
+  input("waterproofing_system", "Система гидроизоляции", null, "Выберите подтверждённую проектом обмазочную или листовую систему; одновременно они не применяются.", { valueType: "enum", defaultValue: null, choices: ["bituminous_coating", "sheet_membrane"], requiredWhen: waterproofing }),
+  input("waterproofing_area_m2", "Площадь гидроизоляции", "m2", "Укажите площадь защищаемых граней по проектной геометрии без автоматического пересчёта из габаритов здания.", { requiredWhen: waterproofing }),
+  input("backfill_included", "Обратная засыпка входит в состав", null, "Подтвердите по проектной границе работ необходимость обратной засыпки после устройства ленты.", { valueType: "boolean", defaultValue: null, requiredWhen: fullScope }),
+  input("backfill_volume_m3", "Объём обратной засыпки", "m3", "Укажите проектный объём пригодного грунта или привозного материала после вычета конструкций.", { requiredWhen: backfill }),
+  input("soil_disposal_included", "Вывоз лишнего грунта входит в состав", null, "Подтвердите баланс грунта и необходимость вывоза на разрешённое место размещения.", { valueType: "boolean", defaultValue: null, requiredWhen: groundworks }),
+  input("excavated_soil_density_t_m3", "Плотность вывозимого грунта", "t/m3", "Укажите расчётную плотность по инженерным данным для перевода объёма в транспортную массу.", { requiredWhen: disposal }),
+  input("soil_disposal_distance_km", "Расстояние вывоза грунта", "km", "Укажите подтверждённый маршрут от объекта до разрешённого места размещения грунта.", { requiredWhen: disposal }),
 ]);
 
 function formula(formulaId: string, outputUnitId: string, source: string): Formula {
@@ -235,6 +265,15 @@ export const STRIP_FOUNDATION_FORMULAS: readonly Formula[] = Object.freeze([
   formula("concrete_delivery", "m3_km", "total_axis_length_m * strip_width_m * strip_height_m * (1 + concrete_order_allowance_percent / 100) * concrete_delivery_distance_km"),
   formula("reinforcement_delivery", "t_km", "reinforcement_mass_t * reinforcement_delivery_distance_km"),
   formula("formwork_delivery", "t_km", "formwork_transport_mass_t * formwork_delivery_distance_km"),
+  formula("excavation_volume", "m3", "excavation_volume_m3"),
+  formula("excavator_machine_hours", "machine_hour", "excavation_volume_m3 / excavator_productivity_m3_h"),
+  formula("foundation_bedding_volume", "m3", "foundation_bedding_volume_m3"),
+  formula("bedding_compactor_hours", "machine_hour", "foundation_bedding_volume_m3 / compactor_productivity_m3_h"),
+  formula("bedding_delivery", "m3_km", "foundation_bedding_volume_m3 * bedding_delivery_distance_km"),
+  formula("waterproofing_area", "m2", "waterproofing_area_m2"),
+  formula("backfill_volume", "m3", "backfill_volume_m3"),
+  formula("backfill_compactor_hours", "machine_hour", "backfill_volume_m3 / compactor_productivity_m3_h"),
+  formula("soil_disposal", "t_km", "excavation_volume_m3 * excavated_soil_density_t_m3 * soil_disposal_distance_km"),
 ]);
 
 function row(
@@ -245,7 +284,7 @@ function row(
   formulaId: string,
   applicabilityExpression: InclusionGraphAst,
   normSource: StripFoundationNormSource,
-  options: Partial<Pick<StripFoundationBoqRow, "rateItemId" | "costOwner" | "includedInParentRate" | "visibility" | "procurementMode" | "cargo">> = {},
+  options: Partial<Pick<StripFoundationBoqRow, "rateItemId" | "costOwner" | "includedInParentRate" | "visibility" | "procurementMode" | "cargo" | "titleSpecificationParameterIds" | "titleSpecificationMode" | "titleSpecificationSeparator">> = {},
 ): StripFoundationBoqRow {
   return {
     rowId,
@@ -262,12 +301,19 @@ function row(
     includedInParentRate: options.includedInParentRate ?? false,
     visibility: options.visibility ?? "customer",
     procurementMode: options.procurementMode ?? (category === "construction_work" ? "none" : category === "machine_equipment" ? "rent" : category === "delivery" ? "transport" : "buy"),
+    ...(options.titleSpecificationParameterIds ? { titleSpecificationParameterIds: options.titleSpecificationParameterIds } : {}),
+    ...(options.titleSpecificationMode ? { titleSpecificationMode: options.titleSpecificationMode } : {}),
+    ...(options.titleSpecificationSeparator ? { titleSpecificationSeparator: options.titleSpecificationSeparator } : {}),
     ...(options.cargo ? { cargo: options.cargo } : {}),
   };
 }
 
 export const STRIP_FOUNDATION_ROWS: readonly StripFoundationBoqRow[] = Object.freeze([
-  row("main_concrete", "material", "Бетонная смесь проектного класса", "m3", "concrete_order", and(fullScope, readyMix), projectSource("класс, W/F, подвижность и объём заказа")),
+  row("main_concrete", "material", "Бетонная смесь", "m3", "concrete_order", and(fullScope, readyMix), projectSource("класс, W/F, подвижность и объём заказа"), {
+    titleSpecificationParameterIds: ["concrete_class", "watertightness", "frost_resistance", "mobility"],
+    titleSpecificationMode: "APPEND",
+    titleSpecificationSeparator: " ",
+  }),
   row("preparation_concrete", "material", "Бетонная смесь для подготовки", "m3", "preparation_volume", preparation, projectSource("бетонная подготовка и её класс")),
   row("reinforcement", "material", "Арматурная сталь по проектной ведомости", "t", "reinforcement_mass", fullScope, projectSource("ведомость расхода стали")),
   row("binding_wire", "material", "Проволока вязальная отожжённая", "kg", "binding_wire_mass", fullScope, projectSource("ведомость армирования")),
@@ -301,6 +347,28 @@ export const STRIP_FOUNDATION_ROWS: readonly StripFoundationBoqRow[] = Object.fr
   row("formwork_delivery", "delivery", "Доставка щитовой опалубки бортовым автомобилем", "t_km", "formwork_delivery", and(separateDelivery, fullScope, gt("formwork_delivery_distance_km", 0), gt("formwork_transport_mass_t", 0)), projectSource("комплектовочная ведомость опалубки, маршрут и транспортная схема"), {
     cargo: { cargoRu: "щитовая опалубка", vehicleRu: "бортовой автомобиль", physicalQuantityFormulaId: "formwork_transport_mass", physicalQuantityUom: "t", distanceParameterId: "formwork_delivery_distance_km" },
   }),
+
+  row("bedding_sand", "material", "Песок для уплотнённой подушки основания", "m3", "foundation_bedding_volume", sandBedding, projectSource("проект основания, характеристики и объём песчаной подушки")),
+  row("bedding_crushed_stone", "material", "Щебень проектной фракции для подушки основания", "m3", "foundation_bedding_volume", crushedStoneBedding, projectSource("проект основания, фракция и объём щебёночной подушки")),
+  row("bituminous_waterproofing", "material", "Битумно-полимерная обмазочная гидроизоляция", "m2", "waterproofing_area", coatingWaterproofing, projectSource("проектная система и число слоёв гидроизоляции")),
+  row("sheet_waterproofing_membrane", "material", "Листовая гидроизоляционная мембрана", "m2", "waterproofing_area", membraneWaterproofing, projectSource("проектная мембрана, нахлёсты и примыкания")),
+
+  row("excavation_work", "construction_work", "Разработка грунта под фундаментную ленту", "m3", "excavation_volume", groundworks, projectSource("профиль выемки, категория грунта и проект производства работ")),
+  row("foundation_bedding_work", "construction_work", "Устройство и послойное уплотнение подушки основания", "m3", "foundation_bedding_volume", bedding, projectSource("толщина слоёв и требуемый коэффициент уплотнения")),
+  row("coating_waterproofing_work", "construction_work", "Нанесение обмазочной гидроизоляции фундаментной ленты", "m2", "waterproofing_area", coatingWaterproofing, projectSource("подготовка поверхности и проектное число слоёв")),
+  row("sheet_waterproofing_work", "construction_work", "Монтаж листовой гидроизоляции фундаментной ленты", "m2", "waterproofing_area", membraneWaterproofing, projectSource("схема нахлёстов, примыканий и защитного слоя")),
+  row("backfill_work", "construction_work", "Обратная засыпка пазух с послойным уплотнением", "m3", "backfill_volume", backfill, projectSource("баланс грунта, толщина слоёв и коэффициент уплотнения")),
+
+  row("excavator", "machine_equipment", "Экскаватор для разработки грунта", "machine_hour", "excavator_machine_hours", groundworks, equipmentSource("тип ковша, категория грунта и паспортная производительность")),
+  row("bedding_compactor", "machine_equipment", "Уплотняющая машина для подушки основания", "machine_hour", "bedding_compactor_hours", bedding, equipmentSource("тип материала, толщина слоя и паспортная производительность")),
+  row("backfill_compactor", "machine_equipment", "Уплотняющая машина для обратной засыпки", "machine_hour", "backfill_compactor_hours", backfill, equipmentSource("тип грунта, толщина слоя и паспортная производительность")),
+
+  row("bedding_material_delivery", "delivery", "Доставка материала подушки основания", "m3_km", "bedding_delivery", and(separateDelivery, bedding, gt("bedding_delivery_distance_km", 0)), projectSource("поставщик материала подушки и подтверждённый маршрут"), {
+    cargo: { cargoRu: "материал подушки основания", vehicleRu: "автомобиль-самосвал", physicalQuantityFormulaId: "foundation_bedding_volume", physicalQuantityUom: "m3", distanceParameterId: "bedding_delivery_distance_km" },
+  }),
+  row("excavated_soil_disposal", "delivery", "Вывоз лишнего грунта автомобилями-самосвалами", "t_km", "soil_disposal", and(separateDelivery, disposal, gt("soil_disposal_distance_km", 0)), projectSource("баланс грунта, разрешённое место размещения и маршрут"), {
+    cargo: { cargoRu: "излишний грунт", vehicleRu: "автомобиль-самосвал", physicalQuantityFormulaId: "excavation_volume", physicalQuantityUom: "m3", distanceParameterId: "soil_disposal_distance_km" },
+  }),
 ]);
 
 export const REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT = Object.freeze({
@@ -308,7 +376,7 @@ export const REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT = Object.freeze({
   domainId: "concrete",
   canonicalRuName: "Устройство монолитного железобетонного ленточного фундамента",
   searchAliases: ["ленточный фундамент", "железобетонная лента", "монолитный ленточный фундамент"],
-  includedResults: ["бетонная лента", "армирование", "опалубка", "укладка и уход", "выбранные машины", "конкретные грузопотоки"],
+  includedResults: ["бетонная лента", "армирование", "опалубка", "укладка и уход", "условные земляные работы", "условная подушка основания", "условная гидроизоляция", "условная обратная засыпка", "выбранные машины", "конкретные грузопотоки"],
   excludedDomains: ["свайные работы", "демонтаж бетона", "резка бетона", "плиты", "колодцы", "лотки", "шахты"],
   allowedScopes: ["full_reinforced_structure", "placement_only"] as const,
   technologyChoices: ["ready_mix", "pump_or_crane_bucket", "membrane_or_water_curing", "warm_or_winter"] as const,
@@ -407,4 +475,20 @@ export const STRIP_FOUNDATION_GOLD_INPUT: Readonly<Record<string, StripFoundatio
   concrete_delivery_distance_km: 18,
   reinforcement_delivery_distance_km: 18,
   formwork_delivery_distance_km: 18,
+  groundworks_included: true,
+  excavation_volume_m3: 54,
+  excavator_productivity_m3_h: 30,
+  foundation_bedding_included: true,
+  foundation_bedding_type: "sand",
+  foundation_bedding_volume_m3: 4,
+  compactor_productivity_m3_h: 12,
+  bedding_delivery_distance_km: 12,
+  waterproofing_included: true,
+  waterproofing_system: "bituminous_coating",
+  waterproofing_area_m2: 120,
+  backfill_included: true,
+  backfill_volume_m3: 20,
+  soil_disposal_included: true,
+  excavated_soil_density_t_m3: 1.8,
+  soil_disposal_distance_km: 15,
 });

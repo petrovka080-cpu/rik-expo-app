@@ -36,6 +36,8 @@ type PromptParameterRule = {
   pattern: RegExp;
 };
 
+export const R4_A10_STRIP_FOUNDATION_CATALOG_ID = "canonical-work:expanded:strip_foundation";
+
 const PROMPT_PARAMETER_RULES: readonly PromptParameterRule[] = [
   {
     parameterIds: ["route_length_m", "cable_length_m"],
@@ -174,6 +176,84 @@ function promptOwnedNamedParameters(
   return values;
 }
 
+function promptNumber(prompt: string, pattern: RegExp): string | undefined {
+  const match = pattern.exec(prompt);
+  return match?.[1]?.replace(",", ".");
+}
+
+function promptBoolean(prompt: string, subject: RegExp): boolean | undefined {
+  const negative = new RegExp(`${subject.source}[^.;]{0,40}(?:не\\s+вход|нет|исключ)`, "iu");
+  if (negative.test(prompt)) return false;
+  const positive = new RegExp(`${subject.source}[^.;]{0,40}(?:вход|да|включ)`, "iu");
+  return positive.test(prompt) ? true : undefined;
+}
+
+/**
+ * Parses only dimensions whose semantic target is explicit. Generic
+ * "100 m long and 20 m wide" can describe the building and must remain a
+ * clarification, never strip geometry.
+ */
+export function parseR4A10StripFoundationPrompt(
+  prompt: string,
+): Record<string, CanonicalEstimateParameterInputValue> {
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  const numeric: Readonly<Record<string, RegExp>> = {
+    total_axis_length_m: /(?:суммарн\p{L}*\s+длин\p{L}*\s+(?:по\s+оси\s+)?лент\p{L}*|длин\p{L}*\s+(?:самой\s+)?лент\p{L}*)\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
+    strip_width_m: /ширин\p{L}*\s+(?:самой\s+)?лент\p{L}*\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
+    strip_height_m: /(?:высот\p{L}*|глубин\p{L}*)\s+(?:бетонн\p{L}*\s+)?лент\p{L}*\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
+    preparation_thickness_m: /толщин\p{L}*\s+(?:бетонн\p{L}*\s+)?подготовк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}])/iu,
+    concrete_order_allowance_percent: /запас\p{L}*\s+бетонн\p{L}*\s+смес\p{L}*\s*(\d+(?:[,.]\d+)?)\s*%/iu,
+    reinforcement_mass_t: /масс\p{L}*\s+арматур\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:т|тонн\p{L}*)/iu,
+    binding_wire_mass_kg: /масс\p{L}*\s+(?:вязальн\p{L}*\s+)?проволок\p{L}*\s*(\d+(?:[,.]\d+)?)\s*кг/iu,
+    formwork_transport_mass_t: /транспортн\p{L}*\s+масс\p{L}*\s+опалубк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:т|тонн\p{L}*)/iu,
+    concrete_delivery_distance_km: /(?:расстоян\p{L}*\s+)?доставк\p{L}*\s+бетонн\p{L}*\s+смес\p{L}*\s*(\d+(?:[,.]\d+)?)\s*км/iu,
+    reinforcement_delivery_distance_km: /(?:расстоян\p{L}*\s+)?доставк\p{L}*\s+арматур\p{L}*\s*(\d+(?:[,.]\d+)?)\s*км/iu,
+    formwork_delivery_distance_km: /(?:расстоян\p{L}*\s+)?доставк\p{L}*\s+опалубк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*км/iu,
+    excavation_volume_m3: /объ[её]м\p{L}*\s+(?:разработк\p{L}*|выемк\p{L}*)\s+грунт\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:м3|м³)/iu,
+    foundation_bedding_volume_m3: /объ[её]м\p{L}*\s+(?:материал\p{L}*\s+)?подушк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:м3|м³)/iu,
+    bedding_delivery_distance_km: /(?:расстоян\p{L}*\s+)?доставк\p{L}*\s+(?:материал\p{L}*\s+)?подушк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*км/iu,
+    waterproofing_area_m2: /площад\p{L}*\s+гидроизоляц\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:м2|м²)/iu,
+    backfill_volume_m3: /объ[её]м\p{L}*\s+обратн\p{L}*\s+засыпк\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:м3|м³)/iu,
+    excavated_soil_density_t_m3: /плотност\p{L}*\s+(?:вывозим\p{L}*\s+)?грунт\p{L}*\s*(\d+(?:[,.]\d+)?)\s*(?:т\/м3|т\/м³)/iu,
+    soil_disposal_distance_km: /расстоян\p{L}*\s+вывоз\p{L}*\s+грунт\p{L}*\s*(\d+(?:[,.]\d+)?)\s*км/iu,
+  };
+  for (const [parameterId, pattern] of Object.entries(numeric)) {
+    const value = promptNumber(prompt, pattern);
+    if (value !== undefined) values[parameterId] = value;
+  }
+  const booleans: Readonly<Record<string, RegExp>> = {
+    preparation_included: /бетонн\p{L}*\s+подготовк\p{L}*/iu,
+    groundworks_included: /(?:землян\p{L}*\s+работ\p{L}*|разработк\p{L}*\s+грунт\p{L}*)/iu,
+    foundation_bedding_included: /подушк\p{L}*\s+основан\p{L}*/iu,
+    waterproofing_included: /гидроизоляц\p{L}*/iu,
+    backfill_included: /обратн\p{L}*\s+засыпк\p{L}*/iu,
+    soil_disposal_included: /вывоз\p{L}*\s+(?:лишн\p{L}*\s+)?грунт\p{L}*/iu,
+  };
+  for (const [parameterId, subject] of Object.entries(booleans)) {
+    const value = promptBoolean(prompt, subject);
+    if (value !== undefined) values[parameterId] = value;
+  }
+  const concreteClass = prompt.match(/класс\p{L}*\s+бетон\p{L}*\s*(B(?:15|20|25|30|35|40))/iu)?.[1];
+  if (concreteClass) values.concrete_class = concreteClass.toUpperCase();
+  const watertightness = prompt.match(/водонепроницаемост\p{L}*\s*(W(?:2|4|6|8|10|12))/iu)?.[1];
+  if (watertightness) values.watertightness = watertightness.toUpperCase();
+  const frostResistance = prompt.match(/морозостойкост\p{L}*\s*(F(?:50|75|100|150|200|300))/iu)?.[1];
+  if (frostResistance) values.frost_resistance = frostResistance.toUpperCase();
+  const mobility = prompt.match(/подвижност\p{L}*\s+(?:смес\p{L}*\s*)?(P(?:2|3|4|5))/iu)?.[1];
+  if (mobility) values.mobility = mobility.toUpperCase();
+  if (/материал\p{L}*\s+подушк\p{L}*[^.;]{0,30}щеб(?:е|ё)н/iu.test(prompt)) {
+    values.foundation_bedding_type = "crushed_stone";
+  } else if (/материал\p{L}*\s+подушк\p{L}*[^.;]{0,30}пес/iu.test(prompt)) {
+    values.foundation_bedding_type = "sand";
+  }
+  if (/систем\p{L}*\s+гидроизоляц\p{L}*[^.;]{0,30}(?:лист|мембран)/iu.test(prompt)) {
+    values.waterproofing_system = "sheet_membrane";
+  } else if (/систем\p{L}*\s+гидроизоляц\p{L}*[^.;]{0,30}обмаз/iu.test(prompt)) {
+    values.waterproofing_system = "bituminous_coating";
+  }
+  return values;
+}
+
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
@@ -187,7 +267,10 @@ export function buildCanonicalBaselinePlan(input: {
   const pumpStationInput = input.catalog.catalogId === R4_A6_PUMP_STATION_CATALOG_ID
     ? parseR4A6PumpStationPrompt(input.prompt)
     : null;
-  const userQuantity = pumpStationInput == null ? extractUserQuantity(input.prompt) : null;
+  const stripFoundationInput = input.catalog.catalogId === R4_A10_STRIP_FOUNDATION_CATALOG_ID
+    ? parseR4A10StripFoundationPrompt(input.prompt)
+    : null;
+  const userQuantity = pumpStationInput == null && stripFoundationInput == null ? extractUserQuantity(input.prompt) : null;
   let userQuantityParameterId: string | null = null;
   if (userQuantity) {
     const candidates = input.catalog.parameterSchema
@@ -202,10 +285,12 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    pumpStationInput ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
+    pumpStationInput ?? stripFoundationInput ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
     ? R4_A6_PUMP_STATION_PRIMARY_MEASURE_PARAMETER_ID
+    : stripFoundationInput != null
+      ? "total_axis_length_m"
     : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")

@@ -325,6 +325,59 @@ describe("canonicalEstimateCompileCore", () => {
     expect(result.rows[0]!.title_ru).toBe("Лист гипсовый влагостойкий ГСП-H2 12,5×1200×2500 мм");
   });
 
+  it("builds one exact public material title from multiple validated specification parameters", async () => {
+    const input = baseInput();
+    for (const parameterId of ["concrete_class", "watertightness", "frost_resistance", "mobility"]) {
+      input.parameterDefinitions.push({
+        parameter_id: parameterId,
+        value_type: "text",
+        required: true,
+        default_value: null,
+        constraints_json: { maxLength: 20 },
+      });
+    }
+    Object.assign(input.submittedParameters, {
+      concrete_class: "B25",
+      watertightness: "W6",
+      frost_resistance: "F150",
+      mobility: "P4",
+    });
+    input.resourceDefinitions[0]!.title_ru = "Бетонная смесь";
+    input.resourceDefinitions[0]!.resource_graph = {
+      titleSpecificationParameterIds: ["concrete_class", "watertightness", "frost_resistance", "mobility"],
+      titleSpecificationMode: "APPEND",
+      titleSpecificationSeparator: " ",
+    };
+
+    const result = await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]!.title_ru).toBe("Бетонная смесь B25, W6, F150, P4");
+  });
+
+  it("fails closed on ambiguous or incomplete multi-parameter title definitions", async () => {
+    const input = baseInput();
+    input.parameterDefinitions.push({
+      parameter_id: "concrete_class",
+      value_type: "text",
+      required: true,
+      default_value: null,
+      constraints_json: { maxLength: 20 },
+    });
+    input.submittedParameters.concrete_class = "B25";
+    input.resourceDefinitions[0]!.resource_graph = {
+      titleSpecificationParameterId: "concrete_class",
+      titleSpecificationParameterIds: ["concrete_class"],
+    };
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "DEFINITION_INTEGRITY_FAILED",
+    });
+
+    delete input.resourceDefinitions[0]!.resource_graph.titleSpecificationParameterId;
+    input.resourceDefinitions[0]!.resource_graph.titleSpecificationParameterIds = ["concrete_class", "missing_value"];
+    await expect(compileCanonicalEstimateCore(input)).rejects.toMatchObject({
+      code: "DEFINITION_INTEGRITY_FAILED",
+    });
+  });
+
   it("rejects an unknown title specification mode", async () => {
     const input = baseInput();
     input.parameterDefinitions.push({

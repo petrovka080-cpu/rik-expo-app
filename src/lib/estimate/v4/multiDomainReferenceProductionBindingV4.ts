@@ -33,7 +33,10 @@ function numericValues(input: {
 }): Record<string, number> {
   const values: Record<string, number> = {};
   for (const [key, raw] of Object.entries(input.parseResult.extractedParams ?? {})) {
-    const value = typeof raw === "number" ? raw : Number(raw);
+    const candidate = raw && typeof raw === "object" && !Array.isArray(raw) && "value" in raw
+      ? raw.value
+      : raw;
+    const value = typeof candidate === "number" ? candidate : Number(candidate);
     if (Number.isFinite(value)) values[key] = value;
   }
   for (const [key, override] of Object.entries(input.paramOverrides ?? {})) {
@@ -41,6 +44,26 @@ function numericValues(input: {
     if (Number.isFinite(value)) values[key] = value;
   }
   return values;
+}
+
+const STRIP_FOUNDATION_BACKEND_CATALOG_ID = "canonical-work:expanded:strip_foundation";
+
+function stripFoundationValues(input: {
+  rawInput: string;
+  values: Record<string, number>;
+  paramOverrides?: Record<string, { value: unknown; source?: string | null }>;
+}): Record<string, number> {
+  const result = { ...input.values };
+  const explicitlyOverridden = new Set(Object.keys(input.paramOverrides ?? {}));
+  const explicitDimension: Readonly<Record<string, RegExp>> = {
+    length_m: /(?:суммарн\p{L}*\s+длин\p{L}*\s+(?:по\s+оси\s+)?лент\p{L}*|длин\p{L}*\s+(?:самой\s+)?лент\p{L}*)/iu,
+    width_m: /ширин\p{L}*\s+(?:самой\s+)?лент\p{L}*/iu,
+    height_m: /(?:высот\p{L}*|глубин\p{L}*)\s+(?:бетонн\p{L}*\s+)?лент\p{L}*/iu,
+  };
+  for (const [parameterId, pattern] of Object.entries(explicitDimension)) {
+    if (!explicitlyOverridden.has(parameterId) && !pattern.test(input.rawInput)) delete result[parameterId];
+  }
+  return result;
 }
 
 function itemType(category: ReferenceBoqRowV4["category"]): ConsumerRepairItemType {
@@ -67,7 +90,14 @@ export function buildMultiDomainReferenceProductionDraftV4(input: {
 }): MultiDomainReferenceProductionDraftV4 | null {
   const passport = passportFromInput(input);
   if (!passport) return null;
-  const values = numericValues(input);
+  const parsedValues = numericValues(input);
+  const values = passport.catalogWorkId === "strip_foundation"
+    ? stripFoundationValues({
+      rawInput: input.rawInput,
+      values: parsedValues,
+      paramOverrides: input.paramOverrides,
+    })
+    : parsedValues;
   const missingP0 = passport.parameters
     .filter((parameter) => parameter.requiredLevel === "P0" && values[parameter.parameterId] === undefined)
     .map((parameter) => parameter.parameterId);
@@ -137,6 +167,7 @@ export function buildMultiDomainReferenceProductionDraftV4(input: {
       sourceParameters: {
         multiDomainReferenceV4: true,
         p0GateOnly: true,
+        missingP0,
         catalogWorkId: passport.catalogWorkId,
         professionalEstimatePassportId: passport.professionalEstimatePassportId,
         calculationStrategyId: passport.calculationStrategyId,
@@ -163,6 +194,9 @@ export function buildMultiDomainReferenceProductionDraftV4(input: {
         : `${passport.professionalNameRu}: требуются обязательные параметры P0.`,
       repairType: passport.catalogWorkId,
       selectedWork: {
+        selectedCatalogWorkId: passport.catalogWorkId === "strip_foundation"
+          ? STRIP_FOUNDATION_BACKEND_CATALOG_ID
+          : null,
         selectedWorkKey: passport.catalogWorkId,
         selectedWorkTitleRu: passport.professionalNameRu,
         selectedWorkCategoryKey: passport.group,

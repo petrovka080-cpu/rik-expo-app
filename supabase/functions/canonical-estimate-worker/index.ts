@@ -225,7 +225,7 @@ async function compileJob(admin: AdminClient, workerId: string, job: ClaimedJob)
     throw Object.assign(new Error("definition content is not admitted"), { code: "DEFINITION_CONTENT_NOT_ADMITTED" });
   }
   const [{ data: definitionVersion, error: definitionError }, { data: identity, error: identityError }] = await Promise.all([
-    admin.from("estimate_definition_version").select("id,definition_version,catalog_id").eq("id", definitionVersionId).single(),
+    admin.from("estimate_definition_version").select("id,definition_version,catalog_id,passport").eq("id", definitionVersionId).single(),
     admin.from("estimate_work_identity").select("title_ru,domain").eq("catalog_id", job.catalog_id).single(),
   ]);
   if (definitionError || identityError) {
@@ -558,7 +558,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
   }
   const [{ data: revision, error: revisionError }, { data: rowData, error: rowsError }] = await Promise.all([
     admin.from("estimate_revision")
-      .select("id,release_id,definition_version_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
+      .select("id,release_id,definition_version_id,catalog_id,organization_id,owner_user_id,revision_number,input_parameters,user_input_snapshot,amendment_contract,currency_code,totals,row_count,checksum_sha256,compiler_version,migration_source,source_request_text,source_request_hash,canonical_work_title_ru,display_title_ru,primary_measure_parameter_id,primary_measure_value,primary_measure_unit_id,created_at")
       .eq("id", job.parent_revision_id).single(),
     admin.from("estimate_revision_row")
       .select("row_id,ordinal,section,category,title_ru,unit_id,quantity,unit_price,amount,currency_code,procurement_eligible,included_in_estimate,included_in_procurement,ownership_status,calculation_trace,normative_trace,legacy_row_payload,row_sha256")
@@ -600,7 +600,7 @@ async function buildArtifactJob(admin: AdminClient, workerId: string, job: Claim
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
-      workTitleRu: String(identity?.title_ru ?? revision.display_title_ru ?? "Строительно-монтажные работы"),
+      workTitleRu: String(revision.canonical_work_title_ru ?? revision.display_title_ru ?? identity?.title_ru ?? "Строительно-монтажные работы"),
       definitionVersionId,
     });
     const rendered = await renderPdfBytes(projection.html, {

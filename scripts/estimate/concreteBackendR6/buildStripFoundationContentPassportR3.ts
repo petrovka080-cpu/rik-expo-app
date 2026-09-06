@@ -29,7 +29,9 @@ function inclusionParameterIds(ast: InclusionGraphAst): string[] {
   return [];
 }
 
-export function buildStripFoundationContentPassportR3(): {
+export function buildStripFoundationContentPassportR3(
+  catalogId = "concrete_foundation_interior_strip_foundation_form_standard",
+): {
   passport: EstimateContentPassportR3;
   formulaConsumers: Record<string, string[]>;
   resourceConsumers: Record<string, string[]>;
@@ -63,7 +65,7 @@ export function buildStripFoundationContentPassportR3(): {
   };
   const passport: EstimateContentPassportR3 = {
     contract: ESTIMATE_CONTENT_PASSPORT_R3_CONTRACT,
-    catalogId: "concrete_foundation_interior_strip_foundation_form_standard",
+    catalogId,
     titleRu: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
     identityMode: "WORK",
     aliasesRu: REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.searchAliases,

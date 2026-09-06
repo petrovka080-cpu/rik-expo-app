@@ -40,6 +40,7 @@ describe("R6 real professional concrete content contract", () => {
     const rows = rowMap(compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT));
     expect(rows.get("concrete_placement")?.evaluatedQuantity).toBe("30");
     expect(rows.get("main_concrete")?.evaluatedQuantity).toBe("30.6");
+    expect(rows.get("main_concrete")?.canonicalRuName).toBe("Бетонная смесь B25, W6, F150, P4");
     expect(rows.get("preparation_concrete")?.evaluatedQuantity).toBe("2");
     expect(rows.get("formwork_system")?.evaluatedQuantity).toBe("120");
     expect(rows.get("curing_membrane")?.evaluatedQuantity).toBe("20");
@@ -53,6 +54,21 @@ describe("R6 real professional concrete content contract", () => {
     expect(rows.get("formwork_delivery")).toMatchObject({ cargoQuantity: "12", distanceKm: "18" });
     expect(rows.get("concrete_delivery")?.cargo?.vehicleRu).toBe("автобетоносмеситель");
     expect(rows.get("reinforcement_delivery")?.cargo?.vehicleRu).toBe("бортовой автомобиль");
+  });
+
+  test("full assembly covers independently expected groundworks, bedding, waterproofing, backfill and disposal quantities", () => {
+    const rows = rowMap(compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT));
+    expect(rows.get("excavation_work")?.evaluatedQuantity).toBe("54");
+    expect(rows.get("excavator")?.evaluatedQuantity).toBe("1.8");
+    expect(rows.get("bedding_sand")?.evaluatedQuantity).toBe("4");
+    expect(rows.has("bedding_crushed_stone")).toBe(false);
+    expect(Number(rows.get("bedding_compactor")?.evaluatedQuantity)).toBeCloseTo(4 / 12, 8);
+    expect(rows.get("bituminous_waterproofing")?.evaluatedQuantity).toBe("120");
+    expect(rows.has("sheet_waterproofing_membrane")).toBe(false);
+    expect(rows.get("backfill_work")?.evaluatedQuantity).toBe("20");
+    expect(Number(rows.get("backfill_compactor")?.evaluatedQuantity)).toBeCloseTo(20 / 12, 8);
+    expect(rows.get("bedding_material_delivery")).toMatchObject({ cargoQuantity: "4", distanceKm: "12" });
+    expect(rows.get("excavated_soil_disposal")?.evaluatedQuantity).toBe("1458");
   });
 
   test("gold rows pass the anti-garbage compiler gate", () => {

@@ -185,9 +185,9 @@ export const MULTI_DOMAIN_REFERENCE_PASSPORTS_V4: readonly MultiDomainReferenceP
     synonyms: ["залить ленточный фундамент", "монолитная лента", "бетонная лента фундамента"],
     primaryArchetype: "ASSEMBLY", supportingArchetypes: ["VOLUME", "MASS"],
     parameters: [
-      p0("length_m", "Суммарная длина ленты", "length", "m", 1_000_000, ["foundation_plan_area"]),
-      p0("width_m", "Ширина ленты", "length", "m", 20, ["foundation_plan_area"]),
-      p0("height_m", "Высота ленты", "length", "m", 20, ["foundation_concrete_volume", "foundation_formwork_area"]),
+      p0("length_m", "Суммарная длина самой ленты (не длина здания)", "length", "m", 1_000_000, ["foundation_plan_area"]),
+      p0("width_m", "Ширина самой ленты (не ширина здания)", "length", "m", 20, ["foundation_plan_area"]),
+      p0("height_m", "Высота бетонной части ленты", "length", "m", 20, ["foundation_concrete_volume", "foundation_formwork_area"]),
       p0("rebar_rate_kg_m3", "Расход арматуры по проекту", "ratio", "kg/m3", 1_000, ["foundation_rebar_mass"]),
     ],
     formulaGraph: [

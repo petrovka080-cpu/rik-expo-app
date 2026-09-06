@@ -4,10 +4,28 @@ export const CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION =
 export type CanonicalRevisionIdentityDefinition = {
   id: string;
   title_ru: string;
+  canonical_title_ru?: unknown;
+  passport?: unknown;
   domain: string;
   approved_template_baseline_id?: string | null;
   cumulative_manifest?: boolean;
 };
+
+export function canonicalDefinitionTitleRu(definition: {
+  title_ru?: unknown;
+  canonical_title_ru?: unknown;
+  passport?: unknown;
+}): string {
+  const passport = definition.passport && typeof definition.passport === "object" && !Array.isArray(definition.passport)
+    ? definition.passport as Record<string, unknown>
+    : null;
+  return String(
+    passport?.canonicalRuName
+      ?? definition.canonical_title_ru
+      ?? definition.title_ru
+      ?? "",
+  ).trim();
+}
 
 export type CanonicalRevisionIdentityParameter = {
   parameter_id?: unknown;
@@ -78,7 +96,7 @@ export async function buildCanonicalRevisionIdentity(
   if (!primary || primaryMeasureValue == null || !String(primaryMeasureValue).trim()) {
     throw writerError("primary measure is unavailable", "PRIMARY_MEASURE_REQUIRED");
   }
-  const canonicalWorkTitleRu = String(input.definition.title_ru ?? "").trim();
+  const canonicalWorkTitleRu = canonicalDefinitionTitleRu(input.definition);
   if (!canonicalWorkTitleRu) {
     throw writerError("canonical work title is unavailable", "DEFINITION_INTEGRITY_FAILED");
   }

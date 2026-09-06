@@ -137,6 +137,9 @@ export function MobilePhotoCaptureFlow({
   const [uploadCompleted, setUploadCompleted] = React.useState(false);
   const [appActive, setAppActive] = React.useState(AppState.currentState === "active");
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const alternativeCaptureOwnsTransitionRef = React.useRef(false);
+  const cameraOpenOutcomeRef = React.useRef<"REQUESTING_PERMISSION" | "MOUNTING" | "PERMISSION_DENIED">("REQUESTING_PERMISSION");
+  const cameraOpenErrorRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
@@ -153,6 +156,9 @@ export function MobilePhotoCaptureFlow({
   React.useEffect(() => {
     if (!visible) return;
     let cancelled = false;
+    alternativeCaptureOwnsTransitionRef.current = false;
+    cameraOpenOutcomeRef.current = "REQUESTING_PERMISSION";
+    cameraOpenErrorRef.current = null;
     setSelectedKind(kind);
     setCameraState("REQUESTING_PERMISSION");
     setErrorMessage(null);
@@ -163,13 +169,17 @@ export function MobilePhotoCaptureFlow({
       targetRowId,
       userAction: "PHOTO_BUTTON_PRESS",
     }).then(() => {
-      if (cancelled) return;
+      cameraOpenOutcomeRef.current = "MOUNTING";
+      if (cancelled || alternativeCaptureOwnsTransitionRef.current) return;
       setCameraState("MOUNTING");
     }).catch((error) => {
       if (cancelled) return;
       const safeMessage = error && typeof error === "object" && "safeMessageRu" in error
         ? String((error as { safeMessageRu?: unknown }).safeMessageRu)
         : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u043c\u0435\u0440\u0443.";
+      cameraOpenOutcomeRef.current = "PERMISSION_DENIED";
+      cameraOpenErrorRef.current = safeMessage;
+      if (alternativeCaptureOwnsTransitionRef.current) return;
       setErrorMessage(safeMessage);
       setCameraState("PERMISSION_DENIED");
       onError?.(safeMessage);
@@ -188,6 +198,9 @@ export function MobilePhotoCaptureFlow({
       setQueued(false);
       setUploadCompleted(false);
       setErrorMessage(null);
+      alternativeCaptureOwnsTransitionRef.current = false;
+      cameraOpenOutcomeRef.current = "REQUESTING_PERMISSION";
+      cameraOpenErrorRef.current = null;
     }
   }, [visible]);
 
@@ -219,20 +232,50 @@ export function MobilePhotoCaptureFlow({
   };
 
   const handleSystemCamera = async () => {
-    const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind, storageIdentity });
-    if (nextAsset) {
-      setErrorMessage(null);
-      setAsset(nextAsset);
-      setCameraState("REVIEWING");
+    alternativeCaptureOwnsTransitionRef.current = true;
+    try {
+      const nextAsset = await service.launchSystemCamera({ scanId, kind: selectedKind, storageIdentity });
+      if (nextAsset) {
+        setErrorMessage(null);
+        setAsset(nextAsset);
+        setCameraState("REVIEWING");
+      } else {
+        alternativeCaptureOwnsTransitionRef.current = false;
+        setCameraState(cameraOpenOutcomeRef.current);
+      }
+    } catch (error) {
+      alternativeCaptureOwnsTransitionRef.current = false;
+      const safeMessage = error instanceof Error ? error.message : "Не удалось открыть системную камеру.";
+      setErrorMessage(safeMessage);
+      setCameraState("FAILED");
+      onError?.(safeMessage);
     }
   };
 
   const handlePickPhoto = async () => {
-    const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind, storageIdentity });
-    if (nextAsset) {
-      setErrorMessage(null);
-      setAsset(nextAsset);
-      setCameraState("REVIEWING");
+    alternativeCaptureOwnsTransitionRef.current = true;
+    try {
+      const nextAsset = await service.pickFromLibrary({ scanId, kind: selectedKind, storageIdentity });
+      if (nextAsset) {
+        setErrorMessage(null);
+        setAsset(nextAsset);
+        setCameraState("REVIEWING");
+      } else {
+        alternativeCaptureOwnsTransitionRef.current = false;
+        const outcome = cameraOpenOutcomeRef.current;
+        const safeMessage = cameraOpenErrorRef.current;
+        if (outcome === "PERMISSION_DENIED" && safeMessage) {
+          setErrorMessage(safeMessage);
+          onError?.(safeMessage);
+        }
+        setCameraState(outcome);
+      }
+    } catch (error) {
+      alternativeCaptureOwnsTransitionRef.current = false;
+      const safeMessage = error instanceof Error ? error.message : "Не удалось выбрать фото.";
+      setErrorMessage(safeMessage);
+      setCameraState("FAILED");
+      onError?.(safeMessage);
     }
   };
 
