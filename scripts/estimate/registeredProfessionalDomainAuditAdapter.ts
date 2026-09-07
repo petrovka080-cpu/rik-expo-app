@@ -31,6 +31,7 @@ type RegisteredAuditRevisionInput = {
   paramOverrides?: EstimateDraftRevision["params"];
   assumptionOverrides?: EstimateDraftRevision["assumptions"];
   changedParamKey?: string | null;
+  artifacts?: EstimateDraftRevision["artifacts"];
 };
 
 function compileRegisteredAuditDraft(
@@ -46,14 +47,27 @@ function compileRegisteredAuditDraft(
     countryCode: "KG",
     paramOverrides: input.paramOverrides,
   };
-  const draft = selection.domain_id === INTERIOR_FINISHES_COMPLETE_DOMAIN_ID
-    ? buildInteriorFinishesFromInlineInputV1(buildInput).production?.draft
+  const outcome = (selection.domain_id === INTERIOR_FINISHES_COMPLETE_DOMAIN_ID
+    ? buildInteriorFinishesFromInlineInputV1(buildInput)
     : selection.domain_id === ELECTRICAL_COMPLETE_DOMAIN_ID
-      ? buildElectricalFromInlineInputV1(buildInput).production?.draft
+      ? buildElectricalFromInlineInputV1(buildInput)
       : selection.domain_id === HVAC_COMPLETE_DOMAIN_ID
-        ? buildHvacFromInlineInputV1(buildInput).production?.draft
-        : null;
+        ? buildHvacFromInlineInputV1(buildInput)
+        : null) as null | {
+          missing_parameter_ids?: string[];
+          production?: {
+            draft?: ConsumerRepairAiDraft | null;
+            compile_result?: { status?: string };
+          } | null;
+        };
+  const draft = outcome?.production?.draft;
   if (!draft) {
+    const missing = outcome?.missing_parameter_ids?.filter(Boolean) ?? [];
+    if (outcome?.production?.compile_result?.status === "NEEDS_REQUIRED_INPUTS" && missing.length > 0) {
+      throw new Error(
+        `REGISTERED_PROFESSIONAL_AUDIT_BACKEND_COMPILE_FAILED:${selection.domain_id}:${selection.catalog_id}:NEEDS_REQUIRED_INPUTS:${missing.join(",")}`,
+      );
+    }
     throw new Error(`REGISTERED_PROFESSIONAL_AUDIT_BACKEND_COMPILE_FAILED:${selection.domain_id}:${selection.catalog_id}`);
   }
   return draft as ConsumerRepairAiDraft;
@@ -85,6 +99,7 @@ export function createRegisteredProfessionalDomainAuditRevision(
     paramOverrides: input.paramOverrides,
     assumptionOverrides: input.assumptionOverrides,
     changedParamKey: input.changedParamKey,
+    artifacts: input.artifacts,
     prebuiltExactDraft,
   });
 }

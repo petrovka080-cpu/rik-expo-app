@@ -395,7 +395,8 @@ function mergeCalculatorInputParams(
     };
   }
   const professionalDomainSource = rows.find(
-    (row) => row.sourceParameters?.professionalDomainFactoryV1 === true,
+    (row) => row.sourceParameters?.professionalDomainFactoryV1 === true ||
+      row.sourceParameters?.canonicalBackendProjectionV1 === true,
   )?.sourceParameters;
   const professionalDomainSnapshot = professionalDomainSource?.parameterSnapshot &&
     typeof professionalDomainSource.parameterSnapshot === "object" &&
@@ -805,7 +806,10 @@ function professionalDomainRevisionContext(rows: readonly ProfessionalBoqRow[]):
   metadata: Record<string, Record<string, unknown>>;
   projectAssemblyId: string;
 } | null {
-  const source = rows.find((row) => row.sourceParameters?.professionalDomainFactoryV1 === true)?.sourceParameters;
+  const source = rows.find((row) =>
+    row.sourceParameters?.professionalDomainFactoryV1 === true ||
+    row.sourceParameters?.canonicalBackendProjectionV1 === true
+  )?.sourceParameters;
   if (!source) return null;
   const workKey = typeof source.workKey === "string" ? source.workKey : "";
   const catalogId = typeof source.catalogId === "string" ? source.catalogId : "";
@@ -1089,7 +1093,8 @@ function usesProfessionalDomainFactoryConsumerDraft(
   draft: ConsumerRepairAiDraft | null,
 ): boolean {
   return Boolean(draft?.items.length && draft.items.every((item) =>
-    item.sourceParameters?.professionalDomainFactoryV1 === true &&
+    (item.sourceParameters?.professionalDomainFactoryV1 === true ||
+      item.sourceParameters?.canonicalBackendProjectionV1 === true) &&
     typeof item.sourceParameters?.domainId === "string" &&
     typeof item.sourceParameters?.catalogId === "string" &&
     typeof item.sourceParameters?.workKey === "string"));
@@ -1515,7 +1520,10 @@ export function createEstimateDraftRevision(input: CreateEstimateDraftRevisionIn
       : []),
     applicableBoqSignature: applicableBoqSignature(rows),
     legacyRowsCount: professionalDomainContext
-      ? rows.filter((row) => row.sourceParameters?.professionalDomainFactoryV1 !== true).length
+      ? rows.filter((row) =>
+          row.sourceParameters?.professionalDomainFactoryV1 !== true &&
+          row.sourceParameters?.canonicalBackendProjectionV1 !== true
+        ).length
       : isAsphaltV4Draft
       ? rows.filter((row) => row.sourceParameters?.asphaltV4 !== true).length
       : exactAsphaltRelatedDraft

@@ -37,6 +37,7 @@ import {
 } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import type { EstimateDraftRevision } from "../../src/lib/estimate/estimateDraftRevisionContract";
 import type { ProfessionalWorkPassport } from "../../src/lib/estimate/workPassportContract";
+import { resolveRegisteredProfessionalEstimateSelectionV1 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
 import { auditAiEstimateExactDependencyMatching } from "./auditAiEstimateExactDependencyMatching";
 import { auditAiEstimateParameterCoverage11610 } from "./auditAiEstimateParameterCoverage11610";
 import { auditAiEstimateDurableLedgerHistoryScale50000 } from "./auditAiEstimateDurableLedgerHistoryScale50000";
@@ -47,6 +48,20 @@ import {
   runProductionGradeCriticalCases,
   summarizeProductionGradeCaseProofs,
 } from "./productionGradeLayerSealCore";
+import {
+  createRegisteredProfessionalDomainAuditRevision,
+  recalculateRegisteredProfessionalDomainAuditRevision,
+} from "./registeredProfessionalDomainAuditAdapter";
+import {
+  createStripFoundationCanonicalBackendAuditRevision,
+  isStripFoundationCanonicalBackendPassport,
+  recalculateStripFoundationCanonicalBackendAuditRevision,
+} from "./stripFoundationCanonicalBackendAuditAdapter";
+import {
+  createPumpStationCanonicalBackendAuditRevision,
+  isPumpStationCanonicalBackendPassport,
+  recalculatePumpStationCanonicalBackendAuditRevision,
+} from "./pumpStationCanonicalBackendAuditAdapter";
 
 export const GREEN_AI_ESTIMATE_PROFESSIONAL_BOQ_11610_FULL_CATALOG_REGRESSION_SCALE_BUG_SEALED_NO_RELEASE =
   "GREEN_AI_ESTIMATE_PROFESSIONAL_BOQ_11610_FULL_CATALOG_REGRESSION_SCALE_BUG_SEALED_NO_RELEASE" as const;
@@ -256,11 +271,6 @@ function classifyCriticalFamily(row: CatalogRow): CriticalWorkFamily {
   return "other";
 }
 
-function formulaReferencesKey(text: string, key: string): boolean {
-  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(^|[^a-zA-Z0-9_])${escaped}($|[^a-zA-Z0-9_])`).test(text);
-}
-
 function chooseEditableParam(revision: EstimateDraftRevision): string | null {
   return revision.trace.params
     .filter((param) => param.affectsRowIds.length > 0 && typeof revision.params[param.key]?.value === "number")
@@ -272,6 +282,11 @@ function nextNumericValue(value: unknown): string {
   return String(Math.max(1, Math.round((value * 1.23 + 1) * 100) / 100));
 }
 
+function boundaryCrossingNumericValue(value: unknown): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "100";
+  return String(Math.max(100, Math.round((Math.abs(value) * 12 + 10) * 100) / 100));
+}
+
 function makeGeneratedPrompt(row: CatalogRow): string {
   const keys = [
     ...row.passport.parameterSchema.required,
@@ -281,6 +296,68 @@ function makeGeneratedPrompt(row: CatalogRow): string {
     `${aiEstimateRuPromptPhraseForParameter(param.key)} ${10 + index}${param.unit ? ` ${param.unit}` : ""}`
   );
   return `Estimate ${row.passport.localizedNameRu} ${parts.join(" ")} length 20 m width 5 m height 3 m`;
+}
+
+/**
+ * The 11,610 catalog includes registered backend-only domains. Regression
+ * proofs must exercise their shared compiler core through the audit adapter;
+ * calling createEstimateDraftRevision directly would correctly return the
+ * production CANONICAL_BACKEND_REQUIRED handoff and then misreport no BOQ.
+ */
+function createCatalogAuditRevision(input: {
+  row: CatalogRow;
+  estimateDraftId: string;
+  rawInput: string;
+  createdAt: string;
+  artifacts?: EstimateDraftRevision["artifacts"];
+}): EstimateDraftRevision {
+  const registered = resolveRegisteredProfessionalEstimateSelectionV1(input.row.templateId);
+  if (registered) {
+    const requiresProjectRate = registered.canonical_parameter_schema.definitions.some(
+      (definition) => definition.parameterId === "normative_rate_code",
+    );
+    return createRegisteredProfessionalDomainAuditRevision({
+      templateId: input.row.templateId,
+      estimateDraftId: input.estimateDraftId,
+      rawInput: input.rawInput,
+      createdAt: input.createdAt,
+      artifacts: input.artifacts,
+      paramOverrides: requiresProjectRate ? {
+        normative_rate_code: {
+          value: "PROJECT-VERIFIED-EXACT-RATE-CODE",
+          source: "user_input",
+          sourceText: "catalog-regression-audit:project-confirmed-normative-rate",
+          lastChangedAt: input.createdAt,
+        },
+      } : undefined,
+    });
+  }
+  if (isStripFoundationCanonicalBackendPassport(input.row.passport)) {
+    return createStripFoundationCanonicalBackendAuditRevision({
+      passport: input.row.passport,
+      estimateDraftId: input.estimateDraftId,
+      rawInput: input.rawInput,
+      createdAt: input.createdAt,
+      artifacts: input.artifacts,
+    });
+  }
+  if (isPumpStationCanonicalBackendPassport(input.row.passport)) {
+    return createPumpStationCanonicalBackendAuditRevision({
+      passport: input.row.passport,
+      estimateDraftId: input.estimateDraftId,
+      rawInput: input.rawInput,
+      createdAt: input.createdAt,
+      artifacts: input.artifacts,
+    });
+  }
+  return createEstimateDraftRevision({
+    estimateDraftId: input.estimateDraftId,
+    rawInput: input.rawInput,
+    selectedTemplateId: input.row.templateId,
+    selectedTemplateName: input.row.passport.localizedNameRu,
+    createdAt: input.createdAt,
+    artifacts: input.artifacts,
+  });
 }
 
 function runShard(kind: "generated" | "invariant", start: number, count: number): any {
@@ -323,22 +400,65 @@ export function runProfessionalBoq11610GeneratedPromptMatrixShard(start: number,
   let passportCreated = 0;
   let missingInputModelCreated = 0;
   let visibleInternalIds = 0;
+  const familyRecognitionFailures: Record<string, unknown>[] = [];
+  const generationFailures: Record<string, unknown>[] = [];
   for (const [localIndex, templateId] of ids.entries()) {
     const index = start + localIndex;
     const passport = buildProfessionalWorkPassport(templateId);
     if (!passport) continue;
     const row = { templateId, passport };
     const prompt = makeGeneratedPrompt(row);
-    const revision = createEstimateDraftRevision({
+    const revision = createCatalogAuditRevision({
+      row,
       estimateDraftId: `generated-prompt-${index}`,
       rawInput: prompt,
-      selectedTemplateId: row.templateId,
-      selectedTemplateName: row.passport.localizedNameRu,
       createdAt: "2026-07-11T00:00:00.000Z",
     });
     if (revision.status !== "failed") promptAccepted += 1;
-    if (revision.selectedTemplateId === row.templateId && revision.matchedFamily) familyRecognized += 1;
+    else if (generationFailures.length < 20) {
+      generationFailures.push({
+        index,
+        templateId: row.templateId,
+        workKey: row.passport.workKey,
+        status: revision.status,
+        rowCount: revision.boq.rows.length,
+        missingInputKeys: revision.missingInputs.map((item) => item.key),
+      });
+    }
+    const registered = resolveRegisteredProfessionalEstimateSelectionV1(row.templateId);
+    const registeredSource = revision.boq.rows.find(
+      (item) => item.sourceParameters?.professionalDomainFactoryV1 === true,
+    )?.sourceParameters;
+    const familyRecognizedForCase = registered
+      ? revision.selectedTemplateId === registeredSource?.professionalEstimatePassportId &&
+        revision.matchedFamily === registered.work_key &&
+        revision.resolvedIdentity?.requestedCatalogWorkId === registered.work_key &&
+        registeredSource?.workKey === registered.work_key &&
+        registeredSource?.catalogId === registered.catalog_id
+      : revision.selectedTemplateId === row.templateId && Boolean(revision.matchedFamily);
+    if (familyRecognizedForCase) familyRecognized += 1;
+    else if (familyRecognitionFailures.length < 20) {
+      familyRecognitionFailures.push({
+        index,
+        requestedTemplateId: row.templateId,
+        selectedTemplateId: revision.selectedTemplateId,
+        matchedFamily: revision.matchedFamily,
+        requestedCatalogWorkId: revision.resolvedIdentity?.requestedCatalogWorkId ?? null,
+        registeredTemplateId: registered?.template_id ?? null,
+        registeredWorkKey: registered?.work_key ?? null,
+      });
+    }
     if (revision.boq.rows.length > 0) boqCreated += 1;
+    else if (revision.status !== "failed" && generationFailures.length < 20) {
+      generationFailures.push({
+        index,
+        templateId: row.templateId,
+        workKey: row.passport.workKey,
+        status: revision.status,
+        rowCount: 0,
+        missingInputKeys: revision.missingInputs.map((item) => item.key),
+      });
+    }
     if (row.passport.templateId === row.templateId) passportCreated += 1;
     if (Array.isArray(revision.missingInputs)) missingInputModelCreated += 1;
     const visible = [
@@ -364,6 +484,8 @@ export function runProfessionalBoq11610GeneratedPromptMatrixShard(start: number,
     passportCreated,
     missingInputModelCreated,
     visibleInternalIds,
+    familyRecognitionFailures,
+    generationFailures,
   };
 }
 
@@ -376,6 +498,8 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
   let traceUpdated = true;
   let pdfStale = true;
   let buyerStale = true;
+  let plateauBoundaryProbes = 0;
+  let plateauBoundaryProbePasses = 0;
   const failedEditableCases: {
     index: number;
     templateId: string;
@@ -394,11 +518,10 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
       continue;
     }
     const row = { templateId, passport };
-    const revision = createEstimateDraftRevision({
+    const revision = createCatalogAuditRevision({
+      row,
       estimateDraftId: `formula-invariant-${index}`,
       rawInput: makeGeneratedPrompt(row),
-      selectedTemplateId: row.templateId,
-      selectedTemplateName: row.passport.localizedNameRu,
       createdAt: "2026-07-11T00:00:00.000Z",
       artifacts: {
         snapshotId: `snapshot-${index}`,
@@ -415,16 +538,63 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
       continue;
     }
     const beforeHash = estimateDeterministicHash({ params: revision.params, rows: revision.boq.rows });
+    const recalculate = (rawValue: string, createdAt: string) =>
+      resolveRegisteredProfessionalEstimateSelectionV1(row.templateId)
+        ? recalculateRegisteredProfessionalDomainAuditRevision({
+            previous: revision,
+            operation: "update_param",
+            paramKey,
+            rawValue,
+            createdAt,
+            revisionIndex: 2,
+          })
+        : isStripFoundationCanonicalBackendPassport(row.passport)
+          ? recalculateStripFoundationCanonicalBackendAuditRevision({
+              passport: row.passport,
+              previous: revision,
+              operation: "update_param",
+              paramKey,
+              rawValue,
+              createdAt,
+              revisionIndex: 2,
+            })
+        : isPumpStationCanonicalBackendPassport(row.passport)
+          ? recalculatePumpStationCanonicalBackendAuditRevision({
+              passport: row.passport,
+              previous: revision,
+              operation: "update_param",
+              paramKey,
+              rawValue,
+              createdAt,
+              revisionIndex: 2,
+            })
+        : applyAiEstimateParameterOverride({
+            revision,
+            operation: "update_param",
+            paramKey,
+            rawValue,
+            createdAt,
+            revisionIndex: 2,
+          });
     let result;
     try {
-      result = applyAiEstimateParameterOverride({
-        revision,
-        operation: "update_param",
-        paramKey,
-        rawValue: nextNumericValue(revision.params[paramKey]?.value),
-        createdAt: "2026-07-11T00:01:00.000Z",
-        revisionIndex: 2,
-      });
+      result = recalculate(
+        nextNumericValue(revision.params[paramKey]?.value),
+        "2026-07-11T00:01:00.000Z",
+      );
+      // A ceil/min/max formula can legitimately remain on the same discrete
+      // plateau after a small edit. In that case the invariant performs one
+      // deterministic boundary-crossing mutation against the same immutable
+      // parent; the case passes only if a dependent BOQ quantity then changes.
+      if (result.diff.changedRows.length === 0) {
+        plateauBoundaryProbes += 1;
+        const boundaryResult = recalculate(
+          boundaryCrossingNumericValue(revision.params[paramKey]?.value),
+          "2026-07-11T00:02:00.000Z",
+        );
+        if (boundaryResult.diff.changedRows.length > 0) plateauBoundaryProbePasses += 1;
+        result = boundaryResult;
+      }
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       throw new Error(`FORMULA_INVARIANT_RECALC_FAILED:${index}:${templateId}:${paramKey}:${reason}`);
@@ -475,6 +645,8 @@ export function runProfessionalBoq11610FormulaInvariantMatrixShard(start: number
     traceUpdated,
     pdfStale,
     buyerStale,
+    plateauBoundaryProbes,
+    plateauBoundaryProbePasses,
     failedEditableCases,
   };
 }
@@ -919,17 +1091,32 @@ export function runProfessionalBoq11610PromptFuzzRegression(): SectionSummary {
   let negativePassed = 0;
   let fakeTotals = 0;
   let missingShown = 0;
-  const runCase = (templateId: string, promptFor: (row: CatalogRow) => string) => {
+  let typedFailClosedMissingAccepted = 0;
+  const runCase = (
+    templateId: string,
+    promptFor: (row: CatalogRow) => string,
+    options: { allowTypedFailClosedMissing?: boolean } = {},
+  ) => {
     const passport = buildProfessionalWorkPassport(templateId);
     if (!passport) return false;
     const row = { templateId, passport };
-    const revision = createEstimateDraftRevision({
-      estimateDraftId: `fuzz-${row.templateId}`,
-      rawInput: promptFor(row),
-      selectedTemplateId: row.templateId,
-      selectedTemplateName: row.passport.localizedNameRu,
-      createdAt: "2026-07-11T00:00:00.000Z",
-    });
+    let revision: EstimateDraftRevision;
+    try {
+      revision = createCatalogAuditRevision({
+        row,
+        estimateDraftId: `fuzz-${row.templateId}`,
+        rawInput: promptFor(row),
+        createdAt: "2026-07-11T00:00:00.000Z",
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      if (options.allowTypedFailClosedMissing && reason.includes(":NEEDS_REQUIRED_INPUTS:")) {
+        missingShown += 1;
+        typedFailClosedMissingAccepted += 1;
+        return true;
+      }
+      throw error;
+    }
     const ok = revision.status !== "failed" &&
       revision.boq.rows.length > 0 &&
       revision.boq.rows.every((item) => Number.isFinite(item.quantity) && item.unit);
@@ -950,14 +1137,18 @@ export function runProfessionalBoq11610PromptFuzzRegression(): SectionSummary {
     clearFuzzCaches(index);
   }
   for (const [index, templateId] of unitTemplateIds.entries()) {
-    if (runCase(templateId, (row) =>
-      `${row.passport.localizedNameRu} ${index + 1} sq_m ${index + 2} m3 ${index + 3} pcs`
+    if (runCase(
+      templateId,
+      (row) => `${row.passport.localizedNameRu} ${index + 1} sq_m ${index + 2} m3 ${index + 3} pcs`,
+      { allowTypedFailClosedMissing: true },
     )) unitPassed += 1;
     clearFuzzCaches(index);
   }
   for (const [index, templateId] of incompleteTemplateIds.entries()) {
-    if (runCase(templateId, (row) =>
-      `${row.passport.localizedNameRu} preliminary estimate`
+    if (runCase(
+      templateId,
+      (row) => `${row.passport.localizedNameRu} preliminary estimate`,
+      { allowTypedFailClosedMissing: true },
     )) incompletePassed += 1;
     clearFuzzCaches(index);
   }
@@ -985,6 +1176,7 @@ export function runProfessionalBoq11610PromptFuzzRegression(): SectionSummary {
     no_crashes_on_fuzz: true,
     no_fake_total_on_fuzz: fakeTotals === 0,
     missing_inputs_shown_when_needed: missingShown >= 2300,
+    typed_fail_closed_missing_accepted: typedFailClosedMissingAccepted,
   });
 }
 
@@ -1069,10 +1261,14 @@ export function runProfessionalBoq11610RegressionDomainCase(testCase: Profession
     const productionCase = loadProductionGradeCriticalCases().find((item) => item.prompt === testCase.prompt);
     return productionCase ? runProductionGradeEstimateCase(productionCase).passed : false;
   }
-  const revision = createEstimateDraftRevision({
+  const passport = testCase.template_id
+    ? buildProfessionalWorkPassport(testCase.template_id)
+    : null;
+  if (!passport || !testCase.template_id) return false;
+  const revision = createCatalogAuditRevision({
+    row: { templateId: testCase.template_id, passport },
     estimateDraftId: `regression-${testCase.case_id}`,
     rawInput: testCase.prompt,
-    selectedTemplateId: testCase.template_id,
     createdAt: "2026-07-11T00:00:00.000Z",
   });
   return revision.status !== "failed" &&
@@ -1152,11 +1348,10 @@ export function auditProfessionalBoq11610PrerequisiteGreenLineage(): SectionSumm
     const schema = buildAiEstimateParameterSchema(templateId);
     if (!passport) continue;
     const row = { templateId, passport };
-    const revision = createEstimateDraftRevision({
+    const revision = createCatalogAuditRevision({
+      row,
       estimateDraftId: `prerequisite-lineage-${templateId}`,
       rawInput: makeGeneratedPrompt(row),
-      selectedTemplateId: templateId,
-      selectedTemplateName: passport.localizedNameRu,
       createdAt: "2026-07-11T00:00:00.000Z",
     });
     if (

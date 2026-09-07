@@ -16,6 +16,10 @@ import {
   R4_A6_PUMP_STATION_TITLE_RU,
 } from "../../src/lib/estimate/r4A6PumpStationProfessional";
 import { allExpandedRows } from "./expandedComplexTestHelpers";
+import {
+  createPumpStationCanonicalBackendAuditRevision,
+  recalculatePumpStationCanonicalBackendAuditRevision,
+} from "../../scripts/estimate/pumpStationCanonicalBackendAuditAdapter";
 
 const FORBIDDEN_GENERIC_TITLE = /(?:основной материал|несущий каркас|крепёж и метизы|комплект узлов|материал по проекту|основной монтажный цикл|координация спецификаций)/iu;
 
@@ -138,6 +142,58 @@ describe("R4-A6 professional BOQ truth contract", () => {
         "automation_scope",
       ]),
     );
+  });
+
+  it("uses the shared pump backend for all ten catalog-level regression projections", () => {
+    const templateIds = ["pumping_station", "booster_pumping_station"].flatMap((workKey) => [
+      `${workKey}_rom_concept_expanded_complex_v1`,
+      `${workKey}_preliminary_boq_expanded_complex_v1`,
+      `${workKey}_detailed_boq_from_drawings_expanded_complex_v1`,
+      `${workKey}_tender_boq_expanded_complex_v1`,
+      `${workKey}_as_built_estimate_expanded_complex_v1`,
+    ]);
+    for (const [index, templateId] of templateIds.entries()) {
+      const passport = buildProfessionalWorkPassport(templateId);
+      if (!passport) throw new Error(`R4_A6_PUMP_PASSPORT_NOT_FOUND:${templateId}`);
+      const first = createPumpStationCanonicalBackendAuditRevision({
+        passport,
+        estimateDraftId: `pump-station-backend-audit-${index}`,
+        rawInput: `${passport.localizedNameRu}: synthetic backend acceptance fixture`,
+        createdAt: "2026-09-06T00:00:00.000Z",
+        artifacts: {
+          snapshotId: `pump-snapshot-${index}`,
+          pdfArtifactId: `pump-pdf-${index}`,
+          buyerHandoffId: `pump-buyer-${index}`,
+          artifactsValidForRevisionId: `pump-revision-${index}`,
+        },
+      });
+      const result = recalculatePumpStationCanonicalBackendAuditRevision({
+        passport,
+        previous: first,
+        operation: "update_param",
+        paramKey: "duty_pump_count",
+        rawValue: "3 pcs",
+        createdAt: "2026-09-06T00:01:00.000Z",
+        revisionIndex: 2,
+      });
+
+      expect(first.selectedTemplateId).toBe(templateId);
+      expect(first.matchedFamily).toBe(passport.workKey);
+      expect(first.boq.rows).toHaveLength(31);
+      expect(new Set(first.boq.rows.map((row) => row.rowType))).toEqual(
+        new Set(["material", "work", "equipment", "service", "transport"]),
+      );
+      expect(first.boq.rows.some((row) => row.rowType === "document")).toBe(false);
+      expect(first.boq.rows.every((row) => row.sourceParameters?.canonicalBackendProjectionV1 === true)).toBe(true);
+      expect(result.revision.previousRevisionId).toBe(first.revisionId);
+      expect(result.revision.params.duty_pump_count?.value).toBe(3);
+      expect(result.diff.changedRowsCount).toBeGreaterThan(0);
+      expect(result.diff.staleArtifactsAfterEdit).toEqual({
+        snapshotInvalidated: true,
+        pdfInvalidated: true,
+        buyerHandoffInvalidated: true,
+      });
+    }
   });
 
   it("contains no executable fixed-depth padding registry", () => {

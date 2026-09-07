@@ -22,7 +22,7 @@ describe("AI estimate 11610 natural-language ingress replay", () => {
     expect(result.summary.final_status).toBe(STOP_AI_ESTIMATE_11610_NATURAL_LANGUAGE_INGRESS_BLOCKED_NO_RELEASE);
   });
 
-  it("builds a passport-backed draft from natural text only", () => {
+  it("routes strip-foundation natural text to the canonical backend handoff without fake BOQ rows", () => {
     const templateId = "strip_foundation_preliminary_boq_expanded_complex_v1";
     const passport = buildProfessionalWorkPassport(templateId);
     expect(passport).toBeTruthy();
@@ -36,8 +36,25 @@ describe("AI estimate 11610 natural-language ingress replay", () => {
     });
 
     expect(revision.selectedTemplateId).toBe(templateId);
-    expect(revision.boq.rows).toHaveLength(passport!.boqRecipe.rowCount);
-    expect(revision.boq.rows.every((row) => row.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(true);
+    expect(revision.matchedFamily).toBe("strip_foundation");
+    expect(revision.estimateLevel).toBe("NEEDS_INPUT");
+    expect(revision.boq.rows).toEqual([
+      expect.objectContaining({
+        rowId: "canonical_backend_handoff_required",
+        rowType: "document",
+        sourceParameters: expect.objectContaining({
+          canonicalBackendHandoffRequired: true,
+          canonical_backend_handoff_required: true,
+          p0GateOnly: true,
+        }),
+      }),
+    ]);
+    expect(revision.missingInputs.map((item) => item.key)).toEqual(expect.arrayContaining([
+      "total_axis_length_m",
+      "strip_width_m",
+      "strip_height_m",
+    ]));
+    expect(revision.boq.rows.some((row) => row.sourceParameters?.passportBackedNaturalLanguageIngress === true)).toBe(false);
   });
 
   it("rejects an arbitrary selectedTemplateId and keeps resolver-selected semantics", () => {

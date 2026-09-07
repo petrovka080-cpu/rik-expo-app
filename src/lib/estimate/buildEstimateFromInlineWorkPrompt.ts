@@ -1575,8 +1575,8 @@ export function buildEstimateFromInlineWorkPrompt(
     (explicitRoadworksWaveASelection || preferSpecificRoadworksWaveA
       ? roadworksWaveA?.draft
       : null) ??
-    explicitlySelectedPassportDraft ??
     explicitLegacyTemplateDraft ??
+    explicitlySelectedPassportDraft ??
     (preferRichAsphaltV4 ? asphaltV4?.draft : null) ??
     (shouldPreferSpecificProfessionalFallback(fallbackDraft) && !passportBackedDraft
       ? fallbackDraft

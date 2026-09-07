@@ -19,6 +19,10 @@ import {
   STRIP_FOUNDATION_INPUTS,
   STRIP_FOUNDATION_ROWS,
 } from "../../src/lib/estimate/v4/reinforcedConcreteStripFoundationR1";
+import {
+  createStripFoundationCanonicalBackendAuditRevision,
+  recalculateStripFoundationCanonicalBackendAuditRevision,
+} from "../../scripts/estimate/stripFoundationCanonicalBackendAuditAdapter";
 
 const TEMPLATE_ID = "strip_foundation_preliminary_boq_expanded_complex_v1";
 const WRONG_BUILDING_FINGERPRINTS = [
@@ -150,6 +154,53 @@ describe("R4-A10 canonical strip-foundation catalog passport", () => {
     expect(second.previousRevisionId).toBe(first.revisionId);
     expect(second.params.area_m2?.value).toBe(80);
     expect(second.selectedTemplateId).not.toBe("professional-estimate-passport:v4:strip_foundation");
+  });
+
+  test("projects every selectable assembly level through the shared R6 backend for regression proofs", () => {
+    const templateIds = listProfessionalWorkPassportTemplateIds()
+      .filter((templateId) => templateId.startsWith("strip_foundation_"));
+    for (const [index, templateId] of templateIds.entries()) {
+      const passport = buildProfessionalWorkPassport(templateId);
+      if (!passport) throw new Error(`strip_foundation_passport_missing:${templateId}`);
+      const first = createStripFoundationCanonicalBackendAuditRevision({
+        passport,
+        estimateDraftId: `strip-foundation-r6-audit-${index}`,
+        rawInput: `${passport.localizedNameRu}: backend regression fixture`,
+        createdAt: "2026-09-06T00:00:00.000Z",
+        artifacts: {
+          snapshotId: `strip-snapshot-${index}`,
+          pdfArtifactId: `strip-pdf-${index}`,
+          buyerHandoffId: `strip-buyer-${index}`,
+          artifactsValidForRevisionId: `strip-revision-${index}`,
+        },
+      });
+      const result = recalculateStripFoundationCanonicalBackendAuditRevision({
+        passport,
+        previous: first,
+        operation: "update_param",
+        paramKey: "total_axis_length_m",
+        rawValue: "80 m",
+        createdAt: "2026-09-06T00:01:00.000Z",
+        revisionIndex: 2,
+      });
+
+      expect(first.selectedTemplateId).toBe(templateId);
+      expect(first.matchedFamily).toBe("strip_foundation");
+      expect(first.boq.rows).toHaveLength(29);
+      expect(new Set(first.boq.rows.map((row) => row.rowType))).toEqual(
+        new Set(["material", "work", "equipment", "transport"]),
+      );
+      expect(first.boq.rows.some((row) => row.rowType === "document")).toBe(false);
+      expect(first.boq.rows.every((row) => row.sourceParameters?.canonicalBackendProjectionV1 === true)).toBe(true);
+      expect(result.revision.previousRevisionId).toBe(first.revisionId);
+      expect(result.revision.params.total_axis_length_m?.value).toBe(80);
+      expect(result.diff.changedRowsCount).toBeGreaterThan(0);
+      expect(result.diff.staleArtifactsAfterEdit).toEqual({
+        snapshotInvalidated: true,
+        pdfInvalidated: true,
+        buyerHandoffInvalidated: true,
+      });
+    }
   });
 
   test("exposes typed technological questions and condition dependencies without building defaults", () => {
