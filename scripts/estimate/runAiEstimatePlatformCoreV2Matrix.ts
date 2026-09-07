@@ -51,8 +51,19 @@ type CreateCaseResult = {
   row_count: number;
   registered_backend_only: boolean;
   status: EstimateDraftRevision["status"];
-  outcome: "client_compiled_nonempty_boq" | "registered_backend_only_honestly_blocked" | "invalid_empty_client_result";
+  outcome:
+    | "client_compiled_nonempty_boq"
+    | "client_needs_input_honestly_blocked"
+    | "registered_backend_only_honestly_blocked"
+    | "invalid_empty_client_result";
 };
+
+function isHonestNeedsInputRevision(revision: EstimateDraftRevision): boolean {
+  return revision.status === "failed" &&
+    revision.estimateLevel === "NEEDS_INPUT" &&
+    revision.boq.rows.length === 0 &&
+    revision.missingInputs.length > 0;
+}
 
 function runCreateCase(
   runtime: ReturnType<typeof createAiEstimateRuntime>,
@@ -71,9 +82,11 @@ function runCreateCase(
   const backendOnlyHonestlyBlocked = registeredBackendOnly &&
     draft.revision.status === "failed" &&
     draft.revision.boq.rows.length === 0;
+  const clientNeedsInputHonestlyBlocked = !registeredBackendOnly &&
+    isHonestNeedsInputRevision(draft.revision);
   return {
     template_id: templateId,
-    passed: clientCompiled || backendOnlyHonestlyBlocked,
+    passed: clientCompiled || backendOnlyHonestlyBlocked || clientNeedsInputHonestlyBlocked,
     row_count: draft.revision.boq.rows.length,
     registered_backend_only: registeredBackendOnly,
     status: draft.revision.status,
@@ -81,6 +94,8 @@ function runCreateCase(
       ? "client_compiled_nonempty_boq"
       : backendOnlyHonestlyBlocked
         ? "registered_backend_only_honestly_blocked"
+        : clientNeedsInputHonestlyBlocked
+          ? "client_needs_input_honestly_blocked"
         : "invalid_empty_client_result",
   };
 }
@@ -281,11 +296,17 @@ export function runAiEstimatePlatformCoreV2Matrix(input: { writeSummary?: boolea
     random_create_draft_failures: randomResults.filter((result) => !result.passed),
     random_registered_backend_only_cases: randomResults.filter((result) => result.registered_backend_only).length,
     random_client_compile_cases_passed: `${randomClientResults.filter((result) => result.passed).length}/${randomClientResults.length}`,
+    random_client_needs_input_honestly_blocked_cases: randomClientResults.filter(
+      (result) => result.outcome === "client_needs_input_honestly_blocked",
+    ).length,
     random_backend_only_honestly_blocked_cases_passed: `${randomBackendOnlyResults.filter((result) => result.passed).length}/${randomBackendOnlyResults.length}`,
     critical_create_draft_cases_passed: `${criticalPassed}/200`,
     critical_create_draft_failures: criticalResults.filter((result) => !result.passed),
     critical_registered_backend_only_cases: criticalResults.filter((result) => result.registered_backend_only).length,
     critical_client_compile_cases_passed: `${criticalClientResults.filter((result) => result.passed).length}/${criticalClientResults.length}`,
+    critical_client_needs_input_honestly_blocked_cases: criticalClientResults.filter(
+      (result) => result.outcome === "client_needs_input_honestly_blocked",
+    ).length,
     critical_backend_only_honestly_blocked_cases_passed: `${criticalBackendOnlyResults.filter((result) => result.passed).length}/${criticalBackendOnlyResults.length}`,
     parameter_override_cases_passed: `${overridePassed}/200`,
     parameter_override_failures: overrideResults.filter((result) => !result.passed),

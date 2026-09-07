@@ -12,8 +12,10 @@ describe("AI estimate platform core v2 matrix", () => {
     expect(summary.random_create_draft_cases_passed).toBe("1000/1000");
     expect(summary.random_client_compile_cases_passed).toBe("793/793");
     expect(summary.random_backend_only_honestly_blocked_cases_passed).toBe("207/207");
-    expect(summary.critical_client_compile_cases_passed).toBe("154/154");
-    expect(summary.critical_backend_only_honestly_blocked_cases_passed).toBe("46/46");
+    expect(summary.random_client_needs_input_honestly_blocked_cases).toBe(1);
+    expect(summary.critical_client_compile_cases_passed).toBe("157/157");
+    expect(summary.critical_backend_only_honestly_blocked_cases_passed).toBe("43/43");
+    expect(summary.critical_client_needs_input_honestly_blocked_cases).toBe(0);
     expect(summary.parameter_override_cases_passed).toBe("200/200");
     expect(summary.parameter_override_executed_cases_passed).toBe("154/154");
     expect(summary.parameter_override_backend_only_honestly_blocked_cases_passed).toBe("46/46");
