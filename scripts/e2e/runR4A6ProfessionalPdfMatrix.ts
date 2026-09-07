@@ -11,11 +11,14 @@ import {
 } from "../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf";
 
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
+  process.env.R4_PROFESSIONAL_PDF_MASTER_PATH ??
+    "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
 );
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_SHA256 = process.env.R4_PROFESSIONAL_PDF_MASTER_SHA256 ??
+  "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
 const EVIDENCE_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/16_web_android",
+  process.env.R4_PROFESSIONAL_PDF_EVIDENCE_ROOT ??
+    ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/16_web_android",
 );
 const MATRIX = [1, 45, 100, 500, 1001] as const;
 const EXACT_SOURCE_PATHS = [

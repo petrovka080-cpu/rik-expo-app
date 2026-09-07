@@ -19,7 +19,7 @@ const DEFAULT_MASTER_PATH = "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A6
 const DEFAULT_MASTER_SHA256 = "11e671dd5c376c577fa4f64017e3ccdc7cc9acfd59f064c343627345334275e6";
 const DEFAULT_EVIDENCE_ROOT = ".release-runtime/r568/rc09-r4-production-closeout/r4-a6-canonical-monolith-professional-estimate-print-formula-global-closeout-1";
 const requestedGateSeries = process.env.R4_SECURITY_PERFORMANCE_GATE_SERIES;
-const GATE_SERIES = requestedGateSeries === "R4_A8" || requestedGateSeries === "R4_A7"
+const GATE_SERIES = requestedGateSeries === "R4_A10" || requestedGateSeries === "R4_A8" || requestedGateSeries === "R4_A7"
   ? requestedGateSeries
   : "R4_A6";
 const MASTER_PATH = process.env.R4_SECURITY_PERFORMANCE_MASTER_PATH ?? DEFAULT_MASTER_PATH;

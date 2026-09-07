@@ -272,6 +272,7 @@ const R555_CURRENT_WORKTREE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry
 ];
 
 export const CURRENT_CORE_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[] = [
+  entry("scripts/estimate/r4a6/securityPerformanceGate.contract.test.ts", "the shared security/performance owner accepted current A7/A8 labels but silently downgraded an explicit R4-A10 run to R4-A6 receipts", "the same frozen security, RLS, scale, PDF and memory contract explicitly accepts the R4-A10 series label without changing any manifest or threshold", "bind current closeout receipts to the governing MASTER while retaining one existing execution owner", "adds one exact series-routing assertion only; no suite, test, security attempt, memory budget, performance threshold, timeout or negative condition changes"),
   ...R3_CURRENT_WORKTREE_TEST_CONTRACT_AUDIT,
   ...HONEST_STOP_MIGRATION_TEST_CONTRACT_AUDIT,
   ...R55_PREDECESSOR_TEST_CONTRACT_AUDIT,

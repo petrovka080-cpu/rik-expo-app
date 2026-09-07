@@ -21,6 +21,7 @@ describe("R4-A6 security/performance gate", () => {
     expect(source).toContain('`GREEN_${GATE_SERIES}_SECURITY_PERFORMANCE`');
     expect(source).toContain('requestedGateSeries === "R4_A7"');
     expect(source).toContain('requestedGateSeries === "R4_A8"');
+    expect(source).toContain('requestedGateSeries === "R4_A10"');
     expect(source).toContain("GREEN_COMBINED_STATUS");
     expect(source).toContain("R4_SECURITY_PERFORMANCE_PLATFORM_SOURCE_SHA");
     expect(source).toContain("STOP_SECURITY_PERFORMANCE_PLATFORM_SOURCE_SHA_INVALID");
