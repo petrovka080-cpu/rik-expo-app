@@ -9,10 +9,10 @@ import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPl
 
 type Json = Record<string, any>;
 
-const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
-);
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_PATH = resolve(process.env.R4_A10_MASTER_PATH ??
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md");
+const MASTER_SHA256 = process.env.R4_A10_MASTER_SHA256
+  ?? "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const FORMULA_CONTRACT_PATH = resolve("data/estimate-benchmarks/r568-r4-a6-formula-remediation-contract.json");
 const PROFESSIONAL_CONTRACT_PATH = resolve("data/estimate-benchmarks/r568-r4-a6-professional-boq-contract.json");
@@ -22,21 +22,14 @@ const HISTORIC_GOLDEN_ROOT = resolve(
 const HISTORIC_GOLDEN_SUMMARY_PATH = resolve(HISTORIC_GOLDEN_ROOT, "SUMMARY.json");
 const HISTORIC_GOLDEN_SUMMARY_SHA256 = "95f30b3bfa3b3c9d04891264c4db173748e0cbc5d72ddfaed1947a4db56f8147";
 const HISTORIC_GOLDEN_MANIFEST_SHA256 = "01c3282fbfc416e26f2815ac7858f9fc6c14cb2642f544427326647d1366fc02";
-const A8_ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1",
-);
-const GROUP50_PATH = resolve(
-  A8_ROOT,
-  "15_scale/group50-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/TERMINAL_SUMMARY.json",
-);
-const IDENTITY_PATH = resolve(
-  A8_ROOT,
-  "15_scale/26_identity_11610_5f12064eb9f70a6f1f473c4aa2ed06f06a50e974.json",
-);
-const PLATFORM30_PATH = resolve(
-  A8_ROOT,
-  "15_scale/platform30-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/29_platform_71040_terminal.json",
-);
+const A8_ROOT = resolve(process.env.R4_A10_EVIDENCE_ROOT
+  ?? ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1");
+const GROUP50_PATH = resolve(process.env.R4_A10_GROUP50_TERMINAL_PATH
+  ?? resolve(A8_ROOT, "15_scale/group50-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/TERMINAL_SUMMARY.json"));
+const IDENTITY_PATH = resolve(process.env.R4_A10_IDENTITY_PATH
+  ?? resolve(A8_ROOT, "15_scale/26_identity_11610_5f12064eb9f70a6f1f473c4aa2ed06f06a50e974.json"));
+const PLATFORM30_PATH = resolve(process.env.R4_A10_PLATFORM30_TERMINAL_PATH
+  ?? resolve(A8_ROOT, "15_scale/platform30-5f12064eb9f70a6f1f473c4aa2ed06f06a50e974-terminal/29_platform_71040_terminal.json"));
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const EXACT_SOURCE_PATHS = [

@@ -10,6 +10,12 @@ describe("R4-A8 Group50 memory ownership", () => {
     expect(source).not.toContain('const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979"');
   });
 
+  it("supports exact R4-A10 master and evidence-root rebinding without changing defaults", () => {
+    expect(source).toContain("R4_A10_MASTER_PATH");
+    expect(source).toContain("R4_A10_MASTER_SHA256");
+    expect(source).toContain("R4_A10_SCALE_ROOT");
+  });
+
   it("streams immutable shard receipts instead of retaining all result arrays", () => {
     expect(source).toContain("Promise<string>");
     expect(source).toContain("const receiptPaths: string[] = []");

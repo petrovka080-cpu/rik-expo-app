@@ -13,10 +13,10 @@ import {
   type R4A6IdentityRow,
 } from "./identityDag11610Contract";
 
-const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
-);
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_PATH = resolve(process.env.R4_A10_MASTER_PATH ??
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md");
+const MASTER_SHA256 = process.env.R4_A10_MASTER_SHA256
+  ?? "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const CURRENT_RELEASE = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
 const RELEASE_ID = String(CURRENT_RELEASE.definitionReleaseId);
@@ -25,9 +25,8 @@ const EXPECTED_RETAINED_NON_SEARCH_DEFINITIONS = 9;
 const IDENTITY_PATH = resolve(
   ".release-runtime/r568/rc09-identity-v1/current-identity-manifest-11610.jsonl",
 );
-const ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale",
-);
+const ROOT = resolve(process.env.R4_A10_SCALE_ROOT
+  ?? ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale");
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const EXACT_SOURCE_PATHS = [

@@ -32,30 +32,29 @@ import {
   type R4A6PlatformExecution,
 } from "./platform30ScenarioContract";
 
-const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md",
-);
-const MASTER_SHA256 = "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
+const MASTER_PATH = resolve(process.env.R4_A10_MASTER_PATH ??
+  "C:/Users/User/Downloads/MASTER_TZ_R5_6_8_RC09_R4_A8_DEVELOPER_ACCESS_ESTIMATE_RECOVERY_CANONICAL_MONOLITH_RU.md");
+const MASTER_SHA256 = process.env.R4_A10_MASTER_SHA256
+  ?? "cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const CURRENT_RELEASE = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
 const RELEASE_ID = String(CURRENT_RELEASE.definitionReleaseId);
 const SEARCH_RELEASE_ID = String(CURRENT_RELEASE.searchReleaseId);
-const GROUP50_SOURCE_SHA = process.env.R4_A8_GROUP50_SOURCE_SHA
+const GROUP50_SOURCE_SHA = process.env.R4_A10_GROUP50_SOURCE_SHA
+  ?? process.env.R4_A8_GROUP50_SOURCE_SHA
   ?? process.env.R4_A6_GROUP50_SOURCE_SHA
   ?? "ecc56a429dd7fac4e0079463af4a46e6340db5a1";
 if (!/^[0-9a-f]{40}$/u.test(GROUP50_SOURCE_SHA)) {
   throw new Error("STOP_PLATFORM30_GROUP50_SOURCE_SHA_INVALID");
 }
-const GROUP50_ROOT = resolve(
-  `.release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale/group50-${GROUP50_SOURCE_SHA}-terminal`,
-);
-const LIVE_CANARY_SOURCE_SHA = "0a51c28c8376fb97f334afd455fa4f7941194992";
-const LIVE_CANARY_PATH = resolve(
-  `.release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence/android-${LIVE_CANARY_SOURCE_SHA}-terminal-green/17_android_replay.json`,
-);
-const ROOT = resolve(
-  ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale",
-);
+const GROUP50_ROOT = resolve(process.env.R4_A10_GROUP50_ROOT
+  ?? `.release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale/group50-${GROUP50_SOURCE_SHA}-terminal`);
+const LIVE_CANARY_SOURCE_SHA = process.env.R4_A10_LIVE_CANARY_SOURCE_SHA
+  ?? "0a51c28c8376fb97f334afd455fa4f7941194992";
+const LIVE_CANARY_PATH = resolve(process.env.R4_A10_LIVE_CANARY_PATH
+  ?? `.release-runtime/r568/rc09-r4-production-closeout/r4-a5-exact-ui-confirm-durability-1/evidence/android-${LIVE_CANARY_SOURCE_SHA}-terminal-green/17_android_replay.json`);
+const ROOT = resolve(process.env.R4_A10_SCALE_ROOT
+  ?? ".release-runtime/r568/rc09-r4-production-closeout/r4-a8-developer-estimate-recovery-1/15_scale");
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const EXPECTED_GROUPS = 2_368;

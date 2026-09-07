@@ -22,6 +22,15 @@ describe("R4-A8 protected goldens and formula content receipt", () => {
     expect(source).toContain("remediationRepeated: false");
   });
 
+  it("supports exact R4-A10 master and current scale receipt rebinding", () => {
+    expect(source).toContain("R4_A10_MASTER_PATH");
+    expect(source).toContain("R4_A10_MASTER_SHA256");
+    expect(source).toContain("R4_A10_EVIDENCE_ROOT");
+    expect(source).toContain("R4_A10_GROUP50_TERMINAL_PATH");
+    expect(source).toContain("R4_A10_IDENTITY_PATH");
+    expect(source).toContain("R4_A10_PLATFORM30_TERMINAL_PATH");
+  });
+
   it("requires relevant-source-clean Group50, Identity/DAG, and Platform30 evidence", () => {
     expect(source).toContain("assertNoRelevantSourceDrift(group50");
     expect(source).toContain("assertNoRelevantSourceDrift(identity");

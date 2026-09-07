@@ -21,6 +21,16 @@ describe("R4-A8 Platform30 evidence lineage", () => {
     expect(source).not.toContain('const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979"');
   });
 
+  it("supports exact R4-A10 scale and live-canary rebinding", () => {
+    expect(source).toContain("R4_A10_MASTER_PATH");
+    expect(source).toContain("R4_A10_MASTER_SHA256");
+    expect(source).toContain("R4_A10_GROUP50_SOURCE_SHA");
+    expect(source).toContain("R4_A10_GROUP50_ROOT");
+    expect(source).toContain("R4_A10_LIVE_CANARY_SOURCE_SHA");
+    expect(source).toContain("R4_A10_LIVE_CANARY_PATH");
+    expect(source).toContain("R4_A10_SCALE_ROOT");
+  });
+
   it("streams shard receipts and preserves the twelve counters", () => {
     expect(source).toContain("Promise<string>");
     expect(source).toContain("const receiptPaths: string[] = []");

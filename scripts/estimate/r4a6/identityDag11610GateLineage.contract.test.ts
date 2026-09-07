@@ -11,6 +11,12 @@ describe("R4-A8 Identity/DAG evidence lineage", () => {
     expect(source).not.toContain('const RELEASE_ID = "3788cc88-701d-5cc9-9130-c61262cb9979"');
   });
 
+  it("supports exact R4-A10 master and evidence-root rebinding", () => {
+    expect(source).toContain("R4_A10_MASTER_PATH");
+    expect(source).toContain("R4_A10_MASTER_SHA256");
+    expect(source).toContain("R4_A10_SCALE_ROOT");
+  });
+
   it("preserves the 11,610 identity and 10,322 selectable denominators", () => {
     expect(source).toContain("R4_A6_EXPECTED_IDENTITIES");
     expect(source).toContain("R4_A6_EXPECTED_VISIBLE_CANONICAL");
