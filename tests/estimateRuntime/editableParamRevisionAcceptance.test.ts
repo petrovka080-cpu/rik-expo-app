@@ -59,10 +59,28 @@ describe("editable param revision acceptance", () => {
     );
     expect(r2.matchedFamily).toBe("ventilated_facade");
     expect(r2.params.area_m2.value).toBe(800);
+    expect(r2.params.facade_area_m2.value).toBe(800);
     expect(r2.selectedTemplateId).toBe(r1.selectedTemplateId);
     expect(diff.changedRowsCount).toBeGreaterThan(0);
     expect(r2.artifacts.artifactsValidForRevisionId).toBeNull();
   });
+
+  it.each([
+    ["ventfasad turnkey 607 m2", "facade_area_m2", "507 m2", 507],
+    ["mansard roof 163 m2 with windows metal tile insulation 200 mm", "roof_area_m2", "203 m2", 203],
+  ] as const)(
+    "keeps the sole technology area alias current for %s",
+    (prompt, specificAreaKey, rawValue, expectedArea) => {
+      const { r1, revision: r2, diff } = recalc(prompt, "area_m2", rawValue);
+
+      expect(r1.params[specificAreaKey]?.value).not.toBe(expectedArea);
+      expect(r2.params.area_m2.value).toBe(expectedArea);
+      expect(r2.params[specificAreaKey]?.value).toBe(expectedArea);
+      expect(r2.params[specificAreaKey]?.source).toBe("edited_by_user");
+      expect(r2.selectedTemplateId).toBe(r1.selectedTemplateId);
+      expect(diff.changedRowsCount).toBeGreaterThan(0);
+    },
+  );
 
   it("recalculates infrastructure families with line length edits", () => {
     const cases = [

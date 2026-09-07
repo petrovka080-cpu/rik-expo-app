@@ -78,6 +78,40 @@ function selectedWorkKeyForRecalculation(
     ?? undefined;
 }
 
+/**
+ * Some legacy families expose both the generic editable area and one
+ * technology-owned area (for example facade_area_m2 or roof_area_m2). They
+ * represent the same measurement when there is exactly one specific area
+ * owner. Keep that pair atomic so a revision cannot feed the compiler a new
+ * generic value together with a stale technology value.
+ */
+function synchronizeSingleSemanticAreaAlias(
+  params: Record<string, EstimateDraftRevisionParam>,
+  changedParamKeys: readonly string[],
+): Record<string, EstimateDraftRevisionParam> {
+  const specificAreaKeys = Object.keys(params)
+    .filter((key) => key !== "area_m2" && /_area_m2$/.test(key));
+  if (specificAreaKeys.length !== 1) return params;
+
+  const specificAreaKey = specificAreaKeys[0];
+  const changedKeys = new Set(changedParamKeys);
+  const genericChanged = changedKeys.has("area_m2");
+  const specificChanged = changedKeys.has(specificAreaKey);
+  if (genericChanged === specificChanged) return params;
+
+  const sourceKey = genericChanged ? "area_m2" : specificAreaKey;
+  const targetKey = genericChanged ? specificAreaKey : "area_m2";
+  const sourceParam = params[sourceKey];
+  if (!sourceParam || typeof sourceParam.value !== "number" || !Number.isFinite(sourceParam.value)) {
+    return params;
+  }
+
+  return {
+    ...params,
+    [targetKey]: { ...sourceParam },
+  };
+}
+
 function valueToPromptToken(key: string, param: EstimateDraftRevisionParam): string {
   const value = String(param.value);
   const unit = param.canonicalUnit;
@@ -150,7 +184,11 @@ export function recalculateEstimateDraftRevision(
   previous = migrateInteriorFinishesProfessionalRevisionV4(originalPrevious);
   patch = retargetPatchAfterRevisionMigration(originalPrevious, previous, patch);
   const changedAt = input.createdAt ?? new Date().toISOString();
-  const patched = applyUserParamPatch(previous, patch, changedAt);
+  const patchedResult = applyUserParamPatch(previous, patch, changedAt);
+  const patched = {
+    ...patchedResult,
+    params: synchronizeSingleSemanticAreaAlias(patchedResult.params, [patch.paramKey]),
+  };
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const exactRoadworks = exactRoadworksWaveARegistration(previous);
   const passport = exactRoadworks || usesRegisteredProfessionalDomain(previous)
@@ -251,7 +289,14 @@ export function recalculateEstimateDraftRevisionBatch(
 
   const changedAt = input.createdAt ?? new Date().toISOString();
   patches = patches.map((patch) => retargetPatchAfterRevisionMigration(originalPrevious, previous, patch));
-  const patched = applyUserParamPatches(previous, patches, changedAt);
+  const patchedResult = applyUserParamPatches(previous, patches, changedAt);
+  const patched = {
+    ...patchedResult,
+    params: synchronizeSingleSemanticAreaAlias(
+      patchedResult.params,
+      patches.map((patch) => patch.paramKey),
+    ),
+  };
   const rawInput = buildPromptForEstimateDraftRevisionRecalc(previous, patched.params);
   const exactRoadworks = exactRoadworksWaveARegistration(previous);
   const passport = exactRoadworks || usesRegisteredProfessionalDomain(previous)

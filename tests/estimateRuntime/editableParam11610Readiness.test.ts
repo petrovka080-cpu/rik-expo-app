@@ -12,6 +12,11 @@ import {
   createRegisteredProfessionalDomainAuditRevision,
   recalculateRegisteredProfessionalDomainAuditRevision,
 } from "../../scripts/estimate/registeredProfessionalDomainAuditAdapter";
+import {
+  createPumpStationCanonicalBackendAuditRevision,
+  isPumpStationCanonicalBackendPassport,
+  recalculatePumpStationCanonicalBackendAuditRevision,
+} from "../../scripts/estimate/pumpStationCanonicalBackendAuditAdapter";
 
 describe("editable param 11610 readiness", () => {
   it("keeps every work passport editable via template-locked revision recalculation", () => {
@@ -23,6 +28,54 @@ describe("editable param 11610 readiness", () => {
       const passport = buildProfessionalWorkPassport(templateId);
       if (!passport) {
         blockers.push(`${templateId}:passport_missing`);
+        continue;
+      }
+      if (isPumpStationCanonicalBackendPassport(passport)) {
+        try {
+          const r1 = createPumpStationCanonicalBackendAuditRevision({
+            passport,
+            estimateDraftId: `readiness-${index}`,
+            rawInput: `${passport.localizedNameRu} canonical acceptance fixture`,
+            createdAt: "2026-07-07T00:00:00.000Z",
+          });
+          const candidate = r1.trace.params
+            .filter((parameter) =>
+              parameter.affectsRowIds.length > 0 &&
+              typeof r1.params[parameter.key]?.value === "number"
+            )
+            .sort((left, right) => right.affectsRowIds.length - left.affectsRowIds.length)[0];
+          if (!candidate) {
+            blockers.push(`${templateId}:pump_editable_parameter_missing`);
+            continue;
+          }
+          const before = Number(r1.params[candidate.key].value);
+          const { revision: r2, diff } = recalculatePumpStationCanonicalBackendAuditRevision({
+            passport,
+            previous: r1,
+            operation: "update_param",
+            paramKey: candidate.key,
+            rawValue: String(before + 1),
+            createdAt: "2026-07-07T00:01:00.000Z",
+            revisionIndex: 2,
+          });
+          const validation = validateEstimateDraftRevision(r2);
+          if (
+            r1.selectedTemplateId === templateId &&
+            r2.selectedTemplateId === templateId &&
+            r2.previousRevisionId === r1.revisionId &&
+            r2.params[candidate.key]?.value === before + 1 &&
+            r2.params[candidate.key]?.source === "edited_by_user" &&
+            r2.boq.rows.length > 0 &&
+            diff.changedRowsCount > 0 &&
+            validation.valid
+          ) {
+            ready += 1;
+          } else {
+            blockers.push(`${templateId}:${validation.failures.join("|") || "pump_editable_revision_failed"}`);
+          }
+        } catch (error) {
+          blockers.push(`${templateId}:${error instanceof Error ? error.message : "pump_editable_revision_failed"}`);
+        }
         continue;
       }
       const registeredSelection = resolveRegisteredProfessionalEstimateSelectionV1(templateId);
