@@ -44,9 +44,72 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value);
 }
 
-function formatValue(param: EstimateDraftRevisionParam, unitRu: string): string {
+type TraceParameterPresentation = {
+  labelRu?: string;
+  unit?: string;
+  choices?: { value: string; labelRu: string }[];
+};
+
+function formatValue(
+  param: EstimateDraftRevisionParam,
+  unitRu: string,
+  choices: readonly { value: string; labelRu: string }[] = [],
+): string {
+  if (typeof param.value === "boolean") return param.value ? "Да" : "Нет";
+  const selectedChoice = choices.find((choice) => choice.value === String(param.value));
+  if (selectedChoice) return selectedChoice.labelRu;
   const text = typeof param.value === "number" ? formatNumber(param.value) : String(param.value);
+  if (/^[a-z0-9]+(?:_[a-z0-9]+)+$/iu.test(text)) return "уточняется";
   return unitRu ? `${text} ${unitRu}` : text;
+}
+
+function traceParameterPresentations(
+  revision: EstimateDraftRevision,
+): Map<string, TraceParameterPresentation> {
+  const presentations = new Map<string, TraceParameterPresentation>();
+  const update = (key: string, value: Partial<TraceParameterPresentation>) => {
+    presentations.set(key, { ...presentations.get(key), ...value });
+  };
+  for (const row of revision.boq.rows) {
+    const source = row.sourceParameters ?? {};
+    for (const [property, field] of [
+      ["asphaltV4ParameterLabelsRu", "labelRu"],
+      ["asphaltV4ParameterUnits", "unit"],
+    ] as const) {
+      const values = source[property];
+      if (!values || typeof values !== "object" || Array.isArray(values)) continue;
+      for (const [key, value] of Object.entries(values)) {
+        if (typeof value === "string" && value.trim()) update(key, { [field]: value.trim() });
+      }
+    }
+    for (const property of ["roadworksWaveAParameterMetadata", "professionalDomainParameterMetadata"] as const) {
+      const values = source[property];
+      if (!values || typeof values !== "object" || Array.isArray(values)) continue;
+      for (const [key, raw] of Object.entries(values)) {
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+        const metadata = raw as Record<string, unknown>;
+        const choices = Array.isArray(metadata.choices)
+          ? metadata.choices.flatMap((choice) => {
+            if (!choice || typeof choice !== "object" || Array.isArray(choice)) return [];
+            const candidate = choice as Record<string, unknown>;
+            return typeof candidate.value === "string" && typeof candidate.labelRu === "string"
+              ? [{ value: candidate.value, labelRu: candidate.labelRu }]
+              : [];
+          })
+          : [];
+        update(key, {
+          ...(typeof metadata.labelRu === "string" && metadata.labelRu.trim()
+            ? { labelRu: metadata.labelRu.trim() }
+            : {}),
+          ...(typeof metadata.unit === "string" && metadata.unit.trim()
+            ? { unit: metadata.unit.trim() }
+            : {}),
+          ...(choices.length > 0 ? { choices } : {}),
+        });
+      }
+    }
+  }
+  return presentations;
 }
 
 function signature(value: string): string {
@@ -75,14 +138,15 @@ function paramKeysForRow(revision: EstimateDraftRevision, row: ProfessionalBoqRo
 function traceParameter(
   key: string,
   param: EstimateDraftRevisionParam,
+  presentation?: TraceParameterPresentation,
 ): AiEstimateQuantityTraceParameter {
-  const unitRu = aiEstimateRuUnitForParameter(key, param.canonicalUnit);
+  const unitRu = aiEstimateRuUnitForParameter(key, presentation?.unit ?? param.canonicalUnit);
   return {
     key,
-    labelRu: aiEstimateRuLabelForParameter(key),
+    labelRu: presentation?.labelRu ?? aiEstimateRuLabelForParameter(key),
     value: param.value,
     unitRu,
-    displayValueRu: formatValue(param, unitRu),
+    displayValueRu: formatValue(param, unitRu === "enum" ? "" : unitRu, presentation?.choices),
   };
 }
 
@@ -108,9 +172,12 @@ export function buildAiEstimateQuantityExplanationTrace(input: {
 }): AiEstimateQuantityExplanationTrace | null {
   const revision = input.revision;
   if (!revision) return null;
+  const presentationByKey = traceParameterPresentations(revision);
   const rows = revision.boq.rows.slice(0, input.maxRows ?? revision.boq.rows.length).map((row) => {
     const parameterKeys = paramKeysForRow(revision, row);
-    const parameters = parameterKeys.map((key) => traceParameter(key, revision.params[key]));
+    const parameters = parameterKeys.map((key) =>
+      traceParameter(key, revision.params[key], presentationByKey.get(key)),
+    );
     const currentValuesSignature = signature(JSON.stringify(parameters.map((param) => [
       param.key,
       param.value,

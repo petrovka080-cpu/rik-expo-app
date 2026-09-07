@@ -63,4 +63,33 @@ describe("AI estimate quantity explanation trace", () => {
     expect(result.diff.changedRowsCount).toBeGreaterThan(0);
     expect(validateAiEstimateQuantityTrace({ revision: result.revision }).ok).toBe(true);
   });
+
+  it("keeps work-specific enum values and uncommon units out of visible formulas", () => {
+    const technicalRoom = createEstimateDraftRevision({
+      estimateDraftId: "quantity-trace-technical-room",
+      rawInput: "Устройство литого асфальта в техническом помещении 100 м2",
+      selectedTemplateId:
+        "paving_roads_landscape_interior_asphalt_lay_technical_room_professional_expanded_v1",
+      createdAt: "2026-07-09T00:00:00.000Z",
+    });
+    const bridge = createEstimateDraftRevision({
+      estimateDraftId: "quantity-trace-bridge",
+      rawInput: "Асфальтирование моста 100 м2 длина 20 м ширина 5 м",
+      selectedTemplateId: "bridge_asphalt_preliminary_boq_expanded_complex_v1",
+      createdAt: "2026-07-09T00:00:00.000Z",
+    });
+
+    const technicalRoomTrace = buildAiEstimateQuantityExplanationTrace({ revision: technicalRoom });
+    const bridgeTrace = buildAiEstimateQuantityExplanationTrace({ revision: bridge });
+    const visibleText = [technicalRoomTrace, bridgeTrace]
+      .flatMap((trace) => trace?.rows ?? [])
+      .map((row) => `${row.visibleFormulaRu} ${row.explanationRu}`)
+      .join("\n");
+
+    expect(validateAiEstimateQuantityTrace({ revision: technicalRoom }).ok).toBe(true);
+    expect(validateAiEstimateQuantityTrace({ revision: bridge }).ok).toBe(true);
+    expect(visibleText).toContain("Литой асфальт");
+    expect(visibleText).toContain("рейс/исп.");
+    expect(visibleText).not.toMatch(/CAST_ASPHALT|MODERATE|trip_test/);
+  });
 });

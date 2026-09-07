@@ -131,6 +131,13 @@ function nextValue(value: unknown): string {
   return String(Math.max(1, Math.round((value * 1.21 + 2) * 100) / 100));
 }
 
+function isHonestNeedsInputRevision(revision: EstimateDraftRevision): boolean {
+  return revision.status === "failed" &&
+    revision.estimateLevel === "NEEDS_INPUT" &&
+    revision.boq.rows.length === 0 &&
+    revision.missingInputs.length > 0;
+}
+
 function runPassportCase(bucket: MatrixBucket, templateId: string, index: number): MatrixCaseResult {
   try {
     const revision = createRevision(templateId, index);
@@ -138,15 +145,21 @@ function runPassportCase(bucket: MatrixBucket, templateId: string, index: number
     const cards = buildAiEstimateParameterCards({ revision, includeMissing: true });
     const questions = buildAiEstimateMissingInputQuestions({ revision, model });
     const trace = validateAiEstimateQuantityTrace({ revision });
-    const passed = Boolean(model) &&
-      cards.length >= (model?.filledRequirements.length ?? 0) &&
+    const dedicatedRoadworksParameterOwner = revision.boq.rows.some(
+      (row) => row.sourceParameters?.roadworksWaveA === true,
+    ) && Boolean(revision.workSpecificParameterSchemaId) && cards.length > 0;
+    const honestNeedsInput = isHonestNeedsInputRevision(revision);
+    const passed = (Boolean(model) || dedicatedRoadworksParameterOwner) &&
+      cards.length >= (model?.filledRequirements.length ?? (dedicatedRoadworksParameterOwner ? 1 : 0)) &&
       (questions?.questions.length ?? 0) <= 5 &&
-      trace.ok;
+      (trace.ok || honestNeedsInput);
     return {
       bucket,
       template_id: templateId,
       passed,
-      reason: passed ? undefined : `model:${Boolean(model)} cards:${cards.length} questions:${questions?.questions.length ?? -1} trace:${trace.blockingReasons.join("|")}`,
+      reason: passed
+        ? undefined
+        : `model:${Boolean(model)} dedicated:${dedicatedRoadworksParameterOwner} needs_input:${honestNeedsInput} cards:${cards.length} questions:${questions?.questions.length ?? -1} trace:${trace.blockingReasons.join("|")}`,
     };
   } catch (error) {
     return {

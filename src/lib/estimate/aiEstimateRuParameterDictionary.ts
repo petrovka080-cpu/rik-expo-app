@@ -163,6 +163,7 @@ const UNIT_LABELS: Record<string, string> = {
   t_trip: "т/рейс",
   m2_test: "м²/испытание",
   trip: "рейс",
+  trip_test: "рейс/исп.",
   person_shift: "чел.-смена",
   person: "чел.",
   document: "документ",

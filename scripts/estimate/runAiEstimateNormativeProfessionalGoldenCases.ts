@@ -113,6 +113,13 @@ function answerForKey(key: string): string {
   return "12";
 }
 
+function isHonestNeedsInputRevision(revision: ReturnType<typeof createEstimateDraftRevision>): boolean {
+  return revision.status === "failed" &&
+    revision.estimateLevel === "NEEDS_INPUT" &&
+    revision.boq.rows.length === 0 &&
+    revision.missingInputs.length > 0;
+}
+
 function runCase(testCase: GoldenCase, index: number): GoldenCaseResult {
   try {
     const templateId = findTemplateForCase(testCase);
@@ -147,10 +154,11 @@ function runCase(testCase: GoldenCase, index: number): GoldenCaseResult {
     const answerRecalculates = !firstQuestion ||
       Boolean(answerResult?.revision.params[firstQuestion.key]) &&
       answerResult?.revision.previousRevisionId === revision.revisionId;
+    const quantityTraceCurrentOrHonestlyDeferred = trace.ok || isHonestNeedsInputRevision(revision);
     const passed = familyMatched &&
       missingRequired.length === 0 &&
       (questions?.questions.length ?? 0) <= 5 &&
-      trace.ok &&
+      quantityTraceCurrentOrHonestlyDeferred &&
       answerRecalculates;
     return {
       id: testCase.id,

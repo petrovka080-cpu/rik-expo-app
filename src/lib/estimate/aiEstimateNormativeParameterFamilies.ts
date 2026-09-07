@@ -64,9 +64,11 @@ export const NORMATIVE_FAMILY_REQUIRED_PARAMETERS: Record<AiEstimateNormativeWor
   apartment_repair: [
     seed("area_m2", "required_for_quantity"),
     seed("ceiling_height_m", "required_for_professional_accuracy"),
+    seed("height_m", "required_for_professional_accuracy"),
     seed("bathrooms_count", "required_for_quantity"),
     seed("bathroom_floor_area_m2", "required_for_professional_accuracy"),
     seed("net_wall_area_m2", "required_for_quantity"),
+    seed("material_specification", "required_for_professional_accuracy"),
     seed("electrical_points", "required_for_professional_accuracy"),
     seed("water_points", "required_for_professional_accuracy"),
   ],
