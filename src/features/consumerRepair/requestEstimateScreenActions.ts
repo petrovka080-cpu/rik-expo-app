@@ -587,8 +587,10 @@ export function canonicalBaselineContractMissingStatusMessage(code: string): str
   if (!code.startsWith(prefix)) {
     return "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт.";
   }
-  const labels = [...new Set(code.slice(prefix.length).split(",").map((parameterId) => parameterId.trim()).filter(Boolean))]
+  const allLabels = [...new Set(code.slice(prefix.length).split(",").map((parameterId) => parameterId.trim()).filter(Boolean))]
     .map((parameterId) => CANONICAL_BASELINE_MISSING_LABEL_RU[parameterId] ?? parameterId.replace(/_/gu, " "));
+  const labels = allLabels.slice(0, 5);
+  const remainingCount = Math.max(0, allLabels.length - labels.length);
   const foundationMissing = code.includes("total_axis_length_m") || code.includes("strip_width_m") || code.includes("strip_height_m");
   const drainageMissing = code.includes("system_type") || code.includes("route_length_m") || code.includes("design_slope_percent");
   const scopeGuard = foundationMissing
@@ -596,8 +598,11 @@ export function canonicalBaselineContractMissingStatusMessage(code: string): str
     : drainageMissing
       ? " Площадь покрытия не используется как длина, сечение или количество узлов водоотвода."
       : "";
+  const continuation = remainingCount > 0
+    ? ` Это первый шаг: пять вопросов. Добавьте ответы в запрос и повторите расчёт; после этого останется уточнить ещё ${remainingCount}.`
+    : " Укажите значения в запросе и повторите расчёт.";
   return labels.length > 0
-    ? `Нужно уточнить обязательные параметры: ${labels.join("; ")}.${scopeGuard}`
+    ? `Нужно уточнить обязательные параметры: ${labels.join("; ")}.${continuation}${scopeGuard}`
     : "Для этой работы не заполнены обязательные исходные данные. Черновик сохранён — уточните параметры или повторите расчёт.";
 }
 

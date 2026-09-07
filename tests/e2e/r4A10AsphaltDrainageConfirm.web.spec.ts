@@ -14,6 +14,7 @@ const EVIDENCE_ROOT = path.resolve(
   ".release-runtime/r568/rc09-r4-production-closeout/r4-a10-asphalt-drainage/02_WEB",
 );
 const USER_FRAGMENT = "водоотвод для асфальтового покрытия на большой площади";
+const USER_TYPOED_LENGTH_PROMPT = "Устройство системы водоотвода асфальтированного покрытия 100 метроа";
 const FULL_LINEAR_PROMPT = `${USER_FRAGMENT}; тип системы: линейный лоток; проектная длина трассы 180 м; проектный продольный уклон 0,8%; ширина траншеи 0,6 м; средняя глубина траншеи 0,5 м; материал подготовки: щебень; толщина подготовки 0,1 м; плотность материала подготовки 1,6 т/м3; расстояние доставки материала подготовки 12 км; сечение обратной засыпки 0,18 м2; привозная обратная засыпка: да; материал обратной засыпки: песок; плотность привозного материала обратной засыпки 1,65 т/м3; расстояние доставки обратной засыпки 14 км; количество подключений к выпуску 2 шт; выпуск подтвержден; вывоз грунта: да; объем вывоза грунта 10,8 м3; плотность грунта 1,8 т/м3; расстояние вывоза грунта 20 км; доставка отдельно: да; транспортная масса системы 18 т; расстояние доставки системы 30 км; модель экскаватора E35; производительность экскаватора 25 м3/ч; модель траншейного уплотнителя DPU 6555; производительность траншейного уплотнителя 12 м3/ч; восстановление асфальта: нет; сечение лотка DN200; класс нагрузки лотка D400; длина модуля лотка 1 м; сечение бетонного основания и обоймы лотка 0,08 м2; расход герметика на стык лотка 0,12 кг/стык; крепеж решетки на модуль 2 шт; пескоуловителей 6 шт; расстояние доставки бетона лотков 18 км`;
 
 async function openRequest(page: Page): Promise<void> {
@@ -192,6 +193,20 @@ test.describe("R4-A10 asphalt drainage technology and confirm", () => {
     expect(ambiguousText).not.toMatch(/59 позиц|сметное сопровождение|налоговая строка|башенный \/ автокран/iu);
 
     await resetRequest(page);
+    await page.getByTestId("consumer-repair-problem-input").fill(USER_TYPOED_LENGTH_PROMPT);
+    await page.getByTestId("consumer-repair-prepare-draft").click();
+    await expect(page.getByTestId("consumer-repair-status")).toContainText(
+      /первый шаг: пять вопросов/iu,
+      { timeout: 120_000 },
+    );
+    expect(compileResponses).toHaveLength(0);
+    const typoedLengthText = await page.getByTestId("consumer-repair-status").innerText();
+    for (const question of ["тип системы", "продольный уклон", "ширина траншеи", "глубина траншеи", "материал подготовки"]) {
+      expect(typoedLengthText).toMatch(new RegExp(question, "iu"));
+    }
+    expect(typoedLengthText).not.toMatch(/проектная длина трассы|сечение лотка|дренажн.*труб|труб.*дождев.*сет/iu);
+
+    await resetRequest(page);
     const compileResponsePromise = page.waitForResponse((response) =>
       response.request().method() === "POST" && response.url() === `${BACKEND_ORIGIN}/jobs/compile`,
     { timeout: 180_000 });
@@ -303,6 +318,13 @@ test.describe("R4-A10 asphalt drainage technology and confirm", () => {
       generatedAt: new Date().toISOString(),
       masterSha256: MASTER_SHA256,
       fragment: { prompt: `${USER_FRAGMENT} 10000 м2`, backendCompileRequests: 0, failClosed: true },
+      typoedLength: {
+        prompt: USER_TYPOED_LENGTH_PROMPT,
+        routeLengthRecognized: true,
+        questionsInFirstStep: 5,
+        backendCompileRequests: 0,
+        failClosed: true,
+      },
       complete: {
         prompt: FULL_LINEAR_PROMPT,
         compileStatus: compileResponse.status(),

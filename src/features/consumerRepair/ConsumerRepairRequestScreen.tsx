@@ -36,6 +36,8 @@ import { MARKET_TAB_ROUTE } from "../market/market.routes";
 import {
   assertCanonicalEstimateArtifactIdentity,
   buildCanonicalEstimateArtifact,
+  getCanonicalEstimateArtifact,
+  getCanonicalEstimateCatalogItem,
   getCanonicalEstimateRevision,
   searchCanonicalEstimateCatalog,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
@@ -1038,9 +1040,13 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     }
     const identityFailure = error instanceof CanonicalEstimateApiError &&
       error.code === "ARTIFACT_REVISION_IDENTITY_MISMATCH";
+    const quarantined = error instanceof CanonicalEstimateApiError &&
+      error.code === "REVISION_CONTENT_QUARANTINED";
     this.setState({
       statusMessage: identityFailure
         ? "PDF для выбранной версии сметы не найден. Другой документ не был открыт."
+        : quarantined
+          ? "Для этой старой версии новый PDF создавать нельзя. Если ранее созданный PDF отсутствует, сформируйте исправленную смету."
         : error instanceof CanonicalEstimateApiError
           ? error.message
           : "PDF выбранной версии не удалось открыть. Другой документ не был открыт.",
@@ -1160,8 +1166,34 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const initial = this.ensureDraftBundle({ allowPendingDraftCreation: true });
     const pendingBundle = this.resolvedDraftBundle(initial);
     if (!pendingBundle) return initial;
-    if (consumerRepairCanonicalBackendBinding(pendingBundle)) {
-      return { status: "READY", bundle: pendingBundle };
+    const existingBinding = consumerRepairCanonicalBackendBinding(pendingBundle);
+    let requiresCanonicalSuccessor = false;
+    if (existingBinding) {
+      try {
+        const existingRevision = await getCanonicalEstimateRevision(existingBinding.revisionId);
+        if (existingRevision.releaseId !== existingBinding.releaseId) {
+          return {
+            status: "RETRYABLE_ERROR",
+            bundle: pendingBundle,
+            message: "Не удалось подтвердить версию сохранённой сметы. Черновик не изменён — повторите попытку.",
+          };
+        }
+        const currentCatalog = await getCanonicalEstimateCatalogItem(existingRevision.catalogId);
+        if (currentCatalog.releaseId === existingBinding.releaseId) {
+          return { status: "READY", bundle: pendingBundle };
+        }
+        requiresCanonicalSuccessor = true;
+      } catch (error) {
+        const unavailable = error instanceof CanonicalEstimateApiError
+          && ["ESTIMATE_ADMISSION_DENIED", "NOT_FOUND"].includes(error.code);
+        return {
+          status: unavailable ? "BLOCKED_WITH_REASON" : "RETRYABLE_ERROR",
+          bundle: pendingBundle,
+          message: unavailable
+            ? "Сохранённая версия доступна только для чтения, а актуальная расчётная модель пока недоступна. Черновик не изменён."
+            : "Не удалось проверить актуальность сохранённой сметы. Черновик не изменён — повторите попытку.",
+        };
+      }
     }
 
     const problemText =
@@ -1234,7 +1266,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       }
     }
 
-    this.setState({ statusMessage: "Формируем исходную смету…" });
+    this.setState({
+      statusMessage: requiresCanonicalSuccessor
+        ? "Сохранённая версия доступна только для чтения. Готовим исправленную смету…"
+        : "Формируем исходную смету…",
+    });
     try {
       const recovered = await this.props.onPrepareCanonicalEstimate(
         problemText,
@@ -1258,7 +1294,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         message: code.startsWith("CANONICAL_BACKEND_DEFINITION_MISSING:")
           ? "Работа найдена, но её расчётная модель временно недоступна. Черновик сохранён — повторите расчёт."
           : code.startsWith("CANONICAL_BASELINE_CONTRACT_MISSING:")
-            ? canonicalBaselineContractMissingStatusMessage(code)
+            ? `${requiresCanonicalSuccessor ? "Для исправленной версии нужны исходные данные. " : ""}${canonicalBaselineContractMissingStatusMessage(code)}`
             : "Не удалось рассчитать смету. Черновик сохранён — повторите расчёт.",
       };
     }
@@ -1404,8 +1440,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         this.handleValidationError(error);
       } else {
         logger.error("ConsumerRepairApprove", "durable approval commit failed", error);
+        const quarantined = error instanceof CanonicalEstimateApiError
+          && error.code === "REVISION_CONTENT_QUARANTINED";
         this.setState({
-          statusMessage: "Не удалось надёжно сохранить утверждённую смету. Повторите подтверждение.",
+          statusMessage: quarantined
+            ? "Эта сохранённая версия доступна только для чтения. Сформируйте исправленную смету, уточните обязательные данные и затем подтвердите её."
+            : "Не удалось надёжно сохранить утверждённую смету. Повторите подтверждение.",
         });
       }
     } finally {
@@ -1427,12 +1467,22 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             "PDF не открыт: backend вернул другую версию или другую работу.",
           );
         }
-        const artifact = await buildCanonicalEstimateArtifact({
-          revisionId: context.revisionId,
-          kind: "pdf",
-          documentProfile: "professional_v1",
-          idempotencyKey: `consumer-professional-pdf-${context.revisionId}`,
-        });
+        let artifact;
+        try {
+          artifact = await getCanonicalEstimateArtifact({
+            revisionId: context.revisionId,
+            kind: "pdf",
+            documentProfile: "professional_v1",
+          });
+        } catch (error) {
+          if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+          artifact = await buildCanonicalEstimateArtifact({
+            revisionId: context.revisionId,
+            kind: "pdf",
+            documentProfile: "professional_v1",
+            idempotencyKey: `consumer-professional-pdf-${context.revisionId}`,
+          });
+        }
         assertCanonicalEstimateArtifactIdentity({
           artifact,
           revision,

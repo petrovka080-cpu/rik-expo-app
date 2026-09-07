@@ -92,6 +92,43 @@ function approvedDefinition(bindingPatch: Record<string, unknown> = {}): Canonic
 }
 
 describe("canonical backend parameter precedence", () => {
+  it("evaluates both persisted InclusionGraph and legacy equals conditional shapes", () => {
+    const definitions: CanonicalParameterDefinitionRecord[] = [
+      {
+        parameter_id: "system_type",
+        value_type: "text",
+        required: true,
+        default_value: null,
+        constraints_json: {},
+      },
+      {
+        parameter_id: "tray_size",
+        value_type: "text",
+        required: false,
+        default_value: null,
+        constraints_json: {
+          requiredWhen: { kind: "equals", parameterId: "system_type", value: "linear_tray" },
+        },
+      },
+      {
+        parameter_id: "inspection_required",
+        value_type: "boolean",
+        required: false,
+        default_value: null,
+        constraints_json: {
+          requiredWhen: { parameterId: "system_type", equals: "storm_sewer" },
+        },
+      },
+    ];
+
+    expect(validateCanonicalEstimateParameters(definitions, { system_type: "subsurface_drain" }))
+      .toEqual({ system_type: "subsurface_drain" });
+    expect(() => validateCanonicalEstimateParameters(definitions, { system_type: "linear_tray" }))
+      .toThrow("missing parameter tray_size");
+    expect(() => validateCanonicalEstimateParameters(definitions, { system_type: "storm_sewer" }))
+      .toThrow("missing parameter inspection_required");
+  });
+
   it("uses the accepted per-work baseline when no refinement exists", () => {
     expect(validateCanonicalEstimateParameters([acceptedDefinition()], {}, {
       baselineContext: { catalogId },

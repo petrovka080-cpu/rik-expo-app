@@ -60,8 +60,42 @@ describe("R4-A10 asphalt surface drainage canonical owner", () => {
   test("keeps the journal fragment fail-closed and never converts asphalt area into drainage geometry", () => {
     expect(parseR4A10AsphaltDrainagePrompt(USER_FRAGMENT)).toEqual({});
     expect(parseR4A10AsphaltDrainagePrompt(`${USER_FRAGMENT} 10000 м2`)).toEqual({});
-    expect(() => buildCanonicalBaselinePlan({ catalog: catalog(), prompt: `${USER_FRAGMENT} 10000 м2` }))
-      .toThrow(/^CANONICAL_BASELINE_CONTRACT_MISSING:system_type,route_length_m,design_slope_percent/u);
+    let missing = "";
+    try {
+      buildCanonicalBaselinePlan({ catalog: catalog(), prompt: `${USER_FRAGMENT} 10000 м2` });
+    } catch (error) {
+      missing = error instanceof Error ? error.message : String(error);
+    }
+    expect(missing).toMatch(/^CANONICAL_BASELINE_CONTRACT_MISSING:system_type,route_length_m,design_slope_percent/u);
+    expect(missing).not.toMatch(/tray_nominal_size|drain_pipe_nominal_size|storm_pipe_nominal_size/u);
+  });
+
+  test("accepts one typoed linear-metre primary measure but keeps the remaining P0 fail-closed", () => {
+    const prompt = "Устройство системы водоотвода асфальтированного покрытия 100 метроа";
+    expect(parseR4A10AsphaltDrainagePrompt(prompt)).toEqual({ route_length_m: "100" });
+    expect(parseR4A10AsphaltDrainagePrompt(`${prompt}; ещё 2 метра`)).toEqual({});
+    let missing = "";
+    try {
+      buildCanonicalBaselinePlan({ catalog: catalog(), prompt });
+    } catch (error) {
+      missing = error instanceof Error ? error.message : String(error);
+    }
+    expect(missing).toMatch(/^CANONICAL_BASELINE_CONTRACT_MISSING:system_type,design_slope_percent/u);
+    expect(missing).not.toContain("route_length_m");
+  });
+
+  test("asks only for the selected drainage branch", () => {
+    let missing = "";
+    try {
+      buildCanonicalBaselinePlan({
+        catalog: catalog(),
+        prompt: `${USER_FRAGMENT}; система: линейные лотки; проектная длина трассы 100 м`,
+      });
+    } catch (error) {
+      missing = error instanceof Error ? error.message : String(error);
+    }
+    expect(missing).toContain("tray_nominal_size");
+    expect(missing).not.toMatch(/drain_pipe_nominal_size|storm_pipe_nominal_size/u);
   });
 
   test("parses an explicitly labelled full linear-tray scheme and fixes the primary measure at route length", () => {

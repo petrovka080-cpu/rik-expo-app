@@ -31,8 +31,17 @@ export function evaluateInclusionGraph(ast: InclusionGraphAst, parameters: Recor
     throw new InclusionGraphEvaluationError("inclusion AST must be an object");
   }
   const kind = String(ast.kind ?? "");
-  if (kind === "literal") return ast.value === true;
-  if (kind === "parameter") return parameters[String(ast.id ?? "")] === true;
+  if (kind === "literal") {
+    if (typeof ast.value !== "boolean") {
+      throw new InclusionGraphEvaluationError("literal node requires boolean value");
+    }
+    return ast.value;
+  }
+  if (kind === "parameter") {
+    const parameterId = String(ast.id ?? "");
+    if (!parameterId) throw new InclusionGraphEvaluationError("parameter node requires id");
+    return parameters[parameterId] === true;
+  }
   if (kind === "not") {
     if (!ast.operand || typeof ast.operand !== "object" || Array.isArray(ast.operand)) {
       throw new InclusionGraphEvaluationError("not node requires one operand");
@@ -48,8 +57,12 @@ export function evaluateInclusionGraph(ast: InclusionGraphAst, parameters: Recor
   const parameterId = String(ast.parameterId ?? "");
   if (!parameterId) throw new InclusionGraphEvaluationError(`${kind || "unknown"} node requires parameterId`);
   const actual = parameters[parameterId];
-  if (kind === "equals") return actual === ast.value;
-  if (kind === "not_equals") return actual !== ast.value;
+  if (kind === "equals" || kind === "not_equals") {
+    if (!Object.prototype.hasOwnProperty.call(ast, "value")) {
+      throw new InclusionGraphEvaluationError(`${kind} node requires value`);
+    }
+    return kind === "equals" ? actual === ast.value : actual !== ast.value;
+  }
   if (kind === "in") {
     if (!Array.isArray(ast.values) || ast.values.length === 0) throw new InclusionGraphEvaluationError("in node requires values");
     return ast.values.includes(actual);

@@ -1,3 +1,5 @@
+import { evaluateInclusionGraph } from "./inclusionGraph";
+
 export type CanonicalParameterDefinitionRecord = {
   parameter_id?: unknown;
   value_type?: unknown;
@@ -33,8 +35,15 @@ function fail(message: string): never {
 function conditionMatches(raw: unknown, values: JsonRecord): boolean {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
   const condition = raw as JsonRecord;
+  if (typeof condition.kind === "string" && condition.kind.trim()) {
+    try {
+      return evaluateInclusionGraph(condition, values);
+    } catch {
+      return fail("invalid conditional parameter constraint");
+    }
+  }
   const parameterId = String(condition.parameterId ?? "");
-  if (!parameterId) return false;
+  if (!parameterId || !Object.prototype.hasOwnProperty.call(condition, "equals")) return false;
   return values[parameterId] === condition.equals;
 }
 

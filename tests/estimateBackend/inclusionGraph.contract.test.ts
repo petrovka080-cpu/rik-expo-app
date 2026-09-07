@@ -33,6 +33,9 @@ describe("canonical backend InclusionGraph", () => {
     [{ kind: "greater_than", parameterId: "missing", value: 0 }],
     [{ kind: "and", conditions: [] }],
     [{ kind: "unknown", parameterId: "quantity", value: 0 }],
+    [{ kind: "equals", parameterId: "missing_value" }],
+    [{ kind: "literal", value: "true" }],
+    [{ kind: "parameter" }],
   ])("fails closed for malformed or unsupported graphs %#", (ast) => {
     expect(() => evaluateInclusionGraph(ast, parameters)).toThrow(InclusionGraphEvaluationError);
   });

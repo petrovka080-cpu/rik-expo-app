@@ -3,6 +3,7 @@ import type {
   CanonicalEstimateCompositeItem,
   CanonicalEstimateParameterInputValue,
 } from "./contracts";
+import { evaluateInclusionGraph } from "./inclusionGraph";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 type ParameterValue = CanonicalEstimateParameterInputValue;
@@ -55,7 +56,13 @@ function conditionMatches(raw: unknown, values: Record<string, ParameterValue>):
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const condition = raw as Record<string, unknown>;
   const parameterId = typeof condition.parameterId === "string" ? condition.parameterId : "";
-  if (!parameterId) return null;
+  if (typeof condition.kind === "string" && condition.kind.trim()) {
+    return {
+      parameterId,
+      matches: evaluateInclusionGraph(condition, values),
+    };
+  }
+  if (!parameterId || !Object.prototype.hasOwnProperty.call(condition, "equals")) return null;
   return { parameterId, matches: values[parameterId] === condition.equals };
 }
 

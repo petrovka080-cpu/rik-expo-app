@@ -106,6 +106,17 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     )).toContain("общая длина ленты по оси; ширина ленты; высота бетонной ленты; входит ли разработка грунта");
   });
 
+  it("shows no more than five P0 questions in one clarification step", () => {
+    const message = canonicalBaselineContractMissingStatusMessage(
+      "CANONICAL_BASELINE_CONTRACT_MISSING:system_type,route_length_m,design_slope_percent,trench_width_m,trench_depth_m,bedding_material,bedding_thickness_m",
+    );
+    expect(message).toContain("тип системы");
+    expect(message).toContain("средняя глубина траншеи");
+    expect(message).toContain("останется уточнить ещё 2");
+    expect(message).not.toContain("материал подготовки");
+    expect(message).not.toContain("толщина подготовки");
+  });
+
   it("does not reinterpret generic building dimensions as strip-foundation geometry", () => {
     expect(parseR4A10StripFoundationPrompt(
       "устройство ленточного фундамента 100 метров длина и 20 метров ширина",
@@ -441,6 +452,26 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     expect(prepareFlow).toContain("this.updateCurrentBundle(");
     expect(prepareFlow).toContain("result.bundle");
     expect(prepareFlow).toContain("Смета рассчитана. Проверьте позиции и параметры.");
+  });
+
+  it("recovers a quarantined revision through the current release and reads an existing legacy PDF without creating a new artifact", () => {
+    const screen = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
+    const ensureFlow = screen.slice(
+      screen.indexOf("private ensureInitialCanonicalRevision = async"),
+      screen.indexOf("private prepareDraft = async"),
+    );
+    expect(ensureFlow).toContain("getCanonicalEstimateRevision(existingBinding.revisionId)");
+    expect(ensureFlow).toContain("getCanonicalEstimateCatalogItem(existingRevision.catalogId)");
+    expect(ensureFlow).toContain("currentCatalog.releaseId === existingBinding.releaseId");
+    expect(ensureFlow).toContain("requiresCanonicalSuccessor = true");
+
+    const pdfFlow = screen.slice(
+      screen.indexOf("private completePdfOpen = async"),
+      screen.indexOf("private makePdf ="),
+    );
+    expect(pdfFlow.indexOf("getCanonicalEstimateArtifact({"))
+      .toBeLessThan(pdfFlow.indexOf("buildCanonicalEstimateArtifact({"));
+    expect(pdfFlow).toContain('error.code !== "NOT_FOUND"');
   });
 
   it("opens history editing on /request with the exact inline parameter session", () => {

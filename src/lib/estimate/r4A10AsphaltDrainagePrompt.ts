@@ -20,8 +20,10 @@ function explicitBoolean(prompt: string, pattern: RegExp): boolean | undefined {
 }
 
 /**
- * Parses only labelled drainage-scheme facts. Area of the asphalt site and a
- * bare word "водоотвод" never become route length, section, wells or outlet.
+ * Parses drainage-scheme facts. Area of the asphalt site and a bare word
+ * "водоотвод" never become route length, section, wells or outlet. For this
+ * exact work, one unambiguous linear-metre quantity may be the primary route
+ * length; several unlabelled metre values remain unresolved.
  */
 export function parseR4A10AsphaltDrainagePrompt(
   prompt: string,
@@ -83,6 +85,14 @@ export function parseR4A10AsphaltDrainagePrompt(
   for (const [parameterId, pattern] of Object.entries(numericPatterns)) {
     const value = number(normalized, pattern);
     if (value !== undefined) values[parameterId] = value;
+  }
+  if (values.route_length_m == null) {
+    const bareLinearMetres = [...normalized.matchAll(
+      /(?<![\p{L}\p{N}])(\d+(?:[,.]\d+)?)\s*м(?:етр\p{L}*)?(?![\p{L}\p{N}²³])/giu,
+    )];
+    if (bareLinearMetres.length === 1) {
+      values.route_length_m = bareLinearMetres[0]![1]!.replace(",", ".");
+    }
   }
 
   if (/материал\p{L}*\s+подготовк\p{L}*\s*[:=]?\s*щеб/iu.test(normalized)) values.bedding_material = "crushed_stone";
