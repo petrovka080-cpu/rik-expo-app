@@ -15,6 +15,8 @@ const EVIDENCE_ROOT = path.resolve(
 );
 const USER_FRAGMENT = "водоотвод для асфальтового покрытия на большой площади";
 const USER_TYPOED_LENGTH_PROMPT = "Устройство системы водоотвода асфальтированного покрытия 100 метроа";
+const LEGACY_REVISION_ID = "ba9661fa-0e50-4e46-a4d0-0d3ce1bdd6a6";
+const LEGACY_RELEASE_ID = "da690b42-1fe2-535b-a52e-5fa98ff9fded";
 const FULL_LINEAR_PROMPT = `${USER_FRAGMENT}; тип системы: линейный лоток; проектная длина трассы 180 м; проектный продольный уклон 0,8%; ширина траншеи 0,6 м; средняя глубина траншеи 0,5 м; материал подготовки: щебень; толщина подготовки 0,1 м; плотность материала подготовки 1,6 т/м3; расстояние доставки материала подготовки 12 км; сечение обратной засыпки 0,18 м2; привозная обратная засыпка: да; материал обратной засыпки: песок; плотность привозного материала обратной засыпки 1,65 т/м3; расстояние доставки обратной засыпки 14 км; количество подключений к выпуску 2 шт; выпуск подтвержден; вывоз грунта: да; объем вывоза грунта 10,8 м3; плотность грунта 1,8 т/м3; расстояние вывоза грунта 20 км; доставка отдельно: да; транспортная масса системы 18 т; расстояние доставки системы 30 км; модель экскаватора E35; производительность экскаватора 25 м3/ч; модель траншейного уплотнителя DPU 6555; производительность траншейного уплотнителя 12 м3/ч; восстановление асфальта: нет; сечение лотка DN200; класс нагрузки лотка D400; длина модуля лотка 1 м; сечение бетонного основания и обоймы лотка 0,08 м2; расход герметика на стык лотка 0,12 кг/стык; крепеж решетки на модуль 2 шт; пескоуловителей 6 шт; расстояние доставки бетона лотков 18 км`;
 
 async function openRequest(page: Page): Promise<void> {
@@ -344,6 +346,111 @@ test.describe("R4-A10 asphalt drainage technology and confirm", () => {
         backendPidAfter: restarted.afterPid,
         archivalPdfContentTypeAfterRestart: archivalPdfResponse.headers()["content-type"],
       },
+      consoleErrors,
+      pageErrors,
+      productionOrigins: [...productionOrigins],
+      productionRequests: 0,
+      screenshot: path.relative(process.cwd(), screenshotPath).replace(/\\/gu, "/"),
+      fakeGreenClaimed: false,
+    }, null, 2)}\n`, "utf8");
+
+    expect(consoleErrors).toEqual([]);
+    expect(pageErrors).toEqual([]);
+    expect([...productionOrigins]).toEqual([]);
+  });
+
+  test("opens the exact legacy PDF and routes confirmation to a current successor instead of mutating the quarantined revision", async ({ page }) => {
+    await ensureLiveWebApp();
+    const consoleErrors: string[] = [];
+    const pageErrors: string[] = [];
+    const productionOrigins = new Set<string>();
+    const oldRevisionArtifactPosts: Response[] = [];
+    const oldRevisionArtifactReads: Response[] = [];
+    const compileResponses: Response[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text().slice(0, 1_000));
+    });
+    page.on("pageerror", (error) => pageErrors.push(error.message.slice(0, 1_000)));
+    page.on("request", (request) => {
+      if (/\.supabase\.co|nxrnjywzxxfdpqmzjorh/iu.test(request.url())) {
+        productionOrigins.add(new URL(request.url()).origin);
+      }
+    });
+    page.on("response", (response) => {
+      if (
+        response.request().method() === "GET"
+        && response.url().includes(LEGACY_REVISION_ID)
+        && /\/artifacts\/pdf(?:\?|$)/u.test(new URL(response.url()).pathname + new URL(response.url()).search)
+      ) oldRevisionArtifactReads.push(response);
+      if (
+        response.request().method() === "POST"
+        && response.url().includes(`/canonical-estimate/revisions/${LEGACY_REVISION_ID}/artifacts/`)
+      ) oldRevisionArtifactPosts.push(response);
+      if (response.request().method() === "POST" && response.url() === `${BACKEND_ORIGIN}/jobs/compile`) {
+        compileResponses.push(response);
+      }
+    });
+
+    await page.goto(
+      new URL(`/request?canonicalRevisionId=${encodeURIComponent(LEGACY_REVISION_ID)}`, BASE_URL).toString(),
+      { waitUntil: "domcontentloaded", timeout: 120_000 },
+    );
+    await expect(page.getByTestId("local-developer-review-banner")).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByTestId("consumer-repair-screen")).toBeVisible({ timeout: 120_000 });
+    await expect(page.getByTestId("request-estimate-summary-card")).toBeVisible({ timeout: 180_000 });
+    const identity = String(await page.locator('[id^="canonical-estimate-row-identity|"]').first().getAttribute("id"));
+    const identityParts = identity.split("|");
+    expect(identityParts[1]).toBe(LEGACY_REVISION_ID);
+    expect(identityParts[2]).toBe(LEGACY_RELEASE_ID);
+
+    const draftUrl = page.url();
+    const legacyPdfFileResponsePromise = page.waitForResponse((response) =>
+      response.url().startsWith(`${BACKEND_ORIGIN}/canonical-estimate/artifact-files/`)
+      && response.status() === 200,
+    { timeout: 180_000 });
+    await page.getByTestId("request-estimate-progressive-actions")
+      .getByTestId("consumer-estimate-make-pdf")
+      .click();
+    await page.waitForURL(/\/pdf-viewer\?sessionId=/iu, { timeout: 180_000 });
+    const legacyPdfFileResponse = await legacyPdfFileResponsePromise;
+    expect(legacyPdfFileResponse.headers()["content-type"]).toContain("application/pdf");
+    await expect(page.getByTestId("pdf-viewer-web-iframe")).toHaveAttribute("aria-busy", "false", {
+      timeout: 120_000,
+    });
+    expect(oldRevisionArtifactReads.map((response) => ({
+      status: response.status(),
+      url: response.url(),
+    }))).toEqual([expect.objectContaining({ status: 200 })]);
+    expect(oldRevisionArtifactPosts).toHaveLength(0);
+
+    await page.goBack({ waitUntil: "domcontentloaded", timeout: 120_000 });
+    await expect(page).toHaveURL(draftUrl);
+    await expect(page.locator(`[id^="canonical-estimate-row-identity|${LEGACY_REVISION_ID}|"]`).first())
+      .toBeVisible({ timeout: 120_000 });
+    await page.getByTestId("consumer-repair-approve").last().click();
+    await expect(page.getByTestId("consumer-repair-status")).toContainText(
+      /для исправленной версии нужны исходные данные.*первый шаг: пять вопросов/iu,
+      { timeout: 180_000 },
+    );
+    expect(oldRevisionArtifactPosts).toHaveLength(0);
+    expect(compileResponses).toHaveLength(0);
+
+    fs.mkdirSync(EVIDENCE_ROOT, { recursive: true });
+    const screenshotPath = path.join(EVIDENCE_ROOT, "asphalt-drainage-legacy-recovery.png");
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    fs.writeFileSync(path.join(EVIDENCE_ROOT, "asphalt-drainage-legacy-recovery.json"), `${JSON.stringify({
+      schemaVersion: "rik-expo-app.r4-a11.asphalt-drainage-legacy-recovery-web.v1",
+      generatedAt: new Date().toISOString(),
+      masterSha256: MASTER_SHA256,
+      revisionId: LEGACY_REVISION_ID,
+      releaseId: LEGACY_RELEASE_ID,
+      exactExistingProfessionalPdfRead: true,
+      legacyArtifactGetStatus: oldRevisionArtifactReads[0]?.status() ?? null,
+      legacyPdfContentType: legacyPdfFileResponse.headers()["content-type"],
+      legacyArtifactCreateRequests: oldRevisionArtifactPosts.length,
+      successorCompileRequestsBeforeRequiredInputs: compileResponses.length,
+      boundedSuccessorQuestions: true,
+      legacyRevisionMutated: false,
       consoleErrors,
       pageErrors,
       productionOrigins: [...productionOrigins],
