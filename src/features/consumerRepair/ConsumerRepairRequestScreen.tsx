@@ -1467,15 +1467,23 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
             "PDF не открыт: backend вернул другую версию или другую работу.",
           );
         }
+        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
         let artifact;
-        try {
-          artifact = await getCanonicalEstimateArtifact({
-            revisionId: context.revisionId,
-            kind: "pdf",
-            documentProfile: "professional_v1",
-          });
-        } catch (error) {
-          if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+        if (currentCatalog.releaseId !== revision.releaseId) {
+          try {
+            artifact = await getCanonicalEstimateArtifact({
+              revisionId: context.revisionId,
+              kind: "pdf",
+              documentProfile: "professional_v1",
+            });
+          } catch (error) {
+            if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+            throw new CanonicalEstimateApiError(
+              "Для этой старой версии ранее созданный PDF не найден.",
+              { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
+            );
+          }
+        } else {
           artifact = await buildCanonicalEstimateArtifact({
             revisionId: context.revisionId,
             kind: "pdf",

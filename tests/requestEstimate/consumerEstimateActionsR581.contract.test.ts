@@ -471,7 +471,10 @@ describe("ONE MONOLITH R5.8.1 consumer estimate actions", () => {
     );
     expect(pdfFlow.indexOf("getCanonicalEstimateArtifact({"))
       .toBeLessThan(pdfFlow.indexOf("buildCanonicalEstimateArtifact({"));
+    expect(pdfFlow).toContain("getCanonicalEstimateCatalogItem(revision.catalogId)");
+    expect(pdfFlow).toContain("currentCatalog.releaseId !== revision.releaseId");
     expect(pdfFlow).toContain('error.code !== "NOT_FOUND"');
+    expect(pdfFlow).toContain('{ code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 }');
   });
 
   it("opens history editing on /request with the exact inline parameter session", () => {
