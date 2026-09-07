@@ -179,6 +179,20 @@ export type ExpandedComplexCalculatorOutput = {
   calculation_trace: string[];
 };
 
+export function isExpandedComplexNeedsInputOutcome(
+  estimate: ExpandedComplexCalculatorOutput,
+): boolean {
+  return estimate.estimate_level === "NEEDS_INPUT" &&
+    estimate.missing_design_inputs.length > 0 &&
+    estimate.material_rows.length === 0 &&
+    estimate.work_rows.length === 0 &&
+    estimate.equipment_rows.length === 0 &&
+    estimate.service_rows.length === 0 &&
+    estimate.procurement_subset.length === 0 &&
+    estimate.calculation_trace.length === 0 &&
+    estimate.price_state.finalTotalAllowed === false;
+}
+
 export type ExpandedComplexSnapshot = ExpandedComplexCalculatorOutput & {
   norm_sources: string[];
   price_states: string[];

@@ -50,6 +50,7 @@ export type GoldenBenchmarkWorkFamilyGroup =
   | "SPECIAL_WORKS";
 
 export type GoldenBenchmarkEstimateLevel =
+  | "NEEDS_INPUT"
   | "DETAILED_BOQ_FROM_DRAWINGS"
   | "PRELIMINARY_BOQ"
   | "ROM_CONCEPT";
@@ -91,6 +92,11 @@ export type GoldenBenchmarkCase = {
   work_key?: string;
   quantity?: number;
   expected_row_codes?: string[];
+  current_runtime_contract?: {
+    version: "canonical-pump-p0-gate-v1";
+    expected_outcome: "NEEDS_INPUT";
+    historical_reference_status: "READ_ONLY_SUPERSEDED_BY_P0_GATE";
+  };
 };
 
 export type GoldenBenchmarkIndex = {
@@ -101,6 +107,15 @@ export type GoldenBenchmarkIndex = {
   mandatory_golden_cases_created: boolean;
   all_required_work_family_groups_covered: boolean;
   distribution: Record<GoldenBenchmarkWorkFamilyGroup, number>;
+  current_runtime_contracts: {
+    expanded_complex_authored_rows: {
+      version: "expanded-complex-authored-rows-v2";
+      applies_to_engine: "expanded_complex";
+      historical_reference_row_prefixes: readonly ["s2b_", "professional_"];
+      historical_reference_status: "READ_ONLY_SUPERSEDED_PADDING_ROWS";
+      current_requirement: "ALL_NON_PADDING_REFERENCE_ROWS_MUST_MATCH_AND_PADDING_MUST_STAY_ABSENT";
+    };
+  };
   cases: Array<{
     case_id: string;
     work_family_group: GoldenBenchmarkWorkFamilyGroup;
@@ -203,6 +218,7 @@ export type GoldenBenchmarkDeviationType =
   | "PDF_SNAPSHOT_MISMATCH"
   | "BUYER_HANDOFF_INVALID"
   | "MISSING_DESIGN_INPUT_NOT_SHOWN"
+  | "INVALID_NEEDS_INPUT_OUTCOME"
   | "ESTIMATE_LEVEL_WRONG"
   | "FAKE_PRICE"
   | "AI_GENERATED_QUANTITY"
@@ -583,7 +599,11 @@ export function buildGeneratedBenchmarkEstimate(caseDef: GoldenBenchmarkCase): G
     return {
       case_id: caseDef.case_id,
       prompt: caseDef.prompt,
-      estimate_level: estimate.estimate_level === "ROM_CONCEPT" ? "ROM_CONCEPT" : "PRELIMINARY_BOQ",
+      estimate_level: estimate.estimate_level === "NEEDS_INPUT"
+        ? "NEEDS_INPUT"
+        : estimate.estimate_level === "ROM_CONCEPT"
+          ? "ROM_CONCEPT"
+          : "PRELIMINARY_BOQ",
       input_parameters: estimate.input_parameters,
       missing_design_inputs: estimate.missing_design_inputs,
       assumptions: estimate.assumptions,
@@ -763,6 +783,7 @@ function deviation(input: {
     "PDF_SNAPSHOT_MISMATCH",
     "BUYER_HANDOFF_INVALID",
     "MISSING_DESIGN_INPUT_NOT_SHOWN",
+    "INVALID_NEEDS_INPUT_OUTCOME",
     "ESTIMATE_LEVEL_WRONG",
     "FAKE_PRICE",
     "AI_GENERATED_QUANTITY",
@@ -788,13 +809,22 @@ export function compareGeneratedEstimateToGoldenBenchmark(
 ): GoldenBenchmarkComparison {
   const deviations: GoldenBenchmarkDeviation[] = [];
   const generatedByCode = new Map(generated.rows.map((row) => [row.code, row]));
-  const referenceByCode = new Map(reference.rows.map((row) => [row.code, row]));
+  const authoredRowsContract = caseDef.engine === "expanded_complex"
+    ? loadGoldenBenchmarkIndex().current_runtime_contracts.expanded_complex_authored_rows
+    : null;
+  const historicalPaddingPrefixes = authoredRowsContract?.historical_reference_row_prefixes ?? [];
+  const isHistoricalPaddingRow = (row: Pick<GoldenBenchmarkReferenceRow, "code">) =>
+    historicalPaddingPrefixes.some((prefix) => row.code.startsWith(prefix));
+  const currentReferenceRows = reference.rows.filter((row) => !isHistoricalPaddingRow(row));
+  const referenceByCode = new Map(currentReferenceRows.map((row) => [row.code, row]));
+  const needsInputContract = caseDef.current_runtime_contract?.expected_outcome === "NEEDS_INPUT";
+  const expectedEstimateLevel = needsInputContract ? "NEEDS_INPUT" : caseDef.estimate_level;
 
-  if (generated.estimate_level !== caseDef.estimate_level) {
+  if (generated.estimate_level !== expectedEstimateLevel) {
     deviations.push(deviation({
       case_id: caseDef.case_id,
       type: "ESTIMATE_LEVEL_WRONG",
-      expected: caseDef.estimate_level,
+      expected: expectedEstimateLevel,
       actual: generated.estimate_level,
       message: "Generated estimate level differs from the benchmark contract.",
     }));
@@ -808,104 +838,124 @@ export function compareGeneratedEstimateToGoldenBenchmark(
     }));
   }
 
-  for (const referenceRow of reference.rows) {
-    const actual = generatedByCode.get(referenceRow.code);
-    if (!actual) {
+  if (needsInputContract) {
+    if (
+      generated.rows.length > 0 ||
+      generated.procurement_subset.length > 0 ||
+      generated.total !== null
+    ) {
       deviations.push(deviation({
         case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "MISSING_REQUIRED_ROW",
-        message: "Generated estimate missed a benchmark BOQ row.",
-      }));
-      continue;
-    }
-    if (actual.unit !== referenceRow.unit) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "WRONG_UNIT",
-        expected: referenceRow.unit,
-        actual: actual.unit,
-        message: "Units must match exactly.",
+        type: "INVALID_NEEDS_INPUT_OUTCOME",
+        expected: { rows: 0, procurement_rows: 0, total: null },
+        actual: {
+          rows: generated.rows.length,
+          procurement_rows: generated.procurement_subset.length,
+          total: generated.total,
+        },
+        message: "A NEEDS_INPUT benchmark must not manufacture BOQ, procurement or total values.",
       }));
     }
-    const tolerancePercent = toleranceForRow(caseDef, referenceRow, policy);
-    const diff = Math.abs(actual.quantity - referenceRow.quantity);
-    const allowed = Math.max(Math.abs(referenceRow.quantity) * tolerancePercent / 100, 0.0001);
-    if (diff > allowed) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "WRONG_QUANTITY",
-        expected: referenceRow.quantity,
-        actual: actual.quantity,
-        message: `Quantity outside tolerance ${tolerancePercent}%.`,
-      }));
+  } else {
+    for (const referenceRow of currentReferenceRows) {
+      const actual = generatedByCode.get(referenceRow.code);
+      if (!actual) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "MISSING_REQUIRED_ROW",
+          message: "Generated estimate missed a benchmark BOQ row.",
+        }));
+        continue;
+      }
+      if (actual.unit !== referenceRow.unit) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "WRONG_UNIT",
+          expected: referenceRow.unit,
+          actual: actual.unit,
+          message: "Units must match exactly.",
+        }));
+      }
+      const tolerancePercent = toleranceForRow(caseDef, referenceRow, policy);
+      const diff = Math.abs(actual.quantity - referenceRow.quantity);
+      const allowed = Math.max(Math.abs(referenceRow.quantity) * tolerancePercent / 100, 0.0001);
+      if (diff > allowed) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "WRONG_QUANTITY",
+          expected: referenceRow.quantity,
+          actual: actual.quantity,
+          message: `Quantity outside tolerance ${tolerancePercent}%.`,
+        }));
+      }
+      if (caseDef.estimate_level === "DETAILED_BOQ_FROM_DRAWINGS" && actual.quantity_formula !== referenceRow.quantity_formula) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "WRONG_FORMULA",
+          expected: referenceRow.quantity_formula,
+          actual: actual.quantity_formula,
+          message: "Detailed BOQ must keep exact formula output for same inputs.",
+        }));
+      }
+      if (!actual.source_ref || sourceRefIsFake(actual)) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: sourceRefIsFake(actual) ? "FAKE_PRICE" : "MISSING_SOURCE",
+          actual: actual.source_ref,
+          message: "Every benchmark row requires a trusted norm/source reference.",
+        }));
+      }
+      if (!actual.formula_ref || !actual.quantity_formula) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "MISSING_TRACE",
+          message: "Every benchmark row requires formula and trace references.",
+        }));
+      }
+      if (actual.price_state === "PRICE_VERIFIED" && actual.unit_price == null) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: referenceRow.code,
+          type: "MISSING_PRICE_STATE",
+          message: "Verified price state requires a verified unit price.",
+        }));
+      }
     }
-    if (caseDef.estimate_level === "DETAILED_BOQ_FROM_DRAWINGS" && actual.quantity_formula !== referenceRow.quantity_formula) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "WRONG_FORMULA",
-        expected: referenceRow.quantity_formula,
-        actual: actual.quantity_formula,
-        message: "Detailed BOQ must keep exact formula output for same inputs.",
-      }));
-    }
-    if (!actual.source_ref || sourceRefIsFake(actual)) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: sourceRefIsFake(actual) ? "FAKE_PRICE" : "MISSING_SOURCE",
-        actual: actual.source_ref,
-        message: "Every benchmark row requires a trusted norm/source reference.",
-      }));
-    }
-    if (!actual.formula_ref || !actual.quantity_formula) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "MISSING_TRACE",
-        message: "Every benchmark row requires formula and trace references.",
-      }));
-    }
-    if (actual.price_state === "PRICE_VERIFIED" && actual.unit_price == null) {
-      deviations.push(deviation({
-        case_id: caseDef.case_id,
-        row_code: referenceRow.code,
-        type: "MISSING_PRICE_STATE",
-        message: "Verified price state requires a verified unit price.",
-      }));
-    }
-  }
 
-  for (const actual of generated.rows) {
-    if (!referenceByCode.has(actual.code) && isGenericRow(actual)) {
+    for (const actual of generated.rows) {
+      if (isHistoricalPaddingRow(actual) || (!referenceByCode.has(actual.code) && isGenericRow(actual))) {
+        deviations.push(deviation({
+          case_id: caseDef.case_id,
+          row_code: actual.code,
+          type: "EXTRA_GENERIC_ROW",
+          message: "Generic/helper/debug rows are forbidden in benchmark output.",
+        }));
+      }
+    }
+
+    if (currentReferenceRows.some((row) => row.line_type === "equipment") && !generated.rows.some((row) => row.line_type === "equipment")) {
       deviations.push(deviation({
         case_id: caseDef.case_id,
-        row_code: actual.code,
-        type: "EXTRA_GENERIC_ROW",
-        message: "Generic/helper/debug rows are forbidden in benchmark output.",
+        type: "MISSING_EQUIPMENT_ROW",
+        message: "Reference includes equipment rows but generated estimate does not.",
       }));
     }
-  }
-
-  if (reference.equipment_rows.length > 0 && !generated.rows.some((row) => row.line_type === "equipment")) {
-    deviations.push(deviation({
-      case_id: caseDef.case_id,
-      type: "MISSING_EQUIPMENT_ROW",
-      message: "Reference includes equipment rows but generated estimate does not.",
-    }));
-  }
-  if (reference.service_rows.length > 0 && !generated.rows.some((row) => row.line_type === "service")) {
-    deviations.push(deviation({
-      case_id: caseDef.case_id,
-      type: "MISSING_SERVICE_ROW",
-      message: "Reference includes service rows but generated estimate does not.",
-    }));
+    if (currentReferenceRows.some((row) => row.line_type === "service") && !generated.rows.some((row) => row.line_type === "service")) {
+      deviations.push(deviation({
+        case_id: caseDef.case_id,
+        type: "MISSING_SERVICE_ROW",
+        message: "Reference includes service rows but generated estimate does not.",
+      }));
+    }
   }
   const missingPriceExists = generated.rows.some((row) => row.price_state === "PRICE_MISSING");
-  if (missingPriceExists && generated.final_total_displayed) {
+  if ((missingPriceExists || needsInputContract) && generated.final_total_displayed) {
     deviations.push(deviation({
       case_id: caseDef.case_id,
       type: "INVALID_FINAL_TOTAL",
@@ -913,7 +963,9 @@ export function compareGeneratedEstimateToGoldenBenchmark(
     }));
   }
   const pdfCodes = new Set(generated.pdf_row_codes);
-  const pdfMismatch = generated.rows.some((row) => !pdfCodes.has(row.code));
+  const pdfMismatch = needsInputContract
+    ? generated.pdf_row_codes.length > 0
+    : generated.rows.some((row) => !pdfCodes.has(row.code));
   if (pdfMismatch) {
     deviations.push(deviation({
       case_id: caseDef.case_id,
@@ -922,9 +974,11 @@ export function compareGeneratedEstimateToGoldenBenchmark(
     }));
   }
   const buyerCodes = new Set(generated.buyer_row_codes);
-  const buyerInvalid = generated.rows.some((row) =>
-    buyerCodes.has(row.code) && (row.line_type === "work" || row.line_type === "helper" || !row.included_in_procurement)
-  );
+  const buyerInvalid = needsInputContract
+    ? generated.buyer_row_codes.length > 0
+    : generated.rows.some((row) =>
+        buyerCodes.has(row.code) && (row.line_type === "work" || row.line_type === "helper" || !row.included_in_procurement)
+      );
   if (buyerInvalid) {
     deviations.push(deviation({
       case_id: caseDef.case_id,
@@ -1135,20 +1189,23 @@ export function validateGoldenBenchmarkDataset() {
     ENERGY_TPP_HPP: 20,
     SPECIAL_WORKS: 15,
   };
-  const missingCaseFields = cases.filter((item) =>
+  const missingCaseFields = cases.filter((item) => {
+    const expectsNeedsInput = item.current_runtime_contract?.expected_outcome === "NEEDS_INPUT";
+    return (
     !item.case_id ||
     !item.prompt ||
     !item.work_family_id ||
     !item.estimate_level ||
-    !item.reference_boq_rows.length ||
-    !item.reference_material_rows.length ||
-    !item.reference_work_rows.length ||
+    (!expectsNeedsInput && !item.reference_boq_rows.length) ||
+    (!expectsNeedsInput && !item.reference_material_rows.length) ||
+    (!expectsNeedsInput && !item.reference_work_rows.length) ||
     !item.reference_pdf_sections.length ||
     !item.tolerance_policy_id ||
     !item.expert_reviewer ||
     !item.review_status ||
-    !item.source_refs.length
-  ).map((item) => item.case_id);
+    (!expectsNeedsInput && !item.source_refs.length)
+    );
+  }).map((item) => item.case_id);
   const missingReference = cases.filter((item) => !existsSync(path.join(GOLDEN_BENCHMARK_ROOT, item.reference_boq_file))).map((item) => item.case_id);
   const references = cases.map((item) => loadGoldenBenchmarkReference(item));
   return {
@@ -1161,9 +1218,25 @@ export function validateGoldenBenchmarkDataset() {
     requiredDistribution,
     missing_case_fields: missingCaseFields,
     missing_reference_files: missingReference,
-    golden_cases_have_reference_boq: references.every((item) => item.rows.length > 0),
+    golden_cases_have_reference_boq: references.every((item, index) =>
+      item.rows.length > 0 || cases[index]?.current_runtime_contract?.expected_outcome === "NEEDS_INPUT"
+    ),
     golden_cases_have_tolerance_policy: cases.every((item) => item.tolerance_policy_id === policy.policy_id),
     golden_cases_have_expert_review_status: cases.every((item) => item.review_status.startsWith("APPROVED_")),
+    current_runtime_contracts_versioned: (
+      index.current_runtime_contracts.expanded_complex_authored_rows.version === "expanded-complex-authored-rows-v2" &&
+      index.current_runtime_contracts.expanded_complex_authored_rows.applies_to_engine === "expanded_complex" &&
+      index.current_runtime_contracts.expanded_complex_authored_rows.historical_reference_status === "READ_ONLY_SUPERSEDED_PADDING_ROWS" &&
+      index.current_runtime_contracts.expanded_complex_authored_rows.current_requirement === "ALL_NON_PADDING_REFERENCE_ROWS_MUST_MATCH_AND_PADDING_MUST_STAY_ABSENT" &&
+      cases.every((item) =>
+        !item.current_runtime_contract || (
+          item.current_runtime_contract.version === "canonical-pump-p0-gate-v1" &&
+          item.current_runtime_contract.expected_outcome === "NEEDS_INPUT" &&
+          item.current_runtime_contract.historical_reference_status === "READ_ONLY_SUPERSEDED_BY_P0_GATE" &&
+          item.missing_design_inputs_expected
+        )
+      )
+    ),
   };
 }
 

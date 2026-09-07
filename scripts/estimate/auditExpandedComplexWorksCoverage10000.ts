@@ -10,6 +10,7 @@ import {
   EXPANDED_COMPLEX_CRITICAL_CASE_PROMPTS,
   EXPANDED_COMPLEX_REQUIRED_CALCULATOR_IDS,
   EXPANDED_COMPLEX_WORK_FAMILIES,
+  isExpandedComplexNeedsInputOutcome,
 } from "../../src/lib/ai/expandedComplexWorks";
 import {
   buildExpandedComplexWorkFamilyMap,
@@ -147,19 +148,24 @@ function criticalCaseResult(prompt: string, index: number): ExpandedComplexCriti
     ...buyer.delivery_procurement_services,
   ];
   const buyerHasWorkRows = buyerRows.some((row) => row.lineType === "work");
-  const expectedEstimateLevel =
-    estimate.work_family_id === "solar_power_plant" &&
-    estimate.input_parameters.scale_class === "utility_scale"
+  const honestlyNeedsInput = isExpandedComplexNeedsInputOutcome(estimate);
+  const expectedEstimateLevel = honestlyNeedsInput
+    ? "NEEDS_INPUT"
+    : estimate.work_family_id === "solar_power_plant" &&
+        estimate.input_parameters.scale_class === "utility_scale"
       ? "ROM_CONCEPT"
       : "PRELIMINARY_BOQ";
+  const buyerHandoffValid = honestlyNeedsInput
+    ? buyerRows.length === 0 && buyer.forbidden_rows_present === false
+    : buyerRows.length > 0 && !buyerHasWorkRows && buyer.forbidden_rows_present === false;
   const blockers = [
-    rowCount > 0 ? "" : "positions_empty_after_prompt",
+    rowCount > 0 || honestlyNeedsInput ? "" : "positions_empty_after_prompt",
     estimate.estimate_level === expectedEstimateLevel
       ? ""
       : `estimate_level_mismatch:${estimate.estimate_level}!=${expectedEstimateLevel}`,
     estimate.missing_design_inputs.length > 0 ? "" : "missing_design_inputs_not_visible",
     pdf.rows_equal_snapshot ? "" : "pdf_snapshot_mismatch",
-    buyerRows.length > 0 && !buyerHasWorkRows ? "" : "buyer_handoff_invalid",
+    buyerHandoffValid ? "" : "buyer_handoff_invalid",
     estimate.price_state.finalTotalAllowed === false ? "" : "final_total_allowed_when_prices_missing",
   ].filter(Boolean);
   return {
@@ -177,7 +183,7 @@ function criticalCaseResult(prompt: string, index: number): ExpandedComplexCriti
     service_rows_count: estimate.service_rows.length,
     missing_design_inputs_count: estimate.missing_design_inputs.length,
     pdf_rows_equal_snapshot: pdf.rows_equal_snapshot,
-    buyer_handoff_procurement_subset_valid: buyerRows.length > 0 && !buyerHasWorkRows && buyer.forbidden_rows_present === false,
+    buyer_handoff_procurement_subset_valid: buyerHandoffValid,
     final_total_allowed: estimate.price_state.finalTotalAllowed,
     blockers,
   };

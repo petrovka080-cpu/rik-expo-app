@@ -356,6 +356,7 @@ const R4_A10_RECOVERED_HISTORICAL_TEST_CONTRACT_AUDIT: readonly TestContractAudi
   currentAlignedContract("tests/officeEstimate/capitalRenovation98PdfFromSnapshot.contract.test.ts", "capital-renovation PDF generation from the exact approved snapshot"),
   currentAlignedContract("tests/officeEstimate/directorPdfPriceSources.contract.test.ts", "director PDF price-source provenance and unpriced-row truth"),
   currentAlignedContract("tests/officeEstimate/expandedComplexPdfAndBuyerHandoff.contract.test.ts", "expanded-complex PDF and buyer projections from one revision"),
+  currentAlignedContract("tests/officeEstimate/goldenBenchmarkPdfAndBuyer.contract.test.ts", "versioned golden pump NEEDS_INPUT successors with empty PDF and buyer projections instead of historical fabricated BOQ rows"),
   currentAlignedContract("tests/officeEstimate/inlineWorkPromptPdfBuyerHandoff.test.ts", "inline-work prompt PDF and buyer handoff after canonical approval"),
   currentAlignedContract("tests/officeEstimate/professionalBoqPdfUnits.contract.test.ts", "professional BOQ unit preservation in the PDF projection"),
   currentAlignedContract("tests/officeEstimate/revisionBoundPdfBuyerHandoff.test.ts", "revision-bound PDF and buyer handoff under edits and history reopen"),

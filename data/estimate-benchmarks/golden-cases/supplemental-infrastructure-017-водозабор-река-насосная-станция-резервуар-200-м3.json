@@ -54,6 +54,11 @@
   "tolerance_policy_id": "golden-benchmark-tolerance-v1",
   "expert_reviewer": "estimate-golden-benchmark-review-board",
   "review_status": "APPROVED_FOR_PRELIMINARY",
+  "current_runtime_contract": {
+    "version": "canonical-pump-p0-gate-v1",
+    "expected_outcome": "NEEDS_INPUT",
+    "historical_reference_status": "READ_ONLY_SUPERSEDED_BY_P0_GATE"
+  },
   "source_refs": [
     "src_expanded_complex_water_supply_reference_formula_v1"
   ],

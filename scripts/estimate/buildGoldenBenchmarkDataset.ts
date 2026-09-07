@@ -445,10 +445,11 @@ function resolveWorkFamily(seed: CaseSeed): string {
 }
 
 function buildCase(seed: CaseSeed): GoldenBenchmarkCase {
+  const workFamilyId = resolveWorkFamily(seed);
   const caseDef: GoldenBenchmarkCase = {
     case_id: seed.case_id,
     prompt: seed.prompt,
-    work_family_id: resolveWorkFamily(seed),
+    work_family_id: workFamilyId,
     work_family_group: seed.group,
     engine: seed.engine,
     estimate_level: seed.estimate_level ?? "PRELIMINARY_BOQ",
@@ -473,6 +474,13 @@ function buildCase(seed: CaseSeed): GoldenBenchmarkCase {
     mandatory_case_number: seed.mandatory_case_number,
     work_key: seed.work_key,
     quantity: seed.quantity,
+    current_runtime_contract: workFamilyId === "pumping_station"
+      ? {
+          version: "canonical-pump-p0-gate-v1",
+          expected_outcome: "NEEDS_INPUT",
+          historical_reference_status: "READ_ONLY_SUPERSEDED_BY_P0_GATE",
+        }
+      : undefined,
   };
   const generated = buildGeneratedBenchmarkEstimate(caseDef);
   const reference = buildReferenceBoqFromGenerated(caseDef, generated);
@@ -600,6 +608,15 @@ function main() {
     all_required_work_family_groups_covered: Object.entries(TARGET_DISTRIBUTION)
       .every(([group, minimum]) => (distribution[group as GoldenBenchmarkWorkFamilyGroup] ?? 0) >= minimum),
     distribution,
+    current_runtime_contracts: {
+      expanded_complex_authored_rows: {
+        version: "expanded-complex-authored-rows-v2",
+        applies_to_engine: "expanded_complex",
+        historical_reference_row_prefixes: ["s2b_", "professional_"],
+        historical_reference_status: "READ_ONLY_SUPERSEDED_PADDING_ROWS",
+        current_requirement: "ALL_NON_PADDING_REFERENCE_ROWS_MUST_MATCH_AND_PADDING_MUST_STAY_ABSENT",
+      },
+    },
     cases: cases.map((caseDef) => ({
       case_id: caseDef.case_id,
       work_family_group: caseDef.work_family_group,

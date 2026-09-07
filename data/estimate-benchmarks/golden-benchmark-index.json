@@ -17,6 +17,18 @@
     "INDUSTRIAL": 26,
     "ENERGY_TPP_HPP": 23
   },
+  "current_runtime_contracts": {
+    "expanded_complex_authored_rows": {
+      "version": "expanded-complex-authored-rows-v2",
+      "applies_to_engine": "expanded_complex",
+      "historical_reference_row_prefixes": [
+        "s2b_",
+        "professional_"
+      ],
+      "historical_reference_status": "READ_ONLY_SUPERSEDED_PADDING_ROWS",
+      "current_requirement": "ALL_NON_PADDING_REFERENCE_ROWS_MUST_MATCH_AND_PADDING_MUST_STAY_ABSENT"
+    }
+  },
   "cases": [
     {
       "case_id": "mandatory-001-capital-renovation-98",
