@@ -47,7 +47,7 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(backendManager).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(backendManager).toContain('resolve(EVIDENCE_ROOT, "backend.json")');
     expect(backendManager).toContain("request_audit_path");
-    expect(backendManager).toContain("cbb384cf6cfa609b2a7973ddfc29c4935fc730d4b63f4480ad1510feb6942ac1");
+    expect(backendManager).toContain("9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b");
     expect(launcher).toContain("LOCAL_DEVELOPER_EVIDENCE_ROOT");
     expect(androidJourney).toContain("R4_A6_ANDROID_BACKEND_AUDIT_PATH");
   });
@@ -91,11 +91,14 @@ describe("R5.5.1 local developer review tooling", () => {
     expect(roleMatrix).toContain("provider_role_unchanged");
     expect(roleMatrix).toContain('getByTestId("local-developer-role-toggle").waitFor');
     expect(roleMatrix).toContain("presentation_role_must_not_replace_provider_role");
+    expect(roleMatrix).toContain("computeReleaseFingerprints");
+    expect(roleMatrix).toContain("R4_A10_MASTER_SHA256");
     expect(roleMatrix).not.toContain("app_metadata?.role === expectedRole");
     expect(routeManifest).toContain("developer_set_effective_role_v1");
     expect(routeManifest).toContain("R555_ROUTE_PROVIDER_ACTOR_CHANGED");
     expect(routeManifest).toContain("provider_actor_stable: true");
     expect(routeManifest).toContain("can_access_all_office_routes");
+    expect(routeManifest).toContain("R4_A10_MASTER_SHA256");
     expect(routeManifest).not.toContain('app_metadata?.role === "director"');
     const rootLayout = source("app/_layout.tsx");
     const banner = source("src/components/auth/LocalDeveloperReviewBanner.tsx");

@@ -10,8 +10,9 @@ import { computeReleaseFingerprints } from "../release/computeReleaseFingerprint
 type Json = Record<string, any>;
 
 const MASTER_SHA256 =
+  process.env.R4_A10_MASTER_SHA256 ??
   process.env.R4_A8_MASTER_SHA256 ??
-  "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007";
+  "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
 const ORIGIN = process.env.R555_WEB_ORIGIN ?? "http://localhost:8081";
 const OUTPUT = resolve(
   process.env.R4_A8_DEVELOPER_ROUTE_MANIFEST_OUTPUT ??

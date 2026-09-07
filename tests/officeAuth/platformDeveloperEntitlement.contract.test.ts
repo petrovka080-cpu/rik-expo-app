@@ -57,7 +57,7 @@ describe("platform_developer server entitlement", () => {
       storageValue: null,
       webdriver: false,
     });
-    expect(local?.authorizationSource).toBe("local_ui_only");
+    expect(local).toBeNull();
     expect(isServerAuthorizedPlatformDeveloper(local)).toBe(false);
 
     const forged = normalizeDeveloperOverrideContext({

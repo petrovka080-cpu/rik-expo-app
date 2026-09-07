@@ -8,10 +8,12 @@ import {
   LOCAL_DEVELOPER_REVIEW_ROLES,
   type LocalDeveloperReviewRole,
 } from "../../src/lib/localDeveloperReviewRoles";
+import { computeReleaseFingerprints } from "../release/computeReleaseFingerprints";
 
 const MASTER_SHA256 =
+  process.env.R4_A10_MASTER_SHA256 ??
   process.env.R4_A8_MASTER_SHA256 ??
-  "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007";
+  "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
 const ORIGIN = process.env.R555_WEB_ORIGIN ?? "http://localhost:8081";
 const OUTPUT = resolve(
   process.env.R4_A8_DEVELOPER_ROLE_MATRIX_OUTPUT ??
@@ -268,6 +270,7 @@ async function verifyRole(
 }
 
 async function main() {
+  const fingerprints = computeReleaseFingerprints();
   const requestedRole = String(process.argv[2] ?? "").trim().toLowerCase();
   const roles = requestedRole
     ? LOCAL_DEVELOPER_REVIEW_ROLES.filter((role) => role === requestedRole)
@@ -284,6 +287,10 @@ async function main() {
       schema_version: "rik-expo-app-r555.local-developer-role-matrix.v1",
       generated_utc: new Date().toISOString(),
       master_sha256: MASTER_SHA256,
+      source_identity: {
+        product_source_hash: fingerprints.productSourceHash,
+        js_bundle_fingerprint: fingerprints.jsBundleFingerprint,
+      },
       status:
         green === roles.length
           ? requestedRole
