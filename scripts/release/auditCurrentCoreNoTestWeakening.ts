@@ -341,6 +341,7 @@ const R4_A10_RECOVERED_HISTORICAL_TEST_CONTRACT_AUDIT: readonly TestContractAudi
   currentAddedContract("tests/estimateExpandedComplex/formulaDependencyOwnersR4A6.contract.test.ts", "formula dependency ownership and controlled edits across expanded professional works"),
   currentAddedContract("tests/estimateExpandedComplex/identityDag11610R4A6.contract.test.ts", "11,610 identities, redirects and canonical DAG invariants"),
   currentAlignedContract("tests/estimateExpandedComplex/s2bInfrastructureEngineeringWave2.contract.test.ts", "authored infrastructure engineering BOQs without synthetic depth padding"),
+  currentAlignedContract("tests/estimateExpandedComplex/s2bRequiredDomainBlocks.contract.test.ts", "exact S2B domain-block row evidence and explicit missing-design-input gates without token-based fake completeness"),
   currentAlignedContract("tests/estimateExpandedComplex/s2bWorkFamilyRouting.contract.test.ts", "S2B work-family routing to exact canonical technologies"),
   currentAlignedContract("tests/estimateInfrastructure/consumerRepairDurableSaveFallback.contract.test.ts", "durable save fallback without losing the authoritative canonical revision"),
   currentAddedContract("tests/estimateInfrastructure/consumerRepairTransactionalWriteCoalescing.contract.test.ts", "transactional write coalescing, ordering and failure propagation"),

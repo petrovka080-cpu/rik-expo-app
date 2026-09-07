@@ -1049,6 +1049,10 @@ function defaultGlobalUnitForFamily(family: ExpandedComplexWorkFamilyDefinition)
 }
 
 const MATCHERS: readonly { familyId: string; pattern: RegExp }[] = [
+  {
+    familyId: "private_house_construction",
+    pattern: /(?=.*(?:частн(?:ый|ого|ому|ым)\s+дом|индивидуальн(?:ый|ого)\s+жил(?:ой|ого)\s+дом|дом\s+ижс|private house))(?:(?=.*(?:стен|wall))(?=.*(?:крыш|кровл|roof))|(?=.*(?:фундамент|foundation))(?=.*(?:крыш|кровл|roof))|(?=.*(?:стен|wall))(?=.*(?:фундамент|foundation)))/iu,
+  },
   { familyId: "strip_foundation", pattern: /\u043b\u0435\u043d\u0442\u043e\u0447\u043d[\p{L}\p{M}-]*\s+\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442[\p{L}\p{M}-]*|strip\s+foundation/iu },
   { familyId: "raft_foundation", pattern: /(?:\u043c\u043e\u043d\u043e\u043b\u0438\u0442\u043d[\p{L}\p{M}-]*\s+)?\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442\u043d[\p{L}\p{M}-]*\s+\u043f\u043b\u0438\u0442[\p{L}\p{M}-]*|raft\s+foundation|foundation\s+slab/iu },
   { familyId: "road_construction", pattern: /\u0434\u043e\u0440\u043e\u0436\u043d[\p{L}\p{M}-]*\s+\u043e\u0434\u0435\u0436\u0434[\p{L}\p{M}-]*|road\s+pavement\s+structure/iu },
@@ -1618,7 +1622,7 @@ export function roadConstructionCalculator(input: CalcInput): ExpandedComplexCal
   const text = normalizePrompt(input.prompt);
   const concreteRoad = /бетонн|concrete/.test(text);
   const calculated = roadRows(family, text, concreteRoad);
-  return output({ family, sourcePrompt: input.prompt, parameters: calculated.parameters, rows: calculated.rows, assumptions: ["Типовая предварительная конструкция дорожной одежды; детальная толщина слоёв уточняется проектом."], formulaSteps: calculated.steps, missingInputs: [...commonMissingInputs(family), "Категория дороги", "Геология и проект дорожной одежды"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: calculated.parameters, rows: calculated.rows, assumptions: ["Типовая предварительная конструкция дорожной одежды; детальная толщина слоёв уточняется проектом."], formulaSteps: calculated.steps, missingInputs: [...commonMissingInputs(family), "Категория дороги", "Геология и проект дорожной одежды", "Применимость и схема укладки геотекстиля"] });
 }
 
 export function concreteRoadCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1677,7 +1681,7 @@ export function damHydraulicCalculator(input: CalcInput): ExpandedComplexCalcula
     row({ family, code: "dump_truck_trips", titleRu: "Самосвалы для грунта", lineType: "equipment", group: "logistics", quantity: Math.ceil(fill / 10), unit: "trip", formula: "ceil(embankment_fill_m3 / 10)" }),
     row({ family, code: "compaction_control_set", titleRu: "Контроль уплотнения тела дамбы", lineType: "service", group: "quality", quantity: Math.ceil(fill / 2500), unit: "set", formula: "ceil(embankment_fill_m3 / 2500)", procurement: true }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, crest_width_m: crestWidthM }, rows, assumptions: ["Откосы и ядро приняты укрупнённо; устойчивость дамбы требует проектного расчёта."], formulaSteps: ["embankment_fill_m3 = length_m * height_m * (crest_width_m + height_m * 3)", "slope_area_m2 = length_m * height_m * 2.25 * 2"], missingInputs: [...commonMissingInputs(family), "Геология основания", "Гидрологический расчёт", "Расчёт устойчивости откосов"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, crest_width_m: crestWidthM }, rows, assumptions: ["Откосы и ядро приняты укрупнённо; устойчивость дамбы требует проектного расчёта."], formulaSteps: ["embankment_fill_m3 = length_m * height_m * (crest_width_m + height_m * 3)", "slope_area_m2 = length_m * height_m * 2.25 * 2"], missingInputs: [...commonMissingInputs(family), "Геология основания", "Гидрологический расчёт", "Расчёт устойчивости откосов", "Система мониторинга и КИП"] });
 }
 
 export function irrigationCanalCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1943,7 +1947,7 @@ export function tunnelCalculator(input: CalcInput): ExpandedComplexCalculatorOut
     row({ family, code: "special_equipment_shifts", titleRu: "Тоннельная спецтехника", lineType: "equipment", group: "equipment", quantity: Math.ceil(lengthM / 20), unit: "shift", formula: "ceil(length_m / 20)" }),
     row({ family, code: "tunnel_geodetic_monitoring_set", titleRu: "Геодезический мониторинг профиля и исполнительная съёмка тоннеля", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, section_m2: sectionM2 }, rows, assumptions: ["Метод проходки не выбран; расчёт предварительный и не заменяет проект."], formulaSteps: ["tunnel_excavation_m3 = length_m * section_m2", "lining_concrete_m3 = length_m * section_m2 * 0.18"], missingInputs: [...commonMissingInputs(family), "Геология", "Метод проходки", "Вентиляционная схема"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, section_m2: sectionM2 }, rows, assumptions: ["Метод проходки не выбран; расчёт предварительный и не заменяет проект."], formulaSteps: ["tunnel_excavation_m3 = length_m * section_m2", "lining_concrete_m3 = length_m * section_m2 * 0.18"], missingInputs: [...commonMissingInputs(family), "Геология", "Метод проходки", "Вентиляционная схема", "Схема временного крепления", "Концепция пожарной безопасности"] });
 }
 
 export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -1972,7 +1976,7 @@ export function retainingWallCalculator(input: CalcInput): ExpandedComplexCalcul
     row({ family, code: "excavator_shifts", titleRu: "Экскаватор", lineType: "equipment", group: "equipment", quantity: Math.ceil(wallFaceAreaM2 / 80), unit: "shift", formula: "ceil(wall_face_area_m2 / 80)" }),
     row({ family, code: "retaining_wall_acceptance_set", titleRu: "Исполнительная съёмка геометрии и дренажа подпорного сооружения", lineType: "service", group: "quality", quantity: Math.max(1, Math.ceil(lengthM / 100)), unit: "set", formula: "max(1, ceil(length_m / 100))" }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, thickness_m: thicknessM, wall_face_area_m2: wallFaceAreaM2, gabion_volume_m3: isGabion ? wallVolumeM3 : 0, is_gabion: isGabion }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_face_area_m2 = length_m * height_m", "gabion_volume_m3 = length_m * height_m * thickness_m", "wall_concrete_m3 = is_gabion ? 0 : length_m * height_m * thickness_m"], missingInputs: [...commonMissingInputs(family), "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, height_m: heightM, thickness_m: thicknessM, wall_face_area_m2: wallFaceAreaM2, gabion_volume_m3: isGabion ? wallVolumeM3 : 0, is_gabion: isGabion }, rows, assumptions: ["Устойчивость стены и армирование требуют расчёта; смета предварительная."], formulaSteps: ["wall_face_area_m2 = length_m * height_m", "gabion_volume_m3 = length_m * height_m * thickness_m", "wall_concrete_m3 = is_gabion ? 0 : length_m * height_m * thickness_m"], missingInputs: [...commonMissingInputs(family), "Инженерно-геологические изыскания", "Параметры котлована и рабочей зоны", "Расчёт устойчивости", "Грунтовые воды", "Нагрузки за стеной"] });
 }
 
 function buildingLikeCalculator(input: CalcInput, fallbackFamily: string): ExpandedComplexCalculatorOutput {
@@ -2210,7 +2214,7 @@ export function technologicalPipelineCalculator(input: CalcInput): ExpandedCompl
     row({ family, code: "pipe_welding_equipment_shifts", titleRu: "Сварочное и монтажное оборудование для технологического трубопровода", lineType: "equipment", group: "equipment", quantity: Math.max(1, Math.ceil(lengthM / 120)), unit: "shift", formula: "max(1, ceil(length_m / 120))" }),
     row({ family, code: "pressure_testing_lm", titleRu: "Испытания трубопровода", lineType: "service", group: "commissioning", quantity: lengthM, unit: "m", formula: "length_m", procurement: true }),
   ];
-  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, diameter_mm: diameterMm }, rows, assumptions: ["Материал трубы, давление и категория трубопровода требуют проекта."], formulaSteps: ["process_piping_lm = length_m * 1.02"], missingInputs: [...commonMissingInputs(family), "Материал трубы", "Рабочее давление", "Категория трубопровода"] });
+  return output({ family, sourcePrompt: input.prompt, parameters: { length_m: lengthM, diameter_mm: diameterMm }, rows, assumptions: ["Материал трубы, давление и категория трубопровода требуют проекта."], formulaSteps: ["process_piping_lm = length_m * 1.02"], missingInputs: [...commonMissingInputs(family), "Материал трубы", "Рабочее давление", "Категория трубопровода", "Программа и объём неразрушающего контроля"] });
 }
 
 export function thermalPowerPlantCalculator(input: CalcInput): ExpandedComplexCalculatorOutput {
@@ -2439,7 +2443,7 @@ export function solarWindEnergyCalculator(input: CalcInput): ExpandedComplexCalc
     rows,
     assumptions: ["Основное оборудование не оценивается по цене без спецификации производителя."],
     formulaSteps: ["equipment_foundations_m3 = capacity_mw * 20"],
-    missingInputs: [...commonMissingInputs(family), "Спецификация оборудования", "Схема выдачи мощности"],
+    missingInputs: [...commonMissingInputs(family), "Регион и климатические данные", "Спецификация фотомодулей", "Спецификация инверторов", "Схема выдачи мощности"],
   });
 }
 

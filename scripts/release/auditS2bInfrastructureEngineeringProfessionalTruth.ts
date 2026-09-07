@@ -9,7 +9,14 @@ import {
   S2B_INFRASTRUCTURE_FAMILY_MANIFEST,
   type S2BFamilyManifestEntry,
 } from "../../src/lib/ai/expandedComplexWorks/s2b/manifest";
-import { s2bWave2KindForFamily } from "../../src/lib/ai/expandedComplexWorks/s2b/registry";
+import {
+  resolveS2BDomainBlockCoverage,
+  type S2BDomainBlockCoverage,
+} from "../../src/lib/ai/expandedComplexWorks/s2b/domainBlockCoverage";
+import {
+  isS2BBackendOwnedFamily,
+  s2bWave2KindForFamily,
+} from "../../src/lib/ai/expandedComplexWorks/s2b/registry";
 
 const PROMPTS_BY_FAMILY: Record<string, string> = {
   asphalt_concrete_pavement: "Асфальтирование 10 000 м²",
@@ -38,6 +45,8 @@ type FamilyAudit = {
   ready: boolean;
   blockers: string[];
   missing_domain_blocks: string[];
+  domain_blocks_needing_input: string[];
+  domain_block_coverage: S2BDomainBlockCoverage[];
   wrong_units: string[];
   row_count: number;
 };
@@ -55,11 +64,6 @@ function countDuplicates(values: readonly string[]): number {
   return values.length - new Set(values).size;
 }
 
-function hasBlock(rows: readonly ExpandedComplexBoqRow[], trace: string, block: string): boolean {
-  const haystack = `${rows.map((row) => `${row.code} ${row.titleRu} ${row.group}`).join("\n")}\n${trace}`.toLowerCase();
-  return haystack.includes(block.toLowerCase());
-}
-
 function auditFamily(entry: S2BFamilyManifestEntry): FamilyAudit {
   const prompt = PROMPTS_BY_FAMILY[entry.work_family_id];
   const blockers: string[] = [];
@@ -73,13 +77,18 @@ function auditFamily(entry: S2BFamilyManifestEntry): FamilyAudit {
       ready: false,
       blockers: ["missing_work_family"],
       missing_domain_blocks: entry.required_domain_blocks.slice(),
+      domain_blocks_needing_input: [],
+      domain_block_coverage: [],
       wrong_units: [],
       row_count: 0,
     };
   }
 
   if (family.calculatorId !== entry.calculator_id) blockers.push("wrong_calculator_binding");
-  if (s2bWave2KindForFamily(family) !== entry.kind) blockers.push("wrong_s2b_kind");
+  const clientCompilerKind = s2bWave2KindForFamily(family);
+  if (isS2BBackendOwnedFamily(family) ? clientCompilerKind !== null : clientCompilerKind !== entry.kind) {
+    blockers.push("wrong_s2b_kind");
+  }
   if (!entry.parameter_passport_id || entry.required_p0_parameters.length === 0) blockers.push("missing_p0_schema");
 
   const estimate = calculateExpandedComplexEstimate({ prompt: prompt ?? entry.work_family_id, familyId: entry.work_family_id });
@@ -90,16 +99,23 @@ function auditFamily(entry: S2BFamilyManifestEntry): FamilyAudit {
       ready: false,
       blockers: [...blockers, "estimate_not_resolved"],
       missing_domain_blocks: entry.required_domain_blocks.slice(),
+      domain_blocks_needing_input: [],
+      domain_block_coverage: [],
       wrong_units: [],
       row_count: 0,
     };
   }
 
   const rows = allRows(estimate);
-  const trace = estimate.calculation_trace.join("\n");
   const codes = rows.map((row) => row.code);
   const duplicateCodes = countDuplicates(codes);
-  const missingBlocks = entry.required_domain_blocks.filter((block) => !hasBlock(rows, trace, block));
+  const domainBlockCoverage = resolveS2BDomainBlockCoverage(entry, estimate);
+  const missingBlocks = domainBlockCoverage
+    .filter((item) => item.status === "UNRESOLVED")
+    .map((item) => item.block_id);
+  const domainBlocksNeedingInput = domainBlockCoverage
+    .filter((item) => item.status === "MISSING_DESIGN_INPUT")
+    .map((item) => item.block_id);
   const wrongUnits = rows.filter((row) => !entry.allowed_units.includes(row.unit));
   const genericDepth = rows.filter((row) => row.code.startsWith("professional_"));
   const fakePrices = rows.filter((row) => row.priceStatus !== "PRICE_MISSING" || row.unitPrice !== null || row.total !== null);
@@ -121,6 +137,8 @@ function auditFamily(entry: S2BFamilyManifestEntry): FamilyAudit {
     ready: blockers.length === 0,
     blockers,
     missing_domain_blocks: missingBlocks,
+    domain_blocks_needing_input: domainBlocksNeedingInput,
+    domain_block_coverage: domainBlockCoverage,
     wrong_units: [...new Set(wrongUnits.map((row) => `${row.unit}:${row.code}`))],
     row_count: rows.length,
   };
@@ -130,8 +148,10 @@ const familyAudits = S2B_INFRASTRUCTURE_FAMILY_MANIFEST.map(auditFamily);
 const blockerCounters = {
   generic_depth_used_as_professional: familyAudits.filter((item) => item.blockers.includes("generic_depth_used_as_professional")).length,
   wrong_calculator_binding: familyAudits.filter((item) => item.blockers.includes("wrong_calculator_binding") || item.blockers.includes("wrong_runtime_calculator")).length,
+  wrong_s2b_kind: familyAudits.filter((item) => item.blockers.includes("wrong_s2b_kind")).length,
   missing_p0_schema: familyAudits.filter((item) => item.blockers.includes("missing_p0_schema")).length,
   missing_domain_blocks: familyAudits.filter((item) => item.blockers.includes("missing_domain_blocks")).length,
+  domain_blocks_needing_input: familyAudits.reduce((sum, item) => sum + item.domain_blocks_needing_input.length, 0),
   wrong_units: familyAudits.filter((item) => item.blockers.includes("wrong_units")).length,
   duplicate_codes: familyAudits.filter((item) => item.blockers.includes("duplicate_codes")).length,
   missing_formula_trace: familyAudits.filter((item) => item.blockers.includes("missing_formula_trace")).length,

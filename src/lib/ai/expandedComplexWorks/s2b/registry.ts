@@ -1,6 +1,15 @@
 import type { ExpandedComplexWorkFamilyDefinition } from "../index";
 import type { S2BWave2Kind } from "./types";
 
+export function isS2BBackendOwnedFamily(family: ExpandedComplexWorkFamilyDefinition): boolean {
+  return (
+    family.categoryGroup === "water_supply" ||
+    family.categoryGroup === "sewer_wastewater" ||
+    family.categoryGroup === "hydraulic" ||
+    family.categoryGroup === "utility_connections"
+  );
+}
+
 export function s2bWave2KindForFamily(family: ExpandedComplexWorkFamilyDefinition): S2BWave2Kind | null {
   const id = family.work_family_id;
   if (family.categoryGroup === "transport") return id === "road_lighting" ? "lighting" : "road";
@@ -12,12 +21,7 @@ export function s2bWave2KindForFamily(family: ExpandedComplexWorkFamilyDefinitio
   // Water, sewerage, drainage, hydraulic-water facilities and their external
   // connections are backend-owned after BATCH-006. Returning a client S2B
   // kind here would make the retired embedded compiler reachable again.
-  if (
-    family.categoryGroup === "water_supply" ||
-    family.categoryGroup === "sewer_wastewater" ||
-    family.categoryGroup === "hydraulic" ||
-    family.categoryGroup === "utility_connections"
-  ) return null;
+  if (isS2BBackendOwnedFamily(family)) return null;
   if (family.categoryGroup === "electrical_infrastructure") {
     if (/substation|switchgear|transformer/.test(id)) return "substation";
     if (/lighting/.test(id)) return "lighting";
