@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
+import { evaluateInclusionGraph } from "../../../src/lib/estimate/backendPlatform/inclusionGraph";
 
 export const R4_A6_GROUP50_SCENARIO_KINDS = [
   "nominal_p0",
@@ -86,6 +87,47 @@ function explicitScenarioValue(parameter: R4A6Group50Parameter): unknown {
   }
   if (parameter.value_type === "text") return "Явно задано сценарием Group50";
   throw new Error(`GROUP50_INPUT_SEED_UNSUPPORTED:${parameter.parameter_id}:${parameter.value_type}`);
+}
+
+function requiredWhenSatisfied(raw: unknown, values: Record<string, unknown>): boolean {
+  const condition = record(raw);
+  if (Object.keys(condition).length === 0) return false;
+  if (condition.kind != null) return evaluateInclusionGraph(condition, values);
+  const parameterId = String(condition.parameterId ?? "");
+  if (!parameterId || !("equals" in condition)) {
+    throw new Error(`GROUP50_REQUIRED_WHEN_UNSUPPORTED:${canonicalEstimateStableJson(condition)}`);
+  }
+  return values[parameterId] === condition.equals;
+}
+
+export function completeR4A6Group50ScenarioInputs(
+  parameters: readonly R4A6Group50Parameter[],
+  initial: Record<string, unknown>,
+): { values: Record<string, unknown>; generatedParameterIds: string[] } {
+  const values = { ...initial };
+  const generatedParameterIds: string[] = [];
+  const assign = (parameter: R4A6Group50Parameter): void => {
+    if (values[parameter.parameter_id] != null && values[parameter.parameter_id] !== "") return;
+    values[parameter.parameter_id] = parameter.default_value != null
+      ? parameter.default_value
+      : explicitScenarioValue(parameter);
+    generatedParameterIds.push(parameter.parameter_id);
+  };
+  for (const parameter of parameters) {
+    if (parameter.required || parameter.default_value != null) assign(parameter);
+  }
+  for (let pass = 0; pass < parameters.length; pass += 1) {
+    let changed = false;
+    for (const parameter of parameters) {
+      if ((values[parameter.parameter_id] == null || values[parameter.parameter_id] === "")
+        && requiredWhenSatisfied(record(parameter.constraints_json).requiredWhen, values)) {
+        assign(parameter);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return { values, generatedParameterIds };
 }
 
 function comparisonPeers(parameters: readonly R4A6Group50Parameter[]): Set<string> {
@@ -179,17 +221,7 @@ function optionalBranchPatch(
       && Object.keys(record(parameter.constraints_json)).length === 0);
     if (!boolean) return {};
     const enabled = scenarioKind === "inclusion_branch_on";
-    const patch: Record<string, unknown> = { [boolean.parameter_id]: enabled };
-    if (enabled) {
-      for (const parameter of parameters) {
-        const requiredWhen = record(record(parameter.constraints_json).requiredWhen);
-        if (requiredWhen.parameterId === boolean.parameter_id && requiredWhen.equals === true
-          && (baseline[parameter.parameter_id] == null || baseline[parameter.parameter_id] === "")) {
-          patch[parameter.parameter_id] = explicitScenarioValue(parameter);
-        }
-      }
-    }
-    return patch;
+    return { [boolean.parameter_id]: enabled };
   }
   if (scenarioKind === "optional_p1_combination") {
     const enumeration = parameters.find((parameter) => {
@@ -238,7 +270,14 @@ export function buildR4A6Group50Case(input: {
       ? "PARAMETER_VALIDATION_FAILED"
       : "GREEN";
   }
-  const effectiveParameters = { ...input.baseline, ...parameterPatch };
+  const completed = completeR4A6Group50ScenarioInputs(
+    input.parameters,
+    { ...input.baseline, ...parameterPatch },
+  );
+  const effectiveParameters = completed.values;
+  for (const parameterId of completed.generatedParameterIds) {
+    parameterPatch[parameterId] = effectiveParameters[parameterId];
+  }
   if (missingParameterId) delete effectiveParameters[missingParameterId];
   return {
     caseId: `${input.groupId}:case-${String(input.caseOrdinal + 1).padStart(2, "0")}`,

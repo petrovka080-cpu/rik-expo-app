@@ -74,6 +74,7 @@ const EXACT_SOURCE_PATHS = [
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
   "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+  "src/lib/estimate/backendPlatform/inclusionGraph.ts",
 ] as const;
 
 type Json = Record<string, any>;

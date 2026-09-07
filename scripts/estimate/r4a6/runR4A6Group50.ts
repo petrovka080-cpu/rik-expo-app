@@ -26,6 +26,7 @@ import {
   R4_A6_GROUP50_SCENARIO_KINDS,
   assertR4A6Group50CaseSet,
   buildR4A6Group50Case,
+  completeR4A6Group50ScenarioInputs,
   type R4A6Group50Case,
   type R4A6Group50Parameter,
 } from "./group50ScenarioContract";
@@ -59,6 +60,7 @@ const EXACT_SOURCE_PATHS = [
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
   "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts",
+  "src/lib/estimate/backendPlatform/inclusionGraph.ts",
   "src/lib/estimate/semanticBoqGate.ts",
 ] as const;
 
@@ -227,9 +229,12 @@ function completeScenarioInputSeed(
     }
     generated = true;
   }
+  const completed = completeR4A6Group50ScenarioInputs(parameters, values);
   return {
-    values,
-    policy: generated ? "EXPLICIT_GROUP50_SCENARIO_INPUT" : "APPROVED_BASELINE",
+    values: completed.values,
+    policy: generated || completed.generatedParameterIds.length > 0
+      ? "EXPLICIT_GROUP50_SCENARIO_INPUT"
+      : "APPROVED_BASELINE",
   };
 }
 

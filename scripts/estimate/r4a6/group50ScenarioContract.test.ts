@@ -2,6 +2,7 @@ import {
   R4_A6_GROUP50_SCENARIO_KINDS,
   assertR4A6Group50CaseSet,
   buildR4A6Group50Case,
+  completeR4A6Group50ScenarioInputs,
   type R4A6Group50Parameter,
 } from "./group50ScenarioContract";
 
@@ -119,5 +120,43 @@ describe("R4-A6 Group50 scenario contract", () => {
       expectedOutcome: "GREEN",
     });
     expect(item.parameterPatch).not.toHaveProperty("area_m2");
+  });
+
+  it("completes only active nested conditional branches as explicit scenario input", () => {
+    const conditionalParameters: R4A6Group50Parameter[] = [
+      { parameter_id: "scope", value_type: "enum", required: true, default_value: null, constraints_json: { values: ["full", "limited"] } },
+      { parameter_id: "include_preparation", value_type: "boolean", required: false, default_value: null, constraints_json: { requiredWhen: { kind: "equals", parameterId: "scope", value: "full" } } },
+      { parameter_id: "preparation_thickness_m", value_type: "decimal", required: false, default_value: null, constraints_json: { min: 0.1, requiredWhen: { kind: "and", operands: [{ kind: "equals", parameterId: "scope", value: "full" }, { kind: "equals", parameterId: "include_preparation", value: true }] } } },
+      { parameter_id: "limited_note", value_type: "text", required: false, default_value: null, constraints_json: { requiredWhen: { kind: "equals", parameterId: "scope", value: "limited" } } },
+    ];
+    const completed = completeR4A6Group50ScenarioInputs(conditionalParameters, {
+      scope: "full",
+      include_preparation: true,
+    });
+    expect(completed.values).toMatchObject({
+      scope: "full",
+      include_preparation: true,
+      preparation_thickness_m: 1,
+    });
+    expect(completed.values).not.toHaveProperty("limited_note");
+    expect(completed.generatedParameterIds).toEqual(["preparation_thickness_m"]);
+  });
+
+  it("completes modern conditional inputs after an inclusion branch is enabled", () => {
+    const cases = R4_A6_GROUP50_SCENARIO_KINDS.map((_kind, caseOrdinal) =>
+      buildR4A6Group50Case({
+        groupId: "group-modern-conditional",
+        caseOrdinal,
+        catalogId: "work-modern-conditional",
+        definitionVersionId: "definition-modern-conditional",
+        parameters: [
+          parameters[0]!,
+          parameters[1]!,
+          { ...parameters[3]!, constraints_json: { min: 1, max: 10_000, requiredWhen: { kind: "equals", parameterId: "delivery_required", value: true } } },
+        ],
+        baseline: { area_m2: 100, delivery_required: false },
+      }));
+    expect(cases.find((item) => item.scenarioKind === "inclusion_branch_on")?.parameterPatch)
+      .toMatchObject({ delivery_required: true, delivery_distance_km: 1 });
   });
 });
