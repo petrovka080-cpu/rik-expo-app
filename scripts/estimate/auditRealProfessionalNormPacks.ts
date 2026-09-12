@@ -9,8 +9,8 @@ import {
   PROFESSIONAL_NORM_PACK_GROUPS,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
   PRODUCTION_WORK_DEFINITIONS_10000,
-  resolveNormWorkGroupForCategory,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { inspectProductionNormConsumerInventory } from "./productionNormConsumerInventory";
 
 export const GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS =
   "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS" as const;
@@ -176,15 +176,6 @@ function latestPreviousSummary(): { file: string; summary: PreviousNormRealitySu
     .sort((left, right) => right.localeCompare(left));
   const file = candidates[0];
   return file ? { file, summary: readJson<PreviousNormRealitySummary>(file) } : null;
-}
-
-function workGroupTemplateCounts(): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
-    const group = resolveNormWorkGroupForCategory(definition.category) ?? "services";
-    counts.set(group, (counts.get(group) ?? 0) + 1);
-  }
-  return counts;
 }
 
 function inspectApartmentReferenceModel(): Record<string, unknown> {
@@ -495,11 +486,13 @@ function main(): void {
   const plan = pathExists(planFile) ? readJson<WorkGroupRemediationPlan>(planFile) : null;
   const packResults = loadProfessionalNormPacks();
   const packBindingRequirements = loadNormPackBindingRequirements();
-  const templateCounts = workGroupTemplateCounts();
+  const consumerInventory = inspectProductionNormConsumerInventory();
+  const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
+  const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
   const planGroups = new Set((plan?.work_groups ?? []).map((entry) => entry.work_group));
   const packGroups = new Set(packResults.filter((result) => result.valid && result.work_group).map((result) => result.work_group as string));
   const taxonomyGroups = new Set(NORM_WORK_TAXONOMY_GROUPS);
-  const activeGroups = new Set(templateCounts.keys());
+  const activeGroups = new Set(consumerInventory.map((entry) => entry.work_group));
   const missingPlanGroups = [...taxonomyGroups].filter((group) => !planGroups.has(group));
   const activeGroupsWithoutPlan = [...activeGroups].filter((group) => !planGroups.has(group));
   const missingPackGroups = [...planGroups].filter((group) => !packGroups.has(group));
@@ -530,10 +523,14 @@ function main(): void {
 
   const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => {
     const requirement = packBindingRequirements.get(entry.work_group);
+    const consumers = consumerInventoryByGroup.get(entry.work_group);
     const productionBindingPresent = productionBoundGroups.has(entry.work_group);
     return {
       ...entry,
-      templates_count: templateCounts.get(entry.work_group) ?? 0,
+      templates_count: consumers?.templates_count ?? 0,
+      consumer_rows_count: consumers?.rows_count ?? 0,
+      consumer_work_basis_units: consumers?.work_basis_units ?? {},
+      consumer_resource_output_units: consumers?.resource_output_units ?? {},
       current_norm_status:
         previousSummary.work_groups_with_only_generic_norms?.includes(entry.work_group)
           ? "structural_generic_only"
@@ -594,6 +591,10 @@ function main(): void {
 
   const syntheticAfter = previousSummary.synthetic_family_default_count ?? 599000;
   const templatesOnlySyntheticAfter = previousSummary.templates_with_only_synthetic_norms ?? 10000;
+  const expectedConsumerRowsCount = previousSummary.norm_records_count ?? 599000;
+  const consumerInventoryComplete =
+    [...taxonomyGroups].every((group) => (consumerInventoryByGroup.get(group)?.rows_count ?? 0) > 0) &&
+    consumerRowsCount === expectedConsumerRowsCount;
   const allSourceRegistryGroupsPresent =
     sourceRegistry.source_registry_exists &&
     sourceRegistry.source_registry_missing_work_groups.length === 0 &&
@@ -615,6 +616,7 @@ function main(): void {
     realSourceCoverageComplete &&
     allPacksValid &&
     allPacksReviewed &&
+    consumerInventoryComplete &&
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
     templatesOnlySyntheticAfter === 0 &&
@@ -637,6 +639,10 @@ function main(): void {
       : null,
     template_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
     norm_records_count: previousSummary.norm_records_count ?? 599000,
+    production_norm_consumer_rows_count: consumerRowsCount,
+    production_norm_consumer_work_groups_count: consumerInventory.length,
+    production_norm_consumer_inventory_complete: consumerInventoryComplete,
+    production_norm_consumer_inventory: consumerInventory,
     synthetic_family_default_count_before: previousSummary.synthetic_family_default_count ?? null,
     templates_with_only_synthetic_norms_before: previousSummary.templates_with_only_synthetic_norms ?? null,
     synthetic_family_default_count_after: syntheticAfter,
@@ -680,6 +686,9 @@ function main(): void {
       physical_norm_item_ids: entry.physical_norm_item_ids,
       required_norm_parameter_keys: entry.required_norm_parameter_keys,
       physical_norm_rate_bases: entry.physical_norm_rate_bases,
+      consumer_rows_count: entry.consumer_rows_count,
+      consumer_work_basis_units: entry.consumer_work_basis_units,
+      consumer_resource_output_units: entry.consumer_resource_output_units,
       binding_blockers: entry.production_norm_registry_binding_blockers,
     })),
     professional_norm_packs_exist: packResults.length > 0,
@@ -855,6 +864,9 @@ function main(): void {
         : "",
       invalidPackResults.length > 0 ? "invalid_professional_norm_pack_files" : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
+      !consumerInventoryComplete
+        ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
+        : "",
       !apartmentReferenceProfessional ? "apartment_reference_not_professional_expanded_boq" : "",
       !apartmentReferenceUsesRealNormPacks ? "apartment_reference_boq_shape_good_but_norm_sources_not_real_packs" : "",
       syntheticAfter !== 0 ? `synthetic_family_default_count_after:${syntheticAfter}` : "",
@@ -876,6 +888,9 @@ function main(): void {
     previous_status: summary.previous_status,
     template_count: summary.template_count,
     norm_records_count: summary.norm_records_count,
+    production_norm_consumer_rows_count: summary.production_norm_consumer_rows_count,
+    production_norm_consumer_work_groups_count: summary.production_norm_consumer_work_groups_count,
+    production_norm_consumer_inventory_complete: summary.production_norm_consumer_inventory_complete,
     synthetic_family_default_count_before: summary.synthetic_family_default_count_before,
     templates_with_only_synthetic_norms_before: summary.templates_with_only_synthetic_norms_before,
     synthetic_family_default_count_after: summary.synthetic_family_default_count_after,

@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { inspectProductionNormConsumerInventory } from "../../scripts/estimate/productionNormConsumerInventory";
+import { NORM_WORK_TAXONOMY_GROUPS } from "../../src/lib/ai/estimateTemplate10000";
 
 describe("real professional norm packs audit", () => {
   it("blocks green until sourced professional norm packs replace synthetic defaults", () => {
@@ -40,6 +42,9 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("production_norm_registry_unbound_work_groups");
     expect(source).toContain("production_norm_registry_invalid_bindings");
     expect(source).toContain("production_unbound_norm_requirements");
+    expect(source).toContain("production_norm_consumer_inventory_complete");
+    expect(source).toContain("consumer_work_basis_units");
+    expect(source).toContain("consumer_resource_output_units");
     expect(source).toContain("required_norm_parameter_keys");
     expect(source).toContain("physical_norm_rate_bases");
     expect(source).toContain("PACK_NEEDS_REVIEW");
@@ -92,5 +97,33 @@ describe("real professional norm packs audit", () => {
       "tile.json",
       "waterproofing.json",
     ]));
+  });
+
+  it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
+    const inventory = inspectProductionNormConsumerInventory();
+    const byGroup = new Map(inventory.map((entry) => [entry.work_group, entry]));
+
+    expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length);
+    expect(inventory.reduce((sum, entry) => sum + entry.rows_count, 0)).toBe(599000);
+    expect(NORM_WORK_TAXONOMY_GROUPS.every((group) => (byGroup.get(group)?.rows_count ?? 0) > 0)).toBe(true);
+    expect(byGroup.get("delivery")?.templates_count).toBe(10000);
+    expect(byGroup.get("documentation")?.templates_count).toBe(10000);
+    expect(byGroup.get("equipment_rent")?.templates_count).toBe(10000);
+    expect(byGroup.get("low_voltage")?.work_basis_units).toEqual({
+      point: 8664,
+      linear_m: 228,
+    });
+    expect(byGroup.get("sewerage")?.work_basis_units).toEqual({
+      point: 1368,
+      linear_m: 190,
+    });
+    expect(byGroup.get("ventilation")?.work_basis_units).toEqual({
+      linear_m: 152,
+      set: 11248,
+    });
+    expect(byGroup.get("heating")?.work_basis_units).toEqual({
+      piece: 14250,
+      m2: 190,
+    });
   });
 });
