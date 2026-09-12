@@ -148,6 +148,31 @@ export const WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_SOURCE_ID =
 export const WAVIN_HEP2O_15MM_VERTICAL_CLIP_SOURCE_ID =
   `src_professional_norm_pack_${WAVIN_HEP2O_15MM_VERTICAL_CLIP_NORM_ID}` as const;
 
+const WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "exact_material_or_equipment",
+  "pipe_material_and_class",
+  "jointing_method",
+  "connection_count",
+  "prepared_pipe_end_count",
+  "hep2o_system_variant",
+  "hep2o_joint_topology_reference",
+] as const);
+
+const WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "route_length_m",
+  "nominal_diameter_mm",
+  "hep2o_support_orientation",
+  "hep2o_support_span_lengths_m",
+  "hep2o_support_anchor_node_count",
+  "hep2o_support_layout_reference",
+  "hep2o_support_anchor_positions_verified",
+] as const);
+
+const WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  ...WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  ...WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS,
+] as const);
+
 const uponorNorm = (() => {
   const found = heatingNormPack.norm_items.find((item) => item.norm_id === UPONOR_UFH_150MM_NORM_ID);
   if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${UPONOR_UFH_150MM_NORM_ID}`);
@@ -531,7 +556,14 @@ if (
   wavinHep2OSmartSleeveNorm.rate.unit !== "piece/prepared pipe end inserted into fitting" ||
   wavinHep2OSmartSleeveNorm.applicability.system !== "Wavin Hep2O push-fit" ||
   wavinHep2OSmartSleeveNorm.applicability.count_basis !== "prepared_pipe_end_count" ||
-  wavinHep2OSmartSleeveNorm.rounding.mode !== "ceil"
+  wavinHep2OSmartSleeveNorm.parameters.length !==
+    WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !wavinHep2OSmartSleeveNorm.parameters.includes(parameterId),
+  ) ||
+  wavinHep2OSmartSleeveNorm.rounding.package_unit !== "piece" ||
+  wavinHep2OSmartSleeveNorm.rounding.package_size !== 1 ||
+  wavinHep2OSmartSleeveNorm.rounding.mode !== "exact_integer_prepared_pipe_end_count"
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${WAVIN_HEP2O_SMARTSLEEVE_NORM_ID}`);
 }
@@ -582,14 +614,22 @@ export const WAVIN_HEP2O_CLIP_SOURCE_METADATA = Object.freeze(wavinHep2OClipNorm
     plumbingNormPack.work_group !== "plumbing" ||
     normItem.unit !== "piece" ||
     normItem.rate.value !== expected.maximum_clip_spacing_m ||
-    normItem.rate.unit !== "maximum spacing m between clips; count must include run endpoints and fittings" ||
+    normItem.rate.unit !== "recommended maximum support distance m for general-purpose run" ||
     normItem.applicability.system !== "Wavin Hep2O" ||
     normItem.applicability.pipe_nominal_diameter_mm !== expected.diameter_mm ||
     normItem.applicability.orientation !== expected.orientation ||
     normItem.applicability.maximum_clip_spacing_m !== expected.maximum_clip_spacing_m ||
     normItem.applicability.count_formula !== "support_layout_count_from_max_spacing_with_endpoints" ||
     normItem.applicability.simple_rate_multiplication_forbidden !== true ||
-    normItem.rounding.mode !== "ceil_after_layout"
+    normItem.applicability.general_purpose_support_distances !== true ||
+    normItem.applicability.concealed_adequately_supported_exceptions_require_separate_design !== true ||
+    normItem.parameters.length !== WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+    WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+      (parameterId) => !normItem.parameters.includes(parameterId),
+    ) ||
+    normItem.rounding.package_unit !== "piece" ||
+    normItem.rounding.package_size !== 1 ||
+    normItem.rounding.mode !== "layout_count_from_verified_anchor_nodes_and_maximum_span"
   ) {
     throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${expected.norm_id}`);
   }
@@ -646,31 +686,6 @@ const LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "manufacturer_system_profile_id",
   "installation_manual_reference",
   "tightening_torque_nm",
-] as const);
-
-const WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "exact_material_or_equipment",
-  "pipe_material_and_class",
-  "jointing_method",
-  "connection_count",
-  "prepared_pipe_end_count",
-  "hep2o_system_variant",
-  "hep2o_joint_topology_reference",
-] as const);
-
-const WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "route_length_m",
-  "nominal_diameter_mm",
-  "hep2o_support_orientation",
-  "hep2o_support_span_lengths_m",
-  "hep2o_support_anchor_node_count",
-  "hep2o_support_layout_reference",
-  "hep2o_support_anchor_positions_verified",
-] as const);
-
-const WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  ...WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
-  ...WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS,
 ] as const);
 
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
@@ -1839,9 +1854,8 @@ function resolveWavinHep2OProfile(
     );
   }
 
-  const calculatedSmartSleeveQuantityPiece = Math.ceil(
-    preparedPipeEndCount! * WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value,
-  );
+  const calculatedSmartSleeveQuantityPiece =
+    preparedPipeEndCount! * WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value;
   const calculatedSupportQuantityPiece = supportAnchorNodeCount! + supportSpanLengths!.reduce(
     (sum, spanLengthM) => sum + Math.max(
       0,
@@ -1889,7 +1903,7 @@ function resolveWavinHep2OProfile(
         `prepared_pipe_end_count=${preparedPipeEndCount}`,
         `connection_count=${connectionCount}`,
         `joint_topology_reference=${primitiveString(explicit.hep2o_joint_topology_reference!)}`,
-        `formula=ceil(prepared_pipe_end_count*${WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value})`,
+        `formula=prepared_pipe_end_count*${WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value}`,
       ].join(";"),
     } satisfies ProfessionalParameterValueV4,
     support_count: {

@@ -77,6 +77,19 @@ describe("real professional norm packs audit", () => {
         items?: { supporting_source_urls?: string[]; verified_facts?: string[] }[];
       };
     };
+    const reviewedPlumbingPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/plumbing.json"),
+        "utf8",
+      ),
+    ) as {
+      review_status: string;
+      norm_items: { norm_id: string }[];
+      review_evidence?: {
+        method?: string;
+        items?: { norm_id?: string; verified_facts?: string[] }[];
+      };
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -212,6 +225,16 @@ describe("real professional norm packs audit", () => {
         "maximum_standard_section_length_is_3000_mm",
         "maximum_standard_length_does_not_define_a_three_metre_procurement_rounding_rule",
       ]));
+    expect(reviewedPlumbingPack.review_status).toBe("reviewed");
+    expect(reviewedPlumbingPack.review_evidence).toMatchObject({
+      method: "DIRECT_PRIMARY_SOURCE_REVIEW",
+    });
+    expect(reviewedPlumbingPack.review_evidence?.items).toHaveLength(4);
+    expect(reviewedPlumbingPack.review_evidence?.items?.map((item) => item.norm_id).sort())
+      .toEqual(reviewedPlumbingPack.norm_items.map((item) => item.norm_id).sort());
+    expect(reviewedPlumbingPack.review_evidence?.items?.find((item) =>
+      item.norm_id === "plumbing_wavin_hep2o_smartsleeve_piece_connection_v1")?.verified_facts)
+      .toContain("exact_integer_prepared_pipe_end_count_requires_no_additional_rounding");
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
@@ -251,8 +274,18 @@ describe("real professional norm packs audit", () => {
       PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
     ))].sort();
 
-    expect(basisParameters).toHaveLength(33);
-    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(31);
+    expect(basisParameters).toHaveLength(32);
+    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(30);
+    expect(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID).toMatchObject({
+      ventilation_lindab_vsr_duct_linear_m_route_v1: "route_length_m",
+      plumbing_wavin_hep2o_15mm_horizontal_clip_spacing_v1: "route_length_m",
+      plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1: "route_length_m",
+      plumbing_wavin_hep2o_22mm_horizontal_clip_spacing_v1: "route_length_m",
+    });
+    expect(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU.route_length_m).toMatchObject({
+      unit: "linear_m",
+      aliasesRu: expect.arrayContaining(["трасса воздуховода", "длина трубопровода"]),
+    });
     expect(basisParameters.filter((key) => {
       const entry = aiEstimateRuDictionaryEntry(key);
       const text = entry

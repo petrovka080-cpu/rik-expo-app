@@ -39,7 +39,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   metalwork: "2026.09-jotun-hardtop-xp-100um-r1",
   paint: "2026.07-wave1",
   plaster: "2026.07-wave1",
-  plumbing: "2026.09-wavin-hep2o-installer-guide-r1",
+  plumbing: "2026.09-wavin-hep2o-primary-review-r2",
   putty: "2026.07-wave1",
   reinforcement: "2026.07-wave2a",
   roadworks: "2026.09-krer27-table-27-06-020-routing-r1",

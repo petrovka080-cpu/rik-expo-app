@@ -1234,7 +1234,7 @@ describe("professional physical norm applicability V1", () => {
       status: "APPLIED",
       source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
       norm_id: WAVIN_HEP2O_SMARTSLEEVE_NORM_ID,
-      source_document_version: "2026.09-wavin-hep2o-installer-guide-r1",
+      source_document_version: "2026.09-wavin-hep2o-primary-review-r2",
       source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
       calculated_smart_sleeve_quantity_piece: 10,
       calculated_support_quantity_piece: 5,
