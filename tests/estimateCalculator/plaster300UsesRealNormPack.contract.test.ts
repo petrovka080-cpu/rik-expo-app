@@ -1,7 +1,7 @@
 import { compileProductionExpandedEstimate10000, isProfessionalNormPackSourceId } from "../../src/lib/ai/estimateTemplate10000";
 
-describe("plaster 300 real norm pack", () => {
-  it("uses the Ceresit CT29 plaster pack in the compiled formula rows", () => {
+describe("plaster 300 physical norm safety", () => {
+  it("does not apply the CT29 thickness rate to area alone", () => {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "plaster_paint_interior_wall_plaster_apply_standard",
       quantity: 300,
@@ -11,14 +11,20 @@ describe("plaster 300 real norm pack", () => {
     const genericReferenceRows = compiled.rows.filter((row) =>
       row.normSourceId.includes("src_professional_norm_pack_catalog_")
     );
-    const plasterRow = realRows.find((row) => row.normSourceId.includes("plaster_ceresit_ct29"));
+    const plasterRows = compiled.rows.filter((row) => row.normSourceId.includes("plaster_ceresit_ct29"));
 
     expect(realRows.length + genericReferenceRows.length).toBe(compiled.rows.length);
     expect(genericReferenceRows.length).toBeGreaterThan(0);
     expect(genericReferenceRows.every((row) =>
       !isProfessionalNormPackSourceId(row.normSourceId)
     )).toBe(true);
-    expect(plasterRow?.unit).toBe("kg");
-    expect(plasterRow?.sourceParameters?.formulaContext).toMatchObject({ normFactor: 1.8, packageSize: 25 });
+    expect(realRows).toEqual([]);
+    expect(plasterRows).toEqual([]);
+    expect(compiled.rows.find((row) =>
+      row.rowCode === "plaster_paint_interior_wall_plaster_apply_standard_materials_01"))
+      .toMatchObject({
+        unit: "l",
+        normSourceId: expect.stringContaining("src_professional_norm_pack_catalog_plaster_"),
+      });
   });
 });

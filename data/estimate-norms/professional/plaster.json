@@ -1,34 +1,84 @@
 {
   "work_group": "plaster",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-ceresit-ct29-global-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "plaster_ceresit_ct29_kg_m2_mm_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+        "verified_facts": [
+          "global_tds_identifier_is_c_ct29_tds_1_0120",
+          "plaster_application_consumption_is_approximately_1_8_kg_per_m2_per_mm",
+          "deep_loss_filling_uses_a_separate_approximately_1_8_kg_per_dm3_basis",
+          "scope_includes_indoor_and_outdoor_repair_of_cement_lime_plaster_and_listed_mineral_substrates",
+          "substrate_must_be_rough_load_carrying_and_free_of_adhesion_reducing_substances",
+          "substrate_absorbency_changes_the_required_preparation_method",
+          "application_temperature_is_5_to_25_c",
+          "documented_bag_sizes_are_5_and_25_kg",
+          "direct_area_only_scalar_multiplication_is_forbidden_because_layer_thickness_is_required",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "plaster_ceresit_ct29_kg_m2_mm_v1",
-      "name_ru": "Ceresit CT 29 plaster filler consumption by layer thickness",
-      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "name_ru": "Ceresit CT 29, штукатурное нанесение по площади и толщине слоя",
+      "parameters": [
+        "area_m2",
+        "layer_thickness_mm",
+        "ct29_application_mode",
+        "substrate_type",
+        "substrate_rough_load_carrying_clean_confirmed",
+        "substrate_absorbency_class",
+        "substrate_absorbency_preparation_confirmed",
+        "installation_location",
+        "application_conditions_confirmed",
+        "exterior_curing_protection_confirmed",
+        "ct29_global_tds_variant_confirmed",
+        "selected_bag_size_kg"
+      ],
       "unit": "kg",
       "rate": {
         "value": 1.8,
-        "unit": "kg/m2/mm"
+        "unit": "approximate kg/m2 per mm for plaster application; not the separate kg/dm3 deep-loss basis"
       },
       "applicability": {
-        "surfaces": ["concrete", "cement_lime_plaster", "brickwork", "mineral_substrate"],
-        "use_cases": ["repair_plaster", "levelling", "thin_putty_layer"],
-        "max_layer_mm": 20
+        "product": "Ceresit CT 29",
+        "tds_identifier": "C_CT29_TDS_1_0120",
+        "application_mode": "plaster_application_by_area_and_thickness",
+        "excluded_application_mode": "deep_loss_filling_by_volume",
+        "deep_loss_fill_rate_kg_dm3": 1.8,
+        "surfaces": ["concrete", "traditional_plaster", "cement_lime_plaster", "rough_mineral_substrate", "small_masonry_work"],
+        "installation_locations": ["indoor", "outdoor"],
+        "substrate_rough_load_carrying_clean_required": true,
+        "low_absorption_or_non_homogeneous_substrate_moist_but_not_wet_required": true,
+        "dry_highly_absorbent_substrate_ct17_and_four_hour_drying_recommended": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 25,
+        "exterior_rain_and_fast_drying_protection_min_hours": 24,
+        "formula": "ct29_plaster_net_kg = area_m2 * layer_thickness_mm * 1.8",
+        "simple_rate_multiplication_forbidden": true,
+        "additional_waste_not_published": true,
+        "documented_bag_sizes_kg": [5, 25]
       },
-      "waste_percent_default": 10,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
-        "package_size": 25,
-        "mode": "ceil"
+        "package_size": 5,
+        "mode": "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_25_kg_bag"
       },
       "source": {
         "title": "Ceresit CT 29 plaster filler technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
-        "page": "technical data, assumed consumption",
+        "page": "TDS C_CT29_TDS_1_0120, pages 1-2: scope, substrate and application conditions; page 2: separate plaster and deep-loss rates plus 5/25 kg packaging",
         "provenance": "manufacturer_technical_cards"
       }
     }

@@ -486,13 +486,13 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
   if (text.includes("lawn") || text.includes("irrigation") || text.includes("garden") || text.includes("site_grading")) return "landscaping";
   if (text.includes("clean_after") || text.includes("construction_cleaning") || text.includes("hydro_clean") || text.includes("cleaning")) return "cleaning";
   if (text.includes("facade_paint")) return "paint";
-  if (text.includes("paint_wall") || text.includes("paint_ceiling") || text.includes("paint_")) return "paint";
   if (text.includes("putty") || text.includes("finish_layer")) return "putty";
   if (text.includes("wall_plaster") || text.includes("ceiling_plaster") || text.includes("decor_plaster")) return "plaster";
   if (text.includes("primer")) {
     if (text.includes("flooring") || text.includes("subfloor")) return "flooring";
     return "paint";
   }
+  if (text.includes("paint_wall") || text.includes("paint_ceiling") || text.includes("paint_")) return "paint";
   if (text.includes("screed")) return "screed";
   return categoryGroup;
 }

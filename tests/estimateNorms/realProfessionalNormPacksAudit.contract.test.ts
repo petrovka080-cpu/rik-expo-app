@@ -310,6 +310,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedPlasterPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/plaster.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -886,6 +911,49 @@ describe("real professional norm packs audit", () => {
           selected_consumption_and_coat_count_required: true,
         }),
       });
+    expect(reviewedPlasterPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-ct29-global-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedPlasterPack.review_evidence?.items).toMatchObject([{
+      norm_id: "plaster_ceresit_ct29_kg_m2_mm_v1",
+      source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+      verified_facts: expect.arrayContaining([
+        "plaster_application_consumption_is_approximately_1_8_kg_per_m2_per_mm",
+        "deep_loss_filling_uses_a_separate_approximately_1_8_kg_per_dm3_basis",
+        "direct_area_only_scalar_multiplication_is_forbidden_because_layer_thickness_is_required",
+        "additional_waste_allowance_is_not_published",
+      ]),
+    }]);
+    expect(reviewedPlasterPack.norm_items).toMatchObject([{
+      norm_id: "plaster_ceresit_ct29_kg_m2_mm_v1",
+      parameters: expect.arrayContaining([
+        "area_m2",
+        "layer_thickness_mm",
+        "ct29_application_mode",
+        "substrate_absorbency_class",
+        "substrate_absorbency_preparation_confirmed",
+        "ct29_global_tds_variant_confirmed",
+        "selected_bag_size_kg",
+      ]),
+      rate: {
+        value: 1.8,
+        unit: "approximate kg/m2 per mm for plaster application; not the separate kg/dm3 deep-loss basis",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        application_mode: "plaster_application_by_area_and_thickness",
+        excluded_application_mode: "deep_loss_filling_by_volume",
+        deep_loss_fill_rate_kg_dm3: 1.8,
+        simple_rate_multiplication_forbidden: true,
+        documented_bag_sizes_kg: [5, 25],
+      }),
+      rounding: {
+        package_size: 5,
+        mode: "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_25_kg_bag",
+      },
+    }]);
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
@@ -983,8 +1051,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(40);
-    expect(unregistered).toHaveLength(19);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(39);
+    expect(unregistered).toHaveLength(20);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -1019,6 +1087,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(13);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(14);
   });
 });
