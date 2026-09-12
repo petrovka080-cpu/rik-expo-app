@@ -335,6 +335,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedPuttyPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -954,6 +979,88 @@ describe("real professional norm packs audit", () => {
         mode: "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_25_kg_bag",
       },
     }]);
+    expect(reviewedPuttyPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-ct126-ct127-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedPuttyPack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedPuttyPack.review_evidence?.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        norm_id: "putty_ceresit_ct126_kg_m2_mm_v1",
+        source_url: "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
+        verified_facts: expect.arrayContaining([
+          "approximate_consumption_is_1_2_kg_per_m2_per_mm",
+          "single_layer_thickness_is_2_to_10_mm",
+          "direct_area_only_scalar_multiplication_is_forbidden_because_layer_thickness_is_required",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+      expect.objectContaining({
+        norm_id: "putty_ceresit_ct127_finish_layer_max_2mm_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "estimated_consumption_is_a_range_from_0_4_to_1_2_kg_per_m2",
+          "tds_does_not_publish_a_rate_selection_table_by_layer_thickness",
+          "fixed_range_bound_must_not_be_used_without_an_explicit_project_consumption_selection",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+    ]));
+    expect(reviewedPuttyPack.norm_items.find((item) =>
+      item.norm_id === "putty_ceresit_ct126_kg_m2_mm_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "area_m2",
+          "layer_thickness_mm",
+          "substrate_type",
+          "substrate_preparation_system",
+          "selected_bag_size_kg",
+        ]),
+        rate: {
+          value: 1.2,
+          unit: "approximate kg/m2 per mm",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          layer_min_mm: 2,
+          layer_max_mm: 10,
+          simple_rate_multiplication_forbidden: true,
+          documented_bag_sizes_kg: [5, 20],
+        }),
+        rounding: {
+          package_size: 5,
+          mode: "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_20_kg_bag",
+        },
+      });
+    expect(reviewedPuttyPack.norm_items.find((item) =>
+      item.norm_id === "putty_ceresit_ct127_finish_layer_max_2mm_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "area_m2",
+          "layer_thickness_mm",
+          "substrate_type",
+          "substrate_absorbency",
+          "selected_consumption_kg_m2",
+          "selected_bag_size_kg",
+        ]),
+        rate: {
+          value: 0.4,
+          unit: "published estimated lower bound only; project rate must be selected within 0.4-1.2 kg/m2",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          layer_max_mm: 2,
+          rate_range_kg_m2: [0.4, 1.2],
+          rate_selection_table_not_published: true,
+          selected_consumption_required: true,
+          simple_rate_multiplication_forbidden: true,
+        }),
+        rounding: {
+          package_size: 20,
+          mode: "net_kg_after_explicit_project_rate_selection_before_20_kg_bag_rounding",
+        },
+      });
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
@@ -1051,8 +1158,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(39);
-    expect(unregistered).toHaveLength(20);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(37);
+    expect(unregistered).toHaveLength(22);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -1087,6 +1194,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(14);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(16);
   });
 });

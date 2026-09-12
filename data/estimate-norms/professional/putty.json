@@ -1,63 +1,165 @@
 {
   "work_group": "putty",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-ceresit-ct126-ct127-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "putty_ceresit_ct126_kg_m2_mm_v1",
+        "source_url": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
+        "verified_facts": [
+          "tds_identifier_is_c_ct126_tds_1_0321",
+          "approximate_consumption_is_1_2_kg_per_m2_per_mm",
+          "single_layer_thickness_is_2_to_10_mm",
+          "scope_is_walls_and_ceilings_inside_dry_rooms_without_permanent_high_humidity",
+          "substrate_type_changes_the_required_ct7_or_ct19_preparation",
+          "application_temperature_is_5_to_30_c",
+          "documented_bag_sizes_are_5_and_20_kg",
+          "direct_area_only_scalar_multiplication_is_forbidden_because_layer_thickness_is_required",
+          "additional_waste_allowance_is_not_published"
+        ]
+      },
+      {
+        "norm_id": "putty_ceresit_ct127_finish_layer_max_2mm_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
+        "verified_facts": [
+          "tds_identifier_is_c_ct127_tds_1_0120",
+          "estimated_consumption_is_a_range_from_0_4_to_1_2_kg_per_m2",
+          "tds_does_not_publish_a_rate_selection_table_by_layer_thickness",
+          "maximum_single_layer_thickness_is_2_mm",
+          "scope_is_walls_and_ceilings_inside_dry_places_without_permanent_humidity",
+          "substrate_type_and_absorbency_change_the_required_in10_ct17_ct7_or_ct19_preparation",
+          "application_temperature_is_5_to_30_c",
+          "documented_bag_size_is_20_kg",
+          "fixed_range_bound_must_not_be_used_without_an_explicit_project_consumption_selection",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "putty_ceresit_ct126_kg_m2_mm_v1",
-      "name_ru": "Ceresit CT 126 gypsum skim coat consumption by thickness",
-      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "name_ru": "Ceresit CT 126, расход гипсовой шпаклёвки по площади и толщине слоя",
+      "parameters": [
+        "area_m2",
+        "layer_thickness_mm",
+        "substrate_type",
+        "substrate_load_bearing_dry_clean_confirmed",
+        "substrate_preparation_system",
+        "dry_interior_no_permanent_humidity_confirmed",
+        "application_temperature_confirmed",
+        "ct126_tds_variant_confirmed",
+        "selected_bag_size_kg"
+      ],
       "unit": "kg",
       "rate": {
         "value": 1.2,
-        "unit": "kg/m2/mm"
+        "unit": "approximate kg/m2 per mm"
       },
       "applicability": {
-        "surfaces": ["traditional_plaster", "concrete"],
+        "product": "Ceresit CT 126",
+        "tds_identifier": "C_CT126_TDS_1_0321",
+        "surfaces": [
+          "cement_plaster",
+          "cement_lime_plaster",
+          "concrete",
+          "gypsum_substrate",
+          "gypsum_fibre_board",
+          "plasterboard",
+          "aerated_concrete",
+          "sound_adherent_paint_coat"
+        ],
         "layer_min_mm": 2,
         "layer_max_mm": 10,
-        "dry_indoor_use": true
+        "dry_indoor_use": true,
+        "permanent_high_humidity_excluded": true,
+        "substrate_load_bearing_dry_clean_required": true,
+        "substrate_specific_ct7_or_ct19_preparation_required": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 30,
+        "formula": "ct126_net_kg = area_m2 * layer_thickness_mm * 1.2",
+        "simple_rate_multiplication_forbidden": true,
+        "additional_waste_not_published": true,
+        "documented_bag_sizes_kg": [5, 20]
       },
-      "waste_percent_default": 8,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
-        "package_size": 20,
-        "mode": "ceil"
+        "package_size": 5,
+        "mode": "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_20_kg_bag"
       },
       "source": {
-        "title": "Ceresit CT 126 technical data sheet",
+        "title": "Ceresit CT 126 gypsum-based plaster technical data sheet",
         "url": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
-        "page": "technical data, approximate consumption",
+        "page": "TDS C_CT126_TDS_1_0321, pages 1-2: scope, substrate preparation and layer limits; page 2: 1.2 kg/m2/mm consumption and 5/20 kg packaging",
         "provenance": "manufacturer_technical_cards"
       }
     },
     {
       "norm_id": "putty_ceresit_ct127_finish_layer_max_2mm_v1",
-      "name_ru": "Ceresit CT 127 finish skim coat applicability",
-      "parameters": ["area_m2", "layer_thickness_mm", "substrate_type"],
+      "name_ru": "Ceresit CT 127, финишная шпаклёвка с проектным выбором расхода из опубликованного диапазона",
+      "parameters": [
+        "area_m2",
+        "layer_thickness_mm",
+        "substrate_type",
+        "substrate_absorbency",
+        "substrate_load_bearing_dry_clean_confirmed",
+        "substrate_preparation_system",
+        "selected_consumption_kg_m2",
+        "dry_interior_no_permanent_humidity_confirmed",
+        "application_temperature_confirmed",
+        "selected_bag_size_kg"
+      ],
       "unit": "kg",
       "rate": {
-        "value": 1.0,
-        "unit": "kg/m2/mm pending estimator review against local product card"
+        "value": 0.4,
+        "unit": "published estimated lower bound only; project rate must be selected within 0.4-1.2 kg/m2"
       },
       "applicability": {
-        "surfaces": ["render", "concrete", "gypsum_board"],
+        "product": "Ceresit CT 127",
+        "tds_identifier": "C_CT127_TDS_1_0120",
+        "surfaces": [
+          "cement_plaster",
+          "cement_lime_plaster",
+          "concrete",
+          "ceresit_ct126",
+          "gypsum_substrate",
+          "gypsum_fibre_board",
+          "plasterboard",
+          "aerated_concrete",
+          "silicate_block",
+          "sound_adherent_paint_coat"
+        ],
         "layer_max_mm": 2,
         "dry_indoor_use": true,
-        "requires_manual_rate_review": true
+        "permanent_humidity_excluded": true,
+        "substrate_load_bearing_dry_clean_required": true,
+        "substrate_specific_in10_ct17_ct7_or_ct19_preparation_required": true,
+        "rate_range_kg_m2": [0.4, 1.2],
+        "rate_selection_table_not_published": true,
+        "selected_consumption_required": true,
+        "simple_rate_multiplication_forbidden": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 30,
+        "additional_waste_not_published": true,
+        "documented_bag_size_kg": 20
       },
-      "waste_percent_default": 8,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
         "package_size": 20,
-        "mode": "ceil"
+        "mode": "net_kg_after_explicit_project_rate_selection_before_20_kg_bag_rounding"
       },
       "source": {
-        "title": "Ceresit CT 127 technical data sheet",
+        "title": "Ceresit CT 127 skim coat technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
-        "page": "scope of use and layer thickness",
+        "page": "TDS C_CT127_TDS_1_0120, pages 1-2: scope, substrate-specific preparation and 2 mm limit; page 2: estimated 0.4-1.2 kg/m2 range and 20 kg packaging",
         "provenance": "manufacturer_technical_cards"
       }
     }
