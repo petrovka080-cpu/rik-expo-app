@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
+import { aiEstimateRuDictionaryEntry } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import {
   getProductionExpandedTemplate10000,
   isProfessionalNormPackSourceId,
@@ -45,12 +46,17 @@ const ALLOWED_SOURCE_TYPES = new Set([
 
 const FORBIDDEN_SOURCE_PATTERN = /\b(AI|unknown|generated|family_default|примерно)\b/i;
 const FAKE_URL_PATTERN = /example\.|localhost|127\.0\.0\.1|fake|todo|tbd|placeholder/i;
+const RU_MOJIBAKE_PATTERN = /[ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђљњќћџ]/u;
 const GENERIC_STRUCTURAL_SOURCE_IDS = new Set([
   "src_norm_internal_labor_standards_2026_07",
   "src_norm_material_consumption_tables_2026_07",
   "src_norm_public_reference_construction_methods_2026_07",
   "src_norm_estimator_manual_service_policy_2026_07",
 ]);
+
+function isReadableRussianText(value: string): boolean {
+  return /[А-Яа-яЁё]/u.test(value) && !RU_MOJIBAKE_PATTERN.test(value);
+}
 
 type PreviousNormRealitySummary = {
   final_status?: string;
@@ -522,6 +528,15 @@ function main(): void {
     ),
   );
   const basisRegistryIds = Object.keys(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID);
+  const basisParameterKeys = [...new Set(Object.values(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID))].sort();
+  const missingBasisQuestionKeys = basisParameterKeys.filter((key) => {
+    const question = aiEstimateRuDictionaryEntry(key);
+    return !question ||
+      !isReadableRussianText(question.labelRu) ||
+      !isReadableRussianText(question.promptPhraseRu) ||
+      !isReadableRussianText(question.descriptionRu);
+  });
+  const physicalNormBasisQuestionCoverageComplete = missingBasisQuestionKeys.length === 0;
   const missingPhysicalNormBasisIds = [...physicalNormIds]
     .filter((normId) => !PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[normId])
     .sort();
@@ -602,6 +617,8 @@ function main(): void {
         norm_id: item.norm_id,
         basis_parameter: item.basis_parameter,
         work_basis_unit: item.work_basis_unit,
+        question_label_ru: aiEstimateRuDictionaryEntry(item.basis_parameter)?.labelRu ?? null,
+        question_prompt_ru: aiEstimateRuDictionaryEntry(item.basis_parameter)?.promptPhraseRu ?? null,
       })) ?? [],
       production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
       production_norm_registry_binding_present: productionBindingPresent,
@@ -677,6 +694,7 @@ function main(): void {
     allPacksValid &&
     allPacksReviewed &&
     physicalNormBasisRegistryComplete &&
+    physicalNormBasisQuestionCoverageComplete &&
     consumerInventoryComplete &&
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
@@ -721,6 +739,10 @@ function main(): void {
       .reduce((sum, result) => sum + result.norm_items_count, 0),
     physical_norm_basis_registry_items_count: basisRegistryIds.length,
     physical_norm_basis_registry_complete: physicalNormBasisRegistryComplete,
+    physical_norm_basis_parameters_count: basisParameterKeys.length,
+    physical_norm_basis_questions_count: basisParameterKeys.length - missingBasisQuestionKeys.length,
+    physical_norm_basis_question_coverage_complete: physicalNormBasisQuestionCoverageComplete,
+    missing_physical_norm_basis_question_keys: missingBasisQuestionKeys,
     missing_physical_norm_basis_ids: missingPhysicalNormBasisIds,
     orphan_physical_norm_basis_ids: orphanPhysicalNormBasisIds,
     professional_norm_pack_work_groups_count: packGroups.size,
@@ -935,6 +957,9 @@ function main(): void {
         : "",
       invalidPackResults.length > 0 ? "invalid_professional_norm_pack_files" : "",
       !physicalNormBasisRegistryComplete ? "physical_norm_basis_registry_incomplete" : "",
+      !physicalNormBasisQuestionCoverageComplete
+        ? `physical_norm_basis_questions_missing:${missingBasisQuestionKeys.join(",")}`
+        : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
         ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
@@ -976,6 +1001,7 @@ function main(): void {
     source_backed_norm_items_count: summary.source_backed_norm_items_count,
     physical_norm_basis_registry_items_count: summary.physical_norm_basis_registry_items_count,
     physical_norm_basis_registry_complete: summary.physical_norm_basis_registry_complete,
+    physical_norm_basis_question_coverage_complete: summary.physical_norm_basis_question_coverage_complete,
     professional_norm_pack_work_groups_count: summary.professional_norm_pack_work_groups_count,
     professional_norm_pack_coverage_percent: summary.professional_norm_pack_coverage_percent,
     apartment_reference_row_count: summary.apartment_reference_row_count,

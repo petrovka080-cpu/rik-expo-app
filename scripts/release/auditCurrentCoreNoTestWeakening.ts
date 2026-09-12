@@ -464,7 +464,7 @@ const R4_A13_6_CURRENT_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[] = 
   currentAlignedContract("tests/estimateNorms/normSourceQualityAudit.contract.test.ts", "hardcoded-rate and professional-source audit ownership"),
   currentAddedContract("tests/estimateNorms/professionalNormPackRegistryParity.contract.test.ts", "exact output unit, work-basis parameter, rate, package and URL parity between all physical norm packs and production bindings"),
   currentAddedContract("tests/estimateNorms/professionalWbsNoGuessedQuantity.contract.test.ts", "removal of guessed steel, concrete and delivery quantity conversions"),
-  currentAlignedContract("tests/estimateNorms/realProfessionalNormPacksAudit.contract.test.ts", "separate physical-pack presence and real production-binding coverage"),
+  currentAlignedContract("tests/estimateNorms/realProfessionalNormPacksAudit.contract.test.ts", "separate physical-pack presence, row-aware production binding, dimensional basis and human-readable Russian basis-question coverage"),
   currentAddedContract("tests/estimateRuntime/editableParam11610Harness.contract.test.ts", "exact 11610 editable-parameter shard fan-in and lost-chunk rejection"),
   currentAddedContract("tests/requestEstimate/canonicalRowAmendmentInheritedValidation.contract.test.ts", "row-only exclude and restore despite inherited parameter issues while parameter edits remain blocked"),
   currentAddedContract("tests/requestEstimate/consumerRepairMultiDigitInput.contract.test.tsx", "continuous multi-digit quantity and price editing with selection preservation and stale-response rejection"),

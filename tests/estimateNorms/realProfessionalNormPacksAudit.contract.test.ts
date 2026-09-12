@@ -1,10 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { inspectProductionNormConsumerInventory } from "../../scripts/estimate/productionNormConsumerInventory";
+import { PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID } from "../../scripts/estimate/professionalNormPackBasisRegistry";
 import {
   NORM_WORK_TAXONOMY_GROUPS,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { aiEstimateRuDictionaryEntry } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
+import { PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU } from "../../src/lib/estimate/professionalNormPackBasisQuestionsRu";
 
 describe("real professional norm packs audit", () => {
   it("blocks green until sourced professional norm packs replace synthetic defaults", () => {
@@ -56,6 +59,8 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("basis_parameter_not_declared");
     expect(source).toContain("work_basis_unit_mismatch");
     expect(source).toContain("physical_norm_basis_registry_complete");
+    expect(source).toContain("physical_norm_basis_question_coverage_complete");
+    expect(source).toContain("missing_physical_norm_basis_question_keys");
     expect(source).toContain("PACK_NEEDS_REVIEW");
     expect(source).toContain("NO_EXECUTABLE_REGISTRY_BINDING");
     expect(source).toContain("wave1_physical_pack_files_present");
@@ -138,5 +143,25 @@ describe("real professional norm packs audit", () => {
       piece: 14250,
       m2: 190,
     });
+  });
+
+  it("provides human-readable Russian questions for every physical norm basis", () => {
+    const basisParameters = [...new Set(Object.values(
+      PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
+    ))].sort();
+
+    expect(basisParameters).toHaveLength(33);
+    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(31);
+    expect(basisParameters.filter((key) => {
+      const entry = aiEstimateRuDictionaryEntry(key);
+      const text = entry
+        ? `${entry.labelRu} ${entry.promptPhraseRu} ${entry.descriptionRu}`
+        : "";
+      return !entry ||
+        !/[А-Яа-яЁё]/u.test(entry.labelRu) ||
+        !/[А-Яа-яЁё]/u.test(entry.promptPhraseRu) ||
+        !/[А-Яа-яЁё]/u.test(entry.descriptionRu) ||
+        /[ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђљњќћџ]/u.test(text);
+    })).toEqual([]);
   });
 });

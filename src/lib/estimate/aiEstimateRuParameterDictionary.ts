@@ -2,6 +2,7 @@ import type {
   EstimateDraftRevisionParamSource,
   EstimateDraftRevisionSource,
 } from "./estimateDraftRevisionContract";
+import { PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU } from "./professionalNormPackBasisQuestionsRu";
 
 export type AiEstimateRuParameterDictionaryEntry = {
   key: string;
@@ -13,7 +14,22 @@ export type AiEstimateRuParameterDictionaryEntry = {
   descriptionRu: string;
 };
 
+const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_DICTIONARY = Object.fromEntries(
+  Object.entries(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU).map(([key, question]) => [
+    key,
+    entry(
+      key,
+      question.labelRu,
+      question.unit,
+      [...question.aliasesRu],
+      question.promptPhraseRu,
+      question.descriptionRu,
+    ),
+  ]),
+) as Record<string, AiEstimateRuParameterDictionaryEntry>;
+
 const PARAMETER_DICTIONARY: Record<string, AiEstimateRuParameterDictionaryEntry> = {
+  ...PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_DICTIONARY,
   q: entry("q", "Объем работ", null, ["количество работ", "объем", "объём"], "объем работ", "Базовый объем из выбранного шаблона."),
   work_package: entry("work_package", "Комплекс работ", "pcs", ["комплекс работ", "пакет работ"], "комплекс работ", "Количество типовых комплексов или узлов в расчете."),
   area_m2: entry("area_m2", "Площадь", "m2", ["площадь", "квадратные метры"], "площадь", "Площадь участка, помещения или поверхности."),
