@@ -643,6 +643,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedDocumentationPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/documentation.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1995,6 +2021,65 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "no_rounding_until_exact_table_measurement_and_precision_rule_selected",
+      },
+    }]);
+    expect(reviewedDocumentationPack).toMatchObject({
+      source_pack_version: "2026.09-kg-design-price-official-routing-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedDocumentationPack.review_evidence?.items).toMatchObject([{
+      norm_id: "documentation_kg_selected_design_price_unit_routing_v1",
+      source_url: "https://minstroy.gov.kg/ru/kyzmat/354/show",
+      supporting_source_urls: expect.arrayContaining([
+        "https://minstroy.gov.kg/ru/state_program/download-pdf/razdel9proektnyeraboty9_compressed-27468fb53dae260e8.84202859.pdf",
+        "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+        "https://minstroy.gov.kg/ru/kyzmat/12",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "official_ministry_page_identifies_the_general_guidance_for_estimating_design_work_in_the_kyrgyz_republic",
+        "section_9_tables_select_objects_by_named_characteristic_capacity_range_and_table_measurement_unit",
+        "section_9_application_instructions_distinguish_working_documentation_project_and_working_project_stages",
+        "a_2022_official_amendment_order_exists_so_current_edition_and_amendments_must_be_confirmed",
+        "value_one_is_only_a_same_unit_routing_identity_not_a_published_price_or_effort_norm",
+      ]),
+    }]);
+    expect(reviewedDocumentationPack.norm_items).toMatchObject([{
+      norm_id: "documentation_kg_selected_design_price_unit_routing_v1",
+      parameters: expect.arrayContaining([
+        "project_object_type",
+        "design_stage",
+        "selected_price_collection_section",
+        "selected_collection_edition_and_amendments",
+        "selected_price_table_and_row",
+        "project_capacity_measure",
+        "project_capacity_unit",
+        "selected_table_capacity_range",
+        "selected_table_measurement_unit",
+        "quantity_normalization_calculation",
+        "applicable_design_stage_coefficient",
+        "deliverable_composition",
+        "current_price_level_conversion_and_indices",
+      ]),
+      rate: {
+        value: 1,
+        unit: "same-unit routing identity after project capacity is normalized to the exact selected collection table measure; not a published price or effort norm",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        jurisdiction: "Kyrgyz Republic",
+        exact_sector_section_and_table_required: true,
+        exact_table_row_capacity_range_and_measurement_unit_required: true,
+        design_stage_and_deliverable_composition_required: true,
+        current_collection_edition_amendments_and_price_conversion_required: true,
+        generic_percent_of_construction_cost_forbidden: true,
+        price_and_effort_blocked_until_exact_collection_measure_selected: true,
+        rate_is_routing_identity_not_published_norm: true,
+        automatic_production_binding_for_generic_documentation_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "no_rounding_until_exact_collection_table_measure_and_precision_rule_selected",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>

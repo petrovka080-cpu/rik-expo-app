@@ -22,7 +22,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   concrete: "2026.07-wave2a",
   delivery: "2026.09-ford-transit-25-5my-primary-review-r2",
   demolition: "2026.09-krer46-official-scope-primary-review-r2",
-  documentation: "2026.09-kg-project-pricing-routing-r1",
+  documentation: "2026.09-kg-design-price-official-routing-review-r2",
   drywall: "2026.09-knauf-k462-primary-review-r2",
   earthworks: "2026.09-fhwa-fp24-section208-primary-review-r2",
   electrical: "2026.09-legrand-product-and-installation-r1",

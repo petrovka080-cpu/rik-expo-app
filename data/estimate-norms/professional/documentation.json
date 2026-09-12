@@ -1,37 +1,90 @@
 {
   "work_group": "documentation",
-  "source_pack_version": "2026.09-kg-project-pricing-routing-r1",
+  "source_pack_version": "2026.09-kg-design-price-official-routing-review-r2",
   "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "documentation_kg_selected_design_price_unit_routing_v1",
+        "source_url": "https://minstroy.gov.kg/ru/kyzmat/354/show",
+        "supporting_source_urls": [
+          "https://minstroy.gov.kg/ru/state_program/download-pdf/razdel9proektnyeraboty9_compressed-27468fb53dae260e8.84202859.pdf",
+          "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+          "https://minstroy.gov.kg/ru/kyzmat/12"
+        ],
+        "verified_facts": [
+          "official_ministry_page_identifies_the_general_guidance_for_estimating_design_work_in_the_kyrgyz_republic",
+          "official_page_states_that_the_methodical_recommendations_support_contract_price_determination_for_design_work",
+          "official_section_9_is_an_official_2016_price_collection_for_chemical_industry_design_work_not_a_cross_sector_generic_rate",
+          "section_9_tables_select_objects_by_named_characteristic_capacity_range_and_table_measurement_unit",
+          "section_9_application_instructions_distinguish_working_documentation_project_and_working_project_stages",
+          "section_9_application_instructions_define_stage_coefficients_and_object_specific_composition_rules",
+          "published_tables_allocate_relative_cost_across_named_design_sections_but_do_not_authorize_an_arbitrary_generic_percent_for_unselected_work",
+          "a_2022_official_amendment_order_exists_so_current_edition_and_amendments_must_be_confirmed",
+          "exact_collection_section_table_row_capacity_measure_stage_and_deliverable_scope_are_required_before_price_application",
+          "value_one_is_only_a_same_unit_routing_identity_not_a_published_price_or_effort_norm"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "documentation_kg_selected_design_price_unit_routing_v1",
       "name_ru": "Маршрутизация проектной документации к точному разделу Сборника цен Кыргызской Республики",
-      "parameters": ["project_object_type", "design_stage", "selected_price_collection_section", "project_capacity_measure", "deliverable_composition"],
+      "parameters": [
+        "project_object_type",
+        "design_stage",
+        "selected_price_collection_section",
+        "selected_collection_edition_and_amendments",
+        "selected_price_table_and_row",
+        "project_capacity_measure",
+        "project_capacity_unit",
+        "selected_table_capacity_range",
+        "selected_table_measurement_unit",
+        "quantity_normalization_calculation",
+        "selected_table_base_price_values",
+        "applicable_design_stage_coefficient",
+        "deliverable_composition",
+        "design_section_cost_allocation",
+        "additional_and_excluded_work_scope",
+        "current_price_level_conversion_and_indices",
+        "estimator_approval_reference"
+      ],
       "unit": "selected_price_unit",
       "rate": {
         "value": 1,
-        "unit": "selected price unit/project input normalized to the same exact collection measure"
+        "unit": "same-unit routing identity after project capacity is normalized to the exact selected collection table measure; not a published price or effort norm"
       },
       "applicability": {
         "jurisdiction": "Kyrgyz Republic",
         "document": "Общие указания по определению сметной стоимости проектных работ",
+        "official_reference_collection_reviewed": "Сборник цен на проектные работы, раздел 9 Химическая промышленность, официальное издание 2016",
         "exact_sector_section_and_table_required": true,
+        "exact_table_row_capacity_range_and_measurement_unit_required": true,
+        "project_capacity_normalization_to_selected_table_unit_required": true,
         "design_stage_and_deliverable_composition_required": true,
+        "applicable_stage_coefficient_and_design_section_allocation_required": true,
+        "current_collection_edition_amendments_and_price_conversion_required": true,
         "generic_percent_of_construction_cost_forbidden": true,
-        "price_and_effort_blocked_until_exact_collection_measure_selected": true
+        "price_and_effort_blocked_until_exact_collection_measure_selected": true,
+        "rate_is_routing_identity_not_published_norm": true,
+        "automatic_production_binding_for_generic_documentation_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "selected_price_unit",
         "package_size": 1,
-        "mode": "follow_exact_selected_price_table"
+        "mode": "no_rounding_until_exact_collection_table_measure_and_precision_rule_selected"
       },
       "source": {
         "title": "Общие указания по определению сметной стоимости проектных работ для строительства в Кыргызской Республике",
         "url": "https://minstroy.gov.kg/ru/kyzmat/354/show",
-        "page": "Purpose and applicability: formation of contractual prices for project products and services",
+        "page": "Official general-guidance page; exact sector collection, table row, capacity measure, stage, scope and current amendments remain required",
         "provenance": "public_government_norms_or_standards"
       }
     }
