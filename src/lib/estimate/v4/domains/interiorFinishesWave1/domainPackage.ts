@@ -5,6 +5,7 @@ import type {
   ProfessionalChildAssemblyV4,
 } from "../../professionalProjectAssemblyV4";
 import {
+  CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
   createProfessionalEstimateDomainFactoryV1,
   type ProfessionalAssemblyProfileV1,
   type ProfessionalCanonicalTechnologyV1,
@@ -206,6 +207,11 @@ const SCOPE_LABELS_RU: Readonly<Record<InteriorFinishesWave1ScopeCapability, str
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
+const CERESIT_CT29_INTERIOR_WALL_PLASTER_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
+} as const;
 
 function parameter(
   parameter_id: string,
@@ -219,9 +225,10 @@ function parameter(
     maximum?: number;
     choices?: readonly { value: string; label_ru: string }[];
     fullOnly?: boolean;
+    condition?: ProfessionalDomainParameterDefinitionV1["required_when"];
   } = {},
 ): ProfessionalDomainParameterDefinitionV1 {
-  const condition = options.fullOnly ? FULL_ONLY : ALWAYS;
+  const condition = options.condition ?? (options.fullOnly ? FULL_ONLY : ALWAYS);
   return {
     parameter_id,
     label_ru,
@@ -308,6 +315,60 @@ function scopeParameterDefinitions(
   }
 }
 
+function ceresitCt29InteriorWallPlasterConditionalParameters(
+  config: TechnologyConfig,
+  scope: InteriorFinishesWave1ScopeCapability,
+): ProfessionalDomainParameterDefinitionV1[] {
+  if (
+    config.canonical_base_work_key !== "plaster_paint_interior_wall_plaster_apply" ||
+    config.material_system !== "WALL_PLASTER" ||
+    scope !== "standard"
+  ) {
+    return [];
+  }
+  const condition = CERESIT_CT29_INTERIOR_WALL_PLASTER_ONLY;
+  return [
+    parameter("ct29_application_mode", "Режим применения Ceresit CT 29", "choice", "P1", null, [], {
+      choices: [{
+        value: "plaster_application_by_area_and_thickness",
+        label_ru: "Штукатурное нанесение по площади и толщине слоя",
+      }],
+      condition,
+    }),
+    parameter("substrate_type", "Минеральное основание для Ceresit CT 29", "choice", "P1", null, [], {
+      choices: [
+        "concrete",
+        "traditional_plaster",
+        "cement_lime_plaster",
+        "rough_mineral_substrate",
+        "small_masonry_work",
+      ].map((value) => ({ value, label_ru: value })),
+      condition,
+    }),
+    parameter("substrate_rough_load_carrying_clean_confirmed", "Основание шероховатое, несущее и очищенное", "boolean", "P1", null, [], { condition }),
+    parameter("substrate_absorbency_class", "Класс впитываемости основания", "choice", "P1", null, [], {
+      choices: [
+        { value: "normal_absorption", label_ru: "Нормально впитывающее" },
+        { value: "dry_highly_absorbent", label_ru: "Сухое сильно впитывающее" },
+        { value: "low_or_non_homogeneous", label_ru: "Слабо или неоднородно впитывающее" },
+      ],
+      condition,
+    }),
+    parameter("substrate_absorbency_preparation_confirmed", "Подготовка основания выбрана по впитываемости", "boolean", "P1", null, [], { condition }),
+    parameter("installation_location", "Место применения Ceresit CT 29", "choice", "P1", null, [], {
+      choices: [{ value: "indoor", label_ru: "Внутренние стены" }],
+      condition,
+    }),
+    parameter("application_conditions_confirmed", "Температура нанесения 5–25 °C и условия TDS подтверждены", "boolean", "P1", null, [], { condition }),
+    parameter("exterior_curing_protection_confirmed", "Наружная защита от дождя и быстрого высыхания применима", "boolean", "P1", null, [], { condition }),
+    parameter("ct29_global_tds_variant_confirmed", "Подтверждена карточка C_CT29_TDS_1_0120", "boolean", "P1", null, [], { condition }),
+    parameter("selected_bag_size_kg", "Выбранная фасовка Ceresit CT 29", "choice", "P1", "kg", [], {
+      choices: [5, 25].map((value) => ({ value: String(value), label_ru: `${value} кг` })),
+      condition,
+    }),
+  ];
+}
+
 function schemaFor(
   technologyId: string,
   config: TechnologyConfig,
@@ -367,6 +428,7 @@ function schemaFor(
       parameter("product_profile_id", "Паспорт выбранного материала или системы", "text", "P0", null, [], {}),
       parameter("normative_rate_code", "Код применимой ресурсной расценки по проекту", "text", "P0", null, [], {}),
       ...formulaParameters(config),
+      ...ceresitCt29InteriorWallPlasterConditionalParameters(config, scope),
       parameter("labor_productivity_output_per_man_hour", "Производительность труда по принятой норме или проекту производства работ", "number", "P0", `${quantityUnit}_per_man_hour`, ["application_labor"], { minimum: 0.01, maximum: 10_000 }),
       parameter("equipment_productivity_output_per_machine_hour", "Производительность выбранного механизма", "number", "P0", `${quantityUnit}_per_machine_hour`, ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
       parameter("surface_preparation_productivity_output_per_man_hour", "Производительность подготовки основания", "number", "P1", `${quantityUnit}_per_man_hour`, ["surface_preparation_labor"], { minimum: 0.01, maximum: 10_000, fullOnly: true }),

@@ -125,6 +125,17 @@ function parameterValues(
       if (parameter.parameter_id === "normative_rate_code") {
         return [parameter.parameter_id, value("PROJECT-VERIFIED-RATE-IFW1", null, "PROJECT_DOCUMENT")];
       }
+      if (parameter.input_type === "boolean") {
+        return [parameter.parameter_id, value(false, parameter.unit_id)];
+      }
+      if (parameter.input_type === "choice") {
+        const selected = parameter.choices?.[0]?.value;
+        if (!selected) throw new Error(`TEST_PARAMETER_CHOICE_FIXTURE_MISSING:${parameter.parameter_id}`);
+        return [parameter.parameter_id, value(selected, parameter.unit_id)];
+      }
+      if (parameter.input_type === "text") {
+        return [parameter.parameter_id, value(`PROJECT:${parameter.parameter_id}`, parameter.unit_id)];
+      }
       const numeric = FIXTURE_NUMBER_BY_PARAMETER[parameter.parameter_id];
       if (numeric == null) throw new Error(`TEST_PARAMETER_FIXTURE_MISSING:${parameter.parameter_id}`);
       const normRate = parameter.parameter_id.includes("productivity");
@@ -327,7 +338,7 @@ describe("Interior Finishes Wave 1 professional domain package", () => {
     )).toThrow(`DOMAIN_EXACT_WORK_KEY_MISMATCH:${first.catalog_id}:foreign-work-key`);
   });
 
-  test("routes six representative exact selections to the canonical backend boundary", () => {
+  test("routes six representative exact selections through the production inline entry", () => {
     const representatives = INTERIOR_FINISHES_WAVE_1_INVENTORY.filter((row) => row.scope_capability === "standard").slice(0, 6);
     expect(representatives).toHaveLength(6);
     for (const [index, inventory] of representatives.entries()) {

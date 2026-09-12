@@ -7,6 +7,7 @@ import electricalNormPack from "../../../../../data/estimate-norms/professional/
 import flooringNormPack from "../../../../../data/estimate-norms/professional/flooring.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import paintNormPack from "../../../../../data/estimate-norms/professional/paint.json";
+import plasterNormPack from "../../../../../data/estimate-norms/professional/plaster.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
 import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
@@ -369,6 +370,35 @@ const CERESIT_CN69_GLOBAL_25KG_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "installation_conditions_confirmed",
   "cn69_global_25kg_tds_variant_confirmed",
   "selected_bag_size_kg",
+] as const);
+
+export const CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:ceresit-ct29:C_CT29_TDS_1_0120:interior-wall-plaster:v1" as const;
+
+export const CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID =
+  "plaster_ceresit_ct29_kg_m2_mm_v1" as const;
+
+export const CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}` as const;
+
+const CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "layer_thickness_mm",
+  "ct29_application_mode",
+  "substrate_type",
+  "substrate_rough_load_carrying_clean_confirmed",
+  "substrate_absorbency_class",
+  "substrate_absorbency_preparation_confirmed",
+  "installation_location",
+  "application_conditions_confirmed",
+  "exterior_curing_protection_confirmed",
+  "ct29_global_tds_variant_confirmed",
+  "selected_bag_size_kg",
+] as const);
+
+const CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  ...CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_PARAMETER_IDS,
+  "surface_type",
 ] as const);
 
 export const CERESIT_CT17_FLOORING_PRIMER_NORM_ID =
@@ -1555,6 +1585,81 @@ export const CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const ceresitCt29InteriorWallPlasterNorm = (() => {
+  const found = plasterNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}`);
+  }
+  return found;
+})();
+
+if (
+  plasterNormPack.work_group !== "plaster" ||
+  ceresitCt29InteriorWallPlasterNorm.unit !== "kg" ||
+  ceresitCt29InteriorWallPlasterNorm.rate.value !== 1.8 ||
+  ceresitCt29InteriorWallPlasterNorm.rate.unit !==
+    "approximate kg/m2 per mm for plaster application; not the separate kg/dm3 deep-loss basis" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.product !== "Ceresit CT 29" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.tds_identifier !== "C_CT29_TDS_1_0120" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.application_mode !==
+    "plaster_application_by_area_and_thickness" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.excluded_application_mode !==
+    "deep_loss_filling_by_volume" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.deep_loss_fill_rate_kg_dm3 !== 1.8 ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.surfaces.join(",") !==
+    "concrete,traditional_plaster,cement_lime_plaster,rough_mineral_substrate,small_masonry_work" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.installation_locations.join(",") !== "indoor,outdoor" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.application_temperature_min_c !== 5 ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.application_temperature_max_c !== 25 ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.formula !==
+    "ct29_plaster_net_kg = area_m2 * layer_thickness_mm * 1.8" ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.simple_rate_multiplication_forbidden !== true ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.additional_waste_not_published !== true ||
+  ceresitCt29InteriorWallPlasterNorm.applicability.documented_bag_sizes_kg.join(",") !== "5,25" ||
+  ceresitCt29InteriorWallPlasterNorm.parameters.length !==
+    CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_PARAMETER_IDS.length ||
+  CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCt29InteriorWallPlasterNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCt29InteriorWallPlasterNorm.waste_percent_default !== 0 ||
+  ceresitCt29InteriorWallPlasterNorm.rounding.package_unit !== "bag" ||
+  ceresitCt29InteriorWallPlasterNorm.rounding.package_size !== 5 ||
+  ceresitCt29InteriorWallPlasterNorm.rounding.mode !==
+    "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_25_kg_bag"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}`);
+}
+
+export const CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_ID,
+  norm_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID,
+  source_document_version: plasterNormPack.source_pack_version,
+  source_title: ceresitCt29InteriorWallPlasterNorm.source.title,
+  source_url: ceresitCt29InteriorWallPlasterNorm.source.url,
+  exact_locator: ceresitCt29InteriorWallPlasterNorm.source.page,
+  rate_value: ceresitCt29InteriorWallPlasterNorm.rate.value,
+  rate_unit: ceresitCt29InteriorWallPlasterNorm.rate.unit,
+  product: ceresitCt29InteriorWallPlasterNorm.applicability.product,
+  tds_identifier: ceresitCt29InteriorWallPlasterNorm.applicability.tds_identifier,
+  application_mode: ceresitCt29InteriorWallPlasterNorm.applicability.application_mode,
+  excluded_application_mode: ceresitCt29InteriorWallPlasterNorm.applicability.excluded_application_mode,
+  surfaces: [...ceresitCt29InteriorWallPlasterNorm.applicability.surfaces],
+  installation_locations: [...ceresitCt29InteriorWallPlasterNorm.applicability.installation_locations],
+  application_temperature_min_c:
+    ceresitCt29InteriorWallPlasterNorm.applicability.application_temperature_min_c,
+  application_temperature_max_c:
+    ceresitCt29InteriorWallPlasterNorm.applicability.application_temperature_max_c,
+  documented_bag_sizes_kg: [...ceresitCt29InteriorWallPlasterNorm.applicability.documented_bag_sizes_kg],
+  waste_percent_default: ceresitCt29InteriorWallPlasterNorm.waste_percent_default,
+  definition_hash: estimateDeterministicHash({
+    work_group: plasterNormPack.work_group,
+    source_pack_version: plasterNormPack.source_pack_version,
+    norm_item: ceresitCt29InteriorWallPlasterNorm,
+  }),
+});
+
 const ceresitCt17FlooringPrimerNorm = (() => {
   const found = flooringNormPack.norm_items.find(
     (item) => item.norm_id === CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
@@ -2490,6 +2595,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CT17_FLOORING_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["ct17_primer_procurement_quantity_l"] as const,
 }, {
+  norm_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID,
+  work_group: "plaster",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "WALL_PLASTER",
+  operation_class: "APPLY",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_ID,
+  source_document_version: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
+}, {
   norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
   work_group: "tile",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -2652,6 +2771,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_gerflor_skirting_piece_count?: number;
   calculated_cn69_net_quantity_kg?: number;
   calculated_cn69_bag_count?: number;
+  calculated_ct29_net_quantity_kg?: number;
+  calculated_ct29_procurement_quantity_kg?: number;
+  calculated_ct29_bag_count?: number;
   calculated_ct17_primer_net_quantity_l?: number;
   calculated_ct17_primer_procurement_quantity_l?: number;
   calculated_ct17_primer_container_count?: number;
@@ -4703,6 +4825,190 @@ function resolveCeresitCn69Global25Kg(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveCeresitCt29InteriorWallPlaster(
+  productProfileId: typeof CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const layerThicknessMm = finiteNumber(explicit.layer_thickness_mm);
+  const applicationMode = primitiveString(explicit.ct29_application_mode!);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const surfaceType = primitiveString(explicit.surface_type!);
+  const substrateAbsorbencyClass = primitiveString(explicit.substrate_absorbency_class!);
+  const installationLocation = primitiveString(explicit.installation_location!);
+  const selectedBagSizeKg = finiteNumber(explicit.selected_bag_size_kg);
+  const surfaceTypeBySubstrate: Readonly<Record<string, string>> = Object.freeze({
+    concrete: "CONCRETE",
+    traditional_plaster: "CEMENT_PLASTER",
+    cement_lime_plaster: "CEMENT_PLASTER",
+    rough_mineral_substrate: "CEMENT_PLASTER",
+    small_masonry_work: "MASONRY",
+  });
+  const acceptedAbsorbencyClasses = [
+    "normal_absorption",
+    "dry_highly_absorbent",
+    "low_or_non_homogeneous",
+  ];
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    layerThicknessMm !== null && layerThicknessMm > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:layer_thickness_mm",
+    applicationMode === CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.application_mode
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:ct29_application_mode=${applicationMode}`,
+    substrateType && CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.surfaces.includes(substrateType)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:substrate_type=${substrateType}`,
+    substrateType && surfaceTypeBySubstrate[substrateType] === surfaceType
+      ? ""
+      : `PHYSICAL_NORM_PROJECT_VALUE_CONFLICT:surface_type=${surfaceType}:substrate_type=${substrateType}`,
+    substrateAbsorbencyClass && acceptedAbsorbencyClasses.includes(substrateAbsorbencyClass)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:substrate_absorbency_class=${substrateAbsorbencyClass}`,
+    installationLocation === "indoor"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:installation_location=${installationLocation}`,
+    selectedBagSizeKg !== null &&
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.documented_bag_sizes_kg.includes(selectedBagSizeKg)
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:selected_bag_size_kg=${selectedBagSizeKg}:documented_bag_sizes_kg=${CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.documented_bag_sizes_kg.join(",")}`,
+    explicitTrue(explicit.substrate_rough_load_carrying_clean_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:substrate_rough_load_carrying_clean_confirmed=false`,
+    explicitTrue(explicit.substrate_absorbency_preparation_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:substrate_absorbency_preparation_confirmed=false`,
+    explicitTrue(explicit.application_conditions_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}:application_conditions_confirmed=false`,
+    explicitFalse(explicit.exterior_curing_protection_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_PROJECT_VALUE_CONFLICT:installation_location=indoor:exterior_curing_protection_confirmed=true`,
+    explicitTrue(explicit.ct29_global_tds_variant_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID}`,
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA,
+    );
+  }
+
+  const consumptionRate = CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.rate_value;
+  const explicitConsumptionRate = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "material_consumption_kg_m2_mm",
+  ));
+  if (explicitConsumptionRate !== null && Math.abs(explicitConsumptionRate - consumptionRate) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:material_consumption_kg_m2_mm=${explicitConsumptionRate}:norm_value=${consumptionRate}`,
+      ],
+      [
+        ...CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "material_consumption_kg_m2_mm",
+      ],
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedCt29NetQuantityKg = Number(
+    (areaM2! * layerThicknessMm! * consumptionRate).toFixed(9),
+  );
+  const calculatedCt29BagCount = Math.ceil(calculatedCt29NetQuantityKg / selectedBagSizeKg! - 1e-9);
+  const calculatedCt29ProcurementQuantityKg = Number(
+    (calculatedCt29BagCount * selectedBagSizeKg!).toFixed(9),
+  );
+  const capturedAt = CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID}`,
+    `tds_identifier=${CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.tds_identifier}`,
+    `ct29_application_mode=${applicationMode}`,
+    `area_m2=${areaM2}`,
+    `layer_thickness_mm=${layerThicknessMm}`,
+    `surface_type=${surfaceType}`,
+    `substrate_type=${substrateType}`,
+    `substrate_absorbency_class=${substrateAbsorbencyClass}`,
+    "substrate_rough_load_carrying_clean_confirmed=true",
+    "substrate_absorbency_preparation_confirmed=true",
+    "installation_location=indoor",
+    "application_conditions_confirmed=true",
+    "exterior_curing_protection_confirmed=false",
+    "ct29_global_tds_variant_confirmed=true",
+    `selected_bag_size_kg=${selectedBagSizeKg}`,
+    `formula=area_m2*layer_thickness_mm*${consumptionRate}`,
+    `net_quantity_kg=${calculatedCt29NetQuantityKg}`,
+    `bag_count=${calculatedCt29BagCount}`,
+    `procurement_quantity_kg=${calculatedCt29ProcurementQuantityKg}`,
+    "deep_loss_filling_by_volume_excluded=true",
+    "additional_waste_percent=0",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    material_consumption_kg_m2_mm: {
+      value: consumptionRate,
+      unit_id: "kg_per_m2_mm",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_ID,
+    norm_id: CERESIT_CT29_INTERIOR_WALL_PLASTER_NORM_ID,
+    source_document_version:
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CT29_INTERIOR_WALL_PLASTER_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
+    calculated_ct29_net_quantity_kg: calculatedCt29NetQuantityKg,
+    calculated_ct29_procurement_quantity_kg: calculatedCt29ProcurementQuantityKg,
+    calculated_ct29_bag_count: calculatedCt29BagCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveCeresitCt17FlooringPrimer(
   productProfileId: typeof CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -6678,6 +6984,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "WALL_PLASTER" &&
+      input.operation_class === "APPLY" &&
+      input.material_system === "WALL_PLASTER" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveCeresitCt29InteriorWallPlaster(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      CERESIT_CT29_INTERIOR_WALL_PLASTER_SOURCE_METADATA,
     );
   }
   if (productProfileId === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID) {
