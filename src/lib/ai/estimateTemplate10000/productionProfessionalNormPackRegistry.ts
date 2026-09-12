@@ -86,6 +86,25 @@ const internalCuratedSource = {
 
 export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPackRegistryItem[] = Object.freeze([
   {
+    normId: "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+    workGroup: "carpentry",
+    unit: "l",
+    consumptionRate: 0.25,
+    wastePercent: 0,
+    packageSize: 5,
+    sourceId: sourceId("carpentry_sikagard_wood_preserver_l_m2_preventative_v1"),
+    sourceTitle: "Sikagard Wood Preserver Product Data Sheet",
+    sourceUrl: "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+    sourcePage: "PDS September 2023, page 1 of 2, preventative treatment 250 ml/m2",
+    match: {
+      categories: ["carpentry_metal"],
+      workKeyIncludes: ["carpentry_metal_interior_wood_frame_finish_standard"],
+      sections: ["materials"],
+      rowNumber: [3],
+    },
+    ...commonSource,
+  },
+  {
     normId: "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
     workGroup: "roofing",
     unit: "m2",

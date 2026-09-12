@@ -1,9 +1,9 @@
 {
   "schema": "catalog-source-registry-v1",
-  "generated_at": "2026-09-12T05:06:44.519Z",
+  "generated_at": "2026-09-12T05:18:17.219Z",
   "final_status": "STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED",
-  "registry_source_count": 32,
-  "row_source_count": 368,
+  "registry_source_count": 33,
+  "row_source_count": 369,
   "p0_source_count": 191,
   "sources": [
     {
@@ -31,6 +31,29 @@
       "p0_case_ids": [
         "apartment_capital_renovation_54"
       ]
+    },
+    {
+      "source_id": "src_professional_norm_pack_carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+      "source_title": "Sikagard Wood Preserver Product Data Sheet",
+      "source_type": "manufacturer_consumption_table",
+      "source_url_or_document_ref": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+      "source_date_or_version": "2026.07-wave2a",
+      "provenance": "manufacturer_datasheet_curated",
+      "license_status": "manufacturer_terms_required",
+      "quality_status": "needs_regional_review",
+      "review_status": "source_mapping_reviewed",
+      "is_source_backed_professional_norm_pack": true,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "registry_norm_pack",
+      "sample_norm_ids": [
+        "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+        "norm:2026.07.03:professional_pack:carpentry_sikagard_wood_preserver_l_m2_preventative_v1:carpentry_metal_interior_wood_frame_finish_standard_professional_expanded_v1:carpentry_metal_interior_wood_frame_finish_standard_materials_03"
+      ],
+      "sample_template_ids": [
+        "carpentry_metal_interior_wood_frame_finish_standard_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_catalog_air_conditioning_labor_labor_piece_v1",

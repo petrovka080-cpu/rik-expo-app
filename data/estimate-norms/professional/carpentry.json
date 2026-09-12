@@ -1,37 +1,49 @@
 {
   "work_group": "carpentry",
-  "source_pack_version": "2026.09-sikabond-wood-floor-upper-consumption-r1",
+  "source_pack_version": "2026.09-sikagard-wood-preserver-preventative-r1",
   "source_type": "manufacturer_consumption_tables",
   "review_status": "needs_review",
   "license_status": "manufacturer_public",
   "norm_items": [
     {
-      "norm_id": "carpentry_sikabond_wood_floor_kg_m2_upper_v1",
-      "name_ru": "Клей SikaBond Wood Flooring Adhesive для сплошного приклеивания деревянного пола",
-      "parameters": ["wood_floor_area_m2", "substrate_type", "substrate_flatness", "application_method", "selected_package"],
-      "unit": "kg",
+      "norm_id": "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+      "name_ru": "Защитный состав Sikagard Wood Preserver для профилактической обработки деревянных элементов",
+      "parameters": [
+        "treated_timber_surface_area_m2",
+        "treatment_purpose",
+        "timber_surface_condition",
+        "application_method"
+      ],
+      "unit": "l",
       "rate": {
-        "value": 1,
-        "unit": "kg/m2; upper endpoint of manufacturer range 0.6-1.0 kg/m2"
+        "value": 0.25,
+        "unit": "l/m2 for the documented preventative treatment"
       },
       "applicability": {
-        "product": "SikaBond Wood Flooring Adhesive",
-        "manufacturer_consumption_range_kg_m2": [0.6, 1],
-        "preliminary_takeoff_uses_upper_endpoint": true,
-        "pail_mass_kg": 14,
-        "substrate_moisture_and_preparation_require_product_data_compliance": true,
-        "final_rate_requires_trowel_and_substrate_confirmation": true
+        "product": "Sikagard Wood Preserver",
+        "treatment_purpose": "preventative effect against insects and wood-rotting fungi",
+        "manufacturer_consumption_ml_m2": 250,
+        "substrates": [
+          "interior or exterior rough-sawn timber",
+          "interior or exterior planed timber",
+          "joists",
+          "roof timbers",
+          "window frames and doors"
+        ],
+        "curative_treatment_must_use_its_own_documented_rate": true,
+        "end_grain_and_dipping_treatment_require_separate_takeoff": true,
+        "project_waste_and_absorption_adjustment_not_included": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "14_kg_pail",
-        "package_size": 14,
-        "mode": "ceil"
+        "package_unit": "5_l_tin",
+        "package_size": 5,
+        "mode": "ceil_after_surface_and_package_selection"
       },
       "source": {
-        "title": "SikaBond Wood Flooring Adhesive product data sheet",
-        "url": "https://gbr.sika.com/en/distribution/adhesives/floor/sikabond-wood-flooringadhesive.html",
-        "page": "Packaging and Consumption: 14 kg pail, 0.6-1.0 kg bonds 1 m2",
+        "title": "Sikagard Wood Preserver Product Data Sheet",
+        "url": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+        "page": "PDS September 2023, page 1 of 2, Application Information / Consumption: preventative treatment 250 ml/m2",
         "provenance": "manufacturer_consumption_tables"
       }
     }

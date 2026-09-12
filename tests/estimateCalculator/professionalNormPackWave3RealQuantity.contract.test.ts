@@ -57,4 +57,15 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(coating.unit).toBe("l");
     expect(coating.normId).toContain("metalwork_jotun_hardtop_xp_l_m2_100um_v1");
   });
+
+  it("uses the carpentry wood-preserver source instead of a neighboring wood-floor adhesive", () => {
+    const row = sourcedRow(
+      "carpentry_metal_interior_wood_frame_finish_standard",
+      "carpentry_metal_interior_wood_frame_finish_standard_materials_03",
+    );
+    expect(row.quantity).toBe(25);
+    expect(row.unit).toBe("l");
+    expect(row.normId).toContain("carpentry_sikagard_wood_preserver_l_m2_preventative_v1");
+    expect(row.normId).not.toContain("wood_floor");
+  });
 });
