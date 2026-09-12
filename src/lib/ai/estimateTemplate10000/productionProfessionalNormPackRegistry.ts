@@ -27,7 +27,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   earthworks: "2026.09-fhwa-fp24-structural-backfill-r1",
   electrical: "2026.09-legrand-product-and-installation-r1",
   equipment_rent: "2026.09-united-rentals-shift-billing-reference-r1",
-  facade: "2026.09-rockwool-vhf-fixings-r1",
+  facade: "2026.09-rockwool-vhf-fixings-primary-review-r2",
   fire_safety: "2026.09-siemens-sinteso-detector-base-r1",
   flooring: "2026.07-wave1",
   formwork: "2026.07-wave2a",
@@ -62,6 +62,7 @@ export type ProfessionalNormPackRegistryItem = {
   consumptionRate: number;
   wastePercent: number;
   packageSize: number;
+  quantityFormulaOverride?: string;
   sourceId: string;
   sourceTitle: string;
   sourceDocumentVersion: string;
@@ -180,10 +181,11 @@ const PROFESSIONAL_NORM_PACK_REGISTRY_ITEM_INPUTS: readonly ProfessionalNormPack
     consumptionRate: 5,
     wastePercent: 0,
     packageSize: 1,
+    quantityFormulaOverride: "ceil(q * normFactor)",
     sourceId: sourceId("facade_rockwool_fixrock_conventional_fixings_piece_m2_v1"),
     sourceTitle: "ROCKWOOL Austria: fixing insulation boards for ventilated facades",
     sourceUrl: "https://www.rockwool.com/at/rat-und-tat/vertiefendes-wissen/produktwissen/vhf-befestigung/",
-    sourcePage: "Variant 1 conventional fixing: average five insulation holders per m2",
+    sourcePage: "Variant 1 conventional fixing: average five insulation holders per m2; adhesive and one-dowel variants are separate",
     match: {
       categories: ["facade"],
       workKeyIncludes: ["facade_interior_vent_facade_install_standard"],

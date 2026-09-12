@@ -132,6 +132,24 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedFacadePack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/facade.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { norm_id?: string; source_url?: string; verified_facts?: string[] }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -336,6 +354,34 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 30,
         mode: "gross_field_area_only_no_roll_rounding_before_complete_layout",
+      },
+    });
+    expect(reviewedFacadePack).toMatchObject({
+      source_pack_version: "2026.09-rockwool-vhf-fixings-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedFacadePack.review_evidence?.items).toHaveLength(1);
+    expect(reviewedFacadePack.review_evidence?.items?.[0]).toMatchObject({
+      norm_id: "facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
+      source_url: "https://www.rockwool.com/at/rat-und-tat/vertiefendes-wissen/produktwissen/vhf-befestigung/",
+    });
+    expect(reviewedFacadePack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "conventional_fixing_uses_average_five_insulation_holders_per_m2",
+        "adhesive_fixing_is_a_separate_variant",
+        "one_dowel_variant_uses_one_holder_per_board_and_two_per_edge_board",
+        "fractional_holder_result_requires_whole_piece_rounding",
+      ]));
+    expect(reviewedFacadePack.norm_items[0]).toMatchObject({
+      parameters: expect.arrayContaining([
+        "conventional_holder_fixing_confirmed",
+        "adhesive_variant_excluded",
+        "one_dowel_variant_excluded",
+      ]),
+      rounding: {
+        package_size: 1,
+        mode: "ceil_to_whole_piece_after_confirmed_conventional_area",
       },
     });
   });

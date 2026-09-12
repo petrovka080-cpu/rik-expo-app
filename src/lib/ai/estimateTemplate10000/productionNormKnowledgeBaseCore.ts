@@ -109,7 +109,7 @@ export type EstimateNormItem = {
   waste_percent: number;
   waste_factor: number;
   waste_ratio: number;
-  rounding_policy: "round_to_4" | "ceil_to_package" | "min_quantity";
+  rounding_policy: "round_to_4" | "ceil_to_package" | "ceil_to_whole_unit" | "min_quantity";
   conversion_policy: "same_unit" | "unit_convert_factor";
   dimensional_contract: {
     workBasisUnit: string;
@@ -118,7 +118,7 @@ export type EstimateNormItem = {
     consumptionRateUnit: string;
     conversionFactor: number;
     calculatedQuantity: number | null;
-    roundingPolicy: "round_to_4" | "ceil_to_package" | "min_quantity";
+    roundingPolicy: "round_to_4" | "ceil_to_package" | "ceil_to_whole_unit" | "min_quantity";
     sourceClaim: {
       sourceId: string;
       url: string | null;
@@ -428,7 +428,8 @@ function hasForbiddenAiNormSourceMarker(value: string): boolean {
 }
 
 function roundingPolicyFor(formula: string): EstimateNormItem["rounding_policy"] {
-  if (/ceil\s*\(/.test(formula)) return "ceil_to_package";
+  if (/ceil\s*\([^)]*\/\s*packageSize/.test(formula)) return "ceil_to_package";
+  if (/ceil\s*\(/.test(formula)) return "ceil_to_whole_unit";
   if (/minQty/.test(formula) && !/round_to/.test(formula)) return "min_quantity";
   return "round_to_4";
 }
@@ -508,7 +509,8 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const workGroup = professionalNormPack?.workGroup ?? rowAwareNormWorkGroup(input);
   const packageSize = professionalNormPack?.packageSize ?? reviewedPackageQuantity(input.row.section, input.row.unit);
   const consumptionRate = professionalNormPack?.consumptionRate ?? reviewedFormulaScalar(input.row.section, input.row.unit);
-  const inputs = formulaInputs(input.row.quantityFormula);
+  const quantityFormula = professionalNormPack?.quantityFormulaOverride ?? input.row.quantityFormula;
+  const inputs = formulaInputs(quantityFormula);
   const wastePercent = professionalNormPack?.wastePercent ?? 5;
   const wasteFactor = 1 + wastePercent / 100;
   const wasteRatio = professionalNormPack ? wastePercent / 100 : isUnit(input.row.unit, "kg", "lbs") ? 0.05 : 0.03;
@@ -531,7 +533,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
   const licenseStatus = professionalNormPack?.licenseStatus ?? source!.license_status;
   const qualityStatus = professionalNormPack?.qualityStatus ?? source!.quality_status;
   const reviewStatus = professionalNormPack?.reviewStatus ?? source!.review_status;
-  const roundingPolicy = roundingPolicyFor(input.row.quantityFormula);
+  const roundingPolicy = roundingPolicyFor(quantityFormula);
   const normIdStem = professionalNormPack
     ? `professional_pack:${compactKey(professionalNormPack.normId)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`
     : `professional_pack:catalog_${compactKey(workGroup)}_${compactKey(recipeType)}_${compactKey(input.row.section)}:${compactKey(input.templateKey)}:${compactKey(rowCode)}`;
@@ -552,11 +554,11 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     recipe_type: recipeType,
     unit: normUnit,
     base_unit: input.defaultUnit,
-    formula: input.row.quantityFormula,
+    formula: quantityFormula,
     formula_inputs: inputs,
     parameter_requirements: inputs.map((key) => ({
       key,
-      unit: key === "q" || key === "baseQuantity" ? input.defaultUnit : input.row.unit,
+      unit: key === "q" || key === "baseQuantity" ? input.defaultUnit : normUnit,
       required: true,
       source: key === "q" || key === "baseQuantity" ? "user_measurement" : "norm_record",
     })),
@@ -568,7 +570,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
     waste_factor: wasteFactor,
     waste_ratio: wasteRatio,
     rounding_policy: roundingPolicy,
-    conversion_policy: /unit_convert/.test(input.row.quantityFormula) ? "unit_convert_factor" : "same_unit",
+    conversion_policy: /unit_convert/.test(quantityFormula) ? "unit_convert_factor" : "same_unit",
     dimensional_contract: {
       workBasisUnit: input.defaultUnit,
       resourceOutputUnit: normUnit,
@@ -592,7 +594,7 @@ export function buildEstimateNormItemForGenericRow(input: EstimateNormGenericTem
           ? JSON.stringify(professionalNormPack.match)
           : `generic:${workGroup}:${recipeType}:${input.row.section}`,
         extractedClaim:
-          `${input.row.quantityFormula}; consumption=${consumptionRate} ${normUnit}/${input.defaultUnit}`,
+          `${quantityFormula}; consumption=${consumptionRate} ${normUnit}/${input.defaultUnit}`,
         normativeStatus: professionalNormPack
           ? "REFERENCE_METHOD"
           : "GENERIC_REFERENCE_NOT_PROFESSIONAL",

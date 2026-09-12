@@ -1307,6 +1307,7 @@ export function getProductionExpandedTemplate10000(workKey: string): ProductionE
       const norm = buildEstimateNormItemForTemplateRow(definition, rowBase);
       return {
         ...rowBase,
+        quantityFormula: norm.formula,
         normId: norm.norm_id,
         normFamilyId: norm.norm_family_id,
         normSourceId: norm.source_id,
@@ -1569,7 +1570,7 @@ export function compileProductionExpandedEstimate10000(input: {
         `wastePercent=${formulaContext.wastePercent}`,
         `normReviewStatus=${norm.review_status}`,
         `normProvenance=${norm.source_provenance}`,
-        `rounding=round_to_4`,
+        `rounding=${norm.rounding_policy}`,
         `result=${rowQuantity} ${outputUnit}`,
       ].join("; "),
       sourceParameters: {

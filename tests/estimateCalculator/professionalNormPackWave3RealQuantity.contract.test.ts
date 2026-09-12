@@ -51,6 +51,21 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(row.quantity).toBe(500);
     expect(row.unit).toBe("piece");
     expect(row.normId).toContain("facade_rockwool_fixrock_conventional_fixings_piece_m2_v1");
+
+    const smallestMeasuredArea = sourcedRow(
+      "facade_interior_vent_facade_install_standard",
+      "facade_interior_vent_facade_install_standard_components_07",
+      0.1,
+    );
+    expect(smallestMeasuredArea.quantityFormula).toBe("ceil(q * normFactor)");
+    expect(smallestMeasuredArea.quantity).toBe(1);
+    expect(smallestMeasuredArea.calculationTrace).toContain("rounding=ceil_to_whole_unit");
+    expect(smallestMeasuredArea.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-rockwool-vhf-fixings-primary-review-r2");
+    expect(smallestMeasuredArea.sourceParameters?.normParameterRequirements).toEqual([
+      { key: "normFactor", unit: "piece", required: true, source: "norm_record" },
+      { key: "q", unit: "m2", required: true, source: "user_measurement" },
+    ]);
   });
 
   it("keeps Comfortboard net area and Jotun theoretical spreading rate dimensionally explicit", () => {
@@ -93,5 +108,9 @@ describe("professional norm-pack wave 3 real quantities", () => {
     });
     expect(partialTinRequirement.sourceParameters?.normSourceDocumentVersion)
       .toBe("2026.09-sikagard-wood-preserver-primary-review-r2");
+    expect(partialTinRequirement.sourceParameters?.normParameterRequirements).toEqual([
+      { key: "normFactor", unit: "l", required: true, source: "norm_record" },
+      { key: "q", unit: "m2", required: true, source: "user_measurement" },
+    ]);
   });
 });
