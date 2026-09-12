@@ -24,7 +24,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   demolition: "2026.09-krer46-applicability-routing-r1",
   documentation: "2026.09-kg-project-pricing-routing-r1",
   drywall: "2026.09-knauf-k462-primary-review-r2",
-  earthworks: "2026.09-fhwa-fp24-structural-backfill-r1",
+  earthworks: "2026.09-fhwa-fp24-section208-primary-review-r2",
   electrical: "2026.09-legrand-product-and-installation-r1",
   equipment_rent: "2026.09-united-rentals-ca-2026-09-02-primary-review-r2",
   facade: "2026.09-rockwool-vhf-fixings-primary-review-r2",

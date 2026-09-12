@@ -1,38 +1,90 @@
 {
   "work_group": "earthworks",
-  "source_pack_version": "2026.09-fhwa-fp24-structural-backfill-r1",
+  "source_pack_version": "2026.09-fhwa-fp24-section208-primary-review-r2",
   "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
+        "source_url": "https://highways.fhwa.dot.gov/federal-lands/specs/fp-24.pdf",
+        "supporting_source_urls": [
+          "https://highways.dot.gov/federal-lands/specs/fp-24",
+          "https://highways.dot.gov/federal-lands/specs/cfl-los/fp-24-library"
+        ],
+        "verified_facts": [
+          "fp_24_is_the_current_fhwa_federal_lands_standard_specification_issued_in_2024",
+          "section_208_09_limits_structural_backfill_to_6_inch_compacted_horizontal_lifts",
+          "section_208_10_requires_at_least_95_percent_of_aashto_t99_method_c_maximum_density",
+          "in_place_density_and_moisture_use_aashto_t310_or_other_approved_procedures",
+          "table_208_1_requires_two_in_place_density_tests_per_structural_backfill_lift",
+          "rocky_material_not_testable_by_t99_t310_uses_a_separate_visible_consolidation_rule",
+          "backfill_against_concrete_waits_until_80_percent_design_strength",
+          "reciprocal_6_5616798_lifts_per_m_is_a_derived_minimum_count_at_maximum_lift_thickness",
+          "fp_24_project_supplemental_specifications_and_local_jurisdiction_must_be_confirmed"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
-      "name_ru": "Число слоёв структурной обратной засыпки при предельной уплотнённой толщине 152,4 мм",
-      "parameters": ["compacted_backfill_depth_m", "material_class", "moisture_condition", "approved_test_method"],
+      "name_ru": "FHWA FP-24 §208: минимальное число слоёв structural backfill при предельной толщине 6 дюймов",
+      "parameters": [
+        "compacted_backfill_depth_m",
+        "fhwa_fp24_project_applicability_confirmed",
+        "project_supplemental_specification_revision",
+        "structure_and_excavation_limits",
+        "material_source_and_section_704_01_qualification",
+        "material_class_and_rock_content",
+        "selected_compacted_lift_thickness_m",
+        "moisture_condition_and_optimum_moisture",
+        "aashto_t99_method_c_maximum_dry_density",
+        "required_density_percent",
+        "aashto_t310_or_approved_in_place_test_method",
+        "density_test_count_per_lift",
+        "even_placement_around_structure_sequence",
+        "concrete_design_strength_before_backfill_percent",
+        "running_waterway_condition",
+        "selected_compaction_equipment",
+        "rocky_material_exception_procedure",
+        "regional_code_and_geotechnical_specification"
+      ],
       "unit": "lift",
       "rate": {
         "value": 6.5616798,
-        "unit": "lifts/m compacted depth; reciprocal of 0.1524 m maximum compacted lift"
+        "unit": "derived minimum lifts/m compacted structural-backfill depth at the 0.1524 m maximum; thinner selected lifts increase count"
       },
       "applicability": {
-        "specification": "FHWA FP-24 section 208 structural excavation and backfill",
+        "specification": "FHWA FP-24",
+        "section": "208 Structural Excavation and Backfill",
+        "maximum_compacted_lift_in": 6,
         "maximum_compacted_lift_m": 0.1524,
-        "minimum_density_percent_of_aashto_t99": 95,
-        "calculation": "ceil(compacted_backfill_depth_m / 0.1524)",
-        "rocky_material_exception_requires_specification_review": true,
-        "project_geotechnical_specification_overrides": true,
-        "regional_code_review_required": true
+        "minimum_density_percent_of_aashto_t99_method_c": 95,
+        "in_place_test_method": "AASHTO T 310 or other approved procedures",
+        "structural_backfill_density_tests_per_lift": 2,
+        "minimum_concrete_design_strength_before_backfill_percent": 80,
+        "calculation": "ceil(compacted_backfill_depth_m / selected_compacted_lift_thickness_m)",
+        "selected_lift_thickness_must_not_exceed_0_1524": true,
+        "rocky_material_exception_requires_separate_visible_consolidation_acceptance": true,
+        "project_supplement_and_geotechnical_specification_override_required": true,
+        "not_applicable_to_generic_earthworks_or_embankment_without_section_208_scope": true,
+        "automatic_production_binding_for_generic_earthworks_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "lift",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_selected_lift_count_after_section_208_and_project_specification_confirmation"
       },
       "source": {
         "title": "FHWA FP-24 Standard Specifications for Construction of Roads and Bridges on Federal Highway Projects",
-        "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/docs/federal-lands/specs/archives/37486/fp-24.pdf",
-        "page": "PDF page 129, sections 208.09-208.10: 6 inch compacted lifts and 95 percent AASHTO T 99 density",
+        "url": "https://highways.fhwa.dot.gov/federal-lands/specs/fp-24.pdf",
+        "page": "PDF page 129, subsections 208.09-208.11 and Table 208-1: lift thickness, compaction and acceptance testing",
         "provenance": "public_government_norms_or_standards"
       }
     }

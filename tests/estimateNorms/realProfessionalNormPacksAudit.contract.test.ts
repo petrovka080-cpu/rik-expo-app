@@ -591,6 +591,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedEarthworksPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/earthworks.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1831,6 +1857,62 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 8,
         mode: "supplier_agreement_calendar_period_and_shift_usage_schedule_required",
+      },
+    }]);
+    expect(reviewedEarthworksPack).toMatchObject({
+      source_pack_version: "2026.09-fhwa-fp24-section208-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedEarthworksPack.review_evidence?.items).toMatchObject([{
+      norm_id: "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
+      source_url: "https://highways.fhwa.dot.gov/federal-lands/specs/fp-24.pdf",
+      supporting_source_urls: expect.arrayContaining([
+        "https://highways.dot.gov/federal-lands/specs/fp-24",
+        "https://highways.dot.gov/federal-lands/specs/cfl-los/fp-24-library",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "section_208_09_limits_structural_backfill_to_6_inch_compacted_horizontal_lifts",
+        "section_208_10_requires_at_least_95_percent_of_aashto_t99_method_c_maximum_density",
+        "table_208_1_requires_two_in_place_density_tests_per_structural_backfill_lift",
+        "rocky_material_not_testable_by_t99_t310_uses_a_separate_visible_consolidation_rule",
+        "reciprocal_6_5616798_lifts_per_m_is_a_derived_minimum_count_at_maximum_lift_thickness",
+      ]),
+    }]);
+    expect(reviewedEarthworksPack.norm_items).toMatchObject([{
+      norm_id: "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
+      parameters: expect.arrayContaining([
+        "compacted_backfill_depth_m",
+        "fhwa_fp24_project_applicability_confirmed",
+        "project_supplemental_specification_revision",
+        "material_source_and_section_704_01_qualification",
+        "selected_compacted_lift_thickness_m",
+        "aashto_t99_method_c_maximum_dry_density",
+        "aashto_t310_or_approved_in_place_test_method",
+        "density_test_count_per_lift",
+        "rocky_material_exception_procedure",
+        "regional_code_and_geotechnical_specification",
+      ]),
+      rate: {
+        value: 6.5616798,
+        unit: "derived minimum lifts/m compacted structural-backfill depth at the 0.1524 m maximum; thinner selected lifts increase count",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        specification: "FHWA FP-24",
+        section: "208 Structural Excavation and Backfill",
+        maximum_compacted_lift_in: 6,
+        maximum_compacted_lift_m: 0.1524,
+        minimum_density_percent_of_aashto_t99_method_c: 95,
+        structural_backfill_density_tests_per_lift: 2,
+        minimum_concrete_design_strength_before_backfill_percent: 80,
+        selected_lift_thickness_must_not_exceed_0_1524: true,
+        not_applicable_to_generic_earthworks_or_embankment_without_section_208_scope: true,
+        automatic_production_binding_for_generic_earthworks_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "ceil_selected_lift_count_after_section_208_and_project_specification_confirmation",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
