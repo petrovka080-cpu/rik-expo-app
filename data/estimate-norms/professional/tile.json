@@ -1,68 +1,157 @@
 {
   "work_group": "tile",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
+        "verified_facts": [
+          "global_tds_revision_is_ceresit_cm11_tds_04_2026",
+          "scope_is_ceramic_gres_and_colour_fast_natural_stone_tiles_up_to_0_25_m2_and_60_cm_side",
+          "scope_includes_indoor_outdoor_horizontal_and_vertical_surfaces",
+          "substrate_must_be_even_load_bearing_compact_dry_and_clean",
+          "approximate_consumption_table_pairs_tile_size_and_notch_from_2_0_to_4_8_kg_per_m2",
+          "consumption_can_vary_with_substrate_evenness_notch_depth_and_tile_type",
+          "larger_tiles_and_outdoor_use_require_floating_buttering_and_over_90_percent_contact",
+          "technical_data_gives_water_proportion_per_25_kg",
+          "direct_area_only_scalar_multiplication_is_forbidden",
+          "additional_waste_allowance_is_not_published"
+        ]
+      },
+      {
+        "norm_id": "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        "verified_facts": [
+          "global_tds_revision_is_ct17_profi_03_24",
+          "scope_includes_absorbent_walls_floors_and_ceilings_before_fixing_ceramic_tiles",
+          "cement_and_cement_lime_substrates_allow_tile_adhesive_after_15_minutes",
+          "other_substrates_require_complete_primer_drying",
+          "published_consumption_is_a_range_from_0_1_to_0_5_l_per_m2",
+          "consumption_depends_on_substrate_evenness_and_absorbency",
+          "documented_container_sizes_are_1_2_5_and_10_l",
+          "fixed_lower_bound_must_not_be_used_without_selected_consumption_and_coat_count",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
-      "name_ru": "Ceresit CM 11 PLUS tile adhesive by tile size and trowel notch",
-      "parameters": ["area_m2", "tile_size_cm", "trowel_notch_mm", "substrate_evenness"],
+      "name_ru": "Ceresit CM 11 PLUS, расход клея по подтверждённой паре размера плитки и зуба шпателя",
+      "parameters": [
+        "area_m2",
+        "tile_type",
+        "tile_size_category",
+        "trowel_notch_mm",
+        "substrate_type",
+        "substrate_even_load_bearing_compact_confirmed",
+        "substrate_dry_clean_confirmed",
+        "installation_location",
+        "floating_buttering_requirement_confirmed",
+        "application_temperature_confirmed",
+        "cm11_global_tds_variant_confirmed",
+        "selected_package_size_kg"
+      ],
       "unit": "kg",
       "rate": {
         "value": 2.0,
-        "unit": "kg/m2 at 4 mm notch; range 2.0-4.8 kg/m2"
+        "unit": "lowest approximate table row only; exact project row is selected by tile-size category and paired trowel notch"
       },
       "applicability": {
-        "surfaces": ["cement", "cement_lime", "even_substrate"],
-        "tile_size_cm": ["up_to_10", "up_to_15", "up_to_25", "up_to_30", "above_30"],
-        "trowel_notch_mm": [4, 6, 8, 10, 12],
+        "product": "Ceresit CM 11 PLUS",
+        "tds_identifier": "CERESIT_CM11_TDS_04_2026",
+        "tile_types": ["ceramic", "gres", "colour_fast_natural_stone"],
+        "tile_max_area_m2": 0.25,
+        "tile_max_side_cm": 60,
+        "surfaces": ["cement_plaster", "cement_lime_plaster", "cement_screed", "cement_ground_coat", "concrete", "primed_gypsum_indoor", "primed_anhydrite_indoor", "primed_aerated_concrete"],
+        "installation_locations": ["indoor", "outdoor"],
+        "orientations": ["horizontal", "vertical"],
+        "substrate_even_load_bearing_compact_dry_clean_required": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 25,
+        "indoor_minimum_tile_back_contact_percent": 65,
+        "larger_tile_or_outdoor_minimum_contact_percent": 90,
+        "larger_tile_or_outdoor_floating_buttering_required": true,
         "rate_table_kg_m2": {
-          "4_mm": 2.0,
-          "6_mm": 2.7,
-          "8_mm": 3.4,
-          "10_mm": 4.2,
-          "12_mm": 4.8
-        }
+          "up_to_10_cm__4_mm": 2.0,
+          "up_to_15_cm__6_mm": 2.7,
+          "up_to_25_cm__8_mm": 3.4,
+          "up_to_30_cm__10_mm": 4.2,
+          "above_30_to_60_cm__12_mm": 4.8
+        },
+        "rate_varies_with": ["substrate_evenness", "trowel_notch_mm", "tile_type"],
+        "simple_rate_multiplication_forbidden": true,
+        "exact_table_pair_required": true,
+        "additional_waste_not_published": true,
+        "technical_data_mix_batch_size_kg": 25
       },
-      "waste_percent_default": 7,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "bag",
+        "package_unit": "kg",
         "package_size": 25,
-        "mode": "ceil"
+        "mode": "approximate_net_kg_before_explicit_project_package_selection"
       },
       "source": {
-        "title": "Ceresit CM 11 PLUS technical data sheet",
+        "title": "Ceresit CM 11 PLUS tile adhesive technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
-        "page": "technical data, approximate consumption table",
+        "page": "TDS CERESIT_CM11_TDS_04_2026, pages 1-2: scope, substrate, contact and application conditions; page 2: paired tile-size/notch approximate consumption table",
         "provenance": "manufacturer_technical_cards"
       }
     },
     {
       "norm_id": "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
-      "name_ru": "Ceresit CT 17 Profi primer for absorbent substrates before tiling",
-      "parameters": ["area_m2", "substrate_absorbency", "coat_count"],
+      "name_ru": "Ceresit CT 17 Profi, грунтование впитывающего основания перед облицовкой плиткой",
+      "parameters": [
+        "area_m2",
+        "substrate_type",
+        "substrate_evenness",
+        "substrate_absorbency",
+        "selected_consumption_l_m2",
+        "coat_count",
+        "substrate_dry_load_bearing_clean_confirmed",
+        "drying_rule_confirmed",
+        "application_conditions_confirmed",
+        "selected_container_size_l"
+      ],
       "unit": "l",
       "rate": {
         "value": 0.1,
-        "unit": "l/m2; range 0.1-0.5 l/m2"
+        "unit": "published lower bound only; project rate must be selected within 0.1-0.5 l/m2"
       },
       "applicability": {
-        "surfaces": ["walls", "floors", "ceilings", "plaster", "concrete", "screed"],
-        "substrate_absorbency": ["low", "normal", "high"],
-        "rate_range_l_m2": [0.1, 0.5]
+        "product": "Ceresit CT 17 Profi",
+        "tds_identifier": "TDS No CT17 Profi 03.24",
+        "surfaces": ["absorbent_wall", "absorbent_floor", "absorbent_ceiling", "plaster", "concrete", "screed", "gypsum", "anhydrite", "aerated_concrete", "chipboard", "non_impregnated_plasterboard"],
+        "rate_range_l_m2": [0.1, 0.5],
+        "rate_depends_on": ["substrate_evenness", "substrate_absorbency"],
+        "cement_or_cement_lime_before_tile_wait_minutes": 15,
+        "other_substrates_require_complete_drying": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 25,
+        "application_relative_humidity_max_percent": 80,
+        "simple_rate_multiplication_forbidden": true,
+        "selected_consumption_and_coat_count_required": true,
+        "additional_waste_not_published": true,
+        "documented_container_sizes_l": [1, 2, 5, 10]
       },
-      "waste_percent_default": 5,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "canister",
-        "package_size": 5,
-        "mode": "ceil"
+        "package_unit": "container",
+        "package_size": 1,
+        "mode": "net_litres_before_rounding_to_explicitly_selected_1_2_5_or_10_l_container"
       },
       "source": {
         "title": "Ceresit CT 17 Profi primer technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
-        "page": "technical data, consumption",
+        "page": "TDS No CT17 Profi 03.24, pages 1-2: absorbent tiling substrates and drying rules; page 2: 0.1-0.5 l/m2 range, conditions and 1/2/5/10 l packaging",
         "provenance": "manufacturer_technical_cards"
       }
     }

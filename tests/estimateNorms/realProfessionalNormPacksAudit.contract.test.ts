@@ -285,6 +285,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedTilePack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/tile.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -779,6 +804,88 @@ describe("real professional norm packs audit", () => {
           selected_consumption_and_coat_count_required: true,
         }),
       });
+    expect(reviewedTilePack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedTilePack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedTilePack.review_evidence?.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        norm_id: "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "approximate_consumption_table_pairs_tile_size_and_notch_from_2_0_to_4_8_kg_per_m2",
+          "consumption_can_vary_with_substrate_evenness_notch_depth_and_tile_type",
+          "direct_area_only_scalar_multiplication_is_forbidden",
+        ]),
+      }),
+      expect.objectContaining({
+        norm_id: "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "cement_and_cement_lime_substrates_allow_tile_adhesive_after_15_minutes",
+          "other_substrates_require_complete_primer_drying",
+          "fixed_lower_bound_must_not_be_used_without_selected_consumption_and_coat_count",
+        ]),
+      }),
+    ]));
+    expect(reviewedTilePack.norm_items.find((item) =>
+      item.norm_id === "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "tile_type",
+          "tile_size_category",
+          "trowel_notch_mm",
+          "substrate_even_load_bearing_compact_confirmed",
+          "floating_buttering_requirement_confirmed",
+          "cm11_global_tds_variant_confirmed",
+        ]),
+        rate: {
+          value: 2,
+          unit: "lowest approximate table row only; exact project row is selected by tile-size category and paired trowel notch",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          tile_max_area_m2: 0.25,
+          tile_max_side_cm: 60,
+          simple_rate_multiplication_forbidden: true,
+          exact_table_pair_required: true,
+          rate_table_kg_m2: {
+            "up_to_10_cm__4_mm": 2,
+            "up_to_15_cm__6_mm": 2.7,
+            "up_to_25_cm__8_mm": 3.4,
+            "up_to_30_cm__10_mm": 4.2,
+            "above_30_to_60_cm__12_mm": 4.8,
+          },
+        }),
+        rounding: {
+          package_size: 25,
+          mode: "approximate_net_kg_before_explicit_project_package_selection",
+        },
+      });
+    expect(reviewedTilePack.norm_items.find((item) =>
+      item.norm_id === "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "substrate_evenness",
+          "substrate_absorbency",
+          "selected_consumption_l_m2",
+          "coat_count",
+          "drying_rule_confirmed",
+        ]),
+        rate: {
+          value: 0.1,
+          unit: "published lower bound only; project rate must be selected within 0.1-0.5 l/m2",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          rate_range_l_m2: [0.1, 0.5],
+          other_substrates_require_complete_drying: true,
+          simple_rate_multiplication_forbidden: true,
+          selected_consumption_and_coat_count_required: true,
+        }),
+      });
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
@@ -876,8 +983,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(42);
-    expect(unregistered).toHaveLength(17);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(40);
+    expect(unregistered).toHaveLength(19);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -905,6 +1012,8 @@ describe("real professional norm packs audit", () => {
       "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",
       "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+      "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
+      "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
     ]);
     expect(withCandidates.every((item) =>
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&

@@ -460,6 +460,7 @@ const R4_A13_6_CURRENT_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[] = 
   currentAddedContract("tests/estimateCalculator/ceilingsD112RealQuantity.contract.test.ts", "all six Knauf D112 source-backed material quantities"),
   currentAlignedContract("tests/estimateCalculator/infrastructureBoqCalculators.test.ts", "cement-concrete road branching and procurement-safe water infrastructure BOQs"),
   currentAddedContract("tests/estimateCalculator/professionalNormPackWave3RealQuantity.contract.test.ts", "dimensionally explicit Sarnafil, Fixrock, Comfortboard, Jotun and Sikagard quantities"),
+  currentAlignedContract("tests/estimateCalculator/tile45UsesRealNormPack.contract.test.ts", "the unchanged 45 m2 tile case no longer promotes CM11 or CT17 lower-bound scalars without tile, notch, substrate, consumption and coat applicability inputs"),
   currentAddedContract("tests/estimateNorms/hardcodedNormRateClassifier.contract.test.ts", "classification of production rates, identifiers, dimensional conversions, schema bounds and managed norm records"),
   currentAlignedContract("tests/estimateNorms/normSourceQualityAudit.contract.test.ts", "hardcoded-rate and professional-source audit ownership"),
   currentAddedContract("tests/estimateNorms/professionalNormPackRegistryParity.contract.test.ts", "exact output unit, work-basis parameter, source-pack version, rate, package and URL parity between all physical norm packs and production bindings"),
