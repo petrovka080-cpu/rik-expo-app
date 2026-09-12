@@ -5,6 +5,7 @@ import type {
   ProfessionalChildAssemblyV4,
 } from "../../professionalProjectAssemblyV4";
 import {
+  CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
   CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
   createProfessionalEstimateDomainFactoryV1,
   type ProfessionalAssemblyProfileV1,
@@ -212,6 +213,11 @@ const CERESIT_CT29_INTERIOR_WALL_PLASTER_ONLY = {
   parameter_id: "product_profile_id",
   value: CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
 } as const;
+const CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
+} as const;
 
 function parameter(
   parameter_id: string,
@@ -313,6 +319,48 @@ function scopeParameterDefinitions(
         parameter("repair_waste_haul_distance_km", "Расстояние вывоза демонтированной отделки", "number", "P1", "km", ["repair_waste_transport"], { minimum: 0.1, maximum: 5_000, fullOnly: true }),
       ];
   }
+}
+
+function ceresitCt126DryInteriorWallPuttyConditionalParameters(
+  config: TechnologyConfig,
+  scope: InteriorFinishesWave1ScopeCapability,
+): ProfessionalDomainParameterDefinitionV1[] {
+  if (
+    config.canonical_base_work_key !== "plaster_paint_interior_wall_putty_apply" ||
+    config.material_system !== "WALL_PUTTY" ||
+    scope !== "standard"
+  ) {
+    return [];
+  }
+  const condition = CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_ONLY;
+  return [
+    parameter("substrate_type", "Основание для Ceresit CT 126", "choice", "P1", null, [], {
+      choices: [
+        "cement_plaster",
+        "cement_lime_plaster",
+        "gypsum_substrate",
+        "gypsum_fibre_board",
+        "plasterboard",
+        "sound_adherent_paint_coat",
+      ].map((value) => ({ value, label_ru: value })),
+      condition,
+    }),
+    parameter("substrate_load_bearing_dry_clean_confirmed", "Основание несущее, сухое и очищенное", "boolean", "P1", null, [], { condition }),
+    parameter("substrate_preparation_system", "Грунтовочная подготовка основания", "choice", "P1", null, [], {
+      choices: [
+        { value: "CERESIT_CT7", label_ru: "Ceresit CT 7" },
+        { value: "CERESIT_CT19", label_ru: "Ceresit CT 19" },
+      ],
+      condition,
+    }),
+    parameter("dry_interior_no_permanent_humidity_confirmed", "Сухое внутреннее помещение без постоянной высокой влажности", "boolean", "P1", null, [], { condition }),
+    parameter("application_temperature_confirmed", "Температура воздуха и основания 5–30 °C подтверждена", "boolean", "P1", null, [], { condition }),
+    parameter("ct126_tds_variant_confirmed", "Подтверждена карточка C_CT126_TDS_1_0321", "boolean", "P1", null, [], { condition }),
+    parameter("selected_bag_size_kg", "Выбранная фасовка Ceresit CT 126", "choice", "P1", "kg", [], {
+      choices: [5, 20].map((value) => ({ value: String(value), label_ru: `${value} кг` })),
+      condition,
+    }),
+  ];
 }
 
 function ceresitCt29InteriorWallPlasterConditionalParameters(
@@ -428,6 +476,7 @@ function schemaFor(
       parameter("product_profile_id", "Паспорт выбранного материала или системы", "text", "P0", null, [], {}),
       parameter("normative_rate_code", "Код применимой ресурсной расценки по проекту", "text", "P0", null, [], {}),
       ...formulaParameters(config),
+      ...ceresitCt126DryInteriorWallPuttyConditionalParameters(config, scope),
       ...ceresitCt29InteriorWallPlasterConditionalParameters(config, scope),
       parameter("labor_productivity_output_per_man_hour", "Производительность труда по принятой норме или проекту производства работ", "number", "P0", `${quantityUnit}_per_man_hour`, ["application_labor"], { minimum: 0.01, maximum: 10_000 }),
       parameter("equipment_productivity_output_per_machine_hour", "Производительность выбранного механизма", "number", "P0", `${quantityUnit}_per_machine_hour`, ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
