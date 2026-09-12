@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -24,6 +24,8 @@ export const GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS =
 export const STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED =
   "STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED" as const;
 
+const PROFESSIONAL_NORM_PACK_ROOT = "data/estimate-norms/professional" as const;
+
 type SourceRegistryEntry = {
   source_id: string;
   source_title: string;
@@ -37,7 +39,7 @@ type SourceRegistryEntry = {
   is_source_backed_professional_norm_pack: boolean;
   is_generated_family_default: boolean;
   is_historical_price_only: boolean;
-  evidence_kind: string | null;
+  evidence_kind: "registry_norm_pack" | "physical_norm_pack_review" | "batch_ledger_norm_pack" | null;
   sample_norm_ids: string[];
   sample_template_ids: string[];
   p0_case_ids: string[];
@@ -50,6 +52,7 @@ export type CatalogSourceRegistry = {
     | typeof GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS
     | typeof STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED;
   registry_source_count: number;
+  physical_norm_pack_source_count: number;
   row_source_count: number;
   p0_source_count: number;
   sources: SourceRegistryEntry[];
@@ -66,6 +69,22 @@ export type CatalogSourceRegistry = {
   full_10000_real_norm_green_claimed: false;
   fake_green_claimed: false;
   marketplace_touched: false;
+};
+
+type PhysicalProfessionalNormPack = {
+  source_pack_version?: string;
+  source_type?: string;
+  review_status?: string;
+  license_status?: string;
+  norm_items?: Array<{
+    norm_id?: string;
+    source?: {
+      title?: string;
+      url?: string;
+      page?: string;
+      provenance?: string;
+    };
+  }>;
 };
 
 function writeJson(relativePath: string, value: unknown): void {
@@ -146,6 +165,42 @@ function addRegistrySources(entries: Map<string, SourceRegistryEntry>): void {
   }
 }
 
+function addPhysicalNormPackSources(entries: Map<string, SourceRegistryEntry>): Set<string> {
+  const physicalSourceIds = new Set<string>();
+  const root = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT);
+  for (const fileName of readdirSync(root).filter((name) =>
+    name.endsWith(".json") && name !== "work-group-remediation-plan.json"
+  )) {
+    const pack = JSON.parse(readFileSync(path.join(root, fileName), "utf8")) as PhysicalProfessionalNormPack;
+    for (const normItem of pack.norm_items ?? []) {
+      const normId = String(normItem.norm_id ?? "").trim();
+      if (!normId) continue;
+      const sourceId = `src_professional_norm_pack_${normId}`;
+      const sourceUrlOrDocumentRef = String(normItem.source?.url || normItem.source?.page || "unknown").trim();
+      const entry = entries.get(sourceId) ?? emptyEntry(sourceId);
+      entries.set(sourceId, entry);
+      physicalSourceIds.add(sourceId);
+      entry.source_title = String(normItem.source?.title ?? "unknown");
+      entry.source_type = String(pack.source_type ?? "unknown");
+      entry.source_url_or_document_ref = sourceUrlOrDocumentRef;
+      entry.source_date_or_version = String(pack.source_pack_version ?? "unknown");
+      entry.provenance = String(normItem.source?.provenance ?? pack.source_type ?? "unknown");
+      entry.license_status = String(pack.license_status ?? "unknown");
+      entry.quality_status = pack.review_status === "reviewed" ? "reviewed" : "needs_regional_review";
+      entry.review_status = String(pack.review_status ?? "needs_review");
+      entry.is_source_backed_professional_norm_pack =
+        pack.review_status === "reviewed" && sourceUrlOrDocumentRef !== "unknown";
+      entry.is_generated_family_default = false;
+      entry.is_historical_price_only = false;
+      entry.evidence_kind = entry.evidence_kind === "registry_norm_pack"
+        ? "registry_norm_pack"
+        : "physical_norm_pack_review";
+      mergeSample(entry.sample_norm_ids, normId);
+    }
+  }
+  return physicalSourceIds;
+}
+
 function evaluateP0Rows(testCase: P0ProfessionalCatalogCase): ProductionCompiledExpandedRow[] {
   if (testCase.source_kind === "critical_prompt_calculator") {
     const promptCase = FUNCTIONAL_REALITY_CASES.find((item) => item.case_id === testCase.sample_prompt_case_id);
@@ -163,6 +218,7 @@ function evaluateP0Rows(testCase: P0ProfessionalCatalogCase): ProductionCompiled
 export function buildCatalogSourceRegistry(options: { writeFiles?: boolean } = {}): CatalogSourceRegistry {
   const entries = new Map<string, SourceRegistryEntry>();
   addRegistrySources(entries);
+  const physicalSourceIds = addPhysicalNormPackSources(entries);
   for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: definition.workKey,
@@ -201,6 +257,7 @@ export function buildCatalogSourceRegistry(options: { writeFiles?: boolean } = {
   const p0SourceCount = sources.filter((item) => item.p0_case_ids.length > 0).length;
   const blockers = [
     sources.length === 0 ? "source_registry_empty" : "",
+    physicalSourceIds.size === 0 ? "physical_norm_pack_source_registry_empty" : "",
     rowSourceCount === 0 ? "row_source_registry_empty" : "",
     p0SourceCount === 0 ? "p0_source_registry_empty" : "",
     ...p0Coverage.flatMap((item) => item.blocking_reasons.map((reason) => `${item.case_id}:${reason}`)),
@@ -221,6 +278,7 @@ export function buildCatalogSourceRegistry(options: { writeFiles?: boolean } = {
       ? GREEN_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_READY_NO_BUILDS
       : STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED,
     registry_source_count: PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.length,
+    physical_norm_pack_source_count: physicalSourceIds.size,
     row_source_count: rowSourceCount,
     p0_source_count: p0SourceCount,
     sources,
@@ -239,6 +297,7 @@ if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/validateCat
   console.log(JSON.stringify({
     final_status: registry.final_status,
     registry_source_count: registry.registry_source_count,
+    physical_norm_pack_source_count: registry.physical_norm_pack_source_count,
     row_source_count: registry.row_source_count,
     p0_source_count: registry.p0_source_count,
     blockers: registry.blockers,

@@ -88,6 +88,7 @@ type SourceRegistry = {
     is_source_backed_professional_norm_pack?: boolean;
     is_generated_family_default?: boolean;
     is_historical_price_only?: boolean;
+    evidence_kind?: string | null;
     sample_norm_ids?: unknown[];
     sample_template_ids?: unknown[];
   }>;
@@ -473,7 +474,7 @@ function inspectCatalogSourceRegistry(planGroups: Set<string>): {
     !Array.isArray(source.sample_norm_ids) ||
     source.sample_norm_ids.length === 0 ||
     !Array.isArray(source.sample_template_ids) ||
-    source.sample_template_ids.length === 0
+    (source.sample_template_ids.length === 0 && source.evidence_kind !== "physical_norm_pack_review")
   );
   const validSources = professionalSources.filter((source) => !invalidSources.includes(source));
   const groups = new Set(
