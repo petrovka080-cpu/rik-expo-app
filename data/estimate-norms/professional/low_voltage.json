@@ -1,0 +1,39 @@
+{
+  "work_group": "low_voltage",
+  "source_pack_version": "2026.09-legrand-049272-signal-cable-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "low_voltage_legrand_049272_cable_linear_m_route_v1",
+      "name_ru": "Безгалогенный двухжильный кабель Legrand 049272 по утверждённой слаботочной трассе",
+      "parameters": ["approved_route_length_linear_m", "cable_product_reference", "signal_circuit_design_confirmed"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 1,
+        "unit": "cable linear m/approved route linear m before termination and routing allowance"
+      },
+      "applicability": {
+        "manufacturer_reference": "Legrand 049272",
+        "conductor_cross_section_mm2": 0.56,
+        "cores": 2,
+        "manufacturer_delivery_reel_m": 200,
+        "power_circuit_substitution_forbidden": true,
+        "termination_service_loops_and_vertical_drops_require_design": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "200_m_reel",
+        "package_size": 200,
+        "mode": "ceil_after_circuit_schedule"
+      },
+      "source": {
+        "title": "Legrand cable 200 m reel, halogen free, reference 049272",
+        "url": "https://www.legrand.com/ecatalogue/en/catalog/products/cable-200m-reel-halogen-free-049272",
+        "page": "Product and technical characteristics: two 0.56 mm2 conductors and 200 m reel",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

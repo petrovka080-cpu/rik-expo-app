@@ -995,12 +995,12 @@ function quantityFormulaFor(section: ProductionTemplateSection, unit: Production
   if (section === "components") {
     if (unit === "linear_m") return "round_to(q * normFactor, 4)";
     if (unit === "kg") return "round_to(q * normFactor * wasteFactor, 4)";
-    return "max(minQty, ceil(q / packageSize))";
+    return "max(minQty, ceil(q * normFactor / packageSize))";
   }
   if (section === "consumables") {
     if (unit === "kg") return "round_to(q * normFactor * wasteFactor, 4)";
     if (unit === "linear_m") return "round_to(q * normFactor, 4)";
-    return "max(minQty, ceil(q / packageSize))";
+    return "max(minQty, ceil(q * normFactor / packageSize))";
   }
   if (section === "equipment") return "max(minQty, ceil(q / packageSize))";
   if (section === "logistics") return "max(minQty, ceil(q / packageSize))";

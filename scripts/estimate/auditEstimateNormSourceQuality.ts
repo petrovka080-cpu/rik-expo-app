@@ -32,10 +32,13 @@ const GENERIC_SOURCE_IDS = new Set([
   "src_norm_public_reference_construction_methods_2026_07",
   "src_norm_estimator_manual_service_policy_2026_07",
 ]);
+const GENERATED_CATALOG_SOURCE_PREFIX = "src_professional_norm_pack_catalog_";
 const HARD_CODED_SCAN_PATTERN =
   /(consumption|rate|kg_per|l_per|hours_per|norm|defaultNorm|fallbackNorm|synthetic|familyDefault|source.*AI|source.*unknown)/i;
 const SPECIFIC_HARDCODED_RATE_PATTERN =
   /(^|[^a-z0-9])(?:kg_per|l_per|hours_per)([^a-z0-9]|$)|\b(?:defaultNorm|fallbackNorm)\b/i;
+const HARDCODED_NUMERIC_EVIDENCE_PATTERN =
+  /(?:[:=]\s*[-+]?(?:\d+(?:\.\d+)?|\.\d+)\b)|(?:\b(?:\d+(?:\.\d+)?|\.\d+)\s*(?:kg_per|l_per|hours_per)[a-z0-9_]*)/i;
 const GREEN_ENV_PREFIX = "AI_ESTIMATE_NORM_BASE_REALITY";
 
 type RawGoldenMatrix = {
@@ -73,13 +76,15 @@ type WorkGroupSummary = {
   certification_status: "certified" | "missing_norm_records" | "structural_generic_only";
 };
 
-type SourceQualityClassification =
+export type SourceQualityClassification =
   | "backend_norm_record"
   | "allowed_test_fixture"
   | "allowed_negative_contract"
   | "generated_family_default_rate"
   | "legacy_calculator_hardcoded_rate"
   | "schema_type_reference"
+  | "parameter_schema_constraint"
+  | "dimension_unit_conversion"
   | "unrelated_rate_limit_or_persistence"
   | "real_hardcoded_production_rate";
 
@@ -171,6 +176,13 @@ function familyKey(item: EstimateNormItem): string {
 }
 
 function isGeneratedFamilyDefault(item: EstimateNormItem, reusedFamilyKeys: ReadonlySet<string>): boolean {
+  // The generated catalog layer deliberately carries structural placeholders
+  // for every taxonomy group. Its metadata may say "manufacturer" or
+  // "reviewed", but without a physical source pack and a concrete document
+  // locator it is not a professional norm. Count it as structural even when a
+  // generated family happens to be unique and therefore is not caught by the
+  // duplicate-family heuristic below.
+  if (item.source_id.startsWith(GENERATED_CATALOG_SOURCE_PREFIX)) return true;
   const broadSource =
     GENERIC_SOURCE_IDS.has(item.source_id) ||
     /(catalog|tables|policy|reference)/i.test(item.source_title);
@@ -203,15 +215,22 @@ function statExists(filePath: string): boolean {
   }
 }
 
-function classifyHardcodedMatch(file: string, lineText: string): SourceQualityClassification {
+export function classifyHardcodedMatch(file: string, lineText: string): SourceQualityClassification {
   const normalized = file.replace(/\\/g, "/");
-  if (/approval_persistence|rateLimit|RateLimit|rate_limit/.test(lineText) || normalized.includes("/shared/scale/")) {
+  const rootedNormalized = `/${normalized.replace(/^\.\//, "")}`;
+  if (/approval_persistence|rateLimit|RateLimit|rate_limit/.test(lineText) || rootedNormalized.includes("/shared/scale/")) {
     return "unrelated_rate_limit_or_persistence";
   }
   if (normalized.endsWith("src/lib/database.types.ts")) {
     return "schema_type_reference";
   }
-  if (normalized.includes("/tests/")) {
+  if (/\b(?:minimum|maximum)\s*:/.test(lineText)) {
+    return "parameter_schema_constraint";
+  }
+  if (/\bkg_per_ton\s*=\s*1000\b|\bbase_quantity_ton\s*\*\s*1000\b/i.test(lineText)) {
+    return "dimension_unit_conversion";
+  }
+  if (rootedNormalized.includes("/tests/")) {
     return /source.*AI|source.*unknown|unknown_ai_generated/i.test(lineText)
       ? "allowed_negative_contract"
       : "allowed_test_fixture";
@@ -230,22 +249,28 @@ function classifyHardcodedMatch(file: string, lineText: string): SourceQualityCl
   if (
     normalized.includes("src/lib/ai/estimateTemplate10000/") ||
     normalized.includes("scripts/estimate/") ||
-    normalized.includes("data/estimate-golden-cases/")
+    normalized.includes("data/estimate-golden-cases/") ||
+    normalized.includes("data/estimate-norms/professional/")
   ) {
     return "backend_norm_record";
   }
-  if (SPECIFIC_HARDCODED_RATE_PATTERN.test(lineText)) {
+  if (
+    SPECIFIC_HARDCODED_RATE_PATTERN.test(lineText) &&
+    HARDCODED_NUMERIC_EVIDENCE_PATTERN.test(lineText)
+  ) {
     return "real_hardcoded_production_rate";
   }
   return "backend_norm_record";
 }
 
-function scanHardcodedNormRates(): {
+export function scanHardcodedNormRates(): {
   hardcoded_norm_rate_audit_done: true;
   real_hardcoded_production_rate_count: number;
   generated_family_default_rate_count: number;
   legacy_calculator_hardcoded_rate_count: number;
   schema_type_reference_match_count: number;
+  parameter_schema_constraint_match_count: number;
+  dimension_unit_conversion_match_count: number;
   unrelated_rate_limit_or_persistence_match_count: number;
   backend_norm_record_match_count: number;
   allowed_test_fixture_match_count: number;
@@ -294,6 +319,8 @@ function scanHardcodedNormRates(): {
     generated_family_default_rate_count: counts.get("generated_family_default_rate") ?? 0,
     legacy_calculator_hardcoded_rate_count: counts.get("legacy_calculator_hardcoded_rate") ?? 0,
     schema_type_reference_match_count: counts.get("schema_type_reference") ?? 0,
+    parameter_schema_constraint_match_count: counts.get("parameter_schema_constraint") ?? 0,
+    dimension_unit_conversion_match_count: counts.get("dimension_unit_conversion") ?? 0,
     unrelated_rate_limit_or_persistence_match_count: counts.get("unrelated_rate_limit_or_persistence") ?? 0,
     backend_norm_record_match_count: counts.get("backend_norm_record") ?? 0,
     allowed_test_fixture_match_count: counts.get("allowed_test_fixture") ?? 0,
@@ -961,4 +988,6 @@ function main(): void {
   }
 }
 
-main();
+if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditEstimateNormSourceQuality.ts")) {
+  main();
+}

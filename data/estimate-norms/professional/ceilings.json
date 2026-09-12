@@ -1,0 +1,214 @@
+{
+  "work_group": "ceilings",
+  "source_pack_version": "2026.09-knauf-d11-d112-standard-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
+      "name_ru": "Пристенный профиль Knauf UD 28/27 для потолка D112, стандартная однослойная обшивка",
+      "parameters": ["ceiling_area_m2", "system_variant", "room_perimeter_m"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 0.4,
+        "unit": "linear_m/m2 for the documented 10 m x 10 m reference ceiling"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "reference_ceiling_m": [10, 10],
+        "perimeter_sensitive": true,
+        "manufacturer_excludes_loss_and_waste": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "3_m_profile",
+        "package_size": 3,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Consumption of Material of selected Examples, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
+      "name_ru": "Крепление пристенного профиля к основанию для потолка Knauf D112",
+      "parameters": ["ceiling_area_m2", "system_variant", "substrate_type"],
+      "unit": "piece",
+      "rate": {
+        "value": 0.4,
+        "unit": "piece/m2 for the documented 10 m x 10 m reference ceiling"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "reference_ceiling_m": [10, 10],
+        "fastener_must_be_approved_for_substrate": true,
+        "manufacturer_excludes_loss_and_waste": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Consumption of Material of selected Examples, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
+      "name_ru": "Анкер или подвес каркаса потолка Knauf D112, стандартная однослойная обшивка",
+      "parameters": ["ceiling_area_m2", "system_variant", "substrate_type", "load_class_kn_m2"],
+      "unit": "piece",
+      "rate": {
+        "value": 1.2,
+        "unit": "piece/m2 for D112 variant 1"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "load_class_max_kn_m2": 0.15,
+        "hanger_spacing_max_mm": 950,
+        "carrying_channel_spacing_max_mm": 1000,
+        "furring_channel_spacing_max_mm": 500,
+        "manufacturer_excludes_loss_and_waste": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Consumption of Material and D112 variant 1 spacing notes",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_board_m2_m2_v1",
+      "name_ru": "Листовая обшивка Knauf 12,5 мм для стандартного потолка D112",
+      "parameters": ["ceiling_area_m2", "system_variant", "board_type", "board_thickness_mm"],
+      "unit": "m2",
+      "rate": {
+        "value": 1,
+        "unit": "m2/m2 for D112 variant 1 before loss and waste"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "board_thickness_mm": 12.5,
+        "manufacturer_excludes_loss_and_waste": true,
+        "package_rounding_requires_selected_board_dimensions": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "m2",
+        "package_size": 1,
+        "mode": "none_until_board_selected"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Consumption of Material of selected Examples, Knauf Boards, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
+      "name_ru": "Саморез Knauf TN 3,5 × 25 мм для однослойной обшивки потолка D112",
+      "parameters": ["ceiling_area_m2", "system_variant", "board_layer_count", "board_thickness_mm"],
+      "unit": "piece",
+      "rate": {
+        "value": 17,
+        "unit": "piece/m2 for D112 variant 1"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "board_layer_count": 1,
+        "screw": "TN 3.5 x 25 mm",
+        "manufacturer_excludes_loss_and_waste": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Screw attachment, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
+      "name_ru": "Шпаклёвочная смесь Knauf Uniflott для швов потолка D112",
+      "parameters": ["ceiling_area_m2", "system_variant", "joint_filling_method"],
+      "unit": "kg",
+      "rate": {
+        "value": 0.3,
+        "unit": "kg/m2 for hand filling, D112 variant 1"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "joint_filling_method": "hand",
+        "documented_package_sizes_kg": [5, 25],
+        "manufacturer_excludes_loss_and_waste": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "bag",
+        "package_size": 5,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Jointing, Knauf Uniflott, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
+      "name_ru": "Армирующая лента швов резаных кромок потолка Knauf D112",
+      "parameters": ["ceiling_area_m2", "system_variant", "cut_edge_jointing_required"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 0.45,
+        "unit": "linear_m/m2 for D112 variant 1"
+      },
+      "applicability": {
+        "system": "Knauf D112",
+        "variant": "standard_12_5_mm_single_layer",
+        "cut_edges_only": true,
+        "manufacturer_excludes_loss_and_waste": true,
+        "package_rounding_requires_selected_tape": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "linear_m",
+        "package_size": 1,
+        "mode": "none_until_product_selected"
+      },
+      "source": {
+        "title": "Knauf D11 Board Ceilings system data sheet",
+        "url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "page": "page 28, Joint Tape for cut edges, D112 variant 1",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

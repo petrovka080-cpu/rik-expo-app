@@ -1,0 +1,68 @@
+{
+  "work_group": "baseboards",
+  "source_pack_version": "2026.09-gerflor-forbo-source-review-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
+      "name_ru": "Плинтус Gerflor Design Skirting 6086 по измеренному периметру",
+      "parameters": ["finished_perimeter_linear_m", "inside_corner_count", "outside_corner_count", "selected_skirting_product"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 1,
+        "unit": "linear_m/linear_m measured finished perimeter"
+      },
+      "applicability": {
+        "product_code": "6086",
+        "piece_length_m": 2,
+        "pieces_per_package": 6,
+        "package_length_linear_m": 12,
+        "corner_cutting_must_follow_method_statement": true,
+        "corner_allowance_not_automatically_assumed": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "2_m_piece",
+        "package_size": 2,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Gerflor Design Skirting product code 6086 installation guidelines PMO [516V1]",
+        "url": "https://cdn.gerflor.com/media/2/56198/design%20skirting%20-%20installation%20guidelines.pdf",
+        "page": "page 1, packaging; sections 2 and 3, cutting and installation",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
+      "name_ru": "Монтажный клей Forbo Eurocol 232 для деревянного или жёсткого ПВХ-плинтуса",
+      "parameters": ["skirting_length_linear_m", "skirting_material", "substrate_type", "selected_adhesive_product"],
+      "unit": "ml",
+      "rate": {
+        "value": 40,
+        "unit": "ml/linear_m; conservative upper endpoint of manufacturer range 20-40 ml/linear_m"
+      },
+      "applicability": {
+        "product": "Forbo Eurocol 232 Eurosol Montage",
+        "skirting_materials": ["wood", "rigid_pvc"],
+        "manufacturer_rate_range_ml_linear_m": [20, 40],
+        "preliminary_takeoff_uses_upper_endpoint": true,
+        "final_package_rounding_requires_selected_cartridge": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "ml",
+        "package_size": 1,
+        "mode": "none_until_product_selected"
+      },
+      "source": {
+        "title": "Forbo Eurocol 232 Eurosol Montage product specification",
+        "url": "https://www.forbo.com/eurocol/en/232-eurosol-montage/eqrzcp",
+        "page": "Performances: consumption approximately 20-40 ml/rm; Application: wood and rigid-PVC skirting",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

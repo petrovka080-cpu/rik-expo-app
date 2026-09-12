@@ -1,0 +1,39 @@
+{
+  "work_group": "fire_safety",
+  "source_pack_version": "2026.09-siemens-sinteso-detector-base-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
+      "name_ru": "Основание пожарного извещателя Siemens Sinteso на каждую утверждённую проектную точку",
+      "parameters": ["designed_detector_point_count", "selected_detector_family", "selected_base_reference", "fire_alarm_design_approved"],
+      "unit": "piece",
+      "rate": {
+        "value": 1,
+        "unit": "detector base/designed compatible detector point"
+      },
+      "applicability": {
+        "manufacturer": "Siemens",
+        "system_family": "Sinteso",
+        "source_product_reference": "A5Q00001664",
+        "detector_spacing_and_point_count_must_come_from_approved_fire_design": true,
+        "automatic_area_based_detector_count_forbidden": true,
+        "compatibility_and_local_fire_code_review_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil_to_designed_point_count"
+      },
+      "source": {
+        "title": "Siemens Sinteso detector base and accessories product data",
+        "url": "https://hit.sbt.siemens.com/RWD/AssetsByProduct.aspx?RC=GB&asset_type=Data+Sheet+for+Product&lang=en&prodId=A5Q00001664",
+        "page": "Detector base and accessories product documentation for reference A5Q00001664",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

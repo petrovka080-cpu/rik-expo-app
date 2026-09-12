@@ -1,0 +1,39 @@
+{
+  "work_group": "carpentry",
+  "source_pack_version": "2026.09-sikabond-wood-floor-upper-consumption-r1",
+  "source_type": "manufacturer_consumption_tables",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "carpentry_sikabond_wood_floor_kg_m2_upper_v1",
+      "name_ru": "Клей SikaBond Wood Flooring Adhesive для сплошного приклеивания деревянного пола",
+      "parameters": ["wood_floor_area_m2", "substrate_type", "substrate_flatness", "application_method", "selected_package"],
+      "unit": "kg",
+      "rate": {
+        "value": 1,
+        "unit": "kg/m2; upper endpoint of manufacturer range 0.6-1.0 kg/m2"
+      },
+      "applicability": {
+        "product": "SikaBond Wood Flooring Adhesive",
+        "manufacturer_consumption_range_kg_m2": [0.6, 1],
+        "preliminary_takeoff_uses_upper_endpoint": true,
+        "pail_mass_kg": 14,
+        "substrate_moisture_and_preparation_require_product_data_compliance": true,
+        "final_rate_requires_trowel_and_substrate_confirmation": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "14_kg_pail",
+        "package_size": 14,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "SikaBond Wood Flooring Adhesive product data sheet",
+        "url": "https://gbr.sika.com/en/distribution/adhesives/floor/sikabond-wood-flooringadhesive.html",
+        "page": "Packaging and Consumption: 14 kg pail, 0.6-1.0 kg bonds 1 m2",
+        "provenance": "manufacturer_consumption_tables"
+      }
+    }
+  ]
+}

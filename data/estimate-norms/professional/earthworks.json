@@ -1,0 +1,40 @@
+{
+  "work_group": "earthworks",
+  "source_pack_version": "2026.09-fhwa-fp24-structural-backfill-r1",
+  "source_type": "public_government_norms_or_standards",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
+      "name_ru": "Число слоёв структурной обратной засыпки при предельной уплотнённой толщине 152,4 мм",
+      "parameters": ["compacted_backfill_depth_m", "material_class", "moisture_condition", "approved_test_method"],
+      "unit": "lift",
+      "rate": {
+        "value": 6.5616798,
+        "unit": "lifts/m compacted depth; reciprocal of 0.1524 m maximum compacted lift"
+      },
+      "applicability": {
+        "specification": "FHWA FP-24 section 208 structural excavation and backfill",
+        "maximum_compacted_lift_m": 0.1524,
+        "minimum_density_percent_of_aashto_t99": 95,
+        "calculation": "ceil(compacted_backfill_depth_m / 0.1524)",
+        "rocky_material_exception_requires_specification_review": true,
+        "project_geotechnical_specification_overrides": true,
+        "regional_code_review_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "lift",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "FHWA FP-24 Standard Specifications for Construction of Roads and Bridges on Federal Highway Projects",
+        "url": "https://highways.dot.gov/sites/fhwa.dot.gov/files/docs/federal-lands/specs/archives/37486/fp-24.pdf",
+        "page": "PDF page 129, sections 208.09-208.10: 6 inch compacted lifts and 95 percent AASHTO T 99 density",
+        "provenance": "public_government_norms_or_standards"
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "work_group": "cleaning",
+  "source_pack_version": "2026.09-tennant-t350-productivity-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1",
+      "name_ru": "Машино-часы одного прохода поломоечной машины Tennant T350 600 мм по практической производительности",
+      "parameters": ["cleanable_hard_floor_area_m2", "machine_variant", "soil_type", "obstruction_factor", "required_pass_count"],
+      "unit": "equipment_hour",
+      "rate": {
+        "value": 0.0003577818,
+        "unit": "equipment hour/m2 per pass; reciprocal of 2795 m2/hour practical conventional rate"
+      },
+      "applicability": {
+        "machine": "Tennant T350 stand-on floor scrubber",
+        "cleaning_path_mm": 600,
+        "mode": "conventional",
+        "manufacturer_practical_productivity_m2_per_hour": 2795,
+        "calculation": "cleanable_hard_floor_area_m2 * required_pass_count / 2795",
+        "single_unobstructed_machine_pass_only": true,
+        "manual_detail_cleaning_excluded": true,
+        "heavy_construction_residue_removal_excluded": true,
+        "obstruction_and_soil_adjustment_requires_review": true,
+        "operator_labor_is_separate": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "equipment_hour",
+        "package_size": 1,
+        "mode": "round_up_to_supplier_billing_increment"
+      },
+      "source": {
+        "title": "Tennant T350 Industrial stand-on floor scrubber brochure",
+        "url": "https://www.tennantco.com/content/dam/tennant/tennantco/products/machines/scrubber%20stand-on/T350/t350-brochure-industrial-en-noam.pdf",
+        "page": "PDF page 4, Scrubbing Coverage Rate Per Hour, 600 mm conventional practical: 2,795 m2/hour",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

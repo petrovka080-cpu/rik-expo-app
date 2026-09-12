@@ -1,0 +1,39 @@
+{
+  "work_group": "services",
+  "source_pack_version": "2026.09-kg-author-supervision-trip-exclusion-r1",
+  "source_type": "public_government_norms_or_standards",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "services_kg_author_supervision_confirmed_visit_unit_v1",
+      "name_ru": "Подтверждённые выезды авторского надзора с отдельным учётом проезда",
+      "parameters": ["contracted_author_supervision_visit_count", "site_location", "travel_required", "selected_price_collection"],
+      "unit": "visit",
+      "rate": {
+        "value": 1,
+        "unit": "service visit/contracted and scheduled author-supervision visit"
+      },
+      "applicability": {
+        "jurisdiction": "Kyrgyz Republic",
+        "automatic_visit_count_forbidden": true,
+        "visit_count_must_come_from_contract_and_schedule": true,
+        "travel_to_and_from_site_is_not_included_in_author_supervision_cost": true,
+        "travel_cost_must_be_separate_when_required": true,
+        "exact_project_price_collection_and_current_amendments_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "visit",
+        "package_size": 1,
+        "mode": "exact_contracted_integer_count"
+      },
+      "source": {
+        "title": "Приказ Минстроя КР от 28 апреля 2022 года №52-нпа: изменения в Общие указания по стоимости проектных работ",
+        "url": "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+        "page": "Amendment note: travel to and from the construction site for author-supervision personnel is not included",
+        "provenance": "public_government_norms_or_standards"
+      }
+    }
+  ]
+}

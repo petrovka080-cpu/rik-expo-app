@@ -1,0 +1,127 @@
+{
+  "work_group": "plumbing",
+  "source_pack_version": "2026.09-wavin-hep2o-installer-guide-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "plumbing_wavin_hep2o_15mm_horizontal_clip_spacing_v1",
+      "name_ru": "Опоры горизонтальной трубы Wavin Hep2O диаметром 15 мм",
+      "parameters": ["pipe_length_linear_m", "pipe_nominal_diameter_mm", "orientation", "support_layout"],
+      "unit": "piece",
+      "rate": {
+        "value": 0.3,
+        "unit": "maximum spacing m between clips; count must include run endpoints and fittings"
+      },
+      "applicability": {
+        "system": "Wavin Hep2O",
+        "pipe_nominal_diameter_mm": 15,
+        "orientation": "horizontal",
+        "maximum_clip_spacing_m": 0.3,
+        "count_formula": "support_layout_count_from_max_spacing_with_endpoints",
+        "simple_rate_multiplication_forbidden": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil_after_layout"
+      },
+      "source": {
+        "title": "Wavin Hep2O Push-fit Plumbing Installer Guide",
+        "url": "https://mediahub.wavin.com/m/585fd6c3724465db/original/Hep2O-Installer-Guide.pdf",
+        "page": "page 36, Table 3 Recommended Clipping Distance",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "plumbing_wavin_hep2o_22mm_horizontal_clip_spacing_v1",
+      "name_ru": "Опоры горизонтальной трубы Wavin Hep2O диаметром 22 мм",
+      "parameters": ["pipe_length_linear_m", "pipe_nominal_diameter_mm", "orientation", "support_layout"],
+      "unit": "piece",
+      "rate": {
+        "value": 0.5,
+        "unit": "maximum spacing m between clips; count must include run endpoints and fittings"
+      },
+      "applicability": {
+        "system": "Wavin Hep2O",
+        "pipe_nominal_diameter_mm": 22,
+        "orientation": "horizontal",
+        "maximum_clip_spacing_m": 0.5,
+        "count_formula": "support_layout_count_from_max_spacing_with_endpoints",
+        "simple_rate_multiplication_forbidden": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil_after_layout"
+      },
+      "source": {
+        "title": "Wavin Hep2O Push-fit Plumbing Installer Guide",
+        "url": "https://mediahub.wavin.com/m/585fd6c3724465db/original/Hep2O-Installer-Guide.pdf",
+        "page": "page 36, Table 3 Recommended Clipping Distance",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1",
+      "name_ru": "Опоры вертикальной трубы Wavin Hep2O диаметром 15 мм",
+      "parameters": ["pipe_length_linear_m", "pipe_nominal_diameter_mm", "orientation", "support_layout"],
+      "unit": "piece",
+      "rate": {
+        "value": 0.5,
+        "unit": "maximum spacing m between clips; count must include run endpoints and fittings"
+      },
+      "applicability": {
+        "system": "Wavin Hep2O",
+        "pipe_nominal_diameter_mm": 15,
+        "orientation": "vertical",
+        "maximum_clip_spacing_m": 0.5,
+        "count_formula": "support_layout_count_from_max_spacing_with_endpoints",
+        "simple_rate_multiplication_forbidden": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil_after_layout"
+      },
+      "source": {
+        "title": "Wavin Hep2O Push-fit Plumbing Installer Guide",
+        "url": "https://mediahub.wavin.com/m/585fd6c3724465db/original/Hep2O-Installer-Guide.pdf",
+        "page": "page 36, Table 3 Recommended Clipping Distance",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "plumbing_wavin_hep2o_smartsleeve_piece_connection_v1",
+      "name_ru": "Опорная втулка Wavin Hep2O SmartSleeve для соединения трубы",
+      "parameters": ["prepared_pipe_end_count", "connection_count", "system_variant"],
+      "unit": "piece",
+      "rate": {
+        "value": 1,
+        "unit": "piece/prepared pipe end inserted into fitting"
+      },
+      "applicability": {
+        "system": "Wavin Hep2O push-fit",
+        "installation_step": "insert SmartSleeve into each prepared pipe end before push-fit connection",
+        "count_basis": "prepared_pipe_end_count",
+        "joint_topology_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Wavin Hep2O Key how-to-install guide",
+        "url": "https://wavin.com/gb/solutions/hep2o-key/how-to-install",
+        "page": "How to Install, step 2",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

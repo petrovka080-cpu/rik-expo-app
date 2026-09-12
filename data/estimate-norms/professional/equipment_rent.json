@@ -1,0 +1,42 @@
+{
+  "work_group": "equipment_rent",
+  "source_pack_version": "2026.09-united-rentals-shift-billing-reference-r1",
+  "source_type": "open_method_statements",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "equipment_rent_united_rentals_one_shift_hours_day_v1",
+      "name_ru": "Нормализация одной смены аренды оборудования к восьми часам работы",
+      "parameters": ["required_equipment_hours", "supplier_terms_confirmed", "shift_count", "calendar_rental_period"],
+      "unit": "hour",
+      "rate": {
+        "value": 8,
+        "unit": "equipment hours/one normal daily shift"
+      },
+      "applicability": {
+        "supplier": "United Rentals Canada",
+        "one_shift_hours_per_day": 8,
+        "one_shift_hours_per_week": 40,
+        "one_shift_hours_per_four_week_period": 160,
+        "double_shift_rate_multiplier": 1.5,
+        "triple_shift_rate_multiplier": 2,
+        "weekends_and_holidays_accrue_charges": true,
+        "supplier_contract_and_local_rate_override": true,
+        "equipment_productivity_must_be_calculated_separately": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "rental_day_shift",
+        "package_size": 8,
+        "mode": "ceil_required_hours_to_supplier_shift_after_calendar_check"
+      },
+      "source": {
+        "title": "United Rentals Canada Rental Service Terms",
+        "url": "https://www.unitedrentals.com/legal/rental-service-terms-ca-eng",
+        "page": "section 15 Rental Period / Calculation of Charges",
+        "provenance": "open_method_statements"
+      }
+    }
+  ]
+}

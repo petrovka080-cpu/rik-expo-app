@@ -1,0 +1,40 @@
+{
+  "work_group": "windows_doors",
+  "source_pack_version": "2026.09-soudal-window-door-genius-linear-yield-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "windows_doors_soudafoam_genius_can_per_joint_m_v1",
+      "name_ru": "Баллоны пены Soudafoam Window & Door Genius по измеренной длине монтажного шва",
+      "parameters": ["qualified_joint_length_linear_m", "joint_cross_section", "temperature", "moisture_condition"],
+      "unit": "can",
+      "rate": {
+        "value": 0.03846154,
+        "unit": "750 ml gun-grade can/linear m at FEICA TM1002 reference yield of 26 m"
+      },
+      "applicability": {
+        "product": "Soudafoam Window & Door Genius",
+        "reference_package_ml": 750,
+        "linear_yield_m_feica_tm1002": 26,
+        "calculation": "ceil(qualified_joint_length_linear_m / 26)",
+        "joint_geometry_must_match_test_method": true,
+        "real_site_temperature_moisture_and_voids_may_reduce_yield": true,
+        "frame_fixings_tapes_andsealants_are_separate": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "750_ml_can",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Soudal Soudafoam Window & Door Genius product page and technical data",
+        "url": "https://www.soudal.co.uk/pro/products/expanding-foam/1k-pu-foams/soudafoam-window-door-genius",
+        "page": "Featured properties: linear yield FEICA TM1002, 750 ml gun grade, 26 m; applications around windows and doors",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

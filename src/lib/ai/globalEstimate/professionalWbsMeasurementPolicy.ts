@@ -37,7 +37,7 @@ function isMetalProfessionalWbsScope(input: ProfessionalWbsScopeInput): boolean 
 function metalScopeMassKg(input: {
   baseQuantity: number;
   measuredUnit: GlobalUnitInput["normalizedUnit"];
-}): ProfessionalWbsMeasurement {
+}): ProfessionalWbsMeasurement | null {
   if (input.measuredUnit === "kg") {
     return {
       unit: "kg",
@@ -54,36 +54,10 @@ function metalScopeMassKg(input: {
       formulaTrace: `base_quantity=${input.baseQuantity}; unit=ton; kg_per_ton=1000`,
     };
   }
-  if (input.measuredUnit === "linear_m") {
-    return {
-      unit: "kg",
-      quantity: round2(input.baseQuantity * 18),
-      quantityFormula: "linear_m * 18 kg_per_linear_m_structural_steel_allowance",
-      formulaTrace: `base_quantity=${input.baseQuantity}; unit=linear_m; structural_steel_kg_per_linear_m=18`,
-    };
-  }
-  if (input.measuredUnit === "pcs") {
-    return {
-      unit: "kg",
-      quantity: round2(input.baseQuantity * 45),
-      quantityFormula: "pcs * 45 kg_per_steel_assembly_allowance",
-      formulaTrace: `base_quantity=${input.baseQuantity}; unit=pcs; structural_steel_kg_per_assembly=45`,
-    };
-  }
-  if (input.measuredUnit === "m3") {
-    return {
-      unit: "kg",
-      quantity: round2(input.baseQuantity * 7850),
-      quantityFormula: "m3 * 7850 kg_per_m3_steel_density",
-      formulaTrace: `base_quantity=${input.baseQuantity}; unit=m3; steel_density_kg_per_m3=7850`,
-    };
-  }
-  return {
-    unit: "kg",
-    quantity: round2(input.baseQuantity * 35),
-    quantityFormula: "area_m2 * 35 kg_per_m2_preliminary_structural_steel_allowance",
-    formulaTrace: `base_quantity=${input.baseQuantity}; unit=${input.measuredUnit}; structural_steel_kg_per_m2=35`,
-  };
+  // A length, item count, volume or area does not determine structural-steel
+  // mass without a selected section/assembly takeoff. Keep the caller's
+  // measured quantity instead of inventing a universal kg allowance.
+  return null;
 }
 
 function defaultProfessionalWbsMeasurement(input: {
@@ -153,27 +127,6 @@ function concreteScopeVolumeM3(input: {
   return null;
 }
 
-function preliminaryConcretePhaseVolumeM3(input: {
-  baseQuantity: number;
-  measuredUnit: GlobalUnitInput["normalizedUnit"];
-}): ProfessionalWbsMeasurement {
-  const factor = input.measuredUnit === "pcs" || input.measuredUnit === "set"
-    ? 0.5
-    : input.measuredUnit === "sq_m"
-      ? 0.12
-      : input.measuredUnit === "linear_m"
-        ? 0.2
-        : 1;
-  return {
-    unit: "m3",
-    quantity: round2(Math.max(0.01, input.baseQuantity * factor)),
-    quantityFormula: `base_quantity * ${factor} preliminary_concrete_m3_per_${input.measuredUnit}`,
-    formulaTrace:
-      `base_quantity=${input.baseQuantity}; unit=${input.measuredUnit}; ` +
-      `preliminary_concrete_m3_per_${input.measuredUnit}=${factor}`,
-  };
-}
-
 export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
   baseQuantity: number;
   measuredUnit: GlobalUnitInput["normalizedUnit"];
@@ -198,10 +151,12 @@ export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
   if (metalPhase || isMetalProfessionalWbsScope(input)) {
     if (input.role === "materials" || input.role === "execution") {
       const mass = metalScopeMassKg(input);
-      return {
-        ...mass,
-        formulaTrace: `${mass.formulaTrace}; wbs_role=${input.role}; wbs_phase=${input.specKey}`,
-      };
+      if (mass) {
+        return {
+          ...mass,
+          formulaTrace: `${mass.formulaTrace}; wbs_role=${input.role}; wbs_phase=${input.specKey}`,
+        };
+      }
     }
     if (input.role === "planning" || input.role === "quality" || input.role === "equipment") {
       return {
@@ -211,20 +166,10 @@ export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
         formulaTrace: `wbs_role=${input.role}; wbs_phase=${input.specKey}; deliverable_or_equipment_package=set`,
       };
     }
-    if (input.role === "delivery") {
-      const mass = metalScopeMassKg(input);
-      return {
-        unit: "trip",
-        quantity: Math.max(1, Math.ceil(mass.quantity / 2500)),
-        quantityFormula: "ceil(steel_mass_kg / 2500 kg_per_delivery_trip)",
-        formulaTrace: `${mass.formulaTrace}; wbs_role=delivery; wbs_phase=${input.specKey}; kg_per_delivery_trip=2500`,
-      };
-    }
   }
   const concretePhase = /(?:^|_)(?:concrete|foundations?)(?:_|$)/i.test(input.specKey);
   if (concretePhase || isConcreteProfessionalWbsScope(input)) {
-    const concrete = concreteScopeVolumeM3(input) ??
-      (concretePhase ? preliminaryConcretePhaseVolumeM3(input) : null);
+    const concrete = concreteScopeVolumeM3(input);
     if (concrete && (input.role === "materials" || input.role === "execution")) {
       return {
         ...concrete,
@@ -237,14 +182,6 @@ export function professionalWbsMeasurement(input: ProfessionalWbsScopeInput & {
         quantity: 1,
         quantityFormula: "1",
         formulaTrace: `wbs_role=${input.role}; wbs_phase=${input.specKey}; deliverable_or_equipment_package=set`,
-      };
-    }
-    if (concrete && input.role === "delivery") {
-      return {
-        unit: "trip",
-        quantity: Math.max(1, Math.ceil(concrete.quantity / 8)),
-        quantityFormula: "ceil(concrete_volume_m3 / 8 m3_per_delivery_trip)",
-        formulaTrace: `${concrete.formulaTrace}; wbs_role=delivery; wbs_phase=${input.specKey}; m3_per_delivery_trip=8`,
       };
     }
   }

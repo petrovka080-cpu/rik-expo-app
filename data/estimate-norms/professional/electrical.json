@@ -1,0 +1,69 @@
+{
+  "work_group": "electrical",
+  "source_pack_version": "2026.09-legrand-product-and-installation-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "electrical_legrand_049272_cable_linear_m_route_v1",
+      "name_ru": "Безгалогенный кабель Legrand 049272 по длине утверждённой трассы",
+      "parameters": ["approved_route_length_linear_m", "cable_product_reference", "circuit_design_confirmed"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 1,
+        "unit": "linear_m/linear_m approved route before project allowance"
+      },
+      "applicability": {
+        "manufacturer_reference": "Legrand 049272",
+        "conductor_cross_section_mm2": 0.56,
+        "cores": 2,
+        "power_circuit_substitution_forbidden": true,
+        "requires_designer_confirmation": true,
+        "manufacturer_delivery_reel_m": 200
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "200_m_reel",
+        "package_size": 200,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Legrand cable 200 m reel, halogen free, reference 049272",
+        "url": "https://www.legrand.com/ecatalogue/en/catalog/products/cable-200m-reel-halogen-free-049272",
+        "page": "Product characteristics and technical characteristics",
+        "provenance": "manufacturer_technical_cards"
+      }
+    },
+    {
+      "norm_id": "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+      "name_ru": "Крепёж M6 стыка симметричного кабельного лотка Legrand P31 шириной 75–300 мм",
+      "parameters": ["tray_joint_count", "tray_width_mm", "coupler_reference"],
+      "unit": "piece",
+      "rate": {
+        "value": 8,
+        "unit": "M6 fasteners/tray joint for 75-300 mm tray"
+      },
+      "applicability": {
+        "system": "Legrand P31 symmetrical cable tray",
+        "tray_width_mm_min": 75,
+        "tray_width_mm_max": 300,
+        "coupler_options": ["EP Coupler LG-341213", "ER Coupler LG-482219"],
+        "tightening_torque_nm": 11,
+        "other_widths_require_their_own_table_row": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Legrand P31 symmetrical cable trays technical sheet FT0955-02",
+        "url": "https://assets.legrand.com/pim/NP-FT-GT/FT0955-02.pdf",
+        "page": "page 11 of 13, section 3 Installation, 75-300 mm joint diagram",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

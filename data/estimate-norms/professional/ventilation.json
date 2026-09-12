@@ -1,0 +1,39 @@
+{
+  "work_group": "ventilation",
+  "source_pack_version": "2026.09-lindab-vsr-3m-duct-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "ventilation_lindab_vsr_duct_linear_m_route_v1",
+      "name_ru": "Сопловой воздуховод Lindab VSR по длине утверждённой трассы",
+      "parameters": ["approved_duct_route_linear_m", "duct_diameter_mm", "nozzle_pattern", "air_distribution_design", "fitting_schedule"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 1,
+        "unit": "duct linear m/approved straight route linear m"
+      },
+      "applicability": {
+        "product": "Lindab VSR Ventiduct nozzle duct",
+        "available_diameter_range_mm": [200, 500],
+        "maximum_standard_length_m": 3,
+        "primarily_for_cooled_supply_air": true,
+        "nozzle_pattern_requires_air_distribution_design": true,
+        "bends_transitions_supports_seals_and_cutting_are_separate": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "up_to_3_m_standard_section",
+        "package_size": 3,
+        "mode": "ceil_after_fitting_and_nozzle_layout"
+      },
+      "source": {
+        "title": "Lindab VSR Ventiduct nozzle ducts",
+        "url": "https://www.lindab.com/Catalog/ventilation-systems/air-distribution/nozzle-ducts/ventiduct/vsr/",
+        "page": "Product description: five diameters from 200 to 500 mm and maximum standard length 3000 mm",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

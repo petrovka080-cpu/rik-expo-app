@@ -1,0 +1,41 @@
+{
+  "work_group": "roadworks",
+  "source_pack_version": "2026.09-krer27-table-27-06-020-routing-r1",
+  "source_type": "official_public_building_norms",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "roadworks_krer27_06_020_norm_unit_per_m2_v1",
+      "name_ru": "Базовые единицы таблицы КРЕР-2015 27-06-020 по площади асфальтобетонного покрытия",
+      "parameters": ["pavement_area_m2", "mixture_kind", "aggregate_size_mm", "layer_thickness_mm", "selected_table_variant"],
+      "unit": "krer_norm_unit",
+      "rate": {
+        "value": 0.001,
+        "unit": "table norm unit/m2; table measurement basis is 1000 m2 of pavement"
+      },
+      "applicability": {
+        "jurisdiction": "Kyrgyz Republic",
+        "collection": "КРЕР-2015 №27 Автомобильные дороги",
+        "table": "27-06-020",
+        "table_measurement_basis_m2": 1000,
+        "calculation": "pavement_area_m2 / 1000",
+        "exact_column_selection_required": true,
+        "resource_rates_must_come_from_selected_official_table_column": true,
+        "thickness_density_and_mix_selection_must_not_be_inferred_from_this_routing_rate": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "krer_norm_unit",
+        "package_size": 1,
+        "mode": "no_integer_rounding"
+      },
+      "source": {
+        "title": "КРЕР-2015 №27 Автомобильные дороги",
+        "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+        "page": "PDF page 93, table 27-06-020, measurement basis 1000 m2 of pavement",
+        "provenance": "official_public_building_norms"
+      }
+    }
+  ]
+}

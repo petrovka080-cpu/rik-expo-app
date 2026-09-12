@@ -1,0 +1,42 @@
+{
+  "work_group": "insulation",
+  "source_pack_version": "2026.09-rockwool-comfortboard80-pack-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
+      "name_ru": "Плиты ROCKWOOL Comfortboard 80 толщиной 38 мм по чистой площади изоляции",
+      "parameters": ["net_insulation_area_m2", "required_r_value", "selected_thickness_mm", "opening_and_cut_layout"],
+      "unit": "m2",
+      "rate": {
+        "value": 1,
+        "unit": "board m2/net insulation m2 before project cutting allowance"
+      },
+      "applicability": {
+        "product": "ROCKWOOL Comfortboard 80",
+        "nominal_r_value": "R6.3",
+        "thickness_mm": 38,
+        "board_length_mm": 1219,
+        "board_width_mm": 610,
+        "boards_per_pack": 6,
+        "manufacturer_pack_coverage_m2": 4.45,
+        "cutting_allowance_requires_layout": true,
+        "thermal_design_and_regional_code_review_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "4.45_m2_pack",
+        "package_size": 4.45,
+        "mode": "ceil_after_opening_and_cut_layout"
+      },
+      "source": {
+        "title": "ROCKWOOL Comfortboard 80 building insulation product guide",
+        "url": "https://brandcommunity.rockwool.com/asset/_ox3bHvewz_eaPJwWxITBw/asset.pdf?quality=10",
+        "page": "Comfortboard 80 product table: R6.3, 38 mm, six 1219 x 610 mm boards, 4.45 m2 per pack",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

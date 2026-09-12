@@ -1,0 +1,39 @@
+{
+  "work_group": "facade",
+  "source_pack_version": "2026.09-rockwool-vhf-fixings-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
+      "name_ru": "Держатели плит ROCKWOOL Fixrock для обычного крепления вентилируемого фасада",
+      "parameters": ["facade_insulation_area_m2", "fixing_variant", "wind_load_calculation", "edge_zone_geometry"],
+      "unit": "piece",
+      "rate": {
+        "value": 5,
+        "unit": "insulation fixings/m2 on average for conventional VHF installation"
+      },
+      "applicability": {
+        "system": "ROCKWOOL Fixrock ventilated facade insulation",
+        "installation_variant": "conventional insulation-holder fixing",
+        "manufacturer_average_fixings_per_m2": 5,
+        "one_fixing_per_board_variant_excluded": true,
+        "edge_zone_and_project_wind_load_may_increase_quantity": true,
+        "substrate_specific_anchor_selection_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "piece",
+        "package_size": 1,
+        "mode": "ceil_after_wind_zone_layout"
+      },
+      "source": {
+        "title": "ROCKWOOL Austria: fixing insulation boards for ventilated facades",
+        "url": "https://www.rockwool.com/at/rat-und-tat/vertiefendes-wissen/produktwissen/vhf-befestigung/",
+        "page": "Variant 1 conventional fixing: average five insulation holders per m2",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

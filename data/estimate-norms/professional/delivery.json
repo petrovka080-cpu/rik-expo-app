@@ -1,0 +1,41 @@
+{
+  "work_group": "delivery",
+  "source_pack_version": "2026.09-ford-transit-payload-reference-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+      "name_ru": "Предварительное число рейсов Ford Transit V363 по паспортной максимальной грузоподъёмности",
+      "parameters": ["cargo_weight_kg", "selected_vehicle_variant", "cargo_volume_m3", "route_and_access_confirmed"],
+      "unit": "trip",
+      "rate": {
+        "value": 0.0004242681,
+        "unit": "trip/kg; reciprocal of the manufacturer maximum payload 2357 kg"
+      },
+      "applicability": {
+        "vehicle_family": "Ford Transit V363 van",
+        "manufacturer_max_payload_kg": 2357,
+        "manufacturer_max_loadspace_m3": 15.1,
+        "calculation": "ceil(cargo_weight_kg / 2357)",
+        "specific_variant_payload_must_be_confirmed": true,
+        "volume_limit_must_be_checked_separately": true,
+        "driver_crew_options_and_access_may_reduce_payload": true,
+        "regional_carrier_rate_and_vehicle_selection_required": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "trip",
+        "package_size": 1,
+        "mode": "ceil"
+      },
+      "source": {
+        "title": "Ford UK New Transit: loadspace and payload characteristics",
+        "url": "https://www.ford.co.uk/vans-and-pickups/transit",
+        "page": "Exceptional loadspace: up to 15.1 m3 and 2,357 kg payload capacity",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

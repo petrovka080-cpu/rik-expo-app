@@ -1,0 +1,39 @@
+{
+  "work_group": "heating",
+  "source_pack_version": "2026.09-uponor-ufh-pipe-spacing-r1",
+  "source_type": "manufacturer_consumption_tables",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1",
+      "name_ru": "Труба водяного тёплого пола Uponor при шаге 150 мм",
+      "parameters": ["heated_floor_area_m2", "designed_pipe_spacing_mm", "manifold_location", "feed_tail_length_linear_m", "loop_length_limit"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 6.7,
+        "unit": "pipe linear m/heated floor m2 at 150 mm spacing, excluding feed and tail lengths"
+      },
+      "applicability": {
+        "system": "Uponor underfloor heating",
+        "pipe_spacing_mm": 150,
+        "manufacturer_guide_quantity_m_m2": 6.7,
+        "feed_and_tail_lengths_must_be_added": true,
+        "heat_loss_hydraulic_loop_and_manifold_design_required": true,
+        "other_spacing_values_require_their_own_table_row": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "selected_pipe_coil",
+        "package_size": 1,
+        "mode": "ceil_after_loop_and_feed_tail_layout"
+      },
+      "source": {
+        "title": "Uponor Underfloor Heating Installation Guide",
+        "url": "https://www.uponor.com/getmedia/c5ab8a1f-9f02-43a4-8bcb-3b6a186dafeb/underfloor-heating-install-guidepdf?sitename=UK",
+        "page": "Pipe requirement table: 150 mm spacing equals 6.7 m/m2; note to add feed and tail lengths",
+        "provenance": "manufacturer_consumption_tables"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "work_group": "sewerage",
+  "source_pack_version": "2026.09-wavin-osma-110mm-3m-pipe-r1",
+  "source_type": "manufacturer_technical_cards",
+  "review_status": "needs_review",
+  "license_status": "manufacturer_public",
+  "norm_items": [
+    {
+      "norm_id": "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+      "name_ru": "Раструбная труба Wavin Osma 110 мм длиной 3 м по утверждённой трассе канализации",
+      "parameters": ["approved_pipe_route_linear_m", "diameter_mm", "fitting_schedule", "slope_and_support_design"],
+      "unit": "linear_m",
+      "rate": {
+        "value": 1,
+        "unit": "pipe linear m/approved route linear m before fitting and cutting layout"
+      },
+      "applicability": {
+        "product": "Wavin Soil Pipe Socketed 110 mm Black 3 m",
+        "diameter_mm": 110,
+        "piece_length_m": 3,
+        "socketed_product": true,
+        "fittings_branches_cleanouts_and_offset_allowance_are_separate": true,
+        "slope_support_firestopping_and_acoustic_requirements_require_design": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "3_m_pipe",
+        "package_size": 3,
+        "mode": "ceil_after_fitting_and_cut_layout"
+      },
+      "source": {
+        "title": "Wavin Soil Pipe Socketed 110 mm Black 3 m product record",
+        "url": "https://wavin.com/ie/p/54d3a658-da71-461c-805f-4c98e980ce46/wavin-soil-pipe-socketed-110mm-black-3m/d",
+        "page": "Product identifier and product name: socketed 110 mm soil pipe, 3 m",
+        "provenance": "manufacturer_technical_cards"
+      }
+    }
+  ]
+}

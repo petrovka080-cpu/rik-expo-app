@@ -21,6 +21,7 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("STOP_NORM_REALITY_AUDIT_NOT_FOUND");
     expect(source).toContain("ai-estimate-real-professional-norm-packs");
     expect(source).toContain("STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL");
+    expect(source).toContain("STOP_HARDCODED_PRODUCTION_NORM_RATE_FOUND");
     expect(source).toContain("synthetic_family_default_count_after");
     expect(source).toContain("templates_with_real_norm_sources_count");
     expect(source).toContain("generated_family_default_not_professional");
@@ -30,8 +31,13 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("source_backed_norm_items_count");
     expect(source).toContain("SOURCE_QUALITY_GREEN_STATUS");
     expect(source).toContain("source_registry_covers_professional_norm_sources");
-    expect(source).toContain("src_professional_norm_pack_catalog_${group}_");
+    expect(source).toContain("allPacksPresent && allSourceRegistryGroupsPresent");
+    expect(source).toContain("missing_real_norm_pack_work_groups: missingPackGroups");
+    expect(source).toContain("missing_real_source_registry_work_groups:");
     expect(source).toContain("src_professional_norm_pack_${group}_");
+    expect(source).toContain('!source.source_id.startsWith("src_professional_norm_pack_catalog_")');
+    expect(source).toContain("all_professional_norm_packs_reviewed");
+    expect(source).toContain("missing_source_page_or_section");
     expect(source).toContain("needs_regional_review");
     expect(source).toContain("AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_${name}");
     expect(source).not.toMatch(/eas\s+build|expo\s+run:android|gradlew|xcodebuild|git add \./);

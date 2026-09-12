@@ -1,0 +1,60 @@
+import {
+  compileProductionExpandedEstimate10000,
+} from "../../src/lib/ai/estimateTemplate10000";
+
+const PROFESSIONAL_SOURCE_PREFIX = "src_professional_norm_pack_";
+
+function sourcedRow(workKey: string, rowCode: string, quantity = 100) {
+  const compiled = compileProductionExpandedEstimate10000({ workKey, quantity, countryCode: "KG" });
+  const row = compiled.rows.find((candidate) => candidate.rowCode === rowCode);
+  expect(row).toBeDefined();
+  expect(row?.normSourceId).toMatch(new RegExp(`^${PROFESSIONAL_SOURCE_PREFIX}`));
+  return row!;
+}
+
+describe("professional norm-pack wave 3 real quantities", () => {
+  it("uses the documented Sarnafil AT-18 field-overlap factor only for the exact flat-roof row", () => {
+    const row = sourcedRow(
+      "roofing_interior_flat_roof_install_standard",
+      "roofing_interior_flat_roof_install_standard_materials_01",
+    );
+    expect(row.quantity).toBeCloseTo(104.1667, 4);
+    expect(row.unit).toBe("m2");
+    expect(row.normId).toContain("roofing_sarnafil_at18_field_overlap_m2_m2_v1");
+
+    const unrelated = compileProductionExpandedEstimate10000({
+      workKey: "roofing_interior_metal_roof_install_standard",
+      quantity: 100,
+      countryCode: "KG",
+    });
+    expect(unrelated.rows[0]?.normSourceId).not.toContain("sarnafil");
+  });
+
+  it("uses five Fixrock holders per square metre only for conventional ventilated-facade fixing", () => {
+    const row = sourcedRow(
+      "facade_interior_vent_facade_install_standard",
+      "facade_interior_vent_facade_install_standard_components_07",
+    );
+    expect(row.quantity).toBe(500);
+    expect(row.unit).toBe("piece");
+    expect(row.normId).toContain("facade_rockwool_fixrock_conventional_fixings_piece_m2_v1");
+  });
+
+  it("keeps Comfortboard net area and Jotun theoretical spreading rate dimensionally explicit", () => {
+    const insulation = sourcedRow(
+      "insulation_interior_facade_install_standard",
+      "insulation_interior_facade_install_standard_materials_01",
+    );
+    expect(insulation.quantity).toBe(100);
+    expect(insulation.unit).toBe("m2");
+    expect(insulation.normId).toContain("insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1");
+
+    const coating = sourcedRow(
+      "carpentry_metal_interior_metal_frame_paint_standard",
+      "carpentry_metal_interior_metal_frame_paint_standard_materials_03",
+    );
+    expect(coating.quantity).toBeCloseTo(15.873, 3);
+    expect(coating.unit).toBe("l");
+    expect(coating.normId).toContain("metalwork_jotun_hardtop_xp_l_m2_100um_v1");
+  });
+});

@@ -1,0 +1,39 @@
+{
+  "work_group": "documentation",
+  "source_pack_version": "2026.09-kg-project-pricing-routing-r1",
+  "source_type": "public_government_norms_or_standards",
+  "review_status": "needs_review",
+  "license_status": "public",
+  "norm_items": [
+    {
+      "norm_id": "documentation_kg_selected_design_price_unit_routing_v1",
+      "name_ru": "Маршрутизация проектной документации к точному разделу Сборника цен Кыргызской Республики",
+      "parameters": ["project_object_type", "design_stage", "selected_price_collection_section", "project_capacity_measure", "deliverable_composition"],
+      "unit": "selected_price_unit",
+      "rate": {
+        "value": 1,
+        "unit": "selected price unit/project input normalized to the same exact collection measure"
+      },
+      "applicability": {
+        "jurisdiction": "Kyrgyz Republic",
+        "document": "Общие указания по определению сметной стоимости проектных работ",
+        "exact_sector_section_and_table_required": true,
+        "design_stage_and_deliverable_composition_required": true,
+        "generic_percent_of_construction_cost_forbidden": true,
+        "price_and_effort_blocked_until_exact_collection_measure_selected": true
+      },
+      "waste_percent_default": 0,
+      "rounding": {
+        "package_unit": "selected_price_unit",
+        "package_size": 1,
+        "mode": "follow_exact_selected_price_table"
+      },
+      "source": {
+        "title": "Общие указания по определению сметной стоимости проектных работ для строительства в Кыргызской Республике",
+        "url": "https://minstroy.gov.kg/ru/kyzmat/354/show",
+        "page": "Purpose and applicability: formation of contractual prices for project products and services",
+        "provenance": "public_government_norms_or_standards"
+      }
+    }
+  ]
+}
