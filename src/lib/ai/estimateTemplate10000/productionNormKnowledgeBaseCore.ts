@@ -482,6 +482,7 @@ function rowAwareNormWorkGroup(input: EstimateNormGenericTemplateInput): Estimat
   if (text.includes("conditioner") || text.includes("split") || text.includes("chiller") || text.includes("fancoil") || text.includes("air_curtain")) return "air_conditioning";
   if (text.includes("sewer")) return "sewerage";
   if (text.includes("wood_") || text.includes("timber") || text.includes("furniture")) return "carpentry";
+  if (categoryGroup === "drywall" && text.includes("drywall")) return "drywall";
   if (text.includes("ceiling") || text.includes("suspended") || text.includes("acoustic")) return "ceilings";
   if (text.includes("lawn") || text.includes("irrigation") || text.includes("garden") || text.includes("site_grading")) return "landscaping";
   if (text.includes("clean_after") || text.includes("construction_cleaning") || text.includes("hydro_clean") || text.includes("cleaning")) return "cleaning";

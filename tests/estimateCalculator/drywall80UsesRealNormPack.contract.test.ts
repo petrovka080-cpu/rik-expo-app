@@ -1,7 +1,7 @@
 import { compileProductionExpandedEstimate10000, isProfessionalNormPackSourceId } from "../../src/lib/ai/estimateTemplate10000";
 
-describe("drywall 80 real norm pack", () => {
-  it("uses Knauf jointing source-backed norms in the drywall compiled rows", () => {
+describe("drywall 80 reviewed norm pack", () => {
+  it("keeps the generic drywall case unbound without an exact Knauf table cell", () => {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "drywall_ceiling_interior_drywall_partition_install_standard",
       quantity: 80,
@@ -18,12 +18,11 @@ describe("drywall 80 real norm pack", () => {
     expect(genericReferenceRows.every((row) =>
       !isProfessionalNormPackSourceId(row.normSourceId)
     )).toBe(true);
-    expect(drywallJointRows).toHaveLength(1);
-    expect(drywallJointRows[0]?.normSourceId).toContain("drywall_knauf_fugenfueller_leicht_jointing");
+    expect(drywallJointRows).toEqual([]);
+    expect(realRows).toEqual([]);
     expect(realRows.map((row) => row.normSourceId)).not.toEqual(expect.arrayContaining([
       expect.stringContaining("drywall_knauf_fugenfueller_perimeter_joint"),
     ]));
-    expect(drywallJointRows[0]?.sourceParameters.baseUnit).toBe("m2");
-    expect(drywallJointRows.every((row) => row.unit === "kg")).toBe(true);
+    expect(compiled.rows.some((row) => row.lineType === "material" && row.unit === "kg")).toBe(true);
   });
 });

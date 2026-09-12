@@ -407,24 +407,27 @@ const knaufFugenfuellerPerimeterNorm = (() => {
 const knaufFugenfuellerRateRange = "rate_range_kg_linear_m" in knaufFugenfuellerPerimeterNorm.applicability
   ? knaufFugenfuellerPerimeterNorm.applicability.rate_range_kg_linear_m
   : null;
+const knaufFugenfuellerSystems = "systems" in knaufFugenfuellerPerimeterNorm.applicability
+  ? knaufFugenfuellerPerimeterNorm.applicability.systems
+  : null;
 
 if (
   drywallNormPack.work_group !== "drywall" ||
   knaufFugenfuellerPerimeterNorm.unit !== "kg" ||
   knaufFugenfuellerPerimeterNorm.rate.value !== 0.15 ||
   knaufFugenfuellerPerimeterNorm.rate.unit !== "kg/linear_m; range 0.15-0.25 kg/linear_m" ||
-  !("systems" in knaufFugenfuellerPerimeterNorm.applicability) ||
-  knaufFugenfuellerPerimeterNorm.applicability.systems.length !== 1 ||
-  knaufFugenfuellerPerimeterNorm.applicability.systems[0] !== "gypsum_board" ||
+  !knaufFugenfuellerSystems ||
+  knaufFugenfuellerSystems.length !== 1 ||
+  knaufFugenfuellerSystems[0] !== "gypsum_board" ||
   !("connection" in knaufFugenfuellerPerimeterNorm.applicability) ||
   knaufFugenfuellerPerimeterNorm.applicability.connection !== "perimeter" ||
   !knaufFugenfuellerRateRange ||
   knaufFugenfuellerRateRange[0] !== 0.15 ||
   knaufFugenfuellerRateRange[1] !== 0.25 ||
-  knaufFugenfuellerPerimeterNorm.waste_percent_default !== 8 ||
+  knaufFugenfuellerPerimeterNorm.waste_percent_default !== 0 ||
   knaufFugenfuellerPerimeterNorm.rounding.package_unit !== "bag" ||
   knaufFugenfuellerPerimeterNorm.rounding.package_size !== 25 ||
-  knaufFugenfuellerPerimeterNorm.rounding.mode !== "ceil"
+  knaufFugenfuellerPerimeterNorm.rounding.mode !== "net_kg_before_rounding_to_confirmed_25kg_profile_package"
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}`);
 }
@@ -439,7 +442,7 @@ export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA = Object.freeze({
   rate_value: knaufFugenfuellerPerimeterNorm.rate.value,
   rate_unit: knaufFugenfuellerPerimeterNorm.rate.unit,
   rate_range_kg_linear_m: [knaufFugenfuellerRateRange[0], knaufFugenfuellerRateRange[1]] as const,
-  system: knaufFugenfuellerPerimeterNorm.applicability.systems[0],
+  system: knaufFugenfuellerSystems[0],
   connection: knaufFugenfuellerPerimeterNorm.applicability.connection,
   waste_percent_default: knaufFugenfuellerPerimeterNorm.waste_percent_default,
   package_size_kg: knaufFugenfuellerPerimeterNorm.rounding.package_size,
@@ -1501,9 +1504,8 @@ function resolveKnaufFugenfuellerPerimeterJoint(
     );
   }
 
-  const wasteFactor = 1 + KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.waste_percent_default / 100;
   const packageSizeKg = KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.package_size_kg;
-  const rawQuantityKg = perimeterLinearM! * consumptionKgLinearM! * wasteFactor;
+  const rawQuantityKg = perimeterLinearM! * consumptionKgLinearM!;
   const calculatedPerimeterJointCompoundQuantityKg = Math.ceil(rawQuantityKg / packageSizeKg - 1e-9) * packageSizeKg;
   const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "perimeter_joint_compound_quantity_kg"));
   if (
@@ -1539,8 +1541,8 @@ function resolveKnaufFugenfuellerPerimeterJoint(
     `perimeter_joint_consumption_kg_linear_m=${consumptionKgLinearM}`,
     `system_passport_reference=${systemPassportReference}`,
     `material_certificate_reference=${materialCertificateReference}`,
-    `waste_percent=${KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.waste_percent_default}`,
-    `formula=ceil((perimeter_linear_m*perimeter_joint_consumption_kg_linear_m*${wasteFactor})/${packageSizeKg})*${packageSizeKg}`,
+    "additional_waste_excluded=true",
+    `formula=ceil((perimeter_linear_m*perimeter_joint_consumption_kg_linear_m)/${packageSizeKg})*${packageSizeKg}`,
   ].join(";");
   const parameterValues = Object.freeze({
     ...parameterValuesInput,

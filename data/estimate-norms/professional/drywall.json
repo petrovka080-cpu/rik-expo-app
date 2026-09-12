@@ -1,62 +1,157 @@
 {
   "work_group": "drywall",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-knauf-k462-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
+        "source_url": "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        "supporting_source_urls": [
+          "https://knauf.com/de-DE/p/produkt/fugenfueller-leicht-10719_0022"
+        ],
+        "verified_facts": [
+          "technical_data_sheet_is_k462_de_eng_07_11",
+          "jointing_table_excludes_perimeter_connection_joints",
+          "zero_point_three_kg_per_m2_is_only_the_12_5_mm_hrak_single_layer_ceiling_cell",
+          "wall_and_dry_lining_cells_for_the_same_board_are_0_5_and_0_25_kg_per_m2",
+          "table_rate_changes_with_board_type_thickness_layer_configuration_and_application",
+          "jointing_requires_reinforcement_tape_preferably_knauf_fugendeckstreifen_kurt",
+          "documented_current_product_package_sizes_are_5_10_and_25_kg",
+          "direct_generic_drywall_area_multiplication_is_forbidden_without_an_exact_table_cell",
+          "additional_waste_allowance_is_not_published"
+        ]
+      },
+      {
+        "norm_id": "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
+        "source_url": "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        "supporting_source_urls": [
+          "https://knauf.com/de-DE/p/produkt/fugenfueller-leicht-10719_0022"
+        ],
+        "verified_facts": [
+          "technical_data_sheet_is_k462_de_eng_07_11",
+          "perimeter_connection_jointing_method_is_knauf_trenn_fix",
+          "perimeter_consumption_is_approximately_0_15_to_0_25_kg_per_linear_m",
+          "exact_perimeter_rate_depends_on_cladding_thickness",
+          "exact_project_rate_must_be_selected_within_the_published_range",
+          "documented_current_product_package_sizes_are_5_10_and_25_kg",
+          "the_25_kg_runtime_profile_is_an_explicit_selected_package_variant",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
-      "name_ru": "Knauf Fugenfuller Leicht gypsum board jointing compound",
-      "parameters": ["board_area_m2", "board_thickness_mm", "edge_type", "joint_type"],
+      "name_ru": "Knauf Fugenfüller Leicht, расход по точной ячейке таблицы заделки швов",
+      "parameters": [
+        "board_area_m2",
+        "board_product_type",
+        "board_thickness_mm",
+        "board_layer_configuration",
+        "long_edge_type",
+        "construction_application",
+        "jointing_without_perimeter_confirmed",
+        "reinforcement_tape_confirmed",
+        "selected_consumption_kg_m2",
+        "substrate_and_application_conditions_confirmed",
+        "selected_bag_size_kg"
+      ],
       "unit": "kg",
       "rate": {
         "value": 0.3,
-        "unit": "kg/m2 for 12.5 mm board jointing table row"
+        "unit": "one exact table cell only: approximate kg/m2 for single-layer 12.5 mm Knauf HRAK board on a ceiling, excluding perimeter joints"
       },
       "applicability": {
-        "systems": ["gypsum_board", "knauf_boards"],
-        "board_thickness_mm": [12.5, 15, 18, 20, 25],
-        "edge_types": ["half_rounded_tapered", "tapered", "solid_board"],
-        "rate_table_present": true
+        "product": "Knauf Fugenfüller Leicht",
+        "tds_identifier": "K462.de/eng/07.11/0/TB",
+        "edge_types": ["HRK", "HRAK"],
+        "reinforcement_tape_required": true,
+        "perimeter_connection_joints_excluded": true,
+        "rate_varies_with": [
+          "board_product_type",
+          "board_thickness_mm",
+          "board_layer_configuration",
+          "construction_application"
+        ],
+        "representative_rate_table_kg_m2": {
+          "single_12_5_mm_knauf_hrak__ceiling": 0.3,
+          "single_12_5_mm_knauf_hrak__wall": 0.5,
+          "single_12_5_mm_knauf_hrak__dry_lining_furring_shaft_wall": 0.25,
+          "single_15_mm_knauf_hrak__ceiling": 0.3,
+          "single_15_mm_knauf_hrak__wall": 0.5,
+          "single_20_mm_solid_board_hrak__ceiling": 0.6,
+          "single_20_mm_solid_board_hrak__wall": 1.1,
+          "single_20_mm_solid_board_hrak__dry_lining_furring_shaft_wall": 0.55,
+          "double_12_5_mm_knauf_hrak__ceiling": 0.5,
+          "double_12_5_mm_knauf_hrak__wall": 0.8,
+          "double_12_5_mm_knauf_hrak__dry_lining_furring_shaft_wall": 0.4,
+          "triple_12_5_mm_knauf_hrak__wall": 1.0
+        },
+        "exact_table_cell_required": true,
+        "simple_rate_multiplication_forbidden": true,
+        "application_temperature_min_c": 10,
+        "additional_waste_not_published": true,
+        "documented_bag_sizes_kg": [5, 10, 25]
       },
-      "waste_percent_default": 8,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
-        "package_size": 25,
-        "mode": "ceil"
+        "package_size": 5,
+        "mode": "approximate_net_kg_after_exact_table_cell_selection_before_explicit_5_10_or_25_kg_bag_rounding"
       },
       "source": {
-        "title": "Knauf Fugenfuller Leicht technical data sheet",
-        "url": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
-        "page": "material requirement consumption table",
+        "title": "Knauf K462 Fugenfüller Leicht technical data sheet",
+        "url": "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        "page": "K462.de/eng/07.11/0/TB, material requirement/consumption table: board and application-specific kg/m2 values excluding perimeter joints",
         "provenance": "manufacturer_technical_cards"
       }
     },
     {
       "norm_id": "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
-      "name_ru": "Knauf Fugenfuller Leicht perimeter connection joint",
-      "parameters": ["perimeter_linear_m", "cladding_thickness_mm"],
+      "name_ru": "Knauf Fugenfüller Leicht, периметральный шов Trenn-Fix по измеренной длине",
+      "parameters": [
+        "perimeter_linear_m",
+        "cladding_thickness_mm",
+        "perimeter_joint_consumption_kg_linear_m",
+        "perimeter_connection_joint_method",
+        "system_passport_reference",
+        "material_certificate_reference"
+      ],
       "unit": "kg",
       "rate": {
         "value": 0.15,
         "unit": "kg/linear_m; range 0.15-0.25 kg/linear_m"
       },
       "applicability": {
+        "product": "Knauf Fugenfüller Leicht",
+        "tds_identifier": "K462.de/eng/07.11/0/TB",
         "systems": ["gypsum_board"],
         "connection": "perimeter",
-        "rate_range_kg_linear_m": [0.15, 0.25]
+        "perimeter_connection_joint_method": "KNAUF_TRENN_FIX",
+        "rate_range_kg_linear_m": [0.15, 0.25],
+        "rate_depends_on": ["cladding_thickness_mm"],
+        "selected_consumption_required": true,
+        "runtime_product_profile_selected_bag_size_kg": 25,
+        "additional_waste_not_published": true,
+        "documented_bag_sizes_kg": [5, 10, 25]
       },
-      "waste_percent_default": 8,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
         "package_size": 25,
-        "mode": "ceil"
+        "mode": "net_kg_before_rounding_to_confirmed_25kg_profile_package"
       },
       "source": {
-        "title": "Knauf Fugenfuller Leicht technical data sheet",
-        "url": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
-        "page": "perimeter connection jointing consumption",
+        "title": "Knauf K462 Fugenfüller Leicht technical data sheet",
+        "url": "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        "page": "K462.de/eng/07.11/0/TB, material requirement/consumption: Trenn-Fix perimeter connection approximately 0.15-0.25 kg/m depending on cladding thickness",
         "provenance": "manufacturer_technical_cards"
       }
     }

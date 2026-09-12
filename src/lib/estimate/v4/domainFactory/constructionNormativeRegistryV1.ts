@@ -681,7 +681,7 @@ export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSo
     unit_basis: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.rate_unit,
     official_reference: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.source_url,
     version: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.source_document_version,
-    license_access_note: "Public manufacturer technical data. The document publishes a 0.15-0.25 kg/m range depending on cladding thickness, so the exact project consumption must be supplied explicitly within that range. The route is limited to a Knauf Trenn-Fix perimeter joint and the documented 25 kg procurement package.",
+    license_access_note: "Public manufacturer technical data. The document publishes a 0.15-0.25 kg/m range depending on cladding thickness, so the exact project consumption must be supplied explicitly within that range. The route is limited to a Knauf Trenn-Fix perimeter joint and an explicitly selected 25 kg package profile; no additional waste allowance is published.",
     supersedes: [],
     superseded_by: [],
     exact_rate_code_required: false,

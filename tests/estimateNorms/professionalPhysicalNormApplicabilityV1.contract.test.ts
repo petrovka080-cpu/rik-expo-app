@@ -897,12 +897,14 @@ describe("professional physical norm applicability V1", () => {
       status: "APPLIED",
       source_id: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
       norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
-      source_document_version: "2026.07-wave1",
+      source_document_version: "2026.09-knauf-k462-primary-review-r2",
       source_definition_hash: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.definition_hash,
       calculated_perimeter_joint_compound_quantity_kg: 25,
       produced_parameter_ids: ["perimeter_joint_compound_quantity_kg"],
       blockers: [],
     });
+    expect(first.parameter_values.perimeter_joint_compound_quantity_kg?.applicability)
+      .toContain("additional_waste_excluded=true");
     expect(first.parameter_values.perimeter_joint_compound_quantity_kg).toMatchObject({
       value: 25,
       unit_id: "kg",

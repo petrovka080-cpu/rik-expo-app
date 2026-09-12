@@ -360,6 +360,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedDrywallPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/drywall.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1114,6 +1140,88 @@ describe("real professional norm packs audit", () => {
           mode: "approximate_net_litres_before_rounding_to_explicitly_selected_3_5_or_15_l_container",
         },
       });
+    expect(reviewedDrywallPack).toMatchObject({
+      source_pack_version: "2026.09-knauf-k462-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedDrywallPack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedDrywallPack.review_evidence?.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        norm_id: "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
+        source_url: "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        supporting_source_urls: [
+          "https://knauf.com/de-DE/p/produkt/fugenfueller-leicht-10719_0022",
+        ],
+        verified_facts: expect.arrayContaining([
+          "zero_point_three_kg_per_m2_is_only_the_12_5_mm_hrak_single_layer_ceiling_cell",
+          "table_rate_changes_with_board_type_thickness_layer_configuration_and_application",
+          "direct_generic_drywall_area_multiplication_is_forbidden_without_an_exact_table_cell",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+      expect.objectContaining({
+        norm_id: "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
+        source_url: "https://media.knauf.com/a/QkC2x6ziJobApENby855zK",
+        verified_facts: expect.arrayContaining([
+          "perimeter_connection_jointing_method_is_knauf_trenn_fix",
+          "perimeter_consumption_is_approximately_0_15_to_0_25_kg_per_linear_m",
+          "exact_project_rate_must_be_selected_within_the_published_range",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+    ]));
+    expect(reviewedDrywallPack.norm_items.find((item) =>
+      item.norm_id === "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "board_area_m2",
+          "board_product_type",
+          "board_thickness_mm",
+          "board_layer_configuration",
+          "construction_application",
+          "selected_consumption_kg_m2",
+        ]),
+        rate: {
+          value: 0.3,
+          unit: "one exact table cell only: approximate kg/m2 for single-layer 12.5 mm Knauf HRAK board on a ceiling, excluding perimeter joints",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          perimeter_connection_joints_excluded: true,
+          exact_table_cell_required: true,
+          simple_rate_multiplication_forbidden: true,
+          documented_bag_sizes_kg: [5, 10, 25],
+        }),
+        rounding: {
+          package_size: 5,
+          mode: "approximate_net_kg_after_exact_table_cell_selection_before_explicit_5_10_or_25_kg_bag_rounding",
+        },
+      });
+    expect(reviewedDrywallPack.norm_items.find((item) =>
+      item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
+      .toMatchObject({
+        parameters: [
+          "perimeter_linear_m",
+          "cladding_thickness_mm",
+          "perimeter_joint_consumption_kg_linear_m",
+          "perimeter_connection_joint_method",
+          "system_passport_reference",
+          "material_certificate_reference",
+        ],
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          perimeter_connection_joint_method: "KNAUF_TRENN_FIX",
+          rate_range_kg_linear_m: [0.15, 0.25],
+          selected_consumption_required: true,
+          runtime_product_profile_selected_bag_size_kg: 25,
+          additional_waste_not_published: true,
+        }),
+        rounding: {
+          package_size: 25,
+          mode: "net_kg_before_rounding_to_confirmed_25kg_profile_package",
+        },
+      });
     expect(reviewedPaintPack.norm_items.find((item) =>
       item.norm_id === "paint_ceresit_ct17_primer_l_m2_before_paint_v1"))
       .toMatchObject({
@@ -1266,8 +1374,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(35);
-    expect(unregistered).toHaveLength(24);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(34);
+    expect(unregistered).toHaveLength(25);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -1291,6 +1399,7 @@ describe("real professional norm packs audit", () => {
         disposition: "REGISTERED_EXECUTABLE_BINDING",
       });
     expect(withCandidates.map((item) => item.norm_id)).toEqual([
+      "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
       "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",

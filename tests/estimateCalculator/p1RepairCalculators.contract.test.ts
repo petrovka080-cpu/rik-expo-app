@@ -28,6 +28,6 @@ describe("P1 repair calculators", () => {
       expect(estimate.rows.some((row) => row.lineType === "equipment")).toBe(true);
       expect(estimate.rows.some((row) => row.includedInProcurement)).toBe(true);
     }
-    expect(registeredNormRows).toEqual([0, 0, 0, 0, 0, 0, 1, 1, 0]);
+    expect(registeredNormRows).toEqual([0, 0, 0, 0, 0, 0, 1, 0, 0]);
   });
 });
