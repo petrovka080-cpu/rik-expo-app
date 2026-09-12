@@ -22,6 +22,19 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(row.unit).toBe("m2");
     expect(row.normId).toContain("roofing_sarnafil_at18_field_overlap_m2_m2_v1");
 
+    const grossFieldAreaBeforeRollLayout = sourcedRow(
+      "roofing_interior_flat_roof_install_standard",
+      "roofing_interior_flat_roof_install_standard_materials_01",
+      10,
+    );
+    expect(grossFieldAreaBeforeRollLayout.quantity).toBeCloseTo(10.4167, 4);
+    expect(grossFieldAreaBeforeRollLayout.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 1.0416667,
+      packageSize: 30,
+    });
+    expect(grossFieldAreaBeforeRollLayout.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-sika-sarnafil-at18-primary-review-r2");
+
     const unrelated = compileProductionExpandedEstimate10000({
       workKey: "roofing_interior_metal_roof_install_standard",
       quantity: 100,

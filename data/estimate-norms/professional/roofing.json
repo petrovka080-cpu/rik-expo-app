@@ -1,18 +1,51 @@
 {
   "work_group": "roofing",
-  "source_pack_version": "2026.09-sika-sarnafil-at18-field-overlap-r1",
+  "source_pack_version": "2026.09-sika-sarnafil-at18-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
+        "source_url": "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
+        "supporting_source_urls": [
+          "https://gbr.sika.com/dam/dms/gb01/5/sarnafil-at-18.pdf"
+        ],
+        "verified_facts": [
+          "august_2025_pds_version_06_01",
+          "standard_roll_is_2_m_wide_and_15_m_long",
+          "field_fastening_and_ballasted_overlap_is_80_mm",
+          "spot_fastening_overlap_is_120_mm",
+          "fastener_spacing_requires_project_specific_sika_calculation",
+          "factor_1_0416667_is_derived_from_width_and_80_mm_overlap_not_a_published_consumption_rate",
+          "gross_field_area_is_not_a_complete_roll_procurement_takeoff"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "name_ru": "Мембрана Sarnafil AT-18 шириной 2 м с полевым нахлёстом 80 мм",
-      "parameters": ["net_rectangular_field_area_m2", "fixing_method", "roll_orientation", "details_and_upstands_area_m2"],
+      "parameters": [
+        "net_rectangular_field_area_m2",
+        "fixing_method",
+        "roll_orientation",
+        "field_course_count",
+        "field_course_lengths_m",
+        "end_lap_design",
+        "details_and_upstands_area_m2",
+        "selected_package_variation",
+        "sika_project_specific_fastening_calculation"
+      ],
       "unit": "m2",
       "rate": {
         "value": 1.0416667,
-        "unit": "gross membrane m2/net rectangular field m2; 2.00 m / (2.00 m - 0.08 m)"
+        "unit": "preliminary repeated-course gross field membrane m2/net rectangular field m2; geometry-derived as 2.00 m / (2.00 m - 0.08 m)"
       },
       "applicability": {
         "product": "Sarnafil AT-18",
@@ -21,20 +54,22 @@
         "roll_area_m2": 30,
         "field_overlap_m": 0.08,
         "effective_course_width_m": 1.92,
+        "field_overlap_factor_is_geometry_derived_not_manufacturer_consumption_rate": true,
         "spot_fastened_120_mm_overlap_excluded": true,
         "end_laps_upstands_penetrations_details_and_cutting_excluded": true,
-        "fastener_spacing_requires_project_specific_sika_calculation": true
+        "fastener_spacing_requires_project_specific_sika_calculation": true,
+        "final_roll_takeoff_requires_complete_course_and_detail_layout": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "30_m2_roll",
         "package_size": 30,
-        "mode": "ceil_after_full_roof_layout_and_detail_allowance"
+        "mode": "gross_field_area_only_no_roll_rounding_before_complete_layout"
       },
       "source": {
         "title": "Sika Sarnafil AT-18 product data and application instructions",
         "url": "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
-        "page": "Packaging: 2 m x 15 m roll; Application: 80 mm field or ballasted overlap and 120 mm spot-fastened overlap",
+        "page": "PDS August 2025, version 06.01, page 2: standard roll 2 m x 15 m; page 4: 80 mm field/ballasted overlap, 120 mm spot-fastened overlap and project-specific fastener spacing",
         "provenance": "manufacturer_technical_cards"
       }
     }

@@ -43,7 +43,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   putty: "2026.07-wave1",
   reinforcement: "2026.07-wave2a",
   roadworks: "2026.09-krer27-table-27-06-020-routing-r1",
-  roofing: "2026.09-sika-sarnafil-at18-field-overlap-r1",
+  roofing: "2026.09-sika-sarnafil-at18-primary-review-r2",
   screed: "2026.07-wave2a",
   services: "2026.09-kg-author-supervision-trip-exclusion-r1",
   sewerage: "2026.09-wavin-osma-110mm-3m-pipe-r1",
@@ -163,7 +163,7 @@ const PROFESSIONAL_NORM_PACK_REGISTRY_ITEM_INPUTS: readonly ProfessionalNormPack
     sourceId: sourceId("roofing_sarnafil_at18_field_overlap_m2_m2_v1"),
     sourceTitle: "Sika Sarnafil AT-18 product data and application instructions",
     sourceUrl: "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
-    sourcePage: "Packaging 2 m x 15 m; application field overlap 80 mm",
+    sourcePage: "PDS August 2025, version 06.01, pages 2 and 4: standard roll 2 m x 15 m; field and ballasted overlap 80 mm",
     match: {
       categories: ["roofing"],
       workKeyIncludes: ["roofing_interior_flat_roof_install_standard"],

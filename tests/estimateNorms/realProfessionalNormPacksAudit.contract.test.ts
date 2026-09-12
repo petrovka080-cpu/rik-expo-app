@@ -109,6 +109,29 @@ describe("real professional norm packs audit", () => {
         source: { url: string; page: string };
       }[];
     };
+    const reviewedRoofingPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/roofing.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -282,6 +305,37 @@ describe("real professional norm packs audit", () => {
       },
       source: {
         url: "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+      },
+    });
+    expect(reviewedRoofingPack).toMatchObject({
+      source_pack_version: "2026.09-sika-sarnafil-at18-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedRoofingPack.review_evidence?.items).toHaveLength(1);
+    expect(reviewedRoofingPack.review_evidence?.items?.[0]).toMatchObject({
+      norm_id: "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
+      source_url: "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
+      supporting_source_urls: ["https://gbr.sika.com/dam/dms/gb01/5/sarnafil-at-18.pdf"],
+    });
+    expect(reviewedRoofingPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "standard_roll_is_2_m_wide_and_15_m_long",
+        "field_fastening_and_ballasted_overlap_is_80_mm",
+        "spot_fastening_overlap_is_120_mm",
+        "factor_1_0416667_is_derived_from_width_and_80_mm_overlap_not_a_published_consumption_rate",
+        "gross_field_area_is_not_a_complete_roll_procurement_takeoff",
+      ]));
+    expect(reviewedRoofingPack.norm_items[0]).toMatchObject({
+      parameters: expect.arrayContaining([
+        "field_course_count",
+        "field_course_lengths_m",
+        "end_lap_design",
+        "sika_project_specific_fastening_calculation",
+      ]),
+      rounding: {
+        package_size: 30,
+        mode: "gross_field_area_only_no_roll_rounding_before_complete_layout",
       },
     });
   });
