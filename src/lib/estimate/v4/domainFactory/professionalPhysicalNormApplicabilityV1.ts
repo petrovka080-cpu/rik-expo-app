@@ -72,6 +72,18 @@ const DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "maximum_piping_and_height_limits_confirmed",
 ] as const);
 
+const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "length_m",
+  "width_m",
+  "system_passport_reference",
+  "system_variant",
+  "substrate_type",
+  "substrate_fastener_reference",
+  "substrate_fastener_approved",
+  "ceiling_perimeter_anchor_spacing_m",
+] as const);
+
 export const KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID =
   "manufacturer-profile:knauf-d112:standard-12.5mm-single-layer:reference-10x10:v1" as const;
 
@@ -333,7 +345,11 @@ if (
   knaufD112ReferenceCeilingM[1] !== 10 ||
   knaufD112WallFastenerNorm.applicability.fastener_must_be_approved_for_substrate !== true ||
   knaufD112WallFastenerNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
-  knaufD112WallFastenerNorm.rounding.mode !== "ceil"
+  knaufD112WallFastenerNorm.rounding.mode !== "ceil_to_whole_piece_for_exact_10x10_reference_geometry" ||
+  knaufD112WallFastenerNorm.parameters.length !== KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !knaufD112WallFastenerNorm.parameters.includes(parameterId),
+  )
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_WALL_FASTENER_NORM_ID}`);
 }
@@ -654,18 +670,6 @@ export const WAVIN_HEP2O_CLIP_SOURCE_METADATA = Object.freeze(wavinHep2OClipNorm
     }),
   });
 }));
-
-const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "area_m2",
-  "length_m",
-  "width_m",
-  "system_passport_reference",
-  "system_variant",
-  "substrate_type",
-  "substrate_fastener_reference",
-  "substrate_fastener_approved",
-  "ceiling_perimeter_anchor_spacing_m",
-] as const);
 
 const KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "perimeter_linear_m",

@@ -1,14 +1,56 @@
 {
   "work_group": "ceilings",
-  "source_pack_version": "2026.09-knauf-d11-d112-standard-r1",
+  "source_pack_version": "2026.09-knauf-d11-d112-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_ud_runner_average_is_0_4_linear_m_per_m2", "ud_runner_documented_length_is_3_m", "quantities_reference_10_by_10_m_ceiling", "loss_and_waste_are_excluded"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_wall_fastener_average_is_0_4_piece_per_m2", "fastener_must_be_approved_for_substrate", "quantities_reference_10_by_10_m_ceiling", "loss_and_waste_are_excluded"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_substructure_anchor_average_is_1_2_piece_per_m2", "variant_1_load_class_is_at_most_0_15_kn_per_m2", "variant_1_spacing_is_950_1000_500_mm", "fractional_piece_result_requires_whole_piece_rounding"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_board_m2_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_board_average_is_1_m2_per_m2", "variant_1_uses_single_12_5_mm_gkb_or_gkbi_board", "selected_board_dimensions_are_not_published_in_the_consumption_table", "loss_and_waste_are_excluded"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_tn_3_5_by_25_mm_average_is_17_piece_per_m2", "rate_applies_to_single_12_5_mm_board_layer", "fractional_piece_result_requires_whole_piece_rounding", "loss_and_waste_are_excluded"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_hand_applied_uniflott_average_is_0_3_kg_per_m2", "documented_uniflott_bags_are_5_kg_and_25_kg", "net_kg_requirement_is_not_automatic_bag_rounding", "loss_and_waste_are_excluded"]
+      },
+      {
+        "norm_id": "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
+        "source_url": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
+        "verified_facts": ["d11_document_version_is_2006_03", "d112_variant_1_cut_edge_joint_tape_average_is_0_45_linear_m_per_m2", "joint_tape_rate_is_for_cut_edges", "selected_tape_package_is_not_published_in_the_consumption_table", "loss_and_waste_are_excluded"]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
       "name_ru": "Пристенный профиль Knauf UD 28/27 для потолка D112, стандартная однослойная обшивка",
-      "parameters": ["ceiling_area_m2", "system_variant", "room_perimeter_m"],
+      "parameters": ["ceiling_area_m2", "system_variant", "room_length_m", "room_width_m", "room_perimeter_m", "selected_profile_piece_length_m", "current_regional_system_approval"],
       "unit": "linear_m",
       "rate": {
         "value": 0.4,
@@ -25,7 +67,7 @@
       "rounding": {
         "package_unit": "3_m_profile",
         "package_size": 3,
-        "mode": "ceil"
+        "mode": "reference_average_linear_m_before_actual_perimeter_and_3_m_piece_layout"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -37,7 +79,7 @@
     {
       "norm_id": "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
       "name_ru": "Крепление пристенного профиля к основанию для потолка Knauf D112",
-      "parameters": ["ceiling_area_m2", "system_variant", "substrate_type"],
+      "parameters": ["area_m2", "length_m", "width_m", "system_passport_reference", "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved", "ceiling_perimeter_anchor_spacing_m"],
       "unit": "piece",
       "rate": {
         "value": 0.4,
@@ -54,7 +96,7 @@
       "rounding": {
         "package_unit": "piece",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_to_whole_piece_for_exact_10x10_reference_geometry"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -85,7 +127,7 @@
       "rounding": {
         "package_unit": "piece",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_to_whole_piece_from_d112_reference_average"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -107,6 +149,7 @@
         "system": "Knauf D112",
         "variant": "standard_12_5_mm_single_layer",
         "board_thickness_mm": 12.5,
+        "board_types": ["GKB", "GKBI"],
         "manufacturer_excludes_loss_and_waste": true,
         "package_rounding_requires_selected_board_dimensions": true
       },
@@ -114,7 +157,7 @@
       "rounding": {
         "package_unit": "m2",
         "package_size": 1,
-        "mode": "none_until_board_selected"
+        "mode": "reference_average_net_m2_before_selected_board_layout"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -143,7 +186,7 @@
       "rounding": {
         "package_unit": "piece",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_to_whole_piece_from_d112_reference_average"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -172,7 +215,7 @@
       "rounding": {
         "package_unit": "bag",
         "package_size": 5,
-        "mode": "ceil"
+        "mode": "reference_average_kg_before_selected_5_or_25_kg_bag_rounding"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",
@@ -201,7 +244,7 @@
       "rounding": {
         "package_unit": "linear_m",
         "package_size": 1,
-        "mode": "none_until_product_selected"
+        "mode": "reference_average_linear_m_before_selected_tape_and_cut_edge_layout"
       },
       "source": {
         "title": "Knauf D11 Board Ceilings system data sheet",

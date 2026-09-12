@@ -192,6 +192,24 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedCeilingsPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/ceilings.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { norm_id?: string; source_url?: string; verified_facts?: string[] }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -492,6 +510,43 @@ describe("real professional norm packs audit", () => {
         mode: "theoretical_litres_before_application_loss_and_selected_5_l_or_20_l_kit_rounding",
       },
     });
+    expect(reviewedCeilingsPack).toMatchObject({
+      source_pack_version: "2026.09-knauf-d11-d112-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedCeilingsPack.review_evidence?.items).toHaveLength(7);
+    expect(reviewedCeilingsPack.review_evidence?.items?.map((item) => item.norm_id).sort())
+      .toEqual(reviewedCeilingsPack.norm_items.map((item) => item.norm_id).sort());
+    expect(reviewedCeilingsPack.review_evidence?.items?.every((item) =>
+      item.source_url === "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true" &&
+      (item.verified_facts?.length ?? 0) >= 3 &&
+      item.verified_facts?.includes("d11_document_version_is_2006_03"),
+    )).toBe(true);
+    expect(reviewedCeilingsPack.norm_items.find((item) =>
+      item.norm_id === "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1"))
+      .toMatchObject({
+        parameters: [
+          "area_m2",
+          "length_m",
+          "width_m",
+          "system_passport_reference",
+          "system_variant",
+          "substrate_type",
+          "substrate_fastener_reference",
+          "substrate_fastener_approved",
+          "ceiling_perimeter_anchor_spacing_m",
+        ],
+        rounding: { mode: "ceil_to_whole_piece_for_exact_10x10_reference_geometry" },
+      });
+    expect(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID
+      .ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1).toBe("area_m2");
+    expect(reviewedCeilingsPack.norm_items.filter((item) => [
+      "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
+      "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
+    ].includes(item.norm_id)).every((item) =>
+      item.rounding.mode === "ceil_to_whole_piece_from_d112_reference_average",
+    )).toBe(true);
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {

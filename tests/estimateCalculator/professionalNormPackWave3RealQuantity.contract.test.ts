@@ -13,6 +13,34 @@ function sourcedRow(workKey: string, rowCode: string, quantity = 100) {
 }
 
 describe("professional norm-pack wave 3 real quantities", () => {
+  it("keeps the six static Knauf D112 variant-1 rows exact and rounds only piece outputs", () => {
+    const workKey = "drywall_ceiling_interior_drywall_ceiling_install_standard";
+    const reference = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
+    const sourced = reference.rows.filter((row) =>
+      row.normSourceId?.startsWith("src_professional_norm_pack_ceilings_knauf_d112_standard_"),
+    );
+    expect(sourced.map((row) => [row.rowCode, row.quantity, row.unit])).toEqual([
+      [`${workKey}_materials_01`, 100, "m2"],
+      [`${workKey}_materials_02`, 40, "linear_m"],
+      [`${workKey}_materials_05`, 30, "kg"],
+      [`${workKey}_materials_06`, 45, "linear_m"],
+      [`${workKey}_components_07`, 1700, "piece"],
+      [`${workKey}_components_08`, 120, "piece"],
+    ]);
+    expect(sourced.every((row) => row.sourceParameters?.normSourceDocumentVersion ===
+      "2026.09-knauf-d11-d112-primary-review-r2")).toBe(true);
+
+    const fractionalArea = compileProductionExpandedEstimate10000({
+      workKey,
+      quantity: 0.1,
+      countryCode: "KG",
+    });
+    expect(fractionalArea.rows.find((row) => row.rowCode === `${workKey}_components_07`))
+      .toMatchObject({ quantityFormula: "ceil(q * normFactor)", quantity: 2, unit: "piece" });
+    expect(fractionalArea.rows.find((row) => row.rowCode === `${workKey}_components_08`))
+      .toMatchObject({ quantityFormula: "ceil(q * normFactor)", quantity: 1, unit: "piece" });
+  });
+
   it("uses the documented Sarnafil AT-18 field-overlap factor only for the exact flat-roof row", () => {
     const row = sourcedRow(
       "roofing_interior_flat_roof_install_standard",

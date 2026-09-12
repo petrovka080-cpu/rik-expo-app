@@ -9,7 +9,7 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1: "ceiling_area_m2",
   ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1: "ceiling_area_m2",
   ceilings_knauf_d112_standard_uniflott_kg_m2_v1: "ceiling_area_m2",
-  ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1: "ceiling_area_m2",
+  ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1: "area_m2",
   cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1: "cleanable_hard_floor_area_m2",
   concrete_ready_mix_m3_m3_placed_v1: "volume_m3",
   delivery_ford_transit_v363_max_payload_trip_per_kg_v1: "cargo_weight_kg",
