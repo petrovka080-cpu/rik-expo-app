@@ -53,6 +53,18 @@ describe("real professional norm packs audit", () => {
         items?: { supporting_source_urls?: string[]; verified_facts?: string[] }[];
       };
     };
+    const reviewedHeatingPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/heating.json"),
+        "utf8",
+      ),
+    ) as {
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { verified_facts?: string[] }[];
+      };
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -168,6 +180,16 @@ describe("real professional norm packs audit", () => {
     });
     expect(reviewedAirConditioningPack.review_evidence?.items?.[0]?.verified_facts)
       .toContain("no_package_or_charge_scale_rounding_stated_for_exact_3mxs_k_formula");
+    expect(reviewedHeatingPack.review_status).toBe("reviewed");
+    expect(reviewedHeatingPack.review_evidence).toMatchObject({
+      method: "DIRECT_PRIMARY_SOURCE_REVIEW",
+    });
+    expect(reviewedHeatingPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "150_mm_spacing_equals_6_7_m_pipe_per_m2",
+        "feed_and_tail_lengths_between_manifold_and_room_must_be_added",
+        "no_pipe_package_or_whole_metre_rounding_stated_for_the_requirement_formula",
+      ]));
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {

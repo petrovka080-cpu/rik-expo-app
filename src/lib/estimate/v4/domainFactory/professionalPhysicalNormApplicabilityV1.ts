@@ -24,6 +24,18 @@ export const UPONOR_UFH_150MM_NORM_ID =
 export const UPONOR_UFH_150MM_SOURCE_ID =
   `src_professional_norm_pack_${UPONOR_UFH_150MM_NORM_ID}` as const;
 
+const UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "zone_area_m2",
+  "designed_pipe_spacing_mm",
+  "manifold_location",
+  "feed_tail_length_linear_m",
+  "loop_length_limit",
+  "hydraulic_loop_design_reference",
+  "circuit_count",
+  "manifold_outlet_count",
+  "longest_circuit_length_m",
+] as const);
+
 export const LINDAB_VSR_PRODUCT_PROFILE_ID =
   "manufacturer-profile:lindab-vsr-ventiduct:v1" as const;
 
@@ -135,9 +147,19 @@ const uponorNorm = (() => {
 if (
   heatingNormPack.work_group !== "heating" ||
   uponorNorm.unit !== "linear_m" ||
+  uponorNorm.rate.value !== 6.7 ||
   uponorNorm.rate.unit !== "pipe linear m/heated floor m2 at 150 mm spacing, excluding feed and tail lengths" ||
   uponorNorm.applicability.pipe_spacing_mm !== 150 ||
-  uponorNorm.rounding.mode !== "ceil_after_loop_and_feed_tail_layout"
+  uponorNorm.applicability.feed_and_tail_lengths_must_be_added !== true ||
+  uponorNorm.applicability.heat_loss_hydraulic_loop_and_manifold_design_required !== true ||
+  uponorNorm.applicability.other_spacing_values_require_their_own_table_row !== true ||
+  uponorNorm.parameters.length !== UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !uponorNorm.parameters.includes(parameterId),
+  ) ||
+  uponorNorm.rounding.package_unit !== "not_applicable" ||
+  uponorNorm.rounding.package_size !== 1 ||
+  uponorNorm.rounding.mode !== "no_package_rounding_apply_exact_manufacturer_formula"
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${UPONOR_UFH_150MM_NORM_ID}`);
 }
@@ -574,18 +596,6 @@ export const WAVIN_HEP2O_CLIP_SOURCE_METADATA = Object.freeze(wavinHep2OClipNorm
   });
 }));
 
-const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "zone_area_m2",
-  "designed_pipe_spacing_mm",
-  "manifold_location",
-  "feed_tail_length_linear_m",
-  "loop_length_limit",
-  "hydraulic_loop_design_reference",
-  "circuit_count",
-  "manifold_outlet_count",
-  "longest_circuit_length_m",
-] as const);
-
 const LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "route_length_m",
   "duct_diameter_mm",
@@ -665,7 +675,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_id: UPONOR_UFH_150MM_SOURCE_ID,
   source_document_version: UPONOR_UFH_150MM_SOURCE_METADATA.source_document_version,
   source_definition_hash: UPONOR_UFH_150MM_SOURCE_METADATA.definition_hash,
-  consumed_parameter_ids: REQUIRED_EXPLICIT_PARAMETER_IDS,
+  consumed_parameter_ids: UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["circuit_length_m"] as const,
 }, {
   norm_id: LINDAB_VSR_NORM_ID,
@@ -2088,11 +2098,11 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
     return nonApplied("NOT_REQUESTED", productProfileId, input.parameter_values, []);
   }
 
-  const explicit = Object.fromEntries(REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+  const explicit = Object.fromEntries(UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
     parameterId,
     explicitValue(input.parameter_values, parameterId),
   ]));
-  const missing = REQUIRED_EXPLICIT_PARAMETER_IDS
+  const missing = UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS
     .filter((parameterId) => explicit[parameterId] === null)
     .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
   if (missing.length > 0) {
@@ -2101,7 +2111,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       missing,
-      REQUIRED_EXPLICIT_PARAMETER_IDS,
+      UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
     );
   }
 
@@ -2130,7 +2140,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       invalidNumeric,
-      REQUIRED_EXPLICIT_PARAMETER_IDS,
+      UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
     );
   }
 
@@ -2140,7 +2150,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       [`PHYSICAL_NORM_NOT_APPLICABLE:${UPONOR_UFH_150MM_NORM_ID}:designed_pipe_spacing_mm=${spacingMm}`],
-      REQUIRED_EXPLICIT_PARAMETER_IDS,
+      UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
     );
   }
   if (longestCircuitM! > loopLimitM!) {
@@ -2149,7 +2159,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       [`PHYSICAL_NORM_LAYOUT_LIMIT_EXCEEDED:longest_circuit_length_m=${longestCircuitM}:loop_length_limit=${loopLimitM}`],
-      REQUIRED_EXPLICIT_PARAMETER_IDS,
+      UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
     );
   }
   if (manifoldOutletCount! < circuitCount!) {
@@ -2158,13 +2168,12 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       [`PHYSICAL_NORM_MANIFOLD_OUTLETS_INSUFFICIENT:circuit_count=${circuitCount}:manifold_outlet_count=${manifoldOutletCount}`],
-      REQUIRED_EXPLICIT_PARAMETER_IDS,
+      UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS,
     );
   }
 
   const rawPipeLengthM = areaM2! * UPONOR_UFH_150MM_SOURCE_METADATA.rate_value + feedTailM!;
-  const packageSize = uponorNorm.rounding.package_size;
-  const calculatedPipeLengthM = Math.ceil(rawPipeLengthM / packageSize) * packageSize;
+  const calculatedPipeLengthM = Number(rawPipeLengthM.toFixed(9));
   const explicitCircuitLengthM = finiteNumber(explicitValue(input.parameter_values, "circuit_length_m"));
   if (explicitCircuitLengthM !== null && explicitCircuitLengthM !== calculatedPipeLengthM) {
     return nonApplied(
@@ -2172,10 +2181,10 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       productProfileId,
       input.parameter_values,
       [`PHYSICAL_NORM_VALUE_CONFLICT:circuit_length_m=${explicitCircuitLengthM}:calculated_pipe_length_m=${calculatedPipeLengthM}`],
-      [...REQUIRED_EXPLICIT_PARAMETER_IDS, "circuit_length_m"],
+      [...UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS, "circuit_length_m"],
     );
   }
-  const capturedAt = REQUIRED_EXPLICIT_PARAMETER_IDS
+  const capturedAt = UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS
     .map((parameterId) => explicit[parameterId]!.captured_at)
     .sort()
     .at(-1)!;
@@ -2196,7 +2205,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
         `loop_length_limit=${loopLimitM}`,
         `hydraulic_loop_design_reference=${primitiveString(explicit.hydraulic_loop_design_reference!)}`,
         `manifold_location=${primitiveString(explicit.manifold_location!)}`,
-        `formula=ceil((zone_area_m2*${UPONOR_UFH_150MM_SOURCE_METADATA.rate_value}+feed_tail_length_linear_m)/${packageSize})*${packageSize}`,
+        `formula=zone_area_m2*${UPONOR_UFH_150MM_SOURCE_METADATA.rate_value}+feed_tail_length_linear_m`,
       ].join(";"),
     } satisfies ProfessionalParameterValueV4,
   });
@@ -2210,7 +2219,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
     source_url: UPONOR_UFH_150MM_SOURCE_METADATA.source_url,
     exact_locator: UPONOR_UFH_150MM_SOURCE_METADATA.exact_locator,
     source_definition_hash: UPONOR_UFH_150MM_SOURCE_METADATA.definition_hash,
-    consumed_parameter_ids: [...REQUIRED_EXPLICIT_PARAMETER_IDS],
+    consumed_parameter_ids: [...UPONOR_UFH_150MM_REQUIRED_EXPLICIT_PARAMETER_IDS],
     produced_parameter_ids: ["circuit_length_m"] as const,
     calculated_pipe_length_m: calculatedPipeLengthM,
     parameter_values: parameterValues,

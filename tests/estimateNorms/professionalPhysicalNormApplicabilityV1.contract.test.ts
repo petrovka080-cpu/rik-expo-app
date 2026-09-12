@@ -395,7 +395,7 @@ describe("professional physical norm applicability V1", () => {
     expect(first).toMatchObject({
       source_id: UPONOR_UFH_150MM_SOURCE_ID,
       norm_id: UPONOR_UFH_150MM_NORM_ID,
-      source_document_version: "2026.09-uponor-ufh-pipe-spacing-r1",
+      source_document_version: "2026.09-uponor-ufh-pipe-spacing-r2",
       source_definition_hash: UPONOR_UFH_150MM_SOURCE_METADATA.definition_hash,
       calculated_pipe_length_m: 690,
       blockers: [],
@@ -407,6 +407,16 @@ describe("professional physical norm applicability V1", () => {
       source_id: UPONOR_UFH_150MM_SOURCE_ID,
     });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(resolve(exactUponorInputs({
+      zone_area_m2: explicit(10.25, "m2"),
+      feed_tail_length_linear_m: explicit(0.1, "m"),
+    }))).toMatchObject({
+      status: "APPLIED",
+      calculated_pipe_length_m: 68.775,
+      parameter_values: {
+        circuit_length_m: { value: 68.775, unit_id: "m" },
+      },
+    });
     expect(input.circuit_length_m).toBeUndefined();
   });
 

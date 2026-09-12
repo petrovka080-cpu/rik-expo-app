@@ -26,7 +26,7 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1: "area_m2",
   flooring_ceresit_ct17_primer_flooring_l_m2_v1: "area_m2",
   formwork_contact_area_m2_m3_concrete_element_v1: "volume_m3",
-  heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1: "heated_floor_area_m2",
+  heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1: "zone_area_m2",
   insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1: "net_insulation_area_m2",
   landscaping_rain_bird_xfd_dripline_m_route_m_v1: "approved_dripline_route_linear_m",
   low_voltage_legrand_049272_cable_linear_m_route_v1: "approved_route_length_linear_m",

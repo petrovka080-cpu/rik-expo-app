@@ -31,7 +31,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   fire_safety: "2026.09-siemens-sinteso-detector-base-r1",
   flooring: "2026.07-wave1",
   formwork: "2026.07-wave2a",
-  heating: "2026.09-uponor-ufh-pipe-spacing-r1",
+  heating: "2026.09-uponor-ufh-pipe-spacing-r2",
   insulation: "2026.09-rockwool-comfortboard80-pack-r1",
   landscaping: "2026.09-rain-bird-xfd-dripline-r1",
   low_voltage: "2026.09-legrand-049272-signal-cable-r1",
