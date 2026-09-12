@@ -7,6 +7,7 @@ import type {
 import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+  CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
   createProfessionalEstimateDomainFactoryV1,
@@ -271,8 +272,52 @@ function ceresitCm11ConditionalParameters(
     }),
     parameter("manufacturer_tds_reference", "Ссылка на техническую карту производителя", "text", "P1", null, [], { condition }),
     parameter("material_certificate_reference", "Ссылка на сертификат выбранного материала", "text", "P1", null, [], { condition }),
+    parameter("ct17_tile_substrate_evenness", "Ровность впитывающего основания перед грунтованием Ceresit CT 17", "choice", "P1", null, [], {
+      choices: [
+        { value: "even", label_ru: "Ровное основание" },
+        { value: "locally_uneven", label_ru: "Локально неровное основание" },
+      ],
+      condition,
+    }),
+    parameter("ct17_tile_substrate_absorbency", "Впитываемость основания перед нанесением Ceresit CT 17", "choice", "P1", null, [], {
+      choices: [{ value: "absorbent", label_ru: "Впитывающее основание" }],
+      condition,
+    }),
+    parameter("ct17_tile_selected_consumption_l_m2", "Проектный расход Ceresit CT 17 перед облицовкой плиткой", "number", "P1", "l_per_m2", [], {
+      minimum: 0.1,
+      maximum: 0.5,
+      condition,
+    }),
+    parameter("ct17_tile_coat_count", "Количество слоёв Ceresit CT 17 перед облицовкой", "number", "P1", "item", [], {
+      minimum: 1,
+      maximum: 10,
+      condition,
+    }),
+    parameter("ct17_tile_drying_rule_confirmed", "Правило высыхания грунтовки перед облицовкой подтверждено", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_tile_cement_wait_minutes", "Выдержка цементной стяжки после CT 17 перед нанесением плиточного клея", "number", "P1", "minute", [], {
+      minimum: 15,
+      maximum: 15,
+      condition,
+    }),
+    parameter("ct17_tile_application_conditions_confirmed", "Условия нанесения Ceresit CT 17 по TDS подтверждены", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_tile_relative_humidity_percent", "Относительная влажность воздуха при нанесении Ceresit CT 17", "number", "P1", "percent", [], {
+      minimum: 0,
+      maximum: 80,
+      condition,
+    }),
+    parameter("ct17_tile_selected_container_size_l", "Выбранная фасовка Ceresit CT 17 перед облицовкой", "choice", "P1", "l", [], {
+      choices: [1, 2, 5, 10].map((size) => ({ value: String(size), label_ru: `${size} л` })),
+      condition,
+    }),
+    parameter("ct17_tile_tds_confirmed", "Подтверждена карточка TDS No CT17 Profi 03.24 перед облицовкой", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_tile_additional_waste_not_published_confirmed", "Подтверждено отсутствие опубликованного дополнительного процента отходов CT 17", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_tile_tds_reference", "Ссылка на техническую карту Ceresit CT 17 для облицовки", "text", "P1", null, [], { condition }),
+    parameter("ct17_tile_material_certificate_reference", "Ссылка на сертификат партии Ceresit CT 17", "text", "P1", null, [], { condition }),
     parameter("cm11_adhesive_procurement_quantity_kg", "Закупочное количество Ceresit CM 11 PLUS после округления упаковок", "number", "P2", "kg", ["cm11_adhesive"], {
       minimum: 25, maximum: 1_000_000_000, condition,
+    }),
+    parameter("ct17_tile_primer_procurement_quantity_l", "Закупочное количество Ceresit CT 17 перед облицовкой после округления фасовки", "number", "P2", "l", ["ct17_tile_primer"], {
+      minimum: 1, maximum: 1_000_000_000, condition,
     }),
   ];
 }
@@ -541,6 +586,46 @@ function ceresitCm11AdhesiveAssembly(
   };
 }
 
+function ceresitCt17TilePrimerAssembly(
+  inventory: InteriorFinishesDomainInventoryRow,
+): ProfessionalChildAssemblyV4 | null {
+  if (!isCeresitCm11SmallCeramicIndoorTarget(inventory)) return null;
+  const technologyId = inventory.canonical_technology_id;
+  return {
+    child_passport_id: `${technologyId}:ct17-tile-primer-v1:passport`,
+    child_passport_version: "1.0.0",
+    domain_owner: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    assembly_id: `${technologyId}:ct17-tile-primer-v1:assembly`,
+    title_ru: "Грунтовка Ceresit CT 17 перед облицовкой плиткой",
+    scope_trigger_parameter: "product_profile_id",
+    scope_trigger_values: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID],
+    supported_scope_modes: ["FULL_APPLICABLE_SCOPE"],
+    parameters: [
+      assemblyParameter("product_profile_id", "Паспорт выбранной системы облицовки", "SCOPE_TRIGGER", null, ["FULL_APPLICABLE_SCOPE"]),
+      assemblyParameter("ct17_tile_primer_procurement_quantity_l", "Закупочное количество Ceresit CT 17", "NORM_RATE", "l", ["FULL_APPLICABLE_SCOPE"]),
+    ],
+    rows: [{
+      row_id: `${technologyId}:ct17-tile-primer-v1:row:ct17_tile_primer`,
+      section: "Основные материалы",
+      category: "material",
+      title_ru: "Грунтовка глубокого проникновения Ceresit CT 17 Profi перед облицовкой",
+      formula: formula(
+        `${technologyId}:ct17-tile-primer-v1:formula`,
+        "ct17_tile_primer_procurement_quantity_l",
+        ["ct17_tile_primer_procurement_quantity_l"],
+        "l",
+        (values) => values.ct17_tile_primer_procurement_quantity_l,
+      ),
+      cost_ownership: "priced_resource",
+      cost_owner_id: `${technologyId}:cost-owner:ct17_tile_primer`,
+      semantic_owner: `${technologyId}:semantic-owner:ct17_tile_primer`,
+      normative_source_ids: [CERESIT_CT17_TILE_PRIMER_SOURCE_ID],
+      inclusion_condition: "scope_mode=FULL_APPLICABLE_SCOPE",
+      procurement_eligible: true,
+    }],
+  };
+}
+
 function ceresitCt17PrimerAssembly(
   inventory: InteriorFinishesDomainInventoryRow,
 ): ProfessionalChildAssemblyV4 | null {
@@ -675,12 +760,14 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
   const conditional = professionalOverlay ? null : scopeAssembly(inventory);
   const cm11Adhesive = professionalOverlay ? null : ceresitCm11AdhesiveAssembly(inventory);
   const ct17Primer = professionalOverlay ? null : ceresitCt17PrimerAssembly(inventory);
+  const ct17TilePrimer = professionalOverlay ? null : ceresitCt17TilePrimerAssembly(inventory);
   const children = professionalOverlay?.child_assemblies ?? [
     mainAssembly(inventory),
     fullAssembly(inventory),
     ...(conditional ? [conditional] : []),
     ...(cm11Adhesive ? [cm11Adhesive] : []),
     ...(ct17Primer ? [ct17Primer] : []),
+    ...(ct17TilePrimer ? [ct17TilePrimer] : []),
   ];
   const formulaPackId = `${technologyId}:formula-pack:v1`;
   const assemblyProfileId = `${technologyId}:assembly-profile:v1`;

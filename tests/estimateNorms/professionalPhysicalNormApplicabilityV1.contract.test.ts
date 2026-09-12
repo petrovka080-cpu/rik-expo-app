@@ -6,6 +6,9 @@ import {
   CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_METADATA,
+  CERESIT_CT17_TILE_PRIMER_NORM_ID,
+  CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+  CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
@@ -422,6 +425,19 @@ function exactCeresitCm11Inputs(
     minimum_tile_back_contact_percent: explicit(65, "percent"),
     manufacturer_tds_reference: explicit("CERESIT_CM11_TDS_04_2026, exact consumption table"),
     material_certificate_reference: explicit("PROJECT-CERESIT-CM11-BATCH-CERT-001"),
+    ct17_tile_substrate_evenness: explicit("even"),
+    ct17_tile_substrate_absorbency: explicit("absorbent"),
+    ct17_tile_selected_consumption_l_m2: explicit(0.18, "l_per_m2"),
+    ct17_tile_coat_count: explicit(1, "item"),
+    ct17_tile_drying_rule_confirmed: explicit(true),
+    ct17_tile_cement_wait_minutes: explicit(15, "minute"),
+    ct17_tile_application_conditions_confirmed: explicit(true),
+    ct17_tile_relative_humidity_percent: explicit(60, "percent"),
+    ct17_tile_selected_container_size_l: explicit(10, "l"),
+    ct17_tile_tds_confirmed: explicit(true),
+    ct17_tile_additional_waste_not_published_confirmed: explicit(true),
+    ct17_tile_tds_reference: explicit("TDS No CT17 Profi 03.24, pages 1-2"),
+    ct17_tile_material_certificate_reference: explicit("PROJECT-CERESIT-CT17-TILE-BATCH-CERT-001"),
     ...changes,
   };
 }
@@ -2275,7 +2291,53 @@ describe("professional physical norm applicability V1", () => {
     }).status).toBe("NOT_REQUESTED");
   });
 
-  test("derives deterministic 100 kg procurement for the exact CM 11 table pair", () => {
+  test("keeps the tile CT 17 primer closed until rate, drying, conditions, and package are explicit", () => {
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_selected_consumption_l_m2: explicit(0.09, "l_per_m2"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_selected_consumption_l_m2=0.09`,
+      ],
+    });
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_cement_wait_minutes: explicit(30, "minute"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_DRYING_TIME_NOT_APPLICABLE:ct17_tile_cement_wait_minutes=30"],
+    });
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_relative_humidity_percent: explicit(81, "percent"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_relative_humidity_percent=81`,
+      ],
+    });
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_selected_container_size_l: explicit(3, "l"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:ct17_tile_selected_container_size_l=3"],
+    });
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_tds_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`],
+    });
+    expect(resolveCeresitCm11(exactCeresitCm11Inputs({
+      ct17_tile_primer_procurement_quantity_l: explicit(8, "l"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:ct17_tile_primer_procurement_quantity_l=8:norm_value=10",
+      ],
+    });
+  });
+
+  test("derives deterministic CM 11 adhesive and CT 17 primer procurement", () => {
     const input = exactCeresitCm11Inputs();
     const first = resolveCeresitCm11(input);
     const second = resolveCeresitCm11(input);
@@ -2285,9 +2347,21 @@ describe("professional physical norm applicability V1", () => {
       source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
       norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
       source_definition_hash: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.definition_hash,
+      source_ids: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID, CERESIT_CT17_TILE_PRIMER_SOURCE_ID],
+      norm_ids: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID, CERESIT_CT17_TILE_PRIMER_NORM_ID],
+      applied_norms: expect.arrayContaining([expect.objectContaining({
+        source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+        source_definition_hash: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.definition_hash,
+      })]),
       calculated_cm11_adhesive_net_quantity_kg: 90,
       calculated_cm11_adhesive_procurement_quantity_kg: 100,
-      produced_parameter_ids: ["cm11_adhesive_procurement_quantity_kg"],
+      calculated_ct17_tile_primer_net_quantity_l: 8.1,
+      calculated_ct17_tile_primer_procurement_quantity_l: 10,
+      calculated_ct17_tile_primer_container_count: 1,
+      produced_parameter_ids: [
+        "cm11_adhesive_procurement_quantity_kg",
+        "ct17_tile_primer_procurement_quantity_l",
+      ],
       blockers: [],
     });
     expect(first.parameter_values.cm11_adhesive_procurement_quantity_kg).toMatchObject({
@@ -2296,9 +2370,23 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
     });
+    expect(first.parameter_values.ct17_tile_primer_procurement_quantity_l).toMatchObject({
+      value: 10,
+      unit_id: "l",
+      source_type: "APPLICABLE_NORM",
+      source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.cm11_adhesive_procurement_quantity_kg).toBeUndefined();
+    expect(input.ct17_tile_primer_procurement_quantity_l).toBeUndefined();
     expect(constructionNormativeRegistryV1.get(CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID))
+      .toMatchObject({
+        authority: "Ceresit / Henkel",
+        product_profile_applicability: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID],
+        material_system_applicability: ["CERAMIC_TILE"],
+        operation_class_applicability: ["LAY"],
+      });
+    expect(constructionNormativeRegistryV1.get(CERESIT_CT17_TILE_PRIMER_SOURCE_ID))
       .toMatchObject({
         authority: "Ceresit / Henkel",
         product_profile_applicability: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID],
@@ -2307,7 +2395,7 @@ describe("professional physical norm applicability V1", () => {
       });
   });
 
-  test("asks the CM 11 applicability questions and adds exactly one separate 100 kg adhesive row", () => {
+  test("asks the CM 11 and CT 17 questions and adds separate adhesive and primer rows", () => {
     const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
       (row) => row.work_key === CERAMIC_TILE_LAY_STANDARD_WORK_KEY,
     );
@@ -2333,7 +2421,21 @@ describe("professional physical norm applicability V1", () => {
       "minimum_tile_back_contact_percent",
       "manufacturer_tds_reference",
       "material_certificate_reference",
+      "ct17_tile_substrate_evenness",
+      "ct17_tile_substrate_absorbency",
+      "ct17_tile_selected_consumption_l_m2",
+      "ct17_tile_coat_count",
+      "ct17_tile_drying_rule_confirmed",
+      "ct17_tile_cement_wait_minutes",
+      "ct17_tile_application_conditions_confirmed",
+      "ct17_tile_relative_humidity_percent",
+      "ct17_tile_selected_container_size_l",
+      "ct17_tile_tds_confirmed",
+      "ct17_tile_additional_waste_not_published_confirmed",
+      "ct17_tile_tds_reference",
+      "ct17_tile_material_certificate_reference",
       "cm11_adhesive_procurement_quantity_kg",
+      "ct17_tile_primer_procurement_quantity_l",
     ];
     expect(schema.parameters.filter((parameter) => cm11ParameterIds.includes(parameter.parameter_id))
       .map((parameter) => parameter.parameter_id)).toEqual(cm11ParameterIds);
@@ -2370,10 +2472,32 @@ describe("professional physical norm applicability V1", () => {
       if (parameter.parameter_id === "material_certificate_reference") {
         return "PROJECT-CERESIT-CM11-BATCH-CERT-001";
       }
+      if (parameter.parameter_id === "ct17_tile_substrate_evenness") return "even";
+      if (parameter.parameter_id === "ct17_tile_substrate_absorbency") return "absorbent";
+      if (parameter.parameter_id === "ct17_tile_selected_consumption_l_m2") return 0.18;
+      if (parameter.parameter_id === "ct17_tile_coat_count") return 1;
+      if (parameter.parameter_id === "ct17_tile_cement_wait_minutes") return 15;
+      if (parameter.parameter_id === "ct17_tile_relative_humidity_percent") return 60;
+      if (parameter.parameter_id === "ct17_tile_selected_container_size_l") return "10";
+      if (parameter.parameter_id === "ct17_tile_tds_reference") {
+        return "TDS No CT17 Profi 03.24, pages 1-2";
+      }
+      if (parameter.parameter_id === "ct17_tile_material_certificate_reference") {
+        return "PROJECT-CERESIT-CT17-TILE-BATCH-CERT-001";
+      }
+      if ([
+        "ct17_tile_drying_rule_confirmed",
+        "ct17_tile_application_conditions_confirmed",
+        "ct17_tile_tds_confirmed",
+        "ct17_tile_additional_waste_not_published_confirmed",
+      ].includes(parameter.parameter_id)) return true;
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "cm11_adhesive_procurement_quantity_kg")
+      .filter((parameter) => ![
+        "cm11_adhesive_procurement_quantity_kg",
+        "ct17_tile_primer_procurement_quantity_l",
+      ].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, {
         value: cm11Value(parameter),
         source: "user",
@@ -2392,6 +2516,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources
       .map((source) => source.source_id)).toContain(CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources
+      .map((source) => source.source_id)).toContain(CERESIT_CT17_TILE_PRIMER_SOURCE_ID);
     const adhesiveRowId = `${inventory.canonical_technology_id}:cm11-adhesive-v1:row:cm11_adhesive`;
     const adhesiveRow = result.production?.draft?.items.find(
       (row) => row.sourceParameters?.rowCode === adhesiveRowId,
@@ -2410,6 +2536,24 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID))).toHaveLength(1);
+    const primerRowId = `${inventory.canonical_technology_id}:ct17-tile-primer-v1:row:ct17_tile_primer`;
+    const primerRow = result.production?.draft?.items.find(
+      (row) => row.sourceParameters?.rowCode === primerRowId,
+    );
+    expect(primerRow).toMatchObject({ quantity: 10, unit: "l" });
+    expect(primerRow?.sourceParameters?.normativeSourceIds)
+      .toContain(CERESIT_CT17_TILE_PRIMER_SOURCE_ID);
+    expect(primerRow?.sourceParameters?.parameterSourceIds)
+      .toContain(CERESIT_CT17_TILE_PRIMER_SOURCE_ID);
+    expect(primerRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_ids: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID, CERESIT_CT17_TILE_PRIMER_SOURCE_ID],
+      calculated_ct17_tile_primer_net_quantity_l: 8.1,
+      calculated_ct17_tile_primer_procurement_quantity_l: 10,
+      calculated_ct17_tile_primer_container_count: 1,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(CERESIT_CT17_TILE_PRIMER_SOURCE_ID))).toHaveLength(1);
     const primaryTileRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`);
     expect(primaryTileRow).toMatchObject({ quantity: 45, unit: "m2" });

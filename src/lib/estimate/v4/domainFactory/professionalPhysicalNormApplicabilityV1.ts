@@ -407,6 +407,45 @@ const CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS = Object
   "material_certificate_reference",
 ] as const);
 
+export const CERESIT_CT17_TILE_PRIMER_NORM_ID =
+  "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1" as const;
+
+export const CERESIT_CT17_TILE_PRIMER_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CT17_TILE_PRIMER_NORM_ID}` as const;
+
+const CERESIT_CT17_TILE_PRIMER_SOURCE_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "substrate_type",
+  "substrate_evenness",
+  "substrate_absorbency",
+  "selected_consumption_l_m2",
+  "coat_count",
+  "substrate_dry_load_bearing_clean_confirmed",
+  "drying_rule_confirmed",
+  "application_conditions_confirmed",
+  "selected_container_size_l",
+] as const);
+
+const CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "substrate_type",
+  "ct17_tile_substrate_evenness",
+  "ct17_tile_substrate_absorbency",
+  "ct17_tile_selected_consumption_l_m2",
+  "ct17_tile_coat_count",
+  "substrate_even_load_bearing_compact_confirmed",
+  "substrate_dry_clean_confirmed",
+  "ct17_tile_drying_rule_confirmed",
+  "ct17_tile_cement_wait_minutes",
+  "ct17_tile_application_conditions_confirmed",
+  "ct17_tile_relative_humidity_percent",
+  "ct17_tile_selected_container_size_l",
+  "ct17_tile_tds_confirmed",
+  "ct17_tile_additional_waste_not_published_confirmed",
+  "ct17_tile_tds_reference",
+  "ct17_tile_material_certificate_reference",
+] as const);
+
 export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
   "manufacturer-profile:legrand-p31:symmetrical-tray:75-300mm:v1" as const;
 
@@ -1524,6 +1563,97 @@ export const CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const ceresitCt17TilePrimerNorm = (() => {
+  const found = tileNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CT17_TILE_PRIMER_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`);
+  }
+  return found;
+})();
+const ceresitCt17TileSurfaces = "surfaces" in ceresitCt17TilePrimerNorm.applicability
+  ? ceresitCt17TilePrimerNorm.applicability.surfaces
+  : null;
+const ceresitCt17TileRateRange = "rate_range_l_m2" in ceresitCt17TilePrimerNorm.applicability
+  ? ceresitCt17TilePrimerNorm.applicability.rate_range_l_m2
+  : null;
+const ceresitCt17TileContainerSizes =
+  "documented_container_sizes_l" in ceresitCt17TilePrimerNorm.applicability
+    ? ceresitCt17TilePrimerNorm.applicability.documented_container_sizes_l
+    : null;
+
+if (
+  tileNormPack.work_group !== "tile" ||
+  ceresitCt17TilePrimerNorm.unit !== "l" ||
+  ceresitCt17TilePrimerNorm.rate.value !== 0.1 ||
+  ceresitCt17TilePrimerNorm.rate.unit !==
+    "published lower bound only; project rate must be selected within 0.1-0.5 l/m2" ||
+  !("product" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.product !== "Ceresit CT 17 Profi" ||
+  !("tds_identifier" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.tds_identifier !== "TDS No CT17 Profi 03.24" ||
+  !ceresitCt17TileSurfaces ||
+  !(ceresitCt17TileSurfaces as readonly string[]).includes("screed") ||
+  !ceresitCt17TileRateRange ||
+  ceresitCt17TileRateRange[0] !== 0.1 ||
+  ceresitCt17TileRateRange[1] !== 0.5 ||
+  !("cement_or_cement_lime_before_tile_wait_minutes" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.cement_or_cement_lime_before_tile_wait_minutes !== 15 ||
+  !("other_substrates_require_complete_drying" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.other_substrates_require_complete_drying !== true ||
+  !("application_temperature_min_c" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.application_temperature_min_c !== 5 ||
+  !("application_temperature_max_c" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.application_temperature_max_c !== 25 ||
+  !("application_relative_humidity_max_percent" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.application_relative_humidity_max_percent !== 80 ||
+  !("simple_rate_multiplication_forbidden" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.simple_rate_multiplication_forbidden !== true ||
+  !("selected_consumption_and_coat_count_required" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.selected_consumption_and_coat_count_required !== true ||
+  !("additional_waste_not_published" in ceresitCt17TilePrimerNorm.applicability) ||
+  ceresitCt17TilePrimerNorm.applicability.additional_waste_not_published !== true ||
+  !ceresitCt17TileContainerSizes ||
+  ceresitCt17TileContainerSizes.join(",") !== "1,2,5,10" ||
+  ceresitCt17TilePrimerNorm.parameters.length !== CERESIT_CT17_TILE_PRIMER_SOURCE_PARAMETER_IDS.length ||
+  CERESIT_CT17_TILE_PRIMER_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCt17TilePrimerNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCt17TilePrimerNorm.waste_percent_default !== 0 ||
+  ceresitCt17TilePrimerNorm.rounding.package_unit !== "container" ||
+  ceresitCt17TilePrimerNorm.rounding.package_size !== 1 ||
+  ceresitCt17TilePrimerNorm.rounding.mode !==
+    "net_litres_before_rounding_to_explicitly_selected_1_2_5_or_10_l_container"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`);
+}
+
+export const CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+  norm_id: CERESIT_CT17_TILE_PRIMER_NORM_ID,
+  source_document_version: tileNormPack.source_pack_version,
+  source_title: ceresitCt17TilePrimerNorm.source.title,
+  source_url: ceresitCt17TilePrimerNorm.source.url,
+  exact_locator: ceresitCt17TilePrimerNorm.source.page,
+  rate_value: ceresitCt17TilePrimerNorm.rate.value,
+  rate_unit: ceresitCt17TilePrimerNorm.rate.unit,
+  product: ceresitCt17TilePrimerNorm.applicability.product,
+  tds_identifier: ceresitCt17TilePrimerNorm.applicability.tds_identifier,
+  surfaces: [...ceresitCt17TileSurfaces],
+  rate_range_l_m2: [ceresitCt17TileRateRange[0], ceresitCt17TileRateRange[1]] as const,
+  cement_wait_minutes: 15 as const,
+  application_temperature_min_c: 5 as const,
+  application_temperature_max_c: 25 as const,
+  application_relative_humidity_max_percent: 80 as const,
+  documented_container_sizes_l: [...ceresitCt17TileContainerSizes],
+  definition_hash: estimateDeterministicHash({
+    work_group: tileNormPack.work_group,
+    source_pack_version: tileNormPack.source_pack_version,
+    norm_item: ceresitCt17TilePrimerNorm,
+  }),
+});
+
 const legrandP31TrayJointFastenerNorm = (() => {
   const found = electricalNormPack.norm_items.find(
     (item) => item.norm_id === LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
@@ -1940,6 +2070,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["cm11_adhesive_procurement_quantity_kg"] as const,
 }, {
+  norm_id: CERESIT_CT17_TILE_PRIMER_NORM_ID,
+  work_group: "tile",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "CERAMIC_TILE",
+  operation_class: "LAY",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+  source_document_version: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["ct17_tile_primer_procurement_quantity_l"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -2034,6 +2178,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct17_primer_container_count?: number;
   calculated_cm11_adhesive_net_quantity_kg?: number;
   calculated_cm11_adhesive_procurement_quantity_kg?: number;
+  calculated_ct17_tile_primer_net_quantity_l?: number;
+  calculated_ct17_tile_primer_procurement_quantity_l?: number;
+  calculated_ct17_tile_primer_container_count?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -4520,6 +4667,272 @@ function resolveCeresitCm11SmallCeramicIndoor(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveCeresitCt17TilePrimer(
+  productProfileId: typeof CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const substrateEvenness = primitiveString(explicit.ct17_tile_substrate_evenness!);
+  const substrateAbsorbency = primitiveString(explicit.ct17_tile_substrate_absorbency!);
+  const selectedConsumptionLM2 = finiteNumber(explicit.ct17_tile_selected_consumption_l_m2);
+  const coatCount = finiteNumber(explicit.ct17_tile_coat_count);
+  const cementWaitMinutes = finiteNumber(explicit.ct17_tile_cement_wait_minutes);
+  const relativeHumidityPercent = finiteNumber(explicit.ct17_tile_relative_humidity_percent);
+  const selectedContainerSizeL = finiteNumber(explicit.ct17_tile_selected_container_size_l);
+  const tdsReference = primitiveString(explicit.ct17_tile_tds_reference!);
+  const materialCertificateReference = primitiveString(
+    explicit.ct17_tile_material_certificate_reference!,
+  );
+  const confirmed = (parameterId:
+    | "substrate_even_load_bearing_compact_confirmed"
+    | "substrate_dry_clean_confirmed"
+    | "ct17_tile_drying_rule_confirmed"
+    | "ct17_tile_application_conditions_confirmed"
+    | "ct17_tile_tds_confirmed"
+    | "ct17_tile_additional_waste_not_published_confirmed") =>
+    explicit[parameterId]!.value === true || explicit[parameterId]!.value === "true";
+  const [minimumRate, maximumRate] = CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.rate_range_l_m2;
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    substrateType === "cement_screed" &&
+      CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.surfaces.includes("screed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:substrate_type=${substrateType}`,
+    substrateEvenness !== null && ["even", "locally_uneven"].includes(substrateEvenness)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_substrate_evenness=${substrateEvenness}`,
+    substrateAbsorbency === "absorbent"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_substrate_absorbency=${substrateAbsorbency}`,
+    selectedConsumptionLM2 !== null &&
+      selectedConsumptionLM2 >= minimumRate &&
+      selectedConsumptionLM2 <= maximumRate
+      ? ""
+      : `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_selected_consumption_l_m2=${selectedConsumptionLM2}`,
+    coatCount !== null && Number.isInteger(coatCount) && coatCount > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct17_tile_coat_count",
+    confirmed("substrate_even_load_bearing_compact_confirmed") &&
+      confirmed("substrate_dry_clean_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:substrate_dry_load_bearing_clean_confirmed=false`,
+    confirmed("ct17_tile_drying_rule_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_DRYING_RULE_NOT_CONFIRMED:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`,
+    cementWaitMinutes === CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.cement_wait_minutes
+      ? ""
+      : `PHYSICAL_NORM_DRYING_TIME_NOT_APPLICABLE:ct17_tile_cement_wait_minutes=${cementWaitMinutes}`,
+    confirmed("ct17_tile_application_conditions_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_APPLICATION_CONDITIONS_NOT_CONFIRMED:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`,
+    relativeHumidityPercent !== null &&
+      relativeHumidityPercent >= 0 &&
+      relativeHumidityPercent <=
+        CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.application_relative_humidity_max_percent
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_TILE_PRIMER_NORM_ID}:ct17_tile_relative_humidity_percent=${relativeHumidityPercent}`,
+    selectedContainerSizeL !== null &&
+      CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.documented_container_sizes_l.includes(
+        selectedContainerSizeL,
+      )
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:ct17_tile_selected_container_size_l=${selectedContainerSizeL}`,
+    confirmed("ct17_tile_tds_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`,
+    confirmed("ct17_tile_additional_waste_not_published_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_WASTE_POLICY_NOT_CONFIRMED:${CERESIT_CT17_TILE_PRIMER_NORM_ID}`,
+    tdsReference ? "" : "PROJECT_VALUE_INVALID:ct17_tile_tds_reference",
+    materialCertificateReference
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct17_tile_material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityL = Number(
+    (areaM2! * selectedConsumptionLM2! * coatCount!).toFixed(9),
+  );
+  const calculatedContainerCount = Math.ceil(
+    calculatedNetQuantityL / selectedContainerSizeL! - 1e-9,
+  );
+  const calculatedProcurementQuantityL = Number(
+    (calculatedContainerCount * selectedContainerSizeL!).toFixed(9),
+  );
+  const explicitProcurementQuantityL = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "ct17_tile_primer_procurement_quantity_l",
+  ));
+  if (
+    explicitProcurementQuantityL !== null &&
+    Math.abs(explicitProcurementQuantityL - calculatedProcurementQuantityL) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:ct17_tile_primer_procurement_quantity_l=${explicitProcurementQuantityL}:norm_value=${calculatedProcurementQuantityL}`,
+      ],
+      [
+        ...CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "ct17_tile_primer_procurement_quantity_l",
+      ],
+      CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID}`,
+    `product=${CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.product}`,
+    `tds_identifier=${CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.tds_identifier}`,
+    `area_m2=${areaM2}`,
+    `substrate_type=screed:canonical(substrate_type=${substrateType})`,
+    `substrate_evenness=${substrateEvenness}:canonical(ct17_tile_substrate_evenness)`,
+    `substrate_absorbency=${substrateAbsorbency}:canonical(ct17_tile_substrate_absorbency)`,
+    `selected_consumption_l_m2=${selectedConsumptionLM2}:canonical(ct17_tile_selected_consumption_l_m2)`,
+    `coat_count=${coatCount}:canonical(ct17_tile_coat_count)`,
+    "substrate_dry_load_bearing_clean_confirmed=true",
+    `cement_or_cement_lime_before_tile_wait_minutes=${cementWaitMinutes}`,
+    "drying_rule_confirmed=true",
+    `application_temperature_c=${CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.application_temperature_min_c}-${CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.application_temperature_max_c}`,
+    `application_relative_humidity_percent=${relativeHumidityPercent}`,
+    `selected_container_size_l=${selectedContainerSizeL}`,
+    `formula=area_m2*selected_consumption_l_m2*coat_count`,
+    `net_quantity_l=${calculatedNetQuantityL}`,
+    `container_count=${calculatedContainerCount}`,
+    "additional_waste_percent=0:not_published_by_source",
+    `tds_reference=${tdsReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    ct17_tile_primer_procurement_quantity_l: {
+      value: calculatedProcurementQuantityL,
+      unit_id: "l",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
+    norm_id: CERESIT_CT17_TILE_PRIMER_NORM_ID,
+    source_document_version: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["ct17_tile_primer_procurement_quantity_l"],
+    calculated_ct17_tile_primer_net_quantity_l: calculatedNetQuantityL,
+    calculated_ct17_tile_primer_procurement_quantity_l: calculatedProcurementQuantityL,
+    calculated_ct17_tile_primer_container_count: calculatedContainerCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveCeresitCm11TileSystemProfile(
+  productProfileId: typeof CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const cm11 = resolveCeresitCm11SmallCeramicIndoor(productProfileId, parameterValuesInput);
+  if (cm11.status !== "APPLIED") return cm11;
+  const ct17 = resolveCeresitCt17TilePrimer(productProfileId, cm11.parameter_values);
+  if (ct17.status !== "APPLIED") return ct17;
+
+  const consumedParameterIds = [
+    ...new Set([...cm11.consumed_parameter_ids, ...ct17.consumed_parameter_ids]),
+  ];
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: cm11.source_id,
+    norm_id: cm11.norm_id,
+    source_document_version: cm11.source_document_version,
+    source_url: cm11.source_url,
+    exact_locator: cm11.exact_locator,
+    source_definition_hash: cm11.source_definition_hash,
+    source_ids: [cm11.source_id, ct17.source_id],
+    norm_ids: [cm11.norm_id, ct17.norm_id],
+    applied_norms: [{
+      source_id: cm11.source_id,
+      norm_id: cm11.norm_id,
+      source_document_version: cm11.source_document_version,
+      source_url: cm11.source_url,
+      exact_locator: cm11.exact_locator,
+      source_definition_hash: cm11.source_definition_hash,
+      produced_parameter_ids: cm11.produced_parameter_ids,
+    }, {
+      source_id: ct17.source_id,
+      norm_id: ct17.norm_id,
+      source_document_version: ct17.source_document_version,
+      source_url: ct17.source_url,
+      exact_locator: ct17.exact_locator,
+      source_definition_hash: ct17.source_definition_hash,
+      produced_parameter_ids: ct17.produced_parameter_ids,
+    }],
+    consumed_parameter_ids: consumedParameterIds,
+    produced_parameter_ids: [
+      "cm11_adhesive_procurement_quantity_kg",
+      "ct17_tile_primer_procurement_quantity_l",
+    ] as const,
+    calculated_cm11_adhesive_net_quantity_kg: cm11.calculated_cm11_adhesive_net_quantity_kg,
+    calculated_cm11_adhesive_procurement_quantity_kg:
+      cm11.calculated_cm11_adhesive_procurement_quantity_kg,
+    calculated_ct17_tile_primer_net_quantity_l:
+      ct17.calculated_ct17_tile_primer_net_quantity_l,
+    calculated_ct17_tile_primer_procurement_quantity_l:
+      ct17.calculated_ct17_tile_primer_procurement_quantity_l,
+    calculated_ct17_tile_primer_container_count:
+      ct17.calculated_ct17_tile_primer_container_count,
+    parameter_values: ct17.parameter_values,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveForbo232MountingAdhesive(
   productProfileId: typeof FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -5059,7 +5472,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       input.material_system === "CERAMIC_TILE" &&
       input.scope_mode === "FULL_APPLICABLE_SCOPE"
     ) {
-      return resolveCeresitCm11SmallCeramicIndoor(productProfileId, input.parameter_values);
+      return resolveCeresitCm11TileSystemProfile(productProfileId, input.parameter_values);
     }
     return nonApplied(
       "NOT_REQUESTED",
