@@ -17,6 +17,10 @@ import {
   inferProfessionalNormPackBasisUnit,
   PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
 } from "./professionalNormPackBasisRegistry";
+import { constructionNormativeRegistryV1 } from "../../src/lib/estimate/v4/domainFactory/constructionNormativeRegistryV1";
+import {
+  CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1,
+} from "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
 
 export const GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS =
   "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS" as const;
@@ -616,8 +620,81 @@ function main(): void {
     previousSummary.professional_source_coverage === true &&
     (previousSummary.real_hardcoded_production_rate_count ?? 0) === 0;
   const previousStatusOk = previousLegacyStopOk || previousSourceQualityGreenOk;
-  const sourceRegistry = inspectCatalogSourceRegistry(planGroups);
-  const productionNormRegistry = inspectProductionNormRegistry(planGroups);
+  const catalogSourceRegistry = inspectCatalogSourceRegistry(planGroups);
+  const staticProductionNormRegistry = inspectProductionNormRegistry(planGroups);
+  const canonicalRuntimeBindingFailures = CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1
+    .flatMap((binding) => {
+      const sourceCard = constructionNormativeRegistryV1.get(binding.source_id);
+      return [
+        sourceCard ? "" : `canonical_source_card_missing:${binding.source_id}`,
+        sourceCard?.source_type === "MANUFACTURER_PASSPORT"
+          ? ""
+          : `canonical_source_type_invalid:${binding.source_id}`,
+        sourceCard?.version === binding.source_document_version
+          ? ""
+          : `canonical_source_version_mismatch:${binding.source_id}`,
+        sourceCard?.official_reference?.trim()
+          ? ""
+          : `canonical_source_url_missing:${binding.source_id}`,
+        binding.source_definition_hash.trim()
+          ? ""
+          : `canonical_source_definition_hash_missing:${binding.source_id}`,
+        binding.consumed_parameter_ids.length > 0 && binding.produced_parameter_ids.length > 0
+          ? ""
+          : `canonical_runtime_parameter_contract_missing:${binding.norm_id}`,
+      ].filter(Boolean);
+    });
+  const canonicalRuntimeBoundGroups = new Set(
+    CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.map((binding) => binding.work_group),
+  );
+  const mergedSourceBoundGroups = [...new Set([
+    ...catalogSourceRegistry.source_registry_bound_work_groups,
+    ...canonicalRuntimeBoundGroups,
+  ])].sort();
+  const sourceRegistry = {
+    ...catalogSourceRegistry,
+    source_registry_professional_sources_count:
+      catalogSourceRegistry.source_registry_professional_sources_count +
+      CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.length,
+    source_registry_professional_groups_count: mergedSourceBoundGroups.length,
+    source_registry_bound_work_groups: mergedSourceBoundGroups,
+    source_registry_unbound_work_groups: [...planGroups]
+      .filter((group) => !mergedSourceBoundGroups.includes(group))
+      .sort(),
+    source_registry_missing_work_groups: [...planGroups]
+      .filter((group) => !mergedSourceBoundGroups.includes(group))
+      .sort(),
+    source_registry_invalid_professional_sources_count:
+      catalogSourceRegistry.source_registry_invalid_professional_sources_count +
+      canonicalRuntimeBindingFailures.length,
+    canonical_runtime_source_registry_items_count:
+      CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.length,
+    canonical_runtime_source_registry_failures: canonicalRuntimeBindingFailures,
+  };
+  const mergedProductionBoundGroups = [...new Set([
+    ...staticProductionNormRegistry.production_norm_registry_bound_work_groups,
+    ...canonicalRuntimeBoundGroups,
+  ])].sort();
+  const productionNormRegistry = {
+    ...staticProductionNormRegistry,
+    production_norm_registry_items_count:
+      staticProductionNormRegistry.production_norm_registry_items_count +
+      CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.length,
+    production_norm_registry_groups_count: mergedProductionBoundGroups.length,
+    production_norm_registry_bound_work_groups: mergedProductionBoundGroups,
+    production_norm_registry_unbound_work_groups: [...planGroups]
+      .filter((group) => !mergedProductionBoundGroups.includes(group))
+      .sort(),
+    production_norm_registry_invalid_binding_count:
+      staticProductionNormRegistry.production_norm_registry_invalid_binding_count +
+      canonicalRuntimeBindingFailures.length,
+    production_norm_registry_invalid_bindings: [
+      ...staticProductionNormRegistry.production_norm_registry_invalid_bindings,
+      ...canonicalRuntimeBindingFailures,
+    ],
+    canonical_runtime_norm_binding_items_count:
+      CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.length,
+  };
   const sourceRegistryBoundGroups = new Set(sourceRegistry.source_registry_bound_work_groups);
   const productionBoundGroups = new Set(productionNormRegistry.production_norm_registry_bound_work_groups);
 
@@ -634,8 +711,13 @@ function main(): void {
       consumer_rows_count: consumers?.rows_count ?? 0,
       consumer_work_basis_units: consumers?.work_basis_units ?? {},
       consumer_resource_output_units: consumers?.resource_output_units ?? {},
-      registered_norm_binding_rows_count: consumers?.registered_norm_binding_rows_count ?? 0,
-      registered_norm_ids: consumers?.registered_norm_ids ?? [],
+      registered_norm_binding_rows_count:
+        (consumers?.registered_norm_binding_rows_count ?? 0) +
+        physicalNormBindings.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY").length,
+      registered_norm_ids: [...new Set([
+        ...(consumers?.registered_norm_ids ?? []),
+        ...physicalNormBindings.filter((item) => item.registered).map((item) => item.norm_id),
+      ])].sort(),
       invalid_registered_norm_bindings: consumers?.invalid_registered_norm_bindings ?? [],
       current_norm_status:
         previousSummary.work_groups_with_only_generic_norms?.includes(entry.work_group)
@@ -661,6 +743,8 @@ function main(): void {
       unregistered_physical_norm_items_count: physicalNormBindings.filter((item) => !item.registered).length,
       production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
       production_norm_registry_binding_present: productionBindingPresent,
+      canonical_runtime_norm_binding_present:
+        physicalNormBindings.some((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY"),
       production_norm_registry_binding_blockers: [
         requirement?.review_status === "reviewed" ? "" : "PACK_NEEDS_REVIEW",
         productionBindingPresent ? "" : "NO_EXECUTABLE_REGISTRY_BINDING",

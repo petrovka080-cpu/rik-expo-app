@@ -4,6 +4,9 @@ import {
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
+import {
+  CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1,
+} from "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
 
 export type PhysicalNormBindingCandidateSpec = {
   norm_id: string;
@@ -21,6 +24,8 @@ export type ProductionNormBindingCandidateInventoryEntry = {
   work_basis_unit: string | null;
   output_unit: string;
   registered: boolean;
+  binding_route: "TEMPLATE_10000_STATIC" | "CANONICAL_V4_APPLICABILITY" | null;
+  binding_owner: string | null;
   unresolved_applicability_keys: string[];
   dimensional_candidate_rows_count: number;
   dimensional_candidate_work_keys: string[];
@@ -57,7 +62,17 @@ function dimensionKey(workGroup: string, workBasisUnit: string | null, outputUni
 export function inspectProductionNormBindingCandidates(
   specs: readonly PhysicalNormBindingCandidateSpec[],
 ): ProductionNormBindingCandidateInventoryEntry[] {
-  const registeredIds = new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.normId));
+  const staticRegisteredIds = new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.normId));
+  const canonicalRuntimeBindingByNormId = new Map<
+    string,
+    (typeof CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1)[number]
+  >(
+    CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1.map((binding) => [binding.norm_id, binding]),
+  );
+  const registeredIds = new Set([
+    ...staticRegisteredIds,
+    ...canonicalRuntimeBindingByNormId.keys(),
+  ]);
   const candidatesByNormId = new Map<string, ProductionNormBindingCandidateInventoryEntry["dimensional_candidate_samples"]>();
   const workKeysByNormId = new Map<string, Set<string>>();
   const rowIdsByNormId = new Map<string, Set<string>>();
@@ -106,6 +121,14 @@ export function inspectProductionNormBindingCandidates(
 
   return specs.map((spec) => {
     const registered = registeredIds.has(spec.norm_id);
+    const canonicalRuntimeBinding = canonicalRuntimeBindingByNormId.get(spec.norm_id) ?? null;
+    const bindingRoute: ProductionNormBindingCandidateInventoryEntry["binding_route"] = canonicalRuntimeBinding
+      ? "CANONICAL_V4_APPLICABILITY"
+      : staticRegisteredIds.has(spec.norm_id)
+        ? "TEMPLATE_10000_STATIC"
+        : null;
+    const bindingOwner = canonicalRuntimeBinding?.binding_owner ??
+      (bindingRoute === "TEMPLATE_10000_STATIC" ? "PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS" : null);
     const samples = candidatesByNormId.get(spec.norm_id) ?? [];
     const workKeys = [...(workKeysByNormId.get(spec.norm_id) ?? [])].sort();
     const rowIds = [...(rowIdsByNormId.get(spec.norm_id) ?? [])].sort();
@@ -118,7 +141,7 @@ export function inspectProductionNormBindingCandidates(
         ? "NO_DIMENSIONALLY_COMPATIBLE_ROW"
         : "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED";
     const nextAction = registered
-      ? "No action: executable production binding is registered."
+      ? `No action: executable production binding is registered via ${bindingRoute}.`
       : disposition === "NO_DIMENSIONALLY_COMPATIBLE_ROW"
         ? "Locate or add the canonical owner with compatible work/output units; do not coerce dimensions."
         : `Review semantic row IDs, then bind applicability inputs (${unresolvedApplicabilityKeys.join(", ")}) in the canonical source resolver; do not select the first source by order.`;
@@ -130,6 +153,8 @@ export function inspectProductionNormBindingCandidates(
       work_basis_unit: spec.work_basis_unit,
       output_unit: spec.output_unit,
       registered,
+      binding_route: bindingRoute,
+      binding_owner: bindingOwner,
       unresolved_applicability_keys: unresolvedApplicabilityKeys,
       dimensional_candidate_rows_count: rowIds.length,
       dimensional_candidate_work_keys: workKeys,

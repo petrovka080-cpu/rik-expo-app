@@ -61,6 +61,22 @@ const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "longest_circuit_length_m",
 ] as const);
 
+export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
+  norm_id: UPONOR_UFH_150MM_NORM_ID,
+  work_group: "heating",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "WARM_FLOOR_SYSTEM",
+  operation_class: "INSTALL",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+  source_id: UPONOR_UFH_150MM_SOURCE_ID,
+  source_document_version: UPONOR_UFH_150MM_SOURCE_METADATA.source_document_version,
+  source_definition_hash: UPONOR_UFH_150MM_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["circuit_length_m"] as const,
+}]);
+
 type AppliedPhysicalNormResolutionV1 = {
   status: "APPLIED";
   applicability_version: typeof PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1;
