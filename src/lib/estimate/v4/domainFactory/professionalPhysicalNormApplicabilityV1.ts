@@ -10,6 +10,7 @@ import paintNormPack from "../../../../../data/estimate-norms/professional/paint
 import plasterNormPack from "../../../../../data/estimate-norms/professional/plaster.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
 import puttyNormPack from "../../../../../data/estimate-norms/professional/putty.json";
+import screedNormPack from "../../../../../data/estimate-norms/professional/screed.json";
 import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import waterproofingNormPack from "../../../../../data/estimate-norms/professional/waterproofing.json";
@@ -450,6 +451,26 @@ const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS = Obj
   "rear_surface_moisture_excluded",
   "chemical_exposure_excluded",
   "selected_bucket_size_kg",
+] as const);
+
+export const CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:ceresit-cn87:CN_87_KT_10.21:50mm-screed:25kg:v1" as const;
+
+export const CERESIT_CN87_50MM_SCREED_NORM_ID =
+  "screed_cement_sand_mix_kg_m2_50mm_v1" as const;
+
+export const CERESIT_CN87_50MM_SCREED_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CN87_50MM_SCREED_NORM_ID}` as const;
+
+const CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "layer_thickness_mm",
+  "screed_construction_type",
+  "underfloor_heating",
+  "heating_pipe_outer_diameter_mm",
+  "substrate_condition_confirmed",
+  "joint_layout_confirmed",
+  "selected_bag_size_kg",
 ] as const);
 
 export const CERESIT_CT17_FLOORING_PRIMER_NORM_ID =
@@ -1857,6 +1878,81 @@ export const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA = Object.freez
   }),
 });
 
+const ceresitCn87Exact50MmScreedNorm = (() => {
+  const found = screedNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CN87_50MM_SCREED_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CN87_50MM_SCREED_NORM_ID}`);
+  }
+  return found;
+})();
+
+if (
+  screedNormPack.work_group !== "screed" ||
+  ceresitCn87Exact50MmScreedNorm.unit !== "kg" ||
+  ceresitCn87Exact50MmScreedNorm.rate.value !== 100 ||
+  ceresitCn87Exact50MmScreedNorm.rate.unit !==
+    "approximate kg/m2 at exactly 50 mm; derived from 2.0 kg/m2 per mm" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.product !== "Ceresit CN 87" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.layer_thickness_mm !== 50 ||
+  ceresitCn87Exact50MmScreedNorm.applicability.source_rate_kg_m2_per_mm !== 2 ||
+  ceresitCn87Exact50MmScreedNorm.applicability.formula !==
+    "cn87_mortar_kg = area_m2 * layer_thickness_mm * 2.0" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.bonded_screed_thickness_mm.join(",") !== "10,80" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.separation_layer_screed_thickness_mm.join(",") !== "35,80" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.floating_screed_thickness_mm.join(",") !== "45,80" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.heated_floating_screed_minimum_thickness_formula !==
+    "45 + heating_pipe_outer_diameter_mm" ||
+  ceresitCn87Exact50MmScreedNorm.applicability.production_scalar_valid_only_at_50_mm !== true ||
+  ceresitCn87Exact50MmScreedNorm.applicability.contact_layer_materials_excluded_from_rate !== true ||
+  ceresitCn87Exact50MmScreedNorm.applicability.additional_waste_not_published !== true ||
+  ceresitCn87Exact50MmScreedNorm.applicability.documented_bag_size_kg !== 25 ||
+  ceresitCn87Exact50MmScreedNorm.parameters.length !==
+    CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCn87Exact50MmScreedNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCn87Exact50MmScreedNorm.waste_percent_default !== 0 ||
+  ceresitCn87Exact50MmScreedNorm.rounding.package_unit !== "bag" ||
+  ceresitCn87Exact50MmScreedNorm.rounding.package_size !== 25 ||
+  ceresitCn87Exact50MmScreedNorm.rounding.mode !==
+    "approximate_net_kg_before_25_kg_bag_rounding"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CN87_50MM_SCREED_NORM_ID}`);
+}
+
+export const CERESIT_CN87_50MM_SCREED_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CN87_50MM_SCREED_SOURCE_ID,
+  norm_id: CERESIT_CN87_50MM_SCREED_NORM_ID,
+  source_document_version: screedNormPack.source_pack_version,
+  source_title: ceresitCn87Exact50MmScreedNorm.source.title,
+  source_url: ceresitCn87Exact50MmScreedNorm.source.url,
+  exact_locator: ceresitCn87Exact50MmScreedNorm.source.page,
+  tds_identifier: "CN_87_KT_10.21",
+  product: ceresitCn87Exact50MmScreedNorm.applicability.product,
+  layer_thickness_mm: ceresitCn87Exact50MmScreedNorm.applicability.layer_thickness_mm,
+  rate_value: ceresitCn87Exact50MmScreedNorm.applicability.source_rate_kg_m2_per_mm,
+  rate_unit: "approximate kg/m2 per mm; exact production binding restricted to 50 mm",
+  rate_kg_m2_at_50mm: ceresitCn87Exact50MmScreedNorm.rate.value,
+  bonded_screed_thickness_mm: [
+    ...ceresitCn87Exact50MmScreedNorm.applicability.bonded_screed_thickness_mm,
+  ],
+  separation_layer_screed_thickness_mm: [
+    ...ceresitCn87Exact50MmScreedNorm.applicability.separation_layer_screed_thickness_mm,
+  ],
+  floating_screed_thickness_mm: [
+    ...ceresitCn87Exact50MmScreedNorm.applicability.floating_screed_thickness_mm,
+  ],
+  package_size_kg: ceresitCn87Exact50MmScreedNorm.applicability.documented_bag_size_kg,
+  waste_percent_default: ceresitCn87Exact50MmScreedNorm.waste_percent_default,
+  definition_hash: estimateDeterministicHash({
+    work_group: screedNormPack.work_group,
+    source_pack_version: screedNormPack.source_pack_version,
+    norm_item: ceresitCn87Exact50MmScreedNorm,
+  }),
+});
+
 const ceresitCt17FlooringPrimerNorm = (() => {
   const found = flooringNormPack.norm_items.find(
     (item) => item.norm_id === CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
@@ -2820,6 +2916,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
 }, {
+  norm_id: CERESIT_CN87_50MM_SCREED_NORM_ID,
+  work_group: "screed",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "SUBFLOOR",
+  operation_class: "PREPARE",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CN87_50MM_SCREED_SOURCE_ID,
+  source_document_version: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
+}, {
   norm_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
   work_group: "waterproofing",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -3005,6 +3115,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_cl51_minimum_net_quantity_kg?: number;
   calculated_cl51_procurement_quantity_kg?: number;
   calculated_cl51_bucket_count?: number;
+  calculated_cn87_net_quantity_kg?: number;
+  calculated_cn87_procurement_quantity_kg?: number;
+  calculated_cn87_bag_count?: number;
   calculated_ct17_primer_net_quantity_l?: number;
   calculated_ct17_primer_procurement_quantity_l?: number;
   calculated_ct17_primer_container_count?: number;
@@ -5050,6 +5163,173 @@ function resolveCeresitCn69Global25Kg(
     produced_parameter_ids: ["material_consumption_kg_m2_mm"],
     calculated_cn69_net_quantity_kg: calculatedCn69NetQuantityKg,
     calculated_cn69_bag_count: calculatedCn69BagCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveCeresitCn87Exact50MmScreed(
+  productProfileId: typeof CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CN87_50MM_SCREED_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const layerThicknessMm = finiteNumber(explicit.layer_thickness_mm);
+  const screedConstructionType = primitiveString(explicit.screed_construction_type!);
+  const underfloorHeating = explicitTrue(explicit.underfloor_heating);
+  const heatingPipeOuterDiameterMm = finiteNumber(explicit.heating_pipe_outer_diameter_mm);
+  const selectedBagSizeKg = finiteNumber(explicit.selected_bag_size_kg);
+  const nonHeatedConstructionRanges: Readonly<Record<string, readonly number[]>> = {
+    bonded: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.bonded_screed_thickness_mm,
+    separation_layer: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.separation_layer_screed_thickness_mm,
+    floating: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.floating_screed_thickness_mm,
+  };
+  const selectedRange = screedConstructionType
+    ? nonHeatedConstructionRanges[screedConstructionType]
+    : undefined;
+  const constructionRangeValid = selectedRange !== undefined &&
+    layerThicknessMm !== null &&
+    layerThicknessMm >= selectedRange[0]! &&
+    layerThicknessMm <= selectedRange[1]!;
+  const heatedFloatingValid = underfloorHeating &&
+    screedConstructionType === "heated_floating" &&
+    layerThicknessMm !== null &&
+    heatingPipeOuterDiameterMm !== null &&
+    heatingPipeOuterDiameterMm > 0 &&
+    layerThicknessMm >= 45 + heatingPipeOuterDiameterMm &&
+    layerThicknessMm <= CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.floating_screed_thickness_mm[1]!;
+  const nonHeatedSelectionValid = !underfloorHeating &&
+    constructionRangeValid &&
+    heatingPipeOuterDiameterMm === 0;
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    layerThicknessMm === CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.layer_thickness_mm
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CN87_50MM_SCREED_NORM_ID}:layer_thickness_mm=${layerThicknessMm}:exact_required=50`,
+    nonHeatedSelectionValid || heatedFloatingValid
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CN87_50MM_SCREED_NORM_ID}:screed_construction_type=${screedConstructionType}:underfloor_heating=${underfloorHeating}:heating_pipe_outer_diameter_mm=${heatingPipeOuterDiameterMm}`,
+    explicitTrue(explicit.substrate_condition_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CN87_50MM_SCREED_NORM_ID}:substrate_condition_confirmed=false`,
+    explicitTrue(explicit.joint_layout_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CN87_50MM_SCREED_NORM_ID}:joint_layout_confirmed=false`,
+    selectedBagSizeKg === CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.package_size_kg
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:selected_bag_size_kg=${selectedBagSizeKg}:tds_bag_size_kg=${CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.package_size_kg}`,
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CN87_50MM_SCREED_SOURCE_METADATA,
+    );
+  }
+
+  const consumptionRate = CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.rate_value;
+  const explicitConsumptionRate = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "material_consumption_kg_m2_mm",
+  ));
+  if (explicitConsumptionRate !== null && Math.abs(explicitConsumptionRate - consumptionRate) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:material_consumption_kg_m2_mm=${explicitConsumptionRate}:norm_value=${consumptionRate}`,
+      ],
+      [
+        ...CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "material_consumption_kg_m2_mm",
+      ],
+      CERESIT_CN87_50MM_SCREED_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityKg = Number(
+    (areaM2! * layerThicknessMm! * consumptionRate).toFixed(9),
+  );
+  const calculatedBagCount = Math.ceil(
+    calculatedNetQuantityKg / CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.package_size_kg - 1e-9,
+  );
+  const calculatedProcurementQuantityKg = Number(
+    (calculatedBagCount * CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.package_size_kg).toFixed(9),
+  );
+  const capturedAt = CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID}`,
+    `product=${CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.product}`,
+    `tds_identifier=${CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.tds_identifier}`,
+    `area_m2=${areaM2}`,
+    `layer_thickness_mm=${layerThicknessMm}`,
+    `screed_construction_type=${screedConstructionType}`,
+    `underfloor_heating=${underfloorHeating}`,
+    `heating_pipe_outer_diameter_mm=${heatingPipeOuterDiameterMm}`,
+    "substrate_condition_confirmed=true",
+    "joint_layout_confirmed=true",
+    `selected_bag_size_kg=${selectedBagSizeKg}`,
+    `formula=area_m2*layer_thickness_mm*${consumptionRate}`,
+    `net_quantity_kg=${calculatedNetQuantityKg}`,
+    `bag_count=${calculatedBagCount}`,
+    `procurement_quantity_kg=${calculatedProcurementQuantityKg}`,
+    "contact_layer_materials_excluded_from_rate=true",
+    "additional_waste_percent=0",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    material_consumption_kg_m2_mm: {
+      value: consumptionRate,
+      unit_id: "kg_per_m2_mm",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CN87_50MM_SCREED_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CN87_50MM_SCREED_SOURCE_ID,
+    norm_id: CERESIT_CN87_50MM_SCREED_NORM_ID,
+    source_document_version: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CN87_50MM_SCREED_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CN87_50MM_SCREED_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
+    calculated_cn87_net_quantity_kg: calculatedNetQuantityKg,
+    calculated_cn87_procurement_quantity_kg: calculatedProcurementQuantityKg,
+    calculated_cn87_bag_count: calculatedBagCount,
     parameter_values: parameterValues,
     blockers: [] as const,
   };
@@ -7628,6 +7908,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "SUBFLOOR" &&
+      input.operation_class === "PREPARE" &&
+      input.material_system === "SUBFLOOR" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveCeresitCn87Exact50MmScreed(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      CERESIT_CN87_50MM_SCREED_SOURCE_METADATA,
     );
   }
   if (productProfileId === CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID) {

@@ -3,6 +3,7 @@ import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
   CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA,
+  CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID,
   CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_METADATA,
@@ -2243,10 +2244,19 @@ describe("professional physical norm applicability V1", () => {
     ];
     expect(schema.parameters.filter((parameter) => cn69QuestionIds.includes(parameter.parameter_id))
       .map((parameter) => parameter.parameter_id)).toEqual(cn69QuestionIds);
-    expect(schema.parameters.filter((parameter) => cn69QuestionIds.includes(parameter.parameter_id))
+    expect(schema.parameters.filter((parameter) =>
+      cn69QuestionIds.includes(parameter.parameter_id) && parameter.parameter_id !== "selected_bag_size_kg")
       .every((parameter) => parameter.required_when.kind === "EQUALS" &&
         parameter.required_when.parameter_id === "product_profile_id" &&
         parameter.required_when.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID)).toBe(true);
+    expect(schema.parameters.find((parameter) => parameter.parameter_id === "selected_bag_size_kg")?.required_when)
+      .toEqual({
+        kind: "ANY_OF",
+        conditions: [
+          { parameter_id: "product_profile_id", value: CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID },
+          { parameter_id: "product_profile_id", value: CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID },
+        ],
+      });
     expect(schema.parameters.find((parameter) => parameter.parameter_id === "layer_thickness_mm")?.label_ru)
       .toContain("Толщина");
 

@@ -6,6 +6,7 @@ import type {
 } from "../../professionalProjectAssemblyV4";
 import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+  CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
   CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
@@ -59,6 +60,18 @@ const CERESIT_CN69_ONLY = {
   kind: "EQUALS",
   parameter_id: "product_profile_id",
   value: CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+} as const;
+const CERESIT_CN87_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID,
+} as const;
+const CERESIT_CN69_OR_CN87 = {
+  kind: "ANY_OF",
+  conditions: [
+    { parameter_id: "product_profile_id", value: CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID },
+    { parameter_id: "product_profile_id", value: CERESIT_CN87_50MM_SCREED_PRODUCT_PROFILE_ID },
+  ],
 } as const;
 const CERESIT_CM11_ONLY = {
   kind: "EQUALS",
@@ -179,10 +192,10 @@ function ceresitCn69ConditionalParameters(
     parameter("substrate_preparation_confirmed", "Основание прочное, сухое, очищенное и подготовлено по TDS", "boolean", "P1", null, [], { condition }),
     parameter("installation_conditions_confirmed", "Температура пола выше 15 °C, воздуха выше 18 °C, влажность ниже 75%", "boolean", "P1", null, [], { condition }),
     parameter("cn69_global_25kg_tds_variant_confirmed", "Материал соответствует глобальной карточке C_CN69_TDS_1_0420 и мешку 25 кг", "boolean", "P1", null, [], { condition }),
-    parameter("selected_bag_size_kg", "Масса выбранного мешка Ceresit CN 69", "number", "P1", "kg", [], {
+    parameter("selected_bag_size_kg", "Масса выбранного мешка Ceresit CN 69 или CN 87", "number", "P1", "kg", [], {
       minimum: 1,
       maximum: 100,
-      condition,
+      condition: CERESIT_CN69_OR_CN87,
     }),
     parameter("ct17_substrate_evenness", "Ровность впитывающего основания перед грунтованием Ceresit CT 17", "choice", "P1", null, [], {
       choices: [
@@ -221,6 +234,32 @@ function ceresitCn69ConditionalParameters(
       maximum: 1_000_000_000,
       condition,
     }),
+  ];
+}
+
+function ceresitCn87ConditionalParameters(
+  row: InteriorFinishesDomainInventoryRow,
+): ProfessionalDomainParameterDefinitionV1[] {
+  if (!isCeresitCn69SubfloorTarget(row)) return [];
+  const condition = CERESIT_CN87_ONLY;
+  return [
+    parameter("screed_construction_type", "Тип конструкции стяжки Ceresit CN 87", "choice", "P1", null, [], {
+      choices: [
+        { value: "bonded", label_ru: "Связанная с основанием" },
+        { value: "separation_layer", label_ru: "На разделительном слое" },
+        { value: "floating", label_ru: "Плавающая без подогрева" },
+        { value: "heated_floating", label_ru: "Плавающая с подогревом" },
+      ],
+      condition,
+    }),
+    parameter("underfloor_heating", "В конструкцию включён тёплый пол", "boolean", "P1", null, [], { condition }),
+    parameter("heating_pipe_outer_diameter_mm", "Наружный диаметр трубы тёплого пола; 0 без подогрева", "number", "P1", "mm", [], {
+      minimum: 0,
+      maximum: 100,
+      condition,
+    }),
+    parameter("substrate_condition_confirmed", "Состояние и подготовка основания по TDS CN 87 подтверждены", "boolean", "P1", null, [], { condition }),
+    parameter("joint_layout_confirmed", "Проектная схема деформационных и разделительных швов подтверждена", "boolean", "P1", null, [], { condition }),
   ];
 }
 
@@ -395,6 +434,7 @@ function schemaFor(row: InteriorFinishesDomainInventoryRow): ProfessionalDomainP
       parameter("normative_rate_code", "Код применимой ресурсной нормы", "text", "P0", null, []),
       ...formulaParameters(profile.formula_kind),
       ...ceresitCn69ConditionalParameters(row),
+      ...ceresitCn87ConditionalParameters(row),
       ...ceresitCm11ConditionalParameters(row),
       parameter("labor_productivity_m2_per_man_hour", "Производительность труда по принятой норме", "number", "P0", "m2_per_man_hour", ["application_labor"], { minimum: 0.01, maximum: 100_000 }),
       parameter("equipment_productivity_m2_per_machine_hour", "Производительность применимого механизма", "number", "P0", "m2_per_machine_hour", ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
