@@ -23,6 +23,7 @@ import {
   LINDAB_VSR_SOURCE_ID,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
+  WAVIN_HEP2O_CLIP_SOURCE_METADATA,
   WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
   WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
 } from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
@@ -241,6 +242,14 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
       ], condition: wavinHep2OCondition }),
       parameter("hep2o_joint_topology_reference", "Ссылка на ведомость соединений и подготовленных концов трубы Hep2O", "text", "P1", null, ["hep2o_smart_sleeves"], { condition: wavinHep2OCondition }),
       parameter("smart_sleeve_quantity_piece", "Количество опорных втулок Wavin Hep2O SmartSleeve", "number", "P1", "item", ["hep2o_smart_sleeves"], { minimum: 1, maximum: 10_000_000, condition: wavinHep2OCondition }),
+      parameter("hep2o_support_orientation", "Ориентация участка трубы Wavin Hep2O", "choice", "P1", null, ["supports"], { choices: [
+        { value: "horizontal", label_ru: "Горизонтальный участок" },
+        { value: "vertical", label_ru: "Вертикальный участок" },
+      ], condition: wavinHep2OCondition }),
+      parameter("hep2o_support_span_lengths_m", "Длины пролётов между обязательными точками крепления Hep2O через точку с запятой", "text", "P1", null, ["supports"], { condition: wavinHep2OCondition }),
+      parameter("hep2o_support_anchor_node_count", "Количество уникальных обязательных точек крепления у концов и фитингов Hep2O", "number", "P1", "item", ["supports"], { minimum: 2, maximum: 10_000_000, condition: wavinHep2OCondition }),
+      parameter("hep2o_support_layout_reference", "Ссылка на схему креплений Hep2O с концами, фитингами и пролётами", "text", "P1", null, ["supports"], { condition: wavinHep2OCondition }),
+      parameter("hep2o_support_anchor_positions_verified", "На схеме учтены обязательные крепления у концов и фитингов Hep2O", "boolean", "P1", null, ["supports"], { condition: wavinHep2OCondition }),
     );
   }
   if (isDuct(profile)) {
@@ -539,7 +548,15 @@ function mainAssemblies(row: HvacDomainInventoryRow, schema: ProfessionalDomainP
     boqRow(row, "installation_labor", "Труд", "labor", `${profile.operation_label_ru}: труд монтажников`, formula(t, "installation_labor", `${q} / labor_productivity_output_per_man_hour`, [q, "labor_productivity_output_per_man_hour"], "man_hour", (v) => v[q] / v.labor_productivity_output_per_man_hour), "BOTH"),
     boqRow(row, "installation_equipment", "Машины и механизмы", "equipment", `${profile.operation_label_ru}: применимые механизмы`, formula(t, "installation_equipment", `${q} / equipment_productivity_output_per_machine_hour`, [q, "equipment_productivity_output_per_machine_hour"], "machine_hour", (v) => v[q] / v.equipment_productivity_output_per_machine_hour), "BOTH"),
     boqRow(row, "joint_consumables", "Соединения", "material", "Расходные материалы точного способа соединения", formula(t, "joint_consumables", "connection_count × joint_consumable_kg_per_connection", ["connection_count", "joint_consumable_kg_per_connection"], "kg", (v) => v.connection_count * v.joint_consumable_kg_per_connection), "FULL_ONLY"),
-    boqRow(row, "supports", "Опоры, подвесы и рамы", "material", "Опоры, подвесы, рамы и крепления по проекту", formula(t, "supports", "support_count", ["support_count"], "item", (v) => v.support_count), "FULL_ONLY"),
+    {
+      ...boqRow(row, "supports", "Опоры, подвесы и рамы", "material", "Опоры, подвесы, рамы и крепления по проекту", formula(t, "supports", "support_count", ["support_count"], "item", (v) => v.support_count), "FULL_ONLY"),
+      normative_source_ids: [
+        normativeSourceId(row),
+        ...(profile.technology_class === "HEATING_PIPE_NETWORK" && row.primary_material_or_system === "HEATING_PIPE" && row.operation_class === "INSTALL"
+          ? WAVIN_HEP2O_CLIP_SOURCE_METADATA.map((metadata) => metadata.source_id)
+          : []),
+      ],
+    },
     boqRow(row, "penetrations", "Проходки", "material", "Гильзы и герметизация проходок", formula(t, "penetrations", "penetration_count", ["penetration_count"], "item", (v) => v.penetration_count), "FULL_ONLY"),
     boqRow(row, "connection_labor", "Труд", "labor", "Труд сборки точных соединений", formula(t, "connection_labor", "connection_count / connection_productivity_item_per_man_hour", ["connection_count", "connection_productivity_item_per_man_hour"], "man_hour", (v) => v.connection_count / v.connection_productivity_item_per_man_hour), "FULL_ONLY"),
     boqRow(row, "loading_labor", "Логистика", "labor", "Погрузка и разгрузка ресурсов", formula(t, "loading_labor", `${q} × primary_resource_units_per_output × primary_resource_mass_kg_per_unit / loading_productivity_kg_per_man_hour`, [q, "primary_resource_units_per_output", "primary_resource_mass_kg_per_unit", "loading_productivity_kg_per_man_hour"], "man_hour", (v) => v[q] * v.primary_resource_units_per_output * v.primary_resource_mass_kg_per_unit / v.loading_productivity_kg_per_man_hour), "FULL_ONLY"),

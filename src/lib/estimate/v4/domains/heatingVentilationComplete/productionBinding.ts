@@ -90,6 +90,9 @@ export function buildHvacProductionDraftV1(
   const inventory = HVAC_DOMAIN_INVENTORY.find((candidate) =>
     candidate.catalog_id === input.catalog_id && candidate.work_key === input.work_key);
   if (!inventory) throw new Error(`HVAC_EXACT_BINDING_NOT_FOUND:${input.catalog_id}:${input.work_key}`);
+  const physicalNormSourceIds = input.physical_norm_resolution
+    ? input.physical_norm_resolution.source_ids ?? [input.physical_norm_resolution.source_id]
+    : [];
   const compileResult = compileProfessionalEstimateDomainV1(
     hvacDomainFactory,
     constructionNormativeRegistryV1,
@@ -100,9 +103,7 @@ export function buildHvacProductionDraftV1(
       parent_revision_id: input.parent_revision_id,
       parameter_values: input.parameter_values,
       normative_request: input.normative_request,
-      additional_normative_source_ids: input.physical_norm_resolution
-        ? [input.physical_norm_resolution.source_id]
-        : [],
+      additional_normative_source_ids: physicalNormSourceIds,
       additional_normative_source_types: input.physical_norm_resolution
         ? ["MANUFACTURER_PASSPORT"]
         : [],
@@ -186,7 +187,7 @@ export function buildHvacProductionDraftV1(
       professionalBoqCategory: row.category,
       professionalResourceGraphV3: row.resource_graph_node_v3,
       ...(input.physical_norm_resolution &&
-          row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+          row.parameter_source_ids.some((sourceId) => physicalNormSourceIds.includes(sourceId))
         ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
         : {}),
     },

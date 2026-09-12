@@ -67,6 +67,24 @@ export const WAVIN_HEP2O_SMARTSLEEVE_NORM_ID =
 export const WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID =
   `src_professional_norm_pack_${WAVIN_HEP2O_SMARTSLEEVE_NORM_ID}` as const;
 
+export const WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID =
+  "plumbing_wavin_hep2o_15mm_horizontal_clip_spacing_v1" as const;
+
+export const WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_NORM_ID =
+  "plumbing_wavin_hep2o_22mm_horizontal_clip_spacing_v1" as const;
+
+export const WAVIN_HEP2O_15MM_VERTICAL_CLIP_NORM_ID =
+  "plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1" as const;
+
+export const WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID =
+  `src_professional_norm_pack_${WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID}` as const;
+
+export const WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_SOURCE_ID =
+  `src_professional_norm_pack_${WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_NORM_ID}` as const;
+
+export const WAVIN_HEP2O_15MM_VERTICAL_CLIP_SOURCE_ID =
+  `src_professional_norm_pack_${WAVIN_HEP2O_15MM_VERTICAL_CLIP_NORM_ID}` as const;
+
 const uponorNorm = (() => {
   const found = heatingNormPack.norm_items.find((item) => item.norm_id === UPONOR_UFH_150MM_NORM_ID);
   if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${UPONOR_UFH_150MM_NORM_ID}`);
@@ -310,6 +328,66 @@ export const WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const wavinHep2OClipNorms = [{
+  norm_id: WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID,
+  source_id: WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+  diameter_mm: 15,
+  orientation: "horizontal",
+  maximum_clip_spacing_m: 0.3,
+}, {
+  norm_id: WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_NORM_ID,
+  source_id: WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_SOURCE_ID,
+  diameter_mm: 22,
+  orientation: "horizontal",
+  maximum_clip_spacing_m: 0.5,
+}, {
+  norm_id: WAVIN_HEP2O_15MM_VERTICAL_CLIP_NORM_ID,
+  source_id: WAVIN_HEP2O_15MM_VERTICAL_CLIP_SOURCE_ID,
+  diameter_mm: 15,
+  orientation: "vertical",
+  maximum_clip_spacing_m: 0.5,
+}] as const;
+
+export const WAVIN_HEP2O_CLIP_SOURCE_METADATA = Object.freeze(wavinHep2OClipNorms.map((expected) => {
+  const normItem = plumbingNormPack.norm_items.find((item) => item.norm_id === expected.norm_id);
+  if (!normItem) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${expected.norm_id}`);
+  if (
+    plumbingNormPack.work_group !== "plumbing" ||
+    normItem.unit !== "piece" ||
+    normItem.rate.value !== expected.maximum_clip_spacing_m ||
+    normItem.rate.unit !== "maximum spacing m between clips; count must include run endpoints and fittings" ||
+    normItem.applicability.system !== "Wavin Hep2O" ||
+    normItem.applicability.pipe_nominal_diameter_mm !== expected.diameter_mm ||
+    normItem.applicability.orientation !== expected.orientation ||
+    normItem.applicability.maximum_clip_spacing_m !== expected.maximum_clip_spacing_m ||
+    normItem.applicability.count_formula !== "support_layout_count_from_max_spacing_with_endpoints" ||
+    normItem.applicability.simple_rate_multiplication_forbidden !== true ||
+    normItem.rounding.mode !== "ceil_after_layout"
+  ) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${expected.norm_id}`);
+  }
+  return Object.freeze({
+    source_id: expected.source_id,
+    norm_id: expected.norm_id,
+    source_document_version: plumbingNormPack.source_pack_version,
+    source_title: normItem.source.title,
+    source_url: normItem.source.url,
+    exact_locator: normItem.source.page,
+    rate_value: normItem.rate.value,
+    rate_unit: normItem.rate.unit,
+    system: normItem.applicability.system,
+    pipe_nominal_diameter_mm: normItem.applicability.pipe_nominal_diameter_mm,
+    orientation: normItem.applicability.orientation,
+    maximum_clip_spacing_m: normItem.applicability.maximum_clip_spacing_m,
+    count_formula: normItem.applicability.count_formula,
+    definition_hash: estimateDeterministicHash({
+      work_group: plumbingNormPack.work_group,
+      source_pack_version: plumbingNormPack.source_pack_version,
+      norm_item: normItem,
+    }),
+  });
+}));
+
 const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "zone_area_m2",
   "designed_pipe_spacing_mm",
@@ -372,6 +450,21 @@ const WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "prepared_pipe_end_count",
   "hep2o_system_variant",
   "hep2o_joint_topology_reference",
+] as const);
+
+const WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "route_length_m",
+  "nominal_diameter_mm",
+  "hep2o_support_orientation",
+  "hep2o_support_span_lengths_m",
+  "hep2o_support_anchor_node_count",
+  "hep2o_support_layout_reference",
+  "hep2o_support_anchor_positions_verified",
+] as const);
+
+const WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  ...WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  ...WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS,
 ] as const);
 
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
@@ -458,7 +551,21 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["smart_sleeve_quantity_piece"] as const,
-}]);
+}, ...WAVIN_HEP2O_CLIP_SOURCE_METADATA.map((metadata) => ({
+  norm_id: metadata.norm_id,
+  work_group: "plumbing",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "HEATING_PIPE_NETWORK",
+  operation_class: "INSTALL",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
+  source_id: metadata.source_id,
+  source_document_version: metadata.source_document_version,
+  source_definition_hash: metadata.definition_hash,
+  consumed_parameter_ids: WAVIN_HEP2O_CLIP_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["support_count"] as const,
+}))]);
 
 type AppliedPhysicalNormResolutionV1 = {
   status: "APPLIED";
@@ -470,6 +577,17 @@ type AppliedPhysicalNormResolutionV1 = {
   source_url: string;
   exact_locator: string;
   source_definition_hash: string;
+  source_ids?: readonly string[];
+  norm_ids?: readonly string[];
+  applied_norms?: readonly {
+    source_id: string;
+    norm_id: string;
+    source_document_version: string;
+    source_url: string;
+    exact_locator: string;
+    source_definition_hash: string;
+    produced_parameter_ids: readonly string[];
+  }[];
   consumed_parameter_ids: readonly string[];
   produced_parameter_ids: readonly string[];
   calculated_pipe_length_m?: number;
@@ -478,6 +596,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_wall_fastener_quantity_piece?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
+  calculated_support_quantity_piece?: number;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
   blockers: readonly [];
   deterministic_hash: string;
@@ -1108,15 +1227,23 @@ function resolveLegrandP31TrayJointFasteners(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
-function resolveWavinHep2OSmartSleeves(
+function parsePositiveLengthSchedule(value: string | null): readonly number[] | null {
+  if (!value) return null;
+  const tokens = value.split(/[;\n]+/u).map((token) => token.trim());
+  if (tokens.length === 0 || tokens.some((token) => token.length === 0)) return null;
+  const lengths = tokens.map((token) => Number(token.replace(/\s+/gu, "").replace(",", ".")));
+  return lengths.every((length) => Number.isFinite(length) && length > 0) ? lengths : null;
+}
+
+function resolveWavinHep2OProfile(
   productProfileId: typeof WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
 ): ProfessionalPhysicalNormApplicabilityResolutionV1 {
-  const explicit = Object.fromEntries(WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+  const explicit = Object.fromEntries(WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
     parameterId,
     explicitValue(parameterValuesInput, parameterId),
   ]));
-  const missing = WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS
+  const missing = WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS
     .filter((parameterId) => explicit[parameterId] === null)
     .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
   if (missing.length > 0) {
@@ -1125,7 +1252,7 @@ function resolveWavinHep2OSmartSleeves(
       productProfileId,
       parameterValuesInput,
       missing,
-      WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS,
       WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
     );
   }
@@ -1136,6 +1263,15 @@ function resolveWavinHep2OSmartSleeves(
   const systemVariant = primitiveString(explicit.hep2o_system_variant!);
   const connectionCount = finiteNumber(explicit.connection_count);
   const preparedPipeEndCount = finiteNumber(explicit.prepared_pipe_end_count);
+  const routeLengthM = finiteNumber(explicit.route_length_m);
+  const nominalDiameterMm = finiteNumber(explicit.nominal_diameter_mm);
+  const supportOrientation = primitiveString(explicit.hep2o_support_orientation!);
+  const supportSpanLengths = parsePositiveLengthSchedule(
+    primitiveString(explicit.hep2o_support_span_lengths_m!),
+  );
+  const supportAnchorNodeCount = finiteNumber(explicit.hep2o_support_anchor_node_count);
+  const supportAnchorPositionsVerified = explicit.hep2o_support_anchor_positions_verified!.value === true ||
+    explicit.hep2o_support_anchor_positions_verified!.value === "true";
   const invalidNumeric = [
     ["connection_count", connectionCount],
     ["prepared_pipe_end_count", preparedPipeEndCount],
@@ -1143,16 +1279,29 @@ function resolveWavinHep2OSmartSleeves(
   const numericBlockers = invalidNumeric
     .filter(([, value]) => value === null || !Number.isInteger(value) || value <= 0)
     .map(([parameterId]) => `PROJECT_VALUE_INVALID:${parameterId}`);
+  if (routeLengthM === null || routeLengthM <= 0) numericBlockers.push("PROJECT_VALUE_INVALID:route_length_m");
+  if (nominalDiameterMm === null || !Number.isInteger(nominalDiameterMm) || nominalDiameterMm <= 0) {
+    numericBlockers.push("PROJECT_VALUE_INVALID:nominal_diameter_mm");
+  }
+  if (supportAnchorNodeCount === null || !Number.isInteger(supportAnchorNodeCount) || supportAnchorNodeCount < 2) {
+    numericBlockers.push("PROJECT_VALUE_INVALID:hep2o_support_anchor_node_count");
+  }
+  if (!supportSpanLengths) numericBlockers.push("PROJECT_VALUE_INVALID:hep2o_support_span_lengths_m");
   if (numericBlockers.length > 0) {
     return nonApplied(
       "BLOCKED_REQUIRED_INPUTS",
       productProfileId,
       parameterValuesInput,
       numericBlockers,
-      WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS,
       WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
     );
   }
+
+  const clipSourceMetadata = WAVIN_HEP2O_CLIP_SOURCE_METADATA.find((metadata) =>
+    metadata.pipe_nominal_diameter_mm === nominalDiameterMm && metadata.orientation === supportOrientation);
+  const supportSpanLengthSumM = supportSpanLengths!.reduce((sum, length) => sum + length, 0);
+  const routeLengthToleranceM = Math.max(1e-9, routeLengthM! * 1e-9);
 
   const applicabilityBlockers = [
     exactMaterialOrEquipment === "Wavin Hep2O Barrier pipe and Hep2O fittings"
@@ -1170,6 +1319,15 @@ function resolveWavinHep2OSmartSleeves(
     preparedPipeEndCount! >= connectionCount!
       ? null
       : `PHYSICAL_NORM_PROJECT_TOPOLOGY_CONFLICT:prepared_pipe_end_count=${preparedPipeEndCount}:connection_count=${connectionCount}`,
+    clipSourceMetadata
+      ? null
+      : `PHYSICAL_NORM_NOT_APPLICABLE:WAVIN_HEP2O_CLIP_SPACING:nominal_diameter_mm=${nominalDiameterMm}:orientation=${supportOrientation}`,
+    Math.abs(supportSpanLengthSumM - routeLengthM!) <= routeLengthToleranceM
+      ? null
+      : `PHYSICAL_NORM_PROJECT_TOPOLOGY_CONFLICT:hep2o_support_span_length_sum_m=${supportSpanLengthSumM}:route_length_m=${routeLengthM}`,
+    supportAnchorPositionsVerified
+      ? null
+      : "PHYSICAL_NORM_PROJECT_TOPOLOGY_NOT_VERIFIED:hep2o_support_anchor_positions_verified",
   ].filter((blocker): blocker is string => blocker !== null);
   if (applicabilityBlockers.length > 0) {
     return nonApplied(
@@ -1177,7 +1335,7 @@ function resolveWavinHep2OSmartSleeves(
       productProfileId,
       parameterValuesInput,
       applicabilityBlockers,
-      WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS,
       WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
     );
   }
@@ -1185,19 +1343,35 @@ function resolveWavinHep2OSmartSleeves(
   const calculatedSmartSleeveQuantityPiece = Math.ceil(
     preparedPipeEndCount! * WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value,
   );
+  const calculatedSupportQuantityPiece = supportAnchorNodeCount! + supportSpanLengths!.reduce(
+    (sum, spanLengthM) => sum + Math.max(
+      0,
+      Math.ceil(spanLengthM / clipSourceMetadata!.maximum_clip_spacing_m) - 1,
+    ),
+    0,
+  );
   const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "smart_sleeve_quantity_piece"));
-  if (explicitQuantity !== null && explicitQuantity !== calculatedSmartSleeveQuantityPiece) {
+  const explicitSupportCount = finiteNumber(explicitValue(parameterValuesInput, "support_count"));
+  const valueConflictBlockers = [
+    explicitQuantity === null || explicitQuantity === calculatedSmartSleeveQuantityPiece
+      ? null
+      : `PHYSICAL_NORM_VALUE_CONFLICT:smart_sleeve_quantity_piece=${explicitQuantity}:norm_value=${calculatedSmartSleeveQuantityPiece}`,
+    explicitSupportCount === null || explicitSupportCount === calculatedSupportQuantityPiece
+      ? null
+      : `PHYSICAL_NORM_VALUE_CONFLICT:support_count=${explicitSupportCount}:norm_value=${calculatedSupportQuantityPiece}`,
+  ].filter((blocker): blocker is string => blocker !== null);
+  if (valueConflictBlockers.length > 0) {
     return nonApplied(
       "BLOCKED_NOT_APPLICABLE",
       productProfileId,
       parameterValuesInput,
-      [`PHYSICAL_NORM_VALUE_CONFLICT:smart_sleeve_quantity_piece=${explicitQuantity}:norm_value=${calculatedSmartSleeveQuantityPiece}`],
-      [...WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS, "smart_sleeve_quantity_piece"],
+      valueConflictBlockers,
+      [...WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS, "smart_sleeve_quantity_piece", "support_count"],
       WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
     );
   }
 
-  const capturedAt = WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS
+  const capturedAt = WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS
     .map((parameterId) => explicit[parameterId]!.captured_at)
     .sort()
     .at(-1)!;
@@ -1219,6 +1393,25 @@ function resolveWavinHep2OSmartSleeves(
         `formula=ceil(prepared_pipe_end_count*${WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.rate_value})`,
       ].join(";"),
     } satisfies ProfessionalParameterValueV4,
+    support_count: {
+      value: calculatedSupportQuantityPiece,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: clipSourceMetadata!.source_id,
+      captured_at: capturedAt,
+      confidence: "high",
+      applicability: [
+        `product_profile_id=${WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID}`,
+        `system=${clipSourceMetadata!.system}`,
+        `nominal_diameter_mm=${nominalDiameterMm}`,
+        `orientation=${supportOrientation}`,
+        `maximum_clip_spacing_m=${clipSourceMetadata!.maximum_clip_spacing_m}`,
+        `support_span_lengths_m=${supportSpanLengths!.join(",")}`,
+        `support_anchor_node_count=${supportAnchorNodeCount}`,
+        `support_layout_reference=${primitiveString(explicit.hep2o_support_layout_reference!)}`,
+        `formula=anchor_node_count+sum(max(0,ceil(span_length/maximum_spacing)-1))`,
+      ].join(";"),
+    } satisfies ProfessionalParameterValueV4,
   });
   const withoutHash = {
     status: "APPLIED" as const,
@@ -1230,9 +1423,29 @@ function resolveWavinHep2OSmartSleeves(
     source_url: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.source_url,
     exact_locator: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.exact_locator,
     source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
-    consumed_parameter_ids: [...WAVIN_HEP2O_SMARTSLEEVE_REQUIRED_EXPLICIT_PARAMETER_IDS],
-    produced_parameter_ids: ["smart_sleeve_quantity_piece"] as const,
+    source_ids: [WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID, clipSourceMetadata!.source_id],
+    norm_ids: [WAVIN_HEP2O_SMARTSLEEVE_NORM_ID, clipSourceMetadata!.norm_id],
+    applied_norms: [{
+      source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+      norm_id: WAVIN_HEP2O_SMARTSLEEVE_NORM_ID,
+      source_document_version: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.source_document_version,
+      source_url: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.source_url,
+      exact_locator: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.exact_locator,
+      source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
+      produced_parameter_ids: ["smart_sleeve_quantity_piece"],
+    }, {
+      source_id: clipSourceMetadata!.source_id,
+      norm_id: clipSourceMetadata!.norm_id,
+      source_document_version: clipSourceMetadata!.source_document_version,
+      source_url: clipSourceMetadata!.source_url,
+      exact_locator: clipSourceMetadata!.exact_locator,
+      source_definition_hash: clipSourceMetadata!.definition_hash,
+      produced_parameter_ids: ["support_count"],
+    }],
+    consumed_parameter_ids: [...WAVIN_HEP2O_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["smart_sleeve_quantity_piece", "support_count"] as const,
     calculated_smart_sleeve_quantity_piece: calculatedSmartSleeveQuantityPiece,
+    calculated_support_quantity_piece: calculatedSupportQuantityPiece,
     parameter_values: parameterValues,
     blockers: [] as const,
   };
@@ -1255,7 +1468,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       input.material_system === "HEATING_PIPE:SPACE_HEATING:HEATING_WATER" &&
       input.scope_mode === "FULL_APPLICABLE_SCOPE"
     ) {
-      return resolveWavinHep2OSmartSleeves(productProfileId, input.parameter_values);
+      return resolveWavinHep2OProfile(productProfileId, input.parameter_values);
     }
     return nonApplied(
       "NOT_REQUESTED",

@@ -19,6 +19,11 @@ import {
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
   UPONOR_UFH_150MM_SOURCE_METADATA,
+  WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID,
+  WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+  WAVIN_HEP2O_15MM_VERTICAL_CLIP_SOURCE_ID,
+  WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_SOURCE_ID,
+  WAVIN_HEP2O_CLIP_SOURCE_METADATA,
   WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
   WAVIN_HEP2O_SMARTSLEEVE_NORM_ID,
   WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
@@ -212,6 +217,13 @@ function exactWavinHep2OInputs(
     prepared_pipe_end_count: explicit(10, "item"),
     hep2o_system_variant: explicit("WAVIN_HEP2O_PUSH_FIT"),
     hep2o_joint_topology_reference: explicit("ОВ-31.S-04, узлы H01-H06, 10 подготовленных концов"),
+    route_length_m: explicit(1.2, "m"),
+    nominal_diameter_mm: explicit(15, "mm"),
+    hep2o_support_orientation: explicit("horizontal"),
+    hep2o_support_span_lengths_m: explicit("0,6; 0,6", "m"),
+    hep2o_support_anchor_node_count: explicit(3, "item"),
+    hep2o_support_layout_reference: explicit("ОВ-31.S-04, участок H01-H03, обязательные точки A1-A3"),
+    hep2o_support_anchor_positions_verified: explicit(true),
     ...changes,
   };
 }
@@ -848,9 +860,28 @@ describe("professional physical norm applicability V1", () => {
       scope_mode: "FULL_APPLICABLE_SCOPE",
       parameter_values: exactWavinHep2OInputs(),
     }).status).toBe("NOT_REQUESTED");
+    expect(resolveWavinHep2O(exactWavinHep2OInputs({
+      nominal_diameter_mm: explicit(22, "mm"),
+      hep2o_support_orientation: explicit("vertical"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_NOT_APPLICABLE:WAVIN_HEP2O_CLIP_SPACING:nominal_diameter_mm=22:orientation=vertical"],
+    });
+    expect(resolveWavinHep2O(exactWavinHep2OInputs({
+      route_length_m: explicit(1.3, "m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PROJECT_TOPOLOGY_CONFLICT:hep2o_support_span_length_sum_m=1.2:route_length_m=1.3"],
+    });
+    expect(resolveWavinHep2O(exactWavinHep2OInputs({
+      hep2o_support_anchor_positions_verified: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PROJECT_TOPOLOGY_NOT_VERIFIED:hep2o_support_anchor_positions_verified"],
+    });
   });
 
-  test("derives one Wavin Hep2O SmartSleeve for every explicit prepared pipe end", () => {
+  test("derives Wavin Hep2O SmartSleeves and clip count from exact joint and support topology", () => {
     const input = exactWavinHep2OInputs();
     const first = resolveWavinHep2O(input);
     const second = resolveWavinHep2O(input);
@@ -862,7 +893,19 @@ describe("professional physical norm applicability V1", () => {
       source_document_version: "2026.09-wavin-hep2o-installer-guide-r1",
       source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
       calculated_smart_sleeve_quantity_piece: 10,
-      produced_parameter_ids: ["smart_sleeve_quantity_piece"],
+      calculated_support_quantity_piece: 5,
+      source_ids: [WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID, WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID],
+      norm_ids: [WAVIN_HEP2O_SMARTSLEEVE_NORM_ID, WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID],
+      applied_norms: [{
+        source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+        source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
+        produced_parameter_ids: ["smart_sleeve_quantity_piece"],
+      }, {
+        source_id: WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+        source_definition_hash: WAVIN_HEP2O_CLIP_SOURCE_METADATA[0].definition_hash,
+        produced_parameter_ids: ["support_count"],
+      }],
+      produced_parameter_ids: ["smart_sleeve_quantity_piece", "support_count"],
       blockers: [],
     });
     expect(first.parameter_values.smart_sleeve_quantity_piece).toMatchObject({
@@ -871,6 +914,12 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
     });
+    expect(first.parameter_values.support_count).toMatchObject({
+      value: 5,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.smart_sleeve_quantity_piece).toBeUndefined();
     expect(constructionNormativeRegistryV1.get(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID)).toMatchObject({
@@ -878,6 +927,37 @@ describe("professional physical norm applicability V1", () => {
       product_profile_applicability: [WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID],
       material_system_applicability: ["HEATING_PIPE:SPACE_HEATING:HEATING_WATER"],
     });
+    expect(constructionNormativeRegistryV1.get(WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID)).toMatchObject({
+      authority: "Wavin",
+      document_code: WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_NORM_ID,
+      product_profile_applicability: [WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID],
+    });
+    expect(WAVIN_HEP2O_CLIP_SOURCE_METADATA).toHaveLength(3);
+    for (const variant of [{
+      nominal_diameter_mm: 22,
+      orientation: "horizontal",
+      source_id: WAVIN_HEP2O_22MM_HORIZONTAL_CLIP_SOURCE_ID,
+    }, {
+      nominal_diameter_mm: 15,
+      orientation: "vertical",
+      source_id: WAVIN_HEP2O_15MM_VERTICAL_CLIP_SOURCE_ID,
+    }] as const) {
+      const resolution = resolveWavinHep2O(exactWavinHep2OInputs({
+        route_length_m: explicit(1, "m"),
+        nominal_diameter_mm: explicit(variant.nominal_diameter_mm, "mm"),
+        hep2o_support_orientation: explicit(variant.orientation),
+        hep2o_support_span_lengths_m: explicit("0.5;0.5", "m"),
+      }));
+      expect(resolution).toMatchObject({
+        status: "APPLIED",
+        calculated_support_quantity_piece: 3,
+        source_ids: [WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID, variant.source_id],
+      });
+      expect(resolution.parameter_values.support_count).toMatchObject({
+        value: 3,
+        source_id: variant.source_id,
+      });
+    }
   });
 
   test("routes Wavin Hep2O SmartSleeve only to its canonical HVAC child row", () => {
@@ -894,13 +974,20 @@ describe("professional physical norm applicability V1", () => {
       if (parameter.parameter_id === "connection_count") return 6;
       if (parameter.parameter_id === "prepared_pipe_end_count") return 10;
       if (parameter.parameter_id === "hep2o_system_variant") return "WAVIN_HEP2O_PUSH_FIT";
+      if (parameter.parameter_id === "route_length_m") return 1.2;
+      if (parameter.parameter_id === "nominal_diameter_mm") return 15;
+      if (parameter.parameter_id === "hep2o_support_orientation") return "horizontal";
+      if (parameter.parameter_id === "hep2o_support_span_lengths_m") return "0.6;0.6";
+      if (parameter.parameter_id === "hep2o_support_anchor_node_count") return 3;
+      if (parameter.parameter_id === "hep2o_support_layout_reference") return "ОВ-31.S-04, участок H01-H03";
+      if (parameter.parameter_id === "hep2o_support_anchor_positions_verified") return true;
       if (parameter.parameter_id === "hep2o_joint_topology_reference") {
         return "ОВ-31.S-04, узлы H01-H06, 10 подготовленных концов";
       }
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "smart_sleeve_quantity_piece")
+      .filter((parameter) => !["smart_sleeve_quantity_piece", "support_count"].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, {
         value: parameter.parameter_id === "scope_capability"
           ? inventory.scope_capability
@@ -921,6 +1008,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
       .toContain(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID);
     const sleeveRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:hep2o_smart_sleeves`);
     expect(sleeveRow).toMatchObject({ quantity: 10, unit: "item" });
@@ -933,10 +1022,29 @@ describe("professional physical norm applicability V1", () => {
       source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
       source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
       calculated_smart_sleeve_quantity_piece: 10,
+      calculated_support_quantity_piece: 5,
+    });
+    const supportRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:supports`);
+    expect(supportRow).toMatchObject({ quantity: 5, unit: "item" });
+    expect(supportRow?.sourceParameters?.normativeSourceIds).toEqual([
+      "kg_krer_2015_application_guidance",
+      WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+    ]);
+    expect(supportRow?.sourceParameters?.parameterSourceIds).toEqual([
+      WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID,
+    ]);
+    expect(supportRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      calculated_support_quantity_piece: 5,
+      source_ids: [WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID, WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID],
     });
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID)))
+      .toHaveLength(1);
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(WAVIN_HEP2O_15MM_HORIZONTAL_CLIP_SOURCE_ID)))
       .toHaveLength(1);
   });
 });
