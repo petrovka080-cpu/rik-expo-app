@@ -33,7 +33,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   formwork: "2026.07-wave2a",
   heating: "2026.09-uponor-ufh-pipe-spacing-r2",
   insulation: "2026.09-rockwool-comfortboard80-primary-review-r2",
-  landscaping: "2026.09-rain-bird-xfd-dripline-r1",
+  landscaping: "2026.09-rain-bird-xfd-d39717e-primary-review-r2",
   low_voltage: "2026.09-legrand-049272-bus-scs-primary-review-r2",
   masonry: "2026.07-wave2a",
   metalwork: "2026.09-jotun-hardtop-xp-primary-review-r2",

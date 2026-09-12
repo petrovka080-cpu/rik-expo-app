@@ -514,6 +514,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedLandscapingPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/landscaping.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1585,6 +1611,64 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 200,
         mode: "aggregate_approved_bus_scs_circuits_before_explicit_reel_cut_plan",
+      },
+    }]);
+    expect(reviewedLandscapingPack).toMatchObject({
+      source_pack_version: "2026.09-rain-bird-xfd-d39717e-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedLandscapingPack.review_evidence?.items).toMatchObject([{
+      norm_id: "landscaping_rain_bird_xfd_dripline_m_route_m_v1",
+      source_url: "https://www.rainbird.com/sites/default/files/media/documents/2022-04/d39717e-xfd-dripline-tech-spec-042122.pdf",
+      supporting_source_urls: [
+        "https://www.rainbird.com/sites/default/files/media/documents/2022-01/d40024c-xf-series-dripline-design-installation-and-maintenance-guide-011022.pdf",
+      ],
+      verified_facts: expect.arrayContaining([
+        "technical_specification_identifier_is_d39717e_04_22",
+        "published_emitter_spacings_are_30_5_and_45_7_cm",
+        "published_emitter_flows_are_2_3_and_3_5_l_per_hour_in_d39717e",
+        "maximum_lateral_length_requires_exact_pressure_emitter_spacing_and_flow_table_cell",
+        "design_guide_requires_120_mesh_filtration",
+        "manufacturer_sources_do_not_publish_a_general_project_cutting_waste_percentage",
+      ]),
+    }]);
+    expect(reviewedLandscapingPack.norm_items).toMatchObject([{
+      norm_id: "landscaping_rain_bird_xfd_dripline_m_route_m_v1",
+      parameters: expect.arrayContaining([
+        "approved_dripline_route_linear_m",
+        "irrigated_planting_area_and_layout",
+        "exact_xfd_model",
+        "emitter_spacing_cm",
+        "emitter_flow_l_h",
+        "zone_inlet_pressure_bar",
+        "maximum_lateral_length_table_check",
+        "zone_total_flow_l_h",
+        "filtration_mesh",
+        "selected_coil_length_m",
+        "reusable_coil_remainder_plan",
+      ]),
+      rate: {
+        value: 1,
+        unit: "geometric dripline linear m/hydraulically approved route linear m before fittings, headers, flush points and coil cut plan; not a published design allowance",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        technical_specification: "D39717E 04/22",
+        outer_diameter_mm: 16,
+        emitter_spacing_cm: [30.5, 45.7],
+        emitter_flow_l_h: [2.3, 3.5],
+        pressure_range_bar: [0.58, 4.14],
+        required_filtration_mesh: 120,
+        available_coil_lengths_m: [30.5, 76.2, 152.4],
+        exact_maximum_lateral_table_cell_required: true,
+        rate_is_geometric_identity_not_manufacturer_consumption_norm: true,
+        additional_waste_not_published: true,
+        automatic_production_binding_for_generic_landscaping_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "net_approved_route_m_before_explicit_30_5_76_2_or_152_4_m_coil_cut_plan",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>

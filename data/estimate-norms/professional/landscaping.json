@@ -1,41 +1,94 @@
 {
   "work_group": "landscaping",
-  "source_pack_version": "2026.09-rain-bird-xfd-dripline-r1",
+  "source_pack_version": "2026.09-rain-bird-xfd-d39717e-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "landscaping_rain_bird_xfd_dripline_m_route_m_v1",
+        "source_url": "https://www.rainbird.com/sites/default/files/media/documents/2022-04/d39717e-xfd-dripline-tech-spec-042122.pdf",
+        "supporting_source_urls": [
+          "https://www.rainbird.com/sites/default/files/media/documents/2022-01/d40024c-xf-series-dripline-design-installation-and-maintenance-guide-011022.pdf"
+        ],
+        "verified_facts": [
+          "technical_specification_identifier_is_d39717e_04_22",
+          "xfd_is_16_mm_flexible_polyethylene_dripline_with_pressure_compensating_inline_emitters",
+          "published_emitter_spacings_are_30_5_and_45_7_cm",
+          "published_emitter_flows_are_2_3_and_3_5_l_per_hour_in_d39717e",
+          "published_pressure_compensation_range_is_8_5_to_60_psi",
+          "maximum_lateral_length_requires_exact_pressure_emitter_spacing_and_flow_table_cell",
+          "design_guide_requires_120_mesh_filtration",
+          "coil_lengths_are_model_specific_and_do_not_define_project_route_quantity",
+          "one_dripline_metre_per_route_metre_is_geometric_identity_not_a_published_design_allowance",
+          "manufacturer_sources_do_not_publish_a_general_project_cutting_waste_percentage"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "landscaping_rain_bird_xfd_dripline_m_route_m_v1",
-      "name_ru": "Капельная линия Rain Bird XFD по длине утверждённой трассы полива",
-      "parameters": ["approved_dripline_route_linear_m", "emitter_spacing_cm", "emitter_flow_l_h", "zone_hydraulic_design"],
+      "name_ru": "Rain Bird XFD: геометрическая ведомость капельной линии по гидравлически проверенной раскладке",
+      "parameters": [
+        "approved_dripline_route_linear_m",
+        "irrigated_planting_area_and_layout",
+        "exact_xfd_model",
+        "emitter_spacing_cm",
+        "emitter_flow_l_h",
+        "zone_inlet_pressure_bar",
+        "maximum_lateral_length_table_check",
+        "zone_total_flow_l_h",
+        "zone_hydraulic_design",
+        "water_source_and_quality",
+        "filtration_mesh",
+        "pressure_regulation_scope",
+        "header_and_manifold_schedule",
+        "fitting_schedule",
+        "flush_point_schedule",
+        "elevation_and_slope_conditions",
+        "selected_coil_length_m",
+        "reusable_coil_remainder_plan",
+        "project_cutting_allowance_percent"
+      ],
       "unit": "linear_m",
       "rate": {
         "value": 1,
-        "unit": "dripline linear m/approved route linear m before fitting and coil remainder allowance"
+        "unit": "geometric dripline linear m/hydraulically approved route linear m before fittings, headers, flush points and coil cut plan; not a published design allowance"
       },
       "applicability": {
-        "product_family": "Rain Bird XF Dripline XFD",
-        "diameter_mm": 16,
-        "standard_emitter_spacing_cm": [30.5, 45.7],
-        "europe_emitter_spacing_cm": [33, 50],
+        "product_family": "Rain Bird XFD Dripline",
+        "technical_specification": "D39717E 04/22",
+        "outer_diameter_mm": 16,
+        "emitter_spacing_cm": [30.5, 45.7],
         "emitter_flow_l_h": [2.3, 3.5],
-        "pressure_range_bar": [1.38, 4.14],
+        "pressure_range_psi": [8.5, 60],
+        "pressure_range_bar": [0.58, 4.14],
         "required_filtration_mesh": 120,
-        "available_coil_lengths_m": [30.5, 76.2, 152.4, 100],
-        "fittings_flush_points_and_headers_are_separate": true,
-        "hydraulic_zone_design_required": true
+        "available_coil_lengths_m": [30.5, 76.2, 152.4],
+        "maximum_lateral_length_varies_by_pressure_spacing_and_flow": true,
+        "exact_maximum_lateral_table_cell_required": true,
+        "zone_flow_pressure_and_water_quality_design_required": true,
+        "fittings_headers_flush_points_and_pressure_regulation_are_separate": true,
+        "coil_remainder_reuse_and_cut_plan_required": true,
+        "rate_is_geometric_identity_not_manufacturer_consumption_norm": true,
+        "additional_waste_not_published": true,
+        "automatic_production_binding_for_generic_landscaping_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "selected_coil",
         "package_size": 1,
-        "mode": "ceil_after_zone_layout_and_available_coil_selection"
+        "mode": "net_approved_route_m_before_explicit_30_5_76_2_or_152_4_m_coil_cut_plan"
       },
       "source": {
-        "title": "Rain Bird XF Dripline specifications",
-        "url": "https://www.rainbird.com/professionals/specifier/dripline",
-        "page": "XFD specifications: 16 mm tubing, emitter spacing, flow rates, pressure, filtration and coil lengths",
+        "title": "Rain Bird XFD Dripline technical specification and design guide",
+        "url": "https://www.rainbird.com/sites/default/files/media/documents/2022-04/d39717e-xfd-dripline-tech-spec-042122.pdf",
+        "page": "D39717E 04/22: emitter spacing, flow and maximum lateral tables; D40024C design guide: operating range, filtration and coil models",
         "provenance": "manufacturer_technical_cards"
       }
     }
