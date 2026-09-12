@@ -94,6 +94,31 @@ export const KNAUF_D112_WALL_FASTENER_NORM_ID =
 export const KNAUF_D112_WALL_FASTENER_SOURCE_ID =
   `src_professional_norm_pack_${KNAUF_D112_WALL_FASTENER_NORM_ID}` as const;
 
+export const KNAUF_D112_TN25_SCREW_NORM_ID =
+  "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1" as const;
+
+export const KNAUF_D112_TN25_SCREW_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_D112_TN25_SCREW_NORM_ID}` as const;
+
+const KNAUF_D112_TN25_SOURCE_PARAMETER_IDS = Object.freeze([
+  "ceiling_area_m2",
+  "system_variant",
+  "board_layer_count",
+  "board_thickness_mm",
+] as const);
+
+const KNAUF_D112_TN25_BOARD_THICKNESS_MM = 12.5 as const;
+
+const KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "length_m",
+  "width_m",
+  "system_passport_reference",
+  "system_variant",
+  "board_layer_count",
+  "board_thickness_mm",
+] as const);
+
 export const KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID =
   "manufacturer-profile:knauf-fugenfueller-leicht:perimeter-joint:25kg:v1" as const;
 
@@ -392,6 +417,55 @@ export const KNAUF_D112_WALL_FASTENER_SOURCE_METADATA = Object.freeze({
     work_group: ceilingsNormPack.work_group,
     source_pack_version: ceilingsNormPack.source_pack_version,
     norm_item: knaufD112WallFastenerNorm,
+  }),
+});
+
+const knaufD112Tn25ScrewNorm = (() => {
+  const found = ceilingsNormPack.norm_items.find((item) => item.norm_id === KNAUF_D112_TN25_SCREW_NORM_ID);
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_D112_TN25_SCREW_NORM_ID}`);
+  return found;
+})();
+
+if (
+  ceilingsNormPack.work_group !== "ceilings" ||
+  knaufD112Tn25ScrewNorm.unit !== "piece" ||
+  knaufD112Tn25ScrewNorm.name_ru !==
+    "Саморез Knauf TN 3,5 × 25 мм для однослойной обшивки потолка D112" ||
+  knaufD112Tn25ScrewNorm.rate.value !== 17 ||
+  knaufD112Tn25ScrewNorm.rate.unit !== "piece/m2 for D112 variant 1" ||
+  knaufD112Tn25ScrewNorm.applicability.system !== "Knauf D112" ||
+  knaufD112Tn25ScrewNorm.applicability.variant !== "standard_12_5_mm_single_layer" ||
+  knaufD112Tn25ScrewNorm.applicability.board_layer_count !== 1 ||
+  knaufD112Tn25ScrewNorm.applicability.screw !== "TN 3.5 x 25 mm" ||
+  knaufD112Tn25ScrewNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
+  knaufD112Tn25ScrewNorm.rounding.package_size !== 1 ||
+  knaufD112Tn25ScrewNorm.rounding.mode !== "ceil_to_whole_piece_from_d112_reference_average" ||
+  knaufD112Tn25ScrewNorm.parameters.length !== KNAUF_D112_TN25_SOURCE_PARAMETER_IDS.length ||
+  KNAUF_D112_TN25_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !knaufD112Tn25ScrewNorm.parameters.includes(parameterId),
+  )
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_TN25_SCREW_NORM_ID}`);
+}
+
+export const KNAUF_D112_TN25_SCREW_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+  norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
+  source_document_version: ceilingsNormPack.source_pack_version,
+  source_title: knaufD112Tn25ScrewNorm.source.title,
+  source_url: knaufD112Tn25ScrewNorm.source.url,
+  exact_locator: knaufD112Tn25ScrewNorm.source.page,
+  rate_value: knaufD112Tn25ScrewNorm.rate.value,
+  rate_unit: knaufD112Tn25ScrewNorm.rate.unit,
+  system: knaufD112Tn25ScrewNorm.applicability.system,
+  variant: knaufD112Tn25ScrewNorm.applicability.variant,
+  board_layer_count: knaufD112Tn25ScrewNorm.applicability.board_layer_count,
+  board_thickness_mm: KNAUF_D112_TN25_BOARD_THICKNESS_MM,
+  screw: knaufD112Tn25ScrewNorm.applicability.screw,
+  definition_hash: estimateDeterministicHash({
+    work_group: ceilingsNormPack.work_group,
+    source_pack_version: ceilingsNormPack.source_pack_version,
+    norm_item: knaufD112Tn25ScrewNorm,
   }),
 });
 
@@ -845,6 +919,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_perimeter_track_anchors"] as const,
 }, {
+  norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
+  work_group: "ceilings",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "CLAD",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+  source_document_version: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_first_layer_screws"] as const,
+}, {
   norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
   work_group: "drywall",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -957,6 +1045,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_resource_quantity_m?: number;
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
+  calculated_tn25_screw_quantity_piece?: number;
   calculated_perimeter_joint_compound_quantity_kg?: number;
   calculated_forbo_adhesive_procurement_quantity_ml?: number;
   calculated_cn69_net_quantity_kg?: number;
@@ -1440,6 +1529,135 @@ function resolveKnaufD112ReferenceCeiling(
     consumed_parameter_ids: [...KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS],
     produced_parameter_ids: ["quantity_perimeter_track_anchors"],
     calculated_wall_fastener_quantity_piece: calculatedWallFastenerQuantityPiece,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveKnaufD112Tn25Screws(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+    parameterId,
+    explicitValue(parameterValuesInput, parameterId),
+  ]));
+  const missing = KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const lengthM = finiteNumber(explicit.length_m);
+  const widthM = finiteNumber(explicit.width_m);
+  const boardLayerCount = finiteNumber(explicit.board_layer_count);
+  const boardThicknessMm = finiteNumber(explicit.board_thickness_mm);
+  const systemVariant = primitiveString(explicit.system_variant!);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const [referenceLengthM, referenceWidthM] = KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.reference_ceiling_m;
+  const referenceAreaM2 = referenceLengthM * referenceWidthM;
+  const geometryMatches = areaM2 !== null && lengthM !== null && widthM !== null &&
+    Math.abs(areaM2 - referenceAreaM2) <= 1e-9 &&
+    Math.abs(lengthM - referenceLengthM) <= 1e-9 &&
+    Math.abs(widthM - referenceWidthM) <= 1e-9 &&
+    Math.abs(areaM2 - lengthM * widthM) <= 1e-9;
+  const applicabilityBlockers = [
+    geometryMatches
+      ? ""
+      : `PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=${lengthM}:width_m=${widthM}:area_m2=${areaM2}`,
+    systemPassportReference
+      ? ""
+      : "PROJECT_VALUE_INVALID:system_passport_reference",
+    systemVariant === KNAUF_D112_TN25_SCREW_SOURCE_METADATA.variant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_TN25_SCREW_NORM_ID}:system_variant=${systemVariant}`,
+    boardLayerCount === KNAUF_D112_TN25_SCREW_SOURCE_METADATA.board_layer_count
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_TN25_SCREW_NORM_ID}:board_layer_count=${boardLayerCount}`,
+    boardThicknessMm === KNAUF_D112_TN25_SCREW_SOURCE_METADATA.board_thickness_mm
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_TN25_SCREW_NORM_ID}:board_thickness_mm=${boardThicknessMm}`,
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedTn25ScrewQuantityPiece = Math.ceil(
+    areaM2! * KNAUF_D112_TN25_SCREW_SOURCE_METADATA.rate_value - 1e-9,
+  );
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_first_layer_screws"));
+  if (explicitQuantity !== null && explicitQuantity !== calculatedTn25ScrewQuantityPiece) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:quantity_first_layer_screws=${explicitQuantity}:norm_value=${calculatedTn25ScrewQuantityPiece}`,
+      ],
+      [...KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_first_layer_screws"],
+      KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_D112_TN25_SCREW_SOURCE_METADATA.system}`,
+    `system_variant=${systemVariant}`,
+    `system_passport_reference=${systemPassportReference}`,
+    `reference_ceiling=${referenceLengthM}x${referenceWidthM}m`,
+    `ceiling_area_m2=canonical(area_m2)=${areaM2}`,
+    `board_layer_count=${boardLayerCount}`,
+    `board_thickness_mm=${boardThicknessMm}`,
+    `screw=${KNAUF_D112_TN25_SCREW_SOURCE_METADATA.screw}`,
+    `formula=ceil(area_m2*${KNAUF_D112_TN25_SCREW_SOURCE_METADATA.rate_value})`,
+    "loss_and_waste_excluded=true",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_first_layer_screws: {
+      value: calculatedTn25ScrewQuantityPiece,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+    norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
+    source_document_version: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_first_layer_screws"],
+    calculated_tn25_screw_quantity_piece: calculatedTn25ScrewQuantityPiece,
     parameter_values: parameterValues,
     blockers: [] as const,
   };
@@ -2335,13 +2553,18 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
     );
   }
   if (productProfileId === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID) {
-    if (
+    const exactFlatCeilingRoute =
       input.technology_class === "FLAT_CEILING" &&
-      input.operation_class === "FRAME" &&
       input.material_system === "FLAT_CEILING" &&
-      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+      input.scope_mode === "FULL_APPLICABLE_SCOPE";
+    if (
+      exactFlatCeilingRoute &&
+      input.operation_class === "FRAME"
     ) {
       return resolveKnaufD112ReferenceCeiling(productProfileId, input.parameter_values);
+    }
+    if (exactFlatCeilingRoute && input.operation_class === "CLAD") {
+      return resolveKnaufD112Tn25Screws(productProfileId, input.parameter_values);
     }
     return nonApplied(
       "NOT_REQUESTED",
@@ -2349,7 +2572,9 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       input.parameter_values,
       [],
       [],
-      KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+      input.operation_class === "CLAD"
+        ? KNAUF_D112_TN25_SCREW_SOURCE_METADATA
+        : KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
     );
   }
   if (productProfileId === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID) {

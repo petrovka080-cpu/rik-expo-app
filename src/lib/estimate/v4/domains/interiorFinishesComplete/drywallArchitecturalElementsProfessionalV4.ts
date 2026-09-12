@@ -288,17 +288,30 @@ function knaufD112ReferenceApplicabilityParameters(
   variant: DrywallArchitecturalElementVariantV4,
   system: DrywallArchitecturalElementWorkContractV4["system"],
 ): ParameterSpec[] {
-  if (system !== "CEILING" || operation !== "FRAME" || variant !== "standard") return [];
+  if (
+    system !== "CEILING" ||
+    variant !== "standard" ||
+    (operation !== "FRAME" && operation !== "CLAD")
+  ) return [];
   const condition = {
     kind: "EQUALS",
     parameter_id: "product_profile_id",
     value: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   } as const;
-  return [
+  const shared = [
     parameter("system_variant", "Вариант потолочной системы Knauf D112", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
       choices: [{ value: "standard_12_5_mm_single_layer", label_ru: "Стандартный однослойный вариант 12,5 мм" }],
       condition,
     }),
+  ];
+  if (operation === "CLAD") {
+    return [
+      ...shared,
+      { ...numberParameter("board_thickness_mm", "Толщина листа системы Knauf D112", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 12.5, 12.5), condition },
+    ];
+  }
+  return [
+    ...shared,
     parameter("substrate_type", "Материал основания для крепления пристенного профиля", "text", "PROJECT_QUANTITY", FULL_SCOPE, null, { condition }),
     parameter("substrate_fastener_reference", "Точный тип и паспорт крепежа для выбранного основания", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     parameter("substrate_fastener_approved", "Крепёж подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
@@ -732,6 +745,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "material_certificate_reference", "system_passport_reference", "normative_rate_code", "area_m2",
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
+    "board_layer_count", "board_thickness_mm",
     "perimeter_linear_m", "cladding_thickness_mm", "perimeter_joint_consumption_kg_linear_m",
     "perimeter_connection_joint_method",
     ...contract.non_cost_dependencies,

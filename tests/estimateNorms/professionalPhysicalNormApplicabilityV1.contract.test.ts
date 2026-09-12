@@ -12,6 +12,9 @@ import {
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_D112_TN25_SCREW_NORM_ID,
+  KNAUF_D112_TN25_SCREW_SOURCE_ID,
+  KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
   KNAUF_D112_WALL_FASTENER_NORM_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
@@ -69,6 +72,7 @@ const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
 const CONDITIONER_INSTALL_WORK_KEY = "heating_hvac_interior_conditioner_install_standard";
 const HEATING_PIPE_INSTALL_WORK_KEY = "heating_hvac_interior_heating_pipe_install_standard";
 const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
+const FLAT_CEILING_CLAD_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_clad_standard";
 const FLAT_CEILING_FINISH_JOINT_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_finish_joint_standard";
 const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
 const BASEBOARD_GLUE_WORK_KEY = "flooring_interior_baseboard_glue_standard";
@@ -187,6 +191,32 @@ function resolveKnaufD112(values: Readonly<Record<string, ProfessionalParameterV
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "FLAT_CEILING",
     operation_class: "FRAME",
+    material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactKnaufD112Tn25Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID),
+    system_passport_reference: explicit("Knauf D11, D112 variant 1, page 28"),
+    area_m2: explicit(100, "m2"),
+    length_m: explicit(10, "m"),
+    width_m: explicit(10, "m"),
+    system_variant: explicit("standard_12_5_mm_single_layer"),
+    board_layer_count: explicit(1, "item"),
+    board_thickness_mm: explicit(12.5, "mm"),
+    ...changes,
+  };
+}
+
+function resolveKnaufD112Tn25(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "FLAT_CEILING",
+    operation_class: "CLAD",
     material_system: "FLAT_CEILING",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
@@ -853,6 +883,136 @@ describe("professional physical norm applicability V1", () => {
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_WALL_FASTENER_SOURCE_ID)))
       .toHaveLength(1);
+  });
+
+  test("keeps the D112 TN25 rate closed outside the exact single-layer 12.5 mm system", () => {
+    const { board_thickness_mm: _omitted, ...withoutThickness } = exactKnaufD112Tn25Inputs();
+    expect(resolveKnaufD112Tn25(withoutThickness)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:board_thickness_mm"],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      board_layer_count: explicit(2, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_TN25_SCREW_NORM_ID}:board_layer_count=2`,
+      ],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      board_thickness_mm: explicit(9.5, "mm"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_TN25_SCREW_NORM_ID}:board_thickness_mm=9.5`,
+      ],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      quantity_first_layer_screws: explicit(500, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:quantity_first_layer_screws=500:norm_value=1700",
+      ],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      length_m: explicit(12, "m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=12:width_m=10:area_m2=100",
+      ],
+    });
+  });
+
+  test("derives deterministic D112 TN25 screws only for the explicit reference ceiling", () => {
+    const input = exactKnaufD112Tn25Inputs();
+    const first = resolveKnaufD112Tn25(input);
+    const second = resolveKnaufD112Tn25(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+      norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
+      source_document_version: "2026.09-knauf-d11-d112-primary-review-r2",
+      source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
+      calculated_tn25_screw_quantity_piece: 1700,
+      produced_parameter_ids: ["quantity_first_layer_screws"],
+      blockers: [],
+    });
+    expect(first.parameter_values.quantity_first_layer_screws).toMatchObject({
+      value: 1700,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.quantity_first_layer_screws).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(KNAUF_D112_TN25_SCREW_SOURCE_ID)).toMatchObject({
+      authority: "Knauf",
+      product_profile_applicability: [KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["FLAT_CEILING"],
+      operation_class_applicability: ["CLAD"],
+    });
+  });
+
+  test("routes D112 TN25 only to the canonical first-layer screw BOQ row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
+      row.work_key === FLAT_CEILING_CLAD_WORK_KEY);
+    if (!inventory) throw new Error("KNAUF_D112_RUNTIME_CLAD_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("KNAUF_D112_RUNTIME_CLAD_SCHEMA_MISSING");
+    expect(schema.parameters.filter((parameter) =>
+      ["system_variant", "board_thickness_mm"].includes(parameter.parameter_id))
+      .every((parameter) => parameter.required_when.kind === "EQUALS" &&
+        parameter.required_when.parameter_id === "product_profile_id" &&
+        parameter.required_when.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID)).toBe(true);
+
+    const knaufValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "system_passport_reference") return "Knauf D11, D112 variant 1, page 28";
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-D112-CLAD-RATE";
+      if (parameter.parameter_id === "project_type") return "INTERIOR-FLAT-CEILING-D112";
+      if (parameter.parameter_id === "area_m2") return 100;
+      if (parameter.parameter_id === "length_m" || parameter.parameter_id === "width_m") return 10;
+      if (parameter.parameter_id === "perimeter_m") return 40;
+      if (parameter.parameter_id === "system_variant") return "standard_12_5_mm_single_layer";
+      if (parameter.parameter_id === "board_layer_count") return 1;
+      if (parameter.parameter_id === "board_thickness_mm") return 12.5;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "quantity_first_layer_screws")
+      .map((parameter) => [parameter.parameter_id, { value: knaufValue(parameter), source: "user" }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Обшивка плоского потолка Knauf D112 10 × 10 м, один слой 12,5 мм, TN 25",
+      selectedWorkKey: FLAT_CEILING_CLAD_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
+    const screwRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:first_layer_screws`);
+    expect(screwRow).toMatchObject({ quantity: 1700, unit: "item" });
+    expect(screwRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
+    expect(screwRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
+    expect(screwRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+      source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
+      calculated_tn25_screw_quantity_piece: 1700,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_TN25_SCREW_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps the Knauf Fugenfueller perimeter norm fail-closed without an exact rate and method", () => {
