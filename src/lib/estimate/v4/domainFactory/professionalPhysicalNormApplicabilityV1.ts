@@ -1,5 +1,6 @@
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
+import electricalNormPack from "../../../../../data/estimate-norms/professional/electrical.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
@@ -46,6 +47,15 @@ export const KNAUF_D112_WALL_FASTENER_NORM_ID =
 
 export const KNAUF_D112_WALL_FASTENER_SOURCE_ID =
   `src_professional_norm_pack_${KNAUF_D112_WALL_FASTENER_NORM_ID}` as const;
+
+export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:legrand-p31:symmetrical-tray:75-300mm:v1" as const;
+
+export const LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID =
+  "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1" as const;
+
+export const LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID =
+  `src_professional_norm_pack_${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}` as const;
 
 const uponorNorm = (() => {
   const found = heatingNormPack.norm_items.find((item) => item.norm_id === UPONOR_UFH_150MM_NORM_ID);
@@ -195,6 +205,64 @@ export const KNAUF_D112_WALL_FASTENER_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const legrandP31TrayJointFastenerNorm = (() => {
+  const found = electricalNormPack.norm_items.find(
+    (item) => item.norm_id === LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}`);
+  }
+  return found;
+})();
+const legrandP31CouplerOptions = "coupler_options" in legrandP31TrayJointFastenerNorm.applicability
+  ? legrandP31TrayJointFastenerNorm.applicability.coupler_options
+  : null;
+
+if (
+  electricalNormPack.work_group !== "electrical" ||
+  legrandP31TrayJointFastenerNorm.unit !== "piece" ||
+  legrandP31TrayJointFastenerNorm.rate.value !== 8 ||
+  legrandP31TrayJointFastenerNorm.rate.unit !== "M6 fasteners/tray joint for 75-300 mm tray" ||
+  !("system" in legrandP31TrayJointFastenerNorm.applicability) ||
+  legrandP31TrayJointFastenerNorm.applicability.system !== "Legrand P31 symmetrical cable tray" ||
+  !("tray_width_mm_min" in legrandP31TrayJointFastenerNorm.applicability) ||
+  legrandP31TrayJointFastenerNorm.applicability.tray_width_mm_min !== 75 ||
+  !("tray_width_mm_max" in legrandP31TrayJointFastenerNorm.applicability) ||
+  legrandP31TrayJointFastenerNorm.applicability.tray_width_mm_max !== 300 ||
+  !legrandP31CouplerOptions ||
+  legrandP31CouplerOptions.length !== 2 ||
+  !legrandP31CouplerOptions.includes("EP Coupler LG-341213") ||
+  !legrandP31CouplerOptions.includes("ER Coupler LG-482219") ||
+  !("tightening_torque_nm" in legrandP31TrayJointFastenerNorm.applicability) ||
+  legrandP31TrayJointFastenerNorm.applicability.tightening_torque_nm !== 11 ||
+  !("other_widths_require_their_own_table_row" in legrandP31TrayJointFastenerNorm.applicability) ||
+  legrandP31TrayJointFastenerNorm.applicability.other_widths_require_their_own_table_row !== true ||
+  legrandP31TrayJointFastenerNorm.rounding.mode !== "ceil"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}`);
+}
+
+export const LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA = Object.freeze({
+  source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+  norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+  source_document_version: electricalNormPack.source_pack_version,
+  source_title: legrandP31TrayJointFastenerNorm.source.title,
+  source_url: legrandP31TrayJointFastenerNorm.source.url,
+  exact_locator: legrandP31TrayJointFastenerNorm.source.page,
+  rate_value: legrandP31TrayJointFastenerNorm.rate.value,
+  rate_unit: legrandP31TrayJointFastenerNorm.rate.unit,
+  system: legrandP31TrayJointFastenerNorm.applicability.system,
+  tray_width_mm_min: legrandP31TrayJointFastenerNorm.applicability.tray_width_mm_min,
+  tray_width_mm_max: legrandP31TrayJointFastenerNorm.applicability.tray_width_mm_max,
+  coupler_options: [...legrandP31CouplerOptions],
+  tightening_torque_nm: legrandP31TrayJointFastenerNorm.applicability.tightening_torque_nm,
+  definition_hash: estimateDeterministicHash({
+    work_group: electricalNormPack.work_group,
+    source_pack_version: electricalNormPack.source_pack_version,
+    norm_item: legrandP31TrayJointFastenerNorm,
+  }),
+});
+
 const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "zone_area_m2",
   "designed_pipe_spacing_mm",
@@ -235,6 +303,18 @@ const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "substrate_fastener_reference",
   "substrate_fastener_approved",
   "ceiling_perimeter_anchor_spacing_m",
+] as const);
+
+const LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "product_specification_id",
+  "containment_type",
+  "containment_width_mm",
+  "tray_joint_count",
+  "tray_width_mm",
+  "coupler_reference",
+  "manufacturer_system_profile_id",
+  "installation_manual_reference",
+  "tightening_torque_nm",
 ] as const);
 
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
@@ -293,6 +373,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_perimeter_track_anchors"] as const,
+}, {
+  norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+  work_group: "electrical",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "CABLE_CHANNEL",
+  operation_class: "INSTALL",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
+  source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+  source_document_version: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_containment_joint_bolt"] as const,
 }]);
 
 type AppliedPhysicalNormResolutionV1 = {
@@ -311,6 +405,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_resource_quantity_m?: number;
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
+  calculated_tray_joint_fastener_quantity_piece?: number;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
   blockers: readonly [];
   deterministic_hash: string;
@@ -810,6 +905,137 @@ function resolveKnaufD112ReferenceCeiling(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveLegrandP31TrayJointFasteners(
+  productProfileId: typeof LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+    parameterId,
+    explicitValue(parameterValuesInput, parameterId),
+  ]));
+  const missing = LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const jointCount = finiteNumber(explicit.tray_joint_count);
+  const trayWidthMm = finiteNumber(explicit.tray_width_mm);
+  const containmentWidthMm = finiteNumber(explicit.containment_width_mm);
+  const tighteningTorqueNm = finiteNumber(explicit.tightening_torque_nm);
+  const containmentType = primitiveString(explicit.containment_type!);
+  const couplerReference = primitiveString(explicit.coupler_reference!);
+  const manufacturerSystemProfileId = primitiveString(explicit.manufacturer_system_profile_id!);
+  const productSpecificationId = primitiveString(explicit.product_specification_id!);
+  const installationManualReference = primitiveString(explicit.installation_manual_reference!);
+  const applicabilityBlockers = [
+    jointCount !== null && Number.isInteger(jointCount) && jointCount > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:tray_joint_count",
+    trayWidthMm !== null &&
+        trayWidthMm >= LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.tray_width_mm_min &&
+        trayWidthMm <= LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.tray_width_mm_max
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:tray_width_mm=${trayWidthMm}`,
+    containmentWidthMm !== null && trayWidthMm !== null && Math.abs(containmentWidthMm - trayWidthMm) <= 1e-9
+      ? ""
+      : `PHYSICAL_NORM_PROJECT_VALUE_CONFLICT:containment_width_mm=${containmentWidthMm}:tray_width_mm=${trayWidthMm}`,
+    containmentType === "TRAY"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:containment_type=${containmentType}`,
+    couplerReference && LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.coupler_options.includes(couplerReference)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:coupler_reference=${couplerReference}`,
+    manufacturerSystemProfileId === LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:manufacturer_system_profile_id=${manufacturerSystemProfileId}`,
+    tighteningTorqueNm === LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.tightening_torque_nm
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:tightening_torque_nm=${tighteningTorqueNm}`,
+    productSpecificationId ? "" : "PROJECT_VALUE_INVALID:product_specification_id",
+    installationManualReference ? "" : "PROJECT_VALUE_INVALID:installation_manual_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedTrayJointFastenerQuantityPiece = Math.ceil(
+    jointCount! * LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.rate_value - 1e-9,
+  );
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_containment_joint_bolt"));
+  if (explicitQuantity !== null && Math.abs(explicitQuantity - calculatedTrayJointFastenerQuantityPiece) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [`PHYSICAL_NORM_VALUE_CONFLICT:quantity_containment_joint_bolt=${explicitQuantity}:norm_value=${calculatedTrayJointFastenerQuantityPiece}`],
+      [...LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_containment_joint_bolt"],
+      LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID}`,
+    `system=${LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.system}`,
+    `tray_joint_count=${jointCount}`,
+    `tray_width_mm=${trayWidthMm}`,
+    `coupler_reference=${couplerReference}`,
+    `tightening_torque_nm=${tighteningTorqueNm}`,
+    `product_specification_id=${productSpecificationId}`,
+    `installation_manual_reference=${installationManualReference}`,
+    `formula=ceil(tray_joint_count*${LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.rate_value})`,
+    "other_widths_require_their_own_table_row=true",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_containment_joint_bolt: {
+      value: calculatedTrayJointFastenerQuantityPiece,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+    norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+    source_document_version: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.source_document_version,
+    source_url: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.source_url,
+    exact_locator: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_containment_joint_bolt"],
+    calculated_tray_joint_fastener_quantity_piece: calculatedTrayJointFastenerQuantityPiece,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   technology_class: string;
   operation_class: string;
@@ -819,6 +1045,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "CABLE_CHANNEL" &&
+      input.operation_class === "INSTALL" &&
+      input.material_system === "CABLE_CHANNEL" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveLegrandP31TrayJointFasteners(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "FLAT_CEILING" &&

@@ -7,6 +7,10 @@ import {
   KNAUF_D112_WALL_FASTENER_NORM_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+  LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+  LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+  LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+  LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
   LINDAB_VSR_NORM_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   LINDAB_VSR_SOURCE_ID,
@@ -28,6 +32,13 @@ import {
   buildInteriorFinishesFromInlineInputV1,
   interiorFinishesDomainFactory,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
+import {
+  ELECTRICAL_DOMAIN_INVENTORY,
+  ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1,
+  ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1,
+  buildElectricalFromInlineInputV1,
+  electricalCompleteDomainFactory,
+} from "../../src/lib/estimate/v4/domains/electricalComplete";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
@@ -35,6 +46,7 @@ const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
 const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
 const CONDITIONER_INSTALL_WORK_KEY = "heating_hvac_interior_conditioner_install_standard";
 const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
+const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -150,6 +162,34 @@ function resolveKnaufD112(values: Readonly<Record<string, ProfessionalParameterV
     technology_class: "FLAT_CEILING",
     operation_class: "FRAME",
     material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactLegrandP31Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID),
+    product_specification_id: explicit("ЭОМ-17.S-04 / Legrand P31"),
+    containment_type: explicit("TRAY"),
+    containment_width_mm: explicit(150, "mm"),
+    tray_joint_count: explicit(5, "item"),
+    tray_width_mm: explicit(150, "mm"),
+    coupler_reference: explicit("EP Coupler LG-341213"),
+    manufacturer_system_profile_id: explicit(LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID),
+    installation_manual_reference: explicit("Legrand FT0955-02, page 11/13, section 3"),
+    tightening_torque_nm: explicit(11, "N_m"),
+    ...changes,
+  };
+}
+
+function resolveLegrandP31(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "CABLE_CHANNEL",
+    operation_class: "INSTALL",
+    material_system: "CABLE_CHANNEL",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -640,6 +680,117 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_WALL_FASTENER_SOURCE_ID)))
+      .toHaveLength(1);
+  });
+
+  test("keeps the Legrand P31 joint norm closed outside its exact width, coupler and torque", () => {
+    expect(resolveLegrandP31(exactLegrandP31Inputs({ tray_width_mm: explicit(400, "mm") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:tray_width_mm=400`,
+        "PHYSICAL_NORM_PROJECT_VALUE_CONFLICT:containment_width_mm=150:tray_width_mm=400",
+      ],
+    });
+    expect(resolveLegrandP31(exactLegrandP31Inputs({ coupler_reference: explicit("Unknown coupler") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:coupler_reference=Unknown coupler`],
+      });
+    expect(resolveLegrandP31(exactLegrandP31Inputs({ tightening_torque_nm: explicit(9, "N_m") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID}:tightening_torque_nm=9`],
+      });
+    expect(resolveProfessionalPhysicalNormParameterValuesV1({
+      technology_class: "POWER_CABLE",
+      operation_class: "INSTALL",
+      material_system: "POWER_CABLE",
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: exactLegrandP31Inputs(),
+    }).status).toBe("NOT_REQUESTED");
+  });
+
+  test("derives eight M6 fasteners per explicit Legrand P31 tray joint", () => {
+    const input = exactLegrandP31Inputs();
+    const first = resolveLegrandP31(input);
+    const second = resolveLegrandP31(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+      norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+      source_document_version: "2026.09-legrand-product-and-installation-r1",
+      source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
+      calculated_tray_joint_fastener_quantity_piece: 40,
+      produced_parameter_ids: ["quantity_containment_joint_bolt"],
+      blockers: [],
+    });
+    expect(first.parameter_values.quantity_containment_joint_bolt).toMatchObject({
+      value: 40,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.quantity_containment_joint_bolt).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID)).toMatchObject({
+      authority: "Legrand",
+      product_profile_applicability: [LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["CABLE_CHANNEL"],
+    });
+  });
+
+  test("routes Legrand P31 only to the canonical tray-joint-bolt BOQ row", () => {
+    const inventory = ELECTRICAL_DOMAIN_INVENTORY.find((row) => row.work_key === CABLE_CHANNEL_INSTALL_WORK_KEY);
+    if (!inventory) throw new Error("LEGRAND_P31_RUNTIME_INSTALL_WORK_MISSING");
+    const technology = electricalCompleteDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = electricalCompleteDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("LEGRAND_P31_RUNTIME_SCHEMA_MISSING");
+    const p31Value = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "product_specification_id") return "ЭОМ-17.S-04 / Legrand P31";
+      if (parameter.parameter_id === "containment_type") return "TRAY";
+      if (parameter.parameter_id === "containment_width_mm" || parameter.parameter_id === "tray_width_mm") return 150;
+      if (parameter.parameter_id === "tray_joint_count") return 5;
+      if (parameter.parameter_id === "coupler_reference") return "EP Coupler LG-341213";
+      if (parameter.parameter_id === "manufacturer_system_profile_id") return LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "installation_manual_reference") return "Legrand FT0955-02, page 11/13, section 3";
+      if (parameter.parameter_id === "tightening_torque_nm") return 11;
+      if (parameter.parameter_id === "exact_krerm_rate_code") return ELECTRICAL_KRERM_INDIVIDUAL_NORM_RESOLUTION_V1;
+      if (parameter.parameter_id === "exact_krerp_rate_code") return ELECTRICAL_KRERP_INDIVIDUAL_RATE_RESOLUTION_V1;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "quantity_containment_joint_bolt")
+      .map((parameter) => [parameter.parameter_id, { value: p31Value(parameter), source: "user" }]));
+
+    const result = buildElectricalFromInlineInputV1({
+      rawInput: "Монтаж симметричного лотка Legrand P31 150 мм, 5 стыков",
+      selectedWorkKey: CABLE_CHANNEL_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
+    const fastenerRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:containment_joint_bolt`);
+    expect(fastenerRow).toMatchObject({ quantity: 40, unit: "item" });
+    expect(fastenerRow?.sourceParameters?.normativeSourceIds).toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
+    expect(fastenerRow?.sourceParameters?.parameterSourceIds).toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
+    expect(fastenerRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+      source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
+      calculated_tray_joint_fastener_quantity_piece: 40,
+    });
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID)))
       .toHaveLength(1);
   });
 });

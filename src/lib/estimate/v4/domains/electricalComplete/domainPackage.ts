@@ -6,6 +6,8 @@ import type {
 } from "../../professionalProjectAssemblyV4";
 import {
   createProfessionalEstimateDomainFactoryV1,
+  LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+  LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
   type ProfessionalAssemblyProfileV1,
   type ProfessionalCanonicalTechnologyV1,
   type ProfessionalDomainParameterDefinitionV1,
@@ -43,9 +45,14 @@ function parameter(
   priority: ProfessionalDomainParameterDefinitionV1["priority"],
   unit_id: string | null,
   formula_consumers: readonly string[],
-  options: { minimum?: number; maximum?: number; choices?: readonly { value: string; label_ru: string }[] } = {},
+  options: {
+    minimum?: number;
+    maximum?: number;
+    choices?: readonly { value: string; label_ru: string }[];
+    condition?: ProfessionalDomainParameterDefinitionV1["visible_when"];
+  } = {},
 ): ProfessionalDomainParameterDefinitionV1 {
-  const condition = priority === "P1" ? FULL_ONLY : ALWAYS;
+  const condition = options.condition ?? (priority === "P1" ? FULL_ONLY : ALWAYS);
   return {
     parameter_id, label_ru, input_type, priority, unit_id,
     ...(options.minimum == null ? {} : { minimum: options.minimum }),
@@ -164,6 +171,7 @@ function schemaFor(row: ElectricalDomainInventoryRow): ProfessionalDomainParamet
       { value: "PROJECT_SPECIFIED", label_ru: "По проекту" },
     ] }),
     parameter("product_specification_id", "Идентификатор точной проектной спецификации и паспортов изделий", "text", "P0", null, []),
+    parameter("product_profile_id", "Паспорт выбранной кабеленесущей системы", "text", "P0", null, []),
     parameter("exact_krerm_rate_code", "Точный шифр применимой расценки КРЕРм 08-2015", "text", "P0", null, []),
     parameter("exact_krerp_rate_code", "Точный шифр применимой расценки КРЕРп 01-2015 или N_A_WITH_REASON", "text", "P0", null, []),
     parameter("price_basis_reference", "Проверяемый источник цен каждой строки", "text", "P0", null, []),
@@ -186,6 +194,24 @@ function schemaFor(row: ElectricalDomainInventoryRow): ProfessionalDomainParamet
         ...(profile.choices ? { choices: profile.choices } : {}),
       },
     ));
+  }
+  if (row.electrical_family === "CABLE_CHANNEL" && row.operation_class === "INSTALL") {
+    const legrandP31Condition = {
+      kind: "EQUALS",
+      parameter_id: "product_profile_id",
+      value: LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
+    } as const;
+    parameters.push(
+      parameter("tray_joint_count", "Количество стыков лотка Legrand P31 по проектной раскладке", "number", "P1", "item", ["containment_joint_bolt"], { minimum: 1, maximum: 1_000_000, condition: legrandP31Condition }),
+      parameter("tray_width_mm", "Ширина симметричного лотка Legrand P31", "number", "P1", "mm", ["containment_joint_bolt"], { minimum: 1, maximum: 2_000, condition: legrandP31Condition }),
+      parameter("coupler_reference", "Точный артикул соединителя Legrand P31", "choice", "P1", null, ["containment_joint_bolt"], { choices: [
+        { value: "EP Coupler LG-341213", label_ru: "EP Coupler LG-341213" },
+        { value: "ER Coupler LG-482219", label_ru: "ER Coupler LG-482219" },
+      ], condition: legrandP31Condition }),
+      parameter("manufacturer_system_profile_id", "Паспорт системы Legrand P31", "text", "P1", null, ["containment_joint_bolt"], { condition: legrandP31Condition }),
+      parameter("installation_manual_reference", "Ссылка на применённую инструкцию монтажа Legrand P31", "text", "P1", null, ["containment_joint_bolt"], { condition: legrandP31Condition }),
+      parameter("tightening_torque_nm", "Момент затяжки крепежа M6 стыка Legrand P31", "number", "P1", "N_m", ["containment_joint_bolt"], { minimum: 0.1, maximum: 1_000, condition: legrandP31Condition }),
+    );
   }
   for (const candidate of candidates) {
     const priority = candidate.minimal ? "P0" as const : "P1" as const;
@@ -287,6 +313,9 @@ function typedChildBoundary(candidate: ElectricalMaximumResourceCandidateV2) {
 
 function boqRow(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximumResourceCandidateV2): ProfessionalAssemblyRowDefinitionV4 {
   const domainOwner = candidate.owner === "ELECTRICAL" ? ELECTRICAL_COMPLETE_DOMAIN_ID : candidate.owner;
+  const legrandP31JointOwner = row.electrical_family === "CABLE_CHANNEL" &&
+    row.operation_class === "INSTALL" &&
+    candidate.candidate_id === "containment_joint_bolt";
   return {
     row_id: `${row.canonical_technology_id}:row:${candidate.candidate_id}`,
     section: candidate.section_ru,
@@ -296,7 +325,10 @@ function boqRow(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximumR
     cost_ownership: candidate.owner === "ELECTRICAL" ? "priced_resource" : "informational_output",
     cost_owner_id: `${domainOwner}:cost-owner:${row.work_key}:${candidate.candidate_id}`,
     semantic_owner: `${domainOwner}:semantic-owner:${row.work_key}:${candidate.candidate_id}`,
-    normative_source_ids: [candidate.normative_source_id],
+    normative_source_ids: [
+      candidate.normative_source_id,
+      ...(legrandP31JointOwner ? [LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID] : []),
+    ],
     inclusion_condition: candidate.minimal
       ? "work_included=true"
       : "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE",
@@ -331,7 +363,7 @@ function boqRow(row: ElectricalDomainInventoryRow, candidate: ElectricalMaximumR
       resource_class: candidate.completeness_slot_v2,
       dependency_ids: [],
       non_cost_dependencies_only: candidate.owner !== "ELECTRICAL",
-      context_parameter_ids: ["rated_voltage_v", "phase_count", "earthing_system", "installation_environment", "product_specification_id"],
+      context_parameter_ids: ["rated_voltage_v", "phase_count", "earthing_system", "installation_environment", "product_specification_id", "product_profile_id"],
       forbidden_cost_scopes: candidate.owner === "ELECTRICAL" ? ["FIRE_SYSTEM", "ICT_SYSTEM", "CIVIL_STANDALONE", "STRUCTURAL_STANDALONE"] : ["ELECTRICAL_DUPLICATE_COST"],
     },
     normative_proof_bundle_id_v3: `${row.canonical_technology_id}:normative-proof:v2`,

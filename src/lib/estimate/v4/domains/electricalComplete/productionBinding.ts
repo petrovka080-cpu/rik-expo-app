@@ -1,6 +1,9 @@
 import {
   compileProfessionalEstimateDomainV1,
   constructionNormativeRegistryV1,
+  type AppliedProfessionalPhysicalNormResolutionV1,
+  LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
+  resolveProfessionalPhysicalNormParameterValuesV1,
   type NormativeApplicabilityRequestV1,
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
@@ -91,6 +94,7 @@ export type ElectricalProductionDraftInput = {
   normative_request: Omit<NormativeApplicabilityRequestV1, "requested_source_ids" | "requested_source_types">;
   raw_input: string;
   currency: string;
+  physical_norm_resolution?: AppliedProfessionalPhysicalNormResolutionV1 | null;
 };
 
 export type ElectricalProductionDraftResult = {
@@ -146,6 +150,12 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     parent_revision_id: input.parent_revision_id,
     parameter_values: input.parameter_values,
     normative_request: input.normative_request,
+    additional_normative_source_ids: input.physical_norm_resolution
+      ? [input.physical_norm_resolution.source_id]
+      : [],
+    additional_normative_source_types: input.physical_norm_resolution
+      ? ["MANUFACTURER_PASSPORT"]
+      : [],
   });
   if (compileResult.status !== "COMPILED" || !compileResult.compilation) return { inventory, compile_result: compileResult, draft: null };
   const compilation = compileResult.compilation;
@@ -256,6 +266,12 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       includedInProcurement: row.procurement_eligible,
       professionalBoqCategory: row.category,
       applicableSourceIds,
+      normativeSourceIds: row.normative_source_ids,
+      parameterSourceIds: row.parameter_source_ids,
+      ...(input.physical_norm_resolution &&
+          row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+        ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
+        : {}),
     },
     templateId: passportId,
     templateVersion: electricalCompleteDomainFactory.package.manifest.domain_version,
@@ -338,10 +354,29 @@ export function buildElectricalFromInlineInputV1(input: ElectricalInlineBuildInp
     scopeCapability: inventory.scope_capability,
     rawInput: input.rawInput,
     supplied: input.paramOverrides,
+    requireExplicitNormativeRateCode:
+      input.paramOverrides?.product_profile_id?.value === LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
   });
-  const parameterValues = baseline.parameter_values;
-  const scopeMode = parameterValues.estimate_scope_mode?.value;
+  const baselineParameterValues = baseline.parameter_values;
+  const scopeMode = baselineParameterValues.estimate_scope_mode?.value;
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") throw new Error(`ELECTRICAL_INLINE_SCOPE_INVALID:${String(scopeMode)}`);
+  const physicalNormResolution = resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: inventory.electrical_family,
+    operation_class: inventory.operation_class,
+    material_system: technology.material_system,
+    scope_mode: scopeMode,
+    parameter_values: baselineParameterValues,
+  });
+  if (physicalNormResolution.status === "BLOCKED_REQUIRED_INPUTS" ||
+      physicalNormResolution.status === "BLOCKED_NOT_APPLICABLE") {
+    return {
+      exact_match: true,
+      inventory,
+      missing_parameter_ids: physicalNormResolution.blockers,
+      production: null,
+    };
+  }
+  const parameterValues = physicalNormResolution.parameter_values;
   return {
     exact_match: true,
     inventory,
@@ -362,6 +397,7 @@ export function buildElectricalFromInlineInputV1(input: ElectricalInlineBuildInp
         effective_date: new Date().toISOString().slice(0, 10),
         material_system: inventory.electrical_family,
         operation_class: inventory.operation_class,
+        product_profile_id: String(parameterValues.product_profile_id?.value ?? ""),
         rate_code_by_source_id: {
           KG_KRERM_08_2015_ELECTRICAL: String(parameterValues.exact_krerm_rate_code.value),
           KG_KRERP_01_2015_ELECTRICAL: String(parameterValues.exact_krerp_rate_code.value),
@@ -369,6 +405,9 @@ export function buildElectricalFromInlineInputV1(input: ElectricalInlineBuildInp
       },
       raw_input: input.rawInput,
       currency: input.currency?.trim() || "KGS",
+      physical_norm_resolution: physicalNormResolution.status === "APPLIED"
+        ? physicalNormResolution
+        : null,
     }),
   };
 }
