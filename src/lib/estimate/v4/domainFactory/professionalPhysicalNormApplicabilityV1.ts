@@ -10,6 +10,7 @@ import paintNormPack from "../../../../../data/estimate-norms/professional/paint
 import plasterNormPack from "../../../../../data/estimate-norms/professional/plaster.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
 import puttyNormPack from "../../../../../data/estimate-norms/professional/putty.json";
+import roadworksNormPack from "../../../../../data/estimate-norms/professional/roadworks.json";
 import screedNormPack from "../../../../../data/estimate-norms/professional/screed.json";
 import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
@@ -22,6 +23,32 @@ import type {
 
 export const PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1 =
   "professional-physical-norm-applicability:v1" as const;
+
+export const KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID =
+  "normative-profile:kg-krer27-06-020:hot-asphalt-40mm-single-layer:v1" as const;
+
+export const KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID =
+  "roadworks_krer27_06_020_norm_unit_per_m2_v1" as const;
+
+export const KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID =
+  `src_professional_norm_pack_${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}` as const;
+
+const KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "pavement_area_m2",
+  "pavement_area_measurement_basis_m2",
+  "mixture_kind",
+  "mixture_type_and_density_class",
+  "aggregate_size_mm",
+  "layer_thickness_mm",
+  "selected_krer27_table_code",
+  "selected_table_variant",
+  "selected_table_variant_work_composition",
+  "selected_table_resource_rows",
+  "selected_collection_edition_and_amendments",
+  "pavement_design_and_compaction_specification",
+  "current_price_level_and_regional_indices",
+  "estimator_approval_reference",
+] as const);
 
 export const UPONOR_UFH_150MM_PRODUCT_PROFILE_ID =
   "manufacturer-profile:uponor-underfloor-heating:150mm:v1" as const;
@@ -1908,6 +1935,69 @@ export const CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA = Object.fr
   }),
 });
 
+const krer2706020HotAsphalt40MmNorm = (() => {
+  const found = roadworksNormPack.norm_items.find(
+    (item) => item.norm_id === KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}`);
+  }
+  return found;
+})();
+
+if (
+  roadworksNormPack.work_group !== "roadworks" ||
+  krer2706020HotAsphalt40MmNorm.unit !== "krer_norm_unit" ||
+  krer2706020HotAsphalt40MmNorm.rate.value !== 0.001 ||
+  krer2706020HotAsphalt40MmNorm.rate.unit !==
+    "table norm unit/m2; table measurement basis is 1000 m2 of pavement" ||
+  krer2706020HotAsphalt40MmNorm.applicability.jurisdiction !== "Kyrgyz Republic" ||
+  krer2706020HotAsphalt40MmNorm.applicability.table !== "27-06-020" ||
+  krer2706020HotAsphalt40MmNorm.applicability.published_layer_thickness_mm !== 40 ||
+  krer2706020HotAsphalt40MmNorm.applicability.table_measurement_basis_m2 !== 1000 ||
+  krer2706020HotAsphalt40MmNorm.applicability.calculation !== "pavement_area_m2 / 1000" ||
+  krer2706020HotAsphalt40MmNorm.applicability.exact_table_variant_and_resource_column_selection_required !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.resource_rates_must_come_from_selected_official_table_column !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.thickness_density_and_mix_selection_must_not_be_inferred_from_this_routing_rate !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.current_collection_edition_and_amendments_required !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.rate_is_derived_same_unit_conversion_not_published_resource_norm !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.resource_and_cost_rates_blocked_until_exact_variant_selected !== true ||
+  krer2706020HotAsphalt40MmNorm.applicability.automatic_production_binding_for_generic_roadworks_forbidden !== true ||
+  krer2706020HotAsphalt40MmNorm.parameters.length !== KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !krer2706020HotAsphalt40MmNorm.parameters.includes(parameterId),
+  ) ||
+  krer2706020HotAsphalt40MmNorm.waste_percent_default !== 0 ||
+  krer2706020HotAsphalt40MmNorm.rounding.package_unit !== "krer_norm_unit" ||
+  krer2706020HotAsphalt40MmNorm.rounding.package_size !== 1 ||
+  krer2706020HotAsphalt40MmNorm.rounding.mode !==
+    "no_rounding_of_fractional_1000_m2_table_units_before_exact_variant_resource_calculation"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}`);
+}
+
+export const KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA = Object.freeze({
+  source_id: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID,
+  norm_id: KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID,
+  source_document_version: roadworksNormPack.source_pack_version,
+  source_title: krer2706020HotAsphalt40MmNorm.source.title,
+  source_url: krer2706020HotAsphalt40MmNorm.source.url,
+  exact_locator: krer2706020HotAsphalt40MmNorm.source.page,
+  rate_value: krer2706020HotAsphalt40MmNorm.rate.value,
+  rate_unit: krer2706020HotAsphalt40MmNorm.rate.unit,
+  collection: krer2706020HotAsphalt40MmNorm.applicability.collection,
+  table: krer2706020HotAsphalt40MmNorm.applicability.table,
+  published_layer_thickness_mm:
+    krer2706020HotAsphalt40MmNorm.applicability.published_layer_thickness_mm,
+  table_measurement_basis_m2:
+    krer2706020HotAsphalt40MmNorm.applicability.table_measurement_basis_m2,
+  definition_hash: estimateDeterministicHash({
+    work_group: roadworksNormPack.work_group,
+    source_pack_version: roadworksNormPack.source_pack_version,
+    norm_item: krer2706020HotAsphalt40MmNorm,
+  }),
+});
+
 const ceresitCl51IndoorCeramicWetZoneNorm = (() => {
   const found = waterproofingNormPack.norm_items.find(
     (item) => item.norm_id === CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
@@ -3131,6 +3221,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["concrete_order_quantity_m3"] as const,
 }, {
+  norm_id: KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID,
+  work_group: "roadworks",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "ASPHALT_PAVEMENT",
+  operation_class: "INSTALL",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID,
+  source_id: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID,
+  source_document_version: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["krer27_06_020_table_norm_units"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -3253,6 +3357,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct17_paint_primer_procurement_quantity_l?: number;
   calculated_ct17_paint_primer_container_count?: number;
   calculated_concrete_order_quantity_m3?: number;
+  calculated_krer27_06_020_table_norm_units?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8020,6 +8125,168 @@ function resolveWavinHep2OProfile(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKrer2706020HotAsphalt40Mm(
+  productProfileId: typeof KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA,
+    );
+  }
+
+  const pavementAreaM2 = finiteNumber(explicit.pavement_area_m2);
+  const measurementBasisM2 = finiteNumber(explicit.pavement_area_measurement_basis_m2);
+  const aggregateSizeMm = finiteNumber(explicit.aggregate_size_mm);
+  const layerThicknessMm = finiteNumber(explicit.layer_thickness_mm);
+  const mixtureKind = primitiveString(explicit.mixture_kind!);
+  const mixtureTypeAndDensityClass = primitiveString(explicit.mixture_type_and_density_class!);
+  const selectedTableCode = primitiveString(explicit.selected_krer27_table_code!);
+  const selectedTableVariant = primitiveString(explicit.selected_table_variant!);
+  const selectedWorkComposition = primitiveString(explicit.selected_table_variant_work_composition!);
+  const selectedResourceRows = primitiveString(explicit.selected_table_resource_rows!);
+  const selectedEdition = primitiveString(explicit.selected_collection_edition_and_amendments!);
+  const pavementSpecification = primitiveString(explicit.pavement_design_and_compaction_specification!);
+  const currentPriceLevelAndIndices = primitiveString(explicit.current_price_level_and_regional_indices!);
+  const estimatorApprovalReference = primitiveString(explicit.estimator_approval_reference!);
+  const genericReference = /^(?:unknown|generic|not_selected|n\/a|none|неизвестно|не выбрано)$/iu;
+  const exactReference = (value: string | null): boolean => Boolean(value && !genericReference.test(value));
+  const applicabilityBlockers = [
+    pavementAreaM2 !== null && pavementAreaM2 > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:pavement_area_m2",
+    measurementBasisM2 === KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.table_measurement_basis_m2
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:pavement_area_measurement_basis_m2=${measurementBasisM2}:published_basis_m2=${KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.table_measurement_basis_m2}`,
+    mixtureKind === "HOT_ASPHALT_CONCRETE"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}:mixture_kind=${mixtureKind}`,
+    exactReference(mixtureTypeAndDensityClass)
+      ? ""
+      : "PROJECT_VALUE_INVALID:mixture_type_and_density_class",
+    aggregateSizeMm !== null && aggregateSizeMm > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:aggregate_size_mm",
+    layerThicknessMm === KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.published_layer_thickness_mm
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}:layer_thickness_mm=${layerThicknessMm}`,
+    selectedTableCode === KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.table
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:selected_krer27_table_code=${selectedTableCode}:required_table=${KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.table}`,
+    exactReference(selectedTableVariant) ? "" : "PROJECT_VALUE_INVALID:selected_table_variant",
+    exactReference(selectedWorkComposition) ? "" : "PROJECT_VALUE_INVALID:selected_table_variant_work_composition",
+    exactReference(selectedResourceRows) ? "" : "PROJECT_VALUE_INVALID:selected_table_resource_rows",
+    exactReference(selectedEdition) ? "" : "PROJECT_VALUE_INVALID:selected_collection_edition_and_amendments",
+    exactReference(pavementSpecification) ? "" : "PROJECT_VALUE_INVALID:pavement_design_and_compaction_specification",
+    exactReference(currentPriceLevelAndIndices) ? "" : "PROJECT_VALUE_INVALID:current_price_level_and_regional_indices",
+    exactReference(estimatorApprovalReference) ? "" : "PROJECT_VALUE_INVALID:estimator_approval_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedTableNormUnits =
+    pavementAreaM2! / KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.table_measurement_basis_m2;
+  const explicitTableNormUnits = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "krer27_06_020_table_norm_units",
+  ));
+  if (
+    explicitTableNormUnits !== null &&
+    Math.abs(explicitTableNormUnits - calculatedTableNormUnits) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:krer27_06_020_table_norm_units=${explicitTableNormUnits}:norm_value=${calculatedTableNormUnits}`,
+      ],
+      [...KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS, "krer27_06_020_table_norm_units"],
+      KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${productProfileId}`,
+    `collection=${KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.collection}`,
+    `table=${selectedTableCode}`,
+    `selected_table_variant=${selectedTableVariant}`,
+    `selected_table_variant_work_composition=${selectedWorkComposition}`,
+    `selected_table_resource_rows=${selectedResourceRows}`,
+    `mixture_kind=${mixtureKind}`,
+    `mixture_type_and_density_class=${mixtureTypeAndDensityClass}`,
+    `aggregate_size_mm=${aggregateSizeMm}`,
+    `layer_thickness_mm=${layerThicknessMm}`,
+    `pavement_area_m2=${pavementAreaM2}`,
+    `table_measurement_basis_m2=${measurementBasisM2}`,
+    `formula=pavement_area_m2/${measurementBasisM2}`,
+    `table_norm_units=${calculatedTableNormUnits}`,
+    `selected_collection_edition_and_amendments=${selectedEdition}`,
+    `pavement_design_and_compaction_specification=${pavementSpecification}`,
+    `current_price_level_and_regional_indices=${currentPriceLevelAndIndices}`,
+    `estimator_approval_reference=${estimatorApprovalReference}`,
+    "derived_same_unit_conversion_only=true",
+    "resource_rates_not_inferred=true",
+    "cost_rates_not_inferred=true",
+    "additional_waste_percent=0",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    krer27_06_020_table_norm_units: {
+      value: calculatedTableNormUnits,
+      unit_id: "krer_norm_unit",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID,
+    norm_id: KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID,
+    source_document_version: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.source_document_version,
+    source_url: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.source_url,
+    exact_locator: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["krer27_06_020_table_norm_units"] as const,
+    calculated_krer27_06_020_table_norm_units: calculatedTableNormUnits,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveNrmcaCip31ReadyMixOrder(
   productProfileId: typeof NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -8165,9 +8432,42 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   material_system?: string;
   scope_mode: ProfessionalEstimateScopeModeV4;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
+  physical_context?: {
+    asphalt_layer_count?: number;
+  };
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "ASPHALT_PAVEMENT" &&
+      input.operation_class === "INSTALL" &&
+      input.material_system === "HOT_ASPHALT_CONCRETE" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      if (input.physical_context?.asphalt_layer_count !== 1) {
+        return nonApplied(
+          "BLOCKED_NOT_APPLICABLE",
+          productProfileId,
+          input.parameter_values,
+          [
+            `PHYSICAL_NORM_NOT_APPLICABLE:${KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID}:asphalt_layer_count=${input.physical_context?.asphalt_layer_count ?? "missing"}`,
+          ],
+          KRER27_06_020_REQUIRED_EXPLICIT_PARAMETER_IDS,
+          KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA,
+        );
+      }
+      return resolveKrer2706020HotAsphalt40Mm(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "REINFORCED_CONCRETE_STRIP_FOUNDATION" &&

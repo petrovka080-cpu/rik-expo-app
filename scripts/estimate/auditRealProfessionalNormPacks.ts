@@ -677,6 +677,7 @@ function main(): void {
   const canonicalPhysicalNormSourceTypes = new Set([
     "MANUFACTURER_PASSPORT",
     "WORK_EXECUTION_STANDARD",
+    "RESOURCE_ESTIMATE_NORM",
   ]);
   const canonicalRuntimeBindingFailures = CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1
     .flatMap((binding) => {

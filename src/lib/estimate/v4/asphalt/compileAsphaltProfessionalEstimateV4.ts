@@ -14,6 +14,12 @@ import type {
   UserFactV4,
 } from "../professionalEstimateV4Contract";
 import { validateProfessionalEstimatePassportV4 } from "../validateProfessionalEstimateV4";
+import {
+  KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID,
+  resolveProfessionalPhysicalNormParameterValuesV1,
+  type ProfessionalPhysicalNormApplicabilityResolutionV1,
+} from "../domainFactory/professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalParameterValueV4 } from "../professionalProjectAssemblyV4";
 import { composeAsphaltClarificationExperienceV4 } from "./asphaltClarificationExperienceV4";
 import { buildAsphaltFullRoadInfrastructureAssemblyV4 } from "./asphaltFullRoadInfrastructureAssemblyV4";
 import {
@@ -94,6 +100,7 @@ export type AsphaltProfessionalEstimateCompilationV4 = {
   preliminary_assembly_policy: AsphaltPreliminaryAssemblyPolicyV4;
   quantity_basis: AsphaltQuantityBasisV4;
   costing_mode: "RESOURCE_MODE" | "UNIT_RATE_MODE";
+  physical_norm_resolution: ProfessionalPhysicalNormApplicabilityResolutionV1 | null;
 };
 
 export type CompileAsphaltProfessionalEstimateV4Input = {
@@ -289,6 +296,72 @@ function mergeFacts(input: CompileAsphaltProfessionalEstimateV4Input): MergedAsp
     confirmed_parameter_keys: confirmedParameterKeys,
     persisted_assumption_keys: persistedAssumptionKeys,
   };
+}
+
+function resolveKrer2706020PhysicalNorm(input: {
+  mergedFacts: MergedAsphaltFacts;
+  quantityBasis: AsphaltQuantityBasisV4;
+  asphaltLayers: readonly LayerInput[];
+}): ProfessionalPhysicalNormApplicabilityResolutionV1 | null {
+  const { mergedFacts, quantityBasis, asphaltLayers } = input;
+  if (
+    !mergedFacts.confirmed_parameter_keys.has("product_profile_id") ||
+    stringValue(mergedFacts.values.get("product_profile_id")) !==
+      KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID
+  ) {
+    return null;
+  }
+
+  const unitByParameterId: Readonly<Record<string, string | null>> = Object.freeze({
+    pavement_area_m2: "m2",
+    pavement_area_measurement_basis_m2: "m2",
+    aggregate_size_mm: "mm",
+    layer_thickness_mm: "mm",
+    krer27_06_020_table_norm_units: "krer_norm_unit",
+  });
+  const parameterValues: Record<string, ProfessionalParameterValueV4> = {};
+  const capture = (parameterId: string, value: string | number | boolean): void => {
+    parameterValues[parameterId] = {
+      value,
+      unit_id: unitByParameterId[parameterId] ?? null,
+      source_type: "USER_EXPLICIT",
+      source_id: `asphalt-v4:confirmed:${parameterId}`,
+      captured_at: "asphalt-v4-confirmed-parameter-snapshot",
+      confidence: "high",
+      applicability: "Explicit value admitted by the canonical asphalt V4 input boundary.",
+    };
+  };
+  for (const parameterId of mergedFacts.confirmed_parameter_keys) {
+    const value = mergedFacts.values.get(parameterId);
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      capture(parameterId, value);
+    }
+  }
+
+  const explicitGeometry = ["area_m2", "length_m", "width_m"].some((parameterId) =>
+    mergedFacts.confirmed_parameter_keys.has(parameterId) || mergedFacts.raw_input_keys.has(parameterId)
+  );
+  if (quantityBasis.basis_type === "project" && explicitGeometry) {
+    capture("pavement_area_m2", quantityBasis.area_m2);
+  }
+  const singleLayerThicknessExplicit = asphaltLayers.length === 1 && [
+    "asphalt_layers",
+    "asphalt_layer_1_thickness_mm",
+  ].some((parameterId) =>
+    mergedFacts.confirmed_parameter_keys.has(parameterId) || mergedFacts.raw_input_keys.has(parameterId)
+  );
+  if (singleLayerThicknessExplicit && typeof asphaltLayers[0]?.thickness_mm === "number") {
+    capture("layer_thickness_mm", asphaltLayers[0].thickness_mm);
+  }
+
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "ASPHALT_PAVEMENT",
+    operation_class: "INSTALL",
+    material_system: "HOT_ASPHALT_CONCRETE",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: parameterValues,
+    physical_context: { asphalt_layer_count: asphaltLayers.length },
+  });
 }
 
 function normalizeAsphaltLayers(values: ReadonlyMap<string, unknown>): LayerInput[] {
@@ -597,6 +670,21 @@ export function compileAsphaltProfessionalEstimateV4(
     unresolved.add(requirement);
     expertQuestions.add(EXPERT_QUESTIONS[key]);
   };
+
+  const physicalNormResolution = resolveKrer2706020PhysicalNorm({
+    mergedFacts,
+    quantityBasis,
+    asphaltLayers,
+  });
+  if (
+    physicalNormResolution?.status === "BLOCKED_REQUIRED_INPUTS" ||
+    physicalNormResolution?.status === "BLOCKED_NOT_APPLICABLE"
+  ) {
+    for (const blocker of physicalNormResolution.blockers) unresolved.add(blocker);
+    expertQuestions.add(
+      "Для применения КРЕР 27-06-020 подтвердите один слой горячего асфальтобетона толщиной 40 мм, точный вариант и колонку ресурсов таблицы, редакцию с изменениями, проект уплотнения, уровень цен и согласование сметчика.",
+    );
+  }
 
   const addFormula = (formulaId: string, expression: string, inputUnits: Record<string, string>, outputUnitId: string, sourceIds: string[], traceRu: string): FormulaDefinitionV4 => {
     const dimensional = validateFormulaDimensionsV4({ expression, input_unit_ids: inputUnits, output_unit_id: outputUnitId });
@@ -1370,6 +1458,11 @@ export function compileAsphaltProfessionalEstimateV4(
   const assumptions = [
     assemblyPolicy.summary_ru,
     ...assemblyPolicy.assumptions.map((assumption) => `${assumption.canonical_key}: ${assumption.reason_ru}`),
+    ...(physicalNormResolution?.status === "APPLIED"
+      ? [
+        `КРЕР 27-06-020: ${physicalNormResolution.calculated_krer27_06_020_table_norm_units} табличных единиц по 1000 м²; значение используется только как маршрут к явно выбранной колонке ресурсов и не подменяет ресурсные или стоимостные нормы.`,
+      ]
+      : []),
     ...(stringValue(values.get("soil_condition")) === "unknown"
       ? ["Тип и состояние грунта не подтверждены; связанные решения по основанию остаются предметом проекта и проверки дорожного инженера."]
       : []),
@@ -1401,5 +1494,6 @@ export function compileAsphaltProfessionalEstimateV4(
     preliminary_assembly_policy: assemblyPolicy,
     quantity_basis: quantityBasis,
     costing_mode: costingMode,
+    physical_norm_resolution: physicalNormResolution,
   };
 }
