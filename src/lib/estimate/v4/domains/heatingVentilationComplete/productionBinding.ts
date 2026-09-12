@@ -10,6 +10,7 @@ import {
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
+  DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
@@ -309,7 +310,8 @@ export function buildHvacFromInlineInputV1(
     supplied: input.paramOverrides,
     requireExplicitNormativeRateCode:
       input.paramOverrides?.product_profile_id?.value === UPONOR_UFH_150MM_PRODUCT_PROFILE_ID ||
-      input.paramOverrides?.product_profile_id?.value === LINDAB_VSR_PRODUCT_PROFILE_ID,
+      input.paramOverrides?.product_profile_id?.value === LINDAB_VSR_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   });
   const baselineParameterValues = baseline.parameter_values;
   const scopeMode = baselineParameterValues.estimate_scope_mode?.value;
@@ -319,6 +321,7 @@ export function buildHvacFromInlineInputV1(
   const physicalNormResolution = resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: hvacTechnologyProfile(inventory).technology_class,
     operation_class: inventory.operation_class,
+    material_system: technology.material_system,
     scope_mode: scopeMode,
     parameter_values: baselineParameterValues,
   });

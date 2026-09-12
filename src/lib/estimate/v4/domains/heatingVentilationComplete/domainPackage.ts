@@ -17,6 +17,8 @@ import {
   type ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory";
 import {
+  DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+  DAIKIN_3MXS_K_SOURCE_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   LINDAB_VSR_SOURCE_ID,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
@@ -269,11 +271,20 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
     );
   }
   if (isRefrigerant(profile)) {
+    const daikin3MxsKCondition = {
+      kind: "EQUALS",
+      parameter_id: "product_profile_id",
+      value: DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+    } as const;
     parameters.push(
       parameter("manufacturer_system_profile_id", "Паспорт согласованной холодильной системы", "text", "P0", null, []),
       parameter("refrigerant_type", "Тип хладагента по паспорту", "text", "P0", null, []),
       parameter("liquid_line_length_m", "Длина жидкостной линии по проекту", "number", "P0", "m", ["liquid_line"], { minimum: 0.001, maximum: 1_000_000 }),
       parameter("gas_line_length_m", "Длина газовой линии по проекту", "number", "P0", "m", ["gas_line"], { minimum: 0.001, maximum: 1_000_000 }),
+      parameter("total_refrigerant_piping_length_m", "Суммарная длина трубопроводов холодильного контура Daikin 3MXS-K", "number", "P1", "m", ["manufacturer_charge"], { minimum: 0.001, maximum: 1_000_000, condition: daikin3MxsKCondition }),
+      parameter("factory_chargeless_length_m", "Длина трубопроводов без дополнительной заправки по паспорту Daikin 3MXS-K", "number", "P1", "m", ["manufacturer_charge"], { minimum: 0.001, maximum: 1_000_000, condition: daikin3MxsKCondition }),
+      parameter("outdoor_unit_nameplate_reference", "Ссылка на шильдик наружного блока и инструкцию Daikin 3MXS-K", "text", "P1", null, ["manufacturer_charge"], { condition: daikin3MxsKCondition }),
+      parameter("maximum_piping_and_height_limits_confirmed", "Подтверждено соблюдение предельной длины трасс и перепада высот Daikin 3MXS-K", "boolean", "P1", null, ["manufacturer_charge"], { condition: daikin3MxsKCondition }),
       parameter("refrigerant_branch_count", "Количество ответвителей по проекту производителя", "number", "P1", "item", ["refrigerant_branches"], { minimum: 0.001, maximum: 1_000_000 }),
       parameter("manufacturer_charge_kg", "Количество хладагента по расчёту производителя", "number", "P1", "kg", ["manufacturer_charge"], { minimum: 0.001, maximum: 1_000_000 }),
       parameter("vacuum_test_section_count", "Количество участков опрессовки и вакуумирования", "number", "P1", "item", ["vacuum_test"], { minimum: 0.001, maximum: 1_000_000 }),
@@ -392,6 +403,9 @@ function boqRow(
       normativeSourceId(row),
       ...(row.primary_material_or_system === "DUCT" && lindabQuantityDerivedRows.includes(id)
         ? [LINDAB_VSR_SOURCE_ID]
+        : []),
+      ...(row.primary_material_or_system === "CONDITIONER" && id === "manufacturer_charge"
+        ? [DAIKIN_3MXS_K_SOURCE_ID]
         : []),
     ],
     inclusion_condition: scope === "BOTH" ? "work_included=true" : "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE",

@@ -1,3 +1,4 @@
+import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
@@ -26,6 +27,15 @@ export const LINDAB_VSR_NORM_ID =
 
 export const LINDAB_VSR_SOURCE_ID =
   `src_professional_norm_pack_${LINDAB_VSR_NORM_ID}` as const;
+
+export const DAIKIN_3MXS_K_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:daikin-3mxs-k:r410a:v1" as const;
+
+export const DAIKIN_3MXS_K_NORM_ID =
+  "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1" as const;
+
+export const DAIKIN_3MXS_K_SOURCE_ID =
+  `src_professional_norm_pack_${DAIKIN_3MXS_K_NORM_ID}` as const;
 
 const uponorNorm = (() => {
   const found = heatingNormPack.norm_items.find((item) => item.norm_id === UPONOR_UFH_150MM_NORM_ID);
@@ -93,6 +103,45 @@ export const LINDAB_VSR_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const daikin3MxsKNorm = (() => {
+  const found = airConditioningNormPack.norm_items.find((item) => item.norm_id === DAIKIN_3MXS_K_NORM_ID);
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${DAIKIN_3MXS_K_NORM_ID}`);
+  return found;
+})();
+
+if (
+  airConditioningNormPack.work_group !== "air_conditioning" ||
+  daikin3MxsKNorm.unit !== "kg" ||
+  daikin3MxsKNorm.rate.value !== 0.02 ||
+  daikin3MxsKNorm.rate.unit !== "kg/m of total piping length exceeding 30 m" ||
+  daikin3MxsKNorm.applicability.refrigerant !== "R-410A" ||
+  daikin3MxsKNorm.applicability.factory_chargeless_length_m !== 30 ||
+  daikin3MxsKNorm.applicability.model_nameplate_and_installation_manual_must_be_confirmed !== true ||
+  daikin3MxsKNorm.applicability.other_daikin_or_other_manufacturer_models_forbidden !== true ||
+  daikin3MxsKNorm.applicability.maximum_piping_and_height_difference_limits_require_separate_check !== true ||
+  daikin3MxsKNorm.rounding.mode !== "follow_model_installation_manual_and_charge_scale"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${DAIKIN_3MXS_K_NORM_ID}`);
+}
+
+export const DAIKIN_3MXS_K_SOURCE_METADATA = Object.freeze({
+  source_id: DAIKIN_3MXS_K_SOURCE_ID,
+  norm_id: DAIKIN_3MXS_K_NORM_ID,
+  source_document_version: airConditioningNormPack.source_pack_version,
+  source_title: daikin3MxsKNorm.source.title,
+  source_url: daikin3MxsKNorm.source.url,
+  exact_locator: daikin3MxsKNorm.source.page,
+  rate_value: daikin3MxsKNorm.rate.value,
+  rate_unit: daikin3MxsKNorm.rate.unit,
+  refrigerant: daikin3MxsKNorm.applicability.refrigerant,
+  factory_chargeless_length_m: daikin3MxsKNorm.applicability.factory_chargeless_length_m,
+  definition_hash: estimateDeterministicHash({
+    work_group: airConditioningNormPack.work_group,
+    source_pack_version: airConditioningNormPack.source_pack_version,
+    norm_item: daikin3MxsKNorm,
+  }),
+});
+
 const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "zone_area_m2",
   "designed_pipe_spacing_mm",
@@ -112,6 +161,15 @@ const LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "air_distribution_design",
   "fitting_schedule",
   "cooled_supply_air_confirmed",
+] as const);
+
+const DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "equipment_model",
+  "manufacturer_system_profile_id",
+  "refrigerant_type",
+  "total_refrigerant_piping_length_m",
+  "outdoor_unit_nameplate_reference",
+  "maximum_piping_and_height_limits_confirmed",
 ] as const);
 
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
@@ -142,6 +200,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["primary_resource_units_per_output", "procurement_factor"] as const,
+}, {
+  norm_id: DAIKIN_3MXS_K_NORM_ID,
+  work_group: "air_conditioning",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "REFRIGERANT_SYSTEM",
+  operation_class: "INSTALL",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+  source_id: DAIKIN_3MXS_K_SOURCE_ID,
+  source_document_version: DAIKIN_3MXS_K_SOURCE_METADATA.source_document_version,
+  source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["factory_chargeless_length_m", "manufacturer_charge_kg"] as const,
 }]);
 
 type AppliedPhysicalNormResolutionV1 = {
@@ -158,6 +230,7 @@ type AppliedPhysicalNormResolutionV1 = {
   produced_parameter_ids: readonly string[];
   calculated_pipe_length_m?: number;
   calculated_resource_quantity_m?: number;
+  calculated_additional_refrigerant_kg?: number;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
   blockers: readonly [];
   deterministic_hash: string;
@@ -383,14 +456,166 @@ function resolveLindabVsr(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveDaikin3MxsK(
+  productProfileId: typeof DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+    parameterId,
+    explicitValue(parameterValuesInput, parameterId),
+  ]));
+  const missing = DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      DAIKIN_3MXS_K_SOURCE_METADATA,
+    );
+  }
+
+  const equipmentModel = primitiveString(explicit.equipment_model!);
+  const manufacturerProfile = primitiveString(explicit.manufacturer_system_profile_id!);
+  const refrigerantType = primitiveString(explicit.refrigerant_type!);
+  const totalPipingLengthM = finiteNumber(explicit.total_refrigerant_piping_length_m);
+  const applicabilityBlockers = [
+    equipmentModel === "Daikin 3MXS-K"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:equipment_model=${equipmentModel}`,
+    manufacturerProfile === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:manufacturer_system_profile_id=${manufacturerProfile}`,
+    refrigerantType === DAIKIN_3MXS_K_SOURCE_METADATA.refrigerant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:refrigerant_type=${refrigerantType}`,
+    totalPipingLengthM !== null && totalPipingLengthM > DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m
+      ? ""
+      : `PHYSICAL_NORM_ADDITIONAL_CHARGE_NOT_REQUIRED_OR_LENGTH_INVALID:total_refrigerant_piping_length_m=${totalPipingLengthM}`,
+    explicit.maximum_piping_and_height_limits_confirmed?.value === true
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:maximum_piping_and_height_limits_confirmed=false`,
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      DAIKIN_3MXS_K_SOURCE_METADATA,
+    );
+  }
+
+  const rawAdditionalChargeKg = (
+    totalPipingLengthM! - DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m
+  ) * DAIKIN_3MXS_K_SOURCE_METADATA.rate_value;
+  const packageSize = daikin3MxsKNorm.rounding.package_size;
+  const calculatedAdditionalRefrigerantKg = Number((
+    Math.ceil(rawAdditionalChargeKg / packageSize - 1e-9) * packageSize
+  ).toFixed(2));
+  const explicitFactoryLength = finiteNumber(explicitValue(parameterValuesInput, "factory_chargeless_length_m"));
+  const explicitCharge = finiteNumber(explicitValue(parameterValuesInput, "manufacturer_charge_kg"));
+  const conflicts = [
+    explicitFactoryLength !== null &&
+      Math.abs(explicitFactoryLength - DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m) > 1e-9
+      ? `PHYSICAL_NORM_VALUE_CONFLICT:factory_chargeless_length_m=${explicitFactoryLength}:norm_value=${DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m}`
+      : "",
+    explicitCharge !== null && Math.abs(explicitCharge - calculatedAdditionalRefrigerantKg) > 1e-9
+      ? `PHYSICAL_NORM_VALUE_CONFLICT:manufacturer_charge_kg=${explicitCharge}:norm_value=${calculatedAdditionalRefrigerantKg}`
+      : "",
+  ].filter(Boolean);
+  if (conflicts.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      conflicts,
+      [...DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS, "factory_chargeless_length_m", "manufacturer_charge_kg"],
+      DAIKIN_3MXS_K_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${DAIKIN_3MXS_K_PRODUCT_PROFILE_ID}`,
+    `equipment_model=${equipmentModel}`,
+    `refrigerant_type=${refrigerantType}`,
+    `total_refrigerant_piping_length_m=${totalPipingLengthM}`,
+    `factory_chargeless_length_m=${DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m}`,
+    `outdoor_unit_nameplate_reference=${primitiveString(explicit.outdoor_unit_nameplate_reference!)}`,
+    `maximum_piping_and_height_limits_confirmed=true`,
+    `formula=max(0,total_refrigerant_piping_length_m-${DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m})*${DAIKIN_3MXS_K_SOURCE_METADATA.rate_value}`,
+  ].join(";");
+  const sourceManagedValue = (value: number, unitId: string): ProfessionalParameterValueV4 => ({
+    value,
+    unit_id: unitId,
+    source_type: "APPLICABLE_NORM",
+    source_id: DAIKIN_3MXS_K_SOURCE_ID,
+    captured_at: capturedAt,
+    confidence: "high",
+    applicability,
+  });
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    factory_chargeless_length_m: sourceManagedValue(
+      DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m,
+      "m",
+    ),
+    manufacturer_charge_kg: sourceManagedValue(calculatedAdditionalRefrigerantKg, "kg"),
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: DAIKIN_3MXS_K_SOURCE_ID,
+    norm_id: DAIKIN_3MXS_K_NORM_ID,
+    source_document_version: DAIKIN_3MXS_K_SOURCE_METADATA.source_document_version,
+    source_url: DAIKIN_3MXS_K_SOURCE_METADATA.source_url,
+    exact_locator: DAIKIN_3MXS_K_SOURCE_METADATA.exact_locator,
+    source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["factory_chargeless_length_m", "manufacturer_charge_kg"],
+    calculated_additional_refrigerant_kg: calculatedAdditionalRefrigerantKg,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   technology_class: string;
   operation_class: string;
+  material_system?: string;
   scope_mode: ProfessionalEstimateScopeModeV4;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "REFRIGERANT_SYSTEM" &&
+      input.operation_class === "INSTALL" &&
+      input.material_system === "CONDITIONER:COOLING_AIR_CONDITIONING:REFRIGERANT_PROJECT_DEFINED" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveDaikin3MxsK(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      DAIKIN_3MXS_K_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === LINDAB_VSR_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "DUCT_NETWORK" &&

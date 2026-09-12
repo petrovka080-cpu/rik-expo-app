@@ -1,4 +1,8 @@
 import {
+  DAIKIN_3MXS_K_NORM_ID,
+  DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+  DAIKIN_3MXS_K_SOURCE_ID,
+  DAIKIN_3MXS_K_SOURCE_METADATA,
   LINDAB_VSR_NORM_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   LINDAB_VSR_SOURCE_ID,
@@ -20,6 +24,7 @@ import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/pro
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
 const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
+const CONDITIONER_INSTALL_WORK_KEY = "heating_hvac_interior_conditioner_install_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -82,6 +87,31 @@ function resolveLindab(values: Readonly<Record<string, ProfessionalParameterValu
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "DUCT_NETWORK",
     operation_class: "INSTALL",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactDaikinInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(DAIKIN_3MXS_K_PRODUCT_PROFILE_ID),
+    equipment_model: explicit("Daikin 3MXS-K"),
+    manufacturer_system_profile_id: explicit(DAIKIN_3MXS_K_PRODUCT_PROFILE_ID),
+    refrigerant_type: explicit("R-410A"),
+    total_refrigerant_piping_length_m: explicit(45, "m"),
+    outdoor_unit_nameplate_reference: explicit("Шильдик 3MXS-K / инструкция rev. 2026-09"),
+    maximum_piping_and_height_limits_confirmed: explicit(true),
+    ...changes,
+  };
+}
+
+function resolveDaikin(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "REFRIGERANT_SYSTEM",
+    operation_class: "INSTALL",
+    material_system: "CONDITIONER:COOLING_AIR_CONDITIONING:REFRIGERANT_PROJECT_DEFINED",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -361,6 +391,115 @@ describe("professional physical norm applicability V1", () => {
       source_id: LINDAB_VSR_SOURCE_ID,
       source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
       calculated_resource_quantity_m: 12,
+    });
+  });
+
+  test("keeps the Daikin charge blocked for a different model, refrigerant, short route or unverified limits", () => {
+    expect(resolveDaikin(exactDaikinInputs({ equipment_model: explicit("Daikin 4MXS-K") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: DAIKIN_3MXS_K_SOURCE_ID,
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:equipment_model=Daikin 4MXS-K`],
+    });
+    expect(resolveDaikin(exactDaikinInputs({ refrigerant_type: explicit("R-32") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:refrigerant_type=R-32`],
+    });
+    expect(resolveDaikin(exactDaikinInputs({ total_refrigerant_piping_length_m: explicit(30, "m") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_ADDITIONAL_CHARGE_NOT_REQUIRED_OR_LENGTH_INVALID:total_refrigerant_piping_length_m=30"],
+    });
+    expect(resolveDaikin(exactDaikinInputs({ maximum_piping_and_height_limits_confirmed: explicit(false) })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${DAIKIN_3MXS_K_NORM_ID}:maximum_piping_and_height_limits_confirmed=false`],
+      });
+  });
+
+  test("derives only the exact Daikin additional charge and preserves source lineage", () => {
+    const input = exactDaikinInputs();
+    const first = resolveDaikin(input);
+    const second = resolveDaikin(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: DAIKIN_3MXS_K_SOURCE_ID,
+      norm_id: DAIKIN_3MXS_K_NORM_ID,
+      source_document_version: "2026.09-daikin-3mxs-k-additional-charge-r1",
+      source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
+      calculated_additional_refrigerant_kg: 0.3,
+      produced_parameter_ids: ["factory_chargeless_length_m", "manufacturer_charge_kg"],
+      blockers: [],
+    });
+    expect(first.parameter_values.factory_chargeless_length_m).toMatchObject({
+      value: 30,
+      unit_id: "m",
+      source_type: "APPLICABLE_NORM",
+      source_id: DAIKIN_3MXS_K_SOURCE_ID,
+    });
+    expect(first.parameter_values.manufacturer_charge_kg).toMatchObject({
+      value: 0.3,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM",
+      source_id: DAIKIN_3MXS_K_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.factory_chargeless_length_m).toBeUndefined();
+    expect(input.manufacturer_charge_kg).toBeUndefined();
+  });
+
+  test("routes Daikin through the registry and the real HVAC refrigerant BOQ row", () => {
+    const inventory = HVAC_DOMAIN_INVENTORY.find((row) => row.work_key === CONDITIONER_INSTALL_WORK_KEY);
+    if (!inventory) throw new Error("DAIKIN_RUNTIME_INSTALL_WORK_MISSING");
+    const technology = hvacDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = hvacDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("DAIKIN_RUNTIME_SCHEMA_MISSING");
+    const daikinValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return DAIKIN_3MXS_K_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "equipment_model") return "Daikin 3MXS-K";
+      if (parameter.parameter_id === "manufacturer_system_profile_id") return DAIKIN_3MXS_K_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "refrigerant_type") return "R-410A";
+      if (parameter.parameter_id === "total_refrigerant_piping_length_m") return 45;
+      if (parameter.parameter_id === "outdoor_unit_nameplate_reference") return "Шильдик 3MXS-K / инструкция rev. 2026-09";
+      if (parameter.parameter_id === "maximum_piping_and_height_limits_confirmed") return true;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => ![
+        "factory_chargeless_length_m",
+        "manufacturer_charge_kg",
+      ].includes(parameter.parameter_id))
+      .map((parameter) => [parameter.parameter_id, {
+        value: parameter.parameter_id === "scope_capability"
+          ? inventory.scope_capability
+          : daikinValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildHvacFromInlineInputV1({
+      rawInput: "Монтаж Daikin 3MXS-K R-410A, суммарная длина трубопроводов 45 м",
+      selectedWorkKey: CONDITIONER_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toEqual(expect.arrayContaining(["kg_krer_2015_application_guidance", DAIKIN_3MXS_K_SOURCE_ID]));
+    const chargeRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:manufacturer_charge`);
+    expect(chargeRow).toMatchObject({ quantity: 0.3, unit: "kg" });
+    expect(chargeRow?.sourceParameters?.normativeSourceIds).toEqual([
+      "kg_krer_2015_application_guidance",
+      DAIKIN_3MXS_K_SOURCE_ID,
+    ]);
+    expect(chargeRow?.sourceParameters?.parameterSourceIds).toContain(DAIKIN_3MXS_K_SOURCE_ID);
+    expect(chargeRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: DAIKIN_3MXS_K_SOURCE_ID,
+      source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
+      calculated_additional_refrigerant_kg: 0.3,
     });
   });
 });

@@ -204,10 +204,11 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(34);
-    expect(unregistered).toHaveLength(25);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(35);
+    expect(unregistered).toHaveLength(24);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
+      "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
       "heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1",
       "ventilation_lindab_vsr_duct_linear_m_route_v1",
     ]);
@@ -228,6 +229,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(21);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(20);
   });
 });
