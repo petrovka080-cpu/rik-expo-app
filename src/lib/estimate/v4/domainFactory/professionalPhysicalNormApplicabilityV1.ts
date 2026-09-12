@@ -120,6 +120,28 @@ const KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "board_thickness_mm",
 ] as const);
 
+export const KNAUF_D112_UNIFLOTT_NORM_ID =
+  "ceilings_knauf_d112_standard_uniflott_kg_m2_v1" as const;
+
+export const KNAUF_D112_UNIFLOTT_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_D112_UNIFLOTT_NORM_ID}` as const;
+
+const KNAUF_D112_UNIFLOTT_SOURCE_PARAMETER_IDS = Object.freeze([
+  "ceiling_area_m2",
+  "system_variant",
+  "joint_filling_method",
+] as const);
+
+const KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "system_variant",
+  "joint_filling_method",
+  "d112_uniflott_selected_bag_size_kg",
+  "d112_manufacturer_excludes_loss_and_waste_confirmed",
+  "system_passport_reference",
+  "material_certificate_reference",
+] as const);
+
 export const KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID =
   "manufacturer-profile:knauf-fugenfueller-leicht:perimeter-joint:25kg:v1" as const;
 
@@ -538,6 +560,68 @@ export const KNAUF_D112_TN25_SCREW_SOURCE_METADATA = Object.freeze({
     work_group: ceilingsNormPack.work_group,
     source_pack_version: ceilingsNormPack.source_pack_version,
     norm_item: knaufD112Tn25ScrewNorm,
+  }),
+});
+
+const knaufD112UniflottNorm = (() => {
+  const found = ceilingsNormPack.norm_items.find(
+    (item) => item.norm_id === KNAUF_D112_UNIFLOTT_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_D112_UNIFLOTT_NORM_ID}`);
+  return found;
+})();
+const knaufD112UniflottPackageSizes =
+  "documented_package_sizes_kg" in knaufD112UniflottNorm.applicability
+    ? knaufD112UniflottNorm.applicability.documented_package_sizes_kg
+    : null;
+
+if (
+  ceilingsNormPack.work_group !== "ceilings" ||
+  knaufD112UniflottNorm.unit !== "kg" ||
+  knaufD112UniflottNorm.rate.value !== 0.3 ||
+  knaufD112UniflottNorm.rate.unit !== "kg/m2 for hand filling, D112 variant 1" ||
+  !("system" in knaufD112UniflottNorm.applicability) ||
+  knaufD112UniflottNorm.applicability.system !== "Knauf D112" ||
+  !("variant" in knaufD112UniflottNorm.applicability) ||
+  knaufD112UniflottNorm.applicability.variant !== "standard_12_5_mm_single_layer" ||
+  !("joint_filling_method" in knaufD112UniflottNorm.applicability) ||
+  knaufD112UniflottNorm.applicability.joint_filling_method !== "hand" ||
+  !knaufD112UniflottPackageSizes ||
+  knaufD112UniflottPackageSizes.join(",") !== "5,25" ||
+  !("manufacturer_excludes_loss_and_waste" in knaufD112UniflottNorm.applicability) ||
+  knaufD112UniflottNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
+  knaufD112UniflottNorm.parameters.length !== KNAUF_D112_UNIFLOTT_SOURCE_PARAMETER_IDS.length ||
+  KNAUF_D112_UNIFLOTT_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !knaufD112UniflottNorm.parameters.includes(parameterId),
+  ) ||
+  knaufD112UniflottNorm.waste_percent_default !== 0 ||
+  knaufD112UniflottNorm.rounding.package_unit !== "bag" ||
+  knaufD112UniflottNorm.rounding.package_size !== 5 ||
+  knaufD112UniflottNorm.rounding.mode !==
+    "reference_average_kg_before_selected_5_or_25_kg_bag_rounding"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_UNIFLOTT_NORM_ID}`);
+}
+
+export const KNAUF_D112_UNIFLOTT_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+  norm_id: KNAUF_D112_UNIFLOTT_NORM_ID,
+  source_document_version: ceilingsNormPack.source_pack_version,
+  source_title: knaufD112UniflottNorm.source.title,
+  source_url: knaufD112UniflottNorm.source.url,
+  exact_locator: knaufD112UniflottNorm.source.page,
+  rate_value: knaufD112UniflottNorm.rate.value,
+  rate_unit: knaufD112UniflottNorm.rate.unit,
+  system: knaufD112UniflottNorm.applicability.system,
+  variant: knaufD112UniflottNorm.applicability.variant,
+  joint_filling_method: knaufD112UniflottNorm.applicability.joint_filling_method,
+  documented_package_sizes_kg: [...knaufD112UniflottPackageSizes],
+  manufacturer_excludes_loss_and_waste:
+    knaufD112UniflottNorm.applicability.manufacturer_excludes_loss_and_waste,
+  definition_hash: estimateDeterministicHash({
+    work_group: ceilingsNormPack.work_group,
+    source_pack_version: ceilingsNormPack.source_pack_version,
+    norm_item: knaufD112UniflottNorm,
   }),
 });
 
@@ -1227,6 +1311,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_first_layer_screws"] as const,
 }, {
+  norm_id: KNAUF_D112_UNIFLOTT_NORM_ID,
+  work_group: "ceilings",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FINISH_JOINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+  source_document_version: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_base_joint_compound"] as const,
+}, {
   norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
   work_group: "drywall",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -1368,6 +1466,8 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
   calculated_tn25_screw_quantity_piece?: number;
+  calculated_uniflott_net_quantity_kg?: number;
+  calculated_uniflott_procurement_quantity_kg?: number;
   calculated_perimeter_joint_compound_quantity_kg?: number;
   calculated_fugenfueller_jointing_net_quantity_kg?: number;
   calculated_fugenfueller_jointing_procurement_quantity_kg?: number;
@@ -1984,6 +2084,138 @@ function resolveKnaufD112Tn25Screws(
     consumed_parameter_ids: [...KNAUF_D112_TN25_REQUIRED_EXPLICIT_PARAMETER_IDS],
     produced_parameter_ids: ["quantity_first_layer_screws"],
     calculated_tn25_screw_quantity_piece: calculatedTn25ScrewQuantityPiece,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveKnaufD112Uniflott(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_UNIFLOTT_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const systemVariant = primitiveString(explicit.system_variant!);
+  const jointFillingMethod = primitiveString(explicit.joint_filling_method!);
+  const selectedBagSizeKg = finiteNumber(explicit.d112_uniflott_selected_bag_size_kg);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const manufacturerExcludesLossAndWasteConfirmed =
+    explicit.d112_manufacturer_excludes_loss_and_waste_confirmed!.value === true ||
+    explicit.d112_manufacturer_excludes_loss_and_waste_confirmed!.value === "true";
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    systemVariant === KNAUF_D112_UNIFLOTT_SOURCE_METADATA.variant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:system_variant=${systemVariant}`,
+    jointFillingMethod === KNAUF_D112_UNIFLOTT_SOURCE_METADATA.joint_filling_method
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:joint_filling_method=${jointFillingMethod}`,
+    KNAUF_D112_UNIFLOTT_SOURCE_METADATA.documented_package_sizes_kg.includes(
+      selectedBagSizeKg ?? Number.NaN,
+    )
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:d112_uniflott_selected_bag_size_kg=${selectedBagSizeKg}`,
+    manufacturerExcludesLossAndWasteConfirmed
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:d112_manufacturer_excludes_loss_and_waste_confirmed=false`,
+    systemPassportReference ? "" : "PROJECT_VALUE_REQUIRED_EXPLICIT:system_passport_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_REQUIRED_EXPLICIT:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_UNIFLOTT_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityKg = Number(
+    (areaM2! * KNAUF_D112_UNIFLOTT_SOURCE_METADATA.rate_value).toFixed(9),
+  );
+  const calculatedProcurementQuantityKg =
+    Math.ceil(calculatedNetQuantityKg / selectedBagSizeKg! - 1e-9) * selectedBagSizeKg!;
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_base_joint_compound"));
+  if (explicitQuantity !== null && Math.abs(explicitQuantity - calculatedProcurementQuantityKg) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:quantity_base_joint_compound=${explicitQuantity}:norm_value=${calculatedProcurementQuantityKg}`,
+      ],
+      [...KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_base_joint_compound"],
+      KNAUF_D112_UNIFLOTT_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_D112_UNIFLOTT_SOURCE_METADATA.system}`,
+    `system_variant=${systemVariant}`,
+    `ceiling_area_m2=canonical(area_m2)=${areaM2}`,
+    `joint_filling_method=${jointFillingMethod}`,
+    `selected_consumption_kg_m2=${KNAUF_D112_UNIFLOTT_SOURCE_METADATA.rate_value}`,
+    `selected_bag_size_kg=${selectedBagSizeKg}`,
+    "manufacturer_excludes_loss_and_waste_confirmed=true",
+    `formula=ceil((area_m2*${KNAUF_D112_UNIFLOTT_SOURCE_METADATA.rate_value})/selected_bag_size_kg)*selected_bag_size_kg`,
+    `net_quantity_kg=${calculatedNetQuantityKg}`,
+    `system_passport_reference=${systemPassportReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_base_joint_compound: {
+      value: calculatedProcurementQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+    norm_id: KNAUF_D112_UNIFLOTT_NORM_ID,
+    source_document_version: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_D112_UNIFLOTT_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_base_joint_compound"],
+    calculated_uniflott_net_quantity_kg: calculatedNetQuantityKg,
+    calculated_uniflott_procurement_quantity_kg: calculatedProcurementQuantityKg,
     parameter_values: parameterValues,
     blockers: [] as const,
   };
@@ -3283,6 +3515,9 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
     if (exactFlatCeilingRoute && input.operation_class === "CLAD") {
       return resolveKnaufD112Tn25Screws(productProfileId, input.parameter_values);
     }
+    if (exactFlatCeilingRoute && input.operation_class === "FINISH_JOINT") {
+      return resolveKnaufD112Uniflott(productProfileId, input.parameter_values);
+    }
     return nonApplied(
       "NOT_REQUESTED",
       productProfileId,
@@ -3291,7 +3526,9 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       input.operation_class === "CLAD"
         ? KNAUF_D112_TN25_SCREW_SOURCE_METADATA
-        : KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+        : input.operation_class === "FINISH_JOINT"
+          ? KNAUF_D112_UNIFLOTT_SOURCE_METADATA
+          : KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
     );
   }
   if (productProfileId === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID) {

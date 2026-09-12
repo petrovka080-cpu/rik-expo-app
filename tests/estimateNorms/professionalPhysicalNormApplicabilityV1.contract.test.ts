@@ -19,6 +19,9 @@ import {
   KNAUF_D112_TN25_SCREW_NORM_ID,
   KNAUF_D112_TN25_SCREW_SOURCE_ID,
   KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
+  KNAUF_D112_UNIFLOTT_NORM_ID,
+  KNAUF_D112_UNIFLOTT_SOURCE_ID,
+  KNAUF_D112_UNIFLOTT_SOURCE_METADATA,
   KNAUF_D112_WALL_FASTENER_NORM_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
@@ -226,6 +229,34 @@ function resolveKnaufD112Tn25(values: Readonly<Record<string, ProfessionalParame
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "FLAT_CEILING",
     operation_class: "CLAD",
+    material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactKnaufD112UniflottInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID),
+    area_m2: explicit(53, "m2"),
+    system_variant: explicit("standard_12_5_mm_single_layer"),
+    joint_filling_method: explicit("hand"),
+    d112_uniflott_selected_bag_size_kg: explicit(5, "kg"),
+    d112_manufacturer_excludes_loss_and_waste_confirmed: explicit(true),
+    system_passport_reference: explicit("Knauf D11, D112 variant 1, page 28, Uniflott"),
+    material_certificate_reference: explicit("PROJECT-KNAUF-UNIFLOTT-BATCH-CERT-001"),
+    ...changes,
+  };
+}
+
+function resolveKnaufD112Uniflott(
+  values: Readonly<Record<string, ProfessionalParameterValueV4>>,
+) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "FLAT_CEILING",
+    operation_class: "FINISH_JOINT",
     material_system: "FLAT_CEILING",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
@@ -1091,6 +1122,158 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_TN25_SCREW_SOURCE_ID))).toHaveLength(1);
+  });
+
+  test("keeps D112 Uniflott closed outside hand filling and a documented bag", () => {
+    const { joint_filling_method: _omitted, ...withoutMethod } = exactKnaufD112UniflottInputs();
+    expect(resolveKnaufD112Uniflott(withoutMethod)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:joint_filling_method"],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      system_variant: explicit("double_layer"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:system_variant=double_layer`,
+      ],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      joint_filling_method: explicit("machine"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:joint_filling_method=machine`,
+      ],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      d112_uniflott_selected_bag_size_kg: explicit(10, "kg"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:d112_uniflott_selected_bag_size_kg=10"],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      d112_manufacturer_excludes_loss_and_waste_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UNIFLOTT_NORM_ID}:d112_manufacturer_excludes_loss_and_waste_confirmed=false`,
+      ],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      quantity_base_joint_compound: explicit(15.9, "kg"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_VALUE_CONFLICT:quantity_base_joint_compound=15.9:norm_value=20"],
+    });
+  });
+
+  test("derives deterministic D112 Uniflott procurement from the exact hand-filling rate", () => {
+    const input = exactKnaufD112UniflottInputs();
+    const first = resolveKnaufD112Uniflott(input);
+    const second = resolveKnaufD112Uniflott(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+      norm_id: KNAUF_D112_UNIFLOTT_NORM_ID,
+      source_document_version: "2026.09-knauf-d11-d112-primary-review-r2",
+      source_definition_hash: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.definition_hash,
+      calculated_uniflott_net_quantity_kg: 15.9,
+      calculated_uniflott_procurement_quantity_kg: 20,
+      produced_parameter_ids: ["quantity_base_joint_compound"],
+      blockers: [],
+    });
+    expect(first.parameter_values.quantity_base_joint_compound).toMatchObject({
+      value: 20,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.quantity_base_joint_compound).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(KNAUF_D112_UNIFLOTT_SOURCE_ID)).toMatchObject({
+      authority: "Knauf",
+      product_profile_applicability: [KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["FLAT_CEILING"],
+      operation_class_applicability: ["FINISH_JOINT"],
+    });
+  });
+
+  test("routes D112 Uniflott only to the canonical base-joint compound BOQ row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
+      row.work_key === FLAT_CEILING_FINISH_JOINT_WORK_KEY);
+    if (!inventory) throw new Error("KNAUF_D112_UNIFLOTT_RUNTIME_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("KNAUF_D112_UNIFLOTT_RUNTIME_SCHEMA_MISSING");
+    const uniflottParameterIds = [
+      "system_variant",
+      "joint_filling_method",
+      "d112_uniflott_selected_bag_size_kg",
+      "d112_manufacturer_excludes_loss_and_waste_confirmed",
+    ];
+    expect(schema.parameters.filter((parameter) => uniflottParameterIds.includes(parameter.parameter_id)))
+      .toHaveLength(uniflottParameterIds.length);
+    expect(schema.parameters.filter((parameter) => uniflottParameterIds.includes(parameter.parameter_id))
+      .every((parameter) => parameter.required_when.kind === "EQUALS" &&
+        parameter.required_when.parameter_id === "product_profile_id" &&
+        parameter.required_when.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID)).toBe(true);
+
+    const uniflottValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "area_m2") return 53;
+      if (parameter.parameter_id === "length_m") return 53;
+      if (parameter.parameter_id === "width_m") return 1;
+      if (parameter.parameter_id === "perimeter_m") return 108;
+      if (parameter.parameter_id === "system_variant") return "standard_12_5_mm_single_layer";
+      if (parameter.parameter_id === "joint_filling_method") return "hand";
+      if (parameter.parameter_id === "d112_uniflott_selected_bag_size_kg") return "5";
+      if (parameter.parameter_id === "d112_manufacturer_excludes_loss_and_waste_confirmed") return true;
+      if (parameter.parameter_id === "system_passport_reference") {
+        return "Knauf D11, D112 variant 1, page 28, Uniflott";
+      }
+      if (parameter.parameter_id === "material_certificate_reference") {
+        return "PROJECT-KNAUF-UNIFLOTT-BATCH-CERT-001";
+      }
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-D112-UNIFLOTT-RATE";
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "quantity_base_joint_compound")
+      .map((parameter) => [parameter.parameter_id, {
+        value: uniflottValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Заделка швов потолка Knauf D112 составом Uniflott вручную, площадь 53 м²",
+      selectedWorkKey: FLAT_CEILING_FINISH_JOINT_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
+    const compoundRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:base_joint_compound`);
+    expect(compoundRow).toMatchObject({ quantity: 20, unit: "kg" });
+    expect(compoundRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
+    expect(compoundRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
+    expect(compoundRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+      source_definition_hash: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.definition_hash,
+      calculated_uniflott_net_quantity_kg: 15.9,
+      calculated_uniflott_procurement_quantity_kg: 20,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_UNIFLOTT_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps the Knauf Fugenfueller jointing cell closed unless every exact TDS fact is explicit", () => {

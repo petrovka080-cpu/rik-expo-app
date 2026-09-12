@@ -292,7 +292,7 @@ function knaufD112ReferenceApplicabilityParameters(
   if (
     system !== "CEILING" ||
     variant !== "standard" ||
-    (operation !== "FRAME" && operation !== "CLAD")
+    (operation !== "FRAME" && operation !== "CLAD" && operation !== "FINISH_JOINT")
   ) return [];
   const condition = {
     kind: "EQUALS",
@@ -309,6 +309,20 @@ function knaufD112ReferenceApplicabilityParameters(
     return [
       ...shared,
       { ...numberParameter("board_thickness_mm", "Толщина листа системы Knauf D112", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 12.5, 12.5), condition },
+    ];
+  }
+  if (operation === "FINISH_JOINT") {
+    return [
+      ...shared,
+      parameter("joint_filling_method", "Способ заполнения швов Knauf Uniflott", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+        choices: [{ value: "hand", label_ru: "Ручное заполнение швов" }],
+        condition,
+      }),
+      parameter("d112_uniflott_selected_bag_size_kg", "Выбранная фасовка Knauf Uniflott", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, "kg", {
+        choices: [5, 25].map((size) => ({ value: String(size), label_ru: `${size} кг` })),
+        condition,
+      }),
+      parameter("d112_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из нормы D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     ];
   }
   return [
@@ -788,6 +802,8 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
     "board_layer_count", "board_thickness_mm",
+    "joint_filling_method", "d112_uniflott_selected_bag_size_kg",
+    "d112_manufacturer_excludes_loss_and_waste_confirmed",
     "board_product_type", "board_layer_configuration", "long_edge_type", "construction_application",
     "jointing_without_perimeter_confirmed", "reinforcement_tape_confirmed", "selected_consumption_kg_m2",
     "substrate_and_application_conditions_confirmed", "selected_bag_size_kg",
