@@ -1,37 +1,90 @@
 {
   "work_group": "low_voltage",
-  "source_pack_version": "2026.09-legrand-049272-signal-cable-r1",
+  "source_pack_version": "2026.09-legrand-049272-bus-scs-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "low_voltage_legrand_049272_cable_linear_m_route_v1",
+        "source_url": "https://www.legrand.com/ecatalogue/en/catalog/products/cable-200m-reel-halogen-free-049272",
+        "supporting_source_urls": [
+          "https://assets.legrand.com/pim/NP-FT-GT/ST-00000381-EN.pdf",
+          "https://www.legrand.com/ecatalogue/en/legrand-ecat/generatepdf/70091"
+        ],
+        "verified_facts": [
+          "exact_reference_is_049272_ean_3414971327986",
+          "product_is_bus_scs_cable_for_system_power_and_operating_signals_not_a_generic_low_voltage_cable",
+          "product_has_two_flexible_twisted_0_56_mm2_conductors_and_no_screen",
+          "manufacturer_delivery_length_is_200_m_on_a_reel",
+          "reaction_to_fire_class_is_cca_s1b_d1_a1",
+          "installation_with_power_cables_above_50_v_is_forbidden_by_the_technical_sheet",
+          "current_ecatalogue_and_2018_technical_sheet_differ_on_underground_suitability_so_current_project_approval_is_required",
+          "one_cable_metre_per_route_metre_is_geometric_identity_not_a_published_project_allowance",
+          "manufacturer_sources_do_not_publish_termination_service_loop_or_cutting_waste_allowances"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "low_voltage_legrand_049272_cable_linear_m_route_v1",
-      "name_ru": "Безгалогенный двухжильный кабель Legrand 049272 по утверждённой слаботочной трассе",
-      "parameters": ["approved_route_length_linear_m", "cable_product_reference", "signal_circuit_design_confirmed"],
+      "name_ru": "Legrand 049272 BUS/SCS: геометрическая ведомость кабеля по утверждённым цепям системы",
+      "parameters": [
+        "approved_route_length_linear_m",
+        "circuit_count_and_point_to_point_schedule",
+        "bus_scs_system_compatibility_confirmed",
+        "exact_cable_product_reference",
+        "routing_environment",
+        "power_cable_segregation_confirmed",
+        "device_and_panel_termination_allowance_m",
+        "service_loop_allowance_m",
+        "vertical_drop_and_riser_allowance_m",
+        "reusable_reel_remnant_plan",
+        "fire_class_requirement",
+        "selected_reel_length_m",
+        "project_cutting_allowance_percent",
+        "installed_circuit_test_and_certification_scope"
+      ],
       "unit": "linear_m",
       "rate": {
         "value": 1,
-        "unit": "cable linear m/approved route linear m before termination and routing allowance"
+        "unit": "geometric cable linear m/approved BUS-SCS circuit route linear m before terminations, service loops, drops and reel cut plan; not a published consumption norm"
       },
       "applicability": {
         "manufacturer_reference": "Legrand 049272",
+        "ean": "3414971327986",
+        "system": "BUS-SCS",
+        "manufacturer_catalogue_context": "nurse_call_system_accessory",
         "conductor_cross_section_mm2": 0.56,
         "cores": 2,
+        "conductor_arrangement": "flexible_twisted_pair_unshielded",
         "manufacturer_delivery_reel_m": 200,
-        "power_circuit_substitution_forbidden": true,
-        "termination_service_loops_and_vertical_drops_require_design": true
+        "reaction_to_fire_class": "Cca-s1b,d1,a1",
+        "permitted_cable_temperature_c": [-15, 70],
+        "power_circuit_above_50_v_coinstallation_forbidden": true,
+        "separate_conduit_from_power_cables_strongly_recommended": true,
+        "underground_suitability_requires_current_project_confirmation_due_source_revision_conflict": true,
+        "circuit_topology_terminations_service_loops_and_vertical_drops_require_design": true,
+        "reel_aggregation_and_reusable_remnant_plan_required": true,
+        "rate_is_geometric_identity_not_manufacturer_consumption_norm": true,
+        "additional_waste_not_published": true,
+        "automatic_production_binding_for_generic_low_voltage_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "200_m_reel",
+        "package_unit": "linear_m",
         "package_size": 200,
-        "mode": "ceil_after_circuit_schedule"
+        "mode": "aggregate_approved_bus_scs_circuits_before_explicit_reel_cut_plan"
       },
       "source": {
-        "title": "Legrand cable 200 m reel, halogen free, reference 049272",
+        "title": "Legrand 049272 BUS-SCS halogen-free cable product record and technical sheet",
         "url": "https://www.legrand.com/ecatalogue/en/catalog/products/cable-200m-reel-halogen-free-049272",
-        "page": "Product and technical characteristics: two 0.56 mm2 conductors and 200 m reel",
+        "page": "Product record 049272 and technical sheet ST-00000381-EN: BUS/SCS application, 2 x 0.56 mm2, 200 m reel and routing restrictions",
         "provenance": "manufacturer_technical_cards"
       }
     }

@@ -488,6 +488,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedLowVoltagePack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/low_voltage.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1503,6 +1529,62 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "ceil_after_exact_joint_geometry_and_onsite_yield_validation",
+      },
+    }]);
+    expect(reviewedLowVoltagePack).toMatchObject({
+      source_pack_version: "2026.09-legrand-049272-bus-scs-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedLowVoltagePack.review_evidence?.items).toMatchObject([{
+      norm_id: "low_voltage_legrand_049272_cable_linear_m_route_v1",
+      source_url: "https://www.legrand.com/ecatalogue/en/catalog/products/cable-200m-reel-halogen-free-049272",
+      supporting_source_urls: expect.arrayContaining([
+        "https://assets.legrand.com/pim/NP-FT-GT/ST-00000381-EN.pdf",
+        "https://www.legrand.com/ecatalogue/en/legrand-ecat/generatepdf/70091",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "exact_reference_is_049272_ean_3414971327986",
+        "product_is_bus_scs_cable_for_system_power_and_operating_signals_not_a_generic_low_voltage_cable",
+        "manufacturer_delivery_length_is_200_m_on_a_reel",
+        "current_ecatalogue_and_2018_technical_sheet_differ_on_underground_suitability_so_current_project_approval_is_required",
+        "one_cable_metre_per_route_metre_is_geometric_identity_not_a_published_project_allowance",
+      ]),
+    }]);
+    expect(reviewedLowVoltagePack.norm_items).toMatchObject([{
+      norm_id: "low_voltage_legrand_049272_cable_linear_m_route_v1",
+      parameters: expect.arrayContaining([
+        "approved_route_length_linear_m",
+        "circuit_count_and_point_to_point_schedule",
+        "bus_scs_system_compatibility_confirmed",
+        "power_cable_segregation_confirmed",
+        "device_and_panel_termination_allowance_m",
+        "service_loop_allowance_m",
+        "vertical_drop_and_riser_allowance_m",
+        "reusable_reel_remnant_plan",
+        "installed_circuit_test_and_certification_scope",
+      ]),
+      rate: {
+        value: 1,
+        unit: "geometric cable linear m/approved BUS-SCS circuit route linear m before terminations, service loops, drops and reel cut plan; not a published consumption norm",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        manufacturer_reference: "Legrand 049272",
+        system: "BUS-SCS",
+        manufacturer_catalogue_context: "nurse_call_system_accessory",
+        conductor_cross_section_mm2: 0.56,
+        cores: 2,
+        manufacturer_delivery_reel_m: 200,
+        power_circuit_above_50_v_coinstallation_forbidden: true,
+        underground_suitability_requires_current_project_confirmation_due_source_revision_conflict: true,
+        rate_is_geometric_identity_not_manufacturer_consumption_norm: true,
+        additional_waste_not_published: true,
+        automatic_production_binding_for_generic_low_voltage_forbidden: true,
+      }),
+      rounding: {
+        package_size: 200,
+        mode: "aggregate_approved_bus_scs_circuits_before_explicit_reel_cut_plan",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
