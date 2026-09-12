@@ -10,6 +10,7 @@ import {
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
+  CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
@@ -214,7 +215,13 @@ export function buildInteriorFinishesProductionDraftV1(
       professionalEstimatePassportId: registeredProfessionalOwner,
       calculationStrategyId,
       rowCode: row.row_id,
-      normativeSourceIds: row.normative_source_ids,
+      normativeSourceIds: [...new Set([
+        ...row.normative_source_ids,
+        ...(row.category === "material" && input.physical_norm_resolution &&
+            row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+          ? [input.physical_norm_resolution.source_id]
+          : []),
+      ])],
       parameterSourceIds: row.parameter_source_ids,
       costOwnership: row.cost_ownership,
       costOwnerId: row.cost_owner_id,
@@ -354,6 +361,7 @@ export function buildInteriorFinishesFromInlineInputV1(
     supplied: input.paramOverrides,
     requireExplicitNormativeRateCode:
       constructionState(inventory) === "REPAIR" ||
+      input.paramOverrides?.product_profile_id?.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,

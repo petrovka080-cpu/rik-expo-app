@@ -18,6 +18,8 @@ describe("screed dedicated estimate template", () => {
     expect(screedCase?.uses_10k_template_catalog).toBe(true);
     expect(screedCase?.uses_norm_pack).toBe(true);
     expect(realRows.some((row) => row.normSourceId.includes("screed_cement_sand_mix"))).toBe(true);
-    expect(realRows.some((row) => row.normSourceId.includes("flooring_ceresit_ct17"))).toBe(true);
+    expect(realRows.some((row) => row.normSourceId.includes("flooring_ceresit_ct17"))).toBe(false);
+    expect(realRows.filter((row) => row.normSourceId.includes("screed_cement_sand_mix")))
+      .toEqual([expect.objectContaining({ quantity: 10_000, unit: "kg" })]);
   });
 });

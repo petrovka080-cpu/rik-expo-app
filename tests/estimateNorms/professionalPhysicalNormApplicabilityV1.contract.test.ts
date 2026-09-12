@@ -1,4 +1,8 @@
 import {
+  CERESIT_CN69_GLOBAL_25KG_NORM_ID,
+  CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+  CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
+  CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA,
   DAIKIN_3MXS_K_NORM_ID,
   DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   DAIKIN_3MXS_K_SOURCE_ID,
@@ -68,6 +72,7 @@ const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_fr
 const FLAT_CEILING_FINISH_JOINT_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_finish_joint_standard";
 const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
 const BASEBOARD_GLUE_WORK_KEY = "flooring_interior_baseboard_glue_standard";
+const SUBFLOOR_PREPARE_WORK_KEY = "flooring_interior_subfloor_prepare_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -208,6 +213,34 @@ function resolveKnaufFugenfueller(values: Readonly<Record<string, ProfessionalPa
     technology_class: "FLAT_CEILING",
     operation_class: "FINISH_JOINT",
     material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactCeresitCn69Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID),
+    area_m2: explicit(100, "m2"),
+    layer_thickness_mm: explicit(5, "mm"),
+    cn69_substrate_type: explicit("cement_sand_screed"),
+    dry_indoor_use_confirmed: explicit(true),
+    moisture_ingress_prevented: explicit(true),
+    substrate_preparation_confirmed: explicit(true),
+    installation_conditions_confirmed: explicit(true),
+    cn69_global_25kg_tds_variant_confirmed: explicit(true),
+    selected_bag_size_kg: explicit(25, "kg"),
+    ...changes,
+  };
+}
+
+function resolveCeresitCn69(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "SUBFLOOR",
+    operation_class: "PREPARE",
+    material_system: "SUBFLOOR",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -937,6 +970,148 @@ describe("professional physical norm applicability V1", () => {
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID)))
       .toHaveLength(1);
+  });
+
+  test("keeps Ceresit CN 69 closed until every global 25 kg TDS applicability fact is explicit", () => {
+    const { layer_thickness_mm: _omitted, ...withoutThickness } = exactCeresitCn69Inputs();
+    expect(resolveCeresitCn69(withoutThickness)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:layer_thickness_mm"],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      layer_thickness_mm: explicit(12, "mm"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CN69_GLOBAL_25KG_NORM_ID}:layer_thickness_mm=12`,
+      ],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      selected_bag_size_kg: explicit(23, "kg"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_VARIANT_CONFLICT:selected_bag_size_kg=23:tds_bag_size_kg=25"],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      cn69_global_25kg_tds_variant_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CN69_GLOBAL_25KG_NORM_ID}`],
+    });
+    expect(resolveProfessionalPhysicalNormParameterValuesV1({
+      technology_class: "SUBFLOOR",
+      operation_class: "FINISH",
+      material_system: "SUBFLOOR",
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: exactCeresitCn69Inputs(),
+    }).status).toBe("NOT_REQUESTED");
+  });
+
+  test("derives the exact CN 69 layer quantity from the global 25 kg TDS profile", () => {
+    const input = exactCeresitCn69Inputs();
+    const first = resolveCeresitCn69(input);
+    const second = resolveCeresitCn69(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
+      norm_id: CERESIT_CN69_GLOBAL_25KG_NORM_ID,
+      source_document_version: "2026.09-ceresit-cn69-ct17-global-primary-review-r2",
+      source_definition_hash: CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA.definition_hash,
+      calculated_cn69_net_quantity_kg: 650,
+      calculated_cn69_bag_count: 26,
+      produced_parameter_ids: ["material_consumption_kg_m2_mm"],
+      blockers: [],
+    });
+    expect(first.parameter_values.material_consumption_kg_m2_mm).toMatchObject({
+      value: 1.3,
+      unit_id: "kg_per_m2_mm",
+      source_type: "APPLICABLE_NORM",
+      source_id: CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.material_consumption_kg_m2_mm).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID)).toMatchObject({
+      authority: "Ceresit / Henkel",
+      product_profile_applicability: [CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["SUBFLOOR"],
+      operation_class_applicability: ["PREPARE"],
+    });
+  });
+
+  test("asks the CN 69 applicability questions and routes one 650 kg primary-material row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.work_key === SUBFLOOR_PREPARE_WORK_KEY);
+    if (!inventory) throw new Error("CERESIT_CN69_RUNTIME_SUBFLOOR_PREPARE_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("CERESIT_CN69_RUNTIME_SUBFLOOR_PREPARE_SCHEMA_MISSING");
+    const cn69QuestionIds = [
+      "cn69_substrate_type",
+      "dry_indoor_use_confirmed",
+      "moisture_ingress_prevented",
+      "substrate_preparation_confirmed",
+      "installation_conditions_confirmed",
+      "cn69_global_25kg_tds_variant_confirmed",
+      "selected_bag_size_kg",
+    ];
+    expect(schema.parameters.filter((parameter) => cn69QuestionIds.includes(parameter.parameter_id))
+      .map((parameter) => parameter.parameter_id)).toEqual(cn69QuestionIds);
+    expect(schema.parameters.filter((parameter) => cn69QuestionIds.includes(parameter.parameter_id))
+      .every((parameter) => parameter.required_when.kind === "EQUALS" &&
+        parameter.required_when.parameter_id === "product_profile_id" &&
+        parameter.required_when.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID)).toBe(true);
+    expect(schema.parameters.find((parameter) => parameter.parameter_id === "layer_thickness_mm")?.label_ru)
+      .toContain("Толщина");
+
+    const cn69Value = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-SUBFLOOR-PREPARE-RATE";
+      if (parameter.parameter_id === "project_type") return "INTERIOR_FLOORING_PROJECT";
+      if (parameter.parameter_id === "area_m2") return 100;
+      if (parameter.parameter_id === "layer_thickness_mm") return 5;
+      if (parameter.parameter_id === "cn69_substrate_type") return "cement_sand_screed";
+      if ([
+        "dry_indoor_use_confirmed",
+        "moisture_ingress_prevented",
+        "substrate_preparation_confirmed",
+        "installation_conditions_confirmed",
+        "cn69_global_25kg_tds_variant_confirmed",
+      ].includes(parameter.parameter_id)) return true;
+      if (parameter.parameter_id === "selected_bag_size_kg") return 25;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "material_consumption_kg_m2_mm")
+      .map((parameter) => [parameter.parameter_id, { value: cn69Value(parameter), source: "user" }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Выравнивание 100 м² сухого внутреннего пола Ceresit CN 69 слоем 5 мм",
+      selectedWorkKey: SUBFLOOR_PREPARE_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID);
+    const materialRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`);
+    expect(materialRow).toMatchObject({ quantity: 650, unit: "kg" });
+    expect(materialRow?.sourceParameters?.normativeSourceIds).toContain(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID);
+    expect(materialRow?.sourceParameters?.parameterSourceIds).toContain(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID);
+    expect(materialRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
+      source_definition_hash: CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA.definition_hash,
+      calculated_cn69_net_quantity_kg: 650,
+      calculated_cn69_bag_count: 26,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps the Forbo 232 adhesive norm closed without an explicit rate and exact applicability", () => {

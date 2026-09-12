@@ -5,6 +5,7 @@ import type {
   ProfessionalChildAssemblyV4,
 } from "../../professionalProjectAssemblyV4";
 import {
+  CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   createProfessionalEstimateDomainFactoryV1,
   type ProfessionalAssemblyProfileV1,
   type ProfessionalCanonicalTechnologyV1,
@@ -47,6 +48,11 @@ import { buildBaseboardGlueProfessionalPackagePartsV1 } from "./baseboardGluePro
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
+const CERESIT_CN69_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+} as const;
 
 type InteriorProfessionalOverlayV4 = {
   contract: { group: string; variant: string; method_prefix?: string };
@@ -95,9 +101,10 @@ function parameter(
     maximum?: number;
     choices?: readonly { value: string; label_ru: string }[];
     fullOnly?: boolean;
+    condition?: ProfessionalDomainParameterDefinitionV1["required_when"];
   } = {},
 ): ProfessionalDomainParameterDefinitionV1 {
-  const condition = options.fullOnly ? FULL_ONLY : ALWAYS;
+  const condition = options.condition ?? (options.fullOnly ? FULL_ONLY : ALWAYS);
   return {
     parameter_id,
     label_ru,
@@ -135,6 +142,39 @@ function formulaParameters(kind: InteriorFormulaKind): ProfessionalDomainParamet
   }
   return [
     parameter("material_consumption_kg_m2", "Расход выбранного состава или расходника на 1 м²", "number", "P0", "kg_per_m2", ["primary_material"], { minimum: 0.001, maximum: 1_000 }),
+  ];
+}
+
+function ceresitCn69ConditionalParameters(
+  row: InteriorFinishesDomainInventoryRow,
+): ProfessionalDomainParameterDefinitionV1[] {
+  if (
+    row.source_domain_id !== "flooring" ||
+    row.work_type !== "prepare" ||
+    interiorMaterialSystemKey(row) !== "SUBFLOOR"
+  ) {
+    return [];
+  }
+  const condition = CERESIT_CN69_ONLY;
+  return [
+    parameter("cn69_substrate_type", "Тип минерального основания для Ceresit CN 69", "choice", "P1", null, [], {
+      choices: [
+        { value: "concrete", label_ru: "Бетон" },
+        { value: "cement_sand_screed", label_ru: "Цементно-песчаная стяжка" },
+        { value: "other_mineral_base", label_ru: "Другое минеральное основание, допускаемое TDS" },
+      ],
+      condition,
+    }),
+    parameter("dry_indoor_use_confirmed", "Подтверждено сухое внутреннее помещение", "boolean", "P1", null, [], { condition }),
+    parameter("moisture_ingress_prevented", "Исключено поступление влаги в конструкцию пола", "boolean", "P1", null, [], { condition }),
+    parameter("substrate_preparation_confirmed", "Основание прочное, сухое, очищенное и подготовлено по TDS", "boolean", "P1", null, [], { condition }),
+    parameter("installation_conditions_confirmed", "Температура пола выше 15 °C, воздуха выше 18 °C, влажность ниже 75%", "boolean", "P1", null, [], { condition }),
+    parameter("cn69_global_25kg_tds_variant_confirmed", "Материал соответствует глобальной карточке C_CN69_TDS_1_0420 и мешку 25 кг", "boolean", "P1", null, [], { condition }),
+    parameter("selected_bag_size_kg", "Масса выбранного мешка Ceresit CN 69", "number", "P1", "kg", [], {
+      minimum: 1,
+      maximum: 100,
+      condition,
+    }),
   ];
 }
 
@@ -204,6 +244,7 @@ function schemaFor(row: InteriorFinishesDomainInventoryRow): ProfessionalDomainP
       parameter("product_profile_id", "Паспорт выбранного материала или системы", "text", "P0", null, []),
       parameter("normative_rate_code", "Код применимой ресурсной нормы", "text", "P0", null, []),
       ...formulaParameters(profile.formula_kind),
+      ...ceresitCn69ConditionalParameters(row),
       parameter("labor_productivity_m2_per_man_hour", "Производительность труда по принятой норме", "number", "P0", "m2_per_man_hour", ["application_labor"], { minimum: 0.01, maximum: 100_000 }),
       parameter("equipment_productivity_m2_per_machine_hour", "Производительность применимого механизма", "number", "P0", "m2_per_machine_hour", ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
       parameter("preparation_productivity_m2_per_man_hour", "Производительность подготовки основания", "number", "P1", "m2_per_man_hour", ["preparation_labor"], { minimum: 0.01, maximum: 100_000, fullOnly: true }),

@@ -260,6 +260,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedFlooringPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/flooring.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -680,6 +705,80 @@ describe("real professional norm packs audit", () => {
         mode: "approximate_net_kg_before_25_kg_bag_rounding",
       },
     }]);
+    expect(reviewedFlooringPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-cn69-ct17-global-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedFlooringPack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedFlooringPack.review_evidence?.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        norm_id: "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "approximate_consumption_is_1_3_kg_per_m2_per_mm",
+          "documented_global_pack_size_is_25_kg",
+          "regional_tds_variants_have_different_rates_and_pack_sizes",
+        ]),
+      }),
+      expect.objectContaining({
+        norm_id: "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "published_consumption_is_a_range_from_0_1_to_0_5_l_per_m2",
+          "flooring_substrates_must_be_reprimed_if_still_absorbent_after_drying",
+          "fixed_lower_bound_must_not_be_used_as_a_project_quantity_without_selected_consumption_and_coat_count",
+        ]),
+      }),
+    ]));
+    expect(reviewedFlooringPack.norm_items.find((item) =>
+      item.norm_id === "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "area_m2",
+          "layer_thickness_mm",
+          "cn69_substrate_type",
+          "cn69_global_25kg_tds_variant_confirmed",
+          "selected_bag_size_kg",
+        ]),
+        rate: {
+          value: 1.3,
+          unit: "approximate kg/m2 per mm for the global 25 kg C_CN69_TDS_1_0420 variant",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          layer_min_mm: 2,
+          layer_max_mm: 10,
+          simple_rate_multiplication_forbidden: true,
+          regional_variant_confirmation_required: true,
+          documented_bag_size_kg: 25,
+        }),
+        rounding: {
+          package_size: 25,
+          mode: "approximate_net_kg_before_confirmed_25_kg_bag_rounding",
+        },
+      });
+    expect(reviewedFlooringPack.norm_items.find((item) =>
+      item.norm_id === "flooring_ceresit_ct17_primer_flooring_l_m2_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "substrate_evenness",
+          "substrate_absorbency",
+          "selected_consumption_l_m2",
+          "coat_count",
+        ]),
+        rate: {
+          value: 0.1,
+          unit: "published lower bound only; project rate must be selected within 0.1-0.5 l/m2",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          rate_range_l_m2: [0.1, 0.5],
+          repeat_if_still_absorbent_after_drying: true,
+          simple_rate_multiplication_forbidden: true,
+          selected_consumption_and_coat_count_required: true,
+        }),
+      });
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
@@ -777,8 +876,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(43);
-    expect(unregistered).toHaveLength(16);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(42);
+    expect(unregistered).toHaveLength(17);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -786,6 +885,7 @@ describe("real professional norm packs audit", () => {
       "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
       "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
       "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+      "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
       "heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1",
       "plumbing_wavin_hep2o_15mm_horizontal_clip_spacing_v1",
       "plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1",
@@ -802,6 +902,7 @@ describe("real professional norm packs audit", () => {
       });
     expect(withCandidates.map((item) => item.norm_id)).toEqual([
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
+      "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",
       "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
     ]);
