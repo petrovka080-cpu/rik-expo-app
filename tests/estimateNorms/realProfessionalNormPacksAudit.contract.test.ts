@@ -335,6 +335,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedPaintPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/paint.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1033,6 +1058,89 @@ describe("real professional norm packs audit", () => {
           mode: "approximate_net_kg_before_rounding_to_explicitly_selected_5_or_20_kg_bag",
         },
       });
+    expect(reviewedPaintPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-ct54-ct17-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedPaintPack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedPaintPack.review_evidence?.items).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        norm_id: "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
+        verified_facts: expect.arrayContaining([
+          "average_assumed_consumption_is_approximately_0_3_l_per_m2_for_two_coats",
+          "consumption_depends_on_substrate_smoothness_and_absorption",
+          "fixed_average_must_not_be_used_without_two_coats_and_exact_substrate_applicability",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+      expect.objectContaining({
+        norm_id: "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+        source_url: "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        verified_facts: expect.arrayContaining([
+          "published_consumption_is_a_range_from_0_1_to_0_5_l_per_m2",
+          "primer_before_painting_may_be_diluted_one_to_one_or_used_undiluted_by_substrate",
+          "fixed_lower_bound_must_not_be_used_without_selected_consumption_dilution_and_coat_count",
+          "additional_waste_allowance_is_not_published",
+        ]),
+      }),
+    ]));
+    expect(reviewedPaintPack.norm_items.find((item) =>
+      item.norm_id === "paint_ceresit_ct54_silicate_two_coats_l_m2_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "area_m2",
+          "coat_count",
+          "substrate_absorption",
+          "substrate_smoothness",
+          "installation_location",
+          "selected_container_size_l",
+        ]),
+        rate: {
+          value: 0.3,
+          unit: "average approximate l/m2 for two coats; depends on substrate smoothness and absorption",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          coat_count: 2,
+          rate_depends_on: ["substrate_smoothness", "substrate_absorption"],
+          fixed_average_requires_exact_applicability_confirmation: true,
+          simple_rate_multiplication_forbidden: true,
+          documented_container_sizes_l: [3.5, 15],
+        }),
+        rounding: {
+          package_size: 3.5,
+          mode: "approximate_net_litres_before_rounding_to_explicitly_selected_3_5_or_15_l_container",
+        },
+      });
+    expect(reviewedPaintPack.norm_items.find((item) =>
+      item.norm_id === "paint_ceresit_ct17_primer_l_m2_before_paint_v1"))
+      .toMatchObject({
+        parameters: expect.arrayContaining([
+          "area_m2",
+          "substrate_evenness",
+          "substrate_absorbency",
+          "selected_consumption_l_m2",
+          "dilution_ratio",
+          "coat_count",
+        ]),
+        rate: {
+          value: 0.1,
+          unit: "published lower bound only; project rate must be selected within 0.1-0.5 l/m2",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          rate_range_l_m2: [0.1, 0.5],
+          painting_dilution_options: ["undiluted", "water_1_to_1"],
+          selected_consumption_dilution_and_coat_count_required: true,
+          simple_rate_multiplication_forbidden: true,
+        }),
+        rounding: {
+          package_size: 1,
+          mode: "net_litres_before_rounding_to_explicitly_selected_1_2_5_or_10_l_container",
+        },
+      });
     expect(reviewedPuttyPack.norm_items.find((item) =>
       item.norm_id === "putty_ceresit_ct127_finish_layer_max_2mm_v1"))
       .toMatchObject({
@@ -1158,8 +1266,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(37);
-    expect(unregistered).toHaveLength(22);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(35);
+    expect(unregistered).toHaveLength(24);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -1186,6 +1294,8 @@ describe("real professional norm packs audit", () => {
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
       "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",
+      "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+      "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
       "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
       "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",

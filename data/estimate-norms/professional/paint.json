@@ -1,61 +1,167 @@
 {
   "work_group": "paint",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-ceresit-ct54-ct17-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
+        "verified_facts": [
+          "tds_identifier_is_c_ct54_tds_1_0819",
+          "average_assumed_consumption_is_approximately_0_3_l_per_m2_for_two_coats",
+          "consumption_depends_on_substrate_smoothness_and_absorption",
+          "scope_includes_facades_and_interior_walls_and_ceilings_on_listed_substrates",
+          "usually_two_coats_are_sufficient_and_subsequent_layers_require_at_least_12_hours",
+          "application_temperature_is_5_to_25_c_and_humidity_must_be_below_80_percent",
+          "documented_container_sizes_are_3_5_and_15_l",
+          "fixed_average_must_not_be_used_without_two_coats_and_exact_substrate_applicability",
+          "additional_waste_allowance_is_not_published"
+        ]
+      },
+      {
+        "norm_id": "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+        "verified_facts": [
+          "global_tds_revision_is_ct17_profi_03_24",
+          "scope_includes_absorbent_walls_and_ceilings_before_painting",
+          "published_consumption_is_a_range_from_0_1_to_0_5_l_per_m2",
+          "consumption_depends_on_substrate_evenness_and_absorbency",
+          "primer_before_painting_may_be_diluted_one_to_one_or_used_undiluted_by_substrate",
+          "other_top_coats_require_complete_primer_drying",
+          "documented_container_sizes_are_1_2_5_and_10_l",
+          "fixed_lower_bound_must_not_be_used_without_selected_consumption_dilution_and_coat_count",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
-      "name_ru": "Ceresit CT 54 silicate paint consumption for two coats",
-      "parameters": ["area_m2", "coat_count", "substrate_absorption", "substrate_smoothness"],
+      "name_ru": "Ceresit CT 54 Silicate Aero, средний расход для подтверждённых двух слоёв",
+      "parameters": [
+        "area_m2",
+        "coat_count",
+        "substrate_type",
+        "substrate_absorption",
+        "substrate_smoothness",
+        "substrate_carrying_smooth_dry_clean_confirmed",
+        "installation_location",
+        "intercoat_break_hours",
+        "application_conditions_confirmed",
+        "facade_rain_protection_confirmed",
+        "ct54_tds_variant_confirmed",
+        "selected_container_size_l"
+      ],
       "unit": "l",
       "rate": {
         "value": 0.3,
-        "unit": "l/m2 for two coats"
+        "unit": "average approximate l/m2 for two coats; depends on substrate smoothness and absorption"
       },
       "applicability": {
-        "surfaces": ["mineral_substrate", "concrete", "cement_plaster", "lime_cement_plaster"],
+        "product": "Ceresit CT 54 Silicate Aero",
+        "tds_identifier": "C_CT54_TDS_1_0819",
+        "surfaces": [
+          "thin_layer_mineral_plaster",
+          "thin_layer_silicate_plaster",
+          "cement_plaster",
+          "lime_cement_plaster",
+          "lime_plaster",
+          "brick_wall",
+          "concrete",
+          "primed_indoor_gypsum_substrate",
+          "primed_indoor_gypsum_board",
+          "primed_indoor_gypsum_fibre_board",
+          "sound_mineral_paint_coat",
+          "sound_paint_coat"
+        ],
+        "installation_locations": ["indoor", "facade"],
         "coat_count": 2,
-        "application_temperature_c": [5, 25]
+        "rate_depends_on": ["substrate_smoothness", "substrate_absorption"],
+        "minimum_intercoat_break_hours": 12,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 25,
+        "application_relative_humidity_max_percent_exclusive": 80,
+        "fixed_average_requires_exact_applicability_confirmation": true,
+        "simple_rate_multiplication_forbidden": true,
+        "additional_waste_not_published": true,
+        "documented_container_sizes_l": [3.5, 15]
       },
-      "waste_percent_default": 7,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "bucket",
-        "package_size": 15,
-        "mode": "ceil"
+        "package_unit": "container",
+        "package_size": 3.5,
+        "mode": "approximate_net_litres_before_rounding_to_explicitly_selected_3_5_or_15_l_container"
       },
       "source": {
         "title": "Ceresit CT 54 Silicate Aero technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
-        "page": "technical data, assumed consumption",
+        "page": "TDS C_CT54_TDS_1_0819, pages 1-2: scope, substrates, coats and conditions; page 2: substrate-dependent average 0.3 l/m2 for two coats and 3.5/15 l packaging",
         "provenance": "manufacturer_technical_cards"
       }
     },
     {
       "norm_id": "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
-      "name_ru": "Ceresit CT 17 primer before painting on absorbent substrates",
-      "parameters": ["area_m2", "substrate_absorbency", "coat_count"],
+      "name_ru": "Ceresit CT 17 Profi, грунтование перед окраской с проектным выбором расхода",
+      "parameters": [
+        "area_m2",
+        "substrate_type",
+        "substrate_evenness",
+        "substrate_absorbency",
+        "selected_consumption_l_m2",
+        "dilution_ratio",
+        "coat_count",
+        "substrate_dry_load_bearing_clean_confirmed",
+        "complete_drying_confirmed",
+        "application_conditions_confirmed",
+        "selected_container_size_l"
+      ],
       "unit": "l",
       "rate": {
         "value": 0.1,
-        "unit": "l/m2; range 0.1-0.5 l/m2"
+        "unit": "published lower bound only; project rate must be selected within 0.1-0.5 l/m2"
       },
       "applicability": {
-        "surfaces": ["plaster", "concrete", "walls", "ceilings"],
-        "substrate_absorbency": ["low", "normal", "high"],
-        "rate_range_l_m2": [0.1, 0.5]
+        "product": "Ceresit CT 17 Profi",
+        "tds_identifier": "TDS No CT17 Profi 03.24",
+        "surfaces": [
+          "absorbent_wall",
+          "absorbent_ceiling",
+          "plaster",
+          "concrete",
+          "gypsum",
+          "aerated_concrete",
+          "non_impregnated_plasterboard"
+        ],
+        "application_stage": "before_painting",
+        "rate_range_l_m2": [0.1, 0.5],
+        "rate_depends_on": ["substrate_evenness", "substrate_absorbency"],
+        "painting_dilution_options": ["undiluted", "water_1_to_1"],
+        "other_top_coats_require_complete_drying": true,
+        "application_temperature_min_c": 5,
+        "application_temperature_max_c": 25,
+        "application_relative_humidity_max_percent_exclusive": 80,
+        "selected_consumption_dilution_and_coat_count_required": true,
+        "simple_rate_multiplication_forbidden": true,
+        "additional_waste_not_published": true,
+        "documented_container_sizes_l": [1, 2, 5, 10]
       },
-      "waste_percent_default": 5,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "canister",
-        "package_size": 5,
-        "mode": "ceil"
+        "package_unit": "container",
+        "package_size": 1,
+        "mode": "net_litres_before_rounding_to_explicitly_selected_1_2_5_or_10_l_container"
       },
       "source": {
         "title": "Ceresit CT 17 Profi primer technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
-        "page": "technical data, consumption",
+        "page": "TDS No CT17 Profi 03.24, pages 1-2: painting scope, dilution and drying rules; page 2: 0.1-0.5 l/m2 range, conditions and 1/2/5/10 l packaging",
         "provenance": "manufacturer_technical_cards"
       }
     }

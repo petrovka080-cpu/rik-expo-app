@@ -16,8 +16,8 @@ describe("paint dedicated estimate template", () => {
     expect(summary.paint_case_mapped_to_plaster_group).toBe(false);
     expect(paintCase?.selected_work_key).toBe("paint_wall_ceiling_2_coats");
     expect(paintCase?.selected_norm_work_group).toBe("paint");
-    expect(paintCase?.uses_norm_pack).toBe(true);
-    expect(realRows.length).toBeGreaterThanOrEqual(2);
-    expect(new Set(realRows.map((row) => row.unit))).toContain("l");
+    expect(paintCase?.uses_norm_pack).toBe(false);
+    expect(realRows).toEqual([]);
+    expect(compiled.rows.some((row) => row.lineType === "material" && row.unit === "l")).toBe(true);
   });
 });

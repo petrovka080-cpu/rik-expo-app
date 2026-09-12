@@ -26,6 +26,6 @@ describe("P2 structural and exterior calculators", () => {
       expect(estimate.rows.every((row) => row.normId && row.normVersion && row.normSourceId)).toBe(true);
       expect(estimate.rows.every((row) => row.priceStatus === "PRICE_MISSING" && row.total === null)).toBe(true);
     }
-    expect(registeredNormRows).toEqual([3, 3, 3, 3, 0, 0, 1, 0, 0, 0]);
+    expect(registeredNormRows).toEqual([3, 3, 3, 3, 0, 0, 0, 0, 0, 0]);
   });
 });

@@ -1,7 +1,7 @@
 import { compileProductionExpandedEstimate10000, isProfessionalNormPackSourceId } from "../../src/lib/ai/estimateTemplate10000";
 
-describe("paint 200 real norm pack", () => {
-  it("uses paint and primer source-backed norms through the dedicated paint template", () => {
+describe("paint 200 reviewed norm pack", () => {
+  it("keeps the dedicated paint template fail-closed without substrate-specific project inputs", () => {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "paint_wall_ceiling_2_coats",
       quantity: 200,
@@ -22,11 +22,9 @@ describe("paint 200 real norm pack", () => {
     expect(genericReferenceRows.every((row) =>
       !isProfessionalNormPackSourceId(row.normSourceId)
     )).toBe(true);
-    expect(paintRows.length).toBeGreaterThanOrEqual(4);
-    expect(realRows.map((row) => row.normSourceId)).toEqual(expect.arrayContaining([
-      expect.stringContaining("paint_ceresit_ct54_silicate_two_coats"),
-      expect.stringContaining("paint_ceresit_ct17_primer"),
-    ]));
-    expect(paintRows.every((row) => row.unit === "l")).toBe(true);
+    expect(paintRows).toEqual([]);
+    expect(realRows).toEqual([]);
+    expect(genericReferenceRows).toHaveLength(compiled.rows.length);
+    expect(compiled.rows.some((row) => row.lineType === "material" && row.unit === "l")).toBe(true);
   });
 });
