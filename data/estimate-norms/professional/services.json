@@ -1,37 +1,78 @@
 {
   "work_group": "services",
-  "source_pack_version": "2026.09-kg-author-supervision-trip-exclusion-r1",
+  "source_pack_version": "2026.09-kg-author-supervision-cost-primary-review-r2",
   "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "services_kg_author_supervision_cost_fraction_v1",
+        "source_url": "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+        "supporting_source_urls": [
+          "https://minstroy.gov.kg/kg/document/31/show",
+          "https://minstroy.gov.kg/ru/kyzmat/354/show"
+        ],
+        "verified_facts": [
+          "official_order_number_52_npa_is_dated_2022_04_28",
+          "amended_appendix_5_sets_author_supervision_cost_at_0_4_percent",
+          "the_0_4_percent_basis_is_construction_estimated_cost_in_chapters_1_through_9_of_the_consolidated_estimate",
+          "author_supervision_cost_is_included_for_objects_where_author_supervision_must_be_performed",
+          "travel_to_and_from_the_construction_site_for_design_organization_staff_is_excluded",
+          "the_order_does_not_define_a_normative_number_of_visits",
+          "travel_cost_requires_a_separate_supported_calculation_when_applicable",
+          "current_legal_applicability_and_later_amendments_require_confirmation_before_costing"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
-      "norm_id": "services_kg_author_supervision_confirmed_visit_unit_v1",
-      "name_ru": "Подтверждённые выезды авторского надзора с отдельным учётом проезда",
-      "parameters": ["contracted_author_supervision_visit_count", "site_location", "travel_required", "selected_price_collection"],
-      "unit": "visit",
+      "norm_id": "services_kg_author_supervision_cost_fraction_v1",
+      "name_ru": "Затраты на авторский надзор по приложению 5 с отдельным учётом проезда",
+      "parameters": [
+        "construction_estimated_cost_chapters_1_9_currency",
+        "construction_estimated_cost_currency",
+        "author_supervision_required_for_object",
+        "applicable_consolidated_estimate_chapters",
+        "current_legal_applicability_and_amendments",
+        "travel_to_and_from_site_required",
+        "travel_cost_separate_calculation",
+        "estimator_approval_reference"
+      ],
+      "unit": "currency",
       "rate": {
-        "value": 1,
-        "unit": "service visit/contracted and scheduled author-supervision visit"
+        "value": 0.004,
+        "unit": "currency/currency; 0.4% of construction estimated cost in chapters 1-9 of the consolidated estimate"
       },
       "applicability": {
         "jurisdiction": "Kyrgyz Republic",
-        "automatic_visit_count_forbidden": true,
-        "visit_count_must_come_from_contract_and_schedule": true,
+        "document": "Приказ от 28 апреля 2022 года №52-нпа, приложение 5 в новой редакции",
+        "author_supervision_cost_percent": 0.4,
+        "construction_estimated_cost_basis_chapters": "1-9",
+        "author_supervision_requirement_for_object_must_be_confirmed": true,
+        "exact_chapters_1_9_construction_estimated_cost_required": true,
         "travel_to_and_from_site_is_not_included_in_author_supervision_cost": true,
-        "travel_cost_must_be_separate_when_required": true,
-        "exact_project_price_collection_and_current_amendments_required": true
+        "travel_cost_must_be_separately_supported_when_required": true,
+        "normative_visit_count_not_defined_by_source": true,
+        "automatic_visit_count_or_visit_cost_derivation_forbidden": true,
+        "current_legal_applicability_and_later_amendments_required": true,
+        "simple_rate_multiplication_requires_exact_currency_basis": true,
+        "automatic_production_binding_for_generic_services_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "visit",
-        "package_size": 1,
-        "mode": "exact_contracted_integer_count"
+        "package_unit": "currency",
+        "package_size": 0.01,
+        "mode": "apply_0_004_to_confirmed_chapters_1_9_cost_then_round_only_to_document_currency_precision"
       },
       "source": {
         "title": "Приказ Минстроя КР от 28 апреля 2022 года №52-нпа: изменения в Общие указания по стоимости проектных работ",
         "url": "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
-        "page": "Amendment note: travel to and from the construction site for author-supervision personnel is not included",
+        "page": "Item 1, amended Appendix 5: 0.4% of construction estimated cost in chapters 1-9; travel to and from site excluded",
         "provenance": "public_government_norms_or_standards"
       }
     }

@@ -49,7 +49,7 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   roadworks_krer27_06_020_norm_unit_per_m2_v1: "pavement_area_m2",
   roofing_sarnafil_at18_field_overlap_m2_m2_v1: "net_rectangular_field_area_m2",
   screed_cement_sand_mix_kg_m2_50mm_v1: "area_m2",
-  services_kg_author_supervision_confirmed_visit_unit_v1: "contracted_author_supervision_visit_count",
+  services_kg_author_supervision_cost_fraction_v1: "construction_estimated_cost_chapters_1_9_currency",
   sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1: "approved_pipe_route_linear_m",
   tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1: "area_m2",
   tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1: "area_m2",
@@ -68,6 +68,7 @@ export type ProfessionalNormPackBasisUnit =
   | "piece"
   | "point"
   | "day"
+  | "currency"
   | "selected_unit";
 
 export function inferProfessionalNormPackBasisUnit(parameterKey: string): ProfessionalNormPackBasisUnit | null {
@@ -79,6 +80,7 @@ export function inferProfessionalNormPackBasisUnit(parameterKey: string): Profes
   if (parameterKey.endsWith("_weight_kg")) return "kg";
   if (parameterKey === "designed_detector_point_count") return "point";
   if (parameterKey === "shift_count") return "day";
+  if (parameterKey === "construction_estimated_cost_chapters_1_9_currency") return "currency";
   if (parameterKey.endsWith("_count")) return "piece";
   if (parameterKey === "measured_project_quantity" || parameterKey === "project_capacity_measure") {
     return "selected_unit";

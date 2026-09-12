@@ -669,6 +669,33 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedServicesPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/services.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        unit: string;
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_unit: string; package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -2082,6 +2109,59 @@ describe("real professional norm packs audit", () => {
         mode: "no_rounding_until_exact_collection_table_measure_and_precision_rule_selected",
       },
     }]);
+    expect(reviewedServicesPack).toMatchObject({
+      source_pack_version: "2026.09-kg-author-supervision-cost-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedServicesPack.review_evidence?.items).toMatchObject([{
+      norm_id: "services_kg_author_supervision_cost_fraction_v1",
+      source_url: "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+      supporting_source_urls: expect.arrayContaining([
+        "https://minstroy.gov.kg/kg/document/31/show",
+        "https://minstroy.gov.kg/ru/kyzmat/354/show",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "amended_appendix_5_sets_author_supervision_cost_at_0_4_percent",
+        "the_0_4_percent_basis_is_construction_estimated_cost_in_chapters_1_through_9_of_the_consolidated_estimate",
+        "travel_to_and_from_the_construction_site_for_design_organization_staff_is_excluded",
+        "the_order_does_not_define_a_normative_number_of_visits",
+      ]),
+    }]);
+    expect(reviewedServicesPack.norm_items).toMatchObject([{
+      norm_id: "services_kg_author_supervision_cost_fraction_v1",
+      parameters: expect.arrayContaining([
+        "construction_estimated_cost_chapters_1_9_currency",
+        "author_supervision_required_for_object",
+        "applicable_consolidated_estimate_chapters",
+        "current_legal_applicability_and_amendments",
+        "travel_to_and_from_site_required",
+        "travel_cost_separate_calculation",
+      ]),
+      unit: "currency",
+      rate: {
+        value: 0.004,
+        unit: "currency/currency; 0.4% of construction estimated cost in chapters 1-9 of the consolidated estimate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        jurisdiction: "Kyrgyz Republic",
+        author_supervision_cost_percent: 0.4,
+        construction_estimated_cost_basis_chapters: "1-9",
+        exact_chapters_1_9_construction_estimated_cost_required: true,
+        travel_to_and_from_site_is_not_included_in_author_supervision_cost: true,
+        normative_visit_count_not_defined_by_source: true,
+        automatic_visit_count_or_visit_cost_derivation_forbidden: true,
+        automatic_production_binding_for_generic_services_forbidden: true,
+      }),
+      rounding: {
+        package_unit: "currency",
+        package_size: 0.01,
+        mode: "apply_0_004_to_confirmed_chapters_1_9_cost_then_round_only_to_document_currency_precision",
+      },
+    }]);
+    expect(reviewedServicesPack.norm_items.some((item) =>
+      item.norm_id === "services_kg_author_supervision_confirmed_visit_unit_v1")).toBe(false);
     expect(reviewedDrywallPack.norm_items.find((item) =>
       item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
       .toMatchObject({

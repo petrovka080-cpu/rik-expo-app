@@ -45,7 +45,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   roadworks: "2026.09-krer27-table-27-06-020-routing-r1",
   roofing: "2026.09-sika-sarnafil-at18-primary-review-r2",
   screed: "2026.09-ceresit-cn87-primary-review-r2",
-  services: "2026.09-kg-author-supervision-trip-exclusion-r1",
+  services: "2026.09-kg-author-supervision-cost-primary-review-r2",
   sewerage: "2026.09-wavin-osma-c3766bk-primary-review-r2",
   tile: "2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
   ventilation: "2026.09-lindab-vsr-exact-sizes-r2",
