@@ -2734,8 +2734,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(14);
-    expect(unregistered).toHaveLength(40);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(15);
+    expect(unregistered).toHaveLength(39);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2751,6 +2751,7 @@ describe("real professional norm packs audit", () => {
       "plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1",
       "plumbing_wavin_hep2o_22mm_horizontal_clip_spacing_v1",
       "plumbing_wavin_hep2o_smartsleeve_piece_connection_v1",
+      "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "ventilation_lindab_vsr_duct_linear_m_route_v1",
     ]);
     expect(inventory.find((item) => item.norm_id === "heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1"))
@@ -2778,7 +2779,6 @@ describe("real professional norm packs audit", () => {
       "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
       "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
-      "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
     ]);
     expect(withCandidates.every((item) =>

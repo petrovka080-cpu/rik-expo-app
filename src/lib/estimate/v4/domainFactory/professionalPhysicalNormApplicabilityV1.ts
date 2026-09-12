@@ -6,6 +6,7 @@ import electricalNormPack from "../../../../../data/estimate-norms/professional/
 import flooringNormPack from "../../../../../data/estimate-norms/professional/flooring.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
+import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type {
@@ -208,6 +209,38 @@ const CERESIT_CN69_GLOBAL_25KG_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "installation_conditions_confirmed",
   "cn69_global_25kg_tds_variant_confirmed",
   "selected_bag_size_kg",
+] as const);
+
+export const CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:ceresit-cm11-plus:global-04-2026:ceramic-up-to-10cm-4mm-indoor-horizontal:25kg:v1" as const;
+
+export const CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID =
+  "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1" as const;
+
+export const CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}` as const;
+
+const CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "tile_type",
+  "tile_size_category",
+  "trowel_notch_mm",
+  "substrate_type",
+  "substrate_even_load_bearing_compact_confirmed",
+  "substrate_dry_clean_confirmed",
+  "installation_location",
+  "floating_buttering_requirement_confirmed",
+  "application_temperature_confirmed",
+  "cm11_global_tds_variant_confirmed",
+  "selected_package_size_kg",
+] as const);
+
+const CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  ...CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_PARAMETER_IDS,
+  "installation_orientation",
+  "minimum_tile_back_contact_percent",
+  "manufacturer_tds_reference",
+  "material_certificate_reference",
 ] as const);
 
 export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
@@ -807,6 +840,131 @@ export const CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const ceresitCm11SmallCeramicIndoorNorm = (() => {
+  const found = tileNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}`);
+  }
+  return found;
+})();
+const ceresitCm11TileTypes = "tile_types" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.tile_types
+  : null;
+const ceresitCm11Surfaces = "surfaces" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.surfaces
+  : null;
+const ceresitCm11Locations = "installation_locations" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.installation_locations
+  : null;
+const ceresitCm11Orientations = "orientations" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.orientations
+  : null;
+const ceresitCm11RateTable = "rate_table_kg_m2" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.rate_table_kg_m2
+  : null;
+const ceresitCm11RateVariesWith = "rate_varies_with" in ceresitCm11SmallCeramicIndoorNorm.applicability
+  ? ceresitCm11SmallCeramicIndoorNorm.applicability.rate_varies_with
+  : null;
+
+if (
+  tileNormPack.work_group !== "tile" ||
+  ceresitCm11SmallCeramicIndoorNorm.unit !== "kg" ||
+  ceresitCm11SmallCeramicIndoorNorm.rate.value !== 2 ||
+  ceresitCm11SmallCeramicIndoorNorm.rate.unit !==
+    "lowest approximate table row only; exact project row is selected by tile-size category and paired trowel notch" ||
+  !("product" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.product !== "Ceresit CM 11 PLUS" ||
+  !("tds_identifier" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.tds_identifier !== "CERESIT_CM11_TDS_04_2026" ||
+  !ceresitCm11TileTypes ||
+  !(ceresitCm11TileTypes as readonly string[]).includes("ceramic") ||
+  !("tile_max_area_m2" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.tile_max_area_m2 !== 0.25 ||
+  !("tile_max_side_cm" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.tile_max_side_cm !== 60 ||
+  !ceresitCm11Surfaces ||
+  !(ceresitCm11Surfaces as readonly string[]).includes("cement_screed") ||
+  !ceresitCm11Locations ||
+  !(ceresitCm11Locations as readonly string[]).includes("indoor") ||
+  !ceresitCm11Orientations ||
+  !(ceresitCm11Orientations as readonly string[]).includes("horizontal") ||
+  !("substrate_even_load_bearing_compact_dry_clean_required" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.substrate_even_load_bearing_compact_dry_clean_required !== true ||
+  !("application_temperature_min_c" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.application_temperature_min_c !== 5 ||
+  !("application_temperature_max_c" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.application_temperature_max_c !== 25 ||
+  !("indoor_minimum_tile_back_contact_percent" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.indoor_minimum_tile_back_contact_percent !== 65 ||
+  !("larger_tile_or_outdoor_minimum_contact_percent" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.larger_tile_or_outdoor_minimum_contact_percent !== 90 ||
+  !("larger_tile_or_outdoor_floating_buttering_required" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.larger_tile_or_outdoor_floating_buttering_required !== true ||
+  !ceresitCm11RateTable ||
+  ceresitCm11RateTable.up_to_10_cm__4_mm !== 2 ||
+  ceresitCm11RateTable.up_to_15_cm__6_mm !== 2.7 ||
+  ceresitCm11RateTable.up_to_25_cm__8_mm !== 3.4 ||
+  ceresitCm11RateTable.up_to_30_cm__10_mm !== 4.2 ||
+  ceresitCm11RateTable.above_30_to_60_cm__12_mm !== 4.8 ||
+  !ceresitCm11RateVariesWith ||
+  ceresitCm11RateVariesWith.length !== 3 ||
+  ["substrate_evenness", "trowel_notch_mm", "tile_type"]
+    .some((parameterId) => !(ceresitCm11RateVariesWith as readonly string[]).includes(parameterId)) ||
+  !("simple_rate_multiplication_forbidden" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.simple_rate_multiplication_forbidden !== true ||
+  !("exact_table_pair_required" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.exact_table_pair_required !== true ||
+  !("additional_waste_not_published" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.additional_waste_not_published !== true ||
+  !("technical_data_mix_batch_size_kg" in ceresitCm11SmallCeramicIndoorNorm.applicability) ||
+  ceresitCm11SmallCeramicIndoorNorm.applicability.technical_data_mix_batch_size_kg !== 25 ||
+  ceresitCm11SmallCeramicIndoorNorm.parameters.length !==
+    CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_PARAMETER_IDS.length ||
+  CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCm11SmallCeramicIndoorNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCm11SmallCeramicIndoorNorm.waste_percent_default !== 0 ||
+  ceresitCm11SmallCeramicIndoorNorm.rounding.package_unit !== "kg" ||
+  ceresitCm11SmallCeramicIndoorNorm.rounding.package_size !== 25 ||
+  ceresitCm11SmallCeramicIndoorNorm.rounding.mode !==
+    "approximate_net_kg_before_explicit_project_package_selection"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}`);
+}
+
+export const CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
+  norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
+  source_document_version: tileNormPack.source_pack_version,
+  source_title: ceresitCm11SmallCeramicIndoorNorm.source.title,
+  source_url: ceresitCm11SmallCeramicIndoorNorm.source.url,
+  exact_locator: ceresitCm11SmallCeramicIndoorNorm.source.page,
+  rate_value: ceresitCm11SmallCeramicIndoorNorm.rate.value,
+  rate_unit: ceresitCm11SmallCeramicIndoorNorm.rate.unit,
+  product: ceresitCm11SmallCeramicIndoorNorm.applicability.product,
+  tds_identifier: ceresitCm11SmallCeramicIndoorNorm.applicability.tds_identifier,
+  exact_table_pair: "up_to_10_cm__4_mm" as const,
+  tile_type: "ceramic" as const,
+  tile_size_category: "up_to_10_cm" as const,
+  trowel_notch_mm: 4 as const,
+  substrate_type: "cement_screed" as const,
+  installation_location: "indoor" as const,
+  installation_orientation: "horizontal" as const,
+  minimum_tile_back_contact_percent: 65 as const,
+  floating_buttering_required: false as const,
+  application_temperature_min_c: 5 as const,
+  application_temperature_max_c: 25 as const,
+  package_size_kg: 25 as const,
+  additional_waste_not_published: true as const,
+  definition_hash: estimateDeterministicHash({
+    work_group: tileNormPack.work_group,
+    source_pack_version: tileNormPack.source_pack_version,
+    norm_item: ceresitCm11SmallCeramicIndoorNorm,
+  }),
+});
+
 const legrandP31TrayJointFastenerNorm = (() => {
   const found = electricalNormPack.norm_items.find(
     (item) => item.norm_id === LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
@@ -1125,6 +1283,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CN69_GLOBAL_25KG_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
 }, {
+  norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
+  work_group: "tile",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "CERAMIC_TILE",
+  operation_class: "LAY",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
+  source_document_version: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["cm11_adhesive_procurement_quantity_kg"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -1202,6 +1374,8 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_forbo_adhesive_procurement_quantity_ml?: number;
   calculated_cn69_net_quantity_kg?: number;
   calculated_cn69_bag_count?: number;
+  calculated_cm11_adhesive_net_quantity_kg?: number;
+  calculated_cm11_adhesive_procurement_quantity_kg?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -2261,6 +2435,200 @@ function resolveCeresitCn69Global25Kg(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveCeresitCm11SmallCeramicIndoor(
+  productProfileId: typeof CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const tileType = primitiveString(explicit.tile_type!);
+  const tileSizeCategory = primitiveString(explicit.tile_size_category!);
+  const trowelNotchMm = finiteNumber(explicit.trowel_notch_mm);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const installationLocation = primitiveString(explicit.installation_location!);
+  const installationOrientation = primitiveString(explicit.installation_orientation!);
+  const selectedPackageSizeKg = finiteNumber(explicit.selected_package_size_kg);
+  const minimumTileBackContactPercent = finiteNumber(explicit.minimum_tile_back_contact_percent);
+  const manufacturerTdsReference = primitiveString(explicit.manufacturer_tds_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const confirmed = (parameterId:
+    | "substrate_even_load_bearing_compact_confirmed"
+    | "substrate_dry_clean_confirmed"
+    | "application_temperature_confirmed"
+    | "cm11_global_tds_variant_confirmed") =>
+    explicit[parameterId]!.value === true || explicit[parameterId]!.value === "true";
+  const explicitlyFalse = (parameterId: "floating_buttering_requirement_confirmed") =>
+    explicit[parameterId]!.value === false || explicit[parameterId]!.value === "false";
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    tileType === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.tile_type
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:tile_type=${tileType}`,
+    tileSizeCategory === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.tile_size_category
+      ? ""
+      : `PHYSICAL_NORM_TABLE_PAIR_NOT_APPLICABLE:tile_size_category=${tileSizeCategory}`,
+    trowelNotchMm === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.trowel_notch_mm
+      ? ""
+      : `PHYSICAL_NORM_TABLE_PAIR_NOT_APPLICABLE:trowel_notch_mm=${trowelNotchMm}`,
+    substrateType === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.substrate_type
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:substrate_type=${substrateType}`,
+    installationLocation === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.installation_location
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:installation_location=${installationLocation}`,
+    installationOrientation === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.installation_orientation
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:installation_orientation=${installationOrientation}`,
+    confirmed("substrate_even_load_bearing_compact_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:substrate_even_load_bearing_compact_confirmed=false`,
+    confirmed("substrate_dry_clean_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:substrate_dry_clean_confirmed=false`,
+    explicitlyFalse("floating_buttering_requirement_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_TABLE_PAIR_NOT_APPLICABLE:floating_buttering_requirement_confirmed=true`,
+    confirmed("application_temperature_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:application_temperature_confirmed=false`,
+    confirmed("cm11_global_tds_variant_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}`,
+    selectedPackageSizeKg === CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.package_size_kg
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:selected_package_size_kg=${selectedPackageSizeKg}:tds_package_size_kg=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.package_size_kg}`,
+    minimumTileBackContactPercent ===
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.minimum_tile_back_contact_percent
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID}:minimum_tile_back_contact_percent=${minimumTileBackContactPercent}`,
+    manufacturerTdsReference ? "" : "PROJECT_VALUE_REQUIRED_EXPLICIT:manufacturer_tds_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_REQUIRED_EXPLICIT:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
+    );
+  }
+
+  const selectedConsumptionKgM2 = CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.rate_value;
+  const calculatedNetQuantityKg = Number((areaM2! * selectedConsumptionKgM2).toFixed(9));
+  const calculatedProcurementQuantityKg =
+    Math.ceil(
+      calculatedNetQuantityKg /
+        CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.package_size_kg -
+        1e-9,
+    ) * CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.package_size_kg;
+  const explicitProcurementQuantityKg = finiteNumber(
+    explicitValue(parameterValuesInput, "cm11_adhesive_procurement_quantity_kg"),
+  );
+  if (
+    explicitProcurementQuantityKg !== null &&
+    Math.abs(explicitProcurementQuantityKg - calculatedProcurementQuantityKg) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:cm11_adhesive_procurement_quantity_kg=${explicitProcurementQuantityKg}:norm_value=${calculatedProcurementQuantityKg}`,
+      ],
+      [
+        ...CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "cm11_adhesive_procurement_quantity_kg",
+      ],
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID}`,
+    `product=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.product}`,
+    `tds_identifier=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.tds_identifier}`,
+    `exact_table_pair=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.exact_table_pair}`,
+    `area_m2=${areaM2}`,
+    `tile_type=${tileType}`,
+    `tile_size_category=${tileSizeCategory}`,
+    `trowel_notch_mm=${trowelNotchMm}`,
+    `substrate_type=${substrateType}`,
+    `installation_location=${installationLocation}`,
+    `installation_orientation=${installationOrientation}`,
+    "substrate_even_load_bearing_compact_confirmed=true",
+    "substrate_dry_clean_confirmed=true",
+    "floating_buttering_requirement_confirmed=false",
+    "application_temperature_confirmed=true",
+    "cm11_global_tds_variant_confirmed=true",
+    `minimum_tile_back_contact_percent=${minimumTileBackContactPercent}`,
+    `selected_consumption_kg_m2=${selectedConsumptionKgM2}`,
+    `selected_package_size_kg=${selectedPackageSizeKg}`,
+    `formula=ceil((area_m2*selected_consumption_kg_m2)/selected_package_size_kg)*selected_package_size_kg`,
+    `net_quantity_kg=${calculatedNetQuantityKg}`,
+    `manufacturer_tds_reference=${manufacturerTdsReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+    `additional_waste_not_published=${CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.additional_waste_not_published}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    cm11_adhesive_procurement_quantity_kg: {
+      value: calculatedProcurementQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
+    norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
+    source_document_version:
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [
+      ...CERESIT_CM11_SMALL_CERAMIC_INDOOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
+    ],
+    produced_parameter_ids: ["cm11_adhesive_procurement_quantity_kg"],
+    calculated_cm11_adhesive_net_quantity_kg: calculatedNetQuantityKg,
+    calculated_cm11_adhesive_procurement_quantity_kg: calculatedProcurementQuantityKg,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveForbo232MountingAdhesive(
   productProfileId: typeof FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -2791,6 +3159,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "CERAMIC_TILE" &&
+      input.operation_class === "LAY" &&
+      input.material_system === "CERAMIC_TILE" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveCeresitCm11SmallCeramicIndoor(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
     );
   }
   if (productProfileId === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID) {

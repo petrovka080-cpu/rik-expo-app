@@ -6,6 +6,8 @@ import type {
 } from "../../professionalProjectAssemblyV4";
 import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+  CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
   createProfessionalEstimateDomainFactoryV1,
   type ProfessionalAssemblyProfileV1,
   type ProfessionalCanonicalTechnologyV1,
@@ -52,6 +54,11 @@ const CERESIT_CN69_ONLY = {
   kind: "EQUALS",
   parameter_id: "product_profile_id",
   value: CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+} as const;
+const CERESIT_CM11_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
 } as const;
 
 type InteriorProfessionalOverlayV4 = {
@@ -178,6 +185,58 @@ function ceresitCn69ConditionalParameters(
   ];
 }
 
+function isCeresitCm11SmallCeramicIndoorTarget(
+  row: InteriorFinishesDomainInventoryRow,
+): boolean {
+  return row.source_domain_id === "tile_stone" &&
+    row.work_type === "lay" &&
+    interiorMaterialSystemKey(row) === "CERAMIC_TILE" &&
+    row.scope_capability === "standard";
+}
+
+function ceresitCm11ConditionalParameters(
+  row: InteriorFinishesDomainInventoryRow,
+): ProfessionalDomainParameterDefinitionV1[] {
+  if (!isCeresitCm11SmallCeramicIndoorTarget(row)) return [];
+  const condition = CERESIT_CM11_ONLY;
+  return [
+    parameter("tile_type", "Тип плитки для Ceresit CM 11 PLUS", "choice", "P1", null, [], {
+      choices: [{ value: "ceramic", label_ru: "Керамическая плитка" }], condition,
+    }),
+    parameter("tile_size_category", "Размерная категория плитки по таблице CM 11", "choice", "P1", null, [], {
+      choices: [{ value: "up_to_10_cm", label_ru: "До 10 см" }], condition,
+    }),
+    parameter("trowel_notch_mm", "Размер зуба шпателя по паре таблицы CM 11", "number", "P1", "mm", [], {
+      minimum: 4, maximum: 4, condition,
+    }),
+    parameter("substrate_type", "Тип основания для Ceresit CM 11 PLUS", "choice", "P1", null, [], {
+      choices: [{ value: "cement_screed", label_ru: "Цементная стяжка" }], condition,
+    }),
+    parameter("substrate_even_load_bearing_compact_confirmed", "Основание ровное, несущее и прочное", "boolean", "P1", null, [], { condition }),
+    parameter("substrate_dry_clean_confirmed", "Основание сухое и очищенное", "boolean", "P1", null, [], { condition }),
+    parameter("installation_location", "Место укладки", "choice", "P1", null, [], {
+      choices: [{ value: "indoor", label_ru: "Внутри помещения" }], condition,
+    }),
+    parameter("installation_orientation", "Ориентация укладки", "choice", "P1", null, [], {
+      choices: [{ value: "horizontal", label_ru: "Горизонтальная поверхность" }], condition,
+    }),
+    parameter("floating_buttering_requirement_confirmed", "Требуется комбинированное нанесение клея", "boolean", "P1", null, [], { condition }),
+    parameter("application_temperature_confirmed", "Температура применения подтверждена в диапазоне 5–25 °C", "boolean", "P1", null, [], { condition }),
+    parameter("cm11_global_tds_variant_confirmed", "Подтверждена глобальная карточка CERESIT_CM11_TDS_04_2026", "boolean", "P1", null, [], { condition }),
+    parameter("selected_package_size_kg", "Масса выбранной упаковки Ceresit CM 11 PLUS", "number", "P1", "kg", [], {
+      minimum: 25, maximum: 25, condition,
+    }),
+    parameter("minimum_tile_back_contact_percent", "Минимальный контакт клея с обратной стороной плитки", "number", "P1", "percent", [], {
+      minimum: 65, maximum: 65, condition,
+    }),
+    parameter("manufacturer_tds_reference", "Ссылка на техническую карту производителя", "text", "P1", null, [], { condition }),
+    parameter("material_certificate_reference", "Ссылка на сертификат выбранного материала", "text", "P1", null, [], { condition }),
+    parameter("cm11_adhesive_procurement_quantity_kg", "Закупочное количество Ceresit CM 11 PLUS после округления упаковок", "number", "P2", "kg", ["cm11_adhesive"], {
+      minimum: 25, maximum: 1_000_000_000, condition,
+    }),
+  ];
+}
+
 function repairRequired(row: InteriorFinishesDomainInventoryRow): boolean {
   return row.scope_capability === "repair" || ["repair", "replace"].includes(row.work_type);
 }
@@ -245,6 +304,7 @@ function schemaFor(row: InteriorFinishesDomainInventoryRow): ProfessionalDomainP
       parameter("normative_rate_code", "Код применимой ресурсной нормы", "text", "P0", null, []),
       ...formulaParameters(profile.formula_kind),
       ...ceresitCn69ConditionalParameters(row),
+      ...ceresitCm11ConditionalParameters(row),
       parameter("labor_productivity_m2_per_man_hour", "Производительность труда по принятой норме", "number", "P0", "m2_per_man_hour", ["application_labor"], { minimum: 0.01, maximum: 100_000 }),
       parameter("equipment_productivity_m2_per_machine_hour", "Производительность применимого механизма", "number", "P0", "m2_per_machine_hour", ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
       parameter("preparation_productivity_m2_per_man_hour", "Производительность подготовки основания", "number", "P1", "m2_per_man_hour", ["preparation_labor"], { minimum: 0.01, maximum: 100_000, fullOnly: true }),
@@ -401,6 +461,46 @@ function fullAssembly(inventory: InteriorFinishesDomainInventoryRow): Profession
   };
 }
 
+function ceresitCm11AdhesiveAssembly(
+  inventory: InteriorFinishesDomainInventoryRow,
+): ProfessionalChildAssemblyV4 | null {
+  if (!isCeresitCm11SmallCeramicIndoorTarget(inventory)) return null;
+  const technologyId = inventory.canonical_technology_id;
+  return {
+    child_passport_id: `${technologyId}:cm11-adhesive-v1:passport`,
+    child_passport_version: "1.0.0",
+    domain_owner: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    assembly_id: `${technologyId}:cm11-adhesive-v1:assembly`,
+    title_ru: "Клей Ceresit CM 11 PLUS по точной паре таблицы расхода",
+    scope_trigger_parameter: "product_profile_id",
+    scope_trigger_values: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID],
+    supported_scope_modes: ["FULL_APPLICABLE_SCOPE"],
+    parameters: [
+      assemblyParameter("product_profile_id", "Паспорт выбранного материала", "SCOPE_TRIGGER", null, ["FULL_APPLICABLE_SCOPE"]),
+      assemblyParameter("cm11_adhesive_procurement_quantity_kg", "Закупочное количество Ceresit CM 11 PLUS", "NORM_RATE", "kg", ["FULL_APPLICABLE_SCOPE"]),
+    ],
+    rows: [{
+      row_id: `${technologyId}:cm11-adhesive-v1:row:cm11_adhesive`,
+      section: "Основные материалы",
+      category: "material",
+      title_ru: "Клей для плитки Ceresit CM 11 PLUS, упаковка 25 кг",
+      formula: formula(
+        `${technologyId}:cm11-adhesive-v1:formula`,
+        "cm11_adhesive_procurement_quantity_kg",
+        ["cm11_adhesive_procurement_quantity_kg"],
+        "kg",
+        (values) => values.cm11_adhesive_procurement_quantity_kg,
+      ),
+      cost_ownership: "priced_resource",
+      cost_owner_id: `${technologyId}:cost-owner:cm11_adhesive`,
+      semantic_owner: `${technologyId}:semantic-owner:cm11_adhesive`,
+      normative_source_ids: [CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID],
+      inclusion_condition: "scope_mode=FULL_APPLICABLE_SCOPE",
+      procurement_eligible: true,
+    }],
+  };
+}
+
 function scopeAssembly(inventory: InteriorFinishesDomainInventoryRow): ProfessionalChildAssemblyV4 | null {
   const scope = inventory.scope_capability;
   const technologyId = inventory.canonical_technology_id;
@@ -493,7 +593,13 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
     rejected_foreign_source_ids: ["ru_gesn_15", "ru_fer_15"],
   };
   const conditional = professionalOverlay ? null : scopeAssembly(inventory);
-  const children = professionalOverlay?.child_assemblies ?? [mainAssembly(inventory), fullAssembly(inventory), ...(conditional ? [conditional] : [])];
+  const cm11Adhesive = professionalOverlay ? null : ceresitCm11AdhesiveAssembly(inventory);
+  const children = professionalOverlay?.child_assemblies ?? [
+    mainAssembly(inventory),
+    fullAssembly(inventory),
+    ...(conditional ? [conditional] : []),
+    ...(cm11Adhesive ? [cm11Adhesive] : []),
+  ];
   const formulaPackId = `${technologyId}:formula-pack:v1`;
   const assemblyProfileId = `${technologyId}:assembly-profile:v1`;
   const policyId = professionalOverlay?.resource_policy.policy_id ?? `${technologyId}:resource-policy:v1`;
