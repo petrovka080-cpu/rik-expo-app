@@ -6,6 +6,8 @@ import {
   getProductionExpandedTemplate10000,
   isProfessionalNormPackSourceId,
   NORM_WORK_TAXONOMY_GROUPS,
+  PROFESSIONAL_NORM_PACK_GROUPS,
+  PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
   PRODUCTION_WORK_DEFINITIONS_10000,
   resolveNormWorkGroupForCategory,
 } from "../../src/lib/ai/estimateTemplate10000";
@@ -379,6 +381,54 @@ function inspectCatalogSourceRegistry(planGroups: Set<string>): {
   };
 }
 
+function inspectProductionNormRegistry(planGroups: Set<string>): {
+  production_norm_registry_items_count: number;
+  production_norm_registry_groups_count: number;
+  production_norm_registry_bound_work_groups: string[];
+  production_norm_registry_unbound_work_groups: string[];
+  production_norm_registry_invalid_binding_count: number;
+  production_norm_registry_invalid_bindings: string[];
+} {
+  const physical = new Map<string, { group: string; item: NonNullable<ProfessionalNormPack["norm_items"]>[number] }>();
+  const root = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT);
+  if (pathExists(root)) {
+    for (const name of readdirSync(root).filter((candidate) =>
+      candidate.endsWith(".json") && candidate !== REMEDIATION_PLAN_FILE
+    )) {
+      const pack = readJson<ProfessionalNormPack>(path.join(root, name));
+      for (const item of pack.norm_items ?? []) {
+        if (item.norm_id && pack.work_group) physical.set(item.norm_id, { group: pack.work_group, item });
+      }
+    }
+  }
+
+  const invalidBindings = PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.flatMap((registered) => {
+    const source = physical.get(registered.normId);
+    if (!source) return [`missing_physical_norm:${registered.normId}`];
+    return [
+      source.group === registered.workGroup ? "" : `work_group_mismatch:${registered.normId}`,
+      source.item.unit === registered.unit ? "" : `unit_mismatch:${registered.normId}`,
+      source.item.rate?.value === registered.consumptionRate ? "" : `rate_mismatch:${registered.normId}`,
+      source.item.rounding?.package_size === registered.packageSize ? "" : `package_mismatch:${registered.normId}`,
+      source.item.source?.url === registered.sourceUrl ? "" : `source_url_mismatch:${registered.normId}`,
+      registered.sourceId === `src_professional_norm_pack_${registered.normId}`
+        ? ""
+        : `source_id_mismatch:${registered.normId}`,
+    ].filter(Boolean);
+  });
+  const boundWorkGroups = [...new Set(PROFESSIONAL_NORM_PACK_GROUPS.filter((group) => planGroups.has(group)))].sort();
+  const boundSet = new Set<string>(boundWorkGroups);
+
+  return {
+    production_norm_registry_items_count: PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.length,
+    production_norm_registry_groups_count: boundWorkGroups.length,
+    production_norm_registry_bound_work_groups: boundWorkGroups,
+    production_norm_registry_unbound_work_groups: [...planGroups].filter((group) => !boundSet.has(group)).sort(),
+    production_norm_registry_invalid_binding_count: invalidBindings.length,
+    production_norm_registry_invalid_bindings: invalidBindings,
+  };
+}
+
 function sourceGate(name: string): boolean {
   return /^(1|true|yes|passed|green)$/i.test(process.env[`AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_${name}`] ?? "");
 }
@@ -437,7 +487,9 @@ function main(): void {
     (previousSummary.real_hardcoded_production_rate_count ?? 0) === 0;
   const previousStatusOk = previousLegacyStopOk || previousSourceQualityGreenOk;
   const sourceRegistry = inspectCatalogSourceRegistry(planGroups);
-  const productionBoundGroups = new Set(sourceRegistry.source_registry_bound_work_groups);
+  const productionNormRegistry = inspectProductionNormRegistry(planGroups);
+  const sourceRegistryBoundGroups = new Set(sourceRegistry.source_registry_bound_work_groups);
+  const productionBoundGroups = new Set(productionNormRegistry.production_norm_registry_bound_work_groups);
 
   const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => ({
     ...entry,
@@ -449,7 +501,8 @@ function main(): void {
           ? "missing_norm_records"
           : "needs_real_norm_pack",
     professional_pack_present: packGroups.has(entry.work_group),
-    production_source_registry_binding_present: productionBoundGroups.has(entry.work_group),
+    production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
+    production_norm_registry_binding_present: productionBoundGroups.has(entry.work_group),
   }));
 
   const sourceGates = {
@@ -491,11 +544,17 @@ function main(): void {
     sourceRegistry.source_registry_exists &&
     sourceRegistry.source_registry_missing_work_groups.length === 0 &&
     sourceRegistry.source_registry_invalid_professional_sources_count === 0;
+  const allProductionNormRegistryGroupsPresent =
+    productionNormRegistry.production_norm_registry_unbound_work_groups.length === 0 &&
+    productionNormRegistry.production_norm_registry_invalid_binding_count === 0;
   // A populated source registry proves trace metadata, not that the referenced
   // work-group packs exist. Requiring both prevents 12/38 physical packs from
   // being reported as complete merely because generated catalog bindings name
   // all taxonomy groups.
-  const realSourceCoverageComplete = allPacksPresent && allSourceRegistryGroupsPresent;
+  const realSourceCoverageComplete =
+    allPacksPresent &&
+    allSourceRegistryGroupsPresent &&
+    allProductionNormRegistryGroupsPresent;
 
   const green = previousStatusOk &&
     planComplete &&
@@ -553,6 +612,8 @@ function main(): void {
     all_inactive_taxonomy_groups_planned: missingPlanGroups.length === 0,
     source_registry_covers_professional_norm_sources: allSourceRegistryGroupsPresent,
     ...sourceRegistry,
+    production_norm_registry_covers_professional_norm_packs: allProductionNormRegistryGroupsPresent,
+    ...productionNormRegistry,
     priority_order_defined: plan?.work_groups.every((entry) => entry.priority > 0) ?? false,
     source_strategy_defined: plan?.work_groups.every((entry) => Boolean(entry.source_strategy)) ?? false,
     all_taxonomy_groups_have_source_strategy: missingPlanGroups.length === 0,
@@ -722,6 +783,12 @@ function main(): void {
       sourceRegistry.source_registry_invalid_professional_sources_count > 0
         ? `invalid_source_registry_professional_sources:${sourceRegistry.source_registry_invalid_professional_sources_count}`
         : "",
+      !allProductionNormRegistryGroupsPresent
+        ? `missing_real_production_norm_registry_work_groups:${productionNormRegistry.production_norm_registry_unbound_work_groups.join(",")}`
+        : "",
+      productionNormRegistry.production_norm_registry_invalid_binding_count > 0
+        ? `invalid_production_norm_registry_bindings:${productionNormRegistry.production_norm_registry_invalid_binding_count}`
+        : "",
       invalidPackResults.length > 0 ? "invalid_professional_norm_pack_files" : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !apartmentReferenceProfessional ? "apartment_reference_not_professional_expanded_boq" : "",
@@ -764,6 +831,8 @@ function main(): void {
     apartment_reference_real_norm_pack_rows_count: summary.apartment_reference_real_norm_pack_rows_count,
     apartment_54_uses_real_norm_packs: summary.apartment_54_uses_real_norm_packs,
     missing_real_norm_pack_work_groups: summary.missing_real_norm_pack_work_groups,
+    production_norm_registry_bound_work_groups: summary.production_norm_registry_bound_work_groups,
+    production_norm_registry_unbound_work_groups: summary.production_norm_registry_unbound_work_groups,
     blockers: summary.blockers,
     fake_green_claimed: summary.fake_green_claimed,
   }, null, 2));
