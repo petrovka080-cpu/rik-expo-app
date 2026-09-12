@@ -1,36 +1,79 @@
 {
   "work_group": "reinforcement",
-  "source_pack_version": "2026.07-wave2a",
+  "source_pack_version": "2026.09-rics-fhwa-rebar-schedule-primary-review-r2",
   "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
+        "source_url": "https://www.fhwa.dot.gov/pavement/concrete/pubs/hif16026.pdf",
+        "supporting_source_urls": [
+          "https://www.rics.org/content/dam/ricsglobal/documents/standards/NRM-2_Oct2022_Update.pdf",
+          "https://www.rics.org/profession-standards/rics-standards-and-guidance/sector-standards/construction-standards/nrm"
+        ],
+        "verified_facts": [
+          "fhwa_table_3_publishes_diameter_cross_section_and_mass_per_metre_for_named_astm_reinforcing_bar_sizes",
+          "the_fhwa_table_does_not_publish_a_universal_kg_per_m3_of_concrete_allowance",
+          "rics_nrm2_measures_mild_and_high_yield_bar_reinforcement_by_tonnes_with_nominal_size_and_shape_stated",
+          "rics_nrm2_separates_straight_bent_curved_and_link_bar_descriptions",
+          "the_previous_95_kg_per_m3_seed_is_not_supported_by_either_primary_source",
+          "a_bar_schedule_or_explicit_count_length_size_and_standard_mass_table_is_required",
+          "the_diameter_squared_over_162_shortcut_must_not_replace_the_selected_standard_or_product_mass_table"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
-      "norm_id": "reinforcement_rebar_kg_m3_concrete_element_v1",
-      "name_ru": "Reinforcement steel by concrete element volume",
-      "parameters": ["volume_m3", "diameter_mm", "spacing_mm", "layers_count", "overlap_percent", "waste_percent"],
+      "norm_id": "reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
+      "name_ru": "Арматура: маршрутизация массы по утверждённой ведомости стержней",
+      "parameters": [
+        "approved_reinforcement_schedule_weight_kg",
+        "bar_bending_schedule_reference",
+        "structural_drawing_and_revision_reference",
+        "bar_standard_and_grade",
+        "bar_size_designation",
+        "nominal_diameter_mm",
+        "shape_straight_bent_curved_or_link",
+        "bar_count_and_cut_length_m",
+        "selected_standard_mass_kg_per_m",
+        "laps_hooks_chairs_connectors_and_accessories_scope",
+        "fabrication_allowance_if_documented",
+        "supplier_bundle_or_length_constraints",
+        "estimator_approval_reference"
+      ],
       "unit": "kg",
       "rate": {
-        "value": 95,
-        "unit": "kg/m3 estimator seed for reinforced concrete element, requires project review"
+        "value": 1,
+        "unit": "kg/kg same-unit routing identity for approved reinforcement schedule mass; not a kg-per-m3 concrete allowance"
       },
       "applicability": {
-        "diameter_mm": [8, 10, 12, 14, 16],
-        "bar_mass_formula": "bar_mass = diameter_mm * diameter_mm / 162",
-        "mesh_formula": "total_length_m = bars_by_direction * span_m * layers_count * (1 + overlap_percent)",
-        "quantity_formula": "reinforcement_quantity = total_length_m * bar_mass * (1 + waste_percent)",
-        "user_confirmation_required_for_diameter_and_spacing": true
+        "primary_mass_table_reference": "FHWA-HIF-16-026 Table 3 for named ASTM bar sizes",
+        "measurement_reference": "RICS NRM 2 Work section 11 reinforcement measured by tonnes",
+        "approved_bar_schedule_or_explicit_bar_takeoff_required": true,
+        "bar_standard_grade_size_shape_count_and_length_required": true,
+        "selected_standard_or_product_mass_per_metre_required": true,
+        "laps_hooks_chairs_connectors_and_accessories_scope_must_be_explicit": true,
+        "previous_95_kg_per_m3_seed_rejected": true,
+        "diameter_squared_over_162_as_automatic_source_forbidden": true,
+        "rate_is_routing_identity_not_design_reinforcement_norm": true,
+        "automatic_production_binding_for_generic_reinforcement_forbidden": true
       },
-      "waste_percent_default": 5,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "ton",
-        "package_size": 1000,
-        "mode": "ceil"
+        "package_unit": "kg",
+        "package_size": 1,
+        "mode": "no_rounding_before_full_approved_bar_schedule_then_apply_documented_supplier_constraints"
       },
       "source": {
-        "title": "Reinforcing bar weight table and reviewed concrete element allowance",
-        "url": "https://www.engineeringtoolbox.com/reinforcing-bars-d_1341.html",
-        "page": "reinforcing bar weights and estimator-reviewed kg per concrete volume allowance",
+        "title": "FHWA-HIF-16-026 Continuously Reinforced Concrete Pavement Manual",
+        "url": "https://www.fhwa.dot.gov/pavement/concrete/pubs/hif16026.pdf",
+        "page": "Printed page 22, Table 3: weight and dimensions of named ASTM standard reinforcing steel bars; no generic kg/m3 concrete factor",
         "provenance": "public_government_norms_or_standards"
       }
     }

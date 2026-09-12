@@ -1,144 +1,83 @@
 {
   "work_group": "masonry",
-  "source_pack_version": "2026.07-wave2a",
+  "source_pack_version": "2026.09-bia-tn10-selected-table-primary-review-r2",
   "source_type": "open_method_statements",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "masonry_bia_tn10_selected_brick_mortar_table_routing_v1",
+        "source_url": "https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf",
+        "supporting_source_urls": [
+          "https://www.gobrick.com/resources/technical-notes",
+          "https://www.rics.org/content/dam/ricsglobal/documents/standards/NRM-2_Oct2022_Update.pdf"
+        ],
+        "verified_facts": [
+          "bia_tn10_wall_area_method_uses_net_wall_area_after_opening_deductions",
+          "bia_tn10_states_that_accurate_non_modular_estimates_require_both_brick_dimensions_and_joint_width",
+          "bia_tn10_table_4_rates_depend_on_selected_brick_size_joint_and_wall_configuration_and_exclude_waste",
+          "bia_tn10_requires_bond_pattern_correction_factors_where_applicable",
+          "bia_tn10_gives_general_waste_guidance_only_after_net_quantity_and_leaves_final_decisions_to_project_professionals",
+          "bia_technical_notes_are_explicitly_for_fired_clay_brick_and_warn_against_applying_them_to_unfired_or_non_clay_products",
+          "the_previous_generic_aac_adhesive_mesh_pallet_bag_and_roll_assumptions_have_no_support_in_this_source"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
-      "norm_id": "masonry_aac_block_600_200_200_piece_m2_wall_v1",
-      "name_ru": "AAC/block masonry main wall blocks, 600 x 200 mm face",
-      "parameters": ["area_m2", "wall_thickness_mm", "block_length_mm", "block_height_mm", "waste_percent"],
-      "unit": "piece",
+      "norm_id": "masonry_bia_tn10_selected_brick_mortar_table_routing_v1",
+      "name_ru": "Кирпичная кладка: маршрутизация выбранной строки BIA TN 10 по чистой площади стены",
+      "parameters": [
+        "measured_net_brick_wall_area_m2",
+        "gross_wall_area_and_opening_deductions",
+        "fired_clay_brick_confirmed",
+        "brick_manufacturer_and_designation",
+        "specified_and_nominal_dimensions",
+        "joint_width_mm",
+        "wall_thickness_and_wythe_configuration",
+        "bond_pattern",
+        "selected_bia_tn10_table_4_row",
+        "selected_brick_quantity_per_m2",
+        "selected_mortar_quantity_per_m2",
+        "applicable_bond_correction_factors",
+        "selected_project_breakage_and_waste_allowances",
+        "supplier_package_quantities",
+        "project_architect_engineer_or_estimator_approval_reference"
+      ],
+      "unit": "selected_material_unit",
       "rate": {
-        "value": 8.33,
-        "unit": "piece/m2 for 600 x 200 mm face block, before waste"
+        "value": 1,
+        "unit": "routing identity after applying the exact selected BIA TN 10 table row and corrections; not a universal piece/m2 or m3/m2 rate"
       },
       "applicability": {
-        "materials": ["aac_block", "gas_block", "ceramic_block"],
-        "wall_thickness_mm": [100, 150, 200, 250, 300],
-        "formula": "main_material_qty = area_m2 / ((block_length_mm / 1000) * (block_height_mm / 1000)) * (1 + waste_percent)",
-        "user_confirmation_required_for_material_type": true
+        "document": "Brick Industry Association Technical Note 10, Dimensioning and Estimating Brick Masonry",
+        "material_scope": "fired clay brick only",
+        "wall_area_method_uses_net_area_after_openings": true,
+        "exact_brick_size_joint_width_wall_configuration_and_bond_required": true,
+        "selected_table_4_row_and_correction_factors_required": true,
+        "table_4_quantities_exclude_waste": true,
+        "project_specific_breakage_mortar_waste_and_supplier_packages_required": true,
+        "aac_concrete_silicate_or_other_non_clay_products_excluded": true,
+        "adhesive_and_masonry_mesh_consumption_not_defined_by_source": true,
+        "previous_fixed_8_33_piece_51_piece_5_kg_0_055_m3_and_1_05_m2_rates_rejected": true,
+        "rate_is_routing_identity_not_published_consumption_norm": true,
+        "automatic_production_binding_for_generic_masonry_forbidden": true
       },
-      "waste_percent_default": 5,
+      "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "pallet",
-        "package_size": 60,
-        "mode": "ceil"
-      },
-      "source": {
-        "title": "Autoclaved aerated concrete block layout engineering takeoff table",
-        "url": "https://www.ytong-silka.de/",
-        "page": "block geometry 600 x 200 mm face area, estimator-reviewed takeoff",
-        "provenance": "open_method_statements"
-      }
-    },
-    {
-      "norm_id": "masonry_brick_250_120_65_piece_m2_half_brick_v1",
-      "name_ru": "Clay brick wall units, 250 x 120 x 65 mm",
-      "parameters": ["area_m2", "brick_length_mm", "brick_height_mm", "joint_mm", "wall_thickness_mm", "waste_percent"],
-      "unit": "piece",
-      "rate": {
-        "value": 51,
-        "unit": "piece/m2 for half-brick wall with mortar joints, before waste"
-      },
-      "applicability": {
-        "materials": ["clay_brick", "silicate_brick"],
-        "brick_size_mm": [250, 120, 65],
-        "formula": "brick_qty = area_m2 * bricks_per_m2 * (1 + waste_percent)",
-        "user_confirmation_required_for_wall_thickness": true
-      },
-      "waste_percent_default": 5,
-      "rounding": {
-        "package_unit": "pallet",
-        "package_size": 500,
-        "mode": "ceil"
-      },
-      "source": {
-        "title": "Clay brick wall takeoff table 250 x 120 x 65 mm",
-        "url": "https://www.gobrick.com/",
-        "page": "brick dimensions and estimator-reviewed wall consumption table",
-        "provenance": "open_method_statements"
-      }
-    },
-    {
-      "norm_id": "masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",
-      "name_ru": "Thin-bed adhesive for AAC/block masonry",
-      "parameters": ["area_m2", "wall_thickness_mm", "block_type", "waste_percent"],
-      "unit": "kg",
-      "rate": {
-        "value": 5,
-        "unit": "kg/m2 for 200 mm wall seed rate pending regional product card review"
-      },
-      "applicability": {
-        "materials": ["aac_block", "gas_block", "ceramic_block"],
-        "wall_thickness_mm": [100, 150, 200, 250, 300],
-        "formula": "adhesive_qty_kg = area_m2 * adhesive_kg_m2 * (1 + waste_percent)"
-      },
-      "waste_percent_default": 7,
-      "rounding": {
-        "package_unit": "bag",
-        "package_size": 25,
-        "mode": "ceil"
-      },
-      "source": {
-        "title": "Thin-bed block adhesive consumption table for AAC/block masonry",
-        "url": "https://www.ytong-silka.de/",
-        "page": "thin-bed mortar / block adhesive estimator table",
-        "provenance": "open_method_statements"
-      }
-    },
-    {
-      "norm_id": "masonry_cement_lime_mortar_m3_m2_brick_v1",
-      "name_ru": "Cement-lime mortar for brick masonry",
-      "parameters": ["area_m2", "wall_thickness_mm", "joint_mm", "waste_percent"],
-      "unit": "m3",
-      "rate": {
-        "value": 0.055,
-        "unit": "m3/m2 reviewed mortar allowance for brick masonry"
-      },
-      "applicability": {
-        "materials": ["clay_brick", "silicate_brick"],
-        "formula": "mortar_qty_m3 = area_m2 * mortar_m3_m2 * (1 + waste_percent)",
-        "requires_material_type": "brick"
-      },
-      "waste_percent_default": 7,
-      "rounding": {
-        "package_unit": "m3",
+        "package_unit": "selected_material_unit",
         "package_size": 1,
-        "mode": "round_to_0.01"
+        "mode": "calculate_net_selected_table_quantities_and_corrections_before_documented_project_waste_and_supplier_package_rounding"
       },
       "source": {
-        "title": "Brick masonry mortar quantity estimator table",
-        "url": "https://www.gobrick.com/",
-        "page": "mortar volume by brick wall area, reviewed estimator takeoff",
-        "provenance": "open_method_statements"
-      }
-    },
-    {
-      "norm_id": "masonry_reinforcement_mesh_m2_m2_wall_v1",
-      "name_ru": "Masonry reinforcement mesh by wall area",
-      "parameters": ["area_m2", "reinforcement_required", "lap_percent"],
-      "unit": "m2",
-      "rate": {
-        "value": 1.05,
-        "unit": "m2/m2 including lap allowance"
-      },
-      "applicability": {
-        "materials": ["brick", "aac_block", "ceramic_block"],
-        "formula": "mesh_qty_m2 = area_m2 * (1 + lap_percent)",
-        "can_be_not_required_if_engineer_confirms": true
-      },
-      "waste_percent_default": 3,
-      "rounding": {
-        "package_unit": "roll",
-        "package_size": 50,
-        "mode": "ceil"
-      },
-      "source": {
-        "title": "Masonry reinforcement mesh reviewed method statement",
-        "url": "https://www.concrete.org/",
-        "page": "masonry reinforcement allowance, reviewed estimator method statement",
+        "title": "Brick Industry Association Technical Note 10: Dimensioning and Estimating Brick Masonry",
+        "url": "https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf",
+        "page": "Printed pages 8-11: wall-area method, Table 4 selected brick and mortar quantities, bond corrections and project-dependent waste guidance",
         "provenance": "open_method_statements"
       }
     }

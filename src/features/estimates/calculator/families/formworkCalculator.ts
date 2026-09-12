@@ -10,7 +10,7 @@ const SPEC: P0FamilyCalculatorSpec = {
   sample_quantity: 20,
   required_parameters: ["contact_area_m2"],
   expected_units: ["m2"],
-  expected_source_token: "formwork_contact_area",
+  expected_source_token: "formwork_rics_nrm2",
 };
 
 export function auditFormworkCalculatorP0() {

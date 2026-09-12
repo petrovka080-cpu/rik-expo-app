@@ -10,7 +10,7 @@ const SPEC: P0FamilyCalculatorSpec = {
   sample_quantity: 10,
   required_parameters: ["volume_m3"],
   expected_units: ["m3"],
-  expected_source_token: "concrete_ready_mix",
+  expected_source_token: "concrete_nrmca_cip31",
 };
 
 export function auditConcreteCalculatorP0() {

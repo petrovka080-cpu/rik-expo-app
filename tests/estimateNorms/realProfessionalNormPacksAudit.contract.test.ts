@@ -8,6 +8,7 @@ import {
 } from "../../scripts/estimate/professionalNormPackBasisRegistry";
 import {
   NORM_WORK_TAXONOMY_GROUPS,
+  PROFESSIONAL_NORM_PACK_GROUPS,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { aiEstimateRuDictionaryEntry } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
@@ -749,6 +750,22 @@ describe("real professional norm packs audit", () => {
         source: { url: string };
       }[];
     };
+    const reviewedConcretePack = JSON.parse(fs.readFileSync(
+      path.resolve(process.cwd(), "data/estimate-norms/professional/concrete.json"),
+      "utf8",
+    ));
+    const reviewedFormworkPack = JSON.parse(fs.readFileSync(
+      path.resolve(process.cwd(), "data/estimate-norms/professional/formwork.json"),
+      "utf8",
+    ));
+    const reviewedReinforcementPack = JSON.parse(fs.readFileSync(
+      path.resolve(process.cwd(), "data/estimate-norms/professional/reinforcement.json"),
+      "utf8",
+    ));
+    const reviewedMasonryPack = JSON.parse(fs.readFileSync(
+      path.resolve(process.cwd(), "data/estimate-norms/professional/masonry.json"),
+      "utf8",
+    ));
     const reviewedElectricalPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/electrical.json"),
@@ -2388,6 +2405,96 @@ describe("real professional norm packs audit", () => {
         }),
       },
     ]);
+    expect(reviewedConcretePack).toMatchObject({
+      source_pack_version: "2026.09-nrmca-cip31-order-quantity-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedConcretePack.norm_items).toMatchObject([{
+      norm_id: "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
+      parameters: expect.arrayContaining([
+        "plan_dimension_concrete_volume_m3",
+        "mix_design_or_project_specification_reference",
+        "selected_contingency_percent",
+        "contingency_selection_justification",
+        "producer_order_confirmation",
+      ]),
+      rate: {
+        value: 1.04,
+        unit: "published lower bound only; selected order factor must be between 1.04 and 1.10 m3 per m3 estimated from plan dimensions",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        published_contingency_percent_range: [4, 10],
+        selected_contingency_percent_required: true,
+        previous_2_percent_allowance_rejected: true,
+        simple_lower_bound_rate_multiplication_forbidden: true,
+        automatic_production_binding_for_generic_concrete_forbidden: true,
+      }),
+    }]);
+    expect(reviewedConcretePack.norm_items.some((item: { norm_id: string }) =>
+      item.norm_id === "concrete_ready_mix_m3_m3_placed_v1")).toBe(false);
+    expect(reviewedFormworkPack).toMatchObject({
+      source_pack_version: "2026.09-rics-nrm2-formwork-measurement-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedFormworkPack.norm_items).toMatchObject([{
+      norm_id: "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
+      rate: { value: 1 },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        previous_2_4_m2_per_m3_seed_rejected: true,
+        previous_50_m2_package_assumption_rejected: true,
+        rate_is_routing_identity_not_material_consumption_norm: true,
+        automatic_production_binding_for_generic_formwork_forbidden: true,
+      }),
+    }]);
+    expect(reviewedFormworkPack.norm_items.some((item: { norm_id: string }) =>
+      item.norm_id === "formwork_contact_area_m2_m3_concrete_element_v1")).toBe(false);
+    expect(reviewedReinforcementPack).toMatchObject({
+      source_pack_version: "2026.09-rics-fhwa-rebar-schedule-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedReinforcementPack.norm_items).toMatchObject([{
+      norm_id: "reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
+      rate: { value: 1 },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        approved_bar_schedule_or_explicit_bar_takeoff_required: true,
+        previous_95_kg_per_m3_seed_rejected: true,
+        diameter_squared_over_162_as_automatic_source_forbidden: true,
+        automatic_production_binding_for_generic_reinforcement_forbidden: true,
+      }),
+    }]);
+    expect(reviewedReinforcementPack.norm_items.some((item: { norm_id: string }) =>
+      item.norm_id === "reinforcement_rebar_kg_m3_concrete_element_v1")).toBe(false);
+    expect(reviewedMasonryPack).toMatchObject({
+      source_pack_version: "2026.09-bia-tn10-selected-table-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedMasonryPack.norm_items).toHaveLength(1);
+    expect(reviewedMasonryPack.norm_items).toMatchObject([{
+      norm_id: "masonry_bia_tn10_selected_brick_mortar_table_routing_v1",
+      rate: { value: 1 },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        material_scope: "fired clay brick only",
+        exact_brick_size_joint_width_wall_configuration_and_bond_required: true,
+        aac_concrete_silicate_or_other_non_clay_products_excluded: true,
+        previous_fixed_8_33_piece_51_piece_5_kg_0_055_m3_and_1_05_m2_rates_rejected: true,
+        automatic_production_binding_for_generic_masonry_forbidden: true,
+      }),
+    }]);
+    expect(reviewedMasonryPack.norm_items.some((item: { norm_id: string }) => [
+      "masonry_aac_block_600_200_200_piece_m2_wall_v1",
+      "masonry_brick_250_120_65_piece_m2_half_brick_v1",
+      "masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",
+      "masonry_cement_lime_mortar_m3_m2_brick_v1",
+      "masonry_reinforcement_mesh_m2_m2_wall_v1",
+    ].includes(item.norm_id))).toBe(false);
     expect(reviewedElectricalPack).toMatchObject({
       source_pack_version: "2026.09-legrand-p31-primary-review-r2",
       review_status: "reviewed",
@@ -2528,9 +2635,13 @@ describe("real professional norm packs audit", () => {
     const inventory = inspectProductionNormConsumerInventory();
     const byGroup = new Map(inventory.map((entry) => [entry.work_group, entry]));
 
-    expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length);
+    expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length - 2);
     expect(inventory.reduce((sum, entry) => sum + entry.rows_count, 0)).toBe(599000);
-    expect(NORM_WORK_TAXONOMY_GROUPS.every((group) => (byGroup.get(group)?.rows_count ?? 0) > 0)).toBe(true);
+    expect(PROFESSIONAL_NORM_PACK_GROUPS.every((group) => (byGroup.get(group)?.rows_count ?? 0) > 0)).toBe(true);
+    expect(NORM_WORK_TAXONOMY_GROUPS.filter((group) => !byGroup.has(group)).sort()).toEqual([
+      "formwork",
+      "reinforcement",
+    ]);
     expect(inventory.flatMap((entry) => entry.invalid_registered_norm_bindings)).toEqual([]);
     expect(new Set(inventory.flatMap((entry) => entry.registered_norm_ids))).toEqual(
       new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.normId)),
@@ -2561,9 +2672,13 @@ describe("real professional norm packs audit", () => {
       PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
     ))].sort();
 
-    expect(basisParameters).toHaveLength(32);
-    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(30);
+    expect(basisParameters).toHaveLength(35);
+    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU)).toHaveLength(34);
     expect(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID).toMatchObject({
+      concrete_nrmca_cip31_selected_contingency_m3_m3_v1: "plan_dimension_concrete_volume_m3",
+      formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1: "measured_formwork_contact_area_m2",
+      masonry_bia_tn10_selected_brick_mortar_table_routing_v1: "measured_net_brick_wall_area_m2",
+      reinforcement_project_bar_schedule_weight_same_unit_routing_v1: "approved_reinforcement_schedule_weight_kg",
       ventilation_lindab_vsr_duct_linear_m_route_v1: "route_length_m",
       plumbing_wavin_hep2o_15mm_horizontal_clip_spacing_v1: "route_length_m",
       plumbing_wavin_hep2o_15mm_vertical_clip_spacing_v1: "route_length_m",
@@ -2618,9 +2733,9 @@ describe("real professional norm packs audit", () => {
     const unregistered = inventory.filter((item) => !item.registered);
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
-    expect(inventory).toHaveLength(58);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(34);
-    expect(unregistered).toHaveLength(24);
+    expect(inventory).toHaveLength(54);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(26);
+    expect(unregistered).toHaveLength(28);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2644,6 +2759,7 @@ describe("real professional norm packs audit", () => {
         disposition: "REGISTERED_EXECUTABLE_BINDING",
       });
     expect(withCandidates.map((item) => item.norm_id)).toEqual([
+      "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
       "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
@@ -2658,6 +2774,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(15);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(18);
   });
 });

@@ -4,7 +4,7 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 
 describe("wave2a reinforcement kg real quantity", () => {
-  it("uses source-backed reinforcement rows in kg", () => {
+  it("does not invent reinforcement mass without an approved bar schedule", () => {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "concrete_foundation_interior_reinforcement_frame_reinforce_standard",
       quantity: 100,
@@ -12,12 +12,10 @@ describe("wave2a reinforcement kg real quantity", () => {
     });
     const rows = compiled.rows.filter((row) =>
       isProfessionalNormPackSourceId(row.normSourceId) &&
-      row.normSourceId.includes("reinforcement_rebar")
+      row.normSourceId.includes("reinforcement_project_bar_schedule")
     );
-    const kgPerMeter12 = (12 * 12) / 162;
 
-    expect(kgPerMeter12).toBeGreaterThan(0);
-    expect(rows.length).toBeGreaterThan(0);
-    expect(rows.every((row) => row.unit === "kg" && row.quantity > 0)).toBe(true);
+    expect(rows).toEqual([]);
+    expect(compiled.rows.some((row) => row.normSourceId.includes("reinforcement_rebar_kg_m3"))).toBe(false);
   });
 });

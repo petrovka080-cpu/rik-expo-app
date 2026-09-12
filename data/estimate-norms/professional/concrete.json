@@ -1,37 +1,78 @@
 {
   "work_group": "concrete",
-  "source_pack_version": "2026.07-wave2a",
-  "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "source_pack_version": "2026.09-nrmca-cip31-order-quantity-primary-review-r2",
+  "source_type": "open_method_statements",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
+        "source_url": "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
+        "supporting_source_urls": [
+          "https://www.nrmca.org/association-resources/research-and-engineering/cip/",
+          "https://www.nrmca.org/wp-content/uploads/2021/06/2Ordering-Scheduling.pdf"
+        ],
+        "verified_facts": [
+          "cip_31_states_that_ready_mixed_concrete_is_sold_by_fresh_unhardened_volume_in_cubic_yards_or_cubic_metres",
+          "cip_31_states_that_there_is_no_typical_concrete_recipe_and_project_specific_information_is_required",
+          "cip_31_recommends_ordering_4_to_10_percent_more_than_plan_dimension_estimate_for_contingencies",
+          "cip_31_requires_a_good_job_estimate_and_reassessment_before_ordering_excess_or_cleanup_loads",
+          "the_previous_2_percent_allowance_is_outside_the_published_4_to_10_percent_range",
+          "the_source_does_not_authorize_one_automatic_contingency_percentage_for_every_project",
+          "the_exact_mix_design_placement_location_and_selected_contingency_must_be_confirmed_before_procurement"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
-      "norm_id": "concrete_ready_mix_m3_m3_placed_v1",
-      "name_ru": "Ready-mix concrete placed volume",
-      "parameters": ["volume_m3", "area_m2", "thickness_mm", "length_m", "width_m", "height_m", "waste_percent"],
+      "norm_id": "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
+      "name_ru": "Товарный бетон: проектный объём и выбранный резерв по NRMCA CIP 31",
+      "parameters": [
+        "plan_dimension_concrete_volume_m3",
+        "plan_volume_calculation_reference",
+        "mix_design_or_project_specification_reference",
+        "mixture_designation",
+        "placement_location",
+        "placement_method",
+        "selected_contingency_percent",
+        "contingency_selection_justification",
+        "delivery_schedule_and_truck_capacity",
+        "producer_order_confirmation",
+        "estimator_approval_reference"
+      ],
       "unit": "m3",
       "rate": {
-        "value": 1.02,
-        "unit": "m3 ready-mix per m3 placed concrete including placement allowance"
+        "value": 1.04,
+        "unit": "published lower bound only; selected order factor must be between 1.04 and 1.10 m3 per m3 estimated from plan dimensions"
       },
       "applicability": {
-        "mix_policy": "ready_mix",
-        "formula_by_volume": "concrete_volume_m3 = volume_m3",
-        "formula_by_area_thickness": "concrete_volume_m3 = area_m2 * thickness_mm / 1000",
-        "formula_by_lwh": "concrete_volume_m3 = length_m * width_m * height_m",
-        "user_confirmation_required_for_mix_policy": true
+        "document": "NRMCA CIP 31 - Ordering Ready Mixed Concrete",
+        "ready_mix_basis_of_sale": "fresh unhardened volume in cubic metres",
+        "published_contingency_percent_range": [4, 10],
+        "selected_contingency_percent_required": true,
+        "project_specific_mix_and_placement_information_required": true,
+        "plan_dimension_volume_calculation_required": true,
+        "reassessment_before_final_order_required": true,
+        "previous_2_percent_allowance_rejected": true,
+        "simple_lower_bound_rate_multiplication_forbidden": true,
+        "automatic_production_binding_for_generic_concrete_forbidden": true
       },
-      "waste_percent_default": 2,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "m3",
         "package_size": 1,
-        "mode": "round_to_0.01"
+        "mode": "no_rounding_until_project_volume_selected_contingency_and_producer_order_increment_are_confirmed"
       },
       "source": {
-        "title": "Ready-mix concrete placed volume allowance",
-        "url": "https://www.nrmca.org/",
-        "page": "ready-mixed concrete volume takeoff with placement waste allowance",
-        "provenance": "public_government_norms_or_standards"
+        "title": "NRMCA CIP 31 - Ordering Ready Mixed Concrete",
+        "url": "https://www.nrmca.org/wp-content/uploads/2021/01/31pr.pdf",
+        "page": "PDF page 2, Quantity of concrete: sold by volume; order 4% to 10% above the plan-dimension estimate for contingencies",
+        "provenance": "open_method_statements"
       }
     }
   ]
