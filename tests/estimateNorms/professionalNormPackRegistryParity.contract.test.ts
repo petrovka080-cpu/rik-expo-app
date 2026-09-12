@@ -65,7 +65,7 @@ describe("professional norm-pack production registry parity", () => {
     });
 
     expect(failures).toEqual([]);
-    expect(physical.size).toBe(59);
-    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID)).toHaveLength(59);
+    expect(physical.size).toBe(58);
+    expect(Object.keys(PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID)).toHaveLength(58);
   });
 });

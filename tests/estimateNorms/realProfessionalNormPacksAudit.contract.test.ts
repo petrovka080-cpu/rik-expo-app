@@ -749,6 +749,31 @@ describe("real professional norm packs audit", () => {
         source: { url: string };
       }[];
     };
+    const reviewedElectricalPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/electrical.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -2363,6 +2388,61 @@ describe("real professional norm packs audit", () => {
         }),
       },
     ]);
+    expect(reviewedElectricalPack).toMatchObject({
+      source_pack_version: "2026.09-legrand-p31-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedElectricalPack.norm_items).toHaveLength(1);
+    expect(reviewedElectricalPack.norm_items.some((item) =>
+      item.norm_id === "electrical_legrand_049272_cable_linear_m_route_v1")).toBe(false);
+    expect(reviewedElectricalPack.review_evidence?.items).toMatchObject([{
+      norm_id: "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+      source_url: "https://assets.legrand.com/pim/NP-FT-GT/FT0955-02.pdf",
+      verified_facts: expect.arrayContaining([
+        "technical_sheet_identifier_is_ft0955_02_last_updated_2021_06_14",
+        "page_11_shows_ep_coupler_lg_341213_or_er_coupler_lg_482219",
+        "page_11_shows_eight_m6_side_fasteners_for_the_75_to_300_mm_joint",
+        "published_m6_tightening_torque_is_11_nm",
+        "the_400_to_600_mm_diagram_additionally_shows_four_m6_bottom_plate_fasteners",
+      ]),
+    }]);
+    expect(reviewedElectricalPack.norm_items).toMatchObject([{
+      norm_id: "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+      parameters: expect.arrayContaining([
+        "tray_joint_count",
+        "tray_width_mm",
+        "coupler_reference",
+        "manufacturer_system_profile_id",
+        "installation_manual_reference",
+        "tightening_torque_nm",
+        "product_specification_id",
+        "containment_type",
+        "containment_width_mm",
+      ]),
+      rate: {
+        value: 8,
+        unit: "M6 fasteners/tray joint for 75-300 mm tray",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        system: "Legrand P31 symmetrical cable tray",
+        technical_sheet_identifier: "FT0955-02",
+        technical_sheet_last_update: "2021-06-14",
+        tray_width_mm_min: 75,
+        tray_width_mm_max: 300,
+        m6_fasteners_per_75_300_mm_joint: 8,
+        tightening_torque_nm: 11,
+        width_400_600_mm_additional_bottom_plate_m6_fasteners: 4,
+        width_400_600_mm_excluded_from_this_norm: true,
+        explicit_manufacturer_profile_and_installation_reference_required: true,
+        generic_cable_tray_or_electrical_binding_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "ceil",
+      },
+    }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
       item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
       .toMatchObject({
@@ -2538,9 +2618,9 @@ describe("real professional norm packs audit", () => {
     const unregistered = inventory.filter((item) => !item.registered);
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
-    expect(inventory).toHaveLength(59);
+    expect(inventory).toHaveLength(58);
     expect(inventory.filter((item) => item.registered)).toHaveLength(34);
-    expect(unregistered).toHaveLength(25);
+    expect(unregistered).toHaveLength(24);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2578,6 +2658,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(16);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(15);
   });
 });

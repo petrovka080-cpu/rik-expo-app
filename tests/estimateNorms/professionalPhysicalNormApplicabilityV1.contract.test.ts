@@ -1284,7 +1284,7 @@ describe("professional physical norm applicability V1", () => {
       status: "APPLIED",
       source_id: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
       norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
-      source_document_version: "2026.09-legrand-product-and-installation-r1",
+      source_document_version: "2026.09-legrand-p31-primary-review-r2",
       source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
       calculated_tray_joint_fastener_quantity_piece: 40,
       produced_parameter_ids: ["quantity_containment_joint_bolt"],

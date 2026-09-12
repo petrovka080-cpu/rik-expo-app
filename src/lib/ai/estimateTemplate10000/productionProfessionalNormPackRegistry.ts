@@ -25,7 +25,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   documentation: "2026.09-kg-design-price-official-routing-review-r2",
   drywall: "2026.09-knauf-k462-primary-review-r2",
   earthworks: "2026.09-fhwa-fp24-section208-primary-review-r2",
-  electrical: "2026.09-legrand-product-and-installation-r1",
+  electrical: "2026.09-legrand-p31-primary-review-r2",
   equipment_rent: "2026.09-united-rentals-ca-2026-09-02-primary-review-r2",
   facade: "2026.09-rockwool-vhf-fixings-primary-review-r2",
   fire_safety: "2026.09-siemens-fdb221-primary-review-r2",

@@ -18,7 +18,6 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1: "board_area_m2",
   drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1: "perimeter_linear_m",
   earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1: "compacted_backfill_depth_m",
-  electrical_legrand_049272_cable_linear_m_route_v1: "approved_route_length_linear_m",
   electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1: "tray_joint_count",
   equipment_rent_united_rentals_one_shift_hours_day_v1: "shift_count",
   facade_rockwool_fixrock_conventional_fixings_piece_m2_v1: "facade_insulation_area_m2",
