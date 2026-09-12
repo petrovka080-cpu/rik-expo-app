@@ -28,7 +28,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   electrical: "2026.09-legrand-product-and-installation-r1",
   equipment_rent: "2026.09-united-rentals-shift-billing-reference-r1",
   facade: "2026.09-rockwool-vhf-fixings-primary-review-r2",
-  fire_safety: "2026.09-siemens-sinteso-detector-base-r1",
+  fire_safety: "2026.09-siemens-fdb221-primary-review-r2",
   flooring: "2026.09-ceresit-cn69-ct17-global-primary-review-r2",
   formwork: "2026.07-wave2a",
   heating: "2026.09-uponor-ufh-pipe-spacing-r2",

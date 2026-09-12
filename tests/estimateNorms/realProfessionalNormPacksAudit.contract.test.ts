@@ -540,6 +540,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedFireSafetyPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/fire_safety.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1669,6 +1695,61 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "net_approved_route_m_before_explicit_30_5_76_2_or_152_4_m_coil_cut_plan",
+      },
+    }]);
+    expect(reviewedFireSafetyPack).toMatchObject({
+      source_pack_version: "2026.09-siemens-fdb221-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedFireSafetyPack.review_evidence?.items).toMatchObject([{
+      norm_id: "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
+      source_url: "https://hit.sbt.siemens.com/RWD/AssetsByProduct.aspx?RC=GB&asset_type=Data+Sheet+for+Product&lang=en&prodId=A5Q00001664",
+      supporting_source_urls: expect.arrayContaining([
+        "https://mall.industry.siemens.com/mall/NO/NO/Catalog/Product/?mlfb=A5Q00001664",
+        "https://sid.siemens.com/v/u/A6V15698430",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "exact_order_number_is_a5q00001664_and_product_number_is_fdb221",
+        "fdb221_is_an_addressable_detector_base_not_a_detector",
+        "product_packaging_quantity_is_one_piece",
+        "one_base_per_point_is_valid_only_for_an_approved_compatible_detector_point",
+        "detector_spacing_and_point_count_are_not_published_by_this_product_datasheet",
+      ]),
+    }]);
+    expect(reviewedFireSafetyPack.norm_items).toMatchObject([{
+      norm_id: "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
+      parameters: expect.arrayContaining([
+        "designed_detector_point_count",
+        "approved_fire_alarm_design_and_code_basis",
+        "selected_detector_product_number",
+        "selected_base_reference",
+        "detector_base_compatibility_document_revision",
+        "installation_environment",
+        "humid_or_wet_base_attachment_scope",
+        "project_spare_quantity",
+        "commissioning_and_acceptance_scope",
+      ]),
+      rate: {
+        value: 1,
+        unit: "FDB221 addressable detector base/approved compatible detector point",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        order_number: "A5Q00001664",
+        product_number: "FDB221",
+        product_type: "addressable_detector_base",
+        maximum_surface_supply_cable_diameter_mm: 6,
+        connection_cable_capacity_mm2: [0.2, 1.5],
+        exact_detector_compatibility_confirmation_required: true,
+        automatic_area_based_detector_count_forbidden: true,
+        project_spares_must_be_explicit: true,
+        additional_waste_not_published: true,
+        automatic_production_binding_for_generic_fire_safety_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "exact_approved_compatible_point_count_plus_explicit_project_spares",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
