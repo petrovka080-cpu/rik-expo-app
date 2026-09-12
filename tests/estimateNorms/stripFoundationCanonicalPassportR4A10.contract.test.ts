@@ -70,10 +70,10 @@ describe("R4-A10 canonical strip-foundation catalog passport", () => {
     expect(COMPATIBILITY_ROWS).toBe(STRIP_FOUNDATION_ROWS);
   });
 
-  test("replaces the high-rise fallback with the 46/28/39 canonical backend definition", () => {
+  test("replaces the high-rise fallback with the 55/28/39 canonical backend definition", () => {
     const passport = buildProfessionalWorkPassport(TEMPLATE_ID);
     expect(passport).not.toBeNull();
-    expect(STRIP_FOUNDATION_INPUTS).toHaveLength(46);
+    expect(STRIP_FOUNDATION_INPUTS).toHaveLength(55);
     expect(STRIP_FOUNDATION_FORMULAS).toHaveLength(28);
     expect(STRIP_FOUNDATION_ROWS).toHaveLength(39);
     expect(passport).toMatchObject({

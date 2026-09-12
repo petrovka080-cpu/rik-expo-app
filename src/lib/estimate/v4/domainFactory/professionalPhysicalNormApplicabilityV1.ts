@@ -1,6 +1,7 @@
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import baseboardsNormPack from "../../../../../data/estimate-norms/professional/baseboards.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
+import concreteNormPack from "../../../../../data/estimate-norms/professional/concrete.json";
 import drywallNormPack from "../../../../../data/estimate-norms/professional/drywall.json";
 import electricalNormPack from "../../../../../data/estimate-norms/professional/electrical.json";
 import flooringNormPack from "../../../../../data/estimate-norms/professional/flooring.json";
@@ -488,6 +489,29 @@ export const CERESIT_CT17_PAINT_PRIMER_NORM_ID =
 
 export const CERESIT_CT17_PAINT_PRIMER_SOURCE_ID =
   `src_professional_norm_pack_${CERESIT_CT17_PAINT_PRIMER_NORM_ID}` as const;
+
+export const NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID =
+  "method-profile:nrmca-cip31:ready-mix-order:v1" as const;
+
+export const NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID =
+  "concrete_nrmca_cip31_selected_contingency_m3_m3_v1" as const;
+
+export const NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID =
+  `src_professional_norm_pack_${NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID}` as const;
+
+const NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "plan_dimension_concrete_volume_m3",
+  "plan_volume_calculation_reference",
+  "mix_design_or_project_specification_reference",
+  "mixture_designation",
+  "placement_location",
+  "placement_method",
+  "selected_contingency_percent",
+  "contingency_selection_justification",
+  "delivery_schedule_and_truck_capacity",
+  "producer_order_confirmation",
+  "estimator_approval_reference",
+] as const);
 
 const CERESIT_CT54_SOURCE_PARAMETER_IDS = Object.freeze([
   "area_m2",
@@ -1991,6 +2015,65 @@ export const CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const nrmcaCip31SelectedContingencyNorm = (() => {
+  const found = concreteNormPack.norm_items.find(
+    (item) => item.norm_id === NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID}`);
+  }
+  return found;
+})();
+const nrmcaCip31ContingencyRange =
+  "published_contingency_percent_range" in nrmcaCip31SelectedContingencyNorm.applicability
+    ? nrmcaCip31SelectedContingencyNorm.applicability.published_contingency_percent_range
+    : null;
+
+if (
+  concreteNormPack.work_group !== "concrete" ||
+  concreteNormPack.source_pack_version !== "2026.09-nrmca-cip31-order-quantity-primary-review-r2" ||
+  nrmcaCip31SelectedContingencyNorm.unit !== "m3" ||
+  nrmcaCip31SelectedContingencyNorm.rate.value !== 1.04 ||
+  !nrmcaCip31ContingencyRange ||
+  nrmcaCip31ContingencyRange[0] !== 4 ||
+  nrmcaCip31ContingencyRange[1] !== 10 ||
+  !("selected_contingency_percent_required" in nrmcaCip31SelectedContingencyNorm.applicability) ||
+  nrmcaCip31SelectedContingencyNorm.applicability.selected_contingency_percent_required !== true ||
+  !("simple_lower_bound_rate_multiplication_forbidden" in nrmcaCip31SelectedContingencyNorm.applicability) ||
+  nrmcaCip31SelectedContingencyNorm.applicability.simple_lower_bound_rate_multiplication_forbidden !== true ||
+  !("automatic_production_binding_for_generic_concrete_forbidden" in nrmcaCip31SelectedContingencyNorm.applicability) ||
+  nrmcaCip31SelectedContingencyNorm.applicability.automatic_production_binding_for_generic_concrete_forbidden !== true ||
+  nrmcaCip31SelectedContingencyNorm.parameters.length !== NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !nrmcaCip31SelectedContingencyNorm.parameters.includes(parameterId),
+  ) ||
+  nrmcaCip31SelectedContingencyNorm.waste_percent_default !== 0 ||
+  nrmcaCip31SelectedContingencyNorm.rounding.package_size !== 1 ||
+  nrmcaCip31SelectedContingencyNorm.rounding.mode !==
+    "no_rounding_until_project_volume_selected_contingency_and_producer_order_increment_are_confirmed"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID}`);
+}
+
+export const NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA = Object.freeze({
+  source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  norm_id: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  source_document_version: concreteNormPack.source_pack_version,
+  source_title: nrmcaCip31SelectedContingencyNorm.source.title,
+  source_url: nrmcaCip31SelectedContingencyNorm.source.url,
+  exact_locator: nrmcaCip31SelectedContingencyNorm.source.page,
+  rate_value: nrmcaCip31SelectedContingencyNorm.rate.value,
+  rate_unit: nrmcaCip31SelectedContingencyNorm.rate.unit,
+  minimum_selected_contingency_percent: 4 as const,
+  maximum_selected_contingency_percent: 10 as const,
+  automatic_generic_binding_forbidden: true as const,
+  definition_hash: estimateDeterministicHash({
+    work_group: concreteNormPack.work_group,
+    source_pack_version: concreteNormPack.source_pack_version,
+    norm_item: nrmcaCip31SelectedContingencyNorm,
+  }),
+});
+
 const legrandP31TrayJointFastenerNorm = (() => {
   const found = electricalNormPack.norm_items.find(
     (item) => item.norm_id === LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
@@ -2463,6 +2546,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["ct17_paint_primer_procurement_quantity_l"] as const,
 }, {
+  norm_id: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  work_group: "concrete",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+  operation_class: "ORDER_READY_MIX",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  source_document_version: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_document_version,
+  source_definition_hash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["concrete_order_quantity_m3"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -2569,6 +2666,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct17_paint_primer_net_quantity_l?: number;
   calculated_ct17_paint_primer_procurement_quantity_l?: number;
   calculated_ct17_paint_primer_container_count?: number;
+  calculated_concrete_order_quantity_m3?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -6416,6 +6514,145 @@ function resolveWavinHep2OProfile(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveNrmcaCip31ReadyMixOrder(
+  productProfileId: typeof NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+    );
+  }
+
+  const planDimensionConcreteVolumeM3 = finiteNumber(explicit.plan_dimension_concrete_volume_m3);
+  const planVolumeCalculationReference = primitiveString(explicit.plan_volume_calculation_reference!);
+  const mixDesignReference = primitiveString(explicit.mix_design_or_project_specification_reference!);
+  const mixtureDesignation = primitiveString(explicit.mixture_designation!);
+  const placementLocation = primitiveString(explicit.placement_location!);
+  const placementMethod = primitiveString(explicit.placement_method!);
+  const selectedContingencyPercent = finiteNumber(explicit.selected_contingency_percent);
+  const contingencySelectionJustification = primitiveString(explicit.contingency_selection_justification!);
+  const deliveryScheduleAndTruckCapacity = primitiveString(explicit.delivery_schedule_and_truck_capacity!);
+  const producerOrderConfirmation = primitiveString(explicit.producer_order_confirmation!);
+  const estimatorApprovalReference = primitiveString(explicit.estimator_approval_reference!);
+  const applicabilityBlockers = [
+    planDimensionConcreteVolumeM3 !== null && planDimensionConcreteVolumeM3 > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:plan_dimension_concrete_volume_m3",
+    planVolumeCalculationReference ? "" : "PROJECT_VALUE_INVALID:plan_volume_calculation_reference",
+    mixDesignReference ? "" : "PROJECT_VALUE_INVALID:mix_design_or_project_specification_reference",
+    mixtureDesignation ? "" : "PROJECT_VALUE_INVALID:mixture_designation",
+    placementLocation ? "" : "PROJECT_VALUE_INVALID:placement_location",
+    placementMethod !== null && ["pump", "crane_bucket", "direct_chute"].includes(placementMethod)
+      ? ""
+      : `PHYSICAL_NORM_PLACEMENT_METHOD_NOT_APPLICABLE:placement_method=${placementMethod}`,
+    selectedContingencyPercent !== null &&
+      selectedContingencyPercent >= NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.minimum_selected_contingency_percent &&
+      selectedContingencyPercent <= NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.maximum_selected_contingency_percent
+      ? ""
+      : `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID}:selected_contingency_percent=${selectedContingencyPercent}`,
+    contingencySelectionJustification ? "" : "PROJECT_VALUE_INVALID:contingency_selection_justification",
+    deliveryScheduleAndTruckCapacity ? "" : "PROJECT_VALUE_INVALID:delivery_schedule_and_truck_capacity",
+    producerOrderConfirmation ? "" : "PROJECT_VALUE_INVALID:producer_order_confirmation",
+    estimatorApprovalReference ? "" : "PROJECT_VALUE_INVALID:estimator_approval_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedConcreteOrderQuantityM3 = Number((
+    planDimensionConcreteVolumeM3! * (1 + selectedContingencyPercent! / 100)
+  ).toFixed(9));
+  const explicitConcreteOrderQuantityM3 = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "concrete_order_quantity_m3",
+  ));
+  if (
+    explicitConcreteOrderQuantityM3 !== null &&
+    Math.abs(explicitConcreteOrderQuantityM3 - calculatedConcreteOrderQuantityM3) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:concrete_order_quantity_m3=${explicitConcreteOrderQuantityM3}:norm_value=${calculatedConcreteOrderQuantityM3}`,
+      ],
+      [...NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS, "concrete_order_quantity_m3"],
+      NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${productProfileId}`,
+    `plan_dimension_concrete_volume_m3=${planDimensionConcreteVolumeM3}`,
+    `plan_volume_calculation_reference=${planVolumeCalculationReference}`,
+    `mix_design_or_project_specification_reference=${mixDesignReference}`,
+    `mixture_designation=${mixtureDesignation}`,
+    `placement_location=${placementLocation}`,
+    `placement_method=${placementMethod}`,
+    `selected_contingency_percent=${selectedContingencyPercent}`,
+    `contingency_selection_justification=${contingencySelectionJustification}`,
+    `delivery_schedule_and_truck_capacity=${deliveryScheduleAndTruckCapacity}`,
+    `producer_order_confirmation=${producerOrderConfirmation}`,
+    `estimator_approval_reference=${estimatorApprovalReference}`,
+    `formula=plan_dimension_concrete_volume_m3*(1+selected_contingency_percent/100)`,
+    `concrete_order_quantity_m3=${calculatedConcreteOrderQuantityM3}`,
+    "automatic_generic_binding=false",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    concrete_order_quantity_m3: {
+      value: calculatedConcreteOrderQuantityM3,
+      unit_id: "m3",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+    norm_id: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+    source_document_version: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_document_version,
+    source_url: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_url,
+    exact_locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
+    source_definition_hash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...NRMCA_CIP31_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["concrete_order_quantity_m3"] as const,
+    calculated_concrete_order_quantity_m3: calculatedConcreteOrderQuantityM3,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   technology_class: string;
   operation_class: string;
@@ -6425,6 +6662,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "REINFORCED_CONCRETE_STRIP_FOUNDATION" &&
+      input.operation_class === "ORDER_READY_MIX" &&
+      input.material_system === "READY_MIX_CONCRETE" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveNrmcaCip31ReadyMixOrder(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "SUBFLOOR" &&

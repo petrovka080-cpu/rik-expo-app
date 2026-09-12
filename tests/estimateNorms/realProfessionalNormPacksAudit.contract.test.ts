@@ -2734,8 +2734,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(25);
-    expect(unregistered).toHaveLength(29);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(26);
+    expect(unregistered).toHaveLength(28);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2748,6 +2748,7 @@ describe("real professional norm packs audit", () => {
       "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
       "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
       "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
+      "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
       "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
@@ -2773,7 +2774,6 @@ describe("real professional norm packs audit", () => {
       });
     expect(withCandidates.map((item) => item.norm_id)).toEqual([
       "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
-      "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
       "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",

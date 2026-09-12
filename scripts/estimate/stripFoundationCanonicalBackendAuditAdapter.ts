@@ -165,6 +165,13 @@ function buildStripFoundationAuditDraft(input: {
           costOwner: row.costOwner,
           includedInParentRate: row.includedInParentRate,
           procurementMode: row.procurementMode,
+          ...(row.professionalPhysicalNormApplicabilityV1
+            ? {
+              normativeSourceIds: [row.professionalPhysicalNormApplicabilityV1.source_id],
+              parameterSourceIds: [row.professionalPhysicalNormApplicabilityV1.source_id],
+              professionalPhysicalNormApplicabilityV1: row.professionalPhysicalNormApplicabilityV1,
+            }
+            : {}),
         },
         templateId: input.passport.templateId,
         templateVersion: "R4-A10",

@@ -674,12 +674,16 @@ function main(): void {
   const previousStatusOk = previousLegacyStopOk || previousSourceQualityGreenOk;
   const catalogSourceRegistry = inspectCatalogSourceRegistry(planGroups);
   const staticProductionNormRegistry = inspectProductionNormRegistry(planGroups);
+  const canonicalPhysicalNormSourceTypes = new Set([
+    "MANUFACTURER_PASSPORT",
+    "WORK_EXECUTION_STANDARD",
+  ]);
   const canonicalRuntimeBindingFailures = CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1
     .flatMap((binding) => {
       const sourceCard = constructionNormativeRegistryV1.get(binding.source_id);
       return [
         sourceCard ? "" : `canonical_source_card_missing:${binding.source_id}`,
-        sourceCard?.source_type === "MANUFACTURER_PASSPORT"
+        sourceCard && canonicalPhysicalNormSourceTypes.has(sourceCard.source_type)
           ? ""
           : `canonical_source_type_invalid:${binding.source_id}`,
         sourceCard?.version === binding.source_document_version

@@ -7,6 +7,14 @@ import {
   evaluateInclusionGraph,
   type InclusionGraphAst,
 } from "../backendPlatform/inclusionGraph";
+import {
+  NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+  resolveProfessionalPhysicalNormParameterValuesV1,
+  type AppliedProfessionalPhysicalNormResolutionV1,
+} from "./domainFactory/professionalPhysicalNormApplicabilityV1";
+import type { ProfessionalParameterValueV4 } from "./professionalProjectAssemblyV4";
 
 export const REAL_PROFESSIONAL_ESTIMATES_R1_SPEC_SHA256 =
   "558f7391033f1fbc30d844cd4d151c680f8d625a1f108ef828450d16e3fc5b30" as const;
@@ -32,7 +40,7 @@ export type StripFoundationNormSource = {
 export type StripFoundationInput = {
   parameterId: string;
   titleRu: string;
-  valueType: "decimal" | "boolean" | "enum";
+  valueType: "decimal" | "boolean" | "enum" | "text";
   unitId: string | null;
   visibilityRole: "USER_INPUT" | "INTERNAL_ONLY";
   required: boolean;
@@ -75,6 +83,7 @@ export type StripFoundationCompiledRow = StripFoundationBoqRow & {
   canonicalRuName: string;
   cargoQuantity?: string;
   distanceKm?: string;
+  professionalPhysicalNormApplicabilityV1?: AppliedProfessionalPhysicalNormResolutionV1;
 };
 
 type Formula = CompiledFormulaGraph & { formulaId: string; outputUnitId: string };
@@ -92,6 +101,7 @@ const or = (...operands: InclusionGraphAst[]): InclusionGraphAst => ({ kind: "or
 
 const fullScope = eq("scope_variant", "full_reinforced_structure");
 const readyMix = eq("concrete_supply", "ready_mix");
+const nrmcaReadyMixOrder = eq("product_profile_id", NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID);
 const preparation = and(fullScope, eq("preparation_included", true));
 const pump = eq("placement_method", "pump");
 const craneBucket = eq("placement_method", "crane_bucket");
@@ -158,6 +168,18 @@ const projectSource = (locator: string): StripFoundationNormSource => ({
   locator,
 });
 
+const NRMCA_CIP31_READY_MIX_ORDER_SOURCE: StripFoundationNormSource = Object.freeze({
+  sourceKey: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  documentCode: "NRMCA CIP 31",
+  officialUrl: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_url,
+  artifactSha256: null,
+  tableCode: null,
+  rateCode: null,
+  meter: "м³ товарного бетона по проектному объёму и явно выбранному резерву 4–10%",
+  pdfPage: 2,
+  locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
+});
+
 const equipmentSource = (locator: string): StripFoundationNormSource => ({
   sourceKey: "selected_equipment_passport",
   documentCode: "Паспорт выбранной машины",
@@ -204,6 +226,15 @@ export const STRIP_FOUNDATION_INPUTS: readonly StripFoundationInput[] = Object.f
   input("frost_resistance", "Морозостойкость", null, "Укажите марку F по проекту.", { valueType: "enum", defaultValue: "F150", choices: ["F50", "F75", "F100", "F150", "F200", "F300"] }),
   input("mobility", "Подвижность смеси", null, "Укажите подвижность бетонной смеси по проекту и способу подачи.", { valueType: "enum", defaultValue: "P4", choices: ["P2", "P3", "P4", "P5"] }),
   input("concrete_order_allowance_percent", "Запас бетонной смеси", "percent", "Явное допущение конкретного расчёта; не универсальная норма.", { defaultValue: 0 }),
+  input("product_profile_id", "Правило заказа бетона", null, "Выберите NRMCA CIP 31 только для заказа товарного бетона по подтверждённому проектному объёму и явно обоснованному резерву 4–10%.", { valueType: "enum", required: false, choices: [NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID] }),
+  input("plan_volume_calculation_reference", "Расчёт проектного объёма", null, "Укажите лист рабочей документации или расчёт, по которому длина, ширина и высота дают проектный объём бетона.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("mix_design_or_project_specification_reference", "Спецификация бетонной смеси", null, "Укажите ссылку на проектный состав, спецификацию или согласованную карточку подбора смеси.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("mixture_designation", "Обозначение бетонной смеси", null, "Укажите точное обозначение заказываемой смеси из проекта или подтверждения производителя.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("placement_location", "Место укладки бетона", null, "Укажите конкретную захватку, оси или участок фундамента, для которого оформляется заказ.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("contingency_selection_justification", "Обоснование запаса", null, "Поясните выбор резерва от 4 до 10 процентов с учётом опалубки, основания, способа подачи и риска потерь.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("delivery_schedule_and_truck_capacity", "График и вместимость миксеров", null, "Укажите согласованный график поставки и вместимость автобетоносмесителей для выбранной захватки.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("producer_order_confirmation", "Подтверждение заказа производителем", null, "Укажите номер или ссылку на подтверждение объёма, смеси, графика и шага заказа производителем.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
+  input("estimator_approval_reference", "Подтверждение сметчика", null, "Укажите ссылку на проверку проектного объёма и выбранного резерва ответственным сметчиком.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
   input("reinforcement_mass_t", "Масса арматуры", "t", "Итоговая масса по проектной ведомости расхода стали.", { requiredWhen: fullScope }),
   input("binding_wire_mass_kg", "Масса вязальной проволоки", "kg", "По ведомости армирования или принятой норме конкретной расценки.", { requiredWhen: fullScope }),
   input("reinforcement_fabrication", "Подготовка арматуры", null, "Готовые каркасы и изготовление на объекте взаимоисключающие.", { valueType: "enum", defaultValue: "ready_cages", choices: ["ready_cages", "site_fabricated"] }),
@@ -418,10 +449,96 @@ function formulaParameterValues(
   );
 }
 
+const NRMCA_CIP31_COMPILER_CAPTURED_AT = "2026-09-12T00:00:00.000Z";
+
+function professionalProjectValue(
+  parameterId: string,
+  value: StripFoundationInputValue,
+  unitId: string | null = null,
+  sourceType: ProfessionalParameterValueV4["source_type"] = "USER_EXPLICIT",
+): ProfessionalParameterValueV4 {
+  return {
+    value,
+    unit_id: unitId,
+    source_type: sourceType,
+    source_id: `strip-foundation-project:${parameterId}`,
+    captured_at: NRMCA_CIP31_COMPILER_CAPTURED_AT,
+    confidence: "high",
+    applicability: "Explicit strip-foundation project input admitted by the canonical backend compiler",
+  };
+}
+
+function resolveNrmcaCip31Order(
+  values: Readonly<Record<string, StripFoundationInputValue>>,
+): AppliedProfessionalPhysicalNormResolutionV1 | null {
+  if (values.product_profile_id !== NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID) return null;
+  if (values.scope_variant !== "full_reinforced_structure" || values.concrete_supply !== "ready_mix") {
+    throw new Error("STRIP_FOUNDATION_NRMCA_CIP31_NOT_APPLICABLE:ready_mix_full_scope_required");
+  }
+  const planDimensionConcreteVolumeM3 =
+    Number(values.total_axis_length_m) * Number(values.strip_width_m) * Number(values.strip_height_m);
+  const parameterValues: Readonly<Record<string, ProfessionalParameterValueV4>> = {
+    product_profile_id: professionalProjectValue(
+      "product_profile_id",
+      NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+    ),
+    plan_dimension_concrete_volume_m3: professionalProjectValue(
+      "plan_dimension_concrete_volume_m3",
+      planDimensionConcreteVolumeM3,
+      "m3",
+      "PROJECT_DOCUMENT",
+    ),
+    plan_volume_calculation_reference: professionalProjectValue(
+      "plan_volume_calculation_reference",
+      values.plan_volume_calculation_reference,
+    ),
+    mix_design_or_project_specification_reference: professionalProjectValue(
+      "mix_design_or_project_specification_reference",
+      values.mix_design_or_project_specification_reference,
+    ),
+    mixture_designation: professionalProjectValue("mixture_designation", values.mixture_designation),
+    placement_location: professionalProjectValue("placement_location", values.placement_location),
+    placement_method: professionalProjectValue("placement_method", values.placement_method),
+    selected_contingency_percent: professionalProjectValue(
+      "selected_contingency_percent",
+      values.concrete_order_allowance_percent,
+      "percent",
+    ),
+    contingency_selection_justification: professionalProjectValue(
+      "contingency_selection_justification",
+      values.contingency_selection_justification,
+    ),
+    delivery_schedule_and_truck_capacity: professionalProjectValue(
+      "delivery_schedule_and_truck_capacity",
+      values.delivery_schedule_and_truck_capacity,
+    ),
+    producer_order_confirmation: professionalProjectValue(
+      "producer_order_confirmation",
+      values.producer_order_confirmation,
+    ),
+    estimator_approval_reference: professionalProjectValue(
+      "estimator_approval_reference",
+      values.estimator_approval_reference,
+    ),
+  };
+  const resolution = resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+    operation_class: "ORDER_READY_MIX",
+    material_system: "READY_MIX_CONCRETE",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: parameterValues,
+  });
+  if (resolution.status !== "APPLIED") {
+    throw new Error(`STRIP_FOUNDATION_NRMCA_CIP31_${resolution.status}:${resolution.blockers.join("|")}`);
+  }
+  return resolution;
+}
+
 export function compileStripFoundationEstimate(
   supplied: Readonly<Record<string, StripFoundationInputValue>>,
 ): readonly StripFoundationCompiledRow[] {
   const values = resolveInputs(supplied);
+  const nrmcaCip31Order = resolveNrmcaCip31Order(values);
   const numericValues = formulaParameterValues(values);
   const formulaById = new Map(STRIP_FOUNDATION_FORMULAS.map((item) => [item.formulaId, item]));
   const semanticOwners = new Set<string>();
@@ -434,11 +551,24 @@ export function compileStripFoundationEstimate(
       if (!target) throw new Error(`STRIP_FOUNDATION_MISSING_FORMULA:${candidate.formulaId}`);
       const evaluatedQuantity = evaluateFormulaGraph(target, numericValues);
       if (Number(evaluatedQuantity) <= 0) throw new Error(`STRIP_FOUNDATION_NON_POSITIVE_QUANTITY:${candidate.rowId}`);
+      if (
+        candidate.rowId === "main_concrete" &&
+        nrmcaCip31Order &&
+        Math.abs(Number(evaluatedQuantity) - nrmcaCip31Order.calculated_concrete_order_quantity_m3!) > 1e-9
+      ) {
+        throw new Error("STRIP_FOUNDATION_NRMCA_CIP31_ORDER_QUANTITY_DIVERGENCE");
+      }
       const cargoFormula = candidate.cargo ? formulaById.get(candidate.cargo.physicalQuantityFormulaId) : null;
       return {
         ...candidate,
+        ...(candidate.rowId === "main_concrete" && nrmcaCip31Order
+          ? { normSource: NRMCA_CIP31_READY_MIX_ORDER_SOURCE }
+          : {}),
         canonicalRuName: renderedMaterialName(candidate, values),
         evaluatedQuantity,
+        ...(["main_concrete", "concrete_delivery"].includes(candidate.rowId) && nrmcaCip31Order
+          ? { professionalPhysicalNormApplicabilityV1: nrmcaCip31Order }
+          : {}),
         ...(candidate.cargo && cargoFormula
           ? {
             cargoQuantity: evaluateFormulaGraph(cargoFormula, numericValues),
