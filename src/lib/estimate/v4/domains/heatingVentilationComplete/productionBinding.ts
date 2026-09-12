@@ -10,6 +10,7 @@ import {
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
+  LINDAB_VSR_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
 } from "../../domainFactory";
@@ -307,7 +308,8 @@ export function buildHvacFromInlineInputV1(
     rawInput: input.rawInput,
     supplied: input.paramOverrides,
     requireExplicitNormativeRateCode:
-      input.paramOverrides?.product_profile_id?.value === UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+      input.paramOverrides?.product_profile_id?.value === UPONOR_UFH_150MM_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === LINDAB_VSR_PRODUCT_PROFILE_ID,
   });
   const baselineParameterValues = baseline.parameter_values;
   const scopeMode = baselineParameterValues.estimate_scope_mode?.value;

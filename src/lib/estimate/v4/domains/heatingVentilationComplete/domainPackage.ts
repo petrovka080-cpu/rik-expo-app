@@ -17,6 +17,8 @@ import {
   type ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory";
 import {
+  LINDAB_VSR_PRODUCT_PROFILE_ID,
+  LINDAB_VSR_SOURCE_ID,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
 } from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
@@ -219,6 +221,11 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
     }
   }
   if (isDuct(profile)) {
+    const lindabVsrCondition = {
+      kind: "EQUALS",
+      parameter_id: "product_profile_id",
+      value: LINDAB_VSR_PRODUCT_PROFILE_ID,
+    } as const;
     parameters.push(
       parameter("duct_material_and_coating", "Материал, толщина и покрытие воздуховодов", "text", "P0", null, []),
       parameter("duct_shape", "Форма сечения воздуховода", "choice", "P0", null, [], { choices: [
@@ -229,6 +236,11 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
       parameter("duct_surface_area_m2", "Площадь металла воздуховодов по ведомости проекта", "number", "P0", "m2", ["duct_metal"], { minimum: 0.001, maximum: 100_000_000 }),
       parameter("design_airflow_m3_h", "Проектный расход воздуха", "number", "P0", "m3_per_hour", [], { minimum: 0.001, maximum: 100_000_000 }),
       parameter("duct_pressure_class", "Класс давления и герметичности воздуховода", "text", "P0", null, []),
+      parameter("duct_diameter_mm", "Диаметр соплового воздуховода Lindab VSR", "number", "P1", "mm", ["primary_resource"], { minimum: 1, maximum: 5_000, condition: lindabVsrCondition }),
+      parameter("nozzle_pattern", "Утверждённая схема и ориентация сопел VSR", "text", "P1", null, ["primary_resource"], { condition: lindabVsrCondition }),
+      parameter("air_distribution_design", "Ссылка на расчёт воздухораспределения", "text", "P1", null, ["primary_resource"], { condition: lindabVsrCondition }),
+      parameter("fitting_schedule", "Ведомость отводов, переходов, опор, уплотнений и резки", "text", "P1", null, ["primary_resource"], { condition: lindabVsrCondition }),
+      parameter("cooled_supply_air_confirmed", "Подтверждено применение для охлаждённого приточного воздуха", "boolean", "P1", null, ["primary_resource"], { condition: lindabVsrCondition }),
       parameter("duct_elbow_count", "Количество отводов воздуховода", "number", "P1", "item", ["duct_elbows"], { minimum: 0.001, maximum: 10_000_000 }),
       parameter("duct_tee_count", "Количество тройников воздуховода", "number", "P1", "item", ["duct_tees"], { minimum: 0.001, maximum: 10_000_000 }),
       parameter("duct_transition_count", "Количество переходов воздуховода", "number", "P1", "item", ["duct_transitions"], { minimum: 0.001, maximum: 10_000_000 }),
@@ -360,6 +372,13 @@ function boqRow(
   scope: "BOTH" | "FULL_ONLY",
   domainOwner: string = HVAC_COMPLETE_DOMAIN_ID,
 ): ProfessionalAssemblyRowDefinitionV4 {
+  const lindabQuantityDerivedRows = [
+    "primary_resource",
+    "loading_labor",
+    "internal_handling",
+    "delivery",
+    "waste",
+  ];
   return {
     row_id: `${row.canonical_technology_id}:row:${id}`,
     section,
@@ -369,7 +388,12 @@ function boqRow(
     cost_ownership: "priced_resource",
     cost_owner_id: `${domainOwner}:cost-owner:${row.work_key}:${id}`,
     semantic_owner: `${domainOwner}:semantic-owner:${row.work_key}:${id}`,
-    normative_source_ids: [normativeSourceId(row)],
+    normative_source_ids: [
+      normativeSourceId(row),
+      ...(row.primary_material_or_system === "DUCT" && lindabQuantityDerivedRows.includes(id)
+        ? [LINDAB_VSR_SOURCE_ID]
+        : []),
+    ],
     inclusion_condition: scope === "BOTH" ? "work_included=true" : "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE",
     procurement_eligible: ["material", "transport", "waste", "equipment"].includes(category),
   };

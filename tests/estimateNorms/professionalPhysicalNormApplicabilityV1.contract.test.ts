@@ -1,4 +1,8 @@
 import {
+  LINDAB_VSR_NORM_ID,
+  LINDAB_VSR_PRODUCT_PROFILE_ID,
+  LINDAB_VSR_SOURCE_ID,
+  LINDAB_VSR_SOURCE_METADATA,
   UPONOR_UFH_150MM_NORM_ID,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
@@ -15,6 +19,7 @@ import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/pro
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
+const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -52,6 +57,30 @@ function exactUponorInputs(
 function resolve(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "WARM_FLOOR_SYSTEM",
+    operation_class: "INSTALL",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactLindabInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(LINDAB_VSR_PRODUCT_PROFILE_ID),
+    route_length_m: explicit(10, "m"),
+    duct_diameter_mm: explicit(315, "mm"),
+    nozzle_pattern: explicit("Схема VSR-NP-04"),
+    air_distribution_design: explicit("ОВ-21, лист 14, расчёт воздухораспределения rev.2"),
+    fitting_schedule: explicit("ОВ-21.S-2: отводы, переходы, опоры, уплотнения и резка"),
+    cooled_supply_air_confirmed: explicit(true),
+    ...changes,
+  };
+}
+
+function resolveLindab(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "DUCT_NETWORK",
     operation_class: "INSTALL",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
@@ -234,5 +263,104 @@ describe("professional physical norm applicability V1", () => {
       source_id: UPONOR_UFH_150MM_SOURCE_ID,
       reasons: ["PRODUCT_PROFILE_NOT_APPLICABLE"],
     }]);
+  });
+
+  test("keeps Lindab VSR blocked outside the published diameter and cooled-air applicability", () => {
+    expect(resolveLindab(exactLindabInputs({ duct_diameter_mm: explicit(501, "mm") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: LINDAB_VSR_SOURCE_ID,
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:duct_diameter_mm=501`],
+    });
+    expect(resolveLindab(exactLindabInputs({ cooled_supply_air_confirmed: explicit(false) }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: LINDAB_VSR_SOURCE_ID,
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:cooled_supply_air_confirmed=false`],
+    });
+    expect(resolveLindab(exactLindabInputs({ route_length_m: explicit(0.5, "m") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_RUNTIME_RANGE_EXCEEDED:procurement_factor=6:maximum=3"],
+    });
+  });
+
+  test("rounds only the Lindab procurement quantity while preserving approved route length", () => {
+    const input = exactLindabInputs();
+    const result = resolveLindab(input);
+
+    expect(result).toMatchObject({
+      status: "APPLIED",
+      source_id: LINDAB_VSR_SOURCE_ID,
+      source_document_version: "2026.09-lindab-vsr-3m-duct-r1",
+      source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
+      calculated_resource_quantity_m: 12,
+      produced_parameter_ids: ["primary_resource_units_per_output", "procurement_factor"],
+    });
+    expect(result.parameter_values.route_length_m).toBe(input.route_length_m);
+    expect(result.parameter_values.primary_resource_units_per_output).toMatchObject({
+      value: 1,
+      source_type: "APPLICABLE_NORM",
+      source_id: LINDAB_VSR_SOURCE_ID,
+    });
+    expect(result.parameter_values.procurement_factor).toMatchObject({
+      value: 1.2,
+      source_type: "APPLICABLE_NORM",
+      source_id: LINDAB_VSR_SOURCE_ID,
+    });
+  });
+
+  test("routes Lindab through the same registry and real HVAC primary-resource row", () => {
+    const inventory = HVAC_DOMAIN_INVENTORY.find((row) => row.work_key === DUCT_INSTALL_WORK_KEY);
+    if (!inventory) throw new Error("LINDAB_RUNTIME_INSTALL_WORK_MISSING");
+    const technology = hvacDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = hvacDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("LINDAB_RUNTIME_SCHEMA_MISSING");
+    const lindabValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return LINDAB_VSR_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "route_length_m") return 10;
+      if (parameter.parameter_id === "duct_diameter_mm") return 315;
+      if (parameter.parameter_id === "nozzle_pattern") return "Схема VSR-NP-04";
+      if (parameter.parameter_id === "air_distribution_design") return "ОВ-21, лист 14, rev.2";
+      if (parameter.parameter_id === "fitting_schedule") return "ОВ-21.S-2, полная ведомость фасонных частей";
+      if (parameter.parameter_id === "cooled_supply_air_confirmed") return true;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => ![
+        "primary_resource_units_per_output",
+        "procurement_factor",
+      ].includes(parameter.parameter_id))
+      .map((parameter) => [parameter.parameter_id, {
+        value: parameter.parameter_id === "scope_capability"
+          ? inventory.scope_capability
+          : lindabValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildHvacFromInlineInputV1({
+      rawInput: "Монтаж соплового воздуховода Lindab VSR, утверждённая трасса 10 м",
+      selectedWorkKey: DUCT_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    const resourceRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_resource`);
+    expect(resourceRow).toMatchObject({ quantity: 12, unit: "m" });
+    expect(resourceRow?.sourceParameters?.normativeSourceIds).toEqual([
+      "kg_krer_2015_application_guidance",
+      LINDAB_VSR_SOURCE_ID,
+    ]);
+    expect(resourceRow?.sourceParameters?.parameterSourceIds).toEqual([
+      `inline-override:${inventory.catalog_id}:route_length_m:user`,
+      LINDAB_VSR_SOURCE_ID,
+      LINDAB_VSR_SOURCE_ID,
+    ]);
+    expect(resourceRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: LINDAB_VSR_SOURCE_ID,
+      source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
+      calculated_resource_quantity_m: 12,
+    });
   });
 });
