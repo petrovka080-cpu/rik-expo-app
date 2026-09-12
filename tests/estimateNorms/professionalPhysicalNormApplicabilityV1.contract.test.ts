@@ -6,6 +6,9 @@ import {
   CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
   CERESIT_CT17_FLOORING_PRIMER_SOURCE_METADATA,
+  CERESIT_CT17_PAINT_PRIMER_NORM_ID,
+  CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+  CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA,
   CERESIT_CT17_TILE_PRIMER_NORM_ID,
   CERESIT_CT17_TILE_PRIMER_SOURCE_ID,
   CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA,
@@ -13,6 +16,10 @@ import {
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
+  CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+  CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+  CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA,
   DAIKIN_3MXS_K_NORM_ID,
   DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   DAIKIN_3MXS_K_SOURCE_ID,
@@ -112,6 +119,7 @@ const BASEBOARD_GLUE_WORK_KEY = "flooring_interior_baseboard_glue_standard";
 const BASEBOARD_INSTALL_WORK_KEY = "flooring_interior_baseboard_install_standard";
 const SUBFLOOR_PREPARE_WORK_KEY = "flooring_interior_subfloor_prepare_standard";
 const CERAMIC_TILE_LAY_STANDARD_WORK_KEY = "tile_stone_interior_ceramic_tile_lay_standard";
+const WALL_PAINT_STANDARD_WORK_KEY = "plaster_paint_interior_paint_wall_paint_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -452,6 +460,63 @@ function resolveCeresitCm11(values: Readonly<Record<string, ProfessionalParamete
     technology_class: "CERAMIC_TILE",
     operation_class: "LAY",
     material_system: "CERAMIC_TILE",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactCeresitCt54Ct17WallInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID),
+    area_m2: explicit(40, "m2"),
+    selected_primer_product: explicit("Ceresit CT 17 Profi"),
+    ct17_paint_substrate_type: explicit("plaster"),
+    ct17_paint_substrate_evenness: explicit("even"),
+    ct17_paint_substrate_absorbency: explicit("absorbent"),
+    ct17_paint_selected_consumption_l_m2: explicit(0.18, "l_per_m2"),
+    ct17_paint_dilution_ratio: explicit("water_1_to_1"),
+    ct17_paint_coat_count: explicit(1, "item"),
+    ct17_paint_substrate_dry_load_bearing_clean_confirmed: explicit(true),
+    ct17_paint_complete_drying_confirmed: explicit(true),
+    ct17_paint_application_conditions_confirmed: explicit(true),
+    ct17_paint_application_temperature_c: explicit(20, "celsius"),
+    ct17_paint_relative_humidity_percent: explicit(60, "percent"),
+    ct17_paint_selected_container_size_l: explicit(5, "l"),
+    ct17_paint_additional_waste_not_published_confirmed: explicit(true),
+    ct17_paint_tds_confirmed: explicit(true),
+    ct17_paint_tds_reference: explicit("TDS No CT17 Profi 03.24, pages 1-2"),
+    ct17_paint_material_certificate_reference: explicit("PROJECT-CERESIT-CT17-PAINT-BATCH-CERT-001"),
+    selected_paint_product: explicit("Ceresit CT 54 Silicate Aero"),
+    ct54_coat_count: explicit(2, "item"),
+    ct54_substrate_type: explicit("cement_plaster"),
+    ct54_substrate_absorption: explicit("normal"),
+    ct54_substrate_smoothness: explicit("smooth"),
+    ct54_substrate_carrying_smooth_dry_clean_confirmed: explicit(true),
+    ct54_installation_location: explicit("indoor"),
+    ct54_intercoat_break_hours: explicit(12, "hour"),
+    ct54_application_conditions_confirmed: explicit(true),
+    ct54_application_temperature_c: explicit(20, "celsius"),
+    ct54_relative_humidity_percent: explicit(60, "percent"),
+    ct54_facade_rain_protection_confirmed: explicit(false),
+    ct54_tds_variant_confirmed: explicit(true),
+    ct54_project_average_rate_confirmed: explicit(true),
+    ct54_selected_container_size_l: explicit(3.5, "l"),
+    ct54_additional_waste_not_published_confirmed: explicit(true),
+    ct54_tds_reference: explicit("C_CT54_TDS_1_0819, pages 1-2"),
+    ct54_material_certificate_reference: explicit("PROJECT-CERESIT-CT54-BATCH-CERT-001"),
+    ...changes,
+  };
+}
+
+function resolveCeresitCt54Ct17Wall(
+  values: Readonly<Record<string, ProfessionalParameterValueV4>>,
+) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "PAINT",
+    operation_class: "PAINT",
+    material_system: "PAINT",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -2594,6 +2659,143 @@ describe("professional physical norm applicability V1", () => {
     expect(primaryTileRow).toMatchObject({ quantity: 45, unit: "m2" });
     expect(primaryTileRow?.sourceParameters?.normativeSourceIds)
       .not.toContain(CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID);
+  });
+
+  test("keeps the CT 17 / CT 54 wall system closed until both exact TDS profiles are explicit", () => {
+    const { ct17_paint_selected_consumption_l_m2: _omitted, ...withoutPrimerRate } =
+      exactCeresitCt54Ct17WallInputs();
+    expect(resolveCeresitCt54Ct17Wall(withoutPrimerRate)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:ct17_paint_selected_consumption_l_m2"],
+    });
+    expect(resolveCeresitCt54Ct17Wall(exactCeresitCt54Ct17WallInputs({
+      ct17_paint_relative_humidity_percent: explicit(80, "percent"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_HUMIDITY_NOT_APPLICABLE:ct17_paint_relative_humidity_percent=80"],
+    });
+    expect(resolveCeresitCt54Ct17Wall(exactCeresitCt54Ct17WallInputs({
+      ct54_coat_count: explicit(1, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+      blockers: [`PHYSICAL_NORM_COAT_COUNT_CONFLICT:ct54_coat_count=1:source_coat_count=2`],
+    });
+    expect(resolveCeresitCt54Ct17Wall(exactCeresitCt54Ct17WallInputs({
+      ct54_facade_rain_protection_confirmed: explicit(true),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_LOCATION_CONFLICT:ct54_facade_rain_protection_confirmed=true:installation_location=indoor"],
+    });
+    expect(resolveProfessionalPhysicalNormParameterValuesV1({
+      technology_class: "PAINT_CEILING",
+      operation_class: "PAINT",
+      material_system: "PAINT_CEILING",
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: exactCeresitCt54Ct17WallInputs(),
+    })).toMatchObject({ status: "NOT_REQUESTED" });
+  });
+
+  test("derives separate packaged CT 17 primer and CT 54 paint quantities", () => {
+    const input = exactCeresitCt54Ct17WallInputs();
+    const first = resolveCeresitCt54Ct17Wall(input);
+    const second = resolveCeresitCt54Ct17Wall(input);
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+      norm_id: CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+      source_ids: [CERESIT_CT54_INTERIOR_WALL_SOURCE_ID, CERESIT_CT17_PAINT_PRIMER_SOURCE_ID],
+      norm_ids: [CERESIT_CT54_INTERIOR_WALL_NORM_ID, CERESIT_CT17_PAINT_PRIMER_NORM_ID],
+      calculated_ct17_paint_primer_net_quantity_l: 7.2,
+      calculated_ct17_paint_primer_procurement_quantity_l: 10,
+      calculated_ct17_paint_primer_container_count: 2,
+      calculated_ct54_paint_net_quantity_l: 12,
+      calculated_ct54_paint_procurement_quantity_l: 14,
+      calculated_ct54_paint_container_count: 4,
+      blockers: [],
+    });
+    expect(first.parameter_values.ct17_paint_primer_procurement_quantity_l).toMatchObject({
+      value: 10,
+      source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+    });
+    expect(first.parameter_values.ct54_paint_procurement_quantity_l).toMatchObject({
+      value: 14,
+      source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(constructionNormativeRegistryV1.get(CERESIT_CT17_PAINT_PRIMER_SOURCE_ID)).toMatchObject({
+      product_profile_applicability: [CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["PAINT"],
+      operation_class_applicability: ["PAINT"],
+    });
+    expect(constructionNormativeRegistryV1.get(CERESIT_CT54_INTERIOR_WALL_SOURCE_ID)).toMatchObject({
+      product_profile_applicability: [CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["PAINT"],
+      operation_class_applicability: ["PAINT"],
+    });
+    expect(CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.definition_hash).not.toBe(
+      CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.definition_hash,
+    );
+  });
+
+  test("routes CT 17 and CT 54 to two source-owned wall-paint rows without a generic duplicate", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
+      (row) => row.work_key === WALL_PAINT_STANDARD_WORK_KEY,
+    );
+    if (!inventory) throw new Error("CERESIT_CT54_CT17_RUNTIME_WALL_PAINT_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("CERESIT_CT54_CT17_RUNTIME_WALL_PAINT_SCHEMA_MISSING");
+    expect(technology.material_system).toBe("PAINT");
+    expect(technology.output).toEqual({ dimension: "AREA", unit_id: "m2" });
+    const exactInputs = exactCeresitCt54Ct17WallInputs();
+    const outputIds = new Set([
+      "ct17_paint_primer_procurement_quantity_l",
+      "ct54_paint_procurement_quantity_l",
+    ]);
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => !outputIds.has(parameter.parameter_id))
+      .map((parameter) => [parameter.parameter_id, {
+        value: ["ct17_paint_selected_container_size_l", "ct54_selected_container_size_l"]
+          .includes(parameter.parameter_id)
+          ? String(exactInputs[parameter.parameter_id]?.value)
+          : exactInputs[parameter.parameter_id]?.value ??
+          (parameter.parameter_id === "normative_rate_code"
+            ? "PROJECT-VERIFIED-CERESIT-CT54-CT17-WALL-RATE"
+            : parameter.parameter_id === "project_type"
+              ? "INTERIOR-WALL-PAINT-PROJECT"
+              : validOverrideValue(parameter)),
+        source: "user",
+      }]));
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Окраска 40 м² внутренних стен системой Ceresit CT 17 и CT 54",
+      selectedWorkKey: WALL_PAINT_STANDARD_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    const primerRowId = `${inventory.canonical_technology_id}:ceresit-ct54-ct17-v1:row:ct17_paint_primer`;
+    const paintRowId = `${inventory.canonical_technology_id}:ceresit-ct54-ct17-v1:row:ct54_paint`;
+    const primerRow = result.production?.draft?.items.find((row) => row.sourceParameters?.rowCode === primerRowId);
+    const paintRow = result.production?.draft?.items.find((row) => row.sourceParameters?.rowCode === paintRowId);
+    expect(primerRow).toMatchObject({ quantity: 10, unit: "l" });
+    expect(paintRow).toMatchObject({ quantity: 14, unit: "l" });
+    expect(primerRow?.sourceParameters?.normativeSourceIds).toEqual([CERESIT_CT17_PAINT_PRIMER_SOURCE_ID]);
+    expect(paintRow?.sourceParameters?.normativeSourceIds).toEqual([CERESIT_CT54_INTERIOR_WALL_SOURCE_ID]);
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(CERESIT_CT17_PAINT_PRIMER_SOURCE_ID))).toHaveLength(1);
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(CERESIT_CT54_INTERIOR_WALL_SOURCE_ID))).toHaveLength(1);
+    expect(result.production?.draft?.items.some((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`))
+      .toBe(false);
   });
 
   test("keeps Gerflor 6086 closed without measured corners, exact pieces, and a cutting method", () => {

@@ -5,6 +5,7 @@ import drywallNormPack from "../../../../../data/estimate-norms/professional/dry
 import electricalNormPack from "../../../../../data/estimate-norms/professional/electrical.json";
 import flooringNormPack from "../../../../../data/estimate-norms/professional/flooring.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
+import paintNormPack from "../../../../../data/estimate-norms/professional/paint.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
 import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
@@ -471,6 +472,93 @@ const CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "ct17_tile_additional_waste_not_published_confirmed",
   "ct17_tile_tds_reference",
   "ct17_tile_material_certificate_reference",
+] as const);
+
+export const CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:ceresit-ct54-ct17:interior-wall:two-coats:v1" as const;
+
+export const CERESIT_CT54_INTERIOR_WALL_NORM_ID =
+  "paint_ceresit_ct54_silicate_two_coats_l_m2_v1" as const;
+
+export const CERESIT_CT54_INTERIOR_WALL_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CT54_INTERIOR_WALL_NORM_ID}` as const;
+
+export const CERESIT_CT17_PAINT_PRIMER_NORM_ID =
+  "paint_ceresit_ct17_primer_l_m2_before_paint_v1" as const;
+
+export const CERESIT_CT17_PAINT_PRIMER_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CT17_PAINT_PRIMER_NORM_ID}` as const;
+
+const CERESIT_CT54_SOURCE_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "coat_count",
+  "substrate_type",
+  "substrate_absorption",
+  "substrate_smoothness",
+  "substrate_carrying_smooth_dry_clean_confirmed",
+  "installation_location",
+  "intercoat_break_hours",
+  "application_conditions_confirmed",
+  "facade_rain_protection_confirmed",
+  "ct54_tds_variant_confirmed",
+  "selected_container_size_l",
+] as const);
+
+const CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "selected_paint_product",
+  "ct54_coat_count",
+  "ct54_substrate_type",
+  "ct54_substrate_absorption",
+  "ct54_substrate_smoothness",
+  "ct54_substrate_carrying_smooth_dry_clean_confirmed",
+  "ct54_installation_location",
+  "ct54_intercoat_break_hours",
+  "ct54_application_conditions_confirmed",
+  "ct54_application_temperature_c",
+  "ct54_relative_humidity_percent",
+  "ct54_facade_rain_protection_confirmed",
+  "ct54_tds_variant_confirmed",
+  "ct54_project_average_rate_confirmed",
+  "ct54_selected_container_size_l",
+  "ct54_additional_waste_not_published_confirmed",
+  "ct54_tds_reference",
+  "ct54_material_certificate_reference",
+] as const);
+
+const CERESIT_CT17_PAINT_SOURCE_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "substrate_type",
+  "substrate_evenness",
+  "substrate_absorbency",
+  "selected_consumption_l_m2",
+  "dilution_ratio",
+  "coat_count",
+  "substrate_dry_load_bearing_clean_confirmed",
+  "complete_drying_confirmed",
+  "application_conditions_confirmed",
+  "selected_container_size_l",
+] as const);
+
+const CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "selected_primer_product",
+  "ct17_paint_substrate_type",
+  "ct17_paint_substrate_evenness",
+  "ct17_paint_substrate_absorbency",
+  "ct17_paint_selected_consumption_l_m2",
+  "ct17_paint_dilution_ratio",
+  "ct17_paint_coat_count",
+  "ct17_paint_substrate_dry_load_bearing_clean_confirmed",
+  "ct17_paint_complete_drying_confirmed",
+  "ct17_paint_application_conditions_confirmed",
+  "ct17_paint_application_temperature_c",
+  "ct17_paint_relative_humidity_percent",
+  "ct17_paint_selected_container_size_l",
+  "ct17_paint_additional_waste_not_published_confirmed",
+  "ct17_paint_tds_confirmed",
+  "ct17_paint_tds_reference",
+  "ct17_paint_material_certificate_reference",
 ] as const);
 
 export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
@@ -1740,6 +1828,169 @@ export const CERESIT_CT17_TILE_PRIMER_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const ceresitCt54InteriorWallNorm = (() => {
+  const found = paintNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}`);
+  return found;
+})();
+const ceresitCt54Surfaces = "surfaces" in ceresitCt54InteriorWallNorm.applicability
+  ? ceresitCt54InteriorWallNorm.applicability.surfaces
+  : null;
+const ceresitCt54Locations = "installation_locations" in ceresitCt54InteriorWallNorm.applicability
+  ? ceresitCt54InteriorWallNorm.applicability.installation_locations
+  : null;
+const ceresitCt54ContainerSizes = "documented_container_sizes_l" in ceresitCt54InteriorWallNorm.applicability
+  ? ceresitCt54InteriorWallNorm.applicability.documented_container_sizes_l
+  : null;
+
+if (
+  paintNormPack.work_group !== "paint" ||
+  paintNormPack.source_pack_version !== "2026.09-ceresit-ct54-ct17-primary-review-r2" ||
+  ceresitCt54InteriorWallNorm.unit !== "l" ||
+  ceresitCt54InteriorWallNorm.rate.value !== 0.3 ||
+  !("product" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.product !== "Ceresit CT 54 Silicate Aero" ||
+  !("tds_identifier" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.tds_identifier !== "C_CT54_TDS_1_0819" ||
+  !ceresitCt54Surfaces ||
+  !(ceresitCt54Surfaces as readonly string[]).includes("cement_plaster") ||
+  !ceresitCt54Locations ||
+  !(ceresitCt54Locations as readonly string[]).includes("indoor") ||
+  !("coat_count" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.coat_count !== 2 ||
+  !("minimum_intercoat_break_hours" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.minimum_intercoat_break_hours !== 12 ||
+  !("application_temperature_min_c" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.application_temperature_min_c !== 5 ||
+  !("application_temperature_max_c" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.application_temperature_max_c !== 25 ||
+  !("application_relative_humidity_max_percent_exclusive" in ceresitCt54InteriorWallNorm.applicability) ||
+  ceresitCt54InteriorWallNorm.applicability.application_relative_humidity_max_percent_exclusive !== 80 ||
+  !ceresitCt54ContainerSizes ||
+  ceresitCt54ContainerSizes.join(",") !== "3.5,15" ||
+  ceresitCt54InteriorWallNorm.parameters.length !== CERESIT_CT54_SOURCE_PARAMETER_IDS.length ||
+  CERESIT_CT54_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCt54InteriorWallNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCt54InteriorWallNorm.waste_percent_default !== 0 ||
+  ceresitCt54InteriorWallNorm.rounding.package_size !== 3.5 ||
+  ceresitCt54InteriorWallNorm.rounding.mode !==
+    "approximate_net_litres_before_rounding_to_explicitly_selected_3_5_or_15_l_container"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}`);
+}
+
+export const CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+  norm_id: CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+  source_document_version: paintNormPack.source_pack_version,
+  source_title: ceresitCt54InteriorWallNorm.source.title,
+  source_url: ceresitCt54InteriorWallNorm.source.url,
+  exact_locator: ceresitCt54InteriorWallNorm.source.page,
+  rate_value: ceresitCt54InteriorWallNorm.rate.value,
+  rate_unit: ceresitCt54InteriorWallNorm.rate.unit,
+  product: ceresitCt54InteriorWallNorm.applicability.product,
+  tds_identifier: ceresitCt54InteriorWallNorm.applicability.tds_identifier,
+  surfaces: [...ceresitCt54Surfaces],
+  installation_locations: [...ceresitCt54Locations],
+  coat_count: 2 as const,
+  minimum_intercoat_break_hours: 12 as const,
+  application_temperature_min_c: 5 as const,
+  application_temperature_max_c: 25 as const,
+  application_relative_humidity_max_percent_exclusive: 80 as const,
+  documented_container_sizes_l: [...ceresitCt54ContainerSizes],
+  additional_waste_not_published: true as const,
+  definition_hash: estimateDeterministicHash({
+    work_group: paintNormPack.work_group,
+    source_pack_version: paintNormPack.source_pack_version,
+    norm_item: ceresitCt54InteriorWallNorm,
+  }),
+});
+
+const ceresitCt17PaintPrimerNorm = (() => {
+  const found = paintNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CT17_PAINT_PRIMER_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}`);
+  return found;
+})();
+const ceresitCt17PaintSurfaces = "surfaces" in ceresitCt17PaintPrimerNorm.applicability
+  ? ceresitCt17PaintPrimerNorm.applicability.surfaces
+  : null;
+const ceresitCt17PaintRateRange = "rate_range_l_m2" in ceresitCt17PaintPrimerNorm.applicability
+  ? ceresitCt17PaintPrimerNorm.applicability.rate_range_l_m2
+  : null;
+const ceresitCt17PaintDilutions = "painting_dilution_options" in ceresitCt17PaintPrimerNorm.applicability
+  ? ceresitCt17PaintPrimerNorm.applicability.painting_dilution_options
+  : null;
+const ceresitCt17PaintContainerSizes = "documented_container_sizes_l" in ceresitCt17PaintPrimerNorm.applicability
+  ? ceresitCt17PaintPrimerNorm.applicability.documented_container_sizes_l
+  : null;
+
+if (
+  ceresitCt17PaintPrimerNorm.unit !== "l" ||
+  ceresitCt17PaintPrimerNorm.rate.value !== 0.1 ||
+  !("product" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.product !== "Ceresit CT 17 Profi" ||
+  !("tds_identifier" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.tds_identifier !== "TDS No CT17 Profi 03.24" ||
+  !ceresitCt17PaintSurfaces ||
+  !(ceresitCt17PaintSurfaces as readonly string[]).includes("plaster") ||
+  !ceresitCt17PaintRateRange ||
+  ceresitCt17PaintRateRange[0] !== 0.1 ||
+  ceresitCt17PaintRateRange[1] !== 0.5 ||
+  !ceresitCt17PaintDilutions ||
+  ceresitCt17PaintDilutions.join(",") !== "undiluted,water_1_to_1" ||
+  !("application_stage" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.application_stage !== "before_painting" ||
+  !("application_temperature_min_c" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.application_temperature_min_c !== 5 ||
+  !("application_temperature_max_c" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.application_temperature_max_c !== 25 ||
+  !("application_relative_humidity_max_percent_exclusive" in ceresitCt17PaintPrimerNorm.applicability) ||
+  ceresitCt17PaintPrimerNorm.applicability.application_relative_humidity_max_percent_exclusive !== 80 ||
+  !ceresitCt17PaintContainerSizes ||
+  ceresitCt17PaintContainerSizes.join(",") !== "1,2,5,10" ||
+  ceresitCt17PaintPrimerNorm.parameters.length !== CERESIT_CT17_PAINT_SOURCE_PARAMETER_IDS.length ||
+  CERESIT_CT17_PAINT_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCt17PaintPrimerNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCt17PaintPrimerNorm.waste_percent_default !== 0 ||
+  ceresitCt17PaintPrimerNorm.rounding.package_size !== 1 ||
+  ceresitCt17PaintPrimerNorm.rounding.mode !==
+    "net_litres_before_rounding_to_explicitly_selected_1_2_5_or_10_l_container"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}`);
+}
+
+export const CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+  norm_id: CERESIT_CT17_PAINT_PRIMER_NORM_ID,
+  source_document_version: paintNormPack.source_pack_version,
+  source_title: ceresitCt17PaintPrimerNorm.source.title,
+  source_url: ceresitCt17PaintPrimerNorm.source.url,
+  exact_locator: ceresitCt17PaintPrimerNorm.source.page,
+  rate_value: ceresitCt17PaintPrimerNorm.rate.value,
+  rate_unit: ceresitCt17PaintPrimerNorm.rate.unit,
+  product: ceresitCt17PaintPrimerNorm.applicability.product,
+  tds_identifier: ceresitCt17PaintPrimerNorm.applicability.tds_identifier,
+  surfaces: [...ceresitCt17PaintSurfaces],
+  rate_range_l_m2: [ceresitCt17PaintRateRange[0], ceresitCt17PaintRateRange[1]] as const,
+  painting_dilution_options: [...ceresitCt17PaintDilutions],
+  application_temperature_min_c: 5 as const,
+  application_temperature_max_c: 25 as const,
+  application_relative_humidity_max_percent_exclusive: 80 as const,
+  documented_container_sizes_l: [...ceresitCt17PaintContainerSizes],
+  additional_waste_not_published: true as const,
+  definition_hash: estimateDeterministicHash({
+    work_group: paintNormPack.work_group,
+    source_pack_version: paintNormPack.source_pack_version,
+    norm_item: ceresitCt17PaintPrimerNorm,
+  }),
+});
+
 const legrandP31TrayJointFastenerNorm = (() => {
   const found = electricalNormPack.norm_items.find(
     (item) => item.norm_id === LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
@@ -2184,6 +2435,34 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CT17_TILE_PRIMER_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["ct17_tile_primer_procurement_quantity_l"] as const,
 }, {
+  norm_id: CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+  work_group: "paint",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "PAINT",
+  operation_class: "PAINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+  source_document_version: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["ct54_paint_procurement_quantity_l"] as const,
+}, {
+  norm_id: CERESIT_CT17_PAINT_PRIMER_NORM_ID,
+  work_group: "paint",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "PAINT",
+  operation_class: "PAINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+  source_document_version: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["ct17_paint_primer_procurement_quantity_l"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -2284,6 +2563,12 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct17_tile_primer_net_quantity_l?: number;
   calculated_ct17_tile_primer_procurement_quantity_l?: number;
   calculated_ct17_tile_primer_container_count?: number;
+  calculated_ct54_paint_net_quantity_l?: number;
+  calculated_ct54_paint_procurement_quantity_l?: number;
+  calculated_ct54_paint_container_count?: number;
+  calculated_ct17_paint_primer_net_quantity_l?: number;
+  calculated_ct17_paint_primer_procurement_quantity_l?: number;
+  calculated_ct17_paint_primer_container_count?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -2337,6 +2622,14 @@ function finiteNumber(value: ProfessionalParameterValueV4 | null): number | null
     ? value.value
     : Number(String(value.value).replace(/\s+/g, "").replace(",", "."));
   return Number.isFinite(numeric) ? numeric : null;
+}
+
+function explicitTrue(value: ProfessionalParameterValueV4 | null): boolean {
+  return value?.value === true || value?.value === "true";
+}
+
+function explicitFalse(value: ProfessionalParameterValueV4 | null): boolean {
+  return value?.value === false || value?.value === "false";
 }
 
 function nonApplied(
@@ -5036,6 +5329,419 @@ function resolveCeresitCm11TileSystemProfile(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveCeresitCt54InteriorWallPaint(
+  productProfileId: typeof CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const selectedPaintProduct = primitiveString(explicit.selected_paint_product!);
+  const coatCount = finiteNumber(explicit.ct54_coat_count);
+  const substrateType = primitiveString(explicit.ct54_substrate_type!);
+  const substrateAbsorption = primitiveString(explicit.ct54_substrate_absorption!);
+  const substrateSmoothness = primitiveString(explicit.ct54_substrate_smoothness!);
+  const installationLocation = primitiveString(explicit.ct54_installation_location!);
+  const intercoatBreakHours = finiteNumber(explicit.ct54_intercoat_break_hours);
+  const applicationTemperatureC = finiteNumber(explicit.ct54_application_temperature_c);
+  const relativeHumidityPercent = finiteNumber(explicit.ct54_relative_humidity_percent);
+  const selectedContainerSizeL = finiteNumber(explicit.ct54_selected_container_size_l);
+  const tdsReference = primitiveString(explicit.ct54_tds_reference!);
+  const materialCertificateReference = primitiveString(explicit.ct54_material_certificate_reference!);
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    selectedPaintProduct === CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.product
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}:selected_paint_product=${selectedPaintProduct}`,
+    coatCount === CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.coat_count
+      ? ""
+      : `PHYSICAL_NORM_COAT_COUNT_CONFLICT:ct54_coat_count=${coatCount}:source_coat_count=${CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.coat_count}`,
+    (CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.surfaces as readonly string[]).includes(substrateType ?? "")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}:ct54_substrate_type=${substrateType}`,
+    substrateAbsorption !== null && ["low", "normal", "high"].includes(substrateAbsorption)
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct54_substrate_absorption",
+    substrateSmoothness !== null && ["smooth", "slightly_textured", "textured"].includes(substrateSmoothness)
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct54_substrate_smoothness",
+    explicitTrue(explicit.ct54_substrate_carrying_smooth_dry_clean_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}:ct54_substrate_carrying_smooth_dry_clean_confirmed=false`,
+    installationLocation === "indoor"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}:ct54_installation_location=${installationLocation}`,
+    intercoatBreakHours !== null &&
+      intercoatBreakHours >= CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.minimum_intercoat_break_hours
+      ? ""
+      : `PHYSICAL_NORM_INTERCOAT_BREAK_TOO_SHORT:ct54_intercoat_break_hours=${intercoatBreakHours}`,
+    explicitTrue(explicit.ct54_application_conditions_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}:ct54_application_conditions_confirmed=false`,
+    applicationTemperatureC !== null &&
+      applicationTemperatureC >= CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.application_temperature_min_c &&
+      applicationTemperatureC <= CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.application_temperature_max_c
+      ? ""
+      : `PHYSICAL_NORM_TEMPERATURE_NOT_APPLICABLE:ct54_application_temperature_c=${applicationTemperatureC}`,
+    relativeHumidityPercent !== null &&
+      relativeHumidityPercent >= 0 &&
+      relativeHumidityPercent < CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.application_relative_humidity_max_percent_exclusive
+      ? ""
+      : `PHYSICAL_NORM_HUMIDITY_NOT_APPLICABLE:ct54_relative_humidity_percent=${relativeHumidityPercent}`,
+    explicitFalse(explicit.ct54_facade_rain_protection_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_LOCATION_CONFLICT:ct54_facade_rain_protection_confirmed=true:installation_location=indoor`,
+    explicitTrue(explicit.ct54_tds_variant_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}`,
+    explicitTrue(explicit.ct54_project_average_rate_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_APPROXIMATE_RATE_NOT_ACCEPTED:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}`,
+    selectedContainerSizeL !== null &&
+      (CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.documented_container_sizes_l as readonly number[])
+        .includes(selectedContainerSizeL)
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:ct54_selected_container_size_l=${selectedContainerSizeL}`,
+    explicitTrue(explicit.ct54_additional_waste_not_published_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_WASTE_POLICY_NOT_CONFIRMED:${CERESIT_CT54_INTERIOR_WALL_NORM_ID}`,
+    tdsReference ? "" : "PROJECT_VALUE_INVALID:ct54_tds_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:ct54_material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityL = Number(
+    (areaM2! * CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.rate_value).toFixed(9),
+  );
+  const calculatedContainerCount = Math.ceil(calculatedNetQuantityL / selectedContainerSizeL! - 1e-9);
+  const calculatedProcurementQuantityL = Number((calculatedContainerCount * selectedContainerSizeL!).toFixed(9));
+  const explicitProcurementQuantityL = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "ct54_paint_procurement_quantity_l",
+  ));
+  if (explicitProcurementQuantityL !== null &&
+      Math.abs(explicitProcurementQuantityL - calculatedProcurementQuantityL) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [`PHYSICAL_NORM_VALUE_CONFLICT:ct54_paint_procurement_quantity_l=${explicitProcurementQuantityL}:norm_value=${calculatedProcurementQuantityL}`],
+      [...CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS, "ct54_paint_procurement_quantity_l"],
+      CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${productProfileId}`,
+    `product=${selectedPaintProduct}`,
+    `tds_identifier=${CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.tds_identifier}`,
+    `area_m2=${areaM2}`,
+    `coat_count=${coatCount}`,
+    `substrate_type=${substrateType}`,
+    `substrate_absorption=${substrateAbsorption}`,
+    `substrate_smoothness=${substrateSmoothness}`,
+    `installation_location=${installationLocation}`,
+    `intercoat_break_hours=${intercoatBreakHours}`,
+    `application_temperature_c=${applicationTemperatureC}`,
+    `relative_humidity_percent=${relativeHumidityPercent}`,
+    `project_average_rate_l_m2=${CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.rate_value}:explicitly_accepted`,
+    `formula=area_m2*${CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.rate_value}`,
+    `net_quantity_l=${calculatedNetQuantityL}`,
+    `container_count=${calculatedContainerCount}`,
+    "additional_waste_percent=0:not_published_by_source",
+    `ct54_tds_reference=${tdsReference}`,
+    `ct54_material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    ct54_paint_procurement_quantity_l: {
+      value: calculatedProcurementQuantityL,
+      unit_id: "l",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CT54_INTERIOR_WALL_SOURCE_ID,
+    norm_id: CERESIT_CT54_INTERIOR_WALL_NORM_ID,
+    source_document_version: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CT54_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["ct54_paint_procurement_quantity_l"],
+    calculated_ct54_paint_net_quantity_l: calculatedNetQuantityL,
+    calculated_ct54_paint_procurement_quantity_l: calculatedProcurementQuantityL,
+    calculated_ct54_paint_container_count: calculatedContainerCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveCeresitCt17PaintPrimer(
+  productProfileId: typeof CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const selectedPrimerProduct = primitiveString(explicit.selected_primer_product!);
+  const substrateType = primitiveString(explicit.ct17_paint_substrate_type!);
+  const substrateEvenness = primitiveString(explicit.ct17_paint_substrate_evenness!);
+  const substrateAbsorbency = primitiveString(explicit.ct17_paint_substrate_absorbency!);
+  const selectedConsumptionLM2 = finiteNumber(explicit.ct17_paint_selected_consumption_l_m2);
+  const dilutionRatio = primitiveString(explicit.ct17_paint_dilution_ratio!);
+  const coatCount = finiteNumber(explicit.ct17_paint_coat_count);
+  const applicationTemperatureC = finiteNumber(explicit.ct17_paint_application_temperature_c);
+  const relativeHumidityPercent = finiteNumber(explicit.ct17_paint_relative_humidity_percent);
+  const selectedContainerSizeL = finiteNumber(explicit.ct17_paint_selected_container_size_l);
+  const tdsReference = primitiveString(explicit.ct17_paint_tds_reference!);
+  const materialCertificateReference = primitiveString(explicit.ct17_paint_material_certificate_reference!);
+  const [minimumRate, maximumRate] = CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.rate_range_l_m2;
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    selectedPrimerProduct === CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.product
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:selected_primer_product=${selectedPrimerProduct}`,
+    (CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.surfaces as readonly string[]).includes(substrateType ?? "")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:ct17_paint_substrate_type=${substrateType}`,
+    substrateEvenness !== null && ["even", "locally_uneven"].includes(substrateEvenness)
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct17_paint_substrate_evenness",
+    substrateAbsorbency === "absorbent"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:ct17_paint_substrate_absorbency=${substrateAbsorbency}`,
+    selectedConsumptionLM2 !== null && selectedConsumptionLM2 >= minimumRate && selectedConsumptionLM2 <= maximumRate
+      ? ""
+      : `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:ct17_paint_selected_consumption_l_m2=${selectedConsumptionLM2}`,
+    (CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.painting_dilution_options as readonly string[])
+      .includes(dilutionRatio ?? "")
+      ? ""
+      : `PHYSICAL_NORM_DILUTION_NOT_APPLICABLE:ct17_paint_dilution_ratio=${dilutionRatio}`,
+    coatCount !== null && Number.isInteger(coatCount) && coatCount > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:ct17_paint_coat_count",
+    explicitTrue(explicit.ct17_paint_substrate_dry_load_bearing_clean_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:ct17_paint_substrate_dry_load_bearing_clean_confirmed=false`,
+    explicitTrue(explicit.ct17_paint_complete_drying_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_DRYING_NOT_CONFIRMED:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}`,
+    explicitTrue(explicit.ct17_paint_application_conditions_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}:ct17_paint_application_conditions_confirmed=false`,
+    applicationTemperatureC !== null &&
+      applicationTemperatureC >= CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.application_temperature_min_c &&
+      applicationTemperatureC <= CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.application_temperature_max_c
+      ? ""
+      : `PHYSICAL_NORM_TEMPERATURE_NOT_APPLICABLE:ct17_paint_application_temperature_c=${applicationTemperatureC}`,
+    relativeHumidityPercent !== null && relativeHumidityPercent >= 0 &&
+      relativeHumidityPercent < CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.application_relative_humidity_max_percent_exclusive
+      ? ""
+      : `PHYSICAL_NORM_HUMIDITY_NOT_APPLICABLE:ct17_paint_relative_humidity_percent=${relativeHumidityPercent}`,
+    selectedContainerSizeL !== null &&
+      (CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.documented_container_sizes_l as readonly number[])
+        .includes(selectedContainerSizeL)
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:ct17_paint_selected_container_size_l=${selectedContainerSizeL}`,
+    explicitTrue(explicit.ct17_paint_additional_waste_not_published_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_WASTE_POLICY_NOT_CONFIRMED:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}`,
+    explicitTrue(explicit.ct17_paint_tds_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_NOT_CONFIRMED:${CERESIT_CT17_PAINT_PRIMER_NORM_ID}`,
+    tdsReference ? "" : "PROJECT_VALUE_INVALID:ct17_paint_tds_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:ct17_paint_material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityL = Number((areaM2! * selectedConsumptionLM2! * coatCount!).toFixed(9));
+  const calculatedContainerCount = Math.ceil(calculatedNetQuantityL / selectedContainerSizeL! - 1e-9);
+  const calculatedProcurementQuantityL = Number((calculatedContainerCount * selectedContainerSizeL!).toFixed(9));
+  const explicitProcurementQuantityL = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "ct17_paint_primer_procurement_quantity_l",
+  ));
+  if (explicitProcurementQuantityL !== null &&
+      Math.abs(explicitProcurementQuantityL - calculatedProcurementQuantityL) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [`PHYSICAL_NORM_VALUE_CONFLICT:ct17_paint_primer_procurement_quantity_l=${explicitProcurementQuantityL}:norm_value=${calculatedProcurementQuantityL}`],
+      [...CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS, "ct17_paint_primer_procurement_quantity_l"],
+      CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${productProfileId}`,
+    `product=${selectedPrimerProduct}`,
+    `tds_identifier=${CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.tds_identifier}`,
+    `area_m2=${areaM2}`,
+    `substrate_type=${substrateType}`,
+    `substrate_evenness=${substrateEvenness}`,
+    `substrate_absorbency=${substrateAbsorbency}`,
+    `selected_consumption_l_m2=${selectedConsumptionLM2}`,
+    `dilution_ratio=${dilutionRatio}`,
+    `coat_count=${coatCount}`,
+    `application_temperature_c=${applicationTemperatureC}`,
+    `relative_humidity_percent=${relativeHumidityPercent}`,
+    `formula=area_m2*selected_consumption_l_m2*coat_count`,
+    `net_quantity_l=${calculatedNetQuantityL}`,
+    `container_count=${calculatedContainerCount}`,
+    "additional_waste_percent=0:not_published_by_source",
+    `ct17_paint_tds_reference=${tdsReference}`,
+    `ct17_paint_material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    ct17_paint_primer_procurement_quantity_l: {
+      value: calculatedProcurementQuantityL,
+      unit_id: "l",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CT17_PAINT_PRIMER_SOURCE_ID,
+    norm_id: CERESIT_CT17_PAINT_PRIMER_NORM_ID,
+    source_document_version: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CT17_PAINT_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["ct17_paint_primer_procurement_quantity_l"],
+    calculated_ct17_paint_primer_net_quantity_l: calculatedNetQuantityL,
+    calculated_ct17_paint_primer_procurement_quantity_l: calculatedProcurementQuantityL,
+    calculated_ct17_paint_primer_container_count: calculatedContainerCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveCeresitCt54Ct17InteriorWallSystem(
+  productProfileId: typeof CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const primer = resolveCeresitCt17PaintPrimer(productProfileId, parameterValuesInput);
+  if (primer.status !== "APPLIED") return primer;
+  const paint = resolveCeresitCt54InteriorWallPaint(productProfileId, primer.parameter_values);
+  if (paint.status !== "APPLIED") return paint;
+  const consumedParameterIds = [...new Set([
+    ...primer.consumed_parameter_ids,
+    ...paint.consumed_parameter_ids,
+  ])];
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: paint.source_id,
+    norm_id: paint.norm_id,
+    source_document_version: paint.source_document_version,
+    source_url: paint.source_url,
+    exact_locator: paint.exact_locator,
+    source_definition_hash: paint.source_definition_hash,
+    source_ids: [paint.source_id, primer.source_id],
+    norm_ids: [paint.norm_id, primer.norm_id],
+    applied_norms: [paint, primer].map((resolution) => ({
+      source_id: resolution.source_id,
+      norm_id: resolution.norm_id,
+      source_document_version: resolution.source_document_version,
+      source_url: resolution.source_url,
+      exact_locator: resolution.exact_locator,
+      source_definition_hash: resolution.source_definition_hash,
+      produced_parameter_ids: resolution.produced_parameter_ids,
+    })),
+    consumed_parameter_ids: consumedParameterIds,
+    produced_parameter_ids: [
+      "ct54_paint_procurement_quantity_l",
+      "ct17_paint_primer_procurement_quantity_l",
+    ] as const,
+    calculated_ct54_paint_net_quantity_l: paint.calculated_ct54_paint_net_quantity_l,
+    calculated_ct54_paint_procurement_quantity_l: paint.calculated_ct54_paint_procurement_quantity_l,
+    calculated_ct54_paint_container_count: paint.calculated_ct54_paint_container_count,
+    calculated_ct17_paint_primer_net_quantity_l: primer.calculated_ct17_paint_primer_net_quantity_l,
+    calculated_ct17_paint_primer_procurement_quantity_l:
+      primer.calculated_ct17_paint_primer_procurement_quantity_l,
+    calculated_ct17_paint_primer_container_count: primer.calculated_ct17_paint_primer_container_count,
+    parameter_values: paint.parameter_values,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveForbo232MountingAdhesive(
   productProfileId: typeof FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -5753,6 +6459,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "PAINT" &&
+      input.operation_class === "PAINT" &&
+      input.material_system === "PAINT" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveCeresitCt54Ct17InteriorWallSystem(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA,
     );
   }
   if (productProfileId === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID) {

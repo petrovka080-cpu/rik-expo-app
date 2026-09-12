@@ -50,6 +50,7 @@ import {
 import { buildDrywallDomainCompletionSuccessorPackagePartsR56 } from "./drywallDomainCompletionSuccessorR56";
 import { buildBaseboardGlueProfessionalPackagePartsV1 } from "./baseboardGlueProfessionalV1";
 import { buildBaseboardGerflorInstallProfessionalPackagePartsV1 } from "./baseboardGerflorInstallProfessionalV1";
+import { buildPaintCeresitCt54Ct17ProfessionalPackagePartsV1 } from "./paintCeresitCt54Ct17ProfessionalV1";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
@@ -80,6 +81,7 @@ type InteriorProfessionalOverlayProviderV4 = (
 ) => InteriorProfessionalOverlayV4 | null;
 
 const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4: readonly InteriorProfessionalOverlayProviderV4[] = Object.freeze([
+  buildPaintCeresitCt54Ct17ProfessionalPackagePartsV1,
   buildBaseboardGerflorInstallProfessionalPackagePartsV1,
   buildBaseboardGlueProfessionalPackagePartsV1,
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,

@@ -12,6 +12,7 @@ import {
   type AppliedProfessionalPhysicalNormResolutionV1,
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
+  CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
   FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
@@ -366,6 +367,7 @@ export function buildInteriorFinishesFromInlineInputV1(
       constructionState(inventory) === "REPAIR" ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID ||

@@ -198,6 +198,9 @@ function schema(inventory: InteriorFinishesDomainInventoryRow): ProfessionalDoma
       parameter("preparation_productivity_linear_m_per_man_hour", "Производительность подготовки линии установки", "number", "P1", "m_per_man_hour", ["preparation_labor"], {
         minimum: 0.01, maximum: 100_000, condition: FULL_ONLY,
       }),
+      parameter("installation_consumables_rate_kg_linear_m", "Расход защитных и монтажных расходников", "number", "P1", "kg_per_m", ["installation_consumables"], {
+        minimum: 0.001, maximum: 100, condition: FULL_ONLY,
+      }),
       parameter("qa_interval_linear_m_per_test", "Длина линии на одну контрольную проверку", "number", "P1", "m_per_test", ["quality_tests"], {
         minimum: 0.01, maximum: 1_000_000, condition: FULL_ONLY,
       }),
@@ -285,6 +288,7 @@ function fullAssembly(inventory: InteriorFinishesDomainInventoryRow): Profession
     parameters: [
       assemblyParameter("finished_perimeter_linear_m", "Чистовой периметр", "PROJECT_QUANTITY", "linear_m", FULL_SCOPE),
       assemblyParameter("preparation_productivity_linear_m_per_man_hour", "Производительность подготовки", "NORM_RATE", "m_per_man_hour", FULL_SCOPE),
+      assemblyParameter("installation_consumables_rate_kg_linear_m", "Расход защитных и монтажных расходников", "MATERIAL_PASSPORT_VALUE", "kg_per_m", FULL_SCOPE),
       assemblyParameter("qa_interval_linear_m_per_test", "Интервал контроля", "CONTROL_PLAN_VALUE", "m_per_test", FULL_SCOPE),
       assemblyParameter("documentation_record_count", "Документы", "CONTROL_PLAN_VALUE", "item", FULL_SCOPE),
     ],
@@ -295,6 +299,13 @@ function fullAssembly(inventory: InteriorFinishesDomainInventoryRow): Profession
         ["finished_perimeter_linear_m", "preparation_productivity_linear_m_per_man_hour"],
         "man_hour",
         (values) => values.finished_perimeter_linear_m / values.preparation_productivity_linear_m_per_man_hour,
+      ), [KG_RESOURCE_SOURCE_ID], "scope_mode=FULL_APPLICABLE_SCOPE"),
+      row(inventory, "installation_consumables", "Защита и расходники", "material", "Защитные и монтажные расходники для линии плинтуса", formula(
+        `${technologyId}:gerflor-6086-installation-consumables:v1`,
+        "finished_perimeter_linear_m * installation_consumables_rate_kg_linear_m",
+        ["finished_perimeter_linear_m", "installation_consumables_rate_kg_linear_m"],
+        "kg",
+        (values) => values.finished_perimeter_linear_m * values.installation_consumables_rate_kg_linear_m,
       ), [KG_RESOURCE_SOURCE_ID], "scope_mode=FULL_APPLICABLE_SCOPE"),
       row(inventory, "quality_tests", "Контроль качества", "testing", "Контроль раскроя, углов и установленной линии", formula(
         `${technologyId}:gerflor-6086-quality-tests:v1`,
