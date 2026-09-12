@@ -1,14 +1,56 @@
 {
   "work_group": "roadworks",
-  "source_pack_version": "2026.09-krer27-table-27-06-020-routing-r1",
+  "source_pack_version": "2026.09-krer27-table-27-06-020-primary-review-r2",
   "source_type": "official_public_building_norms",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "roadworks_krer27_06_020_norm_unit_per_m2_v1",
+        "source_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+        "supporting_source_urls": [
+          "https://minstroy.gov.kg/ru/kyzmat/443/show",
+          "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+          "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/prikazot28marta2016godano2npa-16968e388e7a70b73.52487445.pdf"
+        ],
+        "verified_facts": [
+          "official_ministry_page_identifies_collection_27_as_automobile_roads",
+          "published_scope_covers_new_and_reconstructed_public_logging_temporary_industrial_site_and_urban_roads_and_areas",
+          "official_2016_order_lists_collection_27_among_approved_national_unit_rate_collections",
+          "official_pdf_table_27_06_020_is_for_4_cm_hot_asphalt_concrete_pavement",
+          "official_pdf_table_measurement_basis_is_1000_m2_of_pavement",
+          "table_27_06_020_publishes_multiple_mix_and_density_variants_with_different_resource_rows",
+          "exact_table_variant_and_its_resource_column_are_required_before_resource_or_cost_application",
+          "official_2022_order_adds_tables_to_collection_27_so_current_edition_and_amendments_must_be_confirmed",
+          "value_0_001_is_only_the_derived_m2_to_1000_m2_table_unit_conversion_not_a_resource_or_cost_norm"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "roadworks_krer27_06_020_norm_unit_per_m2_v1",
       "name_ru": "Базовые единицы таблицы КРЕР-2015 27-06-020 по площади асфальтобетонного покрытия",
-      "parameters": ["pavement_area_m2", "mixture_kind", "aggregate_size_mm", "layer_thickness_mm", "selected_table_variant"],
+      "parameters": [
+        "pavement_area_m2",
+        "pavement_area_measurement_basis_m2",
+        "mixture_kind",
+        "mixture_type_and_density_class",
+        "aggregate_size_mm",
+        "layer_thickness_mm",
+        "selected_krer27_table_code",
+        "selected_table_variant",
+        "selected_table_variant_work_composition",
+        "selected_table_resource_rows",
+        "selected_collection_edition_and_amendments",
+        "pavement_design_and_compaction_specification",
+        "current_price_level_and_regional_indices",
+        "estimator_approval_reference"
+      ],
       "unit": "krer_norm_unit",
       "rate": {
         "value": 0.001,
@@ -18,22 +60,28 @@
         "jurisdiction": "Kyrgyz Republic",
         "collection": "КРЕР-2015 №27 Автомобильные дороги",
         "table": "27-06-020",
+        "table_title": "Устройство покрытия толщиной 4 см из горячих асфальтобетонных смесей",
+        "published_layer_thickness_mm": 40,
         "table_measurement_basis_m2": 1000,
         "calculation": "pavement_area_m2 / 1000",
-        "exact_column_selection_required": true,
+        "exact_table_variant_and_resource_column_selection_required": true,
         "resource_rates_must_come_from_selected_official_table_column": true,
-        "thickness_density_and_mix_selection_must_not_be_inferred_from_this_routing_rate": true
+        "thickness_density_and_mix_selection_must_not_be_inferred_from_this_routing_rate": true,
+        "current_collection_edition_and_amendments_required": true,
+        "rate_is_derived_same_unit_conversion_not_published_resource_norm": true,
+        "resource_and_cost_rates_blocked_until_exact_variant_selected": true,
+        "automatic_production_binding_for_generic_roadworks_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "krer_norm_unit",
         "package_size": 1,
-        "mode": "no_integer_rounding"
+        "mode": "no_rounding_of_fractional_1000_m2_table_units_before_exact_variant_resource_calculation"
       },
       "source": {
         "title": "КРЕР-2015 №27 Автомобильные дороги",
         "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
-        "page": "PDF page 93, table 27-06-020, measurement basis 1000 m2 of pavement",
+        "page": "Printed pages 92-93, table 27-06-020: 4 cm hot asphalt-concrete pavement, 1000 m2 measurement basis and variant resource columns",
         "provenance": "official_public_building_norms"
       }
     }

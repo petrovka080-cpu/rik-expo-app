@@ -42,7 +42,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   plumbing: "2026.09-wavin-hep2o-primary-review-r2",
   putty: "2026.09-ceresit-ct126-ct127-primary-review-r2",
   reinforcement: "2026.07-wave2a",
-  roadworks: "2026.09-krer27-table-27-06-020-routing-r1",
+  roadworks: "2026.09-krer27-table-27-06-020-primary-review-r2",
   roofing: "2026.09-sika-sarnafil-at18-primary-review-r2",
   screed: "2026.09-ceresit-cn87-primary-review-r2",
   services: "2026.09-kg-author-supervision-cost-primary-review-r2",

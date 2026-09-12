@@ -696,6 +696,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_unit: string; package_size: number; mode: string };
       }[];
     };
+    const reviewedRoadworksPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/roadworks.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -2162,6 +2188,64 @@ describe("real professional norm packs audit", () => {
     }]);
     expect(reviewedServicesPack.norm_items.some((item) =>
       item.norm_id === "services_kg_author_supervision_confirmed_visit_unit_v1")).toBe(false);
+    expect(reviewedRoadworksPack).toMatchObject({
+      source_pack_version: "2026.09-krer27-table-27-06-020-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedRoadworksPack.review_evidence?.items).toMatchObject([{
+      norm_id: "roadworks_krer27_06_020_norm_unit_per_m2_v1",
+      source_url: "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+      supporting_source_urls: expect.arrayContaining([
+        "https://minstroy.gov.kg/ru/kyzmat/443/show",
+        "https://minstroy.gov.kg/index.php/kg/state_program/download-pdf/prikazot28aprela2022godano52npa_compressed-25868e3850a3ecfb9.81892156.pdf",
+        "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/prikazot28marta2016godano2npa-16968e388e7a70b73.52487445.pdf",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "official_ministry_page_identifies_collection_27_as_automobile_roads",
+        "official_pdf_table_27_06_020_is_for_4_cm_hot_asphalt_concrete_pavement",
+        "official_pdf_table_measurement_basis_is_1000_m2_of_pavement",
+        "table_27_06_020_publishes_multiple_mix_and_density_variants_with_different_resource_rows",
+        "value_0_001_is_only_the_derived_m2_to_1000_m2_table_unit_conversion_not_a_resource_or_cost_norm",
+      ]),
+    }]);
+    expect(reviewedRoadworksPack.norm_items).toMatchObject([{
+      norm_id: "roadworks_krer27_06_020_norm_unit_per_m2_v1",
+      parameters: expect.arrayContaining([
+        "pavement_area_m2",
+        "pavement_area_measurement_basis_m2",
+        "mixture_kind",
+        "mixture_type_and_density_class",
+        "layer_thickness_mm",
+        "selected_krer27_table_code",
+        "selected_table_variant",
+        "selected_table_variant_work_composition",
+        "selected_table_resource_rows",
+        "selected_collection_edition_and_amendments",
+        "pavement_design_and_compaction_specification",
+      ]),
+      rate: {
+        value: 0.001,
+        unit: "table norm unit/m2; table measurement basis is 1000 m2 of pavement",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        jurisdiction: "Kyrgyz Republic",
+        table: "27-06-020",
+        published_layer_thickness_mm: 40,
+        table_measurement_basis_m2: 1000,
+        calculation: "pavement_area_m2 / 1000",
+        exact_table_variant_and_resource_column_selection_required: true,
+        current_collection_edition_and_amendments_required: true,
+        rate_is_derived_same_unit_conversion_not_published_resource_norm: true,
+        resource_and_cost_rates_blocked_until_exact_variant_selected: true,
+        automatic_production_binding_for_generic_roadworks_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "no_rounding_of_fractional_1000_m2_table_units_before_exact_variant_resource_calculation",
+      },
+    }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
       item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
       .toMatchObject({
