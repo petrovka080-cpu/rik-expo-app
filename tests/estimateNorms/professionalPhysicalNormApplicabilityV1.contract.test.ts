@@ -3,6 +3,9 @@ import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
   CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA,
+  CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
+  CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+  CERESIT_CT17_FLOORING_PRIMER_SOURCE_METADATA,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
@@ -372,6 +375,18 @@ function exactCeresitCn69Inputs(
     installation_conditions_confirmed: explicit(true),
     cn69_global_25kg_tds_variant_confirmed: explicit(true),
     selected_bag_size_kg: explicit(25, "kg"),
+    ct17_substrate_evenness: explicit("even"),
+    ct17_substrate_absorbency: explicit("absorbent"),
+    ct17_selected_consumption_l_m2: explicit(0.18, "l_per_m2"),
+    ct17_coat_count: explicit(1, "item"),
+    ct17_substrate_dry_load_bearing_clean_confirmed: explicit(true),
+    ct17_selected_container_size_l: explicit(10, "l"),
+    ct17_still_absorbent_after_drying: explicit(false),
+    ct17_repeat_rule_confirmed: explicit(true),
+    ct17_additional_waste_not_published_confirmed: explicit(true),
+    ct17_flooring_tds_confirmed: explicit(true),
+    system_passport_reference: explicit("CERESIT-CN69-CT17-FLOOR-SYSTEM-PASSPORT-001"),
+    material_certificate_reference: explicit("PROJECT-CERESIT-CT17-BATCH-CERT-001"),
     ...changes,
   };
 }
@@ -1969,7 +1984,64 @@ describe("professional physical norm applicability V1", () => {
     }).status).toBe("NOT_REQUESTED");
   });
 
-  test("derives the exact CN 69 layer quantity from the global 25 kg TDS profile", () => {
+  test("keeps the CT 17 primer row closed until the project rate, repeat rule, and package are exact", () => {
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_selected_consumption_l_m2: explicit(0.09, "l_per_m2"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${CERESIT_CT17_FLOORING_PRIMER_NORM_ID}:ct17_selected_consumption_l_m2=0.09`,
+      ],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      cn69_substrate_type: explicit("other_mineral_base"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_FLOORING_PRIMER_NORM_ID}:cn69_substrate_type=other_mineral_base`,
+      ],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_substrate_evenness: explicit("unknown"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CT17_FLOORING_PRIMER_NORM_ID}:ct17_substrate_evenness=unknown`,
+      ],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_still_absorbent_after_drying: explicit(true),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_COAT_COUNT_CONFLICT:ct17_coat_count=1:still_absorbent_after_drying=true",
+      ],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_selected_container_size_l: explicit(3, "l"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:ct17_selected_container_size_l=3"],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_additional_waste_not_published_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_WASTE_POLICY_NOT_CONFIRMED:${CERESIT_CT17_FLOORING_PRIMER_NORM_ID}`],
+    });
+    expect(resolveCeresitCn69(exactCeresitCn69Inputs({
+      ct17_primer_procurement_quantity_l: explicit(18, "l"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:ct17_primer_procurement_quantity_l=18:norm_value=20",
+      ],
+    });
+  });
+
+  test("derives the exact CN 69 layer and CT 17 primer quantities as one floor-system profile", () => {
     const input = exactCeresitCn69Inputs();
     const first = resolveCeresitCn69(input);
     const second = resolveCeresitCn69(input);
@@ -1980,9 +2052,21 @@ describe("professional physical norm applicability V1", () => {
       norm_id: CERESIT_CN69_GLOBAL_25KG_NORM_ID,
       source_document_version: "2026.09-ceresit-cn69-ct17-global-primary-review-r2",
       source_definition_hash: CERESIT_CN69_GLOBAL_25KG_SOURCE_METADATA.definition_hash,
+      source_ids: [CERESIT_CN69_GLOBAL_25KG_SOURCE_ID, CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID],
+      norm_ids: [CERESIT_CN69_GLOBAL_25KG_NORM_ID, CERESIT_CT17_FLOORING_PRIMER_NORM_ID],
+      applied_norms: expect.arrayContaining([expect.objectContaining({
+        source_id: CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+        source_definition_hash: CERESIT_CT17_FLOORING_PRIMER_SOURCE_METADATA.definition_hash,
+      })]),
       calculated_cn69_net_quantity_kg: 650,
       calculated_cn69_bag_count: 26,
-      produced_parameter_ids: ["material_consumption_kg_m2_mm"],
+      calculated_ct17_primer_net_quantity_l: 18,
+      calculated_ct17_primer_procurement_quantity_l: 20,
+      calculated_ct17_primer_container_count: 2,
+      produced_parameter_ids: [
+        "material_consumption_kg_m2_mm",
+        "ct17_primer_procurement_quantity_l",
+      ],
       blockers: [],
     });
     expect(first.parameter_values.material_consumption_kg_m2_mm).toMatchObject({
@@ -1991,9 +2075,22 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: CERESIT_CN69_GLOBAL_25KG_SOURCE_ID,
     });
+    expect(first.parameter_values.ct17_primer_procurement_quantity_l).toMatchObject({
+      value: 20,
+      unit_id: "l",
+      source_type: "APPLICABLE_NORM",
+      source_id: CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.material_consumption_kg_m2_mm).toBeUndefined();
+    expect(input.ct17_primer_procurement_quantity_l).toBeUndefined();
     expect(constructionNormativeRegistryV1.get(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID)).toMatchObject({
+      authority: "Ceresit / Henkel",
+      product_profile_applicability: [CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["SUBFLOOR"],
+      operation_class_applicability: ["PREPARE"],
+    });
+    expect(constructionNormativeRegistryV1.get(CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID)).toMatchObject({
       authority: "Ceresit / Henkel",
       product_profile_applicability: [CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID],
       material_system_applicability: ["SUBFLOOR"],
@@ -2001,7 +2098,7 @@ describe("professional physical norm applicability V1", () => {
     });
   });
 
-  test("asks the CN 69 applicability questions and routes one 650 kg primary-material row", () => {
+  test("asks the CN 69 and CT 17 applicability questions and routes separate material rows", () => {
     const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.work_key === SUBFLOOR_PREPARE_WORK_KEY);
     if (!inventory) throw new Error("CERESIT_CN69_RUNTIME_SUBFLOOR_PREPARE_WORK_MISSING");
     const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
@@ -2015,6 +2112,18 @@ describe("professional physical norm applicability V1", () => {
       "installation_conditions_confirmed",
       "cn69_global_25kg_tds_variant_confirmed",
       "selected_bag_size_kg",
+      "ct17_substrate_evenness",
+      "ct17_substrate_absorbency",
+      "ct17_selected_consumption_l_m2",
+      "ct17_coat_count",
+      "ct17_substrate_dry_load_bearing_clean_confirmed",
+      "ct17_selected_container_size_l",
+      "ct17_still_absorbent_after_drying",
+      "ct17_repeat_rule_confirmed",
+      "ct17_additional_waste_not_published_confirmed",
+      "ct17_flooring_tds_confirmed",
+      "system_passport_reference",
+      "material_certificate_reference",
     ];
     expect(schema.parameters.filter((parameter) => cn69QuestionIds.includes(parameter.parameter_id))
       .map((parameter) => parameter.parameter_id)).toEqual(cn69QuestionIds);
@@ -2040,10 +2149,31 @@ describe("professional physical norm applicability V1", () => {
         "cn69_global_25kg_tds_variant_confirmed",
       ].includes(parameter.parameter_id)) return true;
       if (parameter.parameter_id === "selected_bag_size_kg") return 25;
+      if (parameter.parameter_id === "ct17_substrate_evenness") return "even";
+      if (parameter.parameter_id === "ct17_substrate_absorbency") return "absorbent";
+      if (parameter.parameter_id === "ct17_selected_consumption_l_m2") return 0.18;
+      if (parameter.parameter_id === "ct17_coat_count") return 1;
+      if (parameter.parameter_id === "ct17_selected_container_size_l") return "10";
+      if (parameter.parameter_id === "ct17_still_absorbent_after_drying") return false;
+      if (parameter.parameter_id === "system_passport_reference") {
+        return "CERESIT-CN69-CT17-FLOOR-SYSTEM-PASSPORT-001";
+      }
+      if (parameter.parameter_id === "material_certificate_reference") {
+        return "PROJECT-CERESIT-CT17-BATCH-CERT-001";
+      }
+      if ([
+        "ct17_substrate_dry_load_bearing_clean_confirmed",
+        "ct17_repeat_rule_confirmed",
+        "ct17_additional_waste_not_published_confirmed",
+        "ct17_flooring_tds_confirmed",
+      ].includes(parameter.parameter_id)) return true;
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "material_consumption_kg_m2_mm")
+      .filter((parameter) => ![
+        "material_consumption_kg_m2_mm",
+        "ct17_primer_procurement_quantity_l",
+      ].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, { value: cn69Value(parameter), source: "user" }]));
 
     const result = buildInteriorFinishesFromInlineInputV1({
@@ -2059,6 +2189,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
       .toContain(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID);
     const materialRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`);
     expect(materialRow).toMatchObject({ quantity: 650, unit: "kg" });
@@ -2073,6 +2205,24 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(CERESIT_CN69_GLOBAL_25KG_SOURCE_ID))).toHaveLength(1);
+    const primerRowId = `${inventory.canonical_technology_id}:ct17-primer-v1:row:ct17_primer`;
+    const primerRow = result.production?.draft?.items.find(
+      (row) => row.sourceParameters?.rowCode === primerRowId,
+    );
+    expect(primerRow).toMatchObject({ quantity: 20, unit: "l" });
+    expect(primerRow?.sourceParameters?.normativeSourceIds)
+      .toContain(CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID);
+    expect(primerRow?.sourceParameters?.parameterSourceIds)
+      .toContain(CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID);
+    expect(primerRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_ids: [CERESIT_CN69_GLOBAL_25KG_SOURCE_ID, CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID],
+      calculated_ct17_primer_net_quantity_l: 18,
+      calculated_ct17_primer_procurement_quantity_l: 20,
+      calculated_ct17_primer_container_count: 2,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps CM 11 closed until the exact small-ceramic indoor table pair is explicit", () => {

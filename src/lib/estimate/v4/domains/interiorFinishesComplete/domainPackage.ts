@@ -6,6 +6,7 @@ import type {
 } from "../../professionalProjectAssemblyV4";
 import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
+  CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID,
   createProfessionalEstimateDomainFactoryV1,
@@ -155,13 +156,7 @@ function formulaParameters(kind: InteriorFormulaKind): ProfessionalDomainParamet
 function ceresitCn69ConditionalParameters(
   row: InteriorFinishesDomainInventoryRow,
 ): ProfessionalDomainParameterDefinitionV1[] {
-  if (
-    row.source_domain_id !== "flooring" ||
-    row.work_type !== "prepare" ||
-    interiorMaterialSystemKey(row) !== "SUBFLOOR"
-  ) {
-    return [];
-  }
+  if (!isCeresitCn69SubfloorTarget(row)) return [];
   const condition = CERESIT_CN69_ONLY;
   return [
     parameter("cn69_substrate_type", "Тип минерального основания для Ceresit CN 69", "choice", "P1", null, [], {
@@ -182,7 +177,52 @@ function ceresitCn69ConditionalParameters(
       maximum: 100,
       condition,
     }),
+    parameter("ct17_substrate_evenness", "Ровность впитывающего основания перед грунтованием Ceresit CT 17", "choice", "P1", null, [], {
+      choices: [
+        { value: "even", label_ru: "Ровное основание" },
+        { value: "locally_uneven", label_ru: "Локально неровное основание" },
+      ],
+      condition,
+    }),
+    parameter("ct17_substrate_absorbency", "Впитываемость основания перед грунтованием Ceresit CT 17", "choice", "P1", null, [], {
+      choices: [{ value: "absorbent", label_ru: "Впитывающее основание" }],
+      condition,
+    }),
+    parameter("ct17_selected_consumption_l_m2", "Проектный расход Ceresit CT 17 по впитываемости и ровности основания", "number", "P1", "l_per_m2", [], {
+      minimum: 0.1,
+      maximum: 0.5,
+      condition,
+    }),
+    parameter("ct17_coat_count", "Количество слоёв Ceresit CT 17 после оценки впитывания", "number", "P1", "item", [], {
+      minimum: 1,
+      maximum: 10,
+      condition,
+    }),
+    parameter("ct17_substrate_dry_load_bearing_clean_confirmed", "Основание сухое, несущее и очищенное перед нанесением Ceresit CT 17", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_selected_container_size_l", "Выбранная фасовка Ceresit CT 17", "choice", "P1", "l", [], {
+      choices: [1, 2, 5, 10].map((size) => ({ value: String(size), label_ru: `${size} л` })),
+      condition,
+    }),
+    parameter("ct17_still_absorbent_after_drying", "Основание остаётся впитывающим после высыхания первого слоя Ceresit CT 17", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_repeat_rule_confirmed", "Правило повторного слоя только после проверки впитывания подтверждено", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_additional_waste_not_published_confirmed", "Подтверждено отсутствие опубликованного дополнительного процента отходов CT 17", "boolean", "P1", null, [], { condition }),
+    parameter("ct17_flooring_tds_confirmed", "Подтверждена карточка TDS No CT17 Profi 03.24 для грунтования пола", "boolean", "P1", null, [], { condition }),
+    parameter("system_passport_reference", "Ссылка на паспорт системы пола CN 69 / CT 17", "text", "P1", null, [], { condition }),
+    parameter("material_certificate_reference", "Ссылка на сертификат выбранной партии Ceresit CT 17", "text", "P1", null, [], { condition }),
+    parameter("ct17_primer_procurement_quantity_l", "Закупочное количество Ceresit CT 17 после округления фасовки", "number", "P2", "l", ["ct17_primer"], {
+      minimum: 1,
+      maximum: 1_000_000_000,
+      condition,
+    }),
   ];
+}
+
+function isCeresitCn69SubfloorTarget(
+  row: InteriorFinishesDomainInventoryRow,
+): boolean {
+  return row.source_domain_id === "flooring" &&
+    row.work_type === "prepare" &&
+    interiorMaterialSystemKey(row) === "SUBFLOOR";
 }
 
 function isCeresitCm11SmallCeramicIndoorTarget(
@@ -501,6 +541,46 @@ function ceresitCm11AdhesiveAssembly(
   };
 }
 
+function ceresitCt17PrimerAssembly(
+  inventory: InteriorFinishesDomainInventoryRow,
+): ProfessionalChildAssemblyV4 | null {
+  if (!isCeresitCn69SubfloorTarget(inventory)) return null;
+  const technologyId = inventory.canonical_technology_id;
+  return {
+    child_passport_id: `${technologyId}:ct17-primer-v1:passport`,
+    child_passport_version: "1.0.0",
+    domain_owner: INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
+    assembly_id: `${technologyId}:ct17-primer-v1:assembly`,
+    title_ru: "Грунтовка Ceresit CT 17 по выбранному проектному расходу и фасовке",
+    scope_trigger_parameter: "product_profile_id",
+    scope_trigger_values: [CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID],
+    supported_scope_modes: ["FULL_APPLICABLE_SCOPE"],
+    parameters: [
+      assemblyParameter("product_profile_id", "Паспорт выбранной системы пола", "SCOPE_TRIGGER", null, ["FULL_APPLICABLE_SCOPE"]),
+      assemblyParameter("ct17_primer_procurement_quantity_l", "Закупочное количество Ceresit CT 17", "NORM_RATE", "l", ["FULL_APPLICABLE_SCOPE"]),
+    ],
+    rows: [{
+      row_id: `${technologyId}:ct17-primer-v1:row:ct17_primer`,
+      section: "Основные материалы",
+      category: "material",
+      title_ru: "Грунтовка глубокого проникновения Ceresit CT 17 Profi",
+      formula: formula(
+        `${technologyId}:ct17-primer-v1:formula`,
+        "ct17_primer_procurement_quantity_l",
+        ["ct17_primer_procurement_quantity_l"],
+        "l",
+        (values) => values.ct17_primer_procurement_quantity_l,
+      ),
+      cost_ownership: "priced_resource",
+      cost_owner_id: `${technologyId}:cost-owner:ct17_primer`,
+      semantic_owner: `${technologyId}:semantic-owner:ct17_primer`,
+      normative_source_ids: [CERESIT_CT17_FLOORING_PRIMER_SOURCE_ID],
+      inclusion_condition: "scope_mode=FULL_APPLICABLE_SCOPE",
+      procurement_eligible: true,
+    }],
+  };
+}
+
 function scopeAssembly(inventory: InteriorFinishesDomainInventoryRow): ProfessionalChildAssemblyV4 | null {
   const scope = inventory.scope_capability;
   const technologyId = inventory.canonical_technology_id;
@@ -594,11 +674,13 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
   };
   const conditional = professionalOverlay ? null : scopeAssembly(inventory);
   const cm11Adhesive = professionalOverlay ? null : ceresitCm11AdhesiveAssembly(inventory);
+  const ct17Primer = professionalOverlay ? null : ceresitCt17PrimerAssembly(inventory);
   const children = professionalOverlay?.child_assemblies ?? [
     mainAssembly(inventory),
     fullAssembly(inventory),
     ...(conditional ? [conditional] : []),
     ...(cm11Adhesive ? [cm11Adhesive] : []),
+    ...(ct17Primer ? [ct17Primer] : []),
   ];
   const formulaPackId = `${technologyId}:formula-pack:v1`;
   const assemblyProfileId = `${technologyId}:assembly-profile:v1`;
