@@ -324,6 +324,8 @@ function inspectCatalogSourceRegistry(planGroups: Set<string>): {
   source_registry_exists: boolean;
   source_registry_professional_sources_count: number;
   source_registry_professional_groups_count: number;
+  source_registry_bound_work_groups: string[];
+  source_registry_unbound_work_groups: string[];
   source_registry_missing_work_groups: string[];
   source_registry_invalid_professional_sources_count: number;
 } {
@@ -333,6 +335,8 @@ function inspectCatalogSourceRegistry(planGroups: Set<string>): {
       source_registry_exists: false,
       source_registry_professional_sources_count: 0,
       source_registry_professional_groups_count: 0,
+      source_registry_bound_work_groups: [],
+      source_registry_unbound_work_groups: [...planGroups].sort(),
       source_registry_missing_work_groups: [...planGroups],
       source_registry_invalid_professional_sources_count: 0,
     };
@@ -361,12 +365,16 @@ function inspectCatalogSourceRegistry(planGroups: Set<string>): {
       .map((source) => sourceRegistryGroup(String(source.source_id ?? ""), [...planGroups]))
       .filter((group): group is string => Boolean(group)),
   );
+  const boundWorkGroups = [...groups].sort();
+  const unboundWorkGroups = [...planGroups].filter((group) => !groups.has(group)).sort();
 
   return {
     source_registry_exists: true,
     source_registry_professional_sources_count: professionalSources.length,
     source_registry_professional_groups_count: groups.size,
-    source_registry_missing_work_groups: [...planGroups].filter((group) => !groups.has(group)),
+    source_registry_bound_work_groups: boundWorkGroups,
+    source_registry_unbound_work_groups: unboundWorkGroups,
+    source_registry_missing_work_groups: unboundWorkGroups,
     source_registry_invalid_professional_sources_count: invalidSources.length,
   };
 }
@@ -429,6 +437,7 @@ function main(): void {
     (previousSummary.real_hardcoded_production_rate_count ?? 0) === 0;
   const previousStatusOk = previousLegacyStopOk || previousSourceQualityGreenOk;
   const sourceRegistry = inspectCatalogSourceRegistry(planGroups);
+  const productionBoundGroups = new Set(sourceRegistry.source_registry_bound_work_groups);
 
   const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => ({
     ...entry,
@@ -440,6 +449,7 @@ function main(): void {
           ? "missing_norm_records"
           : "needs_real_norm_pack",
     professional_pack_present: packGroups.has(entry.work_group),
+    production_source_registry_binding_present: productionBoundGroups.has(entry.work_group),
   }));
 
   const sourceGates = {
@@ -556,7 +566,7 @@ function main(): void {
     professional_norm_pack_files_needing_review: packResults
       .filter((result) => result.review_status !== "reviewed")
       .map((result) => result.file),
-    wave1_real_norm_groups_passed: [
+    wave1_physical_pack_files_present: [
       "plaster",
       "putty",
       "paint",
@@ -573,7 +583,41 @@ function main(): void {
       "cleaning",
       "ceilings",
     ].every((group) => packGroups.has(group)),
-    wave2_real_norm_groups_passed: [
+    wave1_production_bindings_present: [
+      "plaster",
+      "putty",
+      "paint",
+      "flooring",
+      "baseboards",
+      "tile",
+      "drywall",
+      "waterproofing",
+      "electrical",
+      "plumbing",
+      "delivery",
+      "waste_removal",
+      "equipment_rent",
+      "cleaning",
+      "ceilings",
+    ].every((group) => productionBoundGroups.has(group)),
+    wave1_real_norm_groups_passed: [
+      "plaster",
+      "putty",
+      "paint",
+      "flooring",
+      "baseboards",
+      "tile",
+      "drywall",
+      "waterproofing",
+      "electrical",
+      "plumbing",
+      "delivery",
+      "waste_removal",
+      "equipment_rent",
+      "cleaning",
+      "ceilings",
+    ].every((group) => packGroups.has(group) && productionBoundGroups.has(group)),
+    wave2_physical_pack_files_present: [
       "masonry",
       "concrete",
       "reinforcement",
@@ -590,7 +634,41 @@ function main(): void {
       "roadworks",
       "demolition",
     ].every((group) => packGroups.has(group)),
-    wave3_real_norm_groups_passed: [
+    wave2_production_bindings_present: [
+      "masonry",
+      "concrete",
+      "reinforcement",
+      "formwork",
+      "screed",
+      "earthworks",
+      "roofing",
+      "facade",
+      "insulation",
+      "windows_doors",
+      "metalwork",
+      "carpentry",
+      "landscaping",
+      "roadworks",
+      "demolition",
+    ].every((group) => productionBoundGroups.has(group)),
+    wave2_real_norm_groups_passed: [
+      "masonry",
+      "concrete",
+      "reinforcement",
+      "formwork",
+      "screed",
+      "earthworks",
+      "roofing",
+      "facade",
+      "insulation",
+      "windows_doors",
+      "metalwork",
+      "carpentry",
+      "landscaping",
+      "roadworks",
+      "demolition",
+    ].every((group) => packGroups.has(group) && productionBoundGroups.has(group)),
+    wave3_physical_pack_files_present: [
       "low_voltage",
       "sewerage",
       "heating",
@@ -600,6 +678,26 @@ function main(): void {
       "documentation",
       "services",
     ].every((group) => packGroups.has(group)),
+    wave3_production_bindings_present: [
+      "low_voltage",
+      "sewerage",
+      "heating",
+      "ventilation",
+      "air_conditioning",
+      "fire_safety",
+      "documentation",
+      "services",
+    ].every((group) => productionBoundGroups.has(group)),
+    wave3_real_norm_groups_passed: [
+      "low_voltage",
+      "sewerage",
+      "heating",
+      "ventilation",
+      "air_conditioning",
+      "fire_safety",
+      "documentation",
+      "services",
+    ].every((group) => packGroups.has(group) && productionBoundGroups.has(group)),
     golden_100_cases_passed: previousSummary.golden_100_cases_passed === true,
     golden_100_cases_use_real_norm_packs: previousSummary.golden_100_cases_passed === true,
     golden_cases_with_synthetic_norms: previousSummary.templates_with_only_synthetic_norms ?? 10000,

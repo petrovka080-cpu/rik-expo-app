@@ -31,6 +31,12 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("source_backed_norm_items_count");
     expect(source).toContain("SOURCE_QUALITY_GREEN_STATUS");
     expect(source).toContain("source_registry_covers_professional_norm_sources");
+    expect(source).toContain("source_registry_bound_work_groups");
+    expect(source).toContain("source_registry_unbound_work_groups");
+    expect(source).toContain("production_source_registry_binding_present");
+    expect(source).toContain("wave1_physical_pack_files_present");
+    expect(source).toContain("wave1_production_bindings_present");
+    expect(source).toContain("packGroups.has(group) && productionBoundGroups.has(group)");
     expect(source).toContain("allPacksPresent && allSourceRegistryGroupsPresent");
     expect(source).toContain("missing_real_norm_pack_work_groups: missingPackGroups");
     expect(source).toContain("missing_real_source_registry_work_groups:");
