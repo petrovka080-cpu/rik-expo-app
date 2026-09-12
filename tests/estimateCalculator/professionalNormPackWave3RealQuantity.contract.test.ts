@@ -13,6 +13,46 @@ function sourcedRow(workKey: string, rowCode: string, quantity = 100) {
 }
 
 describe("professional norm-pack wave 3 real quantities", () => {
+  it("derives the exact 50 mm CN 87 screed rate and excludes non-standard subfloor routes", () => {
+    const sourceMarker = "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1";
+    const dedicated = compileProductionExpandedEstimate10000({
+      workKey: "screed_cement_sand_50mm",
+      quantity: 100,
+      countryCode: "KG",
+    });
+    expect(dedicated.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
+      rowCode: "screed_cement_sand_50mm_flooring_interior_subfloor_lay_standard_materials_01",
+      quantity: 10_000,
+      unit: "kg",
+    }]);
+    const dedicatedRow = dedicated.rows.find((row) => row.normSourceId === sourceMarker);
+    expect(dedicatedRow?.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 100,
+      wastePercent: 0,
+      packageSize: 25,
+    });
+    expect(dedicatedRow?.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-ceresit-cn87-primary-review-r2");
+
+    const apartment = compileProductionExpandedEstimate10000({
+      workKey: "apartment_capital_renovation",
+      quantity: 100,
+      countryCode: "KG",
+    });
+    expect(apartment.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
+      rowCode: "apartment_screed_dry_mix",
+      quantity: 10_000,
+      unit: "kg",
+    }]);
+
+    const nonStandard = compileProductionExpandedEstimate10000({
+      workKey: "flooring_interior_subfloor_lay_large_area",
+      quantity: 100,
+      countryCode: "KG",
+    });
+    expect(nonStandard.rows.some((row) => row.normSourceId === sourceMarker)).toBe(false);
+  });
+
   it("keeps CL 51 on one indoor wet-area mastic row and excludes incompatible waterproofing scopes", () => {
     const sourceMarker = "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1";
     const bathroomWorkKey = "waterproofing_interior_bathroom_apply_standard";

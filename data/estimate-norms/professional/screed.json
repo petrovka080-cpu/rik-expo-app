@@ -1,35 +1,68 @@
 {
   "work_group": "screed",
-  "source_pack_version": "2026.07-wave2a",
+  "source_pack_version": "2026.09-ceresit-cn87-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "screed_cement_sand_mix_kg_m2_50mm_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CN-87-en_GL.pdf",
+        "supporting_source_urls": ["https://www.ceresit.com/products/flooring/product.html/ceresit-cn-87/SAP_0201TBC014A2.html"],
+        "verified_facts": [
+          "tds_identifier_is_cn_87_kt_10_21",
+          "approximate_mortar_yield_is_2_0_kg_per_m2_per_mm",
+          "derived_50_mm_requirement_is_100_kg_per_m2",
+          "bonded_screed_scope_is_10_to_80_mm",
+          "separation_layer_scope_is_35_to_80_mm",
+          "floating_screed_scope_is_45_to_80_mm",
+          "heated_floating_screed_minimum_adds_pipe_outer_diameter_to_45_mm",
+          "documented_pack_size_is_25_kg",
+          "contact_layer_materials_are_separate_from_the_mortar_rate",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "screed_cement_sand_mix_kg_m2_50mm_v1",
-      "name_ru": "Cement-sand screed dry mix for 50 mm layer",
-      "parameters": ["area_m2", "thickness_mm", "density_kg_m3", "waste_percent"],
+      "name_ru": "Сухая смесь Ceresit CN 87 для стяжки слоем 50 мм",
+      "parameters": ["area_m2", "layer_thickness_mm", "screed_construction_type", "underfloor_heating", "heating_pipe_outer_diameter_mm", "substrate_condition_confirmed", "joint_layout_confirmed", "selected_bag_size_kg"],
       "unit": "kg",
       "rate": {
-        "value": 90,
-        "unit": "kg/m2 at 50 mm seed rate from volume * density"
+        "value": 100,
+        "unit": "approximate kg/m2 at exactly 50 mm; derived from 2.0 kg/m2 per mm"
       },
       "applicability": {
-        "layer_thickness_mm": [40, 50, 60, 70],
-        "formula": "screed_mix_kg = area_m2 * thickness_mm / 1000 * density_kg_m3 * (1 + waste_percent)",
-        "density_kg_m3": 1800,
-        "user_confirmation_required_for_thickness": true
+        "product": "Ceresit CN 87",
+        "layer_thickness_mm": 50,
+        "source_rate_kg_m2_per_mm": 2,
+        "formula": "cn87_mortar_kg = area_m2 * layer_thickness_mm * 2.0",
+        "bonded_screed_thickness_mm": [10, 80],
+        "separation_layer_screed_thickness_mm": [35, 80],
+        "floating_screed_thickness_mm": [45, 80],
+        "heated_floating_screed_minimum_thickness_formula": "45 + heating_pipe_outer_diameter_mm",
+        "production_scalar_valid_only_at_50_mm": true,
+        "non_50_mm_requires_dynamic_thickness_formula": true,
+        "contact_layer_materials_excluded_from_rate": true,
+        "additional_waste_not_published": true,
+        "documented_bag_size_kg": 25
       },
-      "waste_percent_default": 7,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bag",
         "package_size": 25,
-        "mode": "ceil"
+        "mode": "approximate_net_kg_before_25_kg_bag_rounding"
       },
       "source": {
-        "title": "Cement-sand screed dry mix estimator table for 50 mm layer",
-        "url": "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
-        "page": "floor layer thickness scope with estimator-reviewed cement-sand dry mix density",
+        "title": "Ceresit CN 87 fast-setting flooring compound technical data sheet",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CN-87-en_GL.pdf",
+        "page": "TDS CN_87_KT_10.21, pages 1-2: construction-specific thickness ranges; page 2: approximately 2.0 kg/m2 per mm and 25 kg bag",
         "provenance": "manufacturer_technical_cards"
       }
     }

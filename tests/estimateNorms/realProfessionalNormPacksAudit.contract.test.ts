@@ -235,6 +235,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedScreedPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/screed.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -614,6 +639,45 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 5,
         mode: "minimum_required_kg_before_selected_5_or_15_kg_bucket_rounding",
+      },
+    }]);
+    expect(reviewedScreedPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-cn87-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedScreedPack.review_evidence?.items).toMatchObject([{
+      norm_id: "screed_cement_sand_mix_kg_m2_50mm_v1",
+      source_url: "https://datasheets.tdx.henkel.com/CERESIT-CN-87-en_GL.pdf",
+      supporting_source_urls: [
+        "https://www.ceresit.com/products/flooring/product.html/ceresit-cn-87/SAP_0201TBC014A2.html",
+      ],
+    }]);
+    expect(reviewedScreedPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "approximate_mortar_yield_is_2_0_kg_per_m2_per_mm",
+        "derived_50_mm_requirement_is_100_kg_per_m2",
+        "additional_waste_allowance_is_not_published",
+      ]));
+    expect(reviewedScreedPack.norm_items).toMatchObject([{
+      norm_id: "screed_cement_sand_mix_kg_m2_50mm_v1",
+      rate: {
+        value: 100,
+        unit: "approximate kg/m2 at exactly 50 mm; derived from 2.0 kg/m2 per mm",
+      },
+      waste_percent_default: 0,
+      applicability: {
+        layer_thickness_mm: 50,
+        source_rate_kg_m2_per_mm: 2,
+        production_scalar_valid_only_at_50_mm: true,
+        non_50_mm_requires_dynamic_thickness_formula: true,
+        contact_layer_materials_excluded_from_rate: true,
+        additional_waste_not_published: true,
+        documented_bag_size_kg: 25,
+      },
+      rounding: {
+        package_size: 25,
+        mode: "approximate_net_kg_before_25_kg_bag_rounding",
       },
     }]);
   });
