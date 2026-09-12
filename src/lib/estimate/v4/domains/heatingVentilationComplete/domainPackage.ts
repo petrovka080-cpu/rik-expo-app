@@ -23,6 +23,8 @@ import {
   LINDAB_VSR_SOURCE_ID,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
+  WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
+  WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
 } from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
 import {
   HVAC_COMPLETE_ALIAS_COUNT,
@@ -221,6 +223,25 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
         conditionalParameter("heating_terminal_productivity_item_per_man_hour", "Производительность монтажа отопительных приборов", "item_per_man_hour", ["heating_terminal_labor"], "heating_terminals_included"),
       );
     }
+  }
+  if (
+    profile.technology_class === "HEATING_PIPE_NETWORK" &&
+    row.primary_material_or_system === "HEATING_PIPE" &&
+    row.operation_class === "INSTALL"
+  ) {
+    const wavinHep2OCondition = {
+      kind: "EQUALS",
+      parameter_id: "product_profile_id",
+      value: WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
+    } as const;
+    parameters.push(
+      parameter("prepared_pipe_end_count", "Количество подготовленных концов трубы Hep2O, вводимых в фитинги", "number", "P1", "item", ["hep2o_smart_sleeves"], { minimum: 1, maximum: 10_000_000, condition: wavinHep2OCondition }),
+      parameter("hep2o_system_variant", "Точный вариант системы Wavin Hep2O", "choice", "P1", null, ["hep2o_smart_sleeves"], { choices: [
+        { value: "WAVIN_HEP2O_PUSH_FIT", label_ru: "Wavin Hep2O push-fit" },
+      ], condition: wavinHep2OCondition }),
+      parameter("hep2o_joint_topology_reference", "Ссылка на ведомость соединений и подготовленных концов трубы Hep2O", "text", "P1", null, ["hep2o_smart_sleeves"], { condition: wavinHep2OCondition }),
+      parameter("smart_sleeve_quantity_piece", "Количество опорных втулок Wavin Hep2O SmartSleeve", "number", "P1", "item", ["hep2o_smart_sleeves"], { minimum: 1, maximum: 10_000_000, condition: wavinHep2OCondition }),
+    );
   }
   if (isDuct(profile)) {
     const lindabVsrCondition = {
@@ -452,6 +473,7 @@ function childAssembly(
   triggerParameter: string,
   scopes: readonly ProfessionalEstimateScopeModeV4[],
   rows: readonly ProfessionalAssemblyRowDefinitionV4[],
+  triggerValues: readonly (string | boolean)[] = [true, "true"],
 ): ProfessionalChildAssemblyV4 {
   return {
     child_passport_id: `${row.canonical_technology_id}:child:${id}:passport:v1`,
@@ -460,11 +482,48 @@ function childAssembly(
     assembly_id: `${row.canonical_technology_id}:child:${id}:assembly:v1`,
     title_ru: title,
     scope_trigger_parameter: triggerParameter,
-    scope_trigger_values: [true, "true"],
+    scope_trigger_values: triggerValues,
     supported_scope_modes: scopes,
     parameters: assemblyParameters(schema, rows, triggerParameter, scopes),
     rows,
   };
+}
+
+function wavinHep2OSmartSleeveAssembly(
+  row: HvacDomainInventoryRow,
+  schema: ProfessionalDomainParameterSchemaV1,
+): ProfessionalChildAssemblyV4 {
+  const technologyId = row.canonical_technology_id;
+  const smartSleeveRow = {
+    ...boqRow(
+      row,
+      "hep2o_smart_sleeves",
+      "Соединения",
+      "material",
+      "Опорные втулки Wavin Hep2O SmartSleeve для подготовленных концов трубы",
+      formula(
+        technologyId,
+        "hep2o_smart_sleeves",
+        "smart_sleeve_quantity_piece",
+        ["smart_sleeve_quantity_piece"],
+        "item",
+        (values) => values.smart_sleeve_quantity_piece,
+      ),
+      "FULL_ONLY",
+    ),
+    normative_source_ids: [normativeSourceId(row), WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID],
+  } satisfies ProfessionalAssemblyRowDefinitionV4;
+  return childAssembly(
+    row,
+    schema,
+    "wavin-hep2o-smartsleeve",
+    "Опорные втулки соединений Wavin Hep2O",
+    HVAC_COMPLETE_DOMAIN_ID,
+    "product_profile_id",
+    ["FULL_APPLICABLE_SCOPE"],
+    [smartSleeveRow],
+    [WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID],
+  );
 }
 
 function mainAssemblies(row: HvacDomainInventoryRow, schema: ProfessionalDomainParameterSchemaV1): ProfessionalChildAssemblyV4[] {
@@ -656,6 +715,11 @@ function assembliesFor(row: HvacDomainInventoryRow, schema: ProfessionalDomainPa
   if (isRefrigerant(profile)) assemblies.push(condensateAssembly(row, schema));
   if (isExternal(profile)) assemblies.push(earthworksAssembly(row, schema), restorationAssembly(row, schema));
   if (isWarmFloor(profile)) assemblies.push(screedAssembly(row, schema));
+  if (
+    profile.technology_class === "HEATING_PIPE_NETWORK" &&
+    row.primary_material_or_system === "HEATING_PIPE" &&
+    row.operation_class === "INSTALL"
+  ) assemblies.push(wavinHep2OSmartSleeveAssembly(row, schema));
   if (hvacIsRepair(row)) assemblies.push(demolitionAssembly(row, schema));
   return assemblies;
 }

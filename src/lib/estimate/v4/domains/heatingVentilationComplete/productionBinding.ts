@@ -14,6 +14,7 @@ import {
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+  WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
 } from "../../domainFactory";
 import type {
   ProfessionalEstimateScopeModeV4,
@@ -311,7 +312,8 @@ export function buildHvacFromInlineInputV1(
     requireExplicitNormativeRateCode:
       input.paramOverrides?.product_profile_id?.value === UPONOR_UFH_150MM_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === LINDAB_VSR_PRODUCT_PROFILE_ID ||
-      input.paramOverrides?.product_profile_id?.value === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
+      input.paramOverrides?.product_profile_id?.value === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
   });
   const baselineParameterValues = baseline.parameter_values;
   const scopeMode = baselineParameterValues.estimate_scope_mode?.value;

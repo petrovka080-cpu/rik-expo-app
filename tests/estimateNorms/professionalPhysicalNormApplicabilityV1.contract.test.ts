@@ -19,6 +19,10 @@ import {
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   UPONOR_UFH_150MM_SOURCE_ID,
   UPONOR_UFH_150MM_SOURCE_METADATA,
+  WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
+  WAVIN_HEP2O_SMARTSLEEVE_NORM_ID,
+  WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+  WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
   constructionNormativeRegistryV1,
   resolveProfessionalPhysicalNormParameterValuesV1,
 } from "../../src/lib/estimate/v4/domainFactory";
@@ -45,6 +49,7 @@ const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
 const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
 const CONDITIONER_INSTALL_WORK_KEY = "heating_hvac_interior_conditioner_install_standard";
+const HEATING_PIPE_INSTALL_WORK_KEY = "heating_hvac_interior_heating_pipe_install_standard";
 const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
 const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
 
@@ -190,6 +195,32 @@ function resolveLegrandP31(values: Readonly<Record<string, ProfessionalParameter
     technology_class: "CABLE_CHANNEL",
     operation_class: "INSTALL",
     material_system: "CABLE_CHANNEL",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactWavinHep2OInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID),
+    exact_material_or_equipment: explicit("Wavin Hep2O Barrier pipe and Hep2O fittings"),
+    pipe_material_and_class: explicit("Wavin Hep2O Barrier pipe"),
+    jointing_method: explicit("Wavin Hep2O push-fit with SmartSleeve"),
+    connection_count: explicit(6, "item"),
+    prepared_pipe_end_count: explicit(10, "item"),
+    hep2o_system_variant: explicit("WAVIN_HEP2O_PUSH_FIT"),
+    hep2o_joint_topology_reference: explicit("ОВ-31.S-04, узлы H01-H06, 10 подготовленных концов"),
+    ...changes,
+  };
+}
+
+function resolveWavinHep2O(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "HEATING_PIPE_NETWORK",
+    operation_class: "INSTALL",
+    material_system: "HEATING_PIPE:SPACE_HEATING:HEATING_WATER",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -791,6 +822,121 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID)))
+      .toHaveLength(1);
+  });
+
+  test("keeps the Wavin Hep2O SmartSleeve norm closed for another system or inconsistent topology", () => {
+    expect(resolveWavinHep2O(exactWavinHep2OInputs({
+      jointing_method: explicit("generic push-fit"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${WAVIN_HEP2O_SMARTSLEEVE_NORM_ID}:jointing_method=generic push-fit`,
+      ],
+    });
+    expect(resolveWavinHep2O(exactWavinHep2OInputs({
+      prepared_pipe_end_count: explicit(5, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PROJECT_TOPOLOGY_CONFLICT:prepared_pipe_end_count=5:connection_count=6"],
+    });
+    expect(resolveProfessionalPhysicalNormParameterValuesV1({
+      technology_class: "OUTDOOR_HEAT_NETWORK",
+      operation_class: "INSTALL",
+      material_system: "HEATING_PIPE:SPACE_HEATING:HEATING_WATER",
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: exactWavinHep2OInputs(),
+    }).status).toBe("NOT_REQUESTED");
+  });
+
+  test("derives one Wavin Hep2O SmartSleeve for every explicit prepared pipe end", () => {
+    const input = exactWavinHep2OInputs();
+    const first = resolveWavinHep2O(input);
+    const second = resolveWavinHep2O(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+      norm_id: WAVIN_HEP2O_SMARTSLEEVE_NORM_ID,
+      source_document_version: "2026.09-wavin-hep2o-installer-guide-r1",
+      source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
+      calculated_smart_sleeve_quantity_piece: 10,
+      produced_parameter_ids: ["smart_sleeve_quantity_piece"],
+      blockers: [],
+    });
+    expect(first.parameter_values.smart_sleeve_quantity_piece).toMatchObject({
+      value: 10,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.smart_sleeve_quantity_piece).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID)).toMatchObject({
+      authority: "Wavin",
+      product_profile_applicability: [WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["HEATING_PIPE:SPACE_HEATING:HEATING_WATER"],
+    });
+  });
+
+  test("routes Wavin Hep2O SmartSleeve only to its canonical HVAC child row", () => {
+    const inventory = HVAC_DOMAIN_INVENTORY.find((row) => row.work_key === HEATING_PIPE_INSTALL_WORK_KEY);
+    if (!inventory) throw new Error("WAVIN_HEP2O_RUNTIME_INSTALL_WORK_MISSING");
+    const technology = hvacDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = hvacDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("WAVIN_HEP2O_RUNTIME_SCHEMA_MISSING");
+    const wavinValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "exact_material_or_equipment") return "Wavin Hep2O Barrier pipe and Hep2O fittings";
+      if (parameter.parameter_id === "pipe_material_and_class") return "Wavin Hep2O Barrier pipe";
+      if (parameter.parameter_id === "jointing_method") return "Wavin Hep2O push-fit with SmartSleeve";
+      if (parameter.parameter_id === "connection_count") return 6;
+      if (parameter.parameter_id === "prepared_pipe_end_count") return 10;
+      if (parameter.parameter_id === "hep2o_system_variant") return "WAVIN_HEP2O_PUSH_FIT";
+      if (parameter.parameter_id === "hep2o_joint_topology_reference") {
+        return "ОВ-31.S-04, узлы H01-H06, 10 подготовленных концов";
+      }
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "smart_sleeve_quantity_piece")
+      .map((parameter) => [parameter.parameter_id, {
+        value: parameter.parameter_id === "scope_capability"
+          ? inventory.scope_capability
+          : wavinValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildHvacFromInlineInputV1({
+      rawInput: "Монтаж внутреннего отопительного трубопровода Wavin Hep2O, 10 подготовленных концов",
+      selectedWorkKey: HEATING_PIPE_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID);
+    const sleeveRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:hep2o_smart_sleeves`);
+    expect(sleeveRow).toMatchObject({ quantity: 10, unit: "item" });
+    expect(sleeveRow?.sourceParameters?.normativeSourceIds).toEqual([
+      "kg_krer_2015_application_guidance",
+      WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+    ]);
+    expect(sleeveRow?.sourceParameters?.parameterSourceIds).toEqual([WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID]);
+    expect(sleeveRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
+      source_definition_hash: WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA.definition_hash,
+      calculated_smart_sleeve_quantity_piece: 10,
+    });
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID)))
       .toHaveLength(1);
   });
 });
