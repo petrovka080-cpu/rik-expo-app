@@ -1,35 +1,81 @@
 {
   "work_group": "waterproofing",
-  "source_pack_version": "2026.07-wave1",
+  "source_pack_version": "2026.09-ceresit-cl51-global-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
+        "source_url": "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
+        "supporting_source_urls": ["https://www.ceresit.com/products/tiling/product.html/ceresit-cl-51/SAP_0201SKC013R0.html"],
+        "verified_facts": [
+          "global_tds_revision_is_03_2024",
+          "minimum_amount_required_for_two_coats_is_1_3_kg_per_m2",
+          "minimum_total_dry_film_thickness_is_0_5_mm",
+          "scope_is_indoor_walls_and_floors_under_ceramic_coverings_in_domestic_wet_areas",
+          "swimming_pools_and_permanently_wet_areas_are_excluded",
+          "rear_surface_moisture_and_chemical_exposure_must_be_excluded",
+          "joints_edges_and_penetrations_require_separate_tapes_or_collars",
+          "manufacturer_product_page_lists_5_kg_and_15_kg_buckets",
+          "additional_waste_allowance_is_not_published"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
       "name_ru": "Ceresit CL 51 waterproofing membrane under tiles",
-      "parameters": ["area_m2", "coat_count", "wet_zone_type", "substrate_type"],
+      "parameters": [
+        "area_m2",
+        "coat_count",
+        "installation_location",
+        "under_ceramic_covering",
+        "wet_zone_type",
+        "substrate_type",
+        "substrate_preparation_confirmed",
+        "permanent_water_contact_excluded",
+        "rear_surface_moisture_excluded",
+        "chemical_exposure_excluded",
+        "selected_bucket_size_kg"
+      ],
       "unit": "kg",
       "rate": {
         "value": 1.3,
-        "unit": "kg/m2 for two coats"
+        "unit": "minimum kg/m2 for two coats"
       },
       "applicability": {
-        "surfaces": ["mineral_surface", "concrete", "brickwork", "cement_screed", "dry_screed"],
+        "product": "Ceresit CL 51 Express 1-K",
+        "application_location": "indoor_walls_and_floors_under_ceramic_coverings",
+        "documented_substrate_examples": ["mineral_surface", "concrete", "fully_pointed_brickwork", "cement_screed", "cementitious_dry_screed", "gypsum_board", "aerated_concrete"],
+        "substrate_compatibility_requires_current_regional_tds_confirmation": true,
         "wet_zones": ["bathroom", "kitchen", "toilet"],
         "coat_count": 2,
-        "dry_film_min_mm": 0.5
+        "dry_film_min_mm": 0.5,
+        "swimming_pools_excluded": true,
+        "permanently_wet_areas_excluded": true,
+        "rear_surface_moisture_excluded": true,
+        "chemical_exposure_excluded": true,
+        "joint_and_penetration_accessories_excluded_from_rate": true,
+        "manufacturer_rate_is_minimum_required_amount": true,
+        "additional_waste_not_published": true,
+        "documented_bucket_sizes_kg": [5, 15]
       },
-      "waste_percent_default": 8,
+      "waste_percent_default": 0,
       "rounding": {
         "package_unit": "bucket",
-        "package_size": 15,
-        "mode": "ceil"
+        "package_size": 5,
+        "mode": "minimum_required_kg_before_selected_5_or_15_kg_bucket_rounding"
       },
       "source": {
         "title": "Ceresit CL 51 Express 1-K technical data sheet",
         "url": "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
-        "page": "technical data, amount required for two coats",
+        "page": "TDS 03/2024, pages 1-2: indoor wet-area scope, two coats, exclusions and technical-data minimum 1.3 kg/m2; Ceresit product page: 5 kg and 15 kg buckets",
         "provenance": "manufacturer_technical_cards"
       }
     }

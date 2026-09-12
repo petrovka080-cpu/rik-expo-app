@@ -210,6 +210,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedWaterproofingPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/waterproofing.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -547,6 +572,50 @@ describe("real professional norm packs audit", () => {
     ].includes(item.norm_id)).every((item) =>
       item.rounding.mode === "ceil_to_whole_piece_from_d112_reference_average",
     )).toBe(true);
+    expect(reviewedWaterproofingPack).toMatchObject({
+      source_pack_version: "2026.09-ceresit-cl51-global-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedWaterproofingPack.review_evidence?.items).toMatchObject([{
+      norm_id: "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
+      source_url: "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
+      supporting_source_urls: [
+        "https://www.ceresit.com/products/tiling/product.html/ceresit-cl-51/SAP_0201SKC013R0.html",
+      ],
+    }]);
+    expect(reviewedWaterproofingPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "minimum_amount_required_for_two_coats_is_1_3_kg_per_m2",
+        "swimming_pools_and_permanently_wet_areas_are_excluded",
+        "additional_waste_allowance_is_not_published",
+      ]));
+    expect(reviewedWaterproofingPack.norm_items).toMatchObject([{
+      norm_id: "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
+      parameters: expect.arrayContaining([
+        "area_m2",
+        "installation_location",
+        "under_ceramic_covering",
+        "permanent_water_contact_excluded",
+        "rear_surface_moisture_excluded",
+        "chemical_exposure_excluded",
+        "selected_bucket_size_kg",
+      ]),
+      waste_percent_default: 0,
+      applicability: {
+        application_location: "indoor_walls_and_floors_under_ceramic_coverings",
+        swimming_pools_excluded: true,
+        permanently_wet_areas_excluded: true,
+        joint_and_penetration_accessories_excluded_from_rate: true,
+        manufacturer_rate_is_minimum_required_amount: true,
+        additional_waste_not_published: true,
+        documented_bucket_sizes_kg: [5, 15],
+      },
+      rounding: {
+        package_size: 5,
+        mode: "minimum_required_kg_before_selected_5_or_15_kg_bucket_rounding",
+      },
+    }]);
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {

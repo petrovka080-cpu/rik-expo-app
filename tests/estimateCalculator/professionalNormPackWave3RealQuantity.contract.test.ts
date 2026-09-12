@@ -13,6 +13,52 @@ function sourcedRow(workKey: string, rowCode: string, quantity = 100) {
 }
 
 describe("professional norm-pack wave 3 real quantities", () => {
+  it("keeps CL 51 on one indoor wet-area mastic row and excludes incompatible waterproofing scopes", () => {
+    const sourceMarker = "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1";
+    const bathroomWorkKey = "waterproofing_interior_bathroom_apply_standard";
+    const bathroom = compileProductionExpandedEstimate10000({
+      workKey: bathroomWorkKey,
+      quantity: 100,
+      countryCode: "KG",
+    });
+    const bathroomRows = bathroom.rows.filter((row) => row.normSourceId === sourceMarker);
+    expect(bathroomRows).toHaveLength(1);
+    expect(bathroomRows[0]).toMatchObject({
+      rowCode: `${bathroomWorkKey}_materials_03`,
+      quantity: 130,
+      unit: "kg",
+    });
+    expect(bathroomRows[0]?.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 1.3,
+      wastePercent: 0,
+      packageSize: 5,
+    });
+    expect(bathroomRows[0]?.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-ceresit-cl51-global-primary-review-r2");
+    expect(bathroom.rows.find((row) => row.rowCode === `${bathroomWorkKey}_materials_01`)
+      ?.normSourceId).not.toBe(sourceMarker);
+
+    const apartment = compileProductionExpandedEstimate10000({
+      workKey: "apartment_capital_renovation",
+      quantity: 100,
+      countryCode: "KG",
+    });
+    expect(apartment.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
+      rowCode: "waterproofing_wet_zones_waterproofing_interior_wet_zone_apply_standard_materials_03",
+      quantity: 93.6,
+      unit: "kg",
+    }]);
+
+    for (const workKey of [
+      "waterproofing_interior_foundation_apply_standard",
+      "waterproofing_interior_roof_apply_standard",
+      "waterproofing_interior_pool_apply_standard",
+    ]) {
+      const compiled = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
+      expect(compiled.rows.some((row) => row.normSourceId === sourceMarker)).toBe(false);
+    }
+  });
+
   it("keeps the six static Knauf D112 variant-1 rows exact and rounds only piece outputs", () => {
     const workKey = "drywall_ceiling_interior_drywall_ceiling_install_standard";
     const reference = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
