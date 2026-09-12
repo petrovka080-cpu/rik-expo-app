@@ -12,6 +12,7 @@ import {
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { inspectProductionNormConsumerInventory } from "./productionNormConsumerInventory";
+import { inspectProductionNormBindingCandidates } from "./productionNormBindingCandidateInventory";
 import {
   inferProfessionalNormPackBasisUnit,
   PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
@@ -562,6 +563,26 @@ function main(): void {
     basisRegistryIds.every((normId) => Boolean(
       inferProfessionalNormPackBasisUnit(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[normId] ?? "")
     ));
+  const physicalNormBindingCandidates = inspectProductionNormBindingCandidates(
+    [...packBindingRequirements.values()].flatMap((requirement) =>
+      requirement.norm_items.map((item) => ({
+        norm_id: item.norm_id,
+        work_group: requirement.work_group,
+        basis_parameter: item.basis_parameter,
+        work_basis_unit: item.work_basis_unit,
+        output_unit: item.output_unit,
+        required_parameter_keys: item.required_parameter_keys,
+      }))
+    ),
+  );
+  const unregisteredPhysicalNorms = physicalNormBindingCandidates.filter((item) => !item.registered);
+  const physicalNormBindingDispositionComplete = unregisteredPhysicalNorms.length === 0;
+  const physicalNormBindingCandidatesByGroup = new Map(
+    NORM_WORK_TAXONOMY_GROUPS.map((group) => [
+      group,
+      physicalNormBindingCandidates.filter((item) => item.work_group === group),
+    ]),
+  );
   const consumerInventory = inspectProductionNormConsumerInventory();
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
@@ -604,6 +625,9 @@ function main(): void {
     const requirement = packBindingRequirements.get(entry.work_group);
     const consumers = consumerInventoryByGroup.get(entry.work_group);
     const productionBindingPresent = productionBoundGroups.has(entry.work_group);
+    const physicalNormBindings = physicalNormBindingCandidatesByGroup.get(
+      entry.work_group as (typeof NORM_WORK_TAXONOMY_GROUPS)[number],
+    ) ?? [];
     return {
       ...entry,
       templates_count: consumers?.templates_count ?? 0,
@@ -633,6 +657,8 @@ function main(): void {
         question_label_ru: aiEstimateRuDictionaryEntry(item.basis_parameter)?.labelRu ?? null,
         question_prompt_ru: aiEstimateRuDictionaryEntry(item.basis_parameter)?.promptPhraseRu ?? null,
       })) ?? [],
+      physical_norm_binding_dispositions: physicalNormBindings,
+      unregistered_physical_norm_items_count: physicalNormBindings.filter((item) => !item.registered).length,
       production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
       production_norm_registry_binding_present: productionBindingPresent,
       production_norm_registry_binding_blockers: [
@@ -641,6 +667,9 @@ function main(): void {
         requirement?.norm_items.every((item) => item.required_parameter_keys.length > 0)
           ? ""
           : "NORM_REQUIRED_PARAMETERS_MISSING",
+        ...physicalNormBindings
+          .filter((item) => !item.registered)
+          .map((item) => `${item.disposition}:${item.norm_id}`),
       ].filter(Boolean),
     };
   });
@@ -708,6 +737,7 @@ function main(): void {
     allPacksReviewed &&
     physicalNormBasisRegistryComplete &&
     physicalNormBasisQuestionCoverageComplete &&
+    physicalNormBindingDispositionComplete &&
     consumerInventoryComplete &&
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
@@ -758,6 +788,14 @@ function main(): void {
     missing_physical_norm_basis_question_keys: missingBasisQuestionKeys,
     missing_physical_norm_basis_ids: missingPhysicalNormBasisIds,
     orphan_physical_norm_basis_ids: orphanPhysicalNormBasisIds,
+    physical_norm_binding_disposition_complete: physicalNormBindingDispositionComplete,
+    registered_physical_norm_items_count: physicalNormBindingCandidates.length - unregisteredPhysicalNorms.length,
+    unregistered_physical_norm_items_count: unregisteredPhysicalNorms.length,
+    unregistered_physical_norm_items_with_dimensional_candidates_count: unregisteredPhysicalNorms
+      .filter((item) => item.dimensional_candidate_rows_count > 0).length,
+    unregistered_physical_norm_items_without_dimensional_candidates_count: unregisteredPhysicalNorms
+      .filter((item) => item.dimensional_candidate_rows_count === 0).length,
+    unregistered_physical_norm_binding_candidates: unregisteredPhysicalNorms,
     professional_norm_pack_work_groups_count: packGroups.size,
     professional_norm_pack_coverage_percent: Number(((packGroups.size / Math.max(planGroups.size, 1)) * 100).toFixed(2)),
     trace_pipeline_preserved: true,
@@ -973,6 +1011,9 @@ function main(): void {
       !physicalNormBasisQuestionCoverageComplete
         ? `physical_norm_basis_questions_missing:${missingBasisQuestionKeys.join(",")}`
         : "",
+      !physicalNormBindingDispositionComplete
+        ? `unregistered_physical_norm_items:${unregisteredPhysicalNorms.length}`
+        : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
         ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
@@ -1015,6 +1056,11 @@ function main(): void {
     physical_norm_basis_registry_items_count: summary.physical_norm_basis_registry_items_count,
     physical_norm_basis_registry_complete: summary.physical_norm_basis_registry_complete,
     physical_norm_basis_question_coverage_complete: summary.physical_norm_basis_question_coverage_complete,
+    physical_norm_binding_disposition_complete: summary.physical_norm_binding_disposition_complete,
+    registered_physical_norm_items_count: summary.registered_physical_norm_items_count,
+    unregistered_physical_norm_items_count: summary.unregistered_physical_norm_items_count,
+    unregistered_physical_norm_items_with_dimensional_candidates_count:
+      summary.unregistered_physical_norm_items_with_dimensional_candidates_count,
     professional_norm_pack_work_groups_count: summary.professional_norm_pack_work_groups_count,
     professional_norm_pack_coverage_percent: summary.professional_norm_pack_coverage_percent,
     apartment_reference_row_count: summary.apartment_reference_row_count,

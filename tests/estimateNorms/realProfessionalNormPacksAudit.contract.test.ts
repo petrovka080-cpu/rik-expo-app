@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { inspectProductionNormConsumerInventory } from "../../scripts/estimate/productionNormConsumerInventory";
-import { PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID } from "../../scripts/estimate/professionalNormPackBasisRegistry";
+import { inspectProductionNormBindingCandidates } from "../../scripts/estimate/productionNormBindingCandidateInventory";
+import {
+  inferProfessionalNormPackBasisUnit,
+  PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
+} from "../../scripts/estimate/professionalNormPackBasisRegistry";
 import {
   NORM_WORK_TAXONOMY_GROUPS,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
@@ -40,6 +44,8 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("SOURCE_QUALITY_GREEN_STATUS");
     expect(source).toContain("source_registry_covers_professional_norm_sources");
     expect(source).toContain("source_registry_bound_work_groups");
+    expect(source).toContain("physical_norm_binding_disposition_complete");
+    expect(source).toContain("unregistered_physical_norm_binding_candidates");
     expect(source).toContain("source_registry_unbound_work_groups");
     expect(source).toContain("production_source_registry_binding_present");
     expect(source).toContain("production_norm_registry_binding_present");
@@ -163,5 +169,55 @@ describe("real professional norm packs audit", () => {
         !/[А-Яа-яЁё]/u.test(entry.descriptionRu) ||
         /[ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђљњќћџ]/u.test(text);
     })).toEqual([]);
+  });
+
+  it("separates unregistered physical norms by dimensional and applicability blockers", () => {
+    type PhysicalPack = {
+      work_group: string;
+      norm_items: Array<{
+        norm_id: string;
+        parameters: string[];
+        unit: string;
+      }>;
+    };
+    const root = path.resolve(process.cwd(), "data/estimate-norms/professional");
+    const basisById: Readonly<Record<string, string>> =
+      PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID;
+    const specs = fs.readdirSync(root)
+      .filter((name) => name.endsWith(".json") && !name.includes("remediation-plan"))
+      .flatMap((name) => {
+        const pack = JSON.parse(fs.readFileSync(path.join(root, name), "utf8")) as PhysicalPack;
+        return pack.norm_items.map((item) => {
+          const basisParameter = basisById[item.norm_id];
+          return {
+            norm_id: item.norm_id,
+            work_group: pack.work_group,
+            basis_parameter: basisParameter,
+            work_basis_unit: inferProfessionalNormPackBasisUnit(basisParameter),
+            output_unit: item.unit,
+            required_parameter_keys: item.parameters,
+          };
+        });
+      });
+    const inventory = inspectProductionNormBindingCandidates(specs);
+    const unregistered = inventory.filter((item) => !item.registered);
+    const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
+
+    expect(inventory).toHaveLength(59);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(32);
+    expect(unregistered).toHaveLength(27);
+    expect(withCandidates.map((item) => item.norm_id)).toEqual([
+      "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
+      "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
+      "heating_uponor_ufh_pipe_m_m2_150mm_spacing_v1",
+      "low_voltage_legrand_049272_cable_linear_m_route_v1",
+      "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+      "ventilation_lindab_vsr_duct_linear_m_route_v1",
+    ]);
+    expect(withCandidates.every((item) =>
+      item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
+      item.unresolved_applicability_keys.length > 0
+    )).toBe(true);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(21);
   });
 });
