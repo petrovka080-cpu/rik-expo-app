@@ -1,39 +1,79 @@
 {
   "work_group": "delivery",
-  "source_pack_version": "2026.09-ford-transit-payload-reference-r1",
+  "source_pack_version": "2026.09-ford-transit-25-5my-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+        "source_url": "https://www.ford.co.uk/content/dam/guxeu/uk/documents/brochures/cars/BRO-transit_van_25.5MY.pdf",
+        "verified_facts": [
+          "ford_transit_25_5my_guide_page_13_lists_500_l4_h3_payload_range_2357_to_2412_kg",
+          "ford_product_page_headline_2357_kg_is_an_up_to_family_claim_not_a_universal_variant_payload",
+          "payload_depends_on_gvm_kerb_mass_derivative_series_options_accessories_driver_and_crew",
+          "ford_recommends_adding_5_percent_of_kerb_mass_as_margin_when_loading_near_maximum",
+          "actual_vehicle_payload_and_axle_limits_require_confirmation",
+          "headline_15_1_m3_loadspace_is_a_family_maximum_and_selected_variant_volume_requires_confirmation",
+          "trip_count_is_derived_and_requires_both_selected_payload_and_selected_volume_limits",
+          "carrier_billing_route_access_and_load_compatibility_are_not_published_as_a_manufacturer_norm"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
-      "name_ru": "Предварительное число рейсов Ford Transit V363 по паспортной максимальной грузоподъёмности",
-      "parameters": ["cargo_weight_kg", "selected_vehicle_variant", "cargo_volume_m3", "route_and_access_confirmed"],
+      "name_ru": "Справочный расчёт рейсов Ford Transit по подтверждённым ограничениям выбранной комплектации",
+      "parameters": [
+        "cargo_weight_kg",
+        "cargo_volume_m3",
+        "selected_vehicle_model_and_derivative",
+        "selected_verified_usable_payload_kg",
+        "selected_verified_usable_loadspace_m3",
+        "selected_verified_kerb_mass_kg",
+        "driver_crew_options_and_accessories_weight_kg",
+        "payload_margin_for_error_kg",
+        "axle_load_limits_confirmed",
+        "load_securing_and_compatibility_confirmed",
+        "route_and_access_confirmed",
+        "supplier_billing_scope"
+      ],
       "unit": "trip",
       "rate": {
         "value": 0.0004242681,
-        "unit": "trip/kg; reciprocal of the manufacturer maximum payload 2357 kg"
+        "unit": "reference trip/kg reciprocal for the 2357 kg headline payload only; not an automatic production rate"
       },
       "applicability": {
         "vehicle_family": "Ford Transit V363 van",
-        "manufacturer_max_payload_kg": 2357,
-        "manufacturer_max_loadspace_m3": 15.1,
-        "calculation": "ceil(cargo_weight_kg / 2357)",
-        "specific_variant_payload_must_be_confirmed": true,
-        "volume_limit_must_be_checked_separately": true,
-        "driver_crew_options_and_access_may_reduce_payload": true,
-        "regional_carrier_rate_and_vehicle_selection_required": true
+        "reference_derivative": "Transit Van 500 L4 H3",
+        "manufacturer_guide_payload_range_kg": [2357, 2412],
+        "manufacturer_headline_payload_kg": 2357,
+        "manufacturer_headline_max_loadspace_m3": 15.1,
+        "calculation": "ceil(max(cargo_weight_kg / selected_verified_usable_payload_kg, cargo_volume_m3 / selected_verified_usable_loadspace_m3))",
+        "selected_vehicle_derivative_payload_and_volume_required": true,
+        "headline_values_must_not_be_applied_to_an_arbitrary_transit_variant": true,
+        "driver_crew_options_and_accessories_reduce_usable_payload": true,
+        "ford_near_maximum_margin_formula": "payload_margin_for_error_kg = selected_verified_kerb_mass_kg * 0.05",
+        "axle_limits_and_actual_vehicle_legal_compliance_required": true,
+        "route_access_and_load_compatibility_required": true,
+        "reference_rate_not_for_automatic_production_binding": true,
+        "supplier_billing_rule_not_published": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "trip",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_after_selected_payload_and_volume_constraints"
       },
       "source": {
-        "title": "Ford UK New Transit: loadspace and payload characteristics",
-        "url": "https://www.ford.co.uk/vans-and-pickups/transit",
-        "page": "Exceptional loadspace: up to 15.1 m3 and 2,357 kg payload capacity",
+        "title": "Ford Transit Van 25.5MY brochure: payload selection and weights",
+        "url": "https://www.ford.co.uk/content/dam/guxeu/uk/documents/brochures/cars/BRO-transit_van_25.5MY.pdf",
+        "page": "PDF pages 12-13: payload factors, 5% kerb-mass margin guidance, and variant payload table; 500 L4 H3 is 2357-2412 kg",
         "provenance": "manufacturer_technical_cards"
       }
     }

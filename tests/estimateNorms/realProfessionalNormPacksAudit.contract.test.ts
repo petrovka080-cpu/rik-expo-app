@@ -411,6 +411,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedDeliveryPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/delivery.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1268,6 +1293,54 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "net_equipment_hours_before_separate_supplier_billing_rule",
+      },
+    }]);
+    expect(reviewedDeliveryPack).toMatchObject({
+      source_pack_version: "2026.09-ford-transit-25-5my-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedDeliveryPack.review_evidence?.items).toMatchObject([{
+      norm_id: "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+      source_url: "https://www.ford.co.uk/content/dam/guxeu/uk/documents/brochures/cars/BRO-transit_van_25.5MY.pdf",
+      verified_facts: expect.arrayContaining([
+        "ford_transit_25_5my_guide_page_13_lists_500_l4_h3_payload_range_2357_to_2412_kg",
+        "ford_product_page_headline_2357_kg_is_an_up_to_family_claim_not_a_universal_variant_payload",
+        "ford_recommends_adding_5_percent_of_kerb_mass_as_margin_when_loading_near_maximum",
+        "trip_count_is_derived_and_requires_both_selected_payload_and_selected_volume_limits",
+      ]),
+    }]);
+    expect(reviewedDeliveryPack.norm_items).toMatchObject([{
+      norm_id: "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+      parameters: expect.arrayContaining([
+        "cargo_weight_kg",
+        "cargo_volume_m3",
+        "selected_vehicle_model_and_derivative",
+        "selected_verified_usable_payload_kg",
+        "selected_verified_usable_loadspace_m3",
+        "selected_verified_kerb_mass_kg",
+        "payload_margin_for_error_kg",
+        "axle_load_limits_confirmed",
+        "load_securing_and_compatibility_confirmed",
+      ]),
+      rate: {
+        value: 0.0004242681,
+        unit: "reference trip/kg reciprocal for the 2357 kg headline payload only; not an automatic production rate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        reference_derivative: "Transit Van 500 L4 H3",
+        manufacturer_guide_payload_range_kg: [2357, 2412],
+        manufacturer_headline_payload_kg: 2357,
+        manufacturer_headline_max_loadspace_m3: 15.1,
+        selected_vehicle_derivative_payload_and_volume_required: true,
+        headline_values_must_not_be_applied_to_an_arbitrary_transit_variant: true,
+        reference_rate_not_for_automatic_production_binding: true,
+        supplier_billing_rule_not_published: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "ceil_after_selected_payload_and_volume_constraints",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
