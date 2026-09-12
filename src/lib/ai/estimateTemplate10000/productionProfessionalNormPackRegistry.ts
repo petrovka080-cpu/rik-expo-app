@@ -46,7 +46,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   roofing: "2026.09-sika-sarnafil-at18-primary-review-r2",
   screed: "2026.09-ceresit-cn87-primary-review-r2",
   services: "2026.09-kg-author-supervision-trip-exclusion-r1",
-  sewerage: "2026.09-wavin-osma-110mm-3m-pipe-r1",
+  sewerage: "2026.09-wavin-osma-c3766bk-primary-review-r2",
   tile: "2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
   ventilation: "2026.09-lindab-vsr-exact-sizes-r2",
   waste_removal: "2026.09-us-epa-cd-volume-weight-r1",

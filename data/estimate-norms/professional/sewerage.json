@@ -1,37 +1,91 @@
 {
   "work_group": "sewerage",
-  "source_pack_version": "2026.09-wavin-osma-110mm-3m-pipe-r1",
+  "source_pack_version": "2026.09-wavin-osma-c3766bk-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+        "source_url": "https://wavin.com/ie/p/54d3a658-da71-461c-805f-4c98e980ce46/wavin-soil-pipe-socketed-110mm-black-3m",
+        "supporting_source_urls": [
+          "https://mediahub.wavin.com/m/6811dbf1eb045f1/original/Wavin-IE-Above-and-Below-Ground-Trade-Catalogue-May-2023.pdf",
+          "https://mediahub.wavin.com/m/1ddf1fabd25f2f2f/original/Wavin-Osma-Soil-and-Waste-PIM-SW206-Aug25.pdf"
+        ],
+        "verified_facts": [
+          "exact_product_is_c3766bk_sap_3080894_ean_5098987303844",
+          "product_is_black_pvc_u_socketed_pressureless_pipe_with_110_mm_outer_diameter",
+          "catalogue_lists_c3766bk_as_3_m_pipe_to_en_1453_1",
+          "catalogue_also_lists_4_m_and_6_m_lengths_so_commercial_length_selection_is_required",
+          "product_page_packaging_record_is_57_pieces_and_is_not_a_project_consumption_allowance",
+          "manufacturer_manual_requires_system_and_diameter_design_from_connected_appliances",
+          "one_pipe_metre_per_route_metre_is_geometric_identity_not_a_published_consumption_norm",
+          "manufacturer_sources_do_not_publish_a_general_cutting_waste_percentage"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
-      "name_ru": "Раструбная труба Wavin Osma 110 мм длиной 3 м по утверждённой трассе канализации",
-      "parameters": ["approved_pipe_route_linear_m", "diameter_mm", "fitting_schedule", "slope_and_support_design"],
+      "name_ru": "Wavin Osma C3766BK 110 мм: геометрическая ведомость прямых участков по утверждённой трассе",
+      "parameters": [
+        "approved_pipe_route_linear_m",
+        "system_application",
+        "hydraulic_and_appliance_design_reference",
+        "selected_nominal_diameter",
+        "selected_product_code",
+        "selected_commercial_pipe_length_m",
+        "fitting_schedule",
+        "fitting_socket_and_insertion_layout",
+        "reusable_cut_length_plan",
+        "thermal_movement_design",
+        "support_schedule",
+        "firestopping_scope",
+        "acoustic_scope",
+        "project_cutting_allowance_percent",
+        "supplier_purchase_packaging"
+      ],
       "unit": "linear_m",
       "rate": {
         "value": 1,
-        "unit": "pipe linear m/approved route linear m before fitting and cutting layout"
+        "unit": "geometric pipe linear m/approved route linear m before designed fittings, socket insertion and cut reuse; not a published consumption rate"
       },
       "applicability": {
         "product": "Wavin Soil Pipe Socketed 110 mm Black 3 m",
-        "diameter_mm": 110,
+        "catalog_code": "C3766BK",
+        "sap_number": "3080894",
+        "standard": "EN 1453-1",
+        "material": "PVC-U",
+        "article_compression_class": "pressureless",
+        "nominal_diameter": "DN 100",
+        "outer_pipe_diameter_mm": 110,
+        "wall_thickness_mm": 3.5,
         "piece_length_m": 3,
+        "alternative_catalogue_lengths_m": [4, 6],
         "socketed_product": true,
-        "fittings_branches_cleanouts_and_offset_allowance_are_separate": true,
-        "slope_support_firestopping_and_acoustic_requirements_require_design": true
+        "above_ground_soil_and_waste_application_only": true,
+        "diameter_and_system_design_required": true,
+        "fittings_branches_cleanouts_offsets_and_socket_insertions_are_separate": true,
+        "cut_reuse_and_commercial_length_selection_required": true,
+        "rate_is_geometric_identity_not_manufacturer_consumption_norm": true,
+        "additional_waste_not_published": true,
+        "automatic_production_binding_for_generic_sewerage_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "3_m_pipe",
+        "package_unit": "linear_m",
         "package_size": 3,
-        "mode": "ceil_after_fitting_and_cut_layout"
+        "mode": "route_takeoff_before_explicit_product_length_cut_and_socket_layout"
       },
       "source": {
-        "title": "Wavin Soil Pipe Socketed 110 mm Black 3 m product record",
-        "url": "https://wavin.com/ie/p/54d3a658-da71-461c-805f-4c98e980ce46/wavin-soil-pipe-socketed-110mm-black-3m/d",
-        "page": "Product identifier and product name: socketed 110 mm soil pipe, 3 m",
+        "title": "Wavin Osma Soil C3766BK product record and Soil & Waste technical documents",
+        "url": "https://wavin.com/ie/p/54d3a658-da71-461c-805f-4c98e980ce46/wavin-soil-pipe-socketed-110mm-black-3m",
+        "page": "Product record C3766BK/SAP 3080894; Wavin IE trade catalogue page 38; Osma Soil and Waste PIM SW206 Aug25 design section",
         "provenance": "manufacturer_technical_cards"
       }
     }

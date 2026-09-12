@@ -436,6 +436,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedSeweragePack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/sewerage.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1341,6 +1367,61 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "ceil_after_selected_payload_and_volume_constraints",
+      },
+    }]);
+    expect(reviewedSeweragePack).toMatchObject({
+      source_pack_version: "2026.09-wavin-osma-c3766bk-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedSeweragePack.review_evidence?.items).toMatchObject([{
+      norm_id: "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+      source_url: "https://wavin.com/ie/p/54d3a658-da71-461c-805f-4c98e980ce46/wavin-soil-pipe-socketed-110mm-black-3m",
+      supporting_source_urls: expect.arrayContaining([
+        "https://mediahub.wavin.com/m/6811dbf1eb045f1/original/Wavin-IE-Above-and-Below-Ground-Trade-Catalogue-May-2023.pdf",
+        "https://mediahub.wavin.com/m/1ddf1fabd25f2f2f/original/Wavin-Osma-Soil-and-Waste-PIM-SW206-Aug25.pdf",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "exact_product_is_c3766bk_sap_3080894_ean_5098987303844",
+        "catalogue_lists_c3766bk_as_3_m_pipe_to_en_1453_1",
+        "manufacturer_manual_requires_system_and_diameter_design_from_connected_appliances",
+        "one_pipe_metre_per_route_metre_is_geometric_identity_not_a_published_consumption_norm",
+        "manufacturer_sources_do_not_publish_a_general_cutting_waste_percentage",
+      ]),
+    }]);
+    expect(reviewedSeweragePack.norm_items).toMatchObject([{
+      norm_id: "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
+      parameters: expect.arrayContaining([
+        "approved_pipe_route_linear_m",
+        "system_application",
+        "hydraulic_and_appliance_design_reference",
+        "selected_nominal_diameter",
+        "selected_product_code",
+        "selected_commercial_pipe_length_m",
+        "fitting_schedule",
+        "fitting_socket_and_insertion_layout",
+        "reusable_cut_length_plan",
+        "project_cutting_allowance_percent",
+      ]),
+      rate: {
+        value: 1,
+        unit: "geometric pipe linear m/approved route linear m before designed fittings, socket insertion and cut reuse; not a published consumption rate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        catalog_code: "C3766BK",
+        standard: "EN 1453-1",
+        outer_pipe_diameter_mm: 110,
+        piece_length_m: 3,
+        alternative_catalogue_lengths_m: [4, 6],
+        diameter_and_system_design_required: true,
+        rate_is_geometric_identity_not_manufacturer_consumption_norm: true,
+        additional_waste_not_published: true,
+        automatic_production_binding_for_generic_sewerage_forbidden: true,
+      }),
+      rounding: {
+        package_size: 3,
+        mode: "route_takeoff_before_explicit_product_length_cut_and_socket_layout",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
