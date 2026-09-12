@@ -41,6 +41,18 @@ describe("real professional norm packs audit", () => {
       };
       norm_items: { norm_id: string; source: { url: string } }[];
     };
+    const reviewedAirConditioningPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/air_conditioning.json"),
+        "utf8",
+      ),
+    ) as {
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { supporting_source_urls?: string[]; verified_facts?: string[] }[];
+      };
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -147,6 +159,15 @@ describe("real professional norm packs audit", () => {
       );
       return evidence?.source_url === item.source.url && (evidence.verified_facts?.length ?? 0) >= 3;
     })).toBe(true);
+    expect(reviewedAirConditioningPack.review_status).toBe("reviewed");
+    expect(reviewedAirConditioningPack.review_evidence).toMatchObject({
+      method: "DIRECT_PRIMARY_SOURCE_REVIEW",
+    });
+    expect(reviewedAirConditioningPack.review_evidence?.items?.[0]).toMatchObject({
+      supporting_source_urls: ["https://www.daikin.eu/en_us/products/product.table.html/3mxs-k.html"],
+    });
+    expect(reviewedAirConditioningPack.review_evidence?.items?.[0]?.verified_facts)
+      .toContain("no_package_or_charge_scale_rounding_stated_for_exact_3mxs_k_formula");
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {

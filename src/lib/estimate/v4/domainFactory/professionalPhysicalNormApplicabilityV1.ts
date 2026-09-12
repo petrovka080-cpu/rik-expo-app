@@ -42,6 +42,15 @@ export const DAIKIN_3MXS_K_NORM_ID =
 export const DAIKIN_3MXS_K_SOURCE_ID =
   `src_professional_norm_pack_${DAIKIN_3MXS_K_NORM_ID}` as const;
 
+const DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "equipment_model",
+  "manufacturer_system_profile_id",
+  "refrigerant_type",
+  "total_refrigerant_piping_length_m",
+  "outdoor_unit_nameplate_reference",
+  "maximum_piping_and_height_limits_confirmed",
+] as const);
+
 export const KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID =
   "manufacturer-profile:knauf-d112:standard-12.5mm-single-layer:reference-10x10:v1" as const;
 
@@ -197,10 +206,20 @@ if (
   daikin3MxsKNorm.rate.unit !== "kg/m of total piping length exceeding 30 m" ||
   daikin3MxsKNorm.applicability.refrigerant !== "R-410A" ||
   daikin3MxsKNorm.applicability.factory_chargeless_length_m !== 30 ||
+  daikin3MxsKNorm.applicability.maximum_total_piping_length_m !== 50 ||
+  daikin3MxsKNorm.applicability.maximum_piping_to_each_indoor_unit_m !== 25 ||
+  daikin3MxsKNorm.applicability.maximum_outdoor_to_indoor_height_difference_m !== 15 ||
+  daikin3MxsKNorm.applicability.maximum_indoor_to_indoor_height_difference_m !== 7.5 ||
   daikin3MxsKNorm.applicability.model_nameplate_and_installation_manual_must_be_confirmed !== true ||
   daikin3MxsKNorm.applicability.other_daikin_or_other_manufacturer_models_forbidden !== true ||
   daikin3MxsKNorm.applicability.maximum_piping_and_height_difference_limits_require_separate_check !== true ||
-  daikin3MxsKNorm.rounding.mode !== "follow_model_installation_manual_and_charge_scale"
+  daikin3MxsKNorm.parameters.length !== DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !daikin3MxsKNorm.parameters.includes(parameterId),
+  ) ||
+  daikin3MxsKNorm.rounding.package_unit !== "not_applicable" ||
+  daikin3MxsKNorm.rounding.package_size !== 1 ||
+  daikin3MxsKNorm.rounding.mode !== "no_package_rounding_apply_exact_manufacturer_formula"
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${DAIKIN_3MXS_K_NORM_ID}`);
 }
@@ -216,6 +235,12 @@ export const DAIKIN_3MXS_K_SOURCE_METADATA = Object.freeze({
   rate_unit: daikin3MxsKNorm.rate.unit,
   refrigerant: daikin3MxsKNorm.applicability.refrigerant,
   factory_chargeless_length_m: daikin3MxsKNorm.applicability.factory_chargeless_length_m,
+  maximum_total_piping_length_m: daikin3MxsKNorm.applicability.maximum_total_piping_length_m,
+  maximum_piping_to_each_indoor_unit_m: daikin3MxsKNorm.applicability.maximum_piping_to_each_indoor_unit_m,
+  maximum_outdoor_to_indoor_height_difference_m:
+    daikin3MxsKNorm.applicability.maximum_outdoor_to_indoor_height_difference_m,
+  maximum_indoor_to_indoor_height_difference_m:
+    daikin3MxsKNorm.applicability.maximum_indoor_to_indoor_height_difference_m,
   definition_hash: estimateDeterministicHash({
     work_group: airConditioningNormPack.work_group,
     source_pack_version: airConditioningNormPack.source_pack_version,
@@ -568,15 +593,6 @@ const LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "air_distribution_design",
   "fitting_schedule",
   "cooled_supply_air_confirmed",
-] as const);
-
-const DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "equipment_model",
-  "manufacturer_system_profile_id",
-  "refrigerant_type",
-  "total_refrigerant_piping_length_m",
-  "outdoor_unit_nameplate_reference",
-  "maximum_piping_and_height_limits_confirmed",
 ] as const);
 
 const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
@@ -1079,10 +1095,7 @@ function resolveDaikin3MxsK(
   const rawAdditionalChargeKg = (
     totalPipingLengthM! - DAIKIN_3MXS_K_SOURCE_METADATA.factory_chargeless_length_m
   ) * DAIKIN_3MXS_K_SOURCE_METADATA.rate_value;
-  const packageSize = daikin3MxsKNorm.rounding.package_size;
-  const calculatedAdditionalRefrigerantKg = Number((
-    Math.ceil(rawAdditionalChargeKg / packageSize - 1e-9) * packageSize
-  ).toFixed(2));
+  const calculatedAdditionalRefrigerantKg = Number(rawAdditionalChargeKg.toFixed(9));
   const explicitFactoryLength = finiteNumber(explicitValue(parameterValuesInput, "factory_chargeless_length_m"));
   const explicitCharge = finiteNumber(explicitValue(parameterValuesInput, "manufacturer_charge_kg"));
   const conflicts = [

@@ -122,6 +122,7 @@ type ProfessionalNormPack = {
     items?: {
       norm_id?: string;
       source_url?: string;
+      supporting_source_urls?: string[];
       verified_facts?: string[];
     }[];
   };
@@ -351,6 +352,11 @@ function validateProfessionalNormPack(file: string, pack: ProfessionalNormPack):
         failures.push(`${prefix}:review_evidence_missing`);
       } else {
         if (evidence.source_url !== item.source?.url) failures.push(`${prefix}:review_evidence_source_url_mismatch`);
+        if (evidence.supporting_source_urls?.some((url) =>
+          !/^https?:\/\//i.test(url) || FAKE_URL_PATTERN.test(url)
+        )) {
+          failures.push(`${prefix}:review_evidence_supporting_source_url_invalid`);
+        }
         if (!Array.isArray(evidence.verified_facts) || evidence.verified_facts.length < 3 ||
           evidence.verified_facts.some((fact) => !fact.trim())) {
           failures.push(`${prefix}:review_evidence_facts_incomplete`);

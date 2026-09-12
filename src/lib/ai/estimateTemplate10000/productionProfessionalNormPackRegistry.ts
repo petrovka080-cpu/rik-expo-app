@@ -14,7 +14,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.09-source-pack-line
 export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   Record<EstimateNormWorkGroupKey, string>
 > = Object.freeze({
-  air_conditioning: "2026.09-daikin-3mxs-k-additional-charge-r1",
+  air_conditioning: "2026.09-daikin-3mxs-k-additional-charge-r2",
   baseboards: "2026.09-gerflor-forbo-source-review-r2",
   carpentry: "2026.09-sikagard-wood-preserver-preventative-r1",
   ceilings: "2026.09-knauf-d11-d112-standard-r1",

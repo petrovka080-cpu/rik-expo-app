@@ -1,14 +1,43 @@
 {
   "work_group": "air_conditioning",
-  "source_pack_version": "2026.09-daikin-3mxs-k-additional-charge-r1",
+  "source_pack_version": "2026.09-daikin-3mxs-k-additional-charge-r2",
   "source_type": "manufacturer_consumption_tables",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
+        "source_url": "https://www.daikin.eu/content/dam/document-library/installation-manuals/ac/split/mxs-k/3MXS40K_EN_3P164392-4N_Installation%20manuals_English.pdf",
+        "supporting_source_urls": [
+          "https://www.daikin.eu/en_us/products/product.table.html/3mxs-k.html"
+        ],
+        "verified_facts": [
+          "r410a_refrigerant",
+          "20_g_additional_charge_per_m_above_30_m",
+          "50_m_maximum_total_piping_length",
+          "25_m_maximum_piping_to_each_indoor_unit",
+          "15_m_outdoor_to_indoor_height_and_7_5_m_indoor_to_indoor_height_limits",
+          "no_package_or_charge_scale_rounding_stated_for_exact_3mxs_k_formula"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
       "name_ru": "Дополнительная заправка хладагентом Daikin 3MXS-K сверх 30 м трубопровода",
-      "parameters": ["selected_outdoor_unit", "total_refrigerant_piping_length_m", "factory_chargeless_length_m", "refrigerant_type"],
+      "parameters": [
+        "equipment_model",
+        "manufacturer_system_profile_id",
+        "refrigerant_type",
+        "total_refrigerant_piping_length_m",
+        "outdoor_unit_nameplate_reference",
+        "maximum_piping_and_height_limits_confirmed"
+      ],
       "unit": "kg",
       "rate": {
         "value": 0.02,
@@ -19,6 +48,10 @@
         "refrigerant": "R-410A",
         "factory_chargeless_length_m": 30,
         "additional_charge_kg_m": 0.02,
+        "maximum_total_piping_length_m": 50,
+        "maximum_piping_to_each_indoor_unit_m": 25,
+        "maximum_outdoor_to_indoor_height_difference_m": 15,
+        "maximum_indoor_to_indoor_height_difference_m": 7.5,
         "calculation": "max(0, total_refrigerant_piping_length_m - 30) * 0.02",
         "model_nameplate_and_installation_manual_must_be_confirmed": true,
         "other_daikin_or_other_manufacturer_models_forbidden": true,
@@ -26,14 +59,14 @@
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "kg",
-        "package_size": 0.01,
-        "mode": "follow_model_installation_manual_and_charge_scale"
+        "package_unit": "not_applicable",
+        "package_size": 1,
+        "mode": "no_package_rounding_apply_exact_manufacturer_formula"
       },
       "source": {
-        "title": "Daikin 3MXS-K specifications",
-        "url": "https://www.daikin.eu/en_us/products/product.table.html/3mxs-k.html",
-        "page": "Piping connections: additional refrigerant charge 0.02 kg/m for piping length exceeding 30 m",
+        "title": "Daikin 3MXS40K R410A Split Series installation manual 3P164392-4N",
+        "url": "https://www.daikin.eu/content/dam/document-library/installation-manuals/ac/split/mxs-k/3MXS40K_EN_3P164392-4N_Installation%20manuals_English.pdf",
+        "page": "PDF pages 5 and 8: route limits; R410A charging, 20 g per additional metre above 30 m",
         "provenance": "manufacturer_consumption_tables"
       }
     }

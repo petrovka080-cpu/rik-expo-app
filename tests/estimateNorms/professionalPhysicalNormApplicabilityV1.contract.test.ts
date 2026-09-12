@@ -610,7 +610,7 @@ describe("professional physical norm applicability V1", () => {
       status: "APPLIED",
       source_id: DAIKIN_3MXS_K_SOURCE_ID,
       norm_id: DAIKIN_3MXS_K_NORM_ID,
-      source_document_version: "2026.09-daikin-3mxs-k-additional-charge-r1",
+      source_document_version: "2026.09-daikin-3mxs-k-additional-charge-r2",
       source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
       calculated_additional_refrigerant_kg: 0.3,
       produced_parameter_ids: ["factory_chargeless_length_m", "manufacturer_charge_kg"],
@@ -629,6 +629,21 @@ describe("professional physical norm applicability V1", () => {
       source_id: DAIKIN_3MXS_K_SOURCE_ID,
     });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(resolveDaikin(exactDaikinInputs({
+      total_refrigerant_piping_length_m: explicit(45.25, "m"),
+    }))).toMatchObject({
+      status: "APPLIED",
+      calculated_additional_refrigerant_kg: 0.305,
+      parameter_values: {
+        manufacturer_charge_kg: { value: 0.305, unit_id: "kg" },
+      },
+    });
+    expect(DAIKIN_3MXS_K_SOURCE_METADATA).toMatchObject({
+      maximum_total_piping_length_m: 50,
+      maximum_piping_to_each_indoor_unit_m: 25,
+      maximum_outdoor_to_indoor_height_difference_m: 15,
+      maximum_indoor_to_indoor_height_difference_m: 7.5,
+    });
     expect(input.factory_chargeless_length_m).toBeUndefined();
     expect(input.manufacturer_charge_kg).toBeUndefined();
   });
