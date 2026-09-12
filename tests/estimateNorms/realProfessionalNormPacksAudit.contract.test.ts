@@ -39,6 +39,11 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("production_norm_registry_bound_work_groups");
     expect(source).toContain("production_norm_registry_unbound_work_groups");
     expect(source).toContain("production_norm_registry_invalid_bindings");
+    expect(source).toContain("production_unbound_norm_requirements");
+    expect(source).toContain("required_norm_parameter_keys");
+    expect(source).toContain("physical_norm_rate_bases");
+    expect(source).toContain("PACK_NEEDS_REVIEW");
+    expect(source).toContain("NO_EXECUTABLE_REGISTRY_BINDING");
     expect(source).toContain("wave1_physical_pack_files_present");
     expect(source).toContain("wave1_production_bindings_present");
     expect(source).toContain("packGroups.has(group) && productionBoundGroups.has(group)");

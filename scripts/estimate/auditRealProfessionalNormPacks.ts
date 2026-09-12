@@ -136,6 +136,18 @@ type PackValidationResult = {
   failures: string[];
 };
 
+type NormPackBindingRequirement = {
+  work_group: string;
+  review_status: string | null;
+  norm_items: Array<{
+    norm_id: string;
+    required_parameter_keys: string[];
+    output_unit: string;
+    rate_basis: string;
+    source_title: string;
+  }>;
+};
+
 function requireAllFlag(): void {
   if (!process.argv.includes("--all")) {
     throw new Error("AUDIT_REAL_PROFESSIONAL_NORM_PACKS_REQUIRES_--all");
@@ -316,6 +328,30 @@ function loadProfessionalNormPacks(): PackValidationResult[] {
     });
 }
 
+function loadNormPackBindingRequirements(): Map<string, NormPackBindingRequirement> {
+  const requirements = new Map<string, NormPackBindingRequirement>();
+  const root = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT);
+  if (!pathExists(root)) return requirements;
+  for (const name of readdirSync(root).filter((candidate) =>
+    candidate.endsWith(".json") && candidate !== REMEDIATION_PLAN_FILE
+  )) {
+    const pack = readJson<ProfessionalNormPack>(path.join(root, name));
+    if (!pack.work_group) continue;
+    requirements.set(pack.work_group, {
+      work_group: pack.work_group,
+      review_status: pack.review_status ?? null,
+      norm_items: (pack.norm_items ?? []).map((item) => ({
+        norm_id: item.norm_id ?? "",
+        required_parameter_keys: [...(item.parameters ?? [])],
+        output_unit: item.unit ?? "",
+        rate_basis: item.rate?.unit ?? "",
+        source_title: item.source?.title ?? "",
+      })),
+    });
+  }
+  return requirements;
+}
+
 function sourceRegistryGroup(sourceId: string, groups: readonly string[]): string | null {
   return [...groups]
     .sort((left, right) => right.length - left.length)
@@ -458,6 +494,7 @@ function main(): void {
   const planFile = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT, REMEDIATION_PLAN_FILE);
   const plan = pathExists(planFile) ? readJson<WorkGroupRemediationPlan>(planFile) : null;
   const packResults = loadProfessionalNormPacks();
+  const packBindingRequirements = loadNormPackBindingRequirements();
   const templateCounts = workGroupTemplateCounts();
   const planGroups = new Set((plan?.work_groups ?? []).map((entry) => entry.work_group));
   const packGroups = new Set(packResults.filter((result) => result.valid && result.work_group).map((result) => result.work_group as string));
@@ -491,19 +528,36 @@ function main(): void {
   const sourceRegistryBoundGroups = new Set(sourceRegistry.source_registry_bound_work_groups);
   const productionBoundGroups = new Set(productionNormRegistry.production_norm_registry_bound_work_groups);
 
-  const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => ({
-    ...entry,
-    templates_count: templateCounts.get(entry.work_group) ?? 0,
-    current_norm_status:
-      previousSummary.work_groups_with_only_generic_norms?.includes(entry.work_group)
-        ? "structural_generic_only"
-        : previousSummary.taxonomy_work_groups_without_norm_records?.includes(entry.work_group)
-          ? "missing_norm_records"
-          : "needs_real_norm_pack",
-    professional_pack_present: packGroups.has(entry.work_group),
-    production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
-    production_norm_registry_binding_present: productionBoundGroups.has(entry.work_group),
-  }));
+  const workGroupRemediationPlan = (plan?.work_groups ?? []).map((entry) => {
+    const requirement = packBindingRequirements.get(entry.work_group);
+    const productionBindingPresent = productionBoundGroups.has(entry.work_group);
+    return {
+      ...entry,
+      templates_count: templateCounts.get(entry.work_group) ?? 0,
+      current_norm_status:
+        previousSummary.work_groups_with_only_generic_norms?.includes(entry.work_group)
+          ? "structural_generic_only"
+          : previousSummary.taxonomy_work_groups_without_norm_records?.includes(entry.work_group)
+            ? "missing_norm_records"
+            : "needs_real_norm_pack",
+      professional_pack_present: packGroups.has(entry.work_group),
+      norm_pack_review_status: requirement?.review_status ?? null,
+      physical_norm_item_ids: requirement?.norm_items.map((item) => item.norm_id) ?? [],
+      required_norm_parameter_keys: [...new Set(
+        requirement?.norm_items.flatMap((item) => item.required_parameter_keys) ?? [],
+      )].sort(),
+      physical_norm_rate_bases: requirement?.norm_items.map((item) => item.rate_basis) ?? [],
+      production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
+      production_norm_registry_binding_present: productionBindingPresent,
+      production_norm_registry_binding_blockers: [
+        requirement?.review_status === "reviewed" ? "" : "PACK_NEEDS_REVIEW",
+        productionBindingPresent ? "" : "NO_EXECUTABLE_REGISTRY_BINDING",
+        requirement?.norm_items.every((item) => item.required_parameter_keys.length > 0)
+          ? ""
+          : "NORM_REQUIRED_PARAMETERS_MISSING",
+      ].filter(Boolean),
+    };
+  });
 
   const sourceGates = {
     web_norm_knowledge_smoke_passed: sourceGate("WEB_NORM_KNOWLEDGE_SMOKE_PASSED"),
@@ -618,6 +672,16 @@ function main(): void {
     source_strategy_defined: plan?.work_groups.every((entry) => Boolean(entry.source_strategy)) ?? false,
     all_taxonomy_groups_have_source_strategy: missingPlanGroups.length === 0,
     work_group_remediation_plan: workGroupRemediationPlan,
+    production_unbound_norm_requirements: workGroupRemediationPlan.filter((entry) =>
+      !entry.production_norm_registry_binding_present
+    ).map((entry) => ({
+      work_group: entry.work_group,
+      norm_pack_review_status: entry.norm_pack_review_status,
+      physical_norm_item_ids: entry.physical_norm_item_ids,
+      required_norm_parameter_keys: entry.required_norm_parameter_keys,
+      physical_norm_rate_bases: entry.physical_norm_rate_bases,
+      binding_blockers: entry.production_norm_registry_binding_blockers,
+    })),
     professional_norm_packs_exist: packResults.length > 0,
     professional_norm_pack_files_count: packResults.length,
     professional_norm_pack_results: packResults,
