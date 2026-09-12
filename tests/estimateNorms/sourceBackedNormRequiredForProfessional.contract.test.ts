@@ -111,4 +111,65 @@ describe("source-backed norm required for professional status", () => {
       "GENERIC_REFERENCE_NOT_PROFESSIONAL",
     );
   });
+
+  it("uses measured route length for line-laying scopes without selecting a product-specific norm", () => {
+    const cases = [
+      {
+        category: "electrical",
+        elementKey: "low_voltage",
+        operationKey: "lay",
+        expectedCount: 6,
+        standardWorkKey: "electrical_interior_low_voltage_lay_standard",
+        primaryRowCode: "electrical_interior_low_voltage_lay_standard_materials_01",
+      },
+      {
+        category: "plumbing",
+        elementKey: "sewer",
+        operationKey: "route",
+        expectedCount: 5,
+        standardWorkKey: "plumbing_interior_sewer_route_standard",
+        primaryRowCode: "plumbing_interior_sewer_route_standard_materials_01",
+      },
+      {
+        category: "ventilation",
+        elementKey: "duct",
+        operationKey: "install",
+        expectedCount: 4,
+        standardWorkKey: "ventilation_interior_duct_install_standard",
+        primaryRowCode: "ventilation_interior_duct_install_standard_materials_01",
+      },
+    ] as const;
+
+    for (const testCase of cases) {
+      const definitions = PRODUCTION_WORK_DEFINITIONS_10000.filter((definition) =>
+        definition.category === testCase.category &&
+        definition.elementKey === testCase.elementKey &&
+        definition.operationKey === testCase.operationKey
+      );
+      expect(definitions).toHaveLength(testCase.expectedCount);
+      expect(definitions.every((definition) => definition.defaultUnit === "linear_m")).toBe(true);
+
+      const definition = getProductionWorkDefinition10000(testCase.standardWorkKey);
+      if (!definition) throw new Error(`LINEAR_SCOPE_DEFINITION_MISSING:${testCase.standardWorkKey}`);
+      const primaryRow = getProductionExpandedTemplate10000(definition.workKey).rows.find((row) =>
+        row.rowCode === testCase.primaryRowCode
+      );
+      if (!primaryRow) throw new Error(`LINEAR_SCOPE_PRIMARY_ROW_MISSING:${testCase.primaryRowCode}`);
+      const norm = buildEstimateNormItemForTemplateRow(definition, primaryRow);
+
+      expect(norm).toMatchObject({
+        base_unit: "linear_m",
+        unit: "linear_m",
+        dimensional_contract: {
+          workBasisUnit: "linear_m",
+          resourceOutputUnit: "linear_m",
+          consumptionRateUnit: "linear_m/linear_m",
+        },
+      });
+      expect(isRegisteredProfessionalNormPackSourceId(norm.source_id)).toBe(false);
+      expect(norm.dimensional_contract.sourceClaim.normativeStatus).toBe(
+        "GENERIC_REFERENCE_NOT_PROFESSIONAL",
+      );
+    }
+  });
 });

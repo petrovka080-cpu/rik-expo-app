@@ -813,6 +813,11 @@ function defaultUnitForDefinition(packItem: CategoryPack, element: Term, operati
   ) {
     return "m2";
   }
+  const usesMeasuredRouteLength =
+    (packItem.category === "electrical" && element.key === "low_voltage" && operation.key === "lay") ||
+    (packItem.category === "plumbing" && element.key === "sewer" && operation.key === "route") ||
+    (packItem.category === "ventilation" && element.key === "duct" && operation.key === "install");
+  if (usesMeasuredRouteLength) return "linear_m";
   return packItem.defaultUnit;
 }
 
