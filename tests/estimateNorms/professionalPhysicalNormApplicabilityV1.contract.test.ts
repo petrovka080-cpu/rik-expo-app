@@ -957,7 +957,7 @@ describe("professional physical norm applicability V1", () => {
       status: "APPLIED",
       source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
       norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
-      source_document_version: "2026.09-gerflor-forbo-source-review-r1",
+      source_document_version: "2026.09-gerflor-forbo-source-review-r2",
       source_definition_hash: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.definition_hash,
       calculated_forbo_adhesive_procurement_quantity_ml: 3100,
       produced_parameter_ids: ["forbo_adhesive_procurement_quantity_ml"],

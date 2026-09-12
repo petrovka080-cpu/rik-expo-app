@@ -1,9 +1,37 @@
 {
   "work_group": "baseboards",
-  "source_pack_version": "2026.09-gerflor-forbo-source-review-r1",
+  "source_pack_version": "2026.09-gerflor-forbo-source-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
+        "source_url": "https://cdn.gerflor.com/media/2/56198/design%20skirting%20-%20installation%20guidelines.pdf",
+        "verified_facts": [
+          "product_code_6086",
+          "packaging_6_pieces_x_2_m_equals_12_linear_m",
+          "adhesive_installation_on_prepared_plane_surface",
+          "corner_cutting_and_additional_length_are_geometry_dependent"
+        ]
+      },
+      {
+        "norm_id": "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
+        "source_url": "https://www.forbo.com/eurocol/en/232-eurosol-montage/eqrzcp",
+        "verified_facts": [
+          "consumption_range_20_to_40_ml_per_running_m",
+          "wood_and_rigid_pvc_skirting_applicability",
+          "concrete_wood_material_and_clean_metal_substrates",
+          "pe_cartridge_0_31_l",
+          "processing_ventilation_and_flammable_solvent_controls"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "baseboards_gerflor_design_skirting_linear_m_perimeter_v1",

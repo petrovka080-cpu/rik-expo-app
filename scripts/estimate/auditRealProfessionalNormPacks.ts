@@ -115,6 +115,16 @@ type ProfessionalNormPack = {
   source_type?: string;
   review_status?: "reviewed" | "needs_review";
   license_status?: "public" | "internal" | "manufacturer_public";
+  review_evidence?: {
+    reviewer?: string;
+    reviewed_at?: string;
+    method?: "DIRECT_PRIMARY_SOURCE_REVIEW";
+    items?: {
+      norm_id?: string;
+      source_url?: string;
+      verified_facts?: string[];
+    }[];
+  };
   norm_items?: Array<{
     norm_id?: string;
     name_ru?: string;
@@ -147,6 +157,7 @@ type PackValidationResult = {
   source_type: string | null;
   review_status: string | null;
   license_status: string | null;
+  review_evidence_verified: boolean;
   valid: boolean;
   failures: string[];
 };
@@ -296,6 +307,26 @@ function validateProfessionalNormPack(file: string, pack: ProfessionalNormPack):
   if (FORBIDDEN_SOURCE_PATTERN.test(sourceText(pack))) failures.push("forbidden_source_marker_detected");
   if (!Array.isArray(pack.norm_items) || pack.norm_items.length === 0) failures.push("norm_items_missing");
 
+  const reviewEvidence = pack.review_evidence;
+  const reviewEvidenceItems = reviewEvidence?.items ?? [];
+  const reviewEvidenceIds = reviewEvidenceItems.map((item) => item.norm_id).filter(Boolean);
+  if (reviewStatus === "reviewed") {
+    if (!reviewEvidence) failures.push("reviewed_pack_missing_review_evidence");
+    if (!reviewEvidence?.reviewer?.trim()) failures.push("reviewed_pack_missing_reviewer");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(reviewEvidence?.reviewed_at ?? "")) {
+      failures.push("reviewed_pack_invalid_reviewed_at");
+    }
+    if (reviewEvidence?.method !== "DIRECT_PRIMARY_SOURCE_REVIEW") {
+      failures.push("reviewed_pack_invalid_review_method");
+    }
+    if (new Set(reviewEvidenceIds).size !== reviewEvidenceIds.length) {
+      failures.push("reviewed_pack_duplicate_review_evidence_norm_id");
+    }
+    if (reviewEvidenceItems.length !== (pack.norm_items?.length ?? 0)) {
+      failures.push("reviewed_pack_review_evidence_count_mismatch");
+    }
+  }
+
   for (const [index, item] of (pack.norm_items ?? []).entries()) {
     const prefix = `norm_item:${index}`;
     if (!item.norm_id) failures.push(`${prefix}:missing_norm_id`);
@@ -314,6 +345,18 @@ function validateProfessionalNormPack(file: string, pack: ProfessionalNormPack):
       failures.push(`${prefix}:invalid_source_provenance`);
     }
     if (!item.source?.page) failures.push(`${prefix}:missing_source_page_or_section`);
+    if (reviewStatus === "reviewed") {
+      const evidence = reviewEvidenceItems.find((candidate) => candidate.norm_id === item.norm_id);
+      if (!evidence) {
+        failures.push(`${prefix}:review_evidence_missing`);
+      } else {
+        if (evidence.source_url !== item.source?.url) failures.push(`${prefix}:review_evidence_source_url_mismatch`);
+        if (!Array.isArray(evidence.verified_facts) || evidence.verified_facts.length < 3 ||
+          evidence.verified_facts.some((fact) => !fact.trim())) {
+          failures.push(`${prefix}:review_evidence_facts_incomplete`);
+        }
+      }
+    }
     const basisParameter = item.norm_id
       ? PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[item.norm_id]
       : undefined;
@@ -333,6 +376,8 @@ function validateProfessionalNormPack(file: string, pack: ProfessionalNormPack):
     source_type: sourceType,
     review_status: reviewStatus,
     license_status: licenseStatus,
+    review_evidence_verified: reviewStatus === "reviewed" &&
+      !failures.some((failure) => failure.includes("review_evidence") || failure.includes("reviewed_pack_")),
     valid: failures.length === 0,
     failures,
   };

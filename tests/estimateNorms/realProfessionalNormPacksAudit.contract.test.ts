@@ -27,6 +27,20 @@ describe("real professional norm packs audit", () => {
     ) as { work_groups: Array<{ work_group: string; target_norm_pack_file: string }> };
     const packFiles = fs.readdirSync(path.resolve(process.cwd(), "data/estimate-norms/professional"))
       .filter((file) => file.endsWith(".json") && file !== "work-group-remediation-plan.json");
+    const reviewedBaseboardsPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/baseboards.json"),
+        "utf8",
+      ),
+    ) as {
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        reviewed_at?: string;
+        items?: { norm_id?: string; source_url?: string; verified_facts?: string[] }[];
+      };
+      norm_items: { norm_id: string; source: { url: string } }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -68,6 +82,8 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("physical_norm_basis_question_coverage_complete");
     expect(source).toContain("missing_physical_norm_basis_question_keys");
     expect(source).toContain("PACK_NEEDS_REVIEW");
+    expect(source).toContain("reviewed_pack_missing_review_evidence");
+    expect(source).toContain("review_evidence_source_url_mismatch");
     expect(source).toContain("NO_EXECUTABLE_REGISTRY_BINDING");
     expect(source).toContain("wave1_physical_pack_files_present");
     expect(source).toContain("wave1_production_bindings_present");
@@ -117,6 +133,20 @@ describe("real professional norm packs audit", () => {
       "tile.json",
       "waterproofing.json",
     ]));
+    expect(reviewedBaseboardsPack.review_status).toBe("reviewed");
+    expect(reviewedBaseboardsPack.review_evidence).toMatchObject({
+      method: "DIRECT_PRIMARY_SOURCE_REVIEW",
+      reviewed_at: "2026-09-12",
+    });
+    expect(reviewedBaseboardsPack.review_evidence?.items).toHaveLength(
+      reviewedBaseboardsPack.norm_items.length,
+    );
+    expect(reviewedBaseboardsPack.norm_items.every((item) => {
+      const evidence = reviewedBaseboardsPack.review_evidence?.items?.find(
+        (candidate) => candidate.norm_id === item.norm_id,
+      );
+      return evidence?.source_url === item.source.url && (evidence.verified_facts?.length ?? 0) >= 3;
+    })).toBe(true);
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {
