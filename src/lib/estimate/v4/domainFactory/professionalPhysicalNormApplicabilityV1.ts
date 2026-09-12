@@ -1,4 +1,5 @@
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
+import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
@@ -36,6 +37,15 @@ export const DAIKIN_3MXS_K_NORM_ID =
 
 export const DAIKIN_3MXS_K_SOURCE_ID =
   `src_professional_norm_pack_${DAIKIN_3MXS_K_NORM_ID}` as const;
+
+export const KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:knauf-d112:standard-12.5mm-single-layer:reference-10x10:v1" as const;
+
+export const KNAUF_D112_WALL_FASTENER_NORM_ID =
+  "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1" as const;
+
+export const KNAUF_D112_WALL_FASTENER_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_D112_WALL_FASTENER_NORM_ID}` as const;
 
 const uponorNorm = (() => {
   const found = heatingNormPack.norm_items.find((item) => item.norm_id === UPONOR_UFH_150MM_NORM_ID);
@@ -142,6 +152,49 @@ export const DAIKIN_3MXS_K_SOURCE_METADATA = Object.freeze({
   }),
 });
 
+const knaufD112WallFastenerNorm = (() => {
+  const found = ceilingsNormPack.norm_items.find((item) => item.norm_id === KNAUF_D112_WALL_FASTENER_NORM_ID);
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_D112_WALL_FASTENER_NORM_ID}`);
+  return found;
+})();
+const knaufD112ReferenceCeilingM = knaufD112WallFastenerNorm.applicability.reference_ceiling_m;
+
+if (
+  ceilingsNormPack.work_group !== "ceilings" ||
+  knaufD112WallFastenerNorm.unit !== "piece" ||
+  knaufD112WallFastenerNorm.rate.value !== 0.4 ||
+  knaufD112WallFastenerNorm.rate.unit !== "piece/m2 for the documented 10 m x 10 m reference ceiling" ||
+  knaufD112WallFastenerNorm.applicability.system !== "Knauf D112" ||
+  knaufD112WallFastenerNorm.applicability.variant !== "standard_12_5_mm_single_layer" ||
+  !knaufD112ReferenceCeilingM ||
+  knaufD112ReferenceCeilingM[0] !== 10 ||
+  knaufD112ReferenceCeilingM[1] !== 10 ||
+  knaufD112WallFastenerNorm.applicability.fastener_must_be_approved_for_substrate !== true ||
+  knaufD112WallFastenerNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
+  knaufD112WallFastenerNorm.rounding.mode !== "ceil"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_WALL_FASTENER_NORM_ID}`);
+}
+
+export const KNAUF_D112_WALL_FASTENER_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+  norm_id: KNAUF_D112_WALL_FASTENER_NORM_ID,
+  source_document_version: ceilingsNormPack.source_pack_version,
+  source_title: knaufD112WallFastenerNorm.source.title,
+  source_url: knaufD112WallFastenerNorm.source.url,
+  exact_locator: knaufD112WallFastenerNorm.source.page,
+  rate_value: knaufD112WallFastenerNorm.rate.value,
+  rate_unit: knaufD112WallFastenerNorm.rate.unit,
+  system: knaufD112WallFastenerNorm.applicability.system,
+  variant: knaufD112WallFastenerNorm.applicability.variant,
+  reference_ceiling_m: knaufD112ReferenceCeilingM,
+  definition_hash: estimateDeterministicHash({
+    work_group: ceilingsNormPack.work_group,
+    source_pack_version: ceilingsNormPack.source_pack_version,
+    norm_item: knaufD112WallFastenerNorm,
+  }),
+});
+
 const REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "zone_area_m2",
   "designed_pipe_spacing_mm",
@@ -170,6 +223,18 @@ const DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "total_refrigerant_piping_length_m",
   "outdoor_unit_nameplate_reference",
   "maximum_piping_and_height_limits_confirmed",
+] as const);
+
+const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "length_m",
+  "width_m",
+  "system_passport_reference",
+  "system_variant",
+  "substrate_type",
+  "substrate_fastener_reference",
+  "substrate_fastener_approved",
+  "ceiling_perimeter_anchor_spacing_m",
 ] as const);
 
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
@@ -214,6 +279,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: DAIKIN_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["factory_chargeless_length_m", "manufacturer_charge_kg"] as const,
+}, {
+  norm_id: KNAUF_D112_WALL_FASTENER_NORM_ID,
+  work_group: "ceilings",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FRAME",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+  source_document_version: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_perimeter_track_anchors"] as const,
 }]);
 
 type AppliedPhysicalNormResolutionV1 = {
@@ -231,6 +310,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_pipe_length_m?: number;
   calculated_resource_quantity_m?: number;
   calculated_additional_refrigerant_kg?: number;
+  calculated_wall_fastener_quantity_piece?: number;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
   blockers: readonly [];
   deterministic_hash: string;
@@ -589,6 +669,147 @@ function resolveDaikin3MxsK(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKnaufD112ReferenceCeiling(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+    parameterId,
+    explicitValue(parameterValuesInput, parameterId),
+  ]));
+  const missing = KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const lengthM = finiteNumber(explicit.length_m);
+  const widthM = finiteNumber(explicit.width_m);
+  const perimeterAnchorSpacingM = finiteNumber(explicit.ceiling_perimeter_anchor_spacing_m);
+  const systemVariant = primitiveString(explicit.system_variant!);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const substrateFastenerReference = primitiveString(explicit.substrate_fastener_reference!);
+  const [referenceLengthM, referenceWidthM] = KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.reference_ceiling_m;
+  const referenceAreaM2 = referenceLengthM * referenceWidthM;
+  const geometryMatches = areaM2 !== null && lengthM !== null && widthM !== null &&
+    Math.abs(areaM2 - referenceAreaM2) <= 1e-9 &&
+    Math.abs(lengthM - referenceLengthM) <= 1e-9 &&
+    Math.abs(widthM - referenceWidthM) <= 1e-9 &&
+    Math.abs(areaM2 - lengthM * widthM) <= 1e-9;
+  const applicabilityBlockers = [
+    geometryMatches
+      ? ""
+      : `PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=${lengthM}:width_m=${widthM}:area_m2=${areaM2}`,
+    systemVariant === KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.variant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_WALL_FASTENER_NORM_ID}:system_variant=${systemVariant}`,
+    substrateType
+      ? ""
+      : "PROJECT_VALUE_INVALID:substrate_type",
+    substrateFastenerReference
+      ? ""
+      : "PROJECT_VALUE_INVALID:substrate_fastener_reference",
+    explicit.substrate_fastener_approved?.value === true
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_WALL_FASTENER_NORM_ID}:substrate_fastener_approved=false`,
+    perimeterAnchorSpacingM !== null && perimeterAnchorSpacingM > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:ceiling_perimeter_anchor_spacing_m",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedWallFastenerQuantityPiece = Math.ceil(
+    areaM2! * KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.rate_value - 1e-9,
+  );
+  const projectLayoutFastenerQuantityPiece = Math.ceil(
+    (2 * (lengthM! + widthM!)) / perimeterAnchorSpacingM! - 1e-9,
+  );
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_perimeter_track_anchors"));
+  const conflicts = [
+    projectLayoutFastenerQuantityPiece === calculatedWallFastenerQuantityPiece
+      ? ""
+      : `PHYSICAL_NORM_PROJECT_LAYOUT_CONFLICT:perimeter_anchor_count=${projectLayoutFastenerQuantityPiece}:norm_value=${calculatedWallFastenerQuantityPiece}`,
+    explicitQuantity !== null && Math.abs(explicitQuantity - calculatedWallFastenerQuantityPiece) > 1e-9
+      ? `PHYSICAL_NORM_VALUE_CONFLICT:quantity_perimeter_track_anchors=${explicitQuantity}:norm_value=${calculatedWallFastenerQuantityPiece}`
+      : "",
+  ].filter(Boolean);
+  if (conflicts.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      conflicts,
+      [...KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_perimeter_track_anchors"],
+      KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.system}`,
+    `system_variant=${systemVariant}`,
+    `reference_ceiling=${referenceLengthM}x${referenceWidthM}m`,
+    `area_m2=${areaM2}`,
+    `substrate_type=${substrateType}`,
+    `substrate_fastener_reference=${substrateFastenerReference}`,
+    `substrate_fastener_approved=true`,
+    `ceiling_perimeter_anchor_spacing_m=${perimeterAnchorSpacingM}`,
+    `formula=ceil(area_m2*${KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.rate_value})`,
+    "loss_and_waste_excluded=true",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_perimeter_track_anchors: {
+      value: calculatedWallFastenerQuantityPiece,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+    norm_id: KNAUF_D112_WALL_FASTENER_NORM_ID,
+    source_document_version: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_perimeter_track_anchors"],
+    calculated_wall_fastener_quantity_piece: calculatedWallFastenerQuantityPiece,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
   technology_class: string;
   operation_class: string;
@@ -598,6 +819,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "FLAT_CEILING" &&
+      input.operation_class === "FRAME" &&
+      input.material_system === "FLAT_CEILING" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveKnaufD112ReferenceCeiling(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === DAIKIN_3MXS_K_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "REFRIGERANT_SYSTEM" &&

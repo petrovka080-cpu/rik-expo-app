@@ -3,6 +3,10 @@ import {
   DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   DAIKIN_3MXS_K_SOURCE_ID,
   DAIKIN_3MXS_K_SOURCE_METADATA,
+  KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_D112_WALL_FASTENER_NORM_ID,
+  KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+  KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
   LINDAB_VSR_NORM_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
   LINDAB_VSR_SOURCE_ID,
@@ -19,12 +23,18 @@ import {
   buildHvacFromInlineInputV1,
   hvacDomainFactory,
 } from "../../src/lib/estimate/v4/domains/heatingVentilationComplete";
+import {
+  INTERIOR_FINISHES_DOMAIN_INVENTORY,
+  buildInteriorFinishesFromInlineInputV1,
+  interiorFinishesDomainFactory,
+} from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
 const DUCT_INSTALL_WORK_KEY = "ventilation_interior_duct_install_standard";
 const CONDITIONER_INSTALL_WORK_KEY = "heating_hvac_interior_conditioner_install_standard";
+const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -112,6 +122,34 @@ function resolveDaikin(values: Readonly<Record<string, ProfessionalParameterValu
     technology_class: "REFRIGERANT_SYSTEM",
     operation_class: "INSTALL",
     material_system: "CONDITIONER:COOLING_AIR_CONDITIONING:REFRIGERANT_PROJECT_DEFINED",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactKnaufD112Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID),
+    system_passport_reference: explicit("Knauf D11, D112 variant 1, page 28"),
+    area_m2: explicit(100, "m2"),
+    length_m: explicit(10, "m"),
+    width_m: explicit(10, "m"),
+    system_variant: explicit("standard_12_5_mm_single_layer"),
+    substrate_type: explicit("Железобетон C25/30"),
+    substrate_fastener_reference: explicit("Анкер по паспорту проекта КР-17"),
+    substrate_fastener_approved: explicit(true),
+    ceiling_perimeter_anchor_spacing_m: explicit(1, "m"),
+    ...changes,
+  };
+}
+
+function resolveKnaufD112(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "FLAT_CEILING",
+    operation_class: "FRAME",
+    material_system: "FLAT_CEILING",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -501,5 +539,107 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: DAIKIN_3MXS_K_SOURCE_METADATA.definition_hash,
       calculated_additional_refrigerant_kg: 0.3,
     });
+  });
+
+  test("does not extrapolate the Knauf reference-ceiling fastener quantity", () => {
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ length_m: explicit(12, "m") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+      blockers: ["PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=12:width_m=10:area_m2=100"],
+    });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ system_variant: explicit("double_layer") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_WALL_FASTENER_NORM_ID}:system_variant=double_layer`],
+    });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ substrate_fastener_approved: explicit(false) })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_WALL_FASTENER_NORM_ID}:substrate_fastener_approved=false`],
+      });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ ceiling_perimeter_anchor_spacing_m: explicit(1.2, "m") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: ["PHYSICAL_NORM_PROJECT_LAYOUT_CONFLICT:perimeter_anchor_count=34:norm_value=40"],
+      });
+  });
+
+  test("binds the Knauf quantity only to the exact 10 m by 10 m reference ceiling", () => {
+    const input = exactKnaufD112Inputs();
+    const first = resolveKnaufD112(input);
+    const second = resolveKnaufD112(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+      norm_id: KNAUF_D112_WALL_FASTENER_NORM_ID,
+      source_document_version: "2026.09-knauf-d11-d112-standard-r1",
+      source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
+      calculated_wall_fastener_quantity_piece: 40,
+      produced_parameter_ids: ["quantity_perimeter_track_anchors"],
+      blockers: [],
+    });
+    expect(first.parameter_values.quantity_perimeter_track_anchors).toMatchObject({
+      value: 40,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.quantity_perimeter_track_anchors).toBeUndefined();
+  });
+
+  test("routes Knauf only to the canonical perimeter-track-anchor BOQ row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
+      row.work_key === FLAT_CEILING_FRAME_WORK_KEY);
+    if (!inventory) throw new Error("KNAUF_D112_RUNTIME_FRAME_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("KNAUF_D112_RUNTIME_SCHEMA_MISSING");
+    const knaufValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "system_passport_reference") return "Knauf D11, D112 variant 1, page 28";
+      if (parameter.parameter_id === "area_m2") return 100;
+      if (parameter.parameter_id === "length_m" || parameter.parameter_id === "width_m") return 10;
+      if (parameter.parameter_id === "system_variant") return "standard_12_5_mm_single_layer";
+      if (parameter.parameter_id === "substrate_type") return "Железобетон C25/30";
+      if (parameter.parameter_id === "substrate_fastener_reference") return "Анкер по паспорту проекта КР-17";
+      if (parameter.parameter_id === "substrate_fastener_approved") return true;
+      if (parameter.parameter_id === "ceiling_perimeter_anchor_spacing_m") return 1;
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "quantity_perimeter_track_anchors")
+      .map((parameter) => [parameter.parameter_id, {
+        value: knaufValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Каркас потолка Knauf D112 10 × 10 м, вариант 1",
+      selectedWorkKey: FLAT_CEILING_FRAME_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
+    const anchorRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:perimeter_track_anchors`);
+    expect(anchorRow).toMatchObject({ quantity: 40, unit: "item" });
+    expect(anchorRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
+    expect(anchorRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
+    expect(anchorRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+      source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
+      calculated_wall_fastener_quantity_piece: 40,
+    });
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_WALL_FASTENER_SOURCE_ID)))
+      .toHaveLength(1);
   });
 });

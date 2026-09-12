@@ -13,6 +13,10 @@ import type {
   ProfessionalNormativeProfileV1,
   ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory";
+import {
+  KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+} from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
 import type { InteriorFinishesDomainInventoryRow } from "./inventory";
 import { estimateDeterministicHash } from "../../../estimateDeterministicHash";
 import {
@@ -92,6 +96,7 @@ type ParameterSpec = {
   minimum?: number;
   maximum?: number;
   choices?: readonly { value: string; label_ru: string }[];
+  condition?: ProfessionalDomainParameterDefinitionV1["visible_when"];
 };
 
 type RowSpec = {
@@ -173,7 +178,7 @@ function parameter(
   role: ParameterSpec["role"],
   required_for: ParameterSpec["required_for"] = BOTH_SCOPES,
   unit_id: string | null = null,
-  bounds: Pick<ParameterSpec, "minimum" | "maximum" | "choices"> = {},
+  bounds: Pick<ParameterSpec, "minimum" | "maximum" | "choices" | "condition"> = {},
 ): ParameterSpec {
   return {
     parameter_id, label_ru, input_type, role, required_for, unit_id,
@@ -272,6 +277,28 @@ function flatCeilingGeometryParameters(operation: DrywallArchitecturalElementOpe
     numberParameter("ceiling_perimeter_anchor_spacing_m", "Шаг анкеров периметрального профиля", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.05, 2),
     numberParameter("ceiling_suspension_drop_m", "Высота подвеса потолка", "m", "PROJECT_QUANTITY", BOTH_SCOPES, 0.01, 20),
     numberParameter("ceiling_opening_count", "Количество люков и инженерных отверстий", "item", "PROJECT_QUANTITY", BOTH_SCOPES, 0, 100_000),
+  ];
+}
+
+function knaufD112ReferenceApplicabilityParameters(
+  operation: DrywallArchitecturalElementOperationV4,
+  variant: DrywallArchitecturalElementVariantV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
+): ParameterSpec[] {
+  if (system !== "CEILING" || operation !== "FRAME" || variant !== "standard") return [];
+  const condition = {
+    kind: "EQUALS",
+    parameter_id: "product_profile_id",
+    value: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  } as const;
+  return [
+    parameter("system_variant", "Вариант потолочной системы Knauf D112", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "standard_12_5_mm_single_layer", label_ru: "Стандартный однослойный вариант 12,5 мм" }],
+      condition,
+    }),
+    parameter("substrate_type", "Материал основания для крепления пристенного профиля", "text", "PROJECT_QUANTITY", FULL_SCOPE, null, { condition }),
+    parameter("substrate_fastener_reference", "Точный тип и паспорт крепежа для выбранного основания", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    parameter("substrate_fastener_approved", "Крепёж подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
   ];
 }
 
@@ -631,6 +658,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     ...maximumScopeParameters(contract.operation, contract.variant, contract.system),
     ...(contract.system === "CURVE" ? curveGeometryParameters(contract.operation) : []),
     ...(flatCeiling ? flatCeilingGeometryParameters(contract.operation) : []),
+    ...knaufD112ReferenceApplicabilityParameters(contract.operation, contract.variant, contract.system),
   ];
   for (const dependency of contract.non_cost_dependencies) baseParameters.push(parameter(dependency, `Подтвержденная non-cost dependency: ${dependency}`, "text", "DEPENDENCY_REFERENCE"));
   const skeletonKeys = new Set(DRYWALL_AGGREGATE_SKELETON_ROW_KEYS_V4[contract.operation]);
@@ -653,6 +681,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "work_included", "estimate_scope_mode", "funding_source", "project_type", "product_profile_id",
     "material_certificate_reference", "system_passport_reference", "normative_rate_code", "area_m2",
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
+    "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
     ...contract.non_cost_dependencies,
   ]);
   const usedBaseParameters = baseParameters.filter((item) => formulaInputIds.has(item.parameter_id) || retainedControlIds.has(item.parameter_id));
@@ -675,7 +704,8 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
   consumers.set("work_included", new Set([`scope-trigger:${inventory.catalog_id}`]));
   const domainParameter = (spec: ParameterSpec): ProfessionalDomainParameterDefinitionV1 => {
     const full = spec.required_for.length === 1;
-    return { parameter_id: spec.parameter_id, label_ru: spec.label_ru, input_type: spec.input_type, priority: spec.priority, unit_id: spec.unit_id, ...(spec.minimum == null ? {} : { minimum: spec.minimum }), ...(spec.maximum == null ? {} : { maximum: spec.maximum }), ...(spec.choices ? { choices: spec.choices } : {}), visible_when: full ? FULL_ONLY : ALWAYS, required_when: full ? FULL_ONLY : ALWAYS, formula_consumers: [...(consumers.get(spec.parameter_id) ?? [contract.professional_proof_bundle_id])], source_ownership: ["USER_EXPLICIT", "PROJECT_DOCUMENT", "MATERIAL_PASSPORT", "APPLICABLE_NORM", "VERIFIED_RATEBOOK"] };
+    const condition = spec.condition ?? (full ? FULL_ONLY : ALWAYS);
+    return { parameter_id: spec.parameter_id, label_ru: spec.label_ru, input_type: spec.input_type, priority: spec.priority, unit_id: spec.unit_id, ...(spec.minimum == null ? {} : { minimum: spec.minimum }), ...(spec.maximum == null ? {} : { maximum: spec.maximum }), ...(spec.choices ? { choices: spec.choices } : {}), visible_when: condition, required_when: condition, formula_consumers: [...(consumers.get(spec.parameter_id) ?? [contract.professional_proof_bundle_id])], source_ownership: ["USER_EXPLICIT", "PROJECT_DOCUMENT", "MATERIAL_PASSPORT", "APPLICABLE_NORM", "VERIFIED_RATEBOOK"] };
   };
   const namespace = flatCeiling ? `${inventory.catalog_id}:drywall-flat-ceiling-v6` : `${inventory.canonical_technology_id}:drywall-architectural-element-v4`;
   const semanticVersion = flatCeiling ? "6.0.0" : "4.0.0";
@@ -684,7 +714,12 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
   const dependencies = contract.non_cost_dependencies.map((id) => `typed-child:${id}`);
   const assemblyRow = (row: RowSpec): ProfessionalAssemblyRowDefinitionV4 => ({
     row_id: `${namespace}:row:${row.key}`, section: row.section, category: row.category, title_ru: row.title, formula: formula(row),
-    cost_ownership: row.ownership ?? "priced_resource", cost_owner_id: `${flatCeiling ? "DRYWALL_FLAT_CEILING_V6" : "DRYWALL_ARCHITECTURAL_ELEMENT_V4"}:${contract.operation}:${inventory.catalog_id}:${row.key}`, semantic_owner: `${drywallArchitecturalElementProfessionalOwnerIdV4(inventory.catalog_id)}:row:${row.key}`, normative_source_ids: contract.normative_source_ids,
+    cost_ownership: row.ownership ?? "priced_resource", cost_owner_id: `${flatCeiling ? "DRYWALL_FLAT_CEILING_V6" : "DRYWALL_ARCHITECTURAL_ELEMENT_V4"}:${contract.operation}:${inventory.catalog_id}:${row.key}`, semantic_owner: `${drywallArchitecturalElementProfessionalOwnerIdV4(inventory.catalog_id)}:row:${row.key}`, normative_source_ids: [
+      ...contract.normative_source_ids,
+      ...(flatCeiling && contract.operation === "FRAME" && contract.variant === "standard" && row.key === "perimeter_track_anchors"
+        ? [KNAUF_D112_WALL_FASTENER_SOURCE_ID]
+        : []),
+    ],
     inclusion_condition: row.scopes === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true", procurement_eligible: row.procurement ?? false, normative_trace_v3: trace(contract, row),
     price_route_v3: row.ownership === "informational_output" ? { kind: "NOT_APPLICABLE_INFORMATIONAL_OUTPUT", reason: "Контрольный выход не образует повторной стоимости." } : { kind: "RUNTIME_VALIDATED_INPUT", unit_price_parameter_id: `unit_price_${row.key}_kgs`, price_basis_reference_parameter_id: "price_basis_reference", price_basis_date_parameter_id: "price_basis_date", currency_from_request: true, minimum_exclusive: 0 },
     resource_graph_node_v3: { graph_version: "ProfessionalResourceGraphV3", typed_child_boundary: contract.operation, resource_class: row.resource_class, dependency_ids: dependencies, non_cost_dependencies_only: contract.non_cost_dependencies.length > 0, context_parameter_ids: contextIds, forbidden_cost_scopes: contract.forbidden_cost_scope }, normative_proof_bundle_id_v3: contract.normative_proof_bundle_id, professional_proof_bundle_id_v3: contract.professional_proof_bundle_id,

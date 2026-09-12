@@ -9,6 +9,9 @@ import {
   type NormativeApplicabilityRequestV1,
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
+  type AppliedProfessionalPhysicalNormResolutionV1,
+  KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  resolveProfessionalPhysicalNormParameterValuesV1,
 } from "../../domainFactory";
 import type {
   ProfessionalEstimateScopeModeV4,
@@ -56,6 +59,7 @@ export type InteriorFinishesProductionDraftInput = {
   normative_request: Omit<NormativeApplicabilityRequestV1, "requested_source_ids" | "requested_source_types">;
   raw_input: string;
   currency: string;
+  physical_norm_resolution?: AppliedProfessionalPhysicalNormResolutionV1 | null;
 };
 
 export type InteriorFinishesProductionDraftResult = {
@@ -112,6 +116,12 @@ export function buildInteriorFinishesProductionDraftV1(
       parent_revision_id: input.parent_revision_id,
       parameter_values: input.parameter_values,
       normative_request: input.normative_request,
+      additional_normative_source_ids: input.physical_norm_resolution
+        ? [input.physical_norm_resolution.source_id]
+        : [],
+      additional_normative_source_types: input.physical_norm_resolution
+        ? ["MANUFACTURER_PASSPORT"]
+        : [],
     },
   );
   if (compileResult.status !== "COMPILED" || !compileResult.compilation) {
@@ -223,6 +233,10 @@ export function buildInteriorFinishesProductionDraftV1(
       priceBasisDate: row.price_basis_date,
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
+      ...(input.physical_norm_resolution &&
+          row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+        ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
+        : {}),
       ...(isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
         ? { formulaGraphVersion: "FormulaGraphV4", resourceGraphVersion: "ResourceGraphV4" }
         : isDrywallFlatCeilingProfessionalCatalogIdV6(input.catalog_id)
@@ -336,13 +350,32 @@ export function buildInteriorFinishesFromInlineInputV1(
     scopeCapability: inventory.scope_capability,
     rawInput: input.rawInput,
     supplied: input.paramOverrides,
-    requireExplicitNormativeRateCode: constructionState(inventory) === "REPAIR",
+    requireExplicitNormativeRateCode:
+      constructionState(inventory) === "REPAIR" ||
+      input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   });
-  const parameterValues = baseline.parameter_values;
-  const scopeMode = parameterValues.estimate_scope_mode?.value;
+  const baselineParameterValues = baseline.parameter_values;
+  const scopeMode = baselineParameterValues.estimate_scope_mode?.value;
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") {
     throw new Error(`INTERIOR_INLINE_SCOPE_INVALID:${String(scopeMode)}`);
   }
+  const physicalNormResolution = resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: technology.material_system,
+    operation_class: technology.operation_class,
+    material_system: technology.material_system,
+    scope_mode: scopeMode,
+    parameter_values: baselineParameterValues,
+  });
+  if (physicalNormResolution.status === "BLOCKED_REQUIRED_INPUTS" ||
+      physicalNormResolution.status === "BLOCKED_NOT_APPLICABLE") {
+    return {
+      exact_match: true,
+      inventory,
+      missing_parameter_ids: physicalNormResolution.blockers,
+      production: null,
+    };
+  }
+  const parameterValues = physicalNormResolution.parameter_values;
   const sourceId = normativeSourceId(inventory);
   const production = buildInteriorFinishesProductionDraftV1({
     catalog_id: inventory.catalog_id,
@@ -360,10 +393,14 @@ export function buildInteriorFinishesFromInlineInputV1(
       effective_date: new Date().toISOString().slice(0, 10),
       material_system: technology.material_system,
       operation_class: technology.operation_class,
+      product_profile_id: String(parameterValues.product_profile_id?.value ?? ""),
       rate_code_by_source_id: { [sourceId]: String(parameterValues.normative_rate_code?.value ?? "") },
     },
     raw_input: input.rawInput,
     currency: input.currency?.trim() || "KGS",
+    physical_norm_resolution: physicalNormResolution.status === "APPLIED"
+      ? physicalNormResolution
+      : null,
   });
   return { exact_match: true, inventory, missing_parameter_ids: production.compile_result.blockers, production };
 }
