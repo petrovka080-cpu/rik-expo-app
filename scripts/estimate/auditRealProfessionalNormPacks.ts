@@ -11,6 +11,10 @@ import {
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { inspectProductionNormConsumerInventory } from "./productionNormConsumerInventory";
+import {
+  inferProfessionalNormPackBasisUnit,
+  PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID,
+} from "./professionalNormPackBasisRegistry";
 
 export const GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS =
   "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS" as const;
@@ -144,9 +148,14 @@ type NormPackBindingRequirement = {
     required_parameter_keys: string[];
     output_unit: string;
     rate_basis: string;
+    basis_parameter: string;
+    work_basis_unit: string | null;
     source_title: string;
   }>;
 };
+
+const PHYSICAL_NORM_BASIS_PARAMETER_BY_ID: Readonly<Record<string, string>> =
+  PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID;
 
 function requireAllFlag(): void {
   if (!process.argv.includes("--all")) {
@@ -294,6 +303,16 @@ function validateProfessionalNormPack(file: string, pack: ProfessionalNormPack):
       failures.push(`${prefix}:invalid_source_provenance`);
     }
     if (!item.source?.page) failures.push(`${prefix}:missing_source_page_or_section`);
+    const basisParameter = item.norm_id
+      ? PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[item.norm_id]
+      : undefined;
+    if (!basisParameter) failures.push(`${prefix}:missing_basis_parameter_registry`);
+    if (basisParameter && !item.parameters?.includes(basisParameter)) {
+      failures.push(`${prefix}:basis_parameter_not_declared:${basisParameter}`);
+    }
+    if (basisParameter && !inferProfessionalNormPackBasisUnit(basisParameter)) {
+      failures.push(`${prefix}:basis_parameter_unit_unknown:${basisParameter}`);
+    }
   }
 
   return {
@@ -336,6 +355,12 @@ function loadNormPackBindingRequirements(): Map<string, NormPackBindingRequireme
         required_parameter_keys: [...(item.parameters ?? [])],
         output_unit: item.unit ?? "",
         rate_basis: item.rate?.unit ?? "",
+        basis_parameter: item.norm_id
+          ? PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[item.norm_id] ?? ""
+          : "",
+        work_basis_unit: item.norm_id
+          ? inferProfessionalNormPackBasisUnit(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[item.norm_id] ?? "")
+          : null,
         source_title: item.source?.title ?? "",
       })),
     });
@@ -438,6 +463,11 @@ function inspectProductionNormRegistry(planGroups: Set<string>): {
       source.item.rate?.value === registered.consumptionRate ? "" : `rate_mismatch:${registered.normId}`,
       source.item.rounding?.package_size === registered.packageSize ? "" : `package_mismatch:${registered.normId}`,
       source.item.source?.url === registered.sourceUrl ? "" : `source_url_mismatch:${registered.normId}`,
+      inferProfessionalNormPackBasisUnit(
+        PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[registered.normId] ?? "",
+      ) === registered.workBasisUnit
+        ? ""
+        : `work_basis_unit_mismatch:${registered.normId}`,
       registered.sourceId === `src_professional_norm_pack_${registered.normId}`
         ? ""
         : `source_id_mismatch:${registered.normId}`,
@@ -486,6 +516,24 @@ function main(): void {
   const plan = pathExists(planFile) ? readJson<WorkGroupRemediationPlan>(planFile) : null;
   const packResults = loadProfessionalNormPacks();
   const packBindingRequirements = loadNormPackBindingRequirements();
+  const physicalNormIds = new Set(
+    [...packBindingRequirements.values()].flatMap((requirement) =>
+      requirement.norm_items.map((item) => item.norm_id).filter(Boolean)
+    ),
+  );
+  const basisRegistryIds = Object.keys(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID);
+  const missingPhysicalNormBasisIds = [...physicalNormIds]
+    .filter((normId) => !PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[normId])
+    .sort();
+  const orphanPhysicalNormBasisIds = basisRegistryIds
+    .filter((normId) => !physicalNormIds.has(normId))
+    .sort();
+  const physicalNormBasisRegistryComplete =
+    missingPhysicalNormBasisIds.length === 0 &&
+    orphanPhysicalNormBasisIds.length === 0 &&
+    basisRegistryIds.every((normId) => Boolean(
+      inferProfessionalNormPackBasisUnit(PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[normId] ?? "")
+    ));
   const consumerInventory = inspectProductionNormConsumerInventory();
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
@@ -550,6 +598,11 @@ function main(): void {
         requirement?.norm_items.flatMap((item) => item.required_parameter_keys) ?? [],
       )].sort(),
       physical_norm_rate_bases: requirement?.norm_items.map((item) => item.rate_basis) ?? [],
+      physical_norm_work_bases: requirement?.norm_items.map((item) => ({
+        norm_id: item.norm_id,
+        basis_parameter: item.basis_parameter,
+        work_basis_unit: item.work_basis_unit,
+      })) ?? [],
       production_source_registry_binding_present: sourceRegistryBoundGroups.has(entry.work_group),
       production_norm_registry_binding_present: productionBindingPresent,
       production_norm_registry_binding_blockers: [
@@ -623,6 +676,7 @@ function main(): void {
     realSourceCoverageComplete &&
     allPacksValid &&
     allPacksReviewed &&
+    physicalNormBasisRegistryComplete &&
     consumerInventoryComplete &&
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
@@ -665,6 +719,10 @@ function main(): void {
     source_backed_norm_items_count: packResults
       .filter((result) => result.valid)
       .reduce((sum, result) => sum + result.norm_items_count, 0),
+    physical_norm_basis_registry_items_count: basisRegistryIds.length,
+    physical_norm_basis_registry_complete: physicalNormBasisRegistryComplete,
+    missing_physical_norm_basis_ids: missingPhysicalNormBasisIds,
+    orphan_physical_norm_basis_ids: orphanPhysicalNormBasisIds,
     professional_norm_pack_work_groups_count: packGroups.size,
     professional_norm_pack_coverage_percent: Number(((packGroups.size / Math.max(planGroups.size, 1)) * 100).toFixed(2)),
     trace_pipeline_preserved: true,
@@ -695,6 +753,7 @@ function main(): void {
       physical_norm_item_ids: entry.physical_norm_item_ids,
       required_norm_parameter_keys: entry.required_norm_parameter_keys,
       physical_norm_rate_bases: entry.physical_norm_rate_bases,
+      physical_norm_work_bases: entry.physical_norm_work_bases,
       consumer_rows_count: entry.consumer_rows_count,
       consumer_work_basis_units: entry.consumer_work_basis_units,
       consumer_resource_output_units: entry.consumer_resource_output_units,
@@ -875,6 +934,7 @@ function main(): void {
         ? `invalid_production_norm_registry_bindings:${productionNormRegistry.production_norm_registry_invalid_binding_count}`
         : "",
       invalidPackResults.length > 0 ? "invalid_professional_norm_pack_files" : "",
+      !physicalNormBasisRegistryComplete ? "physical_norm_basis_registry_incomplete" : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
         ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
@@ -914,6 +974,8 @@ function main(): void {
     all_inactive_taxonomy_groups_planned: summary.all_inactive_taxonomy_groups_planned,
     professional_norm_pack_files_count: summary.professional_norm_pack_files_count,
     source_backed_norm_items_count: summary.source_backed_norm_items_count,
+    physical_norm_basis_registry_items_count: summary.physical_norm_basis_registry_items_count,
+    physical_norm_basis_registry_complete: summary.physical_norm_basis_registry_complete,
     professional_norm_pack_work_groups_count: summary.professional_norm_pack_work_groups_count,
     professional_norm_pack_coverage_percent: summary.professional_norm_pack_coverage_percent,
     apartment_reference_row_count: summary.apartment_reference_row_count,

@@ -462,7 +462,7 @@ const R4_A13_6_CURRENT_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[] = 
   currentAddedContract("tests/estimateCalculator/professionalNormPackWave3RealQuantity.contract.test.ts", "dimensionally explicit Sarnafil, Fixrock, Comfortboard, Jotun and Sikagard quantities"),
   currentAddedContract("tests/estimateNorms/hardcodedNormRateClassifier.contract.test.ts", "classification of production rates, identifiers, dimensional conversions, schema bounds and managed norm records"),
   currentAlignedContract("tests/estimateNorms/normSourceQualityAudit.contract.test.ts", "hardcoded-rate and professional-source audit ownership"),
-  currentAddedContract("tests/estimateNorms/professionalNormPackRegistryParity.contract.test.ts", "exact unit, rate, package and URL parity between physical norm packs and production bindings"),
+  currentAddedContract("tests/estimateNorms/professionalNormPackRegistryParity.contract.test.ts", "exact output unit, work-basis parameter, rate, package and URL parity between all physical norm packs and production bindings"),
   currentAddedContract("tests/estimateNorms/professionalWbsNoGuessedQuantity.contract.test.ts", "removal of guessed steel, concrete and delivery quantity conversions"),
   currentAlignedContract("tests/estimateNorms/realProfessionalNormPacksAudit.contract.test.ts", "separate physical-pack presence and real production-binding coverage"),
   currentAddedContract("tests/estimateRuntime/editableParam11610Harness.contract.test.ts", "exact 11610 editable-parameter shard fan-in and lost-chunk rejection"),

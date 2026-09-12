@@ -52,6 +52,10 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("invalid_registered_norm_bindings");
     expect(source).toContain("required_norm_parameter_keys");
     expect(source).toContain("physical_norm_rate_bases");
+    expect(source).toContain("physical_norm_work_bases");
+    expect(source).toContain("basis_parameter_not_declared");
+    expect(source).toContain("work_basis_unit_mismatch");
+    expect(source).toContain("physical_norm_basis_registry_complete");
     expect(source).toContain("PACK_NEEDS_REVIEW");
     expect(source).toContain("NO_EXECUTABLE_REGISTRY_BINDING");
     expect(source).toContain("wave1_physical_pack_files_present");

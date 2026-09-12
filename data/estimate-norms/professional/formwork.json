@@ -8,7 +8,7 @@
     {
       "norm_id": "formwork_contact_area_m2_m3_concrete_element_v1",
       "name_ru": "Formwork contact area for concrete elements",
-      "parameters": ["length_m", "height_m", "sides_count", "count", "area_m2", "waste_percent"],
+      "parameters": ["volume_m3", "length_m", "height_m", "perimeter_m", "sides_count", "count", "area_m2", "waste_percent"],
       "unit": "m2",
       "rate": {
         "value": 2.4,
