@@ -722,6 +722,33 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedWasteRemovalPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/waste_removal.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+        source: { url: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -2246,6 +2273,96 @@ describe("real professional norm packs audit", () => {
         mode: "no_rounding_of_fractional_1000_m2_table_units_before_exact_variant_resource_calculation",
       },
     }]);
+    expect(reviewedWasteRemovalPack).toMatchObject({
+      source_pack_version: "2026.09-us-epa-cd-volume-weight-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedWasteRemovalPack.review_evidence?.items).toHaveLength(2);
+    expect(reviewedWasteRemovalPack.review_evidence?.items).toMatchObject([
+      {
+        norm_id: "waste_removal_us_epa_cd_concrete_kg_m3_v1",
+        source_url: "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        supporting_source_urls: ["https://www.epa.gov/smm/volume-weight-conversion-factors-solid-waste"],
+        verified_facts: expect.arrayContaining([
+          "epa_states_that_primary_data_collection_was_not_performed",
+          "page_6_lists_860_lb_per_cubic_yard_for_all_four_large_small_with_without_rebar_concrete_rows",
+          "860_lb_per_cubic_yard_converts_to_510_2177223_kg_per_m3",
+          "coefficient_is_not_a_kyrgyz_local_weighbridge_disposal_fee_container_or_trip_norm",
+        ]),
+      },
+      {
+        norm_id: "waste_removal_us_epa_cd_composite_kg_m3_v1",
+        source_url: "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        supporting_source_urls: ["https://www.epa.gov/smm/volume-weight-conversion-factors-solid-waste"],
+        verified_facts: expect.arrayContaining([
+          "page_6_lists_417_lb_per_cubic_yard_for_remainder_composite_construction_and_demolition",
+          "417_lb_per_cubic_yard_converts_to_247_3962677_kg_per_m3",
+          "page_6_separately_lists_construction_and_demolition_bulk_at_484_lb_per_cubic_yard",
+          "417_and_484_rows_must_not_be_substituted_without_exact_waste_class_confirmation",
+        ]),
+      },
+    ]);
+    expect(reviewedWasteRemovalPack.norm_items).toMatchObject([
+      {
+        norm_id: "waste_removal_us_epa_cd_concrete_kg_m3_v1",
+        parameters: expect.arrayContaining([
+          "measured_epa_compatible_concrete_debris_volume_m3",
+          "volume_measurement_method_and_state",
+          "waste_material_class_confirmed",
+          "concrete_piece_size_class",
+          "rebar_condition",
+          "local_weighbridge_mass_kg_if_available",
+          "local_hauler_container_payload_and_disposal_rules",
+        ]),
+        rate: {
+          value: 510.2177223,
+          unit: "derived kg/m3 planning conversion from EPA estimated 860 lb/cubic yard; not local measured density",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          epa_value_lb_per_cubic_yard: 860,
+          epa_value_is_estimated_weight: true,
+          epa_primary_data_collection_performed: false,
+          exact_material_row_and_compatible_volume_measurement_required: true,
+          local_weighbridge_mass_overrides_conversion: true,
+          haul_trip_count_container_count_and_disposal_fee_derivation_forbidden: true,
+          automatic_production_binding_for_generic_waste_removal_forbidden: true,
+        }),
+        rounding: {
+          package_size: 1,
+          mode: "no_rounding_before_full_unit_conversion_then_follow_documented_mass_display_precision",
+        },
+        source: {
+          url: "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        },
+      },
+      {
+        norm_id: "waste_removal_us_epa_cd_composite_kg_m3_v1",
+        parameters: expect.arrayContaining([
+          "measured_epa_compatible_composite_cd_volume_m3",
+          "volume_measurement_method_and_state",
+          "waste_material_class_confirmed",
+          "composite_or_bulk_cd_row_selected",
+          "container_compaction_state",
+          "local_weighbridge_mass_kg_if_available",
+        ]),
+        rate: {
+          value: 247.3962677,
+          unit: "derived kg/m3 planning conversion from EPA estimated 417 lb/cubic yard composite C&D row; not local measured density",
+        },
+        waste_percent_default: 0,
+        applicability: expect.objectContaining({
+          epa_value_lb_per_cubic_yard: 417,
+          separate_epa_bulk_cd_value_lb_per_cubic_yard: 484,
+          bulk_cd_484_lb_per_cubic_yard_must_not_be_substituted: true,
+          exact_material_row_and_compatible_volume_measurement_required: true,
+          local_weighbridge_mass_overrides_conversion: true,
+          haul_trip_count_container_count_and_disposal_fee_derivation_forbidden: true,
+          automatic_production_binding_for_generic_waste_removal_forbidden: true,
+        }),
+      },
+    ]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
       item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
       .toMatchObject({

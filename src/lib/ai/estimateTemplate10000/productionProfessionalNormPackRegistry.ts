@@ -49,7 +49,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   sewerage: "2026.09-wavin-osma-c3766bk-primary-review-r2",
   tile: "2026.09-ceresit-cm11-plus-ct17-global-primary-review-r2",
   ventilation: "2026.09-lindab-vsr-exact-sizes-r2",
-  waste_removal: "2026.09-us-epa-cd-volume-weight-r1",
+  waste_removal: "2026.09-us-epa-cd-volume-weight-primary-review-r2",
   waterproofing: "2026.09-ceresit-cl51-global-primary-review-r2",
   windows_doors: "2026.09-soudal-9900539-tds-2026-primary-review-r2",
 });

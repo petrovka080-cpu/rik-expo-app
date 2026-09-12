@@ -1,70 +1,140 @@
 {
   "work_group": "waste_removal",
-  "source_pack_version": "2026.09-us-epa-cd-volume-weight-r1",
+  "source_pack_version": "2026.09-us-epa-cd-volume-weight-primary-review-r2",
   "source_type": "public_government_norms_or_standards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "waste_removal_us_epa_cd_concrete_kg_m3_v1",
+        "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        "supporting_source_urls": [
+          "https://www.epa.gov/smm/volume-weight-conversion-factors-solid-waste"
+        ],
+        "verified_facts": [
+          "epa_document_is_volume_to_weight_conversion_factors_april_2016",
+          "document_updates_1997_factors_for_local_data_standardization_and_national_recovery_planning",
+          "epa_states_that_primary_data_collection_was_not_performed",
+          "page_6_lists_860_lb_per_cubic_yard_for_all_four_large_small_with_without_rebar_concrete_rows",
+          "860_lb_per_cubic_yard_converts_to_510_2177223_kg_per_m3",
+          "published_weight_is_estimated_and_source_row_18_traces_to_a_2006_california_cd_characterization_study",
+          "coefficient_is_not_a_kyrgyz_local_weighbridge_disposal_fee_container_or_trip_norm"
+        ]
+      },
+      {
+        "norm_id": "waste_removal_us_epa_cd_composite_kg_m3_v1",
+        "source_url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        "supporting_source_urls": [
+          "https://www.epa.gov/smm/volume-weight-conversion-factors-solid-waste"
+        ],
+        "verified_facts": [
+          "epa_document_is_volume_to_weight_conversion_factors_april_2016",
+          "epa_states_that_primary_data_collection_was_not_performed",
+          "page_6_lists_417_lb_per_cubic_yard_for_remainder_composite_construction_and_demolition",
+          "417_lb_per_cubic_yard_converts_to_247_3962677_kg_per_m3",
+          "page_6_separately_lists_construction_and_demolition_bulk_at_484_lb_per_cubic_yard",
+          "417_and_484_rows_must_not_be_substituted_without_exact_waste_class_confirmation",
+          "coefficient_is_not_a_kyrgyz_local_weighbridge_disposal_fee_container_or_trip_norm"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "waste_removal_us_epa_cd_concrete_kg_m3_v1",
       "name_ru": "Пересчёт объёма бетонного строительного лома в массу по справочному коэффициенту US EPA",
-      "parameters": ["measured_loose_concrete_debris_m3", "waste_material_class_confirmed", "rebar_condition"],
+      "parameters": [
+        "measured_epa_compatible_concrete_debris_volume_m3",
+        "volume_measurement_method_and_state",
+        "waste_material_class_confirmed",
+        "concrete_piece_size_class",
+        "rebar_condition",
+        "local_weighbridge_mass_kg_if_available",
+        "local_hauler_container_payload_and_disposal_rules",
+        "conversion_calculation_reference"
+      ],
       "unit": "kg",
       "rate": {
-        "value": 510.2177,
-        "unit": "kg/m3; converted from 860 lb/cubic yard"
+        "value": 510.2177223,
+        "unit": "derived kg/m3 planning conversion from EPA estimated 860 lb/cubic yard; not local measured density"
       },
       "applicability": {
         "epa_material_rows": ["large concrete with re-bar", "large concrete without re-bar", "small concrete with re-bar", "small concrete without re-bar"],
         "epa_value_lb_per_cubic_yard": 860,
+        "epa_value_is_estimated_weight": true,
+        "epa_primary_data_collection_performed": false,
         "conversion_lb_to_kg": 0.45359237,
         "conversion_cubic_yard_to_m3": 0.764554857984,
-        "calculation": "measured_loose_concrete_debris_m3 * 510.2177",
-        "planning_conversion_only": true,
-        "local_hauler_weighing_and_disposal_rules_override": true
+        "calculation": "measured_epa_compatible_concrete_debris_volume_m3 * 860 * 0.45359237 / 0.764554857984",
+        "exact_material_row_and_compatible_volume_measurement_required": true,
+        "preliminary_recovery_planning_conversion_only": true,
+        "local_weighbridge_mass_overrides_conversion": true,
+        "local_hauler_container_payload_and_disposal_rules_required_separately": true,
+        "haul_trip_count_container_count_and_disposal_fee_derivation_forbidden": true,
+        "automatic_production_binding_for_generic_waste_removal_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "kg",
         "package_size": 1,
-        "mode": "round_after_volume_conversion"
+        "mode": "no_rounding_before_full_unit_conversion_then_follow_documented_mass_display_precision"
       },
       "source": {
         "title": "U.S. EPA Volume-to-Weight Conversion Factors, April 2016",
-        "url": "https://www.epa.gov/sites/production/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
-        "page": "PDF page 6, C&D Concrete rows: 860 lb per cubic yard",
+        "url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        "page": "PDF pages 1, 6 and 7: purpose and secondary-data limitation; four C&D Concrete rows at estimated 860 lb/cubic yard; source 18",
         "provenance": "public_government_norms_or_standards"
       }
     },
     {
       "norm_id": "waste_removal_us_epa_cd_composite_kg_m3_v1",
       "name_ru": "Пересчёт объёма смешанных строительных отходов в массу по справочному коэффициенту US EPA",
-      "parameters": ["measured_loose_cd_debris_m3", "waste_material_class_confirmed", "container_compaction_state"],
+      "parameters": [
+        "measured_epa_compatible_composite_cd_volume_m3",
+        "volume_measurement_method_and_state",
+        "waste_material_class_confirmed",
+        "composite_or_bulk_cd_row_selected",
+        "container_compaction_state",
+        "local_weighbridge_mass_kg_if_available",
+        "local_hauler_container_payload_and_disposal_rules",
+        "conversion_calculation_reference"
+      ],
       "unit": "kg",
       "rate": {
-        "value": 247.3963,
-        "unit": "kg/m3; converted from 417 lb/cubic yard"
+        "value": 247.3962677,
+        "unit": "derived kg/m3 planning conversion from EPA estimated 417 lb/cubic yard composite C&D row; not local measured density"
       },
       "applicability": {
         "epa_material_row": "Construction and Demolition",
         "epa_value_lb_per_cubic_yard": 417,
+        "epa_value_is_estimated_weight": true,
+        "epa_primary_data_collection_performed": false,
+        "separate_epa_bulk_cd_value_lb_per_cubic_yard": 484,
         "bulk_cd_484_lb_per_cubic_yard_must_not_be_substituted": true,
         "conversion_lb_to_kg": 0.45359237,
         "conversion_cubic_yard_to_m3": 0.764554857984,
-        "calculation": "measured_loose_cd_debris_m3 * 247.3963",
-        "planning_conversion_only": true,
-        "local_hauler_weighing_and_disposal_rules_override": true
+        "calculation": "measured_epa_compatible_composite_cd_volume_m3 * 417 * 0.45359237 / 0.764554857984",
+        "exact_material_row_and_compatible_volume_measurement_required": true,
+        "preliminary_recovery_planning_conversion_only": true,
+        "local_weighbridge_mass_overrides_conversion": true,
+        "local_hauler_container_payload_and_disposal_rules_required_separately": true,
+        "haul_trip_count_container_count_and_disposal_fee_derivation_forbidden": true,
+        "automatic_production_binding_for_generic_waste_removal_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "kg",
         "package_size": 1,
-        "mode": "round_after_volume_conversion"
+        "mode": "no_rounding_before_full_unit_conversion_then_follow_documented_mass_display_precision"
       },
       "source": {
         "title": "U.S. EPA Volume-to-Weight Conversion Factors, April 2016",
-        "url": "https://www.epa.gov/sites/production/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
-        "page": "PDF page 6, C&D Remainder/Composite row: 417 lb per cubic yard",
+        "url": "https://www.epa.gov/sites/default/files/2016-04/documents/volume_to_weight_conversion_factors_memorandum_04192016_508fnl.pdf",
+        "page": "PDF pages 1, 6 and 7: secondary-data limitation; C&D Remainder/Composite estimated 417 lb/cubic yard versus separate Bulk 484 row; sources 18 and 20",
         "provenance": "public_government_norms_or_standards"
       }
     }
