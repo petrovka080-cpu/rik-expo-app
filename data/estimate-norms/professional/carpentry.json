@@ -1,9 +1,29 @@
 {
   "work_group": "carpentry",
-  "source_pack_version": "2026.09-sikagard-wood-preserver-preventative-r1",
+  "source_pack_version": "2026.09-sikagard-wood-preserver-primary-review-r2",
   "source_type": "manufacturer_consumption_tables",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+        "source_url": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+        "verified_facts": [
+          "july_2026_pds_version_02_01",
+          "preventative_treatment_consumption_is_250_ml_per_m2",
+          "packaging_is_1_l_and_5_l_tins",
+          "brush_or_spray_application_requires_at_least_two_coats",
+          "product_is_ready_to_use_and_must_not_be_diluted",
+          "external_application_must_be_overcoated_or_varnished",
+          "net_litre_requirement_is_not_a_selected_procurement_pack_mix"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
@@ -12,7 +32,9 @@
         "treated_timber_surface_area_m2",
         "treatment_purpose",
         "timber_surface_condition",
-        "application_method"
+        "application_method",
+        "minimum_coat_count",
+        "selected_package_mix_l"
       ],
       "unit": "l",
       "rate": {
@@ -30,20 +52,25 @@
           "roof timbers",
           "window frames and doors"
         ],
-        "curative_treatment_must_use_its_own_documented_rate": true,
-        "end_grain_and_dipping_treatment_require_separate_takeoff": true,
+        "minimum_coats_for_brush_or_spray": 2,
+        "ready_to_use_do_not_dilute": true,
+        "external_use_requires_overcoat_or_varnish": true,
+        "food_preparation_surfaces_excluded": true,
+        "avoid_contact_with_bitumen_roofing_felt_or_plastics": true,
+        "end_grain_dip_duration_min": 3,
+        "package_sizes_l": [1, 5],
         "project_waste_and_absorption_adjustment_not_included": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "5_l_tin",
-        "package_size": 5,
-        "mode": "ceil_after_surface_and_package_selection"
+        "package_unit": "smallest_documented_tin_l",
+        "package_size": 1,
+        "mode": "exact_litres_before_selected_1_l_and_5_l_procurement_mix"
       },
       "source": {
         "title": "Sikagard Wood Preserver Product Data Sheet",
         "url": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
-        "page": "PDS September 2023, page 1 of 2, Application Information / Consumption: preventative treatment 250 ml/m2",
+        "page": "PDS July 2026, version 02.01, page 1: preventative treatment 250 ml/m2 and 1 L / 5 L tins; page 2: application and limitations",
         "provenance": "manufacturer_consumption_tables"
       }
     }

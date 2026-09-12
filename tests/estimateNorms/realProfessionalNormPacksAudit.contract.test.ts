@@ -90,6 +90,25 @@ describe("real professional norm packs audit", () => {
         items?: { norm_id?: string; verified_facts?: string[] }[];
       };
     };
+    const reviewedCarpentryPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/carpentry.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { norm_id?: string; source_url?: string; verified_facts?: string[] }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+        source: { url: string; page: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -235,6 +254,36 @@ describe("real professional norm packs audit", () => {
     expect(reviewedPlumbingPack.review_evidence?.items?.find((item) =>
       item.norm_id === "plumbing_wavin_hep2o_smartsleeve_piece_connection_v1")?.verified_facts)
       .toContain("exact_integer_prepared_pipe_end_count_requires_no_additional_rounding");
+    expect(reviewedCarpentryPack).toMatchObject({
+      source_pack_version: "2026.09-sikagard-wood-preserver-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedCarpentryPack.review_evidence?.items).toHaveLength(1);
+    expect(reviewedCarpentryPack.review_evidence?.items?.[0]).toMatchObject({
+      norm_id: "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+      source_url: "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+    });
+    expect(reviewedCarpentryPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "july_2026_pds_version_02_01",
+        "preventative_treatment_consumption_is_250_ml_per_m2",
+        "packaging_is_1_l_and_5_l_tins",
+        "net_litre_requirement_is_not_a_selected_procurement_pack_mix",
+      ]));
+    expect(reviewedCarpentryPack.norm_items[0]).toMatchObject({
+      parameters: expect.arrayContaining([
+        "minimum_coat_count",
+        "selected_package_mix_l",
+      ]),
+      rounding: {
+        package_size: 1,
+        mode: "exact_litres_before_selected_1_l_and_5_l_procurement_mix",
+      },
+      source: {
+        url: "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
+      },
+    });
   });
 
   it("inventories the actual row-aware production consumers instead of category-only proxies", () => {

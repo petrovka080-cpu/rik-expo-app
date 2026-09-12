@@ -67,5 +67,18 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(row.unit).toBe("l");
     expect(row.normId).toContain("carpentry_sikagard_wood_preserver_l_m2_preventative_v1");
     expect(row.normId).not.toContain("wood_floor");
+
+    const partialTinRequirement = sourcedRow(
+      "carpentry_metal_interior_wood_frame_finish_standard",
+      "carpentry_metal_interior_wood_frame_finish_standard_materials_03",
+      10,
+    );
+    expect(partialTinRequirement.quantity).toBe(2.5);
+    expect(partialTinRequirement.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 0.25,
+      packageSize: 1,
+    });
+    expect(partialTinRequirement.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-sikagard-wood-preserver-primary-review-r2");
   });
 });

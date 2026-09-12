@@ -16,7 +16,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
 > = Object.freeze({
   air_conditioning: "2026.09-daikin-3mxs-k-additional-charge-r2",
   baseboards: "2026.09-gerflor-forbo-source-review-r2",
-  carpentry: "2026.09-sikagard-wood-preserver-preventative-r1",
+  carpentry: "2026.09-sikagard-wood-preserver-primary-review-r2",
   ceilings: "2026.09-knauf-d11-d112-standard-r1",
   cleaning: "2026.09-tennant-t350-productivity-r1",
   concrete: "2026.07-wave2a",
@@ -139,11 +139,11 @@ const PROFESSIONAL_NORM_PACK_REGISTRY_ITEM_INPUTS: readonly ProfessionalNormPack
     unit: "l",
     consumptionRate: 0.25,
     wastePercent: 0,
-    packageSize: 5,
+    packageSize: 1,
     sourceId: sourceId("carpentry_sikagard_wood_preserver_l_m2_preventative_v1"),
     sourceTitle: "Sikagard Wood Preserver Product Data Sheet",
     sourceUrl: "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
-    sourcePage: "PDS September 2023, page 1 of 2, preventative treatment 250 ml/m2",
+    sourcePage: "PDS July 2026, version 02.01, page 1, preventative treatment 250 ml/m2; packaging 1 L and 5 L tins",
     match: {
       categories: ["carpentry_metal"],
       workKeyIncludes: ["carpentry_metal_interior_wood_frame_finish_standard"],
