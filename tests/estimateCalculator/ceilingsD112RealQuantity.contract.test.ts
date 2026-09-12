@@ -1,30 +1,36 @@
-import {
-  compileProductionExpandedEstimate10000,
-  isProfessionalNormPackSourceId,
-} from "../../src/lib/ai/estimateTemplate10000";
+import { compileProductionExpandedEstimate10000 } from "../../src/lib/ai/estimateTemplate10000";
 
-describe("Knauf D112 ceiling source-backed quantities", () => {
-  it("applies the documented D112 variant 1 factors instead of only tracing them", () => {
+const D112_ROW_CODES = [
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_materials_01",
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_materials_02",
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_materials_05",
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_materials_06",
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_components_07",
+  "drywall_ceiling_interior_drywall_ceiling_install_standard_components_08",
+] as const;
+
+describe("Knauf D112 ceiling source-only applicability", () => {
+  it("preserves all six candidate rows without inferring the D112 system from a generic ceiling key", () => {
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "drywall_ceiling_interior_drywall_ceiling_install_standard",
       quantity: 100,
       countryCode: "KG",
     });
-    const rows = compiled.rows.filter((row) =>
-      isProfessionalNormPackSourceId(row.normSourceId) &&
-      row.normSourceId.includes("ceilings_knauf_d112_standard")
+    const rows = D112_ROW_CODES.map((rowCode) =>
+      compiled.rows.find((row) => row.rowCode === rowCode)
     );
-    const bySource = (part: string) => rows.find((row) => row.normSourceId.includes(part));
 
+    expect(compiled.rows).toHaveLength(59);
     expect(rows).toHaveLength(6);
-    expect(bySource("board_m2_m2")?.quantity).toBe(100);
-    expect(bySource("ud_runner")?.quantity).toBe(40);
-    expect(bySource("uniflott")?.quantity).toBe(30);
-    expect(bySource("joint_tape")?.quantity).toBe(45);
-    expect(bySource("tn25_screw")?.quantity).toBe(1700);
-    expect(bySource("substructure_anchor")?.quantity).toBe(120);
+    expect(rows.every(Boolean)).toBe(true);
     expect(rows.every((row) =>
-      (row.sourceParameters.formulaContext as Record<string, unknown>).wastePercent === 0
+      row?.normSourceId.startsWith("src_professional_norm_pack_catalog_") &&
+      !row.normSourceId.includes("ceilings_knauf_d112_standard") &&
+      row.sourceParameters.baseQuantity === 100 &&
+      row.calculationTrace.includes("normSource=")
     )).toBe(true);
+    expect(compiled.rows.some((row) =>
+      row.normSourceId.startsWith("src_professional_norm_pack_ceilings_knauf_d112_standard_")))
+      .toBe(false);
   });
 });

@@ -1,11 +1,11 @@
 {
   "schema": "catalog-source-registry-v1",
-  "generated_at": "2026-09-12T16:53:21.396Z",
+  "generated_at": "2026-09-12T17:05:05.919Z",
   "final_status": "STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED",
-  "registry_source_count": 14,
+  "registry_source_count": 0,
   "physical_norm_pack_source_count": 54,
-  "row_source_count": 389,
-  "p0_source_count": 209,
+  "row_source_count": 375,
+  "p0_source_count": 201,
   "sources": [
     {
       "source_id": "src_professional_norm_pack_air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -49,51 +49,42 @@
     },
     {
       "source_id": "src_professional_norm_pack_baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
-      "source_title": "Gerflor Design Skirting 6086: плинтус секциями по 2 м",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Gerflor Design Skirting product code 6086 installation guidelines PMO [516V1]",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://cdn.gerflor.com/media/2/56198/design%20skirting%20-%20installation%20guidelines.pdf",
       "source_date_or_version": "2026.09-gerflor-forbo-source-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
-        "norm:2026.07.03:professional_pack:baseboards_gerflor_design_skirting_linear_m_perimeter_v1:flooring_interior_baseboard_install_standard_professional_expanded_v1:flooring_interior_baseboard_install_standard_materials_01"
+        "baseboards_gerflor_design_skirting_linear_m_perimeter_v1"
       ],
-      "sample_template_ids": [
-        "flooring_interior_baseboard_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
       "source_title": "Sikagard Wood Preserver Product Data Sheet",
-      "source_type": "manufacturer_consumption_table",
+      "source_type": "manufacturer_consumption_tables",
       "source_url_or_document_ref": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
       "source_date_or_version": "2026.09-sikagard-wood-preserver-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_consumption_tables",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
-        "norm:2026.07.03:professional_pack:carpentry_sikagard_wood_preserver_l_m2_preventative_v1:carpentry_metal_interior_wood_frame_finish_standard_professional_expanded_v1:carpentry_metal_interior_wood_frame_finish_standard_materials_03"
+        "carpentry_sikagard_wood_preserver_l_m2_preventative_v1"
       ],
-      "sample_template_ids": [
-        "carpentry_metal_interior_wood_frame_finish_standard_professional_expanded_v1"
-      ],
+      "sample_template_ids": [],
       "p0_case_ids": []
     },
     {
@@ -742,7 +733,7 @@
         "norm:2026.07.03:professional_pack:catalog_baseboards_material_materials:flooring_interior_baseboard_lay_standard_professional_expanded_v1:flooring_interior_baseboard_lay_standard_materials_37",
         "norm:2026.07.03:professional_pack:catalog_baseboards_material_materials:flooring_interior_baseboard_lay_standard_professional_expanded_v1:flooring_interior_baseboard_lay_standard_materials_38",
         "norm:2026.07.03:professional_pack:catalog_baseboards_material_materials:flooring_interior_baseboard_lay_standard_professional_expanded_v1:flooring_interior_baseboard_lay_standard_materials_39",
-        "norm:2026.07.03:professional_pack:catalog_baseboards_material_materials:flooring_interior_baseboard_install_standard_professional_expanded_v1:flooring_interior_baseboard_install_standard_materials_02"
+        "norm:2026.07.03:professional_pack:catalog_baseboards_material_materials:flooring_interior_baseboard_install_standard_professional_expanded_v1:flooring_interior_baseboard_install_standard_materials_01"
       ],
       "sample_template_ids": [
         "flooring_interior_baseboard_lay_standard_professional_expanded_v1",
@@ -3731,9 +3722,9 @@
         "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_components_40",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_components_41",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_components_42",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_40",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_41",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_42"
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_07",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_08",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_components:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_40"
       ],
       "sample_template_ids": [
         "drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1",
@@ -3841,25 +3832,27 @@
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_05",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_shaft_install_standard_professional_expanded_v1:drywall_ceiling_interior_shaft_install_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_niche_install_standard_professional_expanded_v1:drywall_ceiling_interior_niche_install_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_bulkhead_install_standard_professional_expanded_v1:drywall_ceiling_interior_bulkhead_install_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_sound_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_sound_partition_install_standard_materials_05",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_moisture_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_moisture_partition_install_standard_materials_05",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_revision_hatch_install_standard_professional_expanded_v1:drywall_ceiling_interior_revision_hatch_install_standard_materials_05"
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_moisture_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_moisture_partition_install_standard_materials_05"
       ],
       "sample_template_ids": [
         "drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1",
+        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
         "drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1",
         "drywall_ceiling_interior_shaft_install_standard_professional_expanded_v1",
         "drywall_ceiling_interior_niche_install_standard_professional_expanded_v1",
         "drywall_ceiling_interior_bulkhead_install_standard_professional_expanded_v1",
         "drywall_ceiling_interior_sound_partition_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_moisture_partition_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_revision_hatch_install_standard_professional_expanded_v1"
+        "drywall_ceiling_interior_moisture_partition_install_standard_professional_expanded_v1"
       ],
-      "p0_case_ids": []
+      "p0_case_ids": [
+        "apartment_capital_renovation_54"
+      ]
     },
     {
       "source_id": "src_professional_norm_pack_catalog_drywall_material_materials_linear_m_v1",
@@ -3879,11 +3872,11 @@
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_02",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_03",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_06",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_02",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_03",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_06",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_02",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_shaft_install_standard_professional_expanded_v1:drywall_ceiling_interior_shaft_install_standard_materials_02"
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_03"
       ],
       "sample_template_ids": [
         "drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1",
@@ -3919,9 +3912,9 @@
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_37",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_38",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_39",
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_01",
         "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_04",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_37",
-        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_38"
+        "norm:2026.07.03:professional_pack:catalog_drywall_material_materials:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_37"
       ],
       "sample_template_ids": [
         "drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1",
@@ -4937,7 +4930,7 @@
         "norm:2026.07.03:professional_pack:catalog_facade_material_components:facade_interior_wet_facade_install_standard_professional_expanded_v1:facade_interior_wet_facade_install_standard_components_40",
         "norm:2026.07.03:professional_pack:catalog_facade_material_components:facade_interior_wet_facade_install_standard_professional_expanded_v1:facade_interior_wet_facade_install_standard_components_41",
         "norm:2026.07.03:professional_pack:catalog_facade_material_components:facade_interior_wet_facade_install_standard_professional_expanded_v1:facade_interior_wet_facade_install_standard_components_42",
-        "norm:2026.07.03:professional_pack:catalog_facade_material_components:facade_interior_vent_facade_install_standard_professional_expanded_v1:facade_interior_vent_facade_install_standard_components_08"
+        "norm:2026.07.03:professional_pack:catalog_facade_material_components:facade_interior_vent_facade_install_standard_professional_expanded_v1:facade_interior_vent_facade_install_standard_components_07"
       ],
       "sample_template_ids": [
         "facade_interior_wet_facade_install_standard_professional_expanded_v1",
@@ -13656,12 +13649,12 @@
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_01",
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_02",
+        "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_03",
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_05",
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_06",
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_37",
         "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_38",
-        "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_39",
-        "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_foundation_apply_standard_professional_expanded_v1:waterproofing_interior_foundation_apply_standard_materials_01"
+        "norm:2026.07.03:professional_pack:catalog_waterproofing_material_materials:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_39"
       ],
       "sample_template_ids": [
         "waterproofing_interior_bathroom_apply_standard_professional_expanded_v1",
@@ -14021,159 +14014,123 @@
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_board_m2_m2_v1",
-      "source_title": "Knauf D11: листовая обшивка D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_board_m2_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_board_m2_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_01"
+        "ceilings_knauf_d112_standard_board_m2_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
-      "source_title": "Knauf D11: армирующая лента резаных кромок D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_06"
+        "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
-      "source_title": "Knauf D11: анкер или подвес каркаса D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_08"
+        "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
-      "source_title": "Knauf D11: саморез TN 3,5 × 25 мм для D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_components_07"
+        "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
-      "source_title": "Knauf D11: пристенный профиль UD 28/27 системы D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_02"
+        "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
-      "source_title": "Knauf D11: смесь Uniflott для швов D112, вариант 1",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Knauf D11 Board Ceilings system data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
       "source_date_or_version": "2026.09-knauf-d11-d112-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
-        "norm:2026.07.03:professional_pack:ceilings_knauf_d112_standard_uniflott_kg_m2_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_ceiling_install_standard_materials_05"
+        "ceilings_knauf_d112_standard_uniflott_kg_m2_v1"
       ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_ceiling_install_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
@@ -14425,24 +14382,21 @@
     {
       "source_id": "src_professional_norm_pack_facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
       "source_title": "ROCKWOOL Austria: fixing insulation boards for ventilated facades",
-      "source_type": "manufacturer_consumption_table",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://www.rockwool.com/at/rat-und-tat/vertiefendes-wissen/produktwissen/vhf-befestigung/",
       "source_date_or_version": "2026.09-rockwool-vhf-fixings-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
-        "norm:2026.07.03:professional_pack:facade_rockwool_fixrock_conventional_fixings_piece_m2_v1:facade_interior_vent_facade_install_standard_professional_expanded_v1:facade_interior_vent_facade_install_standard_components_07"
+        "facade_rockwool_fixrock_conventional_fixings_piece_m2_v1"
       ],
-      "sample_template_ids": [
-        "facade_interior_vent_facade_install_standard_professional_expanded_v1"
-      ],
+      "sample_template_ids": [],
       "p0_case_ids": []
     },
     {
@@ -14548,24 +14502,21 @@
     {
       "source_id": "src_professional_norm_pack_insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
       "source_title": "ROCKWOOL Residential Product Guide: Building Insulation",
-      "source_type": "manufacturer_consumption_table",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://brandportal.rockwool.com/original/gallery/39052/files/original/13225669-1028-49f5-85e4-6dd3f8bb0b9b.pdf",
       "source_date_or_version": "2026.09-rockwool-comfortboard80-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
-        "norm:2026.07.03:professional_pack:insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1:insulation_interior_facade_install_standard_professional_expanded_v1:insulation_interior_facade_install_standard_materials_01"
+        "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1"
       ],
-      "sample_template_ids": [
-        "insulation_interior_facade_install_standard_professional_expanded_v1"
-      ],
+      "sample_template_ids": [],
       "p0_case_ids": []
     },
     {
@@ -14662,24 +14613,21 @@
     {
       "source_id": "src_professional_norm_pack_metalwork_jotun_hardtop_xp_l_m2_100um_v1",
       "source_title": "Jotun Hardtop XP Technical Data Sheet",
-      "source_type": "manufacturer_consumption_table",
+      "source_type": "manufacturer_consumption_tables",
       "source_url_or_document_ref": "https://www.jotun.com/api/v1/datasheets/download/merged?selectedFiles=4378",
       "source_date_or_version": "2026.09-jotun-hardtop-xp-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_consumption_tables",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
-        "norm:2026.07.03:professional_pack:metalwork_jotun_hardtop_xp_l_m2_100um_v1:carpentry_metal_interior_metal_frame_paint_standard_professional_expanded_v1:carpentry_metal_interior_metal_frame_paint_standard_materials_03"
+        "metalwork_jotun_hardtop_xp_l_m2_100um_v1"
       ],
-      "sample_template_ids": [
-        "carpentry_metal_interior_metal_frame_paint_standard_professional_expanded_v1"
-      ],
+      "sample_template_ids": [],
       "p0_case_ids": []
     },
     {
@@ -14934,53 +14882,42 @@
     {
       "source_id": "src_professional_norm_pack_roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "source_title": "Sika Sarnafil AT-18 product data and application instructions",
-      "source_type": "manufacturer_consumption_table",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
       "source_date_or_version": "2026.09-sika-sarnafil-at18-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
-        "norm:2026.07.03:professional_pack:roofing_sarnafil_at18_field_overlap_m2_m2_v1:roofing_interior_flat_roof_install_standard_professional_expanded_v1:roofing_interior_flat_roof_install_standard_materials_01"
+        "roofing_sarnafil_at18_field_overlap_m2_m2_v1"
       ],
-      "sample_template_ids": [
-        "roofing_interior_flat_roof_install_standard_professional_expanded_v1"
-      ],
+      "sample_template_ids": [],
       "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1",
-      "source_title": "Технический паспорт сухой смеси Ceresit CN 87 для стяжки 50 мм",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Ceresit CN 87 fast-setting flooring compound technical data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CN-87-en_GL.pdf",
       "source_date_or_version": "2026.09-ceresit-cn87-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "screed_cement_sand_mix_kg_m2_50mm_v1",
-        "norm:2026.07.03:professional_pack:screed_cement_sand_mix_kg_m2_50mm_v1:flooring_interior_subfloor_lay_standard_professional_expanded_v1:flooring_interior_subfloor_lay_standard_materials_01"
+        "screed_cement_sand_mix_kg_m2_50mm_v1"
       ],
-      "sample_template_ids": [
-        "flooring_interior_subfloor_lay_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1",
-        "screed_cement_sand_50mm_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54",
-        "screed_100x50"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_services_kg_author_supervision_cost_fraction_v1",
@@ -15124,31 +15061,23 @@
     },
     {
       "source_id": "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
-      "source_title": "Технический паспорт эластичной гидроизоляционной мастики Ceresit CL 51 Express 1-K",
-      "source_type": "manufacturer_consumption_table",
+      "source_title": "Ceresit CL 51 Express 1-K technical data sheet",
+      "source_type": "manufacturer_technical_cards",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
       "source_date_or_version": "2026.09-ceresit-cl51-global-primary-review-r2",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
+      "provenance": "manufacturer_technical_cards",
+      "license_status": "manufacturer_public",
+      "quality_status": "reviewed",
+      "review_status": "reviewed",
       "is_source_backed_professional_norm_pack": true,
       "is_generated_family_default": false,
       "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
+      "evidence_kind": "physical_norm_pack_review",
       "sample_norm_ids": [
-        "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
-        "norm:2026.07.03:professional_pack:waterproofing_ceresit_cl51_two_coats_kg_m2_v1:waterproofing_interior_bathroom_apply_standard_professional_expanded_v1:waterproofing_interior_bathroom_apply_standard_materials_03",
-        "norm:2026.07.03:professional_pack:waterproofing_ceresit_cl51_two_coats_kg_m2_v1:waterproofing_interior_wet_zone_apply_standard_professional_expanded_v1:waterproofing_interior_wet_zone_apply_standard_materials_03"
+        "waterproofing_ceresit_cl51_two_coats_kg_m2_v1"
       ],
-      "sample_template_ids": [
-        "waterproofing_interior_bathroom_apply_standard_professional_expanded_v1",
-        "waterproofing_interior_wet_zone_apply_standard_professional_expanded_v1",
-        "apartment_capital_renovation_project_template_group_v1"
-      ],
-      "p0_case_ids": [
-        "apartment_capital_renovation_54"
-      ]
+      "sample_template_ids": [],
+      "p0_case_ids": []
     },
     {
       "source_id": "src_professional_norm_pack_windows_doors_soudafoam_genius_can_per_joint_m_v1",
@@ -15209,7 +15138,6 @@
       "case_id": "apartment_capital_renovation_54",
       "source_kind": "project_template_group",
       "source_ids": [
-        "src_professional_norm_pack_baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
         "src_professional_norm_pack_catalog_baseboards_labor_labor_linear_m_v1",
         "src_professional_norm_pack_catalog_baseboards_labor_preparation_linear_m_v1",
         "src_professional_norm_pack_catalog_baseboards_material_components_piece_v1",
@@ -15251,6 +15179,7 @@
         "src_professional_norm_pack_catalog_drywall_material_components_piece_v1",
         "src_professional_norm_pack_catalog_drywall_material_consumables_m2_v1",
         "src_professional_norm_pack_catalog_drywall_material_consumables_set_v1",
+        "src_professional_norm_pack_catalog_drywall_material_materials_kg_v1",
         "src_professional_norm_pack_catalog_drywall_material_materials_linear_m_v1",
         "src_professional_norm_pack_catalog_drywall_material_materials_m2_v1",
         "src_professional_norm_pack_catalog_electrical_labor_labor_point_v1",
@@ -15359,21 +15288,14 @@
         "src_professional_norm_pack_catalog_windows_doors_material_consumables_m2_v1",
         "src_professional_norm_pack_catalog_windows_doors_material_consumables_set_v1",
         "src_professional_norm_pack_catalog_windows_doors_material_materials_m2_v1",
-        "src_professional_norm_pack_catalog_windows_doors_material_materials_piece_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_board_m2_m2_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
-        "src_professional_norm_pack_ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
-        "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1",
-        "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1"
+        "src_professional_norm_pack_catalog_windows_doors_material_materials_piece_v1"
       ],
       "source_backed": false,
-      "expected_source_token_found": true,
+      "expected_source_token_found": false,
       "row_count": 1381,
       "blocking_reasons": [
-        "p0_source_not_professional_norm_pack"
+        "p0_source_not_professional_norm_pack",
+        "expected_source_token_missing:screed_cement_sand_mix"
       ]
     },
     {
@@ -15569,14 +15491,14 @@
         "src_professional_norm_pack_catalog_flooring_material_materials_l_v1",
         "src_professional_norm_pack_catalog_flooring_material_materials_linear_m_v1",
         "src_professional_norm_pack_catalog_flooring_material_materials_m2_v1",
-        "src_professional_norm_pack_catalog_waste_removal_material_waste_m2_v1",
-        "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1"
+        "src_professional_norm_pack_catalog_waste_removal_material_waste_m2_v1"
       ],
       "source_backed": false,
-      "expected_source_token_found": true,
+      "expected_source_token_found": false,
       "row_count": 59,
       "blocking_reasons": [
-        "p0_source_not_professional_norm_pack"
+        "p0_source_not_professional_norm_pack",
+        "expected_source_token_missing:screed_cement_sand_mix"
       ]
     },
     {
@@ -15701,6 +15623,7 @@
   ],
   "blockers": [
     "apartment_capital_renovation_54:p0_source_not_professional_norm_pack",
+    "apartment_capital_renovation_54:expected_source_token_missing:screed_cement_sand_mix",
     "masonry_400:p0_source_not_professional_norm_pack",
     "masonry_400:expected_source_token_missing:masonry_bia_tn10",
     "concrete_volume:p0_source_not_professional_norm_pack",
@@ -15712,6 +15635,7 @@
     "formwork_contact_area:p0_source_not_professional_norm_pack",
     "formwork_contact_area:expected_source_token_missing:formwork_rics_nrm2",
     "screed_100x50:p0_source_not_professional_norm_pack",
+    "screed_100x50:expected_source_token_missing:screed_cement_sand_mix",
     "roofing_basic:p0_source_not_professional_norm_pack",
     "metalwork_basic:p0_source_not_professional_norm_pack",
     "plumbing_basic:p0_source_not_professional_norm_pack",

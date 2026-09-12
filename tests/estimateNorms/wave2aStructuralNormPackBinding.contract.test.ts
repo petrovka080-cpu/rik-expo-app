@@ -6,8 +6,8 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 
 describe("wave2a structural norm pack registry binding", () => {
-  it("keeps reviewed structural routes fail-closed while retaining the exact screed binding", () => {
-    const reviewedStructuralPacks = ["masonry", "concrete", "reinforcement", "formwork"].map((group) =>
+  it("keeps every reviewed structural route source-only until applicability is explicit", () => {
+    const reviewedStructuralPacks = ["masonry", "concrete", "reinforcement", "formwork", "screed"].map((group) =>
       JSON.parse(fs.readFileSync(
         path.resolve(process.cwd(), `data/estimate-norms/professional/${group}.json`),
         "utf8",
@@ -26,22 +26,22 @@ describe("wave2a structural norm pack registry binding", () => {
       "concrete_ready_mix_m3_m3_placed_v1",
       "reinforcement_rebar_kg_m3_concrete_element_v1",
       "formwork_contact_area_m2_m3_concrete_element_v1",
+      "screed_cement_sand_mix_kg_m2_50mm_v1",
     ];
 
     expect(reviewedStructuralPacks.every((pack) => pack.review_status === "reviewed")).toBe(true);
-    expect(reviewedStructuralPacks.flatMap((pack) => pack.norm_items).every((item) =>
+    expect(reviewedStructuralPacks.slice(0, 4).flatMap((pack) => pack.norm_items).every((item) =>
       Object.entries(item.applicability).some(([key, value]) =>
         key.startsWith("automatic_production_binding_for_generic_") && value === true
       )
     )).toBe(true);
-    expect(PROFESSIONAL_NORM_PACK_GROUPS).toContain("screed");
-    expect(PROFESSIONAL_NORM_PACK_GROUPS).not.toEqual(expect.arrayContaining([
-      "masonry",
-      "concrete",
-      "reinforcement",
-      "formwork",
-    ]));
-    expect(registeredNormIds.has("screed_cement_sand_mix_kg_m2_50mm_v1")).toBe(true);
+    expect(reviewedStructuralPacks[4].norm_items[0]?.applicability).toMatchObject({
+      product: "Ceresit CN 87",
+      production_scalar_valid_only_at_50_mm: true,
+      non_50_mm_requires_dynamic_thickness_formula: true,
+    });
+    expect(PROFESSIONAL_NORM_PACK_GROUPS).toEqual([]);
+    expect(registeredNormIds).toEqual(new Set());
     expect(rejectedLegacyIds.filter((normId) => registeredNormIds.has(normId))).toEqual([]);
     expect(reviewedStructuralPacks.flatMap((pack) => pack.norm_items)
       .filter((item) => registeredNormIds.has(item.norm_id))).toEqual([]);

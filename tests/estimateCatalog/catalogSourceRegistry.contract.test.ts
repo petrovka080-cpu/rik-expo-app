@@ -32,7 +32,7 @@ describe("catalog source registry artifact", () => {
     const physicalSources = registry.sources.filter((item) =>
       item.evidence_kind === "physical_norm_pack_review" || item.evidence_kind === "registry_norm_pack"
     );
-    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(40);
+    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(54);
     expect(physicalSources.map((item) => item.source_id)).toEqual(expect.arrayContaining([
       "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
@@ -51,6 +51,8 @@ describe("catalog source registry artifact", () => {
       "reinforcement_kg:expected_source_token_missing:reinforcement_project_bar_schedule",
       "reinforcement_100:expected_source_token_missing:reinforcement_project_bar_schedule",
       "formwork_contact_area:expected_source_token_missing:formwork_rics_nrm2",
+      "apartment_capital_renovation_54:expected_source_token_missing:screed_cement_sand_mix",
+      "screed_100x50:expected_source_token_missing:screed_cement_sand_mix",
     ]));
     expect(registry.full_10000_real_norm_green_claimed).toBe(false);
     expect(registry.fake_green_claimed).toBe(false);

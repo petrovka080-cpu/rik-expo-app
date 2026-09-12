@@ -1,256 +1,179 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
   compileProductionExpandedEstimate10000,
+  PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
 } from "../../src/lib/ai/estimateTemplate10000";
 
-const PROFESSIONAL_SOURCE_PREFIX = "src_professional_norm_pack_";
+const RETIRED_STATIC_SOURCE_IDS = [
+  "src_professional_norm_pack_carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
+  "src_professional_norm_pack_roofing_sarnafil_at18_field_overlap_m2_m2_v1",
+  "src_professional_norm_pack_facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
+  "src_professional_norm_pack_insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
+  "src_professional_norm_pack_metalwork_jotun_hardtop_xp_l_m2_100um_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_board_m2_m2_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
+  "src_professional_norm_pack_ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
+  "src_professional_norm_pack_baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
+  "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
+  "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1",
+] as const;
 
-function sourcedRow(workKey: string, rowCode: string, quantity = 100) {
-  const compiled = compileProductionExpandedEstimate10000({ workKey, quantity, countryCode: "KG" });
+const SOURCE_ONLY_FACTS = [
+  ["carpentry_sikagard_wood_preserver_l_m2_preventative_v1", 0.25, "l", 1, "2026.09-sikagard-wood-preserver-primary-review-r2"],
+  ["roofing_sarnafil_at18_field_overlap_m2_m2_v1", 1.0416667, "m2", 30, "2026.09-sika-sarnafil-at18-primary-review-r2"],
+  ["facade_rockwool_fixrock_conventional_fixings_piece_m2_v1", 5, "piece", 1, "2026.09-rockwool-vhf-fixings-primary-review-r2"],
+  ["insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1", 1, "m2", 4.45, "2026.09-rockwool-comfortboard80-primary-review-r2"],
+  ["metalwork_jotun_hardtop_xp_l_m2_100um_v1", 0.15873016, "l", 5, "2026.09-jotun-hardtop-xp-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_board_m2_m2_v1", 1, "m2", 1, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1", 0.4, "linear_m", 3, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_uniflott_kg_m2_v1", 0.3, "kg", 5, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1", 0.45, "linear_m", 1, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1", 17, "piece", 1, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1", 1.2, "piece", 1, "2026.09-knauf-d11-d112-primary-review-r2"],
+  ["baseboards_gerflor_design_skirting_linear_m_perimeter_v1", 1, "linear_m", 2, "2026.09-gerflor-forbo-source-review-r2"],
+  ["waterproofing_ceresit_cl51_two_coats_kg_m2_v1", 1.3, "kg", 5, "2026.09-ceresit-cl51-global-primary-review-r2"],
+  ["screed_cement_sand_mix_kg_m2_50mm_v1", 100, "kg", 25, "2026.09-ceresit-cn87-primary-review-r2"],
+] as const;
+
+function compile(workKey: string, quantity = 100) {
+  return compileProductionExpandedEstimate10000({ workKey, quantity, countryCode: "KG" });
+}
+
+function expectSourceOnly(workKey: string, rowCode: string, sourceId: string, quantity = 100) {
+  const compiled = compile(workKey, quantity);
   const row = compiled.rows.find((candidate) => candidate.rowCode === rowCode);
   expect(row).toBeDefined();
-  expect(row?.normSourceId).toMatch(new RegExp(`^${PROFESSIONAL_SOURCE_PREFIX}`));
+  expect(row?.normSourceId).not.toBe(sourceId);
+  expect(row?.normSourceId).toMatch(/^src_professional_norm_pack_catalog_/u);
+  expect(row?.calculationTrace).toContain("normSource=");
   return row!;
 }
 
-describe("professional norm-pack wave 3 real quantities", () => {
-  it("derives the exact 50 mm CN 87 screed rate and excludes non-standard subfloor routes", () => {
-    const sourceMarker = "src_professional_norm_pack_screed_cement_sand_mix_kg_m2_50mm_v1";
-    const dedicated = compileProductionExpandedEstimate10000({
-      workKey: "screed_cement_sand_50mm",
-      quantity: 100,
-      countryCode: "KG",
-    });
-    expect(dedicated.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
-      rowCode: "screed_cement_sand_50mm_flooring_interior_subfloor_lay_standard_materials_01",
-      quantity: 10_000,
-      unit: "kg",
-    }]);
-    const dedicatedRow = dedicated.rows.find((row) => row.normSourceId === sourceMarker);
-    expect(dedicatedRow?.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 100,
-      wastePercent: 0,
-      packageSize: 25,
-    });
-    expect(dedicatedRow?.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-ceresit-cn87-primary-review-r2");
+describe("professional norm-pack source-only applicability", () => {
+  it("retains the exact reviewed source facts after removing automatic product selection", () => {
+    type PhysicalPack = {
+      source_pack_version: string;
+      norm_items: {
+        norm_id: string;
+        unit: string;
+        rate: { value: number };
+        rounding: { package_size: number };
+        parameters: string[];
+        applicability: Record<string, unknown>;
+        source: { url: string };
+      }[];
+    };
+    const root = path.resolve(process.cwd(), "data/estimate-norms/professional");
+    const physical = new Map<string, { packVersion: string; item: PhysicalPack["norm_items"][number] }>();
+    for (const name of fs.readdirSync(root).filter((candidate) =>
+      candidate.endsWith(".json") && !candidate.includes("remediation-plan"))) {
+      const pack = JSON.parse(fs.readFileSync(path.join(root, name), "utf8")) as PhysicalPack;
+      for (const item of pack.norm_items) {
+        physical.set(item.norm_id, { packVersion: pack.source_pack_version, item });
+      }
+    }
 
-    const apartment = compileProductionExpandedEstimate10000({
-      workKey: "apartment_capital_renovation",
-      quantity: 100,
-      countryCode: "KG",
-    });
-    expect(apartment.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
-      rowCode: "apartment_screed_dry_mix",
-      quantity: 10_000,
-      unit: "kg",
-    }]);
-
-    const nonStandard = compileProductionExpandedEstimate10000({
-      workKey: "flooring_interior_subfloor_lay_large_area",
-      quantity: 100,
-      countryCode: "KG",
-    });
-    expect(nonStandard.rows.some((row) => row.normSourceId === sourceMarker)).toBe(false);
-  });
-
-  it("keeps CL 51 on one indoor wet-area mastic row and excludes incompatible waterproofing scopes", () => {
-    const sourceMarker = "src_professional_norm_pack_waterproofing_ceresit_cl51_two_coats_kg_m2_v1";
-    const bathroomWorkKey = "waterproofing_interior_bathroom_apply_standard";
-    const bathroom = compileProductionExpandedEstimate10000({
-      workKey: bathroomWorkKey,
-      quantity: 100,
-      countryCode: "KG",
-    });
-    const bathroomRows = bathroom.rows.filter((row) => row.normSourceId === sourceMarker);
-    expect(bathroomRows).toHaveLength(1);
-    expect(bathroomRows[0]).toMatchObject({
-      rowCode: `${bathroomWorkKey}_materials_03`,
-      quantity: 130,
-      unit: "kg",
-    });
-    expect(bathroomRows[0]?.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 1.3,
-      wastePercent: 0,
-      packageSize: 5,
-    });
-    expect(bathroomRows[0]?.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-ceresit-cl51-global-primary-review-r2");
-    expect(bathroom.rows.find((row) => row.rowCode === `${bathroomWorkKey}_materials_01`)
-      ?.normSourceId).not.toBe(sourceMarker);
-
-    const apartment = compileProductionExpandedEstimate10000({
-      workKey: "apartment_capital_renovation",
-      quantity: 100,
-      countryCode: "KG",
-    });
-    expect(apartment.rows.filter((row) => row.normSourceId === sourceMarker)).toMatchObject([{
-      rowCode: "waterproofing_wet_zones_waterproofing_interior_wet_zone_apply_standard_materials_03",
-      quantity: 93.6,
-      unit: "kg",
-    }]);
-
-    for (const workKey of [
-      "waterproofing_interior_foundation_apply_standard",
-      "waterproofing_interior_roof_apply_standard",
-      "waterproofing_interior_pool_apply_standard",
-    ]) {
-      const compiled = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
-      expect(compiled.rows.some((row) => row.normSourceId === sourceMarker)).toBe(false);
+    for (const [normId, rate, unit, packageSize, packVersion] of SOURCE_ONLY_FACTS) {
+      const physicalFact = physical.get(normId);
+      expect(physicalFact).toMatchObject({
+        packVersion,
+        item: {
+          norm_id: normId,
+          unit,
+          rate: { value: rate },
+          rounding: { package_size: packageSize },
+          source: { url: expect.stringMatching(/^https:\/\//u) },
+        },
+      });
+      expect(physicalFact?.item.parameters.length).toBeGreaterThan(0);
+      expect(Object.keys(physicalFact?.item.applicability ?? {})).not.toHaveLength(0);
     }
   });
 
-  it("keeps the six static Knauf D112 variant-1 rows exact and rounds only piece outputs", () => {
+  it("keeps CN 87 and CL 51 source-only without explicit product and assembly parameters", () => {
+    const screedSource = RETIRED_STATIC_SOURCE_IDS[13];
+    expectSourceOnly(
+      "screed_cement_sand_50mm",
+      "screed_cement_sand_50mm_flooring_interior_subfloor_lay_standard_materials_01",
+      screedSource,
+    );
+    expect(compile("apartment_capital_renovation").rows.some((row) =>
+      row.normSourceId === screedSource)).toBe(false);
+
+    const waterproofingSource = RETIRED_STATIC_SOURCE_IDS[12];
+    expectSourceOnly(
+      "waterproofing_interior_bathroom_apply_standard",
+      "waterproofing_interior_bathroom_apply_standard_materials_03",
+      waterproofingSource,
+    );
+    expect(compile("apartment_capital_renovation").rows.some((row) =>
+      row.normSourceId === waterproofingSource)).toBe(false);
+  });
+
+  it("does not infer Knauf D112 from a generic drywall-ceiling work key", () => {
     const workKey = "drywall_ceiling_interior_drywall_ceiling_install_standard";
-    const reference = compileProductionExpandedEstimate10000({ workKey, quantity: 100, countryCode: "KG" });
-    const sourced = reference.rows.filter((row) =>
-      row.normSourceId?.startsWith("src_professional_norm_pack_ceilings_knauf_d112_standard_"),
-    );
-    expect(sourced.map((row) => [row.rowCode, row.quantity, row.unit])).toEqual([
-      [`${workKey}_materials_01`, 100, "m2"],
-      [`${workKey}_materials_02`, 40, "linear_m"],
-      [`${workKey}_materials_05`, 30, "kg"],
-      [`${workKey}_materials_06`, 45, "linear_m"],
-      [`${workKey}_components_07`, 1700, "piece"],
-      [`${workKey}_components_08`, 120, "piece"],
-    ]);
-    expect(sourced.every((row) => row.sourceParameters?.normSourceDocumentVersion ===
-      "2026.09-knauf-d11-d112-primary-review-r2")).toBe(true);
-
-    const fractionalArea = compileProductionExpandedEstimate10000({
-      workKey,
-      quantity: 0.1,
-      countryCode: "KG",
-    });
-    expect(fractionalArea.rows.find((row) => row.rowCode === `${workKey}_components_07`))
-      .toMatchObject({ quantityFormula: "ceil(q * normFactor)", quantity: 2, unit: "piece" });
-    expect(fractionalArea.rows.find((row) => row.rowCode === `${workKey}_components_08`))
-      .toMatchObject({ quantityFormula: "ceil(q * normFactor)", quantity: 1, unit: "piece" });
+    for (const quantity of [100, 0.1]) {
+      const compiled = compile(workKey, quantity);
+      expect(compiled.rows).toHaveLength(59);
+      expect(compiled.rows.some((row) =>
+        row.normSourceId.startsWith("src_professional_norm_pack_ceilings_knauf_d112_standard_")))
+        .toBe(false);
+    }
   });
 
-  it("uses the documented Sarnafil AT-18 field-overlap factor only for the exact flat-roof row", () => {
-    const row = sourcedRow(
+  it("does not infer Sarnafil or Fixrock from generic roof and facade work keys", () => {
+    expectSourceOnly(
       "roofing_interior_flat_roof_install_standard",
       "roofing_interior_flat_roof_install_standard_materials_01",
+      RETIRED_STATIC_SOURCE_IDS[1],
     );
-    expect(row.quantity).toBeCloseTo(104.1667, 4);
-    expect(row.unit).toBe("m2");
-    expect(row.normId).toContain("roofing_sarnafil_at18_field_overlap_m2_m2_v1");
+    expectSourceOnly(
+      "facade_interior_vent_facade_install_standard",
+      "facade_interior_vent_facade_install_standard_components_07",
+      RETIRED_STATIC_SOURCE_IDS[2],
+    );
+    expect(compile("roofing_interior_metal_roof_install_standard").rows.some((row) =>
+      row.normSourceId.includes("sarnafil"))).toBe(false);
+  });
 
-    const grossFieldAreaBeforeRollLayout = sourcedRow(
+  it("does not infer Comfortboard, Jotun or Sikagard from generic material scopes", () => {
+    expectSourceOnly(
+      "insulation_interior_facade_install_standard",
+      "insulation_interior_facade_install_standard_materials_01",
+      RETIRED_STATIC_SOURCE_IDS[3],
+    );
+    expectSourceOnly(
+      "carpentry_metal_interior_metal_frame_paint_standard",
+      "carpentry_metal_interior_metal_frame_paint_standard_materials_03",
+      RETIRED_STATIC_SOURCE_IDS[4],
+    );
+    expectSourceOnly(
+      "carpentry_metal_interior_wood_frame_finish_standard",
+      "carpentry_metal_interior_wood_frame_finish_standard_materials_03",
+      RETIRED_STATIC_SOURCE_IDS[0],
+    );
+  });
+
+  it("keeps every product-specific static source out of the 10k registry", () => {
+    expect(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS).toEqual([]);
+    const rows = [
+      "apartment_capital_renovation",
+      "screed_cement_sand_50mm",
+      "waterproofing_interior_bathroom_apply_standard",
+      "drywall_ceiling_interior_drywall_ceiling_install_standard",
       "roofing_interior_flat_roof_install_standard",
-      "roofing_interior_flat_roof_install_standard_materials_01",
-      10,
-    );
-    expect(grossFieldAreaBeforeRollLayout.quantity).toBeCloseTo(10.4167, 4);
-    expect(grossFieldAreaBeforeRollLayout.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 1.0416667,
-      packageSize: 30,
-    });
-    expect(grossFieldAreaBeforeRollLayout.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-sika-sarnafil-at18-primary-review-r2");
-
-    const unrelated = compileProductionExpandedEstimate10000({
-      workKey: "roofing_interior_metal_roof_install_standard",
-      quantity: 100,
-      countryCode: "KG",
-    });
-    expect(unrelated.rows[0]?.normSourceId).not.toContain("sarnafil");
-  });
-
-  it("uses five Fixrock holders per square metre only for conventional ventilated-facade fixing", () => {
-    const row = sourcedRow(
       "facade_interior_vent_facade_install_standard",
-      "facade_interior_vent_facade_install_standard_components_07",
-    );
-    expect(row.quantity).toBe(500);
-    expect(row.unit).toBe("piece");
-    expect(row.normId).toContain("facade_rockwool_fixrock_conventional_fixings_piece_m2_v1");
-
-    const smallestMeasuredArea = sourcedRow(
-      "facade_interior_vent_facade_install_standard",
-      "facade_interior_vent_facade_install_standard_components_07",
-      0.1,
-    );
-    expect(smallestMeasuredArea.quantityFormula).toBe("ceil(q * normFactor)");
-    expect(smallestMeasuredArea.quantity).toBe(1);
-    expect(smallestMeasuredArea.calculationTrace).toContain("rounding=ceil_to_whole_unit");
-    expect(smallestMeasuredArea.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-rockwool-vhf-fixings-primary-review-r2");
-    expect(smallestMeasuredArea.sourceParameters?.normParameterRequirements).toEqual([
-      { key: "normFactor", unit: "piece", required: true, source: "norm_record" },
-      { key: "q", unit: "m2", required: true, source: "user_measurement" },
-    ]);
-  });
-
-  it("keeps Comfortboard net area and Jotun theoretical spreading rate dimensionally explicit", () => {
-    const insulation = sourcedRow(
       "insulation_interior_facade_install_standard",
-      "insulation_interior_facade_install_standard_materials_01",
-    );
-    expect(insulation.quantity).toBe(100);
-    expect(insulation.unit).toBe("m2");
-    expect(insulation.normId).toContain("insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1");
-
-    const netAreaBeforeCutLayout = sourcedRow(
-      "insulation_interior_facade_install_standard",
-      "insulation_interior_facade_install_standard_materials_01",
-      1,
-    );
-    expect(netAreaBeforeCutLayout.quantity).toBe(1);
-    expect(netAreaBeforeCutLayout.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 1,
-      packageSize: 4.45,
-    });
-    expect(netAreaBeforeCutLayout.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-rockwool-comfortboard80-primary-review-r2");
-
-    const coating = sourcedRow(
       "carpentry_metal_interior_metal_frame_paint_standard",
-      "carpentry_metal_interior_metal_frame_paint_standard_materials_03",
-    );
-    expect(coating.quantity).toBeCloseTo(15.873, 3);
-    expect(coating.unit).toBe("l");
-    expect(coating.normId).toContain("metalwork_jotun_hardtop_xp_l_m2_100um_v1");
-
-    const theoreticalLitresBeforeLossAndKitSelection = sourcedRow(
-      "carpentry_metal_interior_metal_frame_paint_standard",
-      "carpentry_metal_interior_metal_frame_paint_standard_materials_03",
-      1,
-    );
-    expect(theoreticalLitresBeforeLossAndKitSelection.quantity).toBeCloseTo(0.1587, 4);
-    expect(theoreticalLitresBeforeLossAndKitSelection.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 0.15873016,
-      packageSize: 5,
-    });
-    expect(theoreticalLitresBeforeLossAndKitSelection.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-jotun-hardtop-xp-primary-review-r2");
-  });
-
-  it("uses the carpentry wood-preserver source instead of a neighboring wood-floor adhesive", () => {
-    const row = sourcedRow(
       "carpentry_metal_interior_wood_frame_finish_standard",
-      "carpentry_metal_interior_wood_frame_finish_standard_materials_03",
-    );
-    expect(row.quantity).toBe(25);
-    expect(row.unit).toBe("l");
-    expect(row.normId).toContain("carpentry_sikagard_wood_preserver_l_m2_preventative_v1");
-    expect(row.normId).not.toContain("wood_floor");
-
-    const partialTinRequirement = sourcedRow(
-      "carpentry_metal_interior_wood_frame_finish_standard",
-      "carpentry_metal_interior_wood_frame_finish_standard_materials_03",
-      10,
-    );
-    expect(partialTinRequirement.quantity).toBe(2.5);
-    expect(partialTinRequirement.sourceParameters?.formulaContext).toMatchObject({
-      normFactor: 0.25,
-      packageSize: 1,
-    });
-    expect(partialTinRequirement.sourceParameters?.normSourceDocumentVersion)
-      .toBe("2026.09-sikagard-wood-preserver-primary-review-r2");
-    expect(partialTinRequirement.sourceParameters?.normParameterRequirements).toEqual([
-      { key: "normFactor", unit: "l", required: true, source: "norm_record" },
-      { key: "q", unit: "m2", required: true, source: "user_measurement" },
-    ]);
+    ].flatMap((workKey) => compile(workKey).rows);
+    for (const sourceId of RETIRED_STATIC_SOURCE_IDS) {
+      expect(rows.some((row) => row.normSourceId === sourceId)).toBe(false);
+    }
   });
 });

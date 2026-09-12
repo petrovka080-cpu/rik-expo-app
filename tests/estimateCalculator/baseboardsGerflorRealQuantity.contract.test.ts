@@ -1,11 +1,13 @@
 import {
   compileProductionExpandedEstimate10000,
   getProductionWorkDefinition10000,
-  isProfessionalNormPackSourceId,
 } from "../../src/lib/ai/estimateTemplate10000";
 
-describe("Gerflor Design Skirting source-backed quantity", () => {
-  it("keeps measured perimeter one-to-one and exposes the 2 m product length", () => {
+const RETIRED_GERFLOR_SOURCE_ID =
+  "src_professional_norm_pack_baseboards_gerflor_design_skirting_linear_m_perimeter_v1";
+
+describe("Gerflor Design Skirting source-only applicability", () => {
+  it("keeps the measured-perimeter row generic until the selected skirting system is explicit", () => {
     const definition = getProductionWorkDefinition10000("flooring_interior_baseboard_install_standard");
     expect(definition?.defaultUnit).toBe("linear_m");
     const compiled = compileProductionExpandedEstimate10000({
@@ -14,17 +16,20 @@ describe("Gerflor Design Skirting source-backed quantity", () => {
       countryCode: "KG",
     });
     const row = compiled.rows.find((candidate) =>
-      isProfessionalNormPackSourceId(candidate.normSourceId) &&
-      candidate.normSourceId.includes("baseboards_gerflor_design_skirting")
+      candidate.rowCode === "flooring_interior_baseboard_install_standard_materials_01"
     );
 
-    expect(row?.unit).toBe("linear_m");
-    expect(row?.quantity).toBe(55);
-    expect(row?.sourceParameters.baseUnit).toBe("linear_m");
-    expect(row?.sourceParameters.formulaContext).toMatchObject({
-      normFactor: 1,
-      packageSize: 2,
-      wastePercent: 0,
+    expect(compiled.rows).toHaveLength(59);
+    expect(row).toMatchObject({
+      unit: "linear_m",
+      normSourceId: "src_professional_norm_pack_catalog_baseboards_material_materials_linear_m_v1",
+      sourceParameters: expect.objectContaining({
+        baseQuantity: 55,
+        baseUnit: "linear_m",
+      }),
     });
+    expect(row?.calculationTrace).toContain("baseQuantity=55 linear_m");
+    expect(compiled.rows.some((candidate) => candidate.normSourceId === RETIRED_GERFLOR_SOURCE_ID))
+      .toBe(false);
   });
 });
