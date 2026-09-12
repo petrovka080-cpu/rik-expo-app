@@ -45,6 +45,15 @@ export const LINDAB_VSR_NORM_ID =
 export const LINDAB_VSR_SOURCE_ID =
   `src_professional_norm_pack_${LINDAB_VSR_NORM_ID}` as const;
 
+const LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "route_length_m",
+  "duct_diameter_mm",
+  "nozzle_pattern",
+  "air_distribution_design",
+  "fitting_schedule",
+  "cooled_supply_air_confirmed",
+] as const);
+
 export const DAIKIN_3MXS_K_PRODUCT_PROFILE_ID =
   "manufacturer-profile:daikin-3mxs-k:r410a:v1" as const;
 
@@ -192,7 +201,17 @@ if (
   lindabVsrNorm.unit !== "linear_m" ||
   lindabVsrNorm.rate.unit !== "duct linear m/approved straight route linear m" ||
   lindabVsrNorm.rate.value !== 1 ||
-  lindabVsrNorm.rounding.mode !== "ceil_after_fitting_and_nozzle_layout"
+  lindabVsrNorm.parameters.length !== LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !lindabVsrNorm.parameters.includes(parameterId),
+  ) ||
+  lindabVsrNorm.applicability.available_diameters_mm.join(",") !== "200,250,315,400,500" ||
+  lindabVsrNorm.applicability.maximum_standard_length_m !== 3 ||
+  lindabVsrNorm.applicability.primarily_for_cooled_supply_air !== true ||
+  lindabVsrNorm.applicability.nozzle_pattern_requires_air_distribution_design !== true ||
+  lindabVsrNorm.rounding.package_unit !== "not_applicable" ||
+  lindabVsrNorm.rounding.package_size !== 1 ||
+  lindabVsrNorm.rounding.mode !== "no_package_rounding_apply_approved_route_length"
 ) {
   throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${LINDAB_VSR_NORM_ID}`);
 }
@@ -206,7 +225,7 @@ export const LINDAB_VSR_SOURCE_METADATA = Object.freeze({
   exact_locator: lindabVsrNorm.source.page,
   rate_value: lindabVsrNorm.rate.value,
   rate_unit: lindabVsrNorm.rate.unit,
-  available_diameter_range_mm: lindabVsrNorm.applicability.available_diameter_range_mm,
+  available_diameters_mm: lindabVsrNorm.applicability.available_diameters_mm,
   maximum_standard_length_m: lindabVsrNorm.applicability.maximum_standard_length_m,
   definition_hash: estimateDeterministicHash({
     work_group: ventilationNormPack.work_group,
@@ -596,15 +615,6 @@ export const WAVIN_HEP2O_CLIP_SOURCE_METADATA = Object.freeze(wavinHep2OClipNorm
   });
 }));
 
-const LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
-  "route_length_m",
-  "duct_diameter_mm",
-  "nozzle_pattern",
-  "air_distribution_design",
-  "fitting_schedule",
-  "cooled_supply_air_confirmed",
-] as const);
-
 const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "area_m2",
   "length_m",
@@ -932,10 +942,9 @@ function resolveLindabVsr(
 
   const routeLengthM = finiteNumber(explicit.route_length_m);
   const diameterMm = finiteNumber(explicit.duct_diameter_mm);
-  const [minimumDiameterMm, maximumDiameterMm] = LINDAB_VSR_SOURCE_METADATA.available_diameter_range_mm;
   const invalidNumeric = [
     routeLengthM === null || routeLengthM <= 0 ? "PROJECT_VALUE_INVALID:route_length_m" : "",
-    diameterMm === null || diameterMm < minimumDiameterMm || diameterMm > maximumDiameterMm
+    diameterMm === null || !LINDAB_VSR_SOURCE_METADATA.available_diameters_mm.includes(diameterMm)
       ? `PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:duct_diameter_mm=${diameterMm}`
       : "",
   ].filter(Boolean);
@@ -960,22 +969,9 @@ function resolveLindabVsr(
     );
   }
 
-  const packageSize = lindabVsrNorm.rounding.package_size;
-  const calculatedResourceQuantityM = Math.ceil(
-    routeLengthM! * LINDAB_VSR_SOURCE_METADATA.rate_value / packageSize,
-  ) * packageSize;
   const resourceUnitsPerOutput = LINDAB_VSR_SOURCE_METADATA.rate_value;
+  const calculatedResourceQuantityM = Number((routeLengthM! * resourceUnitsPerOutput).toFixed(9));
   const procurementFactor = calculatedResourceQuantityM / (routeLengthM! * resourceUnitsPerOutput);
-  if (procurementFactor > 3) {
-    return nonApplied(
-      "BLOCKED_NOT_APPLICABLE",
-      productProfileId,
-      parameterValuesInput,
-      [`PHYSICAL_NORM_RUNTIME_RANGE_EXCEEDED:procurement_factor=${procurementFactor}:maximum=3`],
-      LINDAB_REQUIRED_EXPLICIT_PARAMETER_IDS,
-      LINDAB_VSR_SOURCE_METADATA,
-    );
-  }
   const explicitUnitsPerOutput = finiteNumber(explicitValue(parameterValuesInput, "primary_resource_units_per_output"));
   const explicitProcurementFactor = finiteNumber(explicitValue(parameterValuesInput, "procurement_factor"));
   const conflicts = [
@@ -1009,7 +1005,7 @@ function resolveLindabVsr(
     `nozzle_pattern=${primitiveString(explicit.nozzle_pattern!)}`,
     `air_distribution_design=${primitiveString(explicit.air_distribution_design!)}`,
     `fitting_schedule=${primitiveString(explicit.fitting_schedule!)}`,
-    `formula=ceil(route_length_m*${resourceUnitsPerOutput}/${packageSize})*${packageSize}`,
+    `formula=route_length_m*${resourceUnitsPerOutput}`,
     "bends_transitions_supports_seals_and_cutting_are_separate=true",
   ].join(";");
   const sourceManagedValue = (

@@ -48,7 +48,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   services: "2026.09-kg-author-supervision-trip-exclusion-r1",
   sewerage: "2026.09-wavin-osma-110mm-3m-pipe-r1",
   tile: "2026.07-wave1",
-  ventilation: "2026.09-lindab-vsr-3m-duct-r1",
+  ventilation: "2026.09-lindab-vsr-exact-sizes-r2",
   waste_removal: "2026.09-us-epa-cd-volume-weight-r1",
   waterproofing: "2026.07-wave1",
   windows_doors: "2026.09-soudal-window-door-genius-linear-yield-r1",

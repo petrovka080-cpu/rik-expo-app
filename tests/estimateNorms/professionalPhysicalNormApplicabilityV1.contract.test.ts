@@ -497,27 +497,33 @@ describe("professional physical norm applicability V1", () => {
       source_id: LINDAB_VSR_SOURCE_ID,
       blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:duct_diameter_mm=501`],
     });
+    expect(resolveLindab(exactLindabInputs({ duct_diameter_mm: explicit(300, "mm") }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: LINDAB_VSR_SOURCE_ID,
+      blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:duct_diameter_mm=300`],
+    });
     expect(resolveLindab(exactLindabInputs({ cooled_supply_air_confirmed: explicit(false) }))).toMatchObject({
       status: "BLOCKED_NOT_APPLICABLE",
       source_id: LINDAB_VSR_SOURCE_ID,
       blockers: [`PHYSICAL_NORM_NOT_APPLICABLE:${LINDAB_VSR_NORM_ID}:cooled_supply_air_confirmed=false`],
     });
     expect(resolveLindab(exactLindabInputs({ route_length_m: explicit(0.5, "m") }))).toMatchObject({
-      status: "BLOCKED_NOT_APPLICABLE",
-      blockers: ["PHYSICAL_NORM_RUNTIME_RANGE_EXCEEDED:procurement_factor=6:maximum=3"],
+      status: "APPLIED",
+      calculated_resource_quantity_m: 0.5,
+      parameter_values: { procurement_factor: { value: 1 } },
     });
   });
 
-  test("rounds only the Lindab procurement quantity while preserving approved route length", () => {
+  test("preserves the exact Lindab route quantity without treating maximum section length as packaging", () => {
     const input = exactLindabInputs();
     const result = resolveLindab(input);
 
     expect(result).toMatchObject({
       status: "APPLIED",
       source_id: LINDAB_VSR_SOURCE_ID,
-      source_document_version: "2026.09-lindab-vsr-3m-duct-r1",
+      source_document_version: "2026.09-lindab-vsr-exact-sizes-r2",
       source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
-      calculated_resource_quantity_m: 12,
+      calculated_resource_quantity_m: 10,
       produced_parameter_ids: ["primary_resource_units_per_output", "procurement_factor"],
     });
     expect(result.parameter_values.route_length_m).toBe(input.route_length_m);
@@ -527,7 +533,7 @@ describe("professional physical norm applicability V1", () => {
       source_id: LINDAB_VSR_SOURCE_ID,
     });
     expect(result.parameter_values.procurement_factor).toMatchObject({
-      value: 1.2,
+      value: 1,
       source_type: "APPLICABLE_NORM",
       source_id: LINDAB_VSR_SOURCE_ID,
     });
@@ -573,7 +579,7 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     const resourceRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_resource`);
-    expect(resourceRow).toMatchObject({ quantity: 12, unit: "m" });
+    expect(resourceRow).toMatchObject({ quantity: 10, unit: "m" });
     expect(resourceRow?.sourceParameters?.normativeSourceIds).toEqual([
       "kg_krer_2015_application_guidance",
       LINDAB_VSR_SOURCE_ID,
@@ -586,7 +592,7 @@ describe("professional physical norm applicability V1", () => {
     expect(resourceRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
       source_id: LINDAB_VSR_SOURCE_ID,
       source_definition_hash: LINDAB_VSR_SOURCE_METADATA.definition_hash,
-      calculated_resource_quantity_m: 12,
+      calculated_resource_quantity_m: 10,
     });
   });
 

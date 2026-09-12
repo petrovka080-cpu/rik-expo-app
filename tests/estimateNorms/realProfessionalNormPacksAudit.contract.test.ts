@@ -65,6 +65,18 @@ describe("real professional norm packs audit", () => {
         items?: { verified_facts?: string[] }[];
       };
     };
+    const reviewedVentilationPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/ventilation.json"),
+        "utf8",
+      ),
+    ) as {
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { supporting_source_urls?: string[]; verified_facts?: string[] }[];
+      };
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -189,6 +201,16 @@ describe("real professional norm packs audit", () => {
         "150_mm_spacing_equals_6_7_m_pipe_per_m2",
         "feed_and_tail_lengths_between_manifold_and_room_must_be_added",
         "no_pipe_package_or_whole_metre_rounding_stated_for_the_requirement_formula",
+      ]));
+    expect(reviewedVentilationPack.review_status).toBe("reviewed");
+    expect(reviewedVentilationPack.review_evidence).toMatchObject({
+      method: "DIRECT_PRIMARY_SOURCE_REVIEW",
+    });
+    expect(reviewedVentilationPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "five_exact_diameters_are_200_250_315_400_500_mm",
+        "maximum_standard_section_length_is_3000_mm",
+        "maximum_standard_length_does_not_define_a_three_metre_procurement_rounding_rule",
       ]));
   });
 

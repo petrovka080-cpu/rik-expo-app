@@ -18,7 +18,6 @@ function question(labelRu: string, unit: string | null, ...aliasesRu: string[]):
 
 export const PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU: Readonly<Record<string, ProfessionalNormPackBasisQuestionRu>> = Object.freeze({
   approved_dripline_route_linear_m: question("Проектная длина капельной линии", "linear_m", "трасса полива"),
-  approved_duct_route_linear_m: question("Проектная длина воздуховода", "linear_m", "трасса воздуховода"),
   approved_pipe_route_linear_m: question("Проектная длина канализационной трассы", "linear_m", "трасса канализации"),
   approved_route_length_linear_m: question("Проектная длина кабельной трассы", "linear_m", "длина кабеля"),
   board_area_m2: question("Площадь обшивки гипсокартоном", "m2", "площадь листов"),
@@ -42,6 +41,7 @@ export const PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU: Readonly<Record<string, 
   prepared_pipe_end_count: question("Количество подготовленных концов трубы", "pcs", "концы трубы"),
   project_capacity_measure: question("Проектная мощность в единице выбранного сборника", null, "мощность объекта"),
   qualified_joint_length_linear_m: question("Длина монтажного шва окна или двери", "linear_m", "периметр рамы"),
+  route_length_m: question("Утверждённая длина трассы воздуховода", "linear_m", "трасса воздуховода"),
   shift_count: question("Количество смен аренды", "shift", "смены"),
   skirting_length_linear_m: question("Длина приклеиваемого плинтуса", "linear_m", "плинтус под клей"),
   total_refrigerant_piping_length_m: question("Общая длина фреоновой трассы", "linear_m", "трасса кондиционера"),

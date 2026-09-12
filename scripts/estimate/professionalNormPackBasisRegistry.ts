@@ -53,7 +53,7 @@ export const PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID = Object.freeze({
   sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1: "approved_pipe_route_linear_m",
   tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1: "area_m2",
   tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1: "area_m2",
-  ventilation_lindab_vsr_duct_linear_m_route_v1: "approved_duct_route_linear_m",
+  ventilation_lindab_vsr_duct_linear_m_route_v1: "route_length_m",
   waste_removal_us_epa_cd_concrete_kg_m3_v1: "measured_loose_concrete_debris_m3",
   waste_removal_us_epa_cd_composite_kg_m3_v1: "measured_loose_cd_debris_m3",
   waterproofing_ceresit_cl51_two_coats_kg_m2_v1: "area_m2",
