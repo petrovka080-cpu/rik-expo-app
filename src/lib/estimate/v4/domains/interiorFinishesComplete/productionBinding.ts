@@ -11,6 +11,7 @@ import {
   type ProfessionalDomainParameterSchemaV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
 } from "../../domainFactory";
 import type {
@@ -352,7 +353,8 @@ export function buildInteriorFinishesFromInlineInputV1(
     supplied: input.paramOverrides,
     requireExplicitNormativeRateCode:
       constructionState(inventory) === "REPAIR" ||
-      input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+      input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   });
   const baselineParameterValues = baseline.parameter_values;
   const scopeMode = baselineParameterValues.estimate_scope_mode?.value;

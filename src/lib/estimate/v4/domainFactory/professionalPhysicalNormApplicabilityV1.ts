@@ -1,5 +1,6 @@
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
+import drywallNormPack from "../../../../../data/estimate-norms/professional/drywall.json";
 import electricalNormPack from "../../../../../data/estimate-norms/professional/electrical.json";
 import heatingNormPack from "../../../../../data/estimate-norms/professional/heating.json";
 import plumbingNormPack from "../../../../../data/estimate-norms/professional/plumbing.json";
@@ -48,6 +49,15 @@ export const KNAUF_D112_WALL_FASTENER_NORM_ID =
 
 export const KNAUF_D112_WALL_FASTENER_SOURCE_ID =
   `src_professional_norm_pack_${KNAUF_D112_WALL_FASTENER_NORM_ID}` as const;
+
+export const KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:knauf-fugenfueller-leicht:perimeter-joint:25kg:v1" as const;
+
+export const KNAUF_FUGENFUELLER_PERIMETER_NORM_ID =
+  "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1" as const;
+
+export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}` as const;
 
 export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
   "manufacturer-profile:legrand-p31:symmetrical-tray:75-300mm:v1" as const;
@@ -230,6 +240,61 @@ export const KNAUF_D112_WALL_FASTENER_SOURCE_METADATA = Object.freeze({
     work_group: ceilingsNormPack.work_group,
     source_pack_version: ceilingsNormPack.source_pack_version,
     norm_item: knaufD112WallFastenerNorm,
+  }),
+});
+
+const knaufFugenfuellerPerimeterNorm = (() => {
+  const found = drywallNormPack.norm_items.find(
+    (item) => item.norm_id === KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}`);
+  }
+  return found;
+})();
+const knaufFugenfuellerRateRange = "rate_range_kg_linear_m" in knaufFugenfuellerPerimeterNorm.applicability
+  ? knaufFugenfuellerPerimeterNorm.applicability.rate_range_kg_linear_m
+  : null;
+
+if (
+  drywallNormPack.work_group !== "drywall" ||
+  knaufFugenfuellerPerimeterNorm.unit !== "kg" ||
+  knaufFugenfuellerPerimeterNorm.rate.value !== 0.15 ||
+  knaufFugenfuellerPerimeterNorm.rate.unit !== "kg/linear_m; range 0.15-0.25 kg/linear_m" ||
+  !("systems" in knaufFugenfuellerPerimeterNorm.applicability) ||
+  knaufFugenfuellerPerimeterNorm.applicability.systems.length !== 1 ||
+  knaufFugenfuellerPerimeterNorm.applicability.systems[0] !== "gypsum_board" ||
+  !("connection" in knaufFugenfuellerPerimeterNorm.applicability) ||
+  knaufFugenfuellerPerimeterNorm.applicability.connection !== "perimeter" ||
+  !knaufFugenfuellerRateRange ||
+  knaufFugenfuellerRateRange[0] !== 0.15 ||
+  knaufFugenfuellerRateRange[1] !== 0.25 ||
+  knaufFugenfuellerPerimeterNorm.waste_percent_default !== 8 ||
+  knaufFugenfuellerPerimeterNorm.rounding.package_unit !== "bag" ||
+  knaufFugenfuellerPerimeterNorm.rounding.package_size !== 25 ||
+  knaufFugenfuellerPerimeterNorm.rounding.mode !== "ceil"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}`);
+}
+
+export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
+  norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
+  source_document_version: drywallNormPack.source_pack_version,
+  source_title: knaufFugenfuellerPerimeterNorm.source.title,
+  source_url: knaufFugenfuellerPerimeterNorm.source.url,
+  exact_locator: knaufFugenfuellerPerimeterNorm.source.page,
+  rate_value: knaufFugenfuellerPerimeterNorm.rate.value,
+  rate_unit: knaufFugenfuellerPerimeterNorm.rate.unit,
+  rate_range_kg_linear_m: [knaufFugenfuellerRateRange[0], knaufFugenfuellerRateRange[1]] as const,
+  system: knaufFugenfuellerPerimeterNorm.applicability.systems[0],
+  connection: knaufFugenfuellerPerimeterNorm.applicability.connection,
+  waste_percent_default: knaufFugenfuellerPerimeterNorm.waste_percent_default,
+  package_size_kg: knaufFugenfuellerPerimeterNorm.rounding.package_size,
+  definition_hash: estimateDeterministicHash({
+    work_group: drywallNormPack.work_group,
+    source_pack_version: drywallNormPack.source_pack_version,
+    norm_item: knaufFugenfuellerPerimeterNorm,
   }),
 });
 
@@ -430,6 +495,15 @@ const KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "ceiling_perimeter_anchor_spacing_m",
 ] as const);
 
+const KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "perimeter_linear_m",
+  "cladding_thickness_mm",
+  "perimeter_joint_consumption_kg_linear_m",
+  "perimeter_connection_joint_method",
+  "system_passport_reference",
+  "material_certificate_reference",
+] as const);
+
 const LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "product_specification_id",
   "containment_type",
@@ -524,6 +598,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_D112_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_perimeter_track_anchors"] as const,
 }, {
+  norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
+  work_group: "drywall",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FINISH_JOINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
+  source_document_version: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["perimeter_joint_compound_quantity_kg"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -594,6 +682,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_resource_quantity_m?: number;
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
+  calculated_perimeter_joint_compound_quantity_kg?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -1096,6 +1185,136 @@ function resolveKnaufD112ReferenceCeiling(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKnaufFugenfuellerPerimeterJoint(
+  productProfileId: typeof KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA,
+    );
+  }
+
+  const perimeterLinearM = finiteNumber(explicit.perimeter_linear_m);
+  const claddingThicknessMm = finiteNumber(explicit.cladding_thickness_mm);
+  const consumptionKgLinearM = finiteNumber(explicit.perimeter_joint_consumption_kg_linear_m);
+  const connectionMethod = primitiveString(explicit.perimeter_connection_joint_method!);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const [minimumConsumption, maximumConsumption] =
+    KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.rate_range_kg_linear_m;
+  const applicabilityBlockers = [
+    perimeterLinearM !== null && perimeterLinearM > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:perimeter_linear_m",
+    claddingThicknessMm !== null && claddingThicknessMm > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:cladding_thickness_mm",
+    consumptionKgLinearM !== null &&
+      consumptionKgLinearM >= minimumConsumption &&
+      consumptionKgLinearM <= maximumConsumption
+      ? ""
+      : `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}:perimeter_joint_consumption_kg_linear_m=${consumptionKgLinearM}`,
+    connectionMethod === "KNAUF_TRENN_FIX"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}:perimeter_connection_joint_method=${connectionMethod}`,
+    systemPassportReference ? "" : "PROJECT_VALUE_INVALID:system_passport_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA,
+    );
+  }
+
+  const wasteFactor = 1 + KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.waste_percent_default / 100;
+  const packageSizeKg = KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.package_size_kg;
+  const rawQuantityKg = perimeterLinearM! * consumptionKgLinearM! * wasteFactor;
+  const calculatedPerimeterJointCompoundQuantityKg = Math.ceil(rawQuantityKg / packageSizeKg - 1e-9) * packageSizeKg;
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "perimeter_joint_compound_quantity_kg"));
+  if (
+    explicitQuantity !== null &&
+    Math.abs(explicitQuantity - calculatedPerimeterJointCompoundQuantityKg) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:perimeter_joint_compound_quantity_kg=${explicitQuantity}:norm_value=${calculatedPerimeterJointCompoundQuantityKg}`,
+      ],
+      [
+        ...KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "perimeter_joint_compound_quantity_kg",
+      ],
+      KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.system}`,
+    `connection=${KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.connection}`,
+    `perimeter_connection_joint_method=${connectionMethod}`,
+    `perimeter_linear_m=${perimeterLinearM}`,
+    `cladding_thickness_mm=${claddingThicknessMm}`,
+    `perimeter_joint_consumption_kg_linear_m=${consumptionKgLinearM}`,
+    `system_passport_reference=${systemPassportReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+    `waste_percent=${KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.waste_percent_default}`,
+    `formula=ceil((perimeter_linear_m*perimeter_joint_consumption_kg_linear_m*${wasteFactor})/${packageSizeKg})*${packageSizeKg}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    perimeter_joint_compound_quantity_kg: {
+      value: calculatedPerimeterJointCompoundQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
+    norm_id: KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
+    source_document_version: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["perimeter_joint_compound_quantity_kg"],
+    calculated_perimeter_joint_compound_quantity_kg: calculatedPerimeterJointCompoundQuantityKg,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveLegrandP31TrayJointFasteners(
   productProfileId: typeof LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -1495,6 +1714,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "FLAT_CEILING" &&
+      input.operation_class === "FINISH_JOINT" &&
+      input.material_system === "FLAT_CEILING" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveKnaufFugenfuellerPerimeterJoint(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA,
     );
   }
   if (productProfileId === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID) {

@@ -16,6 +16,8 @@ import type {
 import {
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+  KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
 } from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
 import type { InteriorFinishesDomainInventoryRow } from "./inventory";
 import { estimateDeterministicHash } from "../../../estimateDeterministicHash";
@@ -112,6 +114,7 @@ type RowSpec = {
   ownership?: "priced_resource" | "informational_output";
   procurement?: boolean;
   resource_class: string;
+  product_profile_id?: string;
 };
 
 export type IndividualProfessionalEstimatePassportV6 = {
@@ -300,6 +303,49 @@ function knaufD112ReferenceApplicabilityParameters(
     parameter("substrate_fastener_reference", "Точный тип и паспорт крепежа для выбранного основания", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     parameter("substrate_fastener_approved", "Крепёж подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
   ];
+}
+
+function knaufFugenfuellerPerimeterParameters(
+  operation: DrywallArchitecturalElementOperationV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
+): ParameterSpec[] {
+  if (system !== "CEILING" || operation !== "FINISH_JOINT") return [];
+  const condition = {
+    kind: "EQUALS",
+    parameter_id: "product_profile_id",
+    value: KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  } as const;
+  return [
+    { ...numberParameter("perimeter_linear_m", "Длина периметральных примыканий", "m", "PROJECT_QUANTITY", FULL_SCOPE), condition },
+    { ...numberParameter("cladding_thickness_mm", "Толщина гипсокартонной обшивки в узле примыкания", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE), condition },
+    { ...numberParameter("perimeter_joint_consumption_kg_linear_m", "Подтверждённый расход Fugenfüller Leicht по толщине обшивки", "kg_per_m", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 0.15, 0.25), condition },
+    parameter("perimeter_connection_joint_method", "Системный способ выполнения периметрального примыкания", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "KNAUF_TRENN_FIX", label_ru: "Knauf Trenn-Fix" }],
+      condition,
+    }),
+    { ...numberParameter("perimeter_joint_compound_quantity_kg", "Расчётная закупочная масса Fugenfüller Leicht", "kg", "NORM_RATE", FULL_SCOPE), condition },
+  ];
+}
+
+function knaufFugenfuellerPerimeterRows(
+  operation: DrywallArchitecturalElementOperationV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
+): RowSpec[] {
+  if (system !== "CEILING" || operation !== "FINISH_JOINT") return [];
+  return [{
+    ...pricedRow(
+      "knauf_fugenfueller_perimeter_joint",
+      "Периметральные примыкания",
+      "material",
+      "Knauf Fugenfüller Leicht для периметральных примыканий",
+      "perimeter_joint_compound_quantity_kg",
+      ["perimeter_joint_compound_quantity_kg"],
+      "kg",
+      (values) => values.perimeter_joint_compound_quantity_kg,
+      { scopes: "FULL", procurement: true, resource_class: "drywall perimeter joint compound" },
+    ),
+    product_profile_id: KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  }];
 }
 
 function flatCeilingGeometryRows(operation: DrywallArchitecturalElementOperationV4): RowSpec[] {
@@ -659,6 +705,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     ...(contract.system === "CURVE" ? curveGeometryParameters(contract.operation) : []),
     ...(flatCeiling ? flatCeilingGeometryParameters(contract.operation) : []),
     ...knaufD112ReferenceApplicabilityParameters(contract.operation, contract.variant, contract.system),
+    ...knaufFugenfuellerPerimeterParameters(contract.operation, contract.system),
   ];
   for (const dependency of contract.non_cost_dependencies) baseParameters.push(parameter(dependency, `Подтвержденная non-cost dependency: ${dependency}`, "text", "DEPENDENCY_REFERENCE"));
   const skeletonKeys = new Set(DRYWALL_AGGREGATE_SKELETON_ROW_KEYS_V4[contract.operation]);
@@ -666,26 +713,36 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     ? drywallFlatCeilingMaximumScopeLinesV6(contract.operation, contract.variant)
     : drywallMaximumScopeLinesV5(contract.operation, contract.variant);
   const maximumKeys = new Set(maximumCandidates.map((candidate) => candidate.key));
-  const rows = flatCeiling
-    ? [...flatCeilingGeometryRows(contract.operation), ...maximumScopeRows(contract.operation, contract.variant, contract.system)]
-    : [
+  const rows = [
+    ...(flatCeiling
+      ? [...flatCeilingGeometryRows(contract.operation), ...maximumScopeRows(contract.operation, contract.variant, contract.system)]
+      : [
       ...(contract.system === "CURVE" ? curveGeometryRows(contract.operation) : []),
       ...operationRows(contract.operation).filter((row) => !skeletonKeys.has(row.key) && !maximumKeys.has(row.key)),
       // V5 owns variant-specific mobilization, interfaces and wet-zone resources as
       // separate candidates; retaining the V4 variant bundle would double-count them.
       ...completionRows(contract.operation).filter((row) => !maximumKeys.has(row.key)),
       ...maximumScopeRows(contract.operation, contract.variant, contract.system),
-    ];
+      ]),
+    ...knaufFugenfuellerPerimeterRows(contract.operation, contract.system),
+  ];
   const formulaInputIds = new Set(rows.flatMap((row) => row.inputs));
   const retainedControlIds = new Set([
     "work_included", "estimate_scope_mode", "funding_source", "project_type", "product_profile_id",
     "material_certificate_reference", "system_passport_reference", "normative_rate_code", "area_m2",
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
+    "perimeter_linear_m", "cladding_thickness_mm", "perimeter_joint_consumption_kg_linear_m",
+    "perimeter_connection_joint_method",
     ...contract.non_cost_dependencies,
   ]);
   const usedBaseParameters = baseParameters.filter((item) => formulaInputIds.has(item.parameter_id) || retainedControlIds.has(item.parameter_id));
-  const priceParameters = rows.filter((row) => row.ownership !== "informational_output").map((row) => numberParameter(`unit_price_${row.key}_kgs`, `Цена «${row.title}» в KGS за ${row.output_unit}`, `KGS_per_${row.output_unit}`, "PRICE_INPUT", row.scopes === "FULL" ? FULL_SCOPE : BOTH_SCOPES, 0.01, 1_000_000_000_000));
+  const priceParameters = rows.filter((row) => row.ownership !== "informational_output").map((row) => {
+    const result = numberParameter(`unit_price_${row.key}_kgs`, `Цена «${row.title}» в KGS за ${row.output_unit}`, `KGS_per_${row.output_unit}`, "PRICE_INPUT", row.scopes === "FULL" ? FULL_SCOPE : BOTH_SCOPES, 0.01, 1_000_000_000_000);
+    return row.product_profile_id
+      ? { ...result, condition: { kind: "EQUALS" as const, parameter_id: "product_profile_id", value: row.product_profile_id } }
+      : result;
+  });
   const parameters = [...usedBaseParameters, ...priceParameters];
   const byId = new Map(parameters.map((item) => [item.parameter_id, item]));
   if (byId.size !== parameters.length) {
@@ -719,19 +776,60 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
       ...(flatCeiling && contract.operation === "FRAME" && contract.variant === "standard" && row.key === "perimeter_track_anchors"
         ? [KNAUF_D112_WALL_FASTENER_SOURCE_ID]
         : []),
+      ...(row.product_profile_id === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID
+        ? [KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID]
+        : []),
     ],
     inclusion_condition: row.scopes === "FULL" ? "work_included=true AND scope_mode=FULL_APPLICABLE_SCOPE" : "work_included=true", procurement_eligible: row.procurement ?? false, normative_trace_v3: trace(contract, row),
     price_route_v3: row.ownership === "informational_output" ? { kind: "NOT_APPLICABLE_INFORMATIONAL_OUTPUT", reason: "Контрольный выход не образует повторной стоимости." } : { kind: "RUNTIME_VALIDATED_INPUT", unit_price_parameter_id: `unit_price_${row.key}_kgs`, price_basis_reference_parameter_id: "price_basis_reference", price_basis_date_parameter_id: "price_basis_date", currency_from_request: true, minimum_exclusive: 0 },
-    resource_graph_node_v3: { graph_version: "ProfessionalResourceGraphV3", typed_child_boundary: contract.operation, resource_class: row.resource_class, dependency_ids: dependencies, non_cost_dependencies_only: contract.non_cost_dependencies.length > 0, context_parameter_ids: contextIds, forbidden_cost_scopes: contract.forbidden_cost_scope }, normative_proof_bundle_id_v3: contract.normative_proof_bundle_id, professional_proof_bundle_id_v3: contract.professional_proof_bundle_id,
+    resource_graph_node_v3: { graph_version: "ProfessionalResourceGraphV3", typed_child_boundary: contract.operation, resource_class: row.resource_class, dependency_ids: dependencies, non_cost_dependencies_only: contract.non_cost_dependencies.length > 0, context_parameter_ids: [
+      ...contextIds,
+      ...(row.product_profile_id === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID
+        ? ["perimeter_linear_m", "cladding_thickness_mm", "perimeter_joint_consumption_kg_linear_m", "perimeter_connection_joint_method"]
+        : []),
+    ], forbidden_cost_scopes: contract.forbidden_cost_scope }, normative_proof_bundle_id_v3: contract.normative_proof_bundle_id, professional_proof_bundle_id_v3: contract.professional_proof_bundle_id,
   });
-  const child = (suffix: "core" | "full", modes: readonly ProfessionalEstimateScopeModeV4[], childRows: readonly RowSpec[]): ProfessionalChildAssemblyV4 => {
+  const child = (
+    suffix: string,
+    modes: readonly ProfessionalEstimateScopeModeV4[],
+    childRows: readonly RowSpec[],
+    options: {
+      trigger_parameter?: string;
+      trigger_values?: readonly (string | boolean)[];
+      title_prefix?: string;
+      additional_parameter_ids?: readonly string[];
+    } = {},
+  ): ProfessionalChildAssemblyV4 => {
     const needed = new Set(["work_included", "price_basis_reference", "price_basis_date", ...contextIds]);
+    for (const parameterId of options.additional_parameter_ids ?? []) needed.add(parameterId);
     for (const row of childRows) { for (const id of row.inputs) needed.add(id); if (row.ownership !== "informational_output") needed.add(`unit_price_${row.key}_kgs`); }
     const assemblyParameter = (id: string): ProfessionalAssemblyParameterDefinitionV4 => { const spec = byId.get(id); if (!spec) throw new Error(`DRYWALL_ARCHITECTURAL_ELEMENT_PARAMETER_MISSING:${inventory.catalog_id}:${id}`); return { parameter_id: id, title_ru: spec.label_ru, role: spec.role, unit_id: spec.unit_id, required_for: modes }; };
-    return { child_passport_id: `${namespace}:${suffix}-passport`, child_passport_version: semanticVersion, domain_owner: "interior_finishes_complete_v1", assembly_id: `${namespace}:${suffix}-assembly`, title_ru: `${suffix === "core" ? "Основной" : "Полный"} состав: ${inventory.localized_name_ru}`, scope_trigger_parameter: "work_included", scope_trigger_values: [true], supported_scope_modes: modes, parameters: [...needed].map(assemblyParameter), rows: childRows.map(assemblyRow) };
+    return { child_passport_id: `${namespace}:${suffix}-passport`, child_passport_version: semanticVersion, domain_owner: "interior_finishes_complete_v1", assembly_id: `${namespace}:${suffix}-assembly`, title_ru: options.title_prefix ? `${options.title_prefix}: ${inventory.localized_name_ru}` : `${suffix === "core" ? "Основной" : "Полный"} состав: ${inventory.localized_name_ru}`, scope_trigger_parameter: options.trigger_parameter ?? "work_included", scope_trigger_values: options.trigger_values ?? [true], supported_scope_modes: modes, parameters: [...needed].map(assemblyParameter), rows: childRows.map(assemblyRow) };
   };
   const rateSource = contract.operation === "REPAIR" ? KG_KRERR : KG_KRER;
-  return { contract, schema, child_assemblies: [child("core", BOTH_SCOPES, rows.filter((row) => row.scopes === "BOTH")), child("full", FULL_SCOPE, rows.filter((row) => row.scopes === "FULL"))], normative_profile: { profile_id: `${namespace}:kg-profile`, profile_version: semanticVersion, technology_id: inventory.canonical_technology_id, jurisdiction: "KG", requested_source_ids: [KG_SP, rateSource, KG_SAFETY, KG_MATERIAL], requested_source_types: ["WORK_EXECUTION_STANDARD", "RESOURCE_ESTIMATE_NORM", "MATERIAL_STANDARD"], rejected_foreign_source_ids: ["RU_SP_163", "RU_GESN_10", "ISO_6308_WITHDRAWN", "ASTM_C1396", "EN_520"] }, required_stages: contract.required_stages, optional_stages: contract.optional_stages, resource_policy: { policy_id: `${namespace}:resource-policy`, technology_id: inventory.canonical_technology_id, required_categories: ["material", "labor", "equipment", "transport", "waste", "testing", "documentation"], optional_categories: ["subcontract_service", "temporary_work"], forbidden_generic_rows: ["Материалы", "Работы", "Оборудование", "Другое", "Комплект работ", "Основные материалы", "Прочие материалы", "Комплект оборудования"], one_bundle_resource_replacement_forbidden: true } };
+  const profileRows = rows.filter((row) => row.product_profile_id === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID);
+  const baseRows = rows.filter((row) => !row.product_profile_id);
+  const childAssemblies = [
+    child("core", BOTH_SCOPES, baseRows.filter((row) => row.scopes === "BOTH")),
+    child("full", FULL_SCOPE, baseRows.filter((row) => row.scopes === "FULL")),
+    ...(profileRows.length > 0 ? [child(
+      "knauf-fugenfueller-perimeter",
+      FULL_SCOPE,
+      profileRows,
+      {
+        trigger_parameter: "product_profile_id",
+        trigger_values: [KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID],
+        title_prefix: "Профиль Knauf Fugenfüller Leicht",
+        additional_parameter_ids: [
+          "perimeter_linear_m",
+          "cladding_thickness_mm",
+          "perimeter_joint_consumption_kg_linear_m",
+          "perimeter_connection_joint_method",
+        ],
+      },
+    )] : []),
+  ];
+  return { contract, schema, child_assemblies: childAssemblies, normative_profile: { profile_id: `${namespace}:kg-profile`, profile_version: semanticVersion, technology_id: inventory.canonical_technology_id, jurisdiction: "KG", requested_source_ids: [KG_SP, rateSource, KG_SAFETY, KG_MATERIAL], requested_source_types: ["WORK_EXECUTION_STANDARD", "RESOURCE_ESTIMATE_NORM", "MATERIAL_STANDARD"], rejected_foreign_source_ids: ["RU_SP_163", "RU_GESN_10", "ISO_6308_WITHDRAWN", "ASTM_C1396", "EN_520"] }, required_stages: contract.required_stages, optional_stages: contract.optional_stages, resource_policy: { policy_id: `${namespace}:resource-policy`, technology_id: inventory.canonical_technology_id, required_categories: ["material", "labor", "equipment", "transport", "waste", "testing", "documentation"], optional_categories: ["subcontract_service", "temporary_work"], forbidden_generic_rows: ["Материалы", "Работы", "Оборудование", "Другое", "Комплект работ", "Основные материалы", "Прочие материалы", "Комплект оборудования"], one_bundle_resource_replacement_forbidden: true } };
 }
 
 export function isDrywallArchitecturalElementProfessionalCatalogIdV4(catalogId: string): boolean {
