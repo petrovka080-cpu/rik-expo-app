@@ -128,6 +128,45 @@ export const KNAUF_FUGENFUELLER_PERIMETER_NORM_ID =
 export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID =
   `src_professional_norm_pack_${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}` as const;
 
+export const KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:knauf-fugenfueller-leicht:single-12.5mm-hrak-ceiling-jointing:v1" as const;
+
+export const KNAUF_FUGENFUELLER_JOINTING_NORM_ID =
+  "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1" as const;
+
+export const KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}` as const;
+
+const KNAUF_FUGENFUELLER_JOINTING_SOURCE_PARAMETER_IDS = Object.freeze([
+  "board_area_m2",
+  "board_product_type",
+  "board_thickness_mm",
+  "board_layer_configuration",
+  "long_edge_type",
+  "construction_application",
+  "jointing_without_perimeter_confirmed",
+  "reinforcement_tape_confirmed",
+  "selected_consumption_kg_m2",
+  "substrate_and_application_conditions_confirmed",
+  "selected_bag_size_kg",
+] as const);
+
+const KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "board_product_type",
+  "board_thickness_mm",
+  "board_layer_configuration",
+  "long_edge_type",
+  "construction_application",
+  "jointing_without_perimeter_confirmed",
+  "reinforcement_tape_confirmed",
+  "selected_consumption_kg_m2",
+  "substrate_and_application_conditions_confirmed",
+  "selected_bag_size_kg",
+  "system_passport_reference",
+  "material_certificate_reference",
+] as const);
+
 export const FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID =
   "manufacturer-profile:forbo-eurocol-232-eurosol-montage:310ml:v1" as const;
 
@@ -524,6 +563,103 @@ export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA = Object.freeze({
     work_group: drywallNormPack.work_group,
     source_pack_version: drywallNormPack.source_pack_version,
     norm_item: knaufFugenfuellerPerimeterNorm,
+  }),
+});
+
+const knaufFugenfuellerJointingNorm = (() => {
+  const found = drywallNormPack.norm_items.find(
+    (item) => item.norm_id === KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}`);
+  return found;
+})();
+const knaufFugenfuellerJointingRateTable =
+  "representative_rate_table_kg_m2" in knaufFugenfuellerJointingNorm.applicability
+    ? knaufFugenfuellerJointingNorm.applicability.representative_rate_table_kg_m2
+    : null;
+const knaufFugenfuellerJointingBagSizes =
+  "documented_bag_sizes_kg" in knaufFugenfuellerJointingNorm.applicability
+    ? knaufFugenfuellerJointingNorm.applicability.documented_bag_sizes_kg
+    : null;
+const knaufFugenfuellerJointingEdgeTypes =
+  "edge_types" in knaufFugenfuellerJointingNorm.applicability
+    ? knaufFugenfuellerJointingNorm.applicability.edge_types
+    : null;
+const knaufFugenfuellerJointingRateVariesWith =
+  "rate_varies_with" in knaufFugenfuellerJointingNorm.applicability
+    ? knaufFugenfuellerJointingNorm.applicability.rate_varies_with
+    : null;
+
+if (
+  drywallNormPack.work_group !== "drywall" ||
+  knaufFugenfuellerJointingNorm.unit !== "kg" ||
+  knaufFugenfuellerJointingNorm.rate.value !== 0.3 ||
+  knaufFugenfuellerJointingNorm.rate.unit !==
+    "one exact table cell only: approximate kg/m2 for single-layer 12.5 mm Knauf HRAK board on a ceiling, excluding perimeter joints" ||
+  !("product" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.product !== "Knauf Fugenfüller Leicht" ||
+  !("tds_identifier" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.tds_identifier !== "K462.de/eng/07.11/0/TB" ||
+  !knaufFugenfuellerJointingRateTable ||
+  knaufFugenfuellerJointingRateTable.single_12_5_mm_knauf_hrak__ceiling !== 0.3 ||
+  !knaufFugenfuellerJointingEdgeTypes ||
+  !knaufFugenfuellerJointingEdgeTypes.includes("HRAK") ||
+  !knaufFugenfuellerJointingRateVariesWith ||
+  knaufFugenfuellerJointingRateVariesWith.length !== 4 ||
+  ["board_product_type", "board_thickness_mm", "board_layer_configuration", "construction_application"]
+    .some((parameterId) => !knaufFugenfuellerJointingRateVariesWith.includes(parameterId)) ||
+  !("reinforcement_tape_required" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.reinforcement_tape_required !== true ||
+  !("perimeter_connection_joints_excluded" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.perimeter_connection_joints_excluded !== true ||
+  !("exact_table_cell_required" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.exact_table_cell_required !== true ||
+  !("simple_rate_multiplication_forbidden" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.simple_rate_multiplication_forbidden !== true ||
+  !("application_temperature_min_c" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.application_temperature_min_c !== 10 ||
+  !("additional_waste_not_published" in knaufFugenfuellerJointingNorm.applicability) ||
+  knaufFugenfuellerJointingNorm.applicability.additional_waste_not_published !== true ||
+  !knaufFugenfuellerJointingBagSizes ||
+  knaufFugenfuellerJointingBagSizes.length !== 3 ||
+  ![5, 10, 25].every((size) => knaufFugenfuellerJointingBagSizes.includes(size)) ||
+  knaufFugenfuellerJointingNorm.parameters.length !== KNAUF_FUGENFUELLER_JOINTING_SOURCE_PARAMETER_IDS.length ||
+  KNAUF_FUGENFUELLER_JOINTING_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !knaufFugenfuellerJointingNorm.parameters.includes(parameterId),
+  ) ||
+  knaufFugenfuellerJointingNorm.waste_percent_default !== 0 ||
+  knaufFugenfuellerJointingNorm.rounding.package_unit !== "bag" ||
+  knaufFugenfuellerJointingNorm.rounding.package_size !== 5 ||
+  knaufFugenfuellerJointingNorm.rounding.mode !==
+    "approximate_net_kg_after_exact_table_cell_selection_before_explicit_5_10_or_25_kg_bag_rounding"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}`);
+}
+
+export const KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+  norm_id: KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+  source_document_version: drywallNormPack.source_pack_version,
+  source_title: knaufFugenfuellerJointingNorm.source.title,
+  source_url: knaufFugenfuellerJointingNorm.source.url,
+  exact_locator: knaufFugenfuellerJointingNorm.source.page,
+  rate_value: knaufFugenfuellerJointingNorm.rate.value,
+  rate_unit: knaufFugenfuellerJointingNorm.rate.unit,
+  product: knaufFugenfuellerJointingNorm.applicability.product,
+  tds_identifier: knaufFugenfuellerJointingNorm.applicability.tds_identifier,
+  exact_table_cell: "single_12_5_mm_knauf_hrak__ceiling" as const,
+  board_product_type: "Knauf HRAK board" as const,
+  board_thickness_mm: 12.5 as const,
+  board_layer_configuration: "single_layer" as const,
+  long_edge_type: "HRAK" as const,
+  construction_application: "ceiling" as const,
+  application_temperature_min_c: 10 as const,
+  additional_waste_not_published: true as const,
+  documented_bag_sizes_kg: [5, 10, 25] as const,
+  definition_hash: estimateDeterministicHash({
+    work_group: drywallNormPack.work_group,
+    source_pack_version: drywallNormPack.source_pack_version,
+    norm_item: knaufFugenfuellerJointingNorm,
   }),
 });
 
@@ -947,6 +1083,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["perimeter_joint_compound_quantity_kg"] as const,
 }, {
+  norm_id: KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+  work_group: "drywall",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FINISH_JOINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+  source_document_version: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_base_joint_compound"] as const,
+}, {
   norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
   work_group: "baseboards",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -1047,6 +1197,8 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_wall_fastener_quantity_piece?: number;
   calculated_tn25_screw_quantity_piece?: number;
   calculated_perimeter_joint_compound_quantity_kg?: number;
+  calculated_fugenfueller_jointing_net_quantity_kg?: number;
+  calculated_fugenfueller_jointing_procurement_quantity_kg?: number;
   calculated_forbo_adhesive_procurement_quantity_ml?: number;
   calculated_cn69_net_quantity_kg?: number;
   calculated_cn69_bag_count?: number;
@@ -1793,6 +1945,167 @@ function resolveKnaufFugenfuellerPerimeterJoint(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKnaufFugenfuellerJointing(
+  productProfileId: typeof KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const boardProductType = primitiveString(explicit.board_product_type!);
+  const boardThicknessMm = finiteNumber(explicit.board_thickness_mm);
+  const boardLayerConfiguration = primitiveString(explicit.board_layer_configuration!);
+  const longEdgeType = primitiveString(explicit.long_edge_type!);
+  const constructionApplication = primitiveString(explicit.construction_application!);
+  const selectedConsumptionKgM2 = finiteNumber(explicit.selected_consumption_kg_m2);
+  const selectedBagSizeKg = finiteNumber(explicit.selected_bag_size_kg);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const confirmed = (
+    parameterId:
+      | "jointing_without_perimeter_confirmed"
+      | "reinforcement_tape_confirmed"
+      | "substrate_and_application_conditions_confirmed",
+  ) => explicit[parameterId]!.value === true || explicit[parameterId]!.value === "true";
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    boardProductType === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.board_product_type
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:board_product_type=${boardProductType}`,
+    boardThicknessMm === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.board_thickness_mm
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:board_thickness_mm=${boardThicknessMm}`,
+    boardLayerConfiguration === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.board_layer_configuration
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:board_layer_configuration=${boardLayerConfiguration}`,
+    longEdgeType === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.long_edge_type
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:long_edge_type=${longEdgeType}`,
+    constructionApplication === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.construction_application
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:construction_application=${constructionApplication}`,
+    selectedConsumptionKgM2 === KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.rate_value
+      ? ""
+      : `PHYSICAL_NORM_TABLE_CELL_CONFLICT:selected_consumption_kg_m2=${selectedConsumptionKgM2}:table_value=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.rate_value}`,
+    selectedBagSizeKg !== null &&
+      (KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.documented_bag_sizes_kg as readonly number[])
+        .includes(selectedBagSizeKg)
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:selected_bag_size_kg=${selectedBagSizeKg}`,
+    confirmed("jointing_without_perimeter_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:jointing_without_perimeter_confirmed=false`,
+    confirmed("reinforcement_tape_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:reinforcement_tape_confirmed=false`,
+    confirmed("substrate_and_application_conditions_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:substrate_and_application_conditions_confirmed=false`,
+    systemPassportReference ? "" : "PROJECT_VALUE_INVALID:system_passport_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedNetQuantityKg = Number((areaM2! * selectedConsumptionKgM2!).toFixed(9));
+  const calculatedProcurementQuantityKg = Math.ceil(
+    calculatedNetQuantityKg / selectedBagSizeKg! - 1e-9,
+  ) * selectedBagSizeKg!;
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_base_joint_compound"));
+  if (explicitQuantity !== null && Math.abs(explicitQuantity - calculatedProcurementQuantityKg) > 1e-9) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:quantity_base_joint_compound=${explicitQuantity}:norm_value=${calculatedProcurementQuantityKg}`,
+      ],
+      [...KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_base_joint_compound"],
+      KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID}`,
+    `product=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.product}`,
+    `tds_identifier=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.tds_identifier}`,
+    `exact_table_cell=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.exact_table_cell}`,
+    `board_area_m2=canonical(area_m2)=${areaM2}`,
+    `board_product_type=${boardProductType}`,
+    `board_thickness_mm=${boardThicknessMm}`,
+    `board_layer_configuration=${boardLayerConfiguration}`,
+    `long_edge_type=${longEdgeType}`,
+    `construction_application=${constructionApplication}`,
+    `application_temperature_min_c=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.application_temperature_min_c}`,
+    `substrate_and_application_conditions_confirmed=true`,
+    `reinforcement_tape_confirmed=true`,
+    `perimeter_connection_joints_excluded=true`,
+    `selected_consumption_kg_m2=${selectedConsumptionKgM2}`,
+    `selected_bag_size_kg=${selectedBagSizeKg}`,
+    `formula=ceil((area_m2*selected_consumption_kg_m2)/selected_bag_size_kg)*selected_bag_size_kg`,
+    `system_passport_reference=${systemPassportReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+    `additional_waste_not_published=${KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.additional_waste_not_published}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_base_joint_compound: {
+      value: calculatedProcurementQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+    norm_id: KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+    source_document_version: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_FUGENFUELLER_JOINTING_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_base_joint_compound"],
+    calculated_fugenfueller_jointing_net_quantity_kg: calculatedNetQuantityKg,
+    calculated_fugenfueller_jointing_procurement_quantity_kg: calculatedProcurementQuantityKg,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveCeresitCn69Global25Kg(
   productProfileId: typeof CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -2532,6 +2845,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "FLAT_CEILING" &&
+      input.operation_class === "FINISH_JOINT" &&
+      input.material_system === "FLAT_CEILING" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveKnaufFugenfuellerJointing(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA,
     );
   }
   if (productProfileId === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID) {

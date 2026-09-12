@@ -16,6 +16,7 @@ import type {
 import {
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+  KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
 } from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
@@ -337,6 +338,46 @@ function knaufFugenfuellerPerimeterParameters(
       condition,
     }),
     { ...numberParameter("perimeter_joint_compound_quantity_kg", "Расчётная закупочная масса Fugenfüller Leicht", "kg", "NORM_RATE", FULL_SCOPE), condition },
+  ];
+}
+
+function knaufFugenfuellerJointingParameters(
+  operation: DrywallArchitecturalElementOperationV4,
+  variant: DrywallArchitecturalElementVariantV4,
+  system: DrywallArchitecturalElementWorkContractV4["system"],
+): ParameterSpec[] {
+  if (system !== "CEILING" || operation !== "FINISH_JOINT" || variant !== "standard") return [];
+  const condition = {
+    kind: "EQUALS",
+    parameter_id: "product_profile_id",
+    value: KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
+  } as const;
+  return [
+    parameter("board_product_type", "Тип листа для табличной ячейки Fugenfüller Leicht", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "Knauf HRAK board", label_ru: "Knauf HRAK board" }],
+      condition,
+    }),
+    { ...numberParameter("board_thickness_mm", "Толщина листа для табличной ячейки", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 12.5, 12.5), condition },
+    parameter("board_layer_configuration", "Конфигурация слоёв обшивки", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "single_layer", label_ru: "Один слой" }],
+      condition,
+    }),
+    parameter("long_edge_type", "Тип продольной кромки", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "HRAK", label_ru: "HRAK" }],
+      condition,
+    }),
+    parameter("construction_application", "Область применения табличной ячейки", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+      choices: [{ value: "ceiling", label_ru: "Потолок" }],
+      condition,
+    }),
+    parameter("jointing_without_perimeter_confirmed", "Периметральные примыкания исключены из этого расхода", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    parameter("reinforcement_tape_confirmed", "Армирующая лента включена по TDS", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    { ...numberParameter("selected_consumption_kg_m2", "Выбранная точная ячейка расхода Fugenfüller Leicht", "kg_per_m2", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 0.3, 0.3), condition },
+    parameter("substrate_and_application_conditions_confirmed", "Основание и температура применения подтверждены по TDS", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    parameter("selected_bag_size_kg", "Выбранная фасовка Fugenfüller Leicht", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, "kg", {
+      choices: [5, 10, 25].map((size) => ({ value: String(size), label_ru: `${size} кг` })),
+      condition,
+    }),
   ];
 }
 
@@ -718,6 +759,7 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     ...(contract.system === "CURVE" ? curveGeometryParameters(contract.operation) : []),
     ...(flatCeiling ? flatCeilingGeometryParameters(contract.operation) : []),
     ...knaufD112ReferenceApplicabilityParameters(contract.operation, contract.variant, contract.system),
+    ...knaufFugenfuellerJointingParameters(contract.operation, contract.variant, contract.system),
     ...knaufFugenfuellerPerimeterParameters(contract.operation, contract.system),
   ];
   for (const dependency of contract.non_cost_dependencies) baseParameters.push(parameter(dependency, `Подтвержденная non-cost dependency: ${dependency}`, "text", "DEPENDENCY_REFERENCE"));
@@ -746,6 +788,9 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
     "board_layer_count", "board_thickness_mm",
+    "board_product_type", "board_layer_configuration", "long_edge_type", "construction_application",
+    "jointing_without_perimeter_confirmed", "reinforcement_tape_confirmed", "selected_consumption_kg_m2",
+    "substrate_and_application_conditions_confirmed", "selected_bag_size_kg",
     "perimeter_linear_m", "cladding_thickness_mm", "perimeter_joint_consumption_kg_linear_m",
     "perimeter_connection_joint_method",
     ...contract.non_cost_dependencies,

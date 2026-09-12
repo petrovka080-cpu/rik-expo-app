@@ -2734,14 +2734,15 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(13);
-    expect(unregistered).toHaveLength(41);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(14);
+    expect(unregistered).toHaveLength(40);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
       "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
       "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
       "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
+      "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
       "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
       "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
@@ -2768,7 +2769,6 @@ describe("real professional norm packs audit", () => {
       "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
       "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
       "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
-      "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",
       "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
       "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",

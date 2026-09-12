@@ -13,6 +13,7 @@ import {
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
 } from "../../domainFactory";
@@ -364,6 +365,7 @@ export function buildInteriorFinishesFromInlineInputV1(
       input.paramOverrides?.product_profile_id?.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   });
   const baselineParameterValues = baseline.parameter_values;

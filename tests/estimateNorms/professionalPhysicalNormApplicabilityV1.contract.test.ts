@@ -18,6 +18,10 @@ import {
   KNAUF_D112_WALL_FASTENER_NORM_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_METADATA,
+  KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+  KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
+  KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+  KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA,
   KNAUF_FUGENFUELLER_PERIMETER_NORM_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID,
@@ -217,6 +221,40 @@ function resolveKnaufD112Tn25(values: Readonly<Record<string, ProfessionalParame
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "FLAT_CEILING",
     operation_class: "CLAD",
+    material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactKnaufFugenfuellerJointingInputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID),
+    area_m2: explicit(53, "m2"),
+    board_product_type: explicit("Knauf HRAK board"),
+    board_thickness_mm: explicit(12.5, "mm"),
+    board_layer_configuration: explicit("single_layer"),
+    long_edge_type: explicit("HRAK"),
+    construction_application: explicit("ceiling"),
+    jointing_without_perimeter_confirmed: explicit(true),
+    reinforcement_tape_confirmed: explicit(true),
+    selected_consumption_kg_m2: explicit(0.3, "kg_per_m2"),
+    substrate_and_application_conditions_confirmed: explicit(true),
+    selected_bag_size_kg: explicit(5, "kg"),
+    system_passport_reference: explicit("Knauf K462.de/eng/07.11/0/TB, exact ceiling table cell"),
+    material_certificate_reference: explicit("PROJECT-KNAUF-FUGENFUELLER-BATCH-CERT-002"),
+    ...changes,
+  };
+}
+
+function resolveKnaufFugenfuellerJointing(
+  values: Readonly<Record<string, ProfessionalParameterValueV4>>,
+) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "FLAT_CEILING",
+    operation_class: "FINISH_JOINT",
     material_system: "FLAT_CEILING",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
@@ -1013,6 +1051,181 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_TN25_SCREW_SOURCE_ID))).toHaveLength(1);
+  });
+
+  test("keeps the Knauf Fugenfueller jointing cell closed unless every exact TDS fact is explicit", () => {
+    const { selected_consumption_kg_m2: _omitted, ...withoutExactCell } =
+      exactKnaufFugenfuellerJointingInputs();
+    expect(resolveKnaufFugenfuellerJointing(withoutExactCell)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:selected_consumption_kg_m2"],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      construction_application: explicit("wall"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:construction_application=wall`,
+      ],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      board_thickness_mm: explicit(15, "mm"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:board_thickness_mm=15`,
+      ],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      jointing_without_perimeter_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:jointing_without_perimeter_confirmed=false`,
+      ],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      reinforcement_tape_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_FUGENFUELLER_JOINTING_NORM_ID}:reinforcement_tape_confirmed=false`,
+      ],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      selected_bag_size_kg: explicit(20, "kg"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:selected_bag_size_kg=20"],
+    });
+    expect(resolveKnaufFugenfuellerJointing(exactKnaufFugenfuellerJointingInputs({
+      quantity_base_joint_compound: explicit(15.9, "kg"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:quantity_base_joint_compound=15.9:norm_value=20",
+      ],
+    });
+  });
+
+  test("derives deterministic Knauf Fugenfueller jointing procurement from the exact ceiling table cell", () => {
+    const input = exactKnaufFugenfuellerJointingInputs();
+    const first = resolveKnaufFugenfuellerJointing(input);
+    const second = resolveKnaufFugenfuellerJointing(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+      norm_id: KNAUF_FUGENFUELLER_JOINTING_NORM_ID,
+      source_document_version: "2026.09-knauf-k462-primary-review-r2",
+      source_definition_hash: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.definition_hash,
+      calculated_fugenfueller_jointing_net_quantity_kg: 15.9,
+      calculated_fugenfueller_jointing_procurement_quantity_kg: 20,
+      produced_parameter_ids: ["quantity_base_joint_compound"],
+      blockers: [],
+    });
+    expect(first.parameter_values.quantity_base_joint_compound?.applicability)
+      .toContain("exact_table_cell=single_12_5_mm_knauf_hrak__ceiling");
+    expect(first.parameter_values.quantity_base_joint_compound).toMatchObject({
+      value: 20,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.quantity_base_joint_compound).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID)).toMatchObject({
+      authority: "Knauf",
+      product_profile_applicability: [KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["FLAT_CEILING"],
+      operation_class_applicability: ["FINISH_JOINT"],
+    });
+  });
+
+  test("routes Knauf Fugenfueller jointing only to the canonical base-compound BOQ row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
+      row.work_key === FLAT_CEILING_FINISH_JOINT_WORK_KEY);
+    if (!inventory) throw new Error("KNAUF_FUGENFUELLER_JOINTING_RUNTIME_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("KNAUF_FUGENFUELLER_JOINTING_RUNTIME_SCHEMA_MISSING");
+    const profileParameterIds = [
+      "board_product_type",
+      "board_thickness_mm",
+      "board_layer_configuration",
+      "long_edge_type",
+      "construction_application",
+      "jointing_without_perimeter_confirmed",
+      "reinforcement_tape_confirmed",
+      "selected_consumption_kg_m2",
+      "substrate_and_application_conditions_confirmed",
+      "selected_bag_size_kg",
+    ];
+    expect(schema.parameters.filter((parameter) => profileParameterIds.includes(parameter.parameter_id)))
+      .toHaveLength(profileParameterIds.length);
+    expect(schema.parameters.filter((parameter) => profileParameterIds.includes(parameter.parameter_id))
+      .every((parameter) => parameter.required_when.kind === "EQUALS" &&
+        parameter.required_when.parameter_id === "product_profile_id" &&
+        parameter.required_when.value === KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID)).toBe(true);
+
+    const fugenfuellerValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "area_m2") return 53;
+      if (parameter.parameter_id === "length_m") return 53;
+      if (parameter.parameter_id === "width_m") return 1;
+      if (parameter.parameter_id === "perimeter_m") return 108;
+      if (parameter.parameter_id === "board_product_type") return "Knauf HRAK board";
+      if (parameter.parameter_id === "board_thickness_mm") return 12.5;
+      if (parameter.parameter_id === "board_layer_configuration") return "single_layer";
+      if (parameter.parameter_id === "long_edge_type") return "HRAK";
+      if (parameter.parameter_id === "construction_application") return "ceiling";
+      if (parameter.parameter_id === "selected_consumption_kg_m2") return 0.3;
+      if (parameter.parameter_id === "selected_bag_size_kg") return "5";
+      if (parameter.parameter_id === "system_passport_reference") {
+        return "Knauf K462.de/eng/07.11/0/TB, exact ceiling table cell";
+      }
+      if (parameter.parameter_id === "material_certificate_reference") {
+        return "PROJECT-KNAUF-FUGENFUELLER-BATCH-CERT-002";
+      }
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-FUGENFUELLER-JOINTING-RATE";
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "quantity_base_joint_compound")
+      .map((parameter) => [parameter.parameter_id, {
+        value: fugenfuellerValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Заделка швов потолка Knauf HRAK 12,5 мм в один слой, площадь 53 м²",
+      selectedWorkKey: FLAT_CEILING_FINISH_JOINT_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID);
+    const compoundRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:base_joint_compound`);
+    expect(compoundRow).toMatchObject({ quantity: 20, unit: "kg" });
+    expect(compoundRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID);
+    expect(compoundRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID);
+    expect(compoundRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID,
+      source_definition_hash: KNAUF_FUGENFUELLER_JOINTING_SOURCE_METADATA.definition_hash,
+      calculated_fugenfueller_jointing_net_quantity_kg: 15.9,
+      calculated_fugenfueller_jointing_procurement_quantity_kg: 20,
+    });
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_FUGENFUELLER_JOINTING_SOURCE_ID)))
+      .toHaveLength(1);
   });
 
   test("keeps the Knauf Fugenfueller perimeter norm fail-closed without an exact rate and method", () => {
