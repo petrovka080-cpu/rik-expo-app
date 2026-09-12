@@ -566,6 +566,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedEquipmentRentPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/equipment_rent.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1750,6 +1775,62 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "exact_approved_compatible_point_count_plus_explicit_project_spares",
+      },
+    }]);
+    expect(reviewedEquipmentRentPack).toMatchObject({
+      source_pack_version: "2026.09-united-rentals-ca-2026-09-02-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedEquipmentRentPack.review_evidence?.items).toMatchObject([{
+      norm_id: "equipment_rent_united_rentals_one_shift_hours_day_v1",
+      source_url: "https://www.unitedrentals.com/legal/rental-service-terms-ca-eng",
+      verified_facts: expect.arrayContaining([
+        "canada_rental_service_terms_last_update_is_2026_09_02",
+        "normal_one_shift_usage_is_8_hours_per_day_40_per_week_and_160_per_four_week_period",
+        "rental_charges_accrue_during_saturdays_sundays_and_holidays",
+        "delivery_pickup_refueling_taxes_transport_environmental_and_miscellaneous_charges_are_separate",
+        "eight_hours_is_a_normal_usage_allowance_not_a_complete_rental_price_formula",
+      ]),
+    }]);
+    expect(reviewedEquipmentRentPack.norm_items).toMatchObject([{
+      norm_id: "equipment_rent_united_rentals_one_shift_hours_day_v1",
+      parameters: expect.arrayContaining([
+        "shift_count",
+        "required_equipment_operating_hours",
+        "equipment_productivity_calculation_reference",
+        "selected_equipment_and_power_status",
+        "supplier_and_jurisdiction",
+        "supplier_terms_revision_confirmed",
+        "rental_out_datetime",
+        "scheduled_in_or_confirmed_off_rent_datetime",
+        "calendar_rental_period",
+        "double_or_triple_shift_usage",
+        "delivery_and_pickup_scope",
+        "fuel_and_refueling_scope",
+      ]),
+      rate: {
+        value: 8,
+        unit: "normal-use equipment operating hours/one supplier-defined shift day; calendar billing period and price are separate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        supplier: "United Rentals of Canada Inc.",
+        jurisdiction: "Canada",
+        terms_last_update: "2026-09-02",
+        one_shift_hours_per_day: 8,
+        one_shift_hours_per_week: 40,
+        one_shift_hours_per_four_week_period: 160,
+        double_shift_rate_multiplier_for_power_equipment: 1.5,
+        triple_shift_rate_multiplier_for_power_equipment: 2,
+        weekends_and_holidays_accrue_rental_charges: true,
+        equipment_productivity_must_be_calculated_separately: true,
+        eight_hour_allowance_is_not_complete_billing_formula: true,
+        automatic_production_binding_for_generic_equipment_rent_forbidden: true,
+      }),
+      rounding: {
+        package_size: 8,
+        mode: "supplier_agreement_calendar_period_and_shift_usage_schedule_required",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>

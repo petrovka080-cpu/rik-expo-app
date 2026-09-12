@@ -26,7 +26,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   drywall: "2026.09-knauf-k462-primary-review-r2",
   earthworks: "2026.09-fhwa-fp24-structural-backfill-r1",
   electrical: "2026.09-legrand-product-and-installation-r1",
-  equipment_rent: "2026.09-united-rentals-shift-billing-reference-r1",
+  equipment_rent: "2026.09-united-rentals-ca-2026-09-02-primary-review-r2",
   facade: "2026.09-rockwool-vhf-fixings-primary-review-r2",
   fire_safety: "2026.09-siemens-fdb221-primary-review-r2",
   flooring: "2026.09-ceresit-cn69-ct17-global-primary-review-r2",

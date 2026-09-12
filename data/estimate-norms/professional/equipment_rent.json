@@ -1,40 +1,85 @@
 {
   "work_group": "equipment_rent",
-  "source_pack_version": "2026.09-united-rentals-shift-billing-reference-r1",
+  "source_pack_version": "2026.09-united-rentals-ca-2026-09-02-primary-review-r2",
   "source_type": "open_method_statements",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "equipment_rent_united_rentals_one_shift_hours_day_v1",
+        "source_url": "https://www.unitedrentals.com/legal/rental-service-terms-ca-eng",
+        "verified_facts": [
+          "canada_rental_service_terms_last_update_is_2026_09_02",
+          "normal_one_shift_usage_is_8_hours_per_day_40_per_week_and_160_per_four_week_period",
+          "power_equipment_double_shift_charge_multiplier_is_1_5_and_triple_shift_is_2",
+          "rental_charges_accrue_during_saturdays_sundays_and_holidays",
+          "rental_period_charge_starts_at_store_departure_and_ends_on_confirmed_return_or_off_rent_pickup",
+          "delivery_pickup_refueling_taxes_transport_environmental_and_miscellaneous_charges_are_separate",
+          "eight_hours_is_a_normal_usage_allowance_not_a_complete_rental_price_formula",
+          "equipment_productivity_and_required_operating_hours_are_not_defined_by_the_supplier_terms"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "equipment_rent_united_rentals_one_shift_hours_day_v1",
-      "name_ru": "Нормализация одной смены аренды оборудования к восьми часам работы",
-      "parameters": ["required_equipment_hours", "supplier_terms_confirmed", "shift_count", "calendar_rental_period"],
+      "name_ru": "United Rentals Canada: лимит нормальной односменной эксплуатации в подтверждённом договоре аренды",
+      "parameters": [
+        "shift_count",
+        "required_equipment_operating_hours",
+        "equipment_productivity_calculation_reference",
+        "selected_equipment_and_power_status",
+        "supplier_and_jurisdiction",
+        "supplier_terms_revision_confirmed",
+        "rental_out_datetime",
+        "scheduled_in_or_confirmed_off_rent_datetime",
+        "calendar_rental_period",
+        "daily_weekly_or_four_week_rate_period",
+        "double_or_triple_shift_usage",
+        "weekend_and_holiday_days",
+        "delivery_and_pickup_scope",
+        "fuel_and_refueling_scope",
+        "tax_transport_environmental_and_miscellaneous_charges",
+        "operator_labor_scope",
+        "insurance_protection_and_damage_scope"
+      ],
       "unit": "hour",
       "rate": {
         "value": 8,
-        "unit": "equipment hours/one normal daily shift"
+        "unit": "normal-use equipment operating hours/one supplier-defined shift day; calendar billing period and price are separate"
       },
       "applicability": {
-        "supplier": "United Rentals Canada",
+        "supplier": "United Rentals of Canada Inc.",
+        "jurisdiction": "Canada",
+        "terms_last_update": "2026-09-02",
         "one_shift_hours_per_day": 8,
         "one_shift_hours_per_week": 40,
         "one_shift_hours_per_four_week_period": 160,
-        "double_shift_rate_multiplier": 1.5,
-        "triple_shift_rate_multiplier": 2,
-        "weekends_and_holidays_accrue_charges": true,
-        "supplier_contract_and_local_rate_override": true,
-        "equipment_productivity_must_be_calculated_separately": true
+        "double_shift_rate_multiplier_for_power_equipment": 1.5,
+        "triple_shift_rate_multiplier_for_power_equipment": 2,
+        "weekends_and_holidays_accrue_rental_charges": true,
+        "rental_period_and_off_rent_confirmation_control_calendar_charge": true,
+        "delivery_pickup_refueling_taxes_transport_environmental_and_miscellaneous_charges_are_separate": true,
+        "equipment_productivity_must_be_calculated_separately": true,
+        "supplier_agreement_and_local_rate_required": true,
+        "eight_hour_allowance_is_not_complete_billing_formula": true,
+        "automatic_production_binding_for_generic_equipment_rent_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "rental_day_shift",
+        "package_unit": "normal_shift_operating_hour_allowance",
         "package_size": 8,
-        "mode": "ceil_required_hours_to_supplier_shift_after_calendar_check"
+        "mode": "supplier_agreement_calendar_period_and_shift_usage_schedule_required"
       },
       "source": {
         "title": "United Rentals Canada Rental Service Terms",
         "url": "https://www.unitedrentals.com/legal/rental-service-terms-ca-eng",
-        "page": "section 15 Rental Period / Calculation of Charges",
+        "page": "Last updated 2026-09-02; sections 13 and 15-17: rental period, one-shift usage, excess shifts and separate charges",
         "provenance": "open_method_statements"
       }
     }
