@@ -1,9 +1,9 @@
 {
   "schema": "catalog-source-registry-v1",
-  "generated_at": "2026-09-12T05:18:17.219Z",
+  "generated_at": "2026-09-12T07:27:04.902Z",
   "final_status": "STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED",
-  "registry_source_count": 33,
-  "row_source_count": 369,
+  "registry_source_count": 32,
+  "row_source_count": 373,
   "p0_source_count": 191,
   "sources": [
     {
@@ -11,7 +11,7 @@
       "source_title": "Gerflor Design Skirting 6086: плинтус секциями по 2 м",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://cdn.gerflor.com/media/2/56198/design%20skirting%20-%20installation%20guidelines.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-gerflor-forbo-source-review-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -37,7 +37,7 @@
       "source_title": "Sikagard Wood Preserver Product Data Sheet",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://gbr.sika.com/dam/dms/gb01/c/sikagard_wood_preserver.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-sikagard-wood-preserver-preventative-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -3176,6 +3176,42 @@
       ]
     },
     {
+      "source_id": "src_professional_norm_pack_catalog_documentation_labor_quality_control_linear_m_v1",
+      "source_title": "Estimator source pack: labor productivity norm catalog (documentation)",
+      "source_type": "internal_company_norm_catalog",
+      "source_url_or_document_ref": "RIK-SMETA-LABOR-DOCUMENTATION-2026.07",
+      "source_date_or_version": "2026.07.03",
+      "provenance": "existing_internal_company_norm_catalog",
+      "license_status": "internal_use_allowed",
+      "quality_status": "reviewed",
+      "review_status": "quantity_engineering_reviewed",
+      "is_source_backed_professional_norm_pack": false,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "batch_ledger_norm_pack",
+      "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_32",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_33",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_34",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_35",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_36",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_37",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_38",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_quality_control_63"
+      ],
+      "sample_template_ids": [
+        "electrical_interior_low_voltage_lay_standard_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_small_area_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_large_area_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_wet_zone_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_technical_room_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_high_load_professional_expanded_v1",
+        "plumbing_interior_sewer_route_standard_professional_expanded_v1",
+        "plumbing_interior_sewer_route_small_area_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
+    },
+    {
       "source_id": "src_professional_norm_pack_catalog_documentation_labor_quality_control_m2_v1",
       "source_title": "Estimator source pack: labor productivity norm catalog (documentation)",
       "source_type": "internal_company_norm_catalog",
@@ -3241,19 +3277,19 @@
         "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_quality_control_35",
         "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_quality_control_36",
         "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_quality_control_38",
-        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_quality_control_32",
-        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_quality_control_34",
-        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_quality_control_35"
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_quality_control_32",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_quality_control_34",
+        "norm:2026.07.03:professional_pack:catalog_documentation_labor_quality_control:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_quality_control_35"
       ],
       "sample_template_ids": [
         "heating_hvac_interior_radiator_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1",
         "heating_hvac_interior_boiler_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1",
         "heating_hvac_interior_collector_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pipe_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heat_station_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_conditioner_install_standard_professional_expanded_v1"
+        "heating_hvac_interior_conditioner_install_standard_professional_expanded_v1",
+        "heating_hvac_interior_split_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -5264,12 +5300,12 @@
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_install_standard_materials_02",
         "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_install_standard_materials_03",
+        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_install_standard_materials_06",
         "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_clad_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_clad_standard_materials_02",
         "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_clad_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_clad_standard_materials_03",
+        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_clad_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_clad_standard_materials_06",
         "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_frame_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_frame_standard_materials_02",
-        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_frame_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_frame_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_insulate_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_insulate_standard_materials_02",
-        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_insulate_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_insulate_standard_materials_03"
+        "norm:2026.07.03:professional_pack:catalog_fire_safety_material_materials:drywall_ceiling_interior_fire_partition_frame_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_frame_standard_materials_03"
       ],
       "sample_template_ids": [
         "drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1",
@@ -5784,6 +5820,39 @@
       ]
     },
     {
+      "source_id": "src_professional_norm_pack_catalog_heating_labor_labor_m2_v1",
+      "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
+      "source_type": "internal_company_norm_catalog",
+      "source_url_or_document_ref": "RIK-SMETA-LABOR-HVAC-2026.07",
+      "source_date_or_version": "2026.07.03",
+      "provenance": "existing_internal_company_norm_catalog",
+      "license_status": "internal_use_allowed",
+      "quality_status": "reviewed",
+      "review_status": "quantity_engineering_reviewed",
+      "is_source_backed_professional_norm_pack": false,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "batch_ledger_norm_pack",
+      "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_18",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_19",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_20",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_21",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_22",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_23",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_24",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_labor:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_labor_52"
+      ],
+      "sample_template_ids": [
+        "heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_small_area_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_large_area_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_wet_zone_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_technical_room_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
+    },
+    {
       "source_id": "src_professional_norm_pack_catalog_heating_labor_labor_piece_v1",
       "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
       "source_type": "internal_company_norm_catalog",
@@ -5809,13 +5878,13 @@
       ],
       "sample_template_ids": [
         "heating_hvac_interior_radiator_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1",
         "heating_hvac_interior_boiler_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1",
         "heating_hvac_interior_collector_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pipe_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heat_station_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_chimney_install_standard_professional_expanded_v1"
+        "heating_hvac_interior_chimney_install_standard_professional_expanded_v1",
+        "heating_hvac_interior_thermostat_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -5856,6 +5925,39 @@
       "p0_case_ids": []
     },
     {
+      "source_id": "src_professional_norm_pack_catalog_heating_labor_preparation_m2_v1",
+      "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
+      "source_type": "internal_company_norm_catalog",
+      "source_url_or_document_ref": "RIK-SMETA-LABOR-HVAC-2026.07",
+      "source_date_or_version": "2026.07.03",
+      "provenance": "existing_internal_company_norm_catalog",
+      "license_status": "internal_use_allowed",
+      "quality_status": "reviewed",
+      "review_status": "quantity_engineering_reviewed",
+      "is_source_backed_professional_norm_pack": false,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "batch_ledger_norm_pack",
+      "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_preparation_50",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_small_area_professional_expanded_v1:heating_hvac_interior_warm_floor_install_small_area_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_small_area_professional_expanded_v1:heating_hvac_interior_warm_floor_install_small_area_preparation_50",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_large_area_professional_expanded_v1:heating_hvac_interior_warm_floor_install_large_area_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_large_area_professional_expanded_v1:heating_hvac_interior_warm_floor_install_large_area_preparation_50",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_wet_zone_professional_expanded_v1:heating_hvac_interior_warm_floor_install_wet_zone_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_wet_zone_professional_expanded_v1:heating_hvac_interior_warm_floor_install_wet_zone_preparation_50"
+      ],
+      "sample_template_ids": [
+        "heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_small_area_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_large_area_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_wet_zone_professional_expanded_v1",
+        "heating_hvac_interior_warm_floor_install_technical_room_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
+    },
+    {
       "source_id": "src_professional_norm_pack_catalog_heating_labor_preparation_piece_v1",
       "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
       "source_type": "internal_company_norm_catalog",
@@ -5872,22 +5974,22 @@
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_preparation_50",
-        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_preparation_50",
         "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_preparation_50",
         "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1:heating_hvac_interior_heating_pump_install_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1:heating_hvac_interior_heating_pump_install_standard_preparation_50"
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1:heating_hvac_interior_heating_pump_install_standard_preparation_50",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_collector_install_standard_professional_expanded_v1:heating_hvac_interior_collector_install_standard_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_heating_labor_preparation:heating_hvac_interior_collector_install_standard_professional_expanded_v1:heating_hvac_interior_collector_install_standard_preparation_50"
       ],
       "sample_template_ids": [
         "heating_hvac_interior_radiator_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1",
         "heating_hvac_interior_boiler_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1",
         "heating_hvac_interior_collector_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heating_pipe_install_standard_professional_expanded_v1",
         "heating_hvac_interior_heat_station_install_standard_professional_expanded_v1",
-        "heating_hvac_interior_chimney_install_standard_professional_expanded_v1"
+        "heating_hvac_interior_chimney_install_standard_professional_expanded_v1",
+        "heating_hvac_interior_thermostat_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -6123,13 +6225,13 @@
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_materials_42",
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_01",
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_03",
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_05",
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_06",
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_41",
         "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_boiler_install_standard_professional_expanded_v1:heating_hvac_interior_boiler_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_heating_pump_install_standard_professional_expanded_v1:heating_hvac_interior_heating_pump_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_collector_install_standard_professional_expanded_v1:heating_hvac_interior_collector_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_heating_pipe_install_standard_professional_expanded_v1:heating_hvac_interior_heating_pipe_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_heat_station_install_standard_professional_expanded_v1:heating_hvac_interior_heat_station_install_standard_materials_42",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_chimney_install_standard_professional_expanded_v1:heating_hvac_interior_chimney_install_standard_materials_42"
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_43"
       ],
       "sample_template_ids": [
         "heating_hvac_interior_radiator_install_standard_professional_expanded_v1",
@@ -6165,7 +6267,7 @@
         "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_materials_06",
         "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_materials_41",
         "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_radiator_install_standard_professional_expanded_v1:heating_hvac_interior_radiator_install_standard_materials_43",
-        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_01"
+        "norm:2026.07.03:professional_pack:catalog_heating_material_materials:heating_hvac_interior_warm_floor_install_standard_professional_expanded_v1:heating_hvac_interior_warm_floor_install_standard_materials_04"
       ],
       "sample_template_ids": [
         "heating_hvac_interior_radiator_install_standard_professional_expanded_v1",
@@ -6828,6 +6930,40 @@
       "p0_case_ids": []
     },
     {
+      "source_id": "src_professional_norm_pack_catalog_low_voltage_labor_labor_linear_m_v1",
+      "source_title": "Estimator source pack: labor productivity norm catalog (low_voltage)",
+      "source_type": "internal_company_norm_catalog",
+      "source_url_or_document_ref": "RIK-SMETA-LABOR-LOW_VOLTAGE-2026.07",
+      "source_date_or_version": "2026.07.03",
+      "provenance": "existing_internal_company_norm_catalog",
+      "license_status": "internal_use_allowed",
+      "quality_status": "reviewed",
+      "review_status": "quantity_engineering_reviewed",
+      "is_source_backed_professional_norm_pack": false,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "batch_ledger_norm_pack",
+      "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_18",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_20",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_21",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_22",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_23",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_24",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_52",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_labor:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_labor_53"
+      ],
+      "sample_template_ids": [
+        "electrical_interior_low_voltage_lay_standard_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_small_area_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_large_area_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_wet_zone_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_technical_room_professional_expanded_v1",
+        "electrical_interior_low_voltage_lay_high_load_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
+    },
+    {
       "source_id": "src_professional_norm_pack_catalog_low_voltage_labor_labor_point_v1",
       "source_title": "Estimator source pack: labor productivity norm catalog (low_voltage)",
       "source_type": "internal_company_norm_catalog",
@@ -6884,8 +7020,8 @@
         "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_intercom_install_standard_professional_expanded_v1:electrical_interior_intercom_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_access_control_install_standard_professional_expanded_v1:electrical_interior_access_control_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_internet_lay_standard_professional_expanded_v1:electrical_interior_internet_lay_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_video_lay_standard_professional_expanded_v1:electrical_interior_video_lay_standard_preparation_14"
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_preparation_15",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_labor_preparation:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_preparation_50"
       ],
       "sample_template_ids": [
         "electrical_interior_low_voltage_install_standard_professional_expanded_v1",
@@ -6929,9 +7065,9 @@
         "electrical_interior_video_install_standard_professional_expanded_v1",
         "electrical_interior_intercom_install_standard_professional_expanded_v1",
         "electrical_interior_access_control_install_standard_professional_expanded_v1",
-        "electrical_interior_low_voltage_lay_standard_professional_expanded_v1",
         "electrical_interior_internet_lay_standard_professional_expanded_v1",
-        "electrical_interior_video_lay_standard_professional_expanded_v1"
+        "electrical_interior_video_lay_standard_professional_expanded_v1",
+        "electrical_interior_intercom_lay_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -7028,8 +7164,8 @@
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_intercom_install_standard_professional_expanded_v1:electrical_interior_intercom_install_standard_consumables_13",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_access_control_install_standard_professional_expanded_v1:electrical_interior_access_control_install_standard_consumables_13",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_consumables_13",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_internet_lay_standard_professional_expanded_v1:electrical_interior_internet_lay_standard_consumables_13",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_video_lay_standard_professional_expanded_v1:electrical_interior_video_lay_standard_consumables_13"
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_consumables_48",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_internet_lay_standard_professional_expanded_v1:electrical_interior_internet_lay_standard_consumables_13"
       ],
       "sample_template_ids": [
         "electrical_interior_low_voltage_install_standard_professional_expanded_v1",
@@ -7063,9 +7199,9 @@
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_video_install_standard_professional_expanded_v1:electrical_interior_video_install_standard_consumables_48",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_intercom_install_standard_professional_expanded_v1:electrical_interior_intercom_install_standard_consumables_48",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_access_control_install_standard_professional_expanded_v1:electrical_interior_access_control_install_standard_consumables_48",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_low_voltage_lay_standard_professional_expanded_v1:electrical_interior_low_voltage_lay_standard_consumables_48",
         "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_internet_lay_standard_professional_expanded_v1:electrical_interior_internet_lay_standard_consumables_48",
-        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_video_lay_standard_professional_expanded_v1:electrical_interior_video_lay_standard_consumables_48"
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_video_lay_standard_professional_expanded_v1:electrical_interior_video_lay_standard_consumables_48",
+        "norm:2026.07.03:professional_pack:catalog_low_voltage_material_consumables:electrical_interior_intercom_lay_standard_professional_expanded_v1:electrical_interior_intercom_lay_standard_consumables_48"
       ],
       "sample_template_ids": [
         "electrical_interior_low_voltage_install_standard_professional_expanded_v1",
@@ -7073,9 +7209,9 @@
         "electrical_interior_video_install_standard_professional_expanded_v1",
         "electrical_interior_intercom_install_standard_professional_expanded_v1",
         "electrical_interior_access_control_install_standard_professional_expanded_v1",
-        "electrical_interior_low_voltage_lay_standard_professional_expanded_v1",
         "electrical_interior_internet_lay_standard_professional_expanded_v1",
-        "electrical_interior_video_lay_standard_professional_expanded_v1"
+        "electrical_interior_video_lay_standard_professional_expanded_v1",
+        "electrical_interior_intercom_lay_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -7181,9 +7317,9 @@
         "electrical_interior_video_install_standard_professional_expanded_v1",
         "electrical_interior_intercom_install_standard_professional_expanded_v1",
         "electrical_interior_access_control_install_standard_professional_expanded_v1",
-        "electrical_interior_low_voltage_lay_standard_professional_expanded_v1",
         "electrical_interior_internet_lay_standard_professional_expanded_v1",
-        "electrical_interior_video_lay_standard_professional_expanded_v1"
+        "electrical_interior_video_lay_standard_professional_expanded_v1",
+        "electrical_interior_intercom_lay_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -10492,9 +10628,9 @@
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_connect_standard_professional_expanded_v1:plumbing_interior_sewer_connect_standard_labor_19",
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_pressure_test_standard_professional_expanded_v1:plumbing_interior_sewer_pressure_test_standard_labor_19",
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_repair_standard_professional_expanded_v1:plumbing_interior_sewer_repair_standard_labor_19",
+        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_labor_18",
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_labor_19",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_seal_standard_professional_expanded_v1:plumbing_interior_sewer_seal_standard_labor_19",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_prepare_standard_professional_expanded_v1:plumbing_interior_sewer_prepare_standard_labor_19"
+        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_labor:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_labor_21"
       ],
       "sample_template_ids": [
         "plumbing_interior_sewer_install_standard_professional_expanded_v1",
@@ -10569,8 +10705,8 @@
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_pressure_test_standard_professional_expanded_v1:plumbing_interior_sewer_pressure_test_standard_preparation_15",
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_repair_standard_professional_expanded_v1:plumbing_interior_sewer_repair_standard_preparation_15",
         "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_preparation_15",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_seal_standard_professional_expanded_v1:plumbing_interior_sewer_seal_standard_preparation_15",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_prepare_standard_professional_expanded_v1:plumbing_interior_sewer_prepare_standard_preparation_15"
+        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_preparation_16",
+        "norm:2026.07.03:professional_pack:catalog_sewerage_labor_preparation:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_preparation_50"
       ],
       "sample_template_ids": [
         "plumbing_interior_sewer_install_standard_professional_expanded_v1",
@@ -10721,8 +10857,8 @@
         "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_pressure_test_standard_professional_expanded_v1:plumbing_interior_sewer_pressure_test_standard_consumables_11",
         "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_repair_standard_professional_expanded_v1:plumbing_interior_sewer_repair_standard_consumables_11",
         "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_consumables_11",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_seal_standard_professional_expanded_v1:plumbing_interior_sewer_seal_standard_consumables_11",
-        "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_prepare_standard_professional_expanded_v1:plumbing_interior_sewer_prepare_standard_consumables_11"
+        "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_consumables_13",
+        "norm:2026.07.03:professional_pack:catalog_sewerage_material_consumables:plumbing_interior_sewer_route_standard_professional_expanded_v1:plumbing_interior_sewer_route_standard_consumables_48"
       ],
       "sample_template_ids": [
         "plumbing_interior_sewer_install_standard_professional_expanded_v1",
@@ -10768,9 +10904,9 @@
         "plumbing_interior_sewer_connect_standard_professional_expanded_v1",
         "plumbing_interior_sewer_pressure_test_standard_professional_expanded_v1",
         "plumbing_interior_sewer_repair_standard_professional_expanded_v1",
-        "plumbing_interior_sewer_route_standard_professional_expanded_v1",
         "plumbing_interior_sewer_seal_standard_professional_expanded_v1",
-        "plumbing_interior_sewer_prepare_standard_professional_expanded_v1"
+        "plumbing_interior_sewer_prepare_standard_professional_expanded_v1",
+        "plumbing_interior_sewer_install_small_area_professional_expanded_v1"
       ],
       "p0_case_ids": [
         "apartment_capital_renovation_54"
@@ -10882,9 +11018,9 @@
         "plumbing_interior_sewer_connect_standard_professional_expanded_v1",
         "plumbing_interior_sewer_pressure_test_standard_professional_expanded_v1",
         "plumbing_interior_sewer_repair_standard_professional_expanded_v1",
-        "plumbing_interior_sewer_route_standard_professional_expanded_v1",
         "plumbing_interior_sewer_seal_standard_professional_expanded_v1",
-        "plumbing_interior_sewer_prepare_standard_professional_expanded_v1"
+        "plumbing_interior_sewer_prepare_standard_professional_expanded_v1",
+        "plumbing_interior_sewer_install_small_area_professional_expanded_v1"
       ],
       "p0_case_ids": [
         "apartment_capital_renovation_54"
@@ -11233,7 +11369,7 @@
       ]
     },
     {
-      "source_id": "src_professional_norm_pack_catalog_ventilation_labor_labor_set_v1",
+      "source_id": "src_professional_norm_pack_catalog_ventilation_labor_labor_linear_m_v1",
       "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
       "source_type": "internal_company_norm_catalog",
       "source_url_or_document_ref": "RIK-SMETA-LABOR-HVAC-2026.07",
@@ -11258,13 +11394,45 @@
       ],
       "sample_template_ids": [
         "ventilation_interior_duct_install_standard_professional_expanded_v1",
+        "ventilation_interior_duct_install_small_area_professional_expanded_v1",
+        "ventilation_interior_duct_install_large_area_professional_expanded_v1",
+        "ventilation_interior_duct_install_wet_zone_professional_expanded_v1"
+      ],
+      "p0_case_ids": []
+    },
+    {
+      "source_id": "src_professional_norm_pack_catalog_ventilation_labor_labor_set_v1",
+      "source_title": "Estimator source pack: labor productivity norm catalog (hvac)",
+      "source_type": "internal_company_norm_catalog",
+      "source_url_or_document_ref": "RIK-SMETA-LABOR-HVAC-2026.07",
+      "source_date_or_version": "2026.07.03",
+      "provenance": "existing_internal_company_norm_catalog",
+      "license_status": "internal_use_allowed",
+      "quality_status": "reviewed",
+      "review_status": "quantity_engineering_reviewed",
+      "is_source_backed_professional_norm_pack": false,
+      "is_generated_family_default": false,
+      "is_historical_price_only": false,
+      "evidence_kind": "batch_ledger_norm_pack",
+      "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_18",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_19",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_20",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_21",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_22",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_23",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_24",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_labor:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_labor_52"
+      ],
+      "sample_template_ids": [
         "ventilation_interior_vent_channel_install_standard_professional_expanded_v1",
         "ventilation_interior_fan_install_standard_professional_expanded_v1",
         "ventilation_interior_hood_install_standard_professional_expanded_v1",
         "ventilation_interior_supply_install_standard_professional_expanded_v1",
         "ventilation_interior_exhaust_install_standard_professional_expanded_v1",
         "ventilation_interior_recuperator_install_standard_professional_expanded_v1",
-        "ventilation_interior_silencer_install_standard_professional_expanded_v1"
+        "ventilation_interior_silencer_install_standard_professional_expanded_v1",
+        "ventilation_interior_diffuser_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -11284,13 +11452,13 @@
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_14",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_15",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_50",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_hood_install_standard_professional_expanded_v1:ventilation_interior_hood_install_standard_preparation_14",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_supply_install_standard_professional_expanded_v1:ventilation_interior_supply_install_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_exhaust_install_standard_professional_expanded_v1:ventilation_interior_exhaust_install_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_recuperator_install_standard_professional_expanded_v1:ventilation_interior_recuperator_install_standard_preparation_14",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_silencer_install_standard_professional_expanded_v1:ventilation_interior_silencer_install_standard_preparation_14"
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_exhaust_install_standard_professional_expanded_v1:ventilation_interior_exhaust_install_standard_preparation_14"
       ],
       "sample_template_ids": [
         "ventilation_interior_duct_install_standard_professional_expanded_v1",
@@ -11319,14 +11487,14 @@
       "is_historical_price_only": false,
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_15",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_16",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_17",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_49",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_50",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_preparation_51",
         "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_15",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_16"
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_16",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_17",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_labor_preparation:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_preparation_49"
       ],
       "sample_template_ids": [
         "ventilation_interior_duct_install_standard_professional_expanded_v1",
@@ -11463,14 +11631,14 @@
       "is_historical_price_only": false,
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_01",
         "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_hood_install_standard_professional_expanded_v1:ventilation_interior_hood_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_supply_install_standard_professional_expanded_v1:ventilation_interior_supply_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_exhaust_install_standard_professional_expanded_v1:ventilation_interior_exhaust_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_recuperator_install_standard_professional_expanded_v1:ventilation_interior_recuperator_install_standard_materials_03",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_silencer_install_standard_professional_expanded_v1:ventilation_interior_silencer_install_standard_materials_03"
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_04",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_05",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_06",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_41",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_43",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_03"
       ],
       "sample_template_ids": [
         "ventilation_interior_duct_install_standard_professional_expanded_v1",
@@ -11571,24 +11739,24 @@
       "is_historical_price_only": false,
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_01",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_04",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_05",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_41",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_materials_43",
         "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_01",
-        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_04"
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_04",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_05",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_06",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_41",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_materials_43",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_materials_01",
+        "norm:2026.07.03:professional_pack:catalog_ventilation_material_materials:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_materials_04"
       ],
       "sample_template_ids": [
-        "ventilation_interior_duct_install_standard_professional_expanded_v1",
         "ventilation_interior_vent_channel_install_standard_professional_expanded_v1",
         "ventilation_interior_fan_install_standard_professional_expanded_v1",
         "ventilation_interior_hood_install_standard_professional_expanded_v1",
         "ventilation_interior_supply_install_standard_professional_expanded_v1",
         "ventilation_interior_exhaust_install_standard_professional_expanded_v1",
         "ventilation_interior_recuperator_install_standard_professional_expanded_v1",
-        "ventilation_interior_silencer_install_standard_professional_expanded_v1"
+        "ventilation_interior_silencer_install_standard_professional_expanded_v1",
+        "ventilation_interior_diffuser_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -11811,24 +11979,24 @@
       "is_historical_price_only": false,
       "evidence_kind": "batch_ledger_norm_pack",
       "sample_norm_ids": [
-        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_waste_30",
-        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_waste_31",
-        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_waste_59",
-        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_duct_install_standard_professional_expanded_v1:ventilation_interior_duct_install_standard_waste_60",
         "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_waste_30",
         "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_waste_31",
         "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_waste_59",
-        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_waste_60"
+        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_vent_channel_install_standard_professional_expanded_v1:ventilation_interior_vent_channel_install_standard_waste_60",
+        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_waste_30",
+        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_waste_31",
+        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_waste_59",
+        "norm:2026.07.03:professional_pack:catalog_waste_removal_material_waste:ventilation_interior_fan_install_standard_professional_expanded_v1:ventilation_interior_fan_install_standard_waste_60"
       ],
       "sample_template_ids": [
-        "ventilation_interior_duct_install_standard_professional_expanded_v1",
         "ventilation_interior_vent_channel_install_standard_professional_expanded_v1",
         "ventilation_interior_fan_install_standard_professional_expanded_v1",
         "ventilation_interior_hood_install_standard_professional_expanded_v1",
         "ventilation_interior_supply_install_standard_professional_expanded_v1",
         "ventilation_interior_exhaust_install_standard_professional_expanded_v1",
         "ventilation_interior_recuperator_install_standard_professional_expanded_v1",
-        "ventilation_interior_silencer_install_standard_professional_expanded_v1"
+        "ventilation_interior_silencer_install_standard_professional_expanded_v1",
+        "ventilation_interior_diffuser_install_standard_professional_expanded_v1"
       ],
       "p0_case_ids": []
     },
@@ -12521,7 +12689,7 @@
       "source_title": "Knauf D11: листовая обшивка D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12547,7 +12715,7 @@
       "source_title": "Knauf D11: армирующая лента резаных кромок D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12573,7 +12741,7 @@
       "source_title": "Knauf D11: анкер или подвес каркаса D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12599,7 +12767,7 @@
       "source_title": "Knauf D11: саморез TN 3,5 × 25 мм для D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12625,7 +12793,7 @@
       "source_title": "Knauf D11: пристенный профиль UD 28/27 системы D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12651,7 +12819,7 @@
       "source_title": "Knauf D11: смесь Uniflott для швов D112, вариант 1",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/2d411a5d-3b6d-45e3-ab8e-a13b0f0b54bd?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-knauf-d11-d112-standard-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12745,7 +12913,7 @@
       "source_title": "Технический паспорт гипсовой шпаклёвки Knauf Fugenfuller Leicht",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12777,47 +12945,11 @@
       "p0_case_ids": []
     },
     {
-      "source_id": "src_professional_norm_pack_drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
-      "source_title": "Технический паспорт гипсовой шпаклёвки Knauf Fugenfuller Leicht",
-      "source_type": "manufacturer_consumption_table",
-      "source_url_or_document_ref": "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
-      "source_date_or_version": "2026.07-wave2a",
-      "provenance": "manufacturer_datasheet_curated",
-      "license_status": "manufacturer_terms_required",
-      "quality_status": "needs_regional_review",
-      "review_status": "source_mapping_reviewed",
-      "is_source_backed_professional_norm_pack": true,
-      "is_generated_family_default": false,
-      "is_historical_price_only": false,
-      "evidence_kind": "registry_norm_pack",
-      "sample_norm_ids": [
-        "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_drywall_partition_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1:drywall_ceiling_interior_wall_cladding_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_shaft_install_standard_professional_expanded_v1:drywall_ceiling_interior_shaft_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_niche_install_standard_professional_expanded_v1:drywall_ceiling_interior_niche_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_bulkhead_install_standard_professional_expanded_v1:drywall_ceiling_interior_bulkhead_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_sound_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_sound_partition_install_standard_materials_06",
-        "norm:2026.07.03:professional_pack:drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1:drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1:drywall_ceiling_interior_fire_partition_install_standard_materials_06"
-      ],
-      "sample_template_ids": [
-        "drywall_ceiling_interior_drywall_partition_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_wall_cladding_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_shaft_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_niche_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_bulkhead_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_sound_partition_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_fire_partition_install_standard_professional_expanded_v1",
-        "drywall_ceiling_interior_moisture_partition_install_standard_professional_expanded_v1"
-      ],
-      "p0_case_ids": []
-    },
-    {
       "source_id": "src_professional_norm_pack_facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
       "source_title": "ROCKWOOL Austria: fixing insulation boards for ventilated facades",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://www.rockwool.com/at/rat-und-tat/vertiefendes-wissen/produktwissen/vhf-befestigung/",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-rockwool-vhf-fixings-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12840,7 +12972,7 @@
       "source_title": "Технический паспорт самовыравнивающейся смеси для пола Ceresit CN 69",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CN-69-en_AE.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12876,7 +13008,7 @@
       "source_title": "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -12956,7 +13088,7 @@
       "source_title": "ROCKWOOL Comfortboard 80 building insulation product guide",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://brandcommunity.rockwool.com/asset/_ox3bHvewz_eaPJwWxITBw/asset.pdf?quality=10",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-rockwool-comfortboard80-pack-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13196,7 +13328,7 @@
       "source_title": "Jotun Hardtop XP Technical Data Sheet",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://www.jotun.com/api/v1/datasheets/download/merged?selectedFiles=4378",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-jotun-hardtop-xp-100um-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13219,7 +13351,7 @@
       "source_title": "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13257,7 +13389,7 @@
       "source_title": "Технический паспорт силикатной краски Ceresit CT 54 Silicate Aero",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-54-en_GR.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13295,7 +13427,7 @@
       "source_title": "Технический паспорт ремонтной штукатурно-шпаклёвочной смеси Ceresit CT 29",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13362,7 +13494,7 @@
       "source_title": "Технический паспорт финишной шпаклёвки Ceresit CT 126",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://dm.henkel-dam.com/is/content/henkel/ceresit-ct126",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13400,7 +13532,7 @@
       "source_title": "Технический паспорт финишной шпаклёвки Ceresit CT 127",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-127-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13479,7 +13611,7 @@
       "source_title": "Sika Sarnafil AT-18 product data and application instructions",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://gbr.sika.com/en/construction/roofing/flat-roof-productsandsystems/single-ply-roofing/fpo-roof-membranes/sarnafil-at-18.html",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.09-sika-sarnafil-at18-field-overlap-r1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13541,7 +13673,7 @@
       "source_title": "Технический паспорт плиточного клея Ceresit CM 11 Plus",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13579,7 +13711,7 @@
       "source_title": "Технический паспорт грунтовки глубокого проникновения Ceresit CT 17 Profi",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",
@@ -13617,7 +13749,7 @@
       "source_title": "Технический паспорт эластичной гидроизоляционной мастики Ceresit CL 51 Express 1-K",
       "source_type": "manufacturer_consumption_table",
       "source_url_or_document_ref": "https://datasheets.tdx.henkel.com/CERESIT-CL-51-en_GL.pdf",
-      "source_date_or_version": "2026.07-wave2a",
+      "source_date_or_version": "2026.07-wave1",
       "provenance": "manufacturer_datasheet_curated",
       "license_status": "manufacturer_terms_required",
       "quality_status": "needs_regional_review",

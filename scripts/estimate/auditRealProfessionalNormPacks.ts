@@ -447,7 +447,11 @@ function inspectProductionNormRegistry(planGroups: Set<string>): {
   production_norm_registry_invalid_binding_count: number;
   production_norm_registry_invalid_bindings: string[];
 } {
-  const physical = new Map<string, { group: string; item: NonNullable<ProfessionalNormPack["norm_items"]>[number] }>();
+  const physical = new Map<string, {
+    group: string;
+    sourcePackVersion: string;
+    item: NonNullable<ProfessionalNormPack["norm_items"]>[number];
+  }>();
   const root = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT);
   if (pathExists(root)) {
     for (const name of readdirSync(root).filter((candidate) =>
@@ -455,7 +459,13 @@ function inspectProductionNormRegistry(planGroups: Set<string>): {
     )) {
       const pack = readJson<ProfessionalNormPack>(path.join(root, name));
       for (const item of pack.norm_items ?? []) {
-        if (item.norm_id && pack.work_group) physical.set(item.norm_id, { group: pack.work_group, item });
+        if (item.norm_id && pack.work_group) {
+          physical.set(item.norm_id, {
+            group: pack.work_group,
+            sourcePackVersion: String(pack.source_pack_version ?? ""),
+            item,
+          });
+        }
       }
     }
   }
@@ -469,6 +479,9 @@ function inspectProductionNormRegistry(planGroups: Set<string>): {
       source.item.rate?.value === registered.consumptionRate ? "" : `rate_mismatch:${registered.normId}`,
       source.item.rounding?.package_size === registered.packageSize ? "" : `package_mismatch:${registered.normId}`,
       source.item.source?.url === registered.sourceUrl ? "" : `source_url_mismatch:${registered.normId}`,
+      source.sourcePackVersion === registered.sourceDocumentVersion
+        ? ""
+        : `source_pack_version_mismatch:${registered.normId}`,
       inferProfessionalNormPackBasisUnit(
         PHYSICAL_NORM_BASIS_PARAMETER_BY_ID[registered.normId] ?? "",
       ) === registered.workBasisUnit

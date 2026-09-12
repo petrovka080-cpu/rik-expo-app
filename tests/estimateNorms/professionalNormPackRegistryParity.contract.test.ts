@@ -21,17 +21,24 @@ type PhysicalNormItem = {
 
 type PhysicalNormPack = {
   work_group: string;
+  source_pack_version: string;
   norm_items: PhysicalNormItem[];
 };
 
 describe("professional norm-pack production registry parity", () => {
   it("binds only physical pack values with identical units, rates, packages and source URLs", () => {
     const root = path.resolve(process.cwd(), "data/estimate-norms/professional");
-    const physical = new Map<string, { group: string; item: PhysicalNormItem }>();
+    const physical = new Map<string, { group: string; sourcePackVersion: string; item: PhysicalNormItem }>();
     const basisById: Readonly<Record<string, string>> = PROFESSIONAL_NORM_PACK_BASIS_PARAMETER_BY_NORM_ID;
     for (const file of fs.readdirSync(root).filter((name) => name.endsWith(".json") && !name.includes("remediation-plan"))) {
       const pack = JSON.parse(fs.readFileSync(path.join(root, file), "utf8")) as PhysicalNormPack;
-      for (const item of pack.norm_items) physical.set(item.norm_id, { group: pack.work_group, item });
+      for (const item of pack.norm_items) {
+        physical.set(item.norm_id, {
+          group: pack.work_group,
+          sourcePackVersion: pack.source_pack_version,
+          item,
+        });
+      }
     }
 
     const failures = PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.flatMap((registered) => {
@@ -44,6 +51,9 @@ describe("professional norm-pack production registry parity", () => {
         source.item.rate.value === registered.consumptionRate ? "" : `rate_mismatch:${registered.normId}`,
         source.item.rounding.package_size === registered.packageSize ? "" : `package_mismatch:${registered.normId}`,
         source.item.source.url === registered.sourceUrl ? "" : `source_url_mismatch:${registered.normId}`,
+        source.sourcePackVersion === registered.sourceDocumentVersion
+          ? ""
+          : `source_pack_version_mismatch:${registered.normId}`,
         source.item.parameters.includes(basisParameter) ? "" : `basis_parameter_not_declared:${registered.normId}`,
         inferProfessionalNormPackBasisUnit(basisParameter) === registered.workBasisUnit
           ? ""

@@ -9,7 +9,50 @@ import type {
 } from "./productionExpandedWorkCatalog10000";
 
 export const PROFESSIONAL_NORM_PACK_SOURCE_PREFIX = "src_professional_norm_pack_" as const;
-export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.07-wave2a" as const;
+export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.09-source-pack-lineage-r1" as const;
+
+export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
+  Record<EstimateNormWorkGroupKey, string>
+> = Object.freeze({
+  air_conditioning: "2026.09-daikin-3mxs-k-additional-charge-r1",
+  baseboards: "2026.09-gerflor-forbo-source-review-r1",
+  carpentry: "2026.09-sikagard-wood-preserver-preventative-r1",
+  ceilings: "2026.09-knauf-d11-d112-standard-r1",
+  cleaning: "2026.09-tennant-t350-productivity-r1",
+  concrete: "2026.07-wave2a",
+  delivery: "2026.09-ford-transit-payload-reference-r1",
+  demolition: "2026.09-krer46-applicability-routing-r1",
+  documentation: "2026.09-kg-project-pricing-routing-r1",
+  drywall: "2026.07-wave1",
+  earthworks: "2026.09-fhwa-fp24-structural-backfill-r1",
+  electrical: "2026.09-legrand-product-and-installation-r1",
+  equipment_rent: "2026.09-united-rentals-shift-billing-reference-r1",
+  facade: "2026.09-rockwool-vhf-fixings-r1",
+  fire_safety: "2026.09-siemens-sinteso-detector-base-r1",
+  flooring: "2026.07-wave1",
+  formwork: "2026.07-wave2a",
+  heating: "2026.09-uponor-ufh-pipe-spacing-r1",
+  insulation: "2026.09-rockwool-comfortboard80-pack-r1",
+  landscaping: "2026.09-rain-bird-xfd-dripline-r1",
+  low_voltage: "2026.09-legrand-049272-signal-cable-r1",
+  masonry: "2026.07-wave2a",
+  metalwork: "2026.09-jotun-hardtop-xp-100um-r1",
+  paint: "2026.07-wave1",
+  plaster: "2026.07-wave1",
+  plumbing: "2026.09-wavin-hep2o-installer-guide-r1",
+  putty: "2026.07-wave1",
+  reinforcement: "2026.07-wave2a",
+  roadworks: "2026.09-krer27-table-27-06-020-routing-r1",
+  roofing: "2026.09-sika-sarnafil-at18-field-overlap-r1",
+  screed: "2026.07-wave2a",
+  services: "2026.09-kg-author-supervision-trip-exclusion-r1",
+  sewerage: "2026.09-wavin-osma-110mm-3m-pipe-r1",
+  tile: "2026.07-wave1",
+  ventilation: "2026.09-lindab-vsr-3m-duct-r1",
+  waste_removal: "2026.09-us-epa-cd-volume-weight-r1",
+  waterproofing: "2026.07-wave1",
+  windows_doors: "2026.09-soudal-window-door-genius-linear-yield-r1",
+});
 
 export type ProfessionalNormPackRegistryItem = {
   normId: string;
@@ -21,7 +64,7 @@ export type ProfessionalNormPackRegistryItem = {
   packageSize: number;
   sourceId: string;
   sourceTitle: string;
-  sourceDocumentVersion: typeof PROFESSIONAL_NORM_PACK_REGISTRY_VERSION;
+  sourceDocumentVersion: string;
   sourceType: EstimateNormSource["source_type"];
   sourceProvenance: EstimateNormSource["provenance"];
   licenseStatus: EstimateNormSource["license_status"];
@@ -60,7 +103,6 @@ function sourceId(normId: string): string {
 }
 
 const commonSource = {
-  sourceDocumentVersion: PROFESSIONAL_NORM_PACK_REGISTRY_VERSION,
   sourceType: "manufacturer_consumption_table",
   sourceProvenance: "manufacturer_datasheet_curated",
   licenseStatus: "manufacturer_terms_required",
@@ -69,7 +111,6 @@ const commonSource = {
 } as const;
 
 const publicReferenceSource = {
-  sourceDocumentVersion: PROFESSIONAL_NORM_PACK_REGISTRY_VERSION,
   sourceType: "public_reference_norm",
   sourceProvenance: "public_reference_curated",
   licenseStatus: "public_reference_allowed",
@@ -78,7 +119,6 @@ const publicReferenceSource = {
 } as const;
 
 const internalCuratedSource = {
-  sourceDocumentVersion: PROFESSIONAL_NORM_PACK_REGISTRY_VERSION,
   sourceType: "internal_company_norm_catalog",
   sourceProvenance: "existing_internal_company_norm_catalog",
   licenseStatus: "internal_use_allowed",
@@ -86,7 +126,12 @@ const internalCuratedSource = {
   reviewStatus: "quantity_engineering_reviewed",
 } as const;
 
-export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPackRegistryItem[] = Object.freeze([
+type ProfessionalNormPackRegistryItemInput = Omit<
+  ProfessionalNormPackRegistryItem,
+  "sourceDocumentVersion"
+>;
+
+const PROFESSIONAL_NORM_PACK_REGISTRY_ITEM_INPUTS: readonly ProfessionalNormPackRegistryItemInput[] = Object.freeze([
   {
     normId: "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
     workGroup: "carpentry",
@@ -730,6 +775,13 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     ...commonSource,
   },
 ]);
+
+export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPackRegistryItem[] = Object.freeze(
+  PROFESSIONAL_NORM_PACK_REGISTRY_ITEM_INPUTS.map((item) => Object.freeze({
+    ...item,
+    sourceDocumentVersion: PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP[item.workGroup],
+  })),
+);
 
 export const PROFESSIONAL_NORM_PACK_GROUPS: readonly EstimateNormWorkGroupKey[] = Object.freeze(
   [...new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.workGroup))].sort(),
