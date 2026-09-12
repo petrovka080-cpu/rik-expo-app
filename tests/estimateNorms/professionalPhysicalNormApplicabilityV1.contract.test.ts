@@ -15,6 +15,9 @@ import {
   FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+  KNAUF_D112_BOARD_NORM_ID,
+  KNAUF_D112_BOARD_SOURCE_ID,
+  KNAUF_D112_BOARD_SOURCE_METADATA,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
   KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
@@ -232,6 +235,13 @@ function exactKnaufD112Tn25Inputs(
     system_variant: explicit("standard_12_5_mm_single_layer"),
     board_layer_count: explicit(1, "item"),
     board_thickness_mm: explicit(12.5, "mm"),
+    board_type: explicit("GKB"),
+    selected_board_length_mm: explicit(2500, "mm"),
+    selected_board_width_mm: explicit(1200, "mm"),
+    selected_board_layout_piece_count: explicit(34, "item"),
+    d112_board_layout_reference: explicit("АР-17, лист 12, раскладка потолка D112 rev.2"),
+    d112_board_manufacturer_excludes_loss_and_waste_confirmed: explicit(true),
+    material_certificate_reference: explicit("PROJECT-KNAUF-D112-GKB-BATCH-CERT-001"),
     ...changes,
   };
 }
@@ -1131,9 +1141,41 @@ describe("professional physical norm applicability V1", () => {
         "PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=12:width_m=10:area_m2=100",
       ],
     });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({ board_type: explicit("GKF") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        source_id: KNAUF_D112_BOARD_SOURCE_ID,
+        blockers: [
+          `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_BOARD_NORM_ID}:board_type=GKF`,
+        ],
+      });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      selected_board_layout_piece_count: explicit(33, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_BOARD_LAYOUT_UNDERSIZED:selected_board_layout_piece_count=33:minimum_piece_count=34",
+      ],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      d112_board_manufacturer_excludes_loss_and_waste_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_BOARD_NORM_ID}:d112_board_manufacturer_excludes_loss_and_waste_confirmed=false`,
+      ],
+    });
+    expect(resolveKnaufD112Tn25(exactKnaufD112Tn25Inputs({
+      quantity_first_layer_gypsum_board: explicit(100, "m2"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:quantity_first_layer_gypsum_board=100:norm_value=102",
+      ],
+    });
   });
 
-  test("derives deterministic D112 TN25 screws only for the explicit reference ceiling", () => {
+  test("derives deterministic D112 TN25 screws and board layout only for the explicit reference ceiling", () => {
     const input = exactKnaufD112Tn25Inputs();
     const first = resolveKnaufD112Tn25(input);
     const second = resolveKnaufD112Tn25(input);
@@ -1144,8 +1186,16 @@ describe("professional physical norm applicability V1", () => {
       norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
       source_document_version: "2026.09-knauf-d11-d112-primary-review-r2",
       source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
+      source_ids: [KNAUF_D112_TN25_SCREW_SOURCE_ID, KNAUF_D112_BOARD_SOURCE_ID],
+      norm_ids: [KNAUF_D112_TN25_SCREW_NORM_ID, KNAUF_D112_BOARD_NORM_ID],
       calculated_tn25_screw_quantity_piece: 1700,
-      produced_parameter_ids: ["quantity_first_layer_screws"],
+      calculated_d112_board_net_quantity_m2: 100,
+      calculated_d112_board_procurement_quantity_m2: 102,
+      calculated_d112_board_piece_count: 34,
+      produced_parameter_ids: [
+        "quantity_first_layer_screws",
+        "quantity_first_layer_gypsum_board",
+      ],
       blockers: [],
     });
     expect(first.parameter_values.quantity_first_layer_screws).toMatchObject({
@@ -1154,17 +1204,30 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: KNAUF_D112_TN25_SCREW_SOURCE_ID,
     });
+    expect(first.parameter_values.quantity_first_layer_gypsum_board).toMatchObject({
+      value: 102,
+      unit_id: "m2",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_BOARD_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.quantity_first_layer_screws).toBeUndefined();
+    expect(input.quantity_first_layer_gypsum_board).toBeUndefined();
     expect(constructionNormativeRegistryV1.get(KNAUF_D112_TN25_SCREW_SOURCE_ID)).toMatchObject({
       authority: "Knauf",
       product_profile_applicability: [KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID],
       material_system_applicability: ["FLAT_CEILING"],
       operation_class_applicability: ["CLAD"],
     });
+    expect(constructionNormativeRegistryV1.get(KNAUF_D112_BOARD_SOURCE_ID)).toMatchObject({
+      authority: "Knauf",
+      document_code: KNAUF_D112_BOARD_NORM_ID,
+      version: KNAUF_D112_BOARD_SOURCE_METADATA.source_document_version,
+      operation_class_applicability: ["CLAD"],
+    });
   });
 
-  test("routes D112 TN25 only to the canonical first-layer screw BOQ row", () => {
+  test("routes D112 TN25 and board norms only to their canonical CLAD BOQ rows", () => {
     const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
       row.work_key === FLAT_CEILING_CLAD_WORK_KEY);
     if (!inventory) throw new Error("KNAUF_D112_RUNTIME_CLAD_WORK_MISSING");
@@ -1172,7 +1235,16 @@ describe("professional physical norm applicability V1", () => {
     const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
     if (!technology || !schema) throw new Error("KNAUF_D112_RUNTIME_CLAD_SCHEMA_MISSING");
     expect(schema.parameters.filter((parameter) =>
-      ["system_variant", "board_thickness_mm"].includes(parameter.parameter_id))
+      [
+        "system_variant",
+        "board_thickness_mm",
+        "board_type",
+        "selected_board_length_mm",
+        "selected_board_width_mm",
+        "selected_board_layout_piece_count",
+        "d112_board_layout_reference",
+        "d112_board_manufacturer_excludes_loss_and_waste_confirmed",
+      ].includes(parameter.parameter_id))
       .every((parameter) => parameter.required_when.kind === "EQUALS" &&
         parameter.required_when.parameter_id === "product_profile_id" &&
         parameter.required_when.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID)).toBe(true);
@@ -1180,6 +1252,7 @@ describe("professional physical norm applicability V1", () => {
     const knaufValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
       if (parameter.parameter_id === "product_profile_id") return KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID;
       if (parameter.parameter_id === "system_passport_reference") return "Knauf D11, D112 variant 1, page 28";
+      if (parameter.parameter_id === "material_certificate_reference") return "PROJECT-KNAUF-D112-GKB-BATCH-CERT-001";
       if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-D112-CLAD-RATE";
       if (parameter.parameter_id === "project_type") return "INTERIOR-FLAT-CEILING-D112";
       if (parameter.parameter_id === "area_m2") return 100;
@@ -1188,10 +1261,19 @@ describe("professional physical norm applicability V1", () => {
       if (parameter.parameter_id === "system_variant") return "standard_12_5_mm_single_layer";
       if (parameter.parameter_id === "board_layer_count") return 1;
       if (parameter.parameter_id === "board_thickness_mm") return 12.5;
+      if (parameter.parameter_id === "board_type") return "GKB";
+      if (parameter.parameter_id === "selected_board_length_mm") return 2500;
+      if (parameter.parameter_id === "selected_board_width_mm") return 1200;
+      if (parameter.parameter_id === "selected_board_layout_piece_count") return 34;
+      if (parameter.parameter_id === "d112_board_layout_reference") return "АР-17, лист 12, раскладка потолка D112 rev.2";
+      if (parameter.parameter_id === "d112_board_manufacturer_excludes_loss_and_waste_confirmed") return true;
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "quantity_first_layer_screws")
+      .filter((parameter) => ![
+        "quantity_first_layer_screws",
+        "quantity_first_layer_gypsum_board",
+      ].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, { value: knaufValue(parameter), source: "user" }]));
 
     const result = buildInteriorFinishesFromInlineInputV1({
@@ -1207,6 +1289,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
       .toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_BOARD_SOURCE_ID);
     const screwRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:first_layer_screws`);
     expect(screwRow).toMatchObject({ quantity: 1700, unit: "item" });
@@ -1217,9 +1301,24 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
       calculated_tn25_screw_quantity_piece: 1700,
     });
+    const boardRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode ===
+        `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:first_layer_gypsum_board`);
+    expect(boardRow).toMatchObject({ quantity: 102, unit: "m2" });
+    expect(boardRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_BOARD_SOURCE_ID);
+    expect(boardRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_BOARD_SOURCE_ID);
+    expect(boardRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_ids: [KNAUF_D112_TN25_SCREW_SOURCE_ID, KNAUF_D112_BOARD_SOURCE_ID],
+      calculated_d112_board_net_quantity_m2: 100,
+      calculated_d112_board_procurement_quantity_m2: 102,
+      calculated_d112_board_piece_count: 34,
+    });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_TN25_SCREW_SOURCE_ID))).toHaveLength(1);
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_BOARD_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps D112 Uniflott closed outside hand filling and a documented bag", () => {

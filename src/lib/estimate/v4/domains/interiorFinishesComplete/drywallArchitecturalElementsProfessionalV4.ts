@@ -309,6 +309,15 @@ function knaufD112ReferenceApplicabilityParameters(
     return [
       ...shared,
       { ...numberParameter("board_thickness_mm", "Толщина листа системы Knauf D112", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 12.5, 12.5), condition },
+      parameter("board_type", "Тип листа системы Knauf D112", "choice", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, {
+        choices: ["GKB", "GKBI"].map((value) => ({ value, label_ru: value })),
+        condition,
+      }),
+      { ...numberParameter("selected_board_length_mm", "Длина выбранного листа Knauf", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 1), condition },
+      { ...numberParameter("selected_board_width_mm", "Ширина выбранного листа Knauf", "mm", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 1), condition },
+      { ...numberParameter("selected_board_layout_piece_count", "Количество листов по проектной раскладке", "item", "PROJECT_QUANTITY", FULL_SCOPE, 1), condition },
+      parameter("d112_board_layout_reference", "Ссылка на проектную раскладку листов D112", "text", "DEPENDENCY_REFERENCE", FULL_SCOPE, null, { condition }),
+      parameter("d112_board_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из паспортной нормы листов D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     ];
   }
   if (operation === "FINISH_JOINT") {
@@ -808,6 +817,9 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "load_class_kn_m2", "substructure_anchor_reference", "substructure_anchor_approved",
     "d112_substructure_manufacturer_excludes_loss_and_waste_confirmed",
     "board_layer_count", "board_thickness_mm",
+    "board_type", "selected_board_length_mm", "selected_board_width_mm",
+    "selected_board_layout_piece_count", "d112_board_layout_reference",
+    "d112_board_manufacturer_excludes_loss_and_waste_confirmed",
     "joint_filling_method", "d112_uniflott_selected_bag_size_kg",
     "d112_manufacturer_excludes_loss_and_waste_confirmed",
     "board_product_type", "board_layer_configuration", "long_edge_type", "construction_application",
