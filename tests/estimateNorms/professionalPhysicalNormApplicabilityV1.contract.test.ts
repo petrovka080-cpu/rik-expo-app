@@ -21,6 +21,10 @@ import {
   FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+  GERFLOR_6086_SKIRTING_NORM_ID,
+  GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID,
+  GERFLOR_6086_SKIRTING_SOURCE_ID,
+  GERFLOR_6086_SKIRTING_SOURCE_METADATA,
   KNAUF_D112_BOARD_NORM_ID,
   KNAUF_D112_BOARD_SOURCE_ID,
   KNAUF_D112_BOARD_SOURCE_METADATA,
@@ -105,6 +109,7 @@ const FLAT_CEILING_CLAD_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_cla
 const FLAT_CEILING_FINISH_JOINT_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_finish_joint_standard";
 const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
 const BASEBOARD_GLUE_WORK_KEY = "flooring_interior_baseboard_glue_standard";
+const BASEBOARD_INSTALL_WORK_KEY = "flooring_interior_baseboard_install_standard";
 const SUBFLOOR_PREPARE_WORK_KEY = "flooring_interior_subfloor_prepare_standard";
 const CERAMIC_TILE_LAY_STANDARD_WORK_KEY = "tile_stone_interior_ceramic_tile_lay_standard";
 
@@ -475,6 +480,36 @@ function resolveForbo232(values: Readonly<Record<string, ProfessionalParameterVa
   return resolveProfessionalPhysicalNormParameterValuesV1({
     technology_class: "BASEBOARD",
     operation_class: "GLUE",
+    material_system: "BASEBOARD",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactGerflor6086Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID),
+    finished_perimeter_linear_m: explicit(55, "linear_m"),
+    inside_corner_count: explicit(4, "item"),
+    outside_corner_count: explicit(2, "item"),
+    selected_skirting_product: explicit("Gerflor Design Skirting 6086"),
+    gerflor_piece_length_m: explicit(2, "m"),
+    gerflor_packaging_confirmed: explicit(true),
+    gerflor_corner_cutting_method_reference: explicit("GERFLOR-6086-CORNER-CUTTING-LAYOUT-001"),
+    gerflor_corner_allowance_not_assumed_confirmed: explicit(true),
+    gerflor_installation_surface_prepared_plane_confirmed: explicit(true),
+    gerflor_manufacturer_instruction_reference: explicit("Gerflor PMO [516V1], sections 2-3"),
+    material_certificate_reference: explicit("PROJECT-GERFLOR-6086-BATCH-CERT-001"),
+    ...changes,
+  };
+}
+
+function resolveGerflor6086(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "BASEBOARD",
+    operation_class: "INSTALL",
     material_system: "BASEBOARD",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
@@ -2559,6 +2594,167 @@ describe("professional physical norm applicability V1", () => {
     expect(primaryTileRow).toMatchObject({ quantity: 45, unit: "m2" });
     expect(primaryTileRow?.sourceParameters?.normativeSourceIds)
       .not.toContain(CERESIT_CM11_SMALL_CERAMIC_INDOOR_SOURCE_ID);
+  });
+
+  test("keeps Gerflor 6086 closed without measured corners, exact pieces, and a cutting method", () => {
+    const { inside_corner_count: _omitted, ...withoutInsideCorners } = exactGerflor6086Inputs();
+    expect(resolveGerflor6086(withoutInsideCorners)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: GERFLOR_6086_SKIRTING_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:inside_corner_count"],
+    });
+    expect(resolveGerflor6086(exactGerflor6086Inputs({
+      selected_skirting_product: explicit("Gerflor unknown"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${GERFLOR_6086_SKIRTING_NORM_ID}:selected_skirting_product=Gerflor unknown`,
+      ],
+    });
+    expect(resolveGerflor6086(exactGerflor6086Inputs({
+      gerflor_piece_length_m: explicit(2.5, "m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_VARIANT_CONFLICT:gerflor_piece_length_m=2.5:source_piece_length_m=2"],
+    });
+    expect(resolveGerflor6086(exactGerflor6086Inputs({
+      gerflor_corner_allowance_not_assumed_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [`PHYSICAL_NORM_CORNER_ALLOWANCE_POLICY_NOT_CONFIRMED:${GERFLOR_6086_SKIRTING_NORM_ID}`],
+    });
+    expect(resolveGerflor6086(exactGerflor6086Inputs({
+      gerflor_skirting_procurement_quantity_linear_m: explicit(54, "linear_m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:gerflor_skirting_procurement_quantity_linear_m=54:norm_value=56",
+      ],
+    });
+  });
+
+  test("rounds the measured Gerflor 6086 perimeter only to exact 2 m pieces", () => {
+    const input = exactGerflor6086Inputs();
+    const first = resolveGerflor6086(input);
+    const second = resolveGerflor6086(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: GERFLOR_6086_SKIRTING_SOURCE_ID,
+      norm_id: GERFLOR_6086_SKIRTING_NORM_ID,
+      source_document_version: "2026.09-gerflor-forbo-source-review-r2",
+      source_definition_hash: GERFLOR_6086_SKIRTING_SOURCE_METADATA.definition_hash,
+      calculated_gerflor_skirting_net_quantity_linear_m: 55,
+      calculated_gerflor_skirting_procurement_quantity_linear_m: 56,
+      calculated_gerflor_skirting_piece_count: 28,
+      produced_parameter_ids: ["gerflor_skirting_procurement_quantity_linear_m"],
+      blockers: [],
+    });
+    expect(first.parameter_values.gerflor_skirting_procurement_quantity_linear_m).toMatchObject({
+      value: 56,
+      unit_id: "linear_m",
+      source_type: "APPLICABLE_NORM",
+      source_id: GERFLOR_6086_SKIRTING_SOURCE_ID,
+    });
+    expect(first.parameter_values.gerflor_skirting_procurement_quantity_linear_m.applicability)
+      .toContain("corner_allowance_linear_m=0:not_automatically_assumed");
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.gerflor_skirting_procurement_quantity_linear_m).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(GERFLOR_6086_SKIRTING_SOURCE_ID)).toMatchObject({
+      authority: "Gerflor",
+      product_profile_applicability: [GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["BASEBOARD"],
+      operation_class_applicability: ["INSTALL"],
+    });
+  });
+
+  test("routes Gerflor 6086 through one linear material row without a generic duplicate", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
+      (row) => row.work_key === BASEBOARD_INSTALL_WORK_KEY,
+    );
+    if (!inventory) throw new Error("GERFLOR_6086_RUNTIME_BASEBOARD_INSTALL_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(
+      inventory.canonical_technology_id,
+    );
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("GERFLOR_6086_RUNTIME_BASEBOARD_INSTALL_SCHEMA_MISSING");
+    expect(technology.output).toEqual({ dimension: "LINEAR", unit_id: "linear_m" });
+    const gerflorQuestionIds = [
+      "finished_perimeter_linear_m",
+      "inside_corner_count",
+      "outside_corner_count",
+      "selected_skirting_product",
+      "gerflor_piece_length_m",
+      "gerflor_packaging_confirmed",
+      "gerflor_corner_cutting_method_reference",
+      "gerflor_corner_allowance_not_assumed_confirmed",
+      "gerflor_installation_surface_prepared_plane_confirmed",
+      "gerflor_manufacturer_instruction_reference",
+      "material_certificate_reference",
+    ];
+    expect(schema.parameters.filter((parameter) => gerflorQuestionIds.includes(parameter.parameter_id))
+      .map((parameter) => parameter.parameter_id)).toEqual(gerflorQuestionIds);
+
+    const gerflorValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return GERFLOR_6086_SKIRTING_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-GERFLOR-6086-INSTALL";
+      if (parameter.parameter_id === "project_type") return "INTERIOR-BASEBOARD-PROJECT";
+      if (parameter.parameter_id === "finished_perimeter_linear_m") return 55;
+      if (parameter.parameter_id === "inside_corner_count") return 4;
+      if (parameter.parameter_id === "outside_corner_count") return 2;
+      if (parameter.parameter_id === "selected_skirting_product") return "Gerflor Design Skirting 6086";
+      if (parameter.parameter_id === "gerflor_piece_length_m") return 2;
+      if (parameter.parameter_id === "gerflor_corner_cutting_method_reference") {
+        return "GERFLOR-6086-CORNER-CUTTING-LAYOUT-001";
+      }
+      if (parameter.parameter_id === "gerflor_manufacturer_instruction_reference") {
+        return "Gerflor PMO [516V1], sections 2-3";
+      }
+      if (parameter.parameter_id === "material_certificate_reference") {
+        return "PROJECT-GERFLOR-6086-BATCH-CERT-001";
+      }
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "gerflor_skirting_procurement_quantity_linear_m")
+      .map((parameter) => [parameter.parameter_id, {
+        value: gerflorValue(parameter),
+        source: "user",
+      }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Монтаж 55 пог. м плинтуса Gerflor Design Skirting 6086",
+      selectedWorkKey: BASEBOARD_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(result.production?.compile_result.normative_resolution.applicable_sources
+      .map((source) => source.source_id)).toContain(GERFLOR_6086_SKIRTING_SOURCE_ID);
+    const materialRowId = `${inventory.canonical_technology_id}:gerflor-6086-v1:row:gerflor_6086_skirting`;
+    const materialRow = result.production?.draft?.items.find(
+      (row) => row.sourceParameters?.rowCode === materialRowId,
+    );
+    expect(materialRow).toMatchObject({ quantity: 56, unit: "linear_m" });
+    expect(materialRow?.sourceParameters?.normativeSourceIds).toEqual([GERFLOR_6086_SKIRTING_SOURCE_ID]);
+    expect(materialRow?.sourceParameters?.parameterSourceIds).toContain(GERFLOR_6086_SKIRTING_SOURCE_ID);
+    expect(materialRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: GERFLOR_6086_SKIRTING_SOURCE_ID,
+      source_definition_hash: GERFLOR_6086_SKIRTING_SOURCE_METADATA.definition_hash,
+      calculated_gerflor_skirting_net_quantity_linear_m: 55,
+      calculated_gerflor_skirting_procurement_quantity_linear_m: 56,
+      calculated_gerflor_skirting_piece_count: 28,
+    });
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(GERFLOR_6086_SKIRTING_SOURCE_ID))).toHaveLength(1);
+    expect(result.production?.draft?.items.some((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`))
+      .toBe(false);
   });
 
   test("keeps the Forbo 232 adhesive norm closed without an explicit rate and exact applicability", () => {
