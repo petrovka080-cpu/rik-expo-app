@@ -805,6 +805,17 @@ function makeWorkKey(packItem: CategoryPack, system: Term, element: Term, operat
   return `${packItem.category}_${system.key}_${element.key}_${operation.key}_${modifier.key}`;
 }
 
+function defaultUnitForDefinition(packItem: CategoryPack, element: Term, operation: Term): ProductionDefaultUnit {
+  if (
+    packItem.category === "heating_hvac" &&
+    element.key === "warm_floor" &&
+    operation.key === "install"
+  ) {
+    return "m2";
+  }
+  return packItem.defaultUnit;
+}
+
 function makeDefinition(packItem: CategoryPack, index: number): ProductionWorkDefinition {
   const element = packItem.elements[index % packItem.elements.length];
   const operation = packItem.operations[Math.floor(index / packItem.elements.length) % packItem.operations.length];
@@ -825,7 +836,7 @@ function makeDefinition(packItem: CategoryPack, index: number): ProductionWorkDe
     systemKey: system.key,
     elementKey: element.key,
     operationKey: operation.key,
-    defaultUnit: packItem.defaultUnit,
+    defaultUnit: defaultUnitForDefinition(packItem, element, operation),
     expectedUnits: packItem.expectedUnits,
     supportStatus: "SUPPORTED",
     materialRecipeScope: `${workKey}_material_recipe`,

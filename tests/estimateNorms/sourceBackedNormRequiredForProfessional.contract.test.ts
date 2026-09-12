@@ -2,6 +2,7 @@ import { classifyEstimateRowReality } from "../../scripts/estimate/classifyEstim
 import {
   getProductionExpandedTemplate10000,
   getProductionWorkDefinition10000,
+  PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000/productionExpandedWorkCatalog10000";
 import {
   buildEstimateNormItemForTemplateRow,
@@ -73,5 +74,41 @@ describe("source-backed norm required for professional status", () => {
       url: null,
     });
     expect(validateEstimateNormItem(generic)).toEqual([]);
+  });
+
+  it("uses heated floor area as the installation basis without pretending the source pack is selected", () => {
+    const warmFloorInstallations = PRODUCTION_WORK_DEFINITIONS_10000.filter((definition) =>
+      definition.category === "heating_hvac" &&
+      definition.elementKey === "warm_floor" &&
+      definition.operationKey === "install"
+    );
+    expect(warmFloorInstallations).toHaveLength(5);
+    expect(warmFloorInstallations.every((definition) => definition.defaultUnit === "m2")).toBe(true);
+
+    const definition = getProductionWorkDefinition10000(
+      "heating_hvac_interior_warm_floor_install_standard",
+    );
+    if (!definition) throw new Error("WARM_FLOOR_INSTALL_DEFINITION_MISSING");
+    const pipeRow = getProductionExpandedTemplate10000(definition.workKey).rows.find((row) =>
+      row.rowCode === "heating_hvac_interior_warm_floor_install_standard_materials_02"
+    );
+    if (!pipeRow) throw new Error("WARM_FLOOR_PIPE_ROW_MISSING");
+    const pipeNorm = buildEstimateNormItemForTemplateRow(definition, pipeRow);
+
+    expect(pipeNorm).toMatchObject({
+      base_unit: "m2",
+      unit: "linear_m",
+      dimensional_contract: {
+        workBasisUnit: "m2",
+        resourceOutputUnit: "linear_m",
+        consumptionRateUnit: "linear_m/m2",
+      },
+    });
+    expect(pipeNorm.formula_inputs).toHaveLength(2);
+    expect(pipeNorm.formula_inputs).toEqual(expect.arrayContaining(["q", "normFactor"]));
+    expect(isRegisteredProfessionalNormPackSourceId(pipeNorm.source_id)).toBe(false);
+    expect(pipeNorm.dimensional_contract.sourceClaim.normativeStatus).toBe(
+      "GENERIC_REFERENCE_NOT_PROFESSIONAL",
+    );
   });
 });
