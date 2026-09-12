@@ -18,7 +18,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   baseboards: "2026.09-gerflor-forbo-source-review-r2",
   carpentry: "2026.09-sikagard-wood-preserver-primary-review-r2",
   ceilings: "2026.09-knauf-d11-d112-primary-review-r2",
-  cleaning: "2026.09-tennant-t350-productivity-r1",
+  cleaning: "2026.09-tennant-t350-productivity-primary-review-r2",
   concrete: "2026.07-wave2a",
   delivery: "2026.09-ford-transit-payload-reference-r1",
   demolition: "2026.09-krer46-applicability-routing-r1",

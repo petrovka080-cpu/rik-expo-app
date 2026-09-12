@@ -386,6 +386,31 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedCleaningPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/cleaning.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1198,6 +1223,53 @@ describe("real professional norm packs audit", () => {
           mode: "approximate_net_kg_after_exact_table_cell_selection_before_explicit_5_10_or_25_kg_bag_rounding",
         },
       });
+    expect(reviewedCleaningPack).toMatchObject({
+      source_pack_version: "2026.09-tennant-t350-productivity-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedCleaningPack.review_evidence?.items).toMatchObject([{
+      norm_id: "cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1",
+      source_url: "https://www.tennantco.com/content/dam/tennant/tennantco/products/machines/scrubber%20stand-on/T350/t350-brochure-industrial-en-noam.pdf",
+      verified_facts: expect.arrayContaining([
+        "exact_machine_variant_is_t350_24_inch_600_mm_dual_disk",
+        "conventional_practical_scrubbing_coverage_is_2795_m2_per_hour",
+        "reciprocal_equipment_hour_rate_is_derived_not_directly_published",
+        "supplier_billing_increment_is_not_published_in_the_brochure",
+      ]),
+    }]);
+    expect(reviewedCleaningPack.norm_items).toMatchObject([{
+      norm_id: "cleaning_tennant_t350_600mm_conventional_practical_hour_m2_v1",
+      parameters: expect.arrayContaining([
+        "cleanable_hard_floor_area_m2",
+        "machine_variant",
+        "cleaning_path_mm",
+        "cleaning_technology_mode",
+        "required_pass_count",
+        "obstruction_factor",
+        "dump_fill_cycle_allowance",
+        "battery_runtime_allowance",
+      ]),
+      rate: {
+        value: 0.0003577818,
+        unit: "derived equipment hour/m2 per pass; reciprocal of the published 2795 m2/hour conventional practical rate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        machine_variant: "24_inch_600_mm_dual_disk",
+        cleaning_path_mm: 600,
+        cleaning_technology_mode: "conventional",
+        manufacturer_practical_productivity_m2_per_hour: 2795,
+        different_ec_h2o_practical_productivity_m2_per_hour: 2874,
+        reciprocal_rate_is_derived: true,
+        project_specific_obstruction_soil_cycle_and_battery_adjustments_required: true,
+        supplier_billing_increment_not_published: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "net_equipment_hours_before_separate_supplier_billing_rule",
+      },
+    }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
       item.norm_id === "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"))
       .toMatchObject({
