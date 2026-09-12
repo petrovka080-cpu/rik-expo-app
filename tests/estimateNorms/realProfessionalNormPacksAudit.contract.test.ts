@@ -174,6 +174,24 @@ describe("real professional norm packs audit", () => {
         source: { url: string };
       }[];
     };
+    const reviewedMetalworkPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/metalwork.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: { norm_id?: string; source_url?: string; verified_facts?: string[] }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -442,6 +460,36 @@ describe("real professional norm packs audit", () => {
       },
       source: {
         url: "https://brandportal.rockwool.com/original/gallery/39052/files/original/13225669-1028-49f5-85e4-6dd3f8bb0b9b.pdf",
+      },
+    });
+    expect(reviewedMetalworkPack).toMatchObject({
+      source_pack_version: "2026.09-jotun-hardtop-xp-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedMetalworkPack.review_evidence?.items).toHaveLength(1);
+    expect(reviewedMetalworkPack.review_evidence?.items?.[0]).toMatchObject({
+      norm_id: "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
+      source_url: "https://www.jotun.com/api/v1/datasheets/download/merged?selectedFiles=4378",
+    });
+    expect(reviewedMetalworkPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "tds_issue_date_is_2026_06_24",
+        "100_um_dry_film_thickness_uses_160_um_wet_film_thickness",
+        "theoretical_spreading_rate_at_100_um_is_6_3_m2_per_l",
+        "product_mixing_ratio_by_volume_is_10_to_1",
+        "typical_combined_kit_volumes_are_5_l_and_20_l",
+        "theoretical_litres_exclude_application_loss_and_kit_rounding",
+      ]));
+    expect(reviewedMetalworkPack.norm_items[0]).toMatchObject({
+      parameters: expect.arrayContaining([
+        "application_loss_factor",
+        "selected_kit_size_l",
+        "component_mixing_ratio_confirmed",
+      ]),
+      rounding: {
+        package_size: 5,
+        mode: "theoretical_litres_before_application_loss_and_selected_5_l_or_20_l_kit_rounding",
       },
     });
   });

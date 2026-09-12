@@ -1,14 +1,43 @@
 {
   "work_group": "metalwork",
-  "source_pack_version": "2026.09-jotun-hardtop-xp-100um-r1",
+  "source_pack_version": "2026.09-jotun-hardtop-xp-primary-review-r2",
   "source_type": "manufacturer_consumption_tables",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
+        "source_url": "https://www.jotun.com/api/v1/datasheets/download/merged?selectedFiles=4378",
+        "verified_facts": [
+          "tds_issue_date_is_2026_06_24",
+          "100_um_dry_film_thickness_uses_160_um_wet_film_thickness",
+          "theoretical_spreading_rate_at_100_um_is_6_3_m2_per_l",
+          "solids_by_volume_is_63_percent_plus_or_minus_2_percent",
+          "product_mixing_ratio_by_volume_is_10_to_1",
+          "typical_combined_kit_volumes_are_5_l_and_20_l",
+          "theoretical_litres_exclude_application_loss_and_kit_rounding"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
       "name_ru": "Покрытие Jotun Hardtop XP при проектной сухой толщине 100 мкм",
-      "parameters": ["coated_steel_area_m2", "specified_dry_film_thickness_um", "application_method", "surface_profile", "coating_system_approved"],
+      "parameters": [
+        "coated_steel_area_m2",
+        "specified_dry_film_thickness_um",
+        "application_method",
+        "surface_profile",
+        "application_loss_factor",
+        "selected_kit_size_l",
+        "component_mixing_ratio_confirmed",
+        "coating_system_approved"
+      ],
       "unit": "l",
       "rate": {
         "value": 0.15873016,
@@ -21,20 +50,22 @@
         "theoretical_spreading_rate_m2_l": 6.3,
         "calculation": "coated_steel_area_m2 / 6.3",
         "application_loss_not_included": true,
-        "surface_profile_geometry_wind_and_method_loss_requires_review": true,
-        "approved_primer_and_full_coating_system_required": true,
+        "surface_profile_geometry_and_method_loss_requires_review": true,
+        "compatible_previous_coating_and_system_selection_required": true,
+        "mixing_ratio_component_a_to_b_by_volume": "10:1",
+        "typical_combined_kit_sizes_l": [5, 20],
         "bright_and_special_colours_require_product_guidance": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "l",
-        "package_size": 1,
-        "mode": "round_after_application_loss_and_available_kit_selection"
+        "package_unit": "smallest_typical_combined_kit_l",
+        "package_size": 5,
+        "mode": "theoretical_litres_before_application_loss_and_selected_5_l_or_20_l_kit_rounding"
       },
       "source": {
         "title": "Jotun Hardtop XP Technical Data Sheet",
         "url": "https://www.jotun.com/api/v1/datasheets/download/merged?selectedFiles=4378",
-        "page": "page 2 of 5, 50-100 um DFT and theoretical spreading rate 12.6-6.3 m2/l",
+        "page": "TDS issued 24 June 2026; page 2: 50-100 um DFT, 80-160 um WFT and 12.6-6.3 m2/l theoretical spreading; pages 3-4: 10:1 mixing and typical 5/20 L kits",
         "provenance": "manufacturer_consumption_tables"
       }
     }

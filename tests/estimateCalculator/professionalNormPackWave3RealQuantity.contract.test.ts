@@ -97,6 +97,19 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(coating.quantity).toBeCloseTo(15.873, 3);
     expect(coating.unit).toBe("l");
     expect(coating.normId).toContain("metalwork_jotun_hardtop_xp_l_m2_100um_v1");
+
+    const theoreticalLitresBeforeLossAndKitSelection = sourcedRow(
+      "carpentry_metal_interior_metal_frame_paint_standard",
+      "carpentry_metal_interior_metal_frame_paint_standard_materials_03",
+      1,
+    );
+    expect(theoreticalLitresBeforeLossAndKitSelection.quantity).toBeCloseTo(0.1587, 4);
+    expect(theoreticalLitresBeforeLossAndKitSelection.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 0.15873016,
+      packageSize: 5,
+    });
+    expect(theoreticalLitresBeforeLossAndKitSelection.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-jotun-hardtop-xp-primary-review-r2");
   });
 
   it("uses the carpentry wood-preserver source instead of a neighboring wood-floor adhesive", () => {
