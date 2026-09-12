@@ -332,6 +332,11 @@ function knaufD112ReferenceApplicabilityParameters(
         condition,
       }),
       parameter("d112_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из нормы D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+      parameter("cut_edge_jointing_required", "В проектной раскладке D112 присутствуют резаные кромки, требующие ленты", "boolean", "PROJECT_QUANTITY", FULL_SCOPE, null, { condition }),
+      { ...numberParameter("selected_joint_tape_roll_length_m", "Длина рулона выбранной армирующей ленты", "m", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 0.000001), condition },
+      parameter("selected_joint_tape_reference", "Точный тип и паспорт выбранной армирующей ленты", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+      parameter("d112_cut_edge_joint_layout_reference", "Ссылка на раскладку швов с резаными кромками", "text", "DEPENDENCY_REFERENCE", FULL_SCOPE, null, { condition }),
+      parameter("d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из паспортной нормы ленты D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     ];
   }
   return [
@@ -827,6 +832,9 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "d112_board_manufacturer_excludes_loss_and_waste_confirmed",
     "joint_filling_method", "d112_uniflott_selected_bag_size_kg",
     "d112_manufacturer_excludes_loss_and_waste_confirmed",
+    "cut_edge_jointing_required", "selected_joint_tape_roll_length_m",
+    "selected_joint_tape_reference", "d112_cut_edge_joint_layout_reference",
+    "d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed",
     "board_product_type", "board_layer_configuration", "long_edge_type", "construction_application",
     "jointing_without_perimeter_confirmed", "reinforcement_tape_confirmed", "selected_consumption_kg_m2",
     "substrate_and_application_conditions_confirmed", "selected_bag_size_kg",

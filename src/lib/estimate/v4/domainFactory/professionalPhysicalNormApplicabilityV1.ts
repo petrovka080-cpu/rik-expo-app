@@ -180,6 +180,30 @@ const KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "material_certificate_reference",
 ] as const);
 
+export const KNAUF_D112_JOINT_TAPE_NORM_ID =
+  "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1" as const;
+
+export const KNAUF_D112_JOINT_TAPE_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_D112_JOINT_TAPE_NORM_ID}` as const;
+
+const KNAUF_D112_JOINT_TAPE_SOURCE_PARAMETER_IDS = Object.freeze([
+  "ceiling_area_m2",
+  "system_variant",
+  "cut_edge_jointing_required",
+] as const);
+
+const KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "system_variant",
+  "cut_edge_jointing_required",
+  "selected_joint_tape_roll_length_m",
+  "selected_joint_tape_reference",
+  "d112_cut_edge_joint_layout_reference",
+  "d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed",
+  "system_passport_reference",
+  "material_certificate_reference",
+] as const);
+
 export const KNAUF_D112_TN25_SCREW_NORM_ID =
   "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1" as const;
 
@@ -791,6 +815,63 @@ export const KNAUF_D112_UD_RUNNER_SOURCE_METADATA = Object.freeze({
     work_group: ceilingsNormPack.work_group,
     source_pack_version: ceilingsNormPack.source_pack_version,
     norm_item: knaufD112UdRunnerNorm,
+  }),
+});
+
+const knaufD112JointTapeNorm = (() => {
+  const found = ceilingsNormPack.norm_items.find(
+    (item) => item.norm_id === KNAUF_D112_JOINT_TAPE_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_D112_JOINT_TAPE_NORM_ID}`);
+  return found;
+})();
+
+if (
+  ceilingsNormPack.work_group !== "ceilings" ||
+  knaufD112JointTapeNorm.unit !== "linear_m" ||
+  knaufD112JointTapeNorm.rate.value !== 0.45 ||
+  knaufD112JointTapeNorm.rate.unit !== "linear_m/m2 for D112 variant 1" ||
+  !("system" in knaufD112JointTapeNorm.applicability) ||
+  knaufD112JointTapeNorm.applicability.system !== "Knauf D112" ||
+  !("variant" in knaufD112JointTapeNorm.applicability) ||
+  knaufD112JointTapeNorm.applicability.variant !== "standard_12_5_mm_single_layer" ||
+  !("cut_edges_only" in knaufD112JointTapeNorm.applicability) ||
+  knaufD112JointTapeNorm.applicability.cut_edges_only !== true ||
+  !("manufacturer_excludes_loss_and_waste" in knaufD112JointTapeNorm.applicability) ||
+  knaufD112JointTapeNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
+  !("package_rounding_requires_selected_tape" in knaufD112JointTapeNorm.applicability) ||
+  knaufD112JointTapeNorm.applicability.package_rounding_requires_selected_tape !== true ||
+  knaufD112JointTapeNorm.parameters.length !== KNAUF_D112_JOINT_TAPE_SOURCE_PARAMETER_IDS.length ||
+  KNAUF_D112_JOINT_TAPE_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !knaufD112JointTapeNorm.parameters.includes(parameterId),
+  ) ||
+  knaufD112JointTapeNorm.waste_percent_default !== 0 ||
+  knaufD112JointTapeNorm.rounding.package_unit !== "linear_m" ||
+  knaufD112JointTapeNorm.rounding.package_size !== 1 ||
+  knaufD112JointTapeNorm.rounding.mode !==
+    "reference_average_linear_m_before_selected_tape_and_cut_edge_layout"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_JOINT_TAPE_NORM_ID}`);
+}
+
+export const KNAUF_D112_JOINT_TAPE_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+  norm_id: KNAUF_D112_JOINT_TAPE_NORM_ID,
+  source_document_version: ceilingsNormPack.source_pack_version,
+  source_title: knaufD112JointTapeNorm.source.title,
+  source_url: knaufD112JointTapeNorm.source.url,
+  exact_locator: knaufD112JointTapeNorm.source.page,
+  rate_value: knaufD112JointTapeNorm.rate.value,
+  rate_unit: knaufD112JointTapeNorm.rate.unit,
+  system: knaufD112JointTapeNorm.applicability.system,
+  variant: knaufD112JointTapeNorm.applicability.variant,
+  cut_edges_only: knaufD112JointTapeNorm.applicability.cut_edges_only,
+  manufacturer_excludes_loss_and_waste:
+    knaufD112JointTapeNorm.applicability.manufacturer_excludes_loss_and_waste,
+  definition_hash: estimateDeterministicHash({
+    work_group: ceilingsNormPack.work_group,
+    source_pack_version: ceilingsNormPack.source_pack_version,
+    norm_item: knaufD112JointTapeNorm,
   }),
 });
 
@@ -1591,6 +1672,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_D112_BOARD_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_first_layer_gypsum_board"] as const,
 }, {
+  norm_id: KNAUF_D112_JOINT_TAPE_NORM_ID,
+  work_group: "ceilings",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FINISH_JOINT",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+  source_document_version: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_paper_joint_tape"] as const,
+}, {
   norm_id: KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
   work_group: "ceilings",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -1794,6 +1889,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_d112_board_net_quantity_m2?: number;
   calculated_d112_board_procurement_quantity_m2?: number;
   calculated_d112_board_piece_count?: number;
+  calculated_d112_joint_tape_net_quantity_m?: number;
+  calculated_d112_joint_tape_procurement_quantity_m?: number;
+  calculated_d112_joint_tape_roll_count?: number;
   calculated_tn25_screw_quantity_piece?: number;
   calculated_uniflott_net_quantity_kg?: number;
   calculated_uniflott_procurement_quantity_kg?: number;
@@ -3185,6 +3283,209 @@ function resolveKnaufD112Uniflott(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKnaufD112JointTape(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_JOINT_TAPE_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const systemVariant = primitiveString(explicit.system_variant!);
+  const selectedTapeRollLengthM = finiteNumber(explicit.selected_joint_tape_roll_length_m);
+  const selectedTapeReference = primitiveString(explicit.selected_joint_tape_reference!);
+  const cutEdgeJointLayoutReference = primitiveString(explicit.d112_cut_edge_joint_layout_reference!);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const cutEdgeJointingRequired = explicit.cut_edge_jointing_required!.value === true ||
+    explicit.cut_edge_jointing_required!.value === "true";
+  const manufacturerExcludesLossAndWasteConfirmed =
+    explicit.d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed!.value === true ||
+    explicit.d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed!.value === "true";
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    systemVariant === KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.variant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_JOINT_TAPE_NORM_ID}:system_variant=${systemVariant}`,
+    cutEdgeJointingRequired
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_JOINT_TAPE_NORM_ID}:cut_edge_jointing_required=false`,
+    selectedTapeRollLengthM !== null && selectedTapeRollLengthM > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:selected_joint_tape_roll_length_m",
+    selectedTapeReference ? "" : "PROJECT_VALUE_INVALID:selected_joint_tape_reference",
+    cutEdgeJointLayoutReference ? "" : "PROJECT_VALUE_INVALID:d112_cut_edge_joint_layout_reference",
+    manufacturerExcludesLossAndWasteConfirmed
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_JOINT_TAPE_NORM_ID}:d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed=false`,
+    systemPassportReference ? "" : "PROJECT_VALUE_INVALID:system_passport_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_JOINT_TAPE_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedJointTapeNetQuantityM = Number(
+    (areaM2! * KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.rate_value).toFixed(9),
+  );
+  const calculatedJointTapeRollCount = Math.ceil(
+    calculatedJointTapeNetQuantityM / selectedTapeRollLengthM! - 1e-9,
+  );
+  const calculatedJointTapeProcurementQuantityM = Number(
+    (calculatedJointTapeRollCount * selectedTapeRollLengthM!).toFixed(9),
+  );
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_paper_joint_tape"));
+  if (
+    explicitQuantity !== null &&
+    Math.abs(explicitQuantity - calculatedJointTapeProcurementQuantityM) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:quantity_paper_joint_tape=${explicitQuantity}:norm_value=${calculatedJointTapeProcurementQuantityM}`,
+      ],
+      [...KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_paper_joint_tape"],
+      KNAUF_D112_JOINT_TAPE_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.system}`,
+    `system_variant=${systemVariant}`,
+    `ceiling_area_m2=canonical(area_m2)=${areaM2}`,
+    "cut_edge_jointing_required=true",
+    `selected_joint_tape_reference=${selectedTapeReference}`,
+    `selected_joint_tape_roll_length_m=${selectedTapeRollLengthM}`,
+    `d112_cut_edge_joint_layout_reference=${cutEdgeJointLayoutReference}`,
+    `net_formula=area_m2*${KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.rate_value}`,
+    "package_formula=ceil(net_quantity_m/selected_joint_tape_roll_length_m)*selected_joint_tape_roll_length_m",
+    "manufacturer_excludes_loss_and_waste=true",
+    `system_passport_reference=${systemPassportReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_paper_joint_tape: {
+      value: calculatedJointTapeProcurementQuantityM,
+      unit_id: "m",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+    norm_id: KNAUF_D112_JOINT_TAPE_NORM_ID,
+    source_document_version: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_D112_JOINT_TAPE_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_paper_joint_tape"],
+    calculated_d112_joint_tape_net_quantity_m: calculatedJointTapeNetQuantityM,
+    calculated_d112_joint_tape_procurement_quantity_m: calculatedJointTapeProcurementQuantityM,
+    calculated_d112_joint_tape_roll_count: calculatedJointTapeRollCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
+function resolveKnaufD112FinishJointProfile(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const uniflott = resolveKnaufD112Uniflott(productProfileId, parameterValuesInput);
+  if (uniflott.status !== "APPLIED") return uniflott;
+  const jointTape = resolveKnaufD112JointTape(productProfileId, uniflott.parameter_values);
+  if (jointTape.status !== "APPLIED") return jointTape;
+
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: uniflott.source_id,
+    norm_id: uniflott.norm_id,
+    source_document_version: uniflott.source_document_version,
+    source_url: uniflott.source_url,
+    exact_locator: uniflott.exact_locator,
+    source_definition_hash: uniflott.source_definition_hash,
+    source_ids: [uniflott.source_id, jointTape.source_id],
+    norm_ids: [uniflott.norm_id, jointTape.norm_id],
+    applied_norms: [{
+      source_id: uniflott.source_id,
+      norm_id: uniflott.norm_id,
+      source_document_version: uniflott.source_document_version,
+      source_url: uniflott.source_url,
+      exact_locator: uniflott.exact_locator,
+      source_definition_hash: uniflott.source_definition_hash,
+      produced_parameter_ids: uniflott.produced_parameter_ids,
+    }, {
+      source_id: jointTape.source_id,
+      norm_id: jointTape.norm_id,
+      source_document_version: jointTape.source_document_version,
+      source_url: jointTape.source_url,
+      exact_locator: jointTape.exact_locator,
+      source_definition_hash: jointTape.source_definition_hash,
+      produced_parameter_ids: jointTape.produced_parameter_ids,
+    }],
+    consumed_parameter_ids: [
+      ...new Set([...uniflott.consumed_parameter_ids, ...jointTape.consumed_parameter_ids]),
+    ],
+    produced_parameter_ids: [
+      "quantity_base_joint_compound",
+      "quantity_paper_joint_tape",
+    ] as const,
+    calculated_uniflott_net_quantity_kg: uniflott.calculated_uniflott_net_quantity_kg,
+    calculated_uniflott_procurement_quantity_kg:
+      uniflott.calculated_uniflott_procurement_quantity_kg,
+    calculated_d112_joint_tape_net_quantity_m:
+      jointTape.calculated_d112_joint_tape_net_quantity_m,
+    calculated_d112_joint_tape_procurement_quantity_m:
+      jointTape.calculated_d112_joint_tape_procurement_quantity_m,
+    calculated_d112_joint_tape_roll_count: jointTape.calculated_d112_joint_tape_roll_count,
+    parameter_values: jointTape.parameter_values,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveKnaufFugenfuellerPerimeterJoint(
   productProfileId: typeof KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -4479,7 +4780,7 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       return resolveKnaufD112CladProfile(productProfileId, input.parameter_values);
     }
     if (exactFlatCeilingRoute && input.operation_class === "FINISH_JOINT") {
-      return resolveKnaufD112Uniflott(productProfileId, input.parameter_values);
+      return resolveKnaufD112FinishJointProfile(productProfileId, input.parameter_values);
     }
     return nonApplied(
       "NOT_REQUESTED",

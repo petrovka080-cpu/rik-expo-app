@@ -18,6 +18,9 @@ import {
   KNAUF_D112_BOARD_NORM_ID,
   KNAUF_D112_BOARD_SOURCE_ID,
   KNAUF_D112_BOARD_SOURCE_METADATA,
+  KNAUF_D112_JOINT_TAPE_NORM_ID,
+  KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+  KNAUF_D112_JOINT_TAPE_SOURCE_METADATA,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
   KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
@@ -273,6 +276,11 @@ function exactKnaufD112UniflottInputs(
     joint_filling_method: explicit("hand"),
     d112_uniflott_selected_bag_size_kg: explicit(5, "kg"),
     d112_manufacturer_excludes_loss_and_waste_confirmed: explicit(true),
+    cut_edge_jointing_required: explicit(true),
+    selected_joint_tape_roll_length_m: explicit(75, "m"),
+    selected_joint_tape_reference: explicit("Knauf joint tape, 75 m roll, batch KT-001"),
+    d112_cut_edge_joint_layout_reference: explicit("АР-17, лист 13, карта резаных кромок rev.2"),
+    d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed: explicit(true),
     system_passport_reference: explicit("Knauf D11, D112 variant 1, page 28, Uniflott"),
     material_certificate_reference: explicit("PROJECT-KNAUF-UNIFLOTT-BATCH-CERT-001"),
     ...changes,
@@ -1439,9 +1447,38 @@ describe("professional physical norm applicability V1", () => {
       status: "BLOCKED_NOT_APPLICABLE",
       blockers: ["PHYSICAL_NORM_VALUE_CONFLICT:quantity_base_joint_compound=15.9:norm_value=20"],
     });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      cut_edge_jointing_required: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_JOINT_TAPE_NORM_ID}:cut_edge_jointing_required=false`,
+      ],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      selected_joint_tape_roll_length_m: explicit(0, "m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PROJECT_VALUE_INVALID:selected_joint_tape_roll_length_m"],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_JOINT_TAPE_NORM_ID}:d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed=false`,
+      ],
+    });
+    expect(resolveKnaufD112Uniflott(exactKnaufD112UniflottInputs({
+      quantity_paper_joint_tape: explicit(23.85, "m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: ["PHYSICAL_NORM_VALUE_CONFLICT:quantity_paper_joint_tape=23.85:norm_value=75"],
+    });
   });
 
-  test("derives deterministic D112 Uniflott procurement from the exact hand-filling rate", () => {
+  test("derives deterministic D112 Uniflott and cut-edge tape procurement", () => {
     const input = exactKnaufD112UniflottInputs();
     const first = resolveKnaufD112Uniflott(input);
     const second = resolveKnaufD112Uniflott(input);
@@ -1452,9 +1489,14 @@ describe("professional physical norm applicability V1", () => {
       norm_id: KNAUF_D112_UNIFLOTT_NORM_ID,
       source_document_version: "2026.09-knauf-d11-d112-primary-review-r2",
       source_definition_hash: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.definition_hash,
+      source_ids: [KNAUF_D112_UNIFLOTT_SOURCE_ID, KNAUF_D112_JOINT_TAPE_SOURCE_ID],
+      norm_ids: [KNAUF_D112_UNIFLOTT_NORM_ID, KNAUF_D112_JOINT_TAPE_NORM_ID],
       calculated_uniflott_net_quantity_kg: 15.9,
       calculated_uniflott_procurement_quantity_kg: 20,
-      produced_parameter_ids: ["quantity_base_joint_compound"],
+      calculated_d112_joint_tape_net_quantity_m: 23.85,
+      calculated_d112_joint_tape_procurement_quantity_m: 75,
+      calculated_d112_joint_tape_roll_count: 1,
+      produced_parameter_ids: ["quantity_base_joint_compound", "quantity_paper_joint_tape"],
       blockers: [],
     });
     expect(first.parameter_values.quantity_base_joint_compound).toMatchObject({
@@ -1463,17 +1505,30 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: KNAUF_D112_UNIFLOTT_SOURCE_ID,
     });
+    expect(first.parameter_values.quantity_paper_joint_tape).toMatchObject({
+      value: 75,
+      unit_id: "m",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.quantity_base_joint_compound).toBeUndefined();
+    expect(input.quantity_paper_joint_tape).toBeUndefined();
     expect(constructionNormativeRegistryV1.get(KNAUF_D112_UNIFLOTT_SOURCE_ID)).toMatchObject({
       authority: "Knauf",
       product_profile_applicability: [KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID],
       material_system_applicability: ["FLAT_CEILING"],
       operation_class_applicability: ["FINISH_JOINT"],
     });
+    expect(constructionNormativeRegistryV1.get(KNAUF_D112_JOINT_TAPE_SOURCE_ID)).toMatchObject({
+      authority: "Knauf",
+      document_code: KNAUF_D112_JOINT_TAPE_NORM_ID,
+      version: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.source_document_version,
+      operation_class_applicability: ["FINISH_JOINT"],
+    });
   });
 
-  test("routes D112 Uniflott only to the canonical base-joint compound BOQ row", () => {
+  test("routes D112 Uniflott and cut-edge tape only to their canonical BOQ rows", () => {
     const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
       row.work_key === FLAT_CEILING_FINISH_JOINT_WORK_KEY);
     if (!inventory) throw new Error("KNAUF_D112_UNIFLOTT_RUNTIME_WORK_MISSING");
@@ -1485,6 +1540,11 @@ describe("professional physical norm applicability V1", () => {
       "joint_filling_method",
       "d112_uniflott_selected_bag_size_kg",
       "d112_manufacturer_excludes_loss_and_waste_confirmed",
+      "cut_edge_jointing_required",
+      "selected_joint_tape_roll_length_m",
+      "selected_joint_tape_reference",
+      "d112_cut_edge_joint_layout_reference",
+      "d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed",
     ];
     expect(schema.parameters.filter((parameter) => uniflottParameterIds.includes(parameter.parameter_id)))
       .toHaveLength(uniflottParameterIds.length);
@@ -1503,6 +1563,17 @@ describe("professional physical norm applicability V1", () => {
       if (parameter.parameter_id === "joint_filling_method") return "hand";
       if (parameter.parameter_id === "d112_uniflott_selected_bag_size_kg") return "5";
       if (parameter.parameter_id === "d112_manufacturer_excludes_loss_and_waste_confirmed") return true;
+      if (parameter.parameter_id === "cut_edge_jointing_required") return true;
+      if (parameter.parameter_id === "selected_joint_tape_roll_length_m") return 75;
+      if (parameter.parameter_id === "selected_joint_tape_reference") {
+        return "Knauf joint tape, 75 m roll, batch KT-001";
+      }
+      if (parameter.parameter_id === "d112_cut_edge_joint_layout_reference") {
+        return "АР-17, лист 13, карта резаных кромок rev.2";
+      }
+      if (parameter.parameter_id === "d112_joint_tape_manufacturer_excludes_loss_and_waste_confirmed") {
+        return true;
+      }
       if (parameter.parameter_id === "system_passport_reference") {
         return "Knauf D11, D112 variant 1, page 28, Uniflott";
       }
@@ -1513,7 +1584,10 @@ describe("professional physical norm applicability V1", () => {
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "quantity_base_joint_compound")
+      .filter((parameter) => ![
+        "quantity_base_joint_compound",
+        "quantity_paper_joint_tape",
+      ].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, {
         value: uniflottValue(parameter),
         source: "user",
@@ -1532,6 +1606,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
       .toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
     const compoundRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:base_joint_compound`);
     expect(compoundRow).toMatchObject({ quantity: 20, unit: "kg" });
@@ -1543,9 +1619,24 @@ describe("professional physical norm applicability V1", () => {
       calculated_uniflott_net_quantity_kg: 15.9,
       calculated_uniflott_procurement_quantity_kg: 20,
     });
+    const jointTapeRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode ===
+        `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:paper_joint_tape`);
+    expect(jointTapeRow).toMatchObject({ quantity: 75, unit: "m" });
+    expect(jointTapeRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
+    expect(jointTapeRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
+    expect(jointTapeRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_ids: [KNAUF_D112_UNIFLOTT_SOURCE_ID, KNAUF_D112_JOINT_TAPE_SOURCE_ID],
+      calculated_d112_joint_tape_net_quantity_m: 23.85,
+      calculated_d112_joint_tape_procurement_quantity_m: 75,
+      calculated_d112_joint_tape_roll_count: 1,
+    });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_UNIFLOTT_SOURCE_ID))).toHaveLength(1);
+    expect(result.production?.draft?.items.filter((row) =>
+      (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_JOINT_TAPE_SOURCE_ID))).toHaveLength(1);
   });
 
   test("keeps the Knauf Fugenfueller jointing cell closed unless every exact TDS fact is explicit", () => {
