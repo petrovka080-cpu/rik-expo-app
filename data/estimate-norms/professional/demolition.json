@@ -1,38 +1,90 @@
 {
   "work_group": "demolition",
-  "source_pack_version": "2026.09-krer46-applicability-routing-r1",
+  "source_pack_version": "2026.09-krer46-official-scope-primary-review-r2",
   "source_type": "official_public_building_norms",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "demolition_krer46_selected_table_same_unit_routing_v1",
+        "source_url": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+        "supporting_source_urls": [
+          "https://minstroy.gov.kg/ru/state_program/download-pdf/no46rabotyprirekonstrukciizdanijisooruzenij_compressed-2196908579b9588d7.46696526.pdf",
+          "https://minstroy.gov.kg/ru/kyzmat/12"
+        ],
+        "verified_facts": [
+          "official_ministry_page_identifies_collection_46_as_works_during_reconstruction_of_buildings_and_structures",
+          "scope_also_covers_analogous_work_during_expansion_and_technical_re_equipment",
+          "published_scope_includes_strengthening_replacement_dismantling_and_erection_of_individual_structural_elements",
+          "official_landing_page_does_not_publish_a_single_generic_demolition_rate",
+          "exact_collection_table_work_composition_and_measurement_unit_are_required_before_resource_application",
+          "project_quantity_must_be_normalized_to_the_exact_selected_table_unit",
+          "current_application_instructions_amendments_and_work_condition_coefficients_require_confirmation",
+          "repair_scope_requires_collection_selection_review_and_must_not_be_assumed_to_use_krer_46",
+          "value_one_is_only_a_same_unit_routing_identity_not_a_cost_or_resource_norm"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "demolition_krer46_selected_table_same_unit_routing_v1",
-      "name_ru": "Маршрутизация демонтажных работ к точной таблице КРЕР-2015 №46 без подстановки усреднённой расценки",
-      "parameters": ["demolished_element_type", "measured_project_quantity", "project_quantity_unit", "selected_krer46_table"],
+      "name_ru": "КРЕР №46: маршрутизация количества к точной таблице демонтажных работ без усреднённой расценки",
+      "parameters": [
+        "measured_project_quantity",
+        "demolished_element_type_and_material",
+        "reconstruction_expansion_or_technical_re_equipment_scope",
+        "selected_norm_collection",
+        "selected_collection_edition_and_amendments",
+        "selected_krer46_table_code",
+        "selected_table_work_composition",
+        "project_quantity_unit",
+        "selected_table_measurement_unit",
+        "quantity_normalization_calculation",
+        "retained_and_disposed_material_scope",
+        "work_access_and_constraint_conditions",
+        "applicable_methodical_instruction_coefficients",
+        "selected_table_resource_rows",
+        "current_price_level_and_regional_indices",
+        "estimator_approval_reference"
+      ],
       "unit": "selected_table_unit",
       "rate": {
         "value": 1,
-        "unit": "selected table unit/project quantity already normalized to that exact table unit"
+        "unit": "same-unit routing identity after project quantity is normalized to the exact selected KRER table unit; not a resource or cost rate"
       },
       "applicability": {
         "jurisdiction": "Kyrgyz Republic",
-        "collection": "КРЕР-2015 №46 Работы при реконструкции зданий и сооружений",
-        "covered_scope": ["усиление существующих конструкций", "замена существующих конструкций", "разборка отдельных конструктивных элементов", "возведение отдельных конструктивных элементов"],
-        "exact_table_and_measurement_unit_required": true,
-        "generic_m2_m3_or_piece_conversion_forbidden": true,
-        "resource_rates_are_blocked_until_exact_table_selected": true,
-        "repair_collections_krerr_may_override_for_repair_scope": true
+        "collection": "КРЕР №46 Работы при реконструкции зданий и сооружений",
+        "official_scope": [
+          "реконструкция зданий и сооружений",
+          "аналогичные работы при расширении и техническом перевооружении",
+          "усиление и замена существующих конструкций",
+          "разборка и возведение отдельных конструктивных элементов"
+        ],
+        "exact_table_code_work_composition_and_measurement_unit_required": true,
+        "project_quantity_normalization_to_selected_table_unit_required": true,
+        "generic_m2_m3_piece_or_same_unit_conversion_forbidden": true,
+        "resource_and_cost_rates_blocked_until_exact_table_selected": true,
+        "current_application_instructions_and_amendments_required": true,
+        "repair_collection_applicability_requires_estimator_review": true,
+        "rate_is_routing_identity_not_published_norm": true,
+        "automatic_production_binding_for_generic_demolition_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
         "package_unit": "selected_table_unit",
         "package_size": 1,
-        "mode": "follow_exact_table_measurement_precision"
+        "mode": "no_rounding_until_exact_table_measurement_and_precision_rule_selected"
       },
       "source": {
-        "title": "Министерство строительства КР: КРЕР-2015 №46 Работы при реконструкции зданий и сооружений",
+        "title": "Министерство строительства Кыргызской Республики: КРЕР №46 Работы при реконструкции зданий и сооружений",
         "url": "https://minstroy.gov.kg/ru/kyzmat/459/show",
-        "page": "Scope statement: strengthening and replacement of existing structures, dismantling and erection of individual structural elements",
+        "page": "Official collection page and downloadable КРЕР №46 document: published scope statement; exact table selection remains required",
         "provenance": "official_public_building_norms"
       }
     }

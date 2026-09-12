@@ -21,7 +21,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   cleaning: "2026.09-tennant-t350-productivity-primary-review-r2",
   concrete: "2026.07-wave2a",
   delivery: "2026.09-ford-transit-25-5my-primary-review-r2",
-  demolition: "2026.09-krer46-applicability-routing-r1",
+  demolition: "2026.09-krer46-official-scope-primary-review-r2",
   documentation: "2026.09-kg-project-pricing-routing-r1",
   drywall: "2026.09-knauf-k462-primary-review-r2",
   earthworks: "2026.09-fhwa-fp24-section208-primary-review-r2",

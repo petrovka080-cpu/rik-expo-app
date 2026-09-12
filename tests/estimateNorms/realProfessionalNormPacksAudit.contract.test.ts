@@ -617,6 +617,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedDemolitionPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/demolition.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1913,6 +1939,62 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "ceil_selected_lift_count_after_section_208_and_project_specification_confirmation",
+      },
+    }]);
+    expect(reviewedDemolitionPack).toMatchObject({
+      source_pack_version: "2026.09-krer46-official-scope-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedDemolitionPack.review_evidence?.items).toMatchObject([{
+      norm_id: "demolition_krer46_selected_table_same_unit_routing_v1",
+      source_url: "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      supporting_source_urls: expect.arrayContaining([
+        "https://minstroy.gov.kg/ru/state_program/download-pdf/no46rabotyprirekonstrukciizdanijisooruzenij_compressed-2196908579b9588d7.46696526.pdf",
+        "https://minstroy.gov.kg/ru/kyzmat/12",
+      ]),
+      verified_facts: expect.arrayContaining([
+        "official_ministry_page_identifies_collection_46_as_works_during_reconstruction_of_buildings_and_structures",
+        "published_scope_includes_strengthening_replacement_dismantling_and_erection_of_individual_structural_elements",
+        "official_landing_page_does_not_publish_a_single_generic_demolition_rate",
+        "exact_collection_table_work_composition_and_measurement_unit_are_required_before_resource_application",
+        "value_one_is_only_a_same_unit_routing_identity_not_a_cost_or_resource_norm",
+      ]),
+    }]);
+    expect(reviewedDemolitionPack.norm_items).toMatchObject([{
+      norm_id: "demolition_krer46_selected_table_same_unit_routing_v1",
+      parameters: expect.arrayContaining([
+        "measured_project_quantity",
+        "demolished_element_type_and_material",
+        "reconstruction_expansion_or_technical_re_equipment_scope",
+        "selected_norm_collection",
+        "selected_collection_edition_and_amendments",
+        "selected_krer46_table_code",
+        "selected_table_work_composition",
+        "project_quantity_unit",
+        "selected_table_measurement_unit",
+        "quantity_normalization_calculation",
+        "applicable_methodical_instruction_coefficients",
+        "selected_table_resource_rows",
+      ]),
+      rate: {
+        value: 1,
+        unit: "same-unit routing identity after project quantity is normalized to the exact selected KRER table unit; not a resource or cost rate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        jurisdiction: "Kyrgyz Republic",
+        collection: "КРЕР №46 Работы при реконструкции зданий и сооружений",
+        exact_table_code_work_composition_and_measurement_unit_required: true,
+        resource_and_cost_rates_blocked_until_exact_table_selected: true,
+        current_application_instructions_and_amendments_required: true,
+        repair_collection_applicability_requires_estimator_review: true,
+        rate_is_routing_identity_not_published_norm: true,
+        automatic_production_binding_for_generic_demolition_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "no_rounding_until_exact_table_measurement_and_precision_rule_selected",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>
