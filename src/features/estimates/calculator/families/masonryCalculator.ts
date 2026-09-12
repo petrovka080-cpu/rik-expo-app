@@ -10,7 +10,7 @@ const SPEC: P0FamilyCalculatorSpec = {
   sample_quantity: 400,
   required_parameters: ["area_m2", "material", "wall_thickness_mm"],
   expected_units: ["piece", "kg", "m2"],
-  expected_source_token: "masonry",
+  expected_source_token: "masonry_bia_tn10",
 };
 
 export function auditMasonryCalculatorP0() {

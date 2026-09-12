@@ -10,7 +10,7 @@ const SPEC: P0FamilyCalculatorSpec = {
   sample_quantity: 100,
   required_parameters: ["diameter_mm", "spacing_mm", "area_m2"],
   expected_units: ["kg"],
-  expected_source_token: "reinforcement_rebar",
+  expected_source_token: "reinforcement_project_bar_schedule",
 };
 
 export function auditReinforcementCalculatorP0() {
