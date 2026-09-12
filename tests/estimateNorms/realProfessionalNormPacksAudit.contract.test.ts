@@ -1,7 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { inspectProductionNormConsumerInventory } from "../../scripts/estimate/productionNormConsumerInventory";
-import { NORM_WORK_TAXONOMY_GROUPS } from "../../src/lib/ai/estimateTemplate10000";
+import {
+  NORM_WORK_TAXONOMY_GROUPS,
+  PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
+} from "../../src/lib/ai/estimateTemplate10000";
 
 describe("real professional norm packs audit", () => {
   it("blocks green until sourced professional norm packs replace synthetic defaults", () => {
@@ -45,6 +48,8 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("production_norm_consumer_inventory_complete");
     expect(source).toContain("consumer_work_basis_units");
     expect(source).toContain("consumer_resource_output_units");
+    expect(source).toContain("production_norm_registry_dimensional_binding_valid");
+    expect(source).toContain("invalid_registered_norm_bindings");
     expect(source).toContain("required_norm_parameter_keys");
     expect(source).toContain("physical_norm_rate_bases");
     expect(source).toContain("PACK_NEEDS_REVIEW");
@@ -106,6 +111,10 @@ describe("real professional norm packs audit", () => {
     expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length);
     expect(inventory.reduce((sum, entry) => sum + entry.rows_count, 0)).toBe(599000);
     expect(NORM_WORK_TAXONOMY_GROUPS.every((group) => (byGroup.get(group)?.rows_count ?? 0) > 0)).toBe(true);
+    expect(inventory.flatMap((entry) => entry.invalid_registered_norm_bindings)).toEqual([]);
+    expect(new Set(inventory.flatMap((entry) => entry.registered_norm_ids))).toEqual(
+      new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.normId)),
+    );
     expect(byGroup.get("delivery")?.templates_count).toBe(10000);
     expect(byGroup.get("documentation")?.templates_count).toBe(10000);
     expect(byGroup.get("equipment_rent")?.templates_count).toBe(10000);

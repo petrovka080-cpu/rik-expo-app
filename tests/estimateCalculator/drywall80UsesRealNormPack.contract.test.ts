@@ -18,11 +18,12 @@ describe("drywall 80 real norm pack", () => {
     expect(genericReferenceRows.every((row) =>
       !isProfessionalNormPackSourceId(row.normSourceId)
     )).toBe(true);
-    expect(drywallJointRows.length).toBeGreaterThanOrEqual(2);
-    expect(realRows.map((row) => row.normSourceId)).toEqual(expect.arrayContaining([
-      expect.stringContaining("drywall_knauf_fugenfueller_leicht_jointing"),
+    expect(drywallJointRows).toHaveLength(1);
+    expect(drywallJointRows[0]?.normSourceId).toContain("drywall_knauf_fugenfueller_leicht_jointing");
+    expect(realRows.map((row) => row.normSourceId)).not.toEqual(expect.arrayContaining([
       expect.stringContaining("drywall_knauf_fugenfueller_perimeter_joint"),
     ]));
+    expect(drywallJointRows[0]?.sourceParameters.baseUnit).toBe("m2");
     expect(drywallJointRows.every((row) => row.unit === "kg")).toBe(true);
   });
 });

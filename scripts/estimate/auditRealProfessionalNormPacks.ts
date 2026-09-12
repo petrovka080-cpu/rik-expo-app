@@ -489,6 +489,9 @@ function main(): void {
   const consumerInventory = inspectProductionNormConsumerInventory();
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
+  const invalidProductionBindingDimensions = consumerInventory.flatMap((entry) =>
+    entry.invalid_registered_norm_bindings
+  );
   const planGroups = new Set((plan?.work_groups ?? []).map((entry) => entry.work_group));
   const packGroups = new Set(packResults.filter((result) => result.valid && result.work_group).map((result) => result.work_group as string));
   const taxonomyGroups = new Set(NORM_WORK_TAXONOMY_GROUPS);
@@ -531,6 +534,9 @@ function main(): void {
       consumer_rows_count: consumers?.rows_count ?? 0,
       consumer_work_basis_units: consumers?.work_basis_units ?? {},
       consumer_resource_output_units: consumers?.resource_output_units ?? {},
+      registered_norm_binding_rows_count: consumers?.registered_norm_binding_rows_count ?? 0,
+      registered_norm_ids: consumers?.registered_norm_ids ?? [],
+      invalid_registered_norm_bindings: consumers?.invalid_registered_norm_bindings ?? [],
       current_norm_status:
         previousSummary.work_groups_with_only_generic_norms?.includes(entry.work_group)
           ? "structural_generic_only"
@@ -594,7 +600,8 @@ function main(): void {
   const expectedConsumerRowsCount = previousSummary.norm_records_count ?? 599000;
   const consumerInventoryComplete =
     [...taxonomyGroups].every((group) => (consumerInventoryByGroup.get(group)?.rows_count ?? 0) > 0) &&
-    consumerRowsCount === expectedConsumerRowsCount;
+    consumerRowsCount === expectedConsumerRowsCount &&
+    invalidProductionBindingDimensions.length === 0;
   const allSourceRegistryGroupsPresent =
     sourceRegistry.source_registry_exists &&
     sourceRegistry.source_registry_missing_work_groups.length === 0 &&
@@ -642,6 +649,8 @@ function main(): void {
     production_norm_consumer_rows_count: consumerRowsCount,
     production_norm_consumer_work_groups_count: consumerInventory.length,
     production_norm_consumer_inventory_complete: consumerInventoryComplete,
+    production_norm_registry_dimensional_binding_valid: invalidProductionBindingDimensions.length === 0,
+    production_norm_registry_dimensional_binding_failures: invalidProductionBindingDimensions,
     production_norm_consumer_inventory: consumerInventory,
     synthetic_family_default_count_before: previousSummary.synthetic_family_default_count ?? null,
     templates_with_only_synthetic_norms_before: previousSummary.templates_with_only_synthetic_norms ?? null,
@@ -689,6 +698,9 @@ function main(): void {
       consumer_rows_count: entry.consumer_rows_count,
       consumer_work_basis_units: entry.consumer_work_basis_units,
       consumer_resource_output_units: entry.consumer_resource_output_units,
+      registered_norm_binding_rows_count: entry.registered_norm_binding_rows_count,
+      registered_norm_ids: entry.registered_norm_ids,
+      invalid_registered_norm_bindings: entry.invalid_registered_norm_bindings,
       binding_blockers: entry.production_norm_registry_binding_blockers,
     })),
     professional_norm_packs_exist: packResults.length > 0,
@@ -891,6 +903,7 @@ function main(): void {
     production_norm_consumer_rows_count: summary.production_norm_consumer_rows_count,
     production_norm_consumer_work_groups_count: summary.production_norm_consumer_work_groups_count,
     production_norm_consumer_inventory_complete: summary.production_norm_consumer_inventory_complete,
+    production_norm_registry_dimensional_binding_valid: summary.production_norm_registry_dimensional_binding_valid,
     synthetic_family_default_count_before: summary.synthetic_family_default_count_before,
     templates_with_only_synthetic_norms_before: summary.templates_with_only_synthetic_norms_before,
     synthetic_family_default_count_after: summary.synthetic_family_default_count_after,

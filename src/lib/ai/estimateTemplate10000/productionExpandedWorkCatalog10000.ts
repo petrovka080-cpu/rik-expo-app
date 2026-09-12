@@ -807,6 +807,13 @@ function makeWorkKey(packItem: CategoryPack, system: Term, element: Term, operat
 
 function defaultUnitForDefinition(packItem: CategoryPack, element: Term, operation: Term): ProductionDefaultUnit {
   if (
+    packItem.category === "flooring" &&
+    element.key === "baseboard" &&
+    operation.key === "install"
+  ) {
+    return "linear_m";
+  }
+  if (
     packItem.category === "heating_hvac" &&
     element.key === "warm_floor" &&
     operation.key === "install"

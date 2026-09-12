@@ -1,10 +1,13 @@
 import {
   compileProductionExpandedEstimate10000,
+  getProductionWorkDefinition10000,
   isProfessionalNormPackSourceId,
 } from "../../src/lib/ai/estimateTemplate10000";
 
 describe("Gerflor Design Skirting source-backed quantity", () => {
   it("keeps measured perimeter one-to-one and exposes the 2 m product length", () => {
+    const definition = getProductionWorkDefinition10000("flooring_interior_baseboard_install_standard");
+    expect(definition?.defaultUnit).toBe("linear_m");
     const compiled = compileProductionExpandedEstimate10000({
       workKey: "flooring_interior_baseboard_install_standard",
       quantity: 55,
@@ -17,6 +20,7 @@ describe("Gerflor Design Skirting source-backed quantity", () => {
 
     expect(row?.unit).toBe("linear_m");
     expect(row?.quantity).toBe(55);
+    expect(row?.sourceParameters.baseUnit).toBe("linear_m");
     expect(row?.sourceParameters.formulaContext).toMatchObject({
       normFactor: 1,
       packageSize: 2,

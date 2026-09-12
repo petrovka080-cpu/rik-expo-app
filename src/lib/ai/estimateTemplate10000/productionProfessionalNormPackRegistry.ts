@@ -14,6 +14,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_VERSION = "2026.07-wave2a" as const
 export type ProfessionalNormPackRegistryItem = {
   normId: string;
   workGroup: EstimateNormWorkGroupKey;
+  workBasisUnit: ProductionDefaultUnit;
   unit: ProductionDefaultUnit;
   consumptionRate: number;
   wastePercent: number;
@@ -42,6 +43,7 @@ export type ProfessionalNormPackTemplateInput = {
   workKey: string;
   templateKey: string;
   category: string;
+  defaultUnit: string;
   row: {
     rowCode?: string;
     code?: string;
@@ -88,6 +90,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
     workGroup: "carpentry",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.25,
     wastePercent: 0,
@@ -107,6 +110,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
     workGroup: "roofing",
+    workBasisUnit: "m2",
     unit: "m2",
     consumptionRate: 1.0416667,
     wastePercent: 0,
@@ -126,6 +130,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "facade_rockwool_fixrock_conventional_fixings_piece_m2_v1",
     workGroup: "facade",
+    workBasisUnit: "m2",
     unit: "piece",
     consumptionRate: 5,
     wastePercent: 0,
@@ -145,6 +150,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
     workGroup: "insulation",
+    workBasisUnit: "m2",
     unit: "m2",
     consumptionRate: 1,
     wastePercent: 0,
@@ -164,6 +170,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
     workGroup: "metalwork",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.15873016,
     wastePercent: 0,
@@ -183,6 +190,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_board_m2_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "m2",
     consumptionRate: 1,
     wastePercent: 0,
@@ -202,6 +210,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "linear_m",
     consumptionRate: 0.4,
     wastePercent: 0,
@@ -221,6 +230,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 0.3,
     wastePercent: 0,
@@ -240,6 +250,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "linear_m",
     consumptionRate: 0.45,
     wastePercent: 0,
@@ -259,6 +270,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "piece",
     consumptionRate: 17,
     wastePercent: 0,
@@ -278,6 +290,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
     workGroup: "ceilings",
+    workBasisUnit: "m2",
     unit: "piece",
     consumptionRate: 1.2,
     wastePercent: 0,
@@ -297,6 +310,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "baseboards_gerflor_design_skirting_linear_m_perimeter_v1",
     workGroup: "baseboards",
+    workBasisUnit: "linear_m",
     unit: "linear_m",
     consumptionRate: 1,
     wastePercent: 0,
@@ -316,6 +330,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
     workGroup: "tile",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 2,
     wastePercent: 7,
@@ -335,6 +350,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
     workGroup: "tile",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.1,
     wastePercent: 5,
@@ -354,6 +370,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "plaster_ceresit_ct29_kg_m2_mm_v1",
     workGroup: "plaster",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 1.8,
     wastePercent: 10,
@@ -373,6 +390,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "putty_ceresit_ct126_kg_m2_mm_v1",
     workGroup: "putty",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 1.2,
     wastePercent: 8,
@@ -392,6 +410,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "putty_ceresit_ct127_finish_layer_max_2mm_v1",
     workGroup: "putty",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 1,
     wastePercent: 8,
@@ -411,6 +430,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "paint_ceresit_ct54_silicate_two_coats_l_m2_v1",
     workGroup: "paint",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.3,
     wastePercent: 7,
@@ -431,6 +451,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "paint_ceresit_ct17_primer_l_m2_before_paint_v1",
     workGroup: "paint",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.1,
     wastePercent: 5,
@@ -451,6 +472,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "flooring_ceresit_cn69_self_leveling_scope_2_10mm_v1",
     workGroup: "flooring",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 1.5,
     wastePercent: 7,
@@ -470,6 +492,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "flooring_ceresit_ct17_primer_flooring_l_m2_v1",
     workGroup: "flooring",
+    workBasisUnit: "m2",
     unit: "l",
     consumptionRate: 0.1,
     wastePercent: 5,
@@ -489,6 +512,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
     workGroup: "drywall",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 0.3,
     wastePercent: 8,
@@ -506,27 +530,9 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
     ...commonSource,
   },
   {
-    normId: "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
-    workGroup: "drywall",
-    unit: "kg",
-    consumptionRate: 0.15,
-    wastePercent: 8,
-    packageSize: 25,
-    sourceId: sourceId("drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1"),
-    sourceTitle: "Технический паспорт гипсовой шпаклёвки Knauf Fugenfuller Leicht",
-    sourceUrl: "https://knauf.com/api/download-center/v1/assets/c049f893-809e-4387-a0e6-4917b162989c?download=true",
-    sourcePage: "perimeter connection jointing consumption",
-    match: {
-      categories: ["drywall_ceiling"],
-      workKeyIncludes: ["drywall"],
-      sections: ["materials"],
-      rowNumber: [6],
-    },
-    ...commonSource,
-  },
-  {
     normId: "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
     workGroup: "waterproofing",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 1.3,
     wastePercent: 8,
@@ -546,6 +552,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "masonry_aac_block_600_200_200_piece_m2_wall_v1",
     workGroup: "masonry",
+    workBasisUnit: "m2",
     unit: "piece",
     consumptionRate: 8.33,
     wastePercent: 5,
@@ -565,6 +572,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "masonry_brick_250_120_65_piece_m2_half_brick_v1",
     workGroup: "masonry",
+    workBasisUnit: "m2",
     unit: "piece",
     consumptionRate: 51,
     wastePercent: 5,
@@ -584,6 +592,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",
     workGroup: "masonry",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 5,
     wastePercent: 7,
@@ -603,6 +612,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "masonry_cement_lime_mortar_m3_m2_brick_v1",
     workGroup: "masonry",
+    workBasisUnit: "m2",
     unit: "m3",
     consumptionRate: 0.055,
     wastePercent: 7,
@@ -622,6 +632,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "masonry_reinforcement_mesh_m2_m2_wall_v1",
     workGroup: "masonry",
+    workBasisUnit: "m2",
     unit: "m2",
     consumptionRate: 1.05,
     wastePercent: 3,
@@ -641,6 +652,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "concrete_ready_mix_m3_m3_placed_v1",
     workGroup: "concrete",
+    workBasisUnit: "m3",
     unit: "m3",
     consumptionRate: 1.02,
     wastePercent: 2,
@@ -660,6 +672,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "reinforcement_rebar_kg_m3_concrete_element_v1",
     workGroup: "reinforcement",
+    workBasisUnit: "m3",
     unit: "kg",
     consumptionRate: 95,
     wastePercent: 5,
@@ -679,6 +692,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "formwork_contact_area_m2_m3_concrete_element_v1",
     workGroup: "formwork",
+    workBasisUnit: "m3",
     unit: "m2",
     consumptionRate: 2.4,
     wastePercent: 5,
@@ -698,6 +712,7 @@ export const PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS: readonly ProfessionalNormPac
   {
     normId: "screed_cement_sand_mix_kg_m2_50mm_v1",
     workGroup: "screed",
+    workBasisUnit: "m2",
     unit: "kg",
     consumptionRate: 90,
     wastePercent: 7,
@@ -745,8 +760,18 @@ function matchesAny(value: string, candidates: readonly string[] | undefined): b
   return candidates.some((candidate) => value.includes(candidate));
 }
 
+function normalizeWorkBasisUnit(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "sq_m" || normalized === "sqm") return "m2";
+  if (normalized === "pcs") return "piece";
+  if (normalized === "shift") return "day";
+  if (normalized === "trip") return "set";
+  return normalized;
+}
+
 function professionalItemMatches(input: ProfessionalNormPackTemplateInput, item: ProfessionalNormPackRegistryItem): boolean {
   if (input.row.lineType && input.row.lineType !== "material") return false;
+  if (normalizeWorkBasisUnit(input.defaultUnit) !== item.workBasisUnit) return false;
   if (!item.match.sections?.includes(input.row.section as ProductionTemplateSection)) return false;
   if (item.match.categories?.length && !item.match.categories.includes(input.category as ProductionTemplate10000Category)) {
     return false;
