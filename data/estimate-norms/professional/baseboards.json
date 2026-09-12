@@ -38,7 +38,18 @@
     {
       "norm_id": "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
       "name_ru": "Монтажный клей Forbo Eurocol 232 для деревянного или жёсткого ПВХ-плинтуса",
-      "parameters": ["skirting_length_linear_m", "skirting_material", "substrate_type", "selected_adhesive_product"],
+      "parameters": [
+        "skirting_length_linear_m",
+        "skirting_material",
+        "substrate_type",
+        "selected_adhesive_product",
+        "adhesive_profile_mode",
+        "adhesive_consumption_ml_linear_m",
+        "substrate_ready_confirmed",
+        "processing_conditions_confirmed",
+        "ventilation_fire_controls_confirmed",
+        "manufacturer_instruction_reference"
+      ],
       "unit": "ml",
       "rate": {
         "value": 40,
@@ -47,20 +58,23 @@
       "applicability": {
         "product": "Forbo Eurocol 232 Eurosol Montage",
         "skirting_materials": ["wood", "rigid_pvc"],
+        "substrate_types": ["concrete", "wood_material", "clean_metal"],
         "manufacturer_rate_range_ml_linear_m": [20, 40],
         "preliminary_takeoff_uses_upper_endpoint": true,
-        "final_package_rounding_requires_selected_cartridge": true
+        "final_package_rounding_requires_selected_cartridge": true,
+        "substrate_readiness_and_processing_conditions_require_confirmation": true,
+        "ventilation_and_flammable_solvent_controls_require_confirmation": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "ml",
-        "package_size": 1,
-        "mode": "none_until_product_selected"
+        "package_unit": "PE_cartridge",
+        "package_size": 310,
+        "mode": "ceil"
       },
       "source": {
         "title": "Forbo Eurocol 232 Eurosol Montage product specification",
         "url": "https://www.forbo.com/eurocol/en/232-eurosol-montage/eqrzcp",
-        "page": "Performances: consumption approximately 20-40 ml/rm; Application: wood and rigid-PVC skirting",
+        "page": "Performances: consumption approximately 20-40 ml/rm; Application and substrate sections; Articles: PE cartridge 0.31 l",
         "provenance": "manufacturer_technical_cards"
       }
     }

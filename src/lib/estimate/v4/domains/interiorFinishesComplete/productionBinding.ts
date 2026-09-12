@@ -10,6 +10,7 @@ import {
   type ProfessionalDomainCompileResultV1,
   type ProfessionalDomainParameterSchemaV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
+  FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   resolveProfessionalPhysicalNormParameterValuesV1,
@@ -353,6 +354,7 @@ export function buildInteriorFinishesFromInlineInputV1(
     supplied: input.paramOverrides,
     requireExplicitNormativeRateCode:
       constructionState(inventory) === "REPAIR" ||
+      input.paramOverrides?.product_profile_id?.value === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   });

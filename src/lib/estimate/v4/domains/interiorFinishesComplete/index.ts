@@ -1,4 +1,5 @@
 export * from "./canonicalParameterSchemas";
+export * from "./baseboardGlueProfessionalV1";
 export * from "./drywallCeilingBulkheadProfessionalV3";
 export * from "./drywallCeilingBulkheadNormativeProofV3";
 export * from "./drywallCeilingBulkheadRevisionMigrationV3";

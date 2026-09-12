@@ -43,12 +43,14 @@ import {
   isDrywallDomainCompletionCatalogIdV7,
 } from "./drywallDomainCompletionProfessionalV7";
 import { buildDrywallDomainCompletionSuccessorPackagePartsR56 } from "./drywallDomainCompletionSuccessorR56";
+import { buildBaseboardGlueProfessionalPackagePartsV1 } from "./baseboardGlueProfessionalV1";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
 
 type InteriorProfessionalOverlayV4 = {
-  contract: { group: string; variant: string };
+  contract: { group: string; variant: string; method_prefix?: string };
+  output?: { dimension: string; unit_id: string };
   schema: ProfessionalDomainParameterSchemaV1;
   child_assemblies: readonly ProfessionalChildAssemblyV4[];
   normative_profile: ProfessionalNormativeProfileV1;
@@ -62,6 +64,7 @@ type InteriorProfessionalOverlayProviderV4 = (
 ) => InteriorProfessionalOverlayV4 | null;
 
 const INTERIOR_PROFESSIONAL_OVERLAY_PROVIDERS_V4: readonly InteriorProfessionalOverlayProviderV4[] = Object.freeze([
+  buildBaseboardGlueProfessionalPackagePartsV1,
   buildDrywallCeilingBulkheadProfessionalPackagePartsV3,
   buildDrywallArchitecturalElementProfessionalPackagePartsV4,
   buildDrywallFlatCeilingProfessionalPackagePartsV6,
@@ -457,14 +460,14 @@ for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
     technology_id: technologyId,
     operation_class: inventory.work_type.toUpperCase(),
     method: professionalOverlay
-      ? `DRYWALL_PROFESSIONAL_OVERLAY:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
+      ? `${professionalOverlay.contract.method_prefix ?? "DRYWALL_PROFESSIONAL_OVERLAY"}:${professionalOverlay.contract.group}:${professionalOverlay.contract.variant}:${inventory.catalog_id}`
       : `${inventory.calculator_family_id}:${inventory.source_domain_id}:${inventory.work_type}:${inventory.scope_capability}`,
     material_system: isDrywallDomainCompletionCatalogIdV7(inventory.catalog_id)
       ? "DRYWALL_DOMAIN"
       : isDrywallFlatCeilingProfessionalCatalogIdV6(inventory.catalog_id)
         ? "FLAT_CEILING"
       : inventory.work_type === "paint" ? "PAINT" : inventory.work_type === "prime" ? "PRIMER" : interiorMaterialSystemKey(inventory),
-    output: { dimension: "AREA", unit_id: "m2" },
+    output: professionalOverlay?.output ?? { dimension: "AREA", unit_id: "m2" },
     required_stages: professionalOverlay?.required_stages ?? [...profile.required_stages, `SCOPE_${inventory.scope_capability.toUpperCase()}`],
     optional_stages: professionalOverlay?.optional_stages ?? profile.optional_stages,
     forbidden_stages: ["ASPHALT_STAGE", "UNSOURCED_ONE_BUNDLE_RESOURCE", "GENERIC_INTERIOR_INSTALLATION"],

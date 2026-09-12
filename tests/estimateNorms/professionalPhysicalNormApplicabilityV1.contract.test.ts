@@ -3,6 +3,10 @@ import {
   DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   DAIKIN_3MXS_K_SOURCE_ID,
   DAIKIN_3MXS_K_SOURCE_METADATA,
+  FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+  FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
+  FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+  FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_D112_WALL_FASTENER_NORM_ID,
   KNAUF_D112_WALL_FASTENER_SOURCE_ID,
@@ -41,6 +45,7 @@ import {
   hvacDomainFactory,
 } from "../../src/lib/estimate/v4/domains/heatingVentilationComplete";
 import {
+  BASEBOARD_GLUE_FORBO_232_PROFILE_MODE,
   INTERIOR_FINISHES_DOMAIN_INVENTORY,
   buildInteriorFinishesFromInlineInputV1,
   interiorFinishesDomainFactory,
@@ -62,6 +67,7 @@ const HEATING_PIPE_INSTALL_WORK_KEY = "heating_hvac_interior_heating_pipe_instal
 const FLAT_CEILING_FRAME_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
 const FLAT_CEILING_FINISH_JOINT_WORK_KEY = "drywall_ceiling_interior_drywall_ceiling_finish_joint_standard";
 const CABLE_CHANNEL_INSTALL_WORK_KEY = "electrical_interior_cable_channel_install_standard";
+const BASEBOARD_GLUE_WORK_KEY = "flooring_interior_baseboard_glue_standard";
 
 function explicit(
   value: string | number | boolean,
@@ -202,6 +208,35 @@ function resolveKnaufFugenfueller(values: Readonly<Record<string, ProfessionalPa
     technology_class: "FLAT_CEILING",
     operation_class: "FINISH_JOINT",
     material_system: "FLAT_CEILING",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: values,
+  });
+}
+
+function exactForbo232Inputs(
+  changes: Readonly<Record<string, ProfessionalParameterValueV4>> = {},
+): Readonly<Record<string, ProfessionalParameterValueV4>> {
+  return {
+    product_profile_id: explicit(FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID),
+    adhesive_profile_mode: explicit(BASEBOARD_GLUE_FORBO_232_PROFILE_MODE),
+    selected_adhesive_product: explicit("Forbo Eurocol 232 Eurosol Montage"),
+    skirting_length_linear_m: explicit(100, "m"),
+    skirting_material: explicit("wood"),
+    substrate_type: explicit("concrete"),
+    adhesive_consumption_ml_linear_m: explicit(30, "ml_per_m"),
+    substrate_ready_confirmed: explicit(true),
+    processing_conditions_confirmed: explicit(true),
+    ventilation_fire_controls_confirmed: explicit(true),
+    manufacturer_instruction_reference: explicit("Forbo 232 product specification, performances, application and working process"),
+    ...changes,
+  };
+}
+
+function resolveForbo232(values: Readonly<Record<string, ProfessionalParameterValueV4>>) {
+  return resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "BASEBOARD",
+    operation_class: "GLUE",
+    material_system: "BASEBOARD",
     scope_mode: "FULL_APPLICABLE_SCOPE",
     parameter_values: values,
   });
@@ -870,6 +905,137 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID)))
+      .toHaveLength(1);
+  });
+
+  test("keeps the Forbo 232 adhesive norm closed without an explicit rate and exact applicability", () => {
+    const { adhesive_consumption_ml_linear_m: _omitted, ...withoutExactRate } = exactForbo232Inputs();
+    expect(resolveForbo232(withoutExactRate)).toMatchObject({
+      status: "BLOCKED_REQUIRED_INPUTS",
+      source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+      blockers: ["PROJECT_VALUE_REQUIRED_EXPLICIT:adhesive_consumption_ml_linear_m"],
+    });
+    expect(resolveForbo232(exactForbo232Inputs({
+      adhesive_consumption_ml_linear_m: explicit(45, "ml_per_m"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:adhesive_consumption_ml_linear_m=45`,
+      ],
+    });
+    expect(resolveForbo232(exactForbo232Inputs({
+      skirting_material: explicit("soft_pvc"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:skirting_material=soft_pvc`,
+      ],
+    });
+    expect(resolveForbo232(exactForbo232Inputs({
+      ventilation_fire_controls_confirmed: explicit(false),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:ventilation_fire_controls_confirmed=false`,
+      ],
+    });
+    expect(resolveProfessionalPhysicalNormParameterValuesV1({
+      technology_class: "BASEBOARD",
+      operation_class: "INSTALL",
+      material_system: "BASEBOARD",
+      scope_mode: "FULL_APPLICABLE_SCOPE",
+      parameter_values: exactForbo232Inputs(),
+    }).status).toBe("NOT_REQUESTED");
+  });
+
+  test("derives deterministic 310 ml cartridge procurement for the exact Forbo 232 profile", () => {
+    const input = exactForbo232Inputs();
+    const first = resolveForbo232(input);
+    const second = resolveForbo232(input);
+
+    expect(first).toMatchObject({
+      status: "APPLIED",
+      source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+      norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+      source_document_version: "2026.09-gerflor-forbo-source-review-r1",
+      source_definition_hash: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.definition_hash,
+      calculated_forbo_adhesive_procurement_quantity_ml: 3100,
+      produced_parameter_ids: ["forbo_adhesive_procurement_quantity_ml"],
+      blockers: [],
+    });
+    expect(first.parameter_values.forbo_adhesive_procurement_quantity_ml).toMatchObject({
+      value: 3100,
+      unit_id: "ml",
+      source_type: "APPLICABLE_NORM",
+      source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+    });
+    expect(first.deterministic_hash).toBe(second.deterministic_hash);
+    expect(input.forbo_adhesive_procurement_quantity_ml).toBeUndefined();
+    expect(constructionNormativeRegistryV1.get(FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID)).toMatchObject({
+      authority: "Forbo Eurocol",
+      product_profile_applicability: [FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID],
+      material_system_applicability: ["BASEBOARD"],
+      operation_class_applicability: ["GLUE"],
+    });
+  });
+
+  test("routes Forbo 232 to one linear baseboard adhesive row without the generic adhesive row", () => {
+    const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.work_key === BASEBOARD_GLUE_WORK_KEY);
+    if (!inventory) throw new Error("FORBO_232_RUNTIME_BASEBOARD_GLUE_WORK_MISSING");
+    const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
+    const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
+    if (!technology || !schema) throw new Error("FORBO_232_RUNTIME_BASEBOARD_GLUE_SCHEMA_MISSING");
+    const forboValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
+      if (parameter.parameter_id === "product_profile_id") return FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID;
+      if (parameter.parameter_id === "adhesive_profile_mode") return BASEBOARD_GLUE_FORBO_232_PROFILE_MODE;
+      if (parameter.parameter_id === "selected_adhesive_product") return "Forbo Eurocol 232 Eurosol Montage";
+      if (parameter.parameter_id === "skirting_length_linear_m") return 100;
+      if (parameter.parameter_id === "skirting_material") return "wood";
+      if (parameter.parameter_id === "substrate_type") return "concrete";
+      if (parameter.parameter_id === "adhesive_consumption_ml_linear_m") return 30;
+      if (["substrate_ready_confirmed", "processing_conditions_confirmed", "ventilation_fire_controls_confirmed"]
+        .includes(parameter.parameter_id)) return true;
+      if (parameter.parameter_id === "manufacturer_instruction_reference") {
+        return "Forbo 232 product specification, performances, application and working process";
+      }
+      if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-INTERIOR-RATE";
+      return validOverrideValue(parameter);
+    };
+    const paramOverrides = Object.fromEntries(schema.parameters
+      .filter((parameter) => parameter.parameter_id !== "forbo_adhesive_procurement_quantity_ml")
+      .map((parameter) => [parameter.parameter_id, { value: forboValue(parameter), source: "user" }]));
+
+    const result = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Приклеивание 100 м деревянного плинтуса клеем Forbo Eurocol 232",
+      selectedWorkKey: BASEBOARD_GLUE_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides,
+    });
+
+    expect(result.exact_match).toBe(true);
+    expect(result.missing_parameter_ids).toEqual([]);
+    expect(result.production?.compile_result.status).toBe("COMPILED");
+    expect(technology.output).toEqual({ dimension: "LINEAR", unit_id: "m" });
+    expect(schema.quantity_alternatives).toEqual([["skirting_length_linear_m"]]);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID);
+    const adhesiveRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:baseboard-glue-v1:row:forbo_232_adhesive`);
+    expect(adhesiveRow).toMatchObject({ quantity: 3100, unit: "ml" });
+    expect(adhesiveRow?.sourceParameters?.normativeSourceIds).toContain(FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID);
+    expect(adhesiveRow?.sourceParameters?.parameterSourceIds).toContain(FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID);
+    expect(adhesiveRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
+      source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+      source_definition_hash: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.definition_hash,
+      calculated_forbo_adhesive_procurement_quantity_ml: 3100,
+    });
+    expect(result.production?.draft?.items.some((row) =>
+      row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:baseboard-glue-v1:row:project_specified_adhesive`))
+      .toBe(false);
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID)))
       .toHaveLength(1);
   });
 

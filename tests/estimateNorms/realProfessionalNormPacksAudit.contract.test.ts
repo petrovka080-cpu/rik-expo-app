@@ -204,11 +204,12 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(59);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(42);
-    expect(unregistered).toHaveLength(17);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(43);
+    expect(unregistered).toHaveLength(16);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
+      "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
       "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
       "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
       "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
@@ -235,6 +236,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(14);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(13);
   });
 });

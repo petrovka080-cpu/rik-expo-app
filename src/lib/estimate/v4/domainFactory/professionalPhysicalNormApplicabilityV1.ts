@@ -1,4 +1,5 @@
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
+import baseboardsNormPack from "../../../../../data/estimate-norms/professional/baseboards.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
 import drywallNormPack from "../../../../../data/estimate-norms/professional/drywall.json";
 import electricalNormPack from "../../../../../data/estimate-norms/professional/electrical.json";
@@ -58,6 +59,28 @@ export const KNAUF_FUGENFUELLER_PERIMETER_NORM_ID =
 
 export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_ID =
   `src_professional_norm_pack_${KNAUF_FUGENFUELLER_PERIMETER_NORM_ID}` as const;
+
+export const FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:forbo-eurocol-232-eurosol-montage:310ml:v1" as const;
+
+export const FORBO_232_MOUNTING_ADHESIVE_NORM_ID =
+  "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1" as const;
+
+export const FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID =
+  `src_professional_norm_pack_${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}` as const;
+
+const FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "skirting_length_linear_m",
+  "skirting_material",
+  "substrate_type",
+  "selected_adhesive_product",
+  "adhesive_profile_mode",
+  "adhesive_consumption_ml_linear_m",
+  "substrate_ready_confirmed",
+  "processing_conditions_confirmed",
+  "ventilation_fire_controls_confirmed",
+  "manufacturer_instruction_reference",
+] as const);
 
 export const LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID =
   "manufacturer-profile:legrand-p31:symmetrical-tray:75-300mm:v1" as const;
@@ -295,6 +318,79 @@ export const KNAUF_FUGENFUELLER_PERIMETER_SOURCE_METADATA = Object.freeze({
     work_group: drywallNormPack.work_group,
     source_pack_version: drywallNormPack.source_pack_version,
     norm_item: knaufFugenfuellerPerimeterNorm,
+  }),
+});
+
+const forbo232MountingAdhesiveNorm = (() => {
+  const found = baseboardsNormPack.norm_items.find(
+    (item) => item.norm_id === FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}`);
+  }
+  return found;
+})();
+const forbo232RateRange = "manufacturer_rate_range_ml_linear_m" in forbo232MountingAdhesiveNorm.applicability
+  ? forbo232MountingAdhesiveNorm.applicability.manufacturer_rate_range_ml_linear_m
+  : null;
+const forbo232SkirtingMaterials = "skirting_materials" in forbo232MountingAdhesiveNorm.applicability
+  ? forbo232MountingAdhesiveNorm.applicability.skirting_materials
+  : null;
+const forbo232SubstrateTypes = "substrate_types" in forbo232MountingAdhesiveNorm.applicability
+  ? forbo232MountingAdhesiveNorm.applicability.substrate_types
+  : null;
+
+if (
+  baseboardsNormPack.work_group !== "baseboards" ||
+  forbo232MountingAdhesiveNorm.unit !== "ml" ||
+  forbo232MountingAdhesiveNorm.rate.value !== 40 ||
+  forbo232MountingAdhesiveNorm.rate.unit !== "ml/linear_m; conservative upper endpoint of manufacturer range 20-40 ml/linear_m" ||
+  !("product" in forbo232MountingAdhesiveNorm.applicability) ||
+  forbo232MountingAdhesiveNorm.applicability.product !== "Forbo Eurocol 232 Eurosol Montage" ||
+  !forbo232RateRange ||
+  forbo232RateRange[0] !== 20 ||
+  forbo232RateRange[1] !== 40 ||
+  !forbo232SkirtingMaterials ||
+  forbo232SkirtingMaterials.length !== 2 ||
+  !forbo232SkirtingMaterials.includes("wood") ||
+  !forbo232SkirtingMaterials.includes("rigid_pvc") ||
+  !forbo232SubstrateTypes ||
+  forbo232SubstrateTypes.length !== 3 ||
+  !forbo232SubstrateTypes.includes("concrete") ||
+  !forbo232SubstrateTypes.includes("wood_material") ||
+  !forbo232SubstrateTypes.includes("clean_metal") ||
+  forbo232MountingAdhesiveNorm.parameters.length !==
+    FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !forbo232MountingAdhesiveNorm.parameters.includes(parameterId),
+  ) ||
+  forbo232MountingAdhesiveNorm.waste_percent_default !== 0 ||
+  forbo232MountingAdhesiveNorm.rounding.package_unit !== "PE_cartridge" ||
+  forbo232MountingAdhesiveNorm.rounding.package_size !== 310 ||
+  forbo232MountingAdhesiveNorm.rounding.mode !== "ceil"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}`);
+}
+
+export const FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA = Object.freeze({
+  source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+  norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+  source_document_version: baseboardsNormPack.source_pack_version,
+  source_title: forbo232MountingAdhesiveNorm.source.title,
+  source_url: forbo232MountingAdhesiveNorm.source.url,
+  exact_locator: forbo232MountingAdhesiveNorm.source.page,
+  rate_value: forbo232MountingAdhesiveNorm.rate.value,
+  rate_unit: forbo232MountingAdhesiveNorm.rate.unit,
+  rate_range_ml_linear_m: [forbo232RateRange[0], forbo232RateRange[1]] as const,
+  product: forbo232MountingAdhesiveNorm.applicability.product,
+  skirting_materials: [...forbo232SkirtingMaterials],
+  substrate_types: [...forbo232SubstrateTypes],
+  waste_percent_default: forbo232MountingAdhesiveNorm.waste_percent_default,
+  package_size_ml: forbo232MountingAdhesiveNorm.rounding.package_size,
+  definition_hash: estimateDeterministicHash({
+    work_group: baseboardsNormPack.work_group,
+    source_pack_version: baseboardsNormPack.source_pack_version,
+    norm_item: forbo232MountingAdhesiveNorm,
   }),
 });
 
@@ -612,6 +708,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_FUGENFUELLER_PERIMETER_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["perimeter_joint_compound_quantity_kg"] as const,
 }, {
+  norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+  work_group: "baseboards",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "BASEBOARD",
+  operation_class: "GLUE",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
+  source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+  source_document_version: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.source_document_version,
+  source_definition_hash: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["forbo_adhesive_procurement_quantity_ml"] as const,
+}, {
   norm_id: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
   work_group: "electrical",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -683,6 +793,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
   calculated_perimeter_joint_compound_quantity_kg?: number;
+  calculated_forbo_adhesive_procurement_quantity_ml?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -1315,6 +1426,156 @@ function resolveKnaufFugenfuellerPerimeterJoint(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveForbo232MountingAdhesive(
+  productProfileId: typeof FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS.map(
+    (parameterId) => [parameterId, explicitValue(parameterValuesInput, parameterId)],
+  ));
+  const missing = FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+    );
+  }
+
+  const skirtingLengthLinearM = finiteNumber(explicit.skirting_length_linear_m);
+  const skirtingMaterial = primitiveString(explicit.skirting_material!);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const selectedAdhesiveProduct = primitiveString(explicit.selected_adhesive_product!);
+  const adhesiveProfileMode = primitiveString(explicit.adhesive_profile_mode!);
+  const adhesiveConsumptionMlLinearM = finiteNumber(explicit.adhesive_consumption_ml_linear_m);
+  const manufacturerInstructionReference = primitiveString(explicit.manufacturer_instruction_reference!);
+  const [minimumConsumption, maximumConsumption] =
+    FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.rate_range_ml_linear_m;
+  const flagConfirmed = (parameterId: "substrate_ready_confirmed" | "processing_conditions_confirmed" | "ventilation_fire_controls_confirmed") =>
+    explicit[parameterId]!.value === true || explicit[parameterId]!.value === "true";
+  const applicabilityBlockers = [
+    skirtingLengthLinearM !== null && skirtingLengthLinearM > 0
+      ? ""
+      : "PROJECT_VALUE_INVALID:skirting_length_linear_m",
+    FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.skirting_materials.includes(skirtingMaterial ?? "")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:skirting_material=${skirtingMaterial}`,
+    FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.substrate_types.includes(substrateType ?? "")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:substrate_type=${substrateType}`,
+    selectedAdhesiveProduct === FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.product
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:selected_adhesive_product=${selectedAdhesiveProduct}`,
+    adhesiveProfileMode === "FORBO_EUROCOL_232"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:adhesive_profile_mode=${adhesiveProfileMode}`,
+    adhesiveConsumptionMlLinearM !== null &&
+      adhesiveConsumptionMlLinearM >= minimumConsumption &&
+      adhesiveConsumptionMlLinearM <= maximumConsumption
+      ? ""
+      : `PHYSICAL_NORM_RATE_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:adhesive_consumption_ml_linear_m=${adhesiveConsumptionMlLinearM}`,
+    flagConfirmed("substrate_ready_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:substrate_ready_confirmed=false`,
+    flagConfirmed("processing_conditions_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:processing_conditions_confirmed=false`,
+    flagConfirmed("ventilation_fire_controls_confirmed")
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${FORBO_232_MOUNTING_ADHESIVE_NORM_ID}:ventilation_fire_controls_confirmed=false`,
+    manufacturerInstructionReference ? "" : "PROJECT_VALUE_INVALID:manufacturer_instruction_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+    );
+  }
+
+  const packageSizeMl = FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.package_size_ml;
+  const rawAdhesiveQuantityMl = skirtingLengthLinearM! * adhesiveConsumptionMlLinearM!;
+  const calculatedForboAdhesiveProcurementQuantityMl =
+    Math.ceil(rawAdhesiveQuantityMl / packageSizeMl - 1e-9) * packageSizeMl;
+  const explicitQuantity = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "forbo_adhesive_procurement_quantity_ml",
+  ));
+  if (
+    explicitQuantity !== null &&
+    Math.abs(explicitQuantity - calculatedForboAdhesiveProcurementQuantityMl) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:forbo_adhesive_procurement_quantity_ml=${explicitQuantity}:norm_value=${calculatedForboAdhesiveProcurementQuantityMl}`,
+      ],
+      [
+        ...FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "forbo_adhesive_procurement_quantity_ml",
+      ],
+      FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID}`,
+    `selected_adhesive_product=${selectedAdhesiveProduct}`,
+    `skirting_material=${skirtingMaterial}`,
+    `substrate_type=${substrateType}`,
+    `skirting_length_linear_m=${skirtingLengthLinearM}`,
+    `adhesive_consumption_ml_linear_m=${adhesiveConsumptionMlLinearM}`,
+    `manufacturer_instruction_reference=${manufacturerInstructionReference}`,
+    "substrate_ready_confirmed=true",
+    "processing_conditions_confirmed=true",
+    "ventilation_fire_controls_confirmed=true",
+    `formula=ceil((skirting_length_linear_m*adhesive_consumption_ml_linear_m)/${packageSizeMl})*${packageSizeMl}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    forbo_adhesive_procurement_quantity_ml: {
+      value: calculatedForboAdhesiveProcurementQuantityMl,
+      unit_id: "ml",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
+    norm_id: FORBO_232_MOUNTING_ADHESIVE_NORM_ID,
+    source_document_version: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.source_document_version,
+    source_url: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.source_url,
+    exact_locator: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.exact_locator,
+    source_definition_hash: FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...FORBO_232_MOUNTING_ADHESIVE_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["forbo_adhesive_procurement_quantity_ml"],
+    calculated_forbo_adhesive_procurement_quantity_ml: calculatedForboAdhesiveProcurementQuantityMl,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveLegrandP31TrayJointFasteners(
   productProfileId: typeof LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -1680,6 +1941,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === FORBO_232_MOUNTING_ADHESIVE_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "BASEBOARD" &&
+      input.operation_class === "GLUE" &&
+      input.material_system === "BASEBOARD" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveForbo232MountingAdhesive(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
+    );
+  }
   if (productProfileId === WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "HEATING_PIPE_NETWORK" &&
