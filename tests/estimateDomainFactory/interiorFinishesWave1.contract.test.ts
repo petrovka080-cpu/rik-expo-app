@@ -67,6 +67,8 @@ const FIXTURE_NUMBER_BY_PARAMETER: Readonly<Record<string, number>> = {
   junction_length_m: 48,
   layer_thickness_mm: 2,
   material_consumption_kg_m2_mm: 0.9,
+  putty_procurement_quantity_kg: 216,
+  selected_consumption_kg_m2: 0.7,
   coat_count: 2,
   material_consumption_kg_m2_coat: 0.18,
   material_consumption_m2_m2: 1.1,
@@ -109,7 +111,9 @@ function parameterValues(
   if (!schema) throw new Error(`TEST_SCHEMA_NOT_FOUND:${technology.parameter_schema_id}`);
 
   return Object.fromEntries(schema.parameters
-    .filter((parameter) => scopeMode === "FULL_APPLICABLE_SCOPE" || parameter.priority === "P0")
+    .filter((parameter) => scopeMode === "FULL_APPLICABLE_SCOPE" ||
+      parameter.priority === "P0" ||
+      parameter.parameter_id === "putty_procurement_quantity_kg")
     .map((parameter) => {
       if (parameter.parameter_id === "work_included") return [parameter.parameter_id, value(true, null)];
       if (parameter.parameter_id === "estimate_scope_mode") return [parameter.parameter_id, value(scopeMode, null)];
@@ -141,7 +145,8 @@ function parameterValues(
       const normRate = parameter.parameter_id.includes("productivity");
       const materialRate = parameter.parameter_id.includes("material_consumption") ||
         parameter.parameter_id.includes("material_mass") ||
-        parameter.parameter_id.includes("auxiliary_material_rate");
+        parameter.parameter_id.includes("auxiliary_material_rate") ||
+        parameter.parameter_id.includes("procurement_quantity");
       return [parameter.parameter_id, value(
         numeric,
         parameter.unit_id,

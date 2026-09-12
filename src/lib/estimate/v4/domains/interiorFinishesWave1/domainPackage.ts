@@ -6,6 +6,7 @@ import type {
 } from "../../professionalProjectAssemblyV4";
 import {
   CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
+  CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID,
   CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
   createProfessionalEstimateDomainFactoryV1,
   type ProfessionalAssemblyProfileV1,
@@ -218,6 +219,18 @@ const CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_ONLY = {
   parameter_id: "product_profile_id",
   value: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
 } as const;
+const CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_ONLY = {
+  kind: "EQUALS",
+  parameter_id: "product_profile_id",
+  value: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID,
+} as const;
+const CERESIT_CT126_OR_CT127_PUTTY = {
+  kind: "ANY_OF",
+  conditions: [
+    { parameter_id: "product_profile_id", value: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID },
+    { parameter_id: "product_profile_id", value: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID },
+  ],
+} as const;
 
 function parameter(
   parameter_id: string,
@@ -255,8 +268,26 @@ function quantityParameterId(config: TechnologyConfig): "junction_length_m" | "a
   return config.formula_kind === "LINEAR_PROFILE" ? "junction_length_m" : "area_m2";
 }
 
-function formulaParameters(config: TechnologyConfig): ProfessionalDomainParameterDefinitionV1[] {
+function isStandardWallPutty(
+  config: TechnologyConfig,
+  scope: InteriorFinishesWave1ScopeCapability,
+): boolean {
+  return config.canonical_base_work_key === "plaster_paint_interior_wall_putty_apply" &&
+    config.material_system === "WALL_PUTTY" &&
+    scope === "standard";
+}
+
+function formulaParameters(
+  config: TechnologyConfig,
+  scope: InteriorFinishesWave1ScopeCapability,
+): ProfessionalDomainParameterDefinitionV1[] {
   if (config.formula_kind === "LAYER_KG") {
+    if (isStandardWallPutty(config, scope)) {
+      return [
+        parameter("layer_thickness_mm", "Толщина наносимого слоя", "number", "P0", "mm", [], { minimum: 0.1, maximum: 100 }),
+        parameter("putty_procurement_quantity_kg", "Закупочное количество шпаклёвки после применения нормы и округления фасовки", "number", "P2", "kg", ["primary_material_quantity", "material_mass"], { minimum: 0.01, maximum: 1_000_000_000 }),
+      ];
+    }
     return [
       parameter("layer_thickness_mm", "Толщина наносимого слоя", "number", "P0", "mm", ["primary_material_quantity"], { minimum: 0.1, maximum: 100 }),
       parameter("material_consumption_kg_m2_mm", "Расход выбранного материала на 1 м² при толщине 1 мм", "number", "P0", "kg_per_m2_mm", ["primary_material_quantity"], { minimum: 0.01, maximum: 20 }),
@@ -321,7 +352,7 @@ function scopeParameterDefinitions(
   }
 }
 
-function ceresitCt126DryInteriorWallPuttyConditionalParameters(
+function ceresitDryInteriorPuttyConditionalParameters(
   config: TechnologyConfig,
   scope: InteriorFinishesWave1ScopeCapability,
 ): ProfessionalDomainParameterDefinitionV1[] {
@@ -332,33 +363,49 @@ function ceresitCt126DryInteriorWallPuttyConditionalParameters(
   ) {
     return [];
   }
-  const condition = CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_ONLY;
+  const sharedCondition = CERESIT_CT126_OR_CT127_PUTTY;
   return [
-    parameter("substrate_type", "Основание для Ceresit CT 126", "choice", "P1", null, [], {
+    parameter("substrate_type", "Основание для Ceresit CT 126 / CT 127", "choice", "P1", null, [], {
       choices: [
         "cement_plaster",
         "cement_lime_plaster",
+        "concrete",
+        "ceresit_ct126",
         "gypsum_substrate",
         "gypsum_fibre_board",
         "plasterboard",
+        "aerated_concrete",
+        "silicate_block",
         "sound_adherent_paint_coat",
       ].map((value) => ({ value, label_ru: value })),
-      condition,
+      condition: sharedCondition,
     }),
-    parameter("substrate_load_bearing_dry_clean_confirmed", "Основание несущее, сухое и очищенное", "boolean", "P1", null, [], { condition }),
+    parameter("substrate_absorbency", "Впитывающая способность основания для Ceresit CT 127", "choice", "P1", null, [], {
+      choices: ["absorbent", "non_absorbent", "very_absorbent"]
+        .map((value) => ({ value, label_ru: value })),
+      condition: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_ONLY,
+    }),
+    parameter("substrate_load_bearing_dry_clean_confirmed", "Основание несущее, сухое и очищенное", "boolean", "P1", null, [], { condition: sharedCondition }),
     parameter("substrate_preparation_system", "Грунтовочная подготовка основания", "choice", "P1", null, [], {
       choices: [
+        { value: "CERESIT_IN10", label_ru: "Ceresit IN 10" },
+        { value: "CERESIT_CT17", label_ru: "Ceresit CT 17" },
         { value: "CERESIT_CT7", label_ru: "Ceresit CT 7" },
         { value: "CERESIT_CT19", label_ru: "Ceresit CT 19" },
       ],
-      condition,
+      condition: sharedCondition,
     }),
-    parameter("dry_interior_no_permanent_humidity_confirmed", "Сухое внутреннее помещение без постоянной высокой влажности", "boolean", "P1", null, [], { condition }),
-    parameter("application_temperature_confirmed", "Температура воздуха и основания 5–30 °C подтверждена", "boolean", "P1", null, [], { condition }),
-    parameter("ct126_tds_variant_confirmed", "Подтверждена карточка C_CT126_TDS_1_0321", "boolean", "P1", null, [], { condition }),
-    parameter("selected_bag_size_kg", "Выбранная фасовка Ceresit CT 126", "choice", "P1", "kg", [], {
+    parameter("selected_consumption_kg_m2", "Проектный расход Ceresit CT 127 из опубликованного диапазона", "number", "P1", "kg_per_m2", [], {
+      minimum: 0.4,
+      maximum: 1.2,
+      condition: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_ONLY,
+    }),
+    parameter("dry_interior_no_permanent_humidity_confirmed", "Сухое внутреннее помещение без постоянной высокой влажности", "boolean", "P1", null, [], { condition: sharedCondition }),
+    parameter("application_temperature_confirmed", "Температура воздуха и основания 5–30 °C подтверждена", "boolean", "P1", null, [], { condition: sharedCondition }),
+    parameter("ct126_tds_variant_confirmed", "Подтверждена карточка C_CT126_TDS_1_0321", "boolean", "P1", null, [], { condition: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_ONLY }),
+    parameter("selected_bag_size_kg", "Выбранная фасовка Ceresit CT 126 / CT 127", "choice", "P1", "kg", [], {
       choices: [5, 20].map((value) => ({ value: String(value), label_ru: `${value} кг` })),
-      condition,
+      condition: sharedCondition,
     }),
   ];
 }
@@ -475,8 +522,8 @@ function schemaFor(
       }),
       parameter("product_profile_id", "Паспорт выбранного материала или системы", "text", "P0", null, [], {}),
       parameter("normative_rate_code", "Код применимой ресурсной расценки по проекту", "text", "P0", null, [], {}),
-      ...formulaParameters(config),
-      ...ceresitCt126DryInteriorWallPuttyConditionalParameters(config, scope),
+      ...formulaParameters(config, scope),
+      ...ceresitDryInteriorPuttyConditionalParameters(config, scope),
       ...ceresitCt29InteriorWallPlasterConditionalParameters(config, scope),
       parameter("labor_productivity_output_per_man_hour", "Производительность труда по принятой норме или проекту производства работ", "number", "P0", `${quantityUnit}_per_man_hour`, ["application_labor"], { minimum: 0.01, maximum: 10_000 }),
       parameter("equipment_productivity_output_per_machine_hour", "Производительность выбранного механизма", "number", "P0", `${quantityUnit}_per_machine_hour`, ["application_equipment"], { minimum: 0.01, maximum: 100_000 }),
@@ -518,6 +565,19 @@ function formula(
 function primaryMaterialFormula(config: TechnologyConfig, technologyId: string): ProfessionalAssemblyFormulaV4 {
   const quantityId = quantityParameterId(config);
   if (config.formula_kind === "LAYER_KG") {
+    if (
+      config.canonical_base_work_key === "plaster_paint_interior_wall_putty_apply" &&
+      config.material_system === "WALL_PUTTY" &&
+      technologyId.endsWith("_standard")
+    ) {
+      return formula(
+        `${technologyId}:primary-material:v1`,
+        "putty_procurement_quantity_kg",
+        ["putty_procurement_quantity_kg"],
+        "kg",
+        (v) => v.putty_procurement_quantity_kg,
+      );
+    }
     return formula(`${technologyId}:primary-material:v1`, "area_m2 × layer_thickness_mm × material_consumption_kg_m2_mm", ["area_m2", "layer_thickness_mm", "material_consumption_kg_m2_mm"], "kg", (v) => v.area_m2 * v.layer_thickness_mm * v.material_consumption_kg_m2_mm);
   }
   if (config.formula_kind === "COAT_KG") {
