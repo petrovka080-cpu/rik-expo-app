@@ -2,7 +2,7 @@ import {
   compileProductionExpandedEstimate10000,
   isProfessionalNormPackSourceId,
 } from "../../src/lib/ai/estimateTemplate10000";
-import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator";
+import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("wave2a masonry 400 m2 real quantity", () => {
   it("keeps user confirmation boundary and rejects generic material rates for an unspecified block", () => {

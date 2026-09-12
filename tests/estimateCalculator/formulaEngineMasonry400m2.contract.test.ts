@@ -1,6 +1,6 @@
 import {
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("real quantity formula engine masonry 400m2", () => {
   it("detects masonry, pre-fills 400 m2, asks missing params, then generates real non-zero rows", () => {

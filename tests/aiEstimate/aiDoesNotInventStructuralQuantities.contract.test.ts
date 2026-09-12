@@ -1,4 +1,4 @@
-import { parseRealMaterialQuantityIntent } from "../../src/lib/ai/professionalEstimateCalculator";
+import { parseRealMaterialQuantityIntent } from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("AI does not invent structural quantities", () => {
   it("parses intent and area but leaves masonry material parameters to backend/user confirmation", () => {

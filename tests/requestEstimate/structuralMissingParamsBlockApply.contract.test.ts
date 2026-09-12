@@ -1,4 +1,4 @@
-import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator";
+import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("structural calculator missing params block apply", () => {
   it("opens the calculator and does not insert rows before required masonry params are filled", () => {

@@ -5,7 +5,7 @@ import {
   compileProductionExpandedEstimate10000,
   isProfessionalNormPackSourceId,
 } from "../../src/lib/ai/estimateTemplate10000";
-import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator";
+import { createRealMaterialQuantityPreview } from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 import { compileAsphaltProfessionalEstimateV4 } from "../../src/lib/estimate/v4/asphalt/compileAsphaltProfessionalEstimateV4";
 import { expectProfessionalBoqEstimate } from "../estimateIntent/anyEstimateTestHelpers";
 
@@ -28,14 +28,20 @@ describe("BATCH005 R3 non-Electrical behavior immutability", () => {
     expect(runtimeSha256).toBe(ASPHALT_BASELINE_RUNTIME_SHA256);
   });
 
-  test("keeps Drywall and Masonry norm-pack behavior unchanged", () => {
+  test("keeps Drywall and Masonry composition while product-specific norms fail closed", () => {
     const drywall = compileProductionExpandedEstimate10000({
       workKey: "drywall_ceiling_interior_drywall_partition_install_standard",
       quantity: 80,
       countryCode: "KG",
     });
     const drywallRealRows = drywall.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
-    expect(drywallRealRows.filter((row) => row.normSourceId.includes("drywall_knauf_fugenfueller"))).toHaveLength(2);
+    expect(drywall.rows).toHaveLength(59);
+    expect(drywallRealRows).toEqual([]);
+    expect(drywall.rows.every((row) =>
+      row.normSourceId.startsWith("src_professional_norm_pack_catalog_") &&
+      row.calculationTrace.includes("normSource=")
+    )).toBe(true);
+    expect(drywall.rows.some((row) => row.normSourceId.includes("drywall_knauf_fugenfueller"))).toBe(false);
 
     const masonry = compileProductionExpandedEstimate10000({
       workKey: "masonry_interior_gas_block_lay_standard",
@@ -43,7 +49,13 @@ describe("BATCH005 R3 non-Electrical behavior immutability", () => {
       countryCode: "KG",
     });
     const masonryRealRows = masonry.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
-    expect(masonryRealRows.map((row) => row.unit)).toEqual(expect.arrayContaining(["piece", "kg", "m2"]));
+    expect(masonry.rows).toHaveLength(59);
+    expect(masonryRealRows).toEqual([]);
+    expect(masonry.rows.every((row) =>
+      row.normSourceId.startsWith("src_professional_norm_pack_catalog_") &&
+      row.calculationTrace.includes("normSource=")
+    )).toBe(true);
+    expect([...new Set(masonry.rows.map((row) => row.unit))]).toEqual(["m2", "m3", "piece", "set"]);
     const preview = createRealMaterialQuantityPreview({
       rawInput: "каменную кладку 400 кв метров",
       parameters: { material_type: "газоблок", wall_thickness_mm: 200 },

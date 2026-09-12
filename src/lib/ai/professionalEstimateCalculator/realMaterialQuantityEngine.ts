@@ -1,5 +1,11 @@
 import { extractEstimateVolume } from "../estimateRouting/estimatePromptExtractor";
 
+/**
+ * Historical compatibility engine retained for test and audit replay only.
+ * Product code must use the canonical backend estimate owner and must not
+ * import this module or receive it through the professional calculator barrel.
+ */
+
 export const PROFESSIONAL_REAL_QUANTITY_ENGINE_WAVE =
   "S_PROFESSIONAL_AI_ESTIMATE_REAL_MATERIAL_QUANTITY_ENGINE_NO_BUILDS" as const;
 

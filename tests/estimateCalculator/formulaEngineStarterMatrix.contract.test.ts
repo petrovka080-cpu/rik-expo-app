@@ -1,6 +1,6 @@
 import {
   runRealQuantityStarterMatrix,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("real quantity formula engine starter matrix", () => {
   it("generates materials and work rows for every trust starter work", () => {

@@ -5,7 +5,7 @@ import {
   GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS,
   GREEN_PROFESSIONAL_AI_ESTIMATE_REAL_MATERIAL_QUANTITY_ENGINE,
   buildRealMaterialQuantityEngineSummary,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 

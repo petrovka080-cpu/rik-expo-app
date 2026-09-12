@@ -1,7 +1,7 @@
 import {
   confirmRealMaterialQuantityEstimate,
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("director PDF professional real quantity estimate", () => {
   it("binds confirmed material and work rows to director PDF without raw AI payload", () => {

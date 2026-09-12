@@ -1,6 +1,6 @@
 import {
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("request real quantity calculator dialog", () => {
   it("opens calculator with prefilled prompt values and blocks insertion until required params are filled", () => {

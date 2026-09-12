@@ -3,7 +3,7 @@ import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "n
 import path from "node:path";
 import {
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 import {
   buildProfessionalExpandedGlobalEstimate,
 } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";

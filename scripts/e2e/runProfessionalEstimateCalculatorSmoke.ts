@@ -6,7 +6,7 @@ import path from "node:path";
 import {
   GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS,
   buildRealMaterialQuantityEngineSummary,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 function envFlag(name: string): boolean | undefined {
   const value = String(process.env[name] ?? "").trim().toLowerCase();

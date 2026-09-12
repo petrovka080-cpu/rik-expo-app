@@ -24,9 +24,19 @@ export type NoSecondEstimateEngineAudit = {
   screen_local_calculation_detected: boolean;
   duplicate_pdf_estimate_logic_detected: boolean;
   duplicate_buyer_handoff_logic_detected: boolean;
+  legacy_real_quantity_engine_unreachable: boolean;
+  legacy_real_quantity_engine_barrel_exported: boolean;
+  legacy_real_quantity_engine_product_importers: string[];
   scanned_files_count: number;
   violations: string[];
   passed: boolean;
+};
+
+export type LegacyRealQuantityEngineReachabilityAudit = {
+  legacy_real_quantity_engine_unreachable: boolean;
+  legacy_real_quantity_engine_barrel_exported: boolean;
+  legacy_real_quantity_engine_product_importers: string[];
+  violations: string[];
 };
 
 const DEFAULT_SCAN_ROOTS = [
@@ -46,6 +56,13 @@ const ALLOWED_ENGINE_FILES = [
   "src/features/procurement/createBuyerHandoffFromDraftRevision.ts",
   "src/lib/foreman/",
 ] as const;
+
+const LEGACY_REAL_QUANTITY_ENGINE_PATH =
+  "src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine.ts";
+const PROFESSIONAL_ESTIMATE_CALCULATOR_BARREL_PATH =
+  "src/lib/ai/professionalEstimateCalculator/index.ts";
+const LEGACY_REAL_QUANTITY_SYMBOL_PATTERN =
+  /\b(?:parseRealMaterialQuantityIntent|createRealMaterialQuantityPreview|confirmRealMaterialQuantityEstimate|runRealQuantityStarterMatrix|buildRealMaterialQuantityEngineSummary|GREEN_PROFESSIONAL_AI_ESTIMATE_REAL_MATERIAL_QUANTITY_ENGINE|GREEN_AI_ESTIMATE_PROFESSIONAL_REAL_QUANTITY_ENGINE_PRODUCTION_SAFE_NO_BUILDS)\b/u;
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
@@ -130,14 +147,66 @@ export function scanNoSecondEstimateEngine(files: readonly EstimateEngineSourceF
     screen_local_calculation_detected: screenLocal,
     duplicate_pdf_estimate_logic_detected: duplicatePdf,
     duplicate_buyer_handoff_logic_detected: duplicateBuyer,
+    legacy_real_quantity_engine_unreachable: true,
+    legacy_real_quantity_engine_barrel_exported: false,
+    legacy_real_quantity_engine_product_importers: [],
     scanned_files_count: files.length,
     violations,
     passed: violations.length === 0,
   };
 }
 
+export function scanLegacyRealQuantityEngineReachability(
+  files: readonly EstimateEngineSourceFile[],
+): LegacyRealQuantityEngineReachabilityAudit {
+  const normalizedFiles = files.map((file) => ({
+    filePath: normalizePath(file.filePath),
+    source: file.source,
+  }));
+  const barrelExported = normalizedFiles.some((file) =>
+    file.filePath.endsWith(PROFESSIONAL_ESTIMATE_CALCULATOR_BARREL_PATH) &&
+    /export\s+(?:\*|\{[^}]*\})\s+from\s+["']\.\/realMaterialQuantityEngine["']/u.test(file.source)
+  );
+  const productImporters = normalizedFiles
+    .filter((file) => !file.filePath.endsWith(LEGACY_REAL_QUANTITY_ENGINE_PATH))
+    .filter((file) => !(barrelExported && file.filePath.endsWith(PROFESSIONAL_ESTIMATE_CALCULATOR_BARREL_PATH)))
+    .filter((file) =>
+      /["'][^"']*realMaterialQuantityEngine["']/u.test(file.source) ||
+      LEGACY_REAL_QUANTITY_SYMBOL_PATTERN.test(file.source)
+    )
+    .map((file) => file.filePath)
+    .sort();
+  const violations = [
+    barrelExported
+      ? `${PROFESSIONAL_ESTIMATE_CALCULATOR_BARREL_PATH}:legacy_real_quantity_engine_barrel_export`
+      : "",
+    ...productImporters.map((filePath) => `${filePath}:legacy_real_quantity_engine_product_reachable`),
+  ].filter(Boolean);
+
+  return {
+    legacy_real_quantity_engine_unreachable: violations.length === 0,
+    legacy_real_quantity_engine_barrel_exported: barrelExported,
+    legacy_real_quantity_engine_product_importers: productImporters,
+    violations,
+  };
+}
+
 export function auditNoSecondEstimateEngine(roots: readonly string[] = DEFAULT_SCAN_ROOTS) {
-  const audit = scanNoSecondEstimateEngine(loadEstimateEngineSourceFiles(roots));
+  const baseAudit = scanNoSecondEstimateEngine(loadEstimateEngineSourceFiles(roots));
+  const legacyReachability = scanLegacyRealQuantityEngineReachability(
+    loadEstimateEngineSourceFiles(["app", "src", "supabase"]),
+  );
+  const violations = [...baseAudit.violations, ...legacyReachability.violations];
+  const audit: NoSecondEstimateEngineAudit = {
+    ...baseAudit,
+    no_second_estimate_engine_passed:
+      baseAudit.no_second_estimate_engine_passed && legacyReachability.legacy_real_quantity_engine_unreachable,
+    second_estimate_engine_detected:
+      baseAudit.second_estimate_engine_detected || !legacyReachability.legacy_real_quantity_engine_unreachable,
+    ...legacyReachability,
+    violations,
+    passed: violations.length === 0,
+  };
   const summary = {
     final_status: audit.passed
       ? "GREEN_AI_ESTIMATE_NO_SECOND_ENGINE"

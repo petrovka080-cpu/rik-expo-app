@@ -1,7 +1,7 @@
 import {
   confirmRealMaterialQuantityEstimate,
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("buyer receives materials from professional estimate", () => {
   it("hands only material rows to procurement and keeps quantities equal to the estimate", () => {

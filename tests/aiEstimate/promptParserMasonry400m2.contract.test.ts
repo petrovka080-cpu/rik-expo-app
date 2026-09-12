@@ -1,6 +1,6 @@
 import {
   parseRealMaterialQuantityIntent,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("real quantity AI prompt parser boundary", () => {
   it("parses intent and area only; backend template catalog remains source of truth", () => {

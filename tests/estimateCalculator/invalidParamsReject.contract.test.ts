@@ -1,6 +1,6 @@
 import {
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("real quantity formula engine invalid params", () => {
   it("rejects invalid deterministic parameters instead of producing fake rows", () => {

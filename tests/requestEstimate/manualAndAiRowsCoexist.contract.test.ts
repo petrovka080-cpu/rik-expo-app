@@ -1,6 +1,6 @@
 import {
   createRealMaterialQuantityPreview,
-} from "../../src/lib/ai/professionalEstimateCalculator";
+} from "../../src/lib/ai/professionalEstimateCalculator/realMaterialQuantityEngine";
 
 describe("request manual and AI calculated rows coexist", () => {
   it("keeps AI rows editable data rows that can coexist with manual rows in the draft", () => {
