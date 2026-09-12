@@ -16,6 +16,9 @@ import {
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_ID,
   FORBO_232_MOUNTING_ADHESIVE_SOURCE_METADATA,
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
+  KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+  KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_METADATA,
   KNAUF_D112_TN25_SCREW_NORM_ID,
   KNAUF_D112_TN25_SCREW_SOURCE_ID,
   KNAUF_D112_TN25_SCREW_SOURCE_METADATA,
@@ -195,6 +198,14 @@ function exactKnaufD112Inputs(
     substrate_fastener_reference: explicit("Анкер по паспорту проекта КР-17"),
     substrate_fastener_approved: explicit(true),
     ceiling_perimeter_anchor_spacing_m: explicit(1, "m"),
+    ceiling_primary_profile_spacing_m: explicit(1, "m"),
+    ceiling_secondary_profile_spacing_m: explicit(0.5, "m"),
+    ceiling_hanger_spacing_m: explicit(0.95, "m"),
+    load_class_kn_m2: explicit(0.15, "kn_per_m2"),
+    substructure_anchor_reference: explicit("Анкер подвеса по паспорту проекта КР-18"),
+    substructure_anchor_approved: explicit(true),
+    d112_substructure_manufacturer_excludes_loss_and_waste_confirmed: explicit(true),
+    material_certificate_reference: explicit("PROJECT-KNAUF-D112-BATCH-CERT-001"),
     ...changes,
   };
 }
@@ -912,9 +923,39 @@ describe("professional physical norm applicability V1", () => {
         status: "BLOCKED_NOT_APPLICABLE",
         blockers: ["PHYSICAL_NORM_PROJECT_LAYOUT_CONFLICT:perimeter_anchor_count=34:norm_value=40"],
       });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ load_class_kn_m2: explicit(0.2, "kn_per_m2") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        source_id: KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+        blockers: [
+          `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID}:load_class_kn_m2=0.2`,
+        ],
+      });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ ceiling_hanger_spacing_m: explicit(0.96, "m") })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [
+          `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID}:ceiling_hanger_spacing_m=0.96`,
+        ],
+      });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({ substructure_anchor_approved: explicit(false) })))
+      .toMatchObject({
+        status: "BLOCKED_NOT_APPLICABLE",
+        blockers: [
+          `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID}:substructure_anchor_approved=false`,
+        ],
+      });
+    expect(resolveKnaufD112(exactKnaufD112Inputs({
+      quantity_slab_hanger_anchors: explicit(119, "item"),
+    }))).toMatchObject({
+      status: "BLOCKED_NOT_APPLICABLE",
+      blockers: [
+        "PHYSICAL_NORM_VALUE_CONFLICT:quantity_slab_hanger_anchors=119:norm_value=120",
+      ],
+    });
   });
 
-  test("binds the Knauf quantity only to the exact 10 m by 10 m reference ceiling", () => {
+  test("binds both Knauf FRAME quantities only to the exact 10 m by 10 m reference ceiling", () => {
     const input = exactKnaufD112Inputs();
     const first = resolveKnaufD112(input);
     const second = resolveKnaufD112(input);
@@ -925,8 +966,20 @@ describe("professional physical norm applicability V1", () => {
       norm_id: KNAUF_D112_WALL_FASTENER_NORM_ID,
       source_document_version: "2026.09-knauf-d11-d112-primary-review-r2",
       source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
+      source_ids: [
+        KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+        KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+      ],
+      norm_ids: [
+        KNAUF_D112_WALL_FASTENER_NORM_ID,
+        KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
+      ],
       calculated_wall_fastener_quantity_piece: 40,
-      produced_parameter_ids: ["quantity_perimeter_track_anchors"],
+      calculated_substructure_anchor_quantity_piece: 120,
+      produced_parameter_ids: [
+        "quantity_perimeter_track_anchors",
+        "quantity_slab_hanger_anchors",
+      ],
       blockers: [],
     });
     expect(first.parameter_values.quantity_perimeter_track_anchors).toMatchObject({
@@ -935,11 +988,18 @@ describe("professional physical norm applicability V1", () => {
       source_type: "APPLICABLE_NORM",
       source_id: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
     });
+    expect(first.parameter_values.quantity_slab_hanger_anchors).toMatchObject({
+      value: 120,
+      unit_id: "item",
+      source_type: "APPLICABLE_NORM",
+      source_id: KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+    });
     expect(first.deterministic_hash).toBe(second.deterministic_hash);
     expect(input.quantity_perimeter_track_anchors).toBeUndefined();
+    expect(input.quantity_slab_hanger_anchors).toBeUndefined();
   });
 
-  test("routes Knauf only to the canonical perimeter-track-anchor BOQ row", () => {
+  test("routes both Knauf FRAME norms only to their canonical BOQ rows", () => {
     const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) =>
       row.work_key === FLAT_CEILING_FRAME_WORK_KEY);
     if (!inventory) throw new Error("KNAUF_D112_RUNTIME_FRAME_WORK_MISSING");
@@ -949,6 +1009,7 @@ describe("professional physical norm applicability V1", () => {
     const knaufValue = (parameter: Parameters<typeof validOverrideValue>[0]) => {
       if (parameter.parameter_id === "product_profile_id") return KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID;
       if (parameter.parameter_id === "system_passport_reference") return "Knauf D11, D112 variant 1, page 28";
+      if (parameter.parameter_id === "material_certificate_reference") return "PROJECT-KNAUF-D112-BATCH-CERT-001";
       if (parameter.parameter_id === "area_m2") return 100;
       if (parameter.parameter_id === "length_m" || parameter.parameter_id === "width_m") return 10;
       if (parameter.parameter_id === "system_variant") return "standard_12_5_mm_single_layer";
@@ -956,10 +1017,20 @@ describe("professional physical norm applicability V1", () => {
       if (parameter.parameter_id === "substrate_fastener_reference") return "Анкер по паспорту проекта КР-17";
       if (parameter.parameter_id === "substrate_fastener_approved") return true;
       if (parameter.parameter_id === "ceiling_perimeter_anchor_spacing_m") return 1;
+      if (parameter.parameter_id === "ceiling_primary_profile_spacing_m") return 1;
+      if (parameter.parameter_id === "ceiling_secondary_profile_spacing_m") return 0.5;
+      if (parameter.parameter_id === "ceiling_hanger_spacing_m") return 0.95;
+      if (parameter.parameter_id === "load_class_kn_m2") return 0.15;
+      if (parameter.parameter_id === "substructure_anchor_reference") return "Анкер подвеса по паспорту проекта КР-18";
+      if (parameter.parameter_id === "substructure_anchor_approved") return true;
+      if (parameter.parameter_id === "d112_substructure_manufacturer_excludes_loss_and_waste_confirmed") return true;
       return validOverrideValue(parameter);
     };
     const paramOverrides = Object.fromEntries(schema.parameters
-      .filter((parameter) => parameter.parameter_id !== "quantity_perimeter_track_anchors")
+      .filter((parameter) => ![
+        "quantity_perimeter_track_anchors",
+        "quantity_slab_hanger_anchors",
+      ].includes(parameter.parameter_id))
       .map((parameter) => [parameter.parameter_id, {
         value: knaufValue(parameter),
         source: "user",
@@ -978,6 +1049,8 @@ describe("professional physical norm applicability V1", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
       .toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
+    expect(result.production?.compile_result.normative_resolution.applicable_sources.map((source) => source.source_id))
+      .toContain(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID);
     const anchorRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:perimeter_track_anchors`);
     expect(anchorRow).toMatchObject({ quantity: 40, unit: "item" });
@@ -988,10 +1061,35 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
       calculated_wall_fastener_quantity_piece: 40,
     });
+    const substructureAnchorRow = result.production?.draft?.items.find((row) =>
+      row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:slab_hanger_anchors`);
+    expect(substructureAnchorRow).toMatchObject({ quantity: 120, unit: "item" });
+    expect(substructureAnchorRow?.sourceParameters?.normativeSourceIds)
+      .toContain(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID);
+    expect(substructureAnchorRow?.sourceParameters?.parameterSourceIds)
+      .toContain(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID);
+    expect(substructureAnchorRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1)
+      .toMatchObject({
+        source_ids: [
+          KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+          KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+        ],
+        calculated_substructure_anchor_quantity_piece: 120,
+      });
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_WALL_FASTENER_SOURCE_ID)))
       .toHaveLength(1);
+    expect(result.production?.draft?.items
+      .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
+        ?.includes(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID)))
+      .toHaveLength(1);
+    expect(constructionNormativeRegistryV1.get(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID))
+      .toMatchObject({
+        document_code: KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
+        version: KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_METADATA.source_document_version,
+        operation_class_applicability: ["FRAME"],
+      });
   });
 
   test("keeps the D112 TN25 rate closed outside the exact single-layer 12.5 mm system", () => {

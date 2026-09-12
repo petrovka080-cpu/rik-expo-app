@@ -111,6 +111,9 @@ export function buildInteriorFinishesProductionDraftV1(
   const inventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((candidate) =>
     candidate.catalog_id === input.catalog_id && candidate.work_key === input.work_key);
   if (!inventory) throw new Error(`INTERIOR_EXACT_BINDING_NOT_FOUND:${input.catalog_id}:${input.work_key}`);
+  const physicalNormSourceIds = input.physical_norm_resolution
+    ? input.physical_norm_resolution.source_ids ?? [input.physical_norm_resolution.source_id]
+    : [];
   const compileResult = compileProfessionalEstimateDomainV1(
     interiorFinishesDomainFactory,
     constructionNormativeRegistryV1,
@@ -121,9 +124,7 @@ export function buildInteriorFinishesProductionDraftV1(
       parent_revision_id: input.parent_revision_id,
       parameter_values: input.parameter_values,
       normative_request: input.normative_request,
-      additional_normative_source_ids: input.physical_norm_resolution
-        ? [input.physical_norm_resolution.source_id]
-        : [],
+      additional_normative_source_ids: physicalNormSourceIds,
       additional_normative_source_types: input.physical_norm_resolution
         ? ["MANUFACTURER_PASSPORT"]
         : [],
@@ -219,9 +220,8 @@ export function buildInteriorFinishesProductionDraftV1(
       rowCode: row.row_id,
       normativeSourceIds: [...new Set([
         ...row.normative_source_ids,
-        ...(row.category === "material" && input.physical_norm_resolution &&
-            row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
-          ? [input.physical_norm_resolution.source_id]
+        ...(row.category === "material" && input.physical_norm_resolution
+          ? row.parameter_source_ids.filter((sourceId) => physicalNormSourceIds.includes(sourceId))
           : []),
       ])],
       parameterSourceIds: row.parameter_source_ids,
@@ -245,7 +245,7 @@ export function buildInteriorFinishesProductionDraftV1(
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
       ...(input.physical_norm_resolution &&
-          row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+          row.parameter_source_ids.some((sourceId) => physicalNormSourceIds.includes(sourceId))
         ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
         : {}),
       ...(isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)

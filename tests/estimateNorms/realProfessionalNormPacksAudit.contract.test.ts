@@ -2734,12 +2734,13 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(16);
-    expect(unregistered).toHaveLength(38);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(17);
+    expect(unregistered).toHaveLength(37);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
       "baseboards_forbo_232_mounting_adhesive_upper_ml_linear_m_v1",
+      "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
       "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1",
       "ceilings_knauf_d112_standard_uniflott_kg_m2_v1",
       "ceilings_knauf_d112_standard_wall_fastener_piece_m2_v1",
@@ -2767,7 +2768,6 @@ describe("real professional norm packs audit", () => {
       "carpentry_sikagard_wood_preserver_l_m2_preventative_v1",
       "ceilings_knauf_d112_standard_board_m2_m2_v1",
       "ceilings_knauf_d112_standard_joint_tape_linear_m_m2_v1",
-      "ceilings_knauf_d112_standard_substructure_anchor_piece_m2_v1",
       "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1",
       "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "fire_safety_siemens_sinteso_base_piece_per_detector_point_v1",

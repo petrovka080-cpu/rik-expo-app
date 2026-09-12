@@ -330,6 +330,10 @@ function knaufD112ReferenceApplicabilityParameters(
     parameter("substrate_type", "Материал основания для крепления пристенного профиля", "text", "PROJECT_QUANTITY", FULL_SCOPE, null, { condition }),
     parameter("substrate_fastener_reference", "Точный тип и паспорт крепежа для выбранного основания", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     parameter("substrate_fastener_approved", "Крепёж подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    { ...numberParameter("load_class_kn_m2", "Класс нагрузки потолочной системы Knauf D112", "kn_per_m2", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 0.000001, 0.15), condition },
+    parameter("substructure_anchor_reference", "Точный тип и паспорт анкера подвеса", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    parameter("substructure_anchor_approved", "Анкер подвеса подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    parameter("d112_substructure_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из нормы анкеров D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
   ];
 }
 
@@ -801,6 +805,8 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "material_certificate_reference", "system_passport_reference", "normative_rate_code", "area_m2",
     "price_basis_reference", "price_basis_date", "working_height_m", "length_m", "width_m",
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
+    "load_class_kn_m2", "substructure_anchor_reference", "substructure_anchor_approved",
+    "d112_substructure_manufacturer_excludes_loss_and_waste_confirmed",
     "board_layer_count", "board_thickness_mm",
     "joint_filling_method", "d112_uniflott_selected_bag_size_kg",
     "d112_manufacturer_excludes_loss_and_waste_confirmed",
