@@ -1,38 +1,94 @@
 {
   "work_group": "windows_doors",
-  "source_pack_version": "2026.09-soudal-window-door-genius-linear-yield-r1",
+  "source_pack_version": "2026.09-soudal-9900539-tds-2026-primary-review-r2",
   "source_type": "manufacturer_technical_cards",
-  "review_status": "needs_review",
+  "review_status": "reviewed",
   "license_status": "manufacturer_public",
+  "review_evidence": {
+    "reviewer": "codex-agent-independent-primary-source-review",
+    "reviewed_at": "2026-09-12",
+    "method": "DIRECT_PRIMARY_SOURCE_REVIEW",
+    "items": [
+      {
+        "norm_id": "windows_doors_soudafoam_genius_can_per_joint_m_v1",
+        "source_url": "https://www.soudal.co.uk/sites/default/files/soudal_api/document/900012953/TDS_Soudal_Soudafoam_Window_%26_Door_Genius_9900539_English_Soudal_UK.pdf",
+        "supporting_source_urls": [
+          "https://www.soudal.co.uk/pro/products/expanding-foam/1k-pu-foams/soudafoam-window-door-genius"
+        ],
+        "verified_facts": [
+          "tds_master_code_is_9900539_revision_08_05_2026",
+          "exact_genius_product_packaging_is_600_ml_aerosol_net",
+          "tds_joint_yield_is_approximately_16_m_for_600_ml_to_en_17333_1",
+          "tds_box_yield_is_approximately_19_l_for_600_ml_to_en_17333_1",
+          "product_page_750_ml_26_m_gun_grade_feature_must_not_replace_exact_genius_tds_value",
+          "joint_yield_test_geometry_is_not_stated_in_the_product_tds",
+          "application_requires_one_third_initial_fill_and_moistening_with_layer_specific_repeat_moistening",
+          "can_ambient_and_surface_temperature_ranges_are_published_but_site_yield_remains_variable",
+          "manufacturer_does_not_publish_a_general_project_waste_percentage"
+        ]
+      }
+    ]
+  },
   "norm_items": [
     {
       "norm_id": "windows_doors_soudafoam_genius_can_per_joint_m_v1",
-      "name_ru": "Баллоны пены Soudafoam Window & Door Genius по измеренной длине монтажного шва",
-      "parameters": ["qualified_joint_length_linear_m", "joint_cross_section", "temperature", "moisture_condition"],
+      "name_ru": "Soudafoam Window & Door Genius 600 мл: справочный выход по подтверждённой геометрии монтажного шва",
+      "parameters": [
+        "qualified_joint_length_linear_m",
+        "joint_width_mm",
+        "joint_depth_mm",
+        "total_joint_volume_l",
+        "exact_product_master_code",
+        "package_volume_ml",
+        "en_17333_1_reference_joint_geometry",
+        "can_temperature_c",
+        "ambient_temperature_c",
+        "surface_temperature_c",
+        "substrate_type_and_condition",
+        "surface_moistening_condition",
+        "application_layer_count",
+        "onsite_validated_joint_yield_m_per_can",
+        "storage_and_expiry_condition",
+        "external_uv_and_weather_protection_scope",
+        "frame_fixings_tapes_membranes_and_sealants_scope"
+      ],
       "unit": "can",
       "rate": {
-        "value": 0.03846154,
-        "unit": "750 ml gun-grade can/linear m at FEICA TM1002 reference yield of 26 m"
+        "value": 0.0625,
+        "unit": "reference 600 ml can/linear m reciprocal of the current TDS approximate 16 m EN 17333-1 joint yield; not a fixed project rate"
       },
       "applicability": {
         "product": "Soudafoam Window & Door Genius",
-        "reference_package_ml": 750,
-        "linear_yield_m_feica_tm1002": 26,
-        "calculation": "ceil(qualified_joint_length_linear_m / 26)",
-        "joint_geometry_must_match_test_method": true,
-        "real_site_temperature_moisture_and_voids_may_reduce_yield": true,
-        "frame_fixings_tapes_andsealants_are_separate": true
+        "master_code": "9900539",
+        "tds_revision": "08-05-2026",
+        "reference_package_ml": 600,
+        "joint_yield_m_en_17333_1_approximate": 16,
+        "box_yield_l_en_17333_1_approximate": 19,
+        "product_page_different_gun_grade_reference_ml": 750,
+        "product_page_different_gun_grade_reference_yield_m": 26,
+        "application": "filling around PVCu, aluminium and wooden window and door frames",
+        "application_fill_fraction": "one_third_before_expansion",
+        "can_temperature_c": [5, 30],
+        "ambient_temperature_c": [5, 30],
+        "surface_temperature_c": [5, 35],
+        "moisture_curing_and_surface_moistening_required": true,
+        "joint_cross_section_and_reference_test_geometry_required": true,
+        "onsite_yield_validation_required": true,
+        "not_uv_resistant": true,
+        "frame_fixings_tapes_membranes_and_sealants_are_separate": true,
+        "additional_waste_not_published": true,
+        "automatic_production_binding_without_joint_geometry_forbidden": true
       },
       "waste_percent_default": 0,
       "rounding": {
-        "package_unit": "750_ml_can",
+        "package_unit": "600_ml_can",
         "package_size": 1,
-        "mode": "ceil"
+        "mode": "ceil_after_exact_joint_geometry_and_onsite_yield_validation"
       },
       "source": {
-        "title": "Soudal Soudafoam Window & Door Genius product page and technical data",
-        "url": "https://www.soudal.co.uk/pro/products/expanding-foam/1k-pu-foams/soudafoam-window-door-genius",
-        "page": "Featured properties: linear yield FEICA TM1002, 750 ml gun grade, 26 m; applications around windows and doors",
+        "title": "Soudal Soudafoam Window & Door Genius technical datasheet 9900539",
+        "url": "https://www.soudal.co.uk/sites/default/files/soudal_api/document/900012953/TDS_Soudal_Soudafoam_Window_%26_Door_Genius_9900539_English_Soudal_UK.pdf",
+        "page": "TDS revision 08-05-2026, pages 1-2: 600 ml yields approximately 16 m of foam; application method, temperature ranges and packaging",
         "provenance": "manufacturer_technical_cards"
       }
     }

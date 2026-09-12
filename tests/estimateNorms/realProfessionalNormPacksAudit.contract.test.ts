@@ -462,6 +462,32 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedWindowsDoorsPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/windows_doors.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rate: { value: number; unit: string };
+        waste_percent_default: number;
+        applicability: Record<string, unknown>;
+        rounding: { package_size: number; mode: string };
+      }[];
+    };
     const reviewedPuttyPack = JSON.parse(
       fs.readFileSync(
         path.resolve(process.cwd(), "data/estimate-norms/professional/putty.json"),
@@ -1422,6 +1448,61 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 3,
         mode: "route_takeoff_before_explicit_product_length_cut_and_socket_layout",
+      },
+    }]);
+    expect(reviewedWindowsDoorsPack).toMatchObject({
+      source_pack_version: "2026.09-soudal-9900539-tds-2026-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedWindowsDoorsPack.review_evidence?.items).toMatchObject([{
+      norm_id: "windows_doors_soudafoam_genius_can_per_joint_m_v1",
+      source_url: "https://www.soudal.co.uk/sites/default/files/soudal_api/document/900012953/TDS_Soudal_Soudafoam_Window_%26_Door_Genius_9900539_English_Soudal_UK.pdf",
+      supporting_source_urls: [
+        "https://www.soudal.co.uk/pro/products/expanding-foam/1k-pu-foams/soudafoam-window-door-genius",
+      ],
+      verified_facts: expect.arrayContaining([
+        "tds_master_code_is_9900539_revision_08_05_2026",
+        "exact_genius_product_packaging_is_600_ml_aerosol_net",
+        "tds_joint_yield_is_approximately_16_m_for_600_ml_to_en_17333_1",
+        "product_page_750_ml_26_m_gun_grade_feature_must_not_replace_exact_genius_tds_value",
+        "joint_yield_test_geometry_is_not_stated_in_the_product_tds",
+        "manufacturer_does_not_publish_a_general_project_waste_percentage",
+      ]),
+    }]);
+    expect(reviewedWindowsDoorsPack.norm_items).toMatchObject([{
+      norm_id: "windows_doors_soudafoam_genius_can_per_joint_m_v1",
+      parameters: expect.arrayContaining([
+        "qualified_joint_length_linear_m",
+        "joint_width_mm",
+        "joint_depth_mm",
+        "total_joint_volume_l",
+        "exact_product_master_code",
+        "package_volume_ml",
+        "en_17333_1_reference_joint_geometry",
+        "onsite_validated_joint_yield_m_per_can",
+        "external_uv_and_weather_protection_scope",
+      ]),
+      rate: {
+        value: 0.0625,
+        unit: "reference 600 ml can/linear m reciprocal of the current TDS approximate 16 m EN 17333-1 joint yield; not a fixed project rate",
+      },
+      waste_percent_default: 0,
+      applicability: expect.objectContaining({
+        master_code: "9900539",
+        tds_revision: "08-05-2026",
+        reference_package_ml: 600,
+        joint_yield_m_en_17333_1_approximate: 16,
+        product_page_different_gun_grade_reference_ml: 750,
+        product_page_different_gun_grade_reference_yield_m: 26,
+        joint_cross_section_and_reference_test_geometry_required: true,
+        onsite_yield_validation_required: true,
+        additional_waste_not_published: true,
+        automatic_production_binding_without_joint_geometry_forbidden: true,
+      }),
+      rounding: {
+        package_size: 1,
+        mode: "ceil_after_exact_joint_geometry_and_onsite_yield_validation",
       },
     }]);
     expect(reviewedDrywallPack.norm_items.find((item) =>

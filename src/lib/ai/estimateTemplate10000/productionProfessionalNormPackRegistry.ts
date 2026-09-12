@@ -51,7 +51,7 @@ export const PROFESSIONAL_NORM_PACK_SOURCE_VERSION_BY_GROUP: Readonly<
   ventilation: "2026.09-lindab-vsr-exact-sizes-r2",
   waste_removal: "2026.09-us-epa-cd-volume-weight-r1",
   waterproofing: "2026.09-ceresit-cl51-global-primary-review-r2",
-  windows_doors: "2026.09-soudal-window-door-genius-linear-yield-r1",
+  windows_doors: "2026.09-soudal-9900539-tds-2026-primary-review-r2",
 });
 
 export type ProfessionalNormPackRegistryItem = {
