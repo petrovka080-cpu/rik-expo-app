@@ -2722,6 +2722,19 @@ describe("professional physical norm applicability V1", () => {
         source: "user",
       }]));
 
+    const { normative_rate_code: _omittedRateCode, ...withoutExplicitNormativeRateCode } = paramOverrides;
+    const blockedWithoutExplicitRateCode = buildInteriorFinishesFromInlineInputV1({
+      rawInput: "Монтаж 55 пог. м плинтуса Gerflor Design Skirting 6086",
+      selectedWorkKey: BASEBOARD_INSTALL_WORK_KEY,
+      city: "Bishkek",
+      currency: "KGS",
+      paramOverrides: withoutExplicitNormativeRateCode,
+    });
+    expect(blockedWithoutExplicitRateCode.production?.draft).toBeNull();
+    expect(blockedWithoutExplicitRateCode.production?.compile_result.status).toBe("NEEDS_REQUIRED_INPUTS");
+    expect(blockedWithoutExplicitRateCode.missing_parameter_ids)
+      .toContain("PROJECT_VALUE_REQUIRED:normative_rate_code");
+
     const result = buildInteriorFinishesFromInlineInputV1({
       rawInput: "Монтаж 55 пог. м плинтуса Gerflor Design Skirting 6086",
       selectedWorkKey: BASEBOARD_INSTALL_WORK_KEY,
