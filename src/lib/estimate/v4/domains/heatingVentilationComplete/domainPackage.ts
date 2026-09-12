@@ -17,6 +17,10 @@ import {
   type ProfessionalResourceCompletenessPolicyV1,
 } from "../../domainFactory";
 import {
+  UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+  UPONOR_UFH_150MM_SOURCE_ID,
+} from "../../domainFactory/professionalPhysicalNormApplicabilityV1";
+import {
   HVAC_COMPLETE_ALIAS_COUNT,
   HVAC_COMPLETE_DOMAIN_ID,
   HVAC_COMPLETE_DOMAIN_VERSION,
@@ -268,11 +272,22 @@ function schemaFor(row: HvacDomainInventoryRow): ProfessionalDomainParameterSche
     );
   }
   if (isWarmFloor(profile)) {
+    const uponor150Condition = {
+      kind: "EQUALS",
+      parameter_id: "product_profile_id",
+      value: UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+    } as const;
     parameters.push(
       parameter("circuit_length_m", "Суммарная длина контуров по проекту", "number", "P0", "m", ["warm_floor_pipe"], { minimum: 0.001, maximum: 10_000_000 }),
       parameter("circuit_count", "Количество контуров по проекту", "number", "P0", "item", ["warm_floor_circuits"], { minimum: 0.001, maximum: 1_000_000 }),
       parameter("manifold_outlet_count", "Количество выходов коллектора", "number", "P1", "item", ["warm_floor_manifold"], { minimum: 0.001, maximum: 1_000_000 }),
       parameter("fixing_units_per_m2", "Расход креплений на площадь по системе", "number", "P1", "item_per_m2", ["warm_floor_fixing"], { minimum: 0.000001, maximum: 10_000 }),
+      parameter("designed_pipe_spacing_mm", "Проектный шаг укладки трубы Uponor", "number", "P1", "mm", ["warm_floor_pipe"], { minimum: 1, maximum: 2_000, condition: uponor150Condition }),
+      parameter("manifold_location", "Проектное расположение коллектора тёплого пола", "text", "P1", null, ["warm_floor_pipe"], { condition: uponor150Condition }),
+      parameter("feed_tail_length_linear_m", "Суммарная длина подводящих и хвостовых участков", "number", "P1", "m", ["warm_floor_pipe"], { minimum: 0, maximum: 10_000_000, condition: uponor150Condition }),
+      parameter("loop_length_limit", "Предельная длина одного контура по проекту", "number", "P1", "m", ["warm_floor_pipe"], { minimum: 0.001, maximum: 10_000, condition: uponor150Condition }),
+      parameter("longest_circuit_length_m", "Длина самого длинного спроектированного контура", "number", "P1", "m", ["warm_floor_pipe"], { minimum: 0.001, maximum: 10_000, condition: uponor150Condition }),
+      parameter("hydraulic_loop_design_reference", "Ссылка на теплотехнический и гидравлический расчёт контуров", "text", "P1", null, ["warm_floor_pipe"], { condition: uponor150Condition }),
       parameter("interior_screed_included", "Стяжка над тёплым полом включена отдельной сборкой", "choice", "P1", null, [], { choices: yesNoChoices() }),
       conditionalParameter("screed_volume_m3", "Проектный объём стяжки", "m3", ["screed_material", "screed_work"], "interior_screed_included"),
       conditionalParameter("screed_productivity_m3_per_man_hour", "Производительность устройства стяжки", "m3_per_man_hour", ["screed_work"], "interior_screed_included"),
@@ -479,7 +494,10 @@ function mainAssemblies(row: HvacDomainInventoryRow, schema: ProfessionalDomainP
   }
   if (isWarmFloor(profile)) {
     rows.push(
-      boqRow(row, "warm_floor_pipe", "Тёплый пол", "material", "Труба контуров по проектной раскладке", formula(t, "warm_floor_pipe", "circuit_length_m", ["circuit_length_m"], "m", (v) => v.circuit_length_m), "FULL_ONLY"),
+      {
+        ...boqRow(row, "warm_floor_pipe", "Тёплый пол", "material", "Труба контуров по проектной раскладке", formula(t, "warm_floor_pipe", "circuit_length_m", ["circuit_length_m"], "m", (v) => v.circuit_length_m), "FULL_ONLY"),
+        normative_source_ids: [normativeSourceId(row), UPONOR_UFH_150MM_SOURCE_ID],
+      },
       boqRow(row, "warm_floor_circuits", "Тёплый пол", "work", "Монтаж отдельных контуров", formula(t, "warm_floor_circuits", "circuit_count", ["circuit_count"], "item", (v) => v.circuit_count), "FULL_ONLY"),
       boqRow(row, "warm_floor_manifold", "Тёплый пол", "equipment", "Выходы коллектора с арматурой", formula(t, "warm_floor_manifold", "manifold_outlet_count", ["manifold_outlet_count"], "item", (v) => v.manifold_outlet_count), "FULL_ONLY"),
       boqRow(row, "warm_floor_fixing", "Тёплый пол", "material", "Крепления контуров по системе", formula(t, "warm_floor_fixing", "zone_area_m2 × fixing_units_per_m2", ["zone_area_m2", "fixing_units_per_m2"], "item", (v) => v.zone_area_m2 * v.fixing_units_per_m2), "FULL_ONLY"),

@@ -1,4 +1,9 @@
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
+import {
+  UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
+  UPONOR_UFH_150MM_SOURCE_ID,
+  UPONOR_UFH_150MM_SOURCE_METADATA,
+} from "./professionalPhysicalNormApplicabilityV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -45,6 +50,7 @@ export type ConstructionNormativeSourceCardV1 = {
   new_repair_demolition_applicability: readonly string[];
   operation_class_applicability: readonly string[];
   material_system_applicability: readonly string[];
+  product_profile_applicability?: readonly string[];
   clause_table_rate_code: string | null;
   unit_basis: string | null;
   official_reference: string;
@@ -66,6 +72,7 @@ export type NormativeApplicabilityRequestV1 = {
   effective_date: string;
   material_system: string;
   operation_class: string;
+  product_profile_id?: string;
   requested_source_ids: readonly string[];
   requested_source_types: readonly ConstructionNormativeSourceTypeV1[];
   rate_code_by_source_id?: Readonly<Record<string, string>>;
@@ -492,6 +499,33 @@ export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSo
     superseded_by: [],
     exact_rate_code_required: false,
   }),
+  source({
+    source_id: UPONOR_UFH_150MM_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Uponor",
+    document_code: UPONOR_UFH_150MM_SOURCE_METADATA.norm_id,
+    title: UPONOR_UFH_150MM_SOURCE_METADATA.source_title,
+    edition: "Manufacturer public installation guide",
+    revision: UPONOR_UFH_150MM_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: null,
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["WARM_FLOOR:SPACE_HEATING:HEATING_WATER"],
+    product_profile_applicability: [UPONOR_UFH_150MM_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: UPONOR_UFH_150MM_SOURCE_METADATA.exact_locator,
+    unit_basis: UPONOR_UFH_150MM_SOURCE_METADATA.rate_unit,
+    official_reference: UPONOR_UFH_150MM_SOURCE_METADATA.source_url,
+    version: UPONOR_UFH_150MM_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer guide. Quantity is applicable only to the exact Uponor profile, 150 mm spacing, explicit feed/tail lengths and verified hydraulic loop/manifold design.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
 ]);
 
 function includesOrAll(values: readonly string[], value: string): boolean {
@@ -510,6 +544,7 @@ function jurisdictionAllowed(
 ): boolean {
   if (sourceCard.jurisdiction === request.country) return true;
   if (request.country === "KG" && sourceCard.jurisdiction === "EAEU") return true;
+  if (sourceCard.status === "project-specific" && sourceCard.source_type === "MANUFACTURER_PASSPORT") return true;
   return request.contract_basis.includes(`ACCEPTS:${sourceCard.jurisdiction}`);
 }
 
@@ -526,6 +561,10 @@ function rejectionReasons(
   if (!includesOrAll(sourceCard.new_repair_demolition_applicability, request.construction_state)) reasons.push("CONSTRUCTION_STATE_NOT_APPLICABLE");
   if (!includesOrAll(sourceCard.operation_class_applicability, request.operation_class)) reasons.push("OPERATION_CLASS_NOT_APPLICABLE");
   if (!includesOrAll(sourceCard.material_system_applicability, request.material_system)) reasons.push("MATERIAL_SYSTEM_NOT_APPLICABLE");
+  if (sourceCard.product_profile_applicability &&
+      !includesOrAll(sourceCard.product_profile_applicability, request.product_profile_id ?? "")) {
+    reasons.push("PRODUCT_PROFILE_NOT_APPLICABLE");
+  }
   return reasons;
 }
 

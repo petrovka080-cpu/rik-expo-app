@@ -463,6 +463,7 @@ const R4_A13_6_CURRENT_TEST_CONTRACT_AUDIT: readonly TestContractAuditEntry[] = 
   currentAddedContract("tests/estimateNorms/hardcodedNormRateClassifier.contract.test.ts", "classification of production rates, identifiers, dimensional conversions, schema bounds and managed norm records"),
   currentAlignedContract("tests/estimateNorms/normSourceQualityAudit.contract.test.ts", "hardcoded-rate and professional-source audit ownership"),
   currentAddedContract("tests/estimateNorms/professionalNormPackRegistryParity.contract.test.ts", "exact output unit, work-basis parameter, source-pack version, rate, package and URL parity between all physical norm packs and production bindings"),
+  currentAddedContract("tests/estimateNorms/professionalPhysicalNormApplicabilityV1.contract.test.ts", "fail-closed exact-product applicability, explicit hydraulic inputs, dimensional calculation, deterministic source lineage and real HVAC BOQ routing for the Uponor 150 mm physical norm"),
   currentAddedContract("tests/estimateNorms/professionalWbsNoGuessedQuantity.contract.test.ts", "removal of guessed steel, concrete and delivery quantity conversions"),
   currentAlignedContract("tests/estimateNorms/realProfessionalNormPacksAudit.contract.test.ts", "separate physical-pack presence, row-aware production binding, dimensional/applicability disposition and human-readable Russian basis-question coverage"),
   currentAddedContract("tests/estimateRuntime/editableParam11610Harness.contract.test.ts", "exact 11610 editable-parameter shard fan-in and lost-chunk rejection"),

@@ -169,6 +169,8 @@ export type ProfessionalDomainCompileRequestV1 = {
   parent_revision_id: string | null;
   parameter_values: Readonly<Record<string, ProfessionalParameterValueV4>>;
   normative_request: Omit<NormativeApplicabilityRequestV1, "requested_source_ids" | "requested_source_types">;
+  additional_normative_source_ids?: readonly string[];
+  additional_normative_source_types?: readonly ConstructionNormativeSourceTypeV1[];
 };
 
 export type ProfessionalDomainCompileResultV1 = {
@@ -408,8 +410,14 @@ export function compileProfessionalEstimateDomainV1(
   });
   const normativeResolution = registry.resolve({
     ...request.normative_request,
-    requested_source_ids: [...new Set(normProfiles.flatMap((profile) => profile.requested_source_ids))],
-    requested_source_types: [...new Set(normProfiles.flatMap((profile) => profile.requested_source_types))],
+    requested_source_ids: [...new Set([
+      ...normProfiles.flatMap((profile) => profile.requested_source_ids),
+      ...(request.additional_normative_source_ids ?? []),
+    ])],
+    requested_source_types: [...new Set([
+      ...normProfiles.flatMap((profile) => profile.requested_source_types),
+      ...(request.additional_normative_source_types ?? []),
+    ])],
   });
   if (schema.parameters.some((parameter) => parameter.parameter_id === "normative_rate_code")) {
     const explicitRateCode = String(parameterValues.normative_rate_code?.value ?? "").trim();
