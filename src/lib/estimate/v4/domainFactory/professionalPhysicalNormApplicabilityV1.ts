@@ -12,6 +12,7 @@ import plumbingNormPack from "../../../../../data/estimate-norms/professional/pl
 import puttyNormPack from "../../../../../data/estimate-norms/professional/putty.json";
 import tileNormPack from "../../../../../data/estimate-norms/professional/tile.json";
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
+import waterproofingNormPack from "../../../../../data/estimate-norms/professional/waterproofing.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
 import type {
   ProfessionalEstimateScopeModeV4,
@@ -426,6 +427,29 @@ const CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_PARAMETER_IDS = Object.freeze
 const CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   ...CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_PARAMETER_IDS,
   "surface_type",
+] as const);
+
+export const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID =
+  "manufacturer-profile:ceresit-cl51:03-2024:indoor-ceramic-wet-zone:v1" as const;
+
+export const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID =
+  "waterproofing_ceresit_cl51_two_coats_kg_m2_v1" as const;
+
+export const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_ID =
+  `src_professional_norm_pack_${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}` as const;
+
+const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "coat_count",
+  "installation_location",
+  "under_ceramic_covering",
+  "wet_zone_type",
+  "substrate_type",
+  "substrate_preparation_confirmed",
+  "permanent_water_contact_excluded",
+  "rear_surface_moisture_excluded",
+  "chemical_exposure_excluded",
+  "selected_bucket_size_kg",
 ] as const);
 
 export const CERESIT_CT17_FLOORING_PRIMER_NORM_ID =
@@ -1760,6 +1784,79 @@ export const CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA = Object.free
   }),
 });
 
+const ceresitCl51IndoorCeramicWetZoneNorm = (() => {
+  const found = waterproofingNormPack.norm_items.find(
+    (item) => item.norm_id === CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
+  );
+  if (!found) {
+    throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}`);
+  }
+  return found;
+})();
+
+if (
+  waterproofingNormPack.work_group !== "waterproofing" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.unit !== "kg" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.rate.value !== 1.3 ||
+  ceresitCl51IndoorCeramicWetZoneNorm.rate.unit !== "minimum kg/m2 for two coats" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.product !== "Ceresit CL 51 Express 1-K" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.application_location !==
+    "indoor_walls_and_floors_under_ceramic_coverings" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.documented_substrate_examples.join(",") !==
+    "mineral_surface,concrete,fully_pointed_brickwork,cement_screed,cementitious_dry_screed,gypsum_board,aerated_concrete" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.wet_zones.join(",") !== "bathroom,kitchen,toilet" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.coat_count !== 2 ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.dry_film_min_mm !== 0.5 ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.swimming_pools_excluded !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.permanently_wet_areas_excluded !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.rear_surface_moisture_excluded !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.chemical_exposure_excluded !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.joint_and_penetration_accessories_excluded_from_rate !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.manufacturer_rate_is_minimum_required_amount !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.additional_waste_not_published !== true ||
+  ceresitCl51IndoorCeramicWetZoneNorm.applicability.documented_bucket_sizes_kg.join(",") !== "5,15" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.parameters.length !==
+    CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS.length ||
+  CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS.some(
+    (parameterId) => !ceresitCl51IndoorCeramicWetZoneNorm.parameters.includes(parameterId),
+  ) ||
+  ceresitCl51IndoorCeramicWetZoneNorm.waste_percent_default !== 0 ||
+  ceresitCl51IndoorCeramicWetZoneNorm.rounding.package_unit !== "bucket" ||
+  ceresitCl51IndoorCeramicWetZoneNorm.rounding.package_size !== 5 ||
+  ceresitCl51IndoorCeramicWetZoneNorm.rounding.mode !==
+    "minimum_required_kg_before_selected_5_or_15_kg_bucket_rounding"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}`);
+}
+
+export const CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA = Object.freeze({
+  source_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_ID,
+  norm_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
+  source_document_version: waterproofingNormPack.source_pack_version,
+  source_title: ceresitCl51IndoorCeramicWetZoneNorm.source.title,
+  source_url: ceresitCl51IndoorCeramicWetZoneNorm.source.url,
+  exact_locator: ceresitCl51IndoorCeramicWetZoneNorm.source.page,
+  rate_value: ceresitCl51IndoorCeramicWetZoneNorm.rate.value,
+  rate_unit: ceresitCl51IndoorCeramicWetZoneNorm.rate.unit,
+  product: ceresitCl51IndoorCeramicWetZoneNorm.applicability.product,
+  application_location: ceresitCl51IndoorCeramicWetZoneNorm.applicability.application_location,
+  documented_substrate_examples: [
+    ...ceresitCl51IndoorCeramicWetZoneNorm.applicability.documented_substrate_examples,
+  ],
+  wet_zones: [...ceresitCl51IndoorCeramicWetZoneNorm.applicability.wet_zones],
+  coat_count: ceresitCl51IndoorCeramicWetZoneNorm.applicability.coat_count,
+  dry_film_min_mm: ceresitCl51IndoorCeramicWetZoneNorm.applicability.dry_film_min_mm,
+  documented_bucket_sizes_kg: [
+    ...ceresitCl51IndoorCeramicWetZoneNorm.applicability.documented_bucket_sizes_kg,
+  ],
+  waste_percent_default: ceresitCl51IndoorCeramicWetZoneNorm.waste_percent_default,
+  definition_hash: estimateDeterministicHash({
+    work_group: waterproofingNormPack.work_group,
+    source_pack_version: waterproofingNormPack.source_pack_version,
+    norm_item: ceresitCl51IndoorCeramicWetZoneNorm,
+  }),
+});
+
 const ceresitCt17FlooringPrimerNorm = (() => {
   const found = flooringNormPack.norm_items.find(
     (item) => item.norm_id === CERESIT_CT17_FLOORING_PRIMER_NORM_ID,
@@ -2723,6 +2820,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["material_consumption_kg_m2_mm"] as const,
 }, {
+  norm_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
+  work_group: "waterproofing",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "CERAMIC_TILE",
+  operation_class: "WATERPROOF",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID,
+  source_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_ID,
+  source_document_version: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.source_document_version,
+  source_definition_hash: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["cl51_procurement_quantity_kg"] as const,
+}, {
   norm_id: CERESIT_CM11_SMALL_CERAMIC_INDOOR_NORM_ID,
   work_group: "tile",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -2891,6 +3002,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct126_net_quantity_kg?: number;
   calculated_ct126_procurement_quantity_kg?: number;
   calculated_ct126_bag_count?: number;
+  calculated_cl51_minimum_net_quantity_kg?: number;
+  calculated_cl51_procurement_quantity_kg?: number;
+  calculated_cl51_bucket_count?: number;
   calculated_ct17_primer_net_quantity_l?: number;
   calculated_ct17_primer_procurement_quantity_l?: number;
   calculated_ct17_primer_container_count?: number;
@@ -5301,6 +5415,172 @@ function resolveCeresitCt126DryInteriorWallPutty(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveCeresitCl51IndoorCeramicWetZone(
+  productProfileId: typeof CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const coatCount = finiteNumber(explicit.coat_count);
+  const installationLocation = primitiveString(explicit.installation_location!);
+  const wetZoneType = primitiveString(explicit.wet_zone_type!);
+  const substrateType = primitiveString(explicit.substrate_type!);
+  const selectedBucketSizeKg = finiteNumber(explicit.selected_bucket_size_kg);
+  const applicabilityBlockers = [
+    areaM2 !== null && areaM2 > 0 ? "" : "PROJECT_VALUE_INVALID:area_m2",
+    coatCount === CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.coat_count
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:coat_count=${coatCount}`,
+    installationLocation === "indoor"
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:installation_location=${installationLocation}`,
+    explicitTrue(explicit.under_ceramic_covering)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:under_ceramic_covering=false`,
+    wetZoneType && CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.wet_zones.includes(wetZoneType)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:wet_zone_type=${wetZoneType}`,
+    substrateType &&
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.documented_substrate_examples.includes(substrateType)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:substrate_type=${substrateType}`,
+    explicitTrue(explicit.substrate_preparation_confirmed)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:substrate_preparation_confirmed=false`,
+    explicitTrue(explicit.permanent_water_contact_excluded)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:permanent_water_contact_excluded=false`,
+    explicitTrue(explicit.rear_surface_moisture_excluded)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:rear_surface_moisture_excluded=false`,
+    explicitTrue(explicit.chemical_exposure_excluded)
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID}:chemical_exposure_excluded=false`,
+    selectedBucketSizeKg !== null &&
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.documented_bucket_sizes_kg.includes(
+        selectedBucketSizeKg,
+      )
+      ? ""
+      : `PHYSICAL_NORM_VARIANT_CONFLICT:selected_bucket_size_kg=${selectedBucketSizeKg}:documented_bucket_sizes_kg=${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.documented_bucket_sizes_kg.join(",")}`,
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA,
+    );
+  }
+
+  const minimumNetQuantityKg = Number(
+    (areaM2! * CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.rate_value).toFixed(9),
+  );
+  const bucketCount = Math.ceil(minimumNetQuantityKg / selectedBucketSizeKg! - 1e-9);
+  const procurementQuantityKg = Number((bucketCount * selectedBucketSizeKg!).toFixed(9));
+  const explicitProcurementQuantityKg = finiteNumber(explicitValue(
+    parameterValuesInput,
+    "cl51_procurement_quantity_kg",
+  ));
+  if (
+    explicitProcurementQuantityKg !== null &&
+    Math.abs(explicitProcurementQuantityKg - procurementQuantityKg) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:cl51_procurement_quantity_kg=${explicitProcurementQuantityKg}:norm_value=${procurementQuantityKg}`,
+      ],
+      [
+        ...CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS,
+        "cl51_procurement_quantity_kg",
+      ],
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID}`,
+    `product=${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.product}`,
+    `area_m2=${areaM2}`,
+    `coat_count=${coatCount}`,
+    "installation_location=indoor",
+    "under_ceramic_covering=true",
+    `wet_zone_type=${wetZoneType}`,
+    `substrate_type=${substrateType}`,
+    "substrate_preparation_confirmed=true",
+    "permanent_water_contact_excluded=true",
+    "rear_surface_moisture_excluded=true",
+    "chemical_exposure_excluded=true",
+    `minimum_dry_film_mm=${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.dry_film_min_mm}`,
+    `formula=area_m2*${CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.rate_value}`,
+    `minimum_net_quantity_kg=${minimumNetQuantityKg}`,
+    `selected_bucket_size_kg=${selectedBucketSizeKg}`,
+    `bucket_count=${bucketCount}`,
+    `procurement_quantity_kg=${procurementQuantityKg}`,
+    "joint_and_penetration_accessories_excluded_from_rate=true",
+    "additional_waste_percent=0",
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    cl51_procurement_quantity_kg: {
+      value: procurementQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_ID,
+    norm_id: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_NORM_ID,
+    source_document_version:
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.source_document_version,
+    source_url: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.source_url,
+    exact_locator: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.exact_locator,
+    source_definition_hash: CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["cl51_procurement_quantity_kg"] as const,
+    calculated_cl51_minimum_net_quantity_kg: minimumNetQuantityKg,
+    calculated_cl51_procurement_quantity_kg: procurementQuantityKg,
+    calculated_cl51_bucket_count: bucketCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveCeresitCt17FlooringPrimer(
   productProfileId: typeof CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -7312,6 +7592,24 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
       [],
       [],
       CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA,
+    );
+  }
+  if (productProfileId === CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID) {
+    if (
+      input.technology_class === "CERAMIC_TILE" &&
+      input.operation_class === "WATERPROOF" &&
+      input.material_system === "CERAMIC_TILE" &&
+      input.scope_mode === "FULL_APPLICABLE_SCOPE"
+    ) {
+      return resolveCeresitCl51IndoorCeramicWetZone(productProfileId, input.parameter_values);
+    }
+    return nonApplied(
+      "NOT_REQUESTED",
+      productProfileId,
+      input.parameter_values,
+      [],
+      [],
+      CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_SOURCE_METADATA,
     );
   }
   if (productProfileId === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID) {

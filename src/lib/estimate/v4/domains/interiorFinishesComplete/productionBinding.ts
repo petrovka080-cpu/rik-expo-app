@@ -12,6 +12,7 @@ import {
   type AppliedProfessionalPhysicalNormResolutionV1,
   CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID,
   CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID,
+  CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID,
   CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID,
   CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID,
   CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID,
@@ -369,6 +370,7 @@ export function buildInteriorFinishesFromInlineInputV1(
       constructionState(inventory) === "REPAIR" ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CN69_GLOBAL_25KG_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_PRODUCT_PROFILE_ID ||
+      input.paramOverrides?.product_profile_id?.value === CERESIT_CL51_INDOOR_CERAMIC_WET_ZONE_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CM11_SMALL_CERAMIC_INDOOR_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CT29_INTERIOR_WALL_PLASTER_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === CERESIT_CT54_CT17_INTERIOR_WALL_PRODUCT_PROFILE_ID ||
