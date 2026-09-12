@@ -77,6 +77,19 @@ describe("professional norm-pack wave 3 real quantities", () => {
     expect(insulation.unit).toBe("m2");
     expect(insulation.normId).toContain("insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1");
 
+    const netAreaBeforeCutLayout = sourcedRow(
+      "insulation_interior_facade_install_standard",
+      "insulation_interior_facade_install_standard_materials_01",
+      1,
+    );
+    expect(netAreaBeforeCutLayout.quantity).toBe(1);
+    expect(netAreaBeforeCutLayout.sourceParameters?.formulaContext).toMatchObject({
+      normFactor: 1,
+      packageSize: 4.45,
+    });
+    expect(netAreaBeforeCutLayout.sourceParameters?.normSourceDocumentVersion)
+      .toBe("2026.09-rockwool-comfortboard80-primary-review-r2");
+
     const coating = sourcedRow(
       "carpentry_metal_interior_metal_frame_paint_standard",
       "carpentry_metal_interior_metal_frame_paint_standard_materials_03",

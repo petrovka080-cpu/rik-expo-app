@@ -150,6 +150,30 @@ describe("real professional norm packs audit", () => {
         rounding: { package_size: number; mode: string };
       }[];
     };
+    const reviewedInsulationPack = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), "data/estimate-norms/professional/insulation.json"),
+        "utf8",
+      ),
+    ) as {
+      source_pack_version: string;
+      review_status: string;
+      review_evidence?: {
+        method?: string;
+        items?: {
+          norm_id?: string;
+          source_url?: string;
+          supporting_source_urls?: string[];
+          verified_facts?: string[];
+        }[];
+      };
+      norm_items: {
+        norm_id: string;
+        parameters: string[];
+        rounding: { package_size: number; mode: string };
+        source: { url: string };
+      }[];
+    };
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
@@ -382,6 +406,42 @@ describe("real professional norm packs audit", () => {
       rounding: {
         package_size: 1,
         mode: "ceil_to_whole_piece_after_confirmed_conventional_area",
+      },
+    });
+    expect(reviewedInsulationPack).toMatchObject({
+      source_pack_version: "2026.09-rockwool-comfortboard80-primary-review-r2",
+      review_status: "reviewed",
+      review_evidence: { method: "DIRECT_PRIMARY_SOURCE_REVIEW" },
+    });
+    expect(reviewedInsulationPack.review_evidence?.items).toHaveLength(1);
+    expect(reviewedInsulationPack.review_evidence?.items?.[0]).toMatchObject({
+      norm_id: "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
+      source_url: "https://brandportal.rockwool.com/original/gallery/39052/files/original/13225669-1028-49f5-85e4-6dd3f8bb0b9b.pdf",
+      supporting_source_urls: expect.arrayContaining([
+        "https://www.rockwool.com/north-america/products/comfortboard/",
+      ]),
+    });
+    expect(reviewedInsulationPack.review_evidence?.items?.[0]?.verified_facts)
+      .toEqual(expect.arrayContaining([
+        "r6_3_board_thickness_is_38_mm",
+        "r6_3_small_board_dimensions_are_1219_by_610_mm",
+        "r6_3_small_pack_contains_6_boards",
+        "r6_3_small_pack_coverage_is_4_45_m2",
+        "net_area_rate_is_not_automatic_package_or_cutting_rounding",
+      ]));
+    expect(reviewedInsulationPack.norm_items[0]).toMatchObject({
+      parameters: expect.arrayContaining([
+        "selected_board_length_mm",
+        "selected_board_width_mm",
+        "selected_package_format",
+        "opening_and_cut_layout",
+      ]),
+      rounding: {
+        package_size: 4.45,
+        mode: "exact_net_area_before_cut_layout_and_package_selection",
+      },
+      source: {
+        url: "https://brandportal.rockwool.com/original/gallery/39052/files/original/13225669-1028-49f5-85e4-6dd3f8bb0b9b.pdf",
       },
     });
   });
