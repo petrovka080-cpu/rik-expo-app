@@ -151,6 +151,35 @@ const KNAUF_D112_BOARD_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "material_certificate_reference",
 ] as const);
 
+export const KNAUF_D112_UD_RUNNER_NORM_ID =
+  "ceilings_knauf_d112_standard_ud_runner_linear_m_m2_v1" as const;
+
+export const KNAUF_D112_UD_RUNNER_SOURCE_ID =
+  `src_professional_norm_pack_${KNAUF_D112_UD_RUNNER_NORM_ID}` as const;
+
+const KNAUF_D112_UD_RUNNER_SOURCE_PARAMETER_IDS = Object.freeze([
+  "ceiling_area_m2",
+  "system_variant",
+  "room_length_m",
+  "room_width_m",
+  "room_perimeter_m",
+  "selected_profile_piece_length_m",
+  "current_regional_system_approval",
+] as const);
+
+const KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
+  "area_m2",
+  "length_m",
+  "width_m",
+  "perimeter_m",
+  "system_variant",
+  "selected_profile_piece_length_m",
+  "current_regional_system_approval",
+  "d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed",
+  "system_passport_reference",
+  "material_certificate_reference",
+] as const);
+
 export const KNAUF_D112_TN25_SCREW_NORM_ID =
   "ceilings_knauf_d112_standard_tn25_screw_piece_m2_v1" as const;
 
@@ -698,6 +727,70 @@ export const KNAUF_D112_BOARD_SOURCE_METADATA = Object.freeze({
     work_group: ceilingsNormPack.work_group,
     source_pack_version: ceilingsNormPack.source_pack_version,
     norm_item: knaufD112BoardNorm,
+  }),
+});
+
+const knaufD112UdRunnerNorm = (() => {
+  const found = ceilingsNormPack.norm_items.find(
+    (item) => item.norm_id === KNAUF_D112_UD_RUNNER_NORM_ID,
+  );
+  if (!found) throw new Error(`PHYSICAL_NORM_DEFINITION_MISSING:${KNAUF_D112_UD_RUNNER_NORM_ID}`);
+  return found;
+})();
+const knaufD112UdRunnerReferenceCeilingM =
+  "reference_ceiling_m" in knaufD112UdRunnerNorm.applicability
+    ? knaufD112UdRunnerNorm.applicability.reference_ceiling_m
+    : null;
+
+if (
+  ceilingsNormPack.work_group !== "ceilings" ||
+  knaufD112UdRunnerNorm.unit !== "linear_m" ||
+  knaufD112UdRunnerNorm.rate.value !== 0.4 ||
+  knaufD112UdRunnerNorm.rate.unit !==
+    "linear_m/m2 for the documented 10 m x 10 m reference ceiling" ||
+  !("system" in knaufD112UdRunnerNorm.applicability) ||
+  knaufD112UdRunnerNorm.applicability.system !== "Knauf D112" ||
+  !("variant" in knaufD112UdRunnerNorm.applicability) ||
+  knaufD112UdRunnerNorm.applicability.variant !== "standard_12_5_mm_single_layer" ||
+  !knaufD112UdRunnerReferenceCeilingM ||
+  knaufD112UdRunnerReferenceCeilingM[0] !== 10 ||
+  knaufD112UdRunnerReferenceCeilingM[1] !== 10 ||
+  !("perimeter_sensitive" in knaufD112UdRunnerNorm.applicability) ||
+  knaufD112UdRunnerNorm.applicability.perimeter_sensitive !== true ||
+  !("manufacturer_excludes_loss_and_waste" in knaufD112UdRunnerNorm.applicability) ||
+  knaufD112UdRunnerNorm.applicability.manufacturer_excludes_loss_and_waste !== true ||
+  knaufD112UdRunnerNorm.parameters.length !== KNAUF_D112_UD_RUNNER_SOURCE_PARAMETER_IDS.length ||
+  KNAUF_D112_UD_RUNNER_SOURCE_PARAMETER_IDS.some(
+    (parameterId) => !knaufD112UdRunnerNorm.parameters.includes(parameterId),
+  ) ||
+  knaufD112UdRunnerNorm.waste_percent_default !== 0 ||
+  knaufD112UdRunnerNorm.rounding.package_unit !== "3_m_profile" ||
+  knaufD112UdRunnerNorm.rounding.package_size !== 3 ||
+  knaufD112UdRunnerNorm.rounding.mode !==
+    "reference_average_linear_m_before_actual_perimeter_and_3_m_piece_layout"
+) {
+  throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${KNAUF_D112_UD_RUNNER_NORM_ID}`);
+}
+
+export const KNAUF_D112_UD_RUNNER_SOURCE_METADATA = Object.freeze({
+  source_id: KNAUF_D112_UD_RUNNER_SOURCE_ID,
+  norm_id: KNAUF_D112_UD_RUNNER_NORM_ID,
+  source_document_version: ceilingsNormPack.source_pack_version,
+  source_title: knaufD112UdRunnerNorm.source.title,
+  source_url: knaufD112UdRunnerNorm.source.url,
+  exact_locator: knaufD112UdRunnerNorm.source.page,
+  rate_value: knaufD112UdRunnerNorm.rate.value,
+  rate_unit: knaufD112UdRunnerNorm.rate.unit,
+  system: knaufD112UdRunnerNorm.applicability.system,
+  variant: knaufD112UdRunnerNorm.applicability.variant,
+  reference_ceiling_m: knaufD112UdRunnerReferenceCeilingM,
+  package_size_m: knaufD112UdRunnerNorm.rounding.package_size,
+  manufacturer_excludes_loss_and_waste:
+    knaufD112UdRunnerNorm.applicability.manufacturer_excludes_loss_and_waste,
+  definition_hash: estimateDeterministicHash({
+    work_group: ceilingsNormPack.work_group,
+    source_pack_version: ceilingsNormPack.source_pack_version,
+    norm_item: knaufD112UdRunnerNorm,
   }),
 });
 
@@ -1512,6 +1605,20 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   consumed_parameter_ids: KNAUF_D112_SUBSTRUCTURE_ANCHOR_REQUIRED_EXPLICIT_PARAMETER_IDS,
   produced_parameter_ids: ["quantity_slab_hanger_anchors"] as const,
 }, {
+  norm_id: KNAUF_D112_UD_RUNNER_NORM_ID,
+  work_group: "ceilings",
+  binding_route: "CANONICAL_V4_APPLICABILITY" as const,
+  binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
+  technology_class: "FLAT_CEILING",
+  operation_class: "FRAME",
+  scope_mode: "FULL_APPLICABLE_SCOPE" as const,
+  product_profile_id: KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  source_id: KNAUF_D112_UD_RUNNER_SOURCE_ID,
+  source_document_version: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.source_document_version,
+  source_definition_hash: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.definition_hash,
+  consumed_parameter_ids: KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+  produced_parameter_ids: ["quantity_perimeter_track"] as const,
+}, {
   norm_id: KNAUF_D112_TN25_SCREW_NORM_ID,
   work_group: "ceilings",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -1681,6 +1788,9 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_additional_refrigerant_kg?: number;
   calculated_wall_fastener_quantity_piece?: number;
   calculated_substructure_anchor_quantity_piece?: number;
+  calculated_d112_ud_runner_net_quantity_m?: number;
+  calculated_d112_ud_runner_procurement_quantity_m?: number;
+  calculated_d112_ud_runner_piece_count?: number;
   calculated_d112_board_net_quantity_m2?: number;
   calculated_d112_board_procurement_quantity_m2?: number;
   calculated_d112_board_piece_count?: number;
@@ -2344,6 +2454,166 @@ function resolveKnaufD112SubstructureAnchor(
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
 }
 
+function resolveKnaufD112UdRunner(
+  productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
+  parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
+): ProfessionalPhysicalNormApplicabilityResolutionV1 {
+  const explicit = Object.fromEntries(
+    KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS.map((parameterId) => [
+      parameterId,
+      explicitValue(parameterValuesInput, parameterId),
+    ]),
+  );
+  const missing = KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .filter((parameterId) => explicit[parameterId] === null)
+    .map((parameterId) => `PROJECT_VALUE_REQUIRED_EXPLICIT:${parameterId}`);
+  if (missing.length > 0) {
+    return nonApplied(
+      "BLOCKED_REQUIRED_INPUTS",
+      productProfileId,
+      parameterValuesInput,
+      missing,
+      KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_UD_RUNNER_SOURCE_METADATA,
+    );
+  }
+
+  const areaM2 = finiteNumber(explicit.area_m2);
+  const lengthM = finiteNumber(explicit.length_m);
+  const widthM = finiteNumber(explicit.width_m);
+  const perimeterM = finiteNumber(explicit.perimeter_m);
+  const systemVariant = primitiveString(explicit.system_variant!);
+  const selectedProfilePieceLengthM = finiteNumber(explicit.selected_profile_piece_length_m);
+  const currentRegionalSystemApproval = primitiveString(explicit.current_regional_system_approval!);
+  const systemPassportReference = primitiveString(explicit.system_passport_reference!);
+  const materialCertificateReference = primitiveString(explicit.material_certificate_reference!);
+  const manufacturerExcludesLossAndWasteConfirmed =
+    explicit.d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed!.value === true ||
+    explicit.d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed!.value === "true";
+  const [referenceLengthM, referenceWidthM] = KNAUF_D112_UD_RUNNER_SOURCE_METADATA.reference_ceiling_m;
+  const referenceAreaM2 = referenceLengthM * referenceWidthM;
+  const geometryMatches = areaM2 !== null && lengthM !== null && widthM !== null &&
+    Math.abs(areaM2 - referenceAreaM2) <= 1e-9 &&
+    Math.abs(lengthM - referenceLengthM) <= 1e-9 &&
+    Math.abs(widthM - referenceWidthM) <= 1e-9 &&
+    Math.abs(areaM2 - lengthM * widthM) <= 1e-9;
+  const geometryPerimeterM = lengthM !== null && widthM !== null ? 2 * (lengthM + widthM) : null;
+  const netNormQuantityM = areaM2 === null
+    ? null
+    : Number((areaM2 * KNAUF_D112_UD_RUNNER_SOURCE_METADATA.rate_value).toFixed(9));
+  const applicabilityBlockers = [
+    geometryMatches
+      ? ""
+      : `PHYSICAL_NORM_REFERENCE_GEOMETRY_NOT_APPLICABLE:length_m=${lengthM}:width_m=${widthM}:area_m2=${areaM2}`,
+    systemVariant === KNAUF_D112_UD_RUNNER_SOURCE_METADATA.variant
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UD_RUNNER_NORM_ID}:system_variant=${systemVariant}`,
+    perimeterM !== null && geometryPerimeterM !== null &&
+      Math.abs(perimeterM - geometryPerimeterM) <= 1e-9
+      ? ""
+      : `PHYSICAL_NORM_PROJECT_PERIMETER_CONFLICT:perimeter_m=${perimeterM}:geometry_perimeter_m=${geometryPerimeterM}`,
+    perimeterM !== null && netNormQuantityM !== null &&
+      Math.abs(perimeterM - netNormQuantityM) <= 1e-9
+      ? ""
+      : `PHYSICAL_NORM_REFERENCE_RATE_PERIMETER_CONFLICT:perimeter_m=${perimeterM}:norm_value=${netNormQuantityM}`,
+    selectedProfilePieceLengthM === KNAUF_D112_UD_RUNNER_SOURCE_METADATA.package_size_m
+      ? ""
+      : `PHYSICAL_NORM_PACKAGE_NOT_APPLICABLE:selected_profile_piece_length_m=${selectedProfilePieceLengthM}`,
+    currentRegionalSystemApproval ? "" : "PROJECT_VALUE_INVALID:current_regional_system_approval",
+    manufacturerExcludesLossAndWasteConfirmed
+      ? ""
+      : `PHYSICAL_NORM_NOT_APPLICABLE:${KNAUF_D112_UD_RUNNER_NORM_ID}:d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed=false`,
+    systemPassportReference ? "" : "PROJECT_VALUE_INVALID:system_passport_reference",
+    materialCertificateReference ? "" : "PROJECT_VALUE_INVALID:material_certificate_reference",
+  ].filter(Boolean);
+  if (applicabilityBlockers.length > 0) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      applicabilityBlockers,
+      KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS,
+      KNAUF_D112_UD_RUNNER_SOURCE_METADATA,
+    );
+  }
+
+  const calculatedUdRunnerPieceCount = Math.ceil(
+    perimeterM! / selectedProfilePieceLengthM! - 1e-9,
+  );
+  const calculatedUdRunnerProcurementQuantityM = Number(
+    (calculatedUdRunnerPieceCount * selectedProfilePieceLengthM!).toFixed(9),
+  );
+  const explicitQuantity = finiteNumber(explicitValue(parameterValuesInput, "quantity_perimeter_track"));
+  if (
+    explicitQuantity !== null &&
+    Math.abs(explicitQuantity - calculatedUdRunnerProcurementQuantityM) > 1e-9
+  ) {
+    return nonApplied(
+      "BLOCKED_NOT_APPLICABLE",
+      productProfileId,
+      parameterValuesInput,
+      [
+        `PHYSICAL_NORM_VALUE_CONFLICT:quantity_perimeter_track=${explicitQuantity}:norm_value=${calculatedUdRunnerProcurementQuantityM}`,
+      ],
+      [...KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS, "quantity_perimeter_track"],
+      KNAUF_D112_UD_RUNNER_SOURCE_METADATA,
+    );
+  }
+
+  const capturedAt = KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS
+    .map((parameterId) => explicit[parameterId]!.captured_at)
+    .sort()
+    .at(-1)!;
+  const applicability = [
+    `product_profile_id=${KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID}`,
+    `system=${KNAUF_D112_UD_RUNNER_SOURCE_METADATA.system}`,
+    `system_variant=${systemVariant}`,
+    `reference_ceiling=${referenceLengthM}x${referenceWidthM}m`,
+    `ceiling_area_m2=canonical(area_m2)=${areaM2}`,
+    `room_length_m=canonical(length_m)=${lengthM}`,
+    `room_width_m=canonical(width_m)=${widthM}`,
+    `room_perimeter_m=canonical(perimeter_m)=${perimeterM}`,
+    `selected_profile_piece_length_m=${selectedProfilePieceLengthM}`,
+    `current_regional_system_approval=${currentRegionalSystemApproval}`,
+    `net_formula=area_m2*${KNAUF_D112_UD_RUNNER_SOURCE_METADATA.rate_value}`,
+    `package_formula=ceil(perimeter_m/selected_profile_piece_length_m)*selected_profile_piece_length_m`,
+    "manufacturer_excludes_loss_and_waste=true",
+    `system_passport_reference=${systemPassportReference}`,
+    `material_certificate_reference=${materialCertificateReference}`,
+  ].join(";");
+  const parameterValues = Object.freeze({
+    ...parameterValuesInput,
+    quantity_perimeter_track: {
+      value: calculatedUdRunnerProcurementQuantityM,
+      unit_id: "m",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: KNAUF_D112_UD_RUNNER_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
+  });
+  const withoutHash = {
+    status: "APPLIED" as const,
+    applicability_version: PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1,
+    product_profile_id: productProfileId,
+    source_id: KNAUF_D112_UD_RUNNER_SOURCE_ID,
+    norm_id: KNAUF_D112_UD_RUNNER_NORM_ID,
+    source_document_version: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.source_document_version,
+    source_url: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.source_url,
+    exact_locator: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.exact_locator,
+    source_definition_hash: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.definition_hash,
+    consumed_parameter_ids: [...KNAUF_D112_UD_RUNNER_REQUIRED_EXPLICIT_PARAMETER_IDS],
+    produced_parameter_ids: ["quantity_perimeter_track"],
+    calculated_d112_ud_runner_net_quantity_m: netNormQuantityM!,
+    calculated_d112_ud_runner_procurement_quantity_m: calculatedUdRunnerProcurementQuantityM,
+    calculated_d112_ud_runner_piece_count: calculatedUdRunnerPieceCount,
+    parameter_values: parameterValues,
+    blockers: [] as const,
+  };
+  return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };
+}
+
 function resolveKnaufD112FrameProfile(
   productProfileId: typeof KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   parameterValuesInput: Readonly<Record<string, ProfessionalParameterValueV4>>,
@@ -2355,11 +2625,14 @@ function resolveKnaufD112FrameProfile(
     wallFastener.parameter_values,
   );
   if (substructureAnchor.status !== "APPLIED") return substructureAnchor;
+  const udRunner = resolveKnaufD112UdRunner(productProfileId, substructureAnchor.parameter_values);
+  if (udRunner.status !== "APPLIED") return udRunner;
 
   const consumedParameterIds = [
     ...new Set([
       ...wallFastener.consumed_parameter_ids,
       ...substructureAnchor.consumed_parameter_ids,
+      ...udRunner.consumed_parameter_ids,
     ]),
   ];
   const withoutHash = {
@@ -2372,8 +2645,8 @@ function resolveKnaufD112FrameProfile(
     source_url: wallFastener.source_url,
     exact_locator: wallFastener.exact_locator,
     source_definition_hash: wallFastener.source_definition_hash,
-    source_ids: [wallFastener.source_id, substructureAnchor.source_id],
-    norm_ids: [wallFastener.norm_id, substructureAnchor.norm_id],
+    source_ids: [wallFastener.source_id, substructureAnchor.source_id, udRunner.source_id],
+    norm_ids: [wallFastener.norm_id, substructureAnchor.norm_id, udRunner.norm_id],
     applied_norms: [{
       source_id: wallFastener.source_id,
       norm_id: wallFastener.norm_id,
@@ -2390,16 +2663,29 @@ function resolveKnaufD112FrameProfile(
       exact_locator: substructureAnchor.exact_locator,
       source_definition_hash: substructureAnchor.source_definition_hash,
       produced_parameter_ids: substructureAnchor.produced_parameter_ids,
+    }, {
+      source_id: udRunner.source_id,
+      norm_id: udRunner.norm_id,
+      source_document_version: udRunner.source_document_version,
+      source_url: udRunner.source_url,
+      exact_locator: udRunner.exact_locator,
+      source_definition_hash: udRunner.source_definition_hash,
+      produced_parameter_ids: udRunner.produced_parameter_ids,
     }],
     consumed_parameter_ids: consumedParameterIds,
     produced_parameter_ids: [
       "quantity_perimeter_track_anchors",
       "quantity_slab_hanger_anchors",
+      "quantity_perimeter_track",
     ] as const,
     calculated_wall_fastener_quantity_piece: wallFastener.calculated_wall_fastener_quantity_piece,
     calculated_substructure_anchor_quantity_piece:
       substructureAnchor.calculated_substructure_anchor_quantity_piece,
-    parameter_values: substructureAnchor.parameter_values,
+    calculated_d112_ud_runner_net_quantity_m: udRunner.calculated_d112_ud_runner_net_quantity_m,
+    calculated_d112_ud_runner_procurement_quantity_m:
+      udRunner.calculated_d112_ud_runner_procurement_quantity_m,
+    calculated_d112_ud_runner_piece_count: udRunner.calculated_d112_ud_runner_piece_count,
+    parameter_values: udRunner.parameter_values,
     blockers: [] as const,
   };
   return { ...withoutHash, deterministic_hash: estimateDeterministicHash(withoutHash) };

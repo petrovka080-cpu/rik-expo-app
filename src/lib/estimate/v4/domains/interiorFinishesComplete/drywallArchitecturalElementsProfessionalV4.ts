@@ -343,6 +343,9 @@ function knaufD112ReferenceApplicabilityParameters(
     parameter("substructure_anchor_reference", "Точный тип и паспорт анкера подвеса", "text", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     parameter("substructure_anchor_approved", "Анкер подвеса подтверждён для выбранного основания", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
     parameter("d112_substructure_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из нормы анкеров D112", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
+    { ...numberParameter("selected_profile_piece_length_m", "Длина выбранного профиля Knauf UD 28/27", "m", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, 3, 3), condition },
+    parameter("current_regional_system_approval", "Ссылка на действующее региональное согласование системы D112", "text", "DEPENDENCY_REFERENCE", FULL_SCOPE, null, { condition }),
+    parameter("d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed", "Подтверждено исключение потерь и отходов из паспортной нормы профиля UD", "boolean", "MATERIAL_PASSPORT_VALUE", FULL_SCOPE, null, { condition }),
   ];
 }
 
@@ -816,6 +819,8 @@ function buildParts(inventory: InteriorFinishesDomainInventoryRow): DrywallArchi
     "system_variant", "substrate_type", "substrate_fastener_reference", "substrate_fastener_approved",
     "load_class_kn_m2", "substructure_anchor_reference", "substructure_anchor_approved",
     "d112_substructure_manufacturer_excludes_loss_and_waste_confirmed",
+    "selected_profile_piece_length_m", "current_regional_system_approval",
+    "d112_ud_runner_manufacturer_excludes_loss_and_waste_confirmed",
     "board_layer_count", "board_thickness_mm",
     "board_type", "selected_board_length_mm", "selected_board_width_mm",
     "selected_board_layout_piece_count", "d112_board_layout_reference",
