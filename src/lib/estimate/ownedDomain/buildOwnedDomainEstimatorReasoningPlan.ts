@@ -5,6 +5,10 @@ import {
   type ElectricalCanonicalParameterValues,
 } from "../v4/electrical/electricalCanonicalV1";
 import type { EstimatorReasoningPlan } from "../../ai/estimatorKernel/estimatorKernelTypes";
+import {
+  extractSarnafilAt18CanonicalParametersV1,
+  sarnafilAt18MissingQuestionsRuV1,
+} from "./roofingSarnafilAt18ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -134,6 +138,7 @@ function electricalPlan(
 }
 
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
     intent: "estimate",
     workKey: "dynamic_waterproofing_estimate",
@@ -145,6 +150,7 @@ function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoni
     // Preserve the current universal-plan safety classification for a roof
     // prompt: work at height is handled as a regulated professional scope.
     regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
     semanticFrame: {
       domain: "waterproofing",
       object: "waterproofing_surface",
@@ -190,6 +196,7 @@ function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoni
         "Какая кровля: плоская или скатная?",
         "Какой материал выбран: рулонная мембрана, мастика или наплавляемая гидроизоляция?",
         "Есть ли проходки, воронки и примыкания, которые нужно включить в объем?",
+        ...sarnafilAt18MissingQuestionsRuV1(canonicalParameters),
       ],
     },
     pricingPolicy: pricingPolicy(currency),

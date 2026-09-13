@@ -2739,8 +2739,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(32);
-    expect(unregistered).toHaveLength(22);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(33);
+    expect(unregistered).toHaveLength(21);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2770,6 +2770,7 @@ describe("real professional norm packs audit", () => {
       "putty_ceresit_ct126_kg_m2_mm_v1",
       "putty_ceresit_ct127_finish_layer_max_2mm_v1",
       "roadworks_krer27_06_020_norm_unit_per_m2_v1",
+      "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "screed_cement_sand_mix_kg_m2_50mm_v1",
       "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
@@ -2789,7 +2790,6 @@ describe("real professional norm packs audit", () => {
       "insulation_rockwool_comfortboard80_r63_38mm_m2_m2_v1",
       "low_voltage_legrand_049272_cable_linear_m_route_v1",
       "metalwork_jotun_hardtop_xp_l_m2_100um_v1",
-      "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
     ]);
     expect(withCandidates.every((item) =>

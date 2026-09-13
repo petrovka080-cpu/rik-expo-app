@@ -49,6 +49,12 @@ function expandRow(
     readonly OwnedPhase[]
   >,
 ): DynamicProfessionalBoqRow[] {
+  // Exact manufacturer-bound physical quantities and blocked applicability
+  // rows are atomic. Repeating their quantity across administrative phases
+  // would corrupt procurement truth even when split price shares still sum.
+  if (row.normSourceProfile === "MANUFACTURER_TECHNICAL" || row.includedInEstimate === false) {
+    return [row];
+  }
   return phasesBySection[row.sectionType].map((phase) => ({
     ...row,
     code: `${row.code}__${phase.code}`,

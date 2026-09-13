@@ -80,6 +80,11 @@ import {
   WAVIN_HEP2O_SMARTSLEEVE_SOURCE_ID,
   WAVIN_HEP2O_SMARTSLEEVE_SOURCE_METADATA,
 } from "./professionalPhysicalNormApplicabilityV1";
+import {
+  SARNAFIL_AT18_FIELD_80MM_PRODUCT_PROFILE_ID,
+  SARNAFIL_AT18_FIELD_80MM_SOURCE_ID,
+  SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA,
+} from "./roofingSarnafilAt18PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -185,6 +190,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: SARNAFIL_AT18_FIELD_80MM_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Sika",
+    document_code: "Sarnafil AT-18 Product Data Sheet, version 06.01",
+    title: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.source_title,
+    edition: "06.01 / August 2025",
+    revision: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2025-08-01",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["SARNAFIL_AT18_ROOF_MEMBRANE"],
+    product_profile_applicability: [SARNAFIL_AT18_FIELD_80MM_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.exact_locator,
+    unit_basis: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.rate_unit,
+    official_reference: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.source_url,
+    version: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer product data used only for the exact 2.00 m Sarnafil AT-18 field-fastened layout with 80 mm side overlap. The derived field geometry excludes end laps, upstands, penetrations, details, cutting loss and roll rounding; fastener spacing remains subject to the project-specific Sika calculation.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_ID,
     source_type: "RESOURCE_ESTIMATE_NORM",

@@ -16,6 +16,11 @@ import tileNormPack from "../../../../../data/estimate-norms/professional/tile.j
 import ventilationNormPack from "../../../../../data/estimate-norms/professional/ventilation.json";
 import waterproofingNormPack from "../../../../../data/estimate-norms/professional/waterproofing.json";
 import { estimateDeterministicHash } from "../../estimateDeterministicHash";
+import {
+  resolveSarnafilAt18Field80MmPhysicalNormV1,
+  SARNAFIL_AT18_FIELD_80MM_PRODUCT_PROFILE_ID,
+  SARNAFIL_AT18_FIELD_80MM_RUNTIME_BINDING_V1,
+} from "./roofingSarnafilAt18PhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2856,7 +2861,9 @@ const LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
   "tightening_torque_nm",
 ] as const);
 
-export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([{
+export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([
+  SARNAFIL_AT18_FIELD_80MM_RUNTIME_BINDING_V1,
+  {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
   binding_route: "CANONICAL_V4_APPLICABILITY" as const,
@@ -3358,6 +3365,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ct17_paint_primer_container_count?: number;
   calculated_concrete_order_quantity_m3?: number;
   calculated_krer27_06_020_table_norm_units?: number;
+  calculated_sarnafil_at18_gross_field_membrane_m2?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8438,6 +8446,15 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === SARNAFIL_AT18_FIELD_80MM_PRODUCT_PROFILE_ID) {
+    return resolveSarnafilAt18Field80MmPhysicalNormV1({
+      technology_class: input.technology_class,
+      operation_class: input.operation_class,
+      material_system: input.material_system,
+      scope_mode: input.scope_mode,
+      parameter_values: input.parameter_values,
+    });
+  }
   if (productProfileId === KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID) {
     if (
       input.technology_class === "ASPHALT_PAVEMENT" &&
