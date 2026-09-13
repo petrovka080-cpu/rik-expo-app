@@ -157,6 +157,8 @@ import { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, BIA_TN10_MASONRY_SOURCE_ID,
   BIA_TN10_MASONRY_SOURCE_METADATA } from "./masonryBiaTn10PhysicalNormV1";
 import { KRER46_DEMOLITION_PRODUCT_PROFILE_ID, KRER46_DEMOLITION_SOURCE_ID,
   KRER46_DEMOLITION_SOURCE_METADATA } from "./demolitionKrer46PhysicalNormV1";
+import { KG_DESIGN_PRICE_PRODUCT_PROFILE_ID, KG_DESIGN_PRICE_SOURCE_ID,
+  KG_DESIGN_PRICE_SOURCE_METADATA } from "./documentationKgDesignPricePhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -262,6 +264,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: KG_DESIGN_PRICE_SOURCE_ID, source_type: "RESOURCE_ESTIMATE_NORM", jurisdiction: "KG",
+    authority: "Министерство строительства Кыргызской Республики",
+    document_code: "Общие указания / сборник цен, раздел 9", title: KG_DESIGN_PRICE_SOURCE_METADATA.source_title,
+    edition: "точная редакция и поправки подтверждаются проектом", revision: KG_DESIGN_PRICE_SOURCE_METADATA.source_document_version,
+    status: "project-specific", effective_from: null, effective_to: null,
+    funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["MEASURE"],
+    material_system_applicability: ["KG_DESIGN_PRICE_SELECTED_TABLE"],
+    product_profile_applicability: [KG_DESIGN_PRICE_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: KG_DESIGN_PRICE_SOURCE_METADATA.exact_locator,
+    unit_basis: KG_DESIGN_PRICE_SOURCE_METADATA.rate_unit, official_reference: KG_DESIGN_PRICE_SOURCE_METADATA.source_url,
+    version: KG_DESIGN_PRICE_SOURCE_METADATA.source_document_version,
+    license_access_note: "Official public KG design-price guidance. The 1:1 value only routes an explicitly normalized project capacity to the exact selected sector table measure; table base values, stage, deliverables, allocation, amendments and price conversion remain mandatory, and no generic construction-cost percentage is inferred.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: true,
+  }),
   source({
     source_id: KRER46_DEMOLITION_SOURCE_ID, source_type: "RESOURCE_ESTIMATE_NORM", jurisdiction: "KG",
     authority: "Министерство строительства Кыргызской Республики", document_code: "КРЕР №46",

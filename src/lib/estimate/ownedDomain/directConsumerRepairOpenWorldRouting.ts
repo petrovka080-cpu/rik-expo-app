@@ -4,6 +4,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "cleaning"
   | "delivery"
   | "demolition"
+  | "documentation"
   | "electrical"
   | "equipment_rent"
   | "earthworks"
@@ -42,6 +43,7 @@ const DIRECT_FHWA_FP24_SECTION208_RE = /(?=.*fhwa\s+fp-?24)(?=.*section\s*208)(?
 const DIRECT_EPA_CD_WASTE_RE = /(?=.*us\s+epa)(?=.*2016)(?:(?=.*concrete\s+debris)(?=.*860\s*lb)|(?=.*composite\s+c&d)(?=.*417\s*lb))/iu;
 const DIRECT_BIA_TN10_MASONRY_RE = /(?=.*(?:brick|кирпич))(?=.*bia)(?=.*tn\s*10)(?=.*table\s*4)/iu;
 const DIRECT_KRER46_DEMOLITION_RE = /(?=.*(?:demolition|демонтаж|разборк))(?=.*(?:krer|крер)\s*(?:№|no\.?|#)?\s*46)(?=.*(?:table|таблиц))/iu;
+const DIRECT_KG_DESIGN_PRICE_RE = /(?=.*(?:design|проектн))(?=.*(?:kg|minstroy|минстрой))(?=.*(?:section|раздел)\s*9)(?=.*(?:table|таблиц))/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -59,6 +61,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
+  if (DIRECT_KG_DESIGN_PRICE_RE.test(prompt)) return "documentation";
   if (DIRECT_KRER46_DEMOLITION_RE.test(prompt)) return "demolition";
   if (DIRECT_BIA_TN10_MASONRY_RE.test(prompt)) return "masonry";
   if (DIRECT_EPA_CD_WASTE_RE.test(prompt)) return "waste_removal";

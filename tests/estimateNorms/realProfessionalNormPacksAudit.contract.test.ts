@@ -2739,8 +2739,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(53);
-    expect(unregistered).toHaveLength(1);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(54);
+    expect(unregistered).toHaveLength(0);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2758,6 +2758,7 @@ describe("real professional norm packs audit", () => {
       "concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
       "demolition_krer46_selected_table_same_unit_routing_v1",
+      "documentation_kg_selected_design_price_unit_routing_v1",
       "drywall_knauf_fugenfueller_leicht_jointing_kg_m2_v1",
       "drywall_knauf_fugenfueller_perimeter_joint_kg_linear_m_v1",
       "earthworks_fhwa_fp24_structural_backfill_lifts_per_m_v1",
@@ -2809,6 +2810,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(1);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(0);
   });
 });

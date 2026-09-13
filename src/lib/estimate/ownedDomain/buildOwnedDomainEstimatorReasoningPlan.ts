@@ -67,6 +67,8 @@ import { biaTn10MasonryMissingQuestionsRuV1,
   extractBiaTn10MasonryCanonicalParametersV1 } from "./masonryBiaTn10ProductionBindingV1";
 import { extractKrer46DemolitionCanonicalParametersV1,
   krer46DemolitionMissingQuestionsRuV1 } from "./demolitionKrer46ProductionBindingV1";
+import { extractKgDesignPriceCanonicalParametersV1,
+  kgDesignPriceMissingQuestionsRuV1 } from "./documentationKgDesignPriceProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -662,6 +664,29 @@ function servicesKgAuthorSupervisionPlan(
   };
 }
 
+function documentationKgDesignPricePlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractKgDesignPriceCanonicalParametersV1(text);
+  return { intent: "estimate", workKey: "documentation_kg_selected_design_price_table",
+    titleRu: "Проектные работы по выбранной таблице сборника цен КР", category: "documents_design",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "documentation", object: "kg_selected_design_price_table", operation: "measurement",
+      method: "exact_sector_table_capacity_routing", materialSystem: "kg_design_price_selected_table",
+      regulated: true, confidence: 0.98 },
+    quantities: { count: typeof canonicalParameters?.project_capacity_measure === "number"
+      ? canonicalParameters.project_capacity_measure : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "complex", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["исходные данные и официальная редакция выбранного отраслевого сборника"],
+      requiredLabor: ["проектные работы по точной таблице и утверждённому составу выдачи", "проверка стадии, мощности, разделов и индексов"],
+      requiredEquipmentOrWarnings: ["программные и обследовательские ресурсы по отдельному составу проекта"],
+      requiredLogisticsOrWarnings: ["согласования и выпуск документации по утверждённому графику"],
+      exclusions: ["Раздел 9 для химической промышленности не является межотраслевой общей ставкой.",
+        "Процент от стоимости строительства, цена и трудоёмкость не выводятся из routing identity со значением 1."],
+      clarifyingQuestions: ["Подтверждены ли отрасль, точная таблица/строка, диапазон мощности, единица и стадия?",
+        "Какие состав выдачи, распределение разделов, базовые значения, поправки и актуальные индексы согласованы?",
+        ...kgDesignPriceMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function demolitionKrer46Plan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractKrer46DemolitionCanonicalParametersV1(text);
   const quantity = canonicalParameters?.measured_project_quantity;
@@ -1141,6 +1166,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "documentation"
+      ? documentationKgDesignPricePlan(input.text, currency)
     : input.owner === "demolition"
       ? demolitionKrer46Plan(input.text, currency)
     : input.owner === "waste_removal"
