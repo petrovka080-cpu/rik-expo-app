@@ -15,6 +15,7 @@ import {
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
+import { isRegisteredProfessionalNormPackSourceId } from "../ai/estimateTemplate10000/productionProfessionalNormPackRegistry";
 import {
   renderEstimatePdfBinaryDocument,
   renderTextPdfDocument,
@@ -263,12 +264,12 @@ function sourceLabelForItem(item: PdfPayloadItem): string {
   return "источник не указан";
 }
 
-function publicCalculationTracePart(value: string): string | null {
+function publicCalculationTracePart(value: string, registeredNormSource: boolean): string | null {
   const part = value.trim();
   if (!part || /^template(?:Version)?=/i.test(part)) return null;
   if (/^formula=/i.test(part) || /^result=/i.test(part)) return null;
-  if (/^normId=/i.test(part)) return "certified norm";
-  if (/^normSource=/i.test(part)) return "certified source";
+  if (/^normId=/i.test(part)) return registeredNormSource ? "certified norm" : "unverified norm";
+  if (/^normSource=/i.test(part)) return registeredNormSource ? "certified source" : "unverified source";
   if (/^normVersion=/i.test(part)) {
     const [, ...rest] = part.split("=");
     const version = publicPdfText(rest.join("="));
@@ -279,15 +280,18 @@ function publicCalculationTracePart(value: string): string | null {
 }
 
 function normSourcePartsForItem(item: PdfPayloadItem): string[] {
+  const registeredNormSource = isRegisteredProfessionalNormPackSourceId(item.normSourceId);
   const directParts = [
-    item.normId ? "certified norm" : null,
-    item.normSourceId || item.normSourceTitle ? "certified source" : null,
+    item.normId ? (registeredNormSource ? "certified norm" : "unverified norm") : null,
+    item.normSourceId || item.normSourceTitle
+      ? (registeredNormSource ? "certified source" : "unverified source")
+      : null,
     item.normVersion ? `norm version ${publicPdfText(item.normVersion)}` : null,
   ].filter((part): part is string => Boolean(part));
   const traceParts = item.calculationTrace
     ? readable(item.calculationTrace)
       .split(";")
-      .map(publicCalculationTracePart)
+      .map((part) => publicCalculationTracePart(part, registeredNormSource))
       .filter((part): part is string => Boolean(part))
     : [];
   return [...new Set([...directParts, ...traceParts])];

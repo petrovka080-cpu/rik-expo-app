@@ -143,7 +143,9 @@ function main(): void {
       generatedAt: GENERATED_AT,
     });
     const labels = pdf?.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels)) ?? [];
-    const pdfHasNormSource = labels.some((label) => label.includes("certified source"));
+    const pdfHasNormSource = labels.some((label) =>
+      label.includes("certified source") || label.includes("unverified source")
+    );
     const pdfHasRegisteredNormSource = pdfHasNormSource && bundle.items.length > 0 && bundle.items.every((item) =>
       isRegisteredProfessionalNormPackSourceId(item.normSourceId)
     );

@@ -5,7 +5,7 @@ import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/cons
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 
 describe("director PDF norm sources", () => {
-  it("renders public norm provenance without leaking internal identifiers", () => {
+  it("renders unverified public provenance without certifying an unregistered source", () => {
     __resetConsumerRepairRequestStoreForTests();
     const estimate = buildProfessionalExpandedGlobalEstimate({
       workKey: "laminate_laying",
@@ -32,8 +32,10 @@ describe("director PDF norm sources", () => {
     });
     const labels = pdf!.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels));
 
-    expect(labels.some((label) => label.includes("certified norm"))).toBe(true);
-    expect(labels.some((label) => label.includes("certified source"))).toBe(true);
+    expect(labels.some((label) => label.includes("unverified norm"))).toBe(true);
+    expect(labels.some((label) => label.includes("unverified source"))).toBe(true);
+    expect(labels.some((label) => label.includes("certified norm"))).toBe(false);
+    expect(labels.some((label) => label.includes("certified source"))).toBe(false);
     expect(labels.some((label) => label.includes("norm version"))).toBe(true);
     expect(labels.join("\n")).not.toMatch(/norm(?:Id|Source|Version)=/);
     expect(labels.join("\n")).not.toMatch(/professional_expanded_real_boq/);

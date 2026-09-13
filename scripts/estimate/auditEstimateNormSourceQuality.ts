@@ -601,7 +601,9 @@ function auditUiPdfBuyerSample(casesLimit: number): {
       generatedAt: GENERATED_AT,
     });
     const pdfLabels = pdf?.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels)) ?? [];
-    const pdfHasSources = pdfLabels.some((label) => label.includes("certified source"));
+    const pdfHasSources = pdfLabels.some((label) =>
+      label.includes("certified source") || label.includes("unverified source")
+    );
     const pdfHasRegisteredSources = pdfHasSources && bundle.items.length > 0 && bundle.items.every((item) =>
       isRegisteredProfessionalNormPackSourceId(item.normSourceId)
     );
