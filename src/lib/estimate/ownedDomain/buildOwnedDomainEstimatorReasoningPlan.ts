@@ -62,6 +62,7 @@ import { extractSoudafoamGeniusCanonicalParametersV1,
   soudafoamGeniusMissingQuestionsRuV1 } from "./windowsDoorsSoudafoamProductionBindingV1";
 import { extractFhwaFp24Section208CanonicalParametersV1,
   fhwaFp24Section208MissingQuestionsRuV1 } from "./earthworksFhwaFp24ProductionBindingV1";
+import { epaCdWasteMissingQuestionsRuV1, extractEpaCdWasteCanonicalParametersV1 } from "./wasteRemovalEpaProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -928,6 +929,31 @@ function earthworksFhwaFp24Plan(text: string, currency: string): EstimatorReason
         ...fhwaFp24Section208MissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
 }
 
+function wasteRemovalEpaPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractEpaCdWasteCanonicalParametersV1(text);
+  const concrete = canonicalParameters?.waste_material_class_confirmed === "EPA_CD_CONCRETE";
+  return { intent: "estimate", workKey: concrete ? "waste_removal_us_epa_cd_concrete" : "waste_removal_us_epa_cd_composite",
+    titleRu: concrete ? "Плановая масса бетонного лома по US EPA" : "Плановая масса смешанных C&D отходов по US EPA",
+    category: "demolition", confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "waste_removal", object: "epa_cd_waste_planning_mass", operation: "conversion",
+      method: "epa_2016_volume_to_weight", materialSystem: concrete ? "us_epa_cd_concrete" : "us_epa_cd_composite",
+      regulated: true, confidence: 0.98 },
+    quantities: { volumeM3: typeof canonicalParameters?.measured_epa_compatible_concrete_debris_volume_m3 === "number"
+      ? canonicalParameters.measured_epa_compatible_concrete_debris_volume_m3 :
+      typeof canonicalParameters?.measured_epa_compatible_composite_cd_volume_m3 === "number"
+        ? canonicalParameters.measured_epa_compatible_composite_cd_volume_m3 : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "medium", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["класс отходов и состояние измеренного объёма по точной строке EPA"],
+      requiredLabor: ["обмер объёма и проверка фактической массы на весовой"],
+      requiredEquipmentOrWarnings: ["контейнер и уплотнение по отдельным правилам перевозчика"],
+      requiredLogisticsOrWarnings: ["грузоподъёмность, рейсы и утилизация рассчитываются отдельно"],
+      exclusions: ["EPA-конверсия — предварительная масса для планирования, не локальная плотность и не тариф.",
+        "Фактическая масса весовой имеет приоритет; контейнеры, рейсы и disposal fee не выводятся из коэффициента."],
+      clarifyingQuestions: ["Подтверждены ли точная строка EPA, совместимое состояние объёма и наличие данных весовой?",
+        ...epaCdWasteMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -1062,6 +1088,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "waste_removal"
+      ? wasteRemovalEpaPlan(input.text, currency)
     : input.owner === "earthworks"
       ? earthworksFhwaFp24Plan(input.text, currency)
     : input.owner === "windows_doors"

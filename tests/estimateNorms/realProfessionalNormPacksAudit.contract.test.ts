@@ -2739,8 +2739,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(49);
-    expect(unregistered).toHaveLength(5);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(51);
+    expect(unregistered).toHaveLength(3);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2790,6 +2790,8 @@ describe("real professional norm packs audit", () => {
       "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
       "ventilation_lindab_vsr_duct_linear_m_route_v1",
+      "waste_removal_us_epa_cd_composite_kg_m3_v1",
+      "waste_removal_us_epa_cd_concrete_kg_m3_v1",
       "waterproofing_ceresit_cl51_two_coats_kg_m2_v1",
       "windows_doors_soudafoam_genius_can_per_joint_m_v1",
     ]);
@@ -2805,6 +2807,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(5);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(3);
   });
 });

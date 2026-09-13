@@ -86,6 +86,9 @@ import { SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID, SOUDAFOAM_GENIUS_RUNTIME_B
   resolveSoudafoamGeniusPhysicalNormV1 } from "./windowsDoorsSoudafoamPhysicalNormV1";
 import { FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID, FHWA_FP24_SECTION208_RUNTIME_BINDING_V1,
   resolveFhwaFp24Section208PhysicalNormV1 } from "./earthworksFhwaFp24PhysicalNormV1";
+import { EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, EPA_CD_COMPOSITE_RUNTIME_BINDING_V1,
+  EPA_CD_CONCRETE_PRODUCT_PROFILE_ID, EPA_CD_CONCRETE_RUNTIME_BINDING_V1,
+  resolveEpaCdWastePhysicalNormV1 } from "./wasteRemovalEpaPhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2944,6 +2947,8 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   RAIN_BIRD_XFD_DRIPLINE_RUNTIME_BINDING_V1,
   SOUDAFOAM_GENIUS_RUNTIME_BINDING_V1,
   FHWA_FP24_SECTION208_RUNTIME_BINDING_V1,
+  EPA_CD_COMPOSITE_RUNTIME_BINDING_V1,
+  EPA_CD_CONCRETE_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3465,6 +3470,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_rain_bird_xfd_project_dripline_linear_m?: number;
   calculated_soudafoam_genius_required_can_count?: number;
   calculated_fhwa_fp24_structural_backfill_lift_count?: number;
+  calculated_epa_cd_planning_mass_kg?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8545,6 +8551,11 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === EPA_CD_CONCRETE_PRODUCT_PROFILE_ID || productProfileId === EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID) {
+    return resolveEpaCdWastePhysicalNormV1({ technology_class: input.technology_class,
+      operation_class: input.operation_class, material_system: input.material_system,
+      scope_mode: input.scope_mode, parameter_values: input.parameter_values });
+  }
   if (productProfileId === FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID) {
     return resolveFhwaFp24Section208PhysicalNormV1({ technology_class: input.technology_class,
       operation_class: input.operation_class, material_system: input.material_system,

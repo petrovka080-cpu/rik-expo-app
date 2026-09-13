@@ -17,6 +17,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "sewerage"
   | "services"
   | "windows_doors"
+  | "waste_removal"
   | "roof_waterproofing";
 
 const DIRECT_JOTUN_HARDTOP_XP_RE = /jotun\s+hardtop\s+xp/iu;
@@ -36,6 +37,7 @@ const DIRECT_UNITED_RENTALS_CA_ONE_SHIFT_RE = /(?=.*united\s+rentals)(?=.*canada
 const DIRECT_RAIN_BIRD_XFD_RE = /(?=.*rain\s+bird\s+xfd)(?=.*xfd-06-12-500)(?=.*d39717e)/iu;
 const DIRECT_SOUDAFOAM_GENIUS_RE = /(?=.*soudafoam)(?=.*genius)(?=.*9900539)(?=.*600\s*ml)/iu;
 const DIRECT_FHWA_FP24_SECTION208_RE = /(?=.*fhwa\s+fp-?24)(?=.*section\s*208)(?=.*structural\s+backfill)/iu;
+const DIRECT_EPA_CD_WASTE_RE = /(?=.*us\s+epa)(?=.*2016)(?:(?=.*concrete\s+debris)(?=.*860\s*lb)|(?=.*composite\s+c&d)(?=.*417\s*lb))/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -53,6 +55,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
+  if (DIRECT_EPA_CD_WASTE_RE.test(prompt)) return "waste_removal";
   if (DIRECT_FHWA_FP24_SECTION208_RE.test(prompt)) return "earthworks";
   if (DIRECT_SOUDAFOAM_GENIUS_RE.test(prompt)) return "windows_doors";
   if (DIRECT_RAIN_BIRD_XFD_RE.test(prompt)) return "landscaping";

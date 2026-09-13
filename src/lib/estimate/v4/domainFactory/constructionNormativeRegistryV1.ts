@@ -150,6 +150,9 @@ import { SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID, SOUDAFOAM_GENIUS_SOURCE_ID
   SOUDAFOAM_GENIUS_SOURCE_METADATA } from "./windowsDoorsSoudafoamPhysicalNormV1";
 import { FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID, FHWA_FP24_SECTION208_SOURCE_ID,
   FHWA_FP24_SECTION208_SOURCE_METADATA } from "./earthworksFhwaFp24PhysicalNormV1";
+import { EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, EPA_CD_COMPOSITE_SOURCE_ID, EPA_CD_COMPOSITE_SOURCE_METADATA,
+  EPA_CD_CONCRETE_PRODUCT_PROFILE_ID, EPA_CD_CONCRETE_SOURCE_ID,
+  EPA_CD_CONCRETE_SOURCE_METADATA } from "./wasteRemovalEpaPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -255,6 +258,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  ...([
+    [EPA_CD_CONCRETE_SOURCE_ID, EPA_CD_CONCRETE_PRODUCT_PROFILE_ID, "US_EPA_2016_CD_CONCRETE", EPA_CD_CONCRETE_SOURCE_METADATA],
+    [EPA_CD_COMPOSITE_SOURCE_ID, EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, "US_EPA_2016_CD_COMPOSITE_REMAINDER", EPA_CD_COMPOSITE_SOURCE_METADATA],
+  ] as const).map(([sourceId, profileId, materialSystem, metadata]) => source({
+    source_id: sourceId, source_type: "RESOURCE_ESTIMATE_NORM", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "U.S. Environmental Protection Agency", document_code: "Volume-to-Weight Conversion Factors, April 2016",
+    title: metadata.source_title, edition: "April 2016", revision: metadata.source_document_version,
+    status: "project-specific", effective_from: "2016-04-01", effective_to: null,
+    funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR", "DEMOLITION"],
+    operation_class_applicability: ["CONVERT"], material_system_applicability: [materialSystem],
+    product_profile_applicability: [profileId], clause_table_rate_code: metadata.exact_locator,
+    unit_basis: metadata.rate_unit, official_reference: metadata.source_url, version: metadata.source_document_version,
+    license_access_note: "Public government planning reference based on secondary data. Exact EPA waste row and compatible measured volume are required; local weighbridge mass overrides conversion, while haul, container and disposal prices remain separate.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  })),
   source({
     source_id: FHWA_FP24_SECTION208_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD", jurisdiction: "INTERNATIONAL_PROJECT",
     authority: "Federal Highway Administration", document_code: "FHWA FP-24 §208",
