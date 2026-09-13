@@ -33,6 +33,7 @@ import { applyTennantT350PhysicalNormToCleaningBoqV1 } from "../../estimate/owne
 import { applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/equipmentRentUnitedRentalsProductionBindingV1";
 import { applyRainBirdXfdPhysicalNormToLandscapingBoqV1 } from "../../estimate/ownedDomain/landscapingRainBirdXfdProductionBindingV1";
 import { applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1 } from "../../estimate/ownedDomain/windowsDoorsSoudafoamProductionBindingV1";
+import { applyFhwaFp24PhysicalNormToEarthworksBoqV1 } from "../../estimate/ownedDomain/earthworksFhwaFp24ProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1722,8 +1723,10 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1(
+  const normBoundRows = applyFhwaFp24PhysicalNormToEarthworksBoqV1(
     plan,
+    applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1(
+      plan,
     applyRainBirdXfdPhysicalNormToLandscapingBoqV1(
       plan,
     applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1(
@@ -1764,6 +1767,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
         ),
       ),
       ),
+    ),
     ),
     ),
     ),

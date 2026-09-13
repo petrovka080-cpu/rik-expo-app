@@ -60,6 +60,8 @@ import { extractRainBirdXfdCanonicalParametersV1,
   rainBirdXfdMissingQuestionsRuV1 } from "./landscapingRainBirdXfdProductionBindingV1";
 import { extractSoudafoamGeniusCanonicalParametersV1,
   soudafoamGeniusMissingQuestionsRuV1 } from "./windowsDoorsSoudafoamProductionBindingV1";
+import { extractFhwaFp24Section208CanonicalParametersV1,
+  fhwaFp24Section208MissingQuestionsRuV1 } from "./earthworksFhwaFp24ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -905,6 +907,27 @@ function windowsDoorsSoudafoamPlan(text: string, currency: string): EstimatorRea
         ...soudafoamGeniusMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
 }
 
+function earthworksFhwaFp24Plan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractFhwaFp24Section208CanonicalParametersV1(text);
+  return { intent: "estimate", workKey: "earthworks_fhwa_fp24_section208_structural_backfill",
+    titleRu: "Послойная обратная засыпка FHWA FP-24 §208", category: "roadworks",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "earthworks", object: "structural_backfill", operation: "backfill",
+      method: "fhwa_fp24_section208_lifts", materialSystem: "fhwa_fp24_section208", regulated: true, confidence: 0.98 },
+    quantities: { lengthM: typeof canonicalParameters?.compacted_backfill_depth_m === "number"
+      ? canonicalParameters.compacted_backfill_depth_m : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "complex", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["structural backfill по квалификации §704.01"],
+      requiredLabor: ["равномерная послойная укладка вокруг сооружения", "приёмка плотности каждого слоя"],
+      requiredEquipmentOrWarnings: ["уплотняющее оборудование по явному проектному выбору", "два in-place density tests на слой"],
+      requiredLogisticsOrWarnings: ["источник материала и ограничения котлована по проекту"],
+      exclusions: ["6 дюймов — максимальная, а не автоматически назначаемая толщина уплотнённого слоя.",
+        "Каменистый материал, текущий водоток и региональная геотехника требуют отдельных процедур."],
+      clarifyingQuestions: ["Подтверждены ли применимость §208, дополнение проекта, материал, плотность и метод испытаний?",
+        ...fhwaFp24Section208MissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -1039,6 +1062,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "earthworks"
+      ? earthworksFhwaFp24Plan(input.text, currency)
     : input.owner === "windows_doors"
       ? windowsDoorsSoudafoamPlan(input.text, currency)
     : input.owner === "landscaping"

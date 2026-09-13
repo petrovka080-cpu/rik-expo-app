@@ -5,6 +5,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "delivery"
   | "electrical"
   | "equipment_rent"
+  | "earthworks"
   | "facade"
   | "fire_safety"
   | "formwork"
@@ -34,6 +35,7 @@ const DIRECT_TENNANT_T350_RE = /(?=.*tennant\s+t350)(?=.*(?:600\s*(?:мм|mm)|24
 const DIRECT_UNITED_RENTALS_CA_ONE_SHIFT_RE = /(?=.*united\s+rentals)(?=.*canada)(?=.*one[\s_-]*shift)/iu;
 const DIRECT_RAIN_BIRD_XFD_RE = /(?=.*rain\s+bird\s+xfd)(?=.*xfd-06-12-500)(?=.*d39717e)/iu;
 const DIRECT_SOUDAFOAM_GENIUS_RE = /(?=.*soudafoam)(?=.*genius)(?=.*9900539)(?=.*600\s*ml)/iu;
+const DIRECT_FHWA_FP24_SECTION208_RE = /(?=.*fhwa\s+fp-?24)(?=.*section\s*208)(?=.*structural\s+backfill)/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -51,6 +53,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
+  if (DIRECT_FHWA_FP24_SECTION208_RE.test(prompt)) return "earthworks";
   if (DIRECT_SOUDAFOAM_GENIUS_RE.test(prompt)) return "windows_doors";
   if (DIRECT_RAIN_BIRD_XFD_RE.test(prompt)) return "landscaping";
   if (DIRECT_UNITED_RENTALS_CA_ONE_SHIFT_RE.test(prompt)) return "equipment_rent";

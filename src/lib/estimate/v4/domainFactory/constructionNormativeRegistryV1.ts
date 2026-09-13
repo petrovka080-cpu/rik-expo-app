@@ -148,6 +148,8 @@ import { RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID, RAIN_BIRD_XFD_DRIPLINE_SOUR
   RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA } from "./landscapingRainBirdXfdPhysicalNormV1";
 import { SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID, SOUDAFOAM_GENIUS_SOURCE_ID,
   SOUDAFOAM_GENIUS_SOURCE_METADATA } from "./windowsDoorsSoudafoamPhysicalNormV1";
+import { FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID, FHWA_FP24_SECTION208_SOURCE_ID,
+  FHWA_FP24_SECTION208_SOURCE_METADATA } from "./earthworksFhwaFp24PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -253,6 +255,21 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: FHWA_FP24_SECTION208_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Federal Highway Administration", document_code: "FHWA FP-24 §208",
+    title: FHWA_FP24_SECTION208_SOURCE_METADATA.source_title, edition: "Standard Specifications FP-24",
+    revision: FHWA_FP24_SECTION208_SOURCE_METADATA.source_document_version, status: "project-specific",
+    effective_from: "2024-01-01", effective_to: null, funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["BACKFILL"],
+    material_system_applicability: ["FHWA_FP24_SECTION208_STRUCTURAL_BACKFILL"],
+    product_profile_applicability: [FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: FHWA_FP24_SECTION208_SOURCE_METADATA.exact_locator,
+    unit_basis: FHWA_FP24_SECTION208_SOURCE_METADATA.rate_unit, official_reference: FHWA_FP24_SECTION208_SOURCE_METADATA.source_url,
+    version: FHWA_FP24_SECTION208_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public government standard. Applies only to confirmed Section 208 structural backfill with project supplement, selected lift thickness, material qualification, density testing and regional geotechnical requirements.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: SOUDAFOAM_GENIUS_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
     authority: "Soudal UK", document_code: "TDS 9900539", title: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_title,
