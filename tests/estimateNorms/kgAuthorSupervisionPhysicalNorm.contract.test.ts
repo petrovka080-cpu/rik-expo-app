@@ -83,7 +83,7 @@ describe("Kyrgyz author-supervision exact 0.4 percent physical norm", () => {
     });
     expect(constructionNormativeRegistryV1.get(KG_AUTHOR_SUPERVISION_SOURCE_ID))
       .toMatchObject({
-        source_type: "LAW_OR_TECHNICAL_REGULATION",
+        source_type: "RESOURCE_ESTIMATE_NORM",
         jurisdiction: "KG",
         operation_class_applicability: ["CALCULATE"],
         material_system_applicability: ["KG_AUTHOR_SUPERVISION"],

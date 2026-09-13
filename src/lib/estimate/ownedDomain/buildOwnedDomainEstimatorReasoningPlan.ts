@@ -41,6 +41,10 @@ import {
   extractKgAuthorSupervisionCanonicalParametersV1,
   kgAuthorSupervisionMissingQuestionsRuV1,
 } from "./servicesKgAuthorSupervisionProductionBindingV1";
+import {
+  extractRicsNrm2FormworkCanonicalParametersV1,
+  ricsNrm2FormworkMissingQuestionsRuV1,
+} from "./formworkRicsNrm2ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -636,6 +640,69 @@ function servicesKgAuthorSupervisionPlan(
   };
 }
 
+function formworkRicsNrm2Plan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractRicsNrm2FormworkCanonicalParametersV1(text);
+  const measuredArea = canonicalParameters?.measured_formwork_contact_area_m2;
+  return {
+    intent: "estimate",
+    workKey: "formwork_rics_nrm2_measured_contact_area",
+    titleRu: "Профессиональный обмер опалубки по RICS NRM 2",
+    category: "concrete",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "formwork",
+      object: "measured_formwork_contact_area",
+      operation: "measurement_and_execution",
+      method: "rics_nrm2_work_section_11",
+      materialSystem: "rics_nrm2_formwork_measurement",
+      regulated: true,
+      confidence: 0.98,
+    },
+    quantities: {
+      areaM2: typeof measuredArea === "number" ? measuredArea : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "система опалубки по проектной спецификации",
+        "крепёж, связи и разделительный состав по выбранной системе",
+      ],
+      requiredLabor: [
+        "монтаж и демонтаж по фактической площади контакта",
+        "устройство проёмов, углов и специальных поверхностей по чертежам",
+        "контроль геометрии и класса отделки",
+      ],
+      requiredEquipmentOrWarnings: [
+        "подъём и средства доступа назначаются отдельно по проекту производства работ",
+      ],
+      requiredLogisticsOrWarnings: [
+        "оборачиваемость и поставка системы не выводятся из площади контакта автоматически",
+      ],
+      exclusions: [
+        "Универсальный коэффициент 2,4 м²/м³ не применяется.",
+        "Пакет или участок 50 м² автоматически не предполагается.",
+        "RICS NRM 2 задаёт правило измерения, а не цену материала или труда.",
+      ],
+      clarifyingQuestions: [
+        "Подтверждены ли все измеряемые грани, проёмы, класс поверхности и односторонняя либо двусторонняя схема?",
+        "Какая ревизия чертежа и проектное правило вычетов приняты сметчиком?",
+        ...ricsNrm2FormworkMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -782,6 +849,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? facadeRockwoolFixrockPlan(input.text, currency)
     : input.owner === "services"
       ? servicesKgAuthorSupervisionPlan(input.text, currency)
+    : input.owner === "formwork"
+      ? formworkRicsNrm2Plan(input.text, currency)
     : input.owner === "sewerage"
       ? sewerageWavinOsmaC3766BkPlan(input.text, currency)
     : input.owner === "roof_waterproofing"

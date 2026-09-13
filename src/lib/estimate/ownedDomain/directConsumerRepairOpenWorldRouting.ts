@@ -4,6 +4,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "electrical"
   | "facade"
   | "fire_safety"
+  | "formwork"
   | "insulation"
   | "low_voltage"
   | "metalwork"
@@ -18,6 +19,8 @@ const DIRECT_WAVIN_OSMA_C3766BK_RE =
 const DIRECT_ROCKWOOL_FIXROCK_RE = /(?:rockwool\s+)?fixrock/iu;
 const DIRECT_KG_AUTHOR_SUPERVISION_RE =
   /(?=.*авторск[а-яё]*\s+надзор)(?=.*(?:52\s*[-–—]?\s*нпа|№\s*52))/iu;
+const DIRECT_RICS_NRM2_FORMWORK_RE =
+  /(?=.*опалубк)(?=.*(?:RICS\s*)?NRM\s*2)/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -36,6 +39,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
   if (DIRECT_KG_AUTHOR_SUPERVISION_RE.test(prompt)) return "services";
+  if (DIRECT_RICS_NRM2_FORMWORK_RE.test(prompt)) return "formwork";
   if (DIRECT_ROCKWOOL_FIXROCK_RE.test(prompt)) return "facade";
   if (DIRECT_SIKAGARD_WOOD_PRESERVER_RE.test(prompt)) return "carpentry";
   if (DIRECT_JOTUN_HARDTOP_XP_RE.test(prompt)) return "metalwork";

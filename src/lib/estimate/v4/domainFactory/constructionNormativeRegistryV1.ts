@@ -125,6 +125,11 @@ import {
   KG_AUTHOR_SUPERVISION_SOURCE_ID,
   KG_AUTHOR_SUPERVISION_SOURCE_METADATA,
 } from "./servicesKgAuthorSupervisionPhysicalNormV1";
+import {
+  RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+  RICS_NRM2_FORMWORK_SOURCE_ID,
+  RICS_NRM2_FORMWORK_SOURCE_METADATA,
+} from "./formworkRicsNrm2PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -231,8 +236,35 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
   source({
+    source_id: RICS_NRM2_FORMWORK_SOURCE_ID,
+    source_type: "WORK_EXECUTION_STANDARD",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Royal Institution of Chartered Surveyors",
+    document_code: "RICS NRM 2, second edition, Work section 11",
+    title: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_title,
+    edition: "Second edition, October 2022 update",
+    revision: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2021-12-01",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["MEASURE"],
+    material_system_applicability: ["FORMWORK_CONTACT_AREA"],
+    product_profile_applicability: [RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: RICS_NRM2_FORMWORK_SOURCE_METADATA.exact_locator,
+    unit_basis: RICS_NRM2_FORMWORK_SOURCE_METADATA.rate_unit,
+    official_reference: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_url,
+    version: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public RICS measurement guidance. The 1:1 value routes an already measured contact area; it is not a material consumption, price, m2-per-m3 coefficient or package size. Element geometry, finish, sidedness, openings and project measurement rules remain explicit.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
+  source({
     source_id: KG_AUTHOR_SUPERVISION_SOURCE_ID,
-    source_type: "LAW_OR_TECHNICAL_REGULATION",
+    source_type: "RESOURCE_ESTIMATE_NORM",
     jurisdiction: "KG",
     authority: "Министерство строительства Кыргызской Республики",
     document_code: "Приказ №52-нпа от 28.04.2022, приложение 5",
