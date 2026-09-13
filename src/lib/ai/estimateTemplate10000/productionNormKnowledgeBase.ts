@@ -16,6 +16,7 @@ import {
   type EstimateNormBinding,
   type EstimateNormItem,
 } from "./productionNormKnowledgeBaseCore";
+import { isRegisteredProfessionalNormPackSourceId } from "./productionProfessionalNormPackRegistry";
 
 export type EstimateNormKnowledgeBaseSnapshot = {
   version: string;
@@ -42,6 +43,9 @@ export type EstimateNormValidationSummary = {
   all_norm_items_have_formula_inputs: boolean;
   all_norm_items_have_parameter_requirements: boolean;
   all_norm_items_have_quality_review: boolean;
+  registered_professional_norm_items_count: number;
+  unverified_norm_items_count: number;
+  all_norm_items_have_registered_professional_sources: boolean;
   no_ai_or_unknown_norm_sources: boolean;
   production_db_touched: false;
   destructive_migration_run: false;
@@ -60,6 +64,7 @@ export type EstimateNormCertificationSummary = EstimateNormValidationSummary & {
   all_templates_compile_with_norm_trace: boolean;
   all_compiled_rows_have_norm_id: boolean;
   all_compiled_rows_have_norm_source: boolean;
+  all_compiled_rows_have_registered_professional_source: boolean;
   all_compiled_rows_have_norm_version: boolean;
   trace_includes_norm_id_source_version: boolean;
 };
@@ -131,6 +136,7 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
   let rowsWithInputs = 0;
   let rowsWithRequirements = 0;
   let rowsWithQualityReview = 0;
+  let registeredProfessionalNormItems = 0;
 
   for (const definition of PRODUCTION_WORK_DEFINITIONS_10000) {
     const template = getProductionExpandedTemplate10000(definition.workKey);
@@ -150,9 +156,12 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
       if (item.formula_inputs.length > 0) rowsWithInputs += 1;
       if (item.parameter_requirements.length > 0) rowsWithRequirements += 1;
       if (item.quality_review.status === "approved_for_formula_engine") rowsWithQualityReview += 1;
+      if (isRegisteredProfessionalNormPackSourceId(item.source_id)) registeredProfessionalNormItems += 1;
     }
   }
 
+  const unverifiedNormItems = normItemsCount - registeredProfessionalNormItems;
+  if (unverifiedNormItems > 0) failures.push(`unverified_norm_items:${unverifiedNormItems}`);
   const dedupedFailures = [...new Set(failures)].slice(0, 200);
   const templatesWithoutBindings = PRODUCTION_WORK_DEFINITIONS_10000.length - templatesWithBindings;
   const schemaPassed = sourceSchemaFailures().length === 0;
@@ -165,7 +174,8 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
     rowsWithSourceVersionUnit === normItemsCount &&
     rowsWithInputs === normItemsCount &&
     rowsWithRequirements === normItemsCount &&
-    rowsWithQualityReview === normItemsCount;
+    rowsWithQualityReview === normItemsCount &&
+    registeredProfessionalNormItems === normItemsCount;
 
   return {
     final_status: green
@@ -184,6 +194,9 @@ export function validateEstimateNormKnowledgeBase(): EstimateNormValidationSumma
     all_norm_items_have_formula_inputs: rowsWithInputs === normItemsCount,
     all_norm_items_have_parameter_requirements: rowsWithRequirements === normItemsCount,
     all_norm_items_have_quality_review: rowsWithQualityReview === normItemsCount,
+    registered_professional_norm_items_count: registeredProfessionalNormItems,
+    unverified_norm_items_count: unverifiedNormItems,
+    all_norm_items_have_registered_professional_sources: registeredProfessionalNormItems === normItemsCount,
     no_ai_or_unknown_norm_sources: !dedupedFailures.some((failure) => /unknown_norm_source|ai_as_norm_source/.test(failure)),
     production_db_touched: false,
     destructive_migration_run: false,
@@ -199,9 +212,11 @@ export function certifyAllEstimateNormBindings10000(): EstimateNormCertification
   const base = validateEstimateNormKnowledgeBase();
   const failures = [...base.failures];
   let templatesCertified = 0;
+  let templatesWithCompleteTrace = 0;
   let rowBindings = 0;
   let compiledRowsHaveNormId = true;
   let compiledRowsHaveNormSource = true;
+  let compiledRowsHaveRegisteredProfessionalSource = true;
   let compiledRowsHaveNormVersion = true;
   let traceIncludesNormEvidence = true;
 
@@ -214,6 +229,10 @@ export function certifyAllEstimateNormBindings10000(): EstimateNormCertification
     const rows = compiled.rows;
     const rowNormId = rows.every((row) => Boolean(row.normId && row.sourceParameters.normId));
     const rowNormSource = rows.every((row) => Boolean(row.normSourceId && row.sourceParameters.normSourceId));
+    const rowRegisteredProfessionalSource = rows.every((row) =>
+      isRegisteredProfessionalNormPackSourceId(row.normSourceId) &&
+      isRegisteredProfessionalNormPackSourceId(String(row.sourceParameters.normSourceId ?? ""))
+    );
     const rowNormVersion = rows.every((row) => Boolean(row.normVersion && row.sourceParameters.normVersion));
     const rowTrace = rows.every((row) =>
       row.calculationTrace.includes("normId=") &&
@@ -222,10 +241,15 @@ export function certifyAllEstimateNormBindings10000(): EstimateNormCertification
     );
     compiledRowsHaveNormId = compiledRowsHaveNormId && rowNormId;
     compiledRowsHaveNormSource = compiledRowsHaveNormSource && rowNormSource;
+    compiledRowsHaveRegisteredProfessionalSource =
+      compiledRowsHaveRegisteredProfessionalSource && rowRegisteredProfessionalSource;
     compiledRowsHaveNormVersion = compiledRowsHaveNormVersion && rowNormVersion;
     traceIncludesNormEvidence = traceIncludesNormEvidence && rowTrace;
     rowBindings += rows.length;
     if (rowNormId && rowNormSource && rowNormVersion && rowTrace) {
+      templatesWithCompleteTrace += 1;
+    }
+    if (rowNormId && rowNormSource && rowRegisteredProfessionalSource && rowNormVersion && rowTrace) {
       templatesCertified += 1;
     } else {
       failures.push(`template_norm_trace_failed:${definition.workKey}`);
@@ -238,6 +262,7 @@ export function certifyAllEstimateNormBindings10000(): EstimateNormCertification
     templatesFailed === 0 &&
     compiledRowsHaveNormId &&
     compiledRowsHaveNormSource &&
+    compiledRowsHaveRegisteredProfessionalSource &&
     compiledRowsHaveNormVersion &&
     traceIncludesNormEvidence;
 
@@ -250,9 +275,11 @@ export function certifyAllEstimateNormBindings10000(): EstimateNormCertification
     templates_certified_count: templatesCertified,
     templates_failed_count: templatesFailed,
     row_bindings_certified_count: rowBindings,
-    all_templates_compile_with_norm_trace: templatesFailed === 0,
+    all_templates_compile_with_norm_trace:
+      templatesWithCompleteTrace === PRODUCTION_WORK_DEFINITIONS_10000.length,
     all_compiled_rows_have_norm_id: compiledRowsHaveNormId,
     all_compiled_rows_have_norm_source: compiledRowsHaveNormSource,
+    all_compiled_rows_have_registered_professional_source: compiledRowsHaveRegisteredProfessionalSource,
     all_compiled_rows_have_norm_version: compiledRowsHaveNormVersion,
     trace_includes_norm_id_source_version: traceIncludesNormEvidence,
     failures: [...new Set(failures)].slice(0, 200),
