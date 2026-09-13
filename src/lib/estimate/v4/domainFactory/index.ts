@@ -17,6 +17,7 @@ export * from "./landscapingRainBirdXfdPhysicalNormV1";
 export * from "./windowsDoorsSoudafoamPhysicalNormV1";
 export * from "./earthworksFhwaFp24PhysicalNormV1";
 export * from "./wasteRemovalEpaPhysicalNormV1";
+export * from "./masonryBiaTn10PhysicalNormV1";
 export * from "./professionalEstimateDomainFactoryV1";
 export * from "./professionalEstimateDomainReferenceV1";
 export * from "./professionalPhysicalNormApplicabilityV1";

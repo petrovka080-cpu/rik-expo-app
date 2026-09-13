@@ -153,6 +153,8 @@ import { FHWA_FP24_SECTION208_PRODUCT_PROFILE_ID, FHWA_FP24_SECTION208_SOURCE_ID
 import { EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, EPA_CD_COMPOSITE_SOURCE_ID, EPA_CD_COMPOSITE_SOURCE_METADATA,
   EPA_CD_CONCRETE_PRODUCT_PROFILE_ID, EPA_CD_CONCRETE_SOURCE_ID,
   EPA_CD_CONCRETE_SOURCE_METADATA } from "./wasteRemovalEpaPhysicalNormV1";
+import { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, BIA_TN10_MASONRY_SOURCE_ID,
+  BIA_TN10_MASONRY_SOURCE_METADATA } from "./masonryBiaTn10PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -258,6 +260,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: BIA_TN10_MASONRY_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Brick Industry Association", document_code: "BIA Technical Note 10, Table 4",
+    title: BIA_TN10_MASONRY_SOURCE_METADATA.source_title, edition: "public Technical Note 10",
+    revision: BIA_TN10_MASONRY_SOURCE_METADATA.source_document_version, status: "project-specific",
+    effective_from: "2017-01-01", effective_to: null, funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["MEASURE"],
+    material_system_applicability: ["BIA_TN10_FIRED_CLAY_BRICK"],
+    product_profile_applicability: [BIA_TN10_MASONRY_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: BIA_TN10_MASONRY_SOURCE_METADATA.exact_locator,
+    unit_basis: BIA_TN10_MASONRY_SOURCE_METADATA.rate_unit,
+    official_reference: BIA_TN10_MASONRY_SOURCE_METADATA.source_url,
+    version: BIA_TN10_MASONRY_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public BIA measurement guidance for fired clay brick only. Quantities require net wall area, the exact selected Table 4 row, brick and joint geometry, bond corrections, project waste and supplier packages; no generic masonry rate or supplier price is inferred.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   ...([
     [EPA_CD_CONCRETE_SOURCE_ID, EPA_CD_CONCRETE_PRODUCT_PROFILE_ID, "US_EPA_2016_CD_CONCRETE", EPA_CD_CONCRETE_SOURCE_METADATA],
     [EPA_CD_COMPOSITE_SOURCE_ID, EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, "US_EPA_2016_CD_COMPOSITE_REMAINDER", EPA_CD_COMPOSITE_SOURCE_METADATA],

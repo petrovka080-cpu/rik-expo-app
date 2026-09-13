@@ -63,6 +63,8 @@ import { extractSoudafoamGeniusCanonicalParametersV1,
 import { extractFhwaFp24Section208CanonicalParametersV1,
   fhwaFp24Section208MissingQuestionsRuV1 } from "./earthworksFhwaFp24ProductionBindingV1";
 import { epaCdWasteMissingQuestionsRuV1, extractEpaCdWasteCanonicalParametersV1 } from "./wasteRemovalEpaProductionBindingV1";
+import { biaTn10MasonryMissingQuestionsRuV1,
+  extractBiaTn10MasonryCanonicalParametersV1 } from "./masonryBiaTn10ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -658,6 +660,30 @@ function servicesKgAuthorSupervisionPlan(
   };
 }
 
+function masonryBiaTn10Plan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractBiaTn10MasonryCanonicalParametersV1(text);
+  return { intent: "estimate", workKey: "masonry_bia_tn10_selected_table_4",
+    titleRu: "Кирпичная кладка по выбранной строке BIA TN 10 Table 4", category: "masonry",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "masonry", object: "bia_tn10_fired_clay_brick_wall", operation: "measurement_and_procurement",
+      method: "selected_table_4_with_project_corrections", materialSystem: "bia_tn10_fired_clay_brick",
+      regulated: true, confidence: 0.98 },
+    quantities: { areaM2: typeof canonicalParameters?.measured_net_brick_wall_area_m2 === "number"
+      ? canonicalParameters.measured_net_brick_wall_area_m2 : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "complex", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["обожжённый глиняный кирпич по выбранной строке BIA TN 10 Table 4",
+        "кладочный раствор по выбранной строке BIA TN 10 Table 4"],
+      requiredLabor: ["кладка по утверждённой геометрии, толщине стены и типу перевязки", "контроль швов и чистой площади стены"],
+      requiredEquipmentOrWarnings: ["средства подачи и подмащивания по отдельному ППР"],
+      requiredLogisticsOrWarnings: ["поставка и округление только по подтверждённым упаковкам поставщика"],
+      exclusions: ["BIA TN 10 применим только к обожжённому глиняному кирпичу, не к AAC, силикатным или бетонным блокам.",
+        "Универсальные расходы кирпича, клея, сетки и раствора не подставляются; Table 4 исключает проектный запас."],
+      clarifyingQuestions: ["Подтверждены ли чистая площадь после проёмов, размеры кирпича, шов, стена, перевязка и точная строка Table 4?",
+        "Какие поправки, проектный запас, упаковки и согласование применяются?",
+        ...biaTn10MasonryMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function formworkRicsNrm2Plan(
   text: string,
   currency: string,
@@ -1114,6 +1140,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? facadeRockwoolFixrockPlan(input.text, currency)
     : input.owner === "services"
       ? servicesKgAuthorSupervisionPlan(input.text, currency)
+    : input.owner === "masonry"
+      ? masonryBiaTn10Plan(input.text, currency)
     : input.owner === "formwork"
       ? formworkRicsNrm2Plan(input.text, currency)
     : input.owner === "reinforcement"
