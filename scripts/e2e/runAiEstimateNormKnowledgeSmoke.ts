@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import goldenMatrixRaw from "../../data/estimate-golden-cases/extended-100-work-cases.json";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
+import { isRegisteredProfessionalNormPackSourceId } from "../../src/lib/ai/estimateTemplate10000";
 import {
   __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
@@ -78,12 +79,17 @@ function main(): void {
     ? allCases.filter((testCase) => groups.has(testCase.expected_work_group.toLowerCase()))
     : allCases;
   const cases = filteredCases.slice(0, casesLimit);
+  const hasCases = cases.length > 0;
   const failures: string[] = [];
-  let webNormSourcesVisible = true;
-  let directorPdfContainsNormSources = true;
-  let buyerBoqContainsNormTrace = true;
+  let webNormSourcesVisible = hasCases;
+  let webRegisteredNormSourcesVisible = hasCases;
+  let directorPdfContainsNormSources = hasCases;
+  let directorPdfContainsRegisteredNormSources = hasCases;
+  let buyerBoqContainsNormTrace = hasCases;
+  let buyerBoqContainsRegisteredNormTrace = hasCases;
 
   __resetConsumerRepairRequestStoreForTests();
+  if (!hasCases) failures.push("no_matching_smoke_cases");
   for (const testCase of cases) {
     const estimate = buildProfessionalExpandedGlobalEstimate({
       workKey: testCase.expected_work_key,
@@ -100,16 +106,29 @@ function main(): void {
     if (!payload) {
       failures.push(`structured_payload_missing:${testCase.case_id}`);
       webNormSourcesVisible = false;
+      webRegisteredNormSourcesVisible = false;
       directorPdfContainsNormSources = false;
+      directorPdfContainsRegisteredNormSources = false;
       buyerBoqContainsNormTrace = false;
+      buyerBoqContainsRegisteredNormTrace = false;
       continue;
     }
 
-    const rowsHaveNormSources = payload.rows.every((row) =>
-      Boolean(row.normId && row.normSourceId && row.normVersion && row.calculationTrace?.includes("normSource="))
+    const rowsHaveNormSources = payload.rows.length > 0 && payload.rows.every((row) =>
+      Boolean(
+        row.normId &&
+        row.normSourceId &&
+        row.normVersion &&
+        row.calculationTrace?.includes(`normSource=${row.normSourceId}`)
+      )
+    );
+    const rowsHaveRegisteredNormSources = rowsHaveNormSources && payload.rows.every((row) =>
+      isRegisteredProfessionalNormPackSourceId(row.normSourceId)
     );
     webNormSourcesVisible = webNormSourcesVisible && rowsHaveNormSources;
+    webRegisteredNormSourcesVisible = webRegisteredNormSourcesVisible && rowsHaveRegisteredNormSources;
     if (!rowsHaveNormSources) failures.push(`web_norm_sources_missing:${testCase.case_id}`);
+    if (!rowsHaveRegisteredNormSources) failures.push(`web_norm_sources_unregistered:${testCase.case_id}`);
 
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: `norm-knowledge-smoke-${testCase.case_id}`,
@@ -124,9 +143,15 @@ function main(): void {
       generatedAt: GENERATED_AT,
     });
     const labels = pdf?.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels)) ?? [];
-    const pdfHasNormSource = labels.some((label) => label.includes("normSource="));
+    const pdfHasNormSource = labels.some((label) => label.includes("certified source"));
+    const pdfHasRegisteredNormSource = pdfHasNormSource && bundle.items.length > 0 && bundle.items.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+    );
     directorPdfContainsNormSources = directorPdfContainsNormSources && pdfHasNormSource;
+    directorPdfContainsRegisteredNormSources =
+      directorPdfContainsRegisteredNormSources && pdfHasRegisteredNormSource;
     if (!pdfHasNormSource) failures.push(`director_pdf_norm_sources_missing:${testCase.case_id}`);
+    if (!pdfHasRegisteredNormSource) failures.push(`director_pdf_norm_sources_unregistered:${testCase.case_id}`);
 
     const buyerDraft = buildProjectExecutionDraftFromEstimate(payload, {
       source: "request_estimate",
@@ -137,17 +162,31 @@ function main(): void {
     });
     const buyerHasTrace = buyerDraft.procurementItems.length > 0 &&
       buyerDraft.procurementItems.every((item) =>
-        Boolean(item.normId && item.normSourceId && item.normVersion && item.calculationTrace?.includes("normSource="))
+        Boolean(
+          item.normId &&
+          item.normSourceId &&
+          item.normVersion &&
+          item.calculationTrace?.includes(`normSource=${item.normSourceId}`)
+        )
+      );
+    const buyerHasRegisteredTrace = buyerHasTrace && buyerDraft.procurementItems.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
       );
     buyerBoqContainsNormTrace = buyerBoqContainsNormTrace && buyerHasTrace;
+    buyerBoqContainsRegisteredNormTrace = buyerBoqContainsRegisteredNormTrace && buyerHasRegisteredTrace;
     if (!buyerHasTrace) failures.push(`buyer_boq_norm_trace_missing:${testCase.case_id}`);
+    if (!buyerHasRegisteredTrace) failures.push(`buyer_boq_norm_trace_unregistered:${testCase.case_id}`);
   }
 
   const green =
     failures.length === 0 &&
+    hasCases &&
     webNormSourcesVisible &&
+    webRegisteredNormSourcesVisible &&
     directorPdfContainsNormSources &&
-    buyerBoqContainsNormTrace;
+    directorPdfContainsRegisteredNormSources &&
+    buyerBoqContainsNormTrace &&
+    buyerBoqContainsRegisteredNormTrace;
   const summary = {
     final_status: green
       ? GREEN_AI_ESTIMATE_NORM_KNOWLEDGE_SMOKE_NO_BUILDS
@@ -159,10 +198,14 @@ function main(): void {
     web_norm_knowledge_smoke_passed: (target === "web" || target === "both") && green,
     android_chrome_norm_knowledge_smoke_passed: (target === "android-chrome" || target === "both") && green,
     norm_sources_visible: webNormSourcesVisible,
+    registered_norm_sources_visible: webRegisteredNormSourcesVisible,
     calculation_trace_visible: webNormSourcesVisible,
     web_norm_sources_visible: webNormSourcesVisible,
+    web_registered_norm_sources_visible: webRegisteredNormSourcesVisible,
     director_pdf_contains_norm_sources: directorPdfContainsNormSources,
+    director_pdf_contains_registered_norm_sources: directorPdfContainsRegisteredNormSources,
     buyer_boq_contains_norm_trace: buyerBoqContainsNormTrace,
+    buyer_boq_contains_registered_norm_trace: buyerBoqContainsRegisteredNormTrace,
     smoke_execution_mode: "headless_route_equivalent",
     browser_automation_started: false,
     native_build_started: false,

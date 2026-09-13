@@ -526,8 +526,11 @@ function auditRandomTemplates(input: {
 function auditUiPdfBuyerSample(casesLimit: number): {
   web_norm_knowledge_smoke_passed: boolean;
   web_norm_sources_visible: boolean;
+  web_registered_norm_sources_visible: boolean;
   director_pdf_contains_norm_sources: boolean;
+  director_pdf_contains_registered_norm_sources: boolean;
   buyer_boq_contains_norm_trace: boolean;
+  buyer_boq_contains_registered_norm_trace: boolean;
   smoke_cases_checked: number;
   smoke_execution_mode: "headless_route_equivalent";
   browser_automation_started: false;
@@ -535,12 +538,17 @@ function auditUiPdfBuyerSample(casesLimit: number): {
 } {
   const matrix = goldenMatrixRaw as RawGoldenMatrix;
   const cases = matrix.cases.slice(0, casesLimit);
+  const hasCases = cases.length > 0;
   const failures: string[] = [];
-  let webVisible = true;
-  let pdfVisible = true;
-  let buyerVisible = true;
+  let webVisible = hasCases;
+  let webRegistered = hasCases;
+  let pdfVisible = hasCases;
+  let pdfRegistered = hasCases;
+  let buyerVisible = hasCases;
+  let buyerRegistered = hasCases;
 
   __resetConsumerRepairRequestStoreForTests();
+  if (!hasCases) failures.push("no_matching_smoke_cases");
   for (const testCase of cases) {
     const estimate = buildProfessionalExpandedGlobalEstimate({
       workKey: testCase.expected_work_key,
@@ -556,16 +564,29 @@ function auditUiPdfBuyerSample(casesLimit: number): {
     const payload = aiDraft.structuredEstimatePayload;
     if (!payload) {
       webVisible = false;
+      webRegistered = false;
       pdfVisible = false;
+      pdfRegistered = false;
       buyerVisible = false;
+      buyerRegistered = false;
       failures.push(`structured_payload_missing:${testCase.case_id}`);
       continue;
     }
-    const rowsHaveNormSource = payload.rows.every((row) =>
-      Boolean(row.normId && row.normSourceId && row.normVersion && row.calculationTrace?.includes("normSource="))
+    const rowsHaveNormSource = payload.rows.length > 0 && payload.rows.every((row) =>
+      Boolean(
+        row.normId &&
+        row.normSourceId &&
+        row.normVersion &&
+        row.calculationTrace?.includes(`normSource=${row.normSourceId}`)
+      )
+    );
+    const rowsHaveRegisteredNormSource = rowsHaveNormSource && payload.rows.every((row) =>
+      isRegisteredProfessionalNormPackSourceId(row.normSourceId)
     );
     webVisible = webVisible && rowsHaveNormSource;
+    webRegistered = webRegistered && rowsHaveRegisteredNormSource;
     if (!rowsHaveNormSource) failures.push(`web_norm_sources_missing:${testCase.case_id}`);
+    if (!rowsHaveRegisteredNormSource) failures.push(`web_norm_sources_unregistered:${testCase.case_id}`);
 
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: `norm-knowledge-smoke-${testCase.case_id}`,
@@ -580,9 +601,14 @@ function auditUiPdfBuyerSample(casesLimit: number): {
       generatedAt: GENERATED_AT,
     });
     const pdfLabels = pdf?.sections.flatMap((section) => section.rows.flatMap((row) => row.sourceLabels)) ?? [];
-    const pdfHasSources = pdfLabels.some((label) => label.includes("normSource="));
+    const pdfHasSources = pdfLabels.some((label) => label.includes("certified source"));
+    const pdfHasRegisteredSources = pdfHasSources && bundle.items.length > 0 && bundle.items.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+    );
     pdfVisible = pdfVisible && pdfHasSources;
+    pdfRegistered = pdfRegistered && pdfHasRegisteredSources;
     if (!pdfHasSources) failures.push(`director_pdf_norm_sources_missing:${testCase.case_id}`);
+    if (!pdfHasRegisteredSources) failures.push(`director_pdf_norm_sources_unregistered:${testCase.case_id}`);
 
     const buyerDraft = buildProjectExecutionDraftFromEstimate(payload, {
       source: "request_estimate",
@@ -593,17 +619,30 @@ function auditUiPdfBuyerSample(casesLimit: number): {
     });
     const buyerHasTrace = buyerDraft.procurementItems.length > 0 &&
       buyerDraft.procurementItems.every((item) =>
-        Boolean(item.normId && item.normSourceId && item.normVersion && item.calculationTrace?.includes("normSource="))
+        Boolean(
+          item.normId &&
+          item.normSourceId &&
+          item.normVersion &&
+          item.calculationTrace?.includes(`normSource=${item.normSourceId}`)
+        )
       );
+    const buyerHasRegisteredTrace = buyerHasTrace && buyerDraft.procurementItems.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+    );
     buyerVisible = buyerVisible && buyerHasTrace;
+    buyerRegistered = buyerRegistered && buyerHasRegisteredTrace;
     if (!buyerHasTrace) failures.push(`buyer_boq_norm_trace_missing:${testCase.case_id}`);
+    if (!buyerHasRegisteredTrace) failures.push(`buyer_boq_norm_trace_unregistered:${testCase.case_id}`);
   }
 
   return {
     web_norm_knowledge_smoke_passed: failures.length === 0,
     web_norm_sources_visible: webVisible,
+    web_registered_norm_sources_visible: webRegistered,
     director_pdf_contains_norm_sources: pdfVisible,
+    director_pdf_contains_registered_norm_sources: pdfRegistered,
     buyer_boq_contains_norm_trace: buyerVisible,
+    buyer_boq_contains_registered_norm_trace: buyerRegistered,
     smoke_cases_checked: cases.length,
     smoke_execution_mode: "headless_route_equivalent",
     browser_automation_started: false,
@@ -928,8 +967,11 @@ function main(): void {
     random_deep_inspection_samples: randomAudit.samples,
     web_norm_knowledge_smoke_passed: smoke.web_norm_knowledge_smoke_passed,
     web_norm_sources_visible: smoke.web_norm_sources_visible,
+    web_registered_norm_sources_visible: smoke.web_registered_norm_sources_visible,
     director_pdf_contains_norm_sources: smoke.director_pdf_contains_norm_sources,
+    director_pdf_contains_registered_norm_sources: smoke.director_pdf_contains_registered_norm_sources,
     buyer_boq_contains_norm_trace: smoke.buyer_boq_contains_norm_trace,
+    buyer_boq_contains_registered_norm_trace: smoke.buyer_boq_contains_registered_norm_trace,
     smoke_cases_checked: smoke.smoke_cases_checked,
     smoke_execution_mode: smoke.smoke_execution_mode,
     browser_automation_started: smoke.browser_automation_started,
@@ -978,8 +1020,11 @@ function main(): void {
     formula_engine_reads_norm_records: summary.formula_engine_reads_norm_records,
     real_hardcoded_production_rate_count: summary.real_hardcoded_production_rate_count,
     web_norm_sources_visible: summary.web_norm_sources_visible,
+    web_registered_norm_sources_visible: summary.web_registered_norm_sources_visible,
     director_pdf_contains_norm_sources: summary.director_pdf_contains_norm_sources,
+    director_pdf_contains_registered_norm_sources: summary.director_pdf_contains_registered_norm_sources,
     buyer_boq_contains_norm_trace: summary.buyer_boq_contains_norm_trace,
+    buyer_boq_contains_registered_norm_trace: summary.buyer_boq_contains_registered_norm_trace,
     typecheck_passed: summary.typecheck_passed,
     lint_passed: summary.lint_passed,
     diff_check_passed: summary.diff_check_passed,

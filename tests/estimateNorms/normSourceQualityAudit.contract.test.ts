@@ -34,7 +34,15 @@ describe("estimate norm source quality reality audit", () => {
     expect(auditSource).toContain("AI_ESTIMATE_NORM_BASE_REALITY");
     expect(smokeSource).toContain("GREEN_AI_ESTIMATE_NORM_KNOWLEDGE_SMOKE_NO_BUILDS");
     expect(smokeSource).toContain("director_pdf_contains_norm_sources");
+    expect(smokeSource).toContain("director_pdf_contains_registered_norm_sources");
     expect(smokeSource).toContain("buyer_boq_contains_norm_trace");
+    expect(smokeSource).toContain("buyer_boq_contains_registered_norm_trace");
+    expect(smokeSource).toContain("web_registered_norm_sources_visible");
+    expect(smokeSource).toContain("isRegisteredProfessionalNormPackSourceId");
+    expect(smokeSource).toContain("no_matching_smoke_cases");
+    expect(auditSource).toContain("director_pdf_contains_registered_norm_sources");
+    expect(auditSource).toContain("buyer_boq_contains_registered_norm_trace");
+    expect(auditSource).toContain("web_registered_norm_sources_visible");
     expect(`${auditSource}\n${smokeSource}`).not.toMatch(/eas\s+build|expo\s+run:android|gradlew|xcodebuild|git add \./);
   });
 });
