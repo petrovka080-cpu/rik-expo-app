@@ -24,6 +24,11 @@ const summary = runExtendedProfessionalCertification({
   includeAllTemplates: !skipTemplates,
   smokeTarget: "headless",
   writeSummary: true,
+  onProgress: (event) => {
+    if (event.completed === 0 || event.completed === event.total || event.completed % 10 === 0) {
+      console.error(JSON.stringify({ certification_progress: event }));
+    }
+  },
 });
 
 console.log(JSON.stringify({

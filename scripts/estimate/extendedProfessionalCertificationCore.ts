@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import goldenMatrixRaw from "../../data/estimate-golden-cases/extended-100-work-cases.json";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi/builtInAiIngress";
+import type { BuiltInAiAnswer } from "../../src/lib/ai/builtInAi/builtInAiTypes";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
 import {
   detectEstimateFakeRows,
@@ -275,6 +276,19 @@ export type ExtendedCertificationOptions = {
   smokeTarget?: "web" | "android-chrome" | "both" | "headless";
   writeSummary?: boolean;
   runtimeRoot?: string;
+  onProgress?: (event: {
+    stage: "case_snapshot" | "case_evaluation" | "lifecycle_evaluation" | "prompt_parsing" | "template_validation";
+    completed: number;
+    total: number;
+    caseId?: string;
+  }) => void;
+};
+
+export type ExtendedCertificationCaseSnapshot = {
+  testCase: ExtendedWorkCase;
+  estimate: GlobalEstimateResult;
+  payload: StructuredEstimatePayload;
+  builtInAnswer: BuiltInAiAnswer;
 };
 
 function goldenMatrix(): RawGoldenMatrix {
@@ -393,8 +407,33 @@ export function buildExtendedProfessionalEstimateForCase(testCase: ExtendedWorkC
   };
 }
 
-export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCaseEvaluation {
-  const { estimate, payload } = buildExtendedProfessionalEstimateForCase(testCase);
+export function buildExtendedCertificationCaseSnapshot(
+  testCase: ExtendedWorkCase,
+): ExtendedCertificationCaseSnapshot {
+  const builtInAnswer = answerBuiltInAi({
+    text: testCase.prompt,
+    explicitWorkKey: testCase.expected_work_key,
+    screenContext: "request",
+    route: "/request",
+    role: "consumer",
+    countryCode: testCase.input_parameters.country,
+    cityOrRegion: testCase.input_parameters.city,
+  });
+  const builtInEstimate = builtInAnswer.toolResult.estimate;
+  const built = builtInEstimate
+    ? {
+        estimate: builtInEstimate,
+        payload: buildStructuredEstimatePayload(builtInEstimate, { source: "request" }),
+      }
+    : buildExtendedProfessionalEstimateForCase(testCase);
+  return { testCase, ...built, builtInAnswer };
+}
+
+export function evaluateExtendedWorkCase(
+  testCase: ExtendedWorkCase,
+  snapshot?: Pick<ExtendedCertificationCaseSnapshot, "estimate" | "payload">,
+): ExtendedCaseEvaluation {
+  const { estimate, payload } = snapshot ?? buildExtendedProfessionalEstimateForCase(testCase);
   const rows = payload.rows;
   const failures: string[] = [];
   const materialRows = rows.filter((row) => row.sectionType === "materials");
@@ -523,9 +562,12 @@ export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCa
   return evaluation;
 }
 
-export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): ExtendedLifecycleEvaluation {
+export function evaluateExtendedLifecycleCase(
+  testCase: ExtendedWorkCase,
+  snapshot?: Pick<ExtendedCertificationCaseSnapshot, "estimate" | "payload">,
+): ExtendedLifecycleEvaluation {
   __resetConsumerRepairRequestStoreForTests();
-  const { estimate, payload } = buildExtendedProfessionalEstimateForCase(testCase);
+  const { estimate, payload } = snapshot ?? buildExtendedProfessionalEstimateForCase(testCase);
   const aiDraft = buildConsumerRepairAiDraftFromGlobalEstimate(estimate);
   const bundle = createCanonicalConsumerRepairAuditDraft({
     consumerUserId: `extended-100-${testCase.case_id}`,
@@ -631,19 +673,16 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
   return evaluation;
 }
 
-export function evaluateBuiltInAiPromptParsingForExtendedCases(limit = 100): BuiltInAiPromptParsingSummary {
+export function evaluateBuiltInAiPromptParsingForExtendedCases(
+  limit = 100,
+  snapshots: readonly ExtendedCertificationCaseSnapshot[] = [],
+): BuiltInAiPromptParsingSummary {
   const failures: string[] = [];
   const cases = loadExtended100WorkCases(limit);
+  const snapshotsByCaseId = new Map(snapshots.map((snapshot) => [snapshot.testCase.case_id, snapshot]));
   for (const testCase of cases) {
-    const answer = answerBuiltInAi({
-      text: testCase.prompt,
-      explicitWorkKey: testCase.expected_work_key,
-      screenContext: "request",
-      route: "/request",
-      role: "consumer",
-      countryCode: testCase.input_parameters.country,
-      cityOrRegion: testCase.input_parameters.city,
-    });
+    const answer = snapshotsByCaseId.get(testCase.case_id)?.builtInAnswer ??
+      buildExtendedCertificationCaseSnapshot(testCase).builtInAnswer;
     const estimate = answer.toolResult.estimate;
     if (!answer.handled || !estimate) {
       failures.push(`${testCase.case_id}:BUILT_IN_AI_ESTIMATE_MISSING`);
@@ -724,12 +763,48 @@ export function runExtendedProfessionalCertification(
   const fullLifecycleLimit = options.fullLifecycleLimit ?? 20;
   const promptParsingLimit = options.promptParsingLimit ?? casesLimit;
   const cases = loadExtended100WorkCases(casesLimit);
-  const caseEvaluations = cases.map(evaluateExtendedWorkCase);
-  const lifecycleEvaluations = cases.slice(0, fullLifecycleLimit).map(evaluateExtendedLifecycleCase);
-  const promptParsing = evaluateBuiltInAiPromptParsingForExtendedCases(promptParsingLimit);
+  const caseSnapshots = cases.map((testCase, index) => {
+    const snapshot = buildExtendedCertificationCaseSnapshot(testCase);
+    options.onProgress?.({
+      stage: "case_snapshot",
+      completed: index + 1,
+      total: cases.length,
+      caseId: testCase.case_id,
+    });
+    return snapshot;
+  });
+  const caseEvaluations = caseSnapshots.map((snapshot, index) => {
+    const evaluation = evaluateExtendedWorkCase(snapshot.testCase, snapshot);
+    options.onProgress?.({
+      stage: "case_evaluation",
+      completed: index + 1,
+      total: caseSnapshots.length,
+      caseId: snapshot.testCase.case_id,
+    });
+    return evaluation;
+  });
+  const lifecycleSnapshots = caseSnapshots.slice(0, fullLifecycleLimit);
+  const lifecycleEvaluations = lifecycleSnapshots.map((snapshot, index) => {
+    const evaluation = evaluateExtendedLifecycleCase(snapshot.testCase, snapshot);
+    options.onProgress?.({
+      stage: "lifecycle_evaluation",
+      completed: index + 1,
+      total: lifecycleSnapshots.length,
+      caseId: snapshot.testCase.case_id,
+    });
+    return evaluation;
+  });
+  const promptParsing = evaluateBuiltInAiPromptParsingForExtendedCases(promptParsingLimit, caseSnapshots);
+  options.onProgress?.({ stage: "prompt_parsing", completed: promptParsing.cases_checked, total: promptParsingLimit });
+  options.onProgress?.({ stage: "template_validation", completed: 0, total: options.includeAllTemplates === false ? 0 : 10000 });
   const templateExtendedValidation = options.includeAllTemplates === false
     ? undefined
     : validateAllProductionTemplatesExtended10000();
+  options.onProgress?.({
+    stage: "template_validation",
+    completed: templateExtendedValidation?.templates_validated_count ?? 0,
+    total: templateExtendedValidation?.template_count ?? 0,
+  });
   const fullCertificationRequested = options.includeAllTemplates !== false;
   const groups = uniqSorted(cases.map((testCase) => testCase.expected_work_group));
   const expectedGroups = new Set(matrix.cases.map((testCase) => testCase.expected_work_group));
