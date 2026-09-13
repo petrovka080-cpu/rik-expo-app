@@ -6,10 +6,13 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "insulation"
   | "low_voltage"
   | "metalwork"
+  | "sewerage"
   | "roof_waterproofing";
 
 const DIRECT_JOTUN_HARDTOP_XP_RE = /jotun\s+hardtop\s+xp/iu;
 const DIRECT_SIKAGARD_WOOD_PRESERVER_RE = /sikagard\s+wood\s+preserver/iu;
+const DIRECT_WAVIN_OSMA_C3766BK_RE =
+  /(?:(?:wavin\s+)?(?:osma\s+)?c3766bk|3080894|5098987303844)/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -26,6 +29,7 @@ const DIRECT_INSULATION_RE =
 export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
+  if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
   if (DIRECT_SIKAGARD_WOOD_PRESERVER_RE.test(prompt)) return "carpentry";
   if (DIRECT_JOTUN_HARDTOP_XP_RE.test(prompt)) return "metalwork";
   if (DIRECT_LEGRAND_049272_RE.test(prompt)) return "low_voltage";

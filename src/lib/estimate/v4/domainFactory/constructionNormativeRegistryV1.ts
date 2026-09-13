@@ -110,6 +110,11 @@ import {
   SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_ID,
   SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA,
 } from "./carpentrySikagardWoodPreserverPhysicalNormV1";
+import {
+  WAVIN_OSMA_C3766BK_110MM_3M_PRODUCT_PROFILE_ID,
+  WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_ID,
+  WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA,
+} from "./sewerageWavinOsmaC3766BkPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -215,6 +220,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Wavin",
+    document_code: "Wavin Osma C3766BK / SW206 Aug25",
+    title: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.source_title,
+    edition: "C3766BK product record and Soil & Waste PIM SW206 Aug25",
+    revision: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2025-08-01",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["WAVIN_OSMA_C3766BK_110MM_3M"],
+    product_profile_applicability: [WAVIN_OSMA_C3766BK_110MM_3M_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.exact_locator,
+    unit_basis: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.rate_unit,
+    official_reference: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.source_url,
+    version: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public Wavin product and system documents. The 1:1 rate is geometric identity for the approved above-ground route, not manufacturer consumption. Fittings, socket insertion, cut reuse, project allowance and the explicit 3 m pipe order remain separate; the supplier pack of 57 pieces is never assumed as project demand.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

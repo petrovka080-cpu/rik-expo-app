@@ -29,6 +29,10 @@ import {
   extractSikagardWoodPreserverCanonicalParametersV1,
   sikagardWoodPreserverMissingQuestionsRuV1,
 } from "./carpentrySikagardWoodPreserverProductionBindingV1";
+import {
+  extractWavinOsmaC3766BkCanonicalParametersV1,
+  wavinOsmaC3766BkMissingQuestionsRuV1,
+} from "./sewerageWavinOsmaC3766BkProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -433,6 +437,74 @@ function carpentrySikagardWoodPreserverPlan(
   };
 }
 
+function sewerageWavinOsmaC3766BkPlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractWavinOsmaC3766BkCanonicalParametersV1(text);
+  const routeLength = canonicalParameters?.approved_pipe_route_linear_m;
+  return {
+    intent: "estimate",
+    workKey: "sewerage_wavin_osma_c3766bk_110mm_3m",
+    titleRu: "Профессиональная предварительная смета: надземная канализация Wavin Osma C3766BK",
+    category: "plumbing",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "sewerage",
+      object: "above_ground_soil_waste_pipe_system",
+      operation: "pipe_installation",
+      method: "socketed_pressureless_pvc_u",
+      materialSystem: "wavin_osma_c3766bk_110mm_3m",
+      regulated: true,
+      confidence: 0.95,
+    },
+    quantities: {
+      lengthM: typeof routeLength === "number" ? routeLength : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "труба Wavin Osma C3766BK PVC-U DN100/OD110 длиной 3 м",
+        "фитинги, ответвления, прочистки и смещения по отдельной ведомости",
+        "опоры, огнезаделка и акустические материалы по проекту",
+      ],
+      requiredLabor: [
+        "проверка утверждённой трассы и подключаемых приборов",
+        "раскрой труб с учётом повторного использования отрезков",
+        "монтаж раструбных соединений с проектной глубиной вставки",
+        "монтаж опор и компенсация температурных перемещений",
+        "испытание и контроль безнапорной канализационной системы",
+      ],
+      requiredEquipmentOrWarnings: [
+        "оборудование для перпендикулярной резки и снятия фаски",
+        "измерительный инструмент для контроля уклонов и вставки",
+      ],
+      requiredLogisticsOrWarnings: [
+        "проектный заказ трёхметровых труб задаётся явно",
+        "заводская упаковка поставщика 57 шт. не является нормой расхода проекта",
+      ],
+      exclusions: [
+        "Геометрическая норма 1:1 не является опубликованным производителем расходом.",
+        "Фитинги, раструбная вставка, повторное использование отрезков и припуск не добавляются автоматически.",
+        "Подземные, напорные и иные диаметры или коммерческие длины требуют другого профиля.",
+      ],
+      clarifyingQuestions: [
+        "Подтверждены ли гидравлический расчёт, приборы и точная надземная область применения?",
+        "Утверждены ли ведомости фитингов, опор, проходок, акустики и температурных перемещений?",
+        ...wavinOsmaC3766BkMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -575,6 +647,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? lowVoltageLegrand049272Plan(input.text, currency)
     : input.owner === "metalwork"
       ? metalworkJotunHardtopXpPlan(input.text, currency)
+    : input.owner === "sewerage"
+      ? sewerageWavinOsmaC3766BkPlan(input.text, currency)
     : input.owner === "roof_waterproofing"
       ? roofWaterproofingPlan(input.text, currency)
       : insulationPlan(input.text, currency);

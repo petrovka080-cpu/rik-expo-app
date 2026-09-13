@@ -2739,8 +2739,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(38);
-    expect(unregistered).toHaveLength(16);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(39);
+    expect(unregistered).toHaveLength(15);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2777,6 +2777,7 @@ describe("real professional norm packs audit", () => {
       "roadworks_krer27_06_020_norm_unit_per_m2_v1",
       "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "screed_cement_sand_mix_kg_m2_50mm_v1",
+      "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
       "tile_ceresit_cm11_plus_adhesive_kg_m2_notch_4_12_v1",
       "tile_ceresit_ct17_primer_l_m2_absorbent_substrate_v1",
       "ventilation_lindab_vsr_duct_linear_m_route_v1",
@@ -2789,9 +2790,7 @@ describe("real professional norm packs audit", () => {
         binding_owner: "resolveProfessionalPhysicalNormParameterValuesV1",
         disposition: "REGISTERED_EXECUTABLE_BINDING",
       });
-    expect(withCandidates.map((item) => item.norm_id)).toEqual([
-      "sewerage_wavin_osma_110mm_3m_pipe_linear_m_route_v1",
-    ]);
+    expect(withCandidates.map((item) => item.norm_id)).toEqual([]);
     expect(withCandidates.every((item) =>
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
