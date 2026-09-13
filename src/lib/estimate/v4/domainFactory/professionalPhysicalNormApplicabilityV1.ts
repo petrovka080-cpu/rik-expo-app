@@ -91,6 +91,8 @@ import { EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, EPA_CD_COMPOSITE_RUNTIME_BINDING_V
   resolveEpaCdWastePhysicalNormV1 } from "./wasteRemovalEpaPhysicalNormV1";
 import { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, BIA_TN10_MASONRY_RUNTIME_BINDING_V1,
   resolveBiaTn10MasonryPhysicalNormV1 } from "./masonryBiaTn10PhysicalNormV1";
+import { KRER46_DEMOLITION_PRODUCT_PROFILE_ID, KRER46_DEMOLITION_RUNTIME_BINDING_V1,
+  resolveKrer46DemolitionPhysicalNormV1 } from "./demolitionKrer46PhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2952,6 +2954,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   EPA_CD_COMPOSITE_RUNTIME_BINDING_V1,
   EPA_CD_CONCRETE_RUNTIME_BINDING_V1,
   BIA_TN10_MASONRY_RUNTIME_BINDING_V1,
+  KRER46_DEMOLITION_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3476,6 +3479,8 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_epa_cd_planning_mass_kg?: number;
   calculated_masonry_selected_brick_quantity_piece?: number;
   calculated_masonry_selected_mortar_quantity_m3?: number;
+  calculated_demolition_selected_table_quantity?: number;
+  calculated_demolition_selected_table_unit?: string;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8556,6 +8561,11 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === KRER46_DEMOLITION_PRODUCT_PROFILE_ID) {
+    return resolveKrer46DemolitionPhysicalNormV1({ technology_class: input.technology_class,
+      operation_class: input.operation_class, material_system: input.material_system,
+      scope_mode: input.scope_mode, parameter_values: input.parameter_values });
+  }
   if (productProfileId === BIA_TN10_MASONRY_PRODUCT_PROFILE_ID) {
     return resolveBiaTn10MasonryPhysicalNormV1({ technology_class: input.technology_class,
       operation_class: input.operation_class, material_system: input.material_system,

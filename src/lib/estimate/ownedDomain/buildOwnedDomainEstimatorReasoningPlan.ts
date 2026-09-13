@@ -65,6 +65,8 @@ import { extractFhwaFp24Section208CanonicalParametersV1,
 import { epaCdWasteMissingQuestionsRuV1, extractEpaCdWasteCanonicalParametersV1 } from "./wasteRemovalEpaProductionBindingV1";
 import { biaTn10MasonryMissingQuestionsRuV1,
   extractBiaTn10MasonryCanonicalParametersV1 } from "./masonryBiaTn10ProductionBindingV1";
+import { extractKrer46DemolitionCanonicalParametersV1,
+  krer46DemolitionMissingQuestionsRuV1 } from "./demolitionKrer46ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -660,6 +662,31 @@ function servicesKgAuthorSupervisionPlan(
   };
 }
 
+function demolitionKrer46Plan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractKrer46DemolitionCanonicalParametersV1(text);
+  const quantity = canonicalParameters?.measured_project_quantity;
+  const unit = canonicalParameters?.selected_table_measurement_unit;
+  return { intent: "estimate", workKey: "demolition_krer46_selected_table",
+    titleRu: "Демонтаж по выбранной таблице КРЕР №46", category: "demolition",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "demolition", object: "krer46_selected_demolition_table", operation: "measurement",
+      method: "exact_selected_table_same_unit_routing", materialSystem: "kg_krer46_selected_demolition_table",
+      regulated: true, confidence: 0.98 },
+    quantities: { areaM2: unit === "m2" && typeof quantity === "number" ? quantity : undefined,
+      count: unit !== "m2" && typeof quantity === "number" ? quantity : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "complex", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["ведомость сохраняемых и удаляемых материалов по выбранной таблице"],
+      requiredLabor: ["демонтаж по составу работ точной таблицы КРЕР №46", "контроль проектного объёма и условий применения"],
+      requiredEquipmentOrWarnings: ["машины и механизмы только из выбранных ресурсных строк таблицы"],
+      requiredLogisticsOrWarnings: ["вывоз и обращение с материалами по отдельному подтверждённому составу"],
+      exclusions: ["Страница сборника не публикует единую универсальную расценку демонтажа.",
+        "КРЕР №46 не применяется автоматически к обычному ремонту; единицы, ресурсы, коэффициенты и индексы не угадываются."],
+      clarifyingQuestions: ["Подтверждены ли область реконструкции, точная таблица, состав работ и совпадение единиц?",
+        "Какие редакция, коэффициенты, ресурсные строки, цены, индексы и условия доступа согласованы?",
+        ...krer46DemolitionMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function masonryBiaTn10Plan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractBiaTn10MasonryCanonicalParametersV1(text);
   return { intent: "estimate", workKey: "masonry_bia_tn10_selected_table_4",
@@ -1114,6 +1141,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "demolition"
+      ? demolitionKrer46Plan(input.text, currency)
     : input.owner === "waste_removal"
       ? wasteRemovalEpaPlan(input.text, currency)
     : input.owner === "earthworks"

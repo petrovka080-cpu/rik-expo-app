@@ -155,6 +155,8 @@ import { EPA_CD_COMPOSITE_PRODUCT_PROFILE_ID, EPA_CD_COMPOSITE_SOURCE_ID, EPA_CD
   EPA_CD_CONCRETE_SOURCE_METADATA } from "./wasteRemovalEpaPhysicalNormV1";
 import { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, BIA_TN10_MASONRY_SOURCE_ID,
   BIA_TN10_MASONRY_SOURCE_METADATA } from "./masonryBiaTn10PhysicalNormV1";
+import { KRER46_DEMOLITION_PRODUCT_PROFILE_ID, KRER46_DEMOLITION_SOURCE_ID,
+  KRER46_DEMOLITION_SOURCE_METADATA } from "./demolitionKrer46PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -260,6 +262,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: KRER46_DEMOLITION_SOURCE_ID, source_type: "RESOURCE_ESTIMATE_NORM", jurisdiction: "KG",
+    authority: "Министерство строительства Кыргызской Республики", document_code: "КРЕР №46",
+    title: KRER46_DEMOLITION_SOURCE_METADATA.source_title, edition: "действующая редакция подтверждается проектом",
+    revision: KRER46_DEMOLITION_SOURCE_METADATA.source_document_version, status: "project-specific",
+    effective_from: null, effective_to: null, funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["RECONSTRUCTION", "DEMOLITION"], operation_class_applicability: ["MEASURE"],
+    material_system_applicability: ["KG_KRER46_SELECTED_DEMOLITION_TABLE"],
+    product_profile_applicability: [KRER46_DEMOLITION_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: KRER46_DEMOLITION_SOURCE_METADATA.exact_locator,
+    unit_basis: KRER46_DEMOLITION_SOURCE_METADATA.rate_unit,
+    official_reference: KRER46_DEMOLITION_SOURCE_METADATA.source_url,
+    version: KRER46_DEMOLITION_SOURCE_METADATA.source_document_version,
+    license_access_note: "Official public KG collection scope. The 1:1 value only routes an explicitly normalized project quantity to an exact selected KRER 46 table unit; table resources, amendments, coefficients, current prices and regional indices remain mandatory and no generic demolition price is inferred.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: true,
+  }),
   source({
     source_id: BIA_TN10_MASONRY_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD", jurisdiction: "INTERNATIONAL_PROJECT",
     authority: "Brick Industry Association", document_code: "BIA Technical Note 10, Table 4",
