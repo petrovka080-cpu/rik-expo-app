@@ -10,6 +10,7 @@ export * from "./facadeRockwoolFixrockPhysicalNormV1";
 export * from "./servicesKgAuthorSupervisionPhysicalNormV1";
 export * from "./formworkRicsNrm2PhysicalNormV1";
 export * from "./reinforcementBarSchedulePhysicalNormV1";
+export * from "./deliveryFordTransitPhysicalNormV1";
 export * from "./professionalEstimateDomainFactoryV1";
 export * from "./professionalEstimateDomainReferenceV1";
 export * from "./professionalPhysicalNormApplicabilityV1";

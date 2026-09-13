@@ -135,6 +135,11 @@ import {
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
 } from "./reinforcementBarSchedulePhysicalNormV1";
+import {
+  FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID,
+  FORD_TRANSIT_V363_DELIVERY_SOURCE_ID,
+  FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA,
+} from "./deliveryFordTransitPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -240,6 +245,28 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: FORD_TRANSIT_V363_DELIVERY_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Ford Motor Company",
+    document_code: "Ford Transit Van 25.5MY / V363 500 L4 H3",
+    title: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.source_title,
+    edition: "25.5 model-year brochure",
+    revision: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.source_document_version,
+    status: "project-specific", effective_from: "2025-01-01", effective_to: null,
+    funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR", "DEMOLITION"],
+    operation_class_applicability: ["TRANSPORT"],
+    material_system_applicability: ["FORD_TRANSIT_V363_500_L4_H3"],
+    product_profile_applicability: [FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.exact_locator,
+    unit_basis: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.rate_unit,
+    official_reference: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.source_url,
+    version: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer brochure. Trip count uses the selected derivative's verified payload and loadspace after explicit occupant/options weight and the Ford 5% kerb-mass margin. Headline maxima, axle compliance, route, load compatibility and supplier billing are never assumed.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
     source_type: "WORK_EXECUTION_STANDARD",

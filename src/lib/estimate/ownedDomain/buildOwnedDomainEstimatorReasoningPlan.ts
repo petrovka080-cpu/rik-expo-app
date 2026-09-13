@@ -49,6 +49,10 @@ import {
   extractReinforcementBarScheduleCanonicalParametersV1,
   reinforcementBarScheduleMissingQuestionsRuV1,
 } from "./reinforcementBarScheduleProductionBindingV1";
+import {
+  extractFordTransitDeliveryCanonicalParametersV1,
+  fordTransitDeliveryMissingQuestionsRuV1,
+} from "./deliveryFordTransitProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -770,6 +774,39 @@ function reinforcementBarSchedulePlan(
   };
 }
 
+function deliveryFordTransitPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractFordTransitDeliveryCanonicalParametersV1(text);
+  return {
+    intent: "estimate", workKey: "delivery_ford_transit_v363_selected_limits",
+    titleRu: "Расчёт рейсов выбранного Ford Transit V363",
+    category: "delivery_equipment", confidence: "medium", templateExactMatch: false,
+    parsableWorkDetected: true, regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "delivery", object: "selected_vehicle_delivery", operation: "transport",
+      method: "weight_and_volume_constrained_trip_count", materialSystem: "ford_transit_v363_delivery",
+      regulated: true, confidence: 0.98,
+    },
+    quantities: { count: 1, rawDimensions: [] }, formulas: [],
+    boqPlan: {
+      complexity: "complex", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["крепёжные и упаковочные материалы по подтверждённой схеме груза"],
+      requiredLabor: ["погрузка, крепление и разгрузка груза по подтверждённой схеме"],
+      requiredEquipmentOrWarnings: ["выбранный Ford Transit V363 500 L4 H3 с подтверждёнными ограничениями"],
+      requiredLogisticsOrWarnings: ["рейсы Ford Transit по ограничениям массы и объёма"],
+      exclusions: [
+        "Рекламные 2357 кг и 15,1 м³ не применяются к произвольной модификации.",
+        "Тариф, маршрут, крепление, осевые нагрузки и совместимость не выводятся автоматически.",
+      ],
+      clarifyingQuestions: [
+        "Какие фактические грузоподъёмность и полезный объём подтверждены для выбранной машины?",
+        "Подтверждены ли осевые нагрузки, крепление, маршрут, доступ и отдельный тариф перевозчика?",
+        ...fordTransitDeliveryMissingQuestionsRuV1(canonicalParameters),
+      ],
+    }, pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -904,6 +941,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "delivery"
+      ? deliveryFordTransitPlan(input.text, currency)
     : input.owner === "carpentry"
       ? carpentrySikagardWoodPreserverPlan(input.text, currency)
     : input.owner === "fire_safety"

@@ -71,6 +71,11 @@ import {
   REINFORCEMENT_BAR_SCHEDULE_RUNTIME_BINDING_V1,
   resolveReinforcementBarSchedulePhysicalNormV1,
 } from "./reinforcementBarSchedulePhysicalNormV1";
+import {
+  FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID,
+  FORD_TRANSIT_V363_DELIVERY_RUNTIME_BINDING_V1,
+  resolveFordTransitV363DeliveryPhysicalNormV1,
+} from "./deliveryFordTransitPhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2923,6 +2928,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   KG_AUTHOR_SUPERVISION_RUNTIME_BINDING_V1,
   RICS_NRM2_FORMWORK_RUNTIME_BINDING_V1,
   REINFORCEMENT_BAR_SCHEDULE_RUNTIME_BINDING_V1,
+  FORD_TRANSIT_V363_DELIVERY_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3438,6 +3444,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_kg_author_supervision_cost_currency?: number;
   calculated_formwork_measured_contact_area_m2?: number;
   calculated_reinforcement_schedule_weight_kg?: number;
+  calculated_ford_transit_required_trip_count?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8518,6 +8525,15 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID) {
+    return resolveFordTransitV363DeliveryPhysicalNormV1({
+      technology_class: input.technology_class,
+      operation_class: input.operation_class,
+      material_system: input.material_system,
+      scope_mode: input.scope_mode,
+      parameter_values: input.parameter_values,
+    });
+  }
   if (productProfileId === REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID) {
     return resolveReinforcementBarSchedulePhysicalNormV1({
       technology_class: input.technology_class,

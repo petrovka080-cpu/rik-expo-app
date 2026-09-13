@@ -28,6 +28,7 @@ import { applyRockwoolFixrockPhysicalNormToFacadeBoqV1 } from "../../estimate/ow
 import { applyKgAuthorSupervisionPhysicalNormToServicesBoqV1 } from "../../estimate/ownedDomain/servicesKgAuthorSupervisionProductionBindingV1";
 import { applyRicsNrm2PhysicalNormToFormworkBoqV1 } from "../../estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
 import { applyReinforcementBarSchedulePhysicalNormToBoqV1 } from "../../estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
+import { applyFordTransitDeliveryPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/deliveryFordTransitProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1717,27 +1718,30 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyReinforcementBarSchedulePhysicalNormToBoqV1(
+  const normBoundRows = applyFordTransitDeliveryPhysicalNormToBoqV1(
     plan,
-    applyRicsNrm2PhysicalNormToFormworkBoqV1(
+    applyReinforcementBarSchedulePhysicalNormToBoqV1(
       plan,
-      applyKgAuthorSupervisionPhysicalNormToServicesBoqV1(
+      applyRicsNrm2PhysicalNormToFormworkBoqV1(
         plan,
-        applyRockwoolFixrockPhysicalNormToFacadeBoqV1(
+        applyKgAuthorSupervisionPhysicalNormToServicesBoqV1(
           plan,
-          applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
+          applyRockwoolFixrockPhysicalNormToFacadeBoqV1(
             plan,
-            applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
+            applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
               plan,
-              applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
+              applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
                 plan,
-                applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
+                applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
                   plan,
-                  applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
+                  applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
                     plan,
-                    applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+                    applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
                       plan,
-                      applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+                      applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+                        plan,
+                        applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+                      ),
                     ),
                   ),
                 ),
