@@ -1,119 +1,119 @@
 {
   "schema": "equipment-catalog-summary-v1",
-  "generated_at": "2026-07-03T21:37:16.453Z",
-  "equipment_catalog_rows_count": 30000,
+  "generated_at": "2026-09-13T05:14:58.651Z",
+  "equipment_catalog_rows_count": 50000,
   "families": [
     {
       "work_family_id": "cleaning_waste",
-      "equipment_row_count": 549
+      "equipment_row_count": 915
     },
     {
       "work_family_id": "concrete",
-      "equipment_row_count": 1272
+      "equipment_row_count": 2360
     },
     {
       "work_family_id": "demolition",
-      "equipment_row_count": 756
+      "equipment_row_count": 1460
     },
     {
       "work_family_id": "drywall",
-      "equipment_row_count": 1374
+      "equipment_row_count": 2290
     },
     {
       "work_family_id": "earthworks",
-      "equipment_row_count": 1239
+      "equipment_row_count": 2065
     },
     {
       "work_family_id": "electrical",
-      "equipment_row_count": 1830
+      "equipment_row_count": 3285
     },
     {
       "work_family_id": "facade",
-      "equipment_row_count": 1374
+      "equipment_row_count": 2290
     },
     {
       "work_family_id": "fire_safety",
-      "equipment_row_count": 177
+      "equipment_row_count": 295
     },
     {
       "work_family_id": "flooring",
-      "equipment_row_count": 1800
+      "equipment_row_count": 3000
     },
     {
       "work_family_id": "formwork",
-      "equipment_row_count": 141
+      "equipment_row_count": 235
     },
     {
       "work_family_id": "hvac",
-      "equipment_row_count": 2550
+      "equipment_row_count": 4250
     },
     {
       "work_family_id": "insulation",
-      "equipment_row_count": 1200
+      "equipment_row_count": 2000
+    },
+    {
+      "work_family_id": "landscaping",
+      "equipment_row_count": 2750
     },
     {
       "work_family_id": "low_voltage",
-      "equipment_row_count": 279
+      "equipment_row_count": 465
     },
     {
       "work_family_id": "masonry",
-      "equipment_row_count": 1212
+      "equipment_row_count": 2020
     },
     {
       "work_family_id": "metalwork",
-      "equipment_row_count": 969
+      "equipment_row_count": 1615
     },
     {
       "work_family_id": "paint",
-      "equipment_row_count": 1896
+      "equipment_row_count": 3160
     },
     {
       "work_family_id": "plaster",
-      "equipment_row_count": 225
+      "equipment_row_count": 375
     },
     {
       "work_family_id": "plumbing",
-      "equipment_row_count": 1950
+      "equipment_row_count": 3250
     },
     {
       "work_family_id": "profile_sheet_fence",
-      "equipment_row_count": 99
+      "equipment_row_count": 165
     },
     {
       "work_family_id": "putty",
-      "equipment_row_count": 324
+      "equipment_row_count": 540
     },
     {
       "work_family_id": "reinforcement",
-      "equipment_row_count": 681
+      "equipment_row_count": 1135
     },
     {
       "work_family_id": "roadworks",
-      "equipment_row_count": 2061
+      "equipment_row_count": 685
     },
     {
       "work_family_id": "roofing",
-      "equipment_row_count": 1500
+      "equipment_row_count": 2500
     },
     {
       "work_family_id": "screed",
-      "equipment_row_count": 87
+      "equipment_row_count": 145
     },
     {
       "work_family_id": "tile",
-      "equipment_row_count": 1500
-    },
-    {
-      "work_family_id": "transport_delivery",
-      "equipment_row_count": 405
+      "equipment_row_count": 2500
     },
     {
       "work_family_id": "waterproofing",
-      "equipment_row_count": 1350
+      "equipment_row_count": 2250
     },
     {
       "work_family_id": "windows_doors",
-      "equipment_row_count": 1200
+      "equipment_row_count": 2000
     }
   ]
 }

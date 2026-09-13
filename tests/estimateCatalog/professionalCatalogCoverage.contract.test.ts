@@ -14,9 +14,9 @@ describe("professional catalog coverage 10000", () => {
     expect(plan.ready_professional_count).toBe(0);
     expect(plan.not_ready_count).toBe(10000);
     expect(plan.generic_fallback_count).toBe(10000);
-    expect(plan.generic_norm_rows_count).toBe(592693);
+    expect(plan.generic_norm_rows_count).toBe(599000);
     expect(plan.synthetic_family_default_count).toBe(0);
-    expect(plan.templates_only_generic_norms_count).toBe(0);
+    expect(plan.templates_only_generic_norms_count).toBe(10000);
     expect(plan.templates_with_real_norm_sources_count).toBe(0);
     expect(plan.work_catalog_items_count).toBe(10000);
     expect(plan.row_catalog_bindings_count).toBeGreaterThan(300000);

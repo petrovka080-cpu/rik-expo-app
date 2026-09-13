@@ -1,6 +1,6 @@
 {
   "schema": "missing-price-policy-v1",
-  "generated_at": "2026-07-03T21:37:16.453Z",
+  "generated_at": "2026-09-13T05:14:58.651Z",
   "policy": "MISSING_PRICE_STATE_UNTIL_VERIFIED_RATEBOOK_BOUND",
   "price_policy_missing_price_state_count": 28,
   "price_policy_ids": [
@@ -16,6 +16,7 @@
     "price_policy_formwork_missing_price_or_ratebook_v1",
     "price_policy_hvac_missing_price_or_ratebook_v1",
     "price_policy_insulation_missing_price_or_ratebook_v1",
+    "price_policy_landscaping_missing_price_or_ratebook_v1",
     "price_policy_low_voltage_missing_price_or_ratebook_v1",
     "price_policy_masonry_missing_price_or_ratebook_v1",
     "price_policy_metalwork_missing_price_or_ratebook_v1",
@@ -29,7 +30,6 @@
     "price_policy_roofing_missing_price_or_ratebook_v1",
     "price_policy_screed_missing_price_or_ratebook_v1",
     "price_policy_tile_missing_price_or_ratebook_v1",
-    "price_policy_transport_delivery_missing_price_or_ratebook_v1",
     "price_policy_waterproofing_missing_price_or_ratebook_v1",
     "price_policy_windows_doors_missing_price_or_ratebook_v1"
   ]

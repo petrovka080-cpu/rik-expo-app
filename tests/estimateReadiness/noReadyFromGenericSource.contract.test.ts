@@ -13,7 +13,9 @@ describe("readiness does not come from generic sources", () => {
     expect(ready.every((item) => item.generic_family_default_row_count === 0)).toBe(true);
     expect(generic).toHaveLength(0);
     expect(manifest.not_ready_count).toBe(10000);
-    expect(manifest.templates.every((item) => item.source_backed_row_count === item.row_count)).toBe(true);
+    expect(manifest.templates.every((item) => item.source_backed_row_count === 0)).toBe(true);
+    expect(manifest.templates.every((item) => item.unverified_norm_row_count === item.row_count)).toBe(true);
+    expect(manifest.templates.every((item) => item.norm_source_status === "UNVERIFIED_SOURCE")).toBe(true);
     expect(manifest.full_10000_real_norm_green_claimed).toBe(false);
     expect(manifest.fake_green_claimed).toBe(false);
   });

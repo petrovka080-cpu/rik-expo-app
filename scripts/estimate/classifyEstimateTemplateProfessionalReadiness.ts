@@ -46,6 +46,7 @@ function sourceType(template: Estimate10000ReadinessTemplate): string {
   if (template.norm_source_status === "READY_SOURCE_BACKED") return "versioned_professional_norm_pack";
   if (template.norm_source_status === "PARTIAL_SOURCE_BACKED") return "partial_versioned_professional_norm_pack";
   if (template.norm_source_status === "GENERIC_FAMILY_DEFAULT") return "generic_family_default";
+  if (template.norm_source_status === "UNVERIFIED_SOURCE") return "unverified_source";
   return "unknown";
 }
 
@@ -58,6 +59,7 @@ function requestedStatusFromTemplate(template: Estimate10000ReadinessTemplate): 
     [template.material_recipe_status !== "PRESENT", "NOT_READY_MISSING_MATERIAL_RECIPE"],
     [template.labor_recipe_status !== "PRESENT", "NOT_READY_MISSING_LABOR_RECIPE"],
     [template.norm_source_status === "UNKNOWN_SOURCE", "NOT_READY_MISSING_NORM_SOURCE"],
+    [template.norm_source_status === "UNVERIFIED_SOURCE", "NOT_READY_MISSING_NORM_SOURCE"],
     [template.unit_policy_status !== "PRESENT", "NOT_READY_MISSING_UNIT_POLICY"],
     [!hasUiRendererPolicy(), "NOT_READY_MISSING_UI_RENDERER"],
     [!template.pdf_policy_id, "NOT_READY_MISSING_PDF_POLICY"],
@@ -91,6 +93,7 @@ export function classifyEstimateTemplateProfessionalReadiness(
     template.material_recipe_status !== "PRESENT" ? "missing_material_recipe" : "",
     template.labor_recipe_status !== "PRESENT" ? "missing_labor_recipe" : "",
     template.norm_source_status === "UNKNOWN_SOURCE" ? "missing_norm_source" : "",
+    template.norm_source_status === "UNVERIFIED_SOURCE" ? "unverified_norm_source" : "",
     template.norm_source_status === "GENERIC_FAMILY_DEFAULT" ? "synthetic_or_generic_norm_source" : "",
     template.unit_policy_status !== "PRESENT" ? "missing_unit_policy" : "",
     !hasUiRendererPolicy() ? "missing_ui_renderer_policy" : "",

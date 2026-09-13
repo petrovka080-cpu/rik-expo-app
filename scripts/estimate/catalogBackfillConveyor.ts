@@ -106,7 +106,7 @@ export type CatalogSourceEvidence = {
   license_status: string;
   quality_status: string;
   review_status: string;
-  evidence_kind: "registry_norm_pack" | "batch_ledger_norm_pack";
+  evidence_kind: "registry_norm_pack";
 };
 
 const REGISTRY_SOURCE_EVIDENCE = new Map(
@@ -124,88 +124,12 @@ const REGISTRY_SOURCE_EVIDENCE = new Map(
   }]),
 );
 
-function familyFromCatalogSourceId(sourceId: string): ProfessionalWorkFamilyId | null {
-  const normalized = sourceId.toLowerCase();
-  const match = normalized.match(/^src_professional_norm_pack_catalog_([a-z0-9_]+?)_(material|labor|service|equipment)_/);
-  if (!match) return null;
-  const raw = match[1];
-  if (raw === "services") return "cleaning_waste";
-  if (raw === "heating" || raw === "ventilation" || raw === "air_conditioning") return "hvac";
-  if (raw === "delivery") return "transport_delivery";
-  if (raw === "waste_removal" || raw === "cleaning") return "cleaning_waste";
-  if (raw === "equipment_rent") return "equipment_rental";
-  if (raw === "windows_doors") return "windows_doors";
-  return raw as ProfessionalWorkFamilyId;
-}
-
-function recipeTypeFromCatalogSourceId(sourceId: string): "material" | "labor" | "service" | "equipment" | null {
-  const match = sourceId.toLowerCase().match(/^src_professional_norm_pack_catalog_[a-z0-9_]+?_(material|labor|service|equipment)_/);
-  return match ? match[1] as "material" | "labor" | "service" | "equipment" : null;
-}
-
-function sourceEvidenceForBatchLedger(sourceId: string): CatalogSourceEvidence | null {
-  if (sourceId.includes("_critical_calculator_v1")) {
-    const stem = sourceId
-      .replace(/^src_professional_norm_pack_/, "")
-      .replace(/_critical_calculator_v1$/, "");
-    return {
-      source_id: sourceId,
-      source_title: `Critical calculator source pack (${stem})`,
-      source_type: "internal_company_norm_catalog",
-      source_url_or_document_ref: `RIK-SMETA-CRITICAL-${stem.toUpperCase()}-2026.07`,
-      source_date_or_version: "2026.07.03",
-      provenance: "existing_internal_company_norm_catalog",
-      license_status: "internal_use_allowed",
-      quality_status: "reviewed",
-      review_status: "quantity_engineering_reviewed",
-      evidence_kind: "batch_ledger_norm_pack",
-    };
-  }
-  const family = familyFromCatalogSourceId(sourceId);
-  const recipeType = recipeTypeFromCatalogSourceId(sourceId);
-  if (!family || !recipeType) return null;
-  const baseTitle: Record<"material" | "labor" | "service" | "equipment", string> = {
-    material: "Estimator source pack: material consumption tables and manufacturer datasheets",
-    labor: "Estimator source pack: labor productivity norm catalog",
-    service: "Estimator source pack: logistics, waste and service norm policy",
-    equipment: "Estimator source pack: construction equipment shift productivity policy",
-  };
-  const sourceType: Record<"material" | "labor" | "service" | "equipment", string> = {
-    material: "manufacturer_consumption_table",
-    labor: "internal_company_norm_catalog",
-    service: "curated_manual_norm",
-    equipment: "curated_manual_norm",
-  };
-  const provenance: Record<"material" | "labor" | "service" | "equipment", string> = {
-    material: "manufacturer_datasheet_curated",
-    labor: "existing_internal_company_norm_catalog",
-    service: "manual_estimator_review",
-    equipment: "manual_estimator_review",
-  };
-  const licenseStatus: Record<"material" | "labor" | "service" | "equipment", string> = {
-    material: "manufacturer_terms_required",
-    labor: "internal_use_allowed",
-    service: "manual_review_required",
-    equipment: "manual_review_required",
-  };
-  return {
-    source_id: sourceId,
-    source_title: `${baseTitle[recipeType]} (${family})`,
-    source_type: sourceType[recipeType],
-    source_url_or_document_ref: `RIK-SMETA-${recipeType.toUpperCase()}-${family.toUpperCase()}-2026.07`,
-    source_date_or_version: "2026.07.03",
-    provenance: provenance[recipeType],
-    license_status: licenseStatus[recipeType],
-    quality_status: "reviewed",
-    review_status: recipeType === "labor" ? "quantity_engineering_reviewed" : "estimator_reviewed",
-    evidence_kind: "batch_ledger_norm_pack",
-  };
-}
-
 export function resolveCatalogSourceEvidence(sourceId: string | null | undefined): CatalogSourceEvidence | null {
   const normalized = String(sourceId ?? "").trim();
   if (!normalized) return null;
-  return REGISTRY_SOURCE_EVIDENCE.get(normalized) ?? sourceEvidenceForBatchLedger(normalized);
+  // Batch membership proves structural catalog coverage only. A source-like ID
+  // is not evidence until an applicability-bound item exists in the registry.
+  return REGISTRY_SOURCE_EVIDENCE.get(normalized) ?? null;
 }
 
 export function batchDefinitionById(batchId: CatalogBackfillBatchId): CatalogBackfillBatchDefinition {

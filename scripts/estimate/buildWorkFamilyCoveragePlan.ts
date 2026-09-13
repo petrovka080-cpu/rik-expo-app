@@ -20,8 +20,6 @@ import { hasMojibakeText } from "./auditEstimatePdfReality";
 import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
 import {
   DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS,
-  isDefinitionCoveredByBackfillBatches,
-  isSourceAllowedForBackfilledTemplate,
   type CatalogBackfillBatchId,
 } from "./catalogBackfillConveyor";
 
@@ -211,21 +209,11 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
         Boolean(row.catalog_item_id && row.professional_name_ru && row.unit_policy_id && row.source_policy_id)
       );
     const templateBindingComplete = Object.entries(templateBinding).every(([, value]) => value !== "");
-    const coveredByActiveBackfill = isDefinitionCoveredByBackfillBatches(definition);
-    const sourceAllowedRowCount = coveredByActiveBackfill
-      ? estimate.rows.filter((row) =>
-        isSourceAllowedForBackfilledTemplate({
-          sourceId: row.normSourceId,
-          definition,
-        })
-      ).length
-      : 0;
-    const strictGenericFamilyDefaultRowCount = coveredByActiveBackfill
-      ? rowReality.row_count - sourceAllowedRowCount
-      : rowReality.row_count;
+    const verifiedSourceRowCount = rowReality.norm_source_verified;
+    const unverifiedNormRowCount = rowReality.row_count - verifiedSourceRowCount;
+    const strictGenericFamilyDefaultRowCount = rowReality.generic_family_default_count;
     const allRowsSourceBacked =
-      rowReality.source_backed_count === rowReality.row_count &&
-      sourceAllowedRowCount === rowReality.row_count &&
+      verifiedSourceRowCount === rowReality.row_count &&
       rowReality.row_count > 0;
     const allMissingPricesExplicit = estimate.rows.every((row) =>
       row.priceStatus === "PRICE_MISSING" &&
@@ -251,12 +239,12 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
       namesReadable;
 
     if (readyProfessional) readyProfessionalCount += 1;
-    if (strictGenericFamilyDefaultRowCount > 0 || rowReality.invalid_fake_source_count > 0) genericFallbackCount += 1;
-    if (sourceAllowedRowCount === 0) templatesOnlyGenericNormsCount += 1;
+    if (unverifiedNormRowCount > 0) genericFallbackCount += 1;
+    if (verifiedSourceRowCount === 0) templatesOnlyGenericNormsCount += 1;
     if (allRowsSourceBacked) templatesWithRealNormSourcesCount += 1;
 
-    genericNormRowsCount += strictGenericFamilyDefaultRowCount + rowReality.invalid_fake_source_count;
-    syntheticFamilyDefaultCount += strictGenericFamilyDefaultRowCount;
+    genericNormRowsCount += unverifiedNormRowCount;
+    syntheticFamilyDefaultCount += rowReality.generic_family_default_count;
     rowCatalogBindingsCount += catalogBindings.rows.length;
     materialCatalogRowsCount += materialRows.length;
     serviceCatalogRowsCount += serviceRows.length;
@@ -279,9 +267,9 @@ export function buildWorkFamilyCoveragePlan(options: { writeFiles?: boolean } = 
     familyCoverage.material_row_count += materialRows.length;
     familyCoverage.service_row_count += serviceRows.length;
     familyCoverage.equipment_row_count += equipmentRows.length;
-    familyCoverage.source_backed_row_count += sourceAllowedRowCount;
-    familyCoverage.generic_family_default_row_count += strictGenericFamilyDefaultRowCount;
-    familyCoverage.synthetic_family_default_count += strictGenericFamilyDefaultRowCount;
+    familyCoverage.source_backed_row_count += verifiedSourceRowCount;
+    familyCoverage.generic_family_default_row_count += unverifiedNormRowCount;
+    familyCoverage.synthetic_family_default_count += rowReality.generic_family_default_count;
     familyCoverage.templates_with_real_norm_sources_count += allRowsSourceBacked ? 1 : 0;
     familyCoverage.templates_ready_professional_count += readyProfessional ? 1 : 0;
     familyCoverage.all_template_bindings_complete &&= templateBindingComplete;

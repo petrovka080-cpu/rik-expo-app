@@ -1,6 +1,6 @@
 {
   "schema": "professional-norm-pack-summary-v1",
-  "generated_at": "2026-07-03T21:37:16.453Z",
+  "generated_at": "2026-09-13T05:14:58.651Z",
   "norm_pack_count": 28,
   "norm_pack_ids": [
     "norm_pack_cleaning_waste_v1",
@@ -15,6 +15,7 @@
     "norm_pack_formwork_v1",
     "norm_pack_hvac_v1",
     "norm_pack_insulation_v1",
+    "norm_pack_landscaping_v1",
     "norm_pack_low_voltage_v1",
     "norm_pack_masonry_v1",
     "norm_pack_metalwork_v1",
@@ -28,7 +29,6 @@
     "norm_pack_roofing_v1",
     "norm_pack_screed_v1",
     "norm_pack_tile_v1",
-    "norm_pack_transport_delivery_v1",
     "norm_pack_waterproofing_v1",
     "norm_pack_windows_doors_v1"
   ]

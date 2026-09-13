@@ -18,11 +18,12 @@ describe("catalog backfill progress dashboard", () => {
     expect(progress.before.ready_professional_count).toBe(0);
     expect(progress.after.ready_professional_count).toBe(0);
     expect(progress.after.not_ready_count).toBe(10000);
-    expect(progress.after.synthetic_family_default_count).toBeLessThan(
+    expect(progress.after.synthetic_family_default_count).toBe(
       progress.before.synthetic_family_default_count,
     );
     expect(progress.full_10000_real_norm_green_claimed).toBe(false);
     expect(progress.blockers).toContain("full_10000_real_norm_green_not_reached");
+    expect(progress.blockers).toContain("synthetic_family_default_count_not_decreased");
     expect(dashboard.final_status).toBe(STOP_AI_ESTIMATE_CATALOG_QUALITY_DASHBOARD_FAILED);
     expect(dashboard.coverage.ready_professional_count).toBe(0);
     expect(dashboard.batches.p3_generic_fallback_count).toBe(0);

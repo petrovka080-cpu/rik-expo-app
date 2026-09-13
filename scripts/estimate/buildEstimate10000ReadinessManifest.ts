@@ -10,7 +10,6 @@ import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
 import {
   DEFAULT_PROFESSIONAL_BACKFILL_BATCH_IDS,
   isDefinitionCoveredByBackfillBatches,
-  isSourceAllowedForBackfilledTemplate,
   type CatalogBackfillBatchId,
 } from "./catalogBackfillConveyor";
 
@@ -57,6 +56,7 @@ export type Estimate10000ReadinessTemplate = {
     | "READY_SOURCE_BACKED"
     | "PARTIAL_SOURCE_BACKED"
     | "GENERIC_FAMILY_DEFAULT"
+    | "UNVERIFIED_SOURCE"
     | "UNKNOWN_SOURCE";
   price_source_status: "MISSING_PRICE_STATE" | "PRICE_SOURCE_PRESENT" | "PRICE_SOURCE_MISSING";
   calculator_status: "GENERIC_QUANTITY_ONLY" | "WORK_SPECIFIC";
@@ -67,6 +67,7 @@ export type Estimate10000ReadinessTemplate = {
   row_count: number;
   source_backed_row_count: number;
   generic_family_default_row_count: number;
+  unverified_norm_row_count: number;
 };
 
 export type Estimate10000ReadinessManifest = {
@@ -183,22 +184,13 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
   const laborRows = compiled.rows.filter((row) => row.section === "labor" || row.lineType === "work");
   const formulaPresent = compiled.rows.every((row) => Boolean(row.formulaId && row.calculationTrace?.includes("formula=")));
   const coveredByActiveBackfill = isDefinitionCoveredByBackfillBatches(definition);
-  const sourceAllowedRowCount = coveredByActiveBackfill
-    ? compiled.rows.filter((row) =>
-      isSourceAllowedForBackfilledTemplate({
-        sourceId: row.normSourceId,
-        definition,
-      })
-    ).length
-    : 0;
-  const strictGenericFamilyDefaultRowCount = coveredByActiveBackfill
-    ? rowReality.row_count - sourceAllowedRowCount
-    : rowReality.row_count;
+  const verifiedSourceRowCount = rowReality.norm_source_verified;
+  const strictGenericFamilyDefaultRowCount = rowReality.generic_family_default_count;
+  const unverifiedNormRowCount = rowReality.row_count - verifiedSourceRowCount;
   const allRowsSourceBacked =
     rowReality.row_count > 0 &&
-    rowReality.source_backed_count === rowReality.row_count &&
-    sourceAllowedRowCount === rowReality.row_count;
-  const hasAnySourceBacked = sourceAllowedRowCount > 0;
+    verifiedSourceRowCount === rowReality.row_count;
+  const hasAnySourceBacked = verifiedSourceRowCount > 0;
   const hasGenericRows = strictGenericFamilyDefaultRowCount > 0;
   const missingPriceState = compiled.rows.every((row) => row.priceStatus === "PRICE_MISSING" && row.unitPrice == null && row.total == null);
   const readinessStatus: Estimate10000ReadinessStatus = hasGenericRows
@@ -219,6 +211,7 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
     materialRows.length === 0 ? "material_recipe_missing" : "",
     laborRows.length === 0 ? "labor_recipe_missing" : "",
     !allRowsSourceBacked ? "not_every_row_has_source_backed_norm" : "",
+    unverifiedNormRowCount > 0 ? `unverified_norm_source_rows:${unverifiedNormRowCount}` : "",
     missingPriceState ? "" : "priced_rows_require_ratebook_or_missing_price_state",
     definition.supportStatus !== "SUPPORTED" ? `support_status:${definition.supportStatus}` : "",
   ].filter(Boolean);
@@ -254,7 +247,9 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
         ? "PARTIAL_SOURCE_BACKED"
         : hasGenericRows
           ? "GENERIC_FAMILY_DEFAULT"
-          : "UNKNOWN_SOURCE",
+          : compiled.rows.some((row) => Boolean(row.normSourceId))
+            ? "UNVERIFIED_SOURCE"
+            : "UNKNOWN_SOURCE",
     price_source_status: missingPriceState ? "MISSING_PRICE_STATE" : "PRICE_SOURCE_PRESENT",
     calculator_status: "WORK_SPECIFIC",
     pdf_status: compiled.rows.every((row) => row.calculationTrace?.includes("template="))
@@ -264,8 +259,9 @@ function templateReadiness(definition: (typeof PRODUCTION_WORK_DEFINITIONS_10000
     readiness_status: readinessStatus,
     blocking_reasons: blockingReasons,
     row_count: rowReality.row_count,
-    source_backed_row_count: sourceAllowedRowCount,
+    source_backed_row_count: verifiedSourceRowCount,
     generic_family_default_row_count: strictGenericFamilyDefaultRowCount,
+    unverified_norm_row_count: unverifiedNormRowCount,
   };
 }
 
