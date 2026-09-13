@@ -120,6 +120,11 @@ import {
   ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_ID,
   ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA,
 } from "./facadeRockwoolFixrockPhysicalNormV1";
+import {
+  KG_AUTHOR_SUPERVISION_PRODUCT_PROFILE_ID,
+  KG_AUTHOR_SUPERVISION_SOURCE_ID,
+  KG_AUTHOR_SUPERVISION_SOURCE_METADATA,
+} from "./servicesKgAuthorSupervisionPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -225,6 +230,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: KG_AUTHOR_SUPERVISION_SOURCE_ID,
+    source_type: "LAW_OR_TECHNICAL_REGULATION",
+    jurisdiction: "KG",
+    authority: "Министерство строительства Кыргызской Республики",
+    document_code: "Приказ №52-нпа от 28.04.2022, приложение 5",
+    title: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.source_title,
+    edition: "Приложение 5 в новой редакции",
+    revision: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.source_document_version,
+    status: "active",
+    effective_from: "2022-04-28",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["CALCULATE"],
+    material_system_applicability: ["KG_AUTHOR_SUPERVISION"],
+    product_profile_applicability: [KG_AUTHOR_SUPERVISION_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.exact_locator,
+    unit_basis: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.rate_unit,
+    official_reference: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.source_url,
+    version: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.source_document_version,
+    license_access_note: "Official public Kyrgyz regulation. The 0.4% rate applies only to the confirmed construction estimated cost in chapters 1-9 for an object requiring author supervision. Travel is excluded, visit count is not defined, and current legal applicability plus later amendments must be confirmed.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

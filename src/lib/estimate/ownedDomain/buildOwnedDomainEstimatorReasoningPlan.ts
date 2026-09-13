@@ -37,6 +37,10 @@ import {
   extractRockwoolFixrockCanonicalParametersV1,
   rockwoolFixrockMissingQuestionsRuV1,
 } from "./facadeRockwoolFixrockProductionBindingV1";
+import {
+  extractKgAuthorSupervisionCanonicalParametersV1,
+  kgAuthorSupervisionMissingQuestionsRuV1,
+} from "./servicesKgAuthorSupervisionProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -576,6 +580,62 @@ function facadeRockwoolFixrockPlan(
   };
 }
 
+function servicesKgAuthorSupervisionPlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractKgAuthorSupervisionCanonicalParametersV1(text);
+  return {
+    intent: "estimate",
+    workKey: "services_kg_author_supervision_order_52_npa",
+    titleRu: "Профессиональный расчёт: авторский надзор по приказу Минстроя КР №52-нпа",
+    category: "documents_design",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "services",
+      object: "author_supervision_service",
+      operation: "normative_cost_calculation",
+      method: "kg_order_52_npa_appendix_5",
+      materialSystem: "kg_order_52_npa_author_supervision",
+      regulated: true,
+      confidence: 0.98,
+    },
+    quantities: { count: 1, rawDimensions: [] },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["labor", "documents", "delivery"],
+      requiredMaterials: ["утверждённый сводный сметный расчёт с выделенной базой глав 1–9"],
+      requiredLabor: [
+        "авторский надзор по обязательному для объекта объёму",
+        "проверка текущей применимости приказа и последующих изменений",
+        "ведение и согласование документов авторского надзора",
+      ],
+      requiredEquipmentOrWarnings: [
+        "нормативное число выездов источником не установлено",
+      ],
+      requiredLogisticsOrWarnings: [
+        "проезд на объект и обратно не входит в 0,4% и рассчитывается отдельно при необходимости",
+      ],
+      exclusions: [
+        "Проезд сотрудников проектной организации не включён в нормативную стоимость.",
+        "Число выездов и стоимость одного выезда автоматически не выводятся.",
+        "Расчёт блокируется без подтверждения текущей юридической применимости.",
+      ],
+      clarifyingQuestions: [
+        "Подтверждены ли обязательность надзора и точная стоимость строительства по главам 1–9?",
+        "Проверены ли текущая применимость приказа и более поздние изменения?",
+        ...kgAuthorSupervisionMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -720,6 +780,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? metalworkJotunHardtopXpPlan(input.text, currency)
     : input.owner === "facade"
       ? facadeRockwoolFixrockPlan(input.text, currency)
+    : input.owner === "services"
+      ? servicesKgAuthorSupervisionPlan(input.text, currency)
     : input.owner === "sewerage"
       ? sewerageWavinOsmaC3766BkPlan(input.text, currency)
     : input.owner === "roof_waterproofing"

@@ -7,6 +7,7 @@ export * from "./metalworkJotunHardtopXpPhysicalNormV1";
 export * from "./carpentrySikagardWoodPreserverPhysicalNormV1";
 export * from "./sewerageWavinOsmaC3766BkPhysicalNormV1";
 export * from "./facadeRockwoolFixrockPhysicalNormV1";
+export * from "./servicesKgAuthorSupervisionPhysicalNormV1";
 export * from "./professionalEstimateDomainFactoryV1";
 export * from "./professionalEstimateDomainReferenceV1";
 export * from "./professionalPhysicalNormApplicabilityV1";
