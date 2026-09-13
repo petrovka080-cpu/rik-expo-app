@@ -130,6 +130,11 @@ import {
   RICS_NRM2_FORMWORK_SOURCE_ID,
   RICS_NRM2_FORMWORK_SOURCE_METADATA,
 } from "./formworkRicsNrm2PhysicalNormV1";
+import {
+  REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
+} from "./reinforcementBarSchedulePhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -235,6 +240,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+    source_type: "WORK_EXECUTION_STANDARD",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Federal Highway Administration / Royal Institution of Chartered Surveyors",
+    document_code: "FHWA-HIF-16-026 Table 3 / RICS NRM 2 Work section 11",
+    title: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_title,
+    edition: "FHWA 2016 table with RICS NRM 2 second-edition measurement context",
+    revision: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2021-12-01",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["MEASURE"],
+    material_system_applicability: ["APPROVED_REINFORCEMENT_BAR_SCHEDULE"],
+    product_profile_applicability: [REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator,
+    unit_basis: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.rate_unit,
+    official_reference: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_url,
+    version: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public FHWA and RICS references. The 1:1 value routes the approved bar-schedule mass; it is not a kg-per-m3 design allowance. Bar standard, grade, size, shape, count, cut length, selected mass table, accessories and documented supplier constraints remain explicit.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: RICS_NRM2_FORMWORK_SOURCE_ID,
     source_type: "WORK_EXECUTION_STANDARD",

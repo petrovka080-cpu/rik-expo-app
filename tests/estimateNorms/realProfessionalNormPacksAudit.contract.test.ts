@@ -2739,8 +2739,8 @@ describe("real professional norm packs audit", () => {
     const withCandidates = unregistered.filter((item) => item.dimensional_candidate_rows_count > 0);
 
     expect(inventory).toHaveLength(54);
-    expect(inventory.filter((item) => item.registered)).toHaveLength(42);
-    expect(unregistered).toHaveLength(12);
+    expect(inventory.filter((item) => item.registered)).toHaveLength(43);
+    expect(unregistered).toHaveLength(11);
     expect(inventory.filter((item) => item.binding_route === "CANONICAL_V4_APPLICABILITY")
       .map((item) => item.norm_id)).toEqual([
       "air_conditioning_daikin_3mxs_k_additional_refrigerant_kg_m_v1",
@@ -2776,6 +2776,7 @@ describe("real professional norm packs audit", () => {
       "plumbing_wavin_hep2o_smartsleeve_piece_connection_v1",
       "putty_ceresit_ct126_kg_m2_mm_v1",
       "putty_ceresit_ct127_finish_layer_max_2mm_v1",
+      "reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
       "roadworks_krer27_06_020_norm_unit_per_m2_v1",
       "roofing_sarnafil_at18_field_overlap_m2_m2_v1",
       "screed_cement_sand_mix_kg_m2_50mm_v1",
@@ -2798,6 +2799,6 @@ describe("real professional norm packs audit", () => {
       item.disposition === "DIMENSIONAL_CANDIDATE_REVIEW_REQUIRED" &&
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
-    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(12);
+    expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(11);
   });
 });

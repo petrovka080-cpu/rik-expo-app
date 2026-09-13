@@ -45,6 +45,10 @@ import {
   extractRicsNrm2FormworkCanonicalParametersV1,
   ricsNrm2FormworkMissingQuestionsRuV1,
 } from "./formworkRicsNrm2ProductionBindingV1";
+import {
+  extractReinforcementBarScheduleCanonicalParametersV1,
+  reinforcementBarScheduleMissingQuestionsRuV1,
+} from "./reinforcementBarScheduleProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -703,6 +707,69 @@ function formworkRicsNrm2Plan(
   };
 }
 
+function reinforcementBarSchedulePlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractReinforcementBarScheduleCanonicalParametersV1(text);
+  const approvedWeight = canonicalParameters?.approved_reinforcement_schedule_weight_kg;
+  return {
+    intent: "estimate",
+    workKey: "reinforcement_approved_bar_schedule_weight",
+    titleRu: "Профессиональная масса арматуры по утверждённой ведомости стержней",
+    category: "concrete",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "reinforcement",
+      object: "approved_reinforcement_bar_schedule",
+      operation: "measurement_and_procurement",
+      method: "approved_bbs_with_selected_standard_mass_table",
+      materialSystem: "fhwa_rics_reinforcement_schedule",
+      regulated: true,
+      confidence: 0.98,
+    },
+    quantities: {
+      count: typeof approvedWeight === "number" ? approvedWeight : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "арматурная сталь по утверждённой ведомости стержней",
+        "фиксаторы, соединители и аксессуары по проектному составу",
+      ],
+      requiredLabor: [
+        "изготовление арматуры по ведомости стержней",
+        "монтаж, вязка и соединение по конструктивным чертежам",
+        "приёмочный контроль класса, диаметра, формы и положения",
+      ],
+      requiredEquipmentOrWarnings: [
+        "резка, гибка и подъём назначаются отдельно по ведомости и ППР",
+      ],
+      requiredLogisticsOrWarnings: [
+        "длины поставки и пакетирование применяются только как документированные ограничения поставщика",
+      ],
+      exclusions: [
+        "Универсальный расход 95 кг/м³ бетона не применяется.",
+        "Формула d²/162 не заменяет выбранную стандартную или продуктовую таблицу массы.",
+        "Автоматический запас и округление до пакета не добавляются.",
+      ],
+      clarifyingQuestions: [
+        "Утверждены ли ведомость стержней, чертёж, стандарт, класс, размеры и формы?",
+        "Включены ли нахлёсты, крюки, фиксаторы, соединители и запас изготовления в утверждённую массу?",
+        ...reinforcementBarScheduleMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -851,6 +918,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? servicesKgAuthorSupervisionPlan(input.text, currency)
     : input.owner === "formwork"
       ? formworkRicsNrm2Plan(input.text, currency)
+    : input.owner === "reinforcement"
+      ? reinforcementBarSchedulePlan(input.text, currency)
     : input.owner === "sewerage"
       ? sewerageWavinOsmaC3766BkPlan(input.text, currency)
     : input.owner === "roof_waterproofing"

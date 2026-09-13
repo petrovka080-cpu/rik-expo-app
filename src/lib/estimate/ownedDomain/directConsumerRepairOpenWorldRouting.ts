@@ -8,6 +8,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "insulation"
   | "low_voltage"
   | "metalwork"
+  | "reinforcement"
   | "sewerage"
   | "services"
   | "roof_waterproofing";
@@ -21,6 +22,8 @@ const DIRECT_KG_AUTHOR_SUPERVISION_RE =
   /(?=.*авторск[а-яё]*\s+надзор)(?=.*(?:52\s*[-–—]?\s*нпа|№\s*52))/iu;
 const DIRECT_RICS_NRM2_FORMWORK_RE =
   /(?=.*опалубк)(?=.*(?:RICS\s*)?NRM\s*2)/iu;
+const DIRECT_REINFORCEMENT_BAR_SCHEDULE_RE =
+  /(?=.*арматур)(?=.*(?:ведомост[а-яё]*\s+стержн|bar\s+bending\s+schedule))(?=.*(?:FHWA(?:-HIF-16-026)?|RICS\s*NRM\s*2))/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -40,6 +43,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
   if (DIRECT_KG_AUTHOR_SUPERVISION_RE.test(prompt)) return "services";
   if (DIRECT_RICS_NRM2_FORMWORK_RE.test(prompt)) return "formwork";
+  if (DIRECT_REINFORCEMENT_BAR_SCHEDULE_RE.test(prompt)) return "reinforcement";
   if (DIRECT_ROCKWOOL_FIXROCK_RE.test(prompt)) return "facade";
   if (DIRECT_SIKAGARD_WOOD_PRESERVER_RE.test(prompt)) return "carpentry";
   if (DIRECT_JOTUN_HARDTOP_XP_RE.test(prompt)) return "metalwork";
