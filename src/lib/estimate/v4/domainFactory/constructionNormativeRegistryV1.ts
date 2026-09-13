@@ -142,6 +142,8 @@ import {
 } from "./deliveryFordTransitPhysicalNormV1";
 import { TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID, TENNANT_T350_CONVENTIONAL_SOURCE_ID,
   TENNANT_T350_CONVENTIONAL_SOURCE_METADATA } from "./cleaningTennantT350PhysicalNormV1";
+import { UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID, UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_ID,
+  UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA } from "./equipmentRentUnitedRentalsPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -247,6 +249,23 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD",
+    jurisdiction: "INTERNATIONAL_PROJECT", authority: "United Rentals of Canada Inc.",
+    document_code: "Rental Service Terms CA ENG", title: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.source_title,
+    edition: "Last updated 2026-09-02", revision: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.source_document_version,
+    status: "project-specific", effective_from: "2026-09-02", effective_to: null,
+    funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR", "DEMOLITION"],
+    operation_class_applicability: ["RENT"], material_system_applicability: ["UNITED_RENTALS_CANADA_ONE_SHIFT_TERMS"],
+    product_profile_applicability: [UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.exact_locator,
+    unit_basis: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.rate_unit,
+    official_reference: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.source_url,
+    version: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public supplier terms. Eight hours is only the normal one-shift daily use allowance. Calendar billing, excess shifts, delivery, fuel, taxes, operator, protection and equipment productivity remain explicit separate inputs.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: TENNANT_T350_CONVENTIONAL_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
     authority: "Tennant Company", document_code: "T350 brochure 1.069.002.am.en 11/17",

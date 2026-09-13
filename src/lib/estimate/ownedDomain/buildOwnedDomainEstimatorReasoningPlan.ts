@@ -54,6 +54,8 @@ import {
   fordTransitDeliveryMissingQuestionsRuV1,
 } from "./deliveryFordTransitProductionBindingV1";
 import { extractTennantT350CanonicalParametersV1, tennantT350MissingQuestionsRuV1 } from "./cleaningTennantT350ProductionBindingV1";
+import { extractUnitedRentalsCaOneShiftCanonicalParametersV1,
+  unitedRentalsCaOneShiftMissingQuestionsRuV1 } from "./equipmentRentUnitedRentalsProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -828,6 +830,32 @@ function cleaningTennantT350Plan(text: string, currency: string): EstimatorReaso
   };
 }
 
+function equipmentRentUnitedRentalsPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractUnitedRentalsCaOneShiftCanonicalParametersV1(text);
+  return {
+    intent: "estimate", workKey: "equipment_rent_united_rentals_ca_one_shift",
+    titleRu: "Аренда оборудования United Rentals Canada — одна смена",
+    category: "delivery_equipment", confidence: "medium", templateExactMatch: false,
+    parsableWorkDetected: true, regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "equipment_rent", object: "selected_equipment_rental", operation: "rent",
+      method: "supplier_one_shift_normal_use_allowance", materialSystem: "united_rentals_canada_one_shift",
+      regulated: false, confidence: 0.98 },
+    quantities: { count: typeof canonicalParameters?.shift_count === "number" ? canonicalParameters.shift_count : 1,
+      rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "medium", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["топливо и расходные материалы по отдельной позиции договора"],
+      requiredLabor: ["оператор выбранной машины по отдельной трудовой калькуляции"],
+      requiredEquipmentOrWarnings: ["точно выбранное power equipment по договору United Rentals Canada"],
+      requiredLogisticsOrWarnings: ["доставка, вывоз и календарный период аренды по подтверждённому договору"],
+      exclusions: ["8 часов в день — лимит нормальной эксплуатации, а не производительность и не формула цены.",
+        "Двойная/тройная смена, выходные, топливо, налоги, оператор, страхование и тариф поставщика считаются отдельно."],
+      clarifyingQuestions: ["Подтверждены ли даты, одна смена, выбранная машина и отдельные начисления?",
+        ...unitedRentalsCaOneShiftMissingQuestionsRuV1(canonicalParameters)] },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -962,6 +990,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "equipment_rent"
+      ? equipmentRentUnitedRentalsPlan(input.text, currency)
     : input.owner === "cleaning"
       ? cleaningTennantT350Plan(input.text, currency)
     : input.owner === "delivery"
