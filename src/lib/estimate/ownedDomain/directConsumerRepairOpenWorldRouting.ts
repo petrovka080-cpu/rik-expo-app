@@ -3,8 +3,11 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "electrical"
   | "fire_safety"
   | "insulation"
+  | "low_voltage"
   | "roof_waterproofing";
 
+const DIRECT_LEGRAND_049272_RE =
+  /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
   /(?:(?:siemens\s+)?(?:sinteso\s+)?fdb221|a5q00001664)/iu;
 const DIRECT_ELECTRICAL_RE =
@@ -19,6 +22,7 @@ const DIRECT_INSULATION_RE =
 export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
+  if (DIRECT_LEGRAND_049272_RE.test(prompt)) return "low_voltage";
   // Product-exact fire-safety ownership must win even when the request also
   // contains cable parameters. FDB221 is a detector base, not a generic
   // electrical cable-work request.

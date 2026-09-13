@@ -2,6 +2,7 @@ export * from "./constructionNormativeRegistryV1";
 export * from "./globalCatalogInventoryV1";
 export * from "./insulationRockwoolComfortboard80PhysicalNormV1";
 export * from "./fireSafetySiemensFdb221PhysicalNormV1";
+export * from "./lowVoltageLegrand049272PhysicalNormV1";
 export * from "./professionalEstimateDomainFactoryV1";
 export * from "./professionalEstimateDomainReferenceV1";
 export * from "./professionalPhysicalNormApplicabilityV1";

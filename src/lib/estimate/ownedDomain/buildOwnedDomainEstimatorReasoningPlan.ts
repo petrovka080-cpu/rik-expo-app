@@ -17,6 +17,10 @@ import {
   extractSiemensSintesoFdb221CanonicalParametersV1,
   siemensSintesoFdb221MissingQuestionsRuV1,
 } from "./fireSafetySiemensFdb221ProductionBindingV1";
+import {
+  extractLegrand049272BusScsCanonicalParametersV1,
+  legrand049272BusScsMissingQuestionsRuV1,
+} from "./lowVoltageLegrand049272ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -216,6 +220,74 @@ function fireSafetySiemensFdb221Plan(
   };
 }
 
+function lowVoltageLegrand049272Plan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractLegrand049272BusScsCanonicalParametersV1(text);
+  const approvedRouteLength = canonicalParameters?.approved_route_length_linear_m;
+  return {
+    intent: "estimate",
+    workKey: "low_voltage_legrand_049272_bus_scs_cable",
+    titleRu: "Профессиональная предварительная смета: кабель BUS/SCS Legrand 049272",
+    category: "electrical",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "low_voltage",
+      object: "nurse_call_bus_scs_system",
+      operation: "installation",
+      method: "approved_bus_scs_circuit_routing",
+      materialSystem: "legrand_049272_bus_scs_system",
+      regulated: true,
+      confidence: 0.9,
+    },
+    quantities: {
+      lengthM: typeof approvedRouteLength === "number" ? approvedRouteLength : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "кабель Legrand 049272 BUS/SCS 2×0,56 мм² (не UTP)",
+        "отдельная трасса или труба BUS/SCS с разделением от силовых кабелей",
+        "оконечные и маркировочные элементы по проекту системы",
+      ],
+      requiredLabor: [
+        "проверка утверждённой ведомости цепей BUS/SCS точка-точка",
+        "разметка отдельной слаботочной трассы",
+        "прокладка кабеля Legrand 049272 по утверждённым цепям",
+        "оконцевание и маркировка BUS/SCS",
+        "испытания и сертификация смонтированных цепей",
+      ],
+      requiredEquipmentOrWarnings: [
+        "кабельный тестер BUS/SCS",
+        "инструмент контролируемого оконцевания",
+      ],
+      requiredLogisticsOrWarnings: [
+        "доставка 200-метровых барабанов Legrand 049272",
+        "учёт и повторное использование остатков барабанов по карте раскроя",
+      ],
+      exclusions: [
+        "Legrand 049272 — специальный BUS/SCS-кабель для питания системы и рабочих сигналов; подмена обычным UTP запрещена.",
+        "Подземная применимость требует отдельного проектного подтверждения из-за расхождения ревизий источника.",
+        "Округление до барабанов выполняется только после полной агрегации цепей и утверждения карты раскроя остатков.",
+      ],
+      clarifyingQuestions: [
+        "Утверждены ли схема BUS/SCS и ведомость всех соединений точка-точка?",
+        "Подтверждена ли раздельная прокладка от силовых цепей выше 50 В?",
+        ...legrand049272BusScsMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -352,6 +424,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
     ? electricalPlan(input.text, currency, input.canonicalParameters)
     : input.owner === "fire_safety"
       ? fireSafetySiemensFdb221Plan(input.text, currency)
+    : input.owner === "low_voltage"
+      ? lowVoltageLegrand049272Plan(input.text, currency)
     : input.owner === "roof_waterproofing"
       ? roofWaterproofingPlan(input.text, currency)
       : insulationPlan(input.text, currency);

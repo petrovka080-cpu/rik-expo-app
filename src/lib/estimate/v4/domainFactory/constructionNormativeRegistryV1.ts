@@ -95,6 +95,11 @@ import {
   SIEMENS_SINTESO_FDB221_SOURCE_ID,
   SIEMENS_SINTESO_FDB221_SOURCE_METADATA,
 } from "./fireSafetySiemensFdb221PhysicalNormV1";
+import {
+  LEGRAND_049272_BUS_SCS_PRODUCT_PROFILE_ID,
+  LEGRAND_049272_BUS_SCS_SOURCE_ID,
+  LEGRAND_049272_BUS_SCS_SOURCE_METADATA,
+} from "./lowVoltageLegrand049272PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -200,6 +205,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: LEGRAND_049272_BUS_SCS_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Legrand",
+    document_code: "Legrand 049272 / EAN 3414971327986 / ST-00000381-EN",
+    title: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.source_title,
+    edition: "Current e-catalogue plus technical sheet ST-00000381-EN",
+    revision: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: null,
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["LEGRAND_049272_BUS_SCS_CABLE"],
+    product_profile_applicability: [LEGRAND_049272_BUS_SCS_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.exact_locator,
+    unit_basis: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.rate_unit,
+    official_reference: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.source_url,
+    version: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public Legrand manufacturer data used only for the exact 049272 BUS/SCS cable. The binding combines approved route geometry with explicit project allowances, never substitutes generic UTP, forbids co-installation with power circuits above 50 V, limits this executable profile to indoor above-ground routing, and leaves 200 m reel rounding to the approved cut/remnant plan.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: SIEMENS_SINTESO_FDB221_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",
