@@ -26,8 +26,59 @@ export const GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_N
   "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS" as const;
 export const STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS =
   "STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS" as const;
+export const STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE =
+  "STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE" as const;
+export const STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE =
+  "STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE" as const;
 export const STOP_NORM_REALITY_AUDIT_NOT_FOUND =
   "STOP_NORM_REALITY_AUDIT_NOT_FOUND" as const;
+
+export type RealProfessionalNormAuditOutcomeInput = {
+  previousStatusOk: boolean;
+  green: boolean;
+  physicalSourceCoverageComplete: boolean;
+  acceptanceDenominatorComplete: boolean;
+  catalogAdmissionComplete: boolean;
+};
+
+export function classifyRealProfessionalNormAuditOutcome(
+  input: RealProfessionalNormAuditOutcomeInput,
+): { finalStatus: string; nextRequiredAction: string } {
+  if (!input.previousStatusOk) {
+    return {
+      finalStatus: STOP_NORM_REALITY_AUDIT_NOT_FOUND,
+      nextRequiredAction: "restore_current_norm_source_quality_audit_lineage",
+    };
+  }
+  if (input.green) {
+    return {
+      finalStatus: GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS,
+      nextRequiredAction: "none",
+    };
+  }
+  if (!input.physicalSourceCoverageComplete) {
+    return {
+      finalStatus: STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS,
+      nextRequiredAction: "add_or_repair_reviewed_applicability_bound_physical_norm_sources",
+    };
+  }
+  if (!input.acceptanceDenominatorComplete) {
+    return {
+      finalStatus: STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE,
+      nextRequiredAction: "reconcile_current_manifest_and_production_norm_consumer_denominators",
+    };
+  }
+  if (!input.catalogAdmissionComplete) {
+    return {
+      finalStatus: STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE,
+      nextRequiredAction: "replace_unverified_catalog_defaults_with_applicability_bound_norm_bindings",
+    };
+  }
+  return {
+    finalStatus: STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE,
+    nextRequiredAction: "resolve_remaining_real_norm_acceptance_blockers",
+  };
+}
 
 const PROFESSIONAL_NORM_PACK_ROOT = "data/estimate-norms/professional";
 const REMEDIATION_PLAN_FILE = "work-group-remediation-plan.json";
@@ -921,28 +972,36 @@ function main(): void {
     allPacksPresent &&
     allSourceRegistryGroupsPresent &&
     allProductionNormRegistryGroupsPresent;
-
-  const green = previousStatusOk &&
-    currentManifestValid &&
-    currentManifestConsumerInventoryComplete &&
+  const physicalSourceCoverageComplete =
     planComplete &&
     realSourceCoverageComplete &&
     allPacksValid &&
     allPacksReviewed &&
     physicalNormBasisRegistryComplete &&
     physicalNormBasisQuestionCoverageComplete &&
-    physicalNormBindingDispositionComplete &&
-    consumerInventoryComplete &&
+    physicalNormBindingDispositionComplete;
+  const acceptanceDenominatorComplete =
+    currentManifestValid &&
+    currentManifestConsumerInventoryComplete &&
+    consumerInventoryComplete;
+  const catalogAdmissionComplete =
     apartmentReferenceProfessional &&
     syntheticAfter === 0 &&
     templatesOnlySyntheticAfter === 0 &&
     templatesWithRealSources === PRODUCTION_WORK_DEFINITIONS_10000.length;
 
-  const finalStatus = !previousStatusOk
-    ? STOP_NORM_REALITY_AUDIT_NOT_FOUND
-    : green
-      ? GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS
-      : STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS;
+  const green = previousStatusOk &&
+    physicalSourceCoverageComplete &&
+    acceptanceDenominatorComplete &&
+    catalogAdmissionComplete;
+  const outcome = classifyRealProfessionalNormAuditOutcome({
+    previousStatusOk,
+    green,
+    physicalSourceCoverageComplete,
+    acceptanceDenominatorComplete,
+    catalogAdmissionComplete,
+  });
+  const finalStatus = outcome.finalStatus;
 
   const summary: Record<string, unknown> = {
     final_status: finalStatus,
@@ -1245,7 +1304,7 @@ function main(): void {
         ? `templates_with_real_norm_sources_count:${templatesWithRealSources}`
         : "",
     ].filter(Boolean),
-    next_required_action: green ? "none" : "add_reviewed_source_backed_professional_norm_pack_json_files_then_update_bindings",
+    next_required_action: outcome.nextRequiredAction,
   };
 
   const summaryPath = writeRuntimeSummary(summary);
@@ -1306,4 +1365,6 @@ function main(): void {
   }
 }
 
-main();
+if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditRealProfessionalNormPacks.ts")) {
+  main();
+}

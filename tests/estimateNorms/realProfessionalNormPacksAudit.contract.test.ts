@@ -819,6 +819,10 @@ describe("real professional norm packs audit", () => {
 
     expect(source).toContain("GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS");
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
+    expect(source).toContain("STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE");
+    expect(source).toContain("STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE");
+    expect(source).toContain("reconcile_current_manifest_and_production_norm_consumer_denominators");
+    expect(source).toContain("replace_unverified_catalog_defaults_with_applicability_bound_norm_bindings");
     expect(source).toContain("STOP_NORM_REALITY_AUDIT_NOT_FOUND");
     expect(source).toContain("ai-estimate-real-professional-norm-packs");
     expect(source).toContain("STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL");
