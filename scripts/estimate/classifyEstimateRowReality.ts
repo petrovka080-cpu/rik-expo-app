@@ -1,7 +1,7 @@
 import {
   isProfessionalNormPackSourceId,
-  isRegisteredProfessionalNormPackSourceId,
 } from "../../src/lib/ai/estimateTemplate10000";
+import { isAdmittedProfessionalNormSource } from "../../src/lib/estimate/professionalNormSourceAdmission";
 
 export type EstimateRealityRowInput = {
   rowCode?: string | null;
@@ -146,7 +146,12 @@ export function isGeneratedFamilyDefaultSource(sourceId: string | null | undefin
 export function classifyEstimateRowReality(row: EstimateRealityRowInput): EstimateRowRealityClassification {
   const sourceId = String(row.normSourceId ?? row.sourceParameters?.normSourceId ?? "").trim();
   const claimsProfessionalSourcePrefix = isProfessionalNormPackSourceId(sourceId);
-  const normSourceVerified = isRegisteredProfessionalNormPackSourceId(sourceId);
+  const normSourceVerified = isAdmittedProfessionalNormSource({
+    normSourceId: sourceId,
+    normId: row.normId,
+    normVersion: row.normVersion,
+    sourceParameters: row.sourceParameters,
+  });
   const isSourceBacked = normSourceVerified;
   const normSourceUnregistered = !normSourceVerified;
   const isFamilyDefault = isGeneratedFamilyDefaultSource(sourceId);

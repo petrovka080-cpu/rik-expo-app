@@ -38,7 +38,7 @@ describe("estimate norm source quality reality audit", () => {
     expect(smokeSource).toContain("buyer_boq_contains_norm_trace");
     expect(smokeSource).toContain("buyer_boq_contains_registered_norm_trace");
     expect(smokeSource).toContain("web_registered_norm_sources_visible");
-    expect(smokeSource).toContain("isRegisteredProfessionalNormPackSourceId");
+    expect(smokeSource).toContain("isAdmittedProfessionalNormSource");
     expect(smokeSource).toContain("no_matching_smoke_cases");
     expect(auditSource).toContain("director_pdf_contains_registered_norm_sources");
     expect(auditSource).toContain("buyer_boq_contains_registered_norm_trace");

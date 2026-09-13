@@ -11,6 +11,7 @@ import {
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
+import { isAdmittedProfessionalNormSource } from "../../src/lib/estimate/professionalNormSourceAdmission";
 
 export const GREEN_AI_ESTIMATE_NORM_BASE_REALITY_AND_SOURCE_QUALITY_AUDIT_NO_BUILDS =
   "GREEN_AI_ESTIMATE_NORM_BASE_REALITY_AND_SOURCE_QUALITY_AUDIT_NO_BUILDS" as const;
@@ -581,7 +582,7 @@ function auditUiPdfBuyerSample(casesLimit: number): {
       )
     );
     const rowsHaveRegisteredNormSource = rowsHaveNormSource && payload.rows.every((row) =>
-      isRegisteredProfessionalNormPackSourceId(row.normSourceId)
+      isAdmittedProfessionalNormSource(row)
     );
     webVisible = webVisible && rowsHaveNormSource;
     webRegistered = webRegistered && rowsHaveRegisteredNormSource;
@@ -605,7 +606,7 @@ function auditUiPdfBuyerSample(casesLimit: number): {
       label.includes("certified source") || label.includes("unverified source")
     );
     const pdfHasRegisteredSources = pdfHasSources && bundle.items.length > 0 && bundle.items.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
     );
     pdfVisible = pdfVisible && pdfHasSources;
     pdfRegistered = pdfRegistered && pdfHasRegisteredSources;
@@ -629,7 +630,7 @@ function auditUiPdfBuyerSample(casesLimit: number): {
         )
       );
     const buyerHasRegisteredTrace = buyerHasTrace && buyerDraft.procurementItems.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
     );
     buyerVisible = buyerVisible && buyerHasTrace;
     buyerRegistered = buyerRegistered && buyerHasRegisteredTrace;

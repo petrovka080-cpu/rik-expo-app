@@ -15,7 +15,7 @@ import {
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
-import { isRegisteredProfessionalNormPackSourceId } from "../ai/estimateTemplate10000/productionProfessionalNormPackRegistry";
+import { isAdmittedProfessionalNormSource } from "../estimate/professionalNormSourceAdmission";
 import {
   renderEstimatePdfBinaryDocument,
   renderTextPdfDocument,
@@ -280,7 +280,7 @@ function publicCalculationTracePart(value: string, registeredNormSource: boolean
 }
 
 function normSourcePartsForItem(item: PdfPayloadItem): string[] {
-  const registeredNormSource = isRegisteredProfessionalNormPackSourceId(item.normSourceId);
+  const registeredNormSource = isAdmittedProfessionalNormSource(item);
   const directParts = [
     item.normId ? (registeredNormSource ? "certified norm" : "unverified norm") : null,
     item.normSourceId || item.normSourceTitle

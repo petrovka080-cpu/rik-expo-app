@@ -9,7 +9,6 @@ import {
 } from "../../src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector";
 import {
   GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS,
-  isRegisteredProfessionalNormPackSourceId,
   validateAllProductionTemplatesExtended10000,
   type ProductionTemplateExtendedValidationSummary,
 } from "../../src/lib/ai/estimateTemplate10000";
@@ -21,6 +20,7 @@ import {
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairStructuredEstimatePdfViewModel } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { normalizeCanonicalProfessionalBoqUnit } from "../../src/lib/estimate/canonicalUnits";
+import { isAdmittedProfessionalNormSource } from "../../src/lib/estimate/professionalNormSourceAdmission";
 import { buildStructuredEstimatePayload, type StructuredEstimatePayload } from "../../src/lib/estimateStructuredPipeline";
 import type { StructuredEstimateRow } from "../../src/lib/estimateStructuredPipeline/structuredEstimateTypes";
 import { buildProjectExecutionDraftFromEstimate } from "../../src/lib/projectExecution";
@@ -324,7 +324,7 @@ function hasNormTrace(row: StructuredEstimateRow): boolean {
 }
 
 function hasRegisteredNormTrace(row: StructuredEstimateRow): boolean {
-  return hasNormTrace(row) && isRegisteredProfessionalNormPackSourceId(row.normSourceId);
+  return hasNormTrace(row) && isAdmittedProfessionalNormSource(row);
 }
 
 function hasPriceSource(row: StructuredEstimateRow): boolean {
@@ -568,7 +568,7 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
     pdfLabels.some((label) => label.includes("certified norm")) &&
     pdfLabels.some((label) => label.includes("certified source")) &&
     approved.items.length > 0 &&
-    approved.items.every((item) => isRegisteredProfessionalNormPackSourceId(item.normSourceId));
+    approved.items.every((item) => isAdmittedProfessionalNormSource(item));
   const failures: string[] = [];
 
   const evaluation: ExtendedLifecycleEvaluation = {
@@ -578,14 +578,14 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
       Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.templateId && item.templateVersion)
     ),
     request_ui_registered_norm_sources: bundle.items.length > 0 && bundle.items.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
     ),
     history_trace_persisted: history.items[0]?.items.every((item) =>
       Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.sourceParameters)
     ) ?? false,
     history_registered_norm_sources: Boolean(
       history.items[0]?.items.length && history.items[0].items.every((item) =>
-        isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+        isAdmittedProfessionalNormSource(item)
       ),
     ),
     pdf_extended_sections_visible: Boolean(
@@ -604,7 +604,7 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
         Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.sourceParameters && item.templateVersion)
       ),
     buyer_registered_norm_sources: buyer.procurementItems.length > 0 && buyer.procurementItems.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
     ),
     buyer_receives_material_rows_only: buyer.procurementItems.every((item) =>
       sourceRowsById.get(item.sourceEstimateRowId)?.sectionType === "materials"

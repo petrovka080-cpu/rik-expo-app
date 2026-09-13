@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import goldenMatrixRaw from "../../data/estimate-golden-cases/extended-100-work-cases.json";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
-import { isRegisteredProfessionalNormPackSourceId } from "../../src/lib/ai/estimateTemplate10000";
+import { isAdmittedProfessionalNormSource } from "../../src/lib/estimate/professionalNormSourceAdmission";
 import {
   __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
@@ -123,7 +123,7 @@ function main(): void {
       )
     );
     const rowsHaveRegisteredNormSources = rowsHaveNormSources && payload.rows.every((row) =>
-      isRegisteredProfessionalNormPackSourceId(row.normSourceId)
+      isAdmittedProfessionalNormSource(row)
     );
     webNormSourcesVisible = webNormSourcesVisible && rowsHaveNormSources;
     webRegisteredNormSourcesVisible = webRegisteredNormSourcesVisible && rowsHaveRegisteredNormSources;
@@ -147,7 +147,7 @@ function main(): void {
       label.includes("certified source") || label.includes("unverified source")
     );
     const pdfHasRegisteredNormSource = pdfHasNormSource && bundle.items.length > 0 && bundle.items.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
     );
     directorPdfContainsNormSources = directorPdfContainsNormSources && pdfHasNormSource;
     directorPdfContainsRegisteredNormSources =
@@ -172,7 +172,7 @@ function main(): void {
         )
       );
     const buyerHasRegisteredTrace = buyerHasTrace && buyerDraft.procurementItems.every((item) =>
-      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      isAdmittedProfessionalNormSource(item)
       );
     buyerBoqContainsNormTrace = buyerBoqContainsNormTrace && buyerHasTrace;
     buyerBoqContainsRegisteredNormTrace = buyerBoqContainsRegisteredNormTrace && buyerHasRegisteredTrace;
