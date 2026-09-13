@@ -1,5 +1,6 @@
 import {
   applyEditableEstimateOverride,
+  applyEditableEstimateUnitPriceBatchOverride,
   mergeEditableEstimateSnapshotWithAiRecalculation,
   refreshEditableEstimateSnapshot,
   type EditableEstimateRow,
@@ -219,6 +220,37 @@ export function applyEstimateRevisionUnitPriceEdit(state: EstimateRevisionState,
     before_value: before.unitPrice,
     after_value: input.unit_price,
     reason_ru: input.reason_ru ?? "\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0430 \u0446\u0435\u043d\u0430.",
+    created_at: input.created_at,
+  });
+}
+
+export function applyEstimateRevisionUnitPriceBatchEdit(state: EstimateRevisionState, input: {
+  base_revision_id?: string | null;
+  edits: readonly { row_key: string; unit_price: number | null }[];
+  actor_id?: string;
+  reason_ru?: string;
+  created_at?: string;
+}): EstimateRevisionState {
+  if (input.edits.length === 0) return state;
+  const base = input.base_revision_id
+    ? getEstimateRevisionById(state, input.base_revision_id)
+    : getCurrentEstimateRevision(state);
+  const edited = applyEditableEstimateUnitPriceBatchOverride(base.editable_estimate_snapshot, {
+    edits: input.edits.map((edit) => ({ rowId: edit.row_key, unitPrice: edit.unit_price })),
+    actorUserId: input.actor_id,
+    reason: "estimate_revision_unit_price_batch_edit",
+    at: input.created_at,
+  });
+  return createEstimateRevisionFromSnapshot(state, {
+    base_revision_id: input.base_revision_id,
+    editable_estimate_snapshot: edited,
+    source: "USER_EDITED",
+    actor: "user",
+    actor_id: input.actor_id,
+    event_type: "UNIT_PRICE_CHANGED",
+    before_value: { edited_row_count: 0 },
+    after_value: { edited_row_count: input.edits.length },
+    reason_ru: input.reason_ru ?? "Изменены цены строк пакетом.",
     created_at: input.created_at,
   });
 }

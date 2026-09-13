@@ -9,6 +9,7 @@ import {
 import {
   applyEstimateRevisionQuantityEdit,
   applyEstimateRevisionRowRemoval,
+  applyEstimateRevisionUnitPriceBatchEdit,
   applyEstimateRevisionUnitPriceEdit,
   approveEstimateRevisionState,
   bindEstimateRevisionToHistoryEntry,
@@ -498,6 +499,22 @@ export function applyConsumerRepairEstimateRevisionUnitPriceEdit(input: {
   const state = applyEstimateRevisionUnitPriceEdit(currentRevisionState(bundle), {
     row_key: input.row_key,
     unit_price: input.unit_price,
+    actor_id: input.actor_id,
+    created_at: input.created_at,
+  });
+  return withRevisionSnapshot(bundle, state);
+}
+
+export function applyConsumerRepairEstimateRevisionUnitPriceBatchEdit(input: {
+  bundle: ConsumerRepairDraftBundle;
+  edits: readonly { row_key: string; unit_price: number | null }[];
+  actor_id?: string;
+  created_at?: string;
+}): ConsumerRepairDraftBundle {
+  if (input.edits.length === 0) return input.bundle;
+  const bundle = ensureConsumerRepairBundleEstimateRevisionState(input.bundle);
+  const state = applyEstimateRevisionUnitPriceBatchEdit(currentRevisionState(bundle), {
+    edits: input.edits,
     actor_id: input.actor_id,
     created_at: input.created_at,
   });

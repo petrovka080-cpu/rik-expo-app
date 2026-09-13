@@ -1,6 +1,7 @@
 export * from "./editableEstimateTypes";
 export * from "./editableEstimateSnapshot";
 export * from "./applyEditableEstimateOverride";
+export * from "./applyEditableEstimateUnitPriceBatchOverride";
 export * from "./editableEstimateAuditTrail";
 export * from "./editableEstimateSnapshotHash";
 export * from "./manualPricePolicy";
