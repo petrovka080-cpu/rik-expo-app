@@ -140,6 +140,8 @@ import {
   FORD_TRANSIT_V363_DELIVERY_SOURCE_ID,
   FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA,
 } from "./deliveryFordTransitPhysicalNormV1";
+import { TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID, TENNANT_T350_CONVENTIONAL_SOURCE_ID,
+  TENNANT_T350_CONVENTIONAL_SOURCE_METADATA } from "./cleaningTennantT350PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -245,6 +247,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: TENNANT_T350_CONVENTIONAL_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Tennant Company", document_code: "T350 brochure 1.069.002.am.en 11/17",
+    title: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_title, edition: "Industrial brochure 11/17",
+    revision: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_document_version, status: "project-specific",
+    effective_from: "2017-11-01", effective_to: null, funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["CLEAN"],
+    material_system_applicability: ["TENNANT_T350_600MM_DUAL_DISK_CONVENTIONAL"],
+    product_profile_applicability: [TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.exact_locator,
+    unit_basis: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.rate_unit,
+    official_reference: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_url,
+    version: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer brochure. The 2795 m2/h practical rate applies only to the 600 mm dual-disk conventional variant. Pass count and project-specific obstruction, cycle and battery allowances are explicit; ec-H2O, operator labor, manual detail work and supplier billing remain separate.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: FORD_TRANSIT_V363_DELIVERY_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

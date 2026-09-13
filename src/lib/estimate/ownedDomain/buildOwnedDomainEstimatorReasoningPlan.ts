@@ -53,6 +53,7 @@ import {
   extractFordTransitDeliveryCanonicalParametersV1,
   fordTransitDeliveryMissingQuestionsRuV1,
 } from "./deliveryFordTransitProductionBindingV1";
+import { extractTennantT350CanonicalParametersV1, tennantT350MissingQuestionsRuV1 } from "./cleaningTennantT350ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -807,6 +808,26 @@ function deliveryFordTransitPlan(text: string, currency: string): EstimatorReaso
   };
 }
 
+function cleaningTennantT350Plan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractTennantT350CanonicalParametersV1(text);
+  return {
+    intent: "estimate", workKey: "cleaning_tennant_t350_600mm_conventional", titleRu: "Машинная уборка Tennant T350 600 мм conventional",
+    category: "cleaning", confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "cleaning", object: "mechanized_hard_floor_cleaning", operation: "cleaning",
+      method: "conventional_practical_productivity", materialSystem: "tennant_t350_conventional", regulated: false, confidence: 0.98 },
+    quantities: { areaM2: typeof canonicalParameters?.cleanable_hard_floor_area_m2 === "number" ? canonicalParameters.cleanable_hard_floor_area_m2 : undefined, rawDimensions: [] },
+    formulas: [], boqPlan: { complexity: "medium", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["моющий раствор и расходные материалы по отдельной карте загрязнения"],
+      requiredLabor: ["оператор поломоечной машины", "ручная детальная уборка недоступных зон"],
+      requiredEquipmentOrWarnings: ["Tennant T350 600 мм dual-disk в режиме conventional"],
+      requiredLogisticsOrWarnings: ["доставка, зарядка, слив и заполнение по проектной схеме"],
+      exclusions: ["Производительность ec-H2O 2874 м²/ч не применяется.", "Труд оператора, ручная детализация и шаг тарификации поставщика считаются отдельно."],
+      clarifyingQuestions: ["Подтверждены ли площадь, число проходов, загрязнение и препятствия?", ...tennantT350MissingQuestionsRuV1(canonicalParameters)] },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -941,6 +962,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "cleaning"
+      ? cleaningTennantT350Plan(input.text, currency)
     : input.owner === "delivery"
       ? deliveryFordTransitPlan(input.text, currency)
     : input.owner === "carpentry"

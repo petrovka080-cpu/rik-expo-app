@@ -1,6 +1,7 @@
 /** Estimate-domain owner selected before the consumer-repair presentation adapter runs. */
 export type DirectConsumerRepairOpenWorldOwner =
   | "carpentry"
+  | "cleaning"
   | "delivery"
   | "electrical"
   | "facade"
@@ -26,6 +27,7 @@ const DIRECT_RICS_NRM2_FORMWORK_RE =
 const DIRECT_REINFORCEMENT_BAR_SCHEDULE_RE =
   /(?=.*арматур)(?=.*(?:ведомост[а-яё]*\s+стержн|bar\s+bending\s+schedule))(?=.*(?:FHWA(?:-HIF-16-026)?|RICS\s*NRM\s*2))/iu;
 const DIRECT_FORD_TRANSIT_DELIVERY_RE = /(?=.*ford\s+transit)(?=.*(?:v363|500\s+l4\s+h3))/iu;
+const DIRECT_TENNANT_T350_RE = /(?=.*tennant\s+t350)(?=.*(?:600\s*(?:мм|mm)|24\s*inch))(?=.*conventional)/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -43,6 +45,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
+  if (DIRECT_TENNANT_T350_RE.test(prompt)) return "cleaning";
   if (DIRECT_FORD_TRANSIT_DELIVERY_RE.test(prompt)) return "delivery";
   if (DIRECT_KG_AUTHOR_SUPERVISION_RE.test(prompt)) return "services";
   if (DIRECT_RICS_NRM2_FORMWORK_RE.test(prompt)) return "formwork";
