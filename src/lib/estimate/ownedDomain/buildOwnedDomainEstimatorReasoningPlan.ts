@@ -58,6 +58,8 @@ import { extractUnitedRentalsCaOneShiftCanonicalParametersV1,
   unitedRentalsCaOneShiftMissingQuestionsRuV1 } from "./equipmentRentUnitedRentalsProductionBindingV1";
 import { extractRainBirdXfdCanonicalParametersV1,
   rainBirdXfdMissingQuestionsRuV1 } from "./landscapingRainBirdXfdProductionBindingV1";
+import { extractSoudafoamGeniusCanonicalParametersV1,
+  soudafoamGeniusMissingQuestionsRuV1 } from "./windowsDoorsSoudafoamProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -882,6 +884,27 @@ function landscapingRainBirdXfdPlan(text: string, currency: string): EstimatorRe
   };
 }
 
+function windowsDoorsSoudafoamPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractSoudafoamGeniusCanonicalParametersV1(text);
+  return { intent: "estimate", workKey: "windows_doors_soudafoam_genius_9900539",
+    titleRu: "Монтажный шов Soudafoam Window & Door Genius 600 мл", category: "doors_windows",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "windows_doors", object: "window_door_joint", operation: "installation",
+      method: "onsite_validated_joint_yield", materialSystem: "soudafoam_genius_9900539", regulated: false, confidence: 0.98 },
+    quantities: { lengthM: typeof canonicalParameters?.qualified_joint_length_linear_m === "number"
+      ? canonicalParameters.qualified_joint_length_linear_m : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "medium", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["Soudafoam Window & Door Genius 600 мл", "ленты, мембраны и герметики по отдельной системе шва"],
+      requiredLabor: ["подготовка и увлажнение основания", "послойное заполнение монтажного шва"],
+      requiredEquipmentOrWarnings: ["контроль температур баллона, воздуха и поверхности"],
+      requiredLogisticsOrWarnings: ["хранение и срок годности по подтверждённой партии"],
+      exclusions: ["Справочные 16 м по EN 17333-1 не применяются как фиксированный площадочный выход.",
+        "Значение 26 м для другого 750 мл gun-grade продукта, UV-защита, крепления, ленты и мембраны исключены."],
+      clarifyingQuestions: ["Подтверждены ли геометрия шва и фактический выход 600 мл баллона на объекте?",
+        ...soudafoamGeniusMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency) };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -1016,6 +1039,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "windows_doors"
+      ? windowsDoorsSoudafoamPlan(input.text, currency)
     : input.owner === "landscaping"
       ? landscapingRainBirdXfdPlan(input.text, currency)
     : input.owner === "equipment_rent"

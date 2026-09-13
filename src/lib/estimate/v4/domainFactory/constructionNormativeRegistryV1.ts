@@ -146,6 +146,8 @@ import { UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID, UNITED_RENTALS_CA_ONE_S
   UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA } from "./equipmentRentUnitedRentalsPhysicalNormV1";
 import { RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID, RAIN_BIRD_XFD_DRIPLINE_SOURCE_ID,
   RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA } from "./landscapingRainBirdXfdPhysicalNormV1";
+import { SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID, SOUDAFOAM_GENIUS_SOURCE_ID,
+  SOUDAFOAM_GENIUS_SOURCE_METADATA } from "./windowsDoorsSoudafoamPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -251,6 +253,21 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: SOUDAFOAM_GENIUS_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Soudal UK", document_code: "TDS 9900539", title: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_title,
+    edition: "TDS revision 08-05-2026", revision: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_document_version,
+    status: "project-specific", effective_from: "2026-05-08", effective_to: null,
+    funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["SOUDAFOAM_WINDOW_DOOR_GENIUS_9900539_600ML"],
+    product_profile_applicability: [SOUDAFOAM_GENIUS_9900539_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: SOUDAFOAM_GENIUS_SOURCE_METADATA.exact_locator,
+    unit_basis: SOUDAFOAM_GENIUS_SOURCE_METADATA.rate_unit, official_reference: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_url,
+    version: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer TDS. The approximate 16 m reference is not a fixed project yield; exact joint geometry, site validation, temperatures, substrate, moisture, UV protection and adjacent sealing systems remain explicit.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: RAIN_BIRD_XFD_DRIPLINE_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
     authority: "Rain Bird Corporation", document_code: "D39717E 04/22",
