@@ -131,6 +131,7 @@ export function applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1(
     if (row.code !== "equipment_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Лимит нормальной односменной эксплуатации United Rentals Canada",
       templateId: "equipment-rent:united-rentals-ca:one-shift:v1",
       templateVersion: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA.source_document_version,

@@ -180,6 +180,7 @@ export function applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Кабель Legrand 049272 BUS/SCS 2×0,56 мм², Cca-s1b,d1,a1 (не UTP)",
       templateId: "low-voltage:legrand-049272-bus-scs:v1",
       templateVersion: LEGRAND_049272_BUS_SCS_SOURCE_METADATA.source_document_version,

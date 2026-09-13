@@ -78,7 +78,7 @@ export function applyBiaTn10MasonryPhysicalNormToBoqV1(plan: EstimatorReasoningP
   return rows.map((row) => {
     const brick = row.code === "material_1", mortar = row.code === "material_2";
     if (!brick && !mortar) return row;
-    const source = { ...row, name: brick ? "Обожжённый глиняный кирпич по выбранной строке BIA TN 10 Table 4" :
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: brick ? "Обожжённый глиняный кирпич по выбранной строке BIA TN 10 Table 4" :
       "Кладочный раствор по выбранной строке BIA TN 10 Table 4", templateId: "masonry:bia-tn10:selected-table-4:v1",
       templateVersion: BIA_TN10_MASONRY_SOURCE_METADATA.source_document_version, normId: BIA_TN10_MASONRY_NORM_ID,
       normFamilyId: "norm_family:masonry:bia_tn10_selected_table", normSourceId: BIA_TN10_MASONRY_SOURCE_ID,

@@ -121,6 +121,7 @@ export function applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Sikagard Wood Preserver — выбранная закупочная комбинация банок 1/5 л",
       templateId: "carpentry:sikagard-wood-preserver-preventative:v1",
       templateVersion: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.source_document_version,

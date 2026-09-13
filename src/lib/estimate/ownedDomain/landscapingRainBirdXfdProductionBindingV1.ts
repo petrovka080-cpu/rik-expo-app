@@ -59,7 +59,7 @@ export function applyRainBirdXfdPhysicalNormToLandscapingBoqV1(plan: EstimatorRe
     material_system: "RAIN_BIRD_XFD_06_12_500", scope_mode: "FULL_APPLICABLE_SCOPE", parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "material_1") return row;
-    const source = { ...row, name: "Капельная линия Rain Bird XFD-06-12-500 по утверждённой гидравлической трассе",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Капельная линия Rain Bird XFD-06-12-500 по утверждённой гидравлической трассе",
       templateId: "landscaping:rain-bird-xfd-06-12-500:v1", templateVersion: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_document_version,
       normId: RAIN_BIRD_XFD_DRIPLINE_NORM_ID, normFamilyId: "norm_family:landscaping:rain_bird_xfd",
       normSourceId: RAIN_BIRD_XFD_DRIPLINE_SOURCE_ID, normSourceTitle: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_title,

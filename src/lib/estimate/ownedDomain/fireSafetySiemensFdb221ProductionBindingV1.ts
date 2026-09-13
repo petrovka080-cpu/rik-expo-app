@@ -181,6 +181,7 @@ export function applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
     if (row.code !== "material_2") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Основания адресных пожарных извещателей Siemens Sinteso FDB221 A5Q00001664 (не извещатели)",
       templateId: "fire-safety:siemens-sinteso-fdb221-base:v1",
       templateVersion: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.source_document_version,

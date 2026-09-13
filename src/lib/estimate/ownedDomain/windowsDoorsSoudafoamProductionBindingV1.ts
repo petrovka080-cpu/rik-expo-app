@@ -53,7 +53,7 @@ export function applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1(plan: Estima
     parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "material_1") return row;
-    const source = { ...row, name: "Soudafoam Window & Door Genius 600 мл по проверенному выходу на объекте",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Soudafoam Window & Door Genius 600 мл по проверенному выходу на объекте",
       templateId: "windows-doors:soudafoam-genius-9900539:v1", templateVersion: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_document_version,
       normId: SOUDAFOAM_GENIUS_NORM_ID, normFamilyId: "norm_family:windows_doors:soudafoam_genius",
       normSourceId: SOUDAFOAM_GENIUS_SOURCE_ID, normSourceTitle: SOUDAFOAM_GENIUS_SOURCE_METADATA.source_title,

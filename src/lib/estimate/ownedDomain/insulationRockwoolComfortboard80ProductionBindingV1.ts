@@ -142,6 +142,7 @@ export function applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Утеплитель ROCKWOOL Comfortboard 80 R6.3, 38 мм, плита 1219×610 мм",
       templateId: "insulation:rockwool-comfortboard80-r63-38mm:v1",
       templateVersion: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.source_document_version,

@@ -50,7 +50,7 @@ export function applyEpaCdWastePhysicalNormToBoqV1(plan: EstimatorReasoningPlan,
   const sourceId = concrete ? EPA_CD_CONCRETE_SOURCE_ID : EPA_CD_COMPOSITE_SOURCE_ID;
   return rows.map((row) => {
     if (row.code !== "logistics_1") return row;
-    const source = { ...row, name: concrete ? "Плановая масса бетонного лома по US EPA 860 lb/yd³" : "Плановая масса composite C&D по US EPA 417 lb/yd³",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: concrete ? "Плановая масса бетонного лома по US EPA 860 lb/yd³" : "Плановая масса composite C&D по US EPA 417 lb/yd³",
       templateId: concrete ? "waste-removal:us-epa:concrete:v1" : "waste-removal:us-epa:composite:v1",
       templateVersion: sourceMeta.source_document_version, normId, normFamilyId: "norm_family:waste_removal:us_epa_cd",
       normSourceId: sourceId, normSourceTitle: sourceMeta.source_title, normVersion: sourceMeta.source_document_version,

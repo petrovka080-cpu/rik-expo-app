@@ -70,7 +70,7 @@ export function applyKrer46DemolitionPhysicalNormToBoqV1(plan: EstimatorReasonin
     parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "labor_1") return row;
-    const source = { ...row, name: "Демонтаж по точной выбранной таблице КРЕР №46", templateId: "demolition:kg-krer46:selected-table:v1",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Демонтаж по точной выбранной таблице КРЕР №46", templateId: "demolition:kg-krer46:selected-table:v1",
       templateVersion: KRER46_DEMOLITION_SOURCE_METADATA.source_document_version, normId: KRER46_DEMOLITION_NORM_ID,
       normFamilyId: "norm_family:demolition:kg_krer46_selected_table", normSourceId: KRER46_DEMOLITION_SOURCE_ID,
       normSourceTitle: KRER46_DEMOLITION_SOURCE_METADATA.source_title,

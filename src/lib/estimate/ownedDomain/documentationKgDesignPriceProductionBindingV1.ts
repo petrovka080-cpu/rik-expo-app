@@ -70,7 +70,7 @@ export function applyKgDesignPricePhysicalNormToBoqV1(plan: EstimatorReasoningPl
     parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "labor_1") return row;
-    const source = { ...row, name: "Проектные работы по точной выбранной таблице сборника цен КР", templateId: "documentation:kg-design-price:selected-table:v1",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Проектные работы по точной выбранной таблице сборника цен КР", templateId: "documentation:kg-design-price:selected-table:v1",
       templateVersion: KG_DESIGN_PRICE_SOURCE_METADATA.source_document_version, normId: KG_DESIGN_PRICE_NORM_ID,
       normFamilyId: "norm_family:documentation:kg_selected_design_price_table", normSourceId: KG_DESIGN_PRICE_SOURCE_ID,
       normSourceTitle: KG_DESIGN_PRICE_SOURCE_METADATA.source_title, normVersion: KG_DESIGN_PRICE_SOURCE_METADATA.source_document_version,

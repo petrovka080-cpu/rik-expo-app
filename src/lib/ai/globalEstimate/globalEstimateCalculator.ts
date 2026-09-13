@@ -974,13 +974,18 @@ export function buildGlobalEstimateFromEstimatorKernel(
               row.normSourceReference ?? normSourceId,
             normSourceSnapshotSha256:
               row.normSourceSnapshotSha256 ?? null,
+            professionalPhysicalNormApplicabilityV1:
+              row.professionalPhysicalNormApplicabilityV1 ?? null,
             normSourceLicenseStatus:
               row.normSourceLicenseStatus ?? "EXPERT_REVIEW_REQUIRED",
             normSourceLifecycleStatus:
               row.normSourceLifecycleStatus ?? "EXPERT_REVIEW_REQUIRED",
             applicabilityRule:
               `estimator_semantic_frame_object:${plan.semanticFrame.object}`,
-            sourceApplicabilityStatus: "preliminary_configured_rule_requires_project_scope_review",
+            sourceApplicabilityStatus:
+              row.professionalPhysicalNormApplicabilityV1?.status === "APPLIED"
+                ? "applicable_physical_norm_identity_verified"
+                : "preliminary_configured_rule_requires_project_scope_review",
             includedInEstimate,
             includedInProcurement,
             parameterBlockerIds: row.parameterBlockerIds ?? [],

@@ -11,6 +11,7 @@ import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
 } from "./consumerRequestTypes";
+import { consumerEstimateNormSourceAdmissionReport } from "./consumerEstimateNormSourceReadiness";
 
 export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
@@ -114,6 +115,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
     (revision) => revision.revisionId === previousState.currentRevisionId,
   ) ?? null;
   const rows = input.nextBundle.items.map(projectedRow);
+  const normSourceAdmission = consumerEstimateNormSourceAdmissionReport(input.nextBundle);
   const params = parameterProjection(payload, previousRevision);
   const sectionsByCategory = new Map<string, string[]>();
   for (const row of rows) {
@@ -170,7 +172,23 @@ export function appendCanonicalBackendRevisionProjection(input: {
     workSpecificParameterSignature: Object.keys(params),
     applicableBoqSignature: metadata.checksumSha256,
     legacyRowsCount: 0,
-    estimateLevel: "SOURCE_BACKED_PROFESSIONAL_BOQ",
+    normSourceAdmission: {
+      evaluatedActiveCalculatedRows: normSourceAdmission.evaluatedActiveCalculatedRows,
+      admittedRows: normSourceAdmission.admittedRows,
+      status: normSourceAdmission.status,
+      gaps: normSourceAdmission.gaps.map(({ item, reason }) => ({
+        rowId: typeof item.sourceParameters?.rowCode === "string"
+          ? item.sourceParameters.rowCode
+          : item.id,
+        normId: item.normId ?? null,
+        normSourceId: item.normSourceId ?? null,
+        normVersion: item.normVersion ?? null,
+        reason,
+      })),
+    },
+    estimateLevel: normSourceAdmission.status === "SOURCE_GAPS"
+      ? "PRELIMINARY_QUANTITY_BOQ"
+      : "SOURCE_BACKED_PROFESSIONAL_BOQ",
     rawInputFacts: [],
     rawInputFactMetrics: {
       explicit_input_facts_ignored: 0,

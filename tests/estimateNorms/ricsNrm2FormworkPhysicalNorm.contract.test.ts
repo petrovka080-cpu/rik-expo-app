@@ -2,6 +2,7 @@ import { buildDirectConsumerRepairOpenWorldAiDraft } from "../../src/features/co
 import { compileDynamicProfessionalBoq } from "../../src/lib/ai/professionalBoq/compileDynamicProfessionalBoq";
 import { buildOwnedDomainEstimatorReasoningPlan } from "../../src/lib/estimate/ownedDomain/buildOwnedDomainEstimatorReasoningPlan";
 import { resolveDirectConsumerRepairOpenWorldOwner } from "../../src/lib/estimate/ownedDomain/directConsumerRepairOpenWorldRouting";
+import { classifyProfessionalNormSourceAdmission } from "../../src/lib/estimate/professionalNormSourceAdmission";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
 import {
   CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1,
@@ -175,6 +176,22 @@ describe("RICS NRM2 measured formwork contact-area norm", () => {
       includedInEstimate: true,
       includedInProcurement: false,
       parameterBlockerIds: [],
+      professionalPhysicalNormApplicabilityV1: {
+        status: "APPLIED",
+        source_id: RICS_NRM2_FORMWORK_SOURCE_ID,
+        norm_id: RICS_NRM2_FORMWORK_NORM_ID,
+        source_document_version: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_document_version,
+      },
+    });
+    expect(classifyProfessionalNormSourceAdmission({
+      normSourceId: exactRows[0]?.normSourceId,
+      normId: exactRows[0]?.normId,
+      normVersion: exactRows[0]?.normVersion,
+      sourceParameters: exactRows[0]?.sourceParameters,
+    })).toEqual({
+      admitted: true,
+      route: "CANONICAL_PHYSICAL_APPLICABILITY",
+      reason: "ADMITTED_CANONICAL_PHYSICAL_APPLICABILITY",
     });
     expect(exactRows[0]?.calculationTrace).toContain("automaticM2PerM3Factor=false");
     expect(exactRows[0]?.calculationTrace).toContain("priceSource=separate_configured_reference");

@@ -1,4 +1,5 @@
 import type { GlobalEstimateConfidence, GlobalWorkCategory } from "../globalEstimate";
+import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "../../estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
 
 export type EstimatorKernelComplexity = "simple" | "medium" | "complex" | "infrastructure";
 
@@ -122,6 +123,7 @@ export type DynamicProfessionalBoqRow = {
   normSourceSnapshotSha256?: string;
   normSourceLicenseStatus?: string;
   normSourceLifecycleStatus?: "ACTIVE" | "SUPERSEDED" | "EXPERT_REVIEW_REQUIRED";
+  professionalPhysicalNormApplicabilityV1?: ProfessionalPhysicalNormApplicabilityResolutionV1;
   includedInEstimate?: boolean;
   includedInProcurement?: boolean;
   optional?: boolean;

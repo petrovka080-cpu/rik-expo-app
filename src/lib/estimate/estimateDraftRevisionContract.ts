@@ -165,6 +165,19 @@ export type EstimateDraftRevisionEstimateLevel =
   | "PRELIMINARY_QUANTITY_BOQ"
   | "SOURCE_BACKED_PROFESSIONAL_BOQ"
   | "EXPERT_VALIDATED_BOQ";
+export type EstimateDraftRevisionNormSourceAdmission = {
+  evaluatedActiveCalculatedRows: number;
+  admittedRows: number;
+  status: "SOURCE_BACKED" | "SOURCE_GAPS";
+  gaps: Array<{
+    rowId: string;
+    normId: string | null;
+    normSourceId: string | null;
+    normVersion: string | null;
+    reason: string;
+  }>;
+};
+
 
 export type EstimateDraftRevisionArtifacts = {
   snapshotId: string | null;
@@ -234,6 +247,7 @@ export type EstimateDraftRevision = {
   workSpecificParameterSignature?: string[];
   applicableBoqSignature?: string | null;
   legacyRowsCount?: number;
+  normSourceAdmission?: EstimateDraftRevisionNormSourceAdmission;
   estimateLevel: EstimateDraftRevisionEstimateLevel;
   rawInputFacts: RawInputFact[];
   rawInputFactMetrics: RawInputFactExtractionMetrics;

@@ -120,6 +120,7 @@ export function applyRicsNrm2PhysicalNormToFormworkBoqV1(
     if (row.code !== "labor_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2",
       templateId: "formwork:rics-nrm2:measured-contact-area:v1",
       templateVersion: RICS_NRM2_FORMWORK_SOURCE_METADATA.source_document_version,

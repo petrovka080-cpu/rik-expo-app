@@ -81,7 +81,7 @@ export function applyFordTransitDeliveryPhysicalNormToBoqV1(plan: EstimatorReaso
   return rows.map((row) => {
     if (row.code !== "logistics_1") return row;
     const source = {
-      ...row, name: "Рейсы Ford Transit V363 500 L4 H3 по ограничениям массы и объёма",
+      ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Рейсы Ford Transit V363 500 L4 H3 по ограничениям массы и объёма",
       templateId: "delivery:ford-transit-v363-500-l4-h3:v1",
       templateVersion: FORD_TRANSIT_V363_DELIVERY_SOURCE_METADATA.source_document_version,
       normId: FORD_TRANSIT_V363_DELIVERY_NORM_ID, normFamilyId: "norm_family:delivery:ford_transit_v363",

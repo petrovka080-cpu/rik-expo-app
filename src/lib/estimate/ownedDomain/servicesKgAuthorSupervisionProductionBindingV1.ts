@@ -121,6 +121,7 @@ export function applyKgAuthorSupervisionPhysicalNormToServicesBoqV1(
     if (row.code !== "labor_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Авторский надзор по приложению 5 к приказу Минстроя КР №52-нпа",
       templateId: "services:kg-author-supervision-order-52-npa:v1",
       templateVersion: KG_AUTHOR_SUPERVISION_SOURCE_METADATA.source_document_version,

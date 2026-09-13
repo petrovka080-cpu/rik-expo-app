@@ -140,6 +140,7 @@ export function applyReinforcementBarSchedulePhysicalNormToBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Арматурная сталь по утверждённой ведомости стержней",
       templateId: "reinforcement:approved-bar-schedule:fhwa-rics:v1",
       templateVersion: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,

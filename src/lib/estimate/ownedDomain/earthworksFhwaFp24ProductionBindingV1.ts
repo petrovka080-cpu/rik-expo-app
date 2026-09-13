@@ -56,7 +56,7 @@ export function applyFhwaFp24PhysicalNormToEarthworksBoqV1(plan: EstimatorReason
     parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "labor_1") return row;
-    const source = { ...row, name: "Послойная укладка и приёмка structural backfill по FHWA FP-24 §208",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Послойная укладка и приёмка structural backfill по FHWA FP-24 §208",
       templateId: "earthworks:fhwa-fp24:section208:v1", templateVersion: FHWA_FP24_SECTION208_SOURCE_METADATA.source_document_version,
       normId: FHWA_FP24_SECTION208_NORM_ID, normFamilyId: "norm_family:earthworks:fhwa_fp24_section208",
       normSourceId: FHWA_FP24_SECTION208_SOURCE_ID, normSourceTitle: FHWA_FP24_SECTION208_SOURCE_METADATA.source_title,

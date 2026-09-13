@@ -108,6 +108,7 @@ export function applyRockwoolFixrockPhysicalNormToFacadeBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Держатели теплоизоляции ROCKWOOL Fixrock для обычного крепления VHF",
       templateId: "facade:rockwool-fixrock-conventional-holders:v1",
       templateVersion: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.source_document_version,

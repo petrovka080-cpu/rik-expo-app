@@ -145,6 +145,7 @@ export function applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Покрытие Jotun Hardtop XP при 100 мкм сухой плёнки — теоретический объём",
       templateId: "metalwork:jotun-hardtop-xp-100um:v1",
       templateVersion: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.source_document_version,

@@ -53,7 +53,7 @@ export function applyTennantT350PhysicalNormToCleaningBoqV1(plan: EstimatorReaso
     material_system: "TENNANT_T350_600MM_DUAL_DISK_CONVENTIONAL", scope_mode: "FULL_APPLICABLE_SCOPE", parameter_values: explicitValues(parameters) });
   return rows.map((row) => {
     if (row.code !== "equipment_1") return row;
-    const source = { ...row, name: "Tennant T350 600 мм dual-disk — машинные часы conventional",
+    const source = { ...row, professionalPhysicalNormApplicabilityV1: resolution, name: "Tennant T350 600 мм dual-disk — машинные часы conventional",
       templateId: "cleaning:tennant-t350-600mm-conventional:v1", templateVersion: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_document_version,
       normId: TENNANT_T350_CONVENTIONAL_NORM_ID, normFamilyId: "norm_family:cleaning:tennant_t350",
       normSourceId: TENNANT_T350_CONVENTIONAL_SOURCE_ID, normSourceTitle: TENNANT_T350_CONVENTIONAL_SOURCE_METADATA.source_title,

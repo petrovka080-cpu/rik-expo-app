@@ -168,6 +168,7 @@ export function applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
     if (row.code !== "material_1") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       name: "Труба Wavin Osma C3766BK PVC-U DN100/OD110, раструбная, 3 м — проектный заказ",
       templateId: "sewerage:wavin-osma-c3766bk-110mm-3m:v1",
       templateVersion: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA.source_document_version,

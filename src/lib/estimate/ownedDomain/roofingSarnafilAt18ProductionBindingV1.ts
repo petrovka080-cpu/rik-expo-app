@@ -184,6 +184,7 @@ export function applySarnafilAt18PhysicalNormToRoofBoqV1(
     if (row.code !== "waterproofing") return row;
     const source = {
       ...row,
+      professionalPhysicalNormApplicabilityV1: resolution,
       templateId: "roof-waterproofing:sarnafil-at18-field-layout:v1",
       templateVersion: SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA.source_document_version,
       normId: SARNAFIL_AT18_FIELD_80MM_NORM_ID,
