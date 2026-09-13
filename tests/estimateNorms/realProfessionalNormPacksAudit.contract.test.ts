@@ -844,6 +844,11 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("production_norm_registry_invalid_bindings");
     expect(source).toContain("production_unbound_norm_requirements");
     expect(source).toContain("production_norm_consumer_inventory_complete");
+    expect(source).toContain("CURRENT_MANIFEST_AUDIT_FILE");
+    expect(source).toContain("AI_ESTIMATE_CURRENT_MANIFEST_AUDIT_FILE");
+    expect(source).toContain("current_manifest_consumer_inventory_complete");
+    expect(source).toContain("current_manifest_consumer_inventory_incomplete");
+    expect(source).toContain("current_manifest_consumer_row_delta");
     expect(source).toContain("consumer_work_basis_units");
     expect(source).toContain("consumer_resource_output_units");
     expect(source).toContain("production_norm_registry_dimensional_binding_valid");

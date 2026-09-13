@@ -33,6 +33,9 @@ const PROFESSIONAL_NORM_PACK_ROOT = "data/estimate-norms/professional";
 const REMEDIATION_PLAN_FILE = "work-group-remediation-plan.json";
 const PREVIOUS_AUDIT_ROOT = ".release-runtime/ai-estimate-norm-base-reality-and-source-quality-audit";
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-real-professional-norm-packs";
+const CURRENT_MANIFEST_AUDIT_FILE =
+  ".release-runtime/r4a13-4/platform-core-global/manifest-core-norm/05_MANIFEST_CORE_NORM_AUDIT.json";
+const REQUIRED_CURRENT_MANIFEST_STATUS = "GREEN_R4_A13_4_MANIFEST_CORE_NORM_INVENTORY";
 const REQUIRED_PREVIOUS_STATUS = "STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL";
 const HARDCODED_PREVIOUS_STATUS = "STOP_HARDCODED_PRODUCTION_NORM_RATE_FOUND";
 const SOURCE_QUALITY_GREEN_STATUS = "GREEN_AI_ESTIMATE_NORM_BASE_REALITY_AND_SOURCE_QUALITY_AUDIT_NO_BUILDS";
@@ -78,6 +81,26 @@ type PreviousNormRealitySummary = {
   real_hardcoded_production_rate_count?: number;
   work_groups_with_only_generic_norms?: string[];
   taxonomy_work_groups_without_norm_records?: string[];
+};
+
+type CurrentManifestNormAudit = {
+  schemaVersion?: string;
+  status?: string;
+  runtime?: {
+    definitionReleaseId?: string;
+    sourceHead?: string;
+  };
+  catalog?: {
+    currentRuntimeDefinitions?: number;
+    releaseStoredDefinitionCount?: number;
+    identityCounts?: Record<string, number>;
+  };
+  definitions?: {
+    resourceCount?: number;
+    tracedResourceCount?: number;
+    uncoveredResourceCount?: number;
+    invalidTraceResourceCount?: number;
+  };
 };
 
 type SourceRegistry = {
@@ -209,6 +232,15 @@ function latestPreviousSummary(): { file: string; summary: PreviousNormRealitySu
     .sort((left, right) => right.localeCompare(left));
   const file = candidates[0];
   return file ? { file, summary: readJson<PreviousNormRealitySummary>(file) } : null;
+}
+
+function currentManifestNormAudit(): { file: string; summary: CurrentManifestNormAudit } | null {
+  const configured = process.env.AI_ESTIMATE_CURRENT_MANIFEST_AUDIT_FILE?.trim();
+  const file = configured
+    ? path.resolve(process.cwd(), configured)
+    : path.join(process.cwd(), CURRENT_MANIFEST_AUDIT_FILE);
+  if (!pathExists(file)) return null;
+  return { file, summary: readJson<CurrentManifestNormAudit>(file) };
 }
 
 function inspectApartmentReferenceModel(): Record<string, unknown> {
@@ -587,6 +619,7 @@ function main(): void {
   requireAllFlag();
 
   const previous = latestPreviousSummary();
+  const currentManifest = currentManifestNormAudit();
   const apartmentReference = inspectApartmentReferenceModel();
   const planFile = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT, REMEDIATION_PLAN_FILE);
   const plan = pathExists(planFile) ? readJson<WorkGroupRemediationPlan>(planFile) : null;
@@ -642,6 +675,24 @@ function main(): void {
   const consumerInventory = inspectProductionNormConsumerInventory();
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
+  const currentManifestResourceCount = currentManifest?.summary.definitions?.resourceCount ?? null;
+  const currentManifestDefinitionCount = currentManifest?.summary.catalog?.currentRuntimeDefinitions ?? null;
+  const currentManifestValid = Boolean(
+    currentManifest &&
+    currentManifest.summary.status === REQUIRED_CURRENT_MANIFEST_STATUS &&
+    typeof currentManifestResourceCount === "number" &&
+    currentManifestResourceCount > 0 &&
+    typeof currentManifestDefinitionCount === "number" &&
+    currentManifestDefinitionCount > 0 &&
+    currentManifest.summary.definitions?.uncoveredResourceCount === 0 &&
+    currentManifest.summary.definitions?.invalidTraceResourceCount === 0,
+  );
+  const currentManifestConsumerInventoryComplete = Boolean(
+    currentManifestValid && currentManifestResourceCount === consumerRowsCount,
+  );
+  const currentManifestConsumerRowDelta = typeof currentManifestResourceCount === "number"
+    ? currentManifestResourceCount - consumerRowsCount
+    : null;
   const invalidProductionBindingDimensions = consumerInventory.flatMap((entry) =>
     entry.invalid_registered_norm_bindings
   );
@@ -872,6 +923,8 @@ function main(): void {
     allProductionNormRegistryGroupsPresent;
 
   const green = previousStatusOk &&
+    currentManifestValid &&
+    currentManifestConsumerInventoryComplete &&
     planComplete &&
     realSourceCoverageComplete &&
     allPacksValid &&
@@ -900,6 +953,25 @@ function main(): void {
     previous_summary_path: previous
       ? path.relative(process.cwd(), previous.file).replace(/\\/g, "/")
       : null,
+    current_manifest_audit_path: currentManifest
+      ? path.relative(process.cwd(), currentManifest.file).replace(/\\/g, "/")
+      : null,
+    current_manifest_status: currentManifest?.summary.status ?? null,
+    current_manifest_schema_version: currentManifest?.summary.schemaVersion ?? null,
+    current_manifest_source_head: currentManifest?.summary.runtime?.sourceHead ?? null,
+    current_manifest_definition_release_id:
+      currentManifest?.summary.runtime?.definitionReleaseId ?? null,
+    current_manifest_definition_count: currentManifestDefinitionCount,
+    current_manifest_resource_count: currentManifestResourceCount,
+    current_manifest_traced_resource_count:
+      currentManifest?.summary.definitions?.tracedResourceCount ?? null,
+    current_manifest_uncovered_resource_count:
+      currentManifest?.summary.definitions?.uncoveredResourceCount ?? null,
+    current_manifest_invalid_trace_resource_count:
+      currentManifest?.summary.definitions?.invalidTraceResourceCount ?? null,
+    current_manifest_valid: currentManifestValid,
+    current_manifest_consumer_inventory_complete: currentManifestConsumerInventoryComplete,
+    current_manifest_consumer_row_delta: currentManifestConsumerRowDelta,
     template_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
     norm_records_count: previousSummary.norm_records_count ?? 599000,
     production_norm_consumer_rows_count: consumerRowsCount,
@@ -1155,6 +1227,12 @@ function main(): void {
       !physicalNormBindingDispositionComplete
         ? `unregistered_physical_norm_items:${unregisteredPhysicalNorms.length}`
         : "",
+      !currentManifestValid
+        ? "current_manifest_norm_audit_missing_or_invalid"
+        : "",
+      currentManifestValid && !currentManifestConsumerInventoryComplete
+        ? `current_manifest_consumer_inventory_incomplete:${consumerRowsCount}/${currentManifestResourceCount}`
+        : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
         ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
@@ -1178,6 +1256,12 @@ function main(): void {
     final_status: summary.final_status,
     runtime_summary_path: summary.runtime_summary_path,
     previous_status: summary.previous_status,
+    current_manifest_status: summary.current_manifest_status,
+    current_manifest_definition_count: summary.current_manifest_definition_count,
+    current_manifest_resource_count: summary.current_manifest_resource_count,
+    current_manifest_consumer_inventory_complete:
+      summary.current_manifest_consumer_inventory_complete,
+    current_manifest_consumer_row_delta: summary.current_manifest_consumer_row_delta,
     template_count: summary.template_count,
     norm_records_count: summary.norm_records_count,
     production_norm_consumer_rows_count: summary.production_norm_consumer_rows_count,
