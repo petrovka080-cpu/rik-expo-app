@@ -65,7 +65,7 @@ export function classifyRealProfessionalNormAuditOutcome(
   if (!input.acceptanceDenominatorComplete) {
     return {
       finalStatus: STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE,
-      nextRequiredAction: "reconcile_current_manifest_and_production_norm_consumer_denominators",
+      nextRequiredAction: "repair_current_manifest_norm_source_admission_and_verify_catalog_projection",
     };
   }
   if (!input.catalogAdmissionComplete) {
@@ -86,6 +86,8 @@ const PREVIOUS_AUDIT_ROOT = ".release-runtime/ai-estimate-norm-base-reality-and-
 const RUNTIME_ROOT = ".release-runtime/ai-estimate-real-professional-norm-packs";
 const CURRENT_MANIFEST_AUDIT_FILE =
   ".release-runtime/r4a13-4/platform-core-global/manifest-core-norm/05_MANIFEST_CORE_NORM_AUDIT.json";
+const CURRENT_MANIFEST_COVERAGE_LEDGER_BASENAME =
+  "01_CURRENT_WORK_IDENTITY_COVERAGE_LEDGER.jsonl";
 const REQUIRED_CURRENT_MANIFEST_STATUS = "GREEN_R4_A13_4_MANIFEST_CORE_NORM_INVENTORY";
 const REQUIRED_PREVIOUS_STATUS = "STOP_NORM_BASE_STRUCTURAL_BUT_NOT_PROFESSIONAL";
 const HARDCODED_PREVIOUS_STATUS = "STOP_HARDCODED_PRODUCTION_NORM_RATE_FOUND";
@@ -151,7 +153,19 @@ type CurrentManifestNormAudit = {
     tracedResourceCount?: number;
     uncoveredResourceCount?: number;
     invalidTraceResourceCount?: number;
+    admittedDefinitionsWithUnregisteredNormSources?: number;
   };
+};
+
+export type ManifestNormSourceRegistryAdmission = {
+  admitted_definition_count: number;
+  declared_norm_source_ids_count: number;
+  accepted_norm_source_ids_count: number;
+  unregistered_norm_source_ids: string[];
+  unregistered_norm_source_id_class_counts: Record<string, number>;
+  admitted_definitions_with_unregistered_norm_sources_count: number;
+  admitted_definitions_with_unregistered_norm_sources_samples: string[];
+  complete: boolean;
 };
 
 type SourceRegistry = {
@@ -272,6 +286,126 @@ function pathExists(filePath: string): boolean {
   } catch {
     return false;
   }
+}
+
+export function inspectManifestNormSourceRegistryAdmission(
+  jsonLines: string,
+  acceptedNormSourceIds: ReadonlySet<string>,
+): ManifestNormSourceRegistryAdmission {
+  let admittedDefinitionCount = 0;
+  let affectedDefinitionCount = 0;
+  const declaredSourceIds = new Set<string>();
+  const acceptedSourceIds = new Set<string>();
+  const unregisteredSourceIds = new Set<string>();
+  const affectedDefinitionSamples: string[] = [];
+
+  for (const line of jsonLines.split(/\r?\n/u)) {
+    if (!line.trim()) continue;
+    const row = JSON.parse(line) as {
+      canonicalId?: string;
+      admissionState?: string;
+      normPackVersion?: { sourceIds?: unknown[] } | null;
+    };
+    if (!String(row.admissionState ?? "").startsWith("ADMITTED_")) continue;
+    admittedDefinitionCount += 1;
+    const sourceIds = (row.normPackVersion?.sourceIds ?? [])
+      .map((sourceId) => String(sourceId ?? "").trim())
+      .filter(Boolean);
+    let affected = false;
+    for (const sourceId of sourceIds) {
+      declaredSourceIds.add(sourceId);
+      if (acceptedNormSourceIds.has(sourceId)) {
+        acceptedSourceIds.add(sourceId);
+      } else {
+        affected = true;
+        unregisteredSourceIds.add(sourceId);
+      }
+    }
+    if (affected) {
+      affectedDefinitionCount += 1;
+      if (affectedDefinitionSamples.length < 20) {
+        affectedDefinitionSamples.push(String(row.canonicalId ?? "unknown"));
+      }
+    }
+  }
+
+  const unregisteredNormSourceIdClassCounts = [...unregisteredSourceIds].reduce<Record<string, number>>(
+    (counts, sourceId) => {
+      const classification = sourceId.startsWith("src_professional_norm_pack_catalog_")
+        ? "generated_catalog_default"
+        : sourceId.startsWith("src_professional_norm_pack_")
+          ? "unregistered_professional_pack"
+          : /^(?:project_|selected_|verified_|engineering_assumption:)/u.test(sourceId)
+            ? "project_or_engineering_input"
+            : "other_unregistered_source";
+      counts[classification] = (counts[classification] ?? 0) + 1;
+      return counts;
+    },
+    {},
+  );
+
+  return {
+    admitted_definition_count: admittedDefinitionCount,
+    declared_norm_source_ids_count: declaredSourceIds.size,
+    accepted_norm_source_ids_count: acceptedSourceIds.size,
+    unregistered_norm_source_ids: [...unregisteredSourceIds].sort(),
+    unregistered_norm_source_id_class_counts: unregisteredNormSourceIdClassCounts,
+    admitted_definitions_with_unregistered_norm_sources_count: affectedDefinitionCount,
+    admitted_definitions_with_unregistered_norm_sources_samples: affectedDefinitionSamples,
+    complete: admittedDefinitionCount > 0 && unregisteredSourceIds.size === 0,
+  };
+}
+
+function inspectCurrentManifestNormSourceRegistryAdmission(
+  manifestAuditFile: string | null,
+): ManifestNormSourceRegistryAdmission & { ledger_path: string | null; ledger_exists: boolean } {
+  const empty = {
+    admitted_definition_count: 0,
+    declared_norm_source_ids_count: 0,
+    accepted_norm_source_ids_count: 0,
+    unregistered_norm_source_ids: [],
+    unregistered_norm_source_id_class_counts: {},
+    admitted_definitions_with_unregistered_norm_sources_count: 0,
+    admitted_definitions_with_unregistered_norm_sources_samples: [],
+    complete: false,
+  };
+  if (!manifestAuditFile) return { ...empty, ledger_path: null, ledger_exists: false };
+  const ledgerFile = path.join(path.dirname(manifestAuditFile), CURRENT_MANIFEST_COVERAGE_LEDGER_BASENAME);
+  if (!pathExists(ledgerFile)) {
+    return {
+      ...empty,
+      ledger_path: path.relative(process.cwd(), ledgerFile).replace(/\\/g, "/"),
+      ledger_exists: false,
+    };
+  }
+
+  const sourceRegistry = pathExists(path.join(process.cwd(), SOURCE_REGISTRY_FILE))
+    ? readJson<SourceRegistry>(path.join(process.cwd(), SOURCE_REGISTRY_FILE))
+    : { sources: [] };
+  const acceptedNormSourceIds = new Set([
+    ...(sourceRegistry.sources ?? [])
+      .filter((source) =>
+        source.is_source_backed_professional_norm_pack === true &&
+        source.is_generated_family_default !== true &&
+        source.is_historical_price_only !== true &&
+        !String(source.source_id ?? "").startsWith("src_professional_norm_pack_catalog_") &&
+        Boolean(String(source.source_url_or_document_ref ?? "").trim()) &&
+        ["reviewed", "needs_regional_review"].includes(String(source.quality_status ?? ""))
+      )
+      .map((source) => String(source.source_id)),
+    ...constructionNormativeRegistryV1.list()
+      .filter((source) => source.status === "active" || source.status === "project-specific")
+      .map((source) => source.source_id),
+  ]);
+  const result = inspectManifestNormSourceRegistryAdmission(
+    readFileSync(ledgerFile, "utf8"),
+    acceptedNormSourceIds,
+  );
+  return {
+    ...result,
+    ledger_path: path.relative(process.cwd(), ledgerFile).replace(/\\/g, "/"),
+    ledger_exists: true,
+  };
 }
 
 function latestPreviousSummary(): { file: string; summary: PreviousNormRealitySummary } | null {
@@ -671,6 +805,9 @@ function main(): void {
 
   const previous = latestPreviousSummary();
   const currentManifest = currentManifestNormAudit();
+  const currentManifestNormSourceAdmission = inspectCurrentManifestNormSourceRegistryAdmission(
+    currentManifest?.file ?? null,
+  );
   const apartmentReference = inspectApartmentReferenceModel();
   const planFile = path.join(process.cwd(), PROFESSIONAL_NORM_PACK_ROOT, REMEDIATION_PLAN_FILE);
   const plan = pathExists(planFile) ? readJson<WorkGroupRemediationPlan>(planFile) : null;
@@ -727,7 +864,11 @@ function main(): void {
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
   const currentManifestResourceCount = currentManifest?.summary.definitions?.resourceCount ?? null;
+  const currentManifestTracedResourceCount =
+    currentManifest?.summary.definitions?.tracedResourceCount ?? null;
   const currentManifestDefinitionCount = currentManifest?.summary.catalog?.currentRuntimeDefinitions ?? null;
+  const currentManifestUnregisteredNormSourceDefinitions =
+    currentManifestNormSourceAdmission.admitted_definitions_with_unregistered_norm_sources_count;
   const currentManifestValid = Boolean(
     currentManifest &&
     currentManifest.summary.status === REQUIRED_CURRENT_MANIFEST_STATUS &&
@@ -735,13 +876,22 @@ function main(): void {
     currentManifestResourceCount > 0 &&
     typeof currentManifestDefinitionCount === "number" &&
     currentManifestDefinitionCount > 0 &&
+    currentManifestNormSourceAdmission.complete &&
     currentManifest.summary.definitions?.uncoveredResourceCount === 0 &&
     currentManifest.summary.definitions?.invalidTraceResourceCount === 0,
   );
   const currentManifestConsumerInventoryComplete = Boolean(
-    currentManifestValid && currentManifestResourceCount === consumerRowsCount,
+    currentManifestValid &&
+    currentManifestTracedResourceCount === currentManifestResourceCount,
   );
-  const currentManifestConsumerRowDelta = typeof currentManifestResourceCount === "number"
+  // The generated 10k catalog and the immutable cumulative runtime manifest are
+  // different projections. The latter also contains canonical expanded and
+  // special runtime definitions, while admitted successors may replace row
+  // shapes inside the 10k base scope. Their totals must be audited independently,
+  // never forced to equality.
+  const currentManifestAndCatalogProjectionSameScope =
+    currentManifestDefinitionCount === PRODUCTION_WORK_DEFINITIONS_10000.length;
+  const currentManifestVsCatalogProjectionRowDelta = typeof currentManifestResourceCount === "number"
     ? currentManifestResourceCount - consumerRowsCount
     : null;
   const invalidProductionBindingDimensions = consumerInventory.flatMap((entry) =>
@@ -1028,9 +1178,15 @@ function main(): void {
       currentManifest?.summary.definitions?.uncoveredResourceCount ?? null,
     current_manifest_invalid_trace_resource_count:
       currentManifest?.summary.definitions?.invalidTraceResourceCount ?? null,
+    current_manifest_unregistered_norm_source_definitions:
+      currentManifestUnregisteredNormSourceDefinitions,
+    current_manifest_norm_source_registry_admission:
+      currentManifestNormSourceAdmission,
     current_manifest_valid: currentManifestValid,
     current_manifest_consumer_inventory_complete: currentManifestConsumerInventoryComplete,
-    current_manifest_consumer_row_delta: currentManifestConsumerRowDelta,
+    current_manifest_and_catalog_projection_same_scope:
+      currentManifestAndCatalogProjectionSameScope,
+    current_manifest_vs_catalog_projection_row_delta: currentManifestVsCatalogProjectionRowDelta,
     template_count: PRODUCTION_WORK_DEFINITIONS_10000.length,
     norm_records_count: previousSummary.norm_records_count ?? 599000,
     production_norm_consumer_rows_count: consumerRowsCount,
@@ -1289,8 +1445,11 @@ function main(): void {
       !currentManifestValid
         ? "current_manifest_norm_audit_missing_or_invalid"
         : "",
+      currentManifestNormSourceAdmission.unregistered_norm_source_ids.length > 0
+        ? `current_manifest_unregistered_norm_sources:${currentManifestNormSourceAdmission.unregistered_norm_source_ids.length}`
+        : "",
       currentManifestValid && !currentManifestConsumerInventoryComplete
-        ? `current_manifest_consumer_inventory_incomplete:${consumerRowsCount}/${currentManifestResourceCount}`
+        ? `current_manifest_trace_inventory_incomplete:${currentManifestTracedResourceCount}/${currentManifestResourceCount}`
         : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
@@ -1320,7 +1479,10 @@ function main(): void {
     current_manifest_resource_count: summary.current_manifest_resource_count,
     current_manifest_consumer_inventory_complete:
       summary.current_manifest_consumer_inventory_complete,
-    current_manifest_consumer_row_delta: summary.current_manifest_consumer_row_delta,
+    current_manifest_and_catalog_projection_same_scope:
+      summary.current_manifest_and_catalog_projection_same_scope,
+    current_manifest_vs_catalog_projection_row_delta:
+      summary.current_manifest_vs_catalog_projection_row_delta,
     template_count: summary.template_count,
     norm_records_count: summary.norm_records_count,
     production_norm_consumer_rows_count: summary.production_norm_consumer_rows_count,

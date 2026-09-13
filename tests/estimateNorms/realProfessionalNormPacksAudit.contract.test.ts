@@ -821,7 +821,7 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("STOP_REAL_NORM_SOURCES_MISSING_FOR_WORK_GROUPS");
     expect(source).toContain("STOP_REAL_NORM_ACCEPTANCE_DENOMINATOR_INCOMPLETE");
     expect(source).toContain("STOP_REAL_NORM_CATALOG_ADMISSION_INCOMPLETE");
-    expect(source).toContain("reconcile_current_manifest_and_production_norm_consumer_denominators");
+    expect(source).toContain("repair_current_manifest_norm_source_admission_and_verify_catalog_projection");
     expect(source).toContain("replace_unverified_catalog_defaults_with_applicability_bound_norm_bindings");
     expect(source).toContain("STOP_NORM_REALITY_AUDIT_NOT_FOUND");
     expect(source).toContain("ai-estimate-real-professional-norm-packs");
@@ -851,8 +851,10 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("AI_ESTIMATE_CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("current_manifest_consumer_inventory_complete");
-    expect(source).toContain("current_manifest_consumer_inventory_incomplete");
-    expect(source).toContain("current_manifest_consumer_row_delta");
+    expect(source).toContain("current_manifest_trace_inventory_incomplete");
+    expect(source).toContain("current_manifest_and_catalog_projection_same_scope");
+    expect(source).toContain("current_manifest_vs_catalog_projection_row_delta");
+    expect(source).toContain("admittedDefinitionsWithUnregisteredNormSources");
     expect(source).toContain("consumer_work_basis_units");
     expect(source).toContain("consumer_resource_output_units");
     expect(source).toContain("production_norm_registry_dimensional_binding_valid");
