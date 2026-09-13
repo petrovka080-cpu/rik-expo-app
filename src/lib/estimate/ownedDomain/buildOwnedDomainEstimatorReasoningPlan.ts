@@ -21,6 +21,10 @@ import {
   extractLegrand049272BusScsCanonicalParametersV1,
   legrand049272BusScsMissingQuestionsRuV1,
 } from "./lowVoltageLegrand049272ProductionBindingV1";
+import {
+  extractJotunHardtopXpCanonicalParametersV1,
+  jotunHardtopXpMissingQuestionsRuV1,
+} from "./metalworkJotunHardtopXpProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -288,6 +292,75 @@ function lowVoltageLegrand049272Plan(
   };
 }
 
+function metalworkJotunHardtopXpPlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractJotunHardtopXpCanonicalParametersV1(text);
+  const coatedArea = canonicalParameters?.coated_steel_area_m2;
+  return {
+    intent: "estimate",
+    workKey: "metalwork_jotun_hardtop_xp_100um_coating",
+    titleRu: "Профессиональная предварительная смета: покрытие стали Jotun Hardtop XP",
+    category: "painting",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "metalwork",
+      object: "steel_protective_coating_system",
+      operation: "coating",
+      method: "approved_two_component_topcoat_application",
+      materialSystem: "jotun_hardtop_xp_coating_system",
+      regulated: true,
+      confidence: 0.9,
+    },
+    quantities: {
+      areaM2: typeof coatedArea === "number" ? coatedArea : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "двухкомпонентное покрытие Jotun Hardtop XP",
+        "материалы маскирования и защиты смежных поверхностей",
+        "материалы контроля и ремонта совместимого предыдущего слоя",
+      ],
+      requiredLabor: [
+        "проверка системы покрытия и профиля поверхности",
+        "подготовка и обеспыливание стальной поверхности",
+        "смешивание компонентов Jotun Hardtop XP 10:1",
+        "нанесение покрытия утверждённым способом",
+        "контроль толщины сухой плёнки 100 мкм",
+      ],
+      requiredEquipmentOrWarnings: [
+        "оборудование утверждённого способа нанесения",
+        "толщиномер сухой плёнки",
+        "средства вентиляции и защиты персонала",
+      ],
+      requiredLogisticsOrWarnings: [
+        "доставка комплектов Jotun Hardtop XP",
+        "хранение компонентов по паспорту производителя",
+      ],
+      exclusions: [
+        "Теоретические 6,3 м²/л не включают потери нанесения, геометрию профиля и ремонт дефектов.",
+        "Округление до комплектов 5/20 л выполняется только после выбора закупочной комбинации.",
+        "Яркие и специальные цвета требуют отдельной проверки указаний производителя.",
+      ],
+      clarifyingQuestions: [
+        "Утверждены ли вся система покрытия и совместимость предыдущего слоя?",
+        "Какой профиль поверхности и способ нанесения зафиксированы технологической картой?",
+        ...jotunHardtopXpMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -426,6 +499,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? fireSafetySiemensFdb221Plan(input.text, currency)
     : input.owner === "low_voltage"
       ? lowVoltageLegrand049272Plan(input.text, currency)
+    : input.owner === "metalwork"
+      ? metalworkJotunHardtopXpPlan(input.text, currency)
     : input.owner === "roof_waterproofing"
       ? roofWaterproofingPlan(input.text, currency)
       : insulationPlan(input.text, currency);

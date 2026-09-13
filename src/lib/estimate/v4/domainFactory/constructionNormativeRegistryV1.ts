@@ -100,6 +100,11 @@ import {
   LEGRAND_049272_BUS_SCS_SOURCE_ID,
   LEGRAND_049272_BUS_SCS_SOURCE_METADATA,
 } from "./lowVoltageLegrand049272PhysicalNormV1";
+import {
+  JOTUN_HARDTOP_XP_100UM_PRODUCT_PROFILE_ID,
+  JOTUN_HARDTOP_XP_100UM_SOURCE_ID,
+  JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA,
+} from "./metalworkJotunHardtopXpPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -205,6 +210,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: JOTUN_HARDTOP_XP_100UM_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Jotun",
+    document_code: "Jotun Hardtop XP TDS 4378",
+    title: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.source_title,
+    edition: "Technical Data Sheet issued 24 June 2026",
+    revision: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2026-06-24",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["APPLY"],
+    material_system_applicability: ["JOTUN_HARDTOP_XP"],
+    product_profile_applicability: [JOTUN_HARDTOP_XP_100UM_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.exact_locator,
+    unit_basis: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.rate_unit,
+    official_reference: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.source_url,
+    version: JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public Jotun manufacturer data used only for the theoretical Hardtop XP quantity at 100 um DFT and 6.3 m2/L. The executable profile requires an approved coating system, surface profile and 10:1 mixing ratio, applies no automatic application loss, and performs no 5/20 L kit rounding.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: LEGRAND_049272_BUS_SCS_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

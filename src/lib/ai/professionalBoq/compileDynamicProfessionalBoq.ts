@@ -21,6 +21,7 @@ import { applySarnafilAt18PhysicalNormToRoofBoqV1 } from "../../estimate/ownedDo
 import { applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1 } from "../../estimate/ownedDomain/insulationRockwoolComfortboard80ProductionBindingV1";
 import { applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1 } from "../../estimate/ownedDomain/fireSafetySiemensFdb221ProductionBindingV1";
 import { applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1 } from "../../estimate/ownedDomain/lowVoltageLegrand049272ProductionBindingV1";
+import { applyJotunHardtopXpPhysicalNormToMetalworkBoqV1 } from "../../estimate/ownedDomain/metalworkJotunHardtopXpProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1710,13 +1711,16 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
+  const normBoundRows = applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
     plan,
-    applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
+    applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
       plan,
-      applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+      applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
         plan,
-        applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+        applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+          plan,
+          applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+        ),
       ),
     ),
   );

@@ -4,8 +4,10 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "fire_safety"
   | "insulation"
   | "low_voltage"
+  | "metalwork"
   | "roof_waterproofing";
 
+const DIRECT_JOTUN_HARDTOP_XP_RE = /jotun\s+hardtop\s+xp/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -22,6 +24,7 @@ const DIRECT_INSULATION_RE =
 export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
+  if (DIRECT_JOTUN_HARDTOP_XP_RE.test(prompt)) return "metalwork";
   if (DIRECT_LEGRAND_049272_RE.test(prompt)) return "low_voltage";
   // Product-exact fire-safety ownership must win even when the request also
   // contains cable parameters. FDB221 is a detector base, not a generic
