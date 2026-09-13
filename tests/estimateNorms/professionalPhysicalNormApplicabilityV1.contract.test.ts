@@ -106,6 +106,7 @@ import {
   electricalCompleteDomainFactory,
 } from "../../src/lib/estimate/v4/domains/electricalComplete";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
+import { classifyProfessionalNormSourceAdmission } from "../../src/lib/estimate/professionalNormSourceAdmission";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const INSTALL_WORK_KEY = "heating_hvac_interior_warm_floor_install_standard";
@@ -793,7 +794,9 @@ describe("professional physical norm applicability V1", () => {
     expect(pipeRow).toMatchObject({
       quantity: 690,
       unit: "m",
-      normSourceId: "kg_krer_2015_application_guidance",
+      normId: UPONOR_UFH_150MM_NORM_ID,
+      normSourceId: UPONOR_UFH_150MM_SOURCE_ID,
+      normVersion: UPONOR_UFH_150MM_SOURCE_METADATA.source_document_version,
     });
     expect(pipeRow?.sourceParameters?.normativeSourceIds).toEqual([
       "kg_krer_2015_application_guidance",
@@ -804,6 +807,11 @@ describe("professional physical norm applicability V1", () => {
       source_id: UPONOR_UFH_150MM_SOURCE_ID,
       source_definition_hash: UPONOR_UFH_150MM_SOURCE_METADATA.definition_hash,
       calculated_pipe_length_m: 690,
+    });
+    expect(classifyProfessionalNormSourceAdmission(pipeRow ?? {})).toEqual({
+      admitted: true,
+      route: "CANONICAL_PHYSICAL_APPLICABILITY",
+      reason: "ADMITTED_CANONICAL_PHYSICAL_APPLICABILITY",
     });
   });
 
@@ -1251,7 +1259,13 @@ describe("professional physical norm applicability V1", () => {
       .toContain(KNAUF_D112_UD_RUNNER_SOURCE_ID);
     const anchorRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:perimeter_track_anchors`);
-    expect(anchorRow).toMatchObject({ quantity: 40, unit: "item" });
+    expect(anchorRow).toMatchObject({
+      quantity: 40,
+      unit: "item",
+      normId: KNAUF_D112_WALL_FASTENER_NORM_ID,
+      normSourceId: KNAUF_D112_WALL_FASTENER_SOURCE_ID,
+      normVersion: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.source_document_version,
+    });
     expect(anchorRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
     expect(anchorRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_WALL_FASTENER_SOURCE_ID);
     expect(anchorRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1259,9 +1273,16 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: KNAUF_D112_WALL_FASTENER_SOURCE_METADATA.definition_hash,
       calculated_wall_fastener_quantity_piece: 40,
     });
+    expect(classifyProfessionalNormSourceAdmission(anchorRow ?? {})).toMatchObject({ admitted: true });
     const substructureAnchorRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:slab_hanger_anchors`);
-    expect(substructureAnchorRow).toMatchObject({ quantity: 120, unit: "item" });
+    expect(substructureAnchorRow).toMatchObject({
+      quantity: 120,
+      unit: "item",
+      normId: KNAUF_D112_SUBSTRUCTURE_ANCHOR_NORM_ID,
+      normSourceId: KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID,
+      normVersion: KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_METADATA.source_document_version,
+    });
     expect(substructureAnchorRow?.sourceParameters?.normativeSourceIds)
       .toContain(KNAUF_D112_SUBSTRUCTURE_ANCHOR_SOURCE_ID);
     expect(substructureAnchorRow?.sourceParameters?.parameterSourceIds)
@@ -1275,10 +1296,17 @@ describe("professional physical norm applicability V1", () => {
         ],
         calculated_substructure_anchor_quantity_piece: 120,
       });
+    expect(classifyProfessionalNormSourceAdmission(substructureAnchorRow ?? {})).toMatchObject({ admitted: true });
     const udRunnerRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode ===
         `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:perimeter_track`);
-    expect(udRunnerRow).toMatchObject({ quantity: 42, unit: "m" });
+    expect(udRunnerRow).toMatchObject({
+      quantity: 42,
+      unit: "m",
+      normId: KNAUF_D112_UD_RUNNER_NORM_ID,
+      normSourceId: KNAUF_D112_UD_RUNNER_SOURCE_ID,
+      normVersion: KNAUF_D112_UD_RUNNER_SOURCE_METADATA.source_document_version,
+    });
     expect(udRunnerRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_UD_RUNNER_SOURCE_ID);
     expect(udRunnerRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_UD_RUNNER_SOURCE_ID);
     expect(udRunnerRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1291,6 +1319,7 @@ describe("professional physical norm applicability V1", () => {
       calculated_d112_ud_runner_procurement_quantity_m: 42,
       calculated_d112_ud_runner_piece_count: 14,
     });
+    expect(classifyProfessionalNormSourceAdmission(udRunnerRow ?? {})).toMatchObject({ admitted: true });
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_WALL_FASTENER_SOURCE_ID)))
@@ -1508,7 +1537,13 @@ describe("professional physical norm applicability V1", () => {
       .toContain(KNAUF_D112_BOARD_SOURCE_ID);
     const screwRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:first_layer_screws`);
-    expect(screwRow).toMatchObject({ quantity: 1700, unit: "item" });
+    expect(screwRow).toMatchObject({
+      quantity: 1700,
+      unit: "item",
+      normId: KNAUF_D112_TN25_SCREW_NORM_ID,
+      normSourceId: KNAUF_D112_TN25_SCREW_SOURCE_ID,
+      normVersion: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.source_document_version,
+    });
     expect(screwRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
     expect(screwRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_TN25_SCREW_SOURCE_ID);
     expect(screwRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1516,10 +1551,17 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: KNAUF_D112_TN25_SCREW_SOURCE_METADATA.definition_hash,
       calculated_tn25_screw_quantity_piece: 1700,
     });
+    expect(classifyProfessionalNormSourceAdmission(screwRow ?? {})).toMatchObject({ admitted: true });
     const boardRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode ===
         `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:first_layer_gypsum_board`);
-    expect(boardRow).toMatchObject({ quantity: 102, unit: "m2" });
+    expect(boardRow).toMatchObject({
+      quantity: 102,
+      unit: "m2",
+      normId: KNAUF_D112_BOARD_NORM_ID,
+      normSourceId: KNAUF_D112_BOARD_SOURCE_ID,
+      normVersion: KNAUF_D112_BOARD_SOURCE_METADATA.source_document_version,
+    });
     expect(boardRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_BOARD_SOURCE_ID);
     expect(boardRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_BOARD_SOURCE_ID);
     expect(boardRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1528,6 +1570,7 @@ describe("professional physical norm applicability V1", () => {
       calculated_d112_board_procurement_quantity_m2: 102,
       calculated_d112_board_piece_count: 34,
     });
+    expect(classifyProfessionalNormSourceAdmission(boardRow ?? {})).toMatchObject({ admitted: true });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_TN25_SCREW_SOURCE_ID))).toHaveLength(1);
@@ -1742,7 +1785,13 @@ describe("professional physical norm applicability V1", () => {
       .toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
     const compoundRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:base_joint_compound`);
-    expect(compoundRow).toMatchObject({ quantity: 20, unit: "kg" });
+    expect(compoundRow).toMatchObject({
+      quantity: 20,
+      unit: "kg",
+      normId: KNAUF_D112_UNIFLOTT_NORM_ID,
+      normSourceId: KNAUF_D112_UNIFLOTT_SOURCE_ID,
+      normVersion: KNAUF_D112_UNIFLOTT_SOURCE_METADATA.source_document_version,
+    });
     expect(compoundRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
     expect(compoundRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_UNIFLOTT_SOURCE_ID);
     expect(compoundRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1751,10 +1800,17 @@ describe("professional physical norm applicability V1", () => {
       calculated_uniflott_net_quantity_kg: 15.9,
       calculated_uniflott_procurement_quantity_kg: 20,
     });
+    expect(classifyProfessionalNormSourceAdmission(compoundRow ?? {})).toMatchObject({ admitted: true });
     const jointTapeRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode ===
         `${inventory.catalog_id}:drywall-flat-ceiling-v6:row:paper_joint_tape`);
-    expect(jointTapeRow).toMatchObject({ quantity: 75, unit: "m" });
+    expect(jointTapeRow).toMatchObject({
+      quantity: 75,
+      unit: "m",
+      normId: KNAUF_D112_JOINT_TAPE_NORM_ID,
+      normSourceId: KNAUF_D112_JOINT_TAPE_SOURCE_ID,
+      normVersion: KNAUF_D112_JOINT_TAPE_SOURCE_METADATA.source_document_version,
+    });
     expect(jointTapeRow?.sourceParameters?.normativeSourceIds).toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
     expect(jointTapeRow?.sourceParameters?.parameterSourceIds).toContain(KNAUF_D112_JOINT_TAPE_SOURCE_ID);
     expect(jointTapeRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -1763,6 +1819,7 @@ describe("professional physical norm applicability V1", () => {
       calculated_d112_joint_tape_procurement_quantity_m: 75,
       calculated_d112_joint_tape_roll_count: 1,
     });
+    expect(classifyProfessionalNormSourceAdmission(jointTapeRow ?? {})).toMatchObject({ admitted: true });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(KNAUF_D112_UNIFLOTT_SOURCE_ID))).toHaveLength(1);
@@ -3210,7 +3267,13 @@ describe("professional physical norm applicability V1", () => {
       .toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
     const fastenerRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:containment_joint_bolt`);
-    expect(fastenerRow).toMatchObject({ quantity: 40, unit: "item" });
+    expect(fastenerRow).toMatchObject({
+      quantity: 40,
+      unit: "item",
+      normId: LEGRAND_P31_TRAY_JOINT_FASTENER_NORM_ID,
+      normSourceId: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID,
+      normVersion: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.source_document_version,
+    });
     expect(fastenerRow?.sourceParameters?.normativeSourceIds).toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
     expect(fastenerRow?.sourceParameters?.parameterSourceIds).toContain(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID);
     expect(fastenerRow?.sourceParameters?.professionalPhysicalNormApplicabilityV1).toMatchObject({
@@ -3218,6 +3281,7 @@ describe("professional physical norm applicability V1", () => {
       source_definition_hash: LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_METADATA.definition_hash,
       calculated_tray_joint_fastener_quantity_piece: 40,
     });
+    expect(classifyProfessionalNormSourceAdmission(fastenerRow ?? {})).toMatchObject({ admitted: true });
     expect(result.production?.draft?.items
       .filter((row) => (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(LEGRAND_P31_TRAY_JOINT_FASTENER_SOURCE_ID)))

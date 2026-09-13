@@ -3,6 +3,7 @@ import {
   constructionNormativeRegistryV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
   LEGRAND_P31_TRAY_PRODUCT_PROFILE_ID,
+  resolveAppliedProfessionalPhysicalNormIdentityV1,
   resolveProfessionalPhysicalNormParameterValuesV1,
   type NormativeApplicabilityRequestV1,
   type ProfessionalDomainCompileResultV1,
@@ -51,6 +52,7 @@ type ElectricalProductionDraftItemV1 = {
   sourceParameters: Record<string, unknown>;
   templateId: string;
   templateVersion: string;
+  normId: string | null;
   normSourceId: string | null;
   normSourceTitle: string;
   normVersion: string;
@@ -132,6 +134,9 @@ function assertExactNormativeRateResolution(sourceId: string, value: unknown, ex
 export function buildElectricalProductionDraftV1(input: ElectricalProductionDraftInput): ElectricalProductionDraftResult {
   const inventory = ELECTRICAL_DOMAIN_INVENTORY.find((candidate) => candidate.catalog_id === input.catalog_id && candidate.work_key === input.work_key);
   if (!inventory) throw new Error(`ELECTRICAL_EXACT_BINDING_NOT_FOUND:${input.catalog_id}:${input.work_key}`);
+  const physicalNormSourceIds = input.physical_norm_resolution
+    ? input.physical_norm_resolution.source_ids ?? [input.physical_norm_resolution.source_id]
+    : [];
   const rateCodes = input.normative_request.rate_code_by_source_id ?? {};
   assertExactNormativeRateResolution(
     "KG_KRERM_08_2015_ELECTRICAL",
@@ -150,9 +155,7 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
     parent_revision_id: input.parent_revision_id,
     parameter_values: input.parameter_values,
     normative_request: input.normative_request,
-    additional_normative_source_ids: input.physical_norm_resolution
-      ? [input.physical_norm_resolution.source_id]
-      : [],
+    additional_normative_source_ids: physicalNormSourceIds,
     additional_normative_source_types: input.physical_norm_resolution
       ? ["MANUFACTURER_PASSPORT"]
       : [],
@@ -164,6 +167,13 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
   const schema = electricalCompleteDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
   if (!technology || !schema) throw new Error(`ELECTRICAL_PRODUCTION_SCHEMA_NOT_FOUND:${input.catalog_id}`);
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
+  const physicalNormIdentityByRowId = new Map(compilation.compiled_rows.map((row) => [
+    row.row_id,
+    resolveAppliedProfessionalPhysicalNormIdentityV1({
+      resolution: input.physical_norm_resolution,
+      rowParameterSourceIds: row.parameter_source_ids,
+    }),
+  ]));
   const requestedCatalogWorkId = input.catalog_id.startsWith("expanded-template:")
     ? input.catalog_id.slice("expanded-template:".length)
     : inventory.template_id;
@@ -268,16 +278,17 @@ export function buildElectricalProductionDraftV1(input: ElectricalProductionDraf
       applicableSourceIds,
       normativeSourceIds: row.normative_source_ids,
       parameterSourceIds: row.parameter_source_ids,
-      ...(input.physical_norm_resolution &&
-          row.parameter_source_ids.includes(input.physical_norm_resolution.source_id)
+      ...(input.physical_norm_resolution && physicalNormIdentityByRowId.get(row.row_id)
         ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
         : {}),
     },
     templateId: passportId,
     templateVersion: electricalCompleteDomainFactory.package.manifest.domain_version,
-    normSourceId: row.normative_source_ids[0] ?? null,
+    normId: physicalNormIdentityByRowId.get(row.row_id)?.norm_id ?? null,
+    normSourceId: physicalNormIdentityByRowId.get(row.row_id)?.source_id ?? row.normative_source_ids[0] ?? null,
     normSourceTitle: row.normative_source_ids.join(", "),
-    normVersion: compileResult.normative_resolution.normative_profile_version,
+    normVersion: physicalNormIdentityByRowId.get(row.row_id)?.source_document_version ??
+      compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
     priceStatus: informationalOutput || row.unit_price == null ? "PRICE_MISSING" : "REFERENCE_PRICE_ESTIMATE",
     priceSource: informationalOutput || row.unit_price == null ? "missing" : "reference_price_book",

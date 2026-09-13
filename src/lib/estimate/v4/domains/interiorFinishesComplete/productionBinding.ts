@@ -23,6 +23,7 @@ import {
   KNAUF_D112_REFERENCE_CEILING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID,
   KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
+  resolveAppliedProfessionalPhysicalNormIdentityV1,
   resolveProfessionalPhysicalNormParameterValuesV1,
 } from "../../domainFactory";
 import type {
@@ -182,6 +183,13 @@ export function buildInteriorFinishesProductionDraftV1(
     professionalDomainVisibleParameterMetadataV1(parameter, input.parameter_values[parameter.parameter_id]),
   ]));
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
+  const physicalNormIdentityByRowId = new Map(compilation.compiled_rows.map((row) => [
+    row.row_id,
+    resolveAppliedProfessionalPhysicalNormIdentityV1({
+      resolution: input.physical_norm_resolution,
+      rowParameterSourceIds: row.parameter_source_ids,
+    }),
+  ]));
   const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
     itemType: itemType(row.category),
     titleRu: row.title_ru,
@@ -251,8 +259,7 @@ export function buildInteriorFinishesProductionDraftV1(
       priceBasisDate: row.price_basis_date,
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
-      ...(input.physical_norm_resolution &&
-          row.parameter_source_ids.some((sourceId) => physicalNormSourceIds.includes(sourceId))
+      ...(input.physical_norm_resolution && physicalNormIdentityByRowId.get(row.row_id)
         ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
         : {}),
       ...(isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
@@ -265,9 +272,11 @@ export function buildInteriorFinishesProductionDraftV1(
     },
     templateId: registeredProfessionalOwner,
     templateVersion: interiorFinishesDomainFactory.package.manifest.domain_version,
-    normSourceId: applicableSourceIds[0] ?? null,
+    normId: physicalNormIdentityByRowId.get(row.row_id)?.norm_id ?? null,
+    normSourceId: physicalNormIdentityByRowId.get(row.row_id)?.source_id ?? applicableSourceIds[0] ?? null,
     normSourceTitle: applicableSourceIds.join(", "),
-    normVersion: compileResult.normative_resolution.normative_profile_version,
+    normVersion: physicalNormIdentityByRowId.get(row.row_id)?.source_document_version ??
+      compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
     priceStatus: row.unit_price == null ? "PRICE_MISSING" : "USER_ENTERED_PRICE",
     priceSource: row.unit_price == null ? "missing" : "user",

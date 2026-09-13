@@ -3517,6 +3517,50 @@ export type ProfessionalPhysicalNormApplicabilityResolutionV1 =
 
 export type AppliedProfessionalPhysicalNormResolutionV1 = AppliedPhysicalNormResolutionV1;
 
+export type AppliedProfessionalPhysicalNormIdentityV1 = {
+  source_id: string;
+  norm_id: string;
+  source_document_version: string;
+  source_definition_hash: string;
+};
+
+/**
+ * Resolves one row-level identity from a previously admitted physical result.
+ * A multi-norm product profile is never reduced to the first source by order:
+ * the compiled row must cite exactly one of its own parameter source IDs.
+ */
+export function resolveAppliedProfessionalPhysicalNormIdentityV1(input: {
+  resolution: ProfessionalPhysicalNormApplicabilityResolutionV1 | null | undefined;
+  rowParameterSourceIds: readonly string[];
+}): AppliedProfessionalPhysicalNormIdentityV1 | null {
+  if (input.resolution?.status !== "APPLIED") return null;
+  const rowSourceIds = new Set(input.rowParameterSourceIds.map((value) => value.trim()).filter(Boolean));
+  if (rowSourceIds.size === 0) return null;
+  const candidates: AppliedProfessionalPhysicalNormIdentityV1[] = [
+    {
+      source_id: input.resolution.source_id,
+      norm_id: input.resolution.norm_id,
+      source_document_version: input.resolution.source_document_version,
+      source_definition_hash: input.resolution.source_definition_hash,
+    },
+    ...(input.resolution.applied_norms ?? []).map((candidate) => ({
+      source_id: candidate.source_id,
+      norm_id: candidate.norm_id,
+      source_document_version: candidate.source_document_version,
+      source_definition_hash: candidate.source_definition_hash,
+    })),
+  ];
+  const matches = [...new Map(
+    candidates
+      .filter((candidate) => rowSourceIds.has(candidate.source_id))
+      .map((candidate) => [
+        `${candidate.source_id}\u0000${candidate.norm_id}\u0000${candidate.source_document_version}\u0000${candidate.source_definition_hash}`,
+        candidate,
+      ]),
+  ).values()];
+  return matches.length === 1 ? matches[0] : null;
+}
+
 function primitiveString(value: ProfessionalParameterValueV4 | undefined): string | null {
   if (typeof value?.value !== "string") return null;
   const normalized = value.value.trim();

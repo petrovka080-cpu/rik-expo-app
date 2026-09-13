@@ -12,6 +12,7 @@ import {
   type AppliedProfessionalPhysicalNormResolutionV1,
   DAIKIN_3MXS_K_PRODUCT_PROFILE_ID,
   LINDAB_VSR_PRODUCT_PROFILE_ID,
+  resolveAppliedProfessionalPhysicalNormIdentityV1,
   resolveProfessionalPhysicalNormParameterValuesV1,
   UPONOR_UFH_150MM_PRODUCT_PROFILE_ID,
   WAVIN_HEP2O_PUSH_FIT_PRODUCT_PROFILE_ID,
@@ -137,6 +138,13 @@ export function buildHvacProductionDraftV1(
     professionalDomainVisibleParameterMetadataV1(parameter, input.parameter_values[parameter.parameter_id]),
   ]));
   const applicableSourceIds = compileResult.normative_resolution.applicable_sources.map((source) => source.source_id);
+  const physicalNormIdentityByRowId = new Map(compilation.compiled_rows.map((row) => [
+    row.row_id,
+    resolveAppliedProfessionalPhysicalNormIdentityV1({
+      resolution: input.physical_norm_resolution,
+      rowParameterSourceIds: row.parameter_source_ids,
+    }),
+  ]));
   const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
     itemType: itemType(row.category),
     titleRu: row.title_ru,
@@ -186,16 +194,17 @@ export function buildHvacProductionDraftV1(
       includedInProcurement: row.procurement_eligible,
       professionalBoqCategory: row.category,
       professionalResourceGraphV3: row.resource_graph_node_v3,
-      ...(input.physical_norm_resolution &&
-          row.parameter_source_ids.some((sourceId) => physicalNormSourceIds.includes(sourceId))
+      ...(input.physical_norm_resolution && physicalNormIdentityByRowId.get(row.row_id)
         ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
         : {}),
     },
     templateId: passportId,
     templateVersion: hvacDomainFactory.package.manifest.domain_version,
-    normSourceId: applicableSourceIds[0] ?? null,
+    normId: physicalNormIdentityByRowId.get(row.row_id)?.norm_id ?? null,
+    normSourceId: physicalNormIdentityByRowId.get(row.row_id)?.source_id ?? applicableSourceIds[0] ?? null,
     normSourceTitle: applicableSourceIds.join(", "),
-    normVersion: compileResult.normative_resolution.normative_profile_version,
+    normVersion: physicalNormIdentityByRowId.get(row.row_id)?.source_document_version ??
+      compileResult.normative_resolution.normative_profile_version,
     normReviewStatus: "applicable",
     priceStatus: "PRICE_MISSING",
     priceSource: "missing",
