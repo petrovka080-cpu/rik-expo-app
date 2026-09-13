@@ -1,6 +1,7 @@
 /** Estimate-domain owner selected before the consumer-repair presentation adapter runs. */
 export type DirectConsumerRepairOpenWorldOwner =
   | "electrical"
+  | "insulation"
   | "roof_waterproofing";
 
 const DIRECT_ELECTRICAL_RE =
@@ -9,6 +10,8 @@ const DIRECT_ROOF_RE =
   /(?:\u043a\u0440\u043e\u0432\u043b|\u043a\u0440\u044b\u0448|roof)/iu;
 const DIRECT_WATERPROOFING_RE =
   /(?:\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446|waterproof)/iu;
+const DIRECT_INSULATION_RE =
+  /(?:утепл|теплоизоляц|rockwool|comfortboard|insulat)/iu;
 
 export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
@@ -17,6 +20,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   if (DIRECT_ROOF_RE.test(prompt) && DIRECT_WATERPROOFING_RE.test(prompt)) {
     return "roof_waterproofing";
   }
+  if (DIRECT_INSULATION_RE.test(prompt)) return "insulation";
   return null;
 }
 

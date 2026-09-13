@@ -85,6 +85,11 @@ import {
   SARNAFIL_AT18_FIELD_80MM_SOURCE_ID,
   SARNAFIL_AT18_FIELD_80MM_SOURCE_METADATA,
 } from "./roofingSarnafilAt18PhysicalNormV1";
+import {
+  ROCKWOOL_COMFORTBOARD80_R63_38MM_PRODUCT_PROFILE_ID,
+  ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_ID,
+  ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA,
+} from "./insulationRockwoolComfortboard80PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -190,6 +195,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "ROCKWOOL",
+    document_code: "ROCKWOOL Residential Product Guide, Comfortboard 80 quantity table",
+    title: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.source_title,
+    edition: "Residential Product Guide, created 2025-07-02",
+    revision: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2025-07-02",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["ROCKWOOL_COMFORTBOARD80"],
+    product_profile_applicability: [ROCKWOOL_COMFORTBOARD80_R63_38MM_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.exact_locator,
+    unit_basis: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.rate_unit,
+    official_reference: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.source_url,
+    version: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer guide used only for the exact R6.3, 38 mm, 1219 x 610 mm Comfortboard 80 format. The binding returns net board area only; cutting allowance, package rounding and thermal-design applicability remain project decisions.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: SARNAFIL_AT18_FIELD_80MM_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

@@ -9,6 +9,10 @@ import {
   extractSarnafilAt18CanonicalParametersV1,
   sarnafilAt18MissingQuestionsRuV1,
 } from "./roofingSarnafilAt18ProductionBindingV1";
+import {
+  extractRockwoolComfortboard80CanonicalParametersV1,
+  rockwoolComfortboard80MissingQuestionsRuV1,
+} from "./insulationRockwoolComfortboard80ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -203,6 +207,60 @@ function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoni
   };
 }
 
+function insulationPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractRockwoolComfortboard80CanonicalParametersV1(text);
+  return {
+    intent: "estimate",
+    workKey: "dynamic_insulation_estimate",
+    titleRu: "Профессиональная предварительная смета: теплоизоляция",
+    category: "insulation",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "insulation",
+      object: "insulation_system",
+      operation: "installation",
+      method: "thermal_insulation_install",
+      materialSystem: "insulation_system",
+      regulated: false,
+      confidence: 0.86,
+    },
+    quantities: { areaM2: areaFromPrompt(text), rawDimensions: [] },
+    formulas: [],
+    boqPlan: {
+      complexity: "medium",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "утеплитель",
+        "клей / крепеж утеплителя",
+        "ветрозащитная мембрана",
+        "армирующая сетка warning",
+      ],
+      requiredLabor: [
+        "подготовка основания",
+        "монтаж утеплителя",
+        "крепление тарельчатыми дюбелями",
+        "контроль мостиков холода",
+      ],
+      requiredEquipmentOrWarnings: ["нож для утеплителя", "леса warning"],
+      requiredLogisticsOrWarnings: ["доставка утеплителя", "хранение сухим способом"],
+      exclusions: [
+        "Теплотехнический расчёт и региональные требования подтверждаются проектом.",
+        "Раскройный запас и число упаковок считаются только по полной карте раскроя.",
+      ],
+      clarifyingQuestions: [
+        "Где выполняется утепление: фасад, кровля, пол или внутренняя стена?",
+        "Каковы требования проекта к тепловому сопротивлению и пожарной безопасности?",
+        ...rockwoolComfortboard80MissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 /**
  * Builds the same estimator-kernel plan after the request router has already
  * resolved one of its two owned domains. This avoids repeating the universal
@@ -217,5 +275,7 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
-    : roofWaterproofingPlan(input.text, currency);
+    : input.owner === "roof_waterproofing"
+      ? roofWaterproofingPlan(input.text, currency)
+      : insulationPlan(input.text, currency);
 }
