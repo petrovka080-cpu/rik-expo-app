@@ -13,6 +13,7 @@ export * from "./reinforcementBarSchedulePhysicalNormV1";
 export * from "./deliveryFordTransitPhysicalNormV1";
 export * from "./cleaningTennantT350PhysicalNormV1";
 export * from "./equipmentRentUnitedRentalsPhysicalNormV1";
+export * from "./landscapingRainBirdXfdPhysicalNormV1";
 export * from "./professionalEstimateDomainFactoryV1";
 export * from "./professionalEstimateDomainReferenceV1";
 export * from "./professionalPhysicalNormApplicabilityV1";

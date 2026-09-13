@@ -31,6 +31,7 @@ import { applyReinforcementBarSchedulePhysicalNormToBoqV1 } from "../../estimate
 import { applyFordTransitDeliveryPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/deliveryFordTransitProductionBindingV1";
 import { applyTennantT350PhysicalNormToCleaningBoqV1 } from "../../estimate/ownedDomain/cleaningTennantT350ProductionBindingV1";
 import { applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/equipmentRentUnitedRentalsProductionBindingV1";
+import { applyRainBirdXfdPhysicalNormToLandscapingBoqV1 } from "../../estimate/ownedDomain/landscapingRainBirdXfdProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1720,8 +1721,10 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1(
+  const normBoundRows = applyRainBirdXfdPhysicalNormToLandscapingBoqV1(
     plan,
+    applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1(
+      plan,
     applyTennantT350PhysicalNormToCleaningBoqV1(
       plan,
       applyFordTransitDeliveryPhysicalNormToBoqV1(
@@ -1758,6 +1761,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
         ),
       ),
       ),
+    ),
     ),
   );
   const expandedRows = plan.workKey === "electrical_area_installation"

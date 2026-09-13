@@ -9,6 +9,7 @@ export type DirectConsumerRepairOpenWorldOwner =
   | "fire_safety"
   | "formwork"
   | "insulation"
+  | "landscaping"
   | "low_voltage"
   | "metalwork"
   | "reinforcement"
@@ -30,6 +31,7 @@ const DIRECT_REINFORCEMENT_BAR_SCHEDULE_RE =
 const DIRECT_FORD_TRANSIT_DELIVERY_RE = /(?=.*ford\s+transit)(?=.*(?:v363|500\s+l4\s+h3))/iu;
 const DIRECT_TENNANT_T350_RE = /(?=.*tennant\s+t350)(?=.*(?:600\s*(?:мм|mm)|24\s*inch))(?=.*conventional)/iu;
 const DIRECT_UNITED_RENTALS_CA_ONE_SHIFT_RE = /(?=.*united\s+rentals)(?=.*canada)(?=.*one[\s_-]*shift)/iu;
+const DIRECT_RAIN_BIRD_XFD_RE = /(?=.*rain\s+bird\s+xfd)(?=.*xfd-06-12-500)(?=.*d39717e)/iu;
 const DIRECT_LEGRAND_049272_RE =
   /(?:(?:legrand\s*)?0?49272|3414971327986)/iu;
 const DIRECT_SIEMENS_FDB221_RE =
@@ -47,6 +49,7 @@ export function resolveDirectConsumerRepairOpenWorldOwner(
   prompt: string,
 ): DirectConsumerRepairOpenWorldOwner | null {
   if (DIRECT_WAVIN_OSMA_C3766BK_RE.test(prompt)) return "sewerage";
+  if (DIRECT_RAIN_BIRD_XFD_RE.test(prompt)) return "landscaping";
   if (DIRECT_UNITED_RENTALS_CA_ONE_SHIFT_RE.test(prompt)) return "equipment_rent";
   if (DIRECT_TENNANT_T350_RE.test(prompt)) return "cleaning";
   if (DIRECT_FORD_TRANSIT_DELIVERY_RE.test(prompt)) return "delivery";

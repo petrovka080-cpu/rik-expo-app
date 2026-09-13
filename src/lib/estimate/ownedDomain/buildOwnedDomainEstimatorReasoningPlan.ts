@@ -56,6 +56,8 @@ import {
 import { extractTennantT350CanonicalParametersV1, tennantT350MissingQuestionsRuV1 } from "./cleaningTennantT350ProductionBindingV1";
 import { extractUnitedRentalsCaOneShiftCanonicalParametersV1,
   unitedRentalsCaOneShiftMissingQuestionsRuV1 } from "./equipmentRentUnitedRentalsProductionBindingV1";
+import { extractRainBirdXfdCanonicalParametersV1,
+  rainBirdXfdMissingQuestionsRuV1 } from "./landscapingRainBirdXfdProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -856,6 +858,30 @@ function equipmentRentUnitedRentalsPlan(text: string, currency: string): Estimat
   };
 }
 
+function landscapingRainBirdXfdPlan(text: string, currency: string): EstimatorReasoningPlan {
+  const canonicalParameters = extractRainBirdXfdCanonicalParametersV1(text);
+  return {
+    intent: "estimate", workKey: "landscaping_rain_bird_xfd_06_12_500",
+    titleRu: "Капельный полив Rain Bird XFD-06-12-500", category: "landscaping",
+    confidence: "medium", templateExactMatch: false, parsableWorkDetected: true, regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: { domain: "irrigation", object: "irrigation_system", operation: "installation",
+      method: "hydraulically_approved_dripline_route", materialSystem: "rain_bird_xfd_06_12_500",
+      regulated: false, confidence: 0.98 },
+    quantities: { lengthM: typeof canonicalParameters?.approved_dripline_route_linear_m === "number"
+      ? canonicalParameters.approved_dripline_route_linear_m : undefined, rawDimensions: [] }, formulas: [],
+    boqPlan: { complexity: "medium", sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: ["Rain Bird XFD-06-12-500", "фитинги, коллекторы и промывочные точки по отдельным ведомостям"],
+      requiredLabor: ["укладка капельной линии по утверждённой трассе", "промывка и гидравлическая проверка зоны"],
+      requiredEquipmentOrWarnings: ["фильтрация 120 mesh и регулирование давления по проекту"],
+      requiredLogisticsOrWarnings: ["бухты 152,4 м раскраиваются по явному плану повторного использования остатков"],
+      exclusions: ["Единица длины на единицу трассы — геометрическая тождественность, а не универсальная норма расхода.",
+        "Производитель не задаёт общий процент запаса; фитинги, коллекторы, промывка и округление бухт считаются отдельно."],
+      clarifyingQuestions: ["Подтверждены ли точная модель, ячейка таблицы lateral length и гидравлический проект зоны?",
+        ...rainBirdXfdMissingQuestionsRuV1(canonicalParameters)] }, pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -990,6 +1016,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "landscaping"
+      ? landscapingRainBirdXfdPlan(input.text, currency)
     : input.owner === "equipment_rent"
       ? equipmentRentUnitedRentalsPlan(input.text, currency)
     : input.owner === "cleaning"

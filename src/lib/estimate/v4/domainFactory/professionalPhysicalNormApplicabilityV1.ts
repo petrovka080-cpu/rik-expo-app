@@ -80,6 +80,8 @@ import { TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID, TENNANT_T350_CONVENTIONAL
   resolveTennantT350ConventionalPhysicalNormV1 } from "./cleaningTennantT350PhysicalNormV1";
 import { UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID, UNITED_RENTALS_CA_ONE_SHIFT_RUNTIME_BINDING_V1,
   resolveUnitedRentalsCaOneShiftPhysicalNormV1 } from "./equipmentRentUnitedRentalsPhysicalNormV1";
+import { RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID, RAIN_BIRD_XFD_DRIPLINE_RUNTIME_BINDING_V1,
+  resolveRainBirdXfdDriplinePhysicalNormV1 } from "./landscapingRainBirdXfdPhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2935,6 +2937,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   FORD_TRANSIT_V363_DELIVERY_RUNTIME_BINDING_V1,
   TENNANT_T350_CONVENTIONAL_RUNTIME_BINDING_V1,
   UNITED_RENTALS_CA_ONE_SHIFT_RUNTIME_BINDING_V1,
+  RAIN_BIRD_XFD_DRIPLINE_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3453,6 +3456,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_ford_transit_required_trip_count?: number;
   calculated_tennant_t350_project_equipment_hours?: number;
   calculated_united_rentals_normal_use_allowance_hours?: number;
+  calculated_rain_bird_xfd_project_dripline_linear_m?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8533,6 +8537,11 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID) {
+    return resolveRainBirdXfdDriplinePhysicalNormV1({ technology_class: input.technology_class,
+      operation_class: input.operation_class, material_system: input.material_system,
+      scope_mode: input.scope_mode, parameter_values: input.parameter_values });
+  }
   if (productProfileId === UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID) {
     return resolveUnitedRentalsCaOneShiftPhysicalNormV1({ technology_class: input.technology_class,
       operation_class: input.operation_class, material_system: input.material_system,

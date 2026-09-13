@@ -144,6 +144,8 @@ import { TENNANT_T350_CONVENTIONAL_PRODUCT_PROFILE_ID, TENNANT_T350_CONVENTIONAL
   TENNANT_T350_CONVENTIONAL_SOURCE_METADATA } from "./cleaningTennantT350PhysicalNormV1";
 import { UNITED_RENTALS_CA_ONE_SHIFT_PRODUCT_PROFILE_ID, UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_ID,
   UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA } from "./equipmentRentUnitedRentalsPhysicalNormV1";
+import { RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID, RAIN_BIRD_XFD_DRIPLINE_SOURCE_ID,
+  RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA } from "./landscapingRainBirdXfdPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -249,6 +251,22 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: RAIN_BIRD_XFD_DRIPLINE_SOURCE_ID, source_type: "MANUFACTURER_PASSPORT", jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Rain Bird Corporation", document_code: "D39717E 04/22",
+    title: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_title, edition: "Technical specification 04/22",
+    revision: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_document_version, status: "project-specific",
+    effective_from: "2022-04-21", effective_to: null, funding_applicability: [ALL], project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"], operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["RAIN_BIRD_XFD_06_12_500"],
+    product_profile_applicability: [RAIN_BIRD_XFD_06_12_500_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.exact_locator,
+    unit_basis: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.rate_unit,
+    official_reference: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_url,
+    version: RAIN_BIRD_XFD_DRIPLINE_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer technical specification. The one-to-one value is geometric route identity only; exact model, emitter table cell, hydraulics, fittings, coil cut plan and project allowance remain explicit.",
+    supersedes: [], superseded_by: [], exact_rate_code_required: false,
+  }),
   source({
     source_id: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_ID, source_type: "WORK_EXECUTION_STANDARD",
     jurisdiction: "INTERNATIONAL_PROJECT", authority: "United Rentals of Canada Inc.",
