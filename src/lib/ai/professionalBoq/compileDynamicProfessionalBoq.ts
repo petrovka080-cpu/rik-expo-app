@@ -24,6 +24,7 @@ import { applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1 } from "../../est
 import { applyJotunHardtopXpPhysicalNormToMetalworkBoqV1 } from "../../estimate/ownedDomain/metalworkJotunHardtopXpProductionBindingV1";
 import { applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1 } from "../../estimate/ownedDomain/carpentrySikagardWoodPreserverProductionBindingV1";
 import { applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1 } from "../../estimate/ownedDomain/sewerageWavinOsmaC3766BkProductionBindingV1";
+import { applyRockwoolFixrockPhysicalNormToFacadeBoqV1 } from "../../estimate/ownedDomain/facadeRockwoolFixrockProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1713,19 +1714,22 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
+  const normBoundRows = applyRockwoolFixrockPhysicalNormToFacadeBoqV1(
     plan,
-    applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
+    applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
       plan,
-      applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
+      applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
         plan,
-        applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
+        applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
           plan,
-          applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
+          applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
             plan,
-            applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+            applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
               plan,
-              applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+              applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+                plan,
+                applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+              ),
             ),
           ),
         ),

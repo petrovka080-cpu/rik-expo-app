@@ -115,6 +115,11 @@ import {
   WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_ID,
   WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_METADATA,
 } from "./sewerageWavinOsmaC3766BkPhysicalNormV1";
+import {
+  ROCKWOOL_FIXROCK_CONVENTIONAL_PRODUCT_PROFILE_ID,
+  ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_ID,
+  ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA,
+} from "./facadeRockwoolFixrockPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -220,6 +225,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "ROCKWOOL",
+    document_code: "ROCKWOOL VHF Befestigung Variante 1",
+    title: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.source_title,
+    edition: "Reviewed manufacturer web technical guidance",
+    revision: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: null,
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["FIX"],
+    material_system_applicability: ["ROCKWOOL_FIXROCK_CONVENTIONAL"],
+    product_profile_applicability: [ROCKWOOL_FIXROCK_CONVENTIONAL_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.exact_locator,
+    unit_basis: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.rate_unit,
+    official_reference: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.source_url,
+    version: ROCKWOOL_FIXROCK_CONVENTIONAL_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public manufacturer technical guidance. The average five holders per m2 applies only to conventional Fixrock VHF fixing. Adhesive and one-dowel variants are excluded, and the fractional result is rounded only to a whole holder without an automatic waste allowance.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: WAVIN_OSMA_C3766BK_110MM_3M_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

@@ -51,6 +51,11 @@ import {
   WAVIN_OSMA_C3766BK_110MM_3M_RUNTIME_BINDING_V1,
   resolveWavinOsmaC3766Bk110Mm3MPhysicalNormV1,
 } from "./sewerageWavinOsmaC3766BkPhysicalNormV1";
+import {
+  ROCKWOOL_FIXROCK_CONVENTIONAL_PRODUCT_PROFILE_ID,
+  ROCKWOOL_FIXROCK_CONVENTIONAL_RUNTIME_BINDING_V1,
+  resolveRockwoolFixrockConventionalPhysicalNormV1,
+} from "./facadeRockwoolFixrockPhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2899,6 +2904,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   JOTUN_HARDTOP_XP_100UM_RUNTIME_BINDING_V1,
   SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_RUNTIME_BINDING_V1,
   WAVIN_OSMA_C3766BK_110MM_3M_RUNTIME_BINDING_V1,
+  ROCKWOOL_FIXROCK_CONVENTIONAL_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3410,6 +3416,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_sikagard_wood_preserver_procurement_quantity_l?: number;
   calculated_wavin_osma_geometric_pipe_quantity_linear_m?: number;
   calculated_wavin_osma_project_procurement_quantity_linear_m?: number;
+  calculated_rockwool_fixrock_conventional_holder_quantity_piece?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8490,6 +8497,15 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === ROCKWOOL_FIXROCK_CONVENTIONAL_PRODUCT_PROFILE_ID) {
+    return resolveRockwoolFixrockConventionalPhysicalNormV1({
+      technology_class: input.technology_class,
+      operation_class: input.operation_class,
+      material_system: input.material_system,
+      scope_mode: input.scope_mode,
+      parameter_values: input.parameter_values,
+    });
+  }
   if (productProfileId === WAVIN_OSMA_C3766BK_110MM_3M_PRODUCT_PROFILE_ID) {
     return resolveWavinOsmaC3766Bk110Mm3MPhysicalNormV1({
       technology_class: input.technology_class,

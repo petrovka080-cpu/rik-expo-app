@@ -33,6 +33,10 @@ import {
   extractWavinOsmaC3766BkCanonicalParametersV1,
   wavinOsmaC3766BkMissingQuestionsRuV1,
 } from "./sewerageWavinOsmaC3766BkProductionBindingV1";
+import {
+  extractRockwoolFixrockCanonicalParametersV1,
+  rockwoolFixrockMissingQuestionsRuV1,
+} from "./facadeRockwoolFixrockProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -505,6 +509,73 @@ function sewerageWavinOsmaC3766BkPlan(
   };
 }
 
+function facadeRockwoolFixrockPlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractRockwoolFixrockCanonicalParametersV1(text);
+  const insulationArea = canonicalParameters?.facade_insulation_area_m2;
+  return {
+    intent: "estimate",
+    workKey: "facade_rockwool_fixrock_conventional_holders",
+    titleRu: "Профессиональная предварительная смета: крепление фасадной теплоизоляции ROCKWOOL Fixrock",
+    category: "facade",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "facade",
+      object: "ventilated_facade_insulation_system",
+      operation: "insulation_holder_fixing",
+      method: "conventional_vhf_fixing",
+      materialSystem: "rockwool_fixrock_conventional_system",
+      regulated: false,
+      confidence: 0.94,
+    },
+    quantities: {
+      areaM2: typeof insulationArea === "number" ? insulationArea : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "medium",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "держатели теплоизоляции ROCKWOOL Fixrock для обычного крепления VHF",
+        "плиты Fixrock выбранной проектом толщины",
+        "элементы фасадной подсистемы по проектной раскладке",
+      ],
+      requiredLabor: [
+        "разметка мест крепления по утверждённой раскладке",
+        "установка плит фасадной теплоизоляции",
+        "монтаж обычных держателей теплоизоляции",
+        "контроль прилегания и непрерывности теплоизоляционного слоя",
+      ],
+      requiredEquipmentOrWarnings: [
+        "буровой инструмент под основание и выбранный держатель",
+        "средства доступа и защиты для фасадных работ",
+      ],
+      requiredLogisticsOrWarnings: [
+        "доставка и защищённое хранение плит и держателей",
+        "проверка основания и длины анкеровки выполняется отдельно",
+      ],
+      exclusions: [
+        "Клеевой вариант крепления не включён.",
+        "Вариант одного дюбеля на плиту требует отдельного согласования и технической консультации ROCKWOOL.",
+        "Дополнительный процент запаса держателей автоматически не добавляется.",
+      ],
+      clarifyingQuestions: [
+        "Подтверждены ли обычное крепление держателями и точная площадь утепления?",
+        "Исключены ли клеевой вариант и вариант одного дюбеля на плиту?",
+        ...rockwoolFixrockMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -647,6 +718,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
       ? lowVoltageLegrand049272Plan(input.text, currency)
     : input.owner === "metalwork"
       ? metalworkJotunHardtopXpPlan(input.text, currency)
+    : input.owner === "facade"
+      ? facadeRockwoolFixrockPlan(input.text, currency)
     : input.owner === "sewerage"
       ? sewerageWavinOsmaC3766BkPlan(input.text, currency)
     : input.owner === "roof_waterproofing"
