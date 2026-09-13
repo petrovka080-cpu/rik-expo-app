@@ -4,7 +4,7 @@ import path from "node:path";
 import {
   compileProductionExpandedEstimate10000,
   clearProductionExpandedEstimate10000Caches,
-  isProfessionalNormPackSourceId,
+  isRegisteredProfessionalNormPackSourceId,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import {
@@ -127,7 +127,11 @@ export function renderEstimateSnapshots10000(options: {
     for (const row of estimate.rows) {
       renderedRowCount += 1;
       const professionalName = Boolean(row.titleRu.trim()) && !GENERIC_ROW_PATTERN.test(row.titleRu);
-      const normSource = Boolean(row.normId && row.normVersion && isProfessionalNormPackSourceId(row.normSourceId));
+      const normSource = Boolean(
+        row.normId &&
+        row.normVersion &&
+        isRegisteredProfessionalNormPackSourceId(row.normSourceId)
+      );
       const formulaTrace = Boolean(
         row.formulaId &&
           row.calculationTrace.includes("formula=") &&

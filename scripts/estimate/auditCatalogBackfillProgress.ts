@@ -1,6 +1,6 @@
 import {
   getProductionExpandedTemplate10000,
-  isProfessionalNormPackSourceId,
+  isRegisteredProfessionalNormPackSourceId,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import {
@@ -42,7 +42,7 @@ export function buildBackfillStageCounts(batchIds: readonly CatalogBackfillBatch
     const template = getProductionExpandedTemplate10000(definition.workKey);
     const covered = isDefinitionCoveredByBackfillBatches(definition, batchIds);
     const realRows = covered
-      ? template.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId)).length
+      ? template.rows.filter((row) => isRegisteredProfessionalNormPackSourceId(row.normSourceId)).length
       : 0;
     const genericRows = template.rows.length - realRows;
     if (covered && realRows === template.rows.length && template.rows.length > 0) {

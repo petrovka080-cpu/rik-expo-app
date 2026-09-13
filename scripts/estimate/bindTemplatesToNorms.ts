@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   compileProductionExpandedEstimate10000,
-  isProfessionalNormPackSourceId,
+  isRegisteredProfessionalNormPackSourceId,
   PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS,
 } from "../../src/lib/ai/estimateTemplate10000";
 
@@ -31,7 +31,9 @@ export function runBindTemplatesToNorms(options: { writeSummary?: boolean } = {}
       quantity: target.quantity,
       countryCode: "KG",
     });
-    const realRows = compiled.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId));
+    const realRows = compiled.rows.filter((row) =>
+      isRegisteredProfessionalNormPackSourceId(row.normSourceId)
+    );
     const groups = uniqueSorted(realRows.map((row) => GROUP_BY_SOURCE_ID.get(row.normSourceId)));
     return {
       ...target,

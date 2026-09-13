@@ -23,6 +23,7 @@ describe("estimate norm source quality reality audit", () => {
     expect(auditSource).toContain("synthetic_family_default_count");
     expect(auditSource).toContain('GENERATED_CATALOG_SOURCE_PREFIX = "src_professional_norm_pack_catalog_"');
     expect(auditSource).toContain("item.source_id.startsWith(GENERATED_CATALOG_SOURCE_PREFIX)");
+    expect(auditSource).toContain("isRegisteredProfessionalNormPackSourceId");
     expect(auditSource).toContain("templates_with_only_synthetic_norms");
     expect(auditSource).toContain("random_templates_checked_count");
     expect(auditSource).toContain("real_hardcoded_production_rate_count");

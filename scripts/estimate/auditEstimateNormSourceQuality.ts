@@ -5,7 +5,7 @@ import path from "node:path";
 import goldenMatrixRaw from "../../data/estimate-golden-cases/extended-100-work-cases.json";
 import { buildProfessionalExpandedGlobalEstimate } from "../../src/lib/ai/estimateCompiler/expandedEstimateCompiler";
 import {
-  buildEstimateNormKnowledgeBaseSnapshot, certifyAllEstimateNormBindings10000, compileProductionExpandedEstimate10000, getProductionExpandedTemplate10000, isProfessionalNormPackSourceId, NORM_WORK_TAXONOMY_GROUPS, PRODUCTION_WORK_DEFINITIONS_10000, resolveNormWorkGroupForCategory, validateAllProductionTemplatesExtended10000, type EstimateNormItem, type EstimateNormWorkGroupKey, type ProductionWorkDefinition, } from "../../src/lib/ai/estimateTemplate10000";
+  buildEstimateNormKnowledgeBaseSnapshot, certifyAllEstimateNormBindings10000, compileProductionExpandedEstimate10000, getProductionExpandedTemplate10000, isRegisteredProfessionalNormPackSourceId, NORM_WORK_TAXONOMY_GROUPS, PRODUCTION_WORK_DEFINITIONS_10000, resolveNormWorkGroupForCategory, validateAllProductionTemplatesExtended10000, type EstimateNormItem, type EstimateNormWorkGroupKey, type ProductionWorkDefinition, } from "../../src/lib/ai/estimateTemplate10000";
 import {
   __resetConsumerRepairRequestStoreForTests, createConsumerRepairRequestDraft } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairAiDraftFromGlobalEstimate } from "../../src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration";
@@ -182,7 +182,8 @@ function isGeneratedFamilyDefault(item: EstimateNormItem, reusedFamilyKeys: Read
   // locator it is not a professional norm. Count it as structural even when a
   // generated family happens to be unique and therefore is not caught by the
   // duplicate-family heuristic below.
-  if (item.source_id.startsWith(GENERATED_CATALOG_SOURCE_PREFIX)) return true;
+  if (item.source_id.startsWith(GENERATED_CATALOG_SOURCE_PREFIX) ||
+    !isRegisteredProfessionalNormPackSourceId(item.source_id)) return true;
   const broadSource =
     GENERIC_SOURCE_IDS.has(item.source_id) ||
     /(catalog|tables|policy|reference)/i.test(item.source_title);
@@ -363,7 +364,7 @@ function auditGolden100Cases(input: {
     return Boolean(
       row.normId &&
       row.normVersion &&
-      isProfessionalNormPackSourceId(sourceId) &&
+      isRegisteredProfessionalNormPackSourceId(sourceId) &&
       provenance &&
       sourceTitle &&
       !/(catalog|tables|policy|reference|unknown)/i.test(sourceTitle),

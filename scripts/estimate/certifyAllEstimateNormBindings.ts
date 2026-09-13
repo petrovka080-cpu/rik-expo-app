@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   getProductionExpandedTemplate10000,
-  isProfessionalNormPackSourceId,
+  isRegisteredProfessionalNormPackSourceId,
   PRODUCTION_WORK_DEFINITIONS_10000,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { isDefinitionCoveredByBackfillBatches } from "./catalogBackfillConveyor";
@@ -25,7 +25,7 @@ export function runCertifyAllEstimateNormBindings(options: { writeSummary?: bool
     const template = getProductionExpandedTemplate10000(definition.workKey);
     const coveredByBackfill = isDefinitionCoveredByBackfillBatches(definition);
     const templateRealRows = coveredByBackfill
-      ? template.rows.filter((row) => isProfessionalNormPackSourceId(row.normSourceId)).length
+      ? template.rows.filter((row) => isRegisteredProfessionalNormPackSourceId(row.normSourceId)).length
       : 0;
     const templateGenericRows = template.rows.length - templateRealRows;
     rowCount += template.rows.length;

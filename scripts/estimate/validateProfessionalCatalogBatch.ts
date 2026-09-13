@@ -3,7 +3,7 @@ import path from "node:path";
 
 import {
   compileProductionExpandedEstimate10000,
-  isProfessionalNormPackSourceId,
+  isRegisteredProfessionalNormPackSourceId,
   type ProductionCompiledExpandedEstimate,
 } from "../../src/lib/ai/estimateTemplate10000";
 import { classifyEstimateRowsReality } from "./classifyEstimateRowReality";
@@ -158,7 +158,9 @@ export function evaluateP0ProfessionalCatalogCase(
   const allRowsHavePdfSnapshotTrace = rows.length > 0 && rows.every((row) =>
     Boolean(row.templateId && row.templateVersion && row.calculationTrace?.includes("template="))
   );
-  const allRowsHaveNormSource = rows.length > 0 && rows.every((row) => isProfessionalNormPackSourceId(row.normSourceId));
+  const allRowsHaveNormSource = rows.length > 0 && rows.every((row) =>
+    isRegisteredProfessionalNormPackSourceId(row.normSourceId)
+  );
   const calculatorModuleExists = moduleExists(testCase.required_calculator_module);
   const promptCaseBlockedAreaOnly = testCase.case_id !== "apartment_capital_renovation_54" ||
     Boolean(promptResult && promptResult.missing_parameters.length > 0 && !promptResult.rows_generated_despite_missing_params);
