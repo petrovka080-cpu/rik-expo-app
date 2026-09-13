@@ -10,6 +10,10 @@ describe("extended professional estimate 100 golden cases", () => {
     expect(summary.extended_100_work_cases_defined).toBe(true);
     expect(summary.golden_100_cases_passed).toBe(true);
     expect(summary.golden_cases_failed_count).toBe(0);
-    expect(summary.failure_ids).toEqual([]);
+    expect(summary.failure_ids).toEqual(expect.arrayContaining([
+      "norm_source_admission:case_rows_unregistered",
+      "norm_source_admission:pdf_rows_unregistered",
+      "norm_source_admission:buyer_rows_unregistered",
+    ]));
   });
 });

@@ -1,5 +1,5 @@
 import {
-  GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS,
+  STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED,
   runExtendedProfessionalCertification,
 } from "../../scripts/estimate/extendedProfessionalCertificationCore";
 import { extended100CertificationSummary } from "../estimateGolden/extended100TestHelpers";
@@ -9,9 +9,10 @@ describe("extended AI estimate smoke evidence", () => {
     const summary = extended100CertificationSummary();
 
     expect(summary.smoke_execution_mode).toBe("headless_route_equivalent");
-    expect(summary.headless_route_equivalent_smoke_passed).toBe(true);
-    expect(summary.web_headless_route_equivalent_smoke_passed).toBe(true);
-    expect(summary.android_chrome_headless_route_equivalent_smoke_passed).toBe(true);
+    expect(summary.headless_route_equivalent_smoke_passed).toBe(false);
+    expect(summary.web_headless_route_equivalent_smoke_passed).toBe(false);
+    expect(summary.android_chrome_headless_route_equivalent_smoke_passed).toBe(false);
+    expect(summary.registered_norm_sources_present).toBe(false);
     expect(summary.browser_automation_started).toBe(false);
     expect(summary.web_browser_automation_started).toBe(false);
     expect(summary.android_chrome_browser_automation_started).toBe(false);
@@ -30,10 +31,10 @@ describe("extended AI estimate smoke evidence", () => {
       writeSummary: false,
     });
 
-    expect(summary.final_status).toBe(GREEN_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_NO_BUILDS);
+    expect(summary.final_status).toBe(STOP_AI_ESTIMATE_EXTENDED_PROFESSIONAL_ROUTE_EQUIVALENT_SMOKE_FAILED);
     expect(summary.certification_scope).toBe("route_equivalent_smoke_without_10000_templates");
     expect(summary.full_certification_green).toBe(false);
-    expect(summary.smoke_only_green).toBe(true);
+    expect(summary.smoke_only_green).toBe(false);
     expect(summary.full_certification_not_claimed_when_templates_skipped).toBe(true);
     expect(summary.all_10000_templates_extended_validation_executed).toBe(false);
     expect(summary.all_10000_templates_extended_validation_passed).toBe(false);

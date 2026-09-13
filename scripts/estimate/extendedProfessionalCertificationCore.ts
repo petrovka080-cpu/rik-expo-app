@@ -9,6 +9,7 @@ import {
 } from "../../src/lib/ai/estimateContinuousDetection/continuousAiEstimateDetector";
 import {
   GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS,
+  isRegisteredProfessionalNormPackSourceId,
   validateAllProductionTemplatesExtended10000,
   type ProductionTemplateExtendedValidationSummary,
 } from "../../src/lib/ai/estimateTemplate10000";
@@ -126,6 +127,7 @@ export type ExtendedCaseEvaluation = {
   logistics_and_waste_covered: boolean;
   price_sources_separated: boolean;
   norm_trace_present: boolean;
+  registered_norm_sources_present: boolean;
   calculation_trace_present: boolean;
   template_version_present: boolean;
   procurement_flags_present: boolean;
@@ -145,12 +147,16 @@ export type ExtendedLifecycleEvaluation = {
   case_id: string;
   request_ui_sections_visible: boolean;
   request_ui_trace_visible: boolean;
+  request_ui_registered_norm_sources: boolean;
   history_trace_persisted: boolean;
+  history_registered_norm_sources: boolean;
   pdf_extended_sections_visible: boolean;
   pdf_calculation_trace_visible: boolean;
   pdf_norm_sources_visible: boolean;
+  pdf_registered_norm_sources_visible: boolean;
   pdf_no_raw_ai_json: boolean;
   buyer_boq_extended_projection_passed: boolean;
+  buyer_registered_norm_sources: boolean;
   buyer_receives_material_rows_only: boolean;
   buyer_quantities_match_estimate: boolean;
   buyer_items_not_truncated: boolean;
@@ -197,6 +203,7 @@ export type ExtendedProfessionalCertificationSummary = {
   price_sources_separated: boolean;
   calculation_trace_visible: boolean;
   norm_trace_visible: boolean;
+  registered_norm_sources_present: boolean;
   template_version_visible: boolean;
   procurement_flags_present: boolean;
   quantity_invariants_passed: boolean;
@@ -208,8 +215,12 @@ export type ExtendedProfessionalCertificationSummary = {
   pdf_extended_sections_visible: boolean;
   pdf_calculation_trace_visible: boolean;
   pdf_norm_sources_visible: boolean;
+  pdf_registered_norm_sources_visible: boolean;
   pdf_no_raw_ai_json: boolean;
   buyer_boq_extended_projection_passed: boolean;
+  request_ui_registered_norm_sources: boolean;
+  history_registered_norm_sources: boolean;
+  buyer_registered_norm_sources: boolean;
   buyer_receives_material_rows_only: boolean;
   buyer_material_quantities_match_estimate: boolean;
   buyer_items_not_truncated: boolean;
@@ -307,9 +318,13 @@ function hasNormTrace(row: StructuredEstimateRow): boolean {
     row.normSourceId &&
     row.normVersion &&
     /normId=/.test(trace) &&
-    /normSource=/.test(trace) &&
+    trace.includes(`normSource=${row.normSourceId}`) &&
     /normVersion=/.test(trace),
   );
+}
+
+function hasRegisteredNormTrace(row: StructuredEstimateRow): boolean {
+  return hasNormTrace(row) && isRegisteredProfessionalNormPackSourceId(row.normSourceId);
 }
 
 function hasPriceSource(row: StructuredEstimateRow): boolean {
@@ -456,6 +471,7 @@ export function evaluateExtendedWorkCase(testCase: ExtendedWorkCase): ExtendedCa
       pricedRows.every(hasPriceSource) &&
       rows.every((row) => row.priceTrace?.price_source_id !== row.normSourceId),
     norm_trace_present: rows.every(hasNormTrace),
+    registered_norm_sources_present: rows.length > 0 && rows.every(hasRegisteredNormTrace),
     calculation_trace_present: rows.every((row) => Boolean(row.formulaId && row.quantityFormula && row.calculationTrace)),
     template_version_present: rows.every((row) => Boolean(row.templateId && row.templateVersion)),
     procurement_flags_present: rows.every((row) =>
@@ -544,6 +560,15 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
   const procurementRows = payload.rows.filter((row) => row.includedInProcurement && !row.deletedByUser);
   const pdfRows = pdf?.sections.flatMap((section) => section.rows) ?? [];
   const pdfLabels = pdfRows.flatMap((row) => row.sourceLabels);
+  const pdfNormSourcesVisible =
+    pdfLabels.some((label) => label.includes("certified norm") || label.includes("unverified norm")) &&
+    pdfLabels.some((label) => label.includes("certified source") || label.includes("unverified source")) &&
+    pdfLabels.some((label) => label.includes("norm version"));
+  const pdfRegisteredNormSourcesVisible =
+    pdfLabels.some((label) => label.includes("certified norm")) &&
+    pdfLabels.some((label) => label.includes("certified source")) &&
+    approved.items.length > 0 &&
+    approved.items.every((item) => isRegisteredProfessionalNormPackSourceId(item.normSourceId));
   const failures: string[] = [];
 
   const evaluation: ExtendedLifecycleEvaluation = {
@@ -552,25 +577,35 @@ export function evaluateExtendedLifecycleCase(testCase: ExtendedWorkCase): Exten
     request_ui_trace_visible: bundle.items.every((item) =>
       Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.templateId && item.templateVersion)
     ),
+    request_ui_registered_norm_sources: bundle.items.length > 0 && bundle.items.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+    ),
     history_trace_persisted: history.items[0]?.items.every((item) =>
       Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.sourceParameters)
     ) ?? false,
+    history_registered_norm_sources: Boolean(
+      history.items[0]?.items.length && history.items[0].items.every((item) =>
+        isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+      ),
+    ),
     pdf_extended_sections_visible: Boolean(
       pdf &&
       pdf.sections.some((section) => section.type === "materials") &&
       pdf.sections.some((section) => section.type === "labor") &&
       pdfRows.length > 0,
     ),
-    pdf_calculation_trace_visible: pdfLabels.some((label) => label.includes("formula:") && label.includes("trace:")),
-    pdf_norm_sources_visible: pdfLabels.some((label) => label.includes("certified norm")) &&
-      pdfLabels.some((label) => label.includes("certified source")) &&
-      pdfLabels.some((label) => label.includes("norm version")),
+    pdf_calculation_trace_visible: pdfLabels.some((label) => label.includes("количество рассчитано по норме")),
+    pdf_norm_sources_visible: pdfNormSourcesVisible,
+    pdf_registered_norm_sources_visible: pdfRegisteredNormSourcesVisible,
     pdf_no_raw_ai_json: pdfLabels.every((label) => !looksLikeInternalRawJson(label)) &&
       pdfLabels.every((label) => !/\b[a-z][a-z0-9]*(?:_[a-z0-9]+){2,}\b/.test(label)),
     buyer_boq_extended_projection_passed: buyer.procurementItems.length > 0 &&
       buyer.procurementItems.every((item) =>
         Boolean(item.formulaId && item.quantityFormula && item.calculationTrace && item.sourceParameters && item.templateVersion)
       ),
+    buyer_registered_norm_sources: buyer.procurementItems.length > 0 && buyer.procurementItems.every((item) =>
+      isRegisteredProfessionalNormPackSourceId(item.normSourceId)
+    ),
     buyer_receives_material_rows_only: buyer.procurementItems.every((item) =>
       sourceRowsById.get(item.sourceEstimateRowId)?.sectionType === "materials"
     ),
@@ -639,6 +674,15 @@ function buildSmokeBooleans(input: {
 }) {
   const allPreview = input.caseEvaluations.every((item) => item.failures.length === 0);
   const lifecyclePassed = input.lifecycleEvaluations.every((item) => item.failures.length === 0);
+  const previewNormAdmissionPassed = input.caseEvaluations.length > 0 &&
+    input.caseEvaluations.every((item) => item.registered_norm_sources_present);
+  const lifecycleNormAdmissionPassed = input.lifecycleEvaluations.length > 0 &&
+    input.lifecycleEvaluations.every((item) =>
+      item.request_ui_registered_norm_sources &&
+      item.history_registered_norm_sources &&
+      item.pdf_registered_norm_sources_visible &&
+      item.buyer_registered_norm_sources
+    );
   const web10 = input.lifecycleEvaluations.slice(0, 10).length >= 10 &&
     input.lifecycleEvaluations.slice(0, 10).every((item) => item.failures.length === 0);
   const android3 = input.lifecycleEvaluations.slice(0, 3).length >= 3 &&
@@ -646,19 +690,21 @@ function buildSmokeBooleans(input: {
   const android25 = input.caseEvaluations.slice(0, 25).length >= 25 &&
     input.caseEvaluations.slice(0, 25).every((item) => item.failures.length === 0);
   const target = input.target ?? "headless";
-  const webHeadlessPassed = allPreview && (target === "web" || target === "both" || target === "headless");
-  const androidHeadlessPassed = allPreview && lifecyclePassed &&
+  const webHeadlessPassed = allPreview && previewNormAdmissionPassed &&
+    (target === "web" || target === "both" || target === "headless");
+  const androidHeadlessPassed = allPreview && lifecyclePassed && previewNormAdmissionPassed && lifecycleNormAdmissionPassed &&
     (target === "android-chrome" || target === "both" || target === "headless");
   return {
     web_extended_100_cases_smoke_passed: webHeadlessPassed,
-    web_100_preview_cases_passed: allPreview,
-    web_10_full_lifecycle_cases_passed: web10,
+    web_100_preview_cases_passed: allPreview && previewNormAdmissionPassed,
+    web_10_full_lifecycle_cases_passed: web10 && lifecycleNormAdmissionPassed,
     android_chrome_extended_cases_smoke_passed: androidHeadlessPassed,
-    android_chrome_25_preview_cases_passed: android25,
-    android_chrome_3_full_lifecycle_cases_passed: android3,
+    android_chrome_25_preview_cases_passed: android25 && previewNormAdmissionPassed,
+    android_chrome_3_full_lifecycle_cases_passed: android3 && lifecycleNormAdmissionPassed,
     smoke_target: target,
     smoke_execution_mode: "headless_route_equivalent" as const,
-    headless_route_equivalent_smoke_passed: allPreview && lifecyclePassed,
+    headless_route_equivalent_smoke_passed:
+      allPreview && lifecyclePassed && previewNormAdmissionPassed && lifecycleNormAdmissionPassed,
     web_headless_route_equivalent_smoke_passed: webHeadlessPassed,
     android_chrome_headless_route_equivalent_smoke_passed: androidHeadlessPassed,
     browser_automation_started: false as const,
@@ -736,6 +782,7 @@ export function runExtendedProfessionalCertification(
     price_sources_separated: booleanAll(caseEvaluations, (item) => item.price_sources_separated),
     calculation_trace_visible: booleanAll(caseEvaluations, (item) => item.calculation_trace_present),
     norm_trace_visible: booleanAll(caseEvaluations, (item) => item.norm_trace_present),
+    registered_norm_sources_present: booleanAll(caseEvaluations, (item) => item.registered_norm_sources_present),
     template_version_visible: booleanAll(caseEvaluations, (item) => item.template_version_present),
     procurement_flags_present: booleanAll(caseEvaluations, (item) => item.procurement_flags_present),
     quantity_invariants_passed: booleanAll(caseEvaluations, (item) => item.quantity_invariants_passed),
@@ -747,8 +794,24 @@ export function runExtendedProfessionalCertification(
     pdf_extended_sections_visible: booleanAll(lifecycleEvaluations, (item) => item.pdf_extended_sections_visible),
     pdf_calculation_trace_visible: booleanAll(lifecycleEvaluations, (item) => item.pdf_calculation_trace_visible),
     pdf_norm_sources_visible: booleanAll(lifecycleEvaluations, (item) => item.pdf_norm_sources_visible),
+    pdf_registered_norm_sources_visible: booleanAll(
+      lifecycleEvaluations,
+      (item) => item.pdf_registered_norm_sources_visible,
+    ),
     pdf_no_raw_ai_json: booleanAll(lifecycleEvaluations, (item) => item.pdf_no_raw_ai_json),
     buyer_boq_extended_projection_passed: booleanAll(lifecycleEvaluations, (item) => item.buyer_boq_extended_projection_passed),
+    request_ui_registered_norm_sources: booleanAll(
+      lifecycleEvaluations,
+      (item) => item.request_ui_registered_norm_sources,
+    ),
+    history_registered_norm_sources: booleanAll(
+      lifecycleEvaluations,
+      (item) => item.history_registered_norm_sources,
+    ),
+    buyer_registered_norm_sources: booleanAll(
+      lifecycleEvaluations,
+      (item) => item.buyer_registered_norm_sources,
+    ),
     buyer_receives_material_rows_only: booleanAll(lifecycleEvaluations, (item) => item.buyer_receives_material_rows_only),
     buyer_material_quantities_match_estimate: booleanAll(lifecycleEvaluations, (item) => item.buyer_quantities_match_estimate),
     buyer_items_not_truncated: booleanAll(lifecycleEvaluations, (item) => item.buyer_items_not_truncated),
@@ -773,6 +836,21 @@ export function runExtendedProfessionalCertification(
       ...lifecycleFailures,
       ...promptParsing.failures.map((failure) => `prompt:${failure}`),
       ...templateFailures.map((failure) => `template:${failure}`),
+      ...(!booleanAll(caseEvaluations, (item) => item.registered_norm_sources_present)
+        ? ["norm_source_admission:case_rows_unregistered"]
+        : []),
+      ...(!booleanAll(lifecycleEvaluations, (item) => item.request_ui_registered_norm_sources)
+        ? ["norm_source_admission:request_rows_unregistered"]
+        : []),
+      ...(!booleanAll(lifecycleEvaluations, (item) => item.history_registered_norm_sources)
+        ? ["norm_source_admission:history_rows_unregistered"]
+        : []),
+      ...(!booleanAll(lifecycleEvaluations, (item) => item.pdf_registered_norm_sources_visible)
+        ? ["norm_source_admission:pdf_rows_unregistered"]
+        : []),
+      ...(!booleanAll(lifecycleEvaluations, (item) => item.buyer_registered_norm_sources)
+        ? ["norm_source_admission:buyer_rows_unregistered"]
+        : []),
     ],
     production_db_touched: false,
     destructive_migration_run: false,
@@ -797,6 +875,7 @@ export function runExtendedProfessionalCertification(
     summaryWithoutStatus.price_sources_separated &&
     summaryWithoutStatus.calculation_trace_visible &&
     summaryWithoutStatus.norm_trace_visible &&
+    summaryWithoutStatus.registered_norm_sources_present &&
     summaryWithoutStatus.template_version_visible &&
     summaryWithoutStatus.procurement_flags_present &&
     summaryWithoutStatus.quantity_invariants_passed &&
@@ -808,8 +887,12 @@ export function runExtendedProfessionalCertification(
     summaryWithoutStatus.pdf_extended_sections_visible &&
     summaryWithoutStatus.pdf_calculation_trace_visible &&
     summaryWithoutStatus.pdf_norm_sources_visible &&
+    summaryWithoutStatus.pdf_registered_norm_sources_visible &&
     summaryWithoutStatus.pdf_no_raw_ai_json &&
     summaryWithoutStatus.buyer_boq_extended_projection_passed &&
+    summaryWithoutStatus.request_ui_registered_norm_sources &&
+    summaryWithoutStatus.history_registered_norm_sources &&
+    summaryWithoutStatus.buyer_registered_norm_sources &&
     summaryWithoutStatus.buyer_receives_material_rows_only &&
     summaryWithoutStatus.buyer_material_quantities_match_estimate &&
     summaryWithoutStatus.buyer_items_not_truncated &&

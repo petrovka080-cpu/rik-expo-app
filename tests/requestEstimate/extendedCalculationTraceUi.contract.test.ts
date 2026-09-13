@@ -6,6 +6,9 @@ describe("request estimate extended calculation trace UI", () => {
 
     expect(summary.calculation_trace_visible).toBe(true);
     expect(summary.norm_trace_visible).toBe(true);
+    expect(summary.registered_norm_sources_present).toBe(false);
+    expect(summary.request_ui_registered_norm_sources).toBe(false);
+    expect(summary.history_registered_norm_sources).toBe(false);
     expect(summary.template_version_visible).toBe(true);
     expect(summary.lifecycle_evaluations.every((item) => item.request_ui_trace_visible)).toBe(true);
     expect(summary.lifecycle_evaluations.every((item) => item.history_trace_persisted)).toBe(true);

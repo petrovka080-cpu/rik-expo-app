@@ -5,6 +5,7 @@ describe("buyer BOQ extended estimate projection", () => {
     const summary = extended100CertificationSummary();
 
     expect(summary.buyer_boq_extended_projection_passed).toBe(true);
+    expect(summary.buyer_registered_norm_sources).toBe(false);
     expect(summary.buyer_receives_material_rows_only).toBe(true);
     expect(summary.buyer_material_quantities_match_estimate).toBe(true);
     expect(summary.buyer_items_not_truncated).toBe(true);

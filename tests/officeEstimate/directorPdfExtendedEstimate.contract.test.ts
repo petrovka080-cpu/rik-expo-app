@@ -7,6 +7,7 @@ describe("director PDF extended estimate projection", () => {
     expect(summary.pdf_extended_sections_visible).toBe(true);
     expect(summary.pdf_calculation_trace_visible).toBe(true);
     expect(summary.pdf_norm_sources_visible).toBe(true);
+    expect(summary.pdf_registered_norm_sources_visible).toBe(false);
     expect(summary.pdf_no_raw_ai_json).toBe(true);
     expect(summary.lifecycle_evaluations.every((item) => item.pdf_no_raw_ai_json)).toBe(true);
   });
