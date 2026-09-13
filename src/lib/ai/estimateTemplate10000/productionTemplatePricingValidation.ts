@@ -3,6 +3,8 @@ import {
   clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
   getProductionExpandedTemplate10000,
+  type ProductionCompiledExpandedEstimate,
+  type ProductionExpandedEstimateTemplate,
   type ProductionPriceSourcePriority,
   type ProductionTemplateSection,
   type ProductionWorkDefinition,
@@ -83,17 +85,18 @@ function isPriceableRow(row: {
   return row.includedInProcurement || PRICEABLE_SECTIONS.has(row.section);
 }
 
-function markFailed(failedTemplates: Set<string>, failure: ProductionTemplatePricingValidationFailure): void {
-  failedTemplates.add(failure.workKey);
-}
-
-function validateDefinition(input: {
+export function validateProductionTemplatePricingDefinition10000(input: {
   definition: ProductionWorkDefinition;
+  template?: ProductionExpandedEstimateTemplate;
+  compiled?: ProductionCompiledExpandedEstimate;
+}): {
+  priceableRows: number;
   failures: ProductionTemplatePricingValidationFailure[];
-  failedTemplates: Set<string>;
-}): number {
-  const { definition, failures, failedTemplates } = input;
-  const template = getProductionExpandedTemplate10000(definition.workKey);
+  passed: boolean;
+} {
+  const { definition } = input;
+  const failures: ProductionTemplatePricingValidationFailure[] = [];
+  const template = input.template ?? getProductionExpandedTemplate10000(definition.workKey);
   let priceableRows = 0;
 
   for (const row of template.rows) {
@@ -103,7 +106,6 @@ function validateDefinition(input: {
     const push = (blocker: string) => {
       const failure = { ...failureBase, blocker };
       failures.push(failure);
-      markFailed(failedTemplates, failure);
     };
 
     if (!row.pricebookItemKey?.trim()) push("PRICEBOOK_ITEM_KEY_MISSING");
@@ -117,7 +119,7 @@ function validateDefinition(input: {
     if (!row.warningIfMissingPrice?.trim()) push("MISSING_PRICE_WARNING_MISSING");
   }
 
-  const compiled = compileProductionExpandedEstimate10000({
+  const compiled = input.compiled ?? compileProductionExpandedEstimate10000({
     workKey: definition.workKey,
     quantity: 54,
     countryCode: "KG",
@@ -128,7 +130,6 @@ function validateDefinition(input: {
     const push = (blocker: string) => {
       const failure = { ...failureBase, blocker };
       failures.push(failure);
-      markFailed(failedTemplates, failure);
     };
     const unitPrice = row.unitPrice as number | null;
     const total = row.total as number | null;
@@ -142,7 +143,7 @@ function validateDefinition(input: {
     if (unitPrice === 980 || total === 980) push("FAKE_DEFAULT_980_FORBIDDEN");
   }
 
-  return priceableRows;
+  return { priceableRows, failures, passed: failures.length === 0 };
 }
 
 export function validateAllProductionTemplatesPricing10000(): ProductionTemplatePricingValidationSummary {
@@ -152,7 +153,10 @@ export function validateAllProductionTemplatesPricing10000(): ProductionTemplate
 
   for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     try {
-      priceableRows += validateDefinition({ definition, failures, failedTemplates });
+      const result = validateProductionTemplatePricingDefinition10000({ definition });
+      priceableRows += result.priceableRows;
+      failures.push(...result.failures);
+      for (const failure of result.failures) failedTemplates.add(failure.workKey);
     } catch (error) {
       const failure = {
         workKey: definition.workKey,
@@ -160,7 +164,7 @@ export function validateAllProductionTemplatesPricing10000(): ProductionTemplate
         blocker: error instanceof Error ? error.message : "UNKNOWN_TEMPLATE_PRICING_VALIDATION_ERROR",
       };
       failures.push(failure);
-      markFailed(failedTemplates, failure);
+      failedTemplates.add(failure.workKey);
     } finally {
       if ((index + 1) % 100 === 0) clearProductionExpandedEstimate10000Caches();
     }

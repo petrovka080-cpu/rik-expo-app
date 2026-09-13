@@ -2,11 +2,15 @@ import {
   PRODUCTION_WORK_DEFINITIONS_10000,
   clearProductionExpandedEstimate10000Caches,
   compileProductionExpandedEstimate10000,
+  getProductionExpandedTemplate10000,
   type ProductionDefaultUnit,
   type ProductionTemplateSection,
 } from "./productionExpandedWorkCatalog10000";
-import { validateAllProductionTemplatesBoq10000 } from "./productionTemplateBoqValidation";
-import { validateAllProductionTemplatesPricing10000 } from "./productionTemplatePricingValidation";
+import {
+  validateProductionTemplateBoqDefinition10000,
+  validateProductionTemplateBoqSampleMatrices10000,
+} from "./productionTemplateBoqValidation";
+import { validateProductionTemplatePricingDefinition10000 } from "./productionTemplatePricingValidation";
 
 export const GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS =
   "GREEN_AI_ESTIMATE_10000_TEMPLATES_EXTENDED_VALIDATION_NO_BUILDS" as const;
@@ -99,11 +103,12 @@ function hasTraceParam(trace: string, key: string): boolean {
 }
 
 export function validateAllProductionTemplatesExtended10000(): ProductionTemplateExtendedValidationSummary {
-  const boq = validateAllProductionTemplatesBoq10000({ sampleMatrixCount: 100 });
-  const pricing = validateAllProductionTemplatesPricing10000();
   const failures: ProductionTemplateExtendedValidationFailure[] = [];
   const failedTemplates = new Set<string>();
   let rowsValidated = 0;
+  let priceableRowsValidated = 0;
+  let boqValidationPassed = true;
+  let pricingValidationPassed = true;
 
   let materialRows = true;
   let laborRows = true;
@@ -131,11 +136,40 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
 
   for (const [index, definition] of PRODUCTION_WORK_DEFINITIONS_10000.entries()) {
     try {
+      const template = getProductionExpandedTemplate10000(definition.workKey);
       const compiled = compileProductionExpandedEstimate10000({
         workKey: definition.workKey,
         quantity: 54,
         countryCode: "KG",
       });
+      const boqValidation = validateProductionTemplateBoqDefinition10000({ definition, template, compiled });
+      const pricingValidation = validateProductionTemplatePricingDefinition10000({ definition, template, compiled });
+      boqValidationPassed = boqValidationPassed && boqValidation.passed;
+      pricingValidationPassed = pricingValidationPassed && pricingValidation.passed;
+      priceableRowsValidated += pricingValidation.priceableRows;
+      for (const failure of boqValidation.failures) {
+        pushFailure({
+          workKey: failure.workKey,
+          templateKey: failure.templateKey,
+          rowCode: failure.rowCode,
+          blocker: `BOQ_${failure.blocker}`,
+        });
+      }
+      for (const failure of pricingValidation.failures) {
+        pushFailure({
+          workKey: failure.workKey,
+          templateKey: failure.templateKey,
+          rowCode: failure.rowCode,
+          blocker: `PRICING_${failure.blocker}`,
+        });
+      }
+      if (!boqValidation.passed && boqValidation.failures.length === 0) {
+        pushFailure({
+          workKey: definition.workKey,
+          templateKey: definition.templateKey,
+          blocker: "BOQ_DEFINITION_CONTRACT_FAILED",
+        });
+      }
       rowsValidated += compiled.rows.length;
       const failureBase = { workKey: definition.workKey, templateKey: definition.templateKey };
 
@@ -247,6 +281,8 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
         pushFailure({ ...failureBase, blocker: "LINE_TYPES_NOT_SEPARATED" });
       }
     } catch (error) {
+      boqValidationPassed = false;
+      pricingValidationPassed = false;
       pushFailure({
         workKey: definition.workKey,
         templateKey: definition.templateKey,
@@ -257,13 +293,19 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
     }
   }
   clearProductionExpandedEstimate10000Caches();
+  const boqSampleMatrices = validateProductionTemplateBoqSampleMatrices10000(100);
+  boqValidationPassed =
+    boqValidationPassed &&
+    boqSampleMatrices.sampleMatrixPassed &&
+    boqSampleMatrices.starterMatrixPassed;
 
   const passed =
     PRODUCTION_WORK_DEFINITIONS_10000.length >= 10000 &&
     failures.length === 0 &&
-    boq.all_10000_templates_boq_validation_passed &&
-    pricing.final_status === "GREEN_AI_ESTIMATE_REAL_PRICE_SOURCE_TOTALS_AND_COST_CONFIDENCE_NO_BUILDS" &&
+    boqValidationPassed &&
+    pricingValidationPassed &&
     rowsValidated > 0 &&
+    priceableRowsValidated > 0 &&
     materialRows &&
     laborRows &&
     equipmentOrServiceRows &&
@@ -292,9 +334,8 @@ export function validateAllProductionTemplatesExtended10000(): ProductionTemplat
     templates_failed_count: failedTemplates.size,
     rows_validated_count: rowsValidated,
     all_10000_templates_extended_validation_passed: passed,
-    all_10000_templates_boq_validation_passed: boq.all_10000_templates_boq_validation_passed,
-    all_10000_templates_pricing_validation_passed:
-      pricing.final_status === "GREEN_AI_ESTIMATE_REAL_PRICE_SOURCE_TOTALS_AND_COST_CONFIDENCE_NO_BUILDS",
+    all_10000_templates_boq_validation_passed: boqValidationPassed,
+    all_10000_templates_pricing_validation_passed: pricingValidationPassed,
     all_templates_have_material_rows: materialRows,
     all_templates_have_labor_rows: laborRows,
     all_templates_have_equipment_or_service_rows: equipmentOrServiceRows,

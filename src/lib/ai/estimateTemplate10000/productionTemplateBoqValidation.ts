@@ -5,6 +5,7 @@ import {
   getProductionExpandedTemplate10000,
   type ProductionCompiledExpandedEstimate,
   type ProductionDefaultUnit,
+  type ProductionExpandedEstimateTemplate,
   type ProductionTemplateSection,
   type ProductionWorkDefinition,
 } from "./productionExpandedWorkCatalog10000";
@@ -72,6 +73,31 @@ export type ProductionTemplateBoqValidationSummary = {
   fake_green_claimed: false;
 };
 
+export type ProductionTemplateBoqDefinitionValidation = {
+  failures: ProductionTemplateBoqValidationFailure[];
+  schemaValid: boolean;
+  formulaValid: boolean;
+  materialRecipeValid: boolean;
+  laborRecipeValid: boolean;
+  serviceEquipmentRecipeValid: boolean;
+  allTrace: boolean;
+  allNonZero: boolean;
+  allUnits: boolean;
+  noAllSameArea: boolean;
+  noFakeDefaultPrice: boolean;
+  lineTypesSeparated: boolean;
+  lineTypeRequired: boolean;
+  templateIdRequired: boolean;
+  templateVersionRequired: boolean;
+  formulaIdRequired: boolean;
+  calculationTraceRequired: boolean;
+  sourceParametersRequired: boolean;
+  procurementFlagRequired: boolean;
+  priceNullable: boolean;
+  amountNullable: boolean;
+  passed: boolean;
+};
+
 const VALID_UNITS: ReadonlySet<ProductionDefaultUnit> = new Set([
   "m2",
   "m3",
@@ -137,6 +163,158 @@ function sampleDefinitions(count: number): ProductionWorkDefinition[] {
   return sampled;
 }
 
+export function validateProductionTemplateBoqDefinition10000(input: {
+  definition: ProductionWorkDefinition;
+  template?: ProductionExpandedEstimateTemplate;
+  compiled?: ProductionCompiledExpandedEstimate;
+}): ProductionTemplateBoqDefinitionValidation {
+  const { definition } = input;
+  const templateKey = definition.templateKey;
+  const failures: ProductionTemplateBoqValidationFailure[] = [];
+  let schemaValid = true;
+  let formulaValid = true;
+  let materialRecipeValid = true;
+  let laborRecipeValid = true;
+  let serviceEquipmentRecipeValid = true;
+  let allTrace = true;
+  let allNonZero = true;
+  let allUnits = true;
+  let noAllSameArea = true;
+  let noFakeDefaultPrice = true;
+  let lineTypesSeparated = true;
+  let lineTypeRequired = true;
+  let templateIdRequired = true;
+  let templateVersionRequired = true;
+  let formulaIdRequired = true;
+  let calculationTraceRequired = true;
+  let sourceParametersRequired = true;
+  let procurementFlagRequired = true;
+  let priceNullable = true;
+  let amountNullable = true;
+
+  const template = input.template ?? getProductionExpandedTemplate10000(definition.workKey);
+  if (!template.requiredInputs.some((param) => param.key === "q" && param.required)) {
+    schemaValid = false;
+    failures.push({ workKey: definition.workKey, templateKey, blocker: "REQUIRED_Q_SCHEMA_MISSING" });
+  }
+  for (const row of template.rows) {
+    if (!row.recipeId) {
+      materialRecipeValid = false;
+      laborRecipeValid = false;
+      failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "RECIPE_ID_MISSING" });
+    }
+    if (!row.formulaDefinitionId) {
+      formulaValid = false;
+      failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "FORMULA_DEFINITION_ID_MISSING" });
+    }
+    const validation = validateProductionFormulaDsl(row.quantityFormula, validationContext(100));
+    if (!validation.valid) {
+      formulaValid = false;
+      failures.push({
+        workKey: definition.workKey,
+        templateKey,
+        rowCode: row.rowCode,
+        blocker: `FORMULA_INVALID:${validation.errors.join("|")}`,
+      });
+    }
+    if (!VALID_UNITS.has(row.unit)) {
+      allUnits = false;
+      failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "INVALID_UNIT" });
+    }
+  }
+
+  const compiled = input.compiled ?? compileProductionExpandedEstimate10000({
+    workKey: definition.workKey,
+    quantity: 54,
+    countryCode: "KG",
+  });
+  for (const requiredSection of REQUIRED_SECTIONS) {
+    if (!hasRowsInSection(compiled, requiredSection)) {
+      if (requiredSection === "materials") materialRecipeValid = false;
+      if (requiredSection === "labor") laborRecipeValid = false;
+      failures.push({ workKey: definition.workKey, templateKey, blocker: `${requiredSection.toUpperCase()}_SECTION_MISSING` });
+    }
+  }
+  if (!compiled.rows.some((row) => row.lineType === "service" || row.lineType === "equipment")) {
+    serviceEquipmentRecipeValid = false;
+    failures.push({ workKey: definition.workKey, templateKey, blocker: "SERVICE_OR_EQUIPMENT_RECIPE_MISSING" });
+  }
+  if (allRowsSameArea(compiled, 54)) {
+    noAllSameArea = false;
+    failures.push({ workKey: definition.workKey, templateKey, blocker: "ALL_ROWS_SAME_AREA_FAKE_PATTERN" });
+  }
+  for (const row of compiled.rows) {
+    if (!row.lineType) lineTypeRequired = false;
+    if (!row.templateId) templateIdRequired = false;
+    if (!row.templateVersion) templateVersionRequired = false;
+    if (!row.formulaId) formulaIdRequired = false;
+    if (!row.calculationTrace) calculationTraceRequired = false;
+    if (!row.sourceParameters) sourceParametersRequired = false;
+    if (typeof row.includedInProcurement !== "boolean") procurementFlagRequired = false;
+    if (row.unitPrice !== null) priceNullable = false;
+    if (row.total !== null) amountNullable = false;
+    if (!Number.isFinite(row.quantity) || row.quantity <= 0) allNonZero = false;
+    if (!VALID_UNITS.has(row.unit)) allUnits = false;
+    if (!row.calculationTrace || !row.calculationTrace.includes("expression=")) allTrace = false;
+    if (row.unitPrice !== null || row.total !== null || row.priceStatus !== "PRICE_MISSING") noFakeDefaultPrice = false;
+    if (!VALID_UNITS.has(row.unit)) {
+      failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "COMPILED_INVALID_UNIT" });
+    }
+  }
+  lineTypesSeparated =
+    compiled.rows.some((row) => row.lineType === "material") &&
+    compiled.rows.some((row) => row.lineType === "work") &&
+    compiled.rows.some((row) => row.lineType === "service") &&
+    compiled.rows.some((row) => row.lineType === "equipment");
+
+  const result = {
+    failures,
+    schemaValid,
+    formulaValid,
+    materialRecipeValid,
+    laborRecipeValid,
+    serviceEquipmentRecipeValid,
+    allTrace,
+    allNonZero,
+    allUnits,
+    noAllSameArea,
+    noFakeDefaultPrice,
+    lineTypesSeparated,
+    lineTypeRequired,
+    templateIdRequired,
+    templateVersionRequired,
+    formulaIdRequired,
+    calculationTraceRequired,
+    sourceParametersRequired,
+    procurementFlagRequired,
+    priceNullable,
+    amountNullable,
+  };
+  return {
+    ...result,
+    passed: failures.length === 0 && Object.values(result).every((value) => value === true || Array.isArray(value)),
+  };
+}
+
+export function validateProductionTemplateBoqSampleMatrices10000(sampleMatrixCount = 100): {
+  sampleMatrixPassed: boolean;
+  starterMatrixPassed: boolean;
+} {
+  const sampleMatrixPassed = sampleDefinitions(sampleMatrixCount).every((definition) => {
+    const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, quantity: 77, countryCode: "KG" });
+    return compiled.rows.length >= definition.minimumRows &&
+      compiled.rows.some((row) => row.lineType === "material") &&
+      compiled.rows.some((row) => row.lineType === "work") &&
+      compiled.rows.every((row) => row.calculationTrace && Number.isFinite(row.quantity) && row.quantity > 0);
+  });
+  const starterMatrixPassed = sampleDefinitions(8).every((definition) => {
+    const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, quantity: 54, countryCode: "KG" });
+    return compiled.rows.some((row) => row.lineType === "material") && compiled.rows.some((row) => row.lineType === "work");
+  });
+  clearProductionExpandedEstimate10000Caches();
+  return { sampleMatrixPassed, starterMatrixPassed };
+}
+
 export function validateAllProductionTemplatesBoq10000(input: {
   sampleMatrixCount?: number;
 } = {}): ProductionTemplateBoqValidationSummary {
@@ -165,83 +343,33 @@ export function validateAllProductionTemplatesBoq10000(input: {
   let amountNullable = true;
 
   for (const [index, definition] of backend.templates.entries()) {
-    const templateKey = definition.templateKey;
     try {
-      const template = getProductionExpandedTemplate10000(definition.workKey);
-      if (!template.requiredInputs.some((param) => param.key === "q" && param.required)) {
-        schemaValid = false;
-        failures.push({ workKey: definition.workKey, templateKey, blocker: "REQUIRED_Q_SCHEMA_MISSING" });
-      }
-      for (const row of template.rows) {
-        if (!row.recipeId) {
-          materialRecipeValid = false;
-          laborRecipeValid = false;
-          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "RECIPE_ID_MISSING" });
-        }
-        if (!row.formulaDefinitionId) {
-          formulaValid = false;
-          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "FORMULA_DEFINITION_ID_MISSING" });
-        }
-        const validation = validateProductionFormulaDsl(row.quantityFormula, validationContext(100));
-        if (!validation.valid) {
-          formulaValid = false;
-          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: `FORMULA_INVALID:${validation.errors.join("|")}` });
-        }
-        if (!VALID_UNITS.has(row.unit)) {
-          allUnits = false;
-          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "INVALID_UNIT" });
-        }
-      }
-
-      const compiled = compileProductionExpandedEstimate10000({
-        workKey: definition.workKey,
-        quantity: 54,
-        countryCode: "KG",
-      });
-      for (const requiredSection of REQUIRED_SECTIONS) {
-        if (!hasRowsInSection(compiled, requiredSection)) {
-          if (requiredSection === "materials") materialRecipeValid = false;
-          if (requiredSection === "labor") laborRecipeValid = false;
-          failures.push({ workKey: definition.workKey, templateKey, blocker: `${requiredSection.toUpperCase()}_SECTION_MISSING` });
-        }
-      }
-      if (!compiled.rows.some((row) => row.lineType === "service" || row.lineType === "equipment")) {
-        serviceEquipmentRecipeValid = false;
-        failures.push({ workKey: definition.workKey, templateKey, blocker: "SERVICE_OR_EQUIPMENT_RECIPE_MISSING" });
-      }
-      if (allRowsSameArea(compiled, 54)) {
-        noAllSameArea = false;
-        failures.push({ workKey: definition.workKey, templateKey, blocker: "ALL_ROWS_SAME_AREA_FAKE_PATTERN" });
-      }
-      for (const row of compiled.rows) {
-        if (!row.lineType) lineTypeRequired = false;
-        if (!row.templateId) templateIdRequired = false;
-        if (!row.templateVersion) templateVersionRequired = false;
-        if (!row.formulaId) formulaIdRequired = false;
-        if (!row.calculationTrace) calculationTraceRequired = false;
-        if (!row.sourceParameters) sourceParametersRequired = false;
-        if (typeof row.includedInProcurement !== "boolean") procurementFlagRequired = false;
-        if (row.unitPrice !== null) priceNullable = false;
-        if (row.total !== null) amountNullable = false;
-        if (!Number.isFinite(row.quantity) || row.quantity <= 0) allNonZero = false;
-        if (!VALID_UNITS.has(row.unit)) allUnits = false;
-        if (!row.calculationTrace || !row.calculationTrace.includes("expression=")) allTrace = false;
-        if (row.unitPrice !== null || row.total !== null || row.priceStatus !== "PRICE_MISSING") noFakeDefaultPrice = false;
-        if (!VALID_UNITS.has(row.unit)) {
-          allUnits = false;
-          failures.push({ workKey: definition.workKey, templateKey, rowCode: row.rowCode, blocker: "COMPILED_INVALID_UNIT" });
-        }
-      }
-      lineTypesSeparated =
-        lineTypesSeparated &&
-        compiled.rows.some((row) => row.lineType === "material") &&
-        compiled.rows.some((row) => row.lineType === "work") &&
-        compiled.rows.some((row) => row.lineType === "service") &&
-        compiled.rows.some((row) => row.lineType === "equipment");
+      const result = validateProductionTemplateBoqDefinition10000({ definition });
+      failures.push(...result.failures);
+      schemaValid = schemaValid && result.schemaValid;
+      formulaValid = formulaValid && result.formulaValid;
+      materialRecipeValid = materialRecipeValid && result.materialRecipeValid;
+      laborRecipeValid = laborRecipeValid && result.laborRecipeValid;
+      serviceEquipmentRecipeValid = serviceEquipmentRecipeValid && result.serviceEquipmentRecipeValid;
+      allTrace = allTrace && result.allTrace;
+      allNonZero = allNonZero && result.allNonZero;
+      allUnits = allUnits && result.allUnits;
+      noAllSameArea = noAllSameArea && result.noAllSameArea;
+      noFakeDefaultPrice = noFakeDefaultPrice && result.noFakeDefaultPrice;
+      lineTypesSeparated = lineTypesSeparated && result.lineTypesSeparated;
+      lineTypeRequired = lineTypeRequired && result.lineTypeRequired;
+      templateIdRequired = templateIdRequired && result.templateIdRequired;
+      templateVersionRequired = templateVersionRequired && result.templateVersionRequired;
+      formulaIdRequired = formulaIdRequired && result.formulaIdRequired;
+      calculationTraceRequired = calculationTraceRequired && result.calculationTraceRequired;
+      sourceParametersRequired = sourceParametersRequired && result.sourceParametersRequired;
+      procurementFlagRequired = procurementFlagRequired && result.procurementFlagRequired;
+      priceNullable = priceNullable && result.priceNullable;
+      amountNullable = amountNullable && result.amountNullable;
     } catch (error) {
       failures.push({
         workKey: definition.workKey,
-        templateKey,
+        templateKey: definition.templateKey,
         blocker: error instanceof Error ? error.message : "UNKNOWN_TEMPLATE_VALIDATION_ERROR",
       });
     } finally {
@@ -253,18 +381,8 @@ export function validateAllProductionTemplatesBoq10000(input: {
   for (const failure of failures) failedTemplates.add(failure.workKey);
 
   const sampleMatrixCount = input.sampleMatrixCount ?? 100;
-  const sampleMatrixPassed = sampleDefinitions(sampleMatrixCount).every((definition) => {
-    const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, quantity: 77, countryCode: "KG" });
-    return compiled.rows.length >= definition.minimumRows &&
-      compiled.rows.some((row) => row.lineType === "material") &&
-      compiled.rows.some((row) => row.lineType === "work") &&
-      compiled.rows.every((row) => row.calculationTrace && Number.isFinite(row.quantity) && row.quantity > 0);
-  });
-  const starterMatrixPassed = sampleDefinitions(8).every((definition) => {
-    const compiled = compileProductionExpandedEstimate10000({ workKey: definition.workKey, quantity: 54, countryCode: "KG" });
-    return compiled.rows.some((row) => row.lineType === "material") && compiled.rows.some((row) => row.lineType === "work");
-  });
-  clearProductionExpandedEstimate10000Caches();
+  const { sampleMatrixPassed, starterMatrixPassed } =
+    validateProductionTemplateBoqSampleMatrices10000(sampleMatrixCount);
 
   const allBoqPassed =
     backend.count >= 10000 &&
