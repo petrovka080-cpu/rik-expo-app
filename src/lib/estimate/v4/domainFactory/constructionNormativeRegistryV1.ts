@@ -90,6 +90,11 @@ import {
   ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_ID,
   ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_METADATA,
 } from "./insulationRockwoolComfortboard80PhysicalNormV1";
+import {
+  SIEMENS_SINTESO_FDB221_PRODUCT_PROFILE_ID,
+  SIEMENS_SINTESO_FDB221_SOURCE_ID,
+  SIEMENS_SINTESO_FDB221_SOURCE_METADATA,
+} from "./fireSafetySiemensFdb221PhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -195,6 +200,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: SIEMENS_SINTESO_FDB221_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Siemens",
+    document_code: "Siemens Sinteso FDB221 data sheet 007775 / A5Q00001664",
+    title: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.source_title,
+    edition: "Data sheet 007775",
+    revision: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2021-01-08",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["INSTALL"],
+    material_system_applicability: ["SIEMENS_SINTESO_FDB221_BASE"],
+    product_profile_applicability: [SIEMENS_SINTESO_FDB221_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.exact_locator,
+    unit_basis: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.rate_unit,
+    official_reference: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.source_url,
+    version: SIEMENS_SINTESO_FDB221_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public Siemens manufacturer data used only for one FDB221 addressable detector base per approved compatible detector point plus explicit project spares. FDB221 is not a detector; detector count is never derived from area, and humid/wet attachments, auxiliary terminals, heating, locking and designation plates remain separate scopes.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: ROCKWOOL_COMFORTBOARD80_R63_38MM_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",

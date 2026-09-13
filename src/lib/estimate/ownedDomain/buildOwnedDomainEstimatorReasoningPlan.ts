@@ -13,6 +13,10 @@ import {
   extractRockwoolComfortboard80CanonicalParametersV1,
   rockwoolComfortboard80MissingQuestionsRuV1,
 } from "./insulationRockwoolComfortboard80ProductionBindingV1";
+import {
+  extractSiemensSintesoFdb221CanonicalParametersV1,
+  siemensSintesoFdb221MissingQuestionsRuV1,
+} from "./fireSafetySiemensFdb221ProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -135,6 +139,77 @@ function electricalPlan(
         "Сколько точек, групп и фаз?",
         "Нужны ли слаботочные сети?",
         "Есть ли проект и выделенная мощность?",
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
+function fireSafetySiemensFdb221Plan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractSiemensSintesoFdb221CanonicalParametersV1(text);
+  const designedPointCount = canonicalParameters?.designed_detector_point_count;
+  return {
+    intent: "estimate",
+    workKey: "fire_alarm_installation",
+    titleRu: "Профессиональная предварительная смета: адресная пожарная сигнализация Siemens Sinteso",
+    category: "electrical",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: true,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "fire_alarm",
+      object: "fire_alarm_system",
+      operation: "installation",
+      method: "regulated_fire_alarm_install",
+      materialSystem: "fire_alarm_system",
+      regulated: true,
+      confidence: 0.9,
+    },
+    quantities: {
+      count: typeof designedPointCount === "number" ? designedPointCount : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "complex",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "пожарные извещатели по утверждённому проекту",
+        "основания адресных извещателей Siemens Sinteso FDB221 (не извещатели)",
+        "прибор адресной пожарной сигнализации",
+        "огнестойкий кабель пожарной сигнализации",
+        "светозвуковые оповещатели",
+        "резервное питание",
+      ],
+      requiredLabor: [
+        "проверка утверждённой топологии шлейфов и совместимости извещателей",
+        "прокладка огнестойкого кабеля",
+        "монтаж оснований и адресных пожарных извещателей",
+        "адресация и функциональная проверка точек",
+        "пусконаладка и приёмочные испытания пожарной сигнализации",
+      ],
+      requiredEquipmentOrWarnings: [
+        "кабельный тестер линий АПС",
+        "измеритель сопротивления изоляции",
+        "комплект функциональной проверки извещателей",
+      ],
+      requiredLogisticsOrWarnings: [
+        "доставка оборудования пожарной сигнализации",
+        "защищённое хранение адресных устройств",
+      ],
+      exclusions: [
+        "Число и расстановка извещателей принимаются только из утверждённого проекта АПС и не выводятся из площади.",
+        "FDB221 является основанием; извещатель, влажностная насадка, клеммы, обогрев, фиксатор и табличка учитываются отдельно.",
+      ],
+      clarifyingQuestions: [
+        "Есть ли утверждённый проект АПС с числом точек и нормативной основой?",
+        "Какая модель извещателя выбрана и какой документ подтверждает её совместимость с FDB221?",
+        ...siemensSintesoFdb221MissingQuestionsRuV1(canonicalParameters),
       ],
     },
     pricingPolicy: pricingPolicy(currency),
@@ -275,6 +350,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "fire_safety"
+      ? fireSafetySiemensFdb221Plan(input.text, currency)
     : input.owner === "roof_waterproofing"
       ? roofWaterproofingPlan(input.text, currency)
       : insulationPlan(input.text, currency);

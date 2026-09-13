@@ -19,6 +19,7 @@ import {
 } from "../../estimate/v4/electrical/electricalProfessionalBoqV1";
 import { applySarnafilAt18PhysicalNormToRoofBoqV1 } from "../../estimate/ownedDomain/roofingSarnafilAt18ProductionBindingV1";
 import { applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1 } from "../../estimate/ownedDomain/insulationRockwoolComfortboard80ProductionBindingV1";
+import { applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1 } from "../../estimate/ownedDomain/fireSafetySiemensFdb221ProductionBindingV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1708,9 +1709,12 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+  const normBoundRows = applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
     plan,
-    applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+    applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
+      plan,
+      applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
+    ),
   );
   const expandedRows = plan.workKey === "electrical_area_installation"
     ? normBoundRows

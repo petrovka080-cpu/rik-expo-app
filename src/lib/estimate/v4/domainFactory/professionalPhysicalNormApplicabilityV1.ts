@@ -26,6 +26,11 @@ import {
   ROCKWOOL_COMFORTBOARD80_R63_38MM_PRODUCT_PROFILE_ID,
   ROCKWOOL_COMFORTBOARD80_R63_38MM_RUNTIME_BINDING_V1,
 } from "./insulationRockwoolComfortboard80PhysicalNormV1";
+import {
+  resolveSiemensSintesoFdb221PhysicalNormV1,
+  SIEMENS_SINTESO_FDB221_PRODUCT_PROFILE_ID,
+  SIEMENS_SINTESO_FDB221_RUNTIME_BINDING_V1,
+} from "./fireSafetySiemensFdb221PhysicalNormV1";
 import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
@@ -2869,6 +2874,7 @@ const LEGRAND_P31_REQUIRED_EXPLICIT_PARAMETER_IDS = Object.freeze([
 export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.freeze([
   SARNAFIL_AT18_FIELD_80MM_RUNTIME_BINDING_V1,
   ROCKWOOL_COMFORTBOARD80_R63_38MM_RUNTIME_BINDING_V1,
+  SIEMENS_SINTESO_FDB221_RUNTIME_BINDING_V1,
   {
   norm_id: UPONOR_UFH_150MM_NORM_ID,
   work_group: "heating",
@@ -3373,6 +3379,7 @@ type AppliedPhysicalNormResolutionV1 = {
   calculated_krer27_06_020_table_norm_units?: number;
   calculated_sarnafil_at18_gross_field_membrane_m2?: number;
   calculated_rockwool_comfortboard80_net_board_quantity_m2?: number;
+  calculated_siemens_fdb221_base_quantity_piece?: number;
   calculated_tray_joint_fastener_quantity_piece?: number;
   calculated_smart_sleeve_quantity_piece?: number;
   calculated_support_quantity_piece?: number;
@@ -8453,6 +8460,15 @@ export function resolveProfessionalPhysicalNormParameterValuesV1(input: {
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 {
   const profileValue = explicitValue(input.parameter_values, "product_profile_id");
   const productProfileId = primitiveString(profileValue ?? undefined);
+  if (productProfileId === SIEMENS_SINTESO_FDB221_PRODUCT_PROFILE_ID) {
+    return resolveSiemensSintesoFdb221PhysicalNormV1({
+      technology_class: input.technology_class,
+      operation_class: input.operation_class,
+      material_system: input.material_system,
+      scope_mode: input.scope_mode,
+      parameter_values: input.parameter_values,
+    });
+  }
   if (productProfileId === ROCKWOOL_COMFORTBOARD80_R63_38MM_PRODUCT_PROFILE_ID) {
     return resolveRockwoolComfortboard80R6338MmPhysicalNormV1({
       technology_class: input.technology_class,
