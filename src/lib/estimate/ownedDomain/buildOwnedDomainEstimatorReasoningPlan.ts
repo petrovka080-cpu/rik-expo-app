@@ -25,6 +25,10 @@ import {
   extractJotunHardtopXpCanonicalParametersV1,
   jotunHardtopXpMissingQuestionsRuV1,
 } from "./metalworkJotunHardtopXpProductionBindingV1";
+import {
+  extractSikagardWoodPreserverCanonicalParametersV1,
+  sikagardWoodPreserverMissingQuestionsRuV1,
+} from "./carpentrySikagardWoodPreserverProductionBindingV1";
 
 function positiveNumber(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
@@ -361,6 +365,74 @@ function metalworkJotunHardtopXpPlan(
   };
 }
 
+function carpentrySikagardWoodPreserverPlan(
+  text: string,
+  currency: string,
+): EstimatorReasoningPlan {
+  const canonicalParameters = extractSikagardWoodPreserverCanonicalParametersV1(text);
+  const treatedArea = canonicalParameters?.treated_timber_surface_area_m2;
+  return {
+    intent: "estimate",
+    workKey: "carpentry_sikagard_wood_preserver_preventative",
+    titleRu: "Профессиональная предварительная смета: профилактическая защита древесины Sikagard",
+    category: "carpentry",
+    confidence: "medium",
+    templateExactMatch: false,
+    parsableWorkDetected: true,
+    regulatedWorkDetected: false,
+    canonicalParameters: canonicalParameters ?? undefined,
+    semanticFrame: {
+      domain: "carpentry",
+      object: "timber_preservation_system",
+      operation: "preservative_treatment",
+      method: "preventative_brush_or_spray_treatment",
+      materialSystem: "sikagard_wood_preserver_system",
+      regulated: false,
+      confidence: 0.9,
+    },
+    quantities: {
+      areaM2: typeof treatedArea === "number" ? treatedArea : undefined,
+      rawDimensions: [],
+    },
+    formulas: [],
+    boqPlan: {
+      complexity: "medium",
+      sections: ["materials", "labor", "equipment", "delivery"],
+      requiredMaterials: [
+        "Sikagard Wood Preserver в выбранной комбинации банок 1/5 л",
+        "материалы защиты смежных поверхностей",
+        "финишное покрытие или лак для наружного применения warning",
+      ],
+      requiredLabor: [
+        "проверка состояния и влажности древесины",
+        "очистка необработанной деревянной поверхности",
+        "нанесение первого слоя защитного состава",
+        "нанесение второго слоя защитного состава",
+        "контроль сплошности профилактической обработки",
+      ],
+      requiredEquipmentOrWarnings: [
+        "кисти или утверждённое распылительное оборудование",
+        "средства защиты персонала и вентиляции",
+      ],
+      requiredLogisticsOrWarnings: [
+        "доставка выбранной комбинации банок 1/5 л",
+        "защищённое хранение готового к применению состава",
+      ],
+      exclusions: [
+        "Состав готов к применению и не разбавляется.",
+        "Поглощение древесиной и проектные потери не добавляются автоматически.",
+        "Наружная обработка требует отдельного финишного покрытия или лака; поверхности приготовления пищи исключены.",
+      ],
+      clarifyingQuestions: [
+        "Подтверждены ли чистая сухая поверхность и профилактическое назначение обработки?",
+        "Какая комбинация банок 1/5 л выбрана для закупки?",
+        ...sikagardWoodPreserverMissingQuestionsRuV1(canonicalParameters),
+      ],
+    },
+    pricingPolicy: pricingPolicy(currency),
+  };
+}
+
 function roofWaterproofingPlan(text: string, currency: string): EstimatorReasoningPlan {
   const canonicalParameters = extractSarnafilAt18CanonicalParametersV1(text);
   return {
@@ -495,6 +567,8 @@ export function buildOwnedDomainEstimatorReasoningPlan(input: {
   const currency = input.currency ?? "KGS";
   return input.owner === "electrical"
     ? electricalPlan(input.text, currency, input.canonicalParameters)
+    : input.owner === "carpentry"
+      ? carpentrySikagardWoodPreserverPlan(input.text, currency)
     : input.owner === "fire_safety"
       ? fireSafetySiemensFdb221Plan(input.text, currency)
     : input.owner === "low_voltage"

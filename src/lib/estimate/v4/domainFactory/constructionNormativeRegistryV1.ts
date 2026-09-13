@@ -105,6 +105,11 @@ import {
   JOTUN_HARDTOP_XP_100UM_SOURCE_ID,
   JOTUN_HARDTOP_XP_100UM_SOURCE_METADATA,
 } from "./metalworkJotunHardtopXpPhysicalNormV1";
+import {
+  SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_PRODUCT_PROFILE_ID,
+  SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_ID,
+  SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA,
+} from "./carpentrySikagardWoodPreserverPhysicalNormV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -210,6 +215,33 @@ function source(input: Omit<ConstructionNormativeSourceCardV1, "content_digest">
 }
 
 export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSourceCardV1[] = Object.freeze([
+  source({
+    source_id: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_ID,
+    source_type: "MANUFACTURER_PASSPORT",
+    jurisdiction: "INTERNATIONAL_PROJECT",
+    authority: "Sika",
+    document_code: "Sikagard Wood Preserver PDS 02.01",
+    title: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.source_title,
+    edition: "Product Data Sheet July 2026",
+    revision: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.source_document_version,
+    status: "project-specific",
+    effective_from: "2026-07-01",
+    effective_to: null,
+    funding_applicability: [ALL],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION", "REPAIR"],
+    operation_class_applicability: ["APPLY"],
+    material_system_applicability: ["SIKAGARD_WOOD_PRESERVER"],
+    product_profile_applicability: [SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_PRODUCT_PROFILE_ID],
+    clause_table_rate_code: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.exact_locator,
+    unit_basis: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.rate_unit,
+    official_reference: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.source_url,
+    version: SIKAGARD_WOOD_PRESERVER_PREVENTATIVE_SOURCE_METADATA.source_document_version,
+    license_access_note: "Public Sika manufacturer data used only for the documented preventative timber treatment at 0.25 L/m2. The executable profile requires clean dry bare timber and at least two brush/spray coats, never dilutes the ready-to-use product, adds no automatic loss, and uses only an explicit 1/5 L procurement mix.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: false,
+  }),
   source({
     source_id: JOTUN_HARDTOP_XP_100UM_SOURCE_ID,
     source_type: "MANUFACTURER_PASSPORT",
