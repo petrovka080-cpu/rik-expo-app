@@ -41,6 +41,10 @@ describe("hardcoded norm-rate audit classifier", () => {
       "data/estimate-norms/professional/equipment_rent.json",
       '"one_shift_hours_per_day": 8,',
     )).toBe("backend_norm_record");
+    expect(classifyHardcodedMatch(
+      "src/lib/estimate/v4/domainFactory/equipmentRentUnitedRentalsPhysicalNormV1.ts",
+      "norm.applicability.one_shift_hours_per_day !== 8 ||",
+    )).toBe("backend_norm_record");
   });
 
   it("keeps rate limits and generated template records in their own classes", () => {

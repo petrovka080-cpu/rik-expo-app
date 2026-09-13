@@ -242,6 +242,13 @@ export function classifyHardcodedMatch(file: string, lineText: string): SourceQu
       : "backend_norm_record";
   }
   if (
+    rootedNormalized.includes("/src/lib/estimate/v4/domainFactory/") &&
+    normalized.endsWith("PhysicalNormV1.ts") &&
+    /\bnorm\.(?:applicability|rate|rounding|source|parameters|unit|waste_percent_default)\b/u.test(lineText)
+  ) {
+    return "backend_norm_record";
+  }
+  if (
     normalized.endsWith("productionNormKnowledgeBaseCore.ts") &&
     /(consumptionRateForNorm|packageSizeForNorm|return\s+[0-9.]+|waste_percent|waste_factor|min_quantity)/.test(lineText)
   ) {

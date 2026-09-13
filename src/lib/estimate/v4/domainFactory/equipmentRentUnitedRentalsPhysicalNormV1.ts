@@ -58,6 +58,7 @@ if (
   norm.rounding.package_size !== 8 ||
   norm.rounding.mode !== "supplier_agreement_calendar_period_and_shift_usage_schedule_required"
 ) throw new Error(`PHYSICAL_NORM_DEFINITION_CONTRACT_INVALID:${UNITED_RENTALS_CA_ONE_SHIFT_NORM_ID}`);
+const oneShiftHoursPerDayFromReviewedSource = norm.applicability.one_shift_hours_per_day;
 
 export const UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_METADATA = Object.freeze({
   source_id: UNITED_RENTALS_CA_ONE_SHIFT_SOURCE_ID,
@@ -264,7 +265,7 @@ export function resolveUnitedRentalsCaOneShiftPhysicalNormV1(input: {
   const applicability = [
     `product_profile_id=${profile}`,
     `shift_count=${shiftCount}`,
-    "one_shift_hours_per_day=8",
+    `one_shift_hours_per_day=${oneShiftHoursPerDayFromReviewedSource}`,
     `normal_use_allowance_hours=${allowanceHours}`,
     `required_equipment_operating_hours=${requiredHours}`,
     `calendar_rental_period_days=${calendarDays}`,
