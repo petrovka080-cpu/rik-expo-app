@@ -14,7 +14,7 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000/productionProfessionalNormPackRegistry";
 
 describe("source-backed norm required for professional status", () => {
-  it("accepts only professional norm pack source ids as source-backed", () => {
+  it("does not accept an unregistered professional-looking source id as source-backed", () => {
     const row = classifyEstimateRowReality({
       rowCode: "real",
       section: "materials",
@@ -27,8 +27,12 @@ describe("source-backed norm required for professional status", () => {
       formulaId: "formula",
     });
 
-    expect(row.is_source_backed).toBe(true);
-    expect(row.source_status).toBe("READY_SOURCE_BACKED");
+    expect(row.claims_professional_source_prefix).toBe(true);
+    expect(row.is_source_backed).toBe(false);
+    expect(row.norm_source_verified).toBe(false);
+    expect(row.source_status).toBe("INVALID_FAKE_SOURCE");
+    expect(row.blocking_reasons).toContain("unregistered_professional_source_claim");
+    expect(row.blocking_reasons).toContain("row_not_source_backed_professional_norm");
     expect(row.blocking_reasons).not.toContain("generated_family_default_not_professional");
   });
 

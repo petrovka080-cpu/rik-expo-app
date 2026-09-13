@@ -45,6 +45,7 @@ export type EstimateRowRealityClassification = {
   unit: string;
   quantity: number | null;
   norm_source_id: string;
+  claims_professional_source_prefix: boolean;
   is_source_backed: boolean;
   is_generated: boolean;
   is_family_default: boolean;
@@ -144,8 +145,9 @@ export function isGeneratedFamilyDefaultSource(sourceId: string | null | undefin
 
 export function classifyEstimateRowReality(row: EstimateRealityRowInput): EstimateRowRealityClassification {
   const sourceId = String(row.normSourceId ?? row.sourceParameters?.normSourceId ?? "").trim();
-  const isSourceBacked = isProfessionalNormPackSourceId(sourceId);
+  const claimsProfessionalSourcePrefix = isProfessionalNormPackSourceId(sourceId);
   const normSourceVerified = isRegisteredProfessionalNormPackSourceId(sourceId);
+  const isSourceBacked = normSourceVerified;
   const normSourceUnregistered = !normSourceVerified;
   const isFamilyDefault = isGeneratedFamilyDefaultSource(sourceId);
   const isGenerated = isFamilyDefault || sourceId.includes("generated");
@@ -227,6 +229,7 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
         : "UNKNOWN_SOURCE";
   const blockingReasons = [
     !isSourceBacked ? "row_not_source_backed_professional_norm" : "",
+    claimsProfessionalSourcePrefix && normSourceUnregistered ? "unregistered_professional_source_claim" : "",
     isFamilyDefault ? "generated_family_default_not_professional" : "",
     !row.normId ? "norm_id_missing" : "",
     !row.normVersion ? "norm_version_missing" : "",
@@ -260,6 +263,7 @@ export function classifyEstimateRowReality(row: EstimateRealityRowInput): Estima
     unit,
     quantity,
     norm_source_id: sourceId,
+    claims_professional_source_prefix: claimsProfessionalSourcePrefix,
     is_source_backed: isSourceBacked,
     is_generated: isGenerated,
     is_family_default: isFamilyDefault,
@@ -296,6 +300,9 @@ export function classifyEstimateRowsReality(rows: readonly EstimateRealityRowInp
   return {
     classifications,
     row_count: classifications.length,
+    professional_source_prefix_claim_count: classifications.filter(
+      (row) => row.claims_professional_source_prefix,
+    ).length,
     source_backed_count: classifications.filter((row) => row.is_source_backed).length,
     generic_family_default_count: classifications.filter((row) => row.is_family_default).length,
     invalid_fake_source_count: classifications.filter((row) => row.source_status === "INVALID_FAKE_SOURCE").length,
