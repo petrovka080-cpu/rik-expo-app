@@ -151,6 +151,7 @@ type CurrentManifestNormAudit = {
   definitions?: {
     resourceCount?: number;
     tracedResourceCount?: number;
+    normalizedBindingResourceCount?: number;
     uncoveredResourceCount?: number;
     invalidTraceResourceCount?: number;
     admittedDefinitionsWithUnregisteredNormSources?: number;
@@ -159,14 +160,37 @@ type CurrentManifestNormAudit = {
 
 export type ManifestNormSourceRegistryAdmission = {
   admitted_definition_count: number;
+  declared_trace_source_ids_count: number;
   declared_norm_source_ids_count: number;
   accepted_norm_source_ids_count: number;
+  non_normative_provenance_source_ids: string[];
+  non_normative_provenance_source_id_class_counts: Record<string, number>;
+  admitted_definitions_with_non_normative_provenance_count: number;
+  admitted_definitions_with_non_normative_provenance_samples: string[];
   unregistered_norm_source_ids: string[];
   unregistered_norm_source_id_class_counts: Record<string, number>;
   admitted_definitions_with_unregistered_norm_sources_count: number;
   admitted_definitions_with_unregistered_norm_sources_samples: string[];
   complete: boolean;
 };
+
+export type ManifestTraceSourceRole =
+  | "NORMATIVE_SOURCE"
+  | "PROJECT_OR_ENGINEERING_INPUT"
+  | "CALCULATION_PROVENANCE";
+
+export function classifyManifestTraceSourceRole(sourceId: string): ManifestTraceSourceRole {
+  if (/^(?:engineering_assumption:|project_|selected_)/u.test(sourceId)) {
+    return "PROJECT_OR_ENGINEERING_INPUT";
+  }
+  if (
+    /^KG_PROJECT_RESOURCE_CALCULATION_V\d+$/u.test(sourceId) ||
+    /^src_expanded_complex_.+_reference_formula_v1$/u.test(sourceId)
+  ) {
+    return "CALCULATION_PROVENANCE";
+  }
+  return "NORMATIVE_SOURCE";
+}
 
 type SourceRegistry = {
   sources?: Array<{
@@ -294,10 +318,14 @@ export function inspectManifestNormSourceRegistryAdmission(
 ): ManifestNormSourceRegistryAdmission {
   let admittedDefinitionCount = 0;
   let affectedDefinitionCount = 0;
-  const declaredSourceIds = new Set<string>();
+  let nonNormativeDefinitionCount = 0;
+  const declaredTraceSourceIds = new Set<string>();
+  const declaredNormSourceIds = new Set<string>();
   const acceptedSourceIds = new Set<string>();
+  const nonNormativeSourceIds = new Set<string>();
   const unregisteredSourceIds = new Set<string>();
   const affectedDefinitionSamples: string[] = [];
+  const nonNormativeDefinitionSamples: string[] = [];
 
   for (const line of jsonLines.split(/\r?\n/u)) {
     if (!line.trim()) continue;
@@ -312,8 +340,15 @@ export function inspectManifestNormSourceRegistryAdmission(
       .map((sourceId) => String(sourceId ?? "").trim())
       .filter(Boolean);
     let affected = false;
+    let hasNonNormativeProvenance = false;
     for (const sourceId of sourceIds) {
-      declaredSourceIds.add(sourceId);
+      declaredTraceSourceIds.add(sourceId);
+      if (classifyManifestTraceSourceRole(sourceId) !== "NORMATIVE_SOURCE") {
+        hasNonNormativeProvenance = true;
+        nonNormativeSourceIds.add(sourceId);
+        continue;
+      }
+      declaredNormSourceIds.add(sourceId);
       if (acceptedNormSourceIds.has(sourceId)) {
         acceptedSourceIds.add(sourceId);
       } else {
@@ -327,7 +362,22 @@ export function inspectManifestNormSourceRegistryAdmission(
         affectedDefinitionSamples.push(String(row.canonicalId ?? "unknown"));
       }
     }
+    if (hasNonNormativeProvenance) {
+      nonNormativeDefinitionCount += 1;
+      if (nonNormativeDefinitionSamples.length < 20) {
+        nonNormativeDefinitionSamples.push(String(row.canonicalId ?? "unknown"));
+      }
+    }
   }
+
+  const nonNormativeProvenanceSourceIdClassCounts = [...nonNormativeSourceIds]
+    .reduce<Record<string, number>>((counts, sourceId) => {
+      const classification = classifyManifestTraceSourceRole(sourceId) === "CALCULATION_PROVENANCE"
+        ? "calculation_provenance"
+        : "project_or_engineering_input";
+      counts[classification] = (counts[classification] ?? 0) + 1;
+      return counts;
+    }, {});
 
   const unregisteredNormSourceIdClassCounts = [...unregisteredSourceIds].reduce<Record<string, number>>(
     (counts, sourceId) => {
@@ -335,9 +385,7 @@ export function inspectManifestNormSourceRegistryAdmission(
         ? "generated_catalog_default"
         : sourceId.startsWith("src_professional_norm_pack_")
           ? "unregistered_professional_pack"
-          : /^(?:project_|selected_|verified_|engineering_assumption:)/u.test(sourceId)
-            ? "project_or_engineering_input"
-            : "other_unregistered_source";
+          : "other_unregistered_source";
       counts[classification] = (counts[classification] ?? 0) + 1;
       return counts;
     },
@@ -346,8 +394,13 @@ export function inspectManifestNormSourceRegistryAdmission(
 
   return {
     admitted_definition_count: admittedDefinitionCount,
-    declared_norm_source_ids_count: declaredSourceIds.size,
+    declared_trace_source_ids_count: declaredTraceSourceIds.size,
+    declared_norm_source_ids_count: declaredNormSourceIds.size,
     accepted_norm_source_ids_count: acceptedSourceIds.size,
+    non_normative_provenance_source_ids: [...nonNormativeSourceIds].sort(),
+    non_normative_provenance_source_id_class_counts: nonNormativeProvenanceSourceIdClassCounts,
+    admitted_definitions_with_non_normative_provenance_count: nonNormativeDefinitionCount,
+    admitted_definitions_with_non_normative_provenance_samples: nonNormativeDefinitionSamples,
     unregistered_norm_source_ids: [...unregisteredSourceIds].sort(),
     unregistered_norm_source_id_class_counts: unregisteredNormSourceIdClassCounts,
     admitted_definitions_with_unregistered_norm_sources_count: affectedDefinitionCount,
@@ -361,8 +414,13 @@ function inspectCurrentManifestNormSourceRegistryAdmission(
 ): ManifestNormSourceRegistryAdmission & { ledger_path: string | null; ledger_exists: boolean } {
   const empty = {
     admitted_definition_count: 0,
+    declared_trace_source_ids_count: 0,
     declared_norm_source_ids_count: 0,
     accepted_norm_source_ids_count: 0,
+    non_normative_provenance_source_ids: [],
+    non_normative_provenance_source_id_class_counts: {},
+    admitted_definitions_with_non_normative_provenance_count: 0,
+    admitted_definitions_with_non_normative_provenance_samples: [],
     unregistered_norm_source_ids: [],
     unregistered_norm_source_id_class_counts: {},
     admitted_definitions_with_unregistered_norm_sources_count: 0,
@@ -864,26 +922,29 @@ function main(): void {
   const consumerInventoryByGroup = new Map(consumerInventory.map((entry) => [entry.work_group, entry]));
   const consumerRowsCount = consumerInventory.reduce((sum, entry) => sum + entry.rows_count, 0);
   const currentManifestResourceCount = currentManifest?.summary.definitions?.resourceCount ?? null;
-  const currentManifestTracedResourceCount =
-    currentManifest?.summary.definitions?.tracedResourceCount ?? null;
   const currentManifestDefinitionCount = currentManifest?.summary.catalog?.currentRuntimeDefinitions ?? null;
+  const currentManifestNormalizedBindingResourceCount =
+    currentManifest?.summary.definitions?.normalizedBindingResourceCount ?? null;
   const currentManifestUnregisteredNormSourceDefinitions =
     currentManifestNormSourceAdmission.admitted_definitions_with_unregistered_norm_sources_count;
-  const currentManifestValid = Boolean(
+  const currentManifestResourceInventoryComplete = Boolean(
     currentManifest &&
     currentManifest.summary.status === REQUIRED_CURRENT_MANIFEST_STATUS &&
     typeof currentManifestResourceCount === "number" &&
     currentManifestResourceCount > 0 &&
     typeof currentManifestDefinitionCount === "number" &&
     currentManifestDefinitionCount > 0 &&
-    currentManifestNormSourceAdmission.complete &&
     currentManifest.summary.definitions?.uncoveredResourceCount === 0 &&
     currentManifest.summary.definitions?.invalidTraceResourceCount === 0,
   );
-  const currentManifestConsumerInventoryComplete = Boolean(
-    currentManifestValid &&
-    currentManifestTracedResourceCount === currentManifestResourceCount,
+  const currentManifestValid = Boolean(
+    currentManifestResourceInventoryComplete && currentManifestNormSourceAdmission.complete,
   );
+  // A resource may be covered either by its embedded normative trace or by an
+  // exact row in estimate_work_normative_binding. The manifest producer already
+  // audits that union as uncoveredResourceCount, so traced === total would reject
+  // valid normalized bindings and collapse two independent evidence axes.
+  const currentManifestConsumerInventoryComplete = currentManifestResourceInventoryComplete;
   // The generated 10k catalog and the immutable cumulative runtime manifest are
   // different projections. The latter also contains canonical expanded and
   // special runtime definitions, while admitted successors may replace row
@@ -1182,6 +1243,8 @@ function main(): void {
     current_manifest_resource_count: currentManifestResourceCount,
     current_manifest_traced_resource_count:
       currentManifest?.summary.definitions?.tracedResourceCount ?? null,
+    current_manifest_normalized_binding_resource_count:
+      currentManifestNormalizedBindingResourceCount,
     current_manifest_uncovered_resource_count:
       currentManifest?.summary.definitions?.uncoveredResourceCount ?? null,
     current_manifest_invalid_trace_resource_count:
@@ -1190,6 +1253,8 @@ function main(): void {
       currentManifestUnregisteredNormSourceDefinitions,
     current_manifest_norm_source_registry_admission:
       currentManifestNormSourceAdmission,
+    current_manifest_resource_coverage_mode: "NORMATIVE_TRACE_OR_NORMALIZED_BINDING",
+    current_manifest_resource_inventory_complete: currentManifestResourceInventoryComplete,
     current_manifest_valid: currentManifestValid,
     current_manifest_consumer_inventory_complete: currentManifestConsumerInventoryComplete,
     current_manifest_and_catalog_projection_same_scope:
@@ -1461,8 +1526,8 @@ function main(): void {
       currentManifestNormSourceAdmission.unregistered_norm_source_ids.length > 0
         ? `current_manifest_unregistered_norm_sources:${currentManifestNormSourceAdmission.unregistered_norm_source_ids.length}`
         : "",
-      currentManifestValid && !currentManifestConsumerInventoryComplete
-        ? `current_manifest_trace_inventory_incomplete:${currentManifestTracedResourceCount}/${currentManifestResourceCount}`
+      !currentManifestResourceInventoryComplete
+        ? `current_manifest_resource_coverage_incomplete:uncovered=${currentManifest?.summary.definitions?.uncoveredResourceCount ?? "unknown"}:invalid=${currentManifest?.summary.definitions?.invalidTraceResourceCount ?? "unknown"}`
         : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete

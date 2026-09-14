@@ -16,6 +16,10 @@ import { PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU } from "../../src/lib/estimat
 import {
   OWNED_DOMAIN_PHYSICAL_NORM_CONSUMER_ROUTES_V1,
 } from "../../src/lib/estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1";
+import {
+  classifyManifestTraceSourceRole,
+  inspectManifestNormSourceRegistryAdmission,
+} from "../../scripts/estimate/auditRealProfessionalNormPacks";
 
 describe("real professional norm packs audit", () => {
   it("blocks green until sourced professional norm packs replace synthetic defaults", () => {
@@ -856,7 +860,9 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("AI_ESTIMATE_CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("current_manifest_consumer_inventory_complete");
-    expect(source).toContain("current_manifest_trace_inventory_incomplete");
+    expect(source).toContain("current_manifest_resource_coverage_incomplete");
+    expect(source).toContain("NORMATIVE_TRACE_OR_NORMALIZED_BINDING");
+    expect(source).toContain("current_manifest_normalized_binding_resource_count");
     expect(source).toContain("current_manifest_and_catalog_projection_same_scope");
     expect(source).toContain("current_manifest_vs_catalog_projection_row_delta");
     expect(source).toContain("admittedDefinitionsWithUnregisteredNormSources");
@@ -2841,5 +2847,71 @@ describe("real professional norm packs audit", () => {
       item.unresolved_applicability_keys.length > 0
     )).toBe(true);
     expect(unregistered.filter((item) => item.dimensional_candidate_rows_count === 0)).toHaveLength(0);
+  });
+
+  it("keeps project inputs and calculation lineage separate from normative-source admission", () => {
+    const rows = [
+      {
+        canonicalId: "accepted-definition",
+        admissionState: "ADMITTED_CURRENT",
+        normPackVersion: {
+          sourceIds: [
+            "accepted_norm",
+            "project_quantity_inputs_v4",
+            "selected_equipment_passport",
+            "engineering_assumption:road:v1:haul_distance",
+            "KG_PROJECT_RESOURCE_CALCULATION_V6",
+            "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+          ],
+        },
+      },
+      {
+        canonicalId: "missing-definition",
+        admissionState: "ADMITTED_CURRENT",
+        normPackVersion: {
+          sourceIds: ["missing_norm", "verified_ratebook:road_marking"],
+        },
+      },
+      {
+        canonicalId: "retired-definition",
+        admissionState: "RETIRED_NOT_CURRENT",
+        normPackVersion: { sourceIds: ["retired_missing_norm"] },
+      },
+    ];
+    const result = inspectManifestNormSourceRegistryAdmission(
+      rows.map((row) => JSON.stringify(row)).join("\n"),
+      new Set(["accepted_norm"]),
+    );
+
+    expect(classifyManifestTraceSourceRole("selected_equipment_passport"))
+      .toBe("PROJECT_OR_ENGINEERING_INPUT");
+    expect(classifyManifestTraceSourceRole("src_expanded_complex_energy_reference_formula_v1"))
+      .toBe("CALCULATION_PROVENANCE");
+    expect(classifyManifestTraceSourceRole("verified_ratebook:road_marking"))
+      .toBe("NORMATIVE_SOURCE");
+    expect(result).toMatchObject({
+      admitted_definition_count: 2,
+      declared_trace_source_ids_count: 8,
+      declared_norm_source_ids_count: 3,
+      accepted_norm_source_ids_count: 1,
+      admitted_definitions_with_non_normative_provenance_count: 1,
+      admitted_definitions_with_unregistered_norm_sources_count: 1,
+      complete: false,
+    });
+    expect(result.non_normative_provenance_source_ids).toEqual([
+      "KG_PROJECT_RESOURCE_CALCULATION_V6",
+      "engineering_assumption:road:v1:haul_distance",
+      "project_quantity_inputs_v4",
+      "selected_equipment_passport",
+      "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+    ]);
+    expect(result.non_normative_provenance_source_id_class_counts).toEqual({
+      calculation_provenance: 2,
+      project_or_engineering_input: 3,
+    });
+    expect(result.unregistered_norm_source_ids).toEqual([
+      "missing_norm",
+      "verified_ratebook:road_marking",
+    ]);
   });
 });
