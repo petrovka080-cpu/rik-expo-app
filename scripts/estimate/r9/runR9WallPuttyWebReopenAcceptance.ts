@@ -277,6 +277,13 @@ async function visibleRows(page: Page): Promise<Json[]> {
   }));
 }
 
+async function waitForStableExactRevision(page: Page): Promise<void> {
+  await page.getByTestId("consumer-repair-storage-hydrating")
+    .waitFor({ state: "hidden", timeout: 180_000 });
+  await page.getByTestId("request-estimate-incomplete-composition-notice")
+    .waitFor({ state: "hidden", timeout: 180_000 });
+}
+
 async function main(): Promise<void> {
   const parsedDatabase = new URL(DATABASE_URL);
   invariant(["127.0.0.1", "localhost", "::1"].includes(parsedDatabase.hostname)
@@ -460,6 +467,7 @@ async function main(): Promise<void> {
         ...diagnostic, requests, pageErrors, consoleErrors, diagnosticPath,
       })}`);
     }
+    await waitForStableExactRevision(page);
     const screenIdentity = await identity(page);
     invariant(screenIdentity.revisionId === webRevisionId && screenIdentity.releaseId === RELEASE_ID
       && screenIdentity.catalogId === CATALOG_ID,
@@ -503,6 +511,7 @@ async function main(): Promise<void> {
     const postsBeforeCold = requests.filter((request) => request.method === "POST").length;
     await page.goto(`${route}&cold=1`, { waitUntil: "domcontentloaded", timeout: 180_000 });
     await page.getByTestId("request-estimate-summary-card").waitFor({ state: "visible", timeout: 180_000 });
+    await waitForStableExactRevision(page);
     const coldIdentity = await identity(page);
     const coldRows = await visibleRows(page);
     const postsAfterCold = requests.filter((request) => request.method === "POST").length;
