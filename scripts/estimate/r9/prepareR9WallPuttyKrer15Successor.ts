@@ -650,6 +650,12 @@ async function main(): Promise<void> {
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(current.productionAccessed === false, "STOP_R9_CURRENT_PRODUCTION_ACCESS_FLAG");
+  const predecessorReleaseId = String(
+    process.env.R9_WALL_PUTTY_PREDECESSOR_RELEASE_ID ?? current.definitionReleaseId,
+  );
+  const predecessorSearchReleaseId = String(
+    process.env.R9_WALL_PUTTY_PREDECESSOR_SEARCH_RELEASE_ID ?? current.searchReleaseId,
+  );
   const definition = buildDefinitionSource();
   const coreAcceptance = await verifyThroughExistingCore(definition);
   const definitionSourceSha256 = sha256({
@@ -662,7 +668,8 @@ async function main(): Promise<void> {
     })),
   });
   const fingerprint = sha256({ contract: CONTRACT, masterSha256: MASTER_SHA256, head, tree,
-    predecessor: current.definitionReleaseId, definitionSourceSha256, sourceHashes });
+    predecessor: predecessorReleaseId, predecessorSearch: predecessorSearchReleaseId,
+    definitionSourceSha256, sourceHashes });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
   const definitionId = uuid(`${CONTRACT}:${fingerprint}:${TARGET_CATALOG_ID}:definition`);
@@ -673,8 +680,6 @@ async function main(): Promise<void> {
   await client.connect();
   let receipt: Json;
   try {
-    const predecessorReleaseId = String(current.definitionReleaseId);
-    const predecessorSearchReleaseId = String(current.searchReleaseId);
     const predecessor = (await client.query(
       "select * from public.estimate_definition_release where id=$1",
       [predecessorReleaseId],
@@ -711,7 +716,13 @@ async function main(): Promise<void> {
         from public.estimate_cumulative_manifest_entry manifest
         join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
         where manifest.release_id=$1 and manifest.catalog_id=$2`, [predecessorReleaseId, TARGET_CATALOG_ID])).rows[0] as Json;
-      invariant(target && Number(target.parameters) === 1 && Number(target.formulas) === 59 && Number(target.resources) === 59,
+      const r9Predecessor = predecessor.metadata?.contract === CONTRACT;
+      invariant(target && (
+        (!r9Predecessor && Number(target.parameters) === 1
+          && Number(target.formulas) === 59 && Number(target.resources) === 59)
+        || (r9Predecessor && Number(target.parameters) === PUBLISHED_PARAMETER_IDS.size
+          && Number(target.formulas) === 7 && Number(target.resources) === 7)
+      ),
         `STOP_R9_PREDECESSOR_TARGET_DRIFT:${JSON.stringify(target ?? null)}`);
       const sourcePassport = (await client.query(
         "select * from public.estimate_content_passport_r3 where definition_version_id=$1",
@@ -761,7 +772,7 @@ async function main(): Promise<void> {
           Number(target.resources), definition.resources.length,
           JSON.stringify({ contract: CONTRACT, masterSha256: MASTER_SHA256, sourceHashes,
             lifecycle: "DRAFT_FORWARD_ONLY", targetCatalogId: TARGET_CATALOG_ID,
-            replacedDefinitionCount: 1, replacedSyntheticRowCount: 59,
+            replacedDefinitionCount: 1, replacedSyntheticRowCount: r9Predecessor ? 0 : 59,
             exactResourceRowCount: 7, activationAllowed: false, productionEligible: false }),
           predecessorReleaseId, sha256({ contract: CONTRACT, fingerprint, definitionSha256 }),
           Number(target.parameters), definition.parameters.length, Number(target.formulas), definition.formulas.length,
