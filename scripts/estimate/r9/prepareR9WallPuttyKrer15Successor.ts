@@ -555,11 +555,12 @@ async function cloneSearch(client: Client, input: {
       $3,$4,$5,global_count,external_count,discovered_count,
       metadata||jsonb_build_object('contract',$6::text,'parentSearchReleaseId',$7::uuid::text,
         'definitionReleaseId',$8::uuid::text,'sourceFingerprint',$9::text,
-        'lifecycle','FROZEN_NOT_ACTIVE','activationAllowed',false,'productionEligible',false)
+        'masterSha256',$10::text,'lifecycle','FROZEN_NOT_ACTIVE',
+        'activationAllowed',false,'productionEligible',false)
     from public.estimate_search_index_release where id=$7`, [
     input.searchReleaseId, `${input.releaseKey}-search`, input.head, input.tree,
     sha256(`${input.searchReleaseId}:draft`), CONTRACT, input.parentSearchReleaseId, input.releaseId,
-    input.fingerprint,
+    input.fingerprint, MASTER_SHA256,
   ]);
   await client.query(`insert into public.estimate_search_group(
       search_release_id,group_id,group_name_ru,domain_id,system_id,subsystem_id,assembly_id,
