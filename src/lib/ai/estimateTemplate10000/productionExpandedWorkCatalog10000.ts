@@ -974,6 +974,18 @@ function semanticProductionUnit(
   definition: ProductionWorkDefinition,
 ): ProductionDefaultUnit {
   const name = term.toLocaleLowerCase("ru-RU");
+  // The shared plaster/paint vocabulary calls its primary material
+  // "смесь или краска". For the wall-putty owner the resolved Ceresit CT 126
+  // and CT 127 product profiles are mass-based, so the generic word "краска"
+  // must not turn that row into litres. Keep primers on their own liquid rule
+  // and leave actual paint owners in litres.
+  if (
+    section === "materials" &&
+    definition.elementKey === "wall_putty" &&
+    /(mixture|paint|смес|краск)/iu.test(name)
+  ) {
+    return "kg";
+  }
   const override = semanticUnitOverride(section, name);
   if (override) return override;
   if (definition.elementKey === "baseboard" && (section === "consumables" || section === "quality_control")) {
