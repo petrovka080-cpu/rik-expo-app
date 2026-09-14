@@ -9,6 +9,7 @@ import { PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1 } from "./professionalM
 import { findProfessionalMaterialQuantityNorm } from "./professionalMaterialQuantityNormRegistry";
 import { resolveProfessionalMaterialPackagingPolicy } from "./professionalMaterialPackagingPolicy";
 import { resolveProfessionalMaterialWastePolicy } from "./professionalMaterialWastePolicy";
+import { canonicalMaterialQuantityBasisFromRow } from "./backendPlatform/canonicalMaterialQuantityProjection";
 
 const FORMULA_FUNCTIONS = new Set([
   "abs",
@@ -53,7 +54,8 @@ function roundQuantity(value: number): number {
 function declaredMaterialQuantityBasis(
   row: ProfessionalBoqRow,
 ): ProfessionalMaterialQuantityBasisV1 | null {
-  const candidate = row.sourceParameters?.professionalMaterialQuantityBasisV1;
+  const candidate = row.sourceParameters?.professionalMaterialQuantityBasisV1 ??
+    canonicalMaterialQuantityBasisFromRow(row);
   if (candidate == null) return null;
   if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
     throw new Error(`MATERIAL_QUANTITY_BASIS_INVALID:${row.rowId}:not_object`);
