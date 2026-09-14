@@ -5,6 +5,8 @@ import {
   PRODUCTION_NORM_SOURCE_EVIDENCE_V1,
   PRODUCTION_NORM_SOURCE_LOCATOR_ALIASES_V1,
 } from "../../src/lib/estimate/v4/domainFactory/productionNormSourceEvidenceRegistryV1";
+import { ASPHALT_ASSOCIATED_WORK_CHILD_ASSEMBLIES_V4 } from "../../src/lib/estimate/v4/asphalt/asphaltAssociatedWorkAssembliesV4";
+import { ASPHALT_REMOVAL_RESOURCE_ASSEMBLIES_V4 } from "../../src/lib/estimate/v4/asphalt/asphaltRemovalResourceAssembliesV4";
 
 describe("production norm-source evidence registry v1", () => {
   it("merges reviewed domain evidence without admitting synthetic or unverified rate labels", () => {
@@ -60,5 +62,22 @@ describe("production norm-source evidence registry v1", () => {
       expect(alias.exact_locator).not.toHaveLength(0);
       expect(asphaltBindingSource).toContain(alias.alias_source_id);
     }
+  });
+
+  it("keeps project productivity provenance separate from reviewed normative evidence", () => {
+    const sourceIds = [
+      ...ASPHALT_ASSOCIATED_WORK_CHILD_ASSEMBLIES_V4,
+      ...ASPHALT_REMOVAL_RESOURCE_ASSEMBLIES_V4,
+    ].flatMap((assembly) => assembly.rows)
+      .flatMap((row) => row.normative_source_ids);
+
+    expect(sourceIds.filter((sourceId) => sourceId.startsWith("verified_"))).toEqual([]);
+    expect(sourceIds).toEqual(expect.arrayContaining([
+      "project_equipment_productivity_schedule",
+      "project_fleet_productivity_schedule",
+      "project_marking_work_plan",
+      "project_traffic_sign_work_plan",
+      "project_bridge_waterproofing_work_plan",
+    ]));
   });
 });
