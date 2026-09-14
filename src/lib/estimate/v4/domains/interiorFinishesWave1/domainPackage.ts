@@ -285,7 +285,8 @@ function formulaParameters(
     if (isStandardWallPutty(config, scope)) {
       return [
         parameter("layer_thickness_mm", "Толщина наносимого слоя", "number", "P0", "mm", [], { minimum: 0.1, maximum: 100 }),
-        parameter("putty_procurement_quantity_kg", "Закупочное количество шпаклёвки после применения нормы и округления фасовки", "number", "P2", "kg", ["primary_material_quantity", "material_mass"], { minimum: 0.01, maximum: 1_000_000_000 }),
+        parameter("putty_net_quantity_kg", "Нормативная потребность шпаклёвки до округления фасовки", "number", "P2", "kg", ["primary_material_quantity", "material_mass"], { minimum: 0.01, maximum: 1_000_000_000 }),
+        parameter("putty_procurement_quantity_kg", "Закупочное количество шпаклёвки после округления фасовки", "number", "P2", "kg", [], { minimum: 0.01, maximum: 1_000_000_000 }),
       ];
     }
     return [
@@ -572,10 +573,10 @@ function primaryMaterialFormula(config: TechnologyConfig, technologyId: string):
     ) {
       return formula(
         `${technologyId}:primary-material:v1`,
-        "putty_procurement_quantity_kg",
-        ["putty_procurement_quantity_kg"],
+        "putty_net_quantity_kg",
+        ["putty_net_quantity_kg"],
         "kg",
-        (v) => v.putty_procurement_quantity_kg,
+        (v) => v.putty_net_quantity_kg,
       );
     }
     return formula(`${technologyId}:primary-material:v1`, "area_m2 × layer_thickness_mm × material_consumption_kg_m2_mm", ["area_m2", "layer_thickness_mm", "material_consumption_kg_m2_mm"], "kg", (v) => v.area_m2 * v.layer_thickness_mm * v.material_consumption_kg_m2_mm);

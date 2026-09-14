@@ -18,6 +18,34 @@ export type ProfessionalMaterialQuantityState =
 
 export type ProfessionalMaterialQuantityFormulaInputs = Record<string, number | string | boolean | null>;
 
+export const PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1 =
+  "professional-material-quantity-basis:v1" as const;
+
+/**
+ * A source-owned split between the quantity consumed by the estimate and the
+ * quantity rounded for purchase. The shared quantity calculator validates and
+ * projects this declaration; domain bindings must not replace the estimate
+ * quantity with package-rounded procurement.
+ */
+export type ProfessionalMaterialQuantityBasisV1 = {
+  version: typeof PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1;
+  materialType: ProfessionalMaterialType;
+  unit: string;
+  netQuantity: number;
+  wastePercent: number;
+  lossPercent: number;
+  grossQuantity: number;
+  procurementUnit: string;
+  procurementPackageSize: number;
+  procurementQuantity: number;
+  formula: string;
+  formulaInputs: ProfessionalMaterialQuantityFormulaInputs;
+  sourceId: string;
+  citationLabel: string;
+  calculationTrace: string;
+  quantityDependsOnParams: string[];
+};
+
 export type ProfessionalMaterialQuantityLine = {
   rowId: string;
   templateId: string;

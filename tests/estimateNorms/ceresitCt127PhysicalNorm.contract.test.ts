@@ -13,6 +13,10 @@ import {
   interiorFinishesDomainFactory,
 } from "../../src/lib/estimate/v4/domains/interiorFinishesComplete";
 import type { ProfessionalParameterValueV4 } from "../../src/lib/estimate/v4/professionalProjectAssemblyV4";
+import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstimateDraftRevision";
+import { renderPdfFromDraftRevision } from "../../src/features/pdf/renderPdfFromDraftRevision";
+import { createBuyerHandoffFromDraftRevision } from "../../src/features/procurement/createBuyerHandoffFromDraftRevision";
+import { buildProfessionalEstimateDraftPreviewModel } from "../../src/features/requests/buildProfessionalEstimateDraftPreviewModel";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const WALL_PUTTY_APPLY_WORK_KEY = "plaster_paint_interior_wall_putty_apply_standard";
@@ -118,7 +122,7 @@ describe("Ceresit CT 127 canonical physical norm", () => {
       technology_class: "WALL_PUTTY",
       operation_class: "APPLY",
       source_definition_hash: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.definition_hash,
-      produced_parameter_ids: ["putty_procurement_quantity_kg"],
+      produced_parameter_ids: ["putty_net_quantity_kg", "putty_procurement_quantity_kg"],
     })]);
   });
 
@@ -160,10 +164,16 @@ describe("Ceresit CT 127 canonical physical norm", () => {
       source_id: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID,
       norm_id: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_NORM_ID,
       source_definition_hash: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.definition_hash,
-      produced_parameter_ids: ["putty_procurement_quantity_kg"],
+      produced_parameter_ids: ["putty_net_quantity_kg", "putty_procurement_quantity_kg"],
       calculated_ct127_net_quantity_kg: 70,
       calculated_ct127_procurement_quantity_kg: 80,
       calculated_ct127_bag_count: 4,
+    });
+    expect(first.parameter_values.putty_net_quantity_kg).toMatchObject({
+      value: 70,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM",
+      source_id: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID,
     });
     expect(first.parameter_values.putty_procurement_quantity_kg).toMatchObject({
       value: 80,
@@ -214,6 +224,7 @@ describe("Ceresit CT 127 canonical physical norm", () => {
 
     const paramOverrides = Object.fromEntries(schema.parameters
       .filter((parameter) => ![
+        "putty_net_quantity_kg",
         "putty_procurement_quantity_kg",
         "ct126_tds_variant_confirmed",
       ].includes(parameter.parameter_id))
@@ -234,7 +245,7 @@ describe("Ceresit CT 127 canonical physical norm", () => {
     expect(result.production?.compile_result.status).toBe("COMPILED");
     const materialRow = result.production?.draft?.items.find((row) =>
       row.sourceParameters?.rowCode === `${inventory.canonical_technology_id}:row:primary_material`);
-    expect(materialRow).toMatchObject({ quantity: 80, unit: "kg" });
+    expect(materialRow).toMatchObject({ quantity: 70, unit: "kg" });
     expect(materialRow?.sourceParameters?.normativeSourceIds)
       .toContain(CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID);
     expect(materialRow?.sourceParameters?.parameterSourceIds)
@@ -246,6 +257,63 @@ describe("Ceresit CT 127 canonical physical norm", () => {
       calculated_ct127_procurement_quantity_kg: 80,
       calculated_ct127_bag_count: 4,
     });
+    expect(materialRow?.sourceParameters?.professionalMaterialQuantityBasisV1).toMatchObject({
+      version: "professional-material-quantity-basis:v1",
+      netQuantity: 70,
+      grossQuantity: 70,
+      procurementPackageSize: 20,
+      procurementQuantity: 80,
+      wastePercent: 0,
+      lossPercent: 0,
+      quantityDependsOnParams: ["area_m2", "selected_consumption_kg_m2"],
+    });
+    const preview = buildProfessionalEstimateDraftPreviewModel(result.production?.draft);
+    expect(preview?.materialQuantityLines.find((line) =>
+      line.rowId === `${inventory.canonical_technology_id}:row:primary_material`)).toMatchObject({
+      netQuantity: 70,
+      grossQuantity: 70,
+      procurementPackageSize: 20,
+      procurementQuantity: 80,
+    });
+
+    const revision = createEstimateDraftRevision({
+      estimateDraftId: "ct127-net-vs-procurement",
+      rawInput: "Финишная шпаклёвка 100 м² Ceresit CT 127 слоем 2 мм",
+      selectedTemplateId: `domain-passport:${inventory.catalog_id}:v1`,
+      selectedWorkKey: WALL_PUTTY_APPLY_WORK_KEY,
+      selectedTemplateName: inventory.localized_name_ru,
+      currency: "KGS",
+      createdAt: "2026-09-12T01:00:00.000Z",
+      prebuiltExactDraft: result.production?.draft,
+    });
+    const revisionMaterial = revision.boq.rows.find((row) =>
+      row.rowId === `${inventory.canonical_technology_id}:row:primary_material`);
+    expect(revisionMaterial).toMatchObject({
+      quantity: 70,
+      unit: "kg",
+      materialQuantity: {
+        netQuantity: 70,
+        grossQuantity: 70,
+        procurementPackageSize: 20,
+        procurementQuantity: 80,
+      },
+    });
+    const pdf = renderPdfFromDraftRevision({ revision });
+    expect(pdf.pdf.body).toContain("net=70 kg");
+    expect(pdf.pdf.body).toContain("buy=80 kg");
+    const buyer = createBuyerHandoffFromDraftRevision({
+      revision: pdf.revision,
+      snapshot: pdf.snapshot,
+    });
+    expect(buyer.buyerHandoff.items.find((item) => item.rowId === revisionMaterial?.rowId))
+      .toMatchObject({
+        quantity: 70,
+        unit: "kg",
+        netQuantity: 70,
+        grossQuantity: 70,
+        procurementPackageSize: 20,
+        procurementQuantity: 80,
+      });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)
         ?.includes(CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID))).toHaveLength(1);

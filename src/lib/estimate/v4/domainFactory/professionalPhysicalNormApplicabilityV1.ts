@@ -3209,7 +3209,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_document_version: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.source_document_version,
   source_definition_hash: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS,
-  produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_procurement_quantity_kg"] as const,
+  produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_net_quantity_kg", "putty_procurement_quantity_kg"] as const,
 }, {
   norm_id: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_NORM_ID,
   work_group: "putty",
@@ -3223,7 +3223,7 @@ export const CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1 = Object.f
   source_document_version: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.source_document_version,
   source_definition_hash: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.definition_hash,
   consumed_parameter_ids: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS,
-  produced_parameter_ids: ["putty_procurement_quantity_kg"] as const,
+  produced_parameter_ids: ["putty_net_quantity_kg", "putty_procurement_quantity_kg"] as const,
 }, {
   norm_id: CERESIT_CN87_50MM_SCREED_NORM_ID,
   work_group: "screed",
@@ -6091,6 +6091,15 @@ function resolveCeresitCt126DryInteriorWallPutty(
       confidence: "high" as const,
       applicability,
     },
+    putty_net_quantity_kg: {
+      value: calculatedCt126NetQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
     putty_procurement_quantity_kg: {
       value: calculatedCt126ProcurementQuantityKg,
       unit_id: "kg",
@@ -6113,7 +6122,7 @@ function resolveCeresitCt126DryInteriorWallPutty(
     exact_locator: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.exact_locator,
     source_definition_hash: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.definition_hash,
     consumed_parameter_ids: [...CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS],
-    produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_procurement_quantity_kg"] as const,
+    produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_net_quantity_kg", "putty_procurement_quantity_kg"] as const,
     calculated_ct126_net_quantity_kg: calculatedCt126NetQuantityKg,
     calculated_ct126_procurement_quantity_kg: calculatedCt126ProcurementQuantityKg,
     calculated_ct126_bag_count: calculatedCt126BagCount,
@@ -6288,6 +6297,15 @@ function resolveCeresitCt127DryInteriorFinishPutty(
   ].join(";");
   const parameterValues = Object.freeze({
     ...parameterValuesInput,
+    putty_net_quantity_kg: {
+      value: calculatedCt127NetQuantityKg,
+      unit_id: "kg",
+      source_type: "APPLICABLE_NORM" as const,
+      source_id: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID,
+      captured_at: capturedAt,
+      confidence: "high" as const,
+      applicability,
+    },
     putty_procurement_quantity_kg: {
       value: calculatedCt127ProcurementQuantityKg,
       unit_id: "kg",
@@ -6310,7 +6328,7 @@ function resolveCeresitCt127DryInteriorFinishPutty(
     exact_locator: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.exact_locator,
     source_definition_hash: CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_METADATA.definition_hash,
     consumed_parameter_ids: [...CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_REQUIRED_EXPLICIT_PARAMETER_IDS],
-    produced_parameter_ids: ["putty_procurement_quantity_kg"] as const,
+    produced_parameter_ids: ["putty_net_quantity_kg", "putty_procurement_quantity_kg"] as const,
     calculated_ct127_net_quantity_kg: calculatedCt127NetQuantityKg,
     calculated_ct127_procurement_quantity_kg: calculatedCt127ProcurementQuantityKg,
     calculated_ct127_bag_count: calculatedCt127BagCount,

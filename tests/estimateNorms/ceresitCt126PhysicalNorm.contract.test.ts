@@ -115,7 +115,7 @@ describe("Ceresit CT 126 canonical physical norm", () => {
       technology_class: "WALL_PUTTY",
       operation_class: "APPLY",
       source_definition_hash: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.definition_hash,
-      produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_procurement_quantity_kg"],
+      produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_net_quantity_kg", "putty_procurement_quantity_kg"],
     })]);
   });
 
@@ -159,7 +159,7 @@ describe("Ceresit CT 126 canonical physical norm", () => {
       source_id: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_ID,
       norm_id: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_NORM_ID,
       source_definition_hash: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_METADATA.definition_hash,
-      produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_procurement_quantity_kg"],
+      produced_parameter_ids: ["material_consumption_kg_m2_mm", "putty_net_quantity_kg", "putty_procurement_quantity_kg"],
       calculated_ct126_net_quantity_kg: 240,
       calculated_ct126_procurement_quantity_kg: 240,
       calculated_ct126_bag_count: 12,
@@ -167,6 +167,12 @@ describe("Ceresit CT 126 canonical physical norm", () => {
     expect(first.parameter_values.material_consumption_kg_m2_mm).toMatchObject({
       value: 1.2,
       unit_id: "kg_per_m2_mm",
+      source_type: "APPLICABLE_NORM",
+      source_id: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_ID,
+    });
+    expect(first.parameter_values.putty_net_quantity_kg).toMatchObject({
+      value: 240,
+      unit_id: "kg",
       source_type: "APPLICABLE_NORM",
       source_id: CERESIT_CT126_DRY_INTERIOR_WALL_PUTTY_SOURCE_ID,
     });
@@ -219,6 +225,7 @@ describe("Ceresit CT 126 canonical physical norm", () => {
     const paramOverrides = Object.fromEntries(schema.parameters
       .filter((parameter) => ![
         "material_consumption_kg_m2_mm",
+        "putty_net_quantity_kg",
         "putty_procurement_quantity_kg",
         "substrate_absorbency",
         "selected_consumption_kg_m2",
@@ -253,6 +260,15 @@ describe("Ceresit CT 126 canonical physical norm", () => {
       calculated_ct126_net_quantity_kg: 240,
       calculated_ct126_procurement_quantity_kg: 240,
       calculated_ct126_bag_count: 12,
+    });
+    expect(materialRow?.sourceParameters?.professionalMaterialQuantityBasisV1).toMatchObject({
+      version: "professional-material-quantity-basis:v1",
+      netQuantity: 240,
+      grossQuantity: 240,
+      procurementPackageSize: 20,
+      procurementQuantity: 240,
+      wastePercent: 0,
+      lossPercent: 0,
     });
     expect(result.production?.draft?.items.filter((row) =>
       (row.sourceParameters?.normativeSourceIds as readonly string[] | undefined)

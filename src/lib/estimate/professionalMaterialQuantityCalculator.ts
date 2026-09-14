@@ -1,9 +1,11 @@
 import type { ProfessionalBoqRow } from "./estimateDraftRevisionContract";
 import type {
+  ProfessionalMaterialQuantityBasisV1,
   ProfessionalMaterialQuantityFormulaInputs,
   ProfessionalMaterialQuantityLine,
   ProfessionalMaterialType,
 } from "./professionalMaterialQuantityContract";
+import { PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1 } from "./professionalMaterialQuantityContract";
 import { findProfessionalMaterialQuantityNorm } from "./professionalMaterialQuantityNormRegistry";
 import { resolveProfessionalMaterialPackagingPolicy } from "./professionalMaterialPackagingPolicy";
 import { resolveProfessionalMaterialWastePolicy } from "./professionalMaterialWastePolicy";
@@ -21,6 +23,19 @@ const FORMULA_FUNCTIONS = new Set([
   "unit_convert",
 ]);
 
+const MATERIAL_TYPES = new Set<ProfessionalMaterialType>([
+  "bulk_material",
+  "linear_material",
+  "sheet_material",
+  "piece_material",
+  "set_material",
+  "wet_mix",
+  "equipment_rental",
+  "transport_service",
+  "consumable",
+  "service",
+]);
+
 function normalizeUnit(unit: string): string {
   const value = unit.trim().toLowerCase();
   if (value === "linear_m" || value === "lm") return "m";
@@ -33,6 +48,70 @@ function normalizeUnit(unit: string): string {
 function roundQuantity(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Number(value.toFixed(4));
+}
+
+function declaredMaterialQuantityBasis(
+  row: ProfessionalBoqRow,
+): ProfessionalMaterialQuantityBasisV1 | null {
+  const candidate = row.sourceParameters?.professionalMaterialQuantityBasisV1;
+  if (candidate == null) return null;
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+    throw new Error(`MATERIAL_QUANTITY_BASIS_INVALID:${row.rowId}:not_object`);
+  }
+  const basis = candidate as Partial<ProfessionalMaterialQuantityBasisV1>;
+  const formulaInputsValid = basis.formulaInputs &&
+    typeof basis.formulaInputs === "object" &&
+    !Array.isArray(basis.formulaInputs) &&
+    Object.values(basis.formulaInputs).every((value) =>
+      value === null || ["string", "number", "boolean"].includes(typeof value));
+  const quantities = [
+    basis.netQuantity,
+    basis.wastePercent,
+    basis.lossPercent,
+    basis.grossQuantity,
+    basis.procurementPackageSize,
+    basis.procurementQuantity,
+  ];
+  if (
+    basis.version !== PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1 ||
+    !basis.materialType || !MATERIAL_TYPES.has(basis.materialType) ||
+    !basis.unit?.trim() ||
+    !basis.procurementUnit?.trim() ||
+    !basis.formula?.trim() ||
+    !basis.sourceId?.trim() ||
+    !basis.citationLabel?.trim() ||
+    !basis.calculationTrace?.trim() ||
+    !formulaInputsValid ||
+    !Array.isArray(basis.quantityDependsOnParams) ||
+    basis.quantityDependsOnParams.some((value) => typeof value !== "string" || !value.trim()) ||
+    quantities.some((value) => typeof value !== "number" || !Number.isFinite(value))
+  ) {
+    throw new Error(`MATERIAL_QUANTITY_BASIS_INVALID:${row.rowId}:shape`);
+  }
+  const validBasis = basis as ProfessionalMaterialQuantityBasisV1;
+  const normalizedRowUnit = normalizeUnit(row.unit);
+  const expectedGrossQuantity = roundQuantity(
+    validBasis.netQuantity * (1 + (validBasis.wastePercent + validBasis.lossPercent) / 100),
+  );
+  const expectedProcurementQuantity = roundQuantity(
+    Math.ceil((validBasis.grossQuantity - 1e-9) / validBasis.procurementPackageSize) *
+      validBasis.procurementPackageSize,
+  );
+  if (
+    normalizeUnit(validBasis.unit) !== normalizedRowUnit ||
+    Math.abs(validBasis.netQuantity - row.quantity) > 1e-6 ||
+    validBasis.netQuantity <= 0 ||
+    validBasis.wastePercent < 0 ||
+    validBasis.lossPercent < 0 ||
+    validBasis.grossQuantity + 1e-9 < validBasis.netQuantity ||
+    Math.abs(validBasis.grossQuantity - expectedGrossQuantity) > 1e-6 ||
+    validBasis.procurementPackageSize <= 0 ||
+    validBasis.procurementQuantity + 1e-9 < validBasis.grossQuantity ||
+    Math.abs(validBasis.procurementQuantity - expectedProcurementQuantity) > 1e-6
+  ) {
+    throw new Error(`MATERIAL_QUANTITY_BASIS_INVALID:${row.rowId}:values`);
+  }
+  return validBasis;
 }
 
 function primitiveInputs(value: unknown): ProfessionalMaterialQuantityFormulaInputs {
@@ -107,6 +186,20 @@ export function calculateProfessionalMaterialQuantityLine(input: {
   templateId: string;
   family: string;
 }): ProfessionalMaterialQuantityLine {
+  const declaredBasis = declaredMaterialQuantityBasis(input.row);
+  if (declaredBasis) {
+    const { version: _version, ...basis } = declaredBasis;
+    return {
+      rowId: input.row.rowId,
+      templateId: input.templateId || input.row.templateId || "",
+      family: input.family || input.row.normFamilyId || "",
+      materialName: input.row.titleRu,
+      ...basis,
+      baseQuantity: declaredBasis.netQuantity,
+      formulaResult: declaredBasis.netQuantity,
+      quantityState: "calculated",
+    };
+  }
   const norm = findProfessionalMaterialQuantityNorm({ row: input.row, family: input.family });
   const materialType = norm?.materialType ?? classifyMaterialType(input.row);
   const formulaInputs = formulaContextInputs(input.row);

@@ -30,6 +30,10 @@ import type {
   ProfessionalEstimateScopeModeV4,
   ProfessionalParameterValueV4,
 } from "../../professionalProjectAssemblyV4";
+import {
+  PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1,
+  type ProfessionalMaterialQuantityBasisV1,
+} from "../../../professionalMaterialQuantityContract";
 import { interiorFinishesDomainFactory } from "./domainPackage";
 import {
   INTERIOR_FINISHES_COMPLETE_DOMAIN_ID,
@@ -99,6 +103,71 @@ function primitiveParameterSnapshot(
   values: Readonly<Record<string, ProfessionalParameterValueV4>>,
 ): Readonly<Record<string, string | number | boolean>> {
   return Object.fromEntries(Object.entries(values).map(([key, parameter]) => [key, parameter.value]));
+}
+
+function puttyMaterialQuantityBasisV1(input: {
+  resolution: AppliedProfessionalPhysicalNormResolutionV1 | null | undefined;
+  parameterValues: Readonly<Record<string, ProfessionalParameterValueV4>>;
+}): ProfessionalMaterialQuantityBasisV1 | null {
+  const resolution = input.resolution;
+  if (!resolution) return null;
+  const ct126 = resolution.calculated_ct126_net_quantity_kg != null;
+  const ct127 = resolution.calculated_ct127_net_quantity_kg != null;
+  if (!ct126 && !ct127) return null;
+  const netQuantity = ct126
+    ? resolution.calculated_ct126_net_quantity_kg
+    : resolution.calculated_ct127_net_quantity_kg;
+  const procurementQuantity = ct126
+    ? resolution.calculated_ct126_procurement_quantity_kg
+    : resolution.calculated_ct127_procurement_quantity_kg;
+  const bagCount = ct126
+    ? resolution.calculated_ct126_bag_count
+    : resolution.calculated_ct127_bag_count;
+  const packageSize = Number(input.parameterValues.selected_bag_size_kg?.value);
+  if (
+    netQuantity == null || !Number.isFinite(netQuantity) || netQuantity <= 0 ||
+    procurementQuantity == null || !Number.isFinite(procurementQuantity) ||
+    bagCount == null || !Number.isFinite(bagCount) || bagCount <= 0 ||
+    !Number.isFinite(packageSize) || packageSize <= 0 ||
+    Math.abs(procurementQuantity - bagCount * packageSize) > 1e-6
+  ) {
+    throw new Error(`PUTTY_MATERIAL_QUANTITY_BASIS_INVALID:${resolution.norm_id}`);
+  }
+  const formula = ct126
+    ? "area_m2 × layer_thickness_mm × material_consumption_kg_m2_mm"
+    : "area_m2 × selected_consumption_kg_m2";
+  const quantityDependsOnParams = ct126
+    ? ["area_m2", "layer_thickness_mm", "material_consumption_kg_m2_mm"]
+    : ["area_m2", "selected_consumption_kg_m2"];
+  const formulaInputs = Object.fromEntries(quantityDependsOnParams.map((parameterId) => [
+    parameterId,
+    input.parameterValues[parameterId]?.value ?? null,
+  ]));
+  return {
+    version: PROFESSIONAL_MATERIAL_QUANTITY_BASIS_VERSION_V1,
+    materialType: "wet_mix",
+    unit: "kg",
+    netQuantity,
+    wastePercent: 0,
+    lossPercent: 0,
+    grossQuantity: netQuantity,
+    procurementUnit: "kg",
+    procurementPackageSize: packageSize,
+    procurementQuantity,
+    formula,
+    formulaInputs,
+    sourceId: resolution.source_id,
+    citationLabel: `${resolution.exact_locator} (${resolution.source_document_version})`,
+    calculationTrace: [
+      `net=${netQuantity} kg`,
+      "waste=0% (not published)",
+      `package=${packageSize} kg`,
+      `bags=${bagCount}`,
+      `procurement=${procurementQuantity} kg`,
+      `source=${resolution.source_id}`,
+    ].join("; "),
+    quantityDependsOnParams,
+  };
 }
 
 function constructionState(inventory: InteriorFinishesDomainInventoryRow): "NEW" | "REPAIR" {
@@ -190,6 +259,10 @@ export function buildInteriorFinishesProductionDraftV1(
       rowParameterSourceIds: row.parameter_source_ids,
     }),
   ]));
+  const physicalMaterialQuantityBasis = puttyMaterialQuantityBasisV1({
+    resolution: input.physical_norm_resolution,
+    parameterValues: input.parameter_values,
+  });
   const items: ConsumerRepairAiDraft["items"] = compilation.compiled_rows.map((row) => ({
     itemType: itemType(row.category),
     titleRu: row.title_ru,
@@ -260,7 +333,13 @@ export function buildInteriorFinishesProductionDraftV1(
       workNormativeProofBundleV3: row.normative_proof_bundle_id_v3,
       workProfessionalProofBundleV3: row.professional_proof_bundle_id_v3,
       ...(input.physical_norm_resolution && physicalNormIdentityByRowId.get(row.row_id)
-        ? { professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution }
+        ? {
+          professionalPhysicalNormApplicabilityV1: input.physical_norm_resolution,
+          ...(physicalMaterialQuantityBasis &&
+            row.row_id.endsWith(":row:primary_material")
+            ? { professionalMaterialQuantityBasisV1: physicalMaterialQuantityBasis }
+            : {}),
+        }
         : {}),
       ...(isDrywallArchitecturalElementProfessionalCatalogIdV4(input.catalog_id)
         ? { formulaGraphVersion: "FormulaGraphV4", resourceGraphVersion: "ResourceGraphV4" }

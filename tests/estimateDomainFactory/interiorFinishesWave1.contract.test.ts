@@ -67,6 +67,7 @@ const FIXTURE_NUMBER_BY_PARAMETER: Readonly<Record<string, number>> = {
   junction_length_m: 48,
   layer_thickness_mm: 2,
   material_consumption_kg_m2_mm: 0.9,
+  putty_net_quantity_kg: 216,
   putty_procurement_quantity_kg: 216,
   selected_consumption_kg_m2: 0.7,
   coat_count: 2,
@@ -113,7 +114,7 @@ function parameterValues(
   return Object.fromEntries(schema.parameters
     .filter((parameter) => scopeMode === "FULL_APPLICABLE_SCOPE" ||
       parameter.priority === "P0" ||
-      parameter.parameter_id === "putty_procurement_quantity_kg")
+      parameter.parameter_id === "putty_net_quantity_kg")
     .map((parameter) => {
       if (parameter.parameter_id === "work_included") return [parameter.parameter_id, value(true, null)];
       if (parameter.parameter_id === "estimate_scope_mode") return [parameter.parameter_id, value(scopeMode, null)];
