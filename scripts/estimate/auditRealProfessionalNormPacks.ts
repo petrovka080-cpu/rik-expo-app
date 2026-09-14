@@ -21,6 +21,7 @@ import { constructionNormativeRegistryV1 } from "../../src/lib/estimate/v4/domai
 import {
   CANONICAL_PROFESSIONAL_PHYSICAL_NORM_RUNTIME_BINDINGS_V1,
 } from "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
+import { productionNormSourceEvidenceRegistryV1 } from "../../src/lib/estimate/v4/domainFactory/productionNormSourceEvidenceRegistryV1";
 
 export const GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS =
   "GREEN_AI_ESTIMATE_REAL_PROFESSIONAL_NORM_PACKS_FOR_ALL_WORK_TYPES_NO_BUILDS" as const;
@@ -454,6 +455,7 @@ function inspectCurrentManifestNormSourceRegistryAdmission(
     ...constructionNormativeRegistryV1.list()
       .filter((source) => source.status === "active" || source.status === "project-specific")
       .map((source) => source.source_id),
+    ...productionNormSourceEvidenceRegistryV1.listAcceptedSourceIds(),
   ]);
   const result = inspectManifestNormSourceRegistryAdmission(
     readFileSync(ledgerFile, "utf8"),
@@ -1253,6 +1255,10 @@ function main(): void {
       currentManifestUnregisteredNormSourceDefinitions,
     current_manifest_norm_source_registry_admission:
       currentManifestNormSourceAdmission,
+    production_norm_source_evidence_registry_items_count:
+      productionNormSourceEvidenceRegistryV1.listEvidence().length,
+    production_norm_source_locator_aliases_count:
+      productionNormSourceEvidenceRegistryV1.listAliases().length,
     current_manifest_resource_coverage_mode: "NORMATIVE_TRACE_OR_NORMALIZED_BINDING",
     current_manifest_resource_inventory_complete: currentManifestResourceInventoryComplete,
     current_manifest_valid: currentManifestValid,
