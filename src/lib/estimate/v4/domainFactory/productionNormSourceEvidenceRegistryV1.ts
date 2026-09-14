@@ -33,6 +33,83 @@ const ADMITTED_ROADWORKS_EVIDENCE_IDS = new Set([
   "kg_krer_11_floors_2015",
 ]);
 
+const reviewedOfficialDocument = (input: {
+  source_id: string;
+  title: string;
+  source_document_version: string;
+  official_reference: string;
+}): ProductionNormSourceEvidenceV1 => ({
+  ...input,
+  source_kind: "OFFICIAL_NORMATIVE_DOCUMENT",
+  authority: "Ministry of Construction, Architecture and Housing and Communal Services of the Kyrgyz Republic",
+  jurisdiction: "KG",
+  review_status: "REVIEWED_SOURCE_EVIDENCE",
+  evidence_digest: estimateDeterministicHash(input),
+});
+
+const reviewedCrossDomainEvidence: ProductionNormSourceEvidenceV1[] = [
+  reviewedOfficialDocument({
+    source_id: "kg_krer_2015_collection_01",
+    title: "КРЕР-2015 №1 «Земляные работы»",
+    source_document_version: "КРЕР-2015 №1",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/416/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_krer_2015_collection_33",
+    title: "КРЕР-2015 №33 «Линии электропередачи»",
+    source_document_version: "КРЕР-2015 №33",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/447/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_krerp_2015_collection_01",
+    title: "КРЕРп-2015 №1 «Электротехнические устройства»",
+    source_document_version: "КРЕРп-2015 №1",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/404/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_krer_application_guidance_2015",
+    title: "Указания по применению КРЕР-2015",
+    source_document_version: "КРЕР-2015",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/359/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_sn_23_05_2019",
+    title: "СН КР 23-05:2019 «Естественное и искусственное освещение»",
+    source_document_version: "СН КР 23-05:2019",
+    official_reference: "https://minstroy.gov.kg/ru/state_program/download-pdf/snkr23052019estetstvennoeiiskustvennoeosvesenie-7936858c4d8b27323.46915702.pdf",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_sn_parkings_2018",
+    title: "СН КР 31-12:2018 «Стоянки автомобилей»",
+    source_document_version: "СН КР 31-12:2018",
+    official_reference: "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyenormykyrgyzskojrespublikisistemanormativnyhdokumentovvstroitelstvestoankiavtomobilej-740685a00c177bfa3.03889380.pdf",
+  }),
+  reviewedOfficialDocument({
+    source_id: "kg_krer_30_bridges_and_pipes_2015",
+    title: "КРЕР-2015 №30 «Мосты и трубы»",
+    source_document_version: "КРЕР-2015 №30",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/445/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "krer_06_2015",
+    title: "КРЕР-2015 №6 «Бетонные и железобетонные конструкции монолитные»",
+    source_document_version: "КРЕР-2015 №6",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/422/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "krer_application_guide_2015",
+    title: "Указания по применению КРЕР-2015",
+    source_document_version: "КРЕР-2015",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/359/show",
+  }),
+  reviewedOfficialDocument({
+    source_id: "sn_kr_52_02_2024",
+    title: "СН КР 52-02:2024 «Бетонные и железобетонные конструкции. Основные положения»",
+    source_document_version: "СН КР 52-02:2024",
+    official_reference: "https://minstroy.gov.kg/ru/kyzmat/228/show",
+  }),
+];
+
 const directEvidence: ProductionNormSourceEvidenceV1[] = [
   ...ASPHALT_NORMATIVE_EVIDENCE_V4
     .filter((item) => ADMITTED_ASPHALT_EVIDENCE_IDS.has(item.source_id))
@@ -72,6 +149,7 @@ const directEvidence: ProductionNormSourceEvidenceV1[] = [
       review_status: "REVIEWED_SOURCE_EVIDENCE",
       evidence_digest: item.evidenceHash,
     })),
+  ...reviewedCrossDomainEvidence,
 ];
 
 export const PRODUCTION_NORM_SOURCE_EVIDENCE_V1: readonly ProductionNormSourceEvidenceV1[] =
@@ -83,6 +161,17 @@ const krer27Alias = (
 ): ProductionNormSourceLocatorAliasV1 => ({
   alias_source_id: aliasSourceId,
   canonical_source_id: "kg_krer_2015_collection_27",
+  exact_locator: exactLocator,
+  review_status: "EXACT_LOCATOR_REVIEWED",
+});
+
+const reviewedLocatorAlias = (
+  aliasSourceId: string,
+  canonicalSourceId: string,
+  exactLocator: string,
+): ProductionNormSourceLocatorAliasV1 => ({
+  alias_source_id: aliasSourceId,
+  canonical_source_id: canonicalSourceId,
   exact_locator: exactLocator,
   review_status: "EXACT_LOCATOR_REVIEWED",
 });
@@ -140,6 +229,56 @@ export const PRODUCTION_NORM_SOURCE_LOCATOR_ALIASES_V1: readonly ProductionNormS
     krer27Alias("kg_krer27:technical_part:clause:1.8:bitumen_emulsion_delivery_excluded", "technical part clause 1.8"),
     krer27Alias("kg_krer27:technical_part:clause:1.9:water_delivery_5km_boundary", "technical part clause 1.9"),
     krer27Alias("kg_krer27:technical_part:quality_control_applicability", "technical part quality-control applicability"),
+    reviewedLocatorAlias(
+      "kg_krer01:earthwork_table_selected_by_project_trench_method",
+      "kg_krer_2015_collection_01",
+      "sections 01-01 and 01-02; exact trench earthwork table selected by confirmed soil group, method and plant",
+    ),
+    reviewedLocatorAlias(
+      "kg_krer01:tables:01-01_and_01-02:earthworks_selected_by_soil_and_machine",
+      "kg_krer_2015_collection_01",
+      "sections 01-01 and 01-02; earthwork table selected by confirmed soil group and machine",
+    ),
+    reviewedLocatorAlias(
+      "kg_krer33:table:33-04-003:0.38_to_10kv_poles",
+      "kg_krer_2015_collection_33",
+      "table 33-04-003 for applicable 0.38-10 kV pole works",
+    ),
+    reviewedLocatorAlias(
+      "kg_krer_application_guidance:clause:1.8:electrical_installations_use_krerm08",
+      "kg_krer_application_guidance_2015",
+      "clause 1.8, electrical-installation work routed to the applicable KRERm collection",
+    ),
+    reviewedLocatorAlias(
+      "kg_krerp01:sections:01-11_to_01-13:cable_grounding_insulation_tests",
+      "kg_krerp_2015_collection_01",
+      "sections 01-11 through 01-13 selected by cable, grounding and insulation test type",
+    ),
+    reviewedLocatorAlias(
+      "kg_sn_23-05-2019:outdoor_lighting:project_design_applicability",
+      "kg_sn_23_05_2019",
+      "outdoor-lighting requirements selected by road or parking class and the approved lighting design",
+    ),
+    reviewedLocatorAlias(
+      "kg_sn_parkings_2018:scope_and_accessibility:project_design_applicability",
+      "kg_sn_parkings_2018",
+      "clauses 4.14, 5.1.5 and 5.1.17; parking scope and accessibility fixed by the approved design",
+    ),
+    reviewedLocatorAlias(
+      "kg_sn_parkings_2018:clause:4.16:entry_exit_visibility_and_manoeuvring",
+      "kg_sn_parkings_2018",
+      "clause 4.16, entry and exit visibility and manoeuvring",
+    ),
+    reviewedLocatorAlias(
+      "kg_sn_parkings_2018:clause:5.1.4:parking_spaces_aisles_and_project_geometry",
+      "kg_sn_parkings_2018",
+      "clause 5.1.4, parking spaces, aisles and project geometry",
+    ),
+    reviewedLocatorAlias(
+      "kg_sn_parkings_2018:clause:5.1.5:accessible_space_dimensions",
+      "kg_sn_parkings_2018",
+      "clause 5.1.5, accessible parking-space dimensions",
+    ),
   ]);
 
 const evidenceById = new Map(PRODUCTION_NORM_SOURCE_EVIDENCE_V1.map((item) => [item.source_id, item]));

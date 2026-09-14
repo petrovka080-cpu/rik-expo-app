@@ -17,6 +17,16 @@ describe("production norm-source evidence registry v1", () => {
       "manufacturer_bitumina_emulsion_technical_note",
       "kg_krer_27_roadworks_2015",
       "kg_krer_11_floors_2015",
+      "kg_krer_2015_collection_01",
+      "kg_krer_2015_collection_33",
+      "kg_krerp_2015_collection_01",
+      "kg_krer_application_guidance_2015",
+      "kg_sn_23_05_2019",
+      "kg_sn_parkings_2018",
+      "kg_krer_30_bridges_and_pipes_2015",
+      "krer_06_2015",
+      "krer_application_guide_2015",
+      "sn_kr_52_02_2024",
     ]);
     expect(new Set(accepted).size).toBe(accepted.length);
     expect(PRODUCTION_NORM_SOURCE_EVIDENCE_V1.every((item) =>
@@ -30,6 +40,10 @@ describe("production norm-source evidence registry v1", () => {
       "verified_ratebook:road_marking",
       "src_professional_norm_pack_catalog_roadworks_labor_labor_m2_v1",
       "kg_sp_kr_32_107_2024_consultation_draft",
+      "verified_equipment_productivity",
+      "verified_fleet_productivity",
+      "verified_ratebook:road_marking",
+      "verified_ratebook:traffic_signs",
     ]));
   });
 
@@ -39,7 +53,7 @@ describe("production norm-source evidence registry v1", () => {
       "utf8",
     );
 
-    expect(PRODUCTION_NORM_SOURCE_LOCATOR_ALIASES_V1).toHaveLength(15);
+    expect(PRODUCTION_NORM_SOURCE_LOCATOR_ALIASES_V1).toHaveLength(25);
     for (const alias of PRODUCTION_NORM_SOURCE_LOCATOR_ALIASES_V1) {
       expect(productionNormSourceEvidenceRegistryV1.getEvidence(alias.canonical_source_id)).not.toBeNull();
       expect(productionNormSourceEvidenceRegistryV1.getAlias(alias.alias_source_id)).toEqual(alias);
