@@ -23,6 +23,16 @@ import {
   buildRegisteredProfessionalEstimateParameterCollectionDraftV1,
   resolveRegisteredProfessionalEstimateSelectionV1,
 } from "../../src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1";
+import {
+  WALL_PUTTY_CT127_KRER15_APPLICABILITY_PARAMETER_ID,
+  WALL_PUTTY_CT127_KRER15_RATE_CODE,
+  WALL_PUTTY_CT127_KRER15_SOURCE_ID,
+  WALL_PUTTY_CT127_KRER15_WORK_KEY,
+} from "../../src/lib/estimate/v4/domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1";
+import {
+  CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID,
+  CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID,
+} from "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
 
 const CAPTURED_AT = "2026-08-11T00:00:00.000Z";
 
@@ -65,14 +75,24 @@ function rawParameterValue(
   parameter: ProfessionalDomainParameterDefinitionV1,
   bindingScope: string,
   scopeMode: "MINIMAL_EXPLICIT_SCOPE" | "FULL_APPLICABLE_SCOPE",
+  catalogId: string,
 ): string | number | boolean {
   if (parameter.parameter_id === "work_included") return true;
   if (parameter.parameter_id === "estimate_scope_mode") return scopeMode;
   if (parameter.parameter_id === "scope_capability") return bindingScope;
   if (parameter.parameter_id === "funding_source") return "PRIVATE_RECOMMENDED";
   if (parameter.parameter_id === "project_type") return "RESIDENTIAL_INTERIOR";
-  if (parameter.parameter_id === "product_profile_id") return "PROJECT-MATERIAL-PASSPORT-INTERIOR";
-  if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-INTERIOR-RATE";
+  if (parameter.parameter_id === "product_profile_id") {
+    return catalogId === WALL_PUTTY_CT127_KRER15_WORK_KEY
+      ? CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID
+      : "PROJECT-MATERIAL-PASSPORT-INTERIOR";
+  }
+  if (parameter.parameter_id === "normative_rate_code") {
+    return catalogId === WALL_PUTTY_CT127_KRER15_WORK_KEY
+      ? WALL_PUTTY_CT127_KRER15_RATE_CODE
+      : "PROJECT-VERIFIED-INTERIOR-RATE";
+  }
+  if (parameter.parameter_id === WALL_PUTTY_CT127_KRER15_APPLICABILITY_PARAMETER_ID) return true;
   if (parameter.input_type === "boolean") return scopeMode === "FULL_APPLICABLE_SCOPE";
   if (parameter.input_type === "choice") return parameter.choices?.[0]?.value ?? "PROJECT_SPECIFIED";
   if (parameter.input_type === "text") return `PROJECT:${parameter.parameter_id}`;
@@ -93,7 +113,7 @@ function parameterValues(
     if (scopeMode === "MINIMAL_EXPLICIT_SCOPE" && parameter.priority === "P1") return [];
     if (geometry === "LENGTH_WIDTH" && parameter.parameter_id === "area_m2") return [];
     if (geometry === "AREA" && ["length_m", "width_m"].includes(parameter.parameter_id)) return [];
-    const raw = rawParameterValue(parameter, binding.scope_capability, scopeMode);
+    const raw = rawParameterValue(parameter, binding.scope_capability, scopeMode, catalogId);
     return [[parameter.parameter_id, {
       value: raw,
       unit_id: parameter.unit_id,
@@ -116,13 +136,21 @@ function compile(
   const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
   if (!technology) throw new Error(`TEST_INTERIOR_TECHNOLOGY_NOT_FOUND:${catalogId}`);
   const repair = inventory.scope_capability === "repair" || ["repair", "replace"].includes(inventory.work_type);
-  const sourceId = repair ? "kg_krerr_2015_application_guidance" : "kg_krer_2015_application_guidance";
+  const exactWallPutty = inventory.work_key === WALL_PUTTY_CT127_KRER15_WORK_KEY;
+  const sourceId = exactWallPutty
+    ? WALL_PUTTY_CT127_KRER15_SOURCE_ID
+    : repair ? "kg_krerr_2015_application_guidance" : "kg_krer_2015_application_guidance";
+  const values = parameterValues(catalogId, scopeMode, geometry);
   return compileProfessionalEstimateDomainV1(interiorFinishesDomainFactory, constructionNormativeRegistryV1, {
     catalog_id: inventory.catalog_id,
     work_key: inventory.work_key,
     scope_mode: scopeMode,
     parent_revision_id: null,
-    parameter_values: parameterValues(catalogId, scopeMode, geometry),
+    parameter_values: values,
+    additional_normative_source_ids: exactWallPutty
+      ? [CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_SOURCE_ID]
+      : [],
+    additional_normative_source_types: exactWallPutty ? ["MANUFACTURER_PASSPORT"] : [],
     normative_request: {
       country: "KG",
       region: "Bishkek",
@@ -133,7 +161,12 @@ function compile(
       effective_date: "2026-08-11",
       material_system: technology.material_system,
       operation_class: technology.operation_class,
-      rate_code_by_source_id: { [sourceId]: "PROJECT-VERIFIED-INTERIOR-RATE" },
+      product_profile_id: exactWallPutty
+        ? CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID
+        : undefined,
+      rate_code_by_source_id: {
+        [sourceId]: exactWallPutty ? WALL_PUTTY_CT127_KRER15_RATE_CODE : "PROJECT-VERIFIED-INTERIOR-RATE",
+      },
     },
   });
 }

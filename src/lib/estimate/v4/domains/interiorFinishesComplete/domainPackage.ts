@@ -27,6 +27,7 @@ import {
   INTERIOR_FINISHES_COMPLETE_DOMAIN_VERSION,
   INTERIOR_FINISHES_COMPLETE_RECORD_COUNT,
   INTERIOR_FINISHES_DOMAIN_CATALOG_BINDINGS,
+  INTERIOR_FINISHES_DOMAIN_INVENTORY,
   INTERIOR_FINISHES_NEW_INVENTORY,
   type InteriorFinishesDomainInventoryRow,
 } from "./inventory";
@@ -53,6 +54,10 @@ import { buildBaseboardGlueProfessionalPackagePartsV1 } from "./baseboardGluePro
 import { buildBaseboardGerflorInstallProfessionalPackagePartsV1 } from "./baseboardGerflorInstallProfessionalV1";
 import { buildPaintCeresitCt54Ct17ProfessionalPackagePartsV1 } from "./paintCeresitCt54Ct17ProfessionalV1";
 import { buildWaterproofingCeresitCl51ProfessionalPackagePartsV1 } from "./waterproofingCeresitCl51ProfessionalV1";
+import {
+  buildWallPuttyCt127Krer15ProfessionalPackagePartsV1,
+  WALL_PUTTY_CT127_KRER15_WORK_KEY,
+} from "./wallPuttyCeresitCt127Krer15ProfessionalV1";
 
 const ALWAYS = { kind: "ALWAYS" } as const;
 const FULL_ONLY = { kind: "EQUALS", parameter_id: "estimate_scope_mode", value: "FULL_APPLICABLE_SCOPE" } as const;
@@ -791,6 +796,48 @@ const normativeProfiles: ProfessionalNormativeProfileV1[] = [...INTERIOR_FINISHE
 const formulaPacks: ProfessionalFormulaPackV1[] = [...INTERIOR_FINISHES_WAVE_1_DOMAIN_PACKAGE.formula_packs];
 const assemblyProfiles: ProfessionalAssemblyProfileV1[] = [...INTERIOR_FINISHES_WAVE_1_DOMAIN_PACKAGE.assembly_profiles];
 const resourcePolicies: ProfessionalResourceCompletenessPolicyV1[] = [...INTERIOR_FINISHES_WAVE_1_DOMAIN_PACKAGE.resource_completeness_policies];
+
+const exactWallPuttyInventory = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
+  (inventory) => inventory.work_key === WALL_PUTTY_CT127_KRER15_WORK_KEY,
+);
+if (!exactWallPuttyInventory) throw new Error("INTERIOR_EXACT_WALL_PUTTY_INVENTORY_MISSING");
+const exactWallPuttyTechnologyIndex = technologies.findIndex(
+  (technology) => technology.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+const exactWallPuttySchemaIndex = schemas.findIndex(
+  (schema) => schema.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+if (exactWallPuttyTechnologyIndex < 0 || exactWallPuttySchemaIndex < 0) {
+  throw new Error("INTERIOR_EXACT_WALL_PUTTY_WAVE1_OWNER_MISSING");
+}
+const exactWallPuttyParts = buildWallPuttyCt127Krer15ProfessionalPackagePartsV1({
+  inventory: exactWallPuttyInventory,
+  baseTechnology: technologies[exactWallPuttyTechnologyIndex],
+  baseSchema: schemas[exactWallPuttySchemaIndex],
+});
+if (!exactWallPuttyParts) throw new Error("INTERIOR_EXACT_WALL_PUTTY_OWNER_NOT_APPLICABLE");
+technologies[exactWallPuttyTechnologyIndex] = exactWallPuttyParts.technology;
+schemas[exactWallPuttySchemaIndex] = exactWallPuttyParts.schema;
+const exactWallPuttyNormIndex = normativeProfiles.findIndex(
+  (profile) => profile.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+const exactWallPuttyFormulaIndex = formulaPacks.findIndex(
+  (pack) => pack.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+const exactWallPuttyAssemblyIndex = assemblyProfiles.findIndex(
+  (profile) => profile.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+const exactWallPuttyPolicyIndex = resourcePolicies.findIndex(
+  (policy) => policy.technology_id === exactWallPuttyInventory.canonical_technology_id,
+);
+if ([exactWallPuttyNormIndex, exactWallPuttyFormulaIndex, exactWallPuttyAssemblyIndex, exactWallPuttyPolicyIndex]
+  .some((index) => index < 0)) {
+  throw new Error("INTERIOR_EXACT_WALL_PUTTY_WAVE1_DEPENDENCY_MISSING");
+}
+normativeProfiles[exactWallPuttyNormIndex] = exactWallPuttyParts.normative_profile;
+formulaPacks[exactWallPuttyFormulaIndex] = exactWallPuttyParts.formula_pack;
+assemblyProfiles[exactWallPuttyAssemblyIndex] = exactWallPuttyParts.assembly_profile;
+resourcePolicies[exactWallPuttyPolicyIndex] = exactWallPuttyParts.resource_policy;
 
 for (const inventory of INTERIOR_FINISHES_NEW_INVENTORY) {
   const profile = interiorOperationProfile(inventory);

@@ -17,6 +17,8 @@ import { createEstimateDraftRevision } from "../../src/lib/estimate/createEstima
 import { renderPdfFromDraftRevision } from "../../src/features/pdf/renderPdfFromDraftRevision";
 import { createBuyerHandoffFromDraftRevision } from "../../src/features/procurement/createBuyerHandoffFromDraftRevision";
 import { buildProfessionalEstimateDraftPreviewModel } from "../../src/features/requests/buildProfessionalEstimateDraftPreviewModel";
+import { WALL_PUTTY_CT127_KRER15_RATE_CODE } from
+  "../../src/lib/estimate/v4/domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1";
 
 const CAPTURED_AT = "2026-09-12T00:00:00.000Z";
 const WALL_PUTTY_APPLY_WORK_KEY = "plaster_paint_interior_wall_putty_apply_standard";
@@ -80,7 +82,7 @@ function validOverrideValue(parameter: {
   if (parameter.parameter_id === "product_profile_id") {
     return CERESIT_CT127_DRY_INTERIOR_FINISH_PUTTY_PRODUCT_PROFILE_ID;
   }
-  if (parameter.parameter_id === "normative_rate_code") return "PROJECT-VERIFIED-FINISH-PUTTY-RATE";
+  if (parameter.parameter_id === "normative_rate_code") return WALL_PUTTY_CT127_KRER15_RATE_CODE;
   if (parameter.parameter_id === "area_m2") return 100;
   if (parameter.parameter_id === "layer_thickness_mm") return 2;
   if (parameter.parameter_id === "surface_type") return "CEMENT_PLASTER";

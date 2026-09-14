@@ -159,6 +159,13 @@ import { KRER46_DEMOLITION_PRODUCT_PROFILE_ID, KRER46_DEMOLITION_SOURCE_ID,
   KRER46_DEMOLITION_SOURCE_METADATA } from "./demolitionKrer46PhysicalNormV1";
 import { KG_DESIGN_PRICE_PRODUCT_PROFILE_ID, KG_DESIGN_PRICE_SOURCE_ID,
   KG_DESIGN_PRICE_SOURCE_METADATA } from "./documentationKgDesignPricePhysicalNormV1";
+import {
+  WALL_PUTTY_CT127_KRER15_OFFICIAL_PAGE,
+  WALL_PUTTY_CT127_KRER15_OFFICIAL_PDF,
+  WALL_PUTTY_CT127_KRER15_RATE_CODE,
+  WALL_PUTTY_CT127_KRER15_SOURCE_ID,
+  WALL_PUTTY_CT127_KRER15_SOURCE_PDF_SHA256,
+} from "../domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1";
 
 export type ConstructionNormativeSourceTypeV1 =
   | "LAW_OR_TECHNICAL_REGULATION"
@@ -749,6 +756,32 @@ export const CONSTRUCTION_NORMATIVE_SOURCES_V1: readonly ConstructionNormativeSo
     official_reference: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.source_url,
     version: KRER27_06_020_HOT_ASPHALT_40MM_SOURCE_METADATA.source_document_version,
     license_access_note: "Official public KG resource-estimate collection. The binding converts only explicitly measured pavement area to fractional 1000 m2 table units for the exact 40 mm hot-asphalt table 27-06-020. It requires the selected table variant, work composition, resource rows, current edition/amendments, project compaction specification, price level/indices and estimator approval. The 0.001 value is not a material, labor, machinery or price rate and must not populate those resources.",
+    supersedes: [],
+    superseded_by: [],
+    exact_rate_code_required: true,
+  }),
+  source({
+    source_id: WALL_PUTTY_CT127_KRER15_SOURCE_ID,
+    source_type: "RESOURCE_ESTIMATE_NORM",
+    jurisdiction: "KG",
+    authority: "Министерство строительства, архитектуры и жилищно-коммунального хозяйства Кыргызской Республики",
+    document_code: "КРЕР-2015 №15, 15-04-027-01",
+    title: "Третья шпаклёвка стен при высококачественной окраске",
+    edition: "2015",
+    revision: `official-scan-sha256:${WALL_PUTTY_CT127_KRER15_SOURCE_PDF_SHA256}`,
+    status: "active",
+    effective_from: null,
+    effective_to: null,
+    funding_applicability: [ALL, "STATE_BUDGET", "EXTRA_BUDGETARY_FUND", "PRIVATE_RECOMMENDED"],
+    project_type_applicability: [ALL],
+    new_repair_demolition_applicability: ["NEW", "RECONSTRUCTION"],
+    operation_class_applicability: ["APPLY"],
+    material_system_applicability: ["WALL_PUTTY"],
+    clause_table_rate_code: WALL_PUTTY_CT127_KRER15_RATE_CODE,
+    unit_basis: "100 m2 of painted wall surface",
+    official_reference: WALL_PUTTY_CT127_KRER15_OFFICIAL_PDF,
+    version: "kg-krer15-2015:15-04-027-01:v1",
+    license_access_note: `Official public KG KRER No. 15 scan (${WALL_PUTTY_CT127_KRER15_OFFICIAL_PAGE}). Pages 191-192, table 15-04-027, column 15-04-027-01. The executable binding is limited to the third wall putty coat for high-quality painting. CT 127 replaces only the table's oil-glue putty resource through its separate manufacturer TDS quantity binding; labor, operator labor, lift, truck, sanding sheet and rags retain the exact table column. Current amendments and project applicability still require estimator confirmation.`,
     supersedes: [],
     superseded_by: [],
     exact_rate_code_required: true,

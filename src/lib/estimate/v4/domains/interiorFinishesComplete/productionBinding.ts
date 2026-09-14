@@ -63,6 +63,12 @@ import {
   drywallDomainProfessionalOwnerIdV7,
   isDrywallDomainCompletionCatalogIdV7,
 } from "./drywallDomainCompletionProfessionalV7";
+import {
+  applyWallPuttyCt127Krer15SourceManagedValuesV1,
+  isWallPuttyCt127Krer15Target,
+  validateWallPuttyCt127Krer15InputsV1,
+  WALL_PUTTY_CT127_KRER15_SOURCE_ID,
+} from "./wallPuttyCeresitCt127Krer15ProfessionalV1";
 
 export const INTERIOR_FINISHES_PRODUCTION_BINDING_VERSION =
   "interior-finishes-production-binding:v1" as const;
@@ -177,6 +183,9 @@ function constructionState(inventory: InteriorFinishesDomainInventoryRow): "NEW"
 }
 
 function normativeSourceId(inventory: InteriorFinishesDomainInventoryRow): string {
+  if (isWallPuttyCt127Krer15Target(inventory)) {
+    return WALL_PUTTY_CT127_KRER15_SOURCE_ID;
+  }
   return constructionState(inventory) === "REPAIR"
     ? "kg_krerr_2015_application_guidance"
     : "kg_krer_2015_application_guidance";
@@ -472,7 +481,22 @@ export function buildInteriorFinishesFromInlineInputV1(
       input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_JOINTING_PRODUCT_PROFILE_ID ||
       input.paramOverrides?.product_profile_id?.value === KNAUF_FUGENFUELLER_PERIMETER_PRODUCT_PROFILE_ID,
   });
-  const baselineParameterValues = baseline.parameter_values;
+  const baselineParameterValues = applyWallPuttyCt127Krer15SourceManagedValuesV1({
+    workKey: inventory.work_key,
+    parameterValues: baseline.parameter_values,
+  });
+  const exactNormBlockers = validateWallPuttyCt127Krer15InputsV1({
+    workKey: inventory.work_key,
+    parameterValues: baselineParameterValues,
+  });
+  if (exactNormBlockers.length > 0) {
+    return {
+      exact_match: true,
+      inventory,
+      missing_parameter_ids: exactNormBlockers,
+      production: null,
+    };
+  }
   const scopeMode = baselineParameterValues.estimate_scope_mode?.value;
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") {
     throw new Error(`INTERIOR_INLINE_SCOPE_INVALID:${String(scopeMode)}`);
