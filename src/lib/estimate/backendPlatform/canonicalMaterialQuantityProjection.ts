@@ -30,7 +30,12 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function policyFromRow(row: ProfessionalBoqRow): CanonicalMaterialQuantityPolicyV1 | null {
+type CanonicalMaterialQuantityProjectionInput = Pick<
+  ProfessionalBoqRow,
+  "rowId" | "quantity" | "sourceParameters"
+>;
+
+function policyFromRow(row: CanonicalMaterialQuantityProjectionInput): CanonicalMaterialQuantityPolicyV1 | null {
   const source = record(row.sourceParameters);
   const smart = record(source?.smartEstimateProjectionV2);
   const formulaExplanation = record(smart?.formulaExplanation);
@@ -69,7 +74,7 @@ function round(value: number): number {
 }
 
 export function canonicalMaterialQuantityBasisFromRow(
-  row: ProfessionalBoqRow,
+  row: CanonicalMaterialQuantityProjectionInput,
 ): ProfessionalMaterialQuantityBasisV1 | null {
   const policy = policyFromRow(row);
   if (!policy) return null;

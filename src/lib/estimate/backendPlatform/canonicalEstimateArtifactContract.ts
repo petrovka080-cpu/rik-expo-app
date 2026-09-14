@@ -1,3 +1,5 @@
+import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
+
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5";
 
@@ -53,14 +55,36 @@ export function selectCanonicalArtifactRows(sourceRows: CanonicalArtifactRow[]) 
 
 function projectProcurementRow(row: CanonicalArtifactRow) {
   const calculationTrace = objectValue(row.calculation_trace);
+  const materialQuantity = canonicalMaterialQuantityBasisFromRow({
+    rowId: String(row.row_id),
+    quantity: Number(row.quantity),
+    sourceParameters: {
+      smartEstimateProjectionV2: {
+        formulaExplanation: {
+          resourceGraph: calculationTrace.resourceGraph,
+        },
+      },
+    },
+  });
+  const netQuantity = materialQuantity?.netQuantity ?? row.quantity;
+  const grossQuantity = materialQuantity?.grossQuantity ?? row.quantity;
+  const procurementQuantity = materialQuantity?.procurementQuantity ?? row.quantity;
   return {
     rowId: String(row.row_id),
     ordinal: Number(row.ordinal),
     section: String(row.section ?? ""),
     category: String(row.category ?? ""),
     titleRu: String(row.title_ru ?? ""),
-    unitId: String(row.unit_id ?? ""),
-    quantity: decimalText(row.quantity),
+    unitId: materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
+    quantity: decimalText(procurementQuantity),
+    netQuantity: decimalText(netQuantity),
+    grossQuantity: decimalText(grossQuantity),
+    procurementQuantity: decimalText(procurementQuantity),
+    procurementUnit: materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
+    procurementPackageSize: materialQuantity == null
+      ? null
+      : decimalText(materialQuantity.procurementPackageSize),
+    materialQuantityBasis: materialQuantity,
     unitPrice: decimalText(row.unit_price),
     amount: decimalText(row.amount),
     currencyCode: nullableText(row.currency_code),
