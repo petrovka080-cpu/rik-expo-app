@@ -42,6 +42,35 @@ export type RealProfessionalNormAuditOutcomeInput = {
   catalogAdmissionComplete: boolean;
 };
 
+export type ManifestSourceHeadFreshness = {
+  current_source_head: string | null;
+  manifest_source_head: string | null;
+  matches_current_head: boolean;
+  blocker: string | null;
+};
+
+export function inspectManifestSourceHeadFreshness(
+  currentSourceHead: string | null | undefined,
+  manifestSourceHead: string | null | undefined,
+): ManifestSourceHeadFreshness {
+  const current = currentSourceHead?.trim().toLowerCase() || null;
+  const manifest = manifestSourceHead?.trim().toLowerCase() || null;
+  const matchesCurrentHead = current !== null && manifest !== null && current === manifest;
+
+  return {
+    current_source_head: current,
+    manifest_source_head: manifest,
+    matches_current_head: matchesCurrentHead,
+    blocker: matchesCurrentHead
+      ? null
+      : !current
+        ? "current_source_head_unavailable"
+        : !manifest
+          ? "current_manifest_source_head_missing"
+          : `current_manifest_source_head_stale:${manifest}!=${current}`,
+  };
+}
+
 export function classifyRealProfessionalNormAuditOutcome(
   input: RealProfessionalNormAuditOutcomeInput,
 ): { finalStatus: string; nextRequiredAction: string } {
@@ -863,8 +892,13 @@ function writeRuntimeSummary(summary: Record<string, unknown>): string {
 function main(): void {
   requireAllFlag();
 
+  const currentSourceHead = gitOutput(["rev-parse", "HEAD"]);
   const previous = latestPreviousSummary();
   const currentManifest = currentManifestNormAudit();
+  const currentManifestSourceHeadFreshness = inspectManifestSourceHeadFreshness(
+    currentSourceHead,
+    currentManifest?.summary.runtime?.sourceHead,
+  );
   const currentManifestNormSourceAdmission = inspectCurrentManifestNormSourceRegistryAdmission(
     currentManifest?.file ?? null,
   );
@@ -1203,6 +1237,7 @@ function main(): void {
     physicalNormBindingDispositionComplete;
   const acceptanceDenominatorComplete =
     currentManifestValid &&
+    currentManifestSourceHeadFreshness.matches_current_head &&
     currentManifestConsumerInventoryComplete &&
     consumerInventoryComplete;
   const catalogAdmissionComplete =
@@ -1226,7 +1261,7 @@ function main(): void {
 
   const summary: Record<string, unknown> = {
     final_status: finalStatus,
-    source_sha: gitOutput(["rev-parse", "HEAD"]),
+    source_sha: currentSourceHead,
     branch: gitOutput(["branch", "--show-current"]),
     upstream_sync: gitOutput(["rev-list", "--left-right", "--count", "@{u}...HEAD"]),
     previous_status: previousSummary.final_status ?? null,
@@ -1239,6 +1274,8 @@ function main(): void {
     current_manifest_status: currentManifest?.summary.status ?? null,
     current_manifest_schema_version: currentManifest?.summary.schemaVersion ?? null,
     current_manifest_source_head: currentManifest?.summary.runtime?.sourceHead ?? null,
+    current_manifest_source_head_matches_current_head:
+      currentManifestSourceHeadFreshness.matches_current_head,
     current_manifest_definition_release_id:
       currentManifest?.summary.runtime?.definitionReleaseId ?? null,
     current_manifest_definition_count: currentManifestDefinitionCount,
@@ -1529,6 +1566,7 @@ function main(): void {
       !currentManifestValid
         ? "current_manifest_norm_audit_missing_or_invalid"
         : "",
+      currentManifestSourceHeadFreshness.blocker ?? "",
       currentManifestNormSourceAdmission.unregistered_norm_source_ids.length > 0
         ? `current_manifest_unregistered_norm_sources:${currentManifestNormSourceAdmission.unregistered_norm_source_ids.length}`
         : "",

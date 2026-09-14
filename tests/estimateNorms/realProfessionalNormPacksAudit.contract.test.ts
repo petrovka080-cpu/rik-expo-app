@@ -18,6 +18,7 @@ import {
 } from "../../src/lib/estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1";
 import {
   classifyManifestTraceSourceRole,
+  inspectManifestSourceHeadFreshness,
   inspectManifestNormSourceRegistryAdmission,
 } from "../../scripts/estimate/auditRealProfessionalNormPacks";
 
@@ -2913,5 +2914,24 @@ describe("real professional norm packs audit", () => {
       "missing_norm",
       "verified_ratebook:road_marking",
     ]);
+  });
+
+  it("rejects a structurally valid manifest produced from a stale source head", () => {
+    expect(inspectManifestSourceHeadFreshness("ABC123", "abc123")).toEqual({
+      current_source_head: "abc123",
+      manifest_source_head: "abc123",
+      matches_current_head: true,
+      blocker: null,
+    });
+    expect(inspectManifestSourceHeadFreshness("current-sha", "stale-sha")).toEqual({
+      current_source_head: "current-sha",
+      manifest_source_head: "stale-sha",
+      matches_current_head: false,
+      blocker: "current_manifest_source_head_stale:stale-sha!=current-sha",
+    });
+    expect(inspectManifestSourceHeadFreshness("current-sha", null)).toMatchObject({
+      matches_current_head: false,
+      blocker: "current_manifest_source_head_missing",
+    });
   });
 });
