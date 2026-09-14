@@ -13,6 +13,9 @@ import {
 } from "../../src/lib/ai/estimateTemplate10000";
 import { aiEstimateRuDictionaryEntry } from "../../src/lib/estimate/aiEstimateRuParameterDictionary";
 import { PROFESSIONAL_NORM_PACK_BASIS_QUESTIONS_RU } from "../../src/lib/estimate/professionalNormPackBasisQuestionsRu";
+import {
+  OWNED_DOMAIN_PHYSICAL_NORM_CONSUMER_ROUTES_V1,
+} from "../../src/lib/estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1";
 
 describe("real professional norm packs audit", () => {
   it("blocks green until sourced professional norm packs replace synthetic defaults", () => {
@@ -848,6 +851,8 @@ describe("real professional norm packs audit", () => {
     expect(source).toContain("production_norm_registry_invalid_bindings");
     expect(source).toContain("production_unbound_norm_requirements");
     expect(source).toContain("production_norm_consumer_inventory_complete");
+    expect(source).toContain("production_reachable_physical_norm_bindings_count");
+    expect(source).toContain("production_norm_work_groups_without_reachable_consumers");
     expect(source).toContain("CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("AI_ESTIMATE_CURRENT_MANIFEST_AUDIT_FILE");
     expect(source).toContain("current_manifest_consumer_inventory_complete");
@@ -2646,14 +2651,33 @@ describe("real professional norm packs audit", () => {
     const inventory = inspectProductionNormConsumerInventory();
     const byGroup = new Map(inventory.map((entry) => [entry.work_group, entry]));
 
-    expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length - 2);
+    expect(inventory).toHaveLength(NORM_WORK_TAXONOMY_GROUPS.length);
     expect(inventory.reduce((sum, entry) => sum + entry.rows_count, 0)).toBe(599000);
-    expect(PROFESSIONAL_NORM_PACK_GROUPS.every((group) => (byGroup.get(group)?.rows_count ?? 0) > 0)).toBe(true);
-    expect(NORM_WORK_TAXONOMY_GROUPS.filter((group) => !byGroup.has(group)).sort()).toEqual([
-      "formwork",
-      "reinforcement",
-    ]);
+    expect(PROFESSIONAL_NORM_PACK_GROUPS.every((group) => {
+      const entry = byGroup.get(group);
+      return (entry?.rows_count ?? 0) > 0 ||
+        (entry?.reachable_physical_norm_bindings_count ?? 0) > 0;
+    })).toBe(true);
+    expect(NORM_WORK_TAXONOMY_GROUPS.filter((group) => !byGroup.has(group))).toEqual([]);
     expect(inventory.flatMap((entry) => entry.invalid_registered_norm_bindings)).toEqual([]);
+    expect(inventory.flatMap((entry) => entry.invalid_reachable_physical_norm_consumers)).toEqual([]);
+    expect(inventory.reduce(
+      (sum, entry) => sum + entry.reachable_physical_norm_bindings_count,
+      0,
+    )).toBe(OWNED_DOMAIN_PHYSICAL_NORM_CONSUMER_ROUTES_V1.reduce(
+      (sum, route) => sum + route.runtime_bindings.length,
+      0,
+    ));
+    expect(byGroup.get("formwork")).toMatchObject({
+      rows_count: 0,
+      reachable_physical_norm_bindings_count: 1,
+      reachable_physical_norm_routes: ["formwork_rics_nrm2"],
+    });
+    expect(byGroup.get("reinforcement")).toMatchObject({
+      rows_count: 0,
+      reachable_physical_norm_bindings_count: 1,
+      reachable_physical_norm_routes: ["reinforcement_bar_schedule"],
+    });
     expect(new Set(inventory.flatMap((entry) => entry.registered_norm_ids))).toEqual(
       new Set(PROFESSIONAL_NORM_PACK_REGISTRY_ITEMS.map((item) => item.normId)),
     );

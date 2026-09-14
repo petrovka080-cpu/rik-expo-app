@@ -895,7 +895,10 @@ function main(): void {
     ? currentManifestResourceCount - consumerRowsCount
     : null;
   const invalidProductionBindingDimensions = consumerInventory.flatMap((entry) =>
-    entry.invalid_registered_norm_bindings
+    [
+      ...entry.invalid_registered_norm_bindings,
+      ...entry.invalid_reachable_physical_norm_consumers,
+    ]
   );
   const planGroups = new Set((plan?.work_groups ?? []).map((entry) => entry.work_group));
   const packGroups = new Set(packResults.filter((result) => result.valid && result.work_group).map((result) => result.work_group as string));
@@ -1103,8 +1106,13 @@ function main(): void {
   const syntheticAfter = previousSummary.synthetic_family_default_count ?? 599000;
   const templatesOnlySyntheticAfter = previousSummary.templates_with_only_synthetic_norms ?? 10000;
   const expectedConsumerRowsCount = previousSummary.norm_records_count ?? 599000;
+  const workGroupsWithoutReachableConsumers = [...taxonomyGroups].filter((group) => {
+    const consumers = consumerInventoryByGroup.get(group);
+    return (consumers?.rows_count ?? 0) === 0 &&
+      (consumers?.reachable_physical_norm_bindings_count ?? 0) === 0;
+  });
   const consumerInventoryComplete =
-    [...taxonomyGroups].every((group) => (consumerInventoryByGroup.get(group)?.rows_count ?? 0) > 0) &&
+    workGroupsWithoutReachableConsumers.length === 0 &&
     consumerRowsCount === expectedConsumerRowsCount &&
     invalidProductionBindingDimensions.length === 0;
   const allSourceRegistryGroupsPresent =
@@ -1191,6 +1199,11 @@ function main(): void {
     norm_records_count: previousSummary.norm_records_count ?? 599000,
     production_norm_consumer_rows_count: consumerRowsCount,
     production_norm_consumer_work_groups_count: consumerInventory.length,
+    production_reachable_physical_norm_bindings_count: consumerInventory.reduce(
+      (sum, entry) => sum + entry.reachable_physical_norm_bindings_count,
+      0,
+    ),
+    production_norm_work_groups_without_reachable_consumers: workGroupsWithoutReachableConsumers,
     production_norm_consumer_inventory_complete: consumerInventoryComplete,
     production_norm_registry_dimensional_binding_valid: invalidProductionBindingDimensions.length === 0,
     production_norm_registry_dimensional_binding_failures: invalidProductionBindingDimensions,
@@ -1453,7 +1466,7 @@ function main(): void {
         : "",
       !allPacksReviewed ? "professional_norm_pack_files_need_review" : "",
       !consumerInventoryComplete
-        ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}`
+        ? `production_norm_consumer_inventory_incomplete:${consumerRowsCount}/${expectedConsumerRowsCount}:missing_groups=${workGroupsWithoutReachableConsumers.join(",")}`
         : "",
       !apartmentReferenceProfessional ? "apartment_reference_not_professional_expanded_boq" : "",
       !apartmentReferenceUsesRealNormPacks ? "apartment_reference_boq_shape_good_but_norm_sources_not_real_packs" : "",

@@ -17,27 +17,7 @@ import {
   ELECTRICAL_PROFESSIONAL_BOQ_NORM_METADATA,
   buildElectricalProfessionalBoqV1Rows,
 } from "../../estimate/v4/electrical/electricalProfessionalBoqV1";
-import { applySarnafilAt18PhysicalNormToRoofBoqV1 } from "../../estimate/ownedDomain/roofingSarnafilAt18ProductionBindingV1";
-import { applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1 } from "../../estimate/ownedDomain/insulationRockwoolComfortboard80ProductionBindingV1";
-import { applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1 } from "../../estimate/ownedDomain/fireSafetySiemensFdb221ProductionBindingV1";
-import { applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1 } from "../../estimate/ownedDomain/lowVoltageLegrand049272ProductionBindingV1";
-import { applyJotunHardtopXpPhysicalNormToMetalworkBoqV1 } from "../../estimate/ownedDomain/metalworkJotunHardtopXpProductionBindingV1";
-import { applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1 } from "../../estimate/ownedDomain/carpentrySikagardWoodPreserverProductionBindingV1";
-import { applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1 } from "../../estimate/ownedDomain/sewerageWavinOsmaC3766BkProductionBindingV1";
-import { applyRockwoolFixrockPhysicalNormToFacadeBoqV1 } from "../../estimate/ownedDomain/facadeRockwoolFixrockProductionBindingV1";
-import { applyKgAuthorSupervisionPhysicalNormToServicesBoqV1 } from "../../estimate/ownedDomain/servicesKgAuthorSupervisionProductionBindingV1";
-import { applyRicsNrm2PhysicalNormToFormworkBoqV1 } from "../../estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
-import { applyReinforcementBarSchedulePhysicalNormToBoqV1 } from "../../estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
-import { applyFordTransitDeliveryPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/deliveryFordTransitProductionBindingV1";
-import { applyTennantT350PhysicalNormToCleaningBoqV1 } from "../../estimate/ownedDomain/cleaningTennantT350ProductionBindingV1";
-import { applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/equipmentRentUnitedRentalsProductionBindingV1";
-import { applyRainBirdXfdPhysicalNormToLandscapingBoqV1 } from "../../estimate/ownedDomain/landscapingRainBirdXfdProductionBindingV1";
-import { applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1 } from "../../estimate/ownedDomain/windowsDoorsSoudafoamProductionBindingV1";
-import { applyFhwaFp24PhysicalNormToEarthworksBoqV1 } from "../../estimate/ownedDomain/earthworksFhwaFp24ProductionBindingV1";
-import { applyEpaCdWastePhysicalNormToBoqV1 } from "../../estimate/ownedDomain/wasteRemovalEpaProductionBindingV1";
-import { applyBiaTn10MasonryPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
-import { applyKrer46DemolitionPhysicalNormToBoqV1 } from "../../estimate/ownedDomain/demolitionKrer46ProductionBindingV1";
-import { applyKgDesignPricePhysicalNormToBoqV1 } from "../../estimate/ownedDomain/documentationKgDesignPriceProductionBindingV1";
+import { applyOwnedDomainPhysicalNormConsumersV1 } from "../../estimate/ownedDomain/applyOwnedDomainPhysicalNormConsumersV1";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -1727,67 +1707,7 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                                 object === "foundation_system" ? buildFoundationSystemRows(plan) :
                                   object === "fence_system" ? buildFenceSystemRows(plan) :
                                 buildFallbackRows(plan);
-  const normBoundRows = applyKgDesignPricePhysicalNormToBoqV1(
-    plan,
-    applyKrer46DemolitionPhysicalNormToBoqV1(
-      plan,
-    applyBiaTn10MasonryPhysicalNormToBoqV1(
-      plan,
-    applyEpaCdWastePhysicalNormToBoqV1(
-    plan,
-    applyFhwaFp24PhysicalNormToEarthworksBoqV1(
-      plan,
-    applySoudafoamGeniusPhysicalNormToWindowsDoorsBoqV1(
-      plan,
-    applyRainBirdXfdPhysicalNormToLandscapingBoqV1(
-      plan,
-    applyUnitedRentalsCaOneShiftPhysicalNormToBoqV1(
-      plan,
-    applyTennantT350PhysicalNormToCleaningBoqV1(
-      plan,
-      applyFordTransitDeliveryPhysicalNormToBoqV1(
-      plan,
-      applyReinforcementBarSchedulePhysicalNormToBoqV1(
-        plan,
-        applyRicsNrm2PhysicalNormToFormworkBoqV1(
-          plan,
-          applyKgAuthorSupervisionPhysicalNormToServicesBoqV1(
-            plan,
-            applyRockwoolFixrockPhysicalNormToFacadeBoqV1(
-              plan,
-              applyWavinOsmaC3766BkPhysicalNormToSewerageBoqV1(
-                plan,
-                applySikagardWoodPreserverPhysicalNormToCarpentryBoqV1(
-                  plan,
-                  applyJotunHardtopXpPhysicalNormToMetalworkBoqV1(
-                    plan,
-                    applyLegrand049272BusScsPhysicalNormToLowVoltageBoqV1(
-                      plan,
-                      applySiemensSintesoFdb221PhysicalNormToFireSafetyBoqV1(
-                        plan,
-                        applyRockwoolComfortboard80PhysicalNormToInsulationBoqV1(
-                          plan,
-                          applySarnafilAt18PhysicalNormToRoofBoqV1(plan, baseRows),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      ),
-    ),
-    ),
-    ),
-    ),
-    ),
-    ),
-    ),
-    ),
-  );
+  const normBoundRows = applyOwnedDomainPhysicalNormConsumersV1(plan, baseRows);
   const expandedRows = plan.workKey === "electrical_area_installation"
     ? normBoundRows
     : expandInfrastructureBoqRows(plan, normBoundRows);
