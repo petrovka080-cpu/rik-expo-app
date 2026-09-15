@@ -550,7 +550,10 @@ async function main(): Promise<void> {
               input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
               normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
               acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
-            values($1,$2,$3,$4,$5,$6,'{}'::jsonb,'{}'::jsonb,'{}'::jsonb,$7::jsonb,$8::jsonb,
+            values($1,$2,$3,$4,$5,$6,
+              '{"product_profile_id":"standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1"}'::jsonb,
+              '{"product_profile_id":"NORMATIVE"}'::jsonb,'{"product_profile_id":null}'::jsonb,
+              $7::jsonb,$8::jsonb,
               $9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14,clock_timestamp(),$15,$16)`, [
             baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}`,
             MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId, target.definition_version_id,
