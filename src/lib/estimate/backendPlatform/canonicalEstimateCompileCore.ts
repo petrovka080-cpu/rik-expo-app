@@ -230,6 +230,44 @@ function assertOnlyKeys(value: JsonRecord, allowed: readonly string[], field: st
   }
 }
 
+function resourceGraphForRevision(
+  resourceGraph: Record<string, unknown>,
+  parameters: Readonly<Record<string, unknown>>,
+  rowId: string,
+): Record<string, unknown> {
+  const rawPolicy = resourceGraph.professionalMaterialQuantityPolicyV1;
+  if (rawPolicy == null) return resourceGraph;
+  if (typeof rawPolicy !== "object" || Array.isArray(rawPolicy)) {
+    throw compilerError(`material quantity policy invalid ${rowId}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const policy = { ...(rawPolicy as JsonRecord) };
+  const resolveNumericParameter = (idField: string, valueField: string, allowZero: boolean): void => {
+    const rawId = policy[idField];
+    if (rawId == null) return;
+    const parameterId = typeof rawId === "string" ? rawId.trim() : "";
+    const value = parameterId ? Number(parameters[parameterId]) : Number.NaN;
+    if (!parameterId || !Number.isFinite(value) || (allowZero ? value < 0 : value <= 0)) {
+      throw compilerError(`material quantity policy parameter invalid ${rowId}:${idField}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    policy[valueField] = value;
+  };
+  resolveNumericParameter("wastePercentParameterId", "wastePercent", true);
+  resolveNumericParameter("lossPercentParameterId", "lossPercent", true);
+  resolveNumericParameter("procurementPackageSizeParameterId", "procurementPackageSize", false);
+  const rawFormulaInputIds = policy.formulaInputParameterIds;
+  if (rawFormulaInputIds != null) {
+    if (!Array.isArray(rawFormulaInputIds)
+      || rawFormulaInputIds.some((value) => typeof value !== "string" || !value.trim())) {
+      throw compilerError(`material quantity formula inputs invalid ${rowId}`, "DEFINITION_INTEGRITY_FAILED");
+    }
+    policy.formulaInputs = Object.fromEntries(rawFormulaInputIds.map((parameterId) => [
+      parameterId,
+      parameters[parameterId],
+    ]));
+  }
+  return { ...resourceGraph, professionalMaterialQuantityPolicyV1: policy };
+}
+
 function multiply(quantity: string, unitPrice: string | null): string | null {
   if (unitPrice == null) return null;
   return canonicalRoundDecimal(evaluateFormulaGraph({
@@ -429,6 +467,7 @@ export async function compileCanonicalEstimateCore(
     const inclusionResolvedByManualQuantity = manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
     if (inclusion.value === false) continue;
 
+    let appliedPhysicalNorm: ReturnType<typeof resolveCanonicalEstimatePhysicalNormApplicabilityV1> = null;
     if (resource.resource_graph?.professionalPhysicalNormBindingV1 != null
       && isCanonicalEstimatePhysicalNormBindingActiveV1({ parameters, resourceGraph: resource.resource_graph })) {
       const physicalNorm = resolveCanonicalEstimatePhysicalNormApplicabilityV1({
@@ -449,6 +488,7 @@ export async function compileCanonicalEstimateCore(
           "PHYSICAL_NORM_APPLICABILITY_FAILED",
         );
       }
+      appliedPhysicalNorm = physicalNorm;
     }
 
     const titleSpecification = canonicalTitleSpecification(resource, definitionParameterIds);
@@ -525,6 +565,52 @@ export async function compileCanonicalEstimateCore(
     const quantity = override?.quantity == null
       ? calculatedQuantity
       : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
+    const physicalBinding = resource.resource_graph?.professionalPhysicalNormBindingV1;
+    let physicalNormQuantityParity: JsonRecord | null = null;
+    if (physicalBinding != null && typeof physicalBinding === "object" && !Array.isArray(physicalBinding)) {
+      const rawOutputParameterId = (physicalBinding as JsonRecord).quantity_output_parameter_id;
+      if (rawOutputParameterId != null) {
+        const outputParameterId = typeof rawOutputParameterId === "string" ? rawOutputParameterId.trim() : "";
+        const output = outputParameterId && appliedPhysicalNorm?.status === "APPLIED"
+          ? appliedPhysicalNorm.parameter_values[outputParameterId]?.value
+          : null;
+        const expected = typeof output === "number" || typeof output === "string" ? Number(output) : Number.NaN;
+        const rawOutputFormulaId = (physicalBinding as JsonRecord).quantity_output_formula_id;
+        const outputFormulaId = rawOutputFormulaId == null
+          ? null
+          : typeof rawOutputFormulaId === "string" ? rawOutputFormulaId.trim() : "";
+        const outputFormula = outputFormulaId ? formulas.get(outputFormulaId) : null;
+        if (rawOutputFormulaId != null && (!outputFormulaId || !outputFormula)) {
+          throw compilerError(
+            `physical norm quantity formula invalid ${resource.row_id}`,
+            "DEFINITION_INTEGRITY_FAILED",
+          );
+        }
+        const actualText = outputFormula == null
+          ? quantity
+          : evaluateFormulaGraph(outputFormula.ast, formulaParameters);
+        const actual = Number(actualText);
+        const tolerance = Math.max(1, Math.abs(expected), Math.abs(actual)) * 1e-9;
+        if (!outputParameterId || !Number.isFinite(expected)) {
+          throw compilerError(
+            `physical norm quantity output invalid ${resource.row_id}`,
+            "DEFINITION_INTEGRITY_FAILED",
+          );
+        }
+        if (!Number.isFinite(actual) || Math.abs(actual - expected) > tolerance) {
+          throw compilerError(
+            `physical norm quantity mismatch ${resource.row_id}: formula=${actualText}; norm=${output}`,
+            "PHYSICAL_NORM_QUANTITY_MISMATCH",
+          );
+        }
+        physicalNormQuantityParity = {
+          outputParameterId,
+          outputFormulaId,
+          formulaQuantity: actualText,
+          normQuantity: String(output),
+        };
+      }
+    }
     const snapshotUnitPrice = price ? String(price.unit_price) : null;
     const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
       ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
@@ -545,7 +631,8 @@ export async function compileCanonicalEstimateCore(
       formulaId: resource.formula_id,
       formulaAstSha256: formula.ast_sha256,
       inputParameterIds: formula.input_parameter_ids,
-      resourceGraph: resource.resource_graph,
+      resourceGraph: resourceGraphForRevision(resource.resource_graph, parameters, resource.row_id),
+      ...(physicalNormQuantityParity == null ? {} : { physicalNormQuantityParity }),
       ...(provenance == null ? {} : { manualAmendment: provenance }),
     };
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)

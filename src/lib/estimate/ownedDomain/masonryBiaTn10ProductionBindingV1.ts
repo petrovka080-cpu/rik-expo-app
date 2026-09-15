@@ -28,6 +28,11 @@ function num(text: string, label: RegExp, unit = "") {
   const value = text.match(new RegExp(`${label.source}\\s*[:=]\\s*(\\d+(?:[.,]\\d+)?)\\s*${unit}`, "iu"))?.[1];
   return value ? decimal(value) : null;
 }
+function structuredNumericFields(value: unknown): Readonly<Record<string, number>> {
+  if (typeof value !== "string") return {};
+  return Object.fromEntries([...value.matchAll(/([A-Z0-9_]+)\s*=\s*(\d+(?:[.,]\d+)?)/gu)]
+    .map((match) => [match[1]!, Number(match[2]!.replace(",", "."))]));
+}
 export function extractBiaTn10MasonryCanonicalParametersV1(text: string): Readonly<Record<string, Primitive>> | null {
   if (!/(?=.*(?:brick|кирпич))(?=.*bia)(?=.*tn\s*10)(?=.*table\s*4)/iu.test(text)) return null;
   const result: Record<string, Primitive> = { product_profile_id: BIA_TN10_MASONRY_PRODUCT_PROFILE_ID };
@@ -52,6 +57,15 @@ export function extractBiaTn10MasonryCanonicalParametersV1(text: string): Readon
   for (const [id, label] of refs) { const value = ref(text, label); if (value) result[id] = value; }
   const clay = ref(text, /fired\s+clay\s+brick\s+confirmed/iu);
   if (clay) result.fired_clay_brick_confirmed = /^true$/iu.test(clay);
+  const corrections = structuredNumericFields(result.applicable_bond_correction_factors);
+  const waste = structuredNumericFields(result.selected_project_breakage_and_waste_allowances);
+  const packages = structuredNumericFields(result.supplier_package_quantities);
+  if (corrections.BRICK_FACTOR !== undefined) result.brick_bond_correction_factor = corrections.BRICK_FACTOR;
+  if (corrections.MORTAR_FACTOR !== undefined) result.mortar_bond_correction_factor = corrections.MORTAR_FACTOR;
+  if (waste.BRICK_PERCENT !== undefined) result.brick_breakage_percent = waste.BRICK_PERCENT;
+  if (waste.MORTAR_PERCENT !== undefined) result.mortar_waste_percent = waste.MORTAR_PERCENT;
+  if (packages.BRICK_PIECES !== undefined) result.brick_supplier_package_pieces = packages.BRICK_PIECES;
+  if (packages.MORTAR_M3 !== undefined) result.mortar_supplier_package_m3 = packages.MORTAR_M3;
   return Object.freeze(result);
 }
 export function biaTn10MasonryMissingQuestionsRuV1(parameters: Readonly<Record<string, Primitive>> | null | undefined): string[] {

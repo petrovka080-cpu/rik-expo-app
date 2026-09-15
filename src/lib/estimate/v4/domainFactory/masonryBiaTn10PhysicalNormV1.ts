@@ -113,6 +113,20 @@ export function resolveBiaTn10MasonryPhysicalNormV1(input: { technology_class: s
   const waste = fields(text(values.selected_project_breakage_and_waste_allowances));
   const packages = fields(text(values.supplier_package_quantities));
   const gross = geometry.GROSS_M2, openings = geometry.OPENINGS_M2, statedNet = geometry.NET_M2;
+  const componentPairs = [
+    ["brick_bond_correction_factor", corrections.BRICK_FACTOR],
+    ["mortar_bond_correction_factor", corrections.MORTAR_FACTOR],
+    ["brick_breakage_percent", waste.BRICK_PERCENT],
+    ["mortar_waste_percent", waste.MORTAR_PERCENT],
+    ["brick_supplier_package_pieces", packages.BRICK_PIECES],
+    ["mortar_supplier_package_m3", packages.MORTAR_M3],
+  ] as const;
+  const componentConflicts = componentPairs.flatMap(([id, expected]) => {
+    const actual = number(explicit(input.parameter_values, id));
+    return actual !== null && expected !== undefined && Math.abs(actual - expected) > 1e-9
+      ? [`PHYSICAL_NORM_COMPONENT_CONFLICT:${id}=${actual}:selected_value=${expected}`]
+      : [];
+  });
   const blockers = [
     area !== null && area > 0 ? "" : "PROJECT_VALUE_INVALID:measured_net_brick_wall_area_m2",
     gross !== undefined && openings !== undefined && statedNet !== undefined && gross > 0 && openings >= 0 &&
@@ -134,6 +148,7 @@ export function resolveBiaTn10MasonryPhysicalNormV1(input: { technology_class: s
     packages.BRICK_PIECES !== undefined && packages.BRICK_PIECES > 0 && packages.MORTAR_M3 !== undefined && packages.MORTAR_M3 > 0
       ? "" : "PROJECT_VALUE_INVALID:supplier_package_quantities",
     meaningful(text(values.project_architect_engineer_or_estimator_approval_reference)) ? "" : "PROJECT_VALUE_INVALID:project_architect_engineer_or_estimator_approval_reference",
+    ...componentConflicts,
   ].filter(Boolean);
   if (blockers.length) return nonApplied("BLOCKED_NOT_APPLICABLE", profile, input.parameter_values, blockers, BIA_TN10_MASONRY_REQUIRED_IDS);
 
