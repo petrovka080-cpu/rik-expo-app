@@ -28,7 +28,7 @@ const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = IS_BIA_TN10_MASONRY
+const RELEASE_ID = argValue("--release-id") ?? (IS_BIA_TN10_MASONRY
   ? "c7dc256f-52fb-55ba-9aad-e9f6b961303a"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
@@ -40,8 +40,8 @@ const RELEASE_ID = IS_BIA_TN10_MASONRY
           ? "cdda031e-ac2e-55c2-b2d9-7c3ea8185d74"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
-          : "01f008d7-e290-5237-bf6b-c71c829c04d2";
-const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
+          : "01f008d7-e290-5237-bf6b-c71c829c04d2");
+const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_BIA_TN10_MASONRY
   ? "8521574b-e7e1-583c-a2c6-4117147c4c62"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
@@ -53,8 +53,8 @@ const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
           ? "3deb0263-cf34-54ec-8953-a71be36ebd76"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "16217704-4a47-5138-a19b-dae1e8301e82"
-          : "db513288-1307-5cd8-9bbe-e625f2841074";
-const DEFINITION_ID = IS_BIA_TN10_MASONRY
+          : "db513288-1307-5cd8-9bbe-e625f2841074");
+const DEFINITION_ID = argValue("--definition-id") ?? (IS_BIA_TN10_MASONRY
   ? "31c1b89d-db88-5072-ad41-16ce6eefa421"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
@@ -66,8 +66,8 @@ const DEFINITION_ID = IS_BIA_TN10_MASONRY
           ? "868f131c-fac8-5262-bd30-ad3aa300d27e"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "1bc4c42c-dd69-5534-af66-7f9e2e300830"
-          : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd";
-const CATALOG_ID = IS_BIA_TN10_MASONRY
+          : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd");
+const CATALOG_ID = argValue("--catalog-id") ?? (IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "canonical-work:expanded:strip_foundation"
@@ -79,7 +79,7 @@ const CATALOG_ID = IS_BIA_TN10_MASONRY
           ? "canonical-work:base:concrete_foundation_interior_slab_foundation_form_wet_zone"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
-          : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
+          : "canonical-work:base:concrete_foundation_interior_formwork_form_standard");
 const ROW_ID = IS_BIA_TN10_MASONRY
   ? "material:bia-tn10:fired-clay-brick"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -117,7 +117,7 @@ const EXPECTED_VISIBLE_TITLE = IS_BIA_TN10_MASONRY
     ? "Бетонная смесь B25"
     : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
-const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
+const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root")!) : resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
   IS_BIA_TN10_MASONRY
     ? "web-bia-tn10-masonry"
     : IS_NRMCA_STRIP_FOUNDATION
@@ -132,7 +132,7 @@ const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-succes
               ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
             : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = IS_RICS_NRM2_PILE_CAP_WET_ZONE
+const SEARCH_QUERY = argValue("--search-query") ?? (IS_RICS_NRM2_PILE_CAP_WET_ZONE
   ? "устройство опалубки свайного ростверка во влажной зоне"
   : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
   ? "устройство опалубки плитного фундамента во влажной зоне"
@@ -144,7 +144,7 @@ const SEARCH_QUERY = IS_RICS_NRM2_PILE_CAP_WET_ZONE
   ? "Кладка стены из обожжённого глиняного кирпича"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Устройство монолитного железобетонного ленточного фундамента"
-    : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+    : "Монтаж и демонтаж опалубки по измеренной площади контакта");
 const FORMWORK_DETAILS = [
   "RICS NRM 2.",
   "Измеренная площадь контакта: 100 м2;",

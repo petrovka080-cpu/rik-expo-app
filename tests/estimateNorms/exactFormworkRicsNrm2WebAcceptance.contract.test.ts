@@ -16,6 +16,12 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-strip-foundation-wet-zone"');
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-slab-foundation-wet-zone"');
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-pile-cap-wet-zone"');
+    expect(source).toContain('argValue("--release-id")');
+    expect(source).toContain('argValue("--search-release-id")');
+    expect(source).toContain('argValue("--definition-id")');
+    expect(source).toContain('argValue("--catalog-id")');
+    expect(source).toContain('argValue("--search-query")');
+    expect(source).toContain('argValue("--output-root")');
     expect(source).toContain('"c7dc256f-52fb-55ba-9aad-e9f6b961303a"');
     expect(source).toContain('"8521574b-e7e1-583c-a2c6-4117147c4c62"');
     expect(source).toContain('"d4f46211-551f-5d3b-a98d-9c359c9f2443"');
