@@ -8,7 +8,7 @@ describe("exact formwork RICS NRM2 Web acceptance harness", () => {
   );
 
   test("uses the prepared successor and canonical revision/artifact APIs", () => {
-    expect(source).toContain('const RELEASE_ID = "27ea4b3d-fabb-5adc-897a-ac2163cc8ecc"');
+    expect(source).toContain('const RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
     expect(source).toContain("request-estimate-parameters-toggle");
@@ -21,7 +21,9 @@ describe("exact formwork RICS NRM2 Web acceptance harness", () => {
     expect(source).toContain("EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
     expect(source).toContain("input.fill(SEARCH_QUERY)");
     expect(source).toContain("SELECTED_DETAILS.join");
-    expect(source).toContain("CANONICAL_API_AFTER_WEB_SELECTION");
+    expect(source).toContain("WEB_PREPARE_BUTTON");
+    expect(source).toContain("prepareButton.click()");
+    expect(source).not.toContain("CANONICAL_API_AFTER_WEB_SELECTION");
   });
 
   test("cannot activate, deploy, release, or perform OTA", () => {

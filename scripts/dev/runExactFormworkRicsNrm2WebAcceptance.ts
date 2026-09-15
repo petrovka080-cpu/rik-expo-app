@@ -11,9 +11,9 @@ const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = "27ea4b3d-fabb-5adc-897a-ac2163cc8ecc";
-const SEARCH_RELEASE_ID = "69136c36-c4d7-52f2-9d83-fe2a8583f05b";
-const DEFINITION_ID = "e0d8a9a6-6f6e-5d62-80cf-ca33e8cb007a";
+const RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379";
+const SEARCH_RELEASE_ID = "320b582e-5a6d-5354-b3bf-f801e4490303";
+const DEFINITION_ID = "26c2fee8-1652-50f9-b271-6a2325c84e3c";
 const CATALOG_ID = "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
 const ROW_ID = "formwork:rics-nrm2:measured-contact-area:work";
 const SOURCE_ID = "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
@@ -35,6 +35,7 @@ const SELECTED_DETAILS = [
   "правило проёмов и пустот: PROJECT_RULE:no openings in measured scope;",
   "тип опалубки: REMOVABLE;",
   "правило измерения проекта: RICS_NRM2_WS11_CONFIRMED:FW-149-REV-A;",
+  "сценарий приёмки: WEB-PREPARE-SAME-RELEASE-V1;",
   "согласование сметчика: EST-FW-149.",
 ];
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(" ");
@@ -391,18 +392,43 @@ async function main(): Promise<void> {
       enabled: await prepareButton.isEnabled().catch(() => false),
       label: await prepareButton.innerText().catch(() => ""),
     };
-    const compileBody = await apiPost(authorization, "jobs/compile", {
-      idempotencyKey: `exact-formwork-ui-selected-${Date.now()}`,
-      catalogId: CATALOG_ID,
-      sourceRequestText: PROMPT,
-      primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-      parameters: FIXTURE,
-      currencyCode: "KGS",
-    });
+    invariant(prepareState.visible && prepareState.enabled, "WEB_PREPARE_BUTTON_NOT_READY");
+    const compilePromise = page.waitForResponse((response) => response.url().endsWith("/jobs/compile")
+      && response.request().method() === "POST", { timeout: 30_000 });
+    await prepareButton.click();
+    let compileResponse: Response;
+    try {
+      compileResponse = await compilePromise;
+    } catch (error) {
+      const diagnostic = {
+        capturedAt: new Date().toISOString(),
+        error: error instanceof Error ? error.message : String(error),
+        url: page.url(),
+        inputValue: await input.inputValue().catch(() => ""),
+        prepareStateAfterClick: {
+          visible: await prepareButton.isVisible().catch(() => false),
+          enabled: await prepareButton.isEnabled().catch(() => false),
+          label: await prepareButton.innerText().catch(() => ""),
+        },
+        statusMessages: await page.locator('[data-testid*="status"], [role="alert"]')
+          .allInnerTexts().catch(() => []),
+        bodyText: (await page.locator("body").innerText().catch(() => "")).slice(0, 20_000),
+        backendRequests,
+        consoleErrors,
+        pageErrors,
+        requestFailures,
+      };
+      const diagnosticPath = resolve(OUTPUT_ROOT, "prepare-button-diagnostic.json");
+      atomicJson(diagnosticPath, diagnostic);
+      await page.screenshot({ path: resolve(OUTPUT_ROOT, "prepare-button-diagnostic.png"), fullPage: true });
+      throw new Error(`EXACT_FORMWORK_WEB:WEB_PREPARE_NO_COMPILE_POST:${diagnosticPath}`);
+    }
+    const compileBody = await json(compileResponse);
+    invariant(compileResponse.status() === 202,
+      `WEB_COMPILE_HTTP_${compileResponse.status()}:${String(compileBody.error?.code ?? "")}`);
     compileIngress = {
-      kind: "CANONICAL_API_AFTER_WEB_SELECTION",
+      kind: "WEB_PREPARE_BUTTON",
       prepareState,
-      priorWebPrepareObservation: "VISIBLE_ENABLED_BUT_NO_POST_WITHIN_60_SECONDS",
     };
     progress("COMPILE_ACCEPTED");
     initialRevision = await waitForSuccessfulRevision(authorization, compileBody);
