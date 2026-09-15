@@ -15,6 +15,7 @@ const argValue = (name: string): string | null => {
 const PROFILE_ID = argValue("--profile") ?? "formwork-rics-nrm2";
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
 const IS_BIA_TN10_MASONRY = PROFILE_ID === "bia-tn10-masonry";
+const IS_RICS_NRM2_WET_ZONE = PROFILE_ID === "formwork-rics-nrm2-wet-zone";
 
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
@@ -24,22 +25,30 @@ const RELEASE_ID = IS_BIA_TN10_MASONRY
   ? "c7dc256f-52fb-55ba-9aad-e9f6b961303a"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
-    : "8791b75f-683f-5e72-a56a-54abc2f82379";
+    : IS_RICS_NRM2_WET_ZONE
+      ? "eba96ed6-9f4d-51c3-87a7-d6ff08b11982"
+      : "8791b75f-683f-5e72-a56a-54abc2f82379";
 const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
   ? "8521574b-e7e1-583c-a2c6-4117147c4c62"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
-    : "320b582e-5a6d-5354-b3bf-f801e4490303";
+    : IS_RICS_NRM2_WET_ZONE
+      ? "26079b08-6bfe-55fc-a436-baadd734f024"
+      : "320b582e-5a6d-5354-b3bf-f801e4490303";
 const DEFINITION_ID = IS_BIA_TN10_MASONRY
   ? "31c1b89d-db88-5072-ad41-16ce6eefa421"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
-    : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
+    : IS_RICS_NRM2_WET_ZONE
+      ? "66a104fa-ffe3-5af9-84af-77dac46765dd"
+      : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
 const CATALOG_ID = IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "canonical-work:expanded:strip_foundation"
-    : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
+    : IS_RICS_NRM2_WET_ZONE
+      ? "canonical-work:base:concrete_foundation_interior_formwork_form_wet_zone"
+      : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
 const ROW_ID = IS_BIA_TN10_MASONRY
   ? "material:bia-tn10:fired-clay-brick"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -78,9 +87,13 @@ const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-succes
     ? "web-bia-tn10-masonry"
     : IS_NRMCA_STRIP_FOUNDATION
       ? "web-strip-foundation-nrmca-cip31"
-      : "web-formwork-rics-nrm2");
+      : IS_RICS_NRM2_WET_ZONE
+        ? "web-formwork-rics-nrm2-wet-zone"
+        : "web-formwork-rics-nrm2");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = IS_BIA_TN10_MASONRY
+const SEARCH_QUERY = IS_RICS_NRM2_WET_ZONE
+  ? "устройство опалубки во влажной зоне"
+  : IS_BIA_TN10_MASONRY
   ? "Кладка стены из обожжённого глиняного кирпича"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Устройство монолитного железобетонного ленточного фундамента"
@@ -918,13 +931,17 @@ async function main(): Promise<void> {
       ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-complete-estimate.web-acceptance.v1"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
-        : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
+        : IS_RICS_NRM2_WET_ZONE
+          ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-wet-zone.web-acceptance.v1"
+          : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
     capturedAt: new Date().toISOString(),
     status: IS_BIA_TN10_MASONRY
       ? "GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
-        : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
+        : IS_RICS_NRM2_WET_ZONE
+          ? "GREEN_EXACT_FORMWORK_RICS_NRM2_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+          : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
       searchReleaseId: SEARCH_RELEASE_ID,

@@ -12,8 +12,11 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('"320b582e-5a6d-5354-b3bf-f801e4490303"');
     expect(source).toContain('PROFILE_ID === "strip-foundation-nrmca-cip31"');
     expect(source).toContain('PROFILE_ID === "bia-tn10-masonry"');
+    expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-wet-zone"');
     expect(source).toContain('"c7dc256f-52fb-55ba-9aad-e9f6b961303a"');
     expect(source).toContain('"8521574b-e7e1-583c-a2c6-4117147c4c62"');
+    expect(source).toContain('"eba96ed6-9f4d-51c3-87a7-d6ff08b11982"');
+    expect(source).toContain('"26079b08-6bfe-55fc-a436-baadd734f024"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
     expect(source).toContain("request-estimate-parameters-toggle");
@@ -37,6 +40,7 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain("MASONRY_MORTAR_PROCUREMENT_SPLIT_RED");
     expect(source).toContain("GROSS_M2=110,OPENINGS_M2=10,NET_M2=100");
     expect(source).toContain("GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
+    expect(source).toContain("GREEN_EXACT_FORMWORK_RICS_NRM2_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
     expect(source).not.toContain("CANONICAL_API_AFTER_WEB_SELECTION");
   });
 
