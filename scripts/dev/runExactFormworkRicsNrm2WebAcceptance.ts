@@ -43,6 +43,9 @@ const NORM_ID = IS_NRMCA_STRIP_FOUNDATION
 const EXPECTED_TITLE = IS_NRMCA_STRIP_FOUNDATION
   ? "Бетонная смесь"
   : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+const EXPECTED_VISIBLE_TITLE = IS_NRMCA_STRIP_FOUNDATION
+  ? "Бетонная смесь B25"
+  : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
   IS_NRMCA_STRIP_FOUNDATION ? "web-strip-foundation-nrmca-cip31" : "web-formwork-rics-nrm2");
@@ -411,7 +414,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
   try {
     await openRevision(page, revision.revisionId);
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
-      .filter({ hasText: EXPECTED_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
+      .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
     const body = await page.locator("body").innerText();
     const expectedQuantityText = String(SENSITIVITY_TARGET_QUANTITY);
     invariant(body.includes(expectedQuantityText)
@@ -559,7 +562,7 @@ async function main(): Promise<void> {
       primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY });
     await openRevision(page, fullRevision.revisionId);
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
-      .filter({ hasText: EXPECTED_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
+      .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
     const originalScreenshot = resolve(OUTPUT_ROOT, `01_full_${ORIGINAL_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: originalScreenshot, fullPage: true });
 
