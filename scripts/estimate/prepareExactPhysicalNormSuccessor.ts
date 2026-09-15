@@ -375,6 +375,21 @@ const SLAB_FOUNDATION_FORMWORK_SCENARIO = Object.freeze({
   estimator_approval_reference: "EST-SLAB-FW-01",
 });
 
+const PILE_CAP_FORMWORK_SCENARIO = Object.freeze({
+  product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+  measured_formwork_contact_area_m2: 100,
+  project_drawing_reference: "PC-FW-01-REV-A",
+  element_type: "PILE_CAP",
+  element_dimensions_and_face_count: "PROJECT_MEASURED_CONTACT_AREA:100 m2; all formed pile-cap faces per drawing",
+  plain_or_special_finish: "PLAIN",
+  vertical_battered_horizontal_or_curved_class: "VERTICAL",
+  single_or_double_sided_scope: "DOUBLE_SIDED",
+  openings_voids_and_deduction_rule: "PROJECT_RULE:no openings in measured scope",
+  permanent_or_removable_formwork: "REMOVABLE",
+  project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:PC-FW-01-REV-A",
+  estimator_approval_reference: "EST-PC-FW-01",
+});
+
 type FormworkProfileTarget = Readonly<{
   profileId: string;
   targetCatalogId: string;
@@ -468,6 +483,37 @@ const SLAB_FOUNDATION_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[]
     scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
 ]);
 
+const PILE_CAP_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze([
+  { profileId: "formwork-rics-nrm2-pile-cap-standard",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_standard",
+    scopeTitleRu: "устройство опалубки свайного ростверка в стандартной зоне",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-high-load",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_high_load",
+    scopeTitleRu: "устройство опалубки свайного ростверка для высокой нагрузки",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-large-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_large_area",
+    scopeTitleRu: "устройство опалубки свайного ростверка на большой площади",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-repair",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_repair",
+    scopeTitleRu: "устройство опалубки свайного ростверка при локальном ремонте основания",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-small-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_small_area",
+    scopeTitleRu: "устройство опалубки свайного ростверка на малой площади",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-technical-room",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_technical_room",
+    scopeTitleRu: "устройство опалубки свайного ростверка в техническом помещении",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-pile-cap-wet-zone",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone",
+    scopeTitleRu: "устройство опалубки свайного ростверка во влажной зоне",
+    scenarioParameters: PILE_CAP_FORMWORK_SCENARIO },
+]);
+
 function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
   const scenarioParameters = target.scenarioParameters ?? FORMWORK_SCENARIO;
   return {
@@ -536,6 +582,7 @@ const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.free
     ...FORMWORK_PROFILE_TARGETS,
     ...STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS,
     ...SLAB_FOUNDATION_FORMWORK_PROFILE_TARGETS,
+    ...PILE_CAP_FORMWORK_PROFILE_TARGETS,
   ]
     .map((target) => [target.profileId, formworkProfile(target)]),
 ));
