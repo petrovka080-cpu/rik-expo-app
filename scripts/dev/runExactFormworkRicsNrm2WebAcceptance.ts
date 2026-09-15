@@ -22,6 +22,7 @@ const IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE =
   PROFILE_ID === "formwork-rics-nrm2-slab-foundation-wet-zone";
 const IS_RICS_NRM2_PILE_CAP_WET_ZONE =
   PROFILE_ID === "formwork-rics-nrm2-pile-cap-wet-zone";
+const IS_RICS_NRM2_FORMWORK = PROFILE_ID.startsWith("formwork-rics-nrm2");
 
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
@@ -32,40 +33,40 @@ const RELEASE_ID = IS_BIA_TN10_MASONRY
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
     : IS_RICS_NRM2_WET_ZONE
-      ? "eba96ed6-9f4d-51c3-87a7-d6ff08b11982"
+      ? "d4f46211-551f-5d3b-a98d-9c359c9f2443"
       : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
-        ? "f182cf15-ea99-5566-a366-bb3f6d6edfe1"
+        ? "a15d0987-4289-5ba6-8780-d7c1b0e7d639"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
-          ? "54f8e4d8-7006-5ae1-a791-685c12df9928"
+          ? "cdda031e-ac2e-55c2-b2d9-7c3ea8185d74"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-            ? "b3c7c80c-1d68-506b-af72-147790ed0e6f"
-          : "8791b75f-683f-5e72-a56a-54abc2f82379";
+            ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
+          : "01f008d7-e290-5237-bf6b-c71c829c04d2";
 const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
   ? "8521574b-e7e1-583c-a2c6-4117147c4c62"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
     : IS_RICS_NRM2_WET_ZONE
-      ? "26079b08-6bfe-55fc-a436-baadd734f024"
+      ? "1251ce4e-d68b-506e-9021-2ec392d3a3c6"
       : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
-        ? "7e36ae4c-7349-521c-8963-8113fdc09611"
+        ? "f99c72c6-9098-560a-a96e-4de76e066ece"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
-          ? "15588d33-82f1-55ee-892d-00cf645cf453"
+          ? "3deb0263-cf34-54ec-8953-a71be36ebd76"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-            ? "4a78d386-12b3-590e-859f-b207e931c387"
-          : "320b582e-5a6d-5354-b3bf-f801e4490303";
+            ? "16217704-4a47-5138-a19b-dae1e8301e82"
+          : "db513288-1307-5cd8-9bbe-e625f2841074";
 const DEFINITION_ID = IS_BIA_TN10_MASONRY
   ? "31c1b89d-db88-5072-ad41-16ce6eefa421"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
     : IS_RICS_NRM2_WET_ZONE
-      ? "66a104fa-ffe3-5af9-84af-77dac46765dd"
+      ? "ef2c2f51-b116-537f-8c20-60f891e5c932"
       : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
-        ? "b73e42e4-221d-5f16-b31e-59a991af374b"
+        ? "515f8c9d-adf2-5f18-b27f-64f098320a00"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
-          ? "0d1951a9-d514-5ed3-85c5-b234add759cf"
+          ? "868f131c-fac8-5262-bd30-ad3aa300d27e"
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-            ? "6952e395-c72e-5955-a48c-2bfb324fc6d4"
-          : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
+            ? "1bc4c42c-dd69-5534-af66-7f9e2e300830"
+          : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd";
 const CATALOG_ID = IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -101,11 +102,15 @@ const REINFORCEMENT_NORM_ID =
   "reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
 const REINFORCEMENT_PRODUCT_PROFILE_ID =
   "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1";
+const FORMWORK_FULL_SCOPE_GAP_ROW_ID = "formwork:scope:full-composition:preliminary";
+const FORMWORK_FULL_SCOPE_PARAMETER_ID = "full_formwork_scope_source_set_id";
+const FORMWORK_FULL_SCOPE_GAP_TITLE_RU =
+  "Полный технологический состав опалубки не определён: требуются применимые источники материалов, труда, аренды и доставки";
 const EXPECTED_TITLE = IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Бетонная смесь"
-    : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+    : "Измерение площади контакта опалубки по RICS NRM 2 (не полный состав работ)";
 const EXPECTED_VISIBLE_TITLE = IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -124,8 +129,8 @@ const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-succes
           : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
             ? "web-formwork-rics-nrm2-slab-foundation-wet-zone"
             : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-              ? "web-formwork-rics-nrm2-pile-cap-wet-zone"
-            : "web-formwork-rics-nrm2");
+              ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
+            : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
 const SEARCH_QUERY = IS_RICS_NRM2_PILE_CAP_WET_ZONE
   ? "устройство опалубки свайного ростверка во влажной зоне"
@@ -563,11 +568,42 @@ function preliminaryNeeds(revision: Json): Json[] {
   return Array.isArray(revision.preliminaryNeeds) ? revision.preliminaryNeeds : [];
 }
 
+function assertPreliminaryScopeTruth(revision: Json, expectedQuantity: number): Json | null {
+  const needs = preliminaryNeeds(revision);
+  if (!IS_RICS_NRM2_FORMWORK) {
+    invariant(needs.length === 0, "REVISION_REMAINS_PRELIMINARY");
+    return null;
+  }
+  invariant(needs.length === 1, `FORMWORK_SCOPE_GAP_COUNT_${needs.length}_EXPECTED_1`);
+  const need = needs[0]!;
+  invariant(need.rowId === FORMWORK_FULL_SCOPE_GAP_ROW_ID
+    && need.titleRu === FORMWORK_FULL_SCOPE_GAP_TITLE_RU
+    && need.needState === "CONDITION_REQUIRED"
+    && JSON.stringify(need.missingParameterIds) === JSON.stringify([FORMWORK_FULL_SCOPE_PARAMETER_ID])
+    && Number(need.quantity) === expectedQuantity
+    && need.unitId === "m2"
+    && need.unitPrice == null
+    && need.selected === true
+    && need.procurementEligible === false
+    && /^[0-9a-f]{64}$/u.test(String(need.needSha256 ?? "")),
+  `FORMWORK_SCOPE_GAP_TRUTH_RED:${JSON.stringify(need)}`);
+  return need;
+}
+
+async function assertPreliminaryScopeVisible(page: Page): Promise<void> {
+  if (!IS_RICS_NRM2_FORMWORK) return;
+  await page.locator('[data-testid^="consumer-repair-item-title-"]')
+    .filter({ hasText: FORMWORK_FULL_SCOPE_GAP_TITLE_RU })
+    .waitFor({ state: "visible", timeout: 90_000 });
+  const body = await page.locator("body").innerText();
+  invariant(body.includes(FORMWORK_FULL_SCOPE_GAP_TITLE_RU), "FORMWORK_SCOPE_GAP_NOT_VISIBLE");
+}
+
 function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: number): Json {
   invariant(revision.releaseId === RELEASE_ID, "REVISION_RELEASE_DRIFT");
   invariant(revision.catalogId === CATALOG_ID, "REVISION_CATALOG_DRIFT");
   invariant(revision.definitionVersionId === DEFINITION_ID, "REVISION_DEFINITION_DRIFT");
-  invariant(preliminaryNeeds(revision).length === 0, "REVISION_REMAINS_PRELIMINARY");
+  assertPreliminaryScopeTruth(revision, expectedQuantity);
   invariant(rows.length === Number(revision.rowCount)
     && (IS_BIA_TN10_MASONRY ? rows.length === 5 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
   "REVISION_ROW_DENOMINATOR_RED");
@@ -663,16 +699,16 @@ function assertExactReinforcement(rows: Json[]): Json | null {
   return row;
 }
 
-async function ensureFullRevision(authorization: string, revision: Json): Promise<Json> {
+async function ensurePreparedRevision(authorization: string, revision: Json): Promise<Json> {
   void authorization;
-  invariant(preliminaryNeeds(revision).length === 0, "WEB_PREPARE_REMAINS_PRELIMINARY");
+  assertPreliminaryScopeTruth(revision, ORIGINAL_TARGET_QUANTITY);
   const mismatches = Object.entries(FIXTURE)
     .filter(([key, value]) => typeof value === "number"
       ? Number(revision.parameters?.[key]) !== value
       : revision.parameters?.[key] !== value)
     .map(([key]) => key);
   invariant(mismatches.length === 0,
-    `WEB_PREPARE_DID_NOT_CREATE_FULL_EXACT_REVISION:${mismatches.join(",")}`);
+    `WEB_PREPARE_DID_NOT_CREATE_EXPECTED_EXACT_REVISION:${mismatches.join(",")}`);
   return revision;
 }
 
@@ -716,7 +752,8 @@ async function databaseProof(revisionIds: string[], negativeJobIds: string[]): P
   await client.connect();
   try {
     const revisions = (await client.query(`select id::text,parent_revision_id::text,release_id::text,
-        definition_version_id::text,catalog_id,revision_number,row_count,totals,checksum_sha256
+        definition_version_id::text,catalog_id,revision_number,row_count,totals,checksum_sha256,
+        amendment_contract#>'{parameterSources,preliminaryNeeds}' preliminary_needs
       from public.estimate_revision where id=any($1::uuid[]) order by revision_number`, [revisionIds])).rows;
     const rows = (await client.query(`select revision_id::text,row_id,title_ru,unit_id,quantity,unit_price,amount,
         procurement_eligible,included_in_estimate,included_in_procurement,normative_trace,calculation_trace
@@ -731,6 +768,16 @@ async function databaseProof(revisionIds: string[], negativeJobIds: string[]): P
     invariant(revisions.length === revisionIds.length
       && revisionIds.every((revisionId) => rows.some((row) => row.revision_id === revisionId)),
     "DATABASE_REVISION_PARITY_RED");
+    if (IS_RICS_NRM2_FORMWORK) {
+      invariant(revisions.every((revision) => Array.isArray(revision.preliminary_needs)
+        && revision.preliminary_needs.length === 1
+        && revision.preliminary_needs[0]?.row_id === FORMWORK_FULL_SCOPE_GAP_ROW_ID
+        && revision.preliminary_needs[0]?.need_state === "CONDITION_REQUIRED"
+        && JSON.stringify(revision.preliminary_needs[0]?.missing_parameter_ids)
+          === JSON.stringify([FORMWORK_FULL_SCOPE_PARAMETER_ID]))
+        && !rows.some((row) => row.row_id === FORMWORK_FULL_SCOPE_GAP_ROW_ID),
+      "DATABASE_PRELIMINARY_SCOPE_PARITY_RED");
+    }
     invariant(negativeJobs.length === negativeJobIds.length
       && negativeJobs.every((job) => job.status === "failed" && job.result_revision_id == null),
     "DATABASE_NEGATIVE_JOB_PARITY_RED");
@@ -748,6 +795,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
     await openRevision(page, revision.revisionId);
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
       .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
+    await assertPreliminaryScopeVisible(page);
     const body = await page.locator("body").innerText();
     const expectedQuantityText = String(SENSITIVITY_TARGET_QUANTITY);
     invariant(body.includes(expectedQuantityText)
@@ -769,6 +817,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       expectedQuantity: SENSITIVITY_TARGET_QUANTITY,
       expectedQuantityVisible: true,
       oldFactorVisible: IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY ? null : false,
+      preliminaryScopeGapVisible: IS_RICS_NRM2_FORMWORK ? true : null,
       screenshot,
     };
   } finally {
@@ -812,7 +861,7 @@ async function main(): Promise<void> {
   ));
 
   let initialRevision: Json;
-  let fullRevision: Json;
+  let preparedRevision: Json;
   let sensitivityRevision: Json;
   let originalRow: Json;
   let sensitivityRow: Json;
@@ -846,6 +895,11 @@ async function main(): Promise<void> {
     const selectedWorkText = (await suggestion.innerText()).trim();
     invariant(selectedWorkText.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
       "SEARCH_VISIBLE_TITLE_RED");
+    if (IS_RICS_NRM2_FORMWORK) {
+      invariant(selectedWorkText.includes("(не полный состав работ)")
+        && !selectedWorkText.includes("Монтаж и демонтаж опалубки"),
+      "SEARCH_MEASUREMENT_ONLY_SCOPE_RED");
+    }
     await suggestion.click();
     const selectedPrefix = await input.inputValue();
     invariant(selectedPrefix.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
@@ -901,16 +955,19 @@ async function main(): Promise<void> {
     };
     progress("COMPILE_ACCEPTED");
     initialRevision = await waitForSuccessfulRevision(authorization, compileBody);
-    fullRevision = await ensureFullRevision(authorization, initialRevision);
-    const fullRows = await allRows(authorization, fullRevision.revisionId);
-    originalRow = assertExactRevision(fullRevision, fullRows, ORIGINAL_TARGET_QUANTITY);
-    originalReinforcementRow = assertExactReinforcement(fullRows);
-    progress("FULL_ORIGINAL_GREEN", { revisionId: fullRevision.revisionId,
+    preparedRevision = await ensurePreparedRevision(authorization, initialRevision);
+    const preparedRows = await allRows(authorization, preparedRevision.revisionId);
+    originalRow = assertExactRevision(preparedRevision, preparedRows, ORIGINAL_TARGET_QUANTITY);
+    originalReinforcementRow = assertExactReinforcement(preparedRows);
+    progress(IS_RICS_NRM2_FORMWORK ? "MEASUREMENT_ONLY_PRELIMINARY_ORIGINAL_GREEN" : "FULL_ORIGINAL_GREEN",
+      { revisionId: preparedRevision.revisionId,
       primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY });
-    await openRevision(page, fullRevision.revisionId);
+    await openRevision(page, preparedRevision.revisionId);
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
       .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
-    const originalScreenshot = resolve(OUTPUT_ROOT, `01_full_${ORIGINAL_PRIMARY_VALUE}.png`);
+    await assertPreliminaryScopeVisible(page);
+    const originalScreenshot = resolve(OUTPUT_ROOT,
+      `${IS_RICS_NRM2_FORMWORK ? "01_preliminary" : "01_full"}_${ORIGINAL_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: originalScreenshot, fullPage: true });
 
     const areaChip = page.getByTestId(`editable-param-chip-${PRIMARY_MEASURE_PARAMETER_ID}`);
@@ -939,7 +996,7 @@ async function main(): Promise<void> {
     const recalculateAccepted = await json(recalculateResponse);
     invariant(recalculateResponse.status() === 202, `SENSITIVITY_HTTP_${recalculateResponse.status()}`);
     sensitivityRevision = await waitForSuccessfulRevision(authorization, recalculateAccepted);
-    invariant(sensitivityRevision.parentRevisionId === fullRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
+    invariant(sensitivityRevision.parentRevisionId === preparedRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
     if (IS_BIA_TN10_MASONRY) {
       invariant(Number(sensitivityRevision.parameters?.measured_net_brick_wall_area_m2) === 100
         && sensitivityRevision.parameters?.gross_wall_area_and_opening_deductions
@@ -952,21 +1009,23 @@ async function main(): Promise<void> {
     progress("SENSITIVITY_GREEN", { revisionId: sensitivityRevision.revisionId,
       primaryValue: SENSITIVITY_PRIMARY_VALUE, targetQuantity: SENSITIVITY_TARGET_QUANTITY });
     await openRevision(page, sensitivityRevision.revisionId);
+    await assertPreliminaryScopeVisible(page);
     const sensitivityScreenshot = resolve(OUTPUT_ROOT, `02_sensitivity_${SENSITIVITY_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: sensitivityScreenshot, fullPage: true });
 
     const historyAfter = await api(authorization, `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`);
     const afterRows = Array.isArray(historyAfter.revisions) ? historyAfter.revisions as Json[] : [];
-    invariant(initialRevision.revisionId === fullRevision.revisionId,
+    invariant(initialRevision.revisionId === preparedRevision.revisionId,
       "WEB_PREPARE_REQUIRED_HIDDEN_API_RECALCULATION");
     const expectedNewRevisionCount = 2;
     invariant(afterRows.length === beforeRows.length + expectedNewRevisionCount,
       `HISTORY_DELTA_${afterRows.length - beforeRows.length}_EXPECTED_${expectedNewRevisionCount}`);
-    invariant(afterRows.some((entry) => entry.revisionId === fullRevision.revisionId)
+    invariant(afterRows.some((entry) => entry.revisionId === preparedRevision.revisionId)
       && afterRows.some((entry) => entry.revisionId === sensitivityRevision.revisionId),
     "HISTORY_REVISION_MISSING");
     searchEvidence = { selectedIndex, selectedWorkText, before: beforeRows.length, after: afterRows.length,
-      delta: afterRows.length - beforeRows.length, initialWasFull: initialRevision.revisionId === fullRevision.revisionId,
+      delta: afterRows.length - beforeRows.length,
+      initialWasPrepared: initialRevision.revisionId === preparedRevision.revisionId,
       originalScreenshot, sensitivityScreenshot, compileIngress };
   } finally {
     await closePageBounded(page);
@@ -1021,15 +1080,18 @@ async function main(): Promise<void> {
     buildArtifact(activeAuthorization, sensitivityRevision!, "procurement"),
   ]);
   const sensitivityRowCount = Number(sensitivityRevision!.rowCount);
+  const expectedPdfProjectedRowCount = sensitivityRowCount + (IS_RICS_NRM2_FORMWORK ? 1 : 0);
   invariant(Number(pdf.metadata?.sourceRowCount) === sensitivityRowCount
-    && Number(pdf.metadata?.projectedRowCount) === sensitivityRowCount
+    && Number(pdf.metadata?.projectedRowCount) === expectedPdfProjectedRowCount
     && pdf.metadata?.grandTotalStatus === "PARTIAL_NEEDS_PRICE", "PDF_UNKNOWN_PRICE_TRUTH_RED");
   const expectedProcurementTruth = IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? Number(procurement.metadata?.selectedProcurementRowCount) > 0
       && Number(procurement.metadata?.projectedRowCount)
         === Number(procurement.metadata?.selectedProcurementRowCount)
     : Number(procurement.metadata?.selectedProcurementRowCount) === 0
-      && Number(procurement.metadata?.projectedRowCount) === 0;
+      && Number(procurement.metadata?.projectedRowCount) === 0
+      && (!IS_RICS_NRM2_FORMWORK
+        || Number(procurement.projection?.preliminaryNeedsExcludedCount) === 1);
   invariant(Number(procurement.metadata?.sourceRowCount) === sensitivityRowCount
     && expectedProcurementTruth, "PROCUREMENT_ROW_TRUTH_RED");
   if (IS_BIA_TN10_MASONRY) {
@@ -1065,7 +1127,7 @@ async function main(): Promise<void> {
   await browser.close();
 
   const database = await databaseProof(
-    [...new Set([initialRevision!.revisionId, fullRevision!.revisionId, sensitivityRevision!.revisionId])],
+    [...new Set([initialRevision!.revisionId, preparedRevision!.revisionId, sensitivityRevision!.revisionId])],
     negativeJobs.map((job) => String(job.jobId)),
   );
   invariant(pageErrors.length === 0, `PAGE_ERRORS:${pageErrors.join("|")}`);
@@ -1078,28 +1140,28 @@ async function main(): Promise<void> {
       : IS_NRMCA_STRIP_FOUNDATION
         ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
         : IS_RICS_NRM2_WET_ZONE
-          ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-wet-zone.web-acceptance.v1"
+          ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-wet-zone.web-acceptance.v2"
           : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
-            ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-strip-foundation-wet-zone.web-acceptance.v1"
+            ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-strip-foundation-wet-zone.web-acceptance.v2"
             : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
-              ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-slab-foundation-wet-zone.web-acceptance.v1"
+              ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-slab-foundation-wet-zone.web-acceptance.v2"
               : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-                ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v1"
-              : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
+                ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v2"
+              : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v2",
     capturedAt: new Date().toISOString(),
     status: IS_BIA_TN10_MASONRY
       ? "GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
         : IS_RICS_NRM2_WET_ZONE
-          ? "GREEN_EXACT_FORMWORK_RICS_NRM2_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+          ? "GREEN_EXACT_FORMWORK_RICS_NRM2_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
           : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
-            ? "GREEN_EXACT_FORMWORK_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+            ? "GREEN_EXACT_FORMWORK_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
             : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
-              ? "GREEN_EXACT_FORMWORK_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+              ? "GREEN_EXACT_FORMWORK_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
               : IS_RICS_NRM2_PILE_CAP_WET_ZONE
-                ? "GREEN_EXACT_FORMWORK_RICS_NRM2_PILE_CAP_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
-              : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
+                ? "GREEN_EXACT_FORMWORK_RICS_NRM2_PILE_CAP_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+              : "GREEN_EXACT_FORMWORK_RICS_NRM2_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
       searchReleaseId: SEARCH_RELEASE_ID,
@@ -1111,14 +1173,26 @@ async function main(): Promise<void> {
     principal: { userId, realLocalProviderSession: true, tokensPersisted: false },
     search: searchEvidence!,
     promptSha256: sha256(PROMPT),
+    semanticScope: IS_RICS_NRM2_FORMWORK ? {
+      estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
+      scopeMode: "MEASUREMENT_ONLY",
+      fullWorkScopeComplete: false,
+      measuredAreaRowCount: 1,
+      preliminaryScopeNeedCount: 1,
+      priorOneRowFullScopeAcceptanceUsable: false,
+    } : null,
     scenarioOriginal: { label: SCENARIO_LABEL, primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
       primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY,
-      revisionId: fullRevision!.revisionId, revisionNumber: fullRevision!.revisionNumber,
-      row: originalRow!, reinforcementRow: originalReinforcementRow },
+      revisionId: preparedRevision!.revisionId, revisionNumber: preparedRevision!.revisionNumber,
+      row: originalRow!, preliminaryScopeNeed: IS_RICS_NRM2_FORMWORK
+        ? assertPreliminaryScopeTruth(preparedRevision!, ORIGINAL_TARGET_QUANTITY) : null,
+      reinforcementRow: originalReinforcementRow },
     sensitivity: { primaryValue: SENSITIVITY_PRIMARY_VALUE,
       targetQuantity: SENSITIVITY_TARGET_QUANTITY, revisionId: sensitivityRevision!.revisionId,
       parentRevisionId: sensitivityRevision!.parentRevisionId,
       revisionNumber: sensitivityRevision!.revisionNumber, row: sensitivityRow!,
+      preliminaryScopeNeed: IS_RICS_NRM2_FORMWORK
+        ? assertPreliminaryScopeTruth(sensitivityRevision!, SENSITIVITY_TARGET_QUANTITY) : null,
       reinforcementRow: sensitivityReinforcementRow },
     negative: negativeJobs.map((job) => ({ scenarioId: job.scenarioId, jobId: job.jobId,
       status: job.status, errorCode: job.errorCode, resultRevisionId: job.resultRevisionId ?? null })),
