@@ -15,6 +15,7 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-wet-zone"');
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-strip-foundation-wet-zone"');
     expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-slab-foundation-wet-zone"');
+    expect(source).toContain('PROFILE_ID === "formwork-rics-nrm2-pile-cap-wet-zone"');
     expect(source).toContain('"c7dc256f-52fb-55ba-9aad-e9f6b961303a"');
     expect(source).toContain('"8521574b-e7e1-583c-a2c6-4117147c4c62"');
     expect(source).toContain('"eba96ed6-9f4d-51c3-87a7-d6ff08b11982"');
@@ -23,6 +24,8 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('"7e36ae4c-7349-521c-8963-8113fdc09611"');
     expect(source).toContain('"54f8e4d8-7006-5ae1-a791-685c12df9928"');
     expect(source).toContain('"15588d33-82f1-55ee-892d-00cf645cf453"');
+    expect(source).toContain('"b3c7c80c-1d68-506b-af72-147790ed0e6f"');
+    expect(source).toContain('"4a78d386-12b3-590e-859f-b207e931c387"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
     expect(source).toContain("request-estimate-parameters-toggle");
@@ -54,6 +57,8 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('single_or_double_sided_scope: "DOUBLE_SIDED"');
     expect(source).toContain("GREEN_EXACT_FORMWORK_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
     expect(source).toContain('element_type: "SLAB_FOUNDATION"');
+    expect(source).toContain("GREEN_EXACT_FORMWORK_RICS_NRM2_PILE_CAP_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
+    expect(source).toContain('element_type: "PILE_CAP"');
     expect(source).not.toContain("CANONICAL_API_AFTER_WEB_SELECTION");
   });
 

@@ -20,6 +20,8 @@ const IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE =
   PROFILE_ID === "formwork-rics-nrm2-strip-foundation-wet-zone";
 const IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE =
   PROFILE_ID === "formwork-rics-nrm2-slab-foundation-wet-zone";
+const IS_RICS_NRM2_PILE_CAP_WET_ZONE =
+  PROFILE_ID === "formwork-rics-nrm2-pile-cap-wet-zone";
 
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
@@ -35,6 +37,8 @@ const RELEASE_ID = IS_BIA_TN10_MASONRY
         ? "f182cf15-ea99-5566-a366-bb3f6d6edfe1"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
           ? "54f8e4d8-7006-5ae1-a791-685c12df9928"
+          : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+            ? "b3c7c80c-1d68-506b-af72-147790ed0e6f"
           : "8791b75f-683f-5e72-a56a-54abc2f82379";
 const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
   ? "8521574b-e7e1-583c-a2c6-4117147c4c62"
@@ -46,6 +50,8 @@ const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
         ? "7e36ae4c-7349-521c-8963-8113fdc09611"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
           ? "15588d33-82f1-55ee-892d-00cf645cf453"
+          : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+            ? "4a78d386-12b3-590e-859f-b207e931c387"
           : "320b582e-5a6d-5354-b3bf-f801e4490303";
 const DEFINITION_ID = IS_BIA_TN10_MASONRY
   ? "31c1b89d-db88-5072-ad41-16ce6eefa421"
@@ -57,6 +63,8 @@ const DEFINITION_ID = IS_BIA_TN10_MASONRY
         ? "b73e42e4-221d-5f16-b31e-59a991af374b"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
           ? "0d1951a9-d514-5ed3-85c5-b234add759cf"
+          : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+            ? "6952e395-c72e-5955-a48c-2bfb324fc6d4"
           : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
 const CATALOG_ID = IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
@@ -68,6 +76,8 @@ const CATALOG_ID = IS_BIA_TN10_MASONRY
         ? "canonical-work:base:concrete_foundation_interior_strip_foundation_form_wet_zone"
         : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
           ? "canonical-work:base:concrete_foundation_interior_slab_foundation_form_wet_zone"
+          : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+            ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
           : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
 const ROW_ID = IS_BIA_TN10_MASONRY
   ? "material:bia-tn10:fired-clay-brick"
@@ -113,9 +123,13 @@ const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-succes
           ? "web-formwork-rics-nrm2-strip-foundation-wet-zone"
           : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
             ? "web-formwork-rics-nrm2-slab-foundation-wet-zone"
+            : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+              ? "web-formwork-rics-nrm2-pile-cap-wet-zone"
             : "web-formwork-rics-nrm2");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
+const SEARCH_QUERY = IS_RICS_NRM2_PILE_CAP_WET_ZONE
+  ? "устройство опалубки свайного ростверка во влажной зоне"
+  : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
   ? "устройство опалубки плитного фундамента во влажной зоне"
   : IS_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE
     ? "устройство опалубки ленточного фундамента во влажной зоне"
@@ -170,6 +184,21 @@ const SLAB_FOUNDATION_FORMWORK_DETAILS = [
   "правило измерения проекта: RICS_NRM2_WS11_CONFIRMED:SLAB-FW-149-REV-A;",
   "сценарий приёмки: WEB-PREPARE-SLAB-FORMWORK-SAME-RELEASE-V1;",
   "согласование сметчика: EST-SLAB-FW-149.",
+];
+const PILE_CAP_FORMWORK_DETAILS = [
+  "RICS NRM 2.",
+  "Измеренная площадь контакта: 100 м2;",
+  "ссылка на чертёж: PC-FW-149-REV-A;",
+  "тип элемента: PILE_CAP;",
+  "размеры и количество граней: PROJECT_MEASURED_CONTACT_AREA:100 m2 all formed pile-cap faces;",
+  "отделка: PLAIN;",
+  "класс геометрии: VERTICAL;",
+  "сторона опалубки: DOUBLE_SIDED;",
+  "правило проёмов и пустот: PROJECT_RULE:no openings in measured scope;",
+  "тип опалубки: REMOVABLE;",
+  "правило измерения проекта: RICS_NRM2_WS11_CONFIRMED:PC-FW-149-REV-A;",
+  "сценарий приёмки: WEB-PREPARE-PILE-CAP-FORMWORK-SAME-RELEASE-V1;",
+  "согласование сметчика: EST-PC-FW-149.",
 ];
 const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "по NRMCA CIP 31;",
@@ -228,6 +257,8 @@ const SELECTED_DETAILS = IS_BIA_TN10_MASONRY
       ? STRIP_FOUNDATION_FORMWORK_DETAILS
       : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
         ? SLAB_FOUNDATION_FORMWORK_DETAILS
+        : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+          ? PILE_CAP_FORMWORK_DETAILS
         : FORMWORK_DETAILS;
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(" ");
 
@@ -272,6 +303,20 @@ const SLAB_FOUNDATION_FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
   permanent_or_removable_formwork: "REMOVABLE",
   project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:SLAB-FW-149-REV-A",
   estimator_approval_reference: "EST-SLAB-FW-149.",
+});
+const PILE_CAP_FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
+  product_profile_id: "standard-profile:rics-nrm2:formwork-measured-contact-area:v1",
+  measured_formwork_contact_area_m2: 100,
+  project_drawing_reference: "PC-FW-149-REV-A",
+  element_type: "PILE_CAP",
+  element_dimensions_and_face_count: "PROJECT_MEASURED_CONTACT_AREA:100 m2 all formed pile-cap faces",
+  plain_or_special_finish: "PLAIN",
+  vertical_battered_horizontal_or_curved_class: "VERTICAL",
+  single_or_double_sided_scope: "DOUBLE_SIDED",
+  openings_voids_and_deduction_rule: "PROJECT_RULE:no openings in measured scope",
+  permanent_or_removable_formwork: "REMOVABLE",
+  project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:PC-FW-149-REV-A",
+  estimator_approval_reference: "EST-PC-FW-149.",
 });
 const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   scope_variant: "full_reinforced_structure",
@@ -362,6 +407,8 @@ const FIXTURE = IS_BIA_TN10_MASONRY
       ? STRIP_FOUNDATION_FORMWORK_FIXTURE
       : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
         ? SLAB_FOUNDATION_FORMWORK_FIXTURE
+        : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+          ? PILE_CAP_FORMWORK_FIXTURE
         : FORMWORK_FIXTURE;
 const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
   ? "measured_net_brick_wall_area_m2"
@@ -1036,6 +1083,8 @@ async function main(): Promise<void> {
             ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-strip-foundation-wet-zone.web-acceptance.v1"
             : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
               ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-slab-foundation-wet-zone.web-acceptance.v1"
+              : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+                ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v1"
               : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
     capturedAt: new Date().toISOString(),
     status: IS_BIA_TN10_MASONRY
@@ -1048,6 +1097,8 @@ async function main(): Promise<void> {
             ? "GREEN_EXACT_FORMWORK_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
             : IS_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE
               ? "GREEN_EXACT_FORMWORK_RICS_NRM2_SLAB_FOUNDATION_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+              : IS_RICS_NRM2_PILE_CAP_WET_ZONE
+                ? "GREEN_EXACT_FORMWORK_RICS_NRM2_PILE_CAP_WET_ZONE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
               : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
