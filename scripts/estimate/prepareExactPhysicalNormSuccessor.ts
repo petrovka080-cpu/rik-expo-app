@@ -345,10 +345,26 @@ const FORMWORK_SCENARIO = Object.freeze({
   estimator_approval_reference: "EST-FW-01",
 });
 
+const STRIP_FOUNDATION_FORMWORK_SCENARIO = Object.freeze({
+  product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+  measured_formwork_contact_area_m2: 100,
+  project_drawing_reference: "SF-FW-01-REV-A",
+  element_type: "STRIP_FOUNDATION",
+  element_dimensions_and_face_count: "PROJECT_MEASURED_CONTACT_AREA:100 m2; both formed faces per drawing",
+  plain_or_special_finish: "PLAIN",
+  vertical_battered_horizontal_or_curved_class: "VERTICAL",
+  single_or_double_sided_scope: "DOUBLE_SIDED",
+  openings_voids_and_deduction_rule: "PROJECT_RULE:no openings in measured scope",
+  permanent_or_removable_formwork: "REMOVABLE",
+  project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:SF-FW-01-REV-A",
+  estimator_approval_reference: "EST-SF-FW-01",
+});
+
 type FormworkProfileTarget = Readonly<{
   profileId: string;
   targetCatalogId: string;
   scopeTitleRu: string;
+  scenarioParameters?: Json;
 }>;
 
 const FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze([
@@ -375,7 +391,39 @@ const FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze
     scopeTitleRu: "устройство опалубки во влажной зоне" },
 ]);
 
+const STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze([
+  { profileId: "formwork-rics-nrm2-strip-foundation-standard",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard",
+    scopeTitleRu: "устройство опалубки ленточного фундамента в стандартной зоне",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-high-load",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_high_load",
+    scopeTitleRu: "устройство опалубки ленточного фундамента для высокой нагрузки",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-large-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_large_area",
+    scopeTitleRu: "устройство опалубки ленточного фундамента на большой площади",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-repair",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_repair",
+    scopeTitleRu: "устройство опалубки ленточного фундамента при локальном ремонте основания",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-small-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_small_area",
+    scopeTitleRu: "устройство опалубки ленточного фундамента на малой площади",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-technical-room",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_technical_room",
+    scopeTitleRu: "устройство опалубки ленточного фундамента в техническом помещении",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-strip-foundation-wet-zone",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_wet_zone",
+    scopeTitleRu: "устройство опалубки ленточного фундамента во влажной зоне",
+    scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+]);
+
 function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
+  const scenarioParameters = target.scenarioParameters ?? FORMWORK_SCENARIO;
   return {
     profileId: target.profileId,
     targetCatalogId: target.targetCatalogId,
@@ -428,9 +476,9 @@ function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfil
       product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
       consumed_parameter_ids: [...RICS_NRM2_FORMWORK_REQUIRED_EXPLICIT_PARAMETER_IDS],
     },
-    scenarioParameters: FORMWORK_SCENARIO,
-    sensitivityParameters: { ...FORMWORK_SCENARIO, measured_formwork_contact_area_m2: 120 },
-    negativeParameters: { ...FORMWORK_SCENARIO, project_measurement_rule_reference: "UNCONFIRMED" },
+    scenarioParameters,
+    sensitivityParameters: { ...scenarioParameters, measured_formwork_contact_area_m2: 120 },
+    negativeParameters: { ...scenarioParameters, project_measurement_rule_reference: "UNCONFIRMED" },
     expectedScenarioQuantity: 100,
     expectedSensitivityQuantity: 120,
     forbiddenSourceIds: ["src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1"],
@@ -438,7 +486,8 @@ function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfil
 }
 
 const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.freeze(Object.fromEntries(
-  FORMWORK_PROFILE_TARGETS.map((target) => [target.profileId, formworkProfile(target)]),
+  [...FORMWORK_PROFILE_TARGETS, ...STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS]
+    .map((target) => [target.profileId, formworkProfile(target)]),
 ));
 
 async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfile): Promise<Json> {
