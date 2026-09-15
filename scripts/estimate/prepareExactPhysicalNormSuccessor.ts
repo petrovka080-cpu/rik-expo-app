@@ -35,6 +35,7 @@ type ExactPhysicalNormProfile = {
   targetCatalogId: string;
   primaryMeasureParameterId: string;
   canonicalTitleRu: string;
+  searchAliasesRu: readonly string[];
   physicalResultRu: string;
   includedScopeRu: readonly string[];
   excludedScopeRu: readonly string[];
@@ -128,6 +129,24 @@ function atomicJson(path: string, value: unknown): void {
   const temporary = `${path}.${process.pid}.tmp`;
   writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   renameSync(temporary, path);
+}
+
+function normalizeSearchText(value: string): string {
+  return value.toLocaleLowerCase("ru-RU").replace(/ё/gu, "е")
+    .replace(/[^0-9a-zа-я]+/gu, " ").trim();
+}
+
+function unique(values: readonly string[]): string[] {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function exactSearchTerms(profile: ExactPhysicalNormProfile): string[] {
+  const canonical = normalizeSearchText(profile.canonicalTitleRu);
+  const aliases = profile.searchAliasesRu.map(normalizeSearchText);
+  return unique([
+    normalizeSearchText(profile.targetCatalogId), canonical, ...canonical.split(" "),
+    ...aliases, ...aliases.flatMap((alias) => alias.split(" ")),
+  ]);
 }
 
 function exactDatabaseGuard(): void {
@@ -332,6 +351,13 @@ const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.free
     targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_standard",
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
     canonicalTitleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2",
+    searchAliasesRu: [
+      "опалубка по измеренной площади контакта",
+      "обмер опалубки RICS NRM 2",
+      "монтаж и демонтаж опалубки",
+      "устройство опалубки в стандартной зоне",
+      "formwork measured contact area RICS NRM 2",
+    ],
     physicalResultRu: "Опалубка бетонного элемента по утверждённой измеренной площади контакта",
     includedScopeRu: [
       "Одна точно измеренная площадь контакта с готовым бетоном после учёта граней, проёмов и пустот.",
@@ -568,11 +594,16 @@ async function cloneSearch(client: Client, input: {
       titleRu: parameter.titleRu,
       unitId: parameter.unitId,
     }));
+  const normalizedCanonicalName = normalizeSearchText(input.profile.canonicalTitleRu);
+  const normalizedAliases = unique(input.profile.searchAliasesRu.map(normalizeSearchText));
+  const normalizedSearchTerms = exactSearchTerms(input.profile);
   await client.query(`update public.estimate_search_document set
       canonical_name_ru=$3,primary_uom=$4,short_scope_ru=$5,included_boundaries=$6::jsonb,
       excluded_boundaries=$7::jsonb,required_inputs_count=$8,clarification_fields=$9::jsonb,
       normative_classifiers=$10::text[],applicability_tags=$11::text[],
       source_provenance=source_provenance||jsonb_build_object('exactPhysicalNormProfile',$12::text),
+      aliases=$13::text[],normalized_canonical_name=$14,normalized_aliases=$15::text[],
+      normalized_search_terms=$16::text[],normalized_search_blob=$17,
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$12,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
     input.searchReleaseId, input.profile.targetCatalogId, input.profile.canonicalTitleRu,
@@ -582,6 +613,8 @@ async function cloneSearch(client: Client, input: {
     [input.profile.normId, input.profile.sourceId],
     ["EXACT_PROJECT_MEASUREMENT", "NO_AUTOMATIC_M2_PER_M3", "NO_PACKAGE_ASSUMPTION"],
     input.profile.profileId,
+    input.profile.searchAliasesRu, normalizedCanonicalName, normalizedAliases,
+    normalizedSearchTerms, normalizedSearchTerms.join("\u001f"),
   ]);
   const snapshot = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
