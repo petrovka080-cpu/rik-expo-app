@@ -1,11 +1,17 @@
-import { evaluateFormulaGraph, type FormulaAst } from "./formulaGraph";
-import { evaluateInclusionGraph } from "./inclusionGraph";
+import {
+  evaluateFormulaGraph,
+  formulaAstInputParameterIds,
+  type FormulaAst,
+  type FormulaParameterValue,
+} from "./formulaGraph";
+import { resolveInclusionGraph } from "./inclusionGraph";
 import { validateCanonicalEstimateParameters } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 import {
   canonicalFixedQuantityStatedBySource,
   canonicalNormConstantQuantityBinding,
 } from "./canonicalFormulaSourceBinding";
+import { resolveCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -90,6 +96,20 @@ export function bindCanonicalEstimateResourcePriceKeys(
   });
 }
 
+const NON_PAYABLE_COST_TREATMENTS = new Set([
+  "INCLUDED_IN_RESOURCE_ROWS",
+  "INFORMATIONAL_SCOPE",
+  "CONTROL_OR_DOCUMENT",
+]);
+
+export function canonicalEstimateResourceIncludedByDefault(
+  resource: Pick<CanonicalEstimateResourceDefinition, "resource_graph" | "source_metadata">,
+): boolean {
+  const raw = resource.resource_graph?.costTreatment
+    ?? resource.source_metadata?.costTreatment;
+  return !NON_PAYABLE_COST_TREATMENTS.has(String(raw ?? "").trim());
+}
+
 export type CanonicalEstimateCompiledRow = Record<string, unknown> & {
   row_id: string;
   ordinal: number;
@@ -101,6 +121,22 @@ export type CanonicalEstimateCompiledRow = Record<string, unknown> & {
   procurement_eligible: boolean;
   ownership_status: "OWNED" | "OWNED_EXCLUDED" | "MANUAL_SERVER_OWNED";
   row_sha256: string;
+};
+
+export type CanonicalEstimateCompiledPreliminaryNeed = Record<string, unknown> & {
+  row_id: string;
+  ordinal: number;
+  section: string;
+  category: string;
+  title_ru: string;
+  unit_id: string;
+  quantity: string | null;
+  unit_price: string | null;
+  need_state: "QUANTITY_REQUIRED" | "CONDITION_REQUIRED";
+  missing_parameter_ids: string[];
+  selected: boolean;
+  procurement_eligible: boolean;
+  need_sha256: string;
 };
 
 export type CanonicalEstimateCompileCoreInput = {
@@ -127,6 +163,7 @@ export type CanonicalEstimateCompileCoreInput = {
 export type CanonicalEstimateCompileCoreResult = {
   parameters: Record<string, unknown>;
   rows: CanonicalEstimateCompiledRow[];
+  preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[];
   totals: {
     amount: string;
     includedRowCount: number;
@@ -143,6 +180,7 @@ export type CanonicalEstimateCompileCoreResult = {
     currencyCode: string;
     totals: CanonicalEstimateCompileCoreResult["totals"];
     rows: { rowId: string; rowSha256: string }[];
+    preliminaryNeeds: { rowId: string; needSha256: string }[];
     compilerVersion: string;
   };
 };
@@ -199,6 +237,61 @@ function multiply(quantity: string, unitPrice: string | null): string | null {
   }, {}), 2);
 }
 
+type CanonicalTitleSpecification = {
+  parameterIds: string[];
+  mode: "APPEND" | "REPLACE";
+  separator: " — " | " ";
+};
+
+function canonicalTitleSpecification(
+  resource: CanonicalEstimateResourceDefinition,
+  definitionParameterIds: ReadonlySet<string>,
+): CanonicalTitleSpecification {
+  const legacyParameterId = String(
+    resource.resource_graph?.titleSpecificationParameterId ?? "",
+  ).trim();
+  const rawParameterIds = resource.resource_graph?.titleSpecificationParameterIds;
+  if (rawParameterIds != null && !Array.isArray(rawParameterIds)) {
+    throw compilerError(
+      `title specification parameters invalid ${resource.row_id}`,
+      "DEFINITION_INTEGRITY_FAILED",
+    );
+  }
+  const parameterIds = rawParameterIds == null
+    ? (legacyParameterId ? [legacyParameterId] : [])
+    : rawParameterIds.map((value) => typeof value === "string" ? value.trim() : "");
+  if (
+    (legacyParameterId && rawParameterIds != null)
+    || parameterIds.length > 8
+    || parameterIds.some((parameterId) => !parameterId || !definitionParameterIds.has(parameterId))
+    || new Set(parameterIds).size !== parameterIds.length
+  ) {
+    throw compilerError(
+      `title specification parameters invalid ${resource.row_id}`,
+      "DEFINITION_INTEGRITY_FAILED",
+    );
+  }
+  const mode = String(resource.resource_graph?.titleSpecificationMode ?? "APPEND").trim();
+  const separator = String(resource.resource_graph?.titleSpecificationSeparator ?? " — ");
+  if (parameterIds.length > 0 && !["APPEND", "REPLACE"].includes(mode)) {
+    throw compilerError(
+      `title specification mode invalid ${resource.row_id}`,
+      "DEFINITION_INTEGRITY_FAILED",
+    );
+  }
+  if (parameterIds.length > 0 && ![" — ", " "].includes(separator)) {
+    throw compilerError(
+      `title specification separator invalid ${resource.row_id}`,
+      "DEFINITION_INTEGRITY_FAILED",
+    );
+  }
+  return {
+    parameterIds,
+    mode: mode as CanonicalTitleSpecification["mode"],
+    separator: separator as CanonicalTitleSpecification["separator"],
+  };
+}
+
 /**
  * Единственный pure business-core компиляции canonical estimate.
  * Node/local и Deno/edge передают только загруженные DB records и hash adapter;
@@ -209,6 +302,16 @@ export async function compileCanonicalEstimateCore(
 ): Promise<CanonicalEstimateCompileCoreResult> {
   if (input.resourceDefinitions.length > input.maximumResourceRows) {
     throw compilerError("resource graph row limit exceeded", "DEFINITION_LIMIT_EXCEEDED");
+  }
+  for (const formula of input.formulaDefinitions) {
+    const declared = [...new Set(formula.input_parameter_ids)].sort();
+    const retainedByAst = formulaAstInputParameterIds(formula.ast);
+    if (JSON.stringify(declared) !== JSON.stringify(retainedByAst)) {
+      throw compilerError(
+        `formula dependency graph does not match serialized AST ${formula.formula_id}`,
+        "FORMULA_PARAMETER_DEPENDENCY_MISMATCH",
+      );
+    }
   }
   const primaryMeasureParameterId = String(input.primaryMeasureParameterId ?? "").trim();
   if (primaryMeasureParameterId) {
@@ -252,9 +355,13 @@ export async function compileCanonicalEstimateCore(
       baselineContext: { catalogId: input.catalogId },
     },
   );
-  const numericParameters = Object.fromEntries(
-    Object.entries(parameters).filter(([, value]) => typeof value === "number" || typeof value === "string"),
-  ) as Record<string, string | number>;
+  const formulaParameters = Object.fromEntries(
+    Object.entries(parameters).filter(([, value]) =>
+      typeof value === "number" || typeof value === "string" || typeof value === "boolean"),
+  ) as Record<string, FormulaParameterValue>;
+  const definitionParameterIds = new Set(
+    input.parameterDefinitions.map((parameter) => parameter.parameter_id),
+  );
   const formulas = new Map(input.formulaDefinitions.map((formula) => [formula.formula_id, formula]));
   const prices = new Map<string, CanonicalEstimatePriceItem>();
   for (const item of input.priceItems ?? []) {
@@ -280,6 +387,7 @@ export async function compileCanonicalEstimateCore(
 
   const overrides = new Map(Object.entries(rawOverrides));
   const rows: CanonicalEstimateCompiledRow[] = [];
+  const preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[] = [];
   const rowIds = new Set<string>();
   let totalAmount = "0";
   const addToTotal = (amount: string | null, included: boolean): void => {
@@ -294,15 +402,8 @@ export async function compileCanonicalEstimateCore(
   };
 
   for (const resource of input.resourceDefinitions) {
-    if (!evaluateInclusionGraph(resource.inclusion_ast, parameters)) continue;
     const formula = formulas.get(resource.formula_id);
     if (!formula) throw compilerError("formula graph reference missing", "DEFINITION_INTEGRITY_FAILED");
-    const calculatedQuantity = evaluateFormulaGraph(formula.ast, numericParameters);
-    const priceKey = resource.cost_owner_id || resource.row_id;
-    const price = prices.get(`${priceKey}:${resource.unit_id}`);
-    if (price && price.currency_code !== input.currencyCode) {
-      throw compilerError("mixed currency snapshot", "PRICE_CURRENCY_MISMATCH");
-    }
     const override = overrides.get(resource.row_id);
     if (override != null && (!override || typeof override !== "object" || Array.isArray(override))) {
       throw compilerError(`invalid row override ${resource.row_id}`, "ROW_AMENDMENT_INVALID");
@@ -311,6 +412,112 @@ export async function compileCanonicalEstimateCore(
       "titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance",
     ], `row override ${resource.row_id}`);
     const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
+    overrides.delete(resource.row_id);
+    const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
+    const missingFormulaParameterIds = formula.input_parameter_ids.filter((parameterId) => {
+      const value = formulaParameters[parameterId];
+      return value === undefined || value === null || value === "";
+    });
+    const manualQuantity = override != null && Object.prototype.hasOwnProperty.call(override, "quantity")
+      ? nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)
+      : null;
+    const inclusionOnlyWaitsForFormulaInputs = inclusion.value == null
+      && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
+    const inclusionResolvedByManualQuantity = manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
+    if (inclusion.value === false) continue;
+
+    if (resource.resource_graph?.professionalPhysicalNormBindingV1 != null) {
+      const physicalNorm = resolveCanonicalEstimatePhysicalNormApplicabilityV1({
+        parameters,
+        capturedAt: "canonical-estimate-compile-core",
+        resourceGraph: resource.resource_graph,
+        normativeTrace: resource.source_metadata?.normativeTrace,
+      });
+      if (physicalNorm == null) {
+        throw compilerError(
+          `physical norm binding identity invalid ${resource.row_id}`,
+          "DEFINITION_INTEGRITY_FAILED",
+        );
+      }
+      if (physicalNorm.status !== "APPLIED") {
+        throw compilerError(
+          `physical norm applicability failed ${resource.row_id}: ${physicalNorm.blockers.join("|")}`,
+          "PHYSICAL_NORM_APPLICABILITY_FAILED",
+        );
+      }
+    }
+
+    const titleSpecification = canonicalTitleSpecification(resource, definitionParameterIds);
+    const missingTitleSpecificationParameterIds = titleSpecification.parameterIds.filter((parameterId) => {
+      const value = parameters[parameterId];
+      return value == null || (typeof value === "string" && value.trim() === "");
+    });
+
+    if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
+      || (missingFormulaParameterIds.length > 0 && manualQuantity == null)
+      || missingTitleSpecificationParameterIds.length > 0) {
+      const needState = inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs
+        ? "CONDITION_REQUIRED" as const
+        : missingFormulaParameterIds.length > 0 && manualQuantity == null
+          ? "QUANTITY_REQUIRED" as const
+          : "CONDITION_REQUIRED" as const;
+      const missingParameterIds = [...new Set([
+        ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
+        ...(manualQuantity == null ? missingFormulaParameterIds : []),
+        ...missingTitleSpecificationParameterIds,
+      ])].sort();
+      const selected = override?.includedInEstimate !== false;
+      const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
+        ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
+        : null;
+      const knownQuantity = manualQuantity ?? (missingFormulaParameterIds.length === 0
+        ? evaluateFormulaGraph(formula.ast, formulaParameters)
+        : null);
+      const needWithoutHash = {
+        row_id: resource.row_id,
+        ordinal: resource.ordinal,
+        resource_spec_id: resource.id,
+        section: resource.section,
+        category: resource.category,
+        title_ru: override?.titleRu == null
+          ? resource.title_ru
+          : boundedText(override.titleRu, `${resource.row_id}.titleRu`, 2_000),
+        unit_id: resource.unit_id,
+        quantity: knownQuantity,
+        unit_price: unitPrice,
+        need_state: needState,
+        missing_parameter_ids: missingParameterIds,
+        selected,
+        procurement_eligible: resource.procurement_eligible,
+        formula_id: resource.formula_id,
+        calculation_trace: {
+          compilerVersion: input.compilerVersion,
+          formulaId: resource.formula_id,
+          formulaAstSha256: formula.ast_sha256,
+          inputParameterIds: formula.input_parameter_ids,
+          resourceGraph: resource.resource_graph,
+          preliminaryNeed: true,
+          needState,
+          missingParameterIds,
+          ...(provenance == null ? {} : { manualAmendment: provenance }),
+        },
+        normative_trace: Array.isArray(resource.source_metadata?.normativeTrace)
+          ? resource.source_metadata.normativeTrace
+          : [],
+      };
+      preliminaryNeeds.push({
+        ...needWithoutHash,
+        need_sha256: await input.hashJson(needWithoutHash),
+      });
+      continue;
+    }
+
+    const calculatedQuantity = manualQuantity ?? evaluateFormulaGraph(formula.ast, formulaParameters);
+    const priceKey = resource.cost_owner_id || resource.row_id;
+    const price = prices.get(`${priceKey}:${resource.unit_id}`);
+    if (price && price.currency_code !== input.currencyCode) {
+      throw compilerError("mixed currency snapshot", "PRICE_CURRENCY_MISMATCH");
+    }
     const quantity = override?.quantity == null
       ? calculatedQuantity
       : nonNegativeNumericText(override.quantity, `${resource.row_id}.quantity`)!;
@@ -318,7 +525,9 @@ export async function compileCanonicalEstimateCore(
     const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
       ? nonNegativeNumericText(override.unitPrice, `${resource.row_id}.unitPrice`, true)
       : snapshotUnitPrice;
-    const includedInEstimate = override?.includedInEstimate == null ? true : override.includedInEstimate;
+    const includedInEstimate = override?.includedInEstimate == null
+      ? canonicalEstimateResourceIncludedByDefault(resource)
+      : override.includedInEstimate;
     const includedInProcurement = includedInEstimate
       && (override?.includedInProcurement == null ? resource.procurement_eligible : override.includedInProcurement);
     if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
@@ -338,47 +547,20 @@ export async function compileCanonicalEstimateCore(
     const normativeTrace = Array.isArray(resource.source_metadata?.normativeTrace)
       ? resource.source_metadata.normativeTrace
       : [];
-    const titleSpecificationParameterId = String(resource.resource_graph?.titleSpecificationParameterId ?? "").trim();
-    const rawTitleSpecificationParameterIds = resource.resource_graph?.titleSpecificationParameterIds;
-    if (rawTitleSpecificationParameterIds != null && !Array.isArray(rawTitleSpecificationParameterIds)) {
-      throw compilerError(`title specification parameters invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
-    const titleSpecificationParameterIds = rawTitleSpecificationParameterIds == null
-      ? (titleSpecificationParameterId ? [titleSpecificationParameterId] : [])
-      : rawTitleSpecificationParameterIds.map((value) => typeof value === "string" ? value.trim() : "");
-    if (
-      (titleSpecificationParameterId && rawTitleSpecificationParameterIds != null)
-      || titleSpecificationParameterIds.length > 8
-      || titleSpecificationParameterIds.some((parameterId) => !parameterId)
-      || new Set(titleSpecificationParameterIds).size !== titleSpecificationParameterIds.length
-    ) {
-      throw compilerError(`title specification parameters invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
-    const titleSpecificationMode = String(resource.resource_graph?.titleSpecificationMode ?? "APPEND").trim();
-    const titleSpecificationSeparator = String(resource.resource_graph?.titleSpecificationSeparator ?? " — ");
-    if (titleSpecificationParameterIds.length > 0 && !["APPEND", "REPLACE"].includes(titleSpecificationMode)) {
-      throw compilerError(`title specification mode invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
-    if (titleSpecificationParameterIds.length > 0 && ![" — ", " "].includes(titleSpecificationSeparator)) {
-      throw compilerError(`title specification separator invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
-    const titleSpecificationValues = titleSpecificationParameterIds.map((parameterId) => parameters[parameterId]);
+    const titleSpecificationValues = titleSpecification.parameterIds.map((parameterId) => parameters[parameterId]);
     if (titleSpecificationValues.some((value) => typeof value !== "string")) {
       throw compilerError(`title specification parameter invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
     }
     const normalizedTitleSpecificationValues = titleSpecificationValues.map((value) => String(value).trim());
-    if (titleSpecificationParameterIds.length > 1 && normalizedTitleSpecificationValues.some((value) => !value)) {
-      throw compilerError(`title specification parameter empty ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
-    }
     const joinedTitleSpecification = normalizedTitleSpecificationValues.filter(Boolean).join(", ");
     const boundedTitleSpecification = joinedTitleSpecification
       ? boundedText(joinedTitleSpecification, `${resource.row_id}.titleSpecification`, 500)
       : null;
     const canonicalTitleRu = boundedTitleSpecification == null
       ? resource.title_ru
-      : titleSpecificationMode === "REPLACE"
+      : titleSpecification.mode === "REPLACE"
         ? boundedTitleSpecification
-        : `${resource.title_ru}${titleSpecificationSeparator}${boundedTitleSpecification}`;
+        : `${resource.title_ru}${titleSpecification.separator}${boundedTitleSpecification}`;
     const manuallyPriced = provenance != null && Object.prototype.hasOwnProperty.call(override!, "unitPrice");
     const rowWithoutHash: Record<string, unknown> = {
       row_id: resource.row_id,
@@ -413,12 +595,8 @@ export async function compileCanonicalEstimateCore(
     } as CanonicalEstimateCompiledRow;
     rows.push(row);
     rowIds.add(resource.row_id);
-    overrides.delete(resource.row_id);
   }
 
-  if (overrides.size > 0) {
-    throw compilerError(`row override is not reachable: ${[...overrides.keys()][0]}`, "ROW_OVERRIDE_NOT_REACHED");
-  }
   let nextOrdinal = rows.reduce((maximum, row) => Math.max(maximum, Number(row.ordinal)), -1) + 1;
   for (let index = 0; index < rawCustomRows.length; index += 1) {
     const custom = rawCustomRows[index];
@@ -435,14 +613,72 @@ export async function compileCanonicalEstimateCore(
     }
     const rowId = `manual:${clientRowId}`;
     if (rowIds.has(rowId)) throw compilerError(`duplicate custom row ${rowId}`, "ROW_AMENDMENT_INVALID");
-    const provenance = manualProvenance(custom.provenance, `customRows.${index}`);
-    const quantity = nonNegativeNumericText(custom.quantity, `customRows.${index}.quantity`)!;
-    const unitPrice = nonNegativeNumericText(custom.unitPrice, `customRows.${index}.unitPrice`, true);
-    const includedInEstimate = custom.includedInEstimate;
-    const includedInProcurement = custom.includedInProcurement;
+    const override = overrides.get(rowId);
+    if (override != null && (!override || typeof override !== "object" || Array.isArray(override))) {
+      throw compilerError(`invalid row override ${rowId}`, "ROW_AMENDMENT_INVALID");
+    }
+    if (override != null) assertOnlyKeys(override, [
+      "titleRu", "quantity", "unitPrice", "includedInEstimate", "includedInProcurement", "provenance",
+    ], `row override ${rowId}`);
+    const customProvenance = manualProvenance(custom.provenance, `customRows.${index}`);
+    const overrideProvenance = override == null ? null : manualProvenance(override.provenance, rowId);
+    const provenance = overrideProvenance ?? customProvenance;
+    overrides.delete(rowId);
+    const quantity = override != null && Object.prototype.hasOwnProperty.call(override, "quantity")
+      ? nonNegativeNumericText(override.quantity, `${rowId}.quantity`, true)
+      : nonNegativeNumericText(custom.quantity, `customRows.${index}.quantity`, true);
+    const unitPrice = override != null && Object.prototype.hasOwnProperty.call(override, "unitPrice")
+      ? nonNegativeNumericText(override.unitPrice, `${rowId}.unitPrice`, true)
+      : nonNegativeNumericText(custom.unitPrice, `customRows.${index}.unitPrice`, true);
+    const includedInEstimate = override?.includedInEstimate ?? custom.includedInEstimate;
+    const includedInProcurement = includedInEstimate
+      && (override?.includedInProcurement ?? custom.includedInProcurement);
     if (typeof includedInEstimate !== "boolean" || typeof includedInProcurement !== "boolean"
       || (includedInProcurement && !includedInEstimate)) {
       throw compilerError(`invalid custom row inclusion ${index}`, "ROW_AMENDMENT_INVALID");
+    }
+    const procurementEligible = custom.includedInProcurement === true;
+    const section = boundedText(custom.section, `customRows.${index}.section`, 240);
+    const category = boundedText(custom.category, `customRows.${index}.category`, 240);
+    const titleRu = override?.titleRu == null
+      ? boundedText(custom.titleRu, `customRows.${index}.titleRu`, 2_000)
+      : boundedText(override.titleRu, `${rowId}.titleRu`, 2_000);
+    const unitId = boundedText(custom.unitId, `customRows.${index}.unitId`, 120);
+    if (quantity == null) {
+      const needWithoutHash = {
+        row_id: rowId,
+        ordinal: nextOrdinal,
+        resource_spec_id: null,
+        section,
+        category,
+        title_ru: titleRu,
+        unit_id: unitId,
+        quantity: null,
+        unit_price: unitPrice,
+        need_state: "QUANTITY_REQUIRED" as const,
+        missing_parameter_ids: [],
+        selected: includedInEstimate,
+        procurement_eligible: procurementEligible,
+        formula_id: "manual_custom_quantity",
+        calculation_trace: {
+          compilerVersion: input.compilerVersion,
+          rowId,
+          semanticOwner: `manual:${clientRowId}`,
+          physicalRowType: category,
+          manualAmendment: provenance,
+          preliminaryNeed: true,
+          needState: "QUANTITY_REQUIRED",
+          missingParameterIds: [],
+        },
+        normative_trace: [],
+      };
+      preliminaryNeeds.push({
+        ...needWithoutHash,
+        need_sha256: await input.hashJson(needWithoutHash),
+      });
+      rowIds.add(rowId);
+      nextOrdinal += 1;
+      continue;
     }
     const amount = multiply(quantity, unitPrice);
     addToTotal(amount, includedInEstimate);
@@ -450,15 +686,15 @@ export async function compileCanonicalEstimateCore(
       row_id: rowId,
       ordinal: nextOrdinal,
       resource_spec_id: null,
-      section: boundedText(custom.section, `customRows.${index}.section`, 240),
-      category: boundedText(custom.category, `customRows.${index}.category`, 240),
-      title_ru: boundedText(custom.titleRu, `customRows.${index}.titleRu`, 2_000),
-      unit_id: boundedText(custom.unitId, `customRows.${index}.unitId`, 120),
+      section,
+      category,
+      title_ru: titleRu,
+      unit_id: unitId,
       quantity,
       unit_price: unitPrice,
       amount,
       currency_code: unitPrice == null ? null : input.currencyCode,
-      procurement_eligible: true,
+      procurement_eligible: procurementEligible,
       included_in_estimate: includedInEstimate,
       included_in_procurement: includedInProcurement,
       ownership_status: "MANUAL_SERVER_OWNED",
@@ -484,6 +720,10 @@ export async function compileCanonicalEstimateCore(
     nextOrdinal += 1;
   }
 
+  if (overrides.size > 0) {
+    throw compilerError(`row override is not reachable: ${[...overrides.keys()][0]}`, "ROW_OVERRIDE_NOT_REACHED");
+  }
+
   const totals = {
     amount: totalAmount,
     includedRowCount: rows.filter((row) => row.included_in_estimate).length,
@@ -496,6 +736,7 @@ export async function compileCanonicalEstimateCore(
   return {
     parameters,
     rows,
+    preliminaryNeeds,
     totals,
     priceSnapshotIds,
     revisionProjection: {
@@ -505,6 +746,10 @@ export async function compileCanonicalEstimateCore(
       currencyCode: input.currencyCode,
       totals,
       rows: rows.map((row) => ({ rowId: row.row_id, rowSha256: row.row_sha256 })),
+      preliminaryNeeds: preliminaryNeeds.map((need) => ({
+        rowId: need.row_id,
+        needSha256: need.need_sha256,
+      })),
       compilerVersion: input.compilerVersion,
     },
   };

@@ -20,8 +20,9 @@ function text(value: unknown): string {
   return String(value ?? "").trim();
 }
 
-function traceIdentity(row: CanonicalEstimateRevisionRowView): JsonRecord | null {
-  for (const raw of row.normativeTrace) {
+function traceIdentity(normativeTrace: unknown): JsonRecord | null {
+  if (!Array.isArray(normativeTrace)) return null;
+  for (const raw of normativeTrace) {
     const trace = record(raw);
     if (trace) return trace;
   }
@@ -29,34 +30,32 @@ function traceIdentity(row: CanonicalEstimateRevisionRowView): JsonRecord | null
 }
 
 function parameterValues(
-  revision: CanonicalEstimateRevisionView,
+  parameters: Readonly<Record<string, unknown>>,
+  capturedAt: string,
 ): Readonly<Record<string, ProfessionalParameterValueV4>> {
-  return Object.fromEntries(Object.entries(revision.parameters).flatMap(([parameterId, value]) => {
+  return Object.fromEntries(Object.entries(parameters).flatMap(([parameterId, value]) => {
     if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") return [];
     return [[parameterId, {
       value,
       unit_id: parameterId.endsWith("_m2") ? "m2" : null,
       source_type: parameterId === "product_profile_id" ? "APPLICABLE_NORM" : "USER_EXPLICIT",
-      source_id: `canonical-backend-revision:${revision.revisionId}:${parameterId}`,
-      captured_at: revision.createdAt,
+      source_id: `canonical-backend-physical-input:${parameterId}`,
+      captured_at: capturedAt,
       confidence: "high",
       applicability: "Value preserved by the immutable canonical backend revision.",
     } satisfies ProfessionalParameterValueV4]];
   }));
 }
 
-/**
- * Replays a definition-declared physical binding against the immutable values
- * of the backend revision. The adapter only projects the resolver result; it
- * does not evaluate a second quantity formula.
- */
-export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
-  revision: CanonicalEstimateRevisionView;
-  row: CanonicalEstimateRevisionRowView;
+export function resolveCanonicalEstimatePhysicalNormApplicabilityV1(input: {
+  parameters: Readonly<Record<string, unknown>>;
+  capturedAt: string;
+  resourceGraph: unknown;
+  normativeTrace: unknown;
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 | null {
-  const resourceGraph = record(input.row.calculationTrace?.resourceGraph);
+  const resourceGraph = record(input.resourceGraph);
   const binding = record(resourceGraph?.professionalPhysicalNormBindingV1);
-  const trace = traceIdentity(input.row);
+  const trace = traceIdentity(input.normativeTrace);
   if (!binding || !trace) return null;
   const scopeMode = text(binding.scope_mode);
   if (scopeMode !== "MINIMAL_EXPLICIT_SCOPE" && scopeMode !== "FULL_APPLICABLE_SCOPE") return null;
@@ -65,7 +64,7 @@ export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
     operation_class: text(binding.operation_class),
     material_system: text(binding.material_system) || undefined,
     scope_mode: scopeMode,
-    parameter_values: parameterValues(input.revision),
+    parameter_values: parameterValues(input.parameters, input.capturedAt),
   });
   const traceSourceId = text(trace.source_id ?? trace.sourceId ?? trace.document_code);
   const traceNormId = text(trace.norm_id ?? trace.normId);
@@ -80,4 +79,22 @@ export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
     return null;
   }
   return resolution;
+}
+
+/**
+ * Replays a definition-declared physical binding against the immutable values
+ * of the backend revision. The adapter only projects the resolver result; it
+ * does not evaluate a second quantity formula.
+ */
+export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
+  revision: CanonicalEstimateRevisionView;
+  row: CanonicalEstimateRevisionRowView;
+}): ProfessionalPhysicalNormApplicabilityResolutionV1 | null {
+  const resourceGraph = record(input.row.calculationTrace?.resourceGraph);
+  return resolveCanonicalEstimatePhysicalNormApplicabilityV1({
+    parameters: input.revision.parameters,
+    capturedAt: input.revision.createdAt,
+    resourceGraph,
+    normativeTrace: input.row.normativeTrace,
+  });
 }
