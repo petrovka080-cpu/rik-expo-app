@@ -21,6 +21,8 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("STOP_EXACT_NORM_FORBIDDEN_SOURCE_RETAINED");
     expect(source).toContain("STOP_EXACT_NORM_SOURCE_SNAPSHOT_SHA256_INVALID");
     expect(source).toContain("const baselineNormativeSources = Object.fromEntries");
+    expect(source).toContain('capability: "PRICE_AND_PROCUREMENT"');
+    expect(source).toContain('contract: "real-professional-estimates-r3.content-passport.v1"');
   });
 
   test("creates a normalized binding and cannot activate or release", () => {

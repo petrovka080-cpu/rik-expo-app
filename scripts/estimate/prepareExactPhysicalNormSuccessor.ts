@@ -914,11 +914,12 @@ async function main(): Promise<void> {
             JSON.stringify([
               { capability: "PARAMETERS", status: "GREEN" },
               { capability: "FORMULAS", status: "GREEN" },
-              { capability: "NORMATIVE_BINDING", status: "GREEN" },
-              { capability: "PRICE", status: "UNKNOWN_VISIBLE" },
-              { capability: "PROCUREMENT", status: "NOT_APPLICABLE_NO_MATERIAL_ROWS" },
+              { capability: "RESOURCES", status: "GREEN_EXACT_NORMATIVE_BINDING" },
+              { capability: "PRICE_AND_PROCUREMENT", status: "UNKNOWN_VISIBLE_NO_MATERIAL_ROWS" },
             ]), profile.parameters.length, 1, 1,
-            JSON.stringify({ status: "GREEN", allowed: true, contract: CONTRACT,
+            JSON.stringify({ status: "GREEN", allowed: true,
+              contract: "real-professional-estimates-r3.content-passport.v1",
+              waveContract: CONTRACT,
               exactPhysicalNormProfile: profileId, activationAllowed: false, productionEligible: false }),
             sha256({ definitionSha256, parameterSchemaSha256, acceptanceEvidenceSha256 }), head, tree,
           ]);
