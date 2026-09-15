@@ -79,6 +79,8 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
 const NORMATIVE_PARAMETER_IDS = new Set<string>(MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS);
+const MASONRY_BRICK_WALL_GROUP_ID = "wg:base:masonry_interior_brick_wall_lay";
+const MASONRY_BRICK_WALL_GROUP_NAME_RU = "кладка кирпичных стен";
 const SOURCE_PATHS = [
   "data/estimate-norms/professional/masonry.json",
   "src/lib/estimate/v4/domainFactory/masonryBiaTn10PhysicalNormV1.ts",
@@ -294,6 +296,14 @@ async function cloneSearch(client: Client, input: {
     select $1,group_id,group_name_ru,domain_id,system_id,subsystem_id,assembly_id,
       work_family_id,breadcrumb,member_count,member_set_sha256,oracle_disposition
     from public.estimate_search_group where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
+  const normalizedGroup = await client.query(`update public.estimate_search_group set
+      group_name_ru=$3,breadcrumb=array[$3]::text[]
+    where search_release_id=$1 and group_id=$2`, [
+    input.searchReleaseId,
+    MASONRY_BRICK_WALL_GROUP_ID,
+    MASONRY_BRICK_WALL_GROUP_NAME_RU,
+  ]);
+  invariant(normalizedGroup.rowCount === 1, `STOP_BIA_TN10_SEARCH_GROUP_AUDIT:${normalizedGroup.rowCount}`);
   await client.query(`insert into public.estimate_search_clarification_question(
       search_release_id,question_id,candidate_set_sha256,candidate_ids,discriminator_field,prompt_ru,
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence)
@@ -750,8 +760,13 @@ async function main(): Promise<void> {
                   where coalesce(trace->>'source_id',trace->>'sourceId',trace->>'document_code')=any($3::text[]))) forbidden_legacy_rows`, [
             definitionId, BIA_TN10_MASONRY_SOURCE_ID, FORBIDDEN_LEGACY_SOURCE_IDS,
           ])).rows[0] as Json;
-          const searchTarget = (await client.query(`select definition_version_id,required_inputs_count,selectable,canonical_name_ru
-            from public.estimate_search_document where search_release_id=$1 and catalog_id=$2`, [
+          const searchTarget = (await client.query(`select document.definition_version_id,
+              document.required_inputs_count,document.selectable,document.canonical_name_ru,
+              group_row.group_name_ru,group_row.breadcrumb
+            from public.estimate_search_document document
+            join public.estimate_search_group group_row
+              on group_row.search_release_id=document.search_release_id and group_row.group_id=document.group_id
+            where document.search_release_id=$1 and document.catalog_id=$2`, [
             searchReleaseId, TARGET.catalogId,
           ])).rows[0] as Json;
           invariant(Number(manifestAudit.identities) === 10_331 && Number(manifestAudit.replaced) === 1,
@@ -765,7 +780,9 @@ async function main(): Promise<void> {
           `STOP_BIA_TN10_TARGET_AUDIT:${JSON.stringify(targetAudit)}`);
           invariant(String(searchTarget.definition_version_id) === definitionId
             && Number(searchTarget.required_inputs_count) === 22 && searchTarget.selectable === true
-            && searchTarget.canonical_name_ru === TARGET.titleRu,
+            && searchTarget.canonical_name_ru === TARGET.titleRu
+            && searchTarget.group_name_ru === MASONRY_BRICK_WALL_GROUP_NAME_RU
+            && JSON.stringify(searchTarget.breadcrumb) === JSON.stringify([MASONRY_BRICK_WALL_GROUP_NAME_RU]),
           `STOP_BIA_TN10_SEARCH_TARGET_AUDIT:${JSON.stringify(searchTarget)}`);
           await client.query(`update public.estimate_definition_release
             set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),

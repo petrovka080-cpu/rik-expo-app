@@ -36,4 +36,10 @@ describe("BIA TN 10 masonry family successor", () => {
       'input.catalog.catalogId !== "canonical-work:base:masonry_interior_brick_wall_lay_standard"',
     );
   });
+
+  test("keeps the shared masonry group label neutral across contextual variants", () => {
+    expect(source).toContain('MASONRY_BRICK_WALL_GROUP_NAME_RU = "кладка кирпичных стен"');
+    expect(source).toContain("group_name_ru=$3,breadcrumb=array[$3]::text[]");
+    expect(source).toContain("searchTarget.group_name_ru === MASONRY_BRICK_WALL_GROUP_NAME_RU");
+  });
 });
