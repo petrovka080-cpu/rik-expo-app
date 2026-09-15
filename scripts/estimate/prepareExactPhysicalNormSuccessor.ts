@@ -655,6 +655,14 @@ async function main(): Promise<void> {
     resource: { id: profile.rowId, sourceId: profile.sourceId, physicalBinding: profile.physicalBinding },
   });
   const acceptanceEvidenceSha256 = sha256({ coreAcceptance, parameterSchemaSha256, definitionSha256 });
+  const normativeSourceSnapshotSha256 = sha256({
+    sourceId: profile.sourceId,
+    sourceVersion: profile.sourceVersion,
+    sourceDefinitionHash: profile.sourceDefinitionHash,
+    exactLocator: profile.exactLocator,
+  });
+  invariant(/^[0-9a-f]{64}$/u.test(normativeSourceSnapshotSha256),
+    "STOP_EXACT_NORM_SOURCE_SNAPSHOT_SHA256_INVALID");
   const normativeTrace = [{
     document_code: profile.sourceId,
     source_id: profile.sourceId,
@@ -827,7 +835,7 @@ async function main(): Promise<void> {
                 guide_short_ru: parameter.guideRu, canonical_unit: parameter.unitId,
                 source_role: parameter.valueSourceRole, source_document: profile.sourceId,
                 source_edition_status: "reviewed-exact-version", source_locator: profile.exactLocator,
-                guide_version: CONTRACT, source_snapshot_hash: profile.sourceDefinitionHash,
+                guide_version: CONTRACT, source_snapshot_hash: normativeSourceSnapshotSha256,
                 applicability: profile.physicalResultRu, verified_at: "2026-09-15T00:00:00+06:00" },
               normative_links: [{ sourceId: profile.sourceId, documentTitleRu: profile.sourceTitle,
                 editionStatus: "reviewed-exact-version", locator: profile.exactLocator,

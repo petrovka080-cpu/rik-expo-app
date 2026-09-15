@@ -19,6 +19,7 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("round_to(measured_formwork_contact_area_m2 * 1, 4)");
     expect(source).toContain("src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1");
     expect(source).toContain("STOP_EXACT_NORM_FORBIDDEN_SOURCE_RETAINED");
+    expect(source).toContain("STOP_EXACT_NORM_SOURCE_SNAPSHOT_SHA256_INVALID");
   });
 
   test("creates a normalized binding and cannot activate or release", () => {
