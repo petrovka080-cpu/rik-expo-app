@@ -32,6 +32,15 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS");
     expect(source).toContain('element_type: "STRIP_FOUNDATION"');
     expect(source).toContain('single_or_double_sided_scope: "DOUBLE_SIDED"');
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_standard");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_high_load");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_large_area");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_repair");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_small_area");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_technical_room");
+    expect(source).toContain("canonical-work:base:concrete_foundation_interior_slab_foundation_form_wet_zone");
+    expect(source).toContain("SLAB_FOUNDATION_FORMWORK_PROFILE_TARGETS");
+    expect(source).toContain('element_type: "SLAB_FOUNDATION"');
     expect(source).toContain("round_to(measured_formwork_contact_area_m2 * 1, 4)");
     expect(source).toContain("src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1");
     expect(source).toContain("STOP_EXACT_NORM_FORBIDDEN_SOURCE_RETAINED");

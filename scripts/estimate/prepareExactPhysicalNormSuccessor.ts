@@ -360,6 +360,21 @@ const STRIP_FOUNDATION_FORMWORK_SCENARIO = Object.freeze({
   estimator_approval_reference: "EST-SF-FW-01",
 });
 
+const SLAB_FOUNDATION_FORMWORK_SCENARIO = Object.freeze({
+  product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
+  measured_formwork_contact_area_m2: 100,
+  project_drawing_reference: "SLAB-FW-01-REV-A",
+  element_type: "SLAB_FOUNDATION",
+  element_dimensions_and_face_count: "PROJECT_MEASURED_CONTACT_AREA:100 m2; formed slab edges per drawing",
+  plain_or_special_finish: "PLAIN",
+  vertical_battered_horizontal_or_curved_class: "VERTICAL",
+  single_or_double_sided_scope: "SINGLE_SIDED",
+  openings_voids_and_deduction_rule: "PROJECT_RULE:no openings in measured scope",
+  permanent_or_removable_formwork: "REMOVABLE",
+  project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:SLAB-FW-01-REV-A",
+  estimator_approval_reference: "EST-SLAB-FW-01",
+});
+
 type FormworkProfileTarget = Readonly<{
   profileId: string;
   targetCatalogId: string;
@@ -420,6 +435,37 @@ const STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[
     targetCatalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_wet_zone",
     scopeTitleRu: "устройство опалубки ленточного фундамента во влажной зоне",
     scenarioParameters: STRIP_FOUNDATION_FORMWORK_SCENARIO },
+]);
+
+const SLAB_FOUNDATION_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze([
+  { profileId: "formwork-rics-nrm2-slab-foundation-standard",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_standard",
+    scopeTitleRu: "устройство опалубки плитного фундамента в стандартной зоне",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-high-load",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_high_load",
+    scopeTitleRu: "устройство опалубки плитного фундамента для высокой нагрузки",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-large-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_large_area",
+    scopeTitleRu: "устройство опалубки плитного фундамента на большой площади",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-repair",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_repair",
+    scopeTitleRu: "устройство опалубки плитного фундамента при локальном ремонте основания",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-small-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_small_area",
+    scopeTitleRu: "устройство опалубки плитного фундамента на малой площади",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-technical-room",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_technical_room",
+    scopeTitleRu: "устройство опалубки плитного фундамента в техническом помещении",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
+  { profileId: "formwork-rics-nrm2-slab-foundation-wet-zone",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_form_wet_zone",
+    scopeTitleRu: "устройство опалубки плитного фундамента во влажной зоне",
+    scenarioParameters: SLAB_FOUNDATION_FORMWORK_SCENARIO },
 ]);
 
 function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
@@ -486,7 +532,11 @@ function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfil
 }
 
 const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.freeze(Object.fromEntries(
-  [...FORMWORK_PROFILE_TARGETS, ...STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS]
+  [
+    ...FORMWORK_PROFILE_TARGETS,
+    ...STRIP_FOUNDATION_FORMWORK_PROFILE_TARGETS,
+    ...SLAB_FOUNDATION_FORMWORK_PROFILE_TARGETS,
+  ]
     .map((target) => [target.profileId, formworkProfile(target)]),
 ));
 
