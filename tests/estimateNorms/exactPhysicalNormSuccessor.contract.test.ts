@@ -24,6 +24,7 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain('capability: "PRICE_AND_PROCUREMENT"');
     expect(source).toContain('contract: "real-professional-estimates-r3.content-passport.v1"');
     expect(source).toContain("normative_classifiers=$10::text[],applicability_tags=$11::text[]");
+    expect(source).toContain("active_forbidden_source_rows");
   });
 
   test("creates a normalized binding and cannot activate or release", () => {

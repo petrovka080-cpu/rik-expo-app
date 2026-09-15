@@ -998,9 +998,12 @@ async function main(): Promise<void> {
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1) resources,
               (select count(*)::int from public.estimate_work_normative_binding where definition_version_id=$1) normalized_bindings,
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
-                and source_metadata::text like '%formwork_contact_area_m2_m3_concrete_element%') forbidden_source_rows,
+                and (coalesce(resource_graph#>>'{professionalPhysicalNormBindingV1,source_id}','')=any($2::text[])
+                  or exists(select 1 from jsonb_array_elements(coalesce(source_metadata->'normativeTrace','[]'::jsonb)) trace
+                    where trace->>'source_id'=any($2::text[])))) active_forbidden_source_rows,
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
-                and procurement_eligible) procurement_rows`, [definitionId])).rows[0] as Json;
+                and procurement_eligible) procurement_rows`,
+          [definitionId, profile.forbiddenSourceIds])).rows[0] as Json;
           const searchTarget = (await client.query(`select definition_version_id::text,required_inputs_count,
               canonical_name_ru,primary_uom,selectable
             from public.estimate_search_document where search_release_id=$1 and catalog_id=$2`,
@@ -1010,7 +1013,7 @@ async function main(): Promise<void> {
           invariant(Number(targetAudit.parameters) === profile.parameters.length
             && Number(targetAudit.formulas) === 1 && Number(targetAudit.resources) === 1
             && Number(targetAudit.normalized_bindings) === 1
-            && Number(targetAudit.forbidden_source_rows) === 0
+            && Number(targetAudit.active_forbidden_source_rows) === 0
             && Number(targetAudit.procurement_rows) === 0,
           `STOP_EXACT_NORM_TARGET_AUDIT:${JSON.stringify(targetAudit)}`);
           invariant(String(searchTarget.definition_version_id) === definitionId
