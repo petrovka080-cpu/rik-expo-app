@@ -9,7 +9,7 @@ describe("exact physical norm Web acceptance harness", () => {
 
   test("uses the prepared successor and canonical revision/artifact APIs", () => {
     expect(source).toContain('"8791b75f-683f-5e72-a56a-54abc2f82379"');
-    expect(source).toContain('"0dab7419-7eb5-5f0c-bdd6-57a39fcd6ee7"');
+    expect(source).toContain('"f9d73863-0c5b-59ab-940f-8fd2c8b50525"');
     expect(source).toContain('PROFILE_ID === "strip-foundation-nrmca-cip31"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
