@@ -18,6 +18,8 @@ export const MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID =
   "canonical-work:base:masonry_interior_brick_wall_lay_standard" as const;
 export const MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU =
   "Кладка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4" as const;
+export const MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256 =
+  "719fb6aaef220d986eefd6a0104253f08257a17e669923fbce9edca9ae7b52c1" as const;
 
 export type MasonryBrickWallBiaTn10InputValue = string | number | boolean;
 
@@ -127,7 +129,7 @@ export const MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS: readonly MasonryBrickWallBi
         source_document: BIA_TN10_MASONRY_SOURCE_ID,
         source_locator: BIA_TN10_MASONRY_SOURCE_METADATA.exact_locator,
         guide_version: "masonry-brick-wall-bia-tn10-r1",
-        source_snapshot_hash: BIA_TN10_MASONRY_SOURCE_METADATA.definition_hash,
+        source_snapshot_hash: MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256,
         applicability: "Только выбранная строка BIA TN 10 Table 4 для подтверждённого обожжённого глиняного кирпича.",
         verified_at: "2026-09-15T00:00:00+06:00",
         guide_validation_policy: "REJECT_OUTSIDE_EXACT_BIA_TN10_APPLICABILITY",
