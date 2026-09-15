@@ -55,6 +55,9 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
       parameter.required === true
       && parameter.default_value == null
       && parameter.truth_metadata.preliminary_compilation_allowed === false
+      && /^[0-9a-f]{64}$/u.test(String(
+        (parameter.truth_metadata.guide as Record<string, unknown>).source_snapshot_hash,
+      ))
     ))).toBe(true);
     expect(FORMWORK_FRAMI_XLIFE_FORMULAS).toHaveLength(20);
     expect(FORMWORK_FRAMI_XLIFE_RESOURCES).toHaveLength(24);

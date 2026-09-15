@@ -22,6 +22,8 @@ export const FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID =
   "standard-profile:doka-frami-xlife:foundation-project-kit:2023-11" as const;
 export const FORMWORK_FRAMI_XLIFE_SOURCE_ID =
   "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11" as const;
+export const FORMWORK_FRAMI_XLIFE_SOURCE_PACK_SHA256 =
+  "f65a2f09b226bf662db7c9e046e27779bbb4fcbcc26e50c3eb1e7b50d91eadd7" as const;
 export const FORMWORK_FRAMI_XLIFE_TITLE_RU =
   "Съёмная опалубка ростверка Doka Frami Xlife по утверждённой проектной раскладке" as const;
 
@@ -310,7 +312,7 @@ export const FORMWORK_FRAMI_XLIFE_PARAMETERS: readonly FormworkFramiXlifeParamet
           source_locator: manufacturerBound ? FORMWORK_FRAMI_XLIFE_SOURCE_METADATA.exact_locator : null,
           guide_version: "formwork-frami-xlife-project-kit-r1",
           source_snapshot_hash: manufacturerBound
-            ? FORMWORK_FRAMI_XLIFE_SOURCE_METADATA.definition_hash
+            ? FORMWORK_FRAMI_XLIFE_SOURCE_PACK_SHA256
             : "9f8108ca88b86165a988763f65dbc7899754b6cc3997c5b221c792c94cc301dc",
           applicability: manufacturerBound
             ? "Только система Doka Frami Xlife для фундамента в пределах официально описанной применимости."
