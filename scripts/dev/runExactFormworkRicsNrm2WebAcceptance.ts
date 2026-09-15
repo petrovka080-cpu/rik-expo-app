@@ -7,23 +7,50 @@ import { Client } from "pg";
 
 type Json = Record<string, any>;
 
+const argValue = (name: string): string | null => {
+  const prefix = `${name}=`;
+  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
+};
+
+const PROFILE_ID = argValue("--profile") ?? "formwork-rics-nrm2";
+const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
+
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379";
-const SEARCH_RELEASE_ID = "320b582e-5a6d-5354-b3bf-f801e4490303";
-const DEFINITION_ID = "26c2fee8-1652-50f9-b271-6a2325c84e3c";
-const CATALOG_ID = "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
-const ROW_ID = "formwork:rics-nrm2:measured-contact-area:work";
-const SOURCE_ID = "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
-const NORM_ID = "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
-const EXPECTED_TITLE = "Монтаж и демонтаж опалубки по измеренной площади контакта";
+const RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "0dab7419-7eb5-5f0c-bdd6-57a39fcd6ee7"
+  : "8791b75f-683f-5e72-a56a-54abc2f82379";
+const SEARCH_RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "57acc6be-a43d-586d-9a65-951f412c784f"
+  : "320b582e-5a6d-5354-b3bf-f801e4490303";
+const DEFINITION_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "9ada2063-78f8-5358-a897-6cc650dcfcae"
+  : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
+const CATALOG_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "canonical-work:expanded:strip_foundation"
+  : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
+const ROW_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "main_concrete"
+  : "formwork:rics-nrm2:measured-contact-area:work";
+const SOURCE_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+  : "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
+const NORM_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+  : "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
+const EXPECTED_TITLE = IS_NRMCA_STRIP_FOUNDATION
+  ? "Бетонная смесь"
+  : "Монтаж и демонтаж опалубки по измеренной площади контакта";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
-const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors/web-formwork-rics-nrm2");
+const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
+  IS_NRMCA_STRIP_FOUNDATION ? "web-strip-foundation-nrmca-cip31" : "web-formwork-rics-nrm2");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = "Монтаж и демонтаж опалубки по измеренной площади контакта";
-const SELECTED_DETAILS = [
+const SEARCH_QUERY = IS_NRMCA_STRIP_FOUNDATION
+  ? "Устройство монолитного железобетонного ленточного фундамента"
+  : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+const FORMWORK_DETAILS = [
   "RICS NRM 2.",
   "Измеренная площадь контакта: 100 м2;",
   "ссылка на чертёж: FW-149-REV-A;",
@@ -38,9 +65,30 @@ const SELECTED_DETAILS = [
   "сценарий приёмки: WEB-PREPARE-SAME-RELEASE-V1;",
   "согласование сметчика: EST-FW-149.",
 ];
+const NRMCA_STRIP_FOUNDATION_DETAILS = [
+  "по NRMCA CIP 31;",
+  "длина самой ленты 40 м; ширина самой ленты 0,5 м; высота бетонной ленты 1,5 м;",
+  "толщина бетонной подготовки 0,1 м; класс бетона B25; водонепроницаемость W6; морозостойкость F150; подвижность смеси P4;",
+  "запас бетонной смеси 8%; масса арматуры 2,4 т; масса вязальной проволоки 28,8 кг; транспортная масса опалубки 12 т;",
+  "placement method: pump; доставка бетонной смеси 18 км; доставка арматуры 18 км; доставка опалубки 18 км;",
+  "земляные работы входят: да; объём разработки грунта 54 м3;",
+  "подушка основания не входит; гидроизоляция не входит; обратная засыпка не входит; вывоз грунта не входит;",
+  "plan volume calculation reference: KJ-4 axes 1-8/A-D rev.5;",
+  "mix design or project specification reference: KJ-4 note 7, mix card RM-25-114;",
+  "mixture designation: B25 W6 F150 P4, RM-25-114;",
+  "placement location: strip foundation axes 1-8/A-D, pour 1;",
+  "contingency selection justification: complex formwork and pump remainder per method statement;",
+  "delivery schedule and truck capacity: 4 trucks x 8 m3, final load confirmed before dispatch;",
+  "producer order confirmation: RM-PRODUCER-2026-0912-17;",
+  "estimator approval reference: EST-APPROVAL-2026-0912-04;",
+  "acceptance scenario: WEB-PREPARE-NRMCA-CIP31-V1.",
+];
+const SELECTED_DETAILS = IS_NRMCA_STRIP_FOUNDATION
+  ? NRMCA_STRIP_FOUNDATION_DETAILS
+  : FORMWORK_DETAILS;
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(" ");
 
-const FIXTURE: Readonly<Json> = Object.freeze({
+const FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
   product_profile_id: "standard-profile:rics-nrm2:formwork-measured-contact-area:v1",
   measured_formwork_contact_area_m2: 100,
   project_drawing_reference: "FW-149-REV-A",
@@ -54,6 +102,62 @@ const FIXTURE: Readonly<Json> = Object.freeze({
   project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:FW-149-REV-A",
   estimator_approval_reference: "EST-FW-149",
 });
+const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
+  scope_variant: "full_reinforced_structure",
+  total_axis_length_m: 40,
+  strip_width_m: 0.5,
+  strip_height_m: 1.5,
+  preparation_included: true,
+  preparation_thickness_m: 0.1,
+  concrete_class: "B25",
+  watertightness: "W6",
+  frost_resistance: "F150",
+  mobility: "P4",
+  concrete_order_allowance_percent: 8,
+  product_profile_id: "standard-profile:nrmca-cip31:ready-mix-order:v1",
+  plan_volume_calculation_reference: "KJ-4 axes 1-8/A-D rev.5",
+  mix_design_or_project_specification_reference: "KJ-4 note 7, mix card RM-25-114",
+  mixture_designation: "B25 W6 F150 P4, RM-25-114",
+  placement_location: "strip foundation axes 1-8/A-D, pour 1",
+  contingency_selection_justification: "complex formwork and pump remainder per method statement",
+  delivery_schedule_and_truck_capacity: "4 trucks x 8 m3, final load confirmed before dispatch",
+  producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
+  estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
+  reinforcement_mass_t: 2.4,
+  binding_wire_mass_kg: 28.8,
+  reinforcement_fabrication: "ready_cages",
+  formwork_sides: 2,
+  formwork_transport_mass_t: 12,
+  concrete_supply: "ready_mix",
+  placement_method: "pump",
+  curing_method: "membrane",
+  winter_mode: false,
+  pump_productivity_m3_h: 45,
+  delivery_separately_priced: true,
+  concrete_delivery_distance_km: 18,
+  reinforcement_delivery_distance_km: 18,
+  formwork_delivery_distance_km: 18,
+  groundworks_included: true,
+  excavation_volume_m3: 54,
+  excavator_productivity_m3_h: 30,
+  foundation_bedding_included: false,
+  waterproofing_included: false,
+  backfill_included: false,
+  soil_disposal_included: false,
+});
+const FIXTURE = IS_NRMCA_STRIP_FOUNDATION
+  ? NRMCA_STRIP_FOUNDATION_FIXTURE
+  : FORMWORK_FIXTURE;
+const PRIMARY_MEASURE_PARAMETER_ID = IS_NRMCA_STRIP_FOUNDATION
+  ? "total_axis_length_m"
+  : "measured_formwork_contact_area_m2";
+const ORIGINAL_PRIMARY_VALUE = IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
+const SENSITIVITY_PRIMARY_VALUE = IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
+const ORIGINAL_TARGET_QUANTITY = IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
+const SENSITIVITY_TARGET_QUANTITY = IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
+const TARGET_UNIT_ID = IS_NRMCA_STRIP_FOUNDATION ? "m3" : "m2";
+const SEARCH_VISIBLE_NEEDLE = IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
+const SCENARIO_LABEL = IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(`EXACT_FORMWORK_WEB:${code}`);
@@ -195,45 +299,49 @@ function preliminaryNeeds(revision: Json): Json[] {
   return Array.isArray(revision.preliminaryNeeds) ? revision.preliminaryNeeds : [];
 }
 
-function assertExactRevision(revision: Json, rows: Json[], expectedArea: number): Json {
+function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: number): Json {
   invariant(revision.releaseId === RELEASE_ID, "REVISION_RELEASE_DRIFT");
   invariant(revision.catalogId === CATALOG_ID, "REVISION_CATALOG_DRIFT");
   invariant(revision.definitionVersionId === DEFINITION_ID, "REVISION_DEFINITION_DRIFT");
   invariant(preliminaryNeeds(revision).length === 0, "REVISION_REMAINS_PRELIMINARY");
-  invariant(rows.length === 1 && revision.rowCount === 1, "REVISION_ROW_DENOMINATOR_RED");
-  const row = rows[0]!;
+  invariant(rows.length === Number(revision.rowCount)
+    && (IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
+  "REVISION_ROW_DENOMINATOR_RED");
+  const row = rows.find((candidate) => candidate.rowId === ROW_ID);
+  invariant(row != null, "TARGET_ROW_MISSING");
   invariant(row.rowId === ROW_ID && String(row.titleRu).includes(EXPECTED_TITLE), "ROW_IDENTITY_RED");
-  invariant(Number(row.quantity) === expectedArea && row.unitId === "m2", "ROW_QUANTITY_OR_UNIT_RED");
+  invariant(Number(row.quantity) === expectedQuantity && row.unitId === TARGET_UNIT_ID,
+    "ROW_QUANTITY_OR_UNIT_RED");
   invariant(row.unitPrice == null && row.amount == null, "UNKNOWN_PRICE_WAS_ZEROED");
-  invariant(row.procurementEligible === false && row.includedInProcurement === false,
-    "NON_MATERIAL_ROW_REACHED_PROCUREMENT");
+  invariant(IS_NRMCA_STRIP_FOUNDATION
+    ? row.procurementEligible === true && row.includedInProcurement === true
+    : row.procurementEligible === false && row.includedInProcurement === false,
+  "TARGET_ROW_PROCUREMENT_TRUTH_RED");
   invariant(row.includedInEstimate === true, "EXACT_ROW_EXCLUDED");
-  const trace = Array.isArray(row.normativeTrace) ? row.normativeTrace[0] : null;
+  const trace = Array.isArray(row.normativeTrace)
+    ? row.normativeTrace.find((candidate: Json) => candidate.source_id === SOURCE_ID
+      && candidate.norm_id === NORM_ID)
+    : null;
   invariant(trace?.source_id === SOURCE_ID && trace?.norm_id === NORM_ID,
     "NORMALIZED_SOURCE_IDENTITY_RED");
   const binding = row.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
   invariant(binding?.product_profile_id === FIXTURE.product_profile_id,
     "PHYSICAL_BINDING_MISSING");
-  invariant(Number(revision.totals?.unpricedRowCount) === 1
+  invariant(Number(revision.totals?.unpricedRowCount) > 0
     && Number(revision.totals?.pricedRowCount) === 0,
   "UNKNOWN_PRICE_TOTALS_RED");
   return row;
 }
 
 async function ensureFullRevision(authorization: string, revision: Json): Promise<Json> {
-  if (preliminaryNeeds(revision).length === 0
-    && Object.entries(FIXTURE).every(([key, value]) => revision.parameters?.[key] === value)) return revision;
-  return waitForSuccessfulRevision(authorization, await apiPost(authorization, "jobs/recalculate", {
-    idempotencyKey: `exact-formwork-full-${revision.revisionId}`,
-    catalogId: CATALOG_ID,
-    parentRevisionId: revision.revisionId,
-    sourceRequestText: revision.sourceRequestText,
-    primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-    parameters: { ...(revision.parameters ?? {}), ...FIXTURE },
-    currencyCode: revision.currencyCode,
-    rowOverrides: revision.amendmentContract?.rowOverrides ?? {},
-    customRows: revision.amendmentContract?.customRows ?? [],
-  }));
+  void authorization;
+  invariant(preliminaryNeeds(revision).length === 0, "WEB_PREPARE_REMAINS_PRELIMINARY");
+  const mismatches = Object.entries(FIXTURE)
+    .filter(([key, value]) => revision.parameters?.[key] !== value)
+    .map(([key]) => key);
+  invariant(mismatches.length === 0,
+    `WEB_PREPARE_DID_NOT_CREATE_FULL_EXACT_REVISION:${mismatches.join(",")}`);
+  return revision;
 }
 
 async function buildArtifact(
@@ -285,8 +393,9 @@ async function databaseProof(revisionIds: string[], negativeJobId: string): Prom
       where id=$1`, [RELEASE_ID])).rows[0];
     const search = (await client.query(`select id::text,status,activated_at from public.estimate_search_index_release
       where id=$1`, [SEARCH_RELEASE_ID])).rows[0];
-    invariant(revisions.length === revisionIds.length && rows.length === revisionIds.length,
-      "DATABASE_REVISION_PARITY_RED");
+    invariant(revisions.length === revisionIds.length
+      && revisionIds.every((revisionId) => rows.some((row) => row.revision_id === revisionId)),
+    "DATABASE_REVISION_PARITY_RED");
     invariant(release.status === "prepared" && release.activated_at == null
       && search.status === "draft" && search.activated_at == null, "CANDIDATE_ACTIVATION_DRIFT");
     return { revisions, rows, negativeJob, release, search };
@@ -302,14 +411,20 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
       .filter({ hasText: EXPECTED_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
     const body = await page.locator("body").innerText();
-    invariant(body.includes("120") && !body.includes("2.4"), "COLD_REOPEN_QUANTITY_OR_OLD_FACTOR_RED");
+    const expectedQuantityText = String(SENSITIVITY_TARGET_QUANTITY);
+    invariant(body.includes(expectedQuantityText)
+      || body.includes(expectedQuantityText.replace(".", ",")), "COLD_REOPEN_QUANTITY_RED");
+    if (!IS_NRMCA_STRIP_FOUNDATION) {
+      invariant(!body.includes("2.4"), "COLD_REOPEN_OLD_FACTOR_RED");
+    }
     await page.screenshot({ path: screenshot, fullPage: true });
     return {
       revisionId: revision.revisionId,
       revisionNumber: revision.revisionNumber,
       rowTitleVisible: true,
-      quantity120Visible: true,
-      oldFactorVisible: false,
+      expectedQuantity: SENSITIVITY_TARGET_QUANTITY,
+      expectedQuantityVisible: true,
+      oldFactorVisible: IS_NRMCA_STRIP_FOUNDATION ? null : false,
       screenshot,
     };
   } finally {
@@ -360,7 +475,8 @@ async function main(): Promise<void> {
   let searchEvidence: Json;
   let compileIngress: Json;
   try {
-    await page.goto(`${ORIGIN}/request?exactFormwork=${Date.now()}`, { waitUntil: "commit", timeout: 180_000 });
+    await page.goto(`${ORIGIN}/request?exactNormProfile=${encodeURIComponent(PROFILE_ID)}&run=${Date.now()}`,
+      { waitUntil: "commit", timeout: 180_000 });
     await page.getByTestId("local-developer-review-banner").waitFor({ timeout: 180_000 });
     await enterConsumer(page);
     progress("CONSUMER_READY");
@@ -377,10 +493,12 @@ async function main(): Promise<void> {
     const suggestion = page.getByTestId(`consumer-repair-work-suggestion-${selectedIndex + 1}`);
     await suggestion.waitFor({ state: "visible", timeout: 120_000 });
     const selectedWorkText = (await suggestion.innerText()).trim();
-    invariant(selectedWorkText.includes("опалубк"), "SEARCH_VISIBLE_TITLE_RED");
+    invariant(selectedWorkText.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
+      "SEARCH_VISIBLE_TITLE_RED");
     await suggestion.click();
     const selectedPrefix = await input.inputValue();
-    invariant(selectedPrefix.toLocaleLowerCase("ru-RU").includes("опалубк"), "SELECTED_PREFIX_RED");
+    invariant(selectedPrefix.toLocaleLowerCase("ru-RU").includes(SEARCH_VISIBLE_NEEDLE),
+      "SELECTED_PREFIX_RED");
     await input.fill(`${selectedPrefix}${SELECTED_DETAILS.join(" ")}`);
     progress("WORK_SELECTED", { selectedWorkText });
     invariant(authorization.startsWith("Bearer "), "BROWSER_AUTHORIZATION_MISSING");
@@ -434,15 +552,16 @@ async function main(): Promise<void> {
     initialRevision = await waitForSuccessfulRevision(authorization, compileBody);
     fullRevision = await ensureFullRevision(authorization, initialRevision);
     const fullRows = await allRows(authorization, fullRevision.revisionId);
-    originalRow = assertExactRevision(fullRevision, fullRows, 100);
-    progress("FULL_100_GREEN", { revisionId: fullRevision.revisionId });
+    originalRow = assertExactRevision(fullRevision, fullRows, ORIGINAL_TARGET_QUANTITY);
+    progress("FULL_ORIGINAL_GREEN", { revisionId: fullRevision.revisionId,
+      primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY });
     await openRevision(page, fullRevision.revisionId);
     await page.locator('[data-testid^="consumer-repair-item-title-"]')
       .filter({ hasText: EXPECTED_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
-    const originalScreenshot = resolve(OUTPUT_ROOT, "01_full_100m2.png");
+    const originalScreenshot = resolve(OUTPUT_ROOT, `01_full_${ORIGINAL_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: originalScreenshot, fullPage: true });
 
-    const areaChip = page.getByTestId("editable-param-chip-measured_formwork_contact_area_m2");
+    const areaChip = page.getByTestId(`editable-param-chip-${PRIMARY_MEASURE_PARAMETER_ID}`);
     if (!await areaChip.isVisible().catch(() => false)) {
       const toggle = page.getByTestId("request-estimate-parameters-toggle");
       if (await toggle.isVisible().catch(() => false)) await toggle.click();
@@ -451,7 +570,7 @@ async function main(): Promise<void> {
     }
     await areaChip.waitFor({ state: "visible", timeout: 60_000 });
     const areaInput = areaChip.getByTestId("editable-param-popover-input");
-    await areaInput.fill("120");
+    await areaInput.fill(String(SENSITIVITY_PRIMARY_VALUE));
     await page.getByTestId("editable-param-batch-bar").waitFor({ state: "visible", timeout: 30_000 });
     const recalculatePromise = page.waitForResponse((response) => response.url().endsWith("/jobs/recalculate")
       && response.request().method() === "POST", { timeout: 60_000 });
@@ -464,15 +583,18 @@ async function main(): Promise<void> {
     sensitivityRevision = await waitForSuccessfulRevision(authorization, recalculateAccepted);
     invariant(sensitivityRevision.parentRevisionId === fullRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
     const sensitivityRows = await allRows(authorization, sensitivityRevision.revisionId);
-    sensitivityRow = assertExactRevision(sensitivityRevision, sensitivityRows, 120);
-    progress("SENSITIVITY_120_GREEN", { revisionId: sensitivityRevision.revisionId });
+    sensitivityRow = assertExactRevision(sensitivityRevision, sensitivityRows, SENSITIVITY_TARGET_QUANTITY);
+    progress("SENSITIVITY_GREEN", { revisionId: sensitivityRevision.revisionId,
+      primaryValue: SENSITIVITY_PRIMARY_VALUE, targetQuantity: SENSITIVITY_TARGET_QUANTITY });
     await openRevision(page, sensitivityRevision.revisionId);
-    const sensitivityScreenshot = resolve(OUTPUT_ROOT, "02_sensitivity_120m2.png");
+    const sensitivityScreenshot = resolve(OUTPUT_ROOT, `02_sensitivity_${SENSITIVITY_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: sensitivityScreenshot, fullPage: true });
 
     const historyAfter = await api(authorization, `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`);
     const afterRows = Array.isArray(historyAfter.revisions) ? historyAfter.revisions as Json[] : [];
-    const expectedNewRevisionCount = initialRevision.revisionId === fullRevision.revisionId ? 2 : 3;
+    invariant(initialRevision.revisionId === fullRevision.revisionId,
+      "WEB_PREPARE_REQUIRED_HIDDEN_API_RECALCULATION");
+    const expectedNewRevisionCount = 2;
     invariant(afterRows.length === beforeRows.length + expectedNewRevisionCount,
       `HISTORY_DELTA_${afterRows.length - beforeRows.length}_EXPECTED_${expectedNewRevisionCount}`);
     invariant(afterRows.some((entry) => entry.revisionId === fullRevision.revisionId)
@@ -486,13 +608,16 @@ async function main(): Promise<void> {
   }
 
   const activeAuthorization = authorization || apiAuthorization;
+  const negativeParameters = IS_NRMCA_STRIP_FOUNDATION
+    ? { ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2 }
+    : { ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED" };
   const negativeAccepted = await apiPost(activeAuthorization, "jobs/recalculate", {
-    idempotencyKey: `exact-formwork-negative-${sensitivityRevision!.revisionId}`,
+    idempotencyKey: `exact-${PROFILE_ID}-negative-${sensitivityRevision!.revisionId}`,
     catalogId: CATALOG_ID,
     parentRevisionId: sensitivityRevision!.revisionId,
     sourceRequestText: sensitivityRevision!.sourceRequestText,
-    primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-    parameters: { ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED" },
+    primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
+    parameters: negativeParameters,
     currencyCode: sensitivityRevision!.currencyCode,
     rowOverrides: sensitivityRevision!.amendmentContract?.rowOverrides ?? {},
     customRows: sensitivityRevision!.amendmentContract?.customRows ?? [],
@@ -506,15 +631,24 @@ async function main(): Promise<void> {
     buildArtifact(activeAuthorization, sensitivityRevision!, "pdf"),
     buildArtifact(activeAuthorization, sensitivityRevision!, "procurement"),
   ]);
-  invariant(pdf.metadata?.sourceRowCount === 1 && pdf.metadata?.projectedRowCount === 1
+  const sensitivityRowCount = Number(sensitivityRevision!.rowCount);
+  invariant(Number(pdf.metadata?.sourceRowCount) === sensitivityRowCount
+    && Number(pdf.metadata?.projectedRowCount) === sensitivityRowCount
     && pdf.metadata?.grandTotalStatus === "PARTIAL_NEEDS_PRICE", "PDF_UNKNOWN_PRICE_TRUTH_RED");
-  invariant(procurement.metadata?.sourceRowCount === 1
-    && procurement.metadata?.selectedProcurementRowCount === 0
-    && procurement.metadata?.projectedRowCount === 0, "PROCUREMENT_ZERO_ROW_TRUTH_RED");
-  progress("ARTIFACTS_GREEN", { pdfBytes: pdf.byteSize, procurementRows: 0 });
+  const expectedProcurementTruth = IS_NRMCA_STRIP_FOUNDATION
+    ? Number(procurement.metadata?.selectedProcurementRowCount) > 0
+      && Number(procurement.metadata?.projectedRowCount)
+        === Number(procurement.metadata?.selectedProcurementRowCount)
+    : Number(procurement.metadata?.selectedProcurementRowCount) === 0
+      && Number(procurement.metadata?.projectedRowCount) === 0;
+  invariant(Number(procurement.metadata?.sourceRowCount) === sensitivityRowCount
+    && expectedProcurementTruth, "PROCUREMENT_ROW_TRUTH_RED");
+  progress("ARTIFACTS_GREEN", { pdfBytes: pdf.byteSize,
+    procurementRows: procurement.metadata?.selectedProcurementRowCount });
 
   const coldContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  const cold = await openColdRevision(coldContext, sensitivityRevision!, resolve(OUTPUT_ROOT, "03_cold_reopen_120m2.png"));
+  const cold = await openColdRevision(coldContext, sensitivityRevision!,
+    resolve(OUTPUT_ROOT, `03_cold_reopen_${SENSITIVITY_PRIMARY_VALUE}.png`));
   await coldContext.close();
   await browser.close();
 
@@ -527,9 +661,13 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
+    schemaVersion: IS_NRMCA_STRIP_FOUNDATION
+      ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31.web-acceptance.v1"
+      : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
     capturedAt: new Date().toISOString(),
-    status: "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
+    status: IS_NRMCA_STRIP_FOUNDATION
+      ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
       searchReleaseId: SEARCH_RELEASE_ID,
@@ -541,9 +679,12 @@ async function main(): Promise<void> {
     principal: { userId, realLocalProviderSession: true, tokensPersisted: false },
     search: searchEvidence!,
     promptSha256: sha256(PROMPT),
-    scenario100: { revisionId: fullRevision!.revisionId, revisionNumber: fullRevision!.revisionNumber,
+    scenarioOriginal: { label: SCENARIO_LABEL, primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
+      primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY,
+      revisionId: fullRevision!.revisionId, revisionNumber: fullRevision!.revisionNumber,
       row: originalRow! },
-    sensitivity120: { revisionId: sensitivityRevision!.revisionId,
+    sensitivity: { primaryValue: SENSITIVITY_PRIMARY_VALUE,
+      targetQuantity: SENSITIVITY_TARGET_QUANTITY, revisionId: sensitivityRevision!.revisionId,
       parentRevisionId: sensitivityRevision!.parentRevisionId,
       revisionNumber: sensitivityRevision!.revisionNumber, row: sensitivityRow! },
     negative: { jobId: negativeJob.jobId, status: negativeJob.status,
