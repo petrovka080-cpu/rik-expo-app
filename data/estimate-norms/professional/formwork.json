@@ -28,6 +28,33 @@
       }
     ]
   },
+  "technology_source_pack_version": "2026.09-doka-frami-xlife-foundation-primary-review-r1",
+  "technology_sources": [
+    {
+      "source_id": "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11",
+      "title": "Doka Foundation formwork Frami Xlife, User Information 999810202",
+      "url": "https://direct.doka.com/_ext/downloads/downloadcenter/999810202_2023_11_online.pdf",
+      "supporting_url": "https://www.doka.com/ea/system-groups/doka-wall-systems/framed-formwork/frami-xlife/index",
+      "document_version": "999810202-2023-11",
+      "exact_locator": "Sections Foundation tying, Plumbing accessories and article list; printed pages 4-13",
+      "review_status": "reviewed",
+      "reviewed_at": "2026-09-15",
+      "license_status": "manufacturer_public",
+      "verified_facts": [
+        "the_foundation_document_is_used_together_with_the_underlying_frami_xlife_user_information",
+        "foundation_tying_may_use_flat_tie_rods_and_clips_or_bottom_perforated_tape_and_foundation_clamps",
+        "flat_tie_rods_cover_wall_thicknesses_from_10_to_80_cm",
+        "top_and_bottom_tie_counts_depend_on_panel_orientation_and_dimensions",
+        "plumbing_struts_and_optional_adjustment_or_working_platform_accessories_are_separate_system_components",
+        "the_article_list_identifies_flat_tie_rod_10_80_as_588475000_clip_as_588434000_foundation_clamp_as_588452000_and_perforated_tape_50x2_as_588206000"
+      ],
+      "limitations": [
+        "no_universal_bill_of_materials_or_turnover_factor_is_published",
+        "no_project_labor_productivity_consumable_quantity_rental_duration_transport_quantity_or_price_is_published",
+        "an_approved_project_layout_and_project_or_supplier_schedule_are_required_for_every_commercial_quantity"
+      ]
+    }
+  ],
   "norm_items": [
     {
       "norm_id": "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
