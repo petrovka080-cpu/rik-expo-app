@@ -20,13 +20,13 @@ const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "f9d73863-0c5b-59ab-940f-8fd2c8b50525"
+  ? "4bedd6d1-7ed6-53c0-b975-e570cd7eb693"
   : "8791b75f-683f-5e72-a56a-54abc2f82379";
 const SEARCH_RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "7cec739a-c265-580f-a9ae-cd4fd77d3d05"
+  ? "7cf36d1d-033b-5417-8bc4-3d567b2ff52d"
   : "320b582e-5a6d-5354-b3bf-f801e4490303";
 const DEFINITION_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "7fc4df97-25e3-5905-844f-af1abc2cb7ec"
+  ? "258392ce-3ae4-527d-9382-8e5bcd029b63"
   : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
 const CATALOG_ID = IS_NRMCA_STRIP_FOUNDATION
   ? "canonical-work:expanded:strip_foundation"
@@ -40,6 +40,13 @@ const SOURCE_ID = IS_NRMCA_STRIP_FOUNDATION
 const NORM_ID = IS_NRMCA_STRIP_FOUNDATION
   ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
   : "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
+const REINFORCEMENT_ROW_ID = "reinforcement";
+const REINFORCEMENT_SOURCE_ID =
+  "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
+const REINFORCEMENT_NORM_ID =
+  "reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
+const REINFORCEMENT_PRODUCT_PROFILE_ID =
+  "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1";
 const EXPECTED_TITLE = IS_NRMCA_STRIP_FOUNDATION
   ? "Бетонная смесь"
   : "Монтаж и демонтаж опалубки по измеренной площади контакта";
@@ -76,6 +83,18 @@ const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "placement method: pump; доставка бетонной смеси 18 км; доставка арматуры 18 км; доставка опалубки 18 км;",
   "земляные работы входят: да; объём разработки грунта 54 м3;",
   "подушка основания не входит; гидроизоляция не входит; обратная засыпка не входит; вывоз грунта не входит;",
+  "Арматура по утверждённой ведомости стержней, FHWA-HIF-16-026 Table 3 и RICS NRM 2;",
+  "масса по утверждённой ведомости стержней: 2400 кг;",
+  "ссылка на ведомость стержней: BBS-S01-REV-D;",
+  "конструктивный чертёж: STR-S01-REV-D;",
+  "стандарт и класс арматуры: ASTM A615 Grade 60;",
+  "обозначение размера стержня: No. 5; номинальный диаметр: 15,875 мм;",
+  "форма стержня: BENT:shape-code-21;",
+  "число стержней и длина резки: 160 bars x 9.75 m approved cut length;",
+  "масса погонного метра: 1,552 кг/м;",
+  "состав нахлёстов и аксессуаров: PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately;",
+  "запас изготовления: NONE:INCLUDED_IN_APPROVED_SCHEDULE;",
+  "ограничения поставки: NONE:NO_AUTOMATIC_BUNDLE_ROUNDING;",
   "plan volume calculation reference: KJ-4 axes 1-8/A-D rev.5;",
   "mix design or project specification reference: KJ-4 note 7, mix card RM-25-114;",
   "mixture designation: B25 W6 F150 P4, RM-25-114;",
@@ -84,6 +103,7 @@ const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "delivery schedule and truck capacity: 4 trucks x 8 m3, final load confirmed before dispatch;",
   "producer order confirmation: RM-PRODUCER-2026-0912-17;",
   "estimator approval reference: EST-APPROVAL-2026-0912-04;",
+  "согласование сметчика: EST-REBAR-REV-D;",
   "acceptance scenario: WEB-PREPARE-NRMCA-CIP31-V1.",
 ];
 const SELECTED_DETAILS = IS_NRMCA_STRIP_FOUNDATION
@@ -127,6 +147,20 @@ const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
   estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
   reinforcement_mass_t: 2.4,
+  reinforcement_product_profile_id: REINFORCEMENT_PRODUCT_PROFILE_ID,
+  bar_bending_schedule_reference: "BBS-S01-REV-D",
+  structural_drawing_and_revision_reference: "STR-S01-REV-D",
+  bar_standard_and_grade: "ASTM A615 Grade 60",
+  bar_size_designation: "No. 5",
+  nominal_diameter_mm: 15.875,
+  shape_straight_bent_curved_or_link: "BENT:shape-code-21",
+  bar_count_and_cut_length_m: "160 bars x 9.75 m approved cut length",
+  selected_standard_mass_kg_per_m: 1.552,
+  laps_hooks_chairs_connectors_and_accessories_scope:
+    "PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately",
+  fabrication_allowance_if_documented: "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
+  supplier_bundle_or_length_constraints: "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
+  reinforcement_estimator_approval_reference: "EST-REBAR-REV-D",
   binding_wire_mass_kg: 28.8,
   reinforcement_fabrication: "ready_cages",
   formwork_sides: 2,
@@ -336,6 +370,34 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   return row;
 }
 
+function assertExactReinforcement(rows: Json[]): Json | null {
+  if (!IS_NRMCA_STRIP_FOUNDATION) return null;
+  const row = rows.find((candidate) => candidate.rowId === REINFORCEMENT_ROW_ID);
+  invariant(row != null && String(row.titleRu).includes("Арматурная сталь"),
+    "REINFORCEMENT_ROW_IDENTITY_RED");
+  invariant(Number(row.quantity) === 2.4 && row.unitId === "t",
+    "REINFORCEMENT_QUANTITY_OR_UNIT_RED");
+  invariant(row.unitPrice == null && row.amount == null, "REINFORCEMENT_UNKNOWN_PRICE_WAS_ZEROED");
+  invariant(row.procurementEligible === true && row.includedInProcurement === true
+    && row.includedInEstimate === true, "REINFORCEMENT_PROCUREMENT_TRUTH_RED");
+  const traceRows = Array.isArray(row.normativeTrace) ? row.normativeTrace as Json[] : [];
+  const trace = traceRows.find((candidate: Json) => candidate.source_id === REINFORCEMENT_SOURCE_ID
+    && candidate.norm_id === REINFORCEMENT_NORM_ID);
+  invariant(trace?.source_id === REINFORCEMENT_SOURCE_ID
+    && trace?.norm_id === REINFORCEMENT_NORM_ID,
+  "REINFORCEMENT_NORMALIZED_SOURCE_IDENTITY_RED");
+  invariant(!traceRows.some((candidate: Json) => candidate.source_id
+    === "src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1"),
+  "REINFORCEMENT_LEGACY_KG_PER_M3_SOURCE_VISIBLE");
+  const binding = row.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
+  invariant(binding?.product_profile_id === REINFORCEMENT_PRODUCT_PROFILE_ID
+    && binding?.activation?.parameter_id === "reinforcement_product_profile_id"
+    && binding?.parameter_projection_v1?.formulas?.approved_reinforcement_schedule_weight_kg
+      === "reinforcement_mass_t * 1000",
+  "REINFORCEMENT_PHYSICAL_BINDING_MISSING");
+  return row;
+}
+
 async function ensureFullRevision(authorization: string, revision: Json): Promise<Json> {
   void authorization;
   invariant(preliminaryNeeds(revision).length === 0, "WEB_PREPARE_REMAINS_PRELIMINARY");
@@ -381,7 +443,7 @@ async function buildArtifact(
   return { ...artifact, downloadedByteSize: bytes.byteLength, downloadedSha256: sha256(bytes) };
 }
 
-async function databaseProof(revisionIds: string[], negativeJobId: string): Promise<Json> {
+async function databaseProof(revisionIds: string[], negativeJobIds: string[]): Promise<Json> {
   const client = new Client({ connectionString: DATABASE_URL, application_name: "exact-formwork-web-proof" });
   await client.connect();
   try {
@@ -392,8 +454,8 @@ async function databaseProof(revisionIds: string[], negativeJobId: string): Prom
         procurement_eligible,included_in_estimate,included_in_procurement,normative_trace,calculation_trace
       from public.estimate_revision_row where revision_id=any($1::uuid[]) order by revision_id,ordinal`,
     [revisionIds])).rows;
-    const negativeJob = (await client.query(`select id::text,status,error_code,result_revision_id::text
-      from public.estimate_compile_job where id=$1`, [negativeJobId])).rows[0];
+    const negativeJobs = (await client.query(`select id::text,status,error_code,result_revision_id::text
+      from public.estimate_compile_job where id=any($1::uuid[]) order by created_at`, [negativeJobIds])).rows;
     const release = (await client.query(`select id::text,status,activated_at from public.estimate_definition_release
       where id=$1`, [RELEASE_ID])).rows[0];
     const search = (await client.query(`select id::text,status,activated_at from public.estimate_search_index_release
@@ -401,9 +463,12 @@ async function databaseProof(revisionIds: string[], negativeJobId: string): Prom
     invariant(revisions.length === revisionIds.length
       && revisionIds.every((revisionId) => rows.some((row) => row.revision_id === revisionId)),
     "DATABASE_REVISION_PARITY_RED");
+    invariant(negativeJobs.length === negativeJobIds.length
+      && negativeJobs.every((job) => job.status === "failed" && job.result_revision_id == null),
+    "DATABASE_NEGATIVE_JOB_PARITY_RED");
     invariant(release.status === "prepared" && release.activated_at == null
       && search.status === "draft" && search.activated_at == null, "CANDIDATE_ACTIVATION_DRIFT");
-    return { revisions, rows, negativeJob, release, search };
+    return { revisions, rows, negativeJobs, release, search };
   } finally {
     await client.end();
   }
@@ -477,6 +542,8 @@ async function main(): Promise<void> {
   let sensitivityRevision: Json;
   let originalRow: Json;
   let sensitivityRow: Json;
+  let originalReinforcementRow: Json | null = null;
+  let sensitivityReinforcementRow: Json | null = null;
   let searchEvidence: Json;
   let compileIngress: Json;
   try {
@@ -558,6 +625,7 @@ async function main(): Promise<void> {
     fullRevision = await ensureFullRevision(authorization, initialRevision);
     const fullRows = await allRows(authorization, fullRevision.revisionId);
     originalRow = assertExactRevision(fullRevision, fullRows, ORIGINAL_TARGET_QUANTITY);
+    originalReinforcementRow = assertExactReinforcement(fullRows);
     progress("FULL_ORIGINAL_GREEN", { revisionId: fullRevision.revisionId,
       primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY });
     await openRevision(page, fullRevision.revisionId);
@@ -589,6 +657,7 @@ async function main(): Promise<void> {
     invariant(sensitivityRevision.parentRevisionId === fullRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
     const sensitivityRows = await allRows(authorization, sensitivityRevision.revisionId);
     sensitivityRow = assertExactRevision(sensitivityRevision, sensitivityRows, SENSITIVITY_TARGET_QUANTITY);
+    sensitivityReinforcementRow = assertExactReinforcement(sensitivityRows);
     progress("SENSITIVITY_GREEN", { revisionId: sensitivityRevision.revisionId,
       primaryValue: SENSITIVITY_PRIMARY_VALUE, targetQuantity: SENSITIVITY_TARGET_QUANTITY });
     await openRevision(page, sensitivityRevision.revisionId);
@@ -613,24 +682,37 @@ async function main(): Promise<void> {
   }
 
   const activeAuthorization = authorization || apiAuthorization;
-  const negativeParameters = IS_NRMCA_STRIP_FOUNDATION
-    ? { ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2 }
-    : { ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED" };
-  const negativeAccepted = await apiPost(activeAuthorization, "jobs/recalculate", {
-    idempotencyKey: `exact-${PROFILE_ID}-negative-${sensitivityRevision!.revisionId}`,
-    catalogId: CATALOG_ID,
-    parentRevisionId: sensitivityRevision!.revisionId,
-    sourceRequestText: sensitivityRevision!.sourceRequestText,
-    primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
-    parameters: negativeParameters,
-    currencyCode: sensitivityRevision!.currencyCode,
-    rowOverrides: sensitivityRevision!.amendmentContract?.rowOverrides ?? {},
-    customRows: sensitivityRevision!.amendmentContract?.customRows ?? [],
-  });
-  const negativeJob = await waitForJob(activeAuthorization, String(negativeAccepted.jobId ?? ""));
-  invariant(negativeJob.status === "failed" && !negativeJob.resultRevisionId,
-    `NEGATIVE_NOT_BLOCKED:${String(negativeJob.status)}:${String(negativeJob.errorCode ?? "")}`);
-  progress("NEGATIVE_BLOCKED", { errorCode: negativeJob.errorCode });
+  const negativeScenarios = IS_NRMCA_STRIP_FOUNDATION
+    ? [
+      { scenarioId: "cip31-two-percent", parameters: {
+        ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2,
+      } },
+      { scenarioId: "rebar-invalid-shape", parameters: {
+        ...sensitivityRevision!.parameters, shape_straight_bent_curved_or_link: "ASSUMED",
+      } },
+    ]
+    : [{ scenarioId: "unconfirmed-measurement", parameters: {
+      ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED",
+    } }];
+  const negativeJobs: Json[] = [];
+  for (const scenario of negativeScenarios) {
+    const negativeAccepted = await apiPost(activeAuthorization, "jobs/recalculate", {
+      idempotencyKey: `exact-${PROFILE_ID}-negative-${scenario.scenarioId}-${sensitivityRevision!.revisionId}`,
+      catalogId: CATALOG_ID,
+      parentRevisionId: sensitivityRevision!.revisionId,
+      sourceRequestText: sensitivityRevision!.sourceRequestText,
+      primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
+      parameters: scenario.parameters,
+      currencyCode: sensitivityRevision!.currencyCode,
+      rowOverrides: sensitivityRevision!.amendmentContract?.rowOverrides ?? {},
+      customRows: sensitivityRevision!.amendmentContract?.customRows ?? [],
+    });
+    const negativeJob = await waitForJob(activeAuthorization, String(negativeAccepted.jobId ?? ""));
+    invariant(negativeJob.status === "failed" && !negativeJob.resultRevisionId,
+      `NEGATIVE_NOT_BLOCKED:${scenario.scenarioId}:${String(negativeJob.status)}:${String(negativeJob.errorCode ?? "")}`);
+    negativeJobs.push({ ...negativeJob, scenarioId: scenario.scenarioId });
+    progress("NEGATIVE_BLOCKED", { scenarioId: scenario.scenarioId, errorCode: negativeJob.errorCode });
+  }
 
   const [pdf, procurement] = await Promise.all([
     buildArtifact(activeAuthorization, sensitivityRevision!, "pdf"),
@@ -659,7 +741,7 @@ async function main(): Promise<void> {
 
   const database = await databaseProof(
     [...new Set([initialRevision!.revisionId, fullRevision!.revisionId, sensitivityRevision!.revisionId])],
-    String(negativeJob.jobId),
+    negativeJobs.map((job) => String(job.jobId)),
   );
   invariant(pageErrors.length === 0, `PAGE_ERRORS:${pageErrors.join("|")}`);
   const unexpectedFailures = requestFailures.filter((failure) => !failure.includes("ERR_ABORTED"));
@@ -667,11 +749,11 @@ async function main(): Promise<void> {
 
   const body = {
     schemaVersion: IS_NRMCA_STRIP_FOUNDATION
-      ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31.web-acceptance.v1"
+      ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
       : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
     capturedAt: new Date().toISOString(),
     status: IS_NRMCA_STRIP_FOUNDATION
-      ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
@@ -687,13 +769,14 @@ async function main(): Promise<void> {
     scenarioOriginal: { label: SCENARIO_LABEL, primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
       primaryValue: ORIGINAL_PRIMARY_VALUE, targetQuantity: ORIGINAL_TARGET_QUANTITY,
       revisionId: fullRevision!.revisionId, revisionNumber: fullRevision!.revisionNumber,
-      row: originalRow! },
+      row: originalRow!, reinforcementRow: originalReinforcementRow },
     sensitivity: { primaryValue: SENSITIVITY_PRIMARY_VALUE,
       targetQuantity: SENSITIVITY_TARGET_QUANTITY, revisionId: sensitivityRevision!.revisionId,
       parentRevisionId: sensitivityRevision!.parentRevisionId,
-      revisionNumber: sensitivityRevision!.revisionNumber, row: sensitivityRow! },
-    negative: { jobId: negativeJob.jobId, status: negativeJob.status,
-      errorCode: negativeJob.errorCode, resultRevisionId: negativeJob.resultRevisionId ?? null },
+      revisionNumber: sensitivityRevision!.revisionNumber, row: sensitivityRow!,
+      reinforcementRow: sensitivityReinforcementRow },
+    negative: negativeJobs.map((job) => ({ scenarioId: job.scenarioId, jobId: job.jobId,
+      status: job.status, errorCode: job.errorCode, resultRevisionId: job.resultRevisionId ?? null })),
     historyColdReopen: cold,
     documents: {
       pdf: { artifactId: pdf.artifactId, revisionId: pdf.revisionId, byteSize: pdf.byteSize,

@@ -81,7 +81,7 @@ const PROMPT = [
   "contingency selection justification: complex formwork and pump remainder;",
   "delivery schedule and truck capacity: 4 trucks x 8 m3, final load confirmed before dispatch;",
   "producer order confirmation: RM-PRODUCER-2026-0912-17;",
-  "estimator approval reference: EST-APPROVAL-2026-0912-04.",
+  "estimator approval reference: EST-APPROVAL-2026-0912-04;",
 ].join(" ");
 
 describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
@@ -102,12 +102,13 @@ describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
       contingency_selection_justification: "complex formwork and pump remainder",
       delivery_schedule_and_truck_capacity: "4 trucks x 8 m3, final load confirmed before dispatch",
       producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
-      estimator_approval_reference: "EST-APPROVAL-2026-0912-04.",
+      estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
     });
   });
 
   test("keeps the independent approved bar-schedule profile in the same canonical request", () => {
     const rebarPrompt = [
+      PROMPT,
       "Арматура по утверждённой ведомости стержней, FHWA-HIF-16-026 Table 3 и RICS NRM 2;",
       "масса по утверждённой ведомости стержней: 2480,5 кг;",
       "ссылка на ведомость стержней: BBS-S01-REV-D;",
@@ -121,7 +122,6 @@ describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
       "запас изготовления: NONE:INCLUDED_IN_APPROVED_SCHEDULE;",
       "ограничения поставки: NONE:NO_AUTOMATIC_BUNDLE_ROUNDING;",
       "согласование сметчика: EST-REBAR-REV-D;",
-      PROMPT,
     ].join(" ");
     expect(buildCanonicalBaselinePlan({ catalog: catalog(), prompt: rebarPrompt }).parameters)
       .toMatchObject({
@@ -140,6 +140,7 @@ describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
         fabrication_allowance_if_documented: "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
         supplier_bundle_or_length_constraints: "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
         reinforcement_estimator_approval_reference: "EST-REBAR-REV-D",
+        estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
       });
   });
 });
