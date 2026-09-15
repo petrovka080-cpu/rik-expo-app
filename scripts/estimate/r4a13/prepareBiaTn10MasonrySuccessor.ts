@@ -439,7 +439,9 @@ async function main(): Promise<void> {
         where manifest.release_id=$1 and manifest.catalog_id=$2`, [
         predecessorReleaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
       ])).rows[0] as Json;
-      invariant(target && Number(target.parameters) === 1 && Number(target.formulas) === 59 && Number(target.resources) === 59,
+      const predecessorTargetShape = target == null ? "missing" :
+        `${Number(target.parameters)}:${Number(target.formulas)}:${Number(target.resources)}`;
+      invariant(target && ["1:59:59", "22:5:5"].includes(predecessorTargetShape),
         `STOP_BIA_TN10_PREDECESSOR_TARGET_DRIFT:${JSON.stringify(target)}`);
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
