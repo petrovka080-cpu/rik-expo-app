@@ -684,7 +684,7 @@ async function main(): Promise<void> {
               (select count(*)::int from public.estimate_parameter_definition where definition_version_id=$1 and default_value is not null) defaults,
               (select count(*)::int from public.estimate_formula_graph where definition_version_id=$1) formulas,
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1) resources,
-              (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1 and source_metadata::text like '%synthetic%true%') synthetic_rows,
+              (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1 and source_metadata->>'synthetic'='true') synthetic_rows,
               (select count(*)::int from public.estimate_resource_price_route_binding b join public.estimate_resource_spec r on r.id=b.resource_spec_id where r.definition_version_id=$1) price_bindings,
               (select count(*)::int from public.estimate_work_normative_binding where definition_version_id=$1) normalized_bindings,
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
