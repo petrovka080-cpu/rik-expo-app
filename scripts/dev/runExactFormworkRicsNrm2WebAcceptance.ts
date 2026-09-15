@@ -733,8 +733,13 @@ async function main(): Promise<void> {
     await enterConsumer(page);
     progress("CONSUMER_READY");
     const input = page.getByTestId("consumer-repair-problem-input");
-    const searchPromise = page.waitForResponse((response) => response.url().startsWith(`${BACKEND}/search/catalog?`)
-      && response.status() === 200, { timeout: 120_000 });
+    const searchPromise = page.waitForResponse((response) => {
+      const responseUrl = new URL(response.url());
+      return responseUrl.origin === BACKEND
+        && responseUrl.pathname === "/search/catalog"
+        && responseUrl.searchParams.get("query") === SEARCH_QUERY
+        && response.status() === 200;
+    }, { timeout: 120_000 });
     const [searchResponse] = await Promise.all([searchPromise, input.fill(SEARCH_QUERY)]);
     const search = await json(searchResponse);
     invariant(search.searchIndexReleaseId === SEARCH_RELEASE_ID, "SEARCH_RELEASE_DRIFT");
