@@ -69,7 +69,7 @@ type ExactPhysicalNormProfile = {
   forbiddenSourceIds: readonly string[];
 };
 
-const CONTRACT = "rik-expo-app.r4-a13-6.exact-physical-norm-successor.v2";
+const CONTRACT = "rik-expo-app.r4-a13-6.exact-physical-norm-successor.v3";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (6).md",
@@ -608,7 +608,12 @@ const PILE_CAP_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Obje
 
 function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
   const scenarioParameters = target.scenarioParameters ?? FORMWORK_SCENARIO;
-  const measuredScopeTitleRu = target.scopeTitleRu.replace(/^устройство опалубки\b/iu, "опалубка");
+  const measuredScopeTitleRu = target.scopeTitleRu.replace(
+    /^устройство опалубки(?=\s|$)/iu,
+    "опалубка",
+  );
+  invariant(measuredScopeTitleRu !== target.scopeTitleRu,
+    `STOP_EXACT_NORM_SCOPE_TITLE_NOT_NARROW:${target.profileId}`);
   return {
     profileId: target.profileId,
     targetCatalogId: target.targetCatalogId,

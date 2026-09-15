@@ -81,6 +81,7 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain('capability: "WORK_SCOPE_COMPLETENESS", status: "STOP_MEASUREMENT_ONLY"');
     expect(source).toContain('rowType: "service"');
     expect(source).toContain("не полный состав работ");
+    expect(source).toContain("STOP_EXACT_NORM_SCOPE_TITLE_NOT_NARROW");
     expect(source).not.toContain('rowTitleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта"');
   });
 
