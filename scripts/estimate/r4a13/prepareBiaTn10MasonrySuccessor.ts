@@ -555,7 +555,10 @@ async function main(): Promise<void> {
             baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}`,
             MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId, target.definition_version_id,
             parameterSchemaSha256, JSON.stringify(formulaConsumers), JSON.stringify(resourceConsumers),
-            JSON.stringify([BIA_TN10_MASONRY_SOURCE_ID]),
+            JSON.stringify(Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
+              parameter.parameter_id,
+              [BIA_TN10_MASONRY_SOURCE_ID],
+            ]))),
             JSON.stringify(Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
               parameter.parameter_id, (parameter.truth_metadata.guide as Json).guide_short_ru,
             ]))),
