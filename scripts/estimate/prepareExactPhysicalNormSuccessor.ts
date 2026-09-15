@@ -819,6 +819,9 @@ async function main(): Promise<void> {
             parameter.parameterId,
             [profile.rowId],
           ]));
+          const baselineNormativeSources = Object.fromEntries(
+            Object.keys(profile.baselineParameters).map((parameterId) => [parameterId, [profile.sourceId]]),
+          );
           await insertRows(client, "estimate_parameter_definition", [
             "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru", "required",
             "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
@@ -887,7 +890,7 @@ async function main(): Promise<void> {
             JSON.stringify(Object.fromEntries(Object.keys(profile.baselineParameters).map((id) => [id,
               profile.parameters.find((parameter) => parameter.parameterId === id)?.unitId ?? null]))),
             JSON.stringify(formulaConsumers), JSON.stringify(resourceConsumers),
-            JSON.stringify([profile.sourceId]),
+            JSON.stringify(baselineNormativeSources),
             JSON.stringify(Object.fromEntries(profile.parameters.map((parameter) => [parameter.parameterId, parameter.guideRu]))),
             JSON.stringify([{ contract: CONTRACT, masterSha256: MASTER_SHA256,
               sourceId: profile.sourceId, sourceUrl: profile.sourceUrl,
