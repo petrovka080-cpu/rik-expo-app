@@ -21,6 +21,7 @@ import {
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
 } from "../../../src/lib/estimate/v4/domainFactory";
+import { normalizeCanonicalCatalogSearchQuery } from "../../../src/lib/estimate/backendPlatform/catalogSearchIntent";
 
 type Json = Record<string, any>;
 
@@ -30,6 +31,10 @@ const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-develo
 const DEFAULT_PARENT_RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379";
 const DEFAULT_PARENT_SEARCH_RELEASE_ID = "320b582e-5a6d-5354-b3bf-f801e4490303";
 const TARGET_CATALOG_ID = "canonical-work:expanded:strip_foundation";
+const TARGET_SEARCH_ALIAS_RU = "ленточный фундамент";
+const TARGET_CANONICAL_SEARCH_NAME = normalizeCanonicalCatalogSearchQuery(
+  REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
+);
 const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-successor.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
@@ -227,12 +232,13 @@ async function cloneSearch(client: Client, input: {
       excluded_boundaries=$6::jsonb,required_inputs_count=$7,clarification_fields=$8::jsonb,
       source_provenance=source_provenance||jsonb_build_object('technologicalOwner',$9::text,
         'conditionalExactNormSourceId',$10::text),
-      aliases=array(select distinct value from unnest(coalesce(aliases,'{}'::text[])||array[$11::text]) value),
+      aliases=array(select distinct value from unnest(coalesce(aliases,'{}'::text[])||array[$11::text,$13::text]) value),
       normative_classifiers=array(select distinct value from unnest(coalesce(normative_classifiers,'{}'::text[])||array[$10::text,$12::text]) value),
       applicability_tags=array(select distinct value from unnest(coalesce(applicability_tags,'{}'::text[])||array['CONDITIONAL_EXACT_NRMCA_CIP31','NO_AUTOMATIC_GENERIC_BINDING']) value),
-      normalized_aliases=array(select distinct value from unnest(coalesce(normalized_aliases,'{}'::text[])||array[lower($11::text)]) value),
-      normalized_search_terms=array(select distinct value from unnest(coalesce(normalized_search_terms,'{}'::text[])||array['nrmca','cip 31','ready mix concrete order']) value),
-      normalized_search_blob=coalesce(normalized_search_blob,'')||chr(31)||'nrmca'||chr(31)||'cip 31'||chr(31)||'ready mix concrete order',
+      normalized_canonical_name=$14,
+      normalized_aliases=array(select distinct value from unnest(coalesce(normalized_aliases,'{}'::text[])||array[lower($11::text),$13::text]) value),
+      normalized_search_terms=array(select distinct value from unnest(coalesce(normalized_search_terms,'{}'::text[])||array[$14::text,$13::text,'nrmca','cip 31','ready mix concrete order']) value),
+      normalized_search_blob=concat_ws(chr(31),coalesce(normalized_search_blob,''),$14::text,$13::text,'nrmca','cip 31','ready mix concrete order'),
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$9,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
     input.searchReleaseId, TARGET_CATALOG_ID, REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
@@ -241,6 +247,8 @@ async function cloneSearch(client: Client, input: {
     NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
     "NRMCA CIP 31 ready-mix concrete order",
     NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+    TARGET_SEARCH_ALIAS_RU,
+    TARGET_CANONICAL_SEARCH_NAME,
   ]);
   const snapshot = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
