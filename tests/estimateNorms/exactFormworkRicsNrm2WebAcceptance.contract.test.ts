@@ -12,8 +12,8 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('"320b582e-5a6d-5354-b3bf-f801e4490303"');
     expect(source).toContain('PROFILE_ID === "strip-foundation-nrmca-cip31"');
     expect(source).toContain('PROFILE_ID === "bia-tn10-masonry"');
-    expect(source).toContain('"377b480d-4897-550c-868a-98a52fc576e2"');
-    expect(source).toContain('"4a3f6c8e-252a-5d6b-bbfb-7e219a993ff7"');
+    expect(source).toContain('"c7dc256f-52fb-55ba-9aad-e9f6b961303a"');
+    expect(source).toContain('"8521574b-e7e1-583c-a2c6-4117147c4c62"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
     expect(source).toContain("request-estimate-parameters-toggle");
