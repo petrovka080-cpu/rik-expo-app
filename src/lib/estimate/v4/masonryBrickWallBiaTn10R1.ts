@@ -20,6 +20,8 @@ export const MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU =
   "Кладка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4" as const;
 export const MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256 =
   "719fb6aaef220d986eefd6a0104253f08257a17e669923fbce9edca9ae7b52c1" as const;
+export const MASONRY_BRICK_WALL_PROJECT_INPUT_GUIDE_SHA256 =
+  "c8b80f248ec59176d690b3ff97f8f780d039459f7d4929edf703271cff12fa96" as const;
 
 export type MasonryBrickWallBiaTn10InputValue = string | number | boolean;
 
@@ -134,17 +136,20 @@ export const MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS: readonly MasonryBrickWallBi
       truth_metadata: {
         semantic_parameter_key: `${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:${parameterId}`,
         visibility_role: "USER_INPUT",
-        value_source_role: normative ? "SELECTED_NORMATIVE_TABLE_INPUT" : "PROJECT_SPECIFIC_INPUT",
+        value_source_role: "PROJECT_SPECIFIC_INPUT",
+        input_origin_class: normative ? "SELECTED_NORMATIVE_TABLE" : "PROJECT_OR_SUPPLIER",
         preliminary_compilation_allowed: false,
         source_confirmation_required: true,
         guide: {
-          guide_kind: normative ? "NORMATIVE_SOURCE" : "PROJECT_DEFINED",
+          guide_kind: normative ? "MANDATORY_NORM_VALUE" : "PROJECT_DEFINED",
           guide_short_ru: `Укажите подтверждённое значение: ${PARAMETER_TITLES_RU[parameterId] ?? parameterId}.`,
           source_role: normative ? "SELECTED_BIA_TABLE" : "PROJECT_DOCUMENTATION_OR_SUPPLIER_QUOTE",
           source_document: normative ? BIA_TN10_MASONRY_SOURCE_ID : null,
           source_locator: normative ? BIA_TN10_MASONRY_SOURCE_METADATA.exact_locator : null,
           guide_version: "masonry-brick-wall-bia-tn10-r1",
-          source_snapshot_hash: normative ? MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256 : null,
+          source_snapshot_hash: normative
+            ? MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256
+            : MASONRY_BRICK_WALL_PROJECT_INPUT_GUIDE_SHA256,
           applicability: normative
             ? "Только выбранная строка BIA TN 10 Table 4 для подтверждённого обожжённого глиняного кирпича."
             : "Значение относится к конкретному проекту или поставщику и не выводится из BIA TN 10.",

@@ -116,14 +116,16 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
     for (const parameter of MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS) {
       const guide = parameter.truth_metadata.guide as Record<string, unknown>;
       if (normative.has(parameter.parameter_id)) {
-        expect(parameter.truth_metadata.value_source_role).toBe("SELECTED_NORMATIVE_TABLE_INPUT");
+        expect(parameter.truth_metadata.value_source_role).toBe("PROJECT_SPECIFIC_INPUT");
+        expect(parameter.truth_metadata.input_origin_class).toBe("SELECTED_NORMATIVE_TABLE");
         expect(guide.source_role).toBe("SELECTED_BIA_TABLE");
         expect(guide.source_document).toBeTruthy();
       } else {
         expect(parameter.truth_metadata.value_source_role).toBe("PROJECT_SPECIFIC_INPUT");
+        expect(parameter.truth_metadata.input_origin_class).toBe("PROJECT_OR_SUPPLIER");
         expect(guide.source_role).toBe("PROJECT_DOCUMENTATION_OR_SUPPLIER_QUOTE");
         expect(guide.source_document).toBeNull();
-        expect(guide.source_snapshot_hash).toBeNull();
+        expect(guide.source_snapshot_hash).toMatch(/^[0-9a-f]{64}$/u);
       }
     }
   });
