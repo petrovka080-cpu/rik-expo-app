@@ -88,6 +88,7 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("function exactSchemaPreflight");
     expect(source).toContain("STOP_EXACT_NORM_SCHEMA_PREFLIGHT");
     expect(source).toContain("STOP_EXACT_NORM_ROW_TYPE_PREFLIGHT");
+    expect(source).toContain("STOP_EXACT_NORM_CAPABILITY_MATRIX_PREFLIGHT");
     expect(source).toContain('["estimate_formula_graph", "input_parameter_ids", "ARRAY", "_text"]');
     expect(source).toContain('["estimate_approved_template_baseline", "normative_source_ids", "jsonb", "jsonb"]');
     expect(source).toContain('["estimate_content_passport_r3", "capability_matrix", "jsonb", "jsonb"]');

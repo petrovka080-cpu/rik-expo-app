@@ -220,6 +220,11 @@ async function exactSchemaPreflight(client: Client): Promise<Json> {
   [["labor", "service"]])).rows.map((row) => String(row.row_type));
   invariant(JSON.stringify(supportedRowTypes) === JSON.stringify(["labor", "service"]),
     `STOP_EXACT_NORM_ROW_TYPE_PREFLIGHT:${JSON.stringify(supportedRowTypes)}`);
+  const capabilityMatrixConstraint = String((await client.query(`select pg_get_constraintdef(oid) definition
+    from pg_constraint where conrelid='public.estimate_content_passport_r3'::regclass
+      and conname='estimate_content_passport_r3_capability_matrix_check'`)).rows[0]?.definition ?? "");
+  invariant(capabilityMatrixConstraint.includes("jsonb_array_length(capability_matrix) = 4"),
+    `STOP_EXACT_NORM_CAPABILITY_MATRIX_PREFLIGHT:${capabilityMatrixConstraint}`);
   const digest = String((await client.query(`select encode(extensions.digest(
       convert_to('exact-physical-norm-schema-preflight','UTF8'),'sha256'),'hex') value`)).rows[0]?.value ?? "");
   invariant(/^[0-9a-f]{64}$/u.test(digest), "STOP_EXACT_NORM_DIGEST_PREFLIGHT");
@@ -229,6 +234,7 @@ async function exactSchemaPreflight(client: Client): Promise<Json> {
     checkedColumns: EXACT_SCHEMA_EXPECTATIONS.length,
     schemaSha256,
     supportedRowTypes,
+    capabilityMatrixLength: 4,
     digestSha256: digest,
   };
 }
@@ -1343,8 +1349,7 @@ async function main(): Promise<void> {
             "real-professional-estimates-r3.content-passport.v1", profile.physicalResultRu,
             JSON.stringify(profile.includedScopeRu), JSON.stringify(profile.excludedScopeRu),
             JSON.stringify([
-              { capability: "PARAMETERS", status: "GREEN" },
-              { capability: "FORMULAS", status: "GREEN" },
+              { capability: "PARAMETERS_AND_FORMULAS", status: "GREEN" },
               { capability: "MEASUREMENT", status: "GREEN_EXACT_NORMATIVE_BINDING" },
               { capability: "WORK_SCOPE_COMPLETENESS", status: "STOP_MEASUREMENT_ONLY" },
               { capability: "PRICE_AND_PROCUREMENT", status: "UNKNOWN_VISIBLE_NO_MATERIAL_ROWS" },
