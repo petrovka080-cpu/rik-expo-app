@@ -13,6 +13,7 @@ import type {
   CanonicalEstimateRevisionView,
 } from "./contracts";
 import { CANONICAL_ESTIMATE_REVISION_CONTRACT_VERSION } from "./canonicalEstimateRevisionWriter";
+import { projectCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
 
 function sectionType(section: string, category: string): GlobalEstimateSectionType {
   const value = `${section} ${category}`.toLocaleLowerCase("ru-RU");
@@ -108,6 +109,10 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       ? row.calculationTrace.inputParameterIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
       : [];
     const primaryNormativeSource = normativeTrace[0];
+    const physicalNormApplicability = projectCanonicalEstimatePhysicalNormApplicabilityV1({
+      revision: input.revision,
+      row,
+    });
     return {
       rowId: row.rowId,
       sectionNumber: String(sectionOrder.indexOf(type) + 1),
@@ -155,9 +160,16 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalBackendOwnershipStatus: row.ownershipStatus,
         includedInEstimate: row.includedInEstimate,
         includedInProcurement: row.includedInProcurement,
+        ...(physicalNormApplicability == null ? {} : {
+          professionalPhysicalNormApplicabilityV1: physicalNormApplicability,
+        }),
       },
+      normId: String(primaryNormativeSource?.norm_id ?? primaryNormativeSource?.normId ?? "").trim() || null,
       normSourceId: String(primaryNormativeSource?.document_code ?? "").trim() || null,
-      normSourceTitle: String(primaryNormativeSource?.document_code ?? "").trim() || null,
+      normSourceTitle: String(primaryNormativeSource?.source_title
+        ?? primaryNormativeSource?.document_code ?? "").trim() || null,
+      normVersion: String(primaryNormativeSource?.source_document_version
+        ?? primaryNormativeSource?.normVersion ?? "").trim() || null,
       catalogItemId: null,
       includedInEstimate: row.includedInEstimate,
       includedInProcurement: row.includedInProcurement,
