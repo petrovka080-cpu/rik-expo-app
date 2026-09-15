@@ -181,7 +181,7 @@ const FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
   openings_voids_and_deduction_rule: "PROJECT_RULE:no openings in measured scope",
   permanent_or_removable_formwork: "REMOVABLE",
   project_measurement_rule_reference: "RICS_NRM2_WS11_CONFIRMED:FW-149-REV-A",
-  estimator_approval_reference: "EST-FW-149",
+  estimator_approval_reference: "EST-FW-149.",
 });
 const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   scope_variant: "full_reinforced_structure",

@@ -34,6 +34,7 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain("EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
     expect(source).toContain("input.fill(SEARCH_QUERY)");
     expect(source).toContain("SELECTED_DETAILS.join");
+    expect(source).toContain('estimator_approval_reference: "EST-FW-149."');
     expect(source).toContain("WEB_PREPARE_BUTTON");
     expect(source).toContain("prepareButton.click()");
     expect(source).toContain("MASONRY_BRICK_PROCUREMENT_SPLIT_RED");
