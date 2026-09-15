@@ -23,6 +23,7 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("const baselineNormativeSources = Object.fromEntries");
     expect(source).toContain('capability: "PRICE_AND_PROCUREMENT"');
     expect(source).toContain('contract: "real-professional-estimates-r3.content-passport.v1"');
+    expect(source).toContain("normative_classifiers=$10::text[],applicability_tags=$11::text[]");
   });
 
   test("creates a normalized binding and cannot activate or release", () => {

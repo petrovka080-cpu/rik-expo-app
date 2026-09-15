@@ -571,7 +571,7 @@ async function cloneSearch(client: Client, input: {
   await client.query(`update public.estimate_search_document set
       canonical_name_ru=$3,primary_uom=$4,short_scope_ru=$5,included_boundaries=$6::jsonb,
       excluded_boundaries=$7::jsonb,required_inputs_count=$8,clarification_fields=$9::jsonb,
-      normative_classifiers=$10::jsonb,applicability_tags=$11::jsonb,
+      normative_classifiers=$10::text[],applicability_tags=$11::text[],
       source_provenance=source_provenance||jsonb_build_object('exactPhysicalNormProfile',$12::text),
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$12,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
@@ -579,8 +579,8 @@ async function cloneSearch(client: Client, input: {
     input.profile.outputUnitId, input.profile.physicalResultRu,
     JSON.stringify(input.profile.includedScopeRu), JSON.stringify(input.profile.excludedScopeRu),
     clarificationFields.length, JSON.stringify(clarificationFields),
-    JSON.stringify([input.profile.normId, input.profile.sourceId]),
-    JSON.stringify(["EXACT_PROJECT_MEASUREMENT", "NO_AUTOMATIC_M2_PER_M3", "NO_PACKAGE_ASSUMPTION"]),
+    [input.profile.normId, input.profile.sourceId],
+    ["EXACT_PROJECT_MEASUREMENT", "NO_AUTOMATIC_M2_PER_M3", "NO_PACKAGE_ASSUMPTION"],
     input.profile.profileId,
   ]);
   const snapshot = (await client.query(`select count(*)::int documents,
