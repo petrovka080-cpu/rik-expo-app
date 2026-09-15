@@ -24,6 +24,9 @@ import type {
   EstimateDraftRevisionDiff,
   EstimateDraftRevisionState,
 } from "../../lib/estimate/estimateDraftRevisionContract";
+import { canonicalMaterialQuantityBasisFromRow } from "../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
+import { normalizePublicBoqNameRu } from "../../lib/estimate/publicBoqNaming";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
@@ -82,7 +85,38 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
 type ProgressivePanelState = {
   parametersOpen: boolean;
   positionsOpen: boolean;
+  procurementOpen: boolean;
 };
+
+export type CanonicalProcurementPreviewRow = {
+  rowId: string;
+  titleRu: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number | null;
+  currency: string;
+};
+
+export function buildCanonicalProcurementPreviewRows(
+  revision: EstimateDraftRevision | null,
+): CanonicalProcurementPreviewRow[] {
+  if (!revision) return [];
+  return revision.boq.rows
+    .filter((row) => row.includedInProcurement)
+    .map((row) => {
+      const quantityBasis = row.materialQuantity ?? canonicalMaterialQuantityBasisFromRow(row);
+      return {
+        rowId: row.rowId,
+        titleRu: normalizePublicBoqNameRu({ sourceNameRu: row.titleRu }),
+        quantity: quantityBasis?.procurementQuantity ?? row.quantity,
+        unit: formatEstimateUnitLabel(
+          quantityBasis?.procurementUnit ?? row.unitLabel ?? row.unit,
+        ),
+        unitPrice: row.unitPrice ?? null,
+        currency: row.currency,
+      };
+    });
+}
 
 function pluralizeRu(count: number, one: string, few: string, many: string): string {
   const value = Math.abs(count);
@@ -280,6 +314,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       this.props.canonicalParameterSession?.status === "BLOCKING_REQUIRED",
     positionsOpen:
       this.props.canonicalParameterSession?.status !== "BLOCKING_REQUIRED",
+    procurementOpen: false,
   };
 
   componentDidUpdate(prevProps: Props): void {
@@ -303,6 +338,11 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
 
   private togglePositions = () => {
     this.setState((state) => ({ positionsOpen: !state.positionsOpen }));
+  };
+
+  private openProcurement = () => {
+    this.setState({ procurementOpen: true, positionsOpen: false });
+    this.props.onOpenProcurement?.();
   };
 
   render(): React.ReactElement {
@@ -337,7 +377,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
       onApplyParamPatch,
       onApplyParamBatch,
     } = this.props;
-    const { parametersOpen, positionsOpen } = this.state;
+    const { parametersOpen, positionsOpen, procurementOpen } = this.state;
+    const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision);
     const count = canonicalParameterSession
       ? canonicalParameterSession.blockingMissingParameterIds.length +
         canonicalParameterSession.contractMissingParameterIds.length
@@ -408,7 +449,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Открыть список закупки"
-            onPress={onOpenProcurement}
+            onPress={this.openProcurement}
             style={styles.actionButton}
             testID="consumer-estimate-open-procurement"
           >
@@ -417,6 +458,34 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           </Pressable>
         ) : null}
       </View>
+
+      {procurementOpen && procurementRows.length > 0 ? (
+        <View style={styles.procurementPanel} testID="consumer-estimate-procurement-list">
+          <View style={styles.panelHeader}>
+            <Text style={styles.panelTitle}>Список закупки</Text>
+            <Text style={styles.panelMeta}>
+              {`${procurementRows.length} ${pluralizeRu(procurementRows.length, "позиция", "позиции", "позиций")} · версия №${currentRevision?.canonicalRevisionNumber ?? "—"}`}
+            </Text>
+          </View>
+          {procurementRows.map((row) => (
+            <View
+              key={row.rowId}
+              style={styles.procurementRow}
+              testID={`consumer-estimate-procurement-row-${row.rowId}`}
+            >
+              <Text style={styles.procurementTitle}>{row.titleRu}</Text>
+              <Text style={styles.procurementQuantity}>
+                {`${compactRuNumber(row.quantity)} ${row.unit}`}
+              </Text>
+              <Text style={styles.procurementPrice}>
+                {row.unitPrice == null
+                  ? "Цена не заполнена"
+                  : `${compactRuNumber(row.unitPrice)} ${row.currency} за ${row.unit}`}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       {parametersOpen ? (
         <ParameterDisclosurePanel
@@ -1369,6 +1438,38 @@ const styles = StyleSheet.create({
     color: "#334155",
     fontSize: 13,
     fontWeight: "900",
+  },
+  procurementPanel: {
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#A7F3D0",
+    backgroundColor: "#F0FDF4",
+    padding: 12,
+  },
+  procurementRow: {
+    gap: 3,
+    borderTopWidth: 1,
+    borderTopColor: "#D1FAE5",
+    paddingTop: 9,
+  },
+  procurementTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "900",
+  },
+  procurementQuantity: {
+    color: "#166534",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "900",
+  },
+  procurementPrice: {
+    color: "#64748B",
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "800",
   },
   parameterPanel: {
     gap: 10,

@@ -138,6 +138,10 @@ export function sanitizeRequestEstimatePublicText(value: string | null | undefin
     .trim();
   if (!normalized) return fallback;
   const safe = normalized
+    .replace(
+      /Расч[её]т не заверш[её]н:\s*PHYSICAL_NORM_APPLICABILITY_FAILED/giu,
+      "Расчёт не выполнен: выбранные данные не соответствуют условиям применимости нормы. Проверьте материал и параметры.",
+    )
     .replace(/PRICE_MISSING:\s*[^.;]+/gi, "\u0426\u0435\u043d\u0430 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0430")
     .replace(/\bPRICE_MISSING\b/g, "\u0426\u0435\u043d\u0430 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0430")
     .replace(/no_accepted_price_source_or_unit_conversion/gi, "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0446\u0435\u043d\u044b \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d")

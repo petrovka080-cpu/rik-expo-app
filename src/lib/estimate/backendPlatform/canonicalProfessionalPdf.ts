@@ -3,6 +3,7 @@ import {
   canonicalArtifactParameterValue,
   canonicalArtifactQuantity,
   canonicalArtifactUnit,
+  canonicalArtifactVisibleRowTitle,
   escapeCanonicalArtifactHtml,
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
@@ -156,7 +157,7 @@ function renderClientRow(row: CanonicalArtifactRow): string {
     : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr>
     <td class="number">${Number(row.ordinal) + 1}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(row.title_ru)}</strong>${specification ? `<span>${escapeCanonicalArtifactHtml(specification)}</span>` : ""}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</strong>${specification ? `<span>${escapeCanonicalArtifactHtml(specification)}</span>` : ""}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[category])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(canonicalArtifactQuantity(row.quantity))}</td>
@@ -168,7 +169,7 @@ function renderClientRow(row: CanonicalArtifactRow): string {
 function renderTechnicalRow(row: CanonicalArtifactRow): string {
   return `<tr>
     <td>${Number(row.ordinal) + 1}</td>
-    <td>${escapeCanonicalArtifactHtml(row.title_ru)}</td>
+    <td>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}</td>
     <td>${escapeCanonicalArtifactHtml(technicalTrace(row))}</td>
     <td>${escapeCanonicalArtifactHtml(normativeTrace(row))}</td>
     <td class="checksum">${escapeCanonicalArtifactHtml(row.row_sha256 ?? "—")}</td>

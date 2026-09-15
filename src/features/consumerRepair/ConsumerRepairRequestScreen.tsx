@@ -1,6 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
-import { Linking, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import {
   approveConsumerRepairRequestDraft,
   attachConsumerRepairEstimateRowPhoto,
@@ -2033,8 +2033,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           expectedCatalogId: context.definitionId ?? revision.catalogId,
           expectedRowCount: revision.rowCount,
         });
-        if (artifact.signedUrl) await Linking.openURL(artifact.signedUrl);
-        this.setState({ statusMessage: "Закупка выбранной версии открыта." });
+
+        this.setState({
+          statusMessage: "Закупка текущей версии готова. Список показан ниже в смете.",
+        });
         return;
       }
     } catch (error) {

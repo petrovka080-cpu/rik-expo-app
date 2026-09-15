@@ -76,6 +76,17 @@ export function normalizePublicBoqNameRu(input: {
   workNameRu?: string | null;
 }): string {
   const source = input.sourceNameRu.trim();
+  const biaBrick = source.match(
+    /^Обожжённый глиняный кирпич\s*[—–-]\s*([^,]+),\s*specified\s+([^,]+),\s*nominal\s+(.+)$/iu,
+  );
+  if (biaBrick) {
+    const actualSize = biaBrick[2].replace(/x/giu, "×").replace(/\bmm\b/giu, "мм");
+    const nominalSize = biaBrick[3].replace(/x/giu, "×").replace(/\bmm\b/giu, "мм");
+    return `Обожжённый глиняный кирпич — ${biaBrick[1]}, фактический размер ${actualSize}, координационный размер ${nominalSize}`;
+  }
+  if (/^Кладочный раствор по выбранной строке BIA TN 10 Table 4$/iu.test(source)) {
+    return "Кладочный раствор для стены из обожжённого глиняного кирпича";
+  }
   if (/^Доставка трансформаторного оборудования, кабеля и строительных материалов тяжёлым транспортом$/iu.test(source)) {
     return "Доставка трансформатора и кабеля";
   }

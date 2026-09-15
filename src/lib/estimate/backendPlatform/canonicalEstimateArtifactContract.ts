@@ -1,4 +1,5 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
+import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r7";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:5";
@@ -74,7 +75,7 @@ function projectProcurementRow(row: CanonicalArtifactRow) {
     ordinal: Number(row.ordinal),
     section: String(row.section ?? ""),
     category: String(row.category ?? ""),
-    titleRu: String(row.title_ru ?? ""),
+    titleRu: canonicalArtifactVisibleRowTitle(row),
     unitId: materialQuantity?.procurementUnit ?? String(row.unit_id ?? ""),
     quantity: decimalText(procurementQuantity),
     netQuantity: decimalText(netQuantity),
@@ -233,12 +234,16 @@ export function canonicalArtifactMoney(value: unknown, currencyCode: unknown): s
   }).format(numeric)} ${currency}`.trim();
 }
 
+export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>): string {
+  return normalizePublicBoqNameRu({ sourceNameRu: String(row.title_ru ?? "") });
+}
+
 export function canonicalArtifactUnit(row: Record<string, unknown>): string {
   const displayUnit = nullableText(objectValue(row.calculation_trace).displayUnitRu);
   if (displayUnit) return displayUnit;
   const unit = String(row.unit_id ?? "").trim();
   const localized: Record<string, string> = {
-    set: "компл.", item: "шт.", pcs: "шт.", man_hour: "чел.-ч", machine_hour: "маш.-ч",
+    set: "компл.", item: "шт.", pcs: "шт.", piece: "шт.", man_hour: "чел.-ч", machine_hour: "маш.-ч",
     t_km: "т·км", kg: "кг", t: "т", l: "л", m: "м", m2: "м²", m3: "м³",
     trip: "рейс", document: "док.", ratio: "коэф.", service: "услуга",
   };
