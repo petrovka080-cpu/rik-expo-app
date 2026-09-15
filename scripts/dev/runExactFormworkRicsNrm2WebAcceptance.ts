@@ -20,13 +20,13 @@ const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "4bedd6d1-7ed6-53c0-b975-e570cd7eb693"
+  ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
   : "8791b75f-683f-5e72-a56a-54abc2f82379";
 const SEARCH_RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "7cf36d1d-033b-5417-8bc4-3d567b2ff52d"
+  ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
   : "320b582e-5a6d-5354-b3bf-f801e4490303";
 const DEFINITION_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "258392ce-3ae4-527d-9382-8e5bcd029b63"
+  ? "3afbb931-6432-5801-935a-1ba3d0290030"
   : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
 const CATALOG_ID = IS_NRMCA_STRIP_FOUNDATION
   ? "canonical-work:expanded:strip_foundation"
