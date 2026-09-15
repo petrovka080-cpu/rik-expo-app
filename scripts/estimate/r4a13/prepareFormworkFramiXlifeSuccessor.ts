@@ -139,6 +139,12 @@ function row(rows: readonly Json[], rowId: string): Json {
   return found;
 }
 
+function databaseRowType(category: string): string {
+  if (category === "construction_work") return "labor";
+  if (category === "delivery") return "service";
+  return category;
+}
+
 async function verifyThroughExistingCore(): Promise<Json> {
   const exact = await compileFormworkFramiXlifeProjectKitR1({ ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT });
   const areaOnly = await compileFormworkFramiXlifeProjectKitR1({
@@ -753,7 +759,7 @@ async function main(): Promise<void> {
             "procurement_eligible", "source_metadata", "row_sha256",
           ], resources.map((resource) => [
             resource.id, definitionId, resource.row_id, resource.ordinal, resource.section, resource.category,
-            resource.title_ru, resource.category === "construction_work" ? "labor" : resource.category,
+            resource.title_ru, databaseRowType(resource.category),
             resource.unit_id, resource.formula_id, resource.inclusion_ast, resource.resource_graph,
             `${TARGET_CATALOG_ID}:${resource.row_id}`, resource.cost_owner_id,
             resource.procurement_eligible, resource.source_metadata, resource.row_sha256,
