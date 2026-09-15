@@ -5,6 +5,7 @@ import { BIA_TN10_MASONRY_REQUIRED_IDS } from "../../src/lib/estimate/v4/domainF
 import {
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
   MASONRY_BRICK_WALL_BIA_TN10_FORMULAS,
+  MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS,
   MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS,
   MASONRY_BRICK_WALL_BIA_TN10_RESOURCES,
   compileMasonryBrickWallBiaTn10R1,
@@ -107,6 +108,38 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
         applicability_parameter_ids: [...BIA_TN10_MASONRY_REQUIRED_IDS],
       });
     }
+  });
+
+  test("keeps selected-table facts separate from project and supplier inputs", () => {
+    const normative = new Set<string>(MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS);
+    expect([...normative]).toHaveLength(7);
+    for (const parameter of MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS) {
+      const guide = parameter.truth_metadata.guide as Record<string, unknown>;
+      if (normative.has(parameter.parameter_id)) {
+        expect(parameter.truth_metadata.value_source_role).toBe("SELECTED_NORMATIVE_TABLE_INPUT");
+        expect(guide.source_role).toBe("SELECTED_BIA_TABLE");
+        expect(guide.source_document).toBeTruthy();
+      } else {
+        expect(parameter.truth_metadata.value_source_role).toBe("PROJECT_SPECIFIC_INPUT");
+        expect(guide.source_role).toBe("PROJECT_DOCUMENTATION_OR_SUPPLIER_QUOTE");
+        expect(guide.source_document).toBeNull();
+        expect(guide.source_snapshot_hash).toBeNull();
+      }
+    }
+  });
+
+  test.each([
+    "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
+    "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
+    "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+  ])("reuses the same compile owner for the admitted neutral context %s", async (catalogId) => {
+    const result = await compileMasonryBrickWallBiaTn10R1(
+      { ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT },
+      { catalogId },
+    );
+    expect(result.revisionProjection.catalogId).toBe(catalogId);
+    expect(result.rows).toHaveLength(5);
+    expect(result.preliminaryNeeds).toHaveLength(0);
   });
 
   test("recalculates the full wall while preserving exact package routing", async () => {

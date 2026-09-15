@@ -16,6 +16,7 @@ import {
   MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
   MASONRY_BRICK_WALL_BIA_TN10_FORMULAS,
+  MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS,
   MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS,
   MASONRY_BRICK_WALL_BIA_TN10_RESOURCES,
   MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
@@ -24,19 +25,56 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.bia-tn10-masonry-complete-estimate.v1";
+const cliValue = (name: string): string | null => {
+  const prefix = `${name}=`;
+  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
+};
+
+const TARGETS = Object.freeze({
+  standard: Object.freeze({
+    catalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+    titleRu: MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
+    contextRu: "стандартный участок",
+    searchAliasesRu: ["кирпичная кладка", "кладка кирпичной стены", "стена из глиняного кирпича"],
+  }),
+  large_area: Object.freeze({
+    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
+    titleRu: "Кладка стены большой площади из обожжённого глиняного кирпича по BIA TN 10 Table 4",
+    contextRu: "участок большой площади",
+    searchAliasesRu: ["кирпичная кладка большой площади", "кладка большой кирпичной стены"],
+  }),
+  small_area: Object.freeze({
+    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
+    titleRu: "Кладка небольшого участка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4",
+    contextRu: "небольшой участок",
+    searchAliasesRu: ["кирпичная кладка малого объема", "кладка небольшого участка кирпичной стены"],
+  }),
+  technical_room: Object.freeze({
+    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+    titleRu: "Кладка стены технического помещения из обожжённого глиняного кирпича по BIA TN 10 Table 4",
+    contextRu: "техническое помещение",
+    searchAliasesRu: ["кирпичная кладка технического помещения", "кирпичная стена технического помещения"],
+  }),
+} as const);
+type TargetKey = keyof typeof TARGETS;
+const TARGET_KEY = (cliValue("--target") ?? "standard") as TargetKey;
+const TARGET = TARGETS[TARGET_KEY];
+if (!TARGET) throw new Error(`STOP_BIA_TN10_UNSUPPORTED_TARGET:${TARGET_KEY}`);
+
+const CONTRACT = `rik-expo-app.r4-a13-6.bia-tn10-masonry-complete-estimate.${TARGET_KEY}.v2`;
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (5).md",
+  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (6).md",
 );
-const MASTER_SHA256 = "acd012705f74c90c9fc7a3483dcd2b2f7b929ef090ba4be6482d059c359dedc0";
-const DEFAULT_PREDECESSOR_RELEASE_ID = "dda56d3e-39dc-543c-a3ee-4395a4c018b9";
-const DEFAULT_PREDECESSOR_SEARCH_RELEASE_ID = "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e";
+const MASTER_SHA256 = "4b3188fed623913b76b9ced3c7784bbfc4c60002af7868038f01b819c58ed41d";
+const DEFAULT_PREDECESSOR_RELEASE_ID = "cf7f3504-3b30-5cc9-9230-114b409f9ddb";
+const DEFAULT_PREDECESSOR_SEARCH_RELEASE_ID = "16217704-4a47-5138-a19b-dae1e8301e82";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors/bia-tn10-masonry");
+const OUTPUT_ROOT = resolve(`.release-runtime/r4a13-6/exact-physical-norm-successors/bia-tn10-masonry-${TARGET_KEY}`);
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
+const NORMATIVE_PARAMETER_IDS = new Set<string>(MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS);
 const SOURCE_PATHS = [
   "data/estimate-norms/professional/masonry.json",
   "src/lib/estimate/v4/domainFactory/masonryBiaTn10PhysicalNormV1.ts",
@@ -56,10 +94,7 @@ const FORBIDDEN_LEGACY_SOURCE_IDS = [
   "src_professional_norm_pack_masonry_thin_bed_adhesive_kg_m3_aac_wall_v1",
 ] as const;
 
-const argValue = (name: string): string | null => {
-  const prefix = `${name}=`;
-  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
-};
+const argValue = cliValue;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -154,12 +189,15 @@ function materialBasis(row: Json) {
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
-  const exact = await compileMasonryBrickWallBiaTn10R1({ ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT });
+  const exact = await compileMasonryBrickWallBiaTn10R1(
+    { ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT },
+    { catalogId: TARGET.catalogId },
+  );
   const sensitivity = await compileMasonryBrickWallBiaTn10R1({
     ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
     measured_net_brick_wall_area_m2: 100,
     gross_wall_area_and_opening_deductions: "GROSS_M2=110; OPENINGS_M2=10; NET_M2=100",
-  });
+  }, { catalogId: TARGET.catalogId });
   invariant(exact.rows.length === 5 && exact.preliminaryNeeds.length === 0,
     `STOP_BIA_TN10_CORE_EXACT_ROWS:${exact.rows.length}:${exact.preliminaryNeeds.length}`);
   invariant(exact.rows.every((row) => row.unit_price == null && row.amount == null),
@@ -189,7 +227,10 @@ async function verifyThroughExistingCore(): Promise<Json> {
   for (const patch of negativeCases) {
     let rejected = false;
     try {
-      await compileMasonryBrickWallBiaTn10R1({ ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT, ...patch });
+      await compileMasonryBrickWallBiaTn10R1(
+        { ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT, ...patch },
+        { catalogId: TARGET.catalogId },
+      );
     } catch (error) {
       rejected = ["PHYSICAL_NORM_APPLICABILITY_FAILED", "PHYSICAL_NORM_QUANTITY_MISMATCH"]
         .includes(String((error as { code?: unknown })?.code ?? ""));
@@ -292,11 +333,11 @@ async function cloneSearch(client: Client, input: {
     titleRu: parameter.title_ru,
     unitId: parameter.unit_id,
   }));
-  const aliases = ["кирпичная кладка", "кладка кирпичной стены", "стена из глиняного кирпича", "BIA TN 10 Table 4"];
-  const normalizedCanonicalName = normalizeSearchText(MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU);
+  const aliases = [...TARGET.searchAliasesRu, "BIA TN 10 Table 4"];
+  const normalizedCanonicalName = normalizeSearchText(TARGET.titleRu);
   const normalizedAliases = aliases.map(normalizeSearchText);
   const normalizedSearchTerms = unique([
-    normalizeSearchText(MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID),
+    normalizeSearchText(TARGET.catalogId),
     normalizedCanonicalName,
     ...normalizedCanonicalName.split(" "),
     ...normalizedAliases,
@@ -313,14 +354,14 @@ async function cloneSearch(client: Client, input: {
       definition_version_id=$17::uuid,
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$11,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
-    input.searchReleaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
-    MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
-    "Полная смета кладки стены из выбранного обожжённого глиняного кирпича: потребность, закупка, работы и контроль.",
-    JSON.stringify(["кирпич по выбранной строке BIA TN 10", "кладочный раствор", "кладка", "контроль швов и геометрии", "очистка и сдача"]),
-    JSON.stringify(["AAC и иные неглиняные блоки", "тонкослойный клей", "кладочная сетка без проекта", "неподтверждённые масса и транспорт"]),
+    input.searchReleaseId, TARGET.catalogId,
+    TARGET.titleRu,
+    `Полная смета кладки (${TARGET.contextRu}) из выбранного обожжённого глиняного кирпича: потребность, закупка, работы и контроль.`,
+    JSON.stringify([TARGET.contextRu, "кирпич по выбранной строке BIA TN 10", "кладочный раствор", "кладка", "контроль швов и геометрии", "очистка и сдача"]),
+    JSON.stringify(["AAC и иные неглиняные блоки", "тонкослойный клей", "кладочная сетка без проекта", "неподтверждённые масса и транспорт", "режим высокой нагрузки и влажная зона без отдельного проектного подтверждения"]),
     clarificationFields.length, JSON.stringify(clarificationFields),
     [BIA_TN10_MASONRY_NORM_ID, BIA_TN10_MASONRY_SOURCE_ID],
-    ["EXACT_BIA_TN10_TABLE4", "FIRED_CLAY_BRICK_ONLY", "NEED_SEPARATED_FROM_PROCUREMENT", "UNKNOWN_PRICE_IS_NOT_ZERO"],
+    ["EXACT_BIA_TN10_TABLE4", "FIRED_CLAY_BRICK_ONLY", `CONTEXT_${TARGET_KEY.toUpperCase()}`, "NEED_SEPARATED_FROM_PROCUREMENT", "UNKNOWN_PRICE_IS_NOT_ZERO"],
     BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, aliases, normalizedCanonicalName, normalizedAliases,
     normalizedSearchTerms, normalizedSearchTerms.join("\u001f"), input.definitionId,
   ]);
@@ -332,7 +373,7 @@ async function cloneSearch(client: Client, input: {
     metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
     input.searchReleaseId, snapshot.snapshot_sha256,
     JSON.stringify({ documentCount: snapshot.documents, visibleCount: snapshot.visible,
-      targetCatalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+      targetCatalogId: TARGET.catalogId,
       exactPhysicalNormProfile: BIA_TN10_MASONRY_PRODUCT_PROFILE_ID }),
   ]);
   return snapshot;
@@ -373,9 +414,9 @@ async function main(): Promise<void> {
     definitionSha256, coreAcceptance });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const definitionId = uuid(`${CONTRACT}:${fingerprint}:${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:definition`);
-  const baselineId = uuid(`${CONTRACT}:${fingerprint}:${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:baseline`);
-  const releaseKey = `r4-a13-6-bia-tn10-masonry-${fingerprint.slice(0, 16)}`;
+  const definitionId = uuid(`${CONTRACT}:${fingerprint}:${TARGET.catalogId}:definition`);
+  const baselineId = uuid(`${CONTRACT}:${fingerprint}:${TARGET.catalogId}:baseline`);
+  const releaseKey = `r4-a13-6-bia-tn10-masonry-${TARGET_KEY}-${fingerprint.slice(0, 16)}`;
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(current.productionAccessed === false, "STOP_BIA_TN10_CURRENT_PRODUCTION_ACCESS_FLAG");
   invariant(
@@ -425,7 +466,7 @@ async function main(): Promise<void> {
       const audit = (await client.query(`select count(*)::int identities,
           count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int replaced
         from public.estimate_cumulative_manifest_entry where release_id=$1`, [
-        releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId,
+        releaseId, TARGET.catalogId, definitionId,
       ])).rows[0] as Json;
       receipt = { status: "GREEN_BIA_TN10_MASONRY_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE",
         idempotent: true, successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey }, audit };
@@ -437,7 +478,7 @@ async function main(): Promise<void> {
         from public.estimate_cumulative_manifest_entry manifest
         join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
         where manifest.release_id=$1 and manifest.catalog_id=$2`, [
-        predecessorReleaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+        predecessorReleaseId, TARGET.catalogId,
       ])).rows[0] as Json;
       const predecessorTargetShape = target == null ? "missing" :
         `${Number(target.parameters)}:${Number(target.formulas)}:${Number(target.resources)}`;
@@ -445,7 +486,7 @@ async function main(): Promise<void> {
         `STOP_BIA_TN10_PREDECESSOR_TARGET_DRIFT:${JSON.stringify(target)}`);
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
-        [MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID],
+        [TARGET.catalogId],
       )).rows[0].value);
       const nextCounts = {
         definitions: Number(predecessor.definition_count),
@@ -479,7 +520,7 @@ async function main(): Promise<void> {
             nextCounts.definitions, nextCounts.resources,
             JSON.stringify({ contract: CONTRACT, masterSha256: MASTER_SHA256,
               lifecycle: "DRAFT_FORWARD_ONLY", replacedDefinitionCount: 1,
-              targetCatalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+              targetCatalogId: TARGET.catalogId,
               activationAllowed: false, productionEligible: false,
               netNeedSeparatedFromProcurement: true, unknownPriceIsNull: true }),
             predecessorReleaseId, sha256({ contract: CONTRACT, fingerprint, definitionSha256 }),
@@ -498,14 +539,15 @@ async function main(): Promise<void> {
               id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
               source_metadata,content_status,content_gate_status)
             values($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8::jsonb,'QUARANTINED','RED')`, [
-            definitionId, releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, nextDefinitionVersion,
-            JSON.stringify({ catalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
-              canonicalRuName: MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
-              workKey: "masonry_interior_brick_wall_lay_standard",
+            definitionId, releaseId, TARGET.catalogId, nextDefinitionVersion,
+            JSON.stringify({ catalogId: TARGET.catalogId,
+              canonicalRuName: TARGET.titleRu,
+              workKey: TARGET.catalogId.split(":").at(-1),
               physicalResultRu: "Полная смета кирпичной стены с раздельными потребностью и закупкой",
               exactNormId: BIA_TN10_MASONRY_NORM_ID }),
             JSON.stringify({ country: "KG", operationClass: "MEASURE_AND_LAY",
               materialSystem: "BIA_TN10_FIRED_CLAY_BRICK", productProfileId: BIA_TN10_MASONRY_PRODUCT_PROFILE_ID,
+              contextKey: TARGET_KEY, contextRu: TARGET.contextRu,
               firedClayBrickOnly: true, aacAdhesiveAndMeshExcluded: true, failClosed: true }),
             definitionSha256,
             JSON.stringify({ contract: CONTRACT, predecessorDefinitionId: target.definition_version_id,
@@ -519,6 +561,7 @@ async function main(): Promise<void> {
             definitionId, parameter.parameter_id, parameter.ordinal, parameter.value_type, parameter.unit_id,
             parameter.title_ru, parameter.required, null, parameter.constraints_json,
             { ...parameter.truth_metadata, contract: CONTRACT,
+              semantic_parameter_key: `${TARGET.catalogId}:${parameter.parameter_id}`,
               formula_consumers: formulaConsumers[parameter.parameter_id],
               resource_branch_consumers: resourceConsumers[parameter.parameter_id] },
             null,
@@ -544,7 +587,7 @@ async function main(): Promise<void> {
             resource.title_ru, resource.category === "construction_work" ? "labor" : resource.category,
             resource.unit_id, resource.formula_id,
             resource.inclusion_ast, resource.resource_graph,
-            `${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:${resource.row_id}`,
+            `${TARGET.catalogId}:${resource.row_id}`,
             resource.cost_owner_id, resource.procurement_eligible, resource.source_metadata, resource.row_sha256,
           ]));
           await client.query(`insert into public.estimate_approved_template_baseline(
@@ -557,12 +600,12 @@ async function main(): Promise<void> {
               '{"product_profile_id":"NORMATIVE"}'::jsonb,'{"product_profile_id":null}'::jsonb,
               $7::jsonb,$8::jsonb,
               $9::jsonb,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14,clock_timestamp(),$15,$16)`, [
-            baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}`,
-            MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId, target.definition_version_id,
+            baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${TARGET.catalogId}`,
+            TARGET.catalogId, definitionId, target.definition_version_id,
             parameterSchemaSha256, JSON.stringify(formulaConsumers), JSON.stringify(resourceConsumers),
             JSON.stringify(Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
               parameter.parameter_id,
-              [BIA_TN10_MASONRY_SOURCE_ID],
+              NORMATIVE_PARAMETER_IDS.has(parameter.parameter_id) ? [BIA_TN10_MASONRY_SOURCE_ID] : [],
             ]))),
             JSON.stringify(Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
               parameter.parameter_id, (parameter.truth_metadata.guide as Json).guide_short_ru,
@@ -586,10 +629,10 @@ async function main(): Promise<void> {
               formula_count,resource_count,decision,payload_sha256,source_head,source_tree)
             values($1,$2,$3,'real-professional-estimates-r3.content-passport.v1','WORK',null,$4,$5::jsonb,$6::jsonb,
               $7::jsonb,$8,$9,$10,$11::jsonb,$12,$13,$14)`, [
-            definitionId, releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
-            "Кладка стены из обожжённого глиняного кирпича по выбранной строке BIA TN 10 Table 4",
-            JSON.stringify(["кирпич", "раствор", "кладка", "контроль геометрии и швов", "очистка и сдача"]),
-            JSON.stringify(["AAC", "тонкослойный клей", "кладочная сетка без проекта", "неподтверждённый транспорт"]),
+            definitionId, releaseId, TARGET.catalogId,
+            TARGET.titleRu,
+            JSON.stringify([TARGET.contextRu, "кирпич", "раствор", "кладка", "контроль геометрии и швов", "очистка и сдача"]),
+            JSON.stringify(["AAC", "тонкослойный клей", "кладочная сетка без проекта", "неподтверждённый транспорт", "высокая нагрузка и влажная зона без отдельного проектного подтверждения"]),
             JSON.stringify([
               { capability: "PARAMETERS", status: "GREEN" },
               { capability: "FORMULAS_AND_PHYSICAL_PARITY", status: "GREEN" },
@@ -606,18 +649,18 @@ async function main(): Promise<void> {
           await client.query(`update public.estimate_definition_version
             set content_status='CANDIDATE_READY',content_gate_status='GREEN'
             where id=$1 and release_id=$2 and catalog_id=$3`, [
-            definitionId, releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+            definitionId, releaseId, TARGET.catalogId,
           ]);
           await client.query(`insert into public.estimate_normative_source(
               id,source_key,title_ru,authority,official_url,artifact_sha256,effective_from,metadata)
             values($1,$2,$3,'Brick Industry Association',$4,null,'2017-01-01',$5::jsonb)
             on conflict(source_key) do update set official_url=excluded.official_url,
-              metadata=public.estimate_normative_source.metadata||excluded.metadata`, [
+              metadata=(public.estimate_normative_source.metadata-'targetCatalogId')||excluded.metadata`, [
             uuid(`${CONTRACT}:source:${BIA_TN10_MASONRY_SOURCE_ID}`),
             BIA_TN10_MASONRY_SOURCE_ID, BIA_TN10_MASONRY_SOURCE_METADATA.source_title,
             BIA_TN10_MASONRY_SOURCE_METADATA.source_url,
             JSON.stringify({ contract: CONTRACT, verifiedAt: "2026-09-15",
-              targetCatalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+              targetFamily: "masonry_interior_brick_wall_lay",
               sourceDefinitionHash: BIA_TN10_MASONRY_SOURCE_METADATA.definition_hash,
               useRestriction: "EXACT_SELECTED_BIA_TN10_TABLE4_FIRED_CLAY_BRICK_ONLY",
               automaticGenericBinding: false }),
@@ -669,9 +712,9 @@ async function main(): Promise<void> {
               approved_template_baseline_id=$5,baseline_ready=true,scenario_ready=true,definition_hash=$6,
               entry_sha256=$7,runtime_publication_state='CANDIDATE'
             where release_id=$1 and catalog_id=$2`, [
-            releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId, CONTRACT, baselineId,
+            releaseId, TARGET.catalogId, definitionId, CONTRACT, baselineId,
             definitionSha256, sha256({ contract: CONTRACT, releaseId,
-              catalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId, baselineId, definitionSha256 }),
+              catalogId: TARGET.catalogId, definitionId, baselineId, definitionSha256 }),
           ]);
           const search = await cloneSearch(client, { predecessorSearchReleaseId, releaseId, searchReleaseId,
             releaseKey, head, tree, fingerprint, definitionId });
@@ -679,7 +722,7 @@ async function main(): Promise<void> {
               count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int replaced,
               encode(extensions.digest(convert_to(string_agg(entry_sha256,'' order by catalog_id),'UTF8'),'sha256'),'hex') snapshot
             from public.estimate_cumulative_manifest_entry where release_id=$1`, [
-            releaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID, definitionId,
+            releaseId, TARGET.catalogId, definitionId,
           ])).rows[0] as Json;
           const targetAudit = (await client.query(`select
               (select count(*)::int from public.estimate_parameter_definition where definition_version_id=$1) parameters,
@@ -700,7 +743,7 @@ async function main(): Promise<void> {
           ])).rows[0] as Json;
           const searchTarget = (await client.query(`select definition_version_id,required_inputs_count,selectable,canonical_name_ru
             from public.estimate_search_document where search_release_id=$1 and catalog_id=$2`, [
-            searchReleaseId, MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+            searchReleaseId, TARGET.catalogId,
           ])).rows[0] as Json;
           invariant(Number(manifestAudit.identities) === 10_331 && Number(manifestAudit.replaced) === 1,
             `STOP_BIA_TN10_MANIFEST_AUDIT:${JSON.stringify(manifestAudit)}`);
@@ -713,7 +756,7 @@ async function main(): Promise<void> {
           `STOP_BIA_TN10_TARGET_AUDIT:${JSON.stringify(targetAudit)}`);
           invariant(String(searchTarget.definition_version_id) === definitionId
             && Number(searchTarget.required_inputs_count) === 22 && searchTarget.selectable === true
-            && searchTarget.canonical_name_ru === MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
+            && searchTarget.canonical_name_ru === TARGET.titleRu,
           `STOP_BIA_TN10_SEARCH_TARGET_AUDIT:${JSON.stringify(searchTarget)}`);
           await client.query(`update public.estimate_definition_release
             set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
@@ -751,7 +794,9 @@ async function main(): Promise<void> {
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
     masterSha256: MASTER_SHA256,
-    targetCatalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+    targetCatalogId: TARGET.catalogId,
+    targetKey: TARGET_KEY,
+    targetContextRu: TARGET.contextRu,
     ...receipt!,
     productionAccessed: false,
     deployPerformed: false,

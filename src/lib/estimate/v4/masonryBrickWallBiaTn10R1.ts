@@ -82,6 +82,19 @@ const EXTRA_NUMERIC_PARAMETER_IDS = Object.freeze([
   "mortar_supplier_package_m3",
 ] as const);
 
+export const MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS = Object.freeze([
+  "product_profile_id",
+  "selected_bia_tn10_table_4_row",
+  "selected_brick_quantity_per_m2",
+  "selected_mortar_quantity_per_m2",
+  "applicable_bond_correction_factors",
+  "brick_bond_correction_factor",
+  "mortar_bond_correction_factor",
+] as const);
+const BIA_NORMATIVE_PARAMETER_ID_SET = new Set<string>(
+  MASONRY_BRICK_WALL_BIA_TN10_NORMATIVE_PARAMETER_IDS,
+);
+
 const ALL_PARAMETER_IDS = Object.freeze([
   "product_profile_id",
   ...BIA_TN10_MASONRY_REQUIRED_IDS,
@@ -107,36 +120,41 @@ function parameterConstraints(parameterId: string): Record<string, unknown> {
 }
 
 export const MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS: readonly MasonryBrickWallBiaTn10Parameter[] =
-  Object.freeze(ALL_PARAMETER_IDS.map((parameterId, ordinal) => ({
-    parameter_id: parameterId,
-    ordinal,
-    value_type: parameterValueType(parameterId),
-    unit_id: PARAMETER_UNITS[parameterId] ?? null,
-    title_ru: PARAMETER_TITLES_RU[parameterId] ?? parameterId,
-    required: true,
-    default_value: null,
-    constraints_json: parameterConstraints(parameterId),
-    truth_metadata: {
-      semantic_parameter_key: `${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:${parameterId}`,
-      visibility_role: "USER_INPUT",
-      value_source_role: "PROJECT_SPECIFIC_INPUT",
-      preliminary_compilation_allowed: false,
-      source_confirmation_required: true,
-      guide: {
-        guide_kind: "PROJECT_DEFINED",
-        guide_short_ru: `Укажите подтверждённое значение: ${PARAMETER_TITLES_RU[parameterId] ?? parameterId}.`,
-        source_role: "PROJECT_DOCUMENTATION_OR_SELECTED_BIA_TABLE",
-        source_document: BIA_TN10_MASONRY_SOURCE_ID,
-        source_locator: BIA_TN10_MASONRY_SOURCE_METADATA.exact_locator,
-        guide_version: "masonry-brick-wall-bia-tn10-r1",
-        source_snapshot_hash: MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256,
-        applicability: "Только выбранная строка BIA TN 10 Table 4 для подтверждённого обожжённого глиняного кирпича.",
-        verified_at: "2026-09-15T00:00:00+06:00",
-        guide_validation_policy: "REJECT_OUTSIDE_EXACT_BIA_TN10_APPLICABILITY",
+  Object.freeze(ALL_PARAMETER_IDS.map((parameterId, ordinal) => {
+    const normative = BIA_NORMATIVE_PARAMETER_ID_SET.has(parameterId);
+    return {
+      parameter_id: parameterId,
+      ordinal,
+      value_type: parameterValueType(parameterId),
+      unit_id: PARAMETER_UNITS[parameterId] ?? null,
+      title_ru: PARAMETER_TITLES_RU[parameterId] ?? parameterId,
+      required: true,
+      default_value: null,
+      constraints_json: parameterConstraints(parameterId),
+      truth_metadata: {
+        semantic_parameter_key: `${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:${parameterId}`,
+        visibility_role: "USER_INPUT",
+        value_source_role: normative ? "SELECTED_NORMATIVE_TABLE_INPUT" : "PROJECT_SPECIFIC_INPUT",
+        preliminary_compilation_allowed: false,
+        source_confirmation_required: true,
+        guide: {
+          guide_kind: normative ? "NORMATIVE_SOURCE" : "PROJECT_DEFINED",
+          guide_short_ru: `Укажите подтверждённое значение: ${PARAMETER_TITLES_RU[parameterId] ?? parameterId}.`,
+          source_role: normative ? "SELECTED_BIA_TABLE" : "PROJECT_DOCUMENTATION_OR_SUPPLIER_QUOTE",
+          source_document: normative ? BIA_TN10_MASONRY_SOURCE_ID : null,
+          source_locator: normative ? BIA_TN10_MASONRY_SOURCE_METADATA.exact_locator : null,
+          guide_version: "masonry-brick-wall-bia-tn10-r1",
+          source_snapshot_hash: normative ? MASONRY_BRICK_WALL_BIA_TN10_SOURCE_PACK_SHA256 : null,
+          applicability: normative
+            ? "Только выбранная строка BIA TN 10 Table 4 для подтверждённого обожжённого глиняного кирпича."
+            : "Значение относится к конкретному проекту или поставщику и не выводится из BIA TN 10.",
+          verified_at: "2026-09-15T00:00:00+06:00",
+          guide_validation_policy: "REJECT_OUTSIDE_EXACT_BIA_TN10_APPLICABILITY",
+        },
+        synthetic: false,
       },
-      synthetic: false,
-    },
-  })));
+    };
+  }));
 
 function formula(formulaId: string, outputUnitId: string, expressionSource: string): MasonryBrickWallBiaTn10Formula {
   const compiled = compileFormulaGraph(expressionSource);
@@ -407,11 +425,12 @@ export const MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT: Readonly<Record<string, Ma
 
 export async function compileMasonryBrickWallBiaTn10R1(
   submittedParameters: Record<string, unknown>,
+  options: Readonly<{ catalogId?: string }> = {},
 ): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compiler.masonry-brick-wall-bia-tn10-r1",
-    catalogId: MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
+    catalogId: options.catalogId ?? MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID,
     primaryMeasureParameterId: "measured_net_brick_wall_area_m2",
     parameterDefinitions: [...MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS],
     formulaDefinitions: [...MASONRY_BRICK_WALL_BIA_TN10_FORMULAS],
