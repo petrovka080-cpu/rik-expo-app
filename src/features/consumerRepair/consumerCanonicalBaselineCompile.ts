@@ -29,6 +29,7 @@ import {
   R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
 import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -194,6 +195,11 @@ function promptBoolean(prompt: string, subject: RegExp): boolean | undefined {
   return positive.test(prompt) ? true : undefined;
 }
 
+function promptReference(prompt: string, label: RegExp): string | undefined {
+  const match = prompt.match(new RegExp(`${label.source}\\s*[:=]\\s*([^;\\n]+)`, "iu"));
+  return match?.[1]?.trim() || undefined;
+}
+
 /**
  * Parses only dimensions whose semantic target is explicit. Generic
  * "100 m long and 20 m wide" can describe the building and must remain a
@@ -247,6 +253,30 @@ export function parseR4A10StripFoundationPrompt(
   if (frostResistance) values.frost_resistance = frostResistance.toUpperCase();
   const mobility = prompt.match(/подвижност\p{L}*\s+(?:смес\p{L}*\s*)?(P(?:2|3|4|5))/iu)?.[1];
   if (mobility) values.mobility = mobility.toUpperCase();
+  if (/(?:NRMCA\s*)?CIP\s*31/iu.test(prompt)) {
+    values.product_profile_id = NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID;
+    const evidenceLabels: readonly (readonly [string, RegExp])[] = [
+      ["plan_volume_calculation_reference", /(?:расч[её]т\s+проектн\p{L}*\s+объ[её]м\p{L}*|plan\s+volume\s+calculation\s+reference)/iu],
+      ["mix_design_or_project_specification_reference", /(?:спецификаци\p{L}*\s+бетонн\p{L}*\s+смес\p{L}*|mix\s+design\s+or\s+project\s+specification\s+reference)/iu],
+      ["mixture_designation", /(?:обозначени\p{L}*\s+бетонн\p{L}*\s+смес\p{L}*|mixture\s+designation)/iu],
+      ["placement_location", /(?:мест\p{L}*\s+укладк\p{L}*\s+бетон\p{L}*|placement\s+location)/iu],
+      ["contingency_selection_justification", /(?:обосновани\p{L}*\s+запас\p{L}*|contingency\s+selection\s+justification)/iu],
+      ["delivery_schedule_and_truck_capacity", /(?:график\p{L}*\s+поставк\p{L}*\s+и\s+вместимост\p{L}*\s+миксер\p{L}*|delivery\s+schedule\s+and\s+truck\s+capacity)/iu],
+      ["producer_order_confirmation", /(?:подтверждени\p{L}*\s+заказ\p{L}*\s+производител\p{L}*|producer\s+order\s+confirmation)/iu],
+      ["estimator_approval_reference", /(?:согласовани\p{L}*\s+сметчик\p{L}*|estimator\s+approval\s+reference)/iu],
+    ];
+    for (const [parameterId, label] of evidenceLabels) {
+      const value = promptReference(prompt, label);
+      if (value) values[parameterId] = value;
+    }
+    const placementMethod = promptReference(prompt, /(?:способ\p{L}*\s+укладк\p{L}*|placement\s+method)/iu);
+    if (placementMethod) {
+      const normalizedPlacement = placementMethod.toLocaleLowerCase("ru-RU");
+      if (/pump|насос/iu.test(normalizedPlacement)) values.placement_method = "pump";
+      else if (/crane[_\s-]*bucket|кран|бадь/iu.test(normalizedPlacement)) values.placement_method = "crane_bucket";
+      else if (/direct[_\s-]*chute|лоток/iu.test(normalizedPlacement)) values.placement_method = "direct_chute";
+    }
+  }
   if (/материал\p{L}*\s+подушк\p{L}*[^.;]{0,30}щеб(?:е|ё)н/iu.test(prompt)) {
     values.foundation_bedding_type = "crushed_stone";
   } else if (/материал\p{L}*\s+подушк\p{L}*[^.;]{0,30}пес/iu.test(prompt)) {

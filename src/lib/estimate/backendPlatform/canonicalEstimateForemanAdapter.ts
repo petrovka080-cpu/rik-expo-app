@@ -108,11 +108,14 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
     const parameterDependencies = Array.isArray(row.calculationTrace?.inputParameterIds)
       ? row.calculationTrace.inputParameterIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
       : [];
-    const primaryNormativeSource = normativeTrace[0];
     const physicalNormApplicability = projectCanonicalEstimatePhysicalNormApplicabilityV1({
       revision: input.revision,
       row,
     });
+    const primaryNormativeSource = physicalNormApplicability?.status === "APPLIED"
+      ? normativeTrace.find((trace) => String(trace.source_id ?? trace.sourceId ?? trace.document_code ?? "")
+        === physicalNormApplicability.source_id) ?? normativeTrace[0]
+      : normativeTrace[0];
     return {
       rowId: row.rowId,
       sectionNumber: String(sectionOrder.indexOf(type) + 1),

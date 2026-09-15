@@ -43,6 +43,17 @@ export function buildStripFoundationContentPassportR3(
     frost_resistance: ["main_concrete"],
     mobility: ["main_concrete"],
   };
+  const readyMixOrderEvidenceParameters = new Set([
+    "product_profile_id",
+    "plan_volume_calculation_reference",
+    "mix_design_or_project_specification_reference",
+    "mixture_designation",
+    "placement_location",
+    "contingency_selection_justification",
+    "delivery_schedule_and_truck_capacity",
+    "producer_order_confirmation",
+    "estimator_approval_reference",
+  ]);
   const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_INPUTS.map((parameter) => [
     parameter.parameterId,
     STRIP_FOUNDATION_FORMULAS
@@ -54,7 +65,8 @@ export function buildStripFoundationContentPassportR3(
     const formulaIds = new Set(formulaConsumers[parameter.parameterId] ?? []);
     const rows = STRIP_FOUNDATION_ROWS.filter((row) => formulaIds.has(row.formulaId)
       || inclusionParameterIds(row.applicabilityExpression).includes(parameter.parameterId)
-      || titleParameters[parameter.parameterId]?.includes(row.rowId));
+      || titleParameters[parameter.parameterId]?.includes(row.rowId)
+      || (row.rowId === "main_concrete" && readyMixOrderEvidenceParameters.has(parameter.parameterId)));
     return [parameter.parameterId, rows.map((row) => row.rowId).sort()];
   }));
   const provenanceByCategory: Record<string, EstimateContentProvenanceKindR3> = {

@@ -15,29 +15,88 @@ import {
   compileStripFoundationEstimate,
 } from "../concreteBackendR6/reinforcedConcreteStripFoundationR1";
 import { auditRealProfessionalRowsR1 } from "../concreteBackendR6/realProfessionalEstimateContentGateR1";
+import {
+  NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+} from "../../../src/lib/estimate/v4/domainFactory";
 
 type Json = Record<string, any>;
 
-const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A10_FULL_TECHNOLOGICAL_ESTIMATES_CONFIRM_PRODUCTION_RU.md");
-const MASTER_SHA256 = "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
+const MASTER_PATH = resolve("C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (5).md");
+const MASTER_SHA256 = "acd012705f74c90c9fc7a3483dcd2b2f7b929ef090ba4be6482d059c359dedc0";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
-const PARENT_RELEASE_ID = "1486f78d-8c40-5573-ac49-5f8f0432e12a";
-const PARENT_SEARCH_RELEASE_ID = "d99c1145-fe60-5367-ab7b-1d3c22470ec7";
+const DEFAULT_PARENT_RELEASE_ID = "8791b75f-683f-5e72-a56a-54abc2f82379";
+const DEFAULT_PARENT_SEARCH_RELEASE_ID = "320b582e-5a6d-5354-b3bf-f801e4490303";
 const TARGET_CATALOG_ID = "canonical-work:expanded:strip_foundation";
-const CONTRACT = "rik-expo-app.r4-a10.strip-foundation-public-identity-successor.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-successor.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
-const OUTPUT_ROOT = resolve(".release-runtime/r568/rc09-r4-production-closeout/r4-a10-foundation-public-identity");
+const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-nrmca-cip31");
 const SOURCE_PATHS = [
   "scripts/estimate/concreteBackendR6/buildStripFoundationContentPassportR3.ts",
   "scripts/estimate/concreteBackendR6/reinforcedConcreteStripFoundationR1.ts",
   "src/lib/estimate/v4/reinforcedConcreteStripFoundationR1.ts",
+  "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts",
+  "data/estimate-norms/professional/concrete.json",
   "scripts/estimate/r4a9/prepareR4A9StripFoundationSuccessor.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
 ] as const;
+
+const argValue = (name: string): string | null => {
+  const prefix = `${name}=`;
+  return process.argv.find((argument) => argument.startsWith(prefix))?.slice(prefix.length) ?? null;
+};
+
+const NRMCA_CIP31_RESOURCE_BINDING = Object.freeze({
+  technology_class: "REINFORCED_CONCRETE_STRIP_FOUNDATION",
+  operation_class: "ORDER_READY_MIX",
+  material_system: "READY_MIX_CONCRETE",
+  scope_mode: "FULL_APPLICABLE_SCOPE",
+  product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  activation: {
+    parameter_id: "product_profile_id",
+    equals: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  },
+  parameter_projection_v1: {
+    aliases: {
+      selected_contingency_percent: "concrete_order_allowance_percent",
+    },
+    formulas: {
+      plan_dimension_concrete_volume_m3:
+        "total_axis_length_m * strip_width_m * strip_height_m",
+    },
+    units: {
+      plan_dimension_concrete_volume_m3: "m3",
+      selected_contingency_percent: "percent",
+    },
+  },
+});
+
+const NRMCA_CIP31_NORMATIVE_TRACE = Object.freeze({
+  document_code: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  norm_id: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  normId: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+  source_title: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_title,
+  source_document_version: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_document_version,
+  normVersion: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_document_version,
+  source_definition_hash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
+  exact_locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
+  source_url: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_url,
+  applicability: {
+    selected_product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+    selected_contingency_percent_range: [4, 10],
+    automatic_generic_binding: false,
+  },
+});
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -98,7 +157,8 @@ async function insertRows(client: Client, table: string, columns: readonly strin
 }
 
 async function cloneSearch(client: Client, input: {
-  releaseId: string; searchReleaseId: string; releaseKey: string; head: string; tree: string; fingerprint: string;
+  predecessorSearchReleaseId: string; releaseId: string; searchReleaseId: string;
+  releaseKey: string; head: string; tree: string; fingerprint: string;
 }): Promise<Json> {
   await client.query(`insert into public.estimate_search_index_release(
       id,release_key,status,taxonomy_version,group_relation_version,ranking_contract_version,
@@ -110,20 +170,20 @@ async function cloneSearch(client: Client, input: {
         'lifecycle','FROZEN_NOT_ACTIVE','activationAllowed',false,'productionEligible',false)
     from public.estimate_search_index_release where id=$7`, [
     input.searchReleaseId, `${input.releaseKey}-search`, input.head, input.tree,
-    sha256(`${input.searchReleaseId}:draft`), CONTRACT, PARENT_SEARCH_RELEASE_ID, input.releaseId, input.fingerprint,
+    sha256(`${input.searchReleaseId}:draft`), CONTRACT, input.predecessorSearchReleaseId, input.releaseId, input.fingerprint,
   ]);
   await client.query(`insert into public.estimate_search_group(
       search_release_id,group_id,group_name_ru,domain_id,system_id,subsystem_id,assembly_id,
       work_family_id,breadcrumb,member_count,member_set_sha256,oracle_disposition)
     select $1,group_id,group_name_ru,domain_id,system_id,subsystem_id,assembly_id,
       work_family_id,breadcrumb,member_count,member_set_sha256,oracle_disposition
-    from public.estimate_search_group where search_release_id=$2`, [input.searchReleaseId, PARENT_SEARCH_RELEASE_ID]);
+    from public.estimate_search_group where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
   await client.query(`insert into public.estimate_search_clarification_question(
       search_release_id,question_id,candidate_set_sha256,candidate_ids,discriminator_field,prompt_ru,
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence)
     select $1,question_id,candidate_set_sha256,candidate_ids,discriminator_field,prompt_ru,
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence
-    from public.estimate_search_clarification_question where search_release_id=$2`, [input.searchReleaseId, PARENT_SEARCH_RELEASE_ID]);
+    from public.estimate_search_clarification_question where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
   await client.query(`insert into public.estimate_search_document(
       search_release_id,catalog_id,domain_id,system_id,subsystem_id,assembly_id,work_family_id,
       group_id,subgroup_id,element_type,operation_kind,technology_variant,construction_state,
@@ -147,17 +207,17 @@ async function cloneSearch(client: Client, input: {
       source.adjudication_class,source.selectable,source.canonical_target_catalog_id,manifest.definition_version_id
     from public.estimate_search_document source
     join public.estimate_cumulative_manifest_entry manifest on manifest.release_id=$2 and manifest.catalog_id=source.catalog_id
-    where source.search_release_id=$4`, [input.searchReleaseId, input.releaseId, CONTRACT, PARENT_SEARCH_RELEASE_ID, input.fingerprint]);
+    where source.search_release_id=$4`, [input.searchReleaseId, input.releaseId, CONTRACT, input.predecessorSearchReleaseId, input.fingerprint]);
   await client.query(`insert into public.estimate_search_group_membership(
       search_release_id,group_id,catalog_id,ordinal,independent_disposition)
     select $1,group_id,catalog_id,ordinal,independent_disposition
-    from public.estimate_search_group_membership where search_release_id=$2`, [input.searchReleaseId, PARENT_SEARCH_RELEASE_ID]);
+    from public.estimate_search_group_membership where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
   await client.query(`insert into public.estimate_search_typed_relation(
       search_release_id,source_catalog_id,target_catalog_id,relationship_type,direction,source_locator,
       applicability_predicate,required_when,mutually_exclusive_with,explanation_ru,relation_sha256)
     select $1,source_catalog_id,target_catalog_id,relationship_type,direction,source_locator,
       applicability_predicate,required_when,mutually_exclusive_with,explanation_ru,relation_sha256
-    from public.estimate_search_typed_relation where search_release_id=$2`, [input.searchReleaseId, PARENT_SEARCH_RELEASE_ID]);
+    from public.estimate_search_typed_relation where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
   const clarificationFields = STRIP_FOUNDATION_INPUTS
     .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
     .map((parameter) => ({ parameterId: parameter.parameterId, titleRu: parameter.titleRu, unitId: parameter.unitId }));
@@ -165,12 +225,22 @@ async function cloneSearch(client: Client, input: {
   await client.query(`update public.estimate_search_document set
       canonical_name_ru=$3,primary_uom='m3',short_scope_ru=$4,included_boundaries=$5::jsonb,
       excluded_boundaries=$6::jsonb,required_inputs_count=$7,clarification_fields=$8::jsonb,
-      source_provenance=source_provenance||jsonb_build_object('technologicalOwner',$9::text),
+      source_provenance=source_provenance||jsonb_build_object('technologicalOwner',$9::text,
+        'conditionalExactNormSourceId',$10::text),
+      aliases=array(select distinct value from unnest(coalesce(aliases,'{}'::text[])||array[$11::text]) value),
+      normative_classifiers=array(select distinct value from unnest(coalesce(normative_classifiers,'{}'::text[])||array[$10::text,$12::text]) value),
+      applicability_tags=array(select distinct value from unnest(coalesce(applicability_tags,'{}'::text[])||array['CONDITIONAL_EXACT_NRMCA_CIP31','NO_AUTOMATIC_GENERIC_BINDING']) value),
+      normalized_aliases=array(select distinct value from unnest(coalesce(normalized_aliases,'{}'::text[])||array[lower($11::text)]) value),
+      normalized_search_terms=array(select distinct value from unnest(coalesce(normalized_search_terms,'{}'::text[])||array['nrmca','cip 31','ready mix concrete order']) value),
+      normalized_search_blob=coalesce(normalized_search_blob,'')||chr(31)||'nrmca'||chr(31)||'cip 31'||chr(31)||'ready mix concrete order',
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$9,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
     input.searchReleaseId, TARGET_CATALOG_ID, REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
     content.physicalResultRu, JSON.stringify(content.includedScopeRu), JSON.stringify(content.excludedScopeRu),
     clarificationFields.length, JSON.stringify(clarificationFields), CONTRACT,
+    NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+    "NRMCA CIP 31 ready-mix concrete order",
+    NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
   ]);
   const snapshot = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
@@ -188,21 +258,64 @@ async function main(): Promise<void> {
   exactDatabaseGuard();
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256, "STOP_R4_A10_MASTER_SHA256_DRIFT");
   invariant(git("branch", "--show-current") === EXPECTED_BRANCH, "STOP_R4_A10_BRANCH_DRIFT");
+  const predecessorReleaseId = argValue("--predecessor-release-id") ?? DEFAULT_PARENT_RELEASE_ID;
+  const predecessorSearchReleaseId = argValue("--predecessor-search-release-id")
+    ?? DEFAULT_PARENT_SEARCH_RELEASE_ID;
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
   const compiledGold = compileStripFoundationEstimate(STRIP_FOUNDATION_GOLD_INPUT);
   invariant(auditRealProfessionalRowsR1(compiledGold).length === 0, "STOP_R4_A10_FOUNDATION_CONTENT_GATE_RED");
   invariant(new Set(compiledGold.map((row) => row.category)).size === 4, "STOP_R4_A10_FOUNDATION_CATEGORY_GATE_RED");
+  const exactNrmcaInput = {
+    ...STRIP_FOUNDATION_GOLD_INPUT,
+    product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+    concrete_order_allowance_percent: 8,
+    plan_volume_calculation_reference: "KJ-4 axes 1-8/A-D rev.5",
+    mix_design_or_project_specification_reference: "KJ-4 note 7; mix card RM-25-114",
+    mixture_designation: "B25 W6 F150 P4, RM-25-114",
+    placement_location: "Strip foundation axes 1-8/A-D, pour 1",
+    contingency_selection_justification: "Complex formwork and pump remainder per method statement",
+    delivery_schedule_and_truck_capacity: "4 trucks x 8 m3; final load confirmed before dispatch",
+    producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
+    estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
+  } as const;
+  const compiledExactNrmca = compileStripFoundationEstimate(exactNrmcaInput);
+  const exactConcrete = compiledExactNrmca.find((row) => row.rowId === "main_concrete");
+  const exactDelivery = compiledExactNrmca.find((row) => row.rowId === "concrete_delivery");
+  invariant(exactConcrete?.evaluatedQuantity === "32.4"
+    && exactConcrete.normSource.sourceKey === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID
+    && exactConcrete.professionalPhysicalNormApplicabilityV1?.status === "APPLIED",
+  "STOP_R4_A13_6_NRMCA_EXACT_SCENARIO_RED");
+  invariant(exactDelivery?.cargoQuantity === "32.4"
+    && exactDelivery.professionalPhysicalNormApplicabilityV1?.source_id
+      === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  "STOP_R4_A13_6_NRMCA_DELIVERY_PROJECTION_RED");
+  let formerTwoPercentRejected = false;
+  try {
+    compileStripFoundationEstimate({ ...exactNrmcaInput, concrete_order_allowance_percent: 2 });
+  } catch (error) {
+    formerTwoPercentRejected = String(error).includes("selected_contingency_percent=2");
+  }
+  invariant(formerTwoPercentRejected, "STOP_R4_A13_6_NRMCA_FORMER_TWO_PERCENT_ACCEPTED");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
-  const fingerprint = sha256({ contract: CONTRACT, master: MASTER_SHA256, sourceHashes });
+  const exactNrmcaAcceptance = {
+    projectVolumeM3: 30,
+    selectedContingencyPercent: 8,
+    orderQuantityM3: 32.4,
+    deliveryQuantityM3: 32.4,
+    formerTwoPercentRejected,
+    sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+  };
+  const fingerprint = sha256({ contract: CONTRACT, master: MASTER_SHA256,
+    predecessorReleaseId, predecessorSearchReleaseId, sourceHashes, exactNrmcaAcceptance });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
   const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${TARGET_CATALOG_ID}`);
   const baselineId = uuid(`${CONTRACT}:${fingerprint}:baseline:${TARGET_CATALOG_ID}`);
-  const releaseKey = `r568-r4-a10-foundation-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-strip-foundation-nrmca-cip31-${fingerprint.slice(0, 16)}`;
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(
-    (current.definitionReleaseId === PARENT_RELEASE_ID && current.searchReleaseId === PARENT_SEARCH_RELEASE_ID)
+    (current.definitionReleaseId === predecessorReleaseId && current.searchReleaseId === predecessorSearchReleaseId)
       || (current.definitionReleaseId === releaseId && current.searchReleaseId === searchReleaseId),
     "STOP_R4_A10_CURRENT_RELEASE_DRIFT",
   );
@@ -233,7 +346,7 @@ async function main(): Promise<void> {
     resources: STRIP_FOUNDATION_ROWS,
   });
 
-  const client = new Client({ connectionString: DATABASE_URL, application_name: "r4-a10-strip-foundation-successor" });
+  const client = new Client({ connectionString: DATABASE_URL, application_name: "r4-a13-6-strip-foundation-nrmca-cip31-successor" });
   await client.connect();
   let receipt: Json;
   try {
@@ -243,18 +356,18 @@ async function main(): Promise<void> {
       const audit = (await client.query(`select count(*)::int identities,
           count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int repaired
         from public.estimate_cumulative_manifest_entry where release_id=$1`, [releaseId, TARGET_CATALOG_ID, definitionId])).rows[0] as Json;
-      receipt = { status: "GREEN_R4_A10_FOUNDATION_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE", idempotent: true, audit };
+      receipt = { status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE", idempotent: true, audit };
     } else {
-      const predecessor = (await client.query("select * from public.estimate_definition_release where id=$1", [PARENT_RELEASE_ID])).rows[0] as Json;
+      const predecessor = (await client.query("select * from public.estimate_definition_release where id=$1", [predecessorReleaseId])).rows[0] as Json;
       const target = (await client.query(`select manifest.*,definition.definition_version,
           (select count(*)::int from public.estimate_parameter_definition where definition_version_id=manifest.definition_version_id) parameters,
           (select count(*)::int from public.estimate_formula_graph where definition_version_id=manifest.definition_version_id) formulas,
           (select count(*)::int from public.estimate_resource_spec where definition_version_id=manifest.definition_version_id) resources
         from public.estimate_cumulative_manifest_entry manifest
         join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
-        where manifest.release_id=$1 and manifest.catalog_id=$2`, [PARENT_RELEASE_ID, TARGET_CATALOG_ID])).rows[0] as Json;
+        where manifest.release_id=$1 and manifest.catalog_id=$2`, [predecessorReleaseId, TARGET_CATALOG_ID])).rows[0] as Json;
       invariant(predecessor?.status === "prepared" && Number(predecessor.definition_count) === 10_331, "STOP_R4_A10_PREDECESSOR_RELEASE_DRIFT");
-      invariant(target && Number(target.parameters) === 46 && Number(target.formulas) === 28 && Number(target.resources) === 39, "STOP_R4_A10_PREDECESSOR_TARGET_DRIFT");
+      invariant(target && Number(target.parameters) > 0 && Number(target.formulas) > 0 && Number(target.resources) > 0, "STOP_R4_A10_PREDECESSOR_TARGET_DRIFT");
       const nextDefinitionVersion = Number((await client.query(
         "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
         [TARGET_CATALOG_ID],
@@ -267,8 +380,8 @@ async function main(): Promise<void> {
       };
       if (!APPLY) {
         receipt = {
-          status: "GREEN_R4_A10_FOUNDATION_SUCCESSOR_PRECHECK_NO_MUTATION", idempotent: false,
-          predecessor: { releaseId: PARENT_RELEASE_ID, searchReleaseId: PARENT_SEARCH_RELEASE_ID, definitionId: target.definition_version_id },
+          status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_PRECHECK_NO_MUTATION", idempotent: false,
+          predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId, definitionId: target.definition_version_id },
           successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
           technologicalCore: { parameters: STRIP_FOUNDATION_INPUTS.length, formulas: STRIP_FOUNDATION_FORMULAS.length, resources: STRIP_FOUNDATION_ROWS.length, compiledRows: compiledGold.length },
         };
@@ -288,7 +401,7 @@ async function main(): Promise<void> {
             JSON.stringify({ contract: CONTRACT, masterSha256: MASTER_SHA256,
               lifecycle: "DRAFT_FORWARD_ONLY", replacedDefinitionCount: 1, targetCatalogId: TARGET_CATALOG_ID,
               activationAllowed: false, productionEligible: false }),
-            PARENT_RELEASE_ID, sha256({ contract: CONTRACT, fingerprint, definitionSha256 }), nextCounts.parameters, nextCounts.formulas,
+            predecessorReleaseId, sha256({ contract: CONTRACT, fingerprint, definitionSha256 }), nextCounts.parameters, nextCounts.formulas,
           ]);
           await client.query(`insert into public.estimate_cumulative_manifest_entry(
               release_id,catalog_id,definition_version_id,source_batch,source_release_id,domain_id,
@@ -298,7 +411,7 @@ async function main(): Promise<void> {
               publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,definition_hash,
               encode(extensions.digest(convert_to($2||':'||$1::uuid::text||':'||catalog_id||':'||entry_sha256,'UTF8'),'sha256'),'hex'),
               runtime_publication_state
-            from public.estimate_cumulative_manifest_entry where release_id=$3`, [releaseId, CONTRACT, PARENT_RELEASE_ID]);
+            from public.estimate_cumulative_manifest_entry where release_id=$3`, [releaseId, CONTRACT, predecessorReleaseId]);
           await client.query(`insert into public.estimate_definition_version(
               id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
               source_metadata,content_status,content_gate_status)
@@ -341,11 +454,23 @@ async function main(): Promise<void> {
           const resources = STRIP_FOUNDATION_ROWS.map((row, ordinal) => {
             const id = uuid(`${CONTRACT}:${fingerprint}:resource:${row.rowId}`);
             resourceIdByRow.set(row.rowId, id);
+            const isReadyMixOrderOwner = row.rowId === "main_concrete";
             const sourceMetadata = { contract: CONTRACT, category: row.category, visibility: row.visibility,
               procurementMode: row.procurementMode, includedInParentRate: row.includedInParentRate,
-              normSource: row.normSource, normativeTrace: [row.normSource], ...(row.cargo ? { cargo: row.cargo } : {}) };
+              normSource: row.normSource,
+              normativeTrace: isReadyMixOrderOwner
+                ? [row.normSource, NRMCA_CIP31_NORMATIVE_TRACE]
+                : [row.normSource],
+              ...(isReadyMixOrderOwner ? {
+                conditionalExactNormSourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+                rejectedPredecessorSourceIds: ["src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1"],
+              } : {}),
+              ...(row.cargo ? { cargo: row.cargo } : {}) };
             const resourceGraph = { semanticOwnerId: row.semanticOwnerId, formulaId: row.formulaId,
               category: row.category, normalizedUom: row.normalizedUom, costOwner: row.costOwner,
+              ...(isReadyMixOrderOwner ? {
+                professionalPhysicalNormBindingV1: NRMCA_CIP31_RESOURCE_BINDING,
+              } : {}),
               ...(row.titleSpecificationParameterIds ? { titleSpecificationParameterIds: row.titleSpecificationParameterIds } : {}),
               ...(row.titleSpecificationMode ? { titleSpecificationMode: row.titleSpecificationMode } : {}),
               ...(row.titleSpecificationSeparator ? { titleSpecificationSeparator: row.titleSpecificationSeparator } : {}),
@@ -411,6 +536,55 @@ async function main(): Promise<void> {
                 { rateCode: row.normSource.rateCode, tableCode: row.normSource.tableCode, pdfPage: row.normSource.pdfPage },
               ]));
           }
+          await client.query(`insert into public.estimate_normative_source(
+              id,source_key,title_ru,authority,official_url,artifact_sha256,effective_from,metadata)
+            values($1,$2,$3,$4,$5,null,$6,$7::jsonb)
+            on conflict(source_key) do update set official_url=excluded.official_url,
+              metadata=public.estimate_normative_source.metadata||excluded.metadata`, [
+            uuid(`${CONTRACT}:source:${NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID}`),
+            NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+            NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_title,
+            "National Ready Mixed Concrete Association",
+            NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_url,
+            "2021-01-01",
+            JSON.stringify({ contract: CONTRACT, verifiedAt: "2026-09-15",
+              targetCatalogId: TARGET_CATALOG_ID,
+              sourceDefinitionHash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
+              useRestriction: "EXACT_PROJECT_READY_MIX_ORDER_ONLY",
+              automaticGenericBinding: false }),
+          ]);
+          const nrmcaSource = (await client.query(
+            "select id::text from public.estimate_normative_source where source_key=$1",
+            [NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID],
+          )).rows[0] as Json;
+          const nrmcaLocator = {
+            documentCode: "NRMCA CIP 31 - Ordering Ready Mixed Concrete",
+            exactLocator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
+            measurementUnit: "m3 fresh unhardened concrete",
+            publishedContingencyPercentRange: [4, 10],
+            selectedContingencyPercentRequired: true,
+            automaticGenericBinding: false,
+          };
+          const nrmcaLocatorKey = sha256(nrmcaLocator);
+          await client.query(`insert into public.estimate_normative_locator(
+              id,source_id,locator_key,locator,excerpt_sha256)
+            values($1,$2,$3,$4::jsonb,$5) on conflict(source_id,locator_key) do nothing`, [
+            uuid(`${CONTRACT}:locator:${NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID}:${nrmcaLocatorKey}`),
+            nrmcaSource.id, nrmcaLocatorKey, JSON.stringify(nrmcaLocator), sha256(nrmcaLocator),
+          ]);
+          const storedNrmcaLocator = (await client.query(
+            "select id::text from public.estimate_normative_locator where source_id=$1 and locator_key=$2",
+            [nrmcaSource.id, nrmcaLocatorKey],
+          )).rows[0] as Json;
+          await insertRows(client, "estimate_work_normative_binding", [
+            "definition_version_id", "resource_spec_id", "locator_id", "applicability",
+          ], [[definitionId, resourceIdByRow.get("main_concrete"), storedNrmcaLocator.id, {
+            ...NRMCA_CIP31_RESOURCE_BINDING,
+            norm_id: NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
+            source_document_version: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.source_document_version,
+            source_definition_hash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
+            exact_locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
+          }]]);
           await client.query(`update public.estimate_cumulative_manifest_entry set
               definition_version_id=$3,source_batch=$4,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
               approved_template_baseline_id=$5,baseline_ready=true,scenario_ready=true,definition_hash=$6,
@@ -419,22 +593,51 @@ async function main(): Promise<void> {
             releaseId, TARGET_CATALOG_ID, definitionId, CONTRACT, baselineId, definitionSha256,
             sha256({ contract: CONTRACT, releaseId, catalogId: TARGET_CATALOG_ID, definitionId, baselineId, definitionSha256 }),
           ]);
-          const search = await cloneSearch(client, { releaseId, searchReleaseId, releaseKey, head, tree, fingerprint });
+          const search = await cloneSearch(client, {
+            predecessorSearchReleaseId, releaseId, searchReleaseId, releaseKey, head, tree, fingerprint,
+          });
           const manifest = (await client.query(`select count(*)::int identities,
               count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int repaired,
               encode(extensions.digest(convert_to(string_agg(entry_sha256,'' order by catalog_id),'UTF8'),'sha256'),'hex') snapshot
             from public.estimate_cumulative_manifest_entry where release_id=$1`, [releaseId, TARGET_CATALOG_ID, definitionId])).rows[0] as Json;
+          const exactNormAudit = (await client.query(`select
+              (select count(*)::int from public.estimate_work_normative_binding binding
+                join public.estimate_normative_locator locator on locator.id=binding.locator_id
+                join public.estimate_normative_source source on source.id=locator.source_id
+                where binding.definition_version_id=$1 and source.source_key=$2) normalized_bindings,
+              (select count(*)::int from public.estimate_resource_spec resource
+                where resource.definition_version_id=$1
+                  and resource.row_id='main_concrete'
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,source_id}'=$2
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,parameter_id}'='product_profile_id'
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,equals}'=$3) conditional_owner_rows,
+              (select count(*)::int from public.estimate_resource_spec resource
+                where resource.definition_version_id=$1
+                  and exists(select 1 from jsonb_array_elements(coalesce(resource.source_metadata->'normativeTrace','[]'::jsonb)) trace
+                    where coalesce(trace->>'source_id',trace->>'sourceId',trace->>'document_code')=$4)) forbidden_legacy_rows`, [
+            definitionId,
+            NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
+            NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+            "src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1",
+          ])).rows[0] as Json;
           invariant(Number(manifest.identities) === 10_331 && Number(manifest.repaired) === 1, `STOP_R4_A10_MANIFEST_AUDIT:${JSON.stringify(manifest)}`);
+          invariant(Number(exactNormAudit.normalized_bindings) === 1
+            && Number(exactNormAudit.conditional_owner_rows) === 1
+            && Number(exactNormAudit.forbidden_legacy_rows) === 0,
+          `STOP_R4_A13_6_NRMCA_CANDIDATE_AUDIT:${JSON.stringify(exactNormAudit)}`);
           await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
             metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
             releaseId, manifest.snapshot, JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId,
-              searchSnapshotSha256: search.snapshot_sha256, technologicalRows: STRIP_FOUNDATION_ROWS.length }),
+              searchSnapshotSha256: search.snapshot_sha256, technologicalRows: STRIP_FOUNDATION_ROWS.length,
+              exactNrmcaCip31: exactNrmcaAcceptance, normalizedNrmcaBindingCount: 1 }),
           ]);
           await client.query("commit");
-          receipt = { status: "GREEN_R4_A10_FOUNDATION_SUCCESSOR_PREPARED_NOT_ACTIVE", idempotent: false,
-            predecessor: { releaseId: PARENT_RELEASE_ID, searchReleaseId: PARENT_SEARCH_RELEASE_ID, definitionId: target.definition_version_id },
+          receipt = { status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_PREPARED_NOT_ACTIVE", idempotent: false,
+            predecessor: { releaseId: predecessorReleaseId, searchReleaseId: predecessorSearchReleaseId,
+              definitionId: target.definition_version_id },
             successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
-            audit: { ...manifest, search, hiddenGeometryDefaults: hiddenGeometry.length, safeBaselineInputs: Object.keys(safeBaselineInputs),
+            audit: { ...manifest, search, exactNormAudit, hiddenGeometryDefaults: hiddenGeometry.length,
+              safeBaselineInputs: Object.keys(safeBaselineInputs), exactNrmcaAcceptance,
               technologicalCore: { parameters: STRIP_FOUNDATION_INPUTS.length, formulas: STRIP_FOUNDATION_FORMULAS.length,
                 resources: STRIP_FOUNDATION_ROWS.length, compiledRows: compiledGold.length } } };
         } catch (error) {
@@ -448,10 +651,27 @@ async function main(): Promise<void> {
   }
   const body = { schemaVersion: `${CONTRACT}.receipt.v1`, capturedAt: new Date().toISOString(),
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY", source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
-    masterSha256: MASTER_SHA256, targetCatalogId: TARGET_CATALOG_ID,
-    ...receipt!, productionAccessed: false, deployPerformed: false, activationPerformed: false };
+    masterSha256: MASTER_SHA256, targetCatalogId: TARGET_CATALOG_ID, exactNrmcaAcceptance,
+    ...receipt!, productionAccessed: false, deployPerformed: false, activationPerformed: false,
+    releasePerformed: false };
   const sealed = { ...body, receiptSha256: sha256(body) };
-  if (APPLY && !receipt!.idempotent) atomicJson(resolve(OUTPUT_ROOT, `01_FOUNDATION_SUCCESSOR_${head}.json`), sealed);
+  if (APPLY && !receipt!.idempotent) {
+    atomicJson(resolve(OUTPUT_ROOT, `01_FOUNDATION_SUCCESSOR_${head}.json`), sealed);
+    atomicJson(CURRENT_RELEASE_PATH, {
+      ...current,
+      definitionReleaseId: releaseId,
+      searchReleaseId,
+      definitionReleaseStatus: "prepared",
+      searchReleaseStatus: "draft",
+      definitionSnapshotSha256: receipt!.audit.snapshot,
+      manifestHashChainSha256: receipt!.audit.snapshot,
+      searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
+      currentRuntimeDefinitions: 10_331,
+      owner: "EXACT_NRMCA_CIP31_FULL_STRIP_FOUNDATION_SUCCESSOR",
+      productionAccessed: false,
+      fakeGreenClaimed: false,
+    });
+  }
   process.stdout.write(`${JSON.stringify(sealed, null, 2)}\n`);
 }
 

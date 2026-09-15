@@ -11,7 +11,10 @@ import {
   canonicalFixedQuantityStatedBySource,
   canonicalNormConstantQuantityBinding,
 } from "./canonicalFormulaSourceBinding";
-import { resolveCanonicalEstimatePhysicalNormApplicabilityV1 } from "./canonicalEstimatePhysicalNormProjection";
+import {
+  isCanonicalEstimatePhysicalNormBindingActiveV1,
+  resolveCanonicalEstimatePhysicalNormApplicabilityV1,
+} from "./canonicalEstimatePhysicalNormProjection";
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -426,7 +429,8 @@ export async function compileCanonicalEstimateCore(
     const inclusionResolvedByManualQuantity = manualQuantity != null && inclusionOnlyWaitsForFormulaInputs;
     if (inclusion.value === false) continue;
 
-    if (resource.resource_graph?.professionalPhysicalNormBindingV1 != null) {
+    if (resource.resource_graph?.professionalPhysicalNormBindingV1 != null
+      && isCanonicalEstimatePhysicalNormBindingActiveV1({ parameters, resourceGraph: resource.resource_graph })) {
       const physicalNorm = resolveCanonicalEstimatePhysicalNormApplicabilityV1({
         parameters,
         capturedAt: "canonical-estimate-compile-core",
