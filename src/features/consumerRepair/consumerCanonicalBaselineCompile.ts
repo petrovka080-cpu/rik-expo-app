@@ -28,10 +28,19 @@ import {
   R4_A10_ASPHALT_DRAINAGE_CATALOG_ID,
   R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
-import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
+import {
+  extractAsphaltUserFactsV4,
+  type AsphaltScopeSelectionIdV5,
+} from "../../lib/estimate/v4/asphalt";
+import {
+  getAsphaltRelatedProfileByCanonicalWorkKeyV4,
+  getAsphaltRelatedProfileByCatalogRecordIdV4,
+} from "../../lib/estimate/v4/asphalt/asphaltRelatedSemanticRegistryV4";
 import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
+import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
 import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
+import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -40,12 +49,165 @@ type CanonicalBaselinePlan = {
   primaryMeasureParameterId: string;
 };
 
+const BIA_TN10_MASONRY_CATALOG_IDS = new Set<string>(
+  MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS,
+);
+
+const BROAD_ASPHALT_IDENTITIES = new Set([
+  "asphalt_concrete_pavement",
+  "asphalt_concrete_pavement_preliminary_boq_expanded_complex_v1",
+  "asphalt_concrete_surface",
+  "asphalt_paving",
+  "canonical-work:expanded:asphalt_concrete_pavement",
+]);
+
+const CANONICAL_PROJECT_SCOPE_BY_ASPHALT_SCOPE: Readonly<Record<AsphaltScopeSelectionIdV5, string>> = {
+  ROAD_SURFACING_ONLY: "SURFACING_ONLY",
+  FULL_PAVEMENT_STRUCTURE: "PAVEMENT_STRUCTURE",
+  FULL_ROAD_INFRASTRUCTURE: "FULL_ROAD_INFRASTRUCTURE",
+  ROAD_REPAIR_REHABILITATION: "REHABILITATION",
+  NEW_PARKING_FULL_CONSTRUCTION: "TURNKEY_PARKING_WITH_SITE_FEATURES",
+  PAVEMENT_ON_CONFIRMED_PREPARED_BASE: "SURFACING_ONLY",
+  OVERLAY_EXISTING_PAVEMENT: "REHABILITATION",
+  LOCAL_REPAIR_OR_MILLING: "REHABILITATION",
+};
+
+const ASPHALT_INFRASTRUCTURE_SCOPE = new Set<AsphaltScopeSelectionIdV5>([
+  "FULL_ROAD_INFRASTRUCTURE",
+  "NEW_PARKING_FULL_CONSTRUCTION",
+]);
+
+function applyExplicitAsphaltScopeInputs(input: {
+  values: Record<string, CanonicalEstimateParameterInputValue>;
+  schemaIds: ReadonlySet<string>;
+  selectedRoadScope: AsphaltScopeSelectionIdV5;
+}): void {
+  input.values.project_scope = CANONICAL_PROJECT_SCOPE_BY_ASPHALT_SCOPE[input.selectedRoadScope];
+  // Scope choice is itself user input. Keep the cumulative definition in
+  // explicit-scope mode and resolve only the child-package switches that the
+  // selected scope unambiguously includes or excludes.
+  if (input.schemaIds.has("estimate_scope_mode")) {
+    input.values.estimate_scope_mode = "MINIMAL_EXPLICIT_SCOPE";
+  }
+  const includesRoadInfrastructure = ASPHALT_INFRASTRUCTURE_SCOPE.has(input.selectedRoadScope);
+  for (const parameterId of [
+    "curb_required",
+    "drainage_required",
+    "marking_required",
+    "signing_required",
+    "lighting_required",
+  ]) {
+    if (input.schemaIds.has(parameterId)) input.values[parameterId] = includesRoadInfrastructure;
+  }
+  // A general road/pavement choice never silently enables bridge works.
+  if (input.schemaIds.has("bridge_deck_package_required")) {
+    input.values.bridge_deck_package_required = false;
+  }
+  if (input.schemaIds.has("parking_geometry_required")) {
+    input.values.parking_geometry_required = input.selectedRoadScope === "NEW_PARKING_FULL_CONSTRUCTION";
+  }
+  // Accessibility is project/regulation-specific, not implied by merely
+  // choosing a parking construction scope; leave it for an explicit answer.
+}
+
+export function isConsumerCanonicalBroadAsphaltIdentity(value: string | null | undefined): boolean {
+  return BROAD_ASPHALT_IDENTITIES.has(String(value ?? "").trim());
+}
+
+export function isConsumerCanonicalBroadAsphaltCatalog(
+  catalog: Pick<CanonicalEstimateCatalogItem, "catalogId" | "workKey">,
+): boolean {
+  return isConsumerCanonicalBroadAsphaltIdentity(catalog.catalogId) ||
+    isConsumerCanonicalBroadAsphaltIdentity(catalog.workKey);
+}
+
+function explicitAsphaltPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+  selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const exactRelatedProfile =
+    getAsphaltRelatedProfileByCatalogRecordIdV4(input.catalog.catalogId)
+    ?? getAsphaltRelatedProfileByCanonicalWorkKeyV4(input.catalog.workKey);
+  if (!isConsumerCanonicalBroadAsphaltCatalog(input.catalog) && !exactRelatedProfile) return null;
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  const extracted = extractAsphaltUserFactsV4(input.prompt);
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const userFact of extracted.facts) {
+    const key = userFact.fact_id.match(/^asphalt:raw-input:(.+):v4$/u)?.[1] ?? "";
+    if (!key || !schemaIds.has(key) || Array.isArray(userFact.value)) continue;
+    if (["string", "number", "boolean"].includes(typeof userFact.value)) {
+      values[key] = userFact.value as CanonicalEstimateParameterInputValue;
+    }
+  }
+  const length = Number(values.length_m);
+  const width = Number(values.width_m);
+  if (
+    exactRelatedProfile != null
+    && !isConsumerCanonicalBroadAsphaltCatalog(input.catalog)
+    && schemaIds.has("area_m2")
+    && values.area_m2 == null
+    && Number.isFinite(length)
+    && Number.isFinite(width)
+    && length > 0
+    && width > 0
+  ) {
+    // The backend definition may carry a visible example area. A prompt-owned
+    // L × B measurement must override that example with its deterministic
+    // derived area; otherwise a 200 × 32 m bridge can silently become 640 m².
+    values.area_m2 = String(Math.round((length * width + Number.EPSILON) * 1_000_000) / 1_000_000);
+  }
+  if (input.selectedRoadScope) {
+    if (!schemaIds.has("project_scope")) {
+      throw new Error(`CANONICAL_SCOPE_PARAMETER_MISSING:${input.catalog.catalogId}`);
+    }
+    applyExplicitAsphaltScopeInputs({
+      values,
+      schemaIds,
+      selectedRoadScope: input.selectedRoadScope,
+    });
+  }
+  return values;
+}
+
+function explicitRicsNrm2FormworkPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const extracted = extractRicsNrm2FormworkCanonicalParametersV1(input.prompt);
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  if (!extracted || !schemaIds.has("measured_formwork_contact_area_m2")) return null;
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
+function explicitBiaTn10MasonryPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  if (!BIA_TN10_MASONRY_CATALOG_IDS.has(input.catalog.catalogId)) return null;
+  const extracted = extractBiaTn10MasonryCanonicalParametersV1(input.prompt);
+  if (!extracted) return null;
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
 type PromptParameterRule = {
   parameterIds: readonly string[];
   pattern: RegExp;
 };
 
 export const R4_A10_STRIP_FOUNDATION_CATALOG_ID = "canonical-work:expanded:strip_foundation";
+export const R4_A13_BULKHEAD_FRAME_CATALOG_ID =
+  "canonical-work:base:drywall_ceiling_interior_bulkhead_frame_standard";
+export const R4_A13_BULKHEAD_FRAME_PRIMARY_MEASURE_PARAMETER_ID = "horizontal_face_area_m2";
 
 const PROMPT_PARAMETER_RULES: readonly PromptParameterRule[] = [
   {
@@ -141,6 +303,7 @@ function quantityParameterScore(
   quantity: UserQuantity,
 ): number | null {
   if (!parameterAcceptsQuantity(parameter, quantity)) return null;
+  const parameterId = parameter.parameterId.toLocaleLowerCase("en-US");
   const semanticKey = String(parameter.semanticParameterKey ?? parameter.parameterId).toLocaleLowerCase("en-US");
   const exactSourceByUnit: Record<Exclude<UserQuantity["unit"], null>, RegExp> = {
     m2: /^(?:area_m2|(?:work|surface|floor|wall|roof|parking|paving|site)_area_m2)$/u,
@@ -150,6 +313,10 @@ function quantityParameterScore(
     t: /^(?:weight_t|mass_t)$/u,
     pcs: /^(?:count|quantity|qty)$/u,
   };
+  // semanticParameterKey is namespaced in cumulative definitions. The plain
+  // parameter id remains the authoritative discriminator between the primary
+  // work area and secondary areas such as protected_area_m2.
+  if (quantity.unit != null && exactSourceByUnit[quantity.unit].test(parameterId)) return 140;
   if (quantity.unit != null && exactSourceByUnit[quantity.unit].test(semanticKey)) return 120;
   if (/(?:^|_)(?:area|volume|length|count|quantity|qty|weight|mass)(?:_|$)/u.test(semanticKey)) return 80;
   return 20;
@@ -306,39 +473,38 @@ export function parseR4A10StripFoundationPrompt(
   }
   return values;
 }
-function explicitRicsNrm2FormworkPromptInputs(input: {
-  catalog: CanonicalEstimateCatalogItem;
-  prompt: string;
-}): Record<string, CanonicalEstimateParameterInputValue> | null {
-  const extracted = extractRicsNrm2FormworkCanonicalParametersV1(input.prompt);
-  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
-  if (!extracted || !schemaIds.has("measured_formwork_contact_area_m2")) return null;
+
+/**
+ * Maps only explicitly named bulkhead geometry. A bare or developed square
+ * metre value is intentionally not assigned to a particular face: the user
+ * must distinguish the horizontal face from vertical faces, ends and returns.
+ */
+export function parseR4A13BulkheadFramePrompt(
+  prompt: string,
+): Record<string, CanonicalEstimateParameterInputValue> {
   const values: Record<string, CanonicalEstimateParameterInputValue> = {};
-  for (const [parameterId, value] of Object.entries(extracted)) {
-    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  const normalized = prompt.normalize("NFKC").replace(/\u00a0/gu, " ");
+  const numeric: Readonly<Record<string, RegExp>> = {
+    horizontal_face_area_m2: /(?:площад\p{L}*\s+)?(?:низ\p{L}*|нижн\p{L}*\s+(?:горизонтальн\p{L}*\s+)?(?:част\p{L}*|гран\p{L}*)|горизонтальн\p{L}*\s+гран\p{L}*)\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м[²2]|кв(?:адратн\p{L}*)?\.?\s*м(?:етр\p{L}*)?)/iu,
+    vertical_face_length_m: /(?:суммарн\p{L}*\s+)?длин\p{L}*\s+(?:вертикальн\p{L}*\s+гран\p{L}*|боковин\p{L}*)\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}²³])/iu,
+    vertical_face_count: /(?:количеств\p{L}*|числ\p{L}*)\s+(?:вертикальн\p{L}*\s+гран\p{L}*|боковин\p{L}*)\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)/iu,
+    bulkhead_drop_height_m: /(?:высот\p{L}*\s+(?:опуск\p{L}*|боковин\p{L}*)|опуск\p{L}*\s+по\s+высот\p{L}*)\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}²³])/iu,
+    end_face_area_m2: /(?:суммарн\p{L}*\s+)?площад\p{L}*\s+торц\p{L}*\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м[²2]|кв(?:адратн\p{L}*)?\.?\s*м(?:етр\p{L}*)?)/iu,
+    return_face_area_m2: /(?:суммарн\p{L}*\s+)?площад\p{L}*\s+(?:возврат\p{L}*(?:\s+и\s+переход\p{L}*)?|переход\p{L}*)\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м[²2]|кв(?:адратн\p{L}*)?\.?\s*м(?:етр\p{L}*)?)/iu,
+    opening_area_m2: /(?:суммарн\p{L}*\s+)?площад\p{L}*\s+(?:вычитаем\p{L}*\s+)?про[её]м\p{L}*\s*(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*(?:м[²2]|кв(?:адратн\p{L}*)?\.?\s*м(?:етр\p{L}*)?)/iu,
+    perimeter_length_m: /длин\p{L}*\s+(?:периметр\p{L}*(?:\s+и\s+примыкан\p{L}*)?|примыкан\p{L}*)\s+(?:короб\p{L}*\s*)?[:=]?\s*(\d+(?:[,.]\d+)?)\s*м(?![\p{L}\p{N}²³])/iu,
+  };
+  for (const [parameterId, pattern] of Object.entries(numeric)) {
+    const value = promptNumber(normalized, pattern);
+    if (value !== undefined) values[parameterId] = value;
   }
   return values;
 }
-
-function explicitBiaTn10MasonryPromptInputs(input: {
-  catalog: CanonicalEstimateCatalogItem;
-  prompt: string;
-}): Record<string, CanonicalEstimateParameterInputValue> | null {
-  if (input.catalog.catalogId !== "canonical-work:base:masonry_interior_brick_wall_lay_standard") return null;
-  const extracted = extractBiaTn10MasonryCanonicalParametersV1(input.prompt);
-  if (!extracted) return null;
-  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
-  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
-  for (const [parameterId, value] of Object.entries(extracted)) {
-    if (schemaIds.has(parameterId)) values[parameterId] = value;
-  }
-  return values;
-}
-
 
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
+  selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
 }): CanonicalBaselinePlan {
   const baselineInputs: Record<string, CanonicalEstimateParameterInputValue> = {};
   for (const parameter of input.catalog.parameterSchema) {
@@ -355,10 +521,15 @@ export function buildCanonicalBaselinePlan(input: {
   const asphaltDrainageInput = input.catalog.catalogId === R4_A10_ASPHALT_DRAINAGE_CATALOG_ID
     ? parseR4A10AsphaltDrainagePrompt(input.prompt)
     : null;
+  const asphaltRoadInput = explicitAsphaltPromptInputs(input);
   const ricsNrm2FormworkInput = explicitRicsNrm2FormworkPromptInputs(input);
   const biaTn10MasonryInput = explicitBiaTn10MasonryPromptInputs(input);
+  const bulkheadFrameInput = input.catalog.catalogId === R4_A13_BULKHEAD_FRAME_CATALOG_ID
+    ? parseR4A13BulkheadFramePrompt(input.prompt)
+    : null;
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
-    && asphaltDrainageInput == null && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null
+    && asphaltDrainageInput == null && asphaltRoadInput == null
+    && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null && bulkheadFrameInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -368,14 +539,16 @@ export function buildCanonicalBaselinePlan(input: {
       .filter((candidate): candidate is { parameter: CanonicalEstimateCatalogItem["parameterSchema"][number]; score: number } => candidate.score != null)
       .sort((left, right) => right.score - left.score || left.parameter.ordinal - right.parameter.ordinal);
     const target = candidates[0];
-    if (target && (candidates.length === 1 || target.score > candidates[1].score)) {
+    if (target && (candidates.length === 1
+      || target.score > candidates[1].score)) {
       submittedInputs[target.parameter.parameterId] = userQuantity.value;
       userQuantityParameterId = target.parameter.parameterId;
     }
   }
   Object.assign(
     submittedInputs,
-    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
+    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? asphaltRoadInput
+      ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput ?? bulkheadFrameInput
       ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
@@ -384,11 +557,15 @@ export function buildCanonicalBaselinePlan(input: {
       ? "total_axis_length_m"
       : asphaltDrainageInput != null
         ? R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID
+        : asphaltRoadInput != null
+          ? (asphaltRoadInput.area_m2 != null ? "area_m2" : asphaltRoadInput.length_m != null ? "length_m" : undefined)
         : ricsNrm2FormworkInput != null
           ? "measured_formwork_contact_area_m2"
-          : biaTn10MasonryInput != null
-            ? "measured_net_brick_wall_area_m2"
-            : userQuantityParameterId
+        : biaTn10MasonryInput != null
+          ? "measured_net_brick_wall_area_m2"
+        : bulkheadFrameInput != null
+          ? R4_A13_BULKHEAD_FRAME_PRIMARY_MEASURE_PARAMETER_ID
+    : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
       .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")
@@ -406,11 +583,16 @@ export function buildCanonicalBaselinePlan(input: {
     schema: input.catalog.parameterSchema,
     rawInputs: { ...baselineInputs, ...submittedInputs },
   });
-  if (!validation.ok) {
-    const missing = validation.issues
+  const schemaById = new Map(input.catalog.parameterSchema.map((parameter) => [parameter.parameterId, parameter]));
+  const blockingIssues = validation.issues.filter((issue) =>
+    !((issue.code === "REQUIRED" || issue.code === "REQUIRED_WHEN")
+      && schemaById.get(issue.parameterId)?.preliminaryCompilationAllowed === true)
+  );
+  if (blockingIssues.length > 0) {
+    const missing = blockingIssues
       .filter((issue) => issue.code === "REQUIRED" || issue.code === "REQUIRED_WHEN")
       .map((issue) => issue.parameterId);
-    throw new Error(`CANONICAL_BASELINE_CONTRACT_MISSING:${[...new Set(missing)].join(",") || validation.issues.map((issue) => issue.code).join(",")}`);
+    throw new Error(`CANONICAL_BASELINE_CONTRACT_MISSING:${[...new Set(missing)].join(",") || blockingIssues.map((issue) => issue.code).join(",")}`);
   }
   const assumptions = input.catalog.parameterSchema
     .filter((parameter) => parameter.visibilityRole === "USER_INPUT")
@@ -436,6 +618,7 @@ export function buildCanonicalBaselinePlan(input: {
 export function buildCanonicalBaselineInputs(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
+  selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
 }): Record<string, CanonicalEstimateParameterInputValue> {
   return buildCanonicalBaselinePlan(input).parameters;
 }
@@ -453,6 +636,7 @@ export async function compileConsumerCanonicalBaseline(input: {
   catalogId: string;
   prompt: string;
   draftId: string;
+  selectedRoadScope?: AsphaltScopeSelectionIdV5 | null;
 }): Promise<ForemanAiEstimateDraftMapping> {
   const catalog = await getCanonicalEstimateCatalogItem(input.catalogId).catch((error: unknown) => {
     if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
@@ -460,9 +644,13 @@ export async function compileConsumerCanonicalBaseline(input: {
     }
     throw error;
   });
-  const baseline = buildCanonicalBaselinePlan({ catalog, prompt: input.prompt });
+  const baseline = buildCanonicalBaselinePlan({
+    catalog,
+    prompt: input.prompt,
+    selectedRoadScope: input.selectedRoadScope,
+  });
   const parameters = baseline.parameters;
-  const compiled = await compileCanonicalEstimateAndLoad({
+  const compileInput = {
     request: {
       idempotencyKey: `consumer-baseline-${stableId(`${input.draftId}|${catalog.releaseId}|${catalog.catalogId}|${input.prompt}|${JSON.stringify(parameters)}`)}`,
       catalogId: catalog.catalogId,
@@ -471,7 +659,37 @@ export async function compileConsumerCanonicalBaseline(input: {
       parameters,
       currencyCode: "KGS",
     },
-  });
+  } as const;
+  let compiled: Awaited<ReturnType<typeof compileCanonicalEstimateAndLoad>> | null = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      compiled = await compileCanonicalEstimateAndLoad(compileInput);
+      break;
+    } catch (error) {
+      const errorCode = error instanceof CanonicalEstimateApiError
+        ? error.code
+        : typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
+      const admissionSettling = errorCode === "DEFINITION_CONTENT_NOT_ADMITTED";
+      if (admissionSettling) {
+        console.info("[RikEstimateAdmission]", JSON.stringify({
+          catalogId: catalog.catalogId,
+          releaseId: catalog.releaseId,
+          attempt: attempt + 1,
+          code: errorCode,
+        }));
+      }
+      if (!admissionSettling || attempt === 4) throw error;
+      // A candidate capability and its content-admission projection can settle
+      // on adjacent transactions immediately after local/staging sign-in. The
+      // exact catalog read remains the fail-closed authority: it must confirm
+      // the same release before an idempotent compile retry is permitted.
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 500 * (attempt + 1)));
+      await getCanonicalEstimateCatalogItem(catalog.catalogId, null, catalog.releaseId);
+    }
+  }
+  if (!compiled) throw new Error("CANONICAL_BASELINE_COMPILE_NOT_COMPLETED");
   const estimate = adaptCanonicalRevisionToStructuredEstimate({
     catalog,
     revision: compiled.revision,

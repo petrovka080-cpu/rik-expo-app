@@ -68,6 +68,18 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       brick_supplier_package_pieces: 500,
       mortar_supplier_package_m3: 0.25,
     });
+    for (const catalogId of [
+      "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
+      "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
+      "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
+    ]) {
+      const variant = buildCanonicalBaselinePlan({ catalog: { ...catalog, catalogId }, prompt });
+      expect(Object.keys(variant.parameters)).toHaveLength(22);
+    }
+    expect(() => buildCanonicalBaselinePlan({
+      catalog: { ...catalog, catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_high_load" },
+      prompt,
+    })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING");
   });
 
   test("keeps need, project waste and supplier purchase quantities separate with unknown prices", async () => {
