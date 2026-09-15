@@ -542,7 +542,8 @@ export function buildMultiDomainReferenceSelectedWorkBinding(
   const stripFoundationIntent =
     /(?:устройств|возвед|бетонирован|заливк|монтаж)[^.;]{0,80}ленточн\p{L}*\s+фундамент\p{L}*/iu.test(normalized) ||
     /ленточн\p{L}*\s+фундамент\p{L}*[^.;]{0,80}(?:устройств|возвед|бетонирован|заливк|монтаж)/iu.test(normalized);
-  if (stripFoundationIntent) {
+  const explicitStripFoundationFormworkIntent = /\u043e\u043f\u0430\u043b\u0443\u0431\u043a\p{L}*/iu.test(normalized);
+  if (stripFoundationIntent && !explicitStripFoundationFormworkIntent) {
     return {
       selectedWorkKey: "canonical-work:expanded:strip_foundation",
       selectedTitleRu: "Устройство монолитного железобетонного ленточного фундамента",
