@@ -31,6 +31,7 @@ describe("strip-foundation approved reinforcement schedule integration", () => {
     const row = compileStripFoundationEstimate(EXACT_REINFORCEMENT_SCHEDULE_INPUT)
       .find((candidate) => candidate.rowId === "reinforcement");
     expect(row).toMatchObject({
+      canonicalRuName: "Арматурная сталь по проектной ведомости стержней",
       evaluatedQuantity: "2.4",
       normalizedUom: "t",
       normSource: { sourceKey: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID },

@@ -381,7 +381,7 @@ export const STRIP_FOUNDATION_ROWS: readonly StripFoundationBoqRow[] = Object.fr
     titleSpecificationSeparator: " ",
   }),
   row("preparation_concrete", "material", "Бетонная смесь для подготовки", "m3", "preparation_volume", preparation, projectSource("бетонная подготовка и её класс")),
-  row("reinforcement", "material", "Арматурная сталь по проектной ведомости", "t", "reinforcement_mass", fullScope, projectSource("ведомость расхода стали")),
+  row("reinforcement", "material", "Арматурная сталь по проектной ведомости стержней", "t", "reinforcement_mass", fullScope, projectSource("ведомость расхода стали")),
   row("binding_wire", "material", "Проволока вязальная отожжённая", "kg", "binding_wire_mass", fullScope, projectSource("ведомость армирования")),
   row("formwork_system", "material", "Щитовая опалубочная система", "m2", "formwork_contact_area", fullScope, projectSource("выбранная опалубочная система")),
   row("curing_membrane", "material", "Плёнка для ухода за бетоном", "m2", "curing_top_area", membraneCuring, SN52),
