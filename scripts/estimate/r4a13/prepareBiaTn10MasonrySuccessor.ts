@@ -92,6 +92,11 @@ const FORBIDDEN_LEGACY_SOURCE_IDS = [
   "src_professional_norm_pack_masonry_aac_block_pcs_m3_wall_v1",
   "src_professional_norm_pack_masonry_mesh_kg_m3_wall_v1",
   "src_professional_norm_pack_masonry_thin_bed_adhesive_kg_m3_aac_wall_v1",
+  "src_professional_norm_pack_masonry_brick_250_120_65_piece_m2_half_brick_v1",
+  "src_professional_norm_pack_masonry_cement_lime_mortar_m3_m2_brick_v1",
+  "src_professional_norm_pack_masonry_aac_block_600_200_200_piece_m2_wall_v1",
+  "src_professional_norm_pack_masonry_reinforcement_mesh_m2_m2_wall_v1",
+  "src_professional_norm_pack_masonry_thin_bed_block_adhesive_kg_m2_200mm_v1",
 ] as const;
 
 const argValue = cliValue;

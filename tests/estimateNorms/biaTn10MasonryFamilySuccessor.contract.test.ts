@@ -21,5 +21,7 @@ describe("BIA TN 10 masonry family successor", () => {
     expect(source).toContain("productionEligible: false");
     expect(source).toContain("NORMATIVE_PARAMETER_IDS.has(parameter.parameter_id)");
     expect(source).toContain("semantic_parameter_key: `${TARGET.catalogId}:${parameter.parameter_id}`");
+    expect(source).toContain("src_professional_norm_pack_masonry_brick_250_120_65_piece_m2_half_brick_v1");
+    expect(source).toContain("src_professional_norm_pack_masonry_cement_lime_mortar_m3_m2_brick_v1");
   });
 });
