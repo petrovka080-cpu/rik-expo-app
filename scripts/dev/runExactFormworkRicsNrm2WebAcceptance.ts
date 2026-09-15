@@ -14,32 +14,47 @@ const argValue = (name: string): string | null => {
 
 const PROFILE_ID = argValue("--profile") ?? "formwork-rics-nrm2";
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
+const IS_BIA_TN10_MASONRY = PROFILE_ID === "bia-tn10-masonry";
 
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
-  : "8791b75f-683f-5e72-a56a-54abc2f82379";
-const SEARCH_RELEASE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
-  : "320b582e-5a6d-5354-b3bf-f801e4490303";
-const DEFINITION_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "3afbb931-6432-5801-935a-1ba3d0290030"
-  : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
-const CATALOG_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "canonical-work:expanded:strip_foundation"
-  : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
-const ROW_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "main_concrete"
-  : "formwork:rics-nrm2:measured-contact-area:work";
-const SOURCE_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
-  : "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
-const NORM_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
-  : "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
+const RELEASE_ID = IS_BIA_TN10_MASONRY
+  ? "377b480d-4897-550c-868a-98a52fc576e2"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
+    : "8791b75f-683f-5e72-a56a-54abc2f82379";
+const SEARCH_RELEASE_ID = IS_BIA_TN10_MASONRY
+  ? "4a3f6c8e-252a-5d6b-bbfb-7e219a993ff7"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
+    : "320b582e-5a6d-5354-b3bf-f801e4490303";
+const DEFINITION_ID = IS_BIA_TN10_MASONRY
+  ? "e82968a3-443e-5319-8bba-9865ee19cb0a"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "3afbb931-6432-5801-935a-1ba3d0290030"
+    : "26c2fee8-1652-50f9-b271-6a2325c84e3c";
+const CATALOG_ID = IS_BIA_TN10_MASONRY
+  ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "canonical-work:expanded:strip_foundation"
+    : "canonical-work:base:concrete_foundation_interior_formwork_form_standard";
+const ROW_ID = IS_BIA_TN10_MASONRY
+  ? "material:bia-tn10:fired-clay-brick"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "main_concrete"
+    : "formwork:rics-nrm2:measured-contact-area:work";
+const SOURCE_ID = IS_BIA_TN10_MASONRY
+  ? "src_professional_norm_pack_masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+    : "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
+const NORM_ID = IS_BIA_TN10_MASONRY
+  ? "masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
+    : "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
 const REINFORCEMENT_ROW_ID = "reinforcement";
 const REINFORCEMENT_SOURCE_ID =
   "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
@@ -47,19 +62,29 @@ const REINFORCEMENT_NORM_ID =
   "reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
 const REINFORCEMENT_PRODUCT_PROFILE_ID =
   "project-profile:approved-reinforcement-bar-schedule:fhwa-rics:v1";
-const EXPECTED_TITLE = IS_NRMCA_STRIP_FOUNDATION
-  ? "Бетонная смесь"
-  : "Монтаж и демонтаж опалубки по измеренной площади контакта";
-const EXPECTED_VISIBLE_TITLE = IS_NRMCA_STRIP_FOUNDATION
-  ? "Бетонная смесь B25"
-  : EXPECTED_TITLE;
+const EXPECTED_TITLE = IS_BIA_TN10_MASONRY
+  ? "Обожжённый глиняный кирпич"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "Бетонная смесь"
+    : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+const EXPECTED_VISIBLE_TITLE = IS_BIA_TN10_MASONRY
+  ? "Обожжённый глиняный кирпич"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "Бетонная смесь B25"
+    : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
-  IS_NRMCA_STRIP_FOUNDATION ? "web-strip-foundation-nrmca-cip31" : "web-formwork-rics-nrm2");
+  IS_BIA_TN10_MASONRY
+    ? "web-bia-tn10-masonry"
+    : IS_NRMCA_STRIP_FOUNDATION
+      ? "web-strip-foundation-nrmca-cip31"
+      : "web-formwork-rics-nrm2");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = IS_NRMCA_STRIP_FOUNDATION
-  ? "Устройство монолитного железобетонного ленточного фундамента"
-  : "Монтаж и демонтаж опалубки по измеренной площади контакта";
+const SEARCH_QUERY = IS_BIA_TN10_MASONRY
+  ? "Кладка стены из обожжённого глиняного кирпича"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "Устройство монолитного железобетонного ленточного фундамента"
+    : "Монтаж и демонтаж опалубки по измеренной площади контакта";
 const FORMWORK_DETAILS = [
   "RICS NRM 2.",
   "Измеренная площадь контакта: 100 м2;",
@@ -106,9 +131,29 @@ const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "согласование сметчика: EST-REBAR-REV-D;",
   "acceptance scenario: WEB-PREPARE-NRMCA-CIP31-V1.",
 ];
-const SELECTED_DETAILS = IS_NRMCA_STRIP_FOUNDATION
-  ? NRMCA_STRIP_FOUNDATION_DETAILS
-  : FORMWORK_DETAILS;
+const BIA_TN10_MASONRY_DETAILS = [
+  "BIA TN 10 Table 4;",
+  "net brick wall area: 90 m2;",
+  "gross wall area and opening deductions: GROSS_M2=100,OPENINGS_M2=10,NET_M2=90;",
+  "fired clay brick confirmed: true;",
+  "brick manufacturer and designation: Acme Brick Modular A-101;",
+  "specified and nominal dimensions: specified 194x92x57 mm, nominal 200x100x67 mm;",
+  "joint width: 10 mm;",
+  "wall thickness and wythe configuration: WYTHE:single 100 mm veneer;",
+  "bond pattern: RUNNING_BOND;",
+  "selected BIA TN10 Table 4 row: BIA_TN10_TABLE4:modular-single-wythe-running-bond-10mm;",
+  "selected brick quantity per m2: 60;",
+  "selected mortar quantity per m2: 0.02;",
+  "applicable bond correction factors: BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10;",
+  "selected project breakage and waste allowances: BRICK_PERCENT=3,MORTAR_PERCENT=5;",
+  "supplier package quantities: BRICK_PIECES=500,MORTAR_M3=0.25;",
+  "project approval reference: A-E-EST-BRICK-REV-C",
+];
+const SELECTED_DETAILS = IS_BIA_TN10_MASONRY
+  ? BIA_TN10_MASONRY_DETAILS
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? NRMCA_STRIP_FOUNDATION_DETAILS
+    : FORMWORK_DETAILS;
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(" ");
 
 const FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
@@ -182,19 +227,47 @@ const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   backfill_included: false,
   soil_disposal_included: false,
 });
-const FIXTURE = IS_NRMCA_STRIP_FOUNDATION
-  ? NRMCA_STRIP_FOUNDATION_FIXTURE
-  : FORMWORK_FIXTURE;
-const PRIMARY_MEASURE_PARAMETER_ID = IS_NRMCA_STRIP_FOUNDATION
-  ? "total_axis_length_m"
-  : "measured_formwork_contact_area_m2";
-const ORIGINAL_PRIMARY_VALUE = IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
-const SENSITIVITY_PRIMARY_VALUE = IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
-const ORIGINAL_TARGET_QUANTITY = IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
-const SENSITIVITY_TARGET_QUANTITY = IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
-const TARGET_UNIT_ID = IS_NRMCA_STRIP_FOUNDATION ? "m3" : "m2";
-const SEARCH_VISIBLE_NEEDLE = IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
-const SCENARIO_LABEL = IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
+const BIA_TN10_MASONRY_FIXTURE: Readonly<Json> = Object.freeze({
+  product_profile_id: "standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1",
+  measured_net_brick_wall_area_m2: 90,
+  gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=10,NET_M2=90",
+  fired_clay_brick_confirmed: true,
+  brick_manufacturer_and_designation: "Acme Brick Modular A-101",
+  specified_and_nominal_dimensions: "specified 194x92x57 mm, nominal 200x100x67 mm",
+  joint_width_mm: 10,
+  wall_thickness_and_wythe_configuration: "WYTHE:single 100 mm veneer",
+  bond_pattern: "RUNNING_BOND",
+  selected_bia_tn10_table_4_row: "BIA_TN10_TABLE4:modular-single-wythe-running-bond-10mm",
+  selected_brick_quantity_per_m2: 60,
+  selected_mortar_quantity_per_m2: 0.02,
+  applicable_bond_correction_factors: "BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10",
+  selected_project_breakage_and_waste_allowances: "BRICK_PERCENT=3,MORTAR_PERCENT=5",
+  supplier_package_quantities: "BRICK_PIECES=500,MORTAR_M3=0.25",
+  project_architect_engineer_or_estimator_approval_reference: "A-E-EST-BRICK-REV-C",
+  brick_bond_correction_factor: 1.05,
+  mortar_bond_correction_factor: 1.1,
+  brick_breakage_percent: 3,
+  mortar_waste_percent: 5,
+  brick_supplier_package_pieces: 500,
+  mortar_supplier_package_m3: 0.25,
+});
+const FIXTURE = IS_BIA_TN10_MASONRY
+  ? BIA_TN10_MASONRY_FIXTURE
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? NRMCA_STRIP_FOUNDATION_FIXTURE
+    : FORMWORK_FIXTURE;
+const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
+  ? "measured_net_brick_wall_area_m2"
+  : IS_NRMCA_STRIP_FOUNDATION
+    ? "total_axis_length_m"
+    : "measured_formwork_contact_area_m2";
+const ORIGINAL_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
+const SENSITIVITY_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
+const ORIGINAL_TARGET_QUANTITY = IS_BIA_TN10_MASONRY ? 5_670 : IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
+const SENSITIVITY_TARGET_QUANTITY = IS_BIA_TN10_MASONRY ? 6_300 : IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
+const TARGET_UNIT_ID = IS_BIA_TN10_MASONRY ? "piece" : IS_NRMCA_STRIP_FOUNDATION ? "m3" : "m2";
+const SEARCH_VISIBLE_NEEDLE = IS_BIA_TN10_MASONRY ? "кирпич" : IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
+const SCENARIO_LABEL = IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(`EXACT_FORMWORK_WEB:${code}`);
@@ -342,7 +415,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(revision.definitionVersionId === DEFINITION_ID, "REVISION_DEFINITION_DRIFT");
   invariant(preliminaryNeeds(revision).length === 0, "REVISION_REMAINS_PRELIMINARY");
   invariant(rows.length === Number(revision.rowCount)
-    && (IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
+    && (IS_BIA_TN10_MASONRY ? rows.length === 5 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
   "REVISION_ROW_DENOMINATOR_RED");
   const row = rows.find((candidate) => candidate.rowId === ROW_ID);
   invariant(row != null, "TARGET_ROW_MISSING");
@@ -350,7 +423,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(Number(row.quantity) === expectedQuantity && row.unitId === TARGET_UNIT_ID,
     "ROW_QUANTITY_OR_UNIT_RED");
   invariant(row.unitPrice == null && row.amount == null, "UNKNOWN_PRICE_WAS_ZEROED");
-  invariant(IS_NRMCA_STRIP_FOUNDATION
+  invariant(IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? row.procurementEligible === true && row.includedInProcurement === true
     : row.procurementEligible === false && row.includedInProcurement === false,
   "TARGET_ROW_PROCUREMENT_TRUTH_RED");
@@ -364,6 +437,44 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   const binding = row.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
   invariant(binding?.product_profile_id === FIXTURE.product_profile_id,
     "PHYSICAL_BINDING_MISSING");
+  if (IS_BIA_TN10_MASONRY) {
+    const wallAreaM2 = expectedQuantity === ORIGINAL_TARGET_QUANTITY
+      ? ORIGINAL_PRIMARY_VALUE
+      : SENSITIVITY_PRIMARY_VALUE;
+    const expectedMortarQuantity = wallAreaM2 === ORIGINAL_PRIMARY_VALUE ? 1.98 : 2.2;
+    const mortar = rows.find((candidate) => candidate.rowId === "material:bia-tn10:masonry-mortar");
+    invariant(mortar != null
+      && String(mortar.titleRu).includes("Кладочный раствор по выбранной строке BIA TN 10 Table 4")
+      && Number(mortar.quantity) === expectedMortarQuantity
+      && mortar.unitId === "m3"
+      && mortar.procurementEligible === true
+      && mortar.includedInEstimate === true
+      && mortar.includedInProcurement === true,
+    "MASONRY_MORTAR_ROW_TRUTH_RED");
+    const mortarTrace = Array.isArray(mortar.normativeTrace)
+      ? mortar.normativeTrace.find((candidate: Json) => candidate.source_id === SOURCE_ID
+        && candidate.norm_id === NORM_ID)
+      : null;
+    const mortarBinding = mortar.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
+    invariant(mortarTrace != null && mortarBinding?.product_profile_id === FIXTURE.product_profile_id,
+      "MASONRY_MORTAR_NORMATIVE_BINDING_RED");
+    const expectedWorkRows = [
+      ["work:bia-tn10:brick-wall-laying", "Кладка стены из обожжённого глиняного кирпича"],
+      ["work:bia-tn10:joint-and-geometry-control", "Контроль геометрии стены"],
+      ["work:bia-tn10:cleaning-and-handover", "Очистка кладки"],
+    ];
+    for (const [rowId, title] of expectedWorkRows) {
+      const work = rows.find((candidate) => candidate.rowId === rowId);
+      invariant(work != null && String(work.titleRu).includes(title)
+        && Number(work.quantity) === wallAreaM2 && work.unitId === "m2"
+        && work.procurementEligible === false && work.includedInEstimate === true
+        && work.includedInProcurement === false
+        && Array.isArray(work.normativeTrace) && work.normativeTrace.length === 0,
+      `MASONRY_WORK_ROW_TRUTH_RED:${rowId}`);
+    }
+    invariant(rows.every((candidate) => candidate.unitPrice == null && candidate.amount == null),
+      "MASONRY_UNKNOWN_PRICE_WAS_ZEROED");
+  }
   invariant(Number(revision.totals?.unpricedRowCount) > 0
     && Number(revision.totals?.pricedRowCount) === 0,
   "UNKNOWN_PRICE_TOTALS_RED");
@@ -440,7 +551,10 @@ async function buildArtifact(
   const bytes = Buffer.from(await fileResponse.arrayBuffer());
   invariant(fileResponse.ok && bytes.byteLength === Number(artifact.byteSize)
     && sha256(bytes) === artifact.sha256, `ARTIFACT_${kind}_DOWNLOAD_PARITY_RED`);
-  return { ...artifact, downloadedByteSize: bytes.byteLength, downloadedSha256: sha256(bytes) };
+  const projection = kind === "procurement"
+    ? JSON.parse(bytes.toString("utf8")) as Json
+    : null;
+  return { ...artifact, downloadedByteSize: bytes.byteLength, downloadedSha256: sha256(bytes), projection };
 }
 
 async function databaseProof(revisionIds: string[], negativeJobIds: string[]): Promise<Json> {
@@ -484,7 +598,13 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
     const expectedQuantityText = String(SENSITIVITY_TARGET_QUANTITY);
     invariant(body.includes(expectedQuantityText)
       || body.includes(expectedQuantityText.replace(".", ",")), "COLD_REOPEN_QUANTITY_RED");
-    if (!IS_NRMCA_STRIP_FOUNDATION) {
+    if (IS_BIA_TN10_MASONRY) {
+      const mortarQuantityText = String(SENSITIVITY_PRIMARY_VALUE === 100 ? 2.2 : 1.98);
+      invariant(body.includes(mortarQuantityText) || body.includes(mortarQuantityText.replace(".", ",")),
+        "COLD_REOPEN_MORTAR_QUANTITY_RED");
+      invariant(body.includes("Контроль геометрии стены") && body.includes("Очистка кладки"),
+        "COLD_REOPEN_COMPLETE_MASONRY_ESTIMATE_RED");
+    } else if (!IS_NRMCA_STRIP_FOUNDATION) {
       invariant(!body.includes("2.4"), "COLD_REOPEN_OLD_FACTOR_RED");
     }
     await page.screenshot({ path: screenshot, fullPage: true });
@@ -494,7 +614,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       rowTitleVisible: true,
       expectedQuantity: SENSITIVITY_TARGET_QUANTITY,
       expectedQuantityVisible: true,
-      oldFactorVisible: IS_NRMCA_STRIP_FOUNDATION ? null : false,
+      oldFactorVisible: IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY ? null : false,
       screenshot,
     };
   } finally {
@@ -644,6 +764,12 @@ async function main(): Promise<void> {
     await areaChip.waitFor({ state: "visible", timeout: 60_000 });
     const areaInput = areaChip.getByTestId("editable-param-popover-input");
     await areaInput.fill(String(SENSITIVITY_PRIMARY_VALUE));
+    if (IS_BIA_TN10_MASONRY) {
+      const geometryChip = page.getByTestId("editable-param-chip-gross_wall_area_and_opening_deductions");
+      await geometryChip.waitFor({ state: "visible", timeout: 60_000 });
+      await geometryChip.getByTestId("editable-param-popover-input")
+        .fill("GROSS_M2=110,OPENINGS_M2=10,NET_M2=100");
+    }
     await page.getByTestId("editable-param-batch-bar").waitFor({ state: "visible", timeout: 30_000 });
     const recalculatePromise = page.waitForResponse((response) => response.url().endsWith("/jobs/recalculate")
       && response.request().method() === "POST", { timeout: 60_000 });
@@ -655,6 +781,12 @@ async function main(): Promise<void> {
     invariant(recalculateResponse.status() === 202, `SENSITIVITY_HTTP_${recalculateResponse.status()}`);
     sensitivityRevision = await waitForSuccessfulRevision(authorization, recalculateAccepted);
     invariant(sensitivityRevision.parentRevisionId === fullRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
+    if (IS_BIA_TN10_MASONRY) {
+      invariant(Number(sensitivityRevision.parameters?.measured_net_brick_wall_area_m2) === 100
+        && sensitivityRevision.parameters?.gross_wall_area_and_opening_deductions
+          === "GROSS_M2=110,OPENINGS_M2=10,NET_M2=100",
+      "MASONRY_SENSITIVITY_PARAMETER_DRIFT");
+    }
     const sensitivityRows = await allRows(authorization, sensitivityRevision.revisionId);
     sensitivityRow = assertExactRevision(sensitivityRevision, sensitivityRows, SENSITIVITY_TARGET_QUANTITY);
     sensitivityReinforcementRow = assertExactReinforcement(sensitivityRows);
@@ -682,18 +814,27 @@ async function main(): Promise<void> {
   }
 
   const activeAuthorization = authorization || apiAuthorization;
-  const negativeScenarios = IS_NRMCA_STRIP_FOUNDATION
-    ? [
-      { scenarioId: "cip31-two-percent", parameters: {
-        ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2,
-      } },
-      { scenarioId: "rebar-invalid-shape", parameters: {
-        ...sensitivityRevision!.parameters, shape_straight_bent_curved_or_link: "ASSUMED",
-      } },
-    ]
-    : [{ scenarioId: "unconfirmed-measurement", parameters: {
-      ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED",
-    } }];
+  const negativeScenarios: Array<{ scenarioId: string; parameters: Json; expectedErrorCode: string | null }> =
+    IS_BIA_TN10_MASONRY
+      ? [
+        { scenarioId: "non-fired-clay-material", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
+          parameters: { ...sensitivityRevision!.parameters, fired_clay_brick_confirmed: false } },
+        { scenarioId: "wall-opening-geometry-conflict", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
+          parameters: { ...sensitivityRevision!.parameters,
+            gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=5,NET_M2=100" } },
+      ]
+      : IS_NRMCA_STRIP_FOUNDATION
+        ? [
+          { scenarioId: "cip31-two-percent", expectedErrorCode: null, parameters: {
+            ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2,
+          } },
+          { scenarioId: "rebar-invalid-shape", expectedErrorCode: null, parameters: {
+            ...sensitivityRevision!.parameters, shape_straight_bent_curved_or_link: "ASSUMED",
+          } },
+        ]
+        : [{ scenarioId: "unconfirmed-measurement", expectedErrorCode: null, parameters: {
+          ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED",
+        } }];
   const negativeJobs: Json[] = [];
   for (const scenario of negativeScenarios) {
     const negativeAccepted = await apiPost(activeAuthorization, "jobs/recalculate", {
@@ -710,6 +851,8 @@ async function main(): Promise<void> {
     const negativeJob = await waitForJob(activeAuthorization, String(negativeAccepted.jobId ?? ""));
     invariant(negativeJob.status === "failed" && !negativeJob.resultRevisionId,
       `NEGATIVE_NOT_BLOCKED:${scenario.scenarioId}:${String(negativeJob.status)}:${String(negativeJob.errorCode ?? "")}`);
+    invariant(scenario.expectedErrorCode == null || negativeJob.errorCode === scenario.expectedErrorCode,
+      `NEGATIVE_ERROR_CODE_DRIFT:${scenario.scenarioId}:${String(negativeJob.errorCode ?? "")}`);
     negativeJobs.push({ ...negativeJob, scenarioId: scenario.scenarioId });
     progress("NEGATIVE_BLOCKED", { scenarioId: scenario.scenarioId, errorCode: negativeJob.errorCode });
   }
@@ -722,7 +865,7 @@ async function main(): Promise<void> {
   invariant(Number(pdf.metadata?.sourceRowCount) === sensitivityRowCount
     && Number(pdf.metadata?.projectedRowCount) === sensitivityRowCount
     && pdf.metadata?.grandTotalStatus === "PARTIAL_NEEDS_PRICE", "PDF_UNKNOWN_PRICE_TRUTH_RED");
-  const expectedProcurementTruth = IS_NRMCA_STRIP_FOUNDATION
+  const expectedProcurementTruth = IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? Number(procurement.metadata?.selectedProcurementRowCount) > 0
       && Number(procurement.metadata?.projectedRowCount)
         === Number(procurement.metadata?.selectedProcurementRowCount)
@@ -730,6 +873,29 @@ async function main(): Promise<void> {
       && Number(procurement.metadata?.projectedRowCount) === 0;
   invariant(Number(procurement.metadata?.sourceRowCount) === sensitivityRowCount
     && expectedProcurementTruth, "PROCUREMENT_ROW_TRUTH_RED");
+  if (IS_BIA_TN10_MASONRY) {
+    const procurementRows = Array.isArray(procurement.projection?.rows)
+      ? procurement.projection.rows as Json[]
+      : [];
+    invariant(procurement.projection?.revisionId === sensitivityRevision!.revisionId
+      && procurement.projection?.releaseId === RELEASE_ID
+      && Number(procurement.projection?.selectedRowCount) === 2
+      && procurementRows.length === 2,
+    "MASONRY_PROCUREMENT_PROJECTION_IDENTITY_RED");
+    const brick = procurementRows.find((candidate) => candidate.rowId === "material:bia-tn10:fired-clay-brick");
+    const mortar = procurementRows.find((candidate) => candidate.rowId === "material:bia-tn10:masonry-mortar");
+    invariant(brick != null && Number(brick.quantity) === 6_500 && Number(brick.netQuantity) === 6_300
+      && Number(brick.grossQuantity) === 6_489 && Number(brick.procurementQuantity) === 6_500
+      && Number(brick.procurementPackageSize) === 500 && brick.procurementUnit === "piece",
+    "MASONRY_BRICK_PROCUREMENT_SPLIT_RED");
+    invariant(mortar != null && Number(mortar.quantity) === 2.5 && Number(mortar.netQuantity) === 2.2
+      && Number(mortar.grossQuantity) === 2.31 && Number(mortar.procurementQuantity) === 2.5
+      && Number(mortar.procurementPackageSize) === 0.25 && mortar.procurementUnit === "m3",
+    "MASONRY_MORTAR_PROCUREMENT_SPLIT_RED");
+    invariant(procurementRows.every((candidate) => candidate.unitPrice == null && candidate.amount == null
+      && !String(candidate.rowId).startsWith("work:")),
+    "MASONRY_PROCUREMENT_WORK_OR_ZERO_PRICE_RED");
+  }
   progress("ARTIFACTS_GREEN", { pdfBytes: pdf.byteSize,
     procurementRows: procurement.metadata?.selectedProcurementRowCount });
 
@@ -748,13 +914,17 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: IS_NRMCA_STRIP_FOUNDATION
-      ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
-      : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
+    schemaVersion: IS_BIA_TN10_MASONRY
+      ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-complete-estimate.web-acceptance.v1"
+      : IS_NRMCA_STRIP_FOUNDATION
+        ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
+        : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v1",
     capturedAt: new Date().toISOString(),
-    status: IS_NRMCA_STRIP_FOUNDATION
-      ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
-      : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
+    status: IS_BIA_TN10_MASONRY
+      ? "GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : IS_NRMCA_STRIP_FOUNDATION
+        ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+        : "GREEN_EXACT_FORMWORK_RICS_NRM2_WEB_BACKEND_PDF_PROCUREMENT_HISTORY",
     runtime: {
       definitionReleaseId: RELEASE_ID,
       searchReleaseId: SEARCH_RELEASE_ID,
@@ -784,7 +954,9 @@ async function main(): Promise<void> {
         grandTotalStatus: pdf.metadata?.grandTotalStatus, downloadParity: true },
       procurement: { artifactId: procurement.artifactId, revisionId: procurement.revisionId,
         byteSize: procurement.byteSize, sha256: procurement.sha256,
-        selectedProcurementRowCount: procurement.metadata?.selectedProcurementRowCount, downloadParity: true },
+        selectedProcurementRowCount: procurement.metadata?.selectedProcurementRowCount,
+        projection: IS_BIA_TN10_MASONRY ? procurement.projection : undefined,
+        downloadParity: true },
     },
     database,
     diagnostics: { backendRequests, consoleErrors, pageErrors, requestFailures, unexpectedFailures },

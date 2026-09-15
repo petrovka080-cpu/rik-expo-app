@@ -230,6 +230,7 @@ const PHYSICAL_BINDING_BASE = Object.freeze({
   scope_mode: "FULL_APPLICABLE_SCOPE",
   product_profile_id: BIA_TN10_MASONRY_PRODUCT_PROFILE_ID,
   source_id: BIA_TN10_MASONRY_SOURCE_ID,
+  applicability_parameter_ids: [...BIA_TN10_MASONRY_REQUIRED_IDS],
   activation: { parameter_id: "product_profile_id", equals: BIA_TN10_MASONRY_PRODUCT_PROFILE_ID },
 });
 

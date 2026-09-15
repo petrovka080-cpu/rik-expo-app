@@ -1,6 +1,7 @@
 import { canonicalMaterialQuantityBasisFromRow } from "../../src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection";
 import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import { BIA_TN10_MASONRY_REQUIRED_IDS } from "../../src/lib/estimate/v4/domainFactory";
 import {
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
   MASONRY_BRICK_WALL_BIA_TN10_FORMULAS,
@@ -95,6 +96,17 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
     });
     expect(result.rows.filter((row) => row.category === "construction_work").map((row) => row.quantity))
       .toEqual(["90", "90", "90"]);
+  });
+
+  test("declares every physical applicability input as a resource consumer for the editable Web contract", () => {
+    const resources = MASONRY_BRICK_WALL_BIA_TN10_RESOURCES.filter((resource) =>
+      resource.row_id.startsWith("material:bia-tn10:"));
+    expect(resources).toHaveLength(2);
+    for (const resource of resources) {
+      expect(resource.resource_graph.professionalPhysicalNormBindingV1).toMatchObject({
+        applicability_parameter_ids: [...BIA_TN10_MASONRY_REQUIRED_IDS],
+      });
+    }
   });
 
   test("recalculates the full wall while preserving exact package routing", async () => {

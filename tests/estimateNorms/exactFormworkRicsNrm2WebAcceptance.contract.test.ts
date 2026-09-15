@@ -9,8 +9,11 @@ describe("exact physical norm Web acceptance harness", () => {
 
   test("uses the prepared successor and canonical revision/artifact APIs", () => {
     expect(source).toContain('"8791b75f-683f-5e72-a56a-54abc2f82379"');
-    expect(source).toContain('"f9d73863-0c5b-59ab-940f-8fd2c8b50525"');
+    expect(source).toContain('"320b582e-5a6d-5354-b3bf-f801e4490303"');
     expect(source).toContain('PROFILE_ID === "strip-foundation-nrmca-cip31"');
+    expect(source).toContain('PROFILE_ID === "bia-tn10-masonry"');
+    expect(source).toContain('"377b480d-4897-550c-868a-98a52fc576e2"');
+    expect(source).toContain('"4a3f6c8e-252a-5d6b-bbfb-7e219a993ff7"');
     expect(source).toContain('"jobs/recalculate"');
     expect(source).toContain("artifacts/${kind}");
     expect(source).toContain("request-estimate-parameters-toggle");
@@ -30,6 +33,10 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain("SELECTED_DETAILS.join");
     expect(source).toContain("WEB_PREPARE_BUTTON");
     expect(source).toContain("prepareButton.click()");
+    expect(source).toContain("MASONRY_BRICK_PROCUREMENT_SPLIT_RED");
+    expect(source).toContain("MASONRY_MORTAR_PROCUREMENT_SPLIT_RED");
+    expect(source).toContain("GROSS_M2=110,OPENINGS_M2=10,NET_M2=100");
+    expect(source).toContain("GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
     expect(source).not.toContain("CANONICAL_API_AFTER_WEB_SELECTION");
   });
 
