@@ -70,4 +70,28 @@ describe("generic exact physical norm forward-only successor", () => {
     expect(source).toContain("releasePerformed: false");
     expect(source).not.toMatch(/estimate_activate_definition_release|status='active'|status\s*=\s*'active'/u);
   });
+
+  test("publishes measurement truth without presenting one row as a complete formwork estimate", () => {
+    expect(source).toContain('estimateLevel: "PRELIMINARY_QUANTITY_BOQ"');
+    expect(source).toContain('scopeMode: "MEASUREMENT_ONLY"');
+    expect(source).toContain("MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE");
+    expect(source).toContain("FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID");
+    expect(source).toContain("FORMWORK_FULL_SCOPE_GAP_ROW_ID");
+    expect(source).toContain('preliminary_compilation_allowed:');
+    expect(source).toContain('capability: "WORK_SCOPE_COMPLETENESS", status: "STOP_MEASUREMENT_ONLY"');
+    expect(source).toContain('rowType: "service"');
+    expect(source).toContain("не полный состав работ");
+    expect(source).not.toContain('rowTitleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта"');
+  });
+
+  test("fails before mutation when the canonical database schema drifts", () => {
+    expect(source).toContain("function exactSchemaPreflight");
+    expect(source).toContain("STOP_EXACT_NORM_SCHEMA_PREFLIGHT");
+    expect(source).toContain("STOP_EXACT_NORM_ROW_TYPE_PREFLIGHT");
+    expect(source).toContain('["estimate_formula_graph", "input_parameter_ids", "ARRAY", "_text"]');
+    expect(source).toContain('["estimate_approved_template_baseline", "normative_source_ids", "jsonb", "jsonb"]');
+    expect(source).toContain('["estimate_content_passport_r3", "capability_matrix", "jsonb", "jsonb"]');
+    expect(source).toContain('["estimate_search_document", "aliases", "ARRAY", "_text"]');
+    expect(source).toContain("const schemaPreflight = await exactSchemaPreflight(client)");
+  });
 });

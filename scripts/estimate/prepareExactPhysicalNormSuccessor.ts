@@ -69,12 +69,12 @@ type ExactPhysicalNormProfile = {
   forbiddenSourceIds: readonly string[];
 };
 
-const CONTRACT = "rik-expo-app.r4-a13-6.exact-physical-norm-successor.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.exact-physical-norm-successor.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (5).md",
+  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (6).md",
 );
-const MASTER_SHA256 = "acd012705f74c90c9fc7a3483dcd2b2f7b929ef090ba4be6482d059c359dedc0";
+const MASTER_SHA256 = "4b3188fed623913b76b9ced3c7784bbfc4c60002af7868038f01b819c58ed41d";
 const DEFAULT_PREDECESSOR_RELEASE_ID = "90d4d971-2725-5ccd-96be-209be6d253cc";
 const DEFAULT_PREDECESSOR_SEARCH_RELEASE_ID = "06820680-b6b7-5341-b549-8ee2800b40c1";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
@@ -82,6 +82,10 @@ const OUTPUT_ROOT = resolve(".release-runtime/r4a13-6/exact-physical-norm-succes
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
+const FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID = "full_formwork_scope_source_set_id";
+const FORMWORK_FULL_SCOPE_GAP_ROW_ID = "formwork:scope:full-composition:preliminary";
+const FORMWORK_FULL_SCOPE_GAP_TITLE_RU =
+  "Полный технологический состав опалубки не определён: требуются применимые источники материалов, труда, аренды и доставки";
 
 const argValue = (name: string): string | null => {
   const prefix = `${name}=`;
@@ -155,6 +159,78 @@ function exactDatabaseGuard(): void {
     `STOP_EXACT_NORM_DATABASE_NOT_LOOPBACK:${parsed.hostname}`);
   invariant(parsed.port === "55432" && parsed.pathname === "/rik_r4_runtime_b5_v2",
     `STOP_EXACT_NORM_DATABASE_NOT_CANONICAL_LOCAL:${parsed.port}:${parsed.pathname}`);
+}
+
+const EXACT_SCHEMA_EXPECTATIONS = Object.freeze([
+  ["estimate_definition_release", "source_manifest_sha256", "text", "text"],
+  ["estimate_definition_release", "source_package_sha256", "text", "text"],
+  ["estimate_definition_release", "metadata", "jsonb", "jsonb"],
+  ["estimate_definition_version", "passport", "jsonb", "jsonb"],
+  ["estimate_definition_version", "applicability", "jsonb", "jsonb"],
+  ["estimate_definition_version", "definition_sha256", "text", "text"],
+  ["estimate_definition_version", "source_metadata", "jsonb", "jsonb"],
+  ["estimate_parameter_definition", "constraints_json", "jsonb", "jsonb"],
+  ["estimate_parameter_definition", "truth_metadata", "jsonb", "jsonb"],
+  ["estimate_formula_graph", "ast", "jsonb", "jsonb"],
+  ["estimate_formula_graph", "input_parameter_ids", "ARRAY", "_text"],
+  ["estimate_formula_graph", "ast_sha256", "text", "text"],
+  ["estimate_resource_spec", "row_type", "text", "text"],
+  ["estimate_resource_spec", "inclusion_ast", "jsonb", "jsonb"],
+  ["estimate_resource_spec", "resource_graph", "jsonb", "jsonb"],
+  ["estimate_resource_spec", "source_metadata", "jsonb", "jsonb"],
+  ["estimate_resource_spec", "row_sha256", "text", "text"],
+  ["estimate_approved_template_baseline", "parameter_schema_sha256", "text", "text"],
+  ["estimate_approved_template_baseline", "normative_source_ids", "jsonb", "jsonb"],
+  ["estimate_approved_template_baseline", "guide_provenance_ru", "jsonb", "jsonb"],
+  ["estimate_approved_template_baseline", "acceptance_evidence_sha256", "text", "text"],
+  ["estimate_content_passport_r3", "capability_matrix", "jsonb", "jsonb"],
+  ["estimate_content_passport_r3", "decision", "jsonb", "jsonb"],
+  ["estimate_content_passport_r3", "payload_sha256", "text", "text"],
+  ["estimate_search_index_release", "metadata", "jsonb", "jsonb"],
+  ["estimate_search_document", "aliases", "ARRAY", "_text"],
+  ["estimate_search_document", "normative_classifiers", "ARRAY", "_text"],
+  ["estimate_search_document", "applicability_tags", "ARRAY", "_text"],
+  ["estimate_search_document", "included_boundaries", "jsonb", "jsonb"],
+  ["estimate_search_document", "excluded_boundaries", "jsonb", "jsonb"],
+  ["estimate_search_document", "normalized_aliases", "ARRAY", "_text"],
+  ["estimate_search_document", "normalized_search_terms", "ARRAY", "_text"],
+  ["estimate_search_document", "source_provenance", "jsonb", "jsonb"],
+  ["estimate_search_document", "document_sha256", "text", "text"],
+  ["estimate_work_normative_binding", "applicability", "jsonb", "jsonb"],
+  ["estimate_normative_locator", "locator", "jsonb", "jsonb"],
+] as const);
+
+async function exactSchemaPreflight(client: Client): Promise<Json> {
+  const tableNames = unique(EXACT_SCHEMA_EXPECTATIONS.map(([table]) => table));
+  const rows = (await client.query(`select table_name,column_name,data_type,udt_name
+    from information_schema.columns
+    where table_schema='public' and table_name=any($1::text[])`, [tableNames])).rows as Json[];
+  const actual = new Map(rows.map((row) => [
+    `${String(row.table_name)}.${String(row.column_name)}`,
+    { dataType: String(row.data_type), udtName: String(row.udt_name) },
+  ]));
+  for (const [table, column, dataType, udtName] of EXACT_SCHEMA_EXPECTATIONS) {
+    const key = `${table}.${column}`;
+    const found = actual.get(key);
+    invariant(found?.dataType === dataType && found.udtName === udtName,
+      `STOP_EXACT_NORM_SCHEMA_PREFLIGHT:${key}:${JSON.stringify(found ?? null)}`);
+  }
+  const supportedRowTypes = (await client.query(`select distinct row_type
+    from public.estimate_resource_spec where row_type=any($1::text[]) order by row_type`,
+  [["labor", "service"]])).rows.map((row) => String(row.row_type));
+  invariant(JSON.stringify(supportedRowTypes) === JSON.stringify(["labor", "service"]),
+    `STOP_EXACT_NORM_ROW_TYPE_PREFLIGHT:${JSON.stringify(supportedRowTypes)}`);
+  const digest = String((await client.query(`select encode(extensions.digest(
+      convert_to('exact-physical-norm-schema-preflight','UTF8'),'sha256'),'hex') value`)).rows[0]?.value ?? "");
+  invariant(/^[0-9a-f]{64}$/u.test(digest), "STOP_EXACT_NORM_DIGEST_PREFLIGHT");
+  const schemaSha256 = sha256(EXACT_SCHEMA_EXPECTATIONS);
+  return {
+    status: "GREEN_EXACT_PHYSICAL_NORM_SCHEMA_PREFLIGHT",
+    checkedColumns: EXACT_SCHEMA_EXPECTATIONS.length,
+    schemaSha256,
+    supportedRowTypes,
+    digestSha256: digest,
+  };
 }
 
 async function insertRows(
@@ -327,6 +403,16 @@ const FORMWORK_PARAMETERS: readonly ExactParameter[] = Object.freeze([
     visibilityRole: "USER_INPUT",
     valueSourceRole: "ENGINEERING_DESIGN",
     guideRu: "Укажите идентификатор согласования итогового обмера.",
+  },
+  {
+    parameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+    titleRu: "Комплект применимых источников полного технологического состава опалубки",
+    valueType: "enum",
+    unitId: null,
+    constraints: { values: ["SOURCE_SET_CONFIRMED"] },
+    visibilityRole: "INTERNAL_ONLY",
+    valueSourceRole: "NORMATIVE_SOURCE_SET",
+    guideRu: "Не заполняется пользователем. Требует новой forward-only редакции с применимыми источниками материалов, труда, аренды, смазки и доставки.",
   },
 ]);
 
@@ -516,27 +602,29 @@ const PILE_CAP_FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Obje
 
 function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
   const scenarioParameters = target.scenarioParameters ?? FORMWORK_SCENARIO;
+  const measuredScopeTitleRu = target.scopeTitleRu.replace(/^устройство опалубки\b/iu, "опалубка");
   return {
     profileId: target.profileId,
     targetCatalogId: target.targetCatalogId,
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-    canonicalTitleRu: `Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2 — ${target.scopeTitleRu}`,
+    canonicalTitleRu: `Измерение площади контакта опалубки по RICS NRM 2 — ${measuredScopeTitleRu} (не полный состав работ)`,
     searchAliasesRu: [
       "опалубка по измеренной площади контакта",
       "обмер опалубки RICS NRM 2",
-      "монтаж и демонтаж опалубки",
+      "измерение площади контакта опалубки",
       target.scopeTitleRu,
       "formwork measured contact area RICS NRM 2",
     ],
-    physicalResultRu: "Опалубка бетонного элемента по утверждённой измеренной площади контакта",
+    physicalResultRu: "Измеренная площадь контакта опалубки бетонного элемента; результат не включает полный технологический состав работ",
     includedScopeRu: [
       "Одна точно измеренная площадь контакта с готовым бетоном после учёта граней, проёмов и пустот.",
       "Классификация элемента, геометрии, отделки, сторонности и съёмности по проекту.",
-      "Количество работы в м² без автоматического коэффициента м²/м³.",
+      "Измерительная строка в м² без автоматического коэффициента м²/м³; она не является строкой полного монтажа и демонтажа.",
     ],
     excludedScopeRu: [
       "RICS NRM 2 не задаёт универсальный расход опалубочного материала, трудозатраты или цену.",
       "Материалы, аренда, доставка и упаковки не добавляются без отдельной применимой нормы и проектных данных.",
+      "Полный состав монтажа и демонтажа, включая щиты, крепёж, стяжки, смазку, труд, механизмы, аренду и доставку, остаётся явно незакрытым.",
       "Универсальный коэффициент 2,4 м²/м³ и упаковка 50 м² запрещены.",
     ],
     parameters: FORMWORK_PARAMETERS,
@@ -546,10 +634,10 @@ function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfil
     expression: "round_to(measured_formwork_contact_area_m2 * 1, 4)",
     outputUnitId: "m2",
     rowId: "formwork:rics-nrm2:measured-contact-area:work",
-    rowTitleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта",
-    section: "Работы",
-    category: "construction_work",
-    rowType: "labor",
+    rowTitleRu: "Измерение площади контакта опалубки по RICS NRM 2 (не полный состав работ)",
+    section: "Измерения",
+    category: "documentation",
+    rowType: "service",
     procurementEligible: false,
     sourceId: RICS_NRM2_FORMWORK_SOURCE_ID,
     normId: RICS_NRM2_FORMWORK_NORM_ID,
@@ -601,7 +689,8 @@ async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfil
     truth_metadata: {
       visibility_role: parameter.visibilityRole,
       value_source_role: parameter.valueSourceRole,
-      preliminary_compilation_allowed: false,
+      preliminary_compilation_allowed:
+        parameter.parameterId === FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
     },
   }));
   const normativeTrace = [{
@@ -616,7 +705,7 @@ async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfil
     exact_locator: profile.exactLocator,
     source_url: profile.sourceUrl,
   }];
-  const resource = {
+  const measuredAreaResource = {
     id: "preflight-resource",
     row_id: profile.rowId,
     ordinal: 0,
@@ -643,6 +732,43 @@ async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfil
     },
     row_sha256: sha256({ profileId: profile.profileId, rowId: profile.rowId }),
   };
+  const fullScopeGapResource = {
+    id: "preflight-full-scope-gap",
+    row_id: FORMWORK_FULL_SCOPE_GAP_ROW_ID,
+    ordinal: 1,
+    section: "Незакрытый полный состав",
+    category: "documentation",
+    title_ru: FORMWORK_FULL_SCOPE_GAP_TITLE_RU,
+    row_type: "service",
+    unit_id: profile.outputUnitId,
+    formula_id: profile.formulaId,
+    inclusion_ast: {
+      kind: "equals",
+      parameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+      value: "SOURCE_SET_CONFIRMED",
+    },
+    resource_graph: {
+      contract: CONTRACT,
+      costTreatment: "NON_PAYABLE_PRELIMINARY_SCOPE_GAP",
+      scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+    },
+    semantic_owner: `scope-gap:${profile.targetCatalogId}`,
+    cost_owner_id: null,
+    procurement_eligible: false,
+    source_metadata: {
+      contract: CONTRACT,
+      normativeTrace: [],
+      synthetic: false,
+      scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+      originalQuantityFormula: profile.expression,
+      runtimeExpressionSource: profile.expression,
+    },
+    row_sha256: sha256({
+      profileId: profile.profileId,
+      rowId: FORMWORK_FULL_SCOPE_GAP_ROW_ID,
+      scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+    }),
+  };
   const compile = async (parameters: Json) => compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compile-core-r1",
@@ -655,7 +781,7 @@ async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfil
       input_parameter_ids: formula.inputParameterIds,
       ast_sha256: sha256(formula.ast),
     }],
-    resourceDefinitions: [resource],
+    resourceDefinitions: [measuredAreaResource, fullScopeGapResource],
     submittedParameters: parameters,
     confirmedParameters: {},
     currencyCode: "KGS",
@@ -686,10 +812,20 @@ async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfil
     "STOP_EXACT_NORM_UNKNOWN_PRICE_NOT_NULL");
   invariant(scenario.rows[0]?.included_in_procurement === false,
     "STOP_EXACT_NORM_NON_PROCUREMENT_ROW_INCLUDED");
+  invariant(scenario.rows.length === 1 && sensitivity.rows.length === 1,
+    "STOP_EXACT_NORM_MEASUREMENT_ROW_COUNT_DRIFT");
+  invariant(scenario.preliminaryNeeds.length === 1
+    && scenario.preliminaryNeeds[0]?.row_id === FORMWORK_FULL_SCOPE_GAP_ROW_ID
+    && scenario.preliminaryNeeds[0]?.need_state === "CONDITION_REQUIRED"
+    && JSON.stringify(scenario.preliminaryNeeds[0]?.missing_parameter_ids)
+      === JSON.stringify([FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID]),
+  `STOP_EXACT_NORM_FULL_SCOPE_GAP_NOT_VISIBLE:${JSON.stringify(scenario.preliminaryNeeds)}`);
   return {
     formula: { source: formula.source, astSha256: sha256(formula.ast), inputs: formula.inputParameterIds },
-    scenario: { quantity: scenario.rows[0]?.quantity, rowCount: scenario.rows.length, totals: scenario.totals },
-    sensitivity: { quantity: sensitivity.rows[0]?.quantity, rowCount: sensitivity.rows.length },
+    scenario: { quantity: scenario.rows[0]?.quantity, rowCount: scenario.rows.length,
+      preliminaryNeeds: scenario.preliminaryNeeds, totals: scenario.totals },
+    sensitivity: { quantity: sensitivity.rows[0]?.quantity, rowCount: sensitivity.rows.length,
+      preliminaryNeedCount: sensitivity.preliminaryNeeds.length },
     negative: { status: negativeResolution.status, blockers: negativeResolution.blockers },
     physicalResolutionSha256: scenarioResolution.deterministic_hash,
   };
@@ -850,6 +986,9 @@ async function main(): Promise<void> {
   const definitionId = uuid(`${CONTRACT}:${profileId}:${fingerprint}:definition:${profile.targetCatalogId}`);
   const baselineId = uuid(`${CONTRACT}:${profileId}:${fingerprint}:baseline:${profile.targetCatalogId}`);
   const resourceId = uuid(`${CONTRACT}:${profileId}:${fingerprint}:resource:${profile.rowId}`);
+  const fullScopeGapResourceId = uuid(
+    `${CONTRACT}:${profileId}:${fingerprint}:resource:${FORMWORK_FULL_SCOPE_GAP_ROW_ID}`,
+  );
   const releaseKey = `r4-a13-6-exact-${profileId}-${fingerprint.slice(0, 16)}`;
   const formula = compileFormulaGraph(profile.expression);
   const parameterSchemaSha256 = sha256(profile.parameters.map((parameter) => ({
@@ -865,7 +1004,12 @@ async function main(): Promise<void> {
     targetCatalogId: profile.targetCatalogId,
     parameters: profile.parameters,
     formula: { id: profile.formulaId, source: formula.source, ast: formula.ast },
-    resource: { id: profile.rowId, sourceId: profile.sourceId, physicalBinding: profile.physicalBinding },
+    resources: [
+      { id: profile.rowId, sourceId: profile.sourceId, physicalBinding: profile.physicalBinding },
+      { id: FORMWORK_FULL_SCOPE_GAP_ROW_ID,
+        missingParameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+        scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE" },
+    ],
   });
   const acceptanceEvidenceSha256 = sha256({ coreAcceptance, parameterSchemaSha256, definitionSha256 });
   const normativeSourceSnapshotSha256 = sha256({
@@ -898,6 +1042,7 @@ async function main(): Promise<void> {
     statement_timeout: 600_000,
   });
   await client.connect();
+  const schemaPreflight = await exactSchemaPreflight(client);
   let receipt: Json;
   try {
     const existing = (await client.query(
@@ -911,13 +1056,50 @@ async function main(): Promise<void> {
           count(*) filter(where catalog_id=$2 and definition_version_id=$3)::int replaced
         from public.estimate_cumulative_manifest_entry where release_id=$1`,
       [releaseId, profile.targetCatalogId, definitionId])).rows[0] as Json;
+      const semanticAudit = (await client.query(`select
+          definition.passport->>'estimateLevel' estimate_level,
+          definition.applicability->>'scopeMode' scope_mode,
+          definition.content_status,definition.content_gate_status,
+          (select count(*)::int from public.estimate_parameter_definition where definition_version_id=$1) parameters,
+          (select count(*)::int from public.estimate_formula_graph where definition_version_id=$1) formulas,
+          (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1) resources,
+          (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
+            and row_id=$2 and inclusion_ast->>'parameterId'=$3) visible_scope_gap_rows,
+          (select count(*)::int from public.estimate_parameter_definition where definition_version_id=$1
+            and parameter_id=$3 and truth_metadata->>'preliminary_compilation_allowed'='true') preliminary_scope_parameters,
+          (select count(*)::int from public.estimate_content_passport_r3 where definition_version_id=$1
+            and decision->>'fullWorkScopeComplete'='false') honest_content_passports
+        from public.estimate_definition_version definition where definition.id=$1 and definition.release_id=$4`,
+      [definitionId, FORMWORK_FULL_SCOPE_GAP_ROW_ID, FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+        releaseId])).rows[0] as Json | undefined;
+      const searchAudit = (await client.query(`select release.status,release.activated_at,
+          release.metadata->>'definitionReleaseId' definition_release_id,
+          count(document.catalog_id) filter(where document.catalog_id=$2
+            and document.definition_version_id=$3)::int target_documents
+        from public.estimate_search_index_release release
+        left join public.estimate_search_document document on document.search_release_id=release.id
+        where release.id=$1 group by release.id`,
+      [searchReleaseId, profile.targetCatalogId, definitionId])).rows[0] as Json | undefined;
       invariant(Number(audit.identities) === 10_331 && Number(audit.replaced) === 1,
         `STOP_EXACT_NORM_EXISTING_MANIFEST_DRIFT:${JSON.stringify(audit)}`);
+      invariant(semanticAudit?.estimate_level === "PRELIMINARY_QUANTITY_BOQ"
+        && semanticAudit.scope_mode === "MEASUREMENT_ONLY"
+        && semanticAudit.content_status === "CANDIDATE_READY"
+        && semanticAudit.content_gate_status === "GREEN"
+        && Number(semanticAudit.parameters) === profile.parameters.length
+        && Number(semanticAudit.formulas) === 1 && Number(semanticAudit.resources) === 2
+        && Number(semanticAudit.visible_scope_gap_rows) === 1
+        && Number(semanticAudit.preliminary_scope_parameters) === 1
+        && Number(semanticAudit.honest_content_passports) === 1,
+      `STOP_EXACT_NORM_EXISTING_SEMANTIC_DRIFT:${JSON.stringify(semanticAudit)}`);
+      invariant(searchAudit?.status === "draft" && searchAudit.activated_at == null
+        && searchAudit.definition_release_id === releaseId && Number(searchAudit.target_documents) === 1,
+      `STOP_EXACT_NORM_EXISTING_SEARCH_DRIFT:${JSON.stringify(searchAudit)}`);
       receipt = {
         status: "GREEN_EXACT_PHYSICAL_NORM_SUCCESSOR_ALREADY_PREPARED_NOT_ACTIVE",
         idempotent: true,
         successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey },
-        audit,
+        audit: { manifest: audit, semantic: semanticAudit, search: searchAudit },
       };
     } else {
       const predecessor = (await client.query(
@@ -953,7 +1135,7 @@ async function main(): Promise<void> {
         definitions: Number(predecessor.definition_count),
         parameters: Number(predecessor.parameter_count) - Number(target.parameters) + profile.parameters.length,
         formulas: Number(predecessor.formula_count) - Number(target.formulas) + 1,
-        resources: Number(predecessor.resource_row_count) - Number(target.resources) + 1,
+        resources: Number(predecessor.resource_row_count) - Number(target.resources) + 2,
       };
       if (!APPLY) {
         receipt = {
@@ -1006,20 +1188,24 @@ async function main(): Promise<void> {
             values($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8::jsonb,'QUARANTINED','RED')`, [
             definitionId, releaseId, profile.targetCatalogId, nextDefinitionVersion,
             JSON.stringify({ titleRu: profile.canonicalTitleRu, familyId: "formwork",
-              estimateLevel: "SOURCE_BACKED_PROFESSIONAL_BOQ", contract: CONTRACT,
+              estimateLevel: "PRELIMINARY_QUANTITY_BOQ", contract: CONTRACT,
               canonicalWorkKey: "formwork_rics_nrm2_measured_contact_area",
               primaryMeasureParameterId: profile.primaryMeasureParameterId,
-              normativeSourceIds: [profile.sourceId] }),
+              normativeSourceIds: [profile.sourceId],
+              scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE" }),
             JSON.stringify({ country: "KG", operationClass: "MEASURE",
-              materialSystem: "FORMWORK_CONTACT_AREA", scopeMode: "FULL_APPLICABLE_SCOPE",
+              materialSystem: "FORMWORK_CONTACT_AREA", scopeMode: "MEASUREMENT_ONLY",
               productProfileId: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
-              automaticGenericBinding: false }),
+              automaticGenericBinding: false, fullWorkScopeComplete: false }),
             definitionSha256,
             JSON.stringify({ contract: CONTRACT, predecessorDefinitionId: target.definition_version_id,
               profileId, parameterSchemaSha256, acceptanceEvidenceSha256,
               normativeSourceIds: [profile.sourceId], synthetic: false,
               automaticM2PerM3Factor: false, automaticPackageRounding: false,
-              unknownPriceIsNull: true, sourceClaimFormulaOwner: {
+              unknownPriceIsNull: true,
+              scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+              missingFullScopeParameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+              sourceClaimFormulaOwner: {
                 sourceId: profile.sourceId, exactLocator: profile.exactLocator,
                 formulaId: profile.formulaId, semanticOwner: `physical-norm:${profile.normId}`,
               } }),
@@ -1030,7 +1216,9 @@ async function main(): Promise<void> {
           ]));
           const resourceConsumers = Object.fromEntries(profile.parameters.map((parameter) => [
             parameter.parameterId,
-            [profile.rowId],
+            parameter.parameterId === FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID
+              ? [FORMWORK_FULL_SCOPE_GAP_ROW_ID]
+              : [profile.rowId],
           ]));
           const baselineNormativeSources = Object.fromEntries(
             Object.keys(profile.baselineParameters).map((parameterId) => [parameterId, [profile.sourceId]]),
@@ -1044,7 +1232,8 @@ async function main(): Promise<void> {
             { contract: CONTRACT, semantic_parameter_key: `${profile.targetCatalogId}:${parameter.parameterId}`,
               visibility_role: parameter.visibilityRole, value_source_role: parameter.valueSourceRole,
               source_confirmation_required: parameter.visibilityRole === "INTERNAL_ONLY",
-              preliminary_compilation_allowed: false,
+              preliminary_compilation_allowed:
+                parameter.parameterId === FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
               formula_consumers: formulaConsumers[parameter.parameterId],
               resource_branch_consumers: resourceConsumers[parameter.parameterId],
               guide: { guide_kind: parameter.valueType === "enum" ? "ENUM_DECISION_RULE" : "MEASUREMENT_RULE",
@@ -1081,15 +1270,44 @@ async function main(): Promise<void> {
             sourceOwner: `physical-norm:${profile.normId}`,
             rejectedPredecessorSourceIds: profile.forbiddenSourceIds,
           };
+          const fullScopeGapResourceGraph = {
+            contract: CONTRACT,
+            quantityBasis: profile.expression,
+            parameterSources: formula.inputParameterIds,
+            costTreatment: "NON_PAYABLE_PRELIMINARY_SCOPE_GAP",
+            scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+            missingFullScopeParameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+            synthetic: false,
+          };
+          const fullScopeGapSourceMetadata = {
+            contract: CONTRACT,
+            normativeTrace: [],
+            synthetic: false,
+            originalQuantityFormula: profile.expression,
+            runtimeExpressionSource: profile.expression,
+            scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
+            sourceGapReason: "APPLICABLE_FULL_FORMWORK_TECHNOLOGY_SOURCE_SET_REQUIRED",
+          };
           await insertRows(client, "estimate_resource_spec", [
             "id", "definition_version_id", "row_id", "ordinal", "section", "category", "title_ru", "row_type",
             "unit_id", "formula_id", "inclusion_ast", "resource_graph", "semantic_owner", "cost_owner_id",
             "procurement_eligible", "source_metadata", "row_sha256",
-          ], [[resourceId, definitionId, profile.rowId, 0, profile.section, profile.category,
-            profile.rowTitleRu, profile.rowType, profile.outputUnitId, profile.formulaId,
-            { kind: "literal", value: true }, resourceGraph, `physical-norm:${profile.normId}`,
-            null, profile.procurementEligible, sourceMetadata,
-            sha256({ contract: CONTRACT, profileId, resourceGraph, sourceMetadata })]]);
+          ], [
+            [resourceId, definitionId, profile.rowId, 0, profile.section, profile.category,
+              profile.rowTitleRu, profile.rowType, profile.outputUnitId, profile.formulaId,
+              { kind: "literal", value: true }, resourceGraph, `physical-norm:${profile.normId}`,
+              null, profile.procurementEligible, sourceMetadata,
+              sha256({ contract: CONTRACT, profileId, resourceGraph, sourceMetadata })],
+            [fullScopeGapResourceId, definitionId, FORMWORK_FULL_SCOPE_GAP_ROW_ID, 1,
+              "Незакрытый полный состав", "documentation", FORMWORK_FULL_SCOPE_GAP_TITLE_RU,
+              "service", profile.outputUnitId, profile.formulaId,
+              { kind: "equals", parameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+                value: "SOURCE_SET_CONFIRMED" },
+              fullScopeGapResourceGraph, `scope-gap:${profile.targetCatalogId}`, null, false,
+              fullScopeGapSourceMetadata,
+              sha256({ contract: CONTRACT, profileId, fullScopeGapResourceGraph,
+                fullScopeGapSourceMetadata })],
+          ]);
           await client.query(`insert into public.estimate_approved_template_baseline(
               id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
               input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
@@ -1127,13 +1345,19 @@ async function main(): Promise<void> {
             JSON.stringify([
               { capability: "PARAMETERS", status: "GREEN" },
               { capability: "FORMULAS", status: "GREEN" },
-              { capability: "RESOURCES", status: "GREEN_EXACT_NORMATIVE_BINDING" },
+              { capability: "MEASUREMENT", status: "GREEN_EXACT_NORMATIVE_BINDING" },
+              { capability: "WORK_SCOPE_COMPLETENESS", status: "STOP_MEASUREMENT_ONLY" },
               { capability: "PRICE_AND_PROCUREMENT", status: "UNKNOWN_VISIBLE_NO_MATERIAL_ROWS" },
-            ]), profile.parameters.length, 1, 1,
+            ]), profile.parameters.length, 1, 2,
             JSON.stringify({ status: "GREEN", allowed: true,
               contract: "real-professional-estimates-r3.content-passport.v1",
               waveContract: CONTRACT,
-              exactPhysicalNormProfile: profileId, activationAllowed: false, productionEligible: false }),
+              exactPhysicalNormProfile: profileId,
+              decisionKind: "GREEN_MEASUREMENT_ONLY",
+              estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
+              fullWorkScopeComplete: false,
+              missingFullScopeParameterId: FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID,
+              activationAllowed: false, productionEligible: false }),
             sha256({ definitionSha256, parameterSchemaSha256, acceptanceEvidenceSha256 }), head, tree,
           ]);
           await client.query(`update public.estimate_definition_version
@@ -1215,8 +1439,15 @@ async function main(): Promise<void> {
                   or exists(select 1 from jsonb_array_elements(coalesce(source_metadata->'normativeTrace','[]'::jsonb)) trace
                     where trace->>'source_id'=any($2::text[])))) active_forbidden_source_rows,
               (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
-                and procurement_eligible) procurement_rows`,
-          [definitionId, profile.forbiddenSourceIds])).rows[0] as Json;
+                and procurement_eligible) procurement_rows,
+              (select count(*)::int from public.estimate_resource_spec where definition_version_id=$1
+                and row_id=$3 and inclusion_ast->>'parameterId'=$4) visible_scope_gap_rows,
+              (select count(*)::int from public.estimate_parameter_definition where definition_version_id=$1
+                and parameter_id=$4 and truth_metadata->>'preliminary_compilation_allowed'='true') preliminary_scope_parameters,
+              (select passport->>'estimateLevel' from public.estimate_definition_version where id=$1) estimate_level,
+              (select applicability->>'scopeMode' from public.estimate_definition_version where id=$1) scope_mode`,
+          [definitionId, profile.forbiddenSourceIds, FORMWORK_FULL_SCOPE_GAP_ROW_ID,
+            FORMWORK_FULL_SCOPE_SOURCE_SET_PARAMETER_ID])).rows[0] as Json;
           const searchTarget = (await client.query(`select definition_version_id::text,required_inputs_count,
               canonical_name_ru,primary_uom,selectable
             from public.estimate_search_document where search_release_id=$1 and catalog_id=$2`,
@@ -1224,10 +1455,14 @@ async function main(): Promise<void> {
           invariant(Number(manifest.identities) === 10_331 && Number(manifest.replaced) === 1,
             `STOP_EXACT_NORM_MANIFEST_AUDIT:${JSON.stringify(manifest)}`);
           invariant(Number(targetAudit.parameters) === profile.parameters.length
-            && Number(targetAudit.formulas) === 1 && Number(targetAudit.resources) === 1
+            && Number(targetAudit.formulas) === 1 && Number(targetAudit.resources) === 2
             && Number(targetAudit.normalized_bindings) === 1
             && Number(targetAudit.active_forbidden_source_rows) === 0
-            && Number(targetAudit.procurement_rows) === 0,
+            && Number(targetAudit.procurement_rows) === 0
+            && Number(targetAudit.visible_scope_gap_rows) === 1
+            && Number(targetAudit.preliminary_scope_parameters) === 1
+            && targetAudit.estimate_level === "PRELIMINARY_QUANTITY_BOQ"
+            && targetAudit.scope_mode === "MEASUREMENT_ONLY",
           `STOP_EXACT_NORM_TARGET_AUDIT:${JSON.stringify(targetAudit)}`);
           invariant(String(searchTarget.definition_version_id) === definitionId
             && Number(searchTarget.required_inputs_count) === profile.parameters.filter(
@@ -1240,7 +1475,8 @@ async function main(): Promise<void> {
             releaseId, manifest.snapshot,
             JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId,
               searchSnapshotSha256: search.snapshot_sha256, profileId,
-              exactResourceRowCount: 1, normalizedBindingCount: 1,
+              exactResourceRowCount: 2, normalizedBindingCount: 1,
+              scopeCompleteness: "MEASUREMENT_ONLY_FULL_WORK_INCOMPLETE",
               sourceCoreAcceptanceSha256: sha256(coreAcceptance), activationAllowed: false }),
           ]);
           await client.query("commit");
@@ -1269,6 +1505,7 @@ async function main(): Promise<void> {
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
     masterSha256: MASTER_SHA256,
+    schemaPreflight,
     profileId,
     targetCatalogId: profile.targetCatalogId,
     coreAcceptance,
