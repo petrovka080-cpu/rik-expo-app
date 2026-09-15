@@ -28,6 +28,7 @@ import {
   R4_A10_ASPHALT_DRAINAGE_CATALOG_ID,
   R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
+import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
 
 type UserQuantity = { value: string; unit: "pcs" | "m2" | "m3" | "m" | "kg" | "t" | null };
 type CanonicalBaselinePlan = {
@@ -258,6 +259,20 @@ export function parseR4A10StripFoundationPrompt(
   }
   return values;
 }
+function explicitRicsNrm2FormworkPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const extracted = extractRicsNrm2FormworkCanonicalParametersV1(input.prompt);
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  if (!extracted || !schemaIds.has("measured_formwork_contact_area_m2")) return null;
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
 
 export function buildCanonicalBaselinePlan(input: {
   catalog: CanonicalEstimateCatalogItem;
@@ -278,7 +293,9 @@ export function buildCanonicalBaselinePlan(input: {
   const asphaltDrainageInput = input.catalog.catalogId === R4_A10_ASPHALT_DRAINAGE_CATALOG_ID
     ? parseR4A10AsphaltDrainagePrompt(input.prompt)
     : null;
-  const userQuantity = pumpStationInput == null && stripFoundationInput == null && asphaltDrainageInput == null
+  const ricsNrm2FormworkInput = explicitRicsNrm2FormworkPromptInputs(input);
+  const userQuantity = pumpStationInput == null && stripFoundationInput == null
+    && asphaltDrainageInput == null && ricsNrm2FormworkInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -295,7 +312,7 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput
+    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? ricsNrm2FormworkInput
       ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
@@ -304,7 +321,9 @@ export function buildCanonicalBaselinePlan(input: {
       ? "total_axis_length_m"
       : asphaltDrainageInput != null
         ? R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID
-    : userQuantityParameterId
+        : ricsNrm2FormworkInput != null
+          ? "measured_formwork_contact_area_m2"
+          : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
       .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")
