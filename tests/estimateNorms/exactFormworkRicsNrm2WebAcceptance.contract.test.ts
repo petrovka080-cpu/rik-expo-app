@@ -23,6 +23,7 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain("selectedProcurementRowCount) === 0");
     expect(source).toContain("selectedProcurementRowCount) > 0");
     expect(source).toContain("concrete_order_allowance_percent: 2");
+    expect(source).toContain('product_profile_id: "method-profile:nrmca-cip31:ready-mix-order:v1"');
     expect(source).toContain("SENSITIVITY_TARGET_QUANTITY");
     expect(source).toContain("EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
     expect(source).toContain("input.fill(SEARCH_QUERY)");

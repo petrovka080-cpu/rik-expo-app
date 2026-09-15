@@ -114,7 +114,7 @@ const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   frost_resistance: "F150",
   mobility: "P4",
   concrete_order_allowance_percent: 8,
-  product_profile_id: "standard-profile:nrmca-cip31:ready-mix-order:v1",
+  product_profile_id: "method-profile:nrmca-cip31:ready-mix-order:v1",
   plan_volume_calculation_reference: "KJ-4 axes 1-8/A-D rev.5",
   mix_design_or_project_specification_reference: "KJ-4 note 7, mix card RM-25-114",
   mixture_designation: "B25 W6 F150 P4, RM-25-114",
@@ -337,7 +337,9 @@ async function ensureFullRevision(authorization: string, revision: Json): Promis
   void authorization;
   invariant(preliminaryNeeds(revision).length === 0, "WEB_PREPARE_REMAINS_PRELIMINARY");
   const mismatches = Object.entries(FIXTURE)
-    .filter(([key, value]) => revision.parameters?.[key] !== value)
+    .filter(([key, value]) => typeof value === "number"
+      ? Number(revision.parameters?.[key]) !== value
+      : revision.parameters?.[key] !== value)
     .map(([key]) => key);
   invariant(mismatches.length === 0,
     `WEB_PREPARE_DID_NOT_CREATE_FULL_EXACT_REVISION:${mismatches.join(",")}`);
