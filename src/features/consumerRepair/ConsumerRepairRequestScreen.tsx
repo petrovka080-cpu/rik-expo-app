@@ -70,6 +70,7 @@ import {
   type ConsumerRepairRequestScreenState,
 } from "./requestEstimateScreenActions";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import { canReuseConsumerRepairCanonicalDraft } from "./consumerRepairCanonicalDraftReuse";
 import type { CanonicalParameterSession } from "../../lib/estimate/canonicalParameters";
 import {
   buildConsumerEstimateActionContext,
@@ -1166,6 +1167,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const initial = this.ensureDraftBundle({ allowPendingDraftCreation: true });
     const pendingBundle = this.resolvedDraftBundle(initial);
     if (!pendingBundle) return initial;
+    const requestedProblemText =
+      this.state.problemText.trim() ||
+      pendingBundle.draft.problemText?.trim() ||
+      this.props.initialProblemText?.trim() ||
+      "";
+    const requestedWork = this.state.selectedWork ?? selectedWorkFromBundle(pendingBundle);
     const existingBinding = consumerRepairCanonicalBackendBinding(pendingBundle);
     let requiresCanonicalSuccessor = false;
     if (existingBinding) {
@@ -1179,10 +1186,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           };
         }
         const currentCatalog = await getCanonicalEstimateCatalogItem(existingRevision.catalogId);
-        if (currentCatalog.releaseId === existingBinding.releaseId) {
+        const currentReleaseMatches = currentCatalog.releaseId === existingBinding.releaseId;
+        if (canReuseConsumerRepairCanonicalDraft({
+          existingReleaseId: existingBinding.releaseId,
+          currentReleaseId: currentCatalog.releaseId,
+          existingCatalogId: existingRevision.catalogId,
+          requestedCatalogId: requestedWork?.selectedWorkKey,
+          existingSourceRequestText: existingRevision.sourceRequestText,
+          requestedSourceRequestText: requestedProblemText,
+        })) {
           return { status: "READY", bundle: pendingBundle };
         }
-        requiresCanonicalSuccessor = true;
+        if (!currentReleaseMatches) requiresCanonicalSuccessor = true;
       } catch (error) {
         const unavailable = error instanceof CanonicalEstimateApiError
           && ["ESTIMATE_ADMISSION_DENIED", "NOT_FOUND"].includes(error.code);
@@ -1196,11 +1211,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       }
     }
 
-    const problemText =
-      this.state.problemText.trim() ||
-      pendingBundle.draft.problemText?.trim() ||
-      this.props.initialProblemText?.trim() ||
-      "";
+    const problemText = requestedProblemText;
     if (!problemText) {
       return {
         status: "BLOCKED_WITH_REASON",
@@ -1209,7 +1220,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       };
     }
 
-    let selectedWork = this.state.selectedWork ?? selectedWorkFromBundle(pendingBundle);
+    let selectedWork = requestedWork;
     if (!selectedWork && this.props.initialSelectedCatalogWorkId?.trim()) {
       selectedWork = buildConsumerRepairExactCatalogLaunchSelectedWork({
         catalogWorkId: this.props.initialSelectedCatalogWorkId,
