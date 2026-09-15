@@ -1,0 +1,34 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+describe("exact formwork RICS NRM2 Web acceptance harness", () => {
+  const source = readFileSync(
+    resolve("scripts/dev/runExactFormworkRicsNrm2WebAcceptance.ts"),
+    "utf8",
+  );
+
+  test("uses the prepared successor and canonical revision/artifact APIs", () => {
+    expect(source).toContain('const RELEASE_ID = "27ea4b3d-fabb-5adc-897a-ac2163cc8ecc"');
+    expect(source).toContain('"jobs/recalculate"');
+    expect(source).toContain("artifacts/${kind}");
+    expect(source).toContain("request-estimate-parameters-toggle");
+  });
+
+  test("accepts quantity sensitivity while keeping price and procurement truthful", () => {
+    expect(source).toContain("UNKNOWN_PRICE_WAS_ZEROED");
+    expect(source).toContain('grandTotalStatus === "PARTIAL_NEEDS_PRICE"');
+    expect(source).toContain("selectedProcurementRowCount === 0");
+    expect(source).toContain("EXACT_WORK_NOT_FOUND_BY_PROFESSIONAL_NAME");
+    expect(source).toContain("input.fill(SEARCH_QUERY)");
+    expect(source).toContain("SELECTED_DETAILS.join");
+    expect(source).toContain("CANONICAL_API_AFTER_WEB_SELECTION");
+  });
+
+  test("cannot activate, deploy, release, or perform OTA", () => {
+    expect(source).not.toMatch(/status\s*=\s*['"]active['"]/u);
+    expect(source).toContain("activationPerformed: false");
+    expect(source).toContain("deployPerformed: false");
+    expect(source).toContain("releasePerformed: false");
+    expect(source).toContain("otaPerformed: false");
+  });
+});
