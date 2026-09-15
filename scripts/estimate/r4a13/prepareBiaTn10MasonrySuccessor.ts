@@ -539,7 +539,8 @@ async function main(): Promise<void> {
             "procurement_eligible", "source_metadata", "row_sha256",
           ], resources.map((resource) => [
             resource.id, definitionId, resource.row_id, resource.ordinal, resource.section, resource.category,
-            resource.title_ru, resource.category, resource.unit_id, resource.formula_id,
+            resource.title_ru, resource.category === "construction_work" ? "labor" : resource.category,
+            resource.unit_id, resource.formula_id,
             resource.inclusion_ast, resource.resource_graph,
             `${MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID}:${resource.row_id}`,
             resource.cost_owner_id, resource.procurement_eligible, resource.source_metadata, resource.row_sha256,
