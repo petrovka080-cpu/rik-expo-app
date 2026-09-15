@@ -537,7 +537,9 @@ async function allRows(authorization: string, revisionId: string): Promise<Json[
 async function enterConsumer(page: Page): Promise<void> {
   const deadline = Date.now() + 45_000;
   while (Date.now() < deadline) {
-    if (await page.getByTestId("consumer-repair-problem-input").isVisible().catch(() => false)) return;
+    const consumerInput = page.getByTestId("consumer-repair-problem-input");
+    if (await consumerInput.isVisible().catch(() => false)
+      && await consumerInput.isEditable().catch(() => false)) return;
     const ownerLogin = page.getByTestId("local-developer-director-login");
     if (await ownerLogin.isVisible().catch(() => false)
       && await ownerLogin.isEnabled().catch(() => false)) {
@@ -876,6 +878,8 @@ async function main(): Promise<void> {
     await enterConsumer(page);
     progress("CONSUMER_READY");
     const input = page.getByTestId("consumer-repair-problem-input");
+    invariant(await input.isEditable().catch(() => false), "CONSUMER_SEARCH_INPUT_NOT_EDITABLE");
+    await input.fill("");
     const searchPromise = page.waitForResponse((response) => {
       const responseUrl = new URL(response.url());
       return responseUrl.origin === BACKEND
