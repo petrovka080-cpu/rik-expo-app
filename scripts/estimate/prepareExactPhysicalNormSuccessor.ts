@@ -345,17 +345,47 @@ const FORMWORK_SCENARIO = Object.freeze({
   estimator_approval_reference: "EST-FW-01",
 });
 
-const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.freeze({
-  "formwork-rics-nrm2": {
-    profileId: "formwork-rics-nrm2",
+type FormworkProfileTarget = Readonly<{
+  profileId: string;
+  targetCatalogId: string;
+  scopeTitleRu: string;
+}>;
+
+const FORMWORK_PROFILE_TARGETS: readonly FormworkProfileTarget[] = Object.freeze([
+  { profileId: "formwork-rics-nrm2",
     targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_standard",
+    scopeTitleRu: "устройство опалубки в стандартной зоне" },
+  { profileId: "formwork-rics-nrm2-high-load",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_high_load",
+    scopeTitleRu: "устройство опалубки для высокой нагрузки" },
+  { profileId: "formwork-rics-nrm2-large-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_large_area",
+    scopeTitleRu: "устройство опалубки на большой площади" },
+  { profileId: "formwork-rics-nrm2-repair",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_repair",
+    scopeTitleRu: "устройство опалубки с локальным ремонтом основания" },
+  { profileId: "formwork-rics-nrm2-small-area",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_small_area",
+    scopeTitleRu: "устройство опалубки на малой площади" },
+  { profileId: "formwork-rics-nrm2-technical-room",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_technical_room",
+    scopeTitleRu: "устройство опалубки в техническом помещении" },
+  { profileId: "formwork-rics-nrm2-wet-zone",
+    targetCatalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_wet_zone",
+    scopeTitleRu: "устройство опалубки во влажной зоне" },
+]);
+
+function formworkProfile(target: FormworkProfileTarget): ExactPhysicalNormProfile {
+  return {
+    profileId: target.profileId,
+    targetCatalogId: target.targetCatalogId,
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-    canonicalTitleRu: "Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2",
+    canonicalTitleRu: `Монтаж и демонтаж опалубки по измеренной площади контакта RICS NRM 2 — ${target.scopeTitleRu}`,
     searchAliasesRu: [
       "опалубка по измеренной площади контакта",
       "обмер опалубки RICS NRM 2",
       "монтаж и демонтаж опалубки",
-      "устройство опалубки в стандартной зоне",
+      target.scopeTitleRu,
       "formwork measured contact area RICS NRM 2",
     ],
     physicalResultRu: "Опалубка бетонного элемента по утверждённой измеренной площади контакта",
@@ -404,8 +434,12 @@ const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.free
     expectedScenarioQuantity: 100,
     expectedSensitivityQuantity: 120,
     forbiddenSourceIds: ["src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1"],
-  },
-});
+  };
+}
+
+const PROFILES: Readonly<Record<string, ExactPhysicalNormProfile>> = Object.freeze(Object.fromEntries(
+  FORMWORK_PROFILE_TARGETS.map((target) => [target.profileId, formworkProfile(target)]),
+));
 
 async function verifyProfileThroughExistingCore(profile: ExactPhysicalNormProfile): Promise<Json> {
   const formula = compileFormulaGraph(profile.expression);
