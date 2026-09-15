@@ -297,7 +297,7 @@ async function cloneSearch(client: Client, input: {
       work_family_id,breadcrumb,member_count,member_set_sha256,oracle_disposition
     from public.estimate_search_group where search_release_id=$2`, [input.searchReleaseId, input.predecessorSearchReleaseId]);
   const normalizedGroup = await client.query(`update public.estimate_search_group set
-      group_name_ru=$3,breadcrumb=array[$3]::text[]
+      group_name_ru=$3,breadcrumb=jsonb_build_array($3::text)
     where search_release_id=$1 and group_id=$2`, [
     input.searchReleaseId,
     MASONRY_BRICK_WALL_GROUP_ID,
