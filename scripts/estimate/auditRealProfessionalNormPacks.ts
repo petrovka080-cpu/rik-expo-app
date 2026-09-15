@@ -1650,5 +1650,14 @@ function main(): void {
 }
 
 if (process.argv[1]?.replace(/\\/g, "/").endsWith("/scripts/estimate/auditRealProfessionalNormPacks.ts")) {
-  main();
+  if (process.argv.some((value) => value === "--candidate-release-id" || value.startsWith("--candidate-release-id="))) {
+    void import("./candidateNormSourceResidualAudit")
+      .then(({ runCandidateNormSourceResidualAudit }) => runCandidateNormSourceResidualAudit())
+      .catch((error: unknown) => {
+        process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+        process.exitCode = 1;
+      });
+  } else {
+    main();
+  }
 }
