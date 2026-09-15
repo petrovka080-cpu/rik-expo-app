@@ -14,6 +14,12 @@ import {
   resolveProfessionalPhysicalNormParameterValuesV1,
   type AppliedProfessionalPhysicalNormResolutionV1,
 } from "./domainFactory/professionalPhysicalNormApplicabilityV1";
+import {
+  REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+  REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
+} from "./domainFactory/reinforcementBarSchedulePhysicalNormV1";
 import type { ProfessionalParameterValueV4 } from "./professionalProjectAssemblyV4";
 
 export const REAL_PROFESSIONAL_ESTIMATES_R1_SPEC_SHA256 =
@@ -102,6 +108,10 @@ const or = (...operands: InclusionGraphAst[]): InclusionGraphAst => ({ kind: "or
 const fullScope = eq("scope_variant", "full_reinforced_structure");
 const readyMix = eq("concrete_supply", "ready_mix");
 const nrmcaReadyMixOrder = eq("product_profile_id", NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID);
+const reinforcementBarSchedule = eq(
+  "reinforcement_product_profile_id",
+  REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+);
 const preparation = and(fullScope, eq("preparation_included", true));
 const pump = eq("placement_method", "pump");
 const craneBucket = eq("placement_method", "crane_bucket");
@@ -180,6 +190,18 @@ const NRMCA_CIP31_READY_MIX_ORDER_SOURCE: StripFoundationNormSource = Object.fre
   locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
 });
 
+const REINFORCEMENT_BAR_SCHEDULE_SOURCE: StripFoundationNormSource = Object.freeze({
+  sourceKey: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  documentCode: "FHWA-HIF-16-026 / RICS NRM 2",
+  officialUrl: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_url,
+  artifactSha256: null,
+  tableCode: "FHWA-HIF-16-026 Table 3",
+  rateCode: null,
+  meter: "т по утверждённой ведомости стержней; исходная таблица массы — кг/м",
+  pdfPage: 22,
+  locator: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator,
+});
+
 const equipmentSource = (locator: string): StripFoundationNormSource => ({
   sourceKey: "selected_equipment_passport",
   documentCode: "Паспорт выбранной машины",
@@ -236,6 +258,19 @@ export const STRIP_FOUNDATION_INPUTS: readonly StripFoundationInput[] = Object.f
   input("producer_order_confirmation", "Подтверждение заказа производителем", null, "Укажите номер или ссылку на подтверждение объёма, смеси, графика и шага заказа производителем.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
   input("estimator_approval_reference", "Подтверждение сметчика", null, "Укажите ссылку на проверку проектного объёма и выбранного резерва ответственным сметчиком.", { valueType: "text", requiredWhen: nrmcaReadyMixOrder }),
   input("reinforcement_mass_t", "Масса арматуры", "t", "Итоговая масса по проектной ведомости расхода стали.", { requiredWhen: fullScope }),
+  input("reinforcement_product_profile_id", "Правило определения массы арматуры", null, "Выберите маршрут утверждённой ведомости стержней только при наличии полной ведомости, чертежа и выбранной стандартной таблицы массы.", { valueType: "enum", required: false, choices: [REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID] }),
+  input("bar_bending_schedule_reference", "Ведомость стержней", null, "Укажите номер и ревизию утверждённой ведомости стержней.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("structural_drawing_and_revision_reference", "Конструктивный чертёж армирования", null, "Укажите лист конструктивного чертежа и его ревизию.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("bar_standard_and_grade", "Стандарт и класс арматуры", null, "Укажите стандарт и класс стали, которым соответствует выбранная таблица массы.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("bar_size_designation", "Обозначение размера стержня", null, "Укажите обозначение размера стержня из выбранной стандартной таблицы.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("nominal_diameter_mm", "Номинальный диаметр стержня", "mm", "Укажите номинальный диаметр для контроля выбранного обозначения.", { requiredWhen: reinforcementBarSchedule }),
+  input("shape_straight_bent_curved_or_link", "Форма стержня", null, "Укажите STRAIGHT, BENT, CURVED или LINK и проектный код формы.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("bar_count_and_cut_length_m", "Число стержней и длина резки", null, "Укажите подтверждённые число стержней и длину резки по ведомости.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("selected_standard_mass_kg_per_m", "Масса погонного метра", "kg_per_m", "Укажите массу погонного метра из выбранной стандартной или продуктовой таблицы.", { requiredWhen: reinforcementBarSchedule }),
+  input("laps_hooks_chairs_connectors_and_accessories_scope", "Нахлёсты, крюки и аксессуары", null, "Укажите, какие нахлёсты, крюки, фиксаторы и соединители уже учтены ведомостью.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("fabrication_allowance_if_documented", "Документированный запас изготовления", null, "Укажите PROJECT_ALLOWANCE:… либо NONE:INCLUDED_IN_APPROVED_SCHEDULE.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("supplier_bundle_or_length_constraints", "Ограничения поставки арматуры", null, "Укажите PROJECT_CONSTRAINT:… либо NONE:NO_AUTOMATIC_BUNDLE_ROUNDING.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
+  input("reinforcement_estimator_approval_reference", "Подтверждение ведомости сметчиком", null, "Укажите ссылку на согласование массы и состава ведомости ответственным сметчиком.", { valueType: "text", requiredWhen: reinforcementBarSchedule }),
   input("binding_wire_mass_kg", "Масса вязальной проволоки", "kg", "По ведомости армирования или принятой норме конкретной расценки.", { requiredWhen: fullScope }),
   input("reinforcement_fabrication", "Подготовка арматуры", null, "Готовые каркасы и изготовление на объекте взаимоисключающие.", { valueType: "enum", defaultValue: "ready_cages", choices: ["ready_cages", "site_fabricated"] }),
   input("formwork_sides", "Стороны опалубки", null, "Для обычной ленты укажите число опалубливаемых боковых сторон.", { defaultValue: 2 }),
@@ -534,11 +569,96 @@ function resolveNrmcaCip31Order(
   return resolution;
 }
 
+function resolveReinforcementBarSchedule(
+  values: Readonly<Record<string, StripFoundationInputValue>>,
+): AppliedProfessionalPhysicalNormResolutionV1 | null {
+  if (values.reinforcement_product_profile_id !== REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID) {
+    return null;
+  }
+  if (values.scope_variant !== "full_reinforced_structure") {
+    throw new Error("STRIP_FOUNDATION_REINFORCEMENT_SCHEDULE_NOT_APPLICABLE:full_scope_required");
+  }
+  const parameterValues: Readonly<Record<string, ProfessionalParameterValueV4>> = {
+    product_profile_id: professionalProjectValue(
+      "reinforcement_product_profile_id",
+      REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+    ),
+    approved_reinforcement_schedule_weight_kg: professionalProjectValue(
+      "approved_reinforcement_schedule_weight_kg",
+      Number(values.reinforcement_mass_t) * 1_000,
+      "kg",
+      "PROJECT_DOCUMENT",
+    ),
+    bar_bending_schedule_reference: professionalProjectValue(
+      "bar_bending_schedule_reference",
+      values.bar_bending_schedule_reference,
+    ),
+    structural_drawing_and_revision_reference: professionalProjectValue(
+      "structural_drawing_and_revision_reference",
+      values.structural_drawing_and_revision_reference,
+    ),
+    bar_standard_and_grade: professionalProjectValue(
+      "bar_standard_and_grade",
+      values.bar_standard_and_grade,
+    ),
+    bar_size_designation: professionalProjectValue(
+      "bar_size_designation",
+      values.bar_size_designation,
+    ),
+    nominal_diameter_mm: professionalProjectValue(
+      "nominal_diameter_mm",
+      values.nominal_diameter_mm,
+      "mm",
+    ),
+    shape_straight_bent_curved_or_link: professionalProjectValue(
+      "shape_straight_bent_curved_or_link",
+      values.shape_straight_bent_curved_or_link,
+    ),
+    bar_count_and_cut_length_m: professionalProjectValue(
+      "bar_count_and_cut_length_m",
+      values.bar_count_and_cut_length_m,
+    ),
+    selected_standard_mass_kg_per_m: professionalProjectValue(
+      "selected_standard_mass_kg_per_m",
+      values.selected_standard_mass_kg_per_m,
+      "kg_per_m",
+    ),
+    laps_hooks_chairs_connectors_and_accessories_scope: professionalProjectValue(
+      "laps_hooks_chairs_connectors_and_accessories_scope",
+      values.laps_hooks_chairs_connectors_and_accessories_scope,
+    ),
+    fabrication_allowance_if_documented: professionalProjectValue(
+      "fabrication_allowance_if_documented",
+      values.fabrication_allowance_if_documented,
+    ),
+    supplier_bundle_or_length_constraints: professionalProjectValue(
+      "supplier_bundle_or_length_constraints",
+      values.supplier_bundle_or_length_constraints,
+    ),
+    estimator_approval_reference: professionalProjectValue(
+      "reinforcement_estimator_approval_reference",
+      values.reinforcement_estimator_approval_reference,
+    ),
+  };
+  const resolution = resolveProfessionalPhysicalNormParameterValuesV1({
+    technology_class: "REINFORCEMENT_SCHEDULE_MEASUREMENT",
+    operation_class: "MEASURE",
+    material_system: "APPROVED_REINFORCEMENT_BAR_SCHEDULE",
+    scope_mode: "FULL_APPLICABLE_SCOPE",
+    parameter_values: parameterValues,
+  });
+  if (resolution.status !== "APPLIED") {
+    throw new Error(`STRIP_FOUNDATION_REINFORCEMENT_SCHEDULE_${resolution.status}:${resolution.blockers.join("|")}`);
+  }
+  return resolution;
+}
+
 export function compileStripFoundationEstimate(
   supplied: Readonly<Record<string, StripFoundationInputValue>>,
 ): readonly StripFoundationCompiledRow[] {
   const values = resolveInputs(supplied);
   const nrmcaCip31Order = resolveNrmcaCip31Order(values);
+  const reinforcementSchedule = resolveReinforcementBarSchedule(values);
   const numericValues = formulaParameterValues(values);
   const formulaById = new Map(STRIP_FOUNDATION_FORMULAS.map((item) => [item.formulaId, item]));
   const semanticOwners = new Set<string>();
@@ -558,16 +678,28 @@ export function compileStripFoundationEstimate(
       ) {
         throw new Error("STRIP_FOUNDATION_NRMCA_CIP31_ORDER_QUANTITY_DIVERGENCE");
       }
+      if (
+        candidate.rowId === "reinforcement" &&
+        reinforcementSchedule &&
+        Math.abs(Number(evaluatedQuantity) * 1_000
+          - reinforcementSchedule.calculated_reinforcement_schedule_weight_kg!) > 1e-9
+      ) {
+        throw new Error("STRIP_FOUNDATION_REINFORCEMENT_SCHEDULE_QUANTITY_DIVERGENCE");
+      }
       const cargoFormula = candidate.cargo ? formulaById.get(candidate.cargo.physicalQuantityFormulaId) : null;
       return {
         ...candidate,
         ...(candidate.rowId === "main_concrete" && nrmcaCip31Order
           ? { normSource: NRMCA_CIP31_READY_MIX_ORDER_SOURCE }
+          : candidate.rowId === "reinforcement" && reinforcementSchedule
+            ? { normSource: REINFORCEMENT_BAR_SCHEDULE_SOURCE }
           : {}),
         canonicalRuName: renderedMaterialName(candidate, values),
         evaluatedQuantity,
         ...(["main_concrete", "concrete_delivery"].includes(candidate.rowId) && nrmcaCip31Order
           ? { professionalPhysicalNormApplicabilityV1: nrmcaCip31Order }
+          : candidate.rowId === "reinforcement" && reinforcementSchedule
+            ? { professionalPhysicalNormApplicabilityV1: reinforcementSchedule }
           : {}),
         ...(candidate.cargo && cargoFormula
           ? {

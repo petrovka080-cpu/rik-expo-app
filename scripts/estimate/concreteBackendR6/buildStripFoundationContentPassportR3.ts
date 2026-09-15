@@ -54,6 +54,21 @@ export function buildStripFoundationContentPassportR3(
     "producer_order_confirmation",
     "estimator_approval_reference",
   ]);
+  const reinforcementScheduleEvidenceParameters = new Set([
+    "reinforcement_product_profile_id",
+    "bar_bending_schedule_reference",
+    "structural_drawing_and_revision_reference",
+    "bar_standard_and_grade",
+    "bar_size_designation",
+    "nominal_diameter_mm",
+    "shape_straight_bent_curved_or_link",
+    "bar_count_and_cut_length_m",
+    "selected_standard_mass_kg_per_m",
+    "laps_hooks_chairs_connectors_and_accessories_scope",
+    "fabrication_allowance_if_documented",
+    "supplier_bundle_or_length_constraints",
+    "reinforcement_estimator_approval_reference",
+  ]);
   const formulaConsumers = Object.fromEntries(STRIP_FOUNDATION_INPUTS.map((parameter) => [
     parameter.parameterId,
     STRIP_FOUNDATION_FORMULAS
@@ -66,7 +81,9 @@ export function buildStripFoundationContentPassportR3(
     const rows = STRIP_FOUNDATION_ROWS.filter((row) => formulaIds.has(row.formulaId)
       || inclusionParameterIds(row.applicabilityExpression).includes(parameter.parameterId)
       || titleParameters[parameter.parameterId]?.includes(row.rowId)
-      || (row.rowId === "main_concrete" && readyMixOrderEvidenceParameters.has(parameter.parameterId)));
+      || (row.rowId === "main_concrete" && readyMixOrderEvidenceParameters.has(parameter.parameterId))
+      || (row.rowId === "reinforcement"
+        && reinforcementScheduleEvidenceParameters.has(parameter.parameterId)));
     return [parameter.parameterId, rows.map((row) => row.rowId).sort()];
   }));
   const provenanceByCategory: Record<string, EstimateContentProvenanceKindR3> = {

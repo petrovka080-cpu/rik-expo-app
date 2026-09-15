@@ -20,6 +20,10 @@ import {
   NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
+  REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+  REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
 } from "../../../src/lib/estimate/v4/domainFactory";
 import { normalizeCanonicalCatalogSearchQuery } from "../../../src/lib/estimate/backendPlatform/catalogSearchIntent";
 
@@ -35,7 +39,7 @@ const TARGET_SEARCH_ALIAS_RU = "ленточный фундамент";
 const TARGET_CANONICAL_SEARCH_NAME = normalizeCanonicalCatalogSearchQuery(
   REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
 );
-const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-successor.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-cip31-rebar-schedule-successor.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
@@ -48,6 +52,8 @@ const SOURCE_PATHS = [
   "src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts",
   "data/estimate-norms/professional/concrete.json",
+  "data/estimate-norms/professional/reinforcement.json",
+  "src/lib/estimate/v4/domainFactory/reinforcementBarSchedulePhysicalNormV1.ts",
   "scripts/estimate/r4a9/prepareR4A9StripFoundationSuccessor.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
@@ -84,6 +90,33 @@ const NRMCA_CIP31_RESOURCE_BINDING = Object.freeze({
   },
 });
 
+const REINFORCEMENT_BAR_SCHEDULE_RESOURCE_BINDING = Object.freeze({
+  technology_class: "REINFORCEMENT_SCHEDULE_MEASUREMENT",
+  operation_class: "MEASURE",
+  material_system: "APPROVED_REINFORCEMENT_BAR_SCHEDULE",
+  scope_mode: "FULL_APPLICABLE_SCOPE",
+  product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+  source_id: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  activation: {
+    parameter_id: "reinforcement_product_profile_id",
+    equals: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+  },
+  parameter_projection_v1: {
+    aliases: {
+      product_profile_id: "reinforcement_product_profile_id",
+      estimator_approval_reference: "reinforcement_estimator_approval_reference",
+    },
+    formulas: {
+      approved_reinforcement_schedule_weight_kg: "reinforcement_mass_t * 1000",
+    },
+    units: {
+      approved_reinforcement_schedule_weight_kg: "kg",
+      nominal_diameter_mm: "mm",
+      selected_standard_mass_kg_per_m: "kg_per_m",
+    },
+  },
+});
+
 const NRMCA_CIP31_NORMATIVE_TRACE = Object.freeze({
   document_code: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   source_id: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
@@ -100,6 +133,26 @@ const NRMCA_CIP31_NORMATIVE_TRACE = Object.freeze({
     selected_product_profile_id: NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
     selected_contingency_percent_range: [4, 10],
     automatic_generic_binding: false,
+  },
+});
+
+const REINFORCEMENT_BAR_SCHEDULE_NORMATIVE_TRACE = Object.freeze({
+  document_code: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  source_id: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  sourceId: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  norm_id: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+  normId: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+  source_title: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_title,
+  source_document_version: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,
+  normVersion: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,
+  source_definition_hash: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.definition_hash,
+  exact_locator: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator,
+  source_url: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_url,
+  applicability: {
+    selected_product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+    automatic_kg_per_m3_allowance: false,
+    automatic_diameter_squared_over_162: false,
+    automatic_bundle_rounding: false,
   },
 });
 
@@ -231,14 +284,15 @@ async function cloneSearch(client: Client, input: {
       canonical_name_ru=$3,primary_uom='m3',short_scope_ru=$4,included_boundaries=$5::jsonb,
       excluded_boundaries=$6::jsonb,required_inputs_count=$7,clarification_fields=$8::jsonb,
       source_provenance=source_provenance||jsonb_build_object('technologicalOwner',$9::text,
-        'conditionalExactNormSourceId',$10::text),
-      aliases=array(select distinct value from unnest(coalesce(aliases,'{}'::text[])||array[$11::text,$13::text]) value),
-      normative_classifiers=array(select distinct value from unnest(coalesce(normative_classifiers,'{}'::text[])||array[$10::text,$12::text]) value),
-      applicability_tags=array(select distinct value from unnest(coalesce(applicability_tags,'{}'::text[])||array['CONDITIONAL_EXACT_NRMCA_CIP31','NO_AUTOMATIC_GENERIC_BINDING']) value),
+        'conditionalExactNormSourceId',$10::text,
+        'conditionalExactReinforcementNormSourceId',$15::text),
+      aliases=array(select distinct value from unnest(coalesce(aliases,'{}'::text[])||array[$11::text,$13::text,$17::text]) value),
+      normative_classifiers=array(select distinct value from unnest(coalesce(normative_classifiers,'{}'::text[])||array[$10::text,$12::text,$15::text,$16::text]) value),
+      applicability_tags=array(select distinct value from unnest(coalesce(applicability_tags,'{}'::text[])||array['CONDITIONAL_EXACT_NRMCA_CIP31','CONDITIONAL_EXACT_APPROVED_REBAR_SCHEDULE','NO_AUTOMATIC_GENERIC_BINDING']) value),
       normalized_canonical_name=$14,
-      normalized_aliases=array(select distinct value from unnest(coalesce(normalized_aliases,'{}'::text[])||array[lower($11::text),$13::text]) value),
-      normalized_search_terms=array(select distinct value from unnest(coalesce(normalized_search_terms,'{}'::text[])||array[$14::text,$13::text,'nrmca','cip 31','ready mix concrete order']) value),
-      normalized_search_blob=concat_ws(chr(31),coalesce(normalized_search_blob,''),$14::text,$13::text,'nrmca','cip 31','ready mix concrete order'),
+      normalized_aliases=array(select distinct value from unnest(coalesce(normalized_aliases,'{}'::text[])||array[lower($11::text),$13::text,lower($17::text)]) value),
+      normalized_search_terms=array(select distinct value from unnest(coalesce(normalized_search_terms,'{}'::text[])||array[$14::text,$13::text,'nrmca','cip 31','ready mix concrete order','fhwa','rics nrm 2','approved reinforcement bar schedule']) value),
+      normalized_search_blob=concat_ws(chr(31),coalesce(normalized_search_blob,''),$14::text,$13::text,'nrmca','cip 31','ready mix concrete order','fhwa','rics nrm 2','approved reinforcement bar schedule'),
       document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$9,'UTF8'),'sha256'),'hex')
     where search_release_id=$1 and catalog_id=$2`, [
     input.searchReleaseId, TARGET_CATALOG_ID, REINFORCED_CONCRETE_STRIP_FOUNDATION_PASSPORT.canonicalRuName,
@@ -249,6 +303,9 @@ async function cloneSearch(client: Client, input: {
     NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID,
     TARGET_SEARCH_ALIAS_RU,
     TARGET_CANONICAL_SEARCH_NAME,
+    REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+    REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+    "FHWA/RICS approved reinforcement bar schedule",
   ]);
   const snapshot = (await client.query(`select count(*)::int documents,
       count(*) filter(where selectable and adjudication_class='EFFECTIVE_WORK')::int visible,
@@ -286,10 +343,25 @@ async function main(): Promise<void> {
     delivery_schedule_and_truck_capacity: "4 trucks x 8 m3; final load confirmed before dispatch",
     producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
     estimator_approval_reference: "EST-APPROVAL-2026-0912-04",
+    reinforcement_product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+    bar_bending_schedule_reference: "BBS-S01-REV-D",
+    structural_drawing_and_revision_reference: "STR-S01-REV-D",
+    bar_standard_and_grade: "ASTM A615 Grade 60",
+    bar_size_designation: "No. 5",
+    nominal_diameter_mm: 15.875,
+    shape_straight_bent_curved_or_link: "BENT:shape-code-21",
+    bar_count_and_cut_length_m: "160 bars x 9.75 m approved cut length",
+    selected_standard_mass_kg_per_m: 1.552,
+    laps_hooks_chairs_connectors_and_accessories_scope:
+      "PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately",
+    fabrication_allowance_if_documented: "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
+    supplier_bundle_or_length_constraints: "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
+    reinforcement_estimator_approval_reference: "EST-REBAR-REV-D",
   } as const;
   const compiledExactNrmca = compileStripFoundationEstimate(exactNrmcaInput);
   const exactConcrete = compiledExactNrmca.find((row) => row.rowId === "main_concrete");
   const exactDelivery = compiledExactNrmca.find((row) => row.rowId === "concrete_delivery");
+  const exactReinforcement = compiledExactNrmca.find((row) => row.rowId === "reinforcement");
   invariant(exactConcrete?.evaluatedQuantity === "32.4"
     && exactConcrete.normSource.sourceKey === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID
     && exactConcrete.professionalPhysicalNormApplicabilityV1?.status === "APPLIED",
@@ -298,6 +370,12 @@ async function main(): Promise<void> {
     && exactDelivery.professionalPhysicalNormApplicabilityV1?.source_id
       === NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   "STOP_R4_A13_6_NRMCA_DELIVERY_PROJECTION_RED");
+  invariant(exactReinforcement?.evaluatedQuantity === "2.4"
+    && exactReinforcement.normSource.sourceKey === REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID
+    && exactReinforcement.professionalPhysicalNormApplicabilityV1?.status === "APPLIED"
+    && exactReinforcement.professionalPhysicalNormApplicabilityV1
+      .calculated_reinforcement_schedule_weight_kg === 2_400,
+  "STOP_R4_A13_6_REINFORCEMENT_SCHEDULE_EXACT_SCENARIO_RED");
   let formerTwoPercentRejected = false;
   try {
     compileStripFoundationEstimate({ ...exactNrmcaInput, concrete_order_allowance_percent: 2 });
@@ -305,6 +383,18 @@ async function main(): Promise<void> {
     formerTwoPercentRejected = String(error).includes("selected_contingency_percent=2");
   }
   invariant(formerTwoPercentRejected, "STOP_R4_A13_6_NRMCA_FORMER_TWO_PERCENT_ACCEPTED");
+  let invalidReinforcementShapeRejected = false;
+  try {
+    compileStripFoundationEstimate({
+      ...exactNrmcaInput,
+      shape_straight_bent_curved_or_link: "ASSUMED",
+    });
+  } catch (error) {
+    invalidReinforcementShapeRejected = String(error)
+      .includes("PHYSICAL_NORM_CLASSIFICATION_INVALID:shape_straight_bent_curved_or_link=ASSUMED");
+  }
+  invariant(invalidReinforcementShapeRejected,
+    "STOP_R4_A13_6_REINFORCEMENT_INVALID_SHAPE_ACCEPTED");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));
   const exactNrmcaAcceptance = {
     projectVolumeM3: 30,
@@ -314,8 +404,16 @@ async function main(): Promise<void> {
     formerTwoPercentRejected,
     sourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   };
+  const exactReinforcementAcceptance = {
+    approvedScheduleWeightKg: 2_400,
+    estimateQuantityT: 2.4,
+    invalidShapeRejected: invalidReinforcementShapeRejected,
+    automaticKgPerM3Allowance: false,
+    sourceId: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+  };
   const fingerprint = sha256({ contract: CONTRACT, master: MASTER_SHA256,
-    predecessorReleaseId, predecessorSearchReleaseId, sourceHashes, exactNrmcaAcceptance });
+    predecessorReleaseId, predecessorSearchReleaseId, sourceHashes,
+    exactNrmcaAcceptance, exactReinforcementAcceptance });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search`);
   const definitionId = uuid(`${CONTRACT}:${fingerprint}:definition:${TARGET_CATALOG_ID}`);
@@ -463,21 +561,33 @@ async function main(): Promise<void> {
             const id = uuid(`${CONTRACT}:${fingerprint}:resource:${row.rowId}`);
             resourceIdByRow.set(row.rowId, id);
             const isReadyMixOrderOwner = row.rowId === "main_concrete";
+            const isReinforcementScheduleOwner = row.rowId === "reinforcement";
             const sourceMetadata = { contract: CONTRACT, category: row.category, visibility: row.visibility,
               procurementMode: row.procurementMode, includedInParentRate: row.includedInParentRate,
               normSource: row.normSource,
               normativeTrace: isReadyMixOrderOwner
                 ? [row.normSource, NRMCA_CIP31_NORMATIVE_TRACE]
+                : isReinforcementScheduleOwner
+                  ? [row.normSource, REINFORCEMENT_BAR_SCHEDULE_NORMATIVE_TRACE]
                 : [row.normSource],
               ...(isReadyMixOrderOwner ? {
                 conditionalExactNormSourceId: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
                 rejectedPredecessorSourceIds: ["src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1"],
+              } : {}),
+              ...(isReinforcementScheduleOwner ? {
+                conditionalExactNormSourceId: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+                rejectedPredecessorSourceIds: [
+                  "src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1",
+                ],
               } : {}),
               ...(row.cargo ? { cargo: row.cargo } : {}) };
             const resourceGraph = { semanticOwnerId: row.semanticOwnerId, formulaId: row.formulaId,
               category: row.category, normalizedUom: row.normalizedUom, costOwner: row.costOwner,
               ...(isReadyMixOrderOwner ? {
                 professionalPhysicalNormBindingV1: NRMCA_CIP31_RESOURCE_BINDING,
+              } : {}),
+              ...(isReinforcementScheduleOwner ? {
+                professionalPhysicalNormBindingV1: REINFORCEMENT_BAR_SCHEDULE_RESOURCE_BINDING,
               } : {}),
               ...(row.titleSpecificationParameterIds ? { titleSpecificationParameterIds: row.titleSpecificationParameterIds } : {}),
               ...(row.titleSpecificationMode ? { titleSpecificationMode: row.titleSpecificationMode } : {}),
@@ -593,6 +703,65 @@ async function main(): Promise<void> {
             source_definition_hash: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash,
             exact_locator: NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator,
           }]]);
+          await client.query(`insert into public.estimate_normative_source(
+              id,source_key,title_ru,authority,official_url,artifact_sha256,effective_from,metadata)
+            values($1,$2,$3,$4,$5,null,$6,$7::jsonb)
+            on conflict(source_key) do update set official_url=excluded.official_url,
+              metadata=public.estimate_normative_source.metadata||excluded.metadata`, [
+            uuid(`${CONTRACT}:source:${REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID}`),
+            REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+            REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_title,
+            "Federal Highway Administration / Royal Institution of Chartered Surveyors",
+            REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_url,
+            "2021-12-01",
+            JSON.stringify({ contract: CONTRACT, verifiedAt: "2026-09-15",
+              targetCatalogId: TARGET_CATALOG_ID,
+              sourceDefinitionHash: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.definition_hash,
+              supportingMeasurementReference:
+                REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.measurement_reference,
+              useRestriction: "EXACT_APPROVED_REINFORCEMENT_BAR_SCHEDULE_ONLY",
+              previous95KgPerM3SeedRejected: true,
+              automaticDiameterSquaredOver162: false,
+              automaticBundleRounding: false,
+              automaticGenericBinding: false }),
+          ]);
+          const reinforcementSource = (await client.query(
+            "select id::text from public.estimate_normative_source where source_key=$1",
+            [REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID],
+          )).rows[0] as Json;
+          const reinforcementLocator = {
+            documentCode: "FHWA-HIF-16-026 Table 3 / RICS NRM 2 Work section 11",
+            exactLocator: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator,
+            primaryMassTableReference:
+              REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.primary_mass_table_reference,
+            measurementReference: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.measurement_reference,
+            measurementUnit: "kg routed from approved schedule to t estimate row",
+            automaticKgPerM3Allowance: false,
+            automaticDiameterSquaredOver162: false,
+            automaticBundleRounding: false,
+            automaticGenericBinding: false,
+          };
+          const reinforcementLocatorKey = sha256(reinforcementLocator);
+          await client.query(`insert into public.estimate_normative_locator(
+              id,source_id,locator_key,locator,excerpt_sha256)
+            values($1,$2,$3,$4::jsonb,$5) on conflict(source_id,locator_key) do nothing`, [
+            uuid(`${CONTRACT}:locator:${REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID}:${reinforcementLocatorKey}`),
+            reinforcementSource.id, reinforcementLocatorKey, JSON.stringify(reinforcementLocator),
+            sha256(reinforcementLocator),
+          ]);
+          const storedReinforcementLocator = (await client.query(
+            "select id::text from public.estimate_normative_locator where source_id=$1 and locator_key=$2",
+            [reinforcementSource.id, reinforcementLocatorKey],
+          )).rows[0] as Json;
+          await insertRows(client, "estimate_work_normative_binding", [
+            "definition_version_id", "resource_spec_id", "locator_id", "applicability",
+          ], [[definitionId, resourceIdByRow.get("reinforcement"), storedReinforcementLocator.id, {
+            ...REINFORCEMENT_BAR_SCHEDULE_RESOURCE_BINDING,
+            norm_id: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+            source_document_version: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.source_document_version,
+            source_definition_hash: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.definition_hash,
+            exact_locator: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator,
+          }]]);
           await client.query(`update public.estimate_cumulative_manifest_entry set
               definition_version_id=$3,source_batch=$4,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
               approved_template_baseline_id=$5,baseline_ready=true,scenario_ready=true,definition_hash=$6,
@@ -612,32 +781,55 @@ async function main(): Promise<void> {
               (select count(*)::int from public.estimate_work_normative_binding binding
                 join public.estimate_normative_locator locator on locator.id=binding.locator_id
                 join public.estimate_normative_source source on source.id=locator.source_id
-                where binding.definition_version_id=$1 and source.source_key=$2) normalized_bindings,
+                where binding.definition_version_id=$1 and source.source_key=$2) nrmca_normalized_bindings,
+              (select count(*)::int from public.estimate_work_normative_binding binding
+                join public.estimate_normative_locator locator on locator.id=binding.locator_id
+                join public.estimate_normative_source source on source.id=locator.source_id
+                where binding.definition_version_id=$1 and source.source_key=$4) reinforcement_normalized_bindings,
               (select count(*)::int from public.estimate_resource_spec resource
                 where resource.definition_version_id=$1
                   and resource.row_id='main_concrete'
                   and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,source_id}'=$2
                   and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,parameter_id}'='product_profile_id'
-                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,equals}'=$3) conditional_owner_rows,
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,equals}'=$3) nrmca_conditional_owner_rows,
+              (select count(*)::int from public.estimate_resource_spec resource
+                where resource.definition_version_id=$1
+                  and resource.row_id='reinforcement'
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,source_id}'=$4
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,parameter_id}'='reinforcement_product_profile_id'
+                  and resource.resource_graph#>>'{professionalPhysicalNormBindingV1,activation,equals}'=$5) reinforcement_conditional_owner_rows,
               (select count(*)::int from public.estimate_resource_spec resource
                 where resource.definition_version_id=$1
                   and exists(select 1 from jsonb_array_elements(coalesce(resource.source_metadata->'normativeTrace','[]'::jsonb)) trace
-                    where coalesce(trace->>'source_id',trace->>'sourceId',trace->>'document_code')=$4)) forbidden_legacy_rows`, [
+                    where coalesce(trace->>'source_id',trace->>'sourceId',trace->>'document_code')=$6)) forbidden_ready_mix_legacy_rows,
+              (select count(*)::int from public.estimate_resource_spec resource
+                where resource.definition_version_id=$1
+                  and exists(select 1 from jsonb_array_elements(coalesce(resource.source_metadata->'normativeTrace','[]'::jsonb)) trace
+                    where coalesce(trace->>'source_id',trace->>'sourceId',trace->>'document_code')=$7)) forbidden_reinforcement_legacy_rows`, [
             definitionId,
             NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
             NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+            REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
+            REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
             "src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1",
+            "src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1",
           ])).rows[0] as Json;
           invariant(Number(manifest.identities) === 10_331 && Number(manifest.repaired) === 1, `STOP_R4_A10_MANIFEST_AUDIT:${JSON.stringify(manifest)}`);
-          invariant(Number(exactNormAudit.normalized_bindings) === 1
-            && Number(exactNormAudit.conditional_owner_rows) === 1
-            && Number(exactNormAudit.forbidden_legacy_rows) === 0,
-          `STOP_R4_A13_6_NRMCA_CANDIDATE_AUDIT:${JSON.stringify(exactNormAudit)}`);
+          invariant(Number(exactNormAudit.nrmca_normalized_bindings) === 1
+            && Number(exactNormAudit.reinforcement_normalized_bindings) === 1
+            && Number(exactNormAudit.nrmca_conditional_owner_rows) === 1
+            && Number(exactNormAudit.reinforcement_conditional_owner_rows) === 1
+            && Number(exactNormAudit.forbidden_ready_mix_legacy_rows) === 0
+            && Number(exactNormAudit.forbidden_reinforcement_legacy_rows) === 0,
+          `STOP_R4_A13_6_EXACT_NORM_CANDIDATE_AUDIT:${JSON.stringify(exactNormAudit)}`);
           await client.query(`update public.estimate_definition_release set source_manifest_sha256=$2,status='prepared',sealed_at=clock_timestamp(),
             metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
             releaseId, manifest.snapshot, JSON.stringify({ lifecycle: "PREPARED_NOT_ACTIVE", searchReleaseId,
               searchSnapshotSha256: search.snapshot_sha256, technologicalRows: STRIP_FOUNDATION_ROWS.length,
-              exactNrmcaCip31: exactNrmcaAcceptance, normalizedNrmcaBindingCount: 1 }),
+              exactNrmcaCip31: exactNrmcaAcceptance,
+              exactReinforcementBarSchedule: exactReinforcementAcceptance,
+              normalizedNrmcaBindingCount: 1,
+              normalizedReinforcementBindingCount: 1 }),
           ]);
           await client.query("commit");
           receipt = { status: "GREEN_R4_A13_6_NRMCA_FOUNDATION_SUCCESSOR_PREPARED_NOT_ACTIVE", idempotent: false,
@@ -646,6 +838,7 @@ async function main(): Promise<void> {
             successor: { releaseId, searchReleaseId, definitionId, baselineId, releaseKey, nextCounts },
             audit: { ...manifest, search, exactNormAudit, hiddenGeometryDefaults: hiddenGeometry.length,
               safeBaselineInputs: Object.keys(safeBaselineInputs), exactNrmcaAcceptance,
+              exactReinforcementAcceptance,
               technologicalCore: { parameters: STRIP_FOUNDATION_INPUTS.length, formulas: STRIP_FOUNDATION_FORMULAS.length,
                 resources: STRIP_FOUNDATION_ROWS.length, compiledRows: compiledGold.length } } };
         } catch (error) {
@@ -660,6 +853,7 @@ async function main(): Promise<void> {
   const body = { schemaVersion: `${CONTRACT}.receipt.v1`, capturedAt: new Date().toISOString(),
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY", source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
     masterSha256: MASTER_SHA256, targetCatalogId: TARGET_CATALOG_ID, exactNrmcaAcceptance,
+    exactReinforcementAcceptance,
     ...receipt!, productionAccessed: false, deployPerformed: false, activationPerformed: false,
     releasePerformed: false };
   const sealed = { ...body, receiptSha256: sha256(body) };
@@ -675,7 +869,7 @@ async function main(): Promise<void> {
       manifestHashChainSha256: receipt!.audit.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_NRMCA_CIP31_FULL_STRIP_FOUNDATION_SUCCESSOR",
+      owner: "EXACT_NRMCA_CIP31_AND_APPROVED_REBAR_SCHEDULE_FULL_STRIP_FOUNDATION_SUCCESSOR",
       productionAccessed: false,
       fakeGreenClaimed: false,
     });

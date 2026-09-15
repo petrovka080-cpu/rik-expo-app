@@ -28,6 +28,7 @@ import {
   R4_A10_ASPHALT_DRAINAGE_CATALOG_ID,
   R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID,
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
+import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
 import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 
@@ -253,6 +254,21 @@ export function parseR4A10StripFoundationPrompt(
   if (frostResistance) values.frost_resistance = frostResistance.toUpperCase();
   const mobility = prompt.match(/подвижност\p{L}*\s+(?:смес\p{L}*\s*)?(P(?:2|3|4|5))/iu)?.[1];
   if (mobility) values.mobility = mobility.toUpperCase();
+  const reinforcementSchedule = extractReinforcementBarScheduleCanonicalParametersV1(prompt);
+  if (reinforcementSchedule) {
+    values.reinforcement_product_profile_id = String(reinforcementSchedule.product_profile_id);
+    const approvedWeightKg = Number(reinforcementSchedule.approved_reinforcement_schedule_weight_kg);
+    if (Number.isFinite(approvedWeightKg) && approvedWeightKg > 0) {
+      values.reinforcement_mass_t = String(approvedWeightKg / 1_000);
+    }
+    for (const [parameterId, value] of Object.entries(reinforcementSchedule)) {
+      if (parameterId === "product_profile_id"
+        || parameterId === "approved_reinforcement_schedule_weight_kg") continue;
+      values[parameterId === "estimator_approval_reference"
+        ? "reinforcement_estimator_approval_reference"
+        : parameterId] = value;
+    }
+  }
   if (/(?:NRMCA\s*)?CIP\s*31/iu.test(prompt)) {
     values.product_profile_id = NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID;
     const evidenceLabels: readonly (readonly [string, RegExp])[] = [

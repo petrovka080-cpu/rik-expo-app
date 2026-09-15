@@ -1,6 +1,9 @@
 import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
-import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../src/lib/estimate/v4/domainFactory";
+import {
+  NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
+  REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+} from "../../src/lib/estimate/v4/domainFactory";
 
 const PARAMETER_IDS = [
   "total_axis_length_m",
@@ -17,6 +20,20 @@ const PARAMETER_IDS = [
   "delivery_schedule_and_truck_capacity",
   "producer_order_confirmation",
   "estimator_approval_reference",
+  "reinforcement_mass_t",
+  "reinforcement_product_profile_id",
+  "bar_bending_schedule_reference",
+  "structural_drawing_and_revision_reference",
+  "bar_standard_and_grade",
+  "bar_size_designation",
+  "nominal_diameter_mm",
+  "shape_straight_bent_curved_or_link",
+  "bar_count_and_cut_length_m",
+  "selected_standard_mass_kg_per_m",
+  "laps_hooks_chairs_connectors_and_accessories_scope",
+  "fabrication_allowance_if_documented",
+  "supplier_bundle_or_length_constraints",
+  "reinforcement_estimator_approval_reference",
 ] as const;
 
 function catalog(): CanonicalEstimateCatalogItem {
@@ -38,10 +55,13 @@ function catalog(): CanonicalEstimateCatalogItem {
         "strip_width_m",
         "strip_height_m",
         "concrete_order_allowance_percent",
+        "reinforcement_mass_t",
+        "nominal_diameter_mm",
+        "selected_standard_mass_kg_per_m",
       ].includes(parameterId) ? "decimal" as const : "text" as const,
       unitId: null,
       titleRu: parameterId,
-      required: true,
+      required: false,
       defaultValue: null,
       constraints: {},
       visibilityRole: "USER_INPUT" as const,
@@ -84,5 +104,42 @@ describe("consumer NRMCA CIP 31 strip-foundation baseline", () => {
       producer_order_confirmation: "RM-PRODUCER-2026-0912-17",
       estimator_approval_reference: "EST-APPROVAL-2026-0912-04.",
     });
+  });
+
+  test("keeps the independent approved bar-schedule profile in the same canonical request", () => {
+    const rebarPrompt = [
+      "Арматура по утверждённой ведомости стержней, FHWA-HIF-16-026 Table 3 и RICS NRM 2;",
+      "масса по утверждённой ведомости стержней: 2480,5 кг;",
+      "ссылка на ведомость стержней: BBS-S01-REV-D;",
+      "конструктивный чертёж: STR-S01-REV-D;",
+      "стандарт и класс арматуры: ASTM A615 Grade 60;",
+      "обозначение размера стержня: No. 5; номинальный диаметр: 15,875 мм;",
+      "форма стержня: BENT:shape-code-21;",
+      "число стержней и длина резки: 160 bars x 9.75 m approved cut length;",
+      "масса погонного метра: 1,552 кг/м;",
+      "состав нахлёстов и аксессуаров: PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately;",
+      "запас изготовления: NONE:INCLUDED_IN_APPROVED_SCHEDULE;",
+      "ограничения поставки: NONE:NO_AUTOMATIC_BUNDLE_ROUNDING;",
+      "согласование сметчика: EST-REBAR-REV-D;",
+      PROMPT,
+    ].join(" ");
+    expect(buildCanonicalBaselinePlan({ catalog: catalog(), prompt: rebarPrompt }).parameters)
+      .toMatchObject({
+        reinforcement_product_profile_id: REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID,
+        reinforcement_mass_t: "2.4805",
+        bar_bending_schedule_reference: "BBS-S01-REV-D",
+        structural_drawing_and_revision_reference: "STR-S01-REV-D",
+        bar_standard_and_grade: "ASTM A615 Grade 60",
+        bar_size_designation: "No. 5",
+        nominal_diameter_mm: 15.875,
+        shape_straight_bent_curved_or_link: "BENT:shape-code-21",
+        bar_count_and_cut_length_m: "160 bars x 9.75 m approved cut length",
+        selected_standard_mass_kg_per_m: 1.552,
+        laps_hooks_chairs_connectors_and_accessories_scope:
+          "PROJECT_SCOPE:all BBS laps and hooks, chairs scheduled separately",
+        fabrication_allowance_if_documented: "NONE:INCLUDED_IN_APPROVED_SCHEDULE",
+        supplier_bundle_or_length_constraints: "NONE:NO_AUTOMATIC_BUNDLE_ROUNDING",
+        reinforcement_estimator_approval_reference: "EST-REBAR-REV-D",
+      });
   });
 });
