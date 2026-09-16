@@ -977,8 +977,8 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       }
       await positionsPanel.waitFor({ state: "visible", timeout: 60_000 });
       const expandedBody = await page.locator("body").innerText();
-      invariant(expandedBody.includes("Перфорированная лента 50×2 мм")
-        && expandedBody.includes("Сборка, установка и выверка опалубки")
+      invariant(expandedBody.includes("Перфорированная лента Frami 50×2 мм")
+        && expandedBody.includes("Сборка, установка, крепление и выверка опалубки")
         && expandedBody.includes("Доставка комплекта опалубки на объект")
         && expandedBody.includes("Возврат арендного комплекта опалубки поставщику"),
       "COLD_REOPEN_COMPLETE_FRAMI_ESTIMATE_RED");
