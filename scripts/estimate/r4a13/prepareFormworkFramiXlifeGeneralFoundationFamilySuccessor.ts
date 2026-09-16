@@ -12,6 +12,7 @@ import {
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
   formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
+  formworkFramiXlifeParametersForCatalogR1,
   formworkFramiXlifeResourcesForCatalogR1,
 } from "../../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 import {
@@ -29,8 +30,8 @@ const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
 const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PREDECESSOR_RELEASE_ID = "2f99b3f9-3dba-5ac1-9c77-9e0f79119763";
-const PREDECESSOR_SEARCH_RELEASE_ID = "d866c696-b020-5c31-8657-2b2280fe2e8f";
+const PREDECESSOR_RELEASE_ID = "83edfd0b-7219-5a00-8a98-7aceb1eaf818";
+const PREDECESSOR_SEARCH_RELEASE_ID = "fcd352c7-5149-56a1-a6a0-befcddd55bee";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
 const TARGETS = FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS;
@@ -514,6 +515,12 @@ async function main(): Promise<void> {
       )).rows[0] as Json;
       invariant(representativeBaseline && representativePassport,
         "STOP_FORMWORK_FAMILY_REPRESENTATIVE_EVIDENCE_MISSING");
+      const representativeParameterById = new Map(
+        representativeParameters.map((parameter) => [String(parameter.parameter_id), parameter]),
+      );
+      const representativeResourceByRowId = new Map(
+        representativeResources.map((resource) => [String(resource.row_id), resource]),
+      );
 
       const plannedTargets = [];
       for (const target of TARGETS) {
@@ -525,13 +532,55 @@ async function main(): Promise<void> {
           "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
           [target.catalogId],
         )).rows[0].value);
+        const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
+        const parameterDeclarations = formworkFramiXlifeParametersForCatalogR1(target.catalogId);
+        const resourceDeclarations = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
+        const targetParameters = parameterDeclarations.map((declaration) => {
+          const stored = representativeParameterById.get(declaration.parameter_id);
+          invariant(stored, `STOP_FORMWORK_FAMILY_PARAMETER_TEMPLATE_MISSING:${declaration.parameter_id}`);
+          return {
+            ...stored,
+            parameter_id: declaration.parameter_id,
+            ordinal: declaration.ordinal,
+            value_type: declaration.value_type,
+            unit_id: declaration.unit_id,
+            title_ru: declaration.title_ru,
+            required: declaration.required,
+            constraints_json: declaration.constraints_json,
+            truth_metadata: declaration.truth_metadata,
+          };
+        });
+        const targetResources = resourceDeclarations.map((declaration) => {
+          const stored = representativeResourceByRowId.get(declaration.row_id);
+          invariant(stored, `STOP_FORMWORK_FAMILY_RESOURCE_TEMPLATE_MISSING:${declaration.row_id}`);
+          return {
+            ...stored,
+            row_id: declaration.row_id,
+            ordinal: declaration.ordinal,
+            section: declaration.section,
+            category: declaration.category,
+            title_ru: declaration.title_ru,
+            unit_id: declaration.unit_id,
+            formula_id: declaration.formula_id,
+            inclusion_ast: declaration.inclusion_ast,
+            resource_graph: declaration.resource_graph,
+            procurement_eligible: declaration.procurement_eligible,
+            cost_owner_id: declaration.cost_owner_id,
+            source_metadata: declaration.source_metadata,
+          };
+        });
+        invariant(targetParameters.length === 52 && targetResources.length === 24,
+          `STOP_FORMWORK_FAMILY_SPECIALIZED_SHAPE:${target.catalogId}:${targetParameters.length}:${targetResources.length}`);
         const targetDefinitionSha256 = sha256({
           representativeDefinitionSha256: representative.definition_sha256,
           contract: CONTRACT,
           targetCatalogId: target.catalogId,
           titleRu: target.titleRu,
+          parameters: parameterDeclarations,
+          resources: resourceDeclarations,
+          fixture,
+          lineage,
         });
-        const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
         const targetEvidenceSha256 = sha256({
           contract: CONTRACT,
           target,
@@ -576,9 +625,9 @@ async function main(): Promise<void> {
             },
           },
           representative: {
-            parameters: representativeParameters,
+            parameters: targetParameters,
             formulas: representativeFormulas,
-            resources: representativeResources,
+            resources: targetResources,
             bindings: representativeBindings,
             baseline: representativeBaseline,
             passport: representativePassport,

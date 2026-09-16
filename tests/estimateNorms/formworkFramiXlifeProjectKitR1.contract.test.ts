@@ -482,6 +482,10 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
     expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
     expect(source).toContain("FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS");
+    expect(source).toContain("formworkFramiXlifeParametersForCatalogR1");
+    expect(source).toContain("formworkFramiXlifeResourcesForCatalogR1");
+    expect(source).toContain("targetParameters");
+    expect(source).toContain("targetResources");
     expect(source).toContain('activationPerformed: false');
     expect(source).toContain('deployPerformed: false');
     expect(source).toContain('otaPerformed: false');
