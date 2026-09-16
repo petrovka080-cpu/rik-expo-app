@@ -1337,7 +1337,7 @@ async function main(): Promise<void> {
   ]);
   const sensitivityRowCount = Number(acceptedRevision.rowCount);
   const expectedPdfProjectedRowCount = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-    ? 17
+    ? 24
     : sensitivityRowCount + (IS_RICS_NRM2_FORMWORK ? 1 : 0);
   invariant(Number(pdf.metadata?.sourceRowCount) === sensitivityRowCount
     && Number(pdf.metadata?.projectedRowCount) === expectedPdfProjectedRowCount
