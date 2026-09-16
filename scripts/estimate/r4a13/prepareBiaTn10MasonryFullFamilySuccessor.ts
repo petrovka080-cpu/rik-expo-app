@@ -907,7 +907,7 @@ async function main(): Promise<void> {
             && target.decision?.quantityScope === "FULL" && target.decision?.priceState === "PARTIAL_NEEDS_PRICE"
             && Number(target.parameters) === 60 && Number(target.formulas) === 19
             && Number(target.resources) === 23 && Number(target.bindings) === 2
-            && Number(target.procurement_rows) === 12),
+            && Number(target.procurement_rows) === 13),
           `STOP_BIA_FULL_FAMILY_TARGET_AUDIT:${JSON.stringify(audit.targets)}`);
           invariant(Number(audit.search.targets) === TARGETS.length
             && Number(audit.search.valid) === TARGETS.length
