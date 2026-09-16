@@ -60,30 +60,38 @@ const FULL_PROJECT_PROMPT = [
   "отдельная сервисная плата за обслуживание: не предусмотрена: включена в условия возврата",
 ].join("\n");
 
-function catalog(catalogId = FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID) {
+function catalog(catalogId: string = FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID) {
   return {
     catalogId,
     workKey: "foundation_pile_cap_formwork_wet_zone",
-    parameterSchema: FORMWORK_FRAMI_XLIFE_PARAMETERS.map((parameter) => ({
-      parameterId: parameter.parameter_id,
-      ordinal: parameter.ordinal,
-      titleRu: parameter.title_ru,
-      valueType: parameter.value_type,
-      unitId: parameter.unit_id,
-      required: parameter.required,
-      defaultValue: parameter.default_value,
-      constraints: parameter.constraints_json,
-      visibilityRole: parameter.truth_metadata.visibility_role,
-      valueSourceRole: parameter.truth_metadata.value_source_role,
-      semanticParameterKey: parameter.truth_metadata.semantic_parameter_key,
-      preliminaryCompilationAllowed: parameter.truth_metadata.preliminary_compilation_allowed,
-      formulaConsumers: parameter.truth_metadata.formula_consumers,
-      resourceBranchConsumers: parameter.truth_metadata.resource_branch_consumers,
-      guide: {
-        guideKind: parameter.truth_metadata.guide.guide_kind,
-        guideShortRu: parameter.truth_metadata.guide.guide_short_ru,
-      },
-    })),
+    parameterSchema: FORMWORK_FRAMI_XLIFE_PARAMETERS.map((parameter) => {
+      const guide = parameter.truth_metadata.guide;
+      if (typeof guide !== "object" || guide == null
+        || !("guide_kind" in guide) || typeof guide.guide_kind !== "string"
+        || !("guide_short_ru" in guide) || typeof guide.guide_short_ru !== "string") {
+        throw new Error(`FORMWORK_FRAMI_XLIFE_PARAMETER_GUIDE_INVALID:${parameter.parameter_id}`);
+      }
+      return {
+        parameterId: parameter.parameter_id,
+        ordinal: parameter.ordinal,
+        titleRu: parameter.title_ru,
+        valueType: parameter.value_type,
+        unitId: parameter.unit_id,
+        required: parameter.required,
+        defaultValue: parameter.default_value,
+        constraints: parameter.constraints_json,
+        visibilityRole: parameter.truth_metadata.visibility_role,
+        valueSourceRole: parameter.truth_metadata.value_source_role,
+        semanticParameterKey: parameter.truth_metadata.semantic_parameter_key,
+        preliminaryCompilationAllowed: parameter.truth_metadata.preliminary_compilation_allowed,
+        formulaConsumers: parameter.truth_metadata.formula_consumers,
+        resourceBranchConsumers: parameter.truth_metadata.resource_branch_consumers,
+        guide: {
+          guideKind: guide.guide_kind,
+          guideShortRu: guide.guide_short_ru,
+        },
+      };
+    }),
   } as unknown as CanonicalEstimateCatalogItem;
 }
 

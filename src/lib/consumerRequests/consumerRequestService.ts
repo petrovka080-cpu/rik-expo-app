@@ -565,7 +565,11 @@ export function createConsumerRepairRequestDraft(input: {
 }): ConsumerRepairDraftBundle {
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
   assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
-  if (input.pendingRoadScopeSelection || input.aiDraft?.runtimeEstimateDraftRevision) {
+  if (
+    input.pendingRoadScopeSelection ||
+    input.aiDraft?.runtimeEstimateDraftRevision ||
+    input.aiDraft?.canonicalBackendRequired === true
+  ) {
     canonicalBackendRequired("legacy_consumer_request_compile");
   }
   const selectedWork = input.selectedWork ?? input.aiDraft?.selectedWork ?? null;

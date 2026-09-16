@@ -364,6 +364,8 @@ export type ConsumerRepairAiDraft = {
   electricalCircuitSchedule?: ElectricalCircuitScheduleV1;
   /** Exact runtime revision already used to project items; not a second build request. */
   runtimeEstimateDraftRevision?: EstimateDraftRevision;
+  /** The exact profile is owned by the canonical backend even while required inputs are incomplete. */
+  canonicalBackendRequired?: boolean;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;

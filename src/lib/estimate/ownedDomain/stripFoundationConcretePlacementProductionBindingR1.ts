@@ -13,8 +13,15 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
+const PARAMETER_LABEL_PATTERN = STRIP_FOUNDATION_CONCRETE_PLACEMENT_PARAMETERS
+  .map((parameter) => escapeRegExp(parameter.title_ru))
+  .join("|");
+
 function labeledValue(text: string, titleRu: string): string | null {
-  return text.match(new RegExp(`${escapeRegExp(titleRu)}\\s*[:=]\\s*([^\\n]+)`, "iu"))?.[1]?.trim() || null;
+  return text.match(new RegExp(
+    `${escapeRegExp(titleRu)}\\s*[:=]\\s*([\\s\\S]*?)(?=\\s+(?:${PARAMETER_LABEL_PATTERN})\\s*[:=]|$)`,
+    "iu",
+  ))?.[1]?.trim() || null;
 }
 
 function parseBoolean(value: string): boolean | null {

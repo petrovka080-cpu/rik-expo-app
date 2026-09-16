@@ -35,7 +35,7 @@ function canonicalRuntimeDraft(catalogId: string, title: string) {
 function expectCanonicalBackendRequired(catalogId: string, title: string): void {
   __resetConsumerRepairRequestStoreForTests();
   const aiDraft = canonicalRuntimeDraft(catalogId, title);
-  expect(aiDraft.runtimeEstimateDraftRevision).toBeTruthy();
+  expect(aiDraft.canonicalBackendRequired || aiDraft.runtimeEstimateDraftRevision).toBeTruthy();
   expect(() => createConsumerRepairRequestDraft({
     consumerUserId: "canonical-backend-boundary",
     problemText: title,

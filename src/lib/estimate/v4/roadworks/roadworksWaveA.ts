@@ -341,7 +341,7 @@ export const ROADWORKS_WAVE_A_KRER_27_RATE_IDS_BY_OPERATION: Readonly<
 });
 
 function parseIdentity(item: CatalogItem): { operation: RoadworksWaveAOperation; scope: RoadworksWaveAScope } | null {
-  if (item.work_family_id !== "roadworks" || !item.work_key.startsWith(PREFIX)) return null;
+  if (item.work_family_id !== "landscaping" || !item.work_key.startsWith(PREFIX)) return null;
   const tail = item.work_key.slice(PREFIX.length);
   const operation = OPERATIONS.find((candidate) => tail.startsWith(`${candidate}_`));
   if (!operation) return null;

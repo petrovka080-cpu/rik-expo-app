@@ -8,7 +8,7 @@ import {
 describe("Roadworks Wave A canonical inventory", () => {
   test("selects exactly the direct asphalt catalog IDs without fabricated families", () => {
     const canonical = catalog.items.filter(
-      (item) => item.work_family_id === "roadworks" &&
+      (item) => item.work_family_id === "landscaping" &&
         item.work_key.startsWith("paving_roads_landscape_interior_asphalt_"),
     );
     expect(RoadworksWaveAInventory).toHaveLength(35);

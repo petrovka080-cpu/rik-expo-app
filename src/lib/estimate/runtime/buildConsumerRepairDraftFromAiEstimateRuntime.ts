@@ -331,7 +331,10 @@ export function buildConsumerRepairDraftFromAiEstimateRuntime(
       paramOverrides: input.paramOverrides,
     });
   if (exactAsphaltRelated && exactAsphaltRelated.readiness !== "CALCULATION_READY") {
-    return exactAsphaltRelated.draft;
+    return {
+      ...exactAsphaltRelated.draft,
+      canonicalBackendRequired: true,
+    };
   }
   return projectConsumerRepairRuntimeRevision(
     createConsumerRepairRuntimeRevision(input, exactAsphaltRelated?.draft),
