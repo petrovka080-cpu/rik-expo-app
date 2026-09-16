@@ -1131,6 +1131,10 @@ async function main(): Promise<void> {
       if (await showMore.isVisible().catch(() => false)) await showMore.click();
     }
     await areaChip.waitFor({ state: "visible", timeout: 60_000 });
+    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+      const filledToggle = page.getByTestId("request-estimate-filled-parameters-toggle");
+      if (await filledToggle.isVisible().catch(() => false)) await filledToggle.click();
+    }
     const areaInput = areaChip.getByTestId("editable-param-popover-input");
     await areaInput.fill(String(SENSITIVITY_PRIMARY_VALUE));
     if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
