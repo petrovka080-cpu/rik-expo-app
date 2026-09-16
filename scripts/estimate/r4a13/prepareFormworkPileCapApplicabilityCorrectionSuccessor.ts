@@ -317,38 +317,58 @@ async function cloneSearch(client: Client, input: {
   ]);
 
   const targetIds = OPEN_TARGETS.map((target) => target.catalogId);
-  await client.query(`delete from public.estimate_search_document
-    where search_release_id=$1 and catalog_id=any($2::text[])`, [input.searchReleaseId, targetIds]);
-  await client.query(`insert into public.estimate_search_document(
-      search_release_id,catalog_id,domain_id,system_id,subsystem_id,assembly_id,work_family_id,
-      group_id,subgroup_id,element_type,operation_kind,technology_variant,construction_state,
-      primary_uom,canonical_name_ru,aliases,normative_classifiers,applicability_tags,publication_state,
-      catalog_origin,definition_release_id,short_scope_ru,key_distinguishing_parameters,
-      required_inputs_count,clarification_fields,included_boundaries,excluded_boundaries,
-      replacement_catalog_id,normalized_catalog_id,normalized_canonical_name,normalized_aliases,
-      normalized_search_terms,normalized_search_blob,source_provenance,document_sha256,
-      adjudication_class,selectable,canonical_target_catalog_id,definition_version_id)
-    select $1,source.catalog_id,source.domain_id,source.system_id,source.subsystem_id,source.assembly_id,
-      source.work_family_id,source.group_id,source.subgroup_id,source.element_type,source.operation_kind,
-      source.technology_variant,source.construction_state,source.primary_uom,source.canonical_name_ru,
-      source.aliases,source.normative_classifiers,
-      array_append(array_remove(source.applicability_tags,'FULL_QUANTITY_SCOPE_PRICE_PARTIAL'),
+  await client.query(`update public.estimate_search_document target set
+      domain_id=source.domain_id,
+      system_id=source.system_id,
+      subsystem_id=source.subsystem_id,
+      assembly_id=source.assembly_id,
+      work_family_id=source.work_family_id,
+      group_id=source.group_id,
+      subgroup_id=source.subgroup_id,
+      element_type=source.element_type,
+      operation_kind=source.operation_kind,
+      technology_variant=source.technology_variant,
+      construction_state=source.construction_state,
+      primary_uom=source.primary_uom,
+      canonical_name_ru=source.canonical_name_ru,
+      aliases=source.aliases,
+      normative_classifiers=source.normative_classifiers,
+      applicability_tags=array_append(
+        array_remove(source.applicability_tags,'FULL_QUANTITY_SCOPE_PRICE_PARTIAL'),
         'FULL_SCOPE_REQUIRES_PER_ID_PROJECT'),
-      source.publication_state,source.catalog_origin,$2::uuid,source.short_scope_ru,
-      source.key_distinguishing_parameters,source.required_inputs_count,source.clarification_fields,
-      source.included_boundaries,source.excluded_boundaries,source.replacement_catalog_id,
-      source.normalized_catalog_id,source.normalized_canonical_name,source.normalized_aliases,
-      source.normalized_search_terms,source.normalized_search_blob,
-      source.source_provenance||jsonb_build_object('contract',$3::text,
+      publication_state=source.publication_state,
+      catalog_origin=source.catalog_origin,
+      definition_release_id=$2::uuid,
+      short_scope_ru=source.short_scope_ru,
+      key_distinguishing_parameters=source.key_distinguishing_parameters,
+      required_inputs_count=source.required_inputs_count,
+      clarification_fields=source.clarification_fields,
+      included_boundaries=source.included_boundaries,
+      excluded_boundaries=source.excluded_boundaries,
+      replacement_catalog_id=source.replacement_catalog_id,
+      normalized_catalog_id=source.normalized_catalog_id,
+      normalized_canonical_name=source.normalized_canonical_name,
+      normalized_aliases=source.normalized_aliases,
+      normalized_search_terms=source.normalized_search_terms,
+      normalized_search_blob=source.normalized_search_blob,
+      source_provenance=source.source_provenance||jsonb_build_object('contract',$3::text,
         'parentSearchReleaseId',$4::uuid::text,'definitionReleaseId',$2::uuid::text,
         'restoredFromSearchReleaseId',$5::uuid::text,'sourceFingerprint',$6::text,
         'fullScopeStatus','OPEN_PER_ID_PROJECT_EVIDENCE_REQUIRED'),
-      encode(extensions.digest(convert_to(source.document_sha256||':'||$3||':'||$2::uuid::text,'UTF8'),'sha256'),'hex'),
-      source.adjudication_class,source.selectable,source.canonical_target_catalog_id,manifest.definition_version_id
-    from public.estimate_search_document source
-    join public.estimate_cumulative_manifest_entry manifest
-      on manifest.release_id=$2 and manifest.catalog_id=source.catalog_id
-    where source.search_release_id=$5 and source.catalog_id=any($7::text[])`, [
+      document_sha256=encode(extensions.digest(convert_to(
+        source.document_sha256||':'||$3||':'||$2::uuid::text,'UTF8'),'sha256'),'hex'),
+      adjudication_class=source.adjudication_class,
+      selectable=source.selectable,
+      canonical_target_catalog_id=source.canonical_target_catalog_id,
+      definition_version_id=manifest.definition_version_id
+    from public.estimate_search_document source,
+      public.estimate_cumulative_manifest_entry manifest
+    where target.search_release_id=$1
+      and target.catalog_id=source.catalog_id
+      and source.search_release_id=$5
+      and source.catalog_id=any($7::text[])
+      and manifest.release_id=$2
+      and manifest.catalog_id=source.catalog_id`, [
     input.searchReleaseId, input.releaseId, CONTRACT, PARENT_SEARCH_RELEASE_ID,
     MEASUREMENT_FALLBACK_SEARCH_RELEASE_ID, input.fingerprint, targetIds,
   ]);
