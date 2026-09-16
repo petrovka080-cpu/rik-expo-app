@@ -1,5 +1,6 @@
 import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
+import { isCanonicalEstimateUserEditableParameter } from "../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
 import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_PARAMETERS,
@@ -76,6 +77,12 @@ function catalog(catalogId = FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID) 
       valueSourceRole: parameter.truth_metadata.value_source_role,
       semanticParameterKey: parameter.truth_metadata.semantic_parameter_key,
       preliminaryCompilationAllowed: parameter.truth_metadata.preliminary_compilation_allowed,
+      formulaConsumers: parameter.truth_metadata.formula_consumers,
+      resourceBranchConsumers: parameter.truth_metadata.resource_branch_consumers,
+      guide: {
+        guideKind: parameter.truth_metadata.guide.guide_kind,
+        guideShortRu: parameter.truth_metadata.guide.guide_short_ru,
+      },
     })),
   } as unknown as CanonicalEstimateCatalogItem;
 }
@@ -99,5 +106,20 @@ describe("ordinary Web baseline for the full Frami Xlife project kit", () => {
       catalog: catalog("canonical-work:base:unrelated-formwork"),
       prompt: FULL_PROJECT_PROMPT,
     })).toThrow("CANONICAL_BASELINE_CONTRACT_MISSING");
+  });
+
+  test("keeps the explicitly owned shipping mass visible in the common editor", () => {
+    const shippingMass = catalog().parameterSchema.find(
+      (parameter) => parameter.parameterId === "shipping_mass_t",
+    );
+    expect(shippingMass).toBeDefined();
+    expect(isCanonicalEstimateUserEditableParameter({
+      ...shippingMass!,
+      formulaConsumers: ["formwork_outbound_transport_v1", "formwork_return_transport_v1"],
+      resourceBranchConsumers: [
+        "delivery:formwork:outbound-kit",
+        "delivery:formwork:return-kit",
+      ],
+    })).toBe(true);
   });
 });

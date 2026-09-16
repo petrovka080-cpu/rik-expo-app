@@ -4,7 +4,7 @@ import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
-const DERIVED_OR_INTERNAL_PARAMETER_ID = /(?:^quantity_|^unit_price_|(?:^|_)(?:compacted_volume|volume_m3|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|mass_t|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(?:_|$))/iu;
+const DERIVED_OR_INTERNAL_PARAMETER_ID = /(?:^quantity_|^unit_price_|(?:^|_)(?:compacted_volume|volume_m3|coverage_area|work_quantity|factor|coefficient|calculated|derived|consumption_total|material_m3|labor_man_hours|machine_hours|trip_count|service_count|test_count|test_frequency|test_interval|inspection_interval|control_interval|protocol_count|documentation_count|productivity)(?:_|$))/iu;
 const PER_OUTPUT_OR_UNIT_INTERNAL_PARAMETER_ID = /(?:^qty_.+_per_output$|^(?:labor|machine|mass|handling|inspection|waste)_.+_per_unit$)/iu;
 const DERIVED_OR_INTERNAL_TITLE = /^\s*(?:Количество|Объём|Объем):/iu;
 const DERIVED_OR_INTERNAL_UNIT = new Set([
