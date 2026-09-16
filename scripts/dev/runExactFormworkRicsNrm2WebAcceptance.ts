@@ -1283,7 +1283,7 @@ async function main(): Promise<void> {
           parameters: { ...acceptedRevision.parameters,
             formwork_system_profile_id: "standard-profile:generic-formwork" } },
         { scenarioId: "missing-approved-layout", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
-          parameters: { ...acceptedRevision.parameters, project_formwork_layout_reference: undefined } },
+          parameters: { ...acceptedRevision.parameters, project_formwork_layout_reference: null } },
         { scenarioId: "wall-too-thick-for-flat-tie", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
           parameters: { ...acceptedRevision.parameters, foundation_wall_thickness_cm: 81 } },
         { scenarioId: "wrong-measurement-class", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
