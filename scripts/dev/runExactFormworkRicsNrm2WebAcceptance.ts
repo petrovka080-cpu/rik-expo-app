@@ -522,9 +522,20 @@ const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
 const SCENARIO_LABEL = IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 const FRAMI_SENSITIVITY_PATCH: Readonly<Json> = Object.freeze(Object.fromEntries(
   Object.entries(FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
-    FORMWORK_FRAMI_XLIFE_EXACT_INPUT[parameterId] !== value
+    typeof value === "number" && FORMWORK_FRAMI_XLIFE_EXACT_INPUT[parameterId] !== value
   )),
 ));
+const FRAMI_UI_SENSITIVITY_INPUT: Readonly<Json> = Object.freeze({
+  ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+  ...FRAMI_SENSITIVITY_PATCH,
+});
+const FRAMI_DURATION_INPUT: Readonly<Json> = Object.freeze({
+  ...FRAMI_UI_SENSITIVITY_INPUT,
+  rental_duration_days: 21,
+});
+const ACCEPTED_TARGET_QUANTITY = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+  ? 588
+  : SENSITIVITY_TARGET_QUANTITY;
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(`EXACT_FORMWORK_WEB:${code}`);
@@ -941,7 +952,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       .filter({ hasText: EXPECTED_VISIBLE_TITLE }).waitFor({ state: "visible", timeout: 90_000 });
     await assertPreliminaryScopeVisible(page);
     const body = await page.locator("body").innerText();
-    const expectedQuantityText = String(SENSITIVITY_TARGET_QUANTITY);
+    const expectedQuantityText = String(ACCEPTED_TARGET_QUANTITY);
     invariant(body.includes(expectedQuantityText)
       || body.includes(expectedQuantityText.replace(".", ",")), "COLD_REOPEN_QUANTITY_RED");
     if (IS_BIA_TN10_MASONRY) {
@@ -964,7 +975,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       revisionId: revision.revisionId,
       revisionNumber: revision.revisionNumber,
       rowTitleVisible: true,
-      expectedQuantity: SENSITIVITY_TARGET_QUANTITY,
+      expectedQuantity: ACCEPTED_TARGET_QUANTITY,
       expectedQuantityVisible: true,
       oldFactorVisible: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
         || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY ? null : false,
@@ -1014,8 +1025,10 @@ async function main(): Promise<void> {
   let initialRevision: Json;
   let preparedRevision: Json;
   let sensitivityRevision: Json;
+  let durationRevision: Json | null = null;
   let originalRow: Json;
   let sensitivityRow: Json;
+  let durationRow: Json | null = null;
   let originalReinforcementRow: Json | null = null;
   let sensitivityReinforcementRow: Json | null = null;
   let searchEvidence: Json;
@@ -1162,7 +1175,7 @@ async function main(): Promise<void> {
     sensitivityRevision = await waitForSuccessfulRevision(authorization, recalculateAccepted);
     invariant(sensitivityRevision.parentRevisionId === preparedRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
     if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
-      const mismatches = Object.entries(FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT)
+      const mismatches = Object.entries(FRAMI_UI_SENSITIVITY_INPUT)
         .filter(([parameterId, value]) => typeof value === "number"
           ? Number(sensitivityRevision.parameters?.[parameterId]) !== value
           : sensitivityRevision.parameters?.[parameterId] !== value)
@@ -1185,70 +1198,123 @@ async function main(): Promise<void> {
     const sensitivityScreenshot = resolve(OUTPUT_ROOT, `02_sensitivity_${SENSITIVITY_PRIMARY_VALUE}.png`);
     await page.screenshot({ path: sensitivityScreenshot, fullPage: true });
 
+    let durationScreenshot: string | null = null;
+    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+      const rentalChip = page.getByTestId("editable-param-chip-rental_duration_days");
+      if (!await rentalChip.isVisible().catch(() => false)) {
+        const toggle = page.getByTestId("request-estimate-parameters-toggle");
+        if (await toggle.isVisible().catch(() => false)) await toggle.click();
+      }
+      const filledToggle = page.getByTestId("request-estimate-filled-parameters-toggle");
+      if (await filledToggle.isVisible().catch(() => false)) await filledToggle.click();
+      await rentalChip.waitFor({ state: "visible", timeout: 60_000 });
+      await rentalChip.getByTestId("editable-param-popover-input").fill("21");
+      const durationPromise = page.waitForResponse((response) => response.url().endsWith("/jobs/recalculate")
+        && response.request().method() === "POST", { timeout: 60_000 });
+      const [durationResponse] = await Promise.all([
+        durationPromise,
+        page.getByTestId("editable-param-batch-apply").click(),
+      ]);
+      const durationAccepted = await json(durationResponse);
+      invariant(durationResponse.status() === 202, `DURATION_HTTP_${durationResponse.status()}`);
+      durationRevision = await waitForSuccessfulRevision(authorization, durationAccepted);
+      invariant(durationRevision.parentRevisionId === sensitivityRevision.revisionId,
+        "DURATION_PARENT_DRIFT");
+      const durationMismatches = Object.entries(FRAMI_DURATION_INPUT)
+        .filter(([parameterId, value]) => typeof value === "number"
+          ? Number(durationRevision!.parameters?.[parameterId]) !== value
+          : durationRevision!.parameters?.[parameterId] !== value)
+        .map(([parameterId]) => parameterId);
+      invariant(durationMismatches.length === 0,
+        `FRAMI_DURATION_PARAMETER_DRIFT:${durationMismatches.join(",")}`);
+      const durationRows = await allRows(authorization, durationRevision.revisionId);
+      durationRow = assertExactRevision(durationRevision, durationRows, ACCEPTED_TARGET_QUANTITY);
+      const rentalRowIds = new Set(sensitivityRows
+        .filter((row) => row.calculationTrace?.resourceGraph?.rentalDurationParameterId
+          === "rental_duration_days")
+        .map((row) => row.rowId));
+      invariant(rentalRowIds.size === 7, `FRAMI_RENTAL_ROW_COUNT_${rentalRowIds.size}_EXPECTED_7`);
+      for (const beforeRow of sensitivityRows.filter((row) => !rentalRowIds.has(row.rowId))) {
+        const afterRow = durationRows.find((row) => row.rowId === beforeRow.rowId);
+        invariant(afterRow != null && Number(afterRow.quantity) === Number(beforeRow.quantity),
+          `FRAMI_DURATION_CHANGED_UNRELATED_ROW:${beforeRow.rowId}`);
+      }
+      durationScreenshot = resolve(OUTPUT_ROOT, "03_duration_21_days.png");
+      await openRevision(page, durationRevision.revisionId);
+      await page.screenshot({ path: durationScreenshot, fullPage: true });
+      progress("DURATION_ONLY_GREEN", { revisionId: durationRevision.revisionId,
+        rentalDays: 21, targetQuantity: ACCEPTED_TARGET_QUANTITY, unchangedNonRentalRows: 17 });
+    }
+
     const historyAfter = await api(authorization, `revisions?catalogId=${encodeURIComponent(CATALOG_ID)}&limit=100`);
     const afterRows = Array.isArray(historyAfter.revisions) ? historyAfter.revisions as Json[] : [];
     invariant(initialRevision.revisionId === preparedRevision.revisionId,
       "WEB_PREPARE_REQUIRED_HIDDEN_API_RECALCULATION");
-    const expectedNewRevisionCount = 2;
+    const expectedNewRevisionCount = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? 3 : 2;
     invariant(afterRows.length === beforeRows.length + expectedNewRevisionCount,
       `HISTORY_DELTA_${afterRows.length - beforeRows.length}_EXPECTED_${expectedNewRevisionCount}`);
     invariant(afterRows.some((entry) => entry.revisionId === preparedRevision.revisionId)
       && afterRows.some((entry) => entry.revisionId === sensitivityRevision.revisionId),
     "HISTORY_REVISION_MISSING");
+    if (durationRevision) {
+      invariant(afterRows.some((entry) => entry.revisionId === durationRevision!.revisionId),
+        "HISTORY_DURATION_REVISION_MISSING");
+    }
     searchEvidence = { selectedIndex, selectedWorkText, before: beforeRows.length, after: afterRows.length,
       delta: afterRows.length - beforeRows.length,
       initialWasPrepared: initialRevision.revisionId === preparedRevision.revisionId,
-      originalScreenshot, sensitivityScreenshot, compileIngress };
+      originalScreenshot, sensitivityScreenshot, durationScreenshot, compileIngress };
   } finally {
     await closePageBounded(page);
   }
 
   const activeAuthorization = authorization || apiAuthorization;
+  const acceptedRevision = durationRevision ?? sensitivityRevision!;
   const negativeScenarios: Array<{ scenarioId: string; parameters: Json; expectedErrorCode: string | null }> =
     IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? [
         { scenarioId: "wrong-formwork-system", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
-          parameters: { ...sensitivityRevision!.parameters,
+          parameters: { ...acceptedRevision.parameters,
             formwork_system_profile_id: "standard-profile:generic-formwork" } },
         { scenarioId: "missing-approved-layout", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
-          parameters: { ...sensitivityRevision!.parameters, project_formwork_layout_reference: undefined } },
+          parameters: { ...acceptedRevision.parameters, project_formwork_layout_reference: undefined } },
         { scenarioId: "wall-too-thick-for-flat-tie", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
-          parameters: { ...sensitivityRevision!.parameters, foundation_wall_thickness_cm: 81 } },
+          parameters: { ...acceptedRevision.parameters, foundation_wall_thickness_cm: 81 } },
         { scenarioId: "wrong-measurement-class", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
-          parameters: { ...sensitivityRevision!.parameters, single_or_double_sided_scope: "UNDECLARED" } },
+          parameters: { ...acceptedRevision.parameters, single_or_double_sided_scope: "UNDECLARED" } },
       ]
       : IS_BIA_TN10_MASONRY
       ? [
         { scenarioId: "non-fired-clay-material", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
-          parameters: { ...sensitivityRevision!.parameters, fired_clay_brick_confirmed: false } },
+          parameters: { ...acceptedRevision.parameters, fired_clay_brick_confirmed: false } },
         { scenarioId: "wall-opening-geometry-conflict", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
-          parameters: { ...sensitivityRevision!.parameters,
+          parameters: { ...acceptedRevision.parameters,
             gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=5,NET_M2=100" } },
       ]
       : IS_NRMCA_STRIP_FOUNDATION
         ? [
           { scenarioId: "cip31-two-percent", expectedErrorCode: null, parameters: {
-            ...sensitivityRevision!.parameters, concrete_order_allowance_percent: 2,
+            ...acceptedRevision.parameters, concrete_order_allowance_percent: 2,
           } },
           { scenarioId: "rebar-invalid-shape", expectedErrorCode: null, parameters: {
-            ...sensitivityRevision!.parameters, shape_straight_bent_curved_or_link: "ASSUMED",
+            ...acceptedRevision.parameters, shape_straight_bent_curved_or_link: "ASSUMED",
           } },
         ]
         : [{ scenarioId: "unconfirmed-measurement", expectedErrorCode: null, parameters: {
-          ...sensitivityRevision!.parameters, project_measurement_rule_reference: "UNCONFIRMED",
+          ...acceptedRevision.parameters, project_measurement_rule_reference: "UNCONFIRMED",
         } }];
   const negativeJobs: Json[] = [];
   for (const scenario of negativeScenarios) {
     const negativeAccepted = await apiPost(activeAuthorization, "jobs/recalculate", {
-      idempotencyKey: `exact-${PROFILE_ID}-negative-${scenario.scenarioId}-${sensitivityRevision!.revisionId}`,
+      idempotencyKey: `exact-${PROFILE_ID}-negative-${scenario.scenarioId}-${acceptedRevision.revisionId}`,
       catalogId: CATALOG_ID,
-      parentRevisionId: sensitivityRevision!.revisionId,
-      sourceRequestText: sensitivityRevision!.sourceRequestText,
+      parentRevisionId: acceptedRevision.revisionId,
+      sourceRequestText: acceptedRevision.sourceRequestText,
       primaryMeasureParameterId: PRIMARY_MEASURE_PARAMETER_ID,
       parameters: scenario.parameters,
-      currencyCode: sensitivityRevision!.currencyCode,
-      rowOverrides: sensitivityRevision!.amendmentContract?.rowOverrides ?? {},
-      customRows: sensitivityRevision!.amendmentContract?.customRows ?? [],
+      currencyCode: acceptedRevision.currencyCode,
+      rowOverrides: acceptedRevision.amendmentContract?.rowOverrides ?? {},
+      customRows: acceptedRevision.amendmentContract?.customRows ?? [],
     });
     const negativeJob = await waitForJob(activeAuthorization, String(negativeAccepted.jobId ?? ""));
     invariant(negativeJob.status === "failed" && !negativeJob.resultRevisionId,
@@ -1260,10 +1326,10 @@ async function main(): Promise<void> {
   }
 
   const [pdf, procurement] = await Promise.all([
-    buildArtifact(activeAuthorization, sensitivityRevision!, "pdf"),
-    buildArtifact(activeAuthorization, sensitivityRevision!, "procurement"),
+    buildArtifact(activeAuthorization, acceptedRevision, "pdf"),
+    buildArtifact(activeAuthorization, acceptedRevision, "procurement"),
   ]);
-  const sensitivityRowCount = Number(sensitivityRevision!.rowCount);
+  const sensitivityRowCount = Number(acceptedRevision.rowCount);
   const expectedPdfProjectedRowCount = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
     ? 17
     : sensitivityRowCount + (IS_RICS_NRM2_FORMWORK ? 1 : 0);
@@ -1287,7 +1353,7 @@ async function main(): Promise<void> {
     const procurementRows = Array.isArray(procurement.projection?.rows)
       ? procurement.projection.rows as Json[]
       : [];
-    invariant(procurement.projection?.revisionId === sensitivityRevision!.revisionId
+    invariant(procurement.projection?.revisionId === acceptedRevision.revisionId
       && procurement.projection?.releaseId === RELEASE_ID
       && Number(procurement.projection?.selectedRowCount) === 14
       && procurementRows.length === 14,
@@ -1303,7 +1369,7 @@ async function main(): Promise<void> {
     const procurementRows = Array.isArray(procurement.projection?.rows)
       ? procurement.projection.rows as Json[]
       : [];
-    invariant(procurement.projection?.revisionId === sensitivityRevision!.revisionId
+    invariant(procurement.projection?.revisionId === acceptedRevision.revisionId
       && procurement.projection?.releaseId === RELEASE_ID
       && Number(procurement.projection?.selectedRowCount) === 2
       && procurementRows.length === 2,
@@ -1326,13 +1392,14 @@ async function main(): Promise<void> {
     procurementRows: procurement.metadata?.selectedProcurementRowCount });
 
   const coldContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  const cold = await openColdRevision(coldContext, sensitivityRevision!,
-    resolve(OUTPUT_ROOT, `03_cold_reopen_${SENSITIVITY_PRIMARY_VALUE}.png`));
+  const cold = await openColdRevision(coldContext, acceptedRevision,
+    resolve(OUTPUT_ROOT, `04_cold_reopen_${SENSITIVITY_PRIMARY_VALUE}.png`));
   await coldContext.close();
   await browser.close();
 
   const database = await databaseProof(
-    [...new Set([initialRevision!.revisionId, preparedRevision!.revisionId, sensitivityRevision!.revisionId])],
+    [...new Set([initialRevision!.revisionId, preparedRevision!.revisionId,
+      sensitivityRevision!.revisionId, acceptedRevision.revisionId])],
     negativeJobs.map((job) => String(job.jobId)),
   );
   invariant(pageErrors.length === 0, `PAGE_ERRORS:${pageErrors.join("|")}`);
@@ -1414,6 +1481,15 @@ async function main(): Promise<void> {
       preliminaryScopeNeed: IS_RICS_NRM2_FORMWORK
         ? assertPreliminaryScopeTruth(sensitivityRevision!, SENSITIVITY_TARGET_QUANTITY) : null,
       reinforcementRow: sensitivityReinforcementRow },
+    rentalDuration: durationRevision ? {
+      rentalDays: 21,
+      targetQuantity: ACCEPTED_TARGET_QUANTITY,
+      revisionId: durationRevision.revisionId,
+      parentRevisionId: durationRevision.parentRevisionId,
+      revisionNumber: durationRevision.revisionNumber,
+      row: durationRow,
+      unchangedNonRentalRows: 17,
+    } : null,
     negative: negativeJobs.map((job) => ({ scenarioId: job.scenarioId, jobId: job.jobId,
       status: job.status, errorCode: job.errorCode, resultRevisionId: job.resultRevisionId ?? null })),
     historyColdReopen: cold,
@@ -1440,7 +1516,7 @@ async function main(): Promise<void> {
   };
   atomicJson(OUTPUT, { ...body, receiptSha256: sha256(JSON.stringify(body)) });
   process.stdout.write(`${JSON.stringify({ status: body.status, receipt: OUTPUT,
-    revisionId: sensitivityRevision!.revisionId, pdfSha256: pdf.sha256,
+    revisionId: acceptedRevision.revisionId, pdfSha256: pdf.sha256,
     procurementRows: procurement.metadata?.selectedProcurementRowCount,
     productionAccessed: false })}\n`);
 }
