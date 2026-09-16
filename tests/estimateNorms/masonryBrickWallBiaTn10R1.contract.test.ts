@@ -36,7 +36,26 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       "applicable bond correction factors: BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10;",
       "selected project breakage and waste allowances: BRICK_PERCENT=3,MORTAR_PERCENT=5;",
       "supplier package quantities: BRICK_PIECES=500,MORTAR_M3=0.25;",
-      "project approval reference: A-E-EST-BRICK-REV-C",
+      "project approval reference: A-E-EST-BRICK-REV-C;",
+      "project scope and applicability reference: BIA-WALL-SCOPE-001-REV-D;",
+      "wall layout length: 40 m; wall height: 2.5 m;",
+      "wall connectors applicable: true; wall connector quantity: 80;",
+      "wall connector designation: galvanized connector BIA-WALL-LC-001;",
+      "lintels applicable: true; lintel total length: 12 m; lintel designation: precast lintel BIA-WALL-LC-001;",
+      "dpc applicable: false; dpc area: 0 m2; dpc product designation: not applicable on prepared slab;",
+      "masonry reinforcement applicable: false; masonry reinforcement mass: 0 kg;",
+      "masonry reinforcement designation: not applicable by BIA-WALL-SCOPE-001;",
+      "brick cutting length: 20 m; masonry saw machine hours: 8;",
+      "masonry saw designation: wet masonry saw 350 mm; material handling machine hours: 6;",
+      "material handler designation: 2.5 t forklift; work platform applicable: false;",
+      "work platform rental days: 0; work platform designation: not applicable at 2.5 m wall height;",
+      "engineering inspection applicable: true; engineering inspection hours: 4;",
+      "brick unit mass: 2.2 kg; brick delivery distance: 25 km; brick delivery separately priced: true;",
+      "mortar density: 2000 kg/m3; mortar delivery distance: 20 km; mortar delivery separately priced: true;",
+      "waste haul applicable: true; masonry waste mass: 0.5 t; waste haul distance: 15 km;",
+      "lintel and connector schedule reference: BIA-WALL-LC-001-REV-B;",
+      "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
+      "quality plan reference: BIA-WALL-QA-001-REV-C",
     ].join(" ");
     const catalog = {
       catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_standard",
@@ -58,7 +77,7 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
     } as unknown as CanonicalEstimateCatalogItem;
     const plan = buildCanonicalBaselinePlan({ catalog, prompt });
     expect(plan.primaryMeasureParameterId).toBe("measured_net_brick_wall_area_m2");
-    expect(Object.keys(plan.parameters)).toHaveLength(22);
+    expect(Object.keys(plan.parameters)).toHaveLength(60);
     expect(plan.parameters).toMatchObject({
       measured_net_brick_wall_area_m2: 90,
       brick_bond_correction_factor: 1.05,
@@ -74,7 +93,7 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
     ]) {
       const variant = buildCanonicalBaselinePlan({ catalog: { ...catalog, catalogId }, prompt });
-      expect(Object.keys(variant.parameters)).toHaveLength(22);
+      expect(Object.keys(variant.parameters)).toHaveLength(60);
     }
     expect(() => buildCanonicalBaselinePlan({
       catalog: { ...catalog, catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_high_load" },
@@ -84,10 +103,10 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
 
   test("keeps need, project waste and supplier purchase quantities separate with unknown prices", async () => {
     const result = await compileMasonryBrickWallBiaTn10R1({ ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT });
-    expect(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS).toHaveLength(22);
-    expect(MASONRY_BRICK_WALL_BIA_TN10_FORMULAS).toHaveLength(5);
-    expect(MASONRY_BRICK_WALL_BIA_TN10_RESOURCES).toHaveLength(5);
-    expect(result.rows).toHaveLength(5);
+    expect(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS).toHaveLength(60);
+    expect(MASONRY_BRICK_WALL_BIA_TN10_FORMULAS).toHaveLength(19);
+    expect(MASONRY_BRICK_WALL_BIA_TN10_RESOURCES).toHaveLength(23);
+    expect(result.rows).toHaveLength(18);
     expect(result.preliminaryNeeds).toHaveLength(0);
     expect(result.rows.every((row) => row.unit_price == null && row.amount == null)).toBe(true);
 
@@ -107,13 +126,25 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       procurementPackageSize: 0.25,
       procurementQuantity: 2.25,
     });
-    expect(result.rows.filter((row) => row.category === "construction_work").map((row) => row.quantity))
-      .toEqual(["90", "90", "90"]);
+    expect(result.rows.filter((row) => row.category === "material")).toHaveLength(4);
+    expect(result.rows.filter((row) => row.category === "construction_work")).toHaveLength(8);
+    expect(result.rows.filter((row) => row.category === "equipment")).toHaveLength(2);
+    expect(result.rows.filter((row) => row.category === "service")).toHaveLength(1);
+    expect(result.rows.filter((row) => row.category === "delivery")).toHaveLength(3);
+    expect(result.rows.find((row) => row.row_id === "delivery:bia-tn10:fired-clay-brick")?.quantity)
+      .toBe("330");
+    expect(result.rows.find((row) => row.row_id === "delivery:bia-tn10:masonry-mortar")?.quantity)
+      .toBe("90");
+    expect(result.rows.find((row) => row.row_id === "delivery:bia-tn10:masonry-waste-haul")?.quantity)
+      .toBe("7.5");
+    expect(result.rows.some((row) => row.row_id === "material:bia-tn10:dpc-membrane")).toBe(false);
+    expect(result.rows.some((row) => row.row_id === "material:bia-tn10:masonry-reinforcement")).toBe(false);
+    expect(result.rows.some((row) => row.row_id === "equipment:bia-tn10:work-platform")).toBe(false);
   });
 
   test("declares every physical applicability input as a resource consumer for the editable Web contract", () => {
     const resources = MASONRY_BRICK_WALL_BIA_TN10_RESOURCES.filter((resource) =>
-      resource.row_id.startsWith("material:bia-tn10:"));
+      resource.resource_graph.professionalPhysicalNormBindingV1 != null);
     expect(resources).toHaveLength(2);
     for (const resource of resources) {
       expect(resource.resource_graph.professionalPhysicalNormBindingV1).toMatchObject({
@@ -152,7 +183,7 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       { catalogId },
     );
     expect(result.revisionProjection.catalogId).toBe(catalogId);
-    expect(result.rows).toHaveLength(5);
+    expect(result.rows).toHaveLength(18);
     expect(result.preliminaryNeeds).toHaveLength(0);
   });
 
@@ -161,6 +192,7 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
       ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
       measured_net_brick_wall_area_m2: 100,
       gross_wall_area_and_opening_deductions: "GROSS_M2=110; OPENINGS_M2=10; NET_M2=100",
+      wall_layout_length_m: 44,
     });
     const brick = result.rows.find((row) => row.row_id === "material:bia-tn10:fired-clay-brick")!;
     const mortar = result.rows.find((row) => row.row_id === "material:bia-tn10:masonry-mortar")!;
@@ -168,8 +200,26 @@ describe("complete canonical fired-clay brick wall estimate through BIA TN 10", 
     expect(mortar.quantity).toBe("2.2");
     expect(materialBasis(brick)?.procurementQuantity).toBe(6500);
     expect(materialBasis(mortar)?.procurementQuantity).toBe(2.5);
-    expect(result.rows.filter((row) => row.category === "construction_work").every((row) => row.quantity === "100"))
-      .toBe(true);
+    expect(result.rows.find((row) => row.row_id === "work:bia-tn10:brick-wall-laying")?.quantity).toBe("100");
+    expect(result.rows.find((row) => row.row_id === "work:bia-tn10:gross-wall-geometry-check")?.quantity)
+      .toBe("110");
+    expect(result.rows.find((row) => row.row_id === "delivery:bia-tn10:fired-clay-brick")?.quantity)
+      .toBe("357.5");
+    expect(result.rows.find((row) => row.row_id === "delivery:bia-tn10:masonry-mortar")?.quantity)
+      .toBe("100");
+  });
+
+  test.each([
+    ["applicable connector without quantity", { wall_connectors_applicable: true, wall_connector_quantity_piece: 0 },
+      "MASONRY_FULL_SCOPE_APPLICABLE_QUANTITY_REQUIRED:wall_connector_quantity_piece"],
+    ["not-applicable DPC with hidden quantity", { dpc_applicable: false, dpc_area_m2: 1 },
+      "MASONRY_FULL_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:dpc_area_m2"],
+    ["stale wall dimensions", { wall_layout_length_m: 39 }, "MASONRY_FULL_SCOPE_GROSS_GEOMETRY_CONFLICT"],
+  ])("rejects incomplete full scope: %s", async (_name, patch, code) => {
+    await expect(compileMasonryBrickWallBiaTn10R1({
+      ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
+      ...patch,
+    })).rejects.toMatchObject({ code });
   });
 
   test.each([
