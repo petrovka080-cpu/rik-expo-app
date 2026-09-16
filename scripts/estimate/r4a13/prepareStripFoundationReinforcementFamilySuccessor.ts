@@ -939,6 +939,10 @@ async function main(): Promise<void> {
               priceState: "PARTIAL_NEEDS_PRICE",
             }),
           ]);
+          const preparedAudit = await auditState(client, releaseId, searchReleaseId, definitionIds);
+          invariant(preparedAudit.release?.status === "prepared"
+            && preparedAudit.release?.activated_at == null,
+          `STOP_STRIP_REINFORCEMENT_FINAL_RELEASE_LIFECYCLE:${JSON.stringify(preparedAudit.release)}`);
           await client.query("commit");
           receipt = {
             status: "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE",
@@ -960,7 +964,7 @@ async function main(): Promise<void> {
             },
             coreAcceptance,
             publisherPreflight,
-            audit: { ...audit, unrelatedManifestChanges: Number(unrelated.changed) },
+            audit: { ...preparedAudit, unrelatedManifestChanges: Number(unrelated.changed) },
           };
         } catch (error) {
           await client.query("rollback");
