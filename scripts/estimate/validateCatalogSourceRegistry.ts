@@ -76,6 +76,16 @@ type PhysicalProfessionalNormPack = {
   source_type?: string;
   review_status?: string;
   license_status?: string;
+  technology_source_pack_version?: string;
+  technology_sources?: Array<{
+    source_id?: string;
+    title?: string;
+    url?: string;
+    supporting_url?: string;
+    document_version?: string;
+    review_status?: string;
+    license_status?: string;
+  }>;
   norm_items?: Array<{
     norm_id?: string;
     source?: {
@@ -196,6 +206,37 @@ function addPhysicalNormPackSources(entries: Map<string, SourceRegistryEntry>): 
         ? "registry_norm_pack"
         : "physical_norm_pack_review";
       mergeSample(entry.sample_norm_ids, normId);
+    }
+    for (const technologySource of pack.technology_sources ?? []) {
+      const sourceId = String(technologySource.source_id ?? "").trim();
+      if (!sourceId) continue;
+      const sourceUrlOrDocumentRef = String(
+        technologySource.url || technologySource.supporting_url || "unknown",
+      ).trim();
+      const reviewStatus = String(
+        technologySource.review_status ?? pack.review_status ?? "needs_review",
+      );
+      const licenseStatus = String(
+        technologySource.license_status ?? pack.license_status ?? "unknown",
+      );
+      const entry = entries.get(sourceId) ?? emptyEntry(sourceId);
+      entries.set(sourceId, entry);
+      physicalSourceIds.add(sourceId);
+      entry.source_title = String(technologySource.title ?? "unknown");
+      entry.source_type = "manufacturer_technical_cards";
+      entry.source_url_or_document_ref = sourceUrlOrDocumentRef;
+      entry.source_date_or_version = String(
+        pack.technology_source_pack_version ?? technologySource.document_version ?? "unknown",
+      );
+      entry.provenance = "manufacturer_technical_cards";
+      entry.license_status = licenseStatus;
+      entry.quality_status = reviewStatus === "reviewed" ? "reviewed" : "needs_regional_review";
+      entry.review_status = reviewStatus;
+      entry.is_source_backed_professional_norm_pack =
+        reviewStatus === "reviewed" && sourceUrlOrDocumentRef !== "unknown";
+      entry.is_generated_family_default = false;
+      entry.is_historical_price_only = false;
+      entry.evidence_kind = "physical_norm_pack_review";
     }
   }
   return physicalSourceIds;

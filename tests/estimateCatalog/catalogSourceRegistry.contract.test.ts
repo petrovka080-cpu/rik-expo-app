@@ -13,17 +13,13 @@ describe("catalog source registry artifact", () => {
     const registry = readJson<CatalogSourceRegistry>("data/estimate-catalog/source-registry.json");
 
     expect(registry.final_status).toBe(STOP_AI_ESTIMATE_CATALOG_SOURCE_REGISTRY_FAILED);
-    expect(registry.physical_norm_pack_source_count).toBe(54);
+    expect(registry.physical_norm_pack_source_count).toBe(55);
     expect(registry.row_source_count).toBeGreaterThan(0);
     expect(registry.p0_source_count).toBeGreaterThan(0);
     expect(registry.p0_source_coverage).toHaveLength(14);
     expect(registry.p0_source_coverage.every((item) => item.row_count > 0)).toBe(true);
     expect(registry.p0_source_coverage.filter((item) => item.blocking_reasons.length === 0)
-      .map((item) => item.case_id)).toEqual([
-      "diamond_concrete_drilling",
-      "profile_sheet_fence",
-      "mansard_roof",
-    ]);
+      .map((item) => item.case_id)).toEqual([]);
     expect(registry.sources.some((item) => item.is_generated_family_default)).toBe(false);
     expect(registry.sources.filter((item) => item.is_source_backed_professional_norm_pack).every((item) =>
       item.source_url_or_document_ref !== "unknown" &&
@@ -32,8 +28,9 @@ describe("catalog source registry artifact", () => {
     const physicalSources = registry.sources.filter((item) =>
       item.evidence_kind === "physical_norm_pack_review" || item.evidence_kind === "registry_norm_pack"
     );
-    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(54);
+    expect(physicalSources.filter((item) => item.evidence_kind === "physical_norm_pack_review")).toHaveLength(55);
     expect(physicalSources.map((item) => item.source_id)).toEqual(expect.arrayContaining([
+      "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11",
       "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1",
       "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1",
       "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1",
