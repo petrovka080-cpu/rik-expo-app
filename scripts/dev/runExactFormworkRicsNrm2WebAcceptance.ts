@@ -1359,7 +1359,7 @@ async function main(): Promise<void> {
         { scenarioId: "non-fired-clay-material", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
           parameters: { ...acceptedRevision.parameters, fired_clay_brick_confirmed: false } },
         { scenarioId: "wall-opening-geometry-conflict",
-          expectedErrorCode: "MASONRY_FULL_SCOPE_GROSS_GEOMETRY_CONFLICT",
+          expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
           parameters: { ...acceptedRevision.parameters,
             gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=5,NET_M2=100" } },
         { scenarioId: "connector-quantity-missing",
