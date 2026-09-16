@@ -231,7 +231,7 @@ async function verifyThroughExistingCore(): Promise<Json> {
     },
     {
       patch: { wall_layout_length_m: 41 },
-      expectedCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
+      expectedCode: "MASONRY_FULL_SCOPE_GROSS_GEOMETRY_CONFLICT",
     },
   ] as const;
   for (const negative of negativeCases) {

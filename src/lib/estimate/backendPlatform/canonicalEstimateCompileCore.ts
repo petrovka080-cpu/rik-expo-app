@@ -408,6 +408,74 @@ function validateConditionalPositiveQuantityPolicy(
   }
 }
 
+function validateFormulaLabeledValueConsistencyPolicy(
+  resource: CanonicalEstimateResourceDefinition,
+  formula: CanonicalEstimateFormulaDefinition,
+  formulaParameters: Readonly<Record<string, FormulaParameterValue>>,
+  parameters: Readonly<Record<string, unknown>>,
+  definitionParameterIds: ReadonlySet<string>,
+): void {
+  const rawPolicy = resource.resource_graph?.formulaLabeledValueConsistencyPolicyV1;
+  if (rawPolicy == null) return;
+  if (!rawPolicy || typeof rawPolicy !== "object" || Array.isArray(rawPolicy)) {
+    throw compilerError(`formula labeled-value policy invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const policy = rawPolicy as JsonRecord;
+  const allowedKeys = new Set([
+    "version",
+    "textParameterId",
+    "label",
+    "absoluteTolerance",
+    "errorCodeNamespace",
+    "errorCodeSubject",
+  ]);
+  const textParameterId = typeof policy.textParameterId === "string" ? policy.textParameterId.trim() : "";
+  const label = typeof policy.label === "string" ? policy.label.trim() : "";
+  const absoluteTolerance = Number(policy.absoluteTolerance);
+  const errorCodeNamespace = typeof policy.errorCodeNamespace === "string"
+    ? policy.errorCodeNamespace.trim()
+    : "";
+  const errorCodeSubject = typeof policy.errorCodeSubject === "string"
+    ? policy.errorCodeSubject.trim()
+    : "";
+  if (Object.keys(policy).some((key) => !allowedKeys.has(key))
+    || policy.version !== "canonical-formula-labeled-value-consistency:v1"
+    || !textParameterId
+    || !definitionParameterIds.has(textParameterId)
+    || !/^[A-Z][A-Z0-9_]{1,40}$/u.test(label)
+    || !Number.isFinite(absoluteTolerance)
+    || absoluteTolerance < 0
+    || absoluteTolerance > 1
+    || !/^[A-Z][A-Z0-9_]{2,80}$/u.test(errorCodeNamespace)
+    || !/^[A-Z][A-Z0-9_]{2,80}$/u.test(errorCodeSubject)) {
+    throw compilerError(`formula labeled-value policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const text = parameters[textParameterId];
+  if (typeof text !== "string") {
+    throw compilerError(
+      `labeled value is required ${resource.row_id}:${textParameterId}`,
+      `${errorCodeNamespace}_${errorCodeSubject}_REQUIRED`,
+    );
+  }
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const match = new RegExp(`(?:^|[;,\\s])${escapedLabel}\\s*=\\s*([+-]?\\d+(?:[.,]\\d+)?)`, "iu").exec(text);
+  if (!match) {
+    throw compilerError(
+      `labeled value is required ${resource.row_id}:${label}`,
+      `${errorCodeNamespace}_${errorCodeSubject}_REQUIRED`,
+    );
+  }
+  const expected = Number(match[1]!.replace(",", "."));
+  const actual = Number(evaluateFormulaGraph(formula.ast, formulaParameters));
+  if (!Number.isFinite(expected) || !Number.isFinite(actual)
+    || Math.abs(actual - expected) > absoluteTolerance) {
+    throw compilerError(
+      `formula labeled-value conflict ${resource.row_id}: formula=${actual}; labeled=${expected}`,
+      `${errorCodeNamespace}_${errorCodeSubject}_CONFLICT`,
+    );
+  }
+}
+
 /**
  * Единственный pure business-core компиляции canonical estimate.
  * Node/local и Deno/edge передают только загруженные DB records и hash adapter;
@@ -531,6 +599,13 @@ export async function compileCanonicalEstimateCore(
     overrides.delete(resource.row_id);
     const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
     validateConditionalPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
+    validateFormulaLabeledValueConsistencyPolicy(
+      resource,
+      formula,
+      formulaParameters,
+      parameters,
+      definitionParameterIds,
+    );
     const missingFormulaParameterIds = formula.input_parameter_ids.filter((parameterId) => {
       const value = formulaParameters[parameterId];
       return value === undefined || value === null || value === "";

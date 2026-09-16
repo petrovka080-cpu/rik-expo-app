@@ -673,6 +673,14 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     formulaId: "bia_tn10_gross_wall_geometry_v2",
     procurementEligible: false,
     resourceGraph: {
+      formulaLabeledValueConsistencyPolicyV1: {
+        version: "canonical-formula-labeled-value-consistency:v1",
+        textParameterId: "gross_wall_area_and_opening_deductions",
+        label: "GROSS_M2",
+        absoluteTolerance: 0.000001,
+        errorCodeNamespace: "MASONRY_FULL_SCOPE",
+        errorCodeSubject: "GROSS_GEOMETRY",
+      },
       sourceScheduleParameterIds: [
         "wall_layout_length_m",
         "wall_height_m",

@@ -49,6 +49,11 @@ describe("DB-driven BIA TN 10 conditional quantity policy", () => {
       { dpc_applicable: false, dpc_area_m2: 1 },
       "MASONRY_FULL_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:dpc_area_m2",
     ],
+    [
+      "wall dimensions inconsistent with the stated gross area",
+      { wall_layout_length_m: 41 },
+      "MASONRY_FULL_SCOPE_GROSS_GEOMETRY_CONFLICT",
+    ],
   ])("rejects %s", async (_label, changedParameters, expectedCode) => {
     await expect(compileDbDriven({
       ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
