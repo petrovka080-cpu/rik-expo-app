@@ -14,6 +14,7 @@ import {
 import { useConsumerRepairPhotoCaptureController } from "./useConsumerRepairPhotoCaptureController";
 import { buildStructuredEstimateRequestDraft } from "../../lib/estimateStructuredPipeline/structuredEstimateRequestBinding";
 import {
+  bindConsumerRepairCanonicalArtifactReady,
   listConsumerRepairRequestHistory,
   synchronizeConsumerRepairAuthoritativePhotoAttachments,
   upsertConsumerRepairCanonicalBackendDraft,
@@ -35,6 +36,8 @@ import {
   listCanonicalEstimatePhotoAttachments,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import { logger } from "../../lib/logger";
+import { loadConsumerCanonicalReadyArtifacts } from "./consumerCanonicalArtifactHydration";
 
 const DURABLE_HYDRATION_TIMEOUT_MS = 3_000;
 const canonicalDeepLinkWorkspaceDraftIdsByConsumer = new Map<string, string>();
@@ -402,7 +405,35 @@ export function ConsumerRepairRequestScreen(props: ConsumerRepairRequestScreenPr
                 draftId: bundle.draft.id,
               });
             }
-            return bundle ? await refreshAuthoritativePhotos(bundle, revisionId) : null;
+            let restoredBundle = bundle;
+            if (restoredBundle) {
+              const binding = consumerRepairCanonicalBackendBinding(restoredBundle);
+              if (binding) {
+                try {
+                  const readyArtifacts = await loadConsumerCanonicalReadyArtifacts(binding);
+                  for (const artifact of readyArtifacts) {
+                    restoredBundle = bindConsumerRepairCanonicalArtifactReady({
+                      requestDraftId: restoredBundle.draft.id,
+                      artifact,
+                    });
+                  }
+                  if (readyArtifacts.length > 0) {
+                    await awaitConsumerRepairBundleDurableCommit({
+                      requestDraftId: restoredBundle.draft.id,
+                      expectedStatus: restoredBundle.draft.status,
+                      expectedRevisionId: binding.revisionId,
+                    });
+                  }
+                } catch (error) {
+                  // The estimate itself remains usable if an artifact endpoint is
+                  // temporarily unavailable. Never promote an unverified local file.
+                  logger.warn("ConsumerRepairCanonicalArtifacts", "cold reopen hydration failed", error);
+                }
+              }
+            }
+            return restoredBundle
+              ? await refreshAuthoritativePhotos(restoredBundle, revisionId)
+              : null;
           }}
           onLoadCanonicalParameterSession={(revisionId, requestDraftId) =>
             loadConsumerCanonicalParameterSession({ revisionId, draftId: requestDraftId })}

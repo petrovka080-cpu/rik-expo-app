@@ -7,7 +7,7 @@ import { extractRicsNrm2FormworkCanonicalParametersV1 } from "./formworkRicsNrm2
 
 type Primitive = string | number | boolean;
 
-const CATALOG_IDS = new Set(
+const CATALOG_IDS: ReadonlySet<string> = new Set(
   FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS.map((target) => target.catalogId),
 );
 

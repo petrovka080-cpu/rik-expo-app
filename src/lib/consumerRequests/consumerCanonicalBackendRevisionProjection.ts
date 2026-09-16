@@ -17,6 +17,13 @@ export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
 
 function backendParameterValue(value: unknown): string | number | boolean | null {
+export type ConsumerRepairCanonicalArtifactReadyBinding = {
+  artifactId: string;
+  kind: "pdf" | "procurement";
+  revisionId: string;
+  releaseId: string;
+};
+
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
     ? value
     : null;
@@ -266,4 +273,64 @@ export function canonicalBackendRevisionProjectionForSave(
     || current.boq.rows.length !== bundle.items.length
   ) return null;
   return state;
+}
+
+export function bindCanonicalBackendArtifactToCurrentRevisionProjection(input: {
+  bundle: ConsumerRepairDraftBundle;
+  artifact: ConsumerRepairCanonicalArtifactReadyBinding;
+}): ConsumerRepairDraftBundle {
+  const state = input.bundle.estimateDraftRevisionState;
+  const revision = state?.revisions.find((candidate) =>
+    candidate.revisionId === state.currentRevisionId
+  );
+  const revisionIds = new Set(input.bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+  ));
+  const releaseIds = new Set(input.bundle.items.map((item) =>
+    String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim()
+  ));
+  if (
+    !state || !revision ||
+    input.artifact.revisionId !== state.currentRevisionId ||
+    revisionIds.size !== 1 || !revisionIds.has(input.artifact.revisionId) ||
+    releaseIds.size !== 1 || !releaseIds.has(input.artifact.releaseId)
+  ) {
+    throw new Error("CANONICAL_ARTIFACT_CURRENT_REVISION_IDENTITY_MISMATCH");
+  }
+
+  const artifacts = revision.artifacts;
+  const pdfValidForRevisionId = input.artifact.kind === "pdf"
+    ? revision.revisionId
+    : artifacts.pdfValidForRevisionId ?? null;
+  const procurementValidForRevisionId = input.artifact.kind === "procurement"
+    ? revision.revisionId
+    : artifacts.procurementValidForRevisionId ?? null;
+  const nextArtifacts = {
+    ...artifacts,
+    pdfArtifactId: input.artifact.kind === "pdf"
+      ? input.artifact.artifactId
+      : artifacts.pdfArtifactId,
+    procurementArtifactId: input.artifact.kind === "procurement"
+      ? input.artifact.artifactId
+      : artifacts.procurementArtifactId ?? null,
+    pdfValidForRevisionId,
+    procurementValidForRevisionId,
+    artifactsValidForRevisionId:
+      pdfValidForRevisionId === revision.revisionId &&
+      procurementValidForRevisionId === revision.revisionId
+        ? revision.revisionId
+        : null,
+  };
+
+  return {
+    ...input.bundle,
+    estimateDraftRevisionState: {
+      ...state,
+      revisions: state.revisions.map((candidate) =>
+        candidate.revisionId === revision.revisionId
+          ? { ...candidate, artifacts: nextArtifacts }
+          : candidate
+      ),
+    },
+  };
 }

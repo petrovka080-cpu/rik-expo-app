@@ -184,6 +184,9 @@ export type EstimateDraftRevisionArtifacts = {
   pdfArtifactId: string | null;
   buyerHandoffId: string | null;
   artifactsValidForRevisionId: string | null;
+  procurementArtifactId?: string | null;
+  pdfValidForRevisionId?: string | null;
+  procurementValidForRevisionId?: string | null;
 };
 
 export type EstimateDraftRevisionQuantityBasis = {

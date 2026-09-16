@@ -86,7 +86,11 @@ import type {
 } from "../estimate/canonicalParameters";
 import { getBoundEstimateRevisionCalculationState } from "../ai/estimateRevisions";
 import { ensureExactRoadworksCalculationStateBinding } from "./consumerRequestExactRoadworksCalculationStateMigration";
-import { appendCanonicalBackendRevisionProjection } from "./consumerCanonicalBackendRevisionProjection";
+import {
+  appendCanonicalBackendRevisionProjection,
+  bindCanonicalBackendArtifactToCurrentRevisionProjection,
+  type ConsumerRepairCanonicalArtifactReadyBinding,
+} from "./consumerCanonicalBackendRevisionProjection";
 import type { CanonicalEstimatePhotoAttachmentView } from "../estimate/backendPlatform/contracts";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -99,6 +103,17 @@ type ElectricalCanonicalParameterKey = string;
 type ElectricalCanonicalParameterValue = string | number | boolean;
 
 function canonicalBackendRequired(operation: string): never {
+export function bindConsumerRepairCanonicalArtifactReady(input: {
+  requestDraftId: string;
+  artifact: ConsumerRepairCanonicalArtifactReadyBinding;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  return saveConsumerRepairBundle(bindCanonicalBackendArtifactToCurrentRevisionProjection({
+    bundle,
+    artifact: input.artifact,
+  }));
+}
+
   throw new ConsumerRepairValidationError([{
     code: "CANONICAL_ESTIMATE_BACKEND_REQUIRED",
     messageRu:

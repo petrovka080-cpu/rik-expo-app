@@ -1,6 +1,7 @@
 import type { StructuredEstimatePayload } from "../estimateStructuredPipeline/structuredEstimateTypes";
 import {
   appendCanonicalBackendRevisionProjection,
+  bindCanonicalBackendArtifactToCurrentRevisionProjection,
   canonicalBackendRevisionProjectionForSave,
 } from "./consumerCanonicalBackendRevisionProjection";
 import type { ConsumerRepairDraftBundle } from "./consumerRequestTypes";
@@ -120,6 +121,48 @@ describe("canonical backend revision projection", () => {
     projected.items[0]!.sourceParameters!.canonicalBackendRevisionId = CHILD_ID;
 
     expect(canonicalBackendRevisionProjectionForSave(projected)).toBeNull();
+  });
+
+  test("tracks PDF and procurement readiness separately and seals the pair only for one current revision", () => {
+    const projected = appendCanonicalBackendRevisionProjection({
+      previousBundle: null,
+      nextBundle: bundle(PARENT_ID, 120),
+      payload: payload(PARENT_ID, null, 120),
+    });
+    const withPdf = bindCanonicalBackendArtifactToCurrentRevisionProjection({
+      bundle: projected,
+      artifact: {
+        artifactId: "pdf-artifact",
+        kind: "pdf",
+        revisionId: PARENT_ID,
+        releaseId: RELEASE_ID,
+      },
+    });
+    const pdfArtifacts = withPdf.estimateDraftRevisionState?.revisions[0]?.artifacts;
+    expect(pdfArtifacts).toMatchObject({
+      pdfArtifactId: "pdf-artifact",
+      pdfValidForRevisionId: PARENT_ID,
+      procurementValidForRevisionId: null,
+      artifactsValidForRevisionId: null,
+    });
+
+    const withBoth = bindCanonicalBackendArtifactToCurrentRevisionProjection({
+      bundle: withPdf,
+      artifact: {
+        artifactId: "procurement-artifact",
+        kind: "procurement",
+        revisionId: PARENT_ID,
+        releaseId: RELEASE_ID,
+      },
+    });
+    expect(withBoth.estimateDraftRevisionState?.revisions[0]?.artifacts).toMatchObject({
+      pdfArtifactId: "pdf-artifact",
+      procurementArtifactId: "procurement-artifact",
+      pdfValidForRevisionId: PARENT_ID,
+      procurementValidForRevisionId: PARENT_ID,
+      artifactsValidForRevisionId: PARENT_ID,
+    });
+    expect(canonicalBackendRevisionProjectionForSave(withBoth)?.currentRevisionId).toBe(PARENT_ID);
   });
 
   test("keeps a route-viewer replacement bounded to the requested backend revision", () => {
