@@ -77,6 +77,10 @@ const NORMATIVE_PARAMETER_IDS = new Set<string>(
   REINFORCEMENT_BAR_SCHEDULE_REQUIRED_EXPLICIT_PARAMETER_IDS,
 );
 NORMATIVE_PARAMETER_IDS.add("product_profile_id");
+const REINFORCEMENT_NORM_PACK_SHA256 =
+  "ae22a9ef73c518b292fa8bf1ac4eb448837d30d7e87a3eec5e383891aecef286";
+const PROJECT_SCHEDULE_GUIDE_SHA256 =
+  "99a269e1e5bbd007ff603c2e824bcf09a95bb0b061f4da772121d2b9513fedcd";
 
 export const STRIP_FOUNDATION_REINFORCEMENT_NORMATIVE_PARAMETER_IDS = Object.freeze([
   "product_profile_id",
@@ -135,8 +139,8 @@ readonly StripFoundationReinforcementParameter[] = Object.freeze(PARAMETER_SPECS
           : null,
         guide_version: "strip-foundation-reinforcement-r1",
         source_snapshot_hash: NORMATIVE_PARAMETER_IDS.has(parameterId)
-          ? REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.definition_hash
-          : estimateDeterministicHash("strip-foundation-reinforcement-project-schedule-r1"),
+          ? REINFORCEMENT_NORM_PACK_SHA256
+          : PROJECT_SCHEDULE_GUIDE_SHA256,
         applicability: NORMATIVE_PARAMETER_IDS.has(parameterId)
           ? "Только утверждённая ведомость стержней с чертежом, выбранной таблицей массы и явным составом аксессуаров; это не норма кг/м³ бетона."
           : "Значение относится к конкретной захватке армирования и не выводится из универсальной производительности.",
