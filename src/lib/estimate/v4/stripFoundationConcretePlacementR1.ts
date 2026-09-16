@@ -71,6 +71,26 @@ const TEXT_PARAMETER_IDS = new Set(PARAMETER_SPECS
   .filter(([, , valueType]) => valueType === "text")
   .map(([parameterId]) => parameterId));
 
+export const STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS = Object.freeze([
+  "plan_dimension_concrete_volume_m3",
+  "plan_volume_calculation_reference",
+  "mix_design_or_project_specification_reference",
+  "mixture_designation",
+  "placement_location",
+  "placement_method",
+  "selected_contingency_percent",
+  "contingency_selection_justification",
+  "delivery_schedule_and_truck_capacity",
+  "producer_order_confirmation",
+  "estimator_approval_reference",
+] as const);
+
+const NORMATIVE_PARAMETER_IDS = new Set<string>(
+  STRIP_FOUNDATION_CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS,
+);
+const PROJECT_SCHEDULE_GUIDE_SHA256 =
+  "e2f9581f930330995b67a4fe08cf264756fd3b5b606085062229fd12baf9e437";
+
 export type StripFoundationConcretePlacementParameter = CanonicalEstimateParameterDefinition & {
   ordinal: number;
   unit_id: string | null;
@@ -99,14 +119,48 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
     truth_metadata: {
       contract: "rik-expo-app.strip-foundation-concrete-placement-r1",
       semantic_parameter_key: `strip-foundation-concrete-placement:${parameterId}`,
-      value_source_role: parameterId === "product_profile_id"
-        ? "APPLICABLE_NORM"
+      visibility_role: "USER_INPUT",
+      value_source_role: "PROJECT_SPECIFIC_INPUT",
+      input_origin_class: NORMATIVE_PARAMETER_IDS.has(parameterId)
+        || parameterId === "product_profile_id"
+        ? "SELECTED_NORMATIVE_GUIDANCE_AND_PROJECT_CONFIRMATION"
         : TEXT_PARAMETER_IDS.has(parameterId)
           ? "PROJECT_DOCUMENTATION"
-          : "USER_EXPLICIT",
-      guide_kind: "INLINE_RU",
-      guide_ru: `${titleRu}: укажите подтверждённое проектом или производственной ведомостью значение.`,
+          : "APPROVED_PROJECT_SCHEDULE_OR_SUPPLIER_QUOTE",
+      preliminary_compilation_allowed: false,
+      source_confirmation_required: true,
+      guide: {
+        guide_kind: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? "MANDATORY_NORM_VALUE"
+          : "PROJECT_DEFINED",
+        guide_short_ru: `${titleRu}: укажите подтверждённое проектом или производственной ведомостью значение.`,
+        source_role: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? "NRMCA_CIP31_AND_PROJECT_CONFIRMATION"
+          : "APPROVED_PROJECT_DOCUMENTATION_OR_SUPPLIER_QUOTE",
+        source_document: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID
+          : null,
+        source_locator: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.exact_locator
+          : null,
+        guide_version: "strip-foundation-concrete-placement-r1",
+        source_snapshot_hash: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash
+          : PROJECT_SCHEDULE_GUIDE_SHA256,
+        applicability: NORMATIVE_PARAMETER_IDS.has(parameterId)
+          || parameterId === "product_profile_id"
+          ? "Только заказ товарного бетона по NRMCA CIP 31 при подтверждённом проектном объёме и явно выбранном резерве 4–10%."
+          : "Значение относится к конкретной захватке ленточного фундамента и не выводится из универсальной нормы.",
+        verified_at: "2026-09-16T00:00:00+06:00",
+        guide_validation_policy: "REJECT_MISSING_PROJECT_SCHEDULE_OR_OUTSIDE_NRMCA_CIP31_APPLICABILITY",
+      },
       hidden_default_forbidden: true,
+      synthetic: false,
     },
   }),
 ));
