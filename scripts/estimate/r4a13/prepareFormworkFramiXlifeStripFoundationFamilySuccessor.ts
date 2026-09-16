@@ -7,6 +7,7 @@ import { Client } from "pg";
 
 import {
   FORMWORK_FRAMI_XLIFE_PARAMETERS,
+  FORMWORK_FRAMI_XLIFE_RESOURCES,
   FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
@@ -21,14 +22,14 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-family-complete-estimate.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-family-complete-estimate.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
 const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PREDECESSOR_RELEASE_ID = "722dbe77-537e-54d6-923e-5cf71d2a4b1c";
-const PREDECESSOR_SEARCH_RELEASE_ID = "f91db18a-454f-5db5-9d0c-f2e9bf1ad704";
+const PREDECESSOR_RELEASE_ID = "8909e3eb-e893-5592-b47e-2781396fb90d";
+const PREDECESSOR_SEARCH_RELEASE_ID = "a525282e-2495-5a27-b327-81a38a7d59b3";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
 const TARGETS = FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS;
@@ -106,6 +107,11 @@ function exactDatabaseGuard(): void {
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
+  const expectedRowIds = FORMWORK_FRAMI_XLIFE_RESOURCES.map((resource) => resource.row_id).sort();
+  const expectedProcurementRowIds = FORMWORK_FRAMI_XLIFE_RESOURCES
+    .filter((resource) => resource.procurement_eligible)
+    .map((resource) => resource.row_id)
+    .sort();
   const targets: Json[] = [];
   for (const target of TARGETS) {
     const fixture = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
@@ -119,6 +125,15 @@ async function verifyThroughExistingCore(): Promise<Json> {
       `STOP_FORMWORK_FAMILY_CORE_SCOPE:${target.contextKey}`);
     invariant(compiled.rows.filter((row) => row.included_in_procurement).length === 14,
       `STOP_FORMWORK_FAMILY_CORE_PROCUREMENT:${target.contextKey}`);
+    const actualRowIds = compiled.rows.map((row) => row.row_id).sort();
+    const actualProcurementRowIds = compiled.rows
+      .filter((row) => row.included_in_procurement)
+      .map((row) => row.row_id)
+      .sort();
+    invariant(JSON.stringify(actualRowIds) === JSON.stringify(expectedRowIds),
+      `STOP_FORMWORK_FAMILY_CORE_ROW_SET:${target.contextKey}`);
+    invariant(JSON.stringify(actualProcurementRowIds) === JSON.stringify(expectedProcurementRowIds),
+      `STOP_FORMWORK_FAMILY_CORE_PROCUREMENT_SET:${target.contextKey}`);
     invariant(String(fixture.element_type).includes(target.contextRu),
       `STOP_FORMWORK_FAMILY_CONTEXT_FIXTURE:${target.contextKey}`);
     targets.push({
@@ -127,6 +142,8 @@ async function verifyThroughExistingCore(): Promise<Json> {
       titleRu: target.titleRu,
       rows: compiled.rows.length,
       procurementRows: compiled.rows.filter((row) => row.included_in_procurement).length,
+      rowIds: actualRowIds,
+      procurementRowIds: actualProcurementRowIds,
       deterministicSha256: sha256(compiled),
     });
   }
@@ -378,13 +395,18 @@ async function main(): Promise<void> {
     const targetRows = (await client.query(`select manifest.*,definition.definition_version,
         (select count(*)::int from public.estimate_parameter_definition where definition_version_id=manifest.definition_version_id) parameters,
         (select count(*)::int from public.estimate_formula_graph where definition_version_id=manifest.definition_version_id) formulas,
-        (select count(*)::int from public.estimate_resource_spec where definition_version_id=manifest.definition_version_id) resources
+        (select count(*)::int from public.estimate_resource_spec where definition_version_id=manifest.definition_version_id) resources,
+        (select count(*)::int from public.estimate_work_normative_binding where definition_version_id=manifest.definition_version_id) bindings
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
       where manifest.release_id=$1 and manifest.catalog_id=any($2::text[])`, [
       PREDECESSOR_RELEASE_ID, TARGETS.map((target) => target.catalogId),
     ])).rows as Json[];
     invariant(targetRows.length === TARGETS.length, `STOP_FORMWORK_FAMILY_PREDECESSOR_TARGETS:${targetRows.length}`);
+    invariant(targetRows.every((target) => Number(target.parameters) === 13
+      && Number(target.formulas) === 1 && Number(target.resources) === 2
+      && Number(target.bindings) === 1),
+    `STOP_FORMWORK_FAMILY_PREDECESSOR_TARGET_SHAPE:${JSON.stringify(targetRows)}`);
     const targetByCatalog = new Map(targetRows.map((target) => [String(target.catalog_id), target]));
     const nextCounts = {
       definitions: Number(predecessor.definition_count),
@@ -432,6 +454,7 @@ async function main(): Promise<void> {
             parameters: Number(target.parameters),
             formulas: Number(target.formulas),
             resources: Number(target.resources),
+            bindings: Number(target.bindings),
           })),
         },
         successor: {
@@ -742,6 +765,7 @@ async function main(): Promise<void> {
               parameters: Number(target.parameters),
               formulas: Number(target.formulas),
               resources: Number(target.resources),
+              bindings: Number(target.bindings),
             })),
           },
           successor: {
