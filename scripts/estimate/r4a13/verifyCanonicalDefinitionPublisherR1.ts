@@ -232,6 +232,10 @@ async function main(): Promise<void> {
     negatives.push(await expectedPreflightFailure(client, plan, (copy) => {
       copy.baseline.normative_source_ids = { unexpected: ["unknown-source"] };
     }, "NORMATIVE_SOURCE_CLOSURE"));
+    negatives.push(await expectedPreflightFailure(client, plan, (copy) => {
+      const parameterId = String(Object.keys(copy.baseline.input_values)[0]);
+      copy.baseline.input_classification[parameterId] = "PROJECT_OR_SUPPLIER";
+    }, "BASELINE_PAYLOAD_R54"));
     const preflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
 
     const attempts: CanonicalPublisherJson[] = [];

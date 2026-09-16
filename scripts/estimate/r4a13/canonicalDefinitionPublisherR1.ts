@@ -411,6 +411,19 @@ export async function preflightCanonicalDefinitionPublishPlans(
     invariant(JSON.stringify(actualSourceKeys) === JSON.stringify(expectedSourceKeys),
       `${prefix}:NORMATIVE_SOURCE_CLOSURE:${actualSourceKeys.join(",")}:${expectedSourceKeys.join(",")}`);
 
+    const baselinePayloadValid = (await client.query(`select
+        public.estimate_approved_template_baseline_valid_r54(
+          $1::jsonb,$2::jsonb,$3::jsonb,$4::jsonb,$5::jsonb,$6::jsonb,$7::jsonb) valid`, [
+      jsonb(plan.baseline.input_values, `${prefix}:BASELINE_INPUT_VALUES`, "object"),
+      jsonb(plan.baseline.input_classification, `${prefix}:BASELINE_CLASSIFICATION`, "object"),
+      jsonb(plan.baseline.uom_by_parameter, `${prefix}:BASELINE_UOM`, "object"),
+      jsonb(plan.baseline.formula_consumer_ids, `${prefix}:BASELINE_FORMULA_CONSUMERS`, "object"),
+      jsonb(plan.baseline.resource_consumer_row_ids, `${prefix}:BASELINE_RESOURCE_CONSUMERS`, "object"),
+      jsonb(plan.baseline.normative_source_ids, `${prefix}:BASELINE_NORMATIVE_SOURCES`, "object"),
+      jsonb(plan.baseline.guide_provenance_ru, `${prefix}:BASELINE_GUIDES`, "object"),
+    ])).rows[0]?.valid;
+    invariant(baselinePayloadValid === true, `${prefix}:BASELINE_PAYLOAD_R54`);
+
     invariant(plan.passport.contract_version === CONTENT_PASSPORT_CONTRACT,
       `${prefix}:PASSPORT_CONTRACT_VERSION`);
     invariant(plan.passport.identity_mode === "WORK" && plan.passport.redirect_catalog_id == null,

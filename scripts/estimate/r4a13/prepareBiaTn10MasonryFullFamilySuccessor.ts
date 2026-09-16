@@ -520,7 +520,7 @@ async function main(): Promise<void> {
     input_values: MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
     input_classification: Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
       parameter.parameter_id,
-      NORMATIVE_PARAMETER_IDS.has(parameter.parameter_id) ? "NORMATIVE" : "PROJECT_OR_SUPPLIER",
+      NORMATIVE_PARAMETER_IDS.has(parameter.parameter_id) ? "NORMATIVE" : "VALIDATION_FIXTURE",
     ])),
     uom_by_parameter: Object.fromEntries(MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => [
       parameter.parameter_id, parameter.unit_id,
