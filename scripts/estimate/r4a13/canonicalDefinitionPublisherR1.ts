@@ -320,6 +320,43 @@ function flattenNormativeSourceMap(value: unknown, code: string): string[] {
   return [...new Set(sources)].sort();
 }
 
+export async function resolveCanonicalApprovedBaselineLeaf(
+  client: Client,
+  rootBaselineId: string,
+  expectedCatalogId: string,
+) {
+  const rows = (await client.query(`with recursive lineage as (
+      select baseline.id,baseline.catalog_id,baseline.definition_version_id,
+        baseline.accepted_release_id,0::int depth,array[baseline.id]::uuid[] path
+      from public.estimate_approved_template_baseline baseline where baseline.id=$1
+      union all
+      select child.id,child.catalog_id,child.definition_version_id,
+        child.accepted_release_id,lineage.depth+1,lineage.path||child.id
+      from lineage
+      join public.estimate_approved_template_baseline child on child.supersedes_baseline_id=lineage.id
+      where lineage.depth<100 and not child.id=any(lineage.path)
+    )
+    select lineage.*,
+      (select count(*)::int from public.estimate_approved_template_baseline child
+        where child.supersedes_baseline_id=lineage.id) direct_successor_count
+    from lineage order by lineage.depth`, [rootBaselineId])).rows as CanonicalPublisherJson[];
+  invariant(rows.length > 0, `STOP_CANONICAL_PUBLISHER_BASELINE_ROOT_MISSING:${rootBaselineId}`);
+  invariant(rows.every((row) => row.catalog_id === expectedCatalogId),
+    `STOP_CANONICAL_PUBLISHER_BASELINE_CATALOG_DRIFT:${expectedCatalogId}`);
+  invariant(rows.length <= 100, `STOP_CANONICAL_PUBLISHER_BASELINE_LINEAGE_TOO_DEEP:${expectedCatalogId}`);
+  const leaf = rows.at(-1)!;
+  invariant(Number(leaf.direct_successor_count) === 0,
+    `STOP_CANONICAL_PUBLISHER_BASELINE_LINEAGE_CYCLE:${expectedCatalogId}:${leaf.id}`);
+  return {
+    rootBaselineId,
+    baselineId: String(leaf.id),
+    definitionVersionId: String(leaf.definition_version_id),
+    acceptedReleaseId: String(leaf.accepted_release_id),
+    depth: Number(leaf.depth),
+    path: rows.map((row) => String(row.id)),
+  };
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
@@ -337,6 +374,23 @@ export async function preflightCanonicalDefinitionPublishPlans(
     invariant(isObject(plan.definition.source_metadata), `${prefix}:SOURCE_METADATA_NOT_OBJECT`);
     invariant(plan.definition.content_status === "QUARANTINED"
       && plan.definition.content_gate_status === "RED", `${prefix}:INITIAL_LIFECYCLE`);
+
+    if (plan.baseline.supersedes_baseline_id != null) {
+      const parent = (await client.query(`select baseline.id,baseline.catalog_id,
+          baseline.definition_version_id,
+          (select count(*)::int from public.estimate_approved_template_baseline child
+            where child.supersedes_baseline_id=baseline.id) direct_successor_count
+        from public.estimate_approved_template_baseline baseline where baseline.id=$1`, [
+        plan.baseline.supersedes_baseline_id,
+      ])).rows[0] as CanonicalPublisherJson | undefined;
+      invariant(parent, `${prefix}:BASELINE_PARENT_MISSING:${plan.baseline.supersedes_baseline_id}`);
+      invariant(parent.catalog_id === plan.definition.catalog_id,
+        `${prefix}:BASELINE_PARENT_CATALOG:${parent.catalog_id}`);
+      invariant(parent.definition_version_id === plan.baseline.source_definition_version_id,
+        `${prefix}:BASELINE_SOURCE_DEFINITION:${parent.definition_version_id}`);
+      invariant(Number(parent.direct_successor_count) === 0,
+        `${prefix}:BASELINE_PARENT_ALREADY_HAS_SUCCESSOR:${plan.baseline.supersedes_baseline_id}`);
+    }
 
     invariant(plan.parameters.length === plan.passport.parameter_count, `${prefix}:PARAMETER_COUNT`);
     invariant(plan.formulas.length === plan.passport.formula_count, `${prefix}:FORMULA_COUNT`);

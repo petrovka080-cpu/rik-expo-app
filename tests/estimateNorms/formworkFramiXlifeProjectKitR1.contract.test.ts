@@ -504,6 +504,9 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(sharedPublisher).toContain("estimate_content_passport_r3 passport");
     expect(sharedPublisher).toContain("content_status='CANDIDATE_READY'");
     expect(sharedPublisher).toContain("auditPersistedCanonicalDefinition");
+    expect(sharedPublisher).toContain("resolveCanonicalApprovedBaselineLeaf");
+    expect(sharedPublisher).toContain("BASELINE_PARENT_ALREADY_HAS_SUCCESSOR");
+    expect(sharedPublisher).toContain("direct_successor_count");
 
     for (const publisher of [
       "prepareFormworkFramiXlifePileCapFamilySuccessor.ts",
@@ -519,6 +522,10 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
       expect(source).not.toContain("insert into public.estimate_definition_version");
       expect(source).not.toContain("insert into public.estimate_content_passport_r3");
       expect(source).not.toContain("set content_status='CANDIDATE_READY'");
+      if (publisher === "prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts") {
+        expect(source).toContain("resolveCanonicalApprovedBaselineLeaf");
+        expect(source).toContain("lineageByCatalog");
+      }
     }
   });
 });

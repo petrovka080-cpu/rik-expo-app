@@ -9,6 +9,7 @@ import {
   createCanonicalDefinitionClonePlan,
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
+  resolveCanonicalApprovedBaselineLeaf,
   type CanonicalPublisherJson,
 } from "./canonicalDefinitionPublisherR1";
 
@@ -110,15 +111,26 @@ async function main(): Promise<void> {
       "select * from public.estimate_definition_release where id=$1",
       [SOURCE_RELEASE_ID],
     )).rows[0] as CanonicalPublisherJson;
-    const representative = (await client.query(`select definition.*,manifest.approved_template_baseline_id
+    const manifestRepresentative = (await client.query(`select definition.*,manifest.approved_template_baseline_id
       from public.estimate_cumulative_manifest_entry manifest
       join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
       where manifest.release_id=$1 and manifest.catalog_id=$2`, [
       SOURCE_RELEASE_ID,
       SOURCE_CATALOG_ID,
     ])).rows[0] as CanonicalPublisherJson;
-    invariant(release?.status === "prepared" && representative,
+    invariant(release?.status === "prepared" && manifestRepresentative,
       "STOP_CANONICAL_PUBLISHER_ACCEPTANCE_SOURCE_MISSING");
+    const baselineLeaf = await resolveCanonicalApprovedBaselineLeaf(
+      client,
+      String(manifestRepresentative.approved_template_baseline_id),
+      SOURCE_CATALOG_ID,
+    );
+    const representative = (await client.query(
+      "select * from public.estimate_definition_version where id=$1",
+      [baselineLeaf.definitionVersionId],
+    )).rows[0] as CanonicalPublisherJson;
+    invariant(representative, "STOP_CANONICAL_PUBLISHER_ACCEPTANCE_LINEAGE_DEFINITION_MISSING");
+    representative.approved_template_baseline_id = baselineLeaf.baselineId;
     const parameters = (await client.query(
       "select * from public.estimate_parameter_definition where definition_version_id=$1 order by ordinal",
       [representative.id],

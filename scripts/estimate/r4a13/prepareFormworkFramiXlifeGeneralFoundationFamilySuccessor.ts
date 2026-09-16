@@ -18,6 +18,7 @@ import {
   createCanonicalDefinitionClonePlan,
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
+  resolveCanonicalApprovedBaselineLeaf,
 } from "./canonicalDefinitionPublisherR1";
 
 type Json = Record<string, any>;
@@ -413,6 +414,17 @@ async function main(): Promise<void> {
     ])).rows as Json[];
     invariant(targetRows.length === TARGETS.length, `STOP_FORMWORK_FAMILY_PREDECESSOR_TARGETS:${targetRows.length}`);
     const targetByCatalog = new Map(targetRows.map((target) => [String(target.catalog_id), target]));
+    const lineageByCatalog = new Map<string, Awaited<ReturnType<typeof resolveCanonicalApprovedBaselineLeaf>>>();
+    for (const target of TARGETS) {
+      const old = targetByCatalog.get(target.catalogId);
+      invariant(old, `STOP_FORMWORK_FAMILY_PREDECESSOR_TARGET_MISSING:${target.catalogId}`);
+      const lineage = await resolveCanonicalApprovedBaselineLeaf(
+        client,
+        String(old.approved_template_baseline_id),
+        target.catalogId,
+      );
+      lineageByCatalog.set(target.catalogId, lineage);
+    }
     const nextCounts = {
       definitions: Number(predecessor.definition_count),
       parameters: Number(predecessor.parameter_count),
@@ -469,6 +481,7 @@ async function main(): Promise<void> {
           definitionIds: Object.fromEntries(definitionIds),
           baselineIds: Object.fromEntries(baselineIds),
           nextCounts,
+          lineageLeaves: Object.fromEntries(lineageByCatalog),
         },
         coreAcceptance,
       };
@@ -505,6 +518,7 @@ async function main(): Promise<void> {
       const plannedTargets = [];
       for (const target of TARGETS) {
         const old = targetByCatalog.get(target.catalogId)!;
+        const lineage = lineageByCatalog.get(target.catalogId)!;
         const definitionId = definitionIds.get(target.catalogId)!;
         const baselineId = baselineIds.get(target.catalogId)!;
         const nextDefinitionVersion = Number((await client.query(
@@ -522,6 +536,7 @@ async function main(): Promise<void> {
           contract: CONTRACT,
           target,
           fixture,
+          lineage,
           coreAcceptance: coreAcceptance.targetResults.find(
             (result: Json) => result.catalogId === target.catalogId,
           ),
@@ -552,7 +567,7 @@ async function main(): Promise<void> {
             sourceMetadata: {
               ...representative.source_metadata,
               contract: CONTRACT,
-              predecessorDefinitionId: old.definition_version_id,
+              predecessorDefinitionId: lineage.definitionVersionId,
               representativeDefinitionId: representative.id,
               representativeCatalogId: REPRESENTATIVE_CATALOG_ID,
               acceptanceEvidenceSha256: targetEvidenceSha256,
@@ -585,7 +600,7 @@ async function main(): Promise<void> {
           baseline: {
             id: baselineId,
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
-            sourceDefinitionVersionId: old.definition_version_id,
+            sourceDefinitionVersionId: lineage.definitionVersionId,
             validationScenarioRefs: [{
               scenario: `FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_${target.contextKey.toUpperCase()}`,
               fixture,
@@ -593,7 +608,7 @@ async function main(): Promise<void> {
             }],
             acceptanceEvidenceSha256: targetEvidenceSha256,
             acceptedReleaseId: releaseId,
-            supersedesBaselineId: old.approved_template_baseline_id,
+            supersedesBaselineId: lineage.baselineId,
           },
           passport: {
             physicalResultRu: target.titleRu,
@@ -626,6 +641,7 @@ async function main(): Promise<void> {
         plannedTargets.push({
           target,
           old,
+          lineage,
           definitionId,
           baselineId,
           nextDefinitionVersion,
