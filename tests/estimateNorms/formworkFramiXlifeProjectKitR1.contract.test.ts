@@ -287,6 +287,7 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
         .toHaveLength(craneApplicable ? 14 : 13);
       expect(result.rows.some((row) => row.row_id === "equipment:formwork:crane-handling"))
         .toBe(craneApplicable);
+      expect(target.titleRu).toContain("периметральных рёбер плитного фундамента");
       expect(input.element_type).toContain(target.contextRu);
       expect(input.element_dimensions_and_face_count).toMatch(/проверен|подтвержден/iu);
       projectScheduleFingerprints.add(JSON.stringify({

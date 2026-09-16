@@ -285,7 +285,7 @@ async function cloneSearch(client: Client, input: {
         document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$11||':'||$12,'UTF8'),'sha256'),'hex')
       where search_release_id=$1 and catalog_id=$2`, [
       input.searchReleaseId, target.catalogId, target.titleRu,
-      `Полная проектная смета съёмной опалубки плитного фундамента: ${target.contextRu}; без универсальных коэффициентов комплекта.`,
+      `Полная проектная смета съёмной опалубки периметральных рёбер плитного фундамента: ${target.contextRu}; без универсальных коэффициентов комплекта.`,
       JSON.stringify([
         "измеренная площадь контакта",
         "возвратный комплект Doka Frami Xlife",
@@ -637,7 +637,7 @@ async function main(): Promise<void> {
               catalogId: target.catalogId,
               canonicalRuName: target.titleRu,
               workKey: target.catalogId.split(":").at(-1),
-              physicalResultRu: `Полная проектная смета съёмной опалубки плитного фундамента: ${target.contextRu}`,
+              physicalResultRu: `Полная проектная смета съёмной опалубки периметральных рёбер плитного фундамента: ${target.contextRu}`,
             },
             applicability: {
               ...representative.applicability,
