@@ -90,6 +90,8 @@ const NORMATIVE_PARAMETER_IDS = new Set<string>(
 );
 const PROJECT_SCHEDULE_GUIDE_SHA256 =
   "e2f9581f930330995b67a4fe08cf264756fd3b5b606085062229fd12baf9e437";
+const NRMCA_CIP31_GUIDE_SHA256 =
+  "096bab3bb56d15d109fe9b00c8ec7bea9e09a0451ea198fb73738f0c72a23f14";
 
 export type StripFoundationConcretePlacementParameter = CanonicalEstimateParameterDefinition & {
   ordinal: number;
@@ -150,7 +152,7 @@ readonly StripFoundationConcretePlacementParameter[] = Object.freeze(PARAMETER_S
         guide_version: "strip-foundation-concrete-placement-r1",
         source_snapshot_hash: NORMATIVE_PARAMETER_IDS.has(parameterId)
           || parameterId === "product_profile_id"
-          ? NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA.definition_hash
+          ? NRMCA_CIP31_GUIDE_SHA256
           : PROJECT_SCHEDULE_GUIDE_SHA256,
         applicability: NORMATIVE_PARAMETER_IDS.has(parameterId)
           || parameterId === "product_profile_id"
