@@ -33,6 +33,7 @@ import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate
 import { extractFormworkFramiXlifeCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1";
 import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
 import { extractStripFoundationConcretePlacementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationConcretePlacementProductionBindingR1";
+import { extractStripFoundationReinforcementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
 
@@ -52,6 +53,23 @@ function explicitStripFoundationConcretePlacementPromptInputs(input: {
   prompt: string;
 }): Record<string, CanonicalEstimateParameterInputValue> | null {
   const extracted = extractStripFoundationConcretePlacementCanonicalParametersR1({
+    catalogId: input.catalog.catalogId,
+    text: input.prompt,
+  });
+  if (!extracted) return null;
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
+function explicitStripFoundationReinforcementPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const extracted = extractStripFoundationReinforcementCanonicalParametersR1({
     catalogId: input.catalog.catalogId,
     text: input.prompt,
   });
@@ -400,6 +418,8 @@ export function buildCanonicalBaselinePlan(input: {
   const formworkFramiXlifeInput = explicitFormworkFramiXlifePromptInputs(input);
   const stripFoundationConcretePlacementInput =
     explicitStripFoundationConcretePlacementPromptInputs(input);
+  const stripFoundationReinforcementInput =
+    explicitStripFoundationReinforcementPromptInputs(input);
   const ricsNrm2FormworkInput = formworkFramiXlifeInput == null
     ? explicitRicsNrm2FormworkPromptInputs(input)
     : null;
@@ -408,6 +428,7 @@ export function buildCanonicalBaselinePlan(input: {
     && asphaltDrainageInput == null && formworkFramiXlifeInput == null
     && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null
     && stripFoundationConcretePlacementInput == null
+    && stripFoundationReinforcementInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -426,7 +447,7 @@ export function buildCanonicalBaselinePlan(input: {
     submittedInputs,
     pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput
       ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
-      ?? stripFoundationConcretePlacementInput
+      ?? stripFoundationConcretePlacementInput ?? stripFoundationReinforcementInput
       ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
@@ -441,7 +462,9 @@ export function buildCanonicalBaselinePlan(input: {
             ? "measured_net_brick_wall_area_m2"
             : stripFoundationConcretePlacementInput != null
               ? "plan_dimension_concrete_volume_m3"
-              : userQuantityParameterId
+              : stripFoundationReinforcementInput != null
+                ? "approved_reinforcement_schedule_weight_kg"
+                : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
       .filter((parameter) => parameter.valueType === "decimal" || parameter.valueType === "integer")
