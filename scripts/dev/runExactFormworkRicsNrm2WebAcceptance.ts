@@ -7,6 +7,7 @@ import { Client } from "pg";
 import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
+  formworkFramiXlifeStripFoundationAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 import {
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
@@ -22,6 +23,14 @@ const argValue = (name: string): string | null => {
 const PROFILE_ID = argValue("--profile") ?? "formwork-rics-nrm2";
 const IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE =
   PROFILE_ID === "formwork-frami-xlife-pile-cap-wet-zone";
+const IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-strip-foundation-standard";
+const IS_FRAMI_XLIFE_FULL = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+  || IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD;
+const FRAMI_STRIP_STANDARD_INPUT = formworkFramiXlifeStripFoundationAcceptanceInputR1("standard");
+const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? FRAMI_STRIP_STANDARD_INPUT
+  : FORMWORK_FRAMI_XLIFE_EXACT_INPUT;
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
 const IS_BIA_TN10_MASONRY = PROFILE_ID === "bia-tn10-masonry";
 const IS_RICS_NRM2_WET_ZONE = PROFILE_ID === "formwork-rics-nrm2-wet-zone";
@@ -37,8 +46,9 @@ const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? "50739ecf-b47f-5294-96d8-503c00d92200"
+const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? "c8162da2-0487-5363-a6be-f72401eb8934"
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "50739ecf-b47f-5294-96d8-503c00d92200"
   : IS_BIA_TN10_MASONRY
   ? "8909e3eb-e893-5592-b47e-2781396fb90d"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -52,8 +62,9 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
           : "01f008d7-e290-5237-bf6b-c71c829c04d2");
-const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? "bab13b8a-90f4-5236-bf90-03a631793994"
+const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? "6e7799db-5cc0-57a9-8fb5-dca5101dd0b7"
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "bab13b8a-90f4-5236-bf90-03a631793994"
   : IS_BIA_TN10_MASONRY
   ? "a525282e-2495-5a27-b327-81a38a7d59b3"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -67,8 +78,9 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PIL
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "16217704-4a47-5138-a19b-dae1e8301e82"
           : "db513288-1307-5cd8-9bbe-e625f2841074");
-const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
+const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? "8afc46e8-44ba-5b07-b234-3a88cd9b0c0b"
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
   : IS_BIA_TN10_MASONRY
   ? "7237aa95-be0f-5b6d-a638-5f06b9381749"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -82,8 +94,10 @@ const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WE
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "1bc4c42c-dd69-5534-af66-7f9e2e300830"
           : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd");
-const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
+const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard"
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+    ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
   : IS_BIA_TN10_MASONRY
   ? "canonical-work:base:masonry_interior_brick_wall_lay_standard"
   : IS_NRMCA_STRIP_FOUNDATION
@@ -97,21 +111,21 @@ const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
           : "canonical-work:base:concrete_foundation_interior_formwork_form_standard");
-const ROW_ID = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const ROW_ID = IS_FRAMI_XLIFE_FULL
   ? "equipment:formwork:frami-xlife-panels-rental"
   : IS_BIA_TN10_MASONRY
   ? "material:bia-tn10:fired-clay-brick"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "main_concrete"
     : "formwork:rics-nrm2:measured-contact-area:work";
-const SOURCE_ID = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const SOURCE_ID = IS_FRAMI_XLIFE_FULL
   ? "src_manufacturer_doka_frami_xlife_foundation_999810202_2023_11"
   : IS_BIA_TN10_MASONRY
   ? "src_professional_norm_pack_masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "src_professional_norm_pack_concrete_nrmca_cip31_selected_contingency_m3_m3_v1"
     : "src_professional_norm_pack_formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1";
-const NORM_ID = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const NORM_ID = IS_FRAMI_XLIFE_FULL
   ? null
   : IS_BIA_TN10_MASONRY
   ? "masonry_bia_tn10_selected_brick_mortar_table_routing_v1"
@@ -129,14 +143,14 @@ const FORMWORK_FULL_SCOPE_GAP_ROW_ID = "formwork:scope:full-composition:prelimin
 const FORMWORK_FULL_SCOPE_PARAMETER_ID = "full_formwork_scope_source_set_id";
 const FORMWORK_FULL_SCOPE_GAP_TITLE_RU =
   "Полный технологический состав опалубки не определён: требуются применимые источники материалов, труда, аренды и доставки";
-const EXPECTED_TITLE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const EXPECTED_TITLE = IS_FRAMI_XLIFE_FULL
   ? "Щиты рамной опалубки Doka Frami Xlife"
   : IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "Бетонная смесь"
     : "Измерение площади контакта опалубки по RICS NRM 2 (не полный состав работ)";
-const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_FULL
   ? EXPECTED_TITLE
   : IS_BIA_TN10_MASONRY
   ? "Обожжённый глиняный кирпич"
@@ -145,8 +159,10 @@ const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
     : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root")!) : resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
-  IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-    ? "web-formwork-frami-xlife-pile-cap-wet-zone-full"
+  IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    ? "web-formwork-frami-xlife-strip-foundation-standard-full"
+    : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+      ? "web-formwork-frami-xlife-pile-cap-wet-zone-full"
     : IS_BIA_TN10_MASONRY
     ? "web-bia-tn10-masonry-full-family"
     : IS_NRMCA_STRIP_FOUNDATION
@@ -161,7 +177,9 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
               ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
             : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? "полный комплект опалубки фундаментной ленты стандартная зона Doka Frami Xlife"
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "полный комплект опалубки ростверка во влажной зоне Doka Frami Xlife"
   : IS_RICS_NRM2_PILE_CAP_WET_ZONE
   ? "устройство опалубки свайного ростверка во влажной зоне"
@@ -288,6 +306,31 @@ const FRAMI_XLIFE_PILE_CAP_DETAILS = [
   "отдельный арендный депозит: не предусмотрен предложением поставщика",
   "отдельная сервисная плата за обслуживание: не предусмотрена: включена в условия возврата",
 ];
+const FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS = (() => {
+  const details = [...FRAMI_XLIFE_PILE_CAP_DETAILS];
+  const overrides: Readonly<Record<number, keyof typeof FRAMI_STRIP_STANDARD_INPUT>> = {
+    2: "project_drawing_reference",
+    3: "element_type",
+    4: "element_dimensions_and_face_count",
+    10: "project_measurement_rule_reference",
+    11: "estimator_approval_reference",
+    12: "project_formwork_layout_reference",
+    13: "system_engineer_approval_reference",
+    14: "foundation_wall_thickness_cm",
+    15: "panel_specification",
+    16: "corner_element_specification",
+    17: "panel_connector_specification",
+    26: "joint_sealing_tape_specification",
+    28: "form_release_agent_specification",
+  };
+  for (const [rawIndex, parameterId] of Object.entries(overrides)) {
+    const index = Number(rawIndex);
+    const detail = details[index]!;
+    const separator = detail.indexOf(":");
+    details[index] = `${detail.slice(0, separator + 1)} ${String(FRAMI_STRIP_STANDARD_INPUT[parameterId])}`;
+  }
+  return details;
+})();
 const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "по NRMCA CIP 31;",
   "длина самой ленты 40 м; ширина самой ленты 0,5 м; высота бетонной ленты 1,5 м;",
@@ -356,8 +399,10 @@ const BIA_TN10_MASONRY_DETAILS = [
   "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
   "quality plan reference: BIA-WALL-QA-001-REV-C",
 ];
-const SELECTED_DETAILS = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? FRAMI_XLIFE_PILE_CAP_DETAILS
+const SELECTED_DETAILS = IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  ? FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS
+  : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+    ? FRAMI_XLIFE_PILE_CAP_DETAILS
   : IS_BIA_TN10_MASONRY
   ? BIA_TN10_MASONRY_DETAILS
   : IS_NRMCA_STRIP_FOUNDATION
@@ -369,7 +414,7 @@ const SELECTED_DETAILS = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
         : IS_RICS_NRM2_PILE_CAP_WET_ZONE
           ? PILE_CAP_FORMWORK_DETAILS
         : FORMWORK_DETAILS;
-const SELECTED_DETAILS_SEPARATOR = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "\n" : " ";
+const SELECTED_DETAILS_SEPARATOR = IS_FRAMI_XLIFE_FULL ? "\n" : " ";
 const PROMPT = [SEARCH_QUERY, ...SELECTED_DETAILS].join(SELECTED_DETAILS_SEPARATOR);
 
 const FORMWORK_FIXTURE: Readonly<Json> = Object.freeze({
@@ -501,8 +546,8 @@ const BIA_TN10_MASONRY_FIXTURE: Readonly<Json> = Object.freeze({
   material_handler_designation: "2.5 t forklift",
   work_platform_designation: "not applicable at 2.5 m wall height",
 });
-const FIXTURE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  ? FORMWORK_FRAMI_XLIFE_EXACT_INPUT
+const FIXTURE = IS_FRAMI_XLIFE_FULL
+  ? FRAMI_BASE_INPUT
   : IS_BIA_TN10_MASONRY
   ? BIA_TN10_MASONRY_FIXTURE
   : IS_NRMCA_STRIP_FOUNDATION
@@ -521,33 +566,35 @@ const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
     : "measured_formwork_contact_area_m2";
 const ORIGINAL_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
 const SENSITIVITY_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
-const ORIGINAL_TARGET_QUANTITY = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const ORIGINAL_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? 336
   : IS_BIA_TN10_MASONRY ? 5_670 : IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
-const SENSITIVITY_TARGET_QUANTITY = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const SENSITIVITY_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? 392
   : IS_BIA_TN10_MASONRY ? 6_300 : IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
-const TARGET_UNIT_ID = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const TARGET_UNIT_ID = IS_FRAMI_XLIFE_FULL
   ? "piece_day"
   : IS_BIA_TN10_MASONRY ? "piece" : IS_NRMCA_STRIP_FOUNDATION ? "m3" : "m2";
-const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_FULL
   ? "frami xlife"
   : IS_BIA_TN10_MASONRY ? "кирпич" : IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
 const SCENARIO_LABEL = IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 const FRAMI_SENSITIVITY_PATCH: Readonly<Json> = Object.freeze(Object.fromEntries(
   Object.entries(FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
-    typeof value === "number" && FORMWORK_FRAMI_XLIFE_EXACT_INPUT[parameterId] !== value
+    typeof value === "number"
+      && (!IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD || parameterId !== "foundation_wall_thickness_cm")
+      && FRAMI_BASE_INPUT[parameterId] !== value
   )),
 ));
 const FRAMI_UI_SENSITIVITY_INPUT: Readonly<Json> = Object.freeze({
-  ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+  ...FRAMI_BASE_INPUT,
   ...FRAMI_SENSITIVITY_PATCH,
 });
 const FRAMI_DURATION_INPUT: Readonly<Json> = Object.freeze({
   ...FRAMI_UI_SENSITIVITY_INPUT,
   rental_duration_days: 21,
 });
-const ACCEPTED_TARGET_QUANTITY = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+const ACCEPTED_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? 588
   : SENSITIVITY_TARGET_QUANTITY;
 
@@ -737,7 +784,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(revision.definitionVersionId === DEFINITION_ID, "REVISION_DEFINITION_DRIFT");
   assertPreliminaryScopeTruth(revision, expectedQuantity);
   invariant(rows.length === Number(revision.rowCount)
-    && (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+    && (IS_FRAMI_XLIFE_FULL
       ? rows.length === 24
       : IS_BIA_TN10_MASONRY ? rows.length === 18 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
   "REVISION_ROW_DENOMINATOR_RED");
@@ -747,7 +794,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(Number(row.quantity) === expectedQuantity && row.unitId === TARGET_UNIT_ID,
     "ROW_QUANTITY_OR_UNIT_RED");
   invariant(row.unitPrice == null && row.amount == null, "UNKNOWN_PRICE_WAS_ZEROED");
-  invariant(IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
+  invariant(IS_FRAMI_XLIFE_FULL || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
     ? row.procurementEligible === true && row.includedInProcurement === true
     : row.procurementEligible === false && row.includedInProcurement === false,
   "TARGET_ROW_PROCUREMENT_TRUTH_RED");
@@ -759,7 +806,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(trace?.source_id === SOURCE_ID && (NORM_ID == null || trace?.norm_id === NORM_ID),
     "NORMALIZED_SOURCE_IDENTITY_RED");
   const resourceGraph = row.calculationTrace?.resourceGraph;
-  if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+  if (IS_FRAMI_XLIFE_FULL) {
     invariant(resourceGraph?.contract === "formwork-frami-xlife-project-kit-r1"
       && resourceGraph?.quantitySource === "APPROVED_PROJECT_SCHEDULE_DIRECT"
       && resourceGraph?.returnable === true
@@ -865,7 +912,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(Number(revision.totals?.unpricedRowCount) > 0
     && Number(revision.totals?.pricedRowCount) === 0,
   "UNKNOWN_PRICE_TOTALS_RED");
-  if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+  if (IS_FRAMI_XLIFE_FULL) {
     invariant(Number(revision.totals?.includedRowCount) === 17
       && Number(revision.totals?.excludedRowCount) === 7
       && Number(revision.totals?.unpricedRowCount) === 17,
@@ -1019,7 +1066,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
         && expandedBody.includes("Доставка выбранного обожжённого глиняного кирпича на объект")
         && expandedBody.includes("Вывоз отходов резки и боя кирпичной кладки"),
       "COLD_REOPEN_FULL_MASONRY_EQUIPMENT_SERVICE_LOGISTICS_RED");
-    } else if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+    } else if (IS_FRAMI_XLIFE_FULL) {
       const positionsPanel = page.getByTestId("request-estimate-positions-panel");
       const positionsToggle = page.getByTestId("request-estimate-positions-toggle");
       if (!await positionsPanel.isVisible().catch(() => false)
@@ -1043,7 +1090,7 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       rowTitleVisible: true,
       expectedQuantity: ACCEPTED_TARGET_QUANTITY,
       expectedQuantityVisible: true,
-      oldFactorVisible: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+      oldFactorVisible: IS_FRAMI_XLIFE_FULL
         || IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY ? null : false,
       preliminaryScopeGapVisible: IS_RICS_NRM2_FORMWORK ? true : null,
       screenshot,
@@ -1210,12 +1257,12 @@ async function main(): Promise<void> {
       if (await showMore.isVisible().catch(() => false)) await showMore.click();
     }
     await areaChip.waitFor({ state: "visible", timeout: 60_000 });
-    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+    if (IS_FRAMI_XLIFE_FULL) {
       await expandFilledParameters(page);
     }
     const areaInput = areaChip.getByTestId("editable-param-popover-input");
     await areaInput.fill(String(SENSITIVITY_PRIMARY_VALUE));
-    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+    if (IS_FRAMI_XLIFE_FULL) {
       for (const [parameterId, value] of Object.entries(FRAMI_SENSITIVITY_PATCH)) {
         if (parameterId === PRIMARY_MEASURE_PARAMETER_ID) continue;
         const chip = page.getByTestId(`editable-param-chip-${parameterId}`);
@@ -1245,7 +1292,7 @@ async function main(): Promise<void> {
     invariant(recalculateResponse.status() === 202, `SENSITIVITY_HTTP_${recalculateResponse.status()}`);
     sensitivityRevision = await waitForSuccessfulRevision(authorization, recalculateAccepted);
     invariant(sensitivityRevision.parentRevisionId === preparedRevision.revisionId, "SENSITIVITY_PARENT_DRIFT");
-    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+    if (IS_FRAMI_XLIFE_FULL) {
       const mismatches = Object.entries(FRAMI_UI_SENSITIVITY_INPUT)
         .filter(([parameterId, value]) => typeof value === "number"
           ? Number(sensitivityRevision.parameters?.[parameterId]) !== value
@@ -1271,7 +1318,7 @@ async function main(): Promise<void> {
     await page.screenshot({ path: sensitivityScreenshot, fullPage: true });
 
     let durationScreenshot: string | null = null;
-    if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+    if (IS_FRAMI_XLIFE_FULL) {
       const rentalChip = page.getByTestId("editable-param-chip-rental_duration_days");
       if (!await rentalChip.isVisible().catch(() => false)) {
         const toggle = page.getByTestId("request-estimate-parameters-toggle");
@@ -1321,7 +1368,7 @@ async function main(): Promise<void> {
     const afterRows = Array.isArray(historyAfter.revisions) ? historyAfter.revisions as Json[] : [];
     invariant(initialRevision.revisionId === preparedRevision.revisionId,
       "WEB_PREPARE_REQUIRED_HIDDEN_API_RECALCULATION");
-    const expectedNewRevisionCount = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? 3 : 2;
+    const expectedNewRevisionCount = IS_FRAMI_XLIFE_FULL ? 3 : 2;
     invariant(afterRows.length === beforeRows.length + expectedNewRevisionCount,
       `HISTORY_DELTA_${afterRows.length - beforeRows.length}_EXPECTED_${expectedNewRevisionCount}`);
     invariant(afterRows.some((entry) => entry.revisionId === preparedRevision.revisionId)
@@ -1342,7 +1389,19 @@ async function main(): Promise<void> {
   const activeAuthorization = authorization || apiAuthorization;
   const acceptedRevision = durationRevision ?? sensitivityRevision!;
   const negativeScenarios: { scenarioId: string; parameters: Json; expectedErrorCode: string | null }[] =
-    IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+    IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+      ? [
+        { scenarioId: "crane-not-applicable-with-hours",
+          expectedErrorCode: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
+          parameters: { ...acceptedRevision.parameters,
+            crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING" } },
+        { scenarioId: "crane-rental-without-hours",
+          expectedErrorCode: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
+          parameters: { ...acceptedRevision.parameters, crane_hours: 0 } },
+        { scenarioId: "missing-approved-layout", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
+          parameters: { ...acceptedRevision.parameters, project_formwork_layout_reference: null } },
+      ]
+      : IS_FRAMI_XLIFE_FULL
       ? [
         { scenarioId: "wrong-formwork-system", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
           parameters: { ...acceptedRevision.parameters,
@@ -1409,13 +1468,13 @@ async function main(): Promise<void> {
     buildArtifact(activeAuthorization, acceptedRevision, "procurement"),
   ]);
   const sensitivityRowCount = Number(acceptedRevision.rowCount);
-  const expectedPdfProjectedRowCount = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+  const expectedPdfProjectedRowCount = IS_FRAMI_XLIFE_FULL
     ? 24
     : sensitivityRowCount + (IS_RICS_NRM2_FORMWORK ? 1 : 0);
   invariant(Number(pdf.metadata?.sourceRowCount) === sensitivityRowCount
     && Number(pdf.metadata?.projectedRowCount) === expectedPdfProjectedRowCount
     && pdf.metadata?.grandTotalStatus === "PARTIAL_NEEDS_PRICE", "PDF_UNKNOWN_PRICE_TRUTH_RED");
-  const expectedProcurementTruth = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+  const expectedProcurementTruth = IS_FRAMI_XLIFE_FULL
     ? Number(procurement.metadata?.selectedProcurementRowCount) === 14
       && Number(procurement.metadata?.projectedRowCount) === 14
     : IS_NRMCA_STRIP_FOUNDATION || IS_BIA_TN10_MASONRY
@@ -1428,7 +1487,7 @@ async function main(): Promise<void> {
         || Number(procurement.projection?.preliminaryNeedsExcludedCount) === 1);
   invariant(Number(procurement.metadata?.sourceRowCount) === sensitivityRowCount
     && expectedProcurementTruth, "PROCUREMENT_ROW_TRUTH_RED");
-  if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
+  if (IS_FRAMI_XLIFE_FULL) {
     const procurementRows = Array.isArray(procurement.projection?.rows)
       ? procurement.projection.rows as Json[]
       : [];
@@ -1496,8 +1555,10 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-full.web-acceptance.v1"
+    schemaVersion: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+        ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-full.web-acceptance.v1"
       : IS_BIA_TN10_MASONRY
       ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-full-applicable-estimate.web-acceptance.v2"
       : IS_NRMCA_STRIP_FOUNDATION
@@ -1512,8 +1573,10 @@ async function main(): Promise<void> {
                 ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v2"
               : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v2",
     capturedAt: new Date().toISOString(),
-    status: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PILE_CAP_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+    status: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+        ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PILE_CAP_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_BIA_TN10_MASONRY
       ? "GREEN_EXACT_BIA_TN10_MASONRY_FULL_APPLICABLE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_NRMCA_STRIP_FOUNDATION
@@ -1538,7 +1601,7 @@ async function main(): Promise<void> {
     principal: { userId, realLocalProviderSession: true, tokensPersisted: false },
     search: searchEvidence!,
     promptSha256: sha256(PROMPT),
-    semanticScope: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
+    semanticScope: IS_FRAMI_XLIFE_FULL
       ? {
         estimateLevel: "FULL_APPLICABLE_ESTIMATE",
         scopeMode: "EXPLICIT_PROJECT_SCHEDULE",
@@ -1548,6 +1611,9 @@ async function main(): Promise<void> {
         procurementRowCount: 14,
         preliminaryScopeNeedCount: 0,
         areaDerivedKitQuantities: false,
+        familyContext: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+          ? "strip_foundation_standard"
+          : "pile_cap_wet_zone",
       }
       : IS_BIA_TN10_MASONRY
         ? {
@@ -1602,7 +1668,7 @@ async function main(): Promise<void> {
       procurement: { artifactId: procurement.artifactId, revisionId: procurement.revisionId,
         byteSize: procurement.byteSize, sha256: procurement.sha256,
         selectedProcurementRowCount: procurement.metadata?.selectedProcurementRowCount,
-        projection: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE || IS_BIA_TN10_MASONRY
+        projection: IS_FRAMI_XLIFE_FULL || IS_BIA_TN10_MASONRY
           ? procurement.projection
           : undefined,
         downloadParity: true },
