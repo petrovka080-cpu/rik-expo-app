@@ -75,6 +75,59 @@ export const FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS = Object.freeze([
 export type FormworkFramiXlifePileCapContextKey =
   (typeof FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS)[number]["contextKey"];
 
+export const FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_high_load",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_large_area",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife на большой площади",
+    contextRu: "большая площадь",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_repair",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife при локальном ремонте основания",
+    contextRu: "локальный ремонт основания",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_small_area",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife на малой площади",
+    contextRu: "малая площадь",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_technical_room",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife в техническом помещении",
+    contextRu: "техническое помещение",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_wet_zone",
+    titleRu: "Съёмная опалубка ленточного фундамента Doka Frami Xlife во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifeStripFoundationContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS)[number]["contextKey"];
+
+export const FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS = Object.freeze([
+  ...FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
+] as const);
+
 type TechnologySource = {
   source_id: string;
   title: string;
@@ -1040,12 +1093,40 @@ export function formworkFramiXlifePileCapAcceptanceInputR1(
   });
 }
 
+export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
+  contextKey: FormworkFramiXlifeStripFoundationContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_STRIP_FOUNDATION_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  return Object.freeze({
+    ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+    project_drawing_reference: `ACCEPTANCE-FW-SF-${referenceKey}-001-REV-A`,
+    element_type: `Монолитный ленточный фундамент; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      "Ленточный фундамент общей длиной 62,5 м, высотой 0,8 м; измерены две вертикальные грани; итог 100 м²",
+    project_measurement_rule_reference:
+      `RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-SF-${referenceKey}-001-REV-A`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-SF-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: `ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-SF-${referenceKey}-001-REV-A`,
+    panel_specification:
+      `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+    corner_element_specification:
+      `Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+    panel_connector_specification:
+      `Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+  });
+}
+
 export async function compileFormworkFramiXlifeProjectKitR1(
   submittedParameters: Record<string, unknown>,
   options: Readonly<{ catalogId?: string }> = {},
 ): Promise<CanonicalEstimateCompileCoreResult> {
   const catalogId = options.catalogId ?? FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID;
-  if (!FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.some((target) => target.catalogId === catalogId)) {
+  if (!FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
     throw new Error(`FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED:${catalogId}`);
   }
   return compileCanonicalEstimateCore({

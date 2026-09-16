@@ -18,9 +18,11 @@ import {
   FORMWORK_FRAMI_XLIFE_RESOURCES,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
+  FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
   formworkFramiXlifePileCapAcceptanceInputR1,
+  formworkFramiXlifeStripFoundationAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 
 function rowById(rows: readonly Record<string, unknown>[], rowId: string): Record<string, unknown> {
@@ -210,8 +212,25 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     }
     await expect(compileFormworkFramiXlifeProjectKitR1(
       { ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT },
-      { catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard" },
+      { catalogId: "canonical-work:base:concrete_foundation_interior_slab_form_standard" },
     )).rejects.toThrow("FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED");
+  });
+
+  test("reuses the same core and explicit schedule contract for all seven strip-foundation contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS).toHaveLength(7);
+    for (const target of FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS) {
+      const input = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
+      const result = await compileFormworkFramiXlifeProjectKitR1(
+        { ...input },
+        { catalogId: target.catalogId },
+      );
+      expect(result.revisionProjection.catalogId).toBe(target.catalogId);
+      expect(result.rows).toHaveLength(24);
+      expect(result.preliminaryNeeds).toHaveLength(0);
+      expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
+      expect(input.element_type).toContain(target.contextRu);
+      expect(input.element_dimensions_and_face_count).toContain("62,5 м");
+    }
   });
 
   test.each([
@@ -263,6 +282,22 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
     expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
     expect(source).toContain("representativeDefinitionId");
+    expect(source).toContain('activationPerformed: false');
+    expect(source).toContain('deployPerformed: false');
+    expect(source).toContain('otaPerformed: false');
+    expect(source).not.toContain("estimate_runtime_pointer");
+    expect(source).not.toContain("estimate_search_runtime_pointer");
+    expect(source).not.toContain("status='active'");
+  });
+
+  test("strip-foundation family publisher reuses the same calculation owner and remains local-only", () => {
+    const source = readFileSync(resolve(
+      process.cwd(),
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeStripFoundationFamilySuccessor.ts",
+    ), "utf8");
+    expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
+    expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
+    expect(source).toContain("FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS");
     expect(source).toContain('activationPerformed: false');
     expect(source).toContain('deployPerformed: false');
     expect(source).toContain('otaPerformed: false');
