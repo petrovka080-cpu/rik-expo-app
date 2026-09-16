@@ -171,10 +171,59 @@ export const FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS = Object.freeze([
 export type FormworkFramiXlifeSlabFoundationContextKey =
   (typeof FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS)[number]["contextKey"];
 
+export const FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_standard",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_high_load",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен в зоне высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_large_area",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен на большой площади",
+    contextRu: "большая площадь",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_repair",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен при локальном ремонте",
+    contextRu: "локальный ремонт основания",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_small_area",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен на малой площади",
+    contextRu: "малая площадь",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_technical_room",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен в техническом помещении",
+    contextRu: "техническое помещение",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: "canonical-work:base:concrete_foundation_interior_formwork_form_wet_zone",
+    titleRu: "Съёмная щитовая опалубка Doka Frami Xlife для фундаментных стен во влажной зоне",
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifeGeneralFoundationContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS)[number]["contextKey"];
+
 export const FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS = Object.freeze([
   ...FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
   ...FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   ...FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS,
+  ...FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS,
 ] as const);
 
 type TechnologySource = {
@@ -1195,6 +1244,34 @@ export function formworkFramiXlifeSlabFoundationAcceptanceInputR1(
       `Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-${referenceKey}-001-REV-A`,
     panel_connector_specification:
       `Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-${referenceKey}-001-REV-A`,
+  });
+}
+
+export function formworkFramiXlifeGeneralFoundationAcceptanceInputR1(
+  contextKey: FormworkFramiXlifeGeneralFoundationContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_GENERAL_FOUNDATION_CONTEXT_UNSUPPORTED:${contextKey}`);
+  const referenceKey = contextKey.toUpperCase();
+  return Object.freeze({
+    ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+    project_drawing_reference: `ACCEPTANCE-FW-GEN-${referenceKey}-001-REV-A`,
+    element_type: `Монолитная фундаментная стенка; ${target.contextRu}; приёмочный тестовый проект`,
+    element_dimensions_and_face_count:
+      "Фундаментная стенка длиной 62,5 м, высотой 0,8 м; измерены две вертикальные грани; итог 100 м²",
+    project_measurement_rule_reference:
+      `RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-GEN-${referenceKey}-001-REV-A`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-GEN-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: `ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-GEN-${referenceKey}-001-REV-A`,
+    panel_specification:
+      `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
+    corner_element_specification:
+      `Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
+    panel_connector_specification:
+      `Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-GEN-${referenceKey}-001-REV-A`,
   });
 }
 
