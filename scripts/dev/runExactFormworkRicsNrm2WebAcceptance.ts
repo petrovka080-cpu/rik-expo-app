@@ -7,7 +7,9 @@ import { Client } from "pg";
 import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
+  formworkFramiXlifeSlabFoundationAcceptanceInputR1,
   formworkFramiXlifeStripFoundationAcceptanceInputR1,
+  type FormworkFramiXlifeInputValue,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 import {
   MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
@@ -25,12 +27,42 @@ const IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE =
   PROFILE_ID === "formwork-frami-xlife-pile-cap-wet-zone";
 const IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD =
   PROFILE_ID === "formwork-frami-xlife-strip-foundation-standard";
+const IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-slab-foundation-standard";
 const IS_FRAMI_XLIFE_FULL = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
-  || IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD;
+  || IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+  || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD;
 const FRAMI_STRIP_STANDARD_INPUT = formworkFramiXlifeStripFoundationAcceptanceInputR1("standard");
-const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? FRAMI_STRIP_STANDARD_INPUT
-  : FORMWORK_FRAMI_XLIFE_EXACT_INPUT;
+const FRAMI_SLAB_STANDARD_INPUT = formworkFramiXlifeSlabFoundationAcceptanceInputR1("standard");
+const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? FRAMI_SLAB_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    ? FRAMI_STRIP_STANDARD_INPUT
+    : FORMWORK_FRAMI_XLIFE_EXACT_INPUT;
+const FRAMI_SLAB_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> = Object.freeze({
+  ...FRAMI_SLAB_STANDARD_INPUT,
+  ...Object.fromEntries(Object.entries(FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT)
+    .filter(([parameterId, value]) => typeof value === "number"
+      && parameterId !== "foundation_wall_thickness_cm")),
+  element_dimensions_and_face_count:
+    "Периметральные рёбра плитного фундамента суммарной длиной 75 м и высотой 0,8 м; две вертикальные грани; толщина рёбер и шаг стяжек проверены расчётом SLAB-STANDARD-001-REV-B",
+  project_drawing_reference: "ACCEPTANCE-FW-SLAB-STANDARD-001-REV-B",
+  project_measurement_rule_reference:
+    "RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-SLAB-STANDARD-001-REV-B",
+  estimator_approval_reference: "ACCEPTANCE-EST-FW-SLAB-STANDARD-001-REV-B",
+  project_formwork_layout_reference: "ACCEPTANCE-FW-LAYOUT-SLAB-STANDARD-001-REV-B",
+  system_engineer_approval_reference: "ACCEPTANCE-FW-ENG-SLAB-STANDARD-001-REV-B",
+  panel_specification:
+    "Щит Doka Frami Xlife 0,90×1,50 м по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-STANDARD-001-REV-B",
+  corner_element_specification:
+    "Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-STANDARD-001-REV-B",
+  panel_connector_specification:
+    "Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-STANDARD-001-REV-B",
+});
+const FRAMI_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
+  IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? FRAMI_SLAB_SENSITIVITY_INPUT
+  : FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT;
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
 const IS_BIA_TN10_MASONRY = PROFILE_ID === "bia-tn10-masonry";
 const IS_RICS_NRM2_WET_ZONE = PROFILE_ID === "formwork-rics-nrm2-wet-zone";
@@ -46,8 +78,9 @@ const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? "c8162da2-0487-5363-a6be-f72401eb8934"
+const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? "2f99b3f9-3dba-5ac1-9c77-9e0f79119763"
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "c8162da2-0487-5363-a6be-f72401eb8934"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "50739ecf-b47f-5294-96d8-503c00d92200"
   : IS_BIA_TN10_MASONRY
   ? "8909e3eb-e893-5592-b47e-2781396fb90d"
@@ -62,8 +95,9 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
           : "01f008d7-e290-5237-bf6b-c71c829c04d2");
-const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? "6e7799db-5cc0-57a9-8fb5-dca5101dd0b7"
+const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? "d866c696-b020-5c31-8657-2b2280fe2e8f"
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "6e7799db-5cc0-57a9-8fb5-dca5101dd0b7"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "bab13b8a-90f4-5236-bf90-03a631793994"
   : IS_BIA_TN10_MASONRY
   ? "a525282e-2495-5a27-b327-81a38a7d59b3"
@@ -78,8 +112,9 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_STR
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "16217704-4a47-5138-a19b-dae1e8301e82"
           : "db513288-1307-5cd8-9bbe-e625f2841074");
-const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? "8afc46e8-44ba-5b07-b234-3a88cd9b0c0b"
+const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? "ff1a47c7-d6c5-5f6d-aa1d-5169ccf90a52"
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "8afc46e8-44ba-5b07-b234-3a88cd9b0c0b"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
   : IS_BIA_TN10_MASONRY
   ? "7237aa95-be0f-5b6d-a638-5f06b9381749"
@@ -94,8 +129,10 @@ const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUND
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "1bc4c42c-dd69-5534-af66-7f9e2e300830"
           : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd");
-const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard"
+const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? "canonical-work:base:concrete_foundation_interior_slab_foundation_form_standard"
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    ? "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
     ? "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone"
   : IS_BIA_TN10_MASONRY
@@ -159,8 +196,10 @@ const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_FULL
     : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root")!) : resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
-  IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-    ? "web-formwork-frami-xlife-strip-foundation-standard-full"
+  IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+    ? "web-formwork-frami-xlife-slab-foundation-standard-full"
+    : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+      ? "web-formwork-frami-xlife-strip-foundation-standard-full"
     : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? "web-formwork-frami-xlife-pile-cap-wet-zone-full"
     : IS_BIA_TN10_MASONRY
@@ -177,8 +216,10 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
               ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
             : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? "полный комплект опалубки фундаментной ленты стандартная зона Doka Frami Xlife"
+const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? "полный комплект опалубки периметральных рёбер плитного фундамента стандартная зона Doka Frami Xlife"
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    ? "полный комплект опалубки фундаментной ленты стандартная зона Doka Frami Xlife"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "полный комплект опалубки ростверка во влажной зоне Doka Frami Xlife"
   : IS_RICS_NRM2_PILE_CAP_WET_ZONE
@@ -254,47 +295,50 @@ const PILE_CAP_FORMWORK_DETAILS = [
   "сценарий приёмки: WEB-PREPARE-PILE-CAP-FORMWORK-SAME-RELEASE-V1;",
   "согласование сметчика: EST-PC-FW-149.",
 ];
-const FRAMI_XLIFE_PILE_CAP_DETAILS = [
+function formworkFramiXlifeDetails(
+  input: Readonly<Record<string, FormworkFramiXlifeInputValue>>,
+): string[] {
+  return [
   "Опалубка Doka Frami Xlife по RICS NRM 2",
-  `измеренная площадь контакта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.measured_formwork_contact_area_m2} м²`,
-  `ссылка на чертёж: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.project_drawing_reference}`,
-  `тип элемента: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.element_type}`,
-  `размеры и количество граней: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.element_dimensions_and_face_count}`,
-  `отделка: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.plain_or_special_finish}`,
-  `класс геометрии: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.vertical_battered_horizontal_or_curved_class}`,
-  `стороны опалубки: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.single_or_double_sided_scope}`,
-  `правило проёмов и пустот: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.openings_voids_and_deduction_rule}`,
-  `тип опалубки: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.permanent_or_removable_formwork}`,
-  `правило измерения проекта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.project_measurement_rule_reference}`,
-  `согласование сметчика: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.estimator_approval_reference}`,
-  `утверждённая раскладка щитов и комплектующих: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.project_formwork_layout_reference}`,
-  `согласование раскладки инженером: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.system_engineer_approval_reference}`,
-  `толщина бетонируемого элемента: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.foundation_wall_thickness_cm} см`,
-  `точный тип и размер щита Frami Xlife: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.panel_specification}`,
-  `точный тип углового элемента Frami Xlife: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.corner_element_specification}`,
-  `точный тип соединителя щитов Frami: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.panel_connector_specification}`,
-  `щиты Frami Xlife по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.frami_xlife_panel_count} шт`,
-  `угловые элементы Frami Xlife по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.frami_xlife_corner_element_count} шт`,
-  `соединители щитов Frami по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.frami_clamp_count} шт`,
-  `плоские стяжки Frami 10–80 см по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.flat_tie_rod_10_80_count} шт`,
-  `зажимы плоских стяжек Frami по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.flat_tie_rod_clip_count} шт`,
-  `фундаментные зажимы Frami по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.foundation_clamp_count} шт`,
-  `подкосы для выверки 260 по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.plumbing_strut_260_count} шт`,
-  `перфорированная лента 50×2 мм по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.perforated_tape_50x2_length_m} м`,
-  `точный тип ленты для герметизации стыков: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.joint_sealing_tape_specification}`,
-  `лента для герметизации стыков по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.joint_sealing_tape_length_m} м`,
-  `точный разделительный состав для щитов: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.form_release_agent_specification}`,
-  `разделительный состав по проектной ведомости: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.form_release_agent_l} л`,
-  `приёмка, сортировка и перемещение комплекта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.formwork_handling_worker_h} чел·ч`,
-  `сборка, установка и выверка опалубки: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.assembly_alignment_worker_h} чел·ч`,
-  `распалубка, очистка и подготовка к возврату: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.stripping_cleaning_worker_h} чел·ч`,
-  `проверка раскладки и ведомости инженером: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.layout_review_document_count} документ`,
-  `работа крана на подачу и перестановку: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.crane_hours} маш·ч`,
-  `масса отправляемого комплекта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.shipping_mass_t} т`,
-  `расстояние доставки на объект: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.outbound_distance_km} км`,
-  `расстояние возврата арендного комплекта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.return_distance_km} км`,
-  `срок аренды возвратного комплекта: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.rental_duration_days} суток`,
-  `число этапов установки и перестановки: ${FORMWORK_FRAMI_XLIFE_EXACT_INPUT.project_stage_count} этапа`,
+  `измеренная площадь контакта: ${input.measured_formwork_contact_area_m2} м²`,
+  `ссылка на чертёж: ${input.project_drawing_reference}`,
+  `тип элемента: ${input.element_type}`,
+  `размеры и количество граней: ${input.element_dimensions_and_face_count}`,
+  `отделка: ${input.plain_or_special_finish}`,
+  `класс геометрии: ${input.vertical_battered_horizontal_or_curved_class}`,
+  `стороны опалубки: ${input.single_or_double_sided_scope}`,
+  `правило проёмов и пустот: ${input.openings_voids_and_deduction_rule}`,
+  `тип опалубки: ${input.permanent_or_removable_formwork}`,
+  `правило измерения проекта: ${input.project_measurement_rule_reference}`,
+  `согласование сметчика: ${input.estimator_approval_reference}`,
+  `утверждённая раскладка щитов и комплектующих: ${input.project_formwork_layout_reference}`,
+  `согласование раскладки инженером: ${input.system_engineer_approval_reference}`,
+  `толщина бетонируемого элемента: ${input.foundation_wall_thickness_cm} см`,
+  `точный тип и размер щита Frami Xlife: ${input.panel_specification}`,
+  `точный тип углового элемента Frami Xlife: ${input.corner_element_specification}`,
+  `точный тип соединителя щитов Frami: ${input.panel_connector_specification}`,
+  `щиты Frami Xlife по проектной ведомости: ${input.frami_xlife_panel_count} шт`,
+  `угловые элементы Frami Xlife по проектной ведомости: ${input.frami_xlife_corner_element_count} шт`,
+  `соединители щитов Frami по проектной ведомости: ${input.frami_clamp_count} шт`,
+  `плоские стяжки Frami 10–80 см по проектной ведомости: ${input.flat_tie_rod_10_80_count} шт`,
+  `зажимы плоских стяжек Frami по проектной ведомости: ${input.flat_tie_rod_clip_count} шт`,
+  `фундаментные зажимы Frami по проектной ведомости: ${input.foundation_clamp_count} шт`,
+  `подкосы для выверки 260 по проектной ведомости: ${input.plumbing_strut_260_count} шт`,
+  `перфорированная лента 50×2 мм по проектной ведомости: ${input.perforated_tape_50x2_length_m} м`,
+  `точный тип ленты для герметизации стыков: ${input.joint_sealing_tape_specification}`,
+  `лента для герметизации стыков по проектной ведомости: ${input.joint_sealing_tape_length_m} м`,
+  `точный разделительный состав для щитов: ${input.form_release_agent_specification}`,
+  `разделительный состав по проектной ведомости: ${input.form_release_agent_l} л`,
+  `приёмка, сортировка и перемещение комплекта: ${input.formwork_handling_worker_h} чел·ч`,
+  `сборка, установка и выверка опалубки: ${input.assembly_alignment_worker_h} чел·ч`,
+  `распалубка, очистка и подготовка к возврату: ${input.stripping_cleaning_worker_h} чел·ч`,
+  `проверка раскладки и ведомости инженером: ${input.layout_review_document_count} документ`,
+  `работа крана на подачу и перестановку: ${input.crane_hours} маш·ч`,
+  `масса отправляемого комплекта: ${input.shipping_mass_t} т`,
+  `расстояние доставки на объект: ${input.outbound_distance_km} км`,
+  `расстояние возврата арендного комплекта: ${input.return_distance_km} км`,
+  `срок аренды возвратного комплекта: ${input.rental_duration_days} суток`,
+  `число этапов установки и перестановки: ${input.project_stage_count} этапа`,
   "способ обеспечения возвратного комплекта: аренда с возвратом",
   "способ обеспечения расходных материалов: покупка для проекта",
   "способ привлечения рабочих: отдельная работа подрядчика",
@@ -305,32 +349,11 @@ const FRAMI_XLIFE_PILE_CAP_DETAILS = [
   "компенсационная вставка: не требуется: утверждённая раскладка без зазоров",
   "отдельный арендный депозит: не предусмотрен предложением поставщика",
   "отдельная сервисная плата за обслуживание: не предусмотрена: включена в условия возврата",
-];
-const FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS = (() => {
-  const details = [...FRAMI_XLIFE_PILE_CAP_DETAILS];
-  const overrides: Readonly<Record<number, keyof typeof FRAMI_STRIP_STANDARD_INPUT>> = {
-    2: "project_drawing_reference",
-    3: "element_type",
-    4: "element_dimensions_and_face_count",
-    10: "project_measurement_rule_reference",
-    11: "estimator_approval_reference",
-    12: "project_formwork_layout_reference",
-    13: "system_engineer_approval_reference",
-    14: "foundation_wall_thickness_cm",
-    15: "panel_specification",
-    16: "corner_element_specification",
-    17: "panel_connector_specification",
-    26: "joint_sealing_tape_specification",
-    28: "form_release_agent_specification",
-  };
-  for (const [rawIndex, parameterId] of Object.entries(overrides)) {
-    const index = Number(rawIndex);
-    const detail = details[index]!;
-    const separator = detail.indexOf(":");
-    details[index] = `${detail.slice(0, separator + 1)} ${String(FRAMI_STRIP_STANDARD_INPUT[parameterId])}`;
-  }
-  return details;
-})();
+  ];
+}
+const FRAMI_XLIFE_PILE_CAP_DETAILS = formworkFramiXlifeDetails(FORMWORK_FRAMI_XLIFE_EXACT_INPUT);
+const FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_STRIP_STANDARD_INPUT);
+const FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_SLAB_STANDARD_INPUT);
 const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "по NRMCA CIP 31;",
   "длина самой ленты 40 м; ширина самой ленты 0,5 м; высота бетонной ленты 1,5 м;",
@@ -399,8 +422,10 @@ const BIA_TN10_MASONRY_DETAILS = [
   "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
   "quality plan reference: BIA-WALL-QA-001-REV-C",
 ];
-const SELECTED_DETAILS = IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  ? FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS
+const SELECTED_DETAILS = IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  ? FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS
+  : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    ? FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
     ? FRAMI_XLIFE_PILE_CAP_DETAILS
   : IS_BIA_TN10_MASONRY
@@ -567,10 +592,11 @@ const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
 const ORIGINAL_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
 const SENSITIVITY_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
 const ORIGINAL_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
-  ? 336
+  ? Number(FRAMI_BASE_INPUT.frami_xlife_panel_count) * Number(FRAMI_BASE_INPUT.rental_duration_days)
   : IS_BIA_TN10_MASONRY ? 5_670 : IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
 const SENSITIVITY_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
-  ? 392
+  ? Number(FRAMI_SENSITIVITY_INPUT.frami_xlife_panel_count)
+    * Number(FRAMI_SENSITIVITY_INPUT.rental_duration_days)
   : IS_BIA_TN10_MASONRY ? 6_300 : IS_NRMCA_STRIP_FOUNDATION ? 64.8 : 120;
 const TARGET_UNIT_ID = IS_FRAMI_XLIFE_FULL
   ? "piece_day"
@@ -580,10 +606,12 @@ const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_FULL
   : IS_BIA_TN10_MASONRY ? "кирпич" : IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
 const SCENARIO_LABEL = IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 const FRAMI_SENSITIVITY_PATCH: Readonly<Json> = Object.freeze(Object.fromEntries(
-  Object.entries(FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
-    typeof value === "number"
-      && (!IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD || parameterId !== "foundation_wall_thickness_cm")
-      && FRAMI_BASE_INPUT[parameterId] !== value
+  Object.entries(FRAMI_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
+    FRAMI_BASE_INPUT[parameterId] !== value
+      && (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+        || (typeof value === "number"
+          && (!IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+            || parameterId !== "foundation_wall_thickness_cm")))
   )),
 ));
 const FRAMI_UI_SENSITIVITY_INPUT: Readonly<Json> = Object.freeze({
@@ -595,7 +623,7 @@ const FRAMI_DURATION_INPUT: Readonly<Json> = Object.freeze({
   rental_duration_days: 21,
 });
 const ACCEPTED_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
-  ? 588
+  ? Number(FRAMI_UI_SENSITIVITY_INPUT.frami_xlife_panel_count) * 21
   : SENSITIVITY_TARGET_QUANTITY;
 
 function invariant(value: unknown, code: string): asserts value {
@@ -813,23 +841,19 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
       && resourceGraph?.universalAreaRateApplied === false
       && resourceGraph?.universalTurnoverFactorApplied === false,
     "FRAMI_PROJECT_SCHEDULE_BINDING_MISSING");
-    const expected = expectedQuantity === ORIGINAL_TARGET_QUANTITY
-      ? {
-        "information:formwork:measured-contact-area": 100,
-        "material:formwork:perforated-tape-50x2": 50,
-        "work:formwork:assemble-install-align": 72,
-        "equipment:formwork:crane-handling": 6,
-        "delivery:formwork:outbound-kit": 60,
-        "delivery:formwork:return-kit": 60,
-      }
-      : {
-        "information:formwork:measured-contact-area": 120,
-        "material:formwork:perforated-tape-50x2": 60,
-        "work:formwork:assemble-install-align": 86,
-        "equipment:formwork:crane-handling": 7.2,
-        "delivery:formwork:outbound-kit": 70,
-        "delivery:formwork:return-kit": 70,
-      };
+    const schedule = expectedQuantity === ORIGINAL_TARGET_QUANTITY
+      ? FRAMI_BASE_INPUT
+      : FRAMI_UI_SENSITIVITY_INPUT;
+    const expected = {
+      "information:formwork:measured-contact-area": Number(schedule.measured_formwork_contact_area_m2),
+      "material:formwork:perforated-tape-50x2": Number(schedule.perforated_tape_50x2_length_m),
+      "work:formwork:assemble-install-align": Number(schedule.assembly_alignment_worker_h),
+      "equipment:formwork:crane-handling": Number(schedule.crane_hours),
+      "delivery:formwork:outbound-kit": Number(schedule.shipping_mass_t)
+        * Number(schedule.outbound_distance_km),
+      "delivery:formwork:return-kit": Number(schedule.shipping_mass_t)
+        * Number(schedule.return_distance_km),
+    };
     for (const [rowId, quantity] of Object.entries(expected)) {
       const exact = rows.find((candidate) => candidate.rowId === rowId);
       invariant(exact != null && Number(exact.quantity) === quantity,
@@ -1389,7 +1413,7 @@ async function main(): Promise<void> {
   const activeAuthorization = authorization || apiAuthorization;
   const acceptedRevision = durationRevision ?? sensitivityRevision!;
   const negativeScenarios: { scenarioId: string; parameters: Json; expectedErrorCode: string | null }[] =
-    IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+    IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
       ? [
         { scenarioId: "crane-not-applicable-with-hours",
           expectedErrorCode: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
@@ -1555,8 +1579,10 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-standard-full.web-acceptance.v1"
+    schemaVersion: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-slab-foundation-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+        ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-standard-full.web-acceptance.v1"
       : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
         ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-full.web-acceptance.v1"
       : IS_BIA_TN10_MASONRY
@@ -1573,8 +1599,10 @@ async function main(): Promise<void> {
                 ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v2"
               : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v2",
     capturedAt: new Date().toISOString(),
-    status: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+    status: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+        ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
         ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PILE_CAP_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_BIA_TN10_MASONRY
@@ -1611,9 +1639,11 @@ async function main(): Promise<void> {
         procurementRowCount: 14,
         preliminaryScopeNeedCount: 0,
         areaDerivedKitQuantities: false,
-        familyContext: IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-          ? "strip_foundation_standard"
-          : "pile_cap_wet_zone",
+        familyContext: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+          ? "slab_foundation_standard"
+          : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
+            ? "strip_foundation_standard"
+            : "pile_cap_wet_zone",
       }
       : IS_BIA_TN10_MASONRY
         ? {
