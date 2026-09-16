@@ -50,6 +50,7 @@ type CanonicalDefinitionClonePlanInput = {
     id: string;
     key: string;
     sourceDefinitionVersionId: string;
+    inputValues?: CanonicalPublisherJson;
     validationScenarioRefs: unknown;
     acceptanceEvidenceSha256: string;
     acceptedReleaseId: string;
@@ -182,7 +183,7 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       definition_version_id: input.definition.id,
       source_definition_version_id: input.baseline.sourceDefinitionVersionId,
       parameter_schema_sha256: input.representative.baseline.parameter_schema_sha256,
-      input_values: input.representative.baseline.input_values,
+      input_values: input.baseline.inputValues ?? input.representative.baseline.input_values,
       input_classification: input.representative.baseline.input_classification,
       uom_by_parameter: input.representative.baseline.uom_by_parameter,
       formula_consumer_ids: input.representative.baseline.formula_consumer_ids,

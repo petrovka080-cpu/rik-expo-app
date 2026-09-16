@@ -21,14 +21,14 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-family-complete-estimate.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-distinct-project-family.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
+  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
 );
-const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PREDECESSOR_RELEASE_ID = "a06a3faf-170a-5bdd-ac5f-73b537755930";
-const PREDECESSOR_SEARCH_RELEASE_ID = "a5ed8a79-65d7-5cdd-86a2-e9abe068ffd0";
+const MASTER_SHA256 = "433781e0d4d587d6538fa750e3f0fa5f48be4c76b08de43d7bd8c07541540b24";
+const PREDECESSOR_RELEASE_ID = "ffce7418-e0b2-54df-94b9-45ec442eb651";
+const PREDECESSOR_SEARCH_RELEASE_ID = "84ccfb2b-1c44-550f-9393-409c5a8d3ed1";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
 const TARGETS = FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.filter(
@@ -36,7 +36,7 @@ const TARGETS = FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.filter(
 );
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-pile-cap-family",
+  ".release-runtime/r4a13-6/exact-physical-norm-successors/formwork-frami-xlife-pile-cap-distinct-project-family",
 );
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
@@ -324,7 +324,7 @@ async function main(): Promise<void> {
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const releaseKey = `r4-a13-6-formwork-frami-xlife-pile-cap-family-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-formwork-frami-xlife-pile-cap-distinct-project-${fingerprint.slice(0, 16)}`;
   const definitionIds = new Map(TARGETS.map((target) => [
     target.catalogId,
     uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:definition`),
@@ -344,7 +344,7 @@ async function main(): Promise<void> {
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "r4-a13-6-formwork-frami-xlife-pile-cap-family-successor",
+    application_name: "r4-a13-6-formwork-frami-xlife-pile-cap-distinct-project-successor",
   });
   await client.connect();
   let receipt: Json;
@@ -413,7 +413,7 @@ async function main(): Promise<void> {
         releaseId, TARGETS.map((target) => target.catalogId), [...definitionIds.values()],
       ])).rows[0] as Json;
       receipt = {
-        status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_FAMILY_ALREADY_PREPARED_NOT_ACTIVE",
+        status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_DISTINCT_PROJECT_FAMILY_ALREADY_PREPARED_NOT_ACTIVE",
         idempotent: true,
         successor: { releaseId, searchReleaseId, releaseKey },
         coreAcceptance,
@@ -421,7 +421,7 @@ async function main(): Promise<void> {
       };
     } else if (!APPLY) {
       receipt = {
-        status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_FAMILY_PRECHECK_NO_MUTATION",
+        status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_DISTINCT_PROJECT_FAMILY_PRECHECK_NO_MUTATION",
         idempotent: false,
         predecessor: {
           releaseId: PREDECESSOR_RELEASE_ID,
@@ -561,6 +561,7 @@ async function main(): Promise<void> {
             id: baselineId,
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
             sourceDefinitionVersionId: old.definition_version_id,
+            inputValues: fixture,
             validationScenarioRefs: [{
               scenario: `FORMWORK_FRAMI_XLIFE_PILE_CAP_${target.contextKey.toUpperCase()}`,
               fixture,
@@ -732,7 +733,7 @@ async function main(): Promise<void> {
         ]);
         await client.query("commit");
         receipt = {
-          status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_FAMILY_PREPARED_NOT_ACTIVE",
+          status: "GREEN_FORMWORK_FRAMI_XLIFE_PILE_CAP_DISTINCT_PROJECT_FAMILY_PREPARED_NOT_ACTIVE",
           idempotent: false,
           predecessor: {
             releaseId: PREDECESSOR_RELEASE_ID,
@@ -784,7 +785,7 @@ async function main(): Promise<void> {
   };
   const sealed = { ...body, receiptSha256: sha256(body) };
   if (APPLY && !receipt!.idempotent) {
-    atomicJson(resolve(OUTPUT_ROOT, `01_FORMWORK_FRAMI_XLIFE_PILE_CAP_FAMILY_${head}.json`), sealed);
+    atomicJson(resolve(OUTPUT_ROOT, `01_FORMWORK_FRAMI_XLIFE_PILE_CAP_DISTINCT_PROJECT_FAMILY_${head}.json`), sealed);
     atomicJson(resolve(OUTPUT_ROOT, "acceptance.json"), sealed);
     atomicJson(CURRENT_RELEASE_PATH, {
       ...current,

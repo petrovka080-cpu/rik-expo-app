@@ -202,6 +202,7 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
 
   test("reuses the same core and explicit schedule contract for all seven pile-cap contexts", async () => {
     expect(FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS).toHaveLength(7);
+    const projectScheduleFingerprints = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS) {
       const input = formworkFramiXlifePileCapAcceptanceInputR1(target.contextKey);
       const result = await compileFormworkFramiXlifeProjectKitR1(
@@ -213,7 +214,17 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
       expect(result.preliminaryNeeds).toHaveLength(0);
       expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
       expect(input.element_type).toContain(target.contextRu);
+      expect(input.element_dimensions_and_face_count).toMatch(/подтвержден|проверен|ведомост/iu);
+      projectScheduleFingerprints.add(JSON.stringify({
+        area: input.measured_formwork_contact_area_m2,
+        panels: input.frami_xlife_panel_count,
+        ties: input.flat_tie_rod_10_80_count,
+        craneHours: input.crane_hours,
+        shippingMass: input.shipping_mass_t,
+        stages: input.project_stage_count,
+      }));
     }
+    expect(projectScheduleFingerprints.size).toBe(7);
     await expect(compileFormworkFramiXlifeProjectKitR1(
       { ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT },
       { catalogId: "canonical-work:base:concrete_foundation_interior_slab_form_standard" },
