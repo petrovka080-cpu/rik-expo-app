@@ -1078,6 +1078,61 @@ export const FORMWORK_FRAMI_XLIFE_RESOURCES: readonly CanonicalEstimateResourceD
   }),
 ]);
 
+const STRIP_FOUNDATION_CRANE_APPLICABLE_MODE = "RENTAL_SEPARATE" as const;
+const STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE = "NOT_APPLICABLE_MANUAL_HANDLING" as const;
+
+export function formworkFramiXlifeParametersForCatalogR1(
+  catalogId: string,
+): readonly FormworkFramiXlifeParameter[] {
+  if (!FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
+    return FORMWORK_FRAMI_XLIFE_PARAMETERS;
+  }
+  return FORMWORK_FRAMI_XLIFE_PARAMETERS.map((parameter) => {
+    if (parameter.parameter_id === "crane_supply_mode") {
+      return Object.freeze({
+        ...parameter,
+        constraints_json: {
+          values: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE, STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
+        },
+      });
+    }
+    if (parameter.parameter_id === "crane_hours") {
+      return Object.freeze({ ...parameter, constraints_json: { min: 0 } });
+    }
+    return parameter;
+  });
+}
+
+export function formworkFramiXlifeResourcesForCatalogR1(
+  catalogId: string,
+): readonly CanonicalEstimateResourceDefinition[] {
+  if (!FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
+    return FORMWORK_FRAMI_XLIFE_RESOURCES;
+  }
+  return FORMWORK_FRAMI_XLIFE_RESOURCES.map((resourceDefinition) => {
+    if (resourceDefinition.row_id !== "equipment:formwork:crane-handling") return resourceDefinition;
+    return Object.freeze({
+      ...resourceDefinition,
+      inclusion_ast: {
+        kind: "in",
+        parameterId: "crane_supply_mode",
+        values: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE],
+      },
+      resource_graph: {
+        ...resourceDefinition.resource_graph,
+        conditionalEnumPositiveQuantityPolicyV1: {
+          version: "canonical-conditional-enum-positive-quantity:v1",
+          selectorParameterId: "crane_supply_mode",
+          applicableValues: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE],
+          notApplicableValues: [STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
+          quantityParameterIds: ["crane_hours"],
+          errorCodeNamespace: "FORMWORK_CRANE_SCOPE",
+        },
+      },
+    });
+  });
+}
+
 export const FORMWORK_FRAMI_XLIFE_EXACT_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
   Object.freeze({
     product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
@@ -1199,12 +1254,195 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
   );
   if (!target) throw new Error(`FORMWORK_STRIP_FOUNDATION_CONTEXT_UNSUPPORTED:${contextKey}`);
   const referenceKey = contextKey.toUpperCase();
+  const projectSchedule: Readonly<Record<FormworkFramiXlifeStripFoundationContextKey, Readonly<Record<string, FormworkFramiXlifeInputValue>>>> = {
+    standard: {
+      measured_formwork_contact_area_m2: 100,
+      element_dimensions_and_face_count:
+        "Лента длиной 62,5 м и высотой 0,8 м; две вертикальные грани; давление смеси и шаг стяжек проверены расчётом SF-STANDARD-001",
+      foundation_wall_thickness_cm: 40,
+      frami_xlife_panel_count: 24,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 64,
+      flat_tie_rod_10_80_count: 32,
+      flat_tie_rod_clip_count: 64,
+      foundation_clamp_count: 32,
+      plumbing_strut_260_count: 8,
+      perforated_tape_50x2_length_m: 50,
+      joint_sealing_tape_length_m: 40,
+      form_release_agent_l: 8,
+      formwork_handling_worker_h: 16,
+      assembly_alignment_worker_h: 72,
+      stripping_cleaning_worker_h: 32,
+      crane_hours: 6,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 2.4,
+      outbound_distance_km: 25,
+      return_distance_km: 25,
+      rental_duration_days: 14,
+      project_stage_count: 2,
+    },
+    high_load: {
+      measured_formwork_contact_area_m2: 128,
+      element_dimensions_and_face_count:
+        "Лента длиной 64 м и высотой 1 м; две грани; темп бетонирования, давление свежего бетона и временные нагрузки проверены расчётом SF-HIGH-LOAD-001",
+      foundation_wall_thickness_cm: 60,
+      frami_xlife_panel_count: 32,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 88,
+      flat_tie_rod_10_80_count: 40,
+      flat_tie_rod_clip_count: 80,
+      foundation_clamp_count: 40,
+      plumbing_strut_260_count: 12,
+      perforated_tape_50x2_length_m: 65,
+      joint_sealing_tape_length_m: 52,
+      form_release_agent_l: 10.2,
+      formwork_handling_worker_h: 22,
+      assembly_alignment_worker_h: 96,
+      stripping_cleaning_worker_h: 42,
+      crane_hours: 8,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 3.2,
+      outbound_distance_km: 30,
+      return_distance_km: 30,
+      rental_duration_days: 18,
+      project_stage_count: 3,
+    },
+    large_area: {
+      measured_formwork_contact_area_m2: 240,
+      element_dimensions_and_face_count:
+        "Лента длиной 120 м и высотой 1 м; две грани; шесть захваток и пиковый комплект подтверждены календарно-захваточным планом SF-LARGE-001",
+      foundation_wall_thickness_cm: 50,
+      frami_xlife_panel_count: 54,
+      frami_xlife_corner_element_count: 12,
+      frami_clamp_count: 148,
+      flat_tie_rod_10_80_count: 72,
+      flat_tie_rod_clip_count: 144,
+      foundation_clamp_count: 72,
+      plumbing_strut_260_count: 20,
+      perforated_tape_50x2_length_m: 120,
+      joint_sealing_tape_length_m: 96,
+      form_release_agent_l: 19.2,
+      formwork_handling_worker_h: 40,
+      assembly_alignment_worker_h: 176,
+      stripping_cleaning_worker_h: 76,
+      crane_hours: 15,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 5.8,
+      outbound_distance_km: 42,
+      return_distance_km: 42,
+      rental_duration_days: 28,
+      project_stage_count: 6,
+    },
+    repair: {
+      measured_formwork_contact_area_m2: 36,
+      element_dimensions_and_face_count:
+        "Ремонтные участки суммарной длиной 22,5 м и высотой 0,8 м; две грани; обследование, сопряжения и границы демонтажа подтверждены актом SF-REPAIR-001",
+      foundation_wall_thickness_cm: 35,
+      frami_xlife_panel_count: 14,
+      frami_xlife_corner_element_count: 10,
+      frami_clamp_count: 38,
+      flat_tie_rod_10_80_count: 18,
+      flat_tie_rod_clip_count: 36,
+      foundation_clamp_count: 18,
+      plumbing_strut_260_count: 6,
+      perforated_tape_50x2_length_m: 22,
+      joint_sealing_tape_length_m: 28,
+      form_release_agent_l: 3.5,
+      formwork_handling_worker_h: 12,
+      assembly_alignment_worker_h: 42,
+      stripping_cleaning_worker_h: 20,
+      crane_hours: 0,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 1.4,
+      outbound_distance_km: 18,
+      return_distance_km: 18,
+      rental_duration_days: 10,
+      project_stage_count: 3,
+    },
+    small_area: {
+      measured_formwork_contact_area_m2: 18,
+      element_dimensions_and_face_count:
+        "Лента длиной 15 м и высотой 0,6 м; две грани; минимальный комплект и ручная подача подтверждены планом доступа SF-SMALL-001",
+      foundation_wall_thickness_cm: 30,
+      frami_xlife_panel_count: 8,
+      frami_xlife_corner_element_count: 4,
+      frami_clamp_count: 22,
+      flat_tie_rod_10_80_count: 10,
+      flat_tie_rod_clip_count: 20,
+      foundation_clamp_count: 10,
+      plumbing_strut_260_count: 4,
+      perforated_tape_50x2_length_m: 12,
+      joint_sealing_tape_length_m: 10,
+      form_release_agent_l: 1.8,
+      formwork_handling_worker_h: 7,
+      assembly_alignment_worker_h: 24,
+      stripping_cleaning_worker_h: 11,
+      crane_hours: 0,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 0.8,
+      outbound_distance_km: 15,
+      return_distance_km: 15,
+      rental_duration_days: 7,
+      project_stage_count: 1,
+    },
+    technical_room: {
+      measured_formwork_contact_area_m2: 48,
+      element_dimensions_and_face_count:
+        "Лента длиной 30 м и высотой 0,8 м; две грани; габариты проёмов, масса элементов и ручная подача проверены планом механизации SF-TECH-001",
+      foundation_wall_thickness_cm: 40,
+      frami_xlife_panel_count: 16,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 44,
+      flat_tie_rod_10_80_count: 22,
+      flat_tie_rod_clip_count: 44,
+      foundation_clamp_count: 22,
+      plumbing_strut_260_count: 6,
+      perforated_tape_50x2_length_m: 26,
+      joint_sealing_tape_length_m: 24,
+      form_release_agent_l: 4.2,
+      formwork_handling_worker_h: 18,
+      assembly_alignment_worker_h: 58,
+      stripping_cleaning_worker_h: 26,
+      crane_hours: 0,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 1.6,
+      outbound_distance_km: 20,
+      return_distance_km: 20,
+      rental_duration_days: 12,
+      project_stage_count: 3,
+    },
+    wet_zone: {
+      measured_formwork_contact_area_m2: 96,
+      element_dimensions_and_face_count:
+        "Лента длиной 60 м и высотой 0,8 м; две грани; герметизация стыков, защита и очистка щитов подтверждены планом влажной зоны SF-WET-001",
+      foundation_wall_thickness_cm: 45,
+      frami_xlife_panel_count: 26,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 72,
+      flat_tie_rod_10_80_count: 36,
+      flat_tie_rod_clip_count: 72,
+      foundation_clamp_count: 36,
+      plumbing_strut_260_count: 10,
+      perforated_tape_50x2_length_m: 58,
+      joint_sealing_tape_length_m: 76,
+      form_release_agent_l: 9.5,
+      formwork_handling_worker_h: 20,
+      assembly_alignment_worker_h: 84,
+      stripping_cleaning_worker_h: 40,
+      crane_hours: 7,
+      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 2.8,
+      outbound_distance_km: 28,
+      return_distance_km: 28,
+      rental_duration_days: 16,
+      project_stage_count: 3,
+    },
+  };
   return Object.freeze({
     ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+    ...projectSchedule[contextKey],
     project_drawing_reference: `ACCEPTANCE-FW-SF-${referenceKey}-001-REV-A`,
     element_type: `Монолитный ленточный фундамент; ${target.contextRu}; приёмочный тестовый проект`,
-    element_dimensions_and_face_count:
-      "Ленточный фундамент общей длиной 62,5 м, высотой 0,8 м; измерены две вертикальные грани; итог 100 м²",
     project_measurement_rule_reference:
       `RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-SF-${referenceKey}-001-REV-A`,
     estimator_approval_reference: `ACCEPTANCE-EST-FW-SF-${referenceKey}-001-REV-A`,
@@ -1216,6 +1454,10 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       `Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
     panel_connector_specification:
       `Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+    joint_sealing_tape_specification:
+      `Лента герметизации по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
+    form_release_agent_specification:
+      `Разделительный состав по ведомости ACCEPTANCE-FW-LAYOUT-SF-${referenceKey}-001-REV-A`,
   });
 }
 
@@ -1283,14 +1525,16 @@ export async function compileFormworkFramiXlifeProjectKitR1(
   if (!FORMWORK_FRAMI_XLIFE_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
     throw new Error(`FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED:${catalogId}`);
   }
+  const parameterDefinitions = formworkFramiXlifeParametersForCatalogR1(catalogId);
+  const resourceDefinitions = formworkFramiXlifeResourcesForCatalogR1(catalogId);
   return compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compiler.formwork-frami-xlife-project-kit-r1",
     catalogId,
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
-    parameterDefinitions: [...FORMWORK_FRAMI_XLIFE_PARAMETERS],
+    parameterDefinitions: [...parameterDefinitions],
     formulaDefinitions: [...FORMWORK_FRAMI_XLIFE_FORMULAS],
-    resourceDefinitions: [...FORMWORK_FRAMI_XLIFE_RESOURCES],
+    resourceDefinitions: [...resourceDefinitions],
     submittedParameters,
     confirmedParameters: {},
     currencyCode: "KGS",

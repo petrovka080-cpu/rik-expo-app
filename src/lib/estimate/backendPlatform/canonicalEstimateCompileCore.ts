@@ -408,6 +408,94 @@ function validateConditionalPositiveQuantityPolicy(
   }
 }
 
+function validateConditionalEnumPositiveQuantityPolicy(
+  resource: CanonicalEstimateResourceDefinition,
+  formula: CanonicalEstimateFormulaDefinition,
+  parameters: Readonly<Record<string, unknown>>,
+  definitionParameterIds: ReadonlySet<string>,
+): void {
+  const rawPolicy = resource.resource_graph?.conditionalEnumPositiveQuantityPolicyV1;
+  if (rawPolicy == null) return;
+  if (!rawPolicy || typeof rawPolicy !== "object" || Array.isArray(rawPolicy)) {
+    throw compilerError(`conditional enum quantity policy invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const policy = rawPolicy as JsonRecord;
+  const allowedKeys = new Set([
+    "version",
+    "selectorParameterId",
+    "applicableValues",
+    "notApplicableValues",
+    "quantityParameterIds",
+    "errorCodeNamespace",
+  ]);
+  if (Object.keys(policy).some((key) => !allowedKeys.has(key))
+    || policy.version !== "canonical-conditional-enum-positive-quantity:v1") {
+    throw compilerError(`conditional enum quantity policy contract invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const selectorParameterId = typeof policy.selectorParameterId === "string"
+    ? policy.selectorParameterId.trim()
+    : "";
+  const applicableValues = Array.isArray(policy.applicableValues)
+    ? policy.applicableValues.map((value) => typeof value === "string" ? value.trim() : "")
+    : [];
+  const notApplicableValues = Array.isArray(policy.notApplicableValues)
+    ? policy.notApplicableValues.map((value) => typeof value === "string" ? value.trim() : "")
+    : [];
+  const quantityParameterIds = Array.isArray(policy.quantityParameterIds)
+    ? policy.quantityParameterIds.map((value) => typeof value === "string" ? value.trim() : "")
+    : [];
+  const errorCodeNamespace = typeof policy.errorCodeNamespace === "string"
+    ? policy.errorCodeNamespace.trim()
+    : "";
+  const inclusionAst = resource.inclusion_ast as JsonRecord;
+  const selectorValues = [...applicableValues, ...notApplicableValues];
+  if (!selectorParameterId
+    || !definitionParameterIds.has(selectorParameterId)
+    || applicableValues.length === 0 || notApplicableValues.length === 0
+    || selectorValues.some((value) => !value)
+    || new Set(selectorValues).size !== selectorValues.length
+    || inclusionAst?.kind !== "in"
+    || inclusionAst?.parameterId !== selectorParameterId
+    || JSON.stringify(inclusionAst.values) !== JSON.stringify(applicableValues)
+    || quantityParameterIds.length === 0 || quantityParameterIds.length > 8
+    || quantityParameterIds.some((parameterId) => !parameterId
+      || !definitionParameterIds.has(parameterId)
+      || !formula.input_parameter_ids.includes(parameterId))
+    || new Set(quantityParameterIds).size !== quantityParameterIds.length
+    || !/^[A-Z][A-Z0-9_]{2,80}$/u.test(errorCodeNamespace)) {
+    throw compilerError(`conditional enum quantity policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const selector = parameters[selectorParameterId];
+  if (typeof selector !== "string" || !selectorValues.includes(selector)) {
+    throw compilerError(
+      `conditional enum selector is required ${resource.row_id}:${selectorParameterId}`,
+      `${errorCodeNamespace}_SELECTOR_REQUIRED:${selectorParameterId}`,
+    );
+  }
+  const applicable = applicableValues.includes(selector);
+  for (const quantityParameterId of quantityParameterIds) {
+    const quantity = Number(parameters[quantityParameterId]);
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      throw compilerError(
+        `conditional enum quantity is invalid ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_INVALID_NUMBER:${quantityParameterId}`,
+      );
+    }
+    if (applicable && quantity <= 0) {
+      throw compilerError(
+        `applicable enum resource requires a positive quantity ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_APPLICABLE_QUANTITY_REQUIRED:${quantityParameterId}`,
+      );
+    }
+    if (!applicable && quantity !== 0) {
+      throw compilerError(
+        `non-applicable enum resource cannot retain quantity ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_NOT_APPLICABLE_QUANTITY_CONFLICT:${quantityParameterId}`,
+      );
+    }
+  }
+}
+
 function validateFormulaLabeledValueConsistencyPolicy(
   resource: CanonicalEstimateResourceDefinition,
   formula: CanonicalEstimateFormulaDefinition,
@@ -599,6 +687,7 @@ export async function compileCanonicalEstimateCore(
     overrides.delete(resource.row_id);
     const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
     validateConditionalPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
+    validateConditionalEnumPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
     validateFormulaLabeledValueConsistencyPolicy(
       resource,
       formula,

@@ -7,11 +7,12 @@ import { Client } from "pg";
 
 import {
   FORMWORK_FRAMI_XLIFE_PARAMETERS,
-  FORMWORK_FRAMI_XLIFE_RESOURCES,
   FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
+  formworkFramiXlifeParametersForCatalogR1,
+  formworkFramiXlifeResourcesForCatalogR1,
   formworkFramiXlifeStripFoundationAcceptanceInputR1,
 } from "../../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 import {
@@ -30,6 +31,7 @@ const MASTER_PATH = resolve(
 const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
 const PREDECESSOR_RELEASE_ID = "8909e3eb-e893-5592-b47e-2781396fb90d";
 const PREDECESSOR_SEARCH_RELEASE_ID = "a525282e-2495-5a27-b327-81a38a7d59b3";
+const REJECTED_INTERMEDIATE_RELEASE_ID = "fd4ca3c1-5de0-553e-a64e-cafd93fe4a33";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
 const TARGETS = FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS;
@@ -41,6 +43,7 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = [
+  "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
   "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "scripts/estimate/r4a13/prepareFormworkFramiXlifeStripFoundationFamilySuccessor.ts",
@@ -107,23 +110,31 @@ function exactDatabaseGuard(): void {
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
-  const expectedRowIds = FORMWORK_FRAMI_XLIFE_RESOURCES.map((resource) => resource.row_id).sort();
-  const expectedProcurementRowIds = FORMWORK_FRAMI_XLIFE_RESOURCES
-    .filter((resource) => resource.procurement_eligible)
-    .map((resource) => resource.row_id)
-    .sort();
   const targets: Json[] = [];
   for (const target of TARGETS) {
     const fixture = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
+    const craneApplicable = fixture.crane_supply_mode === "RENTAL_SEPARATE";
+    const resourceDefinitions = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
+    const expectedRowIds = resourceDefinitions
+      .filter((resource) => resource.row_id !== "equipment:formwork:crane-handling" || craneApplicable)
+      .map((resource) => resource.row_id)
+      .sort();
+    const expectedProcurementRowIds = resourceDefinitions
+      .filter((resource) => resource.procurement_eligible)
+      .filter((resource) => resource.row_id !== "equipment:formwork:crane-handling" || craneApplicable)
+      .map((resource) => resource.row_id)
+      .sort();
     const compiled = await compileFormworkFramiXlifeProjectKitR1(
       { ...fixture },
       { catalogId: target.catalogId },
     );
-    invariant(compiled.rows.length === 24 && compiled.preliminaryNeeds.length === 0,
+    invariant(compiled.rows.length === expectedRowIds.length && compiled.preliminaryNeeds.length === 0,
       `STOP_FORMWORK_FAMILY_CORE_ROWS:${target.contextKey}`);
-    invariant(compiled.totals.includedRowCount === 17 && compiled.totals.unpricedRowCount === 17,
+    const expectedIncludedRows = craneApplicable ? 17 : 16;
+    invariant(compiled.totals.includedRowCount === expectedIncludedRows
+      && compiled.totals.unpricedRowCount === expectedIncludedRows,
       `STOP_FORMWORK_FAMILY_CORE_SCOPE:${target.contextKey}`);
-    invariant(compiled.rows.filter((row) => row.included_in_procurement).length === 14,
+    invariant(compiled.rows.filter((row) => row.included_in_procurement).length === expectedProcurementRowIds.length,
       `STOP_FORMWORK_FAMILY_CORE_PROCUREMENT:${target.contextKey}`);
     const actualRowIds = compiled.rows.map((row) => row.row_id).sort();
     const actualProcurementRowIds = compiled.rows
@@ -142,6 +153,8 @@ async function verifyThroughExistingCore(): Promise<Json> {
       titleRu: target.titleRu,
       rows: compiled.rows.length,
       procurementRows: compiled.rows.filter((row) => row.included_in_procurement).length,
+      craneApplicable,
+      projectScheduleSha256: sha256(fixture),
       rowIds: actualRowIds,
       procurementRowIds: actualProcurementRowIds,
       deterministicSha256: sha256(compiled),
@@ -246,8 +259,8 @@ async function cloneSearch(client: Client, input: {
   for (const target of TARGETS) {
     const aliases = [
       `опалубка ленточного фундамента ${target.contextRu}`,
-      `полный комплект опалубки ростверка ${target.contextRu}`,
-      `Doka Frami Xlife ростверк ${target.contextRu}`,
+      `полный комплект опалубки фундаментной ленты ${target.contextRu}`,
+      `Doka Frami Xlife ленточный фундамент ${target.contextRu}`,
     ];
     const normalizedCanonicalName = normalizeSearchText(target.titleRu);
     const normalizedAliases = aliases.map(normalizeSearchText);
@@ -408,6 +421,39 @@ async function main(): Promise<void> {
       && Number(target.bindings) === 1),
     `STOP_FORMWORK_FAMILY_PREDECESSOR_TARGET_SHAPE:${JSON.stringify(targetRows)}`);
     const targetByCatalog = new Map(targetRows.map((target) => [String(target.catalog_id), target]));
+    const intermediateRows = (await client.query(`select manifest.*,
+        definition.content_status,definition.content_gate_status,
+        baseline.supersedes_baseline_id,
+        (select count(*)::int from public.estimate_parameter_definition where definition_version_id=manifest.definition_version_id) parameters,
+        (select count(*)::int from public.estimate_formula_graph where definition_version_id=manifest.definition_version_id) formulas,
+        (select count(*)::int from public.estimate_resource_spec where definition_version_id=manifest.definition_version_id) resources,
+        (select count(*)::int from public.estimate_work_normative_binding where definition_version_id=manifest.definition_version_id) bindings
+      from public.estimate_cumulative_manifest_entry manifest
+      join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
+      join public.estimate_approved_template_baseline baseline on baseline.id=manifest.approved_template_baseline_id
+      where manifest.release_id=$1 and manifest.catalog_id=any($2::text[])`, [
+      REJECTED_INTERMEDIATE_RELEASE_ID, TARGETS.map((target) => target.catalogId),
+    ])).rows as Json[];
+    invariant(intermediateRows.length === TARGETS.length,
+      `STOP_FORMWORK_FAMILY_INTERMEDIATE_TARGETS:${intermediateRows.length}`);
+    const intermediateByCatalog = new Map(
+      intermediateRows.map((target) => [String(target.catalog_id), target]),
+    );
+    invariant(intermediateRows.every((target) => {
+      const current = targetByCatalog.get(String(target.catalog_id));
+      return current
+        && target.supersedes_baseline_id === current.approved_template_baseline_id
+        && target.content_status === "CANDIDATE_READY"
+        && target.content_gate_status === "GREEN"
+        && Number(target.parameters) === 52 && Number(target.formulas) === 20
+        && Number(target.resources) === 24 && Number(target.bindings) === 9;
+    }), `STOP_FORMWORK_FAMILY_INTERMEDIATE_LINEAGE:${JSON.stringify(intermediateRows)}`);
+    const inheritedFullScopeOpenCatalogIds = Array.isArray(predecessor.metadata?.fullScopeOpenCatalogIds)
+      ? predecessor.metadata.fullScopeOpenCatalogIds.map(String)
+      : [];
+    const remainingFullScopeOpenCatalogIds = inheritedFullScopeOpenCatalogIds.filter(
+      (catalogId: string) => !TARGETS.some((target) => target.catalogId === catalogId),
+    );
     const nextCounts = {
       definitions: Number(predecessor.definition_count),
       parameters: Number(predecessor.parameter_count),
@@ -416,9 +462,11 @@ async function main(): Promise<void> {
     };
     for (const target of TARGETS) {
       const old = targetByCatalog.get(target.catalogId)!;
-      nextCounts.parameters += 52 - Number(old.parameters);
+      nextCounts.parameters += formworkFramiXlifeParametersForCatalogR1(target.catalogId).length
+        - Number(old.parameters);
       nextCounts.formulas += 20 - Number(old.formulas);
-      nextCounts.resources += 24 - Number(old.resources);
+      nextCounts.resources += formworkFramiXlifeResourcesForCatalogR1(target.catalogId).length
+        - Number(old.resources);
     }
     const existing = (await client.query(
       "select id,status,activated_at from public.estimate_definition_release where id=$1",
@@ -455,6 +503,13 @@ async function main(): Promise<void> {
             formulas: Number(target.formulas),
             resources: Number(target.resources),
             bindings: Number(target.bindings),
+          })),
+          rejectedIntermediateReleaseId: REJECTED_INTERMEDIATE_RELEASE_ID,
+          intermediateTargets: intermediateRows.map((target) => ({
+            catalogId: target.catalog_id,
+            definitionId: target.definition_version_id,
+            baselineId: target.approved_template_baseline_id,
+            supersedesBaselineId: target.supersedes_baseline_id,
           })),
         },
         successor: {
@@ -497,23 +552,71 @@ async function main(): Promise<void> {
       )).rows[0] as Json;
       invariant(representativeBaseline && representativePassport,
         "STOP_FORMWORK_FAMILY_REPRESENTATIVE_EVIDENCE_MISSING");
+      const representativeParameterById = new Map(
+        representativeParameters.map((parameter) => [String(parameter.parameter_id), parameter]),
+      );
+      const representativeResourceByRowId = new Map(
+        representativeResources.map((resource) => [String(resource.row_id), resource]),
+      );
 
       const plannedTargets = [];
       for (const target of TARGETS) {
         const old = targetByCatalog.get(target.catalogId)!;
+        const intermediate = intermediateByCatalog.get(target.catalogId)!;
         const definitionId = definitionIds.get(target.catalogId)!;
         const baselineId = baselineIds.get(target.catalogId)!;
         const nextDefinitionVersion = Number((await client.query(
           "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
           [target.catalogId],
         )).rows[0].value);
+        const fixture = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
+        const parameterDeclarations = formworkFramiXlifeParametersForCatalogR1(target.catalogId);
+        const resourceDeclarations = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
+        const targetParameters = parameterDeclarations.map((declaration) => {
+          const stored = representativeParameterById.get(declaration.parameter_id);
+          invariant(stored, `STOP_FORMWORK_FAMILY_PARAMETER_TEMPLATE_MISSING:${declaration.parameter_id}`);
+          return {
+            ...stored,
+            parameter_id: declaration.parameter_id,
+            ordinal: declaration.ordinal,
+            value_type: declaration.value_type,
+            unit_id: declaration.unit_id,
+            title_ru: declaration.title_ru,
+            required: declaration.required,
+            constraints_json: declaration.constraints_json,
+            truth_metadata: declaration.truth_metadata,
+          };
+        });
+        const targetResources = resourceDeclarations.map((declaration) => {
+          const stored = representativeResourceByRowId.get(declaration.row_id);
+          invariant(stored, `STOP_FORMWORK_FAMILY_RESOURCE_TEMPLATE_MISSING:${declaration.row_id}`);
+          return {
+            ...stored,
+            row_id: declaration.row_id,
+            ordinal: declaration.ordinal,
+            section: declaration.section,
+            category: declaration.category,
+            title_ru: declaration.title_ru,
+            unit_id: declaration.unit_id,
+            formula_id: declaration.formula_id,
+            inclusion_ast: declaration.inclusion_ast,
+            resource_graph: declaration.resource_graph,
+            procurement_eligible: declaration.procurement_eligible,
+            cost_owner_id: declaration.cost_owner_id,
+            source_metadata: declaration.source_metadata,
+          };
+        });
+        invariant(targetParameters.length === 52 && targetResources.length === 24,
+          `STOP_FORMWORK_FAMILY_SPECIALIZED_SHAPE:${target.catalogId}:${targetParameters.length}:${targetResources.length}`);
         const targetDefinitionSha256 = sha256({
           representativeDefinitionSha256: representative.definition_sha256,
           contract: CONTRACT,
           targetCatalogId: target.catalogId,
           titleRu: target.titleRu,
+          parameters: parameterDeclarations,
+          resources: resourceDeclarations,
+          fixture,
         });
-        const fixture = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
         const targetEvidenceSha256 = sha256({
           contract: CONTRACT,
           target,
@@ -548,7 +651,9 @@ async function main(): Promise<void> {
             sourceMetadata: {
               ...representative.source_metadata,
               contract: CONTRACT,
-              predecessorDefinitionId: old.definition_version_id,
+              predecessorDefinitionId: intermediate.definition_version_id,
+              measurementOnlyPredecessorDefinitionId: old.definition_version_id,
+              rejectedIntermediateReleaseId: REJECTED_INTERMEDIATE_RELEASE_ID,
               representativeDefinitionId: representative.id,
               representativeCatalogId: REPRESENTATIVE_CATALOG_ID,
               acceptanceEvidenceSha256: targetEvidenceSha256,
@@ -557,9 +662,9 @@ async function main(): Promise<void> {
             },
           },
           representative: {
-            parameters: representativeParameters,
+            parameters: targetParameters,
             formulas: representativeFormulas,
-            resources: representativeResources,
+            resources: targetResources,
             bindings: representativeBindings,
             baseline: representativeBaseline,
             passport: representativePassport,
@@ -581,7 +686,7 @@ async function main(): Promise<void> {
           baseline: {
             id: baselineId,
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
-            sourceDefinitionVersionId: old.definition_version_id,
+            sourceDefinitionVersionId: intermediate.definition_version_id,
             validationScenarioRefs: [{
               scenario: `FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_${target.contextKey.toUpperCase()}`,
               fixture,
@@ -589,7 +694,7 @@ async function main(): Promise<void> {
             }],
             acceptanceEvidenceSha256: targetEvidenceSha256,
             acceptedReleaseId: releaseId,
-            supersedesBaselineId: old.approved_template_baseline_id,
+            supersedesBaselineId: intermediate.approved_template_baseline_id,
           },
           passport: {
             physicalResultRu: target.titleRu,
@@ -622,6 +727,7 @@ async function main(): Promise<void> {
         plannedTargets.push({
           target,
           old,
+          intermediate,
           definitionId,
           baselineId,
           nextDefinitionVersion,
@@ -657,6 +763,9 @@ async function main(): Promise<void> {
             productionEligible: false,
             fullQuantityScope: true,
             priceState: "PARTIAL_NEEDS_PRICE",
+            fullScopeOpenCatalogIds: remainingFullScopeOpenCatalogIds,
+            resolvedFullScopeCatalogIds: TARGETS.map((target) => target.catalogId),
+            resolvedRejectedIntermediateReleaseId: REJECTED_INTERMEDIATE_RELEASE_ID,
           }),
           PREDECESSOR_RELEASE_ID, sha256({ contract: CONTRACT, fingerprint }),
           nextCounts.parameters, nextCounts.formulas,
@@ -689,7 +798,9 @@ async function main(): Promise<void> {
           perTargetAudit.push({
             catalogId: planned.target.catalogId,
             contextKey: planned.target.contextKey,
-            predecessorDefinitionId: planned.old.definition_version_id,
+            predecessorDefinitionId: planned.intermediate.definition_version_id,
+            measurementOnlyPredecessorDefinitionId: planned.old.definition_version_id,
+            predecessorBaselineId: planned.intermediate.approved_template_baseline_id,
             definitionId: planned.definitionId,
             baselineId: planned.baselineId,
             definitionVersion: planned.nextDefinitionVersion,
@@ -749,6 +860,9 @@ async function main(): Promise<void> {
             scaledTargetCount: TARGETS.length,
             sourceCoreAcceptanceSha256: coreAcceptance.deterministicSha256,
             priceState: "PARTIAL_NEEDS_PRICE",
+            fullScopeOpenCatalogIds: remainingFullScopeOpenCatalogIds,
+            resolvedFullScopeCatalogIds: TARGETS.map((target) => target.catalogId),
+            resolvedRejectedIntermediateReleaseId: REJECTED_INTERMEDIATE_RELEASE_ID,
           }),
         ]);
         await client.query("commit");
