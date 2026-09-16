@@ -59,20 +59,22 @@ async function json(response: Response): Promise<Json> {
   return response.json().catch(() => ({})) as Promise<Json>;
 }
 
-async function loginConsumer(): Promise<string> {
+async function loginLocalDeveloperOwner(): Promise<string> {
   const credentials = JSON.parse(readFileSync(CREDENTIALS, "utf8")) as Json;
   invariant(credentials.provider_url === PROVIDER, "PROVIDER_IDENTITY_RED");
-  const consumer = (credentials.principals as Json[]).find((entry) => entry.role === "consumer");
-  invariant(consumer?.email && consumer?.password && credentials.publishable_key,
-    "CONSUMER_CREDENTIALS_MISSING");
+  const owner = credentials.owner as Json | undefined;
+  invariant(owner?.role === "platform_developer"
+    && owner.email && owner.password && owner.user_id && credentials.publishable_key,
+  "LOCAL_DEVELOPER_OWNER_CREDENTIALS_MISSING");
   const response = await fetch(`${PROVIDER}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: { apikey: credentials.publishable_key, "Content-Type": "application/json" },
-    body: JSON.stringify({ email: consumer.email, password: consumer.password }),
+    body: JSON.stringify({ email: owner.email, password: owner.password }),
     signal: AbortSignal.timeout(15_000),
   });
   const body = await response.json().catch(() => null) as Json | null;
-  invariant(response.ok && body?.access_token, `CONSUMER_LOGIN_HTTP_${response.status}`);
+  invariant(response.ok && body?.access_token && body.user?.id === owner.user_id,
+    `LOCAL_DEVELOPER_OWNER_LOGIN_HTTP_${response.status}`);
   return `Bearer ${body.access_token}`;
 }
 
@@ -208,7 +210,7 @@ async function main(): Promise<void> {
     === "GREEN_STRIP_FOUNDATION_CONCRETE_PLACEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
     && apiReceipt.denominator?.acceptedTargetCount === 7,
   "API_7_OF_7_RECEIPT_RED");
-  const authorization = await loginConsumer();
+  const authorization = await loginLocalDeveloperOwner();
   const manifest = await api(authorization, "runtime-manifest");
   invariant(manifest.compatibilityTuple?.definitionReleaseId === RELEASE_ID
     && manifest.compatibilityTuple?.searchReleaseId === SEARCH_RELEASE_ID
