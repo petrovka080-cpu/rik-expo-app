@@ -17,11 +17,13 @@ import {
   FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
   FORMWORK_FRAMI_XLIFE_RESOURCES,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
+  FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
   formworkFramiXlifePileCapAcceptanceInputR1,
+  formworkFramiXlifeSlabFoundationAcceptanceInputR1,
   formworkFramiXlifeStripFoundationAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 
@@ -233,6 +235,23 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     }
   });
 
+  test("reuses the same core and explicit schedule contract for all seven slab-foundation contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS).toHaveLength(7);
+    for (const target of FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS) {
+      const input = formworkFramiXlifeSlabFoundationAcceptanceInputR1(target.contextKey);
+      const result = await compileFormworkFramiXlifeProjectKitR1(
+        { ...input },
+        { catalogId: target.catalogId },
+      );
+      expect(result.revisionProjection.catalogId).toBe(target.catalogId);
+      expect(result.rows).toHaveLength(24);
+      expect(result.preliminaryNeeds).toHaveLength(0);
+      expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
+      expect(input.element_type).toContain(target.contextRu);
+      expect(input.element_dimensions_and_face_count).toContain("125 м");
+    }
+  });
+
   test.each([
     ["wrong system", { formwork_system_profile_id: "standard-profile:generic-formwork" }, "PARAMETER_VALIDATION_FAILED"],
     ["missing layout", { project_formwork_layout_reference: undefined }, "PARAMETER_VALIDATION_FAILED"],
@@ -298,6 +317,22 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
     expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
     expect(source).toContain("FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS");
+    expect(source).toContain('activationPerformed: false');
+    expect(source).toContain('deployPerformed: false');
+    expect(source).toContain('otaPerformed: false');
+    expect(source).not.toContain("estimate_runtime_pointer");
+    expect(source).not.toContain("estimate_search_runtime_pointer");
+    expect(source).not.toContain("status='active'");
+  });
+
+  test("slab-foundation family publisher reuses the same calculation owner and remains local-only", () => {
+    const source = readFileSync(resolve(
+      process.cwd(),
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifeSlabFoundationFamilySuccessor.ts",
+    ), "utf8");
+    expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
+    expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
+    expect(source).toContain("FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS");
     expect(source).toContain('activationPerformed: false');
     expect(source).toContain('deployPerformed: false');
     expect(source).toContain('otaPerformed: false');
