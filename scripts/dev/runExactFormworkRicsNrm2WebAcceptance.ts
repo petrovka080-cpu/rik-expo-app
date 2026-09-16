@@ -7,6 +7,7 @@ import { Client } from "pg";
 import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
+  formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
   formworkFramiXlifeSlabFoundationAcceptanceInputR1,
   formworkFramiXlifeStripFoundationAcceptanceInputR1,
   type FormworkFramiXlifeInputValue,
@@ -29,12 +30,18 @@ const IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD =
   PROFILE_ID === "formwork-frami-xlife-strip-foundation-standard";
 const IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD =
   PROFILE_ID === "formwork-frami-xlife-slab-foundation-standard";
+const IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD =
+  PROFILE_ID === "formwork-frami-xlife-general-foundation-standard";
 const IS_FRAMI_XLIFE_FULL = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   || IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
-  || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD;
+  || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD;
 const FRAMI_STRIP_STANDARD_INPUT = formworkFramiXlifeStripFoundationAcceptanceInputR1("standard");
 const FRAMI_SLAB_STANDARD_INPUT = formworkFramiXlifeSlabFoundationAcceptanceInputR1("standard");
-const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const FRAMI_GENERAL_STANDARD_INPUT = formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard");
+const FRAMI_BASE_INPUT = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? FRAMI_GENERAL_STANDARD_INPUT
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_SLAB_STANDARD_INPUT
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
     ? FRAMI_STRIP_STANDARD_INPUT
@@ -59,8 +66,48 @@ const FRAMI_SLAB_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeIn
   panel_connector_specification:
     "Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-SLAB-STANDARD-001-REV-B",
 });
+const FRAMI_GENERAL_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> = Object.freeze({
+  ...FRAMI_GENERAL_STANDARD_INPUT,
+  measured_formwork_contact_area_m2: 150,
+  element_dimensions_and_face_count:
+    "Фундаментная стена длиной 50 м и высотой 1,5 м; две вертикальные грани; давление смеси и шаг стяжек проверены расчётом GEN-STANDARD-001-REV-B",
+  frami_xlife_panel_count: 44,
+  frami_clamp_count: 120,
+  flat_tie_rod_10_80_count: 60,
+  flat_tie_rod_clip_count: 120,
+  foundation_clamp_count: 60,
+  plumbing_strut_260_count: 14,
+  perforated_tape_50x2_length_m: 75,
+  joint_sealing_tape_length_m: 60,
+  form_release_agent_l: 12,
+  formwork_handling_worker_h: 28,
+  assembly_alignment_worker_h: 112,
+  stripping_cleaning_worker_h: 50,
+  crane_hours: 9,
+  shipping_mass_t: 3.8,
+  outbound_distance_km: 32,
+  return_distance_km: 32,
+  project_drawing_reference: "ACCEPTANCE-FW-GEN-STANDARD-001-REV-B",
+  project_measurement_rule_reference:
+    "RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-GEN-STANDARD-001-REV-B",
+  estimator_approval_reference: "ACCEPTANCE-EST-FW-GEN-STANDARD-001-REV-B",
+  project_formwork_layout_reference: "ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+  system_engineer_approval_reference: "ACCEPTANCE-FW-ENG-GEN-STANDARD-001-REV-B",
+  panel_specification:
+    "Щит Doka Frami Xlife 0,90×1,50 м по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+  corner_element_specification:
+    "Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+  panel_connector_specification:
+    "Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+  joint_sealing_tape_specification:
+    "Лента герметизации по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+  form_release_agent_specification:
+    "Разделительный состав по ведомости ACCEPTANCE-FW-LAYOUT-GEN-STANDARD-001-REV-B",
+});
 const FRAMI_SENSITIVITY_INPUT: Readonly<Record<string, FormworkFramiXlifeInputValue>> =
-  IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? FRAMI_GENERAL_SENSITIVITY_INPUT
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_SLAB_SENSITIVITY_INPUT
   : FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT;
 const IS_NRMCA_STRIP_FOUNDATION = PROFILE_ID === "strip-foundation-nrmca-cip31";
@@ -78,7 +125,9 @@ const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? "83edfd0b-7219-5a00-8a98-7aceb1eaf818"
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "2f99b3f9-3dba-5ac1-9c77-9e0f79119763"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "c8162da2-0487-5363-a6be-f72401eb8934"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "50739ecf-b47f-5294-96d8-503c00d92200"
@@ -95,7 +144,9 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_S
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
           : "01f008d7-e290-5237-bf6b-c71c829c04d2");
-const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? "fcd352c7-5149-56a1-a6a0-befcddd55bee"
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "d866c696-b020-5c31-8657-2b2280fe2e8f"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "6e7799db-5cc0-57a9-8fb5-dca5101dd0b7"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "bab13b8a-90f4-5236-bf90-03a631793994"
@@ -112,7 +163,9 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_SLA
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "16217704-4a47-5138-a19b-dae1e8301e82"
           : "db513288-1307-5cd8-9bbe-e625f2841074");
-const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? "1faf9476-36b2-5d04-83f1-afecd80c28e6"
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "ff1a47c7-d6c5-5f6d-aa1d-5169ccf90a52"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "8afc46e8-44ba-5b07-b234-3a88cd9b0c0b"
   : IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
@@ -129,7 +182,9 @@ const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDA
           : IS_RICS_NRM2_PILE_CAP_WET_ZONE
             ? "1bc4c42c-dd69-5534-af66-7f9e2e300830"
           : "3359e9e8-60a4-5fe9-90be-4c2fc73e08bd");
-const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const CATALOG_ID = argValue("--catalog-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? "canonical-work:base:concrete_foundation_interior_formwork_form_standard"
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "canonical-work:base:concrete_foundation_interior_slab_foundation_form_standard"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
     ? "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard"
@@ -196,7 +251,9 @@ const EXPECTED_VISIBLE_TITLE = IS_FRAMI_XLIFE_FULL
     : EXPECTED_TITLE;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root")!) : resolve(".release-runtime/r4a13-6/exact-physical-norm-successors",
-  IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+  IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+    ? "web-formwork-frami-xlife-general-foundation-standard-full"
+    : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
     ? "web-formwork-frami-xlife-slab-foundation-standard-full"
     : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
       ? "web-formwork-frami-xlife-strip-foundation-standard-full"
@@ -216,7 +273,9 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
               ? "web-formwork-rics-nrm2-pile-cap-wet-zone-measurement-only-v3"
             : "web-formwork-rics-nrm2-measurement-only-v3");
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const SEARCH_QUERY = argValue("--search-query") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? "полный комплект опалубки фундаментных стен стандартная зона Doka Frami Xlife"
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "полный комплект опалубки периметральных рёбер плитного фундамента стандартная зона Doka Frami Xlife"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
     ? "полный комплект опалубки фундаментной ленты стандартная зона Doka Frami Xlife"
@@ -354,6 +413,7 @@ function formworkFramiXlifeDetails(
 const FRAMI_XLIFE_PILE_CAP_DETAILS = formworkFramiXlifeDetails(FORMWORK_FRAMI_XLIFE_EXACT_INPUT);
 const FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_STRIP_STANDARD_INPUT);
 const FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_SLAB_STANDARD_INPUT);
+const FRAMI_XLIFE_GENERAL_FOUNDATION_DETAILS = formworkFramiXlifeDetails(FRAMI_GENERAL_STANDARD_INPUT);
 const NRMCA_STRIP_FOUNDATION_DETAILS = [
   "по NRMCA CIP 31;",
   "длина самой ленты 40 м; ширина самой ленты 0,5 м; высота бетонной ленты 1,5 м;",
@@ -422,7 +482,9 @@ const BIA_TN10_MASONRY_DETAILS = [
   "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
   "quality plan reference: BIA-WALL-QA-001-REV-C",
 ];
-const SELECTED_DETAILS = IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+const SELECTED_DETAILS = IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+  ? FRAMI_XLIFE_GENERAL_FOUNDATION_DETAILS
+  : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? FRAMI_XLIFE_SLAB_FOUNDATION_DETAILS
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
     ? FRAMI_XLIFE_STRIP_FOUNDATION_DETAILS
@@ -589,8 +651,12 @@ const PRIMARY_MEASURE_PARAMETER_ID = IS_BIA_TN10_MASONRY
   : IS_NRMCA_STRIP_FOUNDATION
     ? "total_axis_length_m"
     : "measured_formwork_contact_area_m2";
-const ORIGINAL_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
-const SENSITIVITY_PRIMARY_VALUE = IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
+const ORIGINAL_PRIMARY_VALUE = IS_FRAMI_XLIFE_FULL
+  ? Number(FRAMI_BASE_INPUT.measured_formwork_contact_area_m2)
+  : IS_BIA_TN10_MASONRY ? 90 : IS_NRMCA_STRIP_FOUNDATION ? 40 : 100;
+const SENSITIVITY_PRIMARY_VALUE = IS_FRAMI_XLIFE_FULL
+  ? Number(FRAMI_SENSITIVITY_INPUT.measured_formwork_contact_area_m2)
+  : IS_BIA_TN10_MASONRY ? 100 : IS_NRMCA_STRIP_FOUNDATION ? 80 : 120;
 const ORIGINAL_TARGET_QUANTITY = IS_FRAMI_XLIFE_FULL
   ? Number(FRAMI_BASE_INPUT.frami_xlife_panel_count) * Number(FRAMI_BASE_INPUT.rental_duration_days)
   : IS_BIA_TN10_MASONRY ? 5_670 : IS_NRMCA_STRIP_FOUNDATION ? 32.4 : 100;
@@ -604,11 +670,13 @@ const TARGET_UNIT_ID = IS_FRAMI_XLIFE_FULL
 const SEARCH_VISIBLE_NEEDLE = IS_FRAMI_XLIFE_FULL
   ? "frami xlife"
   : IS_BIA_TN10_MASONRY ? "кирпич" : IS_NRMCA_STRIP_FOUNDATION ? "ленточн" : "опалубк";
-const SCENARIO_LABEL = IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
+const SCENARIO_LABEL = IS_FRAMI_XLIFE_FULL
+  ? `${ORIGINAL_PRIMARY_VALUE}m2-to-${SENSITIVITY_PRIMARY_VALUE}m2`
+  : IS_BIA_TN10_MASONRY ? "90m2-to-100m2" : IS_NRMCA_STRIP_FOUNDATION ? "40m-to-80m" : "100m2-to-120m2";
 const FRAMI_SENSITIVITY_PATCH: Readonly<Json> = Object.freeze(Object.fromEntries(
   Object.entries(FRAMI_SENSITIVITY_INPUT).filter(([parameterId, value]) => (
     FRAMI_BASE_INPUT[parameterId] !== value
-      && (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+      && (IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
         || (typeof value === "number"
           && (!IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
             || parameterId !== "foundation_wall_thickness_cm")))
@@ -1414,6 +1482,7 @@ async function main(): Promise<void> {
   const acceptedRevision = durationRevision ?? sensitivityRevision!;
   const negativeScenarios: { scenarioId: string; parameters: Json; expectedErrorCode: string | null }[] =
     IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD || IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+      || IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
       ? [
         { scenarioId: "crane-not-applicable-with-hours",
           expectedErrorCode: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
@@ -1579,7 +1648,9 @@ async function main(): Promise<void> {
   invariant(unexpectedFailures.length === 0, `REQUEST_FAILURES:${unexpectedFailures.join("|")}`);
 
   const body = {
-    schemaVersion: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+    schemaVersion: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+      ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-general-foundation-standard-full.web-acceptance.v1"
+      : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
       ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-slab-foundation-standard-full.web-acceptance.v1"
       : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
         ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-strip-foundation-standard-full.web-acceptance.v1"
@@ -1599,7 +1670,9 @@ async function main(): Promise<void> {
                 ? "rik-expo-app.r4-a13-6.formwork-rics-nrm2-pile-cap-wet-zone.web-acceptance.v2"
               : "rik-expo-app.r4-a13-6.formwork-rics-nrm2.web-acceptance.v2",
     capturedAt: new Date().toISOString(),
-    status: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+    status: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+      ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
       ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
         ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
@@ -1639,7 +1712,9 @@ async function main(): Promise<void> {
         procurementRowCount: 14,
         preliminaryScopeNeedCount: 0,
         areaDerivedKitQuantities: false,
-        familyContext: IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
+        familyContext: IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
+          ? "general_foundation_standard"
+          : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
           ? "slab_foundation_standard"
           : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD
             ? "strip_foundation_standard"
