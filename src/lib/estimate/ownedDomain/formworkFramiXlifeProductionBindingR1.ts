@@ -167,3 +167,45 @@ export function extractFormworkFramiXlifeCanonicalParametersR1(input: {
   }
   return Object.freeze(result);
 }
+
+function requiredPromptValue(
+  input: Readonly<Record<string, Primitive>>,
+  parameterId: string,
+): Primitive {
+  const value = input[parameterId];
+  if (value == null || value === "") {
+    throw new Error(`FORMWORK_FRAMI_XLIFE_PROMPT_VALUE_MISSING:${parameterId}`);
+  }
+  return value;
+}
+
+/**
+ * Serializes one confirmed project/supplier schedule into the same ordinary
+ * Russian form copy consumed by extractFormworkFramiXlifeCanonicalParametersR1.
+ * Keeping both directions under this owner prevents acceptance and UI callers
+ * from maintaining a second list of the 52 canonical inputs.
+ */
+export function formworkFramiXlifePromptDetailsR1(
+  input: Readonly<Record<string, Primitive>>,
+): readonly string[] {
+  const lines = [
+    "Опалубка Doka Frami Xlife по RICS NRM 2",
+    `измеренная площадь контакта: ${requiredPromptValue(input, "measured_formwork_contact_area_m2")} м²`,
+  ];
+  for (const [parameterId, label] of Object.entries(TEXT_FIELDS)) {
+    lines.push(`${label}: ${requiredPromptValue(input, parameterId)}`);
+  }
+  for (const [parameterId, label] of Object.entries(NUMBER_FIELDS)) {
+    lines.push(`${label}: ${requiredPromptValue(input, parameterId)}`);
+  }
+  for (const [parameterId, selection] of Object.entries(SELECTION_FIELDS)) {
+    const canonicalValue = String(requiredPromptValue(input, parameterId));
+    const visibleValue = Object.entries(selection.values)
+      .find(([, value]) => value === canonicalValue)?.[0];
+    if (!visibleValue) {
+      throw new Error(`FORMWORK_FRAMI_XLIFE_PROMPT_SELECTION_INVALID:${parameterId}:${canonicalValue}`);
+    }
+    lines.push(`${selection.label}: ${visibleValue}`);
+  }
+  return Object.freeze(lines);
+}
