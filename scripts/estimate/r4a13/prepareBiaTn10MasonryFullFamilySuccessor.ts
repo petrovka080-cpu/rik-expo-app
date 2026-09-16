@@ -19,8 +19,8 @@ import {
   MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS,
   MASONRY_BRICK_WALL_BIA_TN10_RESOURCES,
   MASONRY_BRICK_WALL_BIA_TN10_TITLE_RU,
-  compileMasonryBrickWallBiaTn10R1,
 } from "../../../src/lib/estimate/v4/masonryBrickWallBiaTn10R1";
+import { compileCanonicalEstimateCore } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import {
   createCanonicalDefinitionClonePlan,
   preflightCanonicalDefinitionPublishPlans,
@@ -29,17 +29,17 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.bia-tn10-masonry-full-family-complete-estimate.v3";
+const CONTRACT = "rik-expo-app.r4-a13-6.bia-tn10-masonry-full-family-complete-estimate.v4";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
 const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PARENT_RELEASE_ID = "b9723ace-15e1-5379-afe7-e7bab16b6830";
-const PARENT_SEARCH_RELEASE_ID = "b8ffcd19-5c02-55b0-b150-583e12fde811";
+const PARENT_RELEASE_ID = "714aadc0-a593-5759-8a12-1973ce14481e";
+const PARENT_SEARCH_RELEASE_ID = "cfb134c3-97e8-50e9-8e72-92905303ee38";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/bia-tn10-masonry-full-family",
+  ".release-runtime/r4a13-6/exact-physical-norm-successors/bia-tn10-masonry-conditional-guard",
 );
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
@@ -159,18 +159,36 @@ function rowQuantity(rows: readonly Json[], rowId: string): number {
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
+  const compilePersistedPayload = (
+    parameters: Record<string, unknown>,
+    catalogId: string,
+  ) => compileCanonicalEstimateCore({
+    operation: "compile",
+    compilerVersion: "canonical-estimate-compiler.bia-tn10-db-driven-preflight.r1",
+    catalogId,
+    primaryMeasureParameterId: "measured_net_brick_wall_area_m2",
+    parameterDefinitions: [...MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS],
+    formulaDefinitions: [...MASONRY_BRICK_WALL_BIA_TN10_FORMULAS],
+    resourceDefinitions: [...MASONRY_BRICK_WALL_BIA_TN10_RESOURCES],
+    submittedParameters: parameters,
+    confirmedParameters: {},
+    currencyCode: "KGS",
+    priceItems: [],
+    maximumResourceRows: 40,
+    hashJson: async (value) => sha256(value),
+  });
   const targetResults: Json[] = [];
   for (const target of TARGETS) {
-    const exact = await compileMasonryBrickWallBiaTn10R1(
+    const exact = await compilePersistedPayload(
       { ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT },
-      { catalogId: target.catalogId },
+      target.catalogId,
     );
-    const sensitivity = await compileMasonryBrickWallBiaTn10R1({
+    const sensitivity = await compilePersistedPayload({
       ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
       measured_net_brick_wall_area_m2: 100,
       wall_layout_length_m: 44,
       gross_wall_area_and_opening_deductions: "GROSS_M2=110; OPENINGS_M2=10; NET_M2=100",
-    }, { catalogId: target.catalogId });
+    }, target.catalogId);
     invariant(exact.rows.length === 18 && exact.preliminaryNeeds.length === 0,
       `STOP_BIA_FULL_FAMILY_CORE_EXACT_ROWS:${target.key}:${exact.rows.length}`);
     invariant(exact.rows.every((row) => row.unit_price == null && row.amount == null),
@@ -203,21 +221,30 @@ async function verifyThroughExistingCore(): Promise<Json> {
     });
   }
   const negativeCases = [
-    { wall_connectors_applicable: true, wall_connector_quantity_piece: 0 },
-    { dpc_applicable: false, dpc_area_m2: 1 },
-    { wall_layout_length_m: 41 },
+    {
+      patch: { wall_connectors_applicable: true, wall_connector_quantity_piece: 0 },
+      expectedCode: "MASONRY_FULL_SCOPE_APPLICABLE_QUANTITY_REQUIRED:wall_connector_quantity_piece",
+    },
+    {
+      patch: { dpc_applicable: false, dpc_area_m2: 1 },
+      expectedCode: "MASONRY_FULL_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:dpc_area_m2",
+    },
+    {
+      patch: { wall_layout_length_m: 41 },
+      expectedCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
+    },
   ] as const;
-  for (const patch of negativeCases) {
+  for (const negative of negativeCases) {
     let rejected = false;
     try {
-      await compileMasonryBrickWallBiaTn10R1({
+      await compilePersistedPayload({
         ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
-        ...patch,
-      });
+        ...negative.patch,
+      }, TARGETS[0].catalogId);
     } catch (error) {
-      rejected = String((error as { code?: unknown })?.code ?? "").startsWith("MASONRY_FULL_SCOPE_");
+      rejected = String((error as { code?: unknown })?.code ?? "") === negative.expectedCode;
     }
-    invariant(rejected, `STOP_BIA_FULL_FAMILY_NEGATIVE_ACCEPTED:${JSON.stringify(patch)}`);
+    invariant(rejected, `STOP_BIA_FULL_FAMILY_NEGATIVE_ACCEPTED:${JSON.stringify(negative)}`);
   }
   return {
     compilerOwner: "compileCanonicalEstimateCore",
@@ -484,7 +511,7 @@ async function main(): Promise<void> {
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const releaseKey = `r4-a13-6-bia-tn10-masonry-full-family-${fingerprint.slice(0, 16)}`;
+  const releaseKey = `r4-a13-6-bia-tn10-masonry-conditional-guard-${fingerprint.slice(0, 16)}`;
   const definitionIds = new Map(TARGETS.map((target) => [
     target.catalogId,
     uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:definition`),
@@ -560,7 +587,7 @@ async function main(): Promise<void> {
 
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "r4-a13-6-bia-tn10-masonry-full-family-successor",
+    application_name: "r4-a13-6-bia-tn10-masonry-conditional-guard-successor",
   });
   await client.connect();
   let receipt: Json;
@@ -614,7 +641,9 @@ async function main(): Promise<void> {
         PARENT_RELEASE_ID, TARGETS.map((target) => target.catalogId),
       ])).rows as Json[];
       invariant(parentTargets.length === TARGETS.length && parentTargets.every((target) =>
-        Number(target.parameters) === 22 && Number(target.formulas) === 5 && Number(target.resources) === 5),
+        Number(target.parameters) === MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.length
+          && Number(target.formulas) === MASONRY_BRICK_WALL_BIA_TN10_FORMULAS.length
+          && Number(target.resources) === MASONRY_BRICK_WALL_BIA_TN10_RESOURCES.length),
       `STOP_BIA_FULL_FAMILY_PARENT_TARGET_SHAPE:${JSON.stringify(parentTargets)}`);
       const parentByCatalog = new Map(parentTargets.map((target) => [String(target.catalog_id), target]));
       const locator = (await client.query(`select locator.id::text locator_id,locator.locator,source.source_key
@@ -626,9 +655,15 @@ async function main(): Promise<void> {
 
       const nextCounts = {
         definitions: Number(parent.definition_count),
-        parameters: Number(parent.parameter_count) + TARGETS.length * (60 - 22),
-        formulas: Number(parent.formula_count) + TARGETS.length * (19 - 5),
-        resources: Number(parent.resource_row_count) + TARGETS.length * (23 - 5),
+        parameters: Number(parent.parameter_count) + TARGETS.reduce((sum, target) =>
+          sum + MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.length
+            - Number(parentByCatalog.get(target.catalogId)?.parameters), 0),
+        formulas: Number(parent.formula_count) + TARGETS.reduce((sum, target) =>
+          sum + MASONRY_BRICK_WALL_BIA_TN10_FORMULAS.length
+            - Number(parentByCatalog.get(target.catalogId)?.formulas), 0),
+        resources: Number(parent.resource_row_count) + TARGETS.reduce((sum, target) =>
+          sum + MASONRY_BRICK_WALL_BIA_TN10_RESOURCES.length
+            - Number(parentByCatalog.get(target.catalogId)?.resources), 0),
       };
       const parameterRows = MASONRY_BRICK_WALL_BIA_TN10_PARAMETERS.map((parameter) => ({ ...parameter }));
       const formulaRows = MASONRY_BRICK_WALL_BIA_TN10_FORMULAS.map((formula) => ({
@@ -990,7 +1025,7 @@ async function main(): Promise<void> {
   };
   const sealed = { ...body, receiptSha256: sha256(body) };
   if (APPLY && receipt!.mutationPerformed === true) {
-    atomicJson(resolve(OUTPUT_ROOT, `01_BIA_TN10_MASONRY_FULL_FAMILY_${head}.json`), sealed);
+    atomicJson(resolve(OUTPUT_ROOT, `01_BIA_TN10_MASONRY_CONDITIONAL_GUARD_${head}.json`), sealed);
     atomicJson(resolve(OUTPUT_ROOT, "acceptance.json"), sealed);
     atomicJson(CURRENT_RELEASE_PATH, {
       ...current,
@@ -1002,7 +1037,7 @@ async function main(): Promise<void> {
       manifestHashChainSha256: receipt!.audit.manifest.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: 10_331,
-      owner: "EXACT_BIA_TN10_MASONRY_FULL_FAMILY_SUCCESSOR",
+      owner: "EXACT_BIA_TN10_MASONRY_CONDITIONAL_GUARD_SUCCESSOR",
       productionAccessed: false,
       fakeGreenClaimed: false,
     });
