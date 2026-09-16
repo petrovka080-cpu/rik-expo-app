@@ -969,10 +969,15 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
       invariant(body.includes("Контроль геометрии стены") && body.includes("Очистка кладки"),
         "COLD_REOPEN_COMPLETE_MASONRY_ESTIMATE_RED");
     } else if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
-      invariant(body.includes("Перфорированная лента 50×2 мм")
-        && body.includes("Сборка, установка и выверка опалубки")
-        && body.includes("Доставка комплекта опалубки на объект")
-        && body.includes("Возврат арендного комплекта опалубки поставщику"),
+      const positionsToggle = page.getByTestId("request-estimate-positions-toggle");
+      if (await positionsToggle.isVisible().catch(() => false)) await positionsToggle.click();
+      await page.getByTestId("request-estimate-positions-panel")
+        .waitFor({ state: "visible", timeout: 60_000 });
+      const expandedBody = await page.locator("body").innerText();
+      invariant(expandedBody.includes("Перфорированная лента 50×2 мм")
+        && expandedBody.includes("Сборка, установка и выверка опалубки")
+        && expandedBody.includes("Доставка комплекта опалубки на объект")
+        && expandedBody.includes("Возврат арендного комплекта опалубки поставщику"),
       "COLD_REOPEN_COMPLETE_FRAMI_ESTIMATE_RED");
     } else if (!IS_NRMCA_STRIP_FOUNDATION) {
       invariant(!body.includes("2.4"), "COLD_REOPEN_OLD_FACTOR_RED");
