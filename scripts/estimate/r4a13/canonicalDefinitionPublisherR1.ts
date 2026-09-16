@@ -672,8 +672,11 @@ export async function auditPersistedCanonicalDefinition(
   const expectedPayload = canonicalPlanPayload(plan);
   const expectedSha256 = sha256(expectedPayload);
   const persistedSha256 = sha256(persistedPayload);
+  const mismatchedSections = Object.keys(expectedPayload).filter((section) =>
+    sha256(persistedPayload[section as keyof typeof persistedPayload])
+      !== sha256(expectedPayload[section as keyof typeof expectedPayload]));
   invariant(persistedSha256 === expectedSha256,
-    `STOP_CANONICAL_PUBLISHER_SELF_AUDIT_PAYLOAD:${plan.definition.catalog_id}:${persistedSha256}:${expectedSha256}`);
+    `STOP_CANONICAL_PUBLISHER_SELF_AUDIT_PAYLOAD:${plan.definition.catalog_id}:${mismatchedSections.join(",")}:${persistedSha256}:${expectedSha256}`);
 
   const decision = selected(passport.decision, [
     "contract", "status", "allowed", "quantityScope", "priceState",
