@@ -126,7 +126,7 @@ const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
-  ? "83edfd0b-7219-5a00-8a98-7aceb1eaf818"
+  ? "d46fe46e-56ad-5e5d-ac6e-7e28b43f8946"
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "2f99b3f9-3dba-5ac1-9c77-9e0f79119763"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "c8162da2-0487-5363-a6be-f72401eb8934"
@@ -145,7 +145,7 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATIO
             ? "cf7f3504-3b30-5cc9-9230-114b409f9ddb"
           : "01f008d7-e290-5237-bf6b-c71c829c04d2");
 const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
-  ? "fcd352c7-5149-56a1-a6a0-befcddd55bee"
+  ? "91ba7943-7e9e-56cc-b239-f61f92953ba3"
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "d866c696-b020-5c31-8657-2b2280fe2e8f"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "6e7799db-5cc0-57a9-8fb5-dca5101dd0b7"
@@ -164,7 +164,7 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_GEN
             ? "16217704-4a47-5138-a19b-dae1e8301e82"
           : "db513288-1307-5cd8-9bbe-e625f2841074");
 const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_GENERAL_FOUNDATION_STANDARD
-  ? "1faf9476-36b2-5d04-83f1-afecd80c28e6"
+  ? "f35f2a9d-40e3-5127-bb7b-fd14284995a3"
   : IS_FRAMI_XLIFE_SLAB_FOUNDATION_STANDARD
   ? "ff1a47c7-d6c5-5f6d-aa1d-5169ccf90a52"
   : IS_FRAMI_XLIFE_STRIP_FOUNDATION_STANDARD ? "8afc46e8-44ba-5b07-b234-3a88cd9b0c0b"
