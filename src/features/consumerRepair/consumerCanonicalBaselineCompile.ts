@@ -30,6 +30,7 @@ import {
 } from "../../lib/estimate/r4A10AsphaltDrainagePrompt";
 import { extractReinforcementBarScheduleCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/reinforcementBarScheduleProductionBindingV1";
 import { extractRicsNrm2FormworkCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/formworkRicsNrm2ProductionBindingV1";
+import { extractFormworkFramiXlifeCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1";
 import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
@@ -325,6 +326,24 @@ function explicitRicsNrm2FormworkPromptInputs(input: {
   return values;
 }
 
+function explicitFormworkFramiXlifePromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const extracted = extractFormworkFramiXlifeCanonicalParametersR1({
+    catalogId: input.catalog.catalogId,
+    text: input.prompt,
+  });
+  if (!extracted) return null;
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
+
 function explicitBiaTn10MasonryPromptInputs(input: {
   catalog: CanonicalEstimateCatalogItem;
   prompt: string;
@@ -360,10 +379,14 @@ export function buildCanonicalBaselinePlan(input: {
   const asphaltDrainageInput = input.catalog.catalogId === R4_A10_ASPHALT_DRAINAGE_CATALOG_ID
     ? parseR4A10AsphaltDrainagePrompt(input.prompt)
     : null;
-  const ricsNrm2FormworkInput = explicitRicsNrm2FormworkPromptInputs(input);
+  const formworkFramiXlifeInput = explicitFormworkFramiXlifePromptInputs(input);
+  const ricsNrm2FormworkInput = formworkFramiXlifeInput == null
+    ? explicitRicsNrm2FormworkPromptInputs(input)
+    : null;
   const biaTn10MasonryInput = explicitBiaTn10MasonryPromptInputs(input);
   const userQuantity = pumpStationInput == null && stripFoundationInput == null
-    && asphaltDrainageInput == null && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null
+    && asphaltDrainageInput == null && formworkFramiXlifeInput == null
+    && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -380,7 +403,8 @@ export function buildCanonicalBaselinePlan(input: {
   }
   Object.assign(
     submittedInputs,
-    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
+    pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput
+      ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
       ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
@@ -389,7 +413,7 @@ export function buildCanonicalBaselinePlan(input: {
       ? "total_axis_length_m"
       : asphaltDrainageInput != null
         ? R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID
-        : ricsNrm2FormworkInput != null
+        : formworkFramiXlifeInput != null || ricsNrm2FormworkInput != null
           ? "measured_formwork_contact_area_m2"
           : biaTn10MasonryInput != null
             ? "measured_net_brick_wall_area_m2"
