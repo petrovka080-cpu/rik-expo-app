@@ -576,7 +576,6 @@ async function main(): Promise<void> {
             id: baselineId,
             key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
             sourceDefinitionVersionId: lineage.definitionVersionId,
-            inputValues: fixture,
             validationScenarioRefs: [{
               scenario: `FORMWORK_FRAMI_XLIFE_PILE_CAP_${target.contextKey.toUpperCase()}`,
               fixture,
