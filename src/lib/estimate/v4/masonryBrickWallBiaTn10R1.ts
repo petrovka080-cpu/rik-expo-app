@@ -442,6 +442,18 @@ function resource(input: {
   });
 }
 
+function conditionalPositiveQuantityPolicy(
+  applicabilityParameterId: string,
+  ...quantityParameterIds: string[]
+): Record<string, unknown> {
+  return {
+    version: "canonical-conditional-positive-quantity:v1",
+    applicabilityParameterId,
+    quantityParameterIds,
+    errorCodeNamespace: "MASONRY_FULL_SCOPE",
+  };
+}
+
 const BRICK_INPUT_IDS = [
   "measured_net_brick_wall_area_m2",
   "selected_brick_quantity_per_m2",
@@ -560,6 +572,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "wall_connectors_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "wall_connectors_applicable",
+        "wall_connector_quantity_piece",
+      ),
       titleSpecificationParameterIds: ["wall_connector_designation"],
       titleSpecificationMode: "APPEND",
       sourceScheduleParameterIds: [
@@ -580,6 +596,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "lintels_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "lintels_applicable",
+        "lintel_total_length_m",
+      ),
       titleSpecificationParameterIds: ["lintel_designation"],
       titleSpecificationMode: "APPEND",
       sourceScheduleParameterIds: ["lintel_total_length_m", "lintel_and_connector_schedule_reference"],
@@ -597,6 +617,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "dpc_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "dpc_applicable",
+        "dpc_area_m2",
+      ),
       titleSpecificationParameterIds: ["dpc_product_designation"],
       titleSpecificationMode: "APPEND",
       sourceScheduleParameterIds: ["dpc_area_m2", "project_scope_and_applicability_reference"],
@@ -614,6 +638,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "masonry_reinforcement_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "masonry_reinforcement_applicable",
+        "masonry_reinforcement_mass_kg",
+      ),
       titleSpecificationParameterIds: ["masonry_reinforcement_designation"],
       titleSpecificationMode: "APPEND",
       sourceScheduleParameterIds: [
@@ -756,6 +784,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "work_platform_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "work_platform_applicable",
+        "work_platform_rental_days",
+      ),
       titleSpecificationParameterIds: ["work_platform_designation"],
       titleSpecificationMode: "APPEND",
       sourceScheduleParameterIds: ["work_platform_rental_days", "equipment_schedule_reference"],
@@ -773,6 +805,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "engineering_inspection_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "engineering_inspection_applicable",
+        "engineering_inspection_hours",
+      ),
       sourceScheduleParameterIds: ["engineering_inspection_hours", "quality_plan_reference"],
     },
   }),
@@ -788,6 +824,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "brick_delivery_separately_priced" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "brick_delivery_separately_priced",
+        "brick_delivery_distance_km",
+      ),
       cargo: {
         cargoRu: "обожжённый глиняный кирпич",
         physicalQuantityUom: "t",
@@ -808,6 +848,10 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "mortar_delivery_separately_priced" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "mortar_delivery_separately_priced",
+        "mortar_delivery_distance_km",
+      ),
       cargo: {
         cargoRu: "кладочный раствор",
         physicalQuantityUom: "t",
@@ -832,6 +876,11 @@ export const MASONRY_BRICK_WALL_BIA_TN10_RESOURCES: readonly CanonicalEstimateRe
     procurementEligible: true,
     inclusionAst: { kind: "parameter", id: "waste_haul_applicable" },
     resourceGraph: {
+      conditionalPositiveQuantityPolicyV1: conditionalPositiveQuantityPolicy(
+        "waste_haul_applicable",
+        "masonry_waste_mass_t",
+        "waste_haul_distance_km",
+      ),
       cargo: {
         cargoRu: "отходы резки и боя кирпича",
         physicalQuantityUom: "t",

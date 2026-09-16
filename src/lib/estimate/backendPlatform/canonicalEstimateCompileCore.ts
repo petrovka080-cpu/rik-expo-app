@@ -333,6 +333,81 @@ function canonicalTitleSpecification(
   };
 }
 
+function validateConditionalPositiveQuantityPolicy(
+  resource: CanonicalEstimateResourceDefinition,
+  formula: CanonicalEstimateFormulaDefinition,
+  parameters: Readonly<Record<string, unknown>>,
+  definitionParameterIds: ReadonlySet<string>,
+): void {
+  const rawPolicy = resource.resource_graph?.conditionalPositiveQuantityPolicyV1;
+  if (rawPolicy == null) return;
+  if (!rawPolicy || typeof rawPolicy !== "object" || Array.isArray(rawPolicy)) {
+    throw compilerError(`conditional quantity policy invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const policy = rawPolicy as JsonRecord;
+  const allowedKeys = new Set([
+    "version",
+    "applicabilityParameterId",
+    "quantityParameterIds",
+    "errorCodeNamespace",
+  ]);
+  if (Object.keys(policy).some((key) => !allowedKeys.has(key))
+    || policy.version !== "canonical-conditional-positive-quantity:v1") {
+    throw compilerError(`conditional quantity policy contract invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const applicabilityParameterId = typeof policy.applicabilityParameterId === "string"
+    ? policy.applicabilityParameterId.trim()
+    : "";
+  const quantityParameterIds = Array.isArray(policy.quantityParameterIds)
+    ? policy.quantityParameterIds.map((value) => typeof value === "string" ? value.trim() : "")
+    : [];
+  const errorCodeNamespace = typeof policy.errorCodeNamespace === "string"
+    ? policy.errorCodeNamespace.trim()
+    : "";
+  const inclusionAst = resource.inclusion_ast as JsonRecord;
+  if (!applicabilityParameterId
+    || !definitionParameterIds.has(applicabilityParameterId)
+    || inclusionAst?.kind !== "parameter"
+    || inclusionAst?.id !== applicabilityParameterId
+    || quantityParameterIds.length === 0
+    || quantityParameterIds.length > 8
+    || quantityParameterIds.some((parameterId) => !parameterId
+      || !definitionParameterIds.has(parameterId)
+      || !formula.input_parameter_ids.includes(parameterId))
+    || new Set(quantityParameterIds).size !== quantityParameterIds.length
+    || !/^[A-Z][A-Z0-9_]{2,80}$/u.test(errorCodeNamespace)) {
+    throw compilerError(`conditional quantity policy binding invalid ${resource.row_id}`, "DEFINITION_INTEGRITY_FAILED");
+  }
+  const applicable = parameters[applicabilityParameterId];
+  if (typeof applicable !== "boolean") {
+    throw compilerError(
+      `conditional applicability is required ${resource.row_id}:${applicabilityParameterId}`,
+      `${errorCodeNamespace}_APPLICABILITY_REQUIRED:${applicabilityParameterId}`,
+    );
+  }
+  for (const quantityParameterId of quantityParameterIds) {
+    const quantity = Number(parameters[quantityParameterId]);
+    if (!Number.isFinite(quantity) || quantity < 0) {
+      throw compilerError(
+        `conditional quantity is invalid ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_INVALID_NUMBER:${quantityParameterId}`,
+      );
+    }
+    if (applicable && quantity <= 0) {
+      throw compilerError(
+        `applicable resource requires a positive quantity ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_APPLICABLE_QUANTITY_REQUIRED:${quantityParameterId}`,
+      );
+    }
+    if (!applicable && quantity !== 0) {
+      throw compilerError(
+        `non-applicable resource cannot retain quantity ${resource.row_id}:${quantityParameterId}`,
+        `${errorCodeNamespace}_NOT_APPLICABLE_QUANTITY_CONFLICT:${quantityParameterId}`,
+      );
+    }
+  }
+}
+
 /**
  * Единственный pure business-core компиляции canonical estimate.
  * Node/local и Deno/edge передают только загруженные DB records и hash adapter;
@@ -455,6 +530,7 @@ export async function compileCanonicalEstimateCore(
     const provenance = override == null ? null : manualProvenance(override.provenance, resource.row_id);
     overrides.delete(resource.row_id);
     const inclusion = resolveInclusionGraph(resource.inclusion_ast, parameters);
+    validateConditionalPositiveQuantityPolicy(resource, formula, parameters, definitionParameterIds);
     const missingFormulaParameterIds = formula.input_parameter_ids.filter((parameterId) => {
       const value = formulaParameters[parameterId];
       return value === undefined || value === null || value === "";
