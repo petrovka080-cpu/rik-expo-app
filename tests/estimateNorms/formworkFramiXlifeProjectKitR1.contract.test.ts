@@ -375,4 +375,36 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(source).not.toContain("estimate_search_runtime_pointer");
     expect(source).not.toContain("status='active'");
   });
+
+  test("all Frami family successors use one schema-aware definition publisher lifecycle", () => {
+    const sharedPublisher = readFileSync(resolve(
+      process.cwd(),
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+    ), "utf8");
+    expect(sharedPublisher).toContain("preflightCanonicalDefinitionPublisherSchema");
+    expect(sharedPublisher).toContain("estimate_parameter_truth_metadata_valid_r3");
+    expect(sharedPublisher).toContain('normative_source_ids: "jsonb"');
+    expect(sharedPublisher).toContain("estimate_resource_spec_row_type_check");
+    expect(sharedPublisher).toContain("jsonb_array_length(capability_matrix) = 4");
+    expect(sharedPublisher).toContain("content_status='QUARANTINED'");
+    expect(sharedPublisher).toContain("estimate_content_passport_r3 passport");
+    expect(sharedPublisher).toContain("content_status='CANDIDATE_READY'");
+    expect(sharedPublisher).toContain("auditPersistedCanonicalDefinition");
+
+    for (const publisher of [
+      "prepareFormworkFramiXlifePileCapFamilySuccessor.ts",
+      "prepareFormworkFramiXlifeStripFoundationFamilySuccessor.ts",
+      "prepareFormworkFramiXlifeSlabFoundationFamilySuccessor.ts",
+      "prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
+    ]) {
+      const source = readFileSync(resolve(process.cwd(), "scripts/estimate/r4a13", publisher), "utf8");
+      expect(source).toContain('from "./canonicalDefinitionPublisherR1"');
+      expect(source).toContain("preflightCanonicalDefinitionPublishPlans");
+      expect(source).toContain("publishCanonicalDefinitionDraft");
+      expect(source).not.toContain("async function insertRows");
+      expect(source).not.toContain("insert into public.estimate_definition_version");
+      expect(source).not.toContain("insert into public.estimate_content_passport_r3");
+      expect(source).not.toContain("set content_status='CANDIDATE_READY'");
+    }
+  });
 });

@@ -13,15 +13,20 @@ import {
   compileFormworkFramiXlifeProjectKitR1,
   formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
 } from "../../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
+import {
+  createCanonicalDefinitionClonePlan,
+  preflightCanonicalDefinitionPublishPlans,
+  publishCanonicalDefinitionDraft,
+} from "./canonicalDefinitionPublisherR1";
 
 type Json = Record<string, any>;
 
 const CONTRACT = "rik-expo-app.r4-a13-6.formwork-frami-xlife-general-foundation-family-complete-estimate.v1";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (7).md",
+  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
-const MASTER_SHA256 = "c03f3fbefa010d78b1313bd8491c6cea82778b2a75ccf594e6e3a29cde230a57";
+const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
 const PREDECESSOR_RELEASE_ID = "9c2736ac-deec-532b-aab5-ddfc51bb31dd";
 const PREDECESSOR_SEARCH_RELEASE_ID = "89859cea-488f-50b0-9028-2c890059e83a";
 const REPRESENTATIVE_CATALOG_ID =
@@ -36,6 +41,7 @@ const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
 const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = [
   "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+  "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
 ] as const;
 
@@ -97,28 +103,6 @@ function exactDatabaseGuard(): void {
     `STOP_FORMWORK_FAMILY_DATABASE_NOT_LOOPBACK:${parsed.hostname}`);
   invariant(parsed.port === "55432" && parsed.pathname === "/rik_r4_runtime_b5_v2",
     `STOP_FORMWORK_FAMILY_DATABASE_NOT_CANONICAL_LOCAL:${parsed.port}:${parsed.pathname}`);
-}
-
-async function insertRows(
-  client: Client,
-  table: string,
-  columns: readonly string[],
-  rows: readonly unknown[][],
-): Promise<void> {
-  for (let offset = 0; offset < rows.length; offset += 100) {
-    const batch = rows.slice(offset, offset + 100);
-    const values: unknown[] = [];
-    const tuples = batch.map((row) => {
-      invariant(row.length === columns.length, `STOP_FORMWORK_FAMILY_INSERT_SHAPE:${table}`);
-      return `(${row.map((value) => {
-        values.push(value);
-        return `$${values.length}`;
-      }).join(",")})`;
-    });
-    if (tuples.length > 0) {
-      await client.query(`insert into public.${table}(${columns.join(",")}) values ${tuples.join(",")}`, values);
-    }
-  }
 }
 
 async function verifyThroughExistingCore(): Promise<Json> {
@@ -491,6 +475,143 @@ async function main(): Promise<void> {
       invariant(representativeBaseline && representativePassport,
         "STOP_FORMWORK_FAMILY_REPRESENTATIVE_EVIDENCE_MISSING");
 
+      const plannedTargets = [];
+      for (const target of TARGETS) {
+        const old = targetByCatalog.get(target.catalogId)!;
+        const definitionId = definitionIds.get(target.catalogId)!;
+        const baselineId = baselineIds.get(target.catalogId)!;
+        const nextDefinitionVersion = Number((await client.query(
+          "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
+          [target.catalogId],
+        )).rows[0].value);
+        const targetDefinitionSha256 = sha256({
+          representativeDefinitionSha256: representative.definition_sha256,
+          contract: CONTRACT,
+          targetCatalogId: target.catalogId,
+          titleRu: target.titleRu,
+        });
+        const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
+        const targetEvidenceSha256 = sha256({
+          contract: CONTRACT,
+          target,
+          fixture,
+          coreAcceptance: coreAcceptance.targetResults.find(
+            (result: Json) => result.catalogId === target.catalogId,
+          ),
+        });
+        const plan = createCanonicalDefinitionClonePlan({
+          contract: CONTRACT,
+          definition: {
+            id: definitionId,
+            releaseId,
+            catalogId: target.catalogId,
+            definitionVersion: nextDefinitionVersion,
+            passport: {
+              ...representative.passport,
+              catalogId: target.catalogId,
+              canonicalRuName: target.titleRu,
+              workKey: target.catalogId.split(":").at(-1),
+              physicalResultRu: `Полная проектная смета съёмной опалубки фундаментных стен: ${target.contextRu}`,
+            },
+            applicability: {
+              ...representative.applicability,
+              generalFoundationContextKey: target.contextKey,
+              generalFoundationContextRu: target.contextRu,
+              projectLayoutRequired: true,
+              projectScheduleRequired: true,
+              contextMultiplierApplied: false,
+            },
+            definitionSha256: targetDefinitionSha256,
+            sourceMetadata: {
+              ...representative.source_metadata,
+              contract: CONTRACT,
+              predecessorDefinitionId: old.definition_version_id,
+              representativeDefinitionId: representative.id,
+              representativeCatalogId: REPRESENTATIVE_CATALOG_ID,
+              acceptanceEvidenceSha256: targetEvidenceSha256,
+              fullQuantityScope: true,
+              priceState: "PARTIAL_NEEDS_PRICE",
+            },
+          },
+          representative: {
+            parameters: representativeParameters,
+            formulas: representativeFormulas,
+            resources: representativeResources,
+            bindings: representativeBindings,
+            baseline: representativeBaseline,
+            passport: representativePassport,
+          },
+          parameterTruthMetadata: (parameter) => ({
+            ...parameter.truth_metadata,
+            contract: CONTRACT,
+            semantic_parameter_key: `${target.catalogId}:${parameter.parameter_id}`,
+          }),
+          resourceId: (resource) => uuid(
+            `${CONTRACT}:${fingerprint}:${target.catalogId}:resource:${resource.row_id}`,
+          ),
+          resourceSemanticOwner: (resource) => `${target.catalogId}:${resource.row_id}`,
+          resourceSha256: (resource) => sha256({
+            contract: CONTRACT,
+            targetCatalogId: target.catalogId,
+            resource,
+          }),
+          baseline: {
+            id: baselineId,
+            key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
+            sourceDefinitionVersionId: old.definition_version_id,
+            validationScenarioRefs: [{
+              scenario: `FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_${target.contextKey.toUpperCase()}`,
+              fixture,
+              targetEvidenceSha256,
+            }],
+            acceptanceEvidenceSha256: targetEvidenceSha256,
+            acceptedReleaseId: releaseId,
+            supersedesBaselineId: old.approved_template_baseline_id,
+          },
+          passport: {
+            physicalResultRu: target.titleRu,
+            excludedScopeRu: [
+              "универсальная ведомость на м²",
+              "автоматическая оборачиваемость",
+              "неподтверждённые цены",
+              "другие типы фундаментных элементов",
+            ],
+            decision: {
+              ...representativePassport.decision,
+              status: "GREEN",
+              allowed: true,
+              waveContract: CONTRACT,
+              quantityScope: "FULL",
+              priceState: "PARTIAL_NEEDS_PRICE",
+              activationAllowed: false,
+              productionEligible: false,
+            },
+            payloadSha256: sha256({ targetDefinitionSha256, targetEvidenceSha256 }),
+            sourceHead: head,
+            sourceTree: tree,
+          },
+          bindingApplicability: (binding) => ({
+            ...binding.applicability,
+            formwork_context_key: target.contextKey,
+          }),
+          expectedNormativeBindingCount: 9,
+        });
+        plannedTargets.push({
+          target,
+          old,
+          definitionId,
+          baselineId,
+          nextDefinitionVersion,
+          targetDefinitionSha256,
+          targetEvidenceSha256,
+          plan,
+        });
+      }
+      const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(
+        client,
+        plannedTargets.map((target) => target.plan),
+      );
+
       await client.query("begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
@@ -529,179 +650,29 @@ async function main(): Promise<void> {
           releaseId, CONTRACT, PREDECESSOR_RELEASE_ID,
         ]);
         const perTargetAudit: Json[] = [];
-        for (const target of TARGETS) {
-          const old = targetByCatalog.get(target.catalogId)!;
-          const definitionId = definitionIds.get(target.catalogId)!;
-          const baselineId = baselineIds.get(target.catalogId)!;
-          const nextDefinitionVersion = Number((await client.query(
-            "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
-            [target.catalogId],
-          )).rows[0].value);
-          const targetDefinitionSha256 = sha256({
-            representativeDefinitionSha256: representative.definition_sha256,
-            contract: CONTRACT,
-            targetCatalogId: target.catalogId,
-            titleRu: target.titleRu,
-          });
-          const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
-          const targetEvidenceSha256 = sha256({
-            contract: CONTRACT,
-            target,
-            fixture,
-            coreAcceptance: coreAcceptance.targetResults.find(
-              (result: Json) => result.catalogId === target.catalogId,
-            ),
-          });
-          await client.query(`insert into public.estimate_definition_version(
-              id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
-              source_metadata,content_status,content_gate_status)
-            values($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8::jsonb,'QUARANTINED','RED')`, [
-            definitionId, releaseId, target.catalogId, nextDefinitionVersion,
-            JSON.stringify({
-              ...representative.passport,
-              catalogId: target.catalogId,
-              canonicalRuName: target.titleRu,
-              workKey: target.catalogId.split(":").at(-1),
-              physicalResultRu: `Полная проектная смета съёмной опалубки фундаментных стен: ${target.contextRu}`,
-            }),
-            JSON.stringify({
-              ...representative.applicability,
-              generalFoundationContextKey: target.contextKey,
-              generalFoundationContextRu: target.contextRu,
-              projectLayoutRequired: true,
-              projectScheduleRequired: true,
-              contextMultiplierApplied: false,
-            }),
-            targetDefinitionSha256,
-            JSON.stringify({
-              ...representative.source_metadata,
-              contract: CONTRACT,
-              predecessorDefinitionId: old.definition_version_id,
-              representativeDefinitionId: representative.id,
-              representativeCatalogId: REPRESENTATIVE_CATALOG_ID,
-              acceptanceEvidenceSha256: targetEvidenceSha256,
-              fullQuantityScope: true,
-              priceState: "PARTIAL_NEEDS_PRICE",
-            }),
-          ]);
-          await insertRows(client, "estimate_parameter_definition", [
-            "definition_version_id", "parameter_id", "ordinal", "value_type", "unit_id", "title_ru", "required",
-            "default_value", "constraints_json", "truth_metadata", "approved_template_baseline_id",
-          ], representativeParameters.map((parameter) => [
-            definitionId, parameter.parameter_id, parameter.ordinal, parameter.value_type, parameter.unit_id,
-            parameter.title_ru, parameter.required, null, parameter.constraints_json,
-            {
-              ...parameter.truth_metadata,
-              contract: CONTRACT,
-              semantic_parameter_key: `${target.catalogId}:${parameter.parameter_id}`,
-            },
-            null,
-          ]));
-          await insertRows(client, "estimate_formula_graph", [
-            "definition_version_id", "formula_id", "output_unit_id", "expression_source", "ast", "input_parameter_ids", "ast_sha256",
-          ], representativeFormulas.map((formula) => [
-            definitionId, formula.formula_id, formula.output_unit_id, formula.expression_source,
-            formula.ast, formula.input_parameter_ids, formula.ast_sha256,
-          ]));
-          const resourceIds = new Map<string, string>();
-          await insertRows(client, "estimate_resource_spec", [
-            "id", "definition_version_id", "row_id", "ordinal", "section", "category", "title_ru", "row_type",
-            "unit_id", "formula_id", "inclusion_ast", "resource_graph", "semantic_owner", "cost_owner_id",
-            "procurement_eligible", "source_metadata", "row_sha256",
-          ], representativeResources.map((resource) => {
-            const resourceId = uuid(`${CONTRACT}:${fingerprint}:${target.catalogId}:resource:${resource.row_id}`);
-            resourceIds.set(resource.row_id, resourceId);
-            return [
-              resourceId, definitionId, resource.row_id, resource.ordinal, resource.section, resource.category,
-              resource.title_ru, resource.row_type, resource.unit_id, resource.formula_id,
-              resource.inclusion_ast, resource.resource_graph, `${target.catalogId}:${resource.row_id}`,
-              resource.cost_owner_id, resource.procurement_eligible, resource.source_metadata,
-              sha256({ contract: CONTRACT, targetCatalogId: target.catalogId, resource }),
-            ];
-          }));
-          await client.query(`insert into public.estimate_approved_template_baseline(
-              id,baseline_key,catalog_id,definition_version_id,source_definition_version_id,parameter_schema_sha256,
-              input_values,input_classification,uom_by_parameter,formula_consumer_ids,resource_consumer_row_ids,
-              normative_source_ids,guide_provenance_ru,proposal_source_refs,validation_scenario_refs,
-              acceptance_evidence_sha256,accepted_release_id,accepted_at,supersedes_baseline_id,contract_version)
-            values($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb,$9::jsonb,$10::jsonb,$11::jsonb,
-              $12::jsonb,$13::jsonb,$14::jsonb,$15::jsonb,$16,$17,clock_timestamp(),$18,$19)`, [
-            baselineId, `${CONTRACT}:${fingerprint.slice(0, 16)}:${target.catalogId}`,
-            target.catalogId, definitionId, old.definition_version_id,
-            representativeBaseline.parameter_schema_sha256,
-            JSON.stringify(representativeBaseline.input_values),
-            JSON.stringify(representativeBaseline.input_classification),
-            JSON.stringify(representativeBaseline.uom_by_parameter),
-            JSON.stringify(representativeBaseline.formula_consumer_ids),
-            JSON.stringify(representativeBaseline.resource_consumer_row_ids),
-            JSON.stringify(representativeBaseline.normative_source_ids),
-            JSON.stringify(representativeBaseline.guide_provenance_ru),
-            JSON.stringify(representativeBaseline.proposal_source_refs),
-            JSON.stringify([{ scenario: `FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_${target.contextKey.toUpperCase()}`,
-              fixture, targetEvidenceSha256 }]),
-            targetEvidenceSha256, releaseId, old.approved_template_baseline_id,
-            representativeBaseline.contract_version,
-          ]);
-          await client.query(
-            "update public.estimate_parameter_definition set approved_template_baseline_id=$2 where definition_version_id=$1",
-            [definitionId, baselineId],
-          );
-          await client.query(`insert into public.estimate_content_passport_r3(
-              definition_version_id,release_id,catalog_id,contract_version,identity_mode,redirect_catalog_id,
-              physical_result_ru,included_scope_ru,excluded_scope_ru,capability_matrix,parameter_count,
-              formula_count,resource_count,decision,payload_sha256,source_head,source_tree)
-            values($1,$2,$3,$4,'WORK',null,$5,$6::jsonb,$7::jsonb,$8::jsonb,52,20,24,$9::jsonb,$10,$11,$12)`, [
-            definitionId, releaseId, target.catalogId, representativePassport.contract_version,
-            target.titleRu,
-            JSON.stringify(representativePassport.included_scope_ru),
-            JSON.stringify([
-              "универсальная ведомость на м²",
-              "автоматическая оборачиваемость",
-              "неподтверждённые цены",
-              "другие типы фундаментных элементов",
-            ]),
-            JSON.stringify(representativePassport.capability_matrix),
-            JSON.stringify({
-              ...representativePassport.decision,
-              status: "GREEN",
-              allowed: true,
-              waveContract: CONTRACT,
-              quantityScope: "FULL",
-              priceState: "PARTIAL_NEEDS_PRICE",
-              activationAllowed: false,
-              productionEligible: false,
-            }),
-            sha256({ targetDefinitionSha256, targetEvidenceSha256 }), head, tree,
-          ]);
-          await client.query(`update public.estimate_definition_version
-            set content_status='CANDIDATE_READY',content_gate_status='GREEN'
-            where id=$1 and release_id=$2 and catalog_id=$3`, [
-            definitionId, releaseId, target.catalogId,
-          ]);
-          await insertRows(client, "estimate_work_normative_binding", [
-            "definition_version_id", "resource_spec_id", "locator_id", "applicability",
-          ], representativeBindings.map((binding) => [
-            definitionId, resourceIds.get(binding.row_id), binding.locator_id,
-            { ...binding.applicability, formwork_context_key: target.contextKey },
-          ]));
+        for (const planned of plannedTargets) {
+          const persisted = await publishCanonicalDefinitionDraft(client, planned.plan);
           await client.query(`update public.estimate_cumulative_manifest_entry set
               definition_version_id=$3,source_batch=$4,source_release_id=$1,publication_state='CANONICAL_SUCCESSOR',
               approved_template_baseline_id=$5,baseline_ready=true,scenario_ready=true,definition_hash=$6,
               entry_sha256=$7,runtime_publication_state='CANDIDATE'
             where release_id=$1 and catalog_id=$2`, [
-            releaseId, target.catalogId, definitionId, CONTRACT, baselineId, targetDefinitionSha256,
-            sha256({ contract: CONTRACT, releaseId, catalogId: target.catalogId,
-              definitionId, baselineId, targetDefinitionSha256 }),
+            releaseId, planned.target.catalogId, planned.definitionId, CONTRACT, planned.baselineId,
+            planned.targetDefinitionSha256,
+            sha256({ contract: CONTRACT, releaseId, catalogId: planned.target.catalogId,
+              definitionId: planned.definitionId, baselineId: planned.baselineId,
+              targetDefinitionSha256: planned.targetDefinitionSha256 }),
           ]);
           perTargetAudit.push({
-            catalogId: target.catalogId,
-            contextKey: target.contextKey,
-            predecessorDefinitionId: old.definition_version_id,
-            definitionId,
-            baselineId,
-            definitionVersion: nextDefinitionVersion,
-            targetDefinitionSha256,
-            targetEvidenceSha256,
+            catalogId: planned.target.catalogId,
+            contextKey: planned.target.contextKey,
+            predecessorDefinitionId: planned.old.definition_version_id,
+            definitionId: planned.definitionId,
+            baselineId: planned.baselineId,
+            definitionVersion: planned.nextDefinitionVersion,
+            targetDefinitionSha256: planned.targetDefinitionSha256,
+            targetEvidenceSha256: planned.targetEvidenceSha256,
+            publisherPersistedSelfAudit: persisted,
           });
         }
         const search = await cloneSearch(client, {
@@ -782,6 +753,7 @@ async function main(): Promise<void> {
             targets: perTargetAudit,
           },
           coreAcceptance,
+          publisherPreflight,
           audit: { manifest: manifestAudit, target: targetAudit, search: { ...search, ...searchAudit } },
         };
       } catch (error) {
