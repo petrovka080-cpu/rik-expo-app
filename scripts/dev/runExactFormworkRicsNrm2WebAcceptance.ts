@@ -487,6 +487,19 @@ const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
 });
 const BIA_TN10_MASONRY_FIXTURE: Readonly<Json> = Object.freeze({
   ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
+  gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=10,NET_M2=90",
+  specified_and_nominal_dimensions: "specified 194x92x57 mm, nominal 200x100x67 mm",
+  wall_thickness_and_wythe_configuration: "WYTHE:single 100 mm veneer",
+  applicable_bond_correction_factors: "BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10",
+  selected_project_breakage_and_waste_allowances: "BRICK_PERCENT=3,MORTAR_PERCENT=5",
+  supplier_package_quantities: "BRICK_PIECES=500,MORTAR_M3=0.25",
+  wall_connector_designation: "galvanized connector BIA-WALL-LC-001",
+  lintel_designation: "precast lintel BIA-WALL-LC-001",
+  dpc_product_designation: "not applicable on prepared slab",
+  masonry_reinforcement_designation: "not applicable by BIA-WALL-SCOPE-001",
+  masonry_saw_designation: "wet masonry saw 350 mm",
+  material_handler_designation: "2.5 t forklift",
+  work_platform_designation: "not applicable at 2.5 m wall height",
 });
 const FIXTURE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? FORMWORK_FRAMI_XLIFE_EXACT_INPUT
