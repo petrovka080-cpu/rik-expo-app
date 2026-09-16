@@ -22,9 +22,9 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('argValue("--catalog-id")');
     expect(source).toContain('argValue("--search-query")');
     expect(source).toContain('argValue("--output-root")');
-    expect(source).toContain('"714aadc0-a593-5759-8a12-1973ce14481e"');
-    expect(source).toContain('"cfb134c3-97e8-50e9-8e72-92905303ee38"');
-    expect(source).toContain('"ec84af28-ca27-5c26-a5a6-2d63106a1b25"');
+    expect(source).toContain('"8909e3eb-e893-5592-b47e-2781396fb90d"');
+    expect(source).toContain('"a525282e-2495-5a27-b327-81a38a7d59b3"');
+    expect(source).toContain('"7237aa95-be0f-5b6d-a638-5f06b9381749"');
     expect(source).toContain('"d4f46211-551f-5d3b-a98d-9c359c9f2443"');
     expect(source).toContain('"1251ce4e-d68b-506e-9021-2ec392d3a3c6"');
     expect(source).toContain('"a15d0987-4289-5ba6-8780-d7c1b0e7d639"');

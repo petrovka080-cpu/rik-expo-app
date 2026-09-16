@@ -40,7 +40,7 @@ const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2
 const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "50739ecf-b47f-5294-96d8-503c00d92200"
   : IS_BIA_TN10_MASONRY
-  ? "714aadc0-a593-5759-8a12-1973ce14481e"
+  ? "8909e3eb-e893-5592-b47e-2781396fb90d"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
     : IS_RICS_NRM2_WET_ZONE
@@ -55,7 +55,7 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
 const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "bab13b8a-90f4-5236-bf90-03a631793994"
   : IS_BIA_TN10_MASONRY
-  ? "cfb134c3-97e8-50e9-8e72-92905303ee38"
+  ? "a525282e-2495-5a27-b327-81a38a7d59b3"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
     : IS_RICS_NRM2_WET_ZONE
@@ -70,7 +70,7 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PIL
 const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
   : IS_BIA_TN10_MASONRY
-  ? "ec84af28-ca27-5c26-a5a6-2d63106a1b25"
+  ? "7237aa95-be0f-5b6d-a638-5f06b9381749"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
     : IS_RICS_NRM2_WET_ZONE
