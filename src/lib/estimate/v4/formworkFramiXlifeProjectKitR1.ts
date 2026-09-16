@@ -27,6 +27,54 @@ export const FORMWORK_FRAMI_XLIFE_SOURCE_PACK_SHA256 =
 export const FORMWORK_FRAMI_XLIFE_TITLE_RU =
   "Съёмная опалубка ростверка Doka Frami Xlife по утверждённой проектной раскладке" as const;
 
+export const FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS = Object.freeze([
+  {
+    contextKey: "standard",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_standard",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife в стандартной зоне",
+    contextRu: "стандартная зона",
+  },
+  {
+    contextKey: "high_load",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_high_load",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife для зоны высокой нагрузки",
+    contextRu: "зона высокой нагрузки",
+  },
+  {
+    contextKey: "large_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_large_area",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife на большом участке",
+    contextRu: "большой участок",
+  },
+  {
+    contextKey: "repair",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_repair",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife на участке ремонта",
+    contextRu: "участок ремонта",
+  },
+  {
+    contextKey: "small_area",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_small_area",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife на малом участке",
+    contextRu: "малый участок",
+  },
+  {
+    contextKey: "technical_room",
+    catalogId: "canonical-work:base:concrete_foundation_interior_pile_cap_form_technical_room",
+    titleRu: "Съёмная опалубка свайного ростверка Doka Frami Xlife в технической зоне",
+    contextRu: "техническая зона",
+  },
+  {
+    contextKey: "wet_zone",
+    catalogId: FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID,
+    titleRu: FORMWORK_FRAMI_XLIFE_TITLE_RU,
+    contextRu: "влажная зона",
+  },
+] as const);
+
+export type FormworkFramiXlifePileCapContextKey =
+  (typeof FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS)[number]["contextKey"];
+
 type TechnologySource = {
   source_id: string;
   title: string;
@@ -884,7 +932,7 @@ export const FORMWORK_FRAMI_XLIFE_EXACT_INPUT: Readonly<Record<string, FormworkF
     product_profile_id: RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID,
     measured_formwork_contact_area_m2: 100,
     project_drawing_reference: "ACCEPTANCE-FW-PC-WZ-001-REV-A",
-    element_type: "Два монолитных ростверка мокрой зоны, приёмочный тестовый проект",
+    element_type: "Два монолитных свайных ростверка; влажная зона; приёмочный тестовый проект",
     element_dimensions_and_face_count: "2 ростверка 5,0×2,0×0,8 м; измерены 8 вертикальных граней; итог 100 м² по ведомости",
     plain_or_special_finish: "PLAIN",
     vertical_battered_horizontal_or_curved_class: "VERTICAL",
@@ -965,14 +1013,45 @@ export const FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT: Readonly<Record<string, For
     shipping_mass_t: 2.8,
   });
 
+export function formworkFramiXlifePileCapAcceptanceInputR1(
+  contextKey: FormworkFramiXlifePileCapContextKey,
+): Readonly<Record<string, FormworkFramiXlifeInputValue>> {
+  const target = FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.find(
+    (candidate) => candidate.contextKey === contextKey,
+  );
+  if (!target) throw new Error(`FORMWORK_PILE_CAP_CONTEXT_UNSUPPORTED:${contextKey}`);
+  if (contextKey === "wet_zone") return FORMWORK_FRAMI_XLIFE_EXACT_INPUT;
+  const referenceKey = contextKey.toUpperCase();
+  return Object.freeze({
+    ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+    project_drawing_reference: `ACCEPTANCE-FW-PC-${referenceKey}-001-REV-A`,
+    element_type: `Два монолитных свайных ростверка; ${target.contextRu}; приёмочный тестовый проект`,
+    project_measurement_rule_reference:
+      `RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-PC-${referenceKey}-001-REV-A`,
+    estimator_approval_reference: `ACCEPTANCE-EST-FW-PC-${referenceKey}-001-REV-A`,
+    project_formwork_layout_reference: `ACCEPTANCE-FW-LAYOUT-PC-${referenceKey}-001-REV-A`,
+    system_engineer_approval_reference: `ACCEPTANCE-FW-ENG-PC-${referenceKey}-001-REV-A`,
+    panel_specification:
+      `Щит Doka Frami Xlife 0,90×1,50 м по ведомости ACCEPTANCE-FW-LAYOUT-PC-${referenceKey}-001-REV-A`,
+    corner_element_specification:
+      `Наружный угловой элемент Doka Frami Xlife по ведомости ACCEPTANCE-FW-LAYOUT-PC-${referenceKey}-001-REV-A`,
+    panel_connector_specification:
+      `Зажим соединительный Doka Frami по ведомости ACCEPTANCE-FW-LAYOUT-PC-${referenceKey}-001-REV-A`,
+  });
+}
+
 export async function compileFormworkFramiXlifeProjectKitR1(
   submittedParameters: Record<string, unknown>,
   options: Readonly<{ catalogId?: string }> = {},
 ): Promise<CanonicalEstimateCompileCoreResult> {
+  const catalogId = options.catalogId ?? FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID;
+  if (!FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS.some((target) => target.catalogId === catalogId)) {
+    throw new Error(`FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED:${catalogId}`);
+  }
   return compileCanonicalEstimateCore({
     operation: "compile",
     compilerVersion: "canonical-estimate-compiler.formwork-frami-xlife-project-kit-r1",
-    catalogId: options.catalogId ?? FORMWORK_FRAMI_XLIFE_PILE_CAP_WET_ZONE_CATALOG_ID,
+    catalogId,
     primaryMeasureParameterId: "measured_formwork_contact_area_m2",
     parameterDefinitions: [...FORMWORK_FRAMI_XLIFE_PARAMETERS],
     formulaDefinitions: [...FORMWORK_FRAMI_XLIFE_FORMULAS],

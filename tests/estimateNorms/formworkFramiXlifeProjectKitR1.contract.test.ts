@@ -14,11 +14,13 @@ import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_FORMULAS,
   FORMWORK_FRAMI_XLIFE_PARAMETERS,
+  FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS,
   FORMWORK_FRAMI_XLIFE_RESOURCES,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
   FORMWORK_FRAMI_XLIFE_SOURCE_ID,
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
+  formworkFramiXlifePileCapAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 
 function rowById(rows: readonly Record<string, unknown>[], rowId: string): Record<string, unknown> {
@@ -192,6 +194,26 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(rowById(revised.rows, "delivery:formwork:outbound-kit").quantity).toBe("70");
   });
 
+  test("reuses the same core and explicit schedule contract for all seven pile-cap contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS).toHaveLength(7);
+    for (const target of FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS) {
+      const input = formworkFramiXlifePileCapAcceptanceInputR1(target.contextKey);
+      const result = await compileFormworkFramiXlifeProjectKitR1(
+        { ...input },
+        { catalogId: target.catalogId },
+      );
+      expect(result.revisionProjection.catalogId).toBe(target.catalogId);
+      expect(result.rows).toHaveLength(24);
+      expect(result.preliminaryNeeds).toHaveLength(0);
+      expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
+      expect(input.element_type).toContain(target.contextRu);
+    }
+    await expect(compileFormworkFramiXlifeProjectKitR1(
+      { ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT },
+      { catalogId: "canonical-work:base:concrete_foundation_interior_strip_foundation_form_standard" },
+    )).rejects.toThrow("FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED");
+  });
+
   test.each([
     ["wrong system", { formwork_system_profile_id: "standard-profile:generic-formwork" }, "PARAMETER_VALIDATION_FAILED"],
     ["missing layout", { project_formwork_layout_reference: undefined }, "PARAMETER_VALIDATION_FAILED"],
@@ -225,6 +247,22 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
     expect(source).toContain("MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (7).md");
     expect(source).toContain('status: "GREEN_FORMWORK_FRAMI_XLIFE_SUCCESSOR_PRECHECK_NO_MUTATION"');
+    expect(source).toContain('activationPerformed: false');
+    expect(source).toContain('deployPerformed: false');
+    expect(source).toContain('otaPerformed: false');
+    expect(source).not.toContain("estimate_runtime_pointer");
+    expect(source).not.toContain("estimate_search_runtime_pointer");
+    expect(source).not.toContain("status='active'");
+  });
+
+  test("pile-cap family publisher scales DB definitions without adding another calculation owner", () => {
+    const source = readFileSync(resolve(
+      process.cwd(),
+      "scripts/estimate/r4a13/prepareFormworkFramiXlifePileCapFamilySuccessor.ts",
+    ), "utf8");
+    expect(source).toContain("compileFormworkFramiXlifeProjectKitR1");
+    expect(source).toContain('compilerOwner: "compileCanonicalEstimateCore"');
+    expect(source).toContain("representativeDefinitionId");
     expect(source).toContain('activationPerformed: false');
     expect(source).toContain('deployPerformed: false');
     expect(source).toContain('otaPerformed: false');
