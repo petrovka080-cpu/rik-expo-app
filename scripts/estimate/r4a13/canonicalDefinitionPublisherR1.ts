@@ -163,7 +163,9 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       truth_metadata: input.parameterTruthMetadata(parameter),
       approved_template_baseline_id: input.baseline.id,
     })),
-    formulas: input.representative.formulas.map((formula) => ({
+    formulas: [...input.representative.formulas]
+      .sort((left, right) => String(left.formula_id).localeCompare(String(right.formula_id)))
+      .map((formula) => ({
       definition_version_id: input.definition.id,
       formula_id: formula.formula_id,
       output_unit_id: formula.output_unit_id,
@@ -171,7 +173,7 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       ast: formula.ast,
       input_parameter_ids: formula.input_parameter_ids,
       ast_sha256: formula.ast_sha256,
-    })),
+      })),
     resources,
     baseline: {
       id: input.baseline.id,
