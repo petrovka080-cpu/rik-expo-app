@@ -272,19 +272,52 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
 
   test("reuses the same core and explicit schedule contract for all seven slab-foundation contexts", async () => {
     expect(FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS).toHaveLength(7);
+    const projectScheduleFingerprints = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS) {
       const input = formworkFramiXlifeSlabFoundationAcceptanceInputR1(target.contextKey);
       const result = await compileFormworkFramiXlifeProjectKitR1(
         { ...input },
         { catalogId: target.catalogId },
       );
+      const craneApplicable = input.crane_supply_mode === "RENTAL_SEPARATE";
       expect(result.revisionProjection.catalogId).toBe(target.catalogId);
-      expect(result.rows).toHaveLength(24);
+      expect(result.rows).toHaveLength(craneApplicable ? 24 : 23);
       expect(result.preliminaryNeeds).toHaveLength(0);
-      expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
+      expect(result.rows.filter((row) => row.included_in_procurement))
+        .toHaveLength(craneApplicable ? 14 : 13);
+      expect(result.rows.some((row) => row.row_id === "equipment:formwork:crane-handling"))
+        .toBe(craneApplicable);
       expect(input.element_type).toContain(target.contextRu);
-      expect(input.element_dimensions_and_face_count).toContain("125 м");
+      expect(input.element_dimensions_and_face_count).toMatch(/проверен|подтвержден/iu);
+      projectScheduleFingerprints.add(JSON.stringify({
+        area: input.measured_formwork_contact_area_m2,
+        panels: input.frami_xlife_panel_count,
+        ties: input.flat_tie_rod_10_80_count,
+        craneMode: input.crane_supply_mode,
+        stages: input.project_stage_count,
+      }));
     }
+    expect(projectScheduleFingerprints.size).toBe(7);
+  });
+
+  test("fails closed when slab-foundation crane applicability and project hours conflict", async () => {
+    const standard = formworkFramiXlifeSlabFoundationAcceptanceInputR1("standard");
+    await expect(compileFormworkFramiXlifeProjectKitR1({
+      ...standard,
+      crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING",
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS[0].catalogId }))
+      .rejects.toMatchObject({
+        code: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
+      });
+
+    const technicalRoom = formworkFramiXlifeSlabFoundationAcceptanceInputR1("technical_room");
+    await expect(compileFormworkFramiXlifeProjectKitR1({
+      ...technicalRoom,
+      crane_supply_mode: "RENTAL_SEPARATE",
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS[5].catalogId }))
+      .rejects.toMatchObject({
+        code: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
+      });
   });
 
   test("reuses the same core and explicit schedule contract for all seven general foundation contexts", async () => {

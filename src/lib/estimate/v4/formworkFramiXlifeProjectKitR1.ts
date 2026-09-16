@@ -1078,13 +1078,20 @@ export const FORMWORK_FRAMI_XLIFE_RESOURCES: readonly CanonicalEstimateResourceD
   }),
 ]);
 
-const STRIP_FOUNDATION_CRANE_APPLICABLE_MODE = "RENTAL_SEPARATE" as const;
-const STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE = "NOT_APPLICABLE_MANUAL_HANDLING" as const;
+const FOUNDATION_CRANE_APPLICABLE_MODE = "RENTAL_SEPARATE" as const;
+const FOUNDATION_CRANE_NOT_APPLICABLE_MODE = "NOT_APPLICABLE_MANUAL_HANDLING" as const;
+
+function usesConditionalFoundationCraneR1(catalogId: string): boolean {
+  return [
+    ...FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS,
+    ...FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS,
+  ].some((target) => target.catalogId === catalogId);
+}
 
 export function formworkFramiXlifeParametersForCatalogR1(
   catalogId: string,
 ): readonly FormworkFramiXlifeParameter[] {
-  if (!FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
+  if (!usesConditionalFoundationCraneR1(catalogId)) {
     return FORMWORK_FRAMI_XLIFE_PARAMETERS;
   }
   return FORMWORK_FRAMI_XLIFE_PARAMETERS.map((parameter) => {
@@ -1092,7 +1099,7 @@ export function formworkFramiXlifeParametersForCatalogR1(
       return Object.freeze({
         ...parameter,
         constraints_json: {
-          values: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE, STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
+          values: [FOUNDATION_CRANE_APPLICABLE_MODE, FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
         },
       });
     }
@@ -1106,7 +1113,7 @@ export function formworkFramiXlifeParametersForCatalogR1(
 export function formworkFramiXlifeResourcesForCatalogR1(
   catalogId: string,
 ): readonly CanonicalEstimateResourceDefinition[] {
-  if (!FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.some((target) => target.catalogId === catalogId)) {
+  if (!usesConditionalFoundationCraneR1(catalogId)) {
     return FORMWORK_FRAMI_XLIFE_RESOURCES;
   }
   return FORMWORK_FRAMI_XLIFE_RESOURCES.map((resourceDefinition) => {
@@ -1116,15 +1123,15 @@ export function formworkFramiXlifeResourcesForCatalogR1(
       inclusion_ast: {
         kind: "in",
         parameterId: "crane_supply_mode",
-        values: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE],
+        values: [FOUNDATION_CRANE_APPLICABLE_MODE],
       },
       resource_graph: {
         ...resourceDefinition.resource_graph,
         conditionalEnumPositiveQuantityPolicyV1: {
           version: "canonical-conditional-enum-positive-quantity:v1",
           selectorParameterId: "crane_supply_mode",
-          applicableValues: [STRIP_FOUNDATION_CRANE_APPLICABLE_MODE],
-          notApplicableValues: [STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
+          applicableValues: [FOUNDATION_CRANE_APPLICABLE_MODE],
+          notApplicableValues: [FOUNDATION_CRANE_NOT_APPLICABLE_MODE],
           quantityParameterIds: ["crane_hours"],
           errorCodeNamespace: "FORMWORK_CRANE_SCOPE",
         },
@@ -1274,7 +1281,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 72,
       stripping_cleaning_worker_h: 32,
       crane_hours: 6,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
       shipping_mass_t: 2.4,
       outbound_distance_km: 25,
       return_distance_km: 25,
@@ -1300,7 +1307,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 96,
       stripping_cleaning_worker_h: 42,
       crane_hours: 8,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
       shipping_mass_t: 3.2,
       outbound_distance_km: 30,
       return_distance_km: 30,
@@ -1326,7 +1333,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 176,
       stripping_cleaning_worker_h: 76,
       crane_hours: 15,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
       shipping_mass_t: 5.8,
       outbound_distance_km: 42,
       return_distance_km: 42,
@@ -1352,7 +1359,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 42,
       stripping_cleaning_worker_h: 20,
       crane_hours: 0,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
       shipping_mass_t: 1.4,
       outbound_distance_km: 18,
       return_distance_km: 18,
@@ -1378,7 +1385,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 24,
       stripping_cleaning_worker_h: 11,
       crane_hours: 0,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
       shipping_mass_t: 0.8,
       outbound_distance_km: 15,
       return_distance_km: 15,
@@ -1404,7 +1411,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 58,
       stripping_cleaning_worker_h: 26,
       crane_hours: 0,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
       shipping_mass_t: 1.6,
       outbound_distance_km: 20,
       return_distance_km: 20,
@@ -1430,7 +1437,7 @@ export function formworkFramiXlifeStripFoundationAcceptanceInputR1(
       assembly_alignment_worker_h: 84,
       stripping_cleaning_worker_h: 40,
       crane_hours: 7,
-      crane_supply_mode: STRIP_FOUNDATION_CRANE_APPLICABLE_MODE,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
       shipping_mass_t: 2.8,
       outbound_distance_km: 28,
       return_distance_km: 28,
@@ -1469,12 +1476,195 @@ export function formworkFramiXlifeSlabFoundationAcceptanceInputR1(
   );
   if (!target) throw new Error(`FORMWORK_SLAB_FOUNDATION_CONTEXT_UNSUPPORTED:${contextKey}`);
   const referenceKey = contextKey.toUpperCase();
+  const projectSchedule: Readonly<Record<FormworkFramiXlifeSlabFoundationContextKey, Readonly<Record<string, FormworkFramiXlifeInputValue>>>> = {
+    standard: {
+      measured_formwork_contact_area_m2: 100,
+      element_dimensions_and_face_count:
+        "Периметральные рёбра плитного фундамента суммарной длиной 62,5 м и высотой 0,8 м; две вертикальные грани; толщина рёбер и шаг стяжек проверены расчётом SLAB-STANDARD-001",
+      foundation_wall_thickness_cm: 40,
+      frami_xlife_panel_count: 24,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 64,
+      flat_tie_rod_10_80_count: 32,
+      flat_tie_rod_clip_count: 64,
+      foundation_clamp_count: 32,
+      plumbing_strut_260_count: 8,
+      perforated_tape_50x2_length_m: 50,
+      joint_sealing_tape_length_m: 42,
+      form_release_agent_l: 8,
+      formwork_handling_worker_h: 16,
+      assembly_alignment_worker_h: 74,
+      stripping_cleaning_worker_h: 32,
+      crane_hours: 6,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 2.4,
+      outbound_distance_km: 25,
+      return_distance_km: 25,
+      rental_duration_days: 14,
+      project_stage_count: 2,
+    },
+    high_load: {
+      measured_formwork_contact_area_m2: 144,
+      element_dimensions_and_face_count:
+        "Усиленные периметральные рёбра плитного фундамента длиной 72 м и высотой 1 м; две вертикальные грани; давление смеси, темп бетонирования и временные нагрузки проверены расчётом SLAB-HIGH-LOAD-001",
+      foundation_wall_thickness_cm: 60,
+      frami_xlife_panel_count: 36,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 96,
+      flat_tie_rod_10_80_count: 48,
+      flat_tie_rod_clip_count: 96,
+      foundation_clamp_count: 48,
+      plumbing_strut_260_count: 14,
+      perforated_tape_50x2_length_m: 72,
+      joint_sealing_tape_length_m: 58,
+      form_release_agent_l: 11.5,
+      formwork_handling_worker_h: 24,
+      assembly_alignment_worker_h: 108,
+      stripping_cleaning_worker_h: 46,
+      crane_hours: 9,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 3.6,
+      outbound_distance_km: 35,
+      return_distance_km: 35,
+      rental_duration_days: 18,
+      project_stage_count: 3,
+    },
+    large_area: {
+      measured_formwork_contact_area_m2: 320,
+      element_dimensions_and_face_count:
+        "Периметральные рёбра крупного плитного фундамента длиной 160 м и высотой 1 м; две вертикальные грани; восемь захваток и пиковый комплект подтверждены календарно-захваточным планом SLAB-LARGE-001",
+      foundation_wall_thickness_cm: 50,
+      frami_xlife_panel_count: 64,
+      frami_xlife_corner_element_count: 12,
+      frami_clamp_count: 176,
+      flat_tie_rod_10_80_count: 80,
+      flat_tie_rod_clip_count: 160,
+      foundation_clamp_count: 80,
+      plumbing_strut_260_count: 24,
+      perforated_tape_50x2_length_m: 160,
+      joint_sealing_tape_length_m: 128,
+      form_release_agent_l: 25.6,
+      formwork_handling_worker_h: 52,
+      assembly_alignment_worker_h: 220,
+      stripping_cleaning_worker_h: 92,
+      crane_hours: 18,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 6.8,
+      outbound_distance_km: 48,
+      return_distance_km: 48,
+      rental_duration_days: 30,
+      project_stage_count: 8,
+    },
+    repair: {
+      measured_formwork_contact_area_m2: 28,
+      element_dimensions_and_face_count:
+        "Ремонтные участки периметрального ребра плитного фундамента длиной 20 м и высотой 0,7 м; две вертикальные грани; границы демонтажа и ручная подача подтверждены актом SLAB-REPAIR-001",
+      foundation_wall_thickness_cm: 35,
+      frami_xlife_panel_count: 12,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 34,
+      flat_tie_rod_10_80_count: 16,
+      flat_tie_rod_clip_count: 32,
+      foundation_clamp_count: 16,
+      plumbing_strut_260_count: 6,
+      perforated_tape_50x2_length_m: 20,
+      joint_sealing_tape_length_m: 24,
+      form_release_agent_l: 3,
+      formwork_handling_worker_h: 10,
+      assembly_alignment_worker_h: 36,
+      stripping_cleaning_worker_h: 16,
+      crane_hours: 0,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 1.2,
+      outbound_distance_km: 16,
+      return_distance_km: 16,
+      rental_duration_days: 9,
+      project_stage_count: 2,
+    },
+    small_area: {
+      measured_formwork_contact_area_m2: 16,
+      element_dimensions_and_face_count:
+        "Периметральное ребро малой плиты длиной 10 м и высотой 0,8 м; две вертикальные грани; минимальный комплект и ручная подача подтверждены планом доступа SLAB-SMALL-001",
+      foundation_wall_thickness_cm: 30,
+      frami_xlife_panel_count: 8,
+      frami_xlife_corner_element_count: 4,
+      frami_clamp_count: 20,
+      flat_tie_rod_10_80_count: 8,
+      flat_tie_rod_clip_count: 16,
+      foundation_clamp_count: 8,
+      plumbing_strut_260_count: 4,
+      perforated_tape_50x2_length_m: 10,
+      joint_sealing_tape_length_m: 9,
+      form_release_agent_l: 1.5,
+      formwork_handling_worker_h: 6,
+      assembly_alignment_worker_h: 22,
+      stripping_cleaning_worker_h: 10,
+      crane_hours: 0,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 0.7,
+      outbound_distance_km: 12,
+      return_distance_km: 12,
+      rental_duration_days: 7,
+      project_stage_count: 1,
+    },
+    technical_room: {
+      measured_formwork_contact_area_m2: 40,
+      element_dimensions_and_face_count:
+        "Рёбра и приямки плитного фундамента технического помещения длиной 25 м и высотой 0,8 м; две вертикальные грани; проёмы, масса элементов и ручная подача подтверждены планом механизации SLAB-TECH-001",
+      foundation_wall_thickness_cm: 40,
+      frami_xlife_panel_count: 14,
+      frami_xlife_corner_element_count: 12,
+      frami_clamp_count: 40,
+      flat_tie_rod_10_80_count: 20,
+      flat_tie_rod_clip_count: 40,
+      foundation_clamp_count: 20,
+      plumbing_strut_260_count: 6,
+      perforated_tape_50x2_length_m: 24,
+      joint_sealing_tape_length_m: 22,
+      form_release_agent_l: 3.8,
+      formwork_handling_worker_h: 15,
+      assembly_alignment_worker_h: 52,
+      stripping_cleaning_worker_h: 23,
+      crane_hours: 0,
+      crane_supply_mode: FOUNDATION_CRANE_NOT_APPLICABLE_MODE,
+      shipping_mass_t: 1.5,
+      outbound_distance_km: 18,
+      return_distance_km: 18,
+      rental_duration_days: 11,
+      project_stage_count: 3,
+    },
+    wet_zone: {
+      measured_formwork_contact_area_m2: 112,
+      element_dimensions_and_face_count:
+        "Гидротехнические периметральные рёбра плитного фундамента длиной 70 м и высотой 0,8 м; две вертикальные грани; герметизация стыков и очистка щитов подтверждены планом влажной зоны SLAB-WET-001",
+      foundation_wall_thickness_cm: 45,
+      frami_xlife_panel_count: 28,
+      frami_xlife_corner_element_count: 8,
+      frami_clamp_count: 76,
+      flat_tie_rod_10_80_count: 38,
+      flat_tie_rod_clip_count: 76,
+      foundation_clamp_count: 38,
+      plumbing_strut_260_count: 10,
+      perforated_tape_50x2_length_m: 65,
+      joint_sealing_tape_length_m: 90,
+      form_release_agent_l: 11.2,
+      formwork_handling_worker_h: 22,
+      assembly_alignment_worker_h: 92,
+      stripping_cleaning_worker_h: 42,
+      crane_hours: 7,
+      crane_supply_mode: FOUNDATION_CRANE_APPLICABLE_MODE,
+      shipping_mass_t: 3,
+      outbound_distance_km: 28,
+      return_distance_km: 28,
+      rental_duration_days: 17,
+      project_stage_count: 4,
+    },
+  };
   return Object.freeze({
     ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
+    ...projectSchedule[contextKey],
     project_drawing_reference: `ACCEPTANCE-FW-SLAB-${referenceKey}-001-REV-A`,
     element_type: `Монолитный плитный фундамент; ${target.contextRu}; приёмочный тестовый проект`,
-    element_dimensions_and_face_count:
-      "Плитный фундамент с периметром 125 м, высотой борта 0,8 м; измерена наружная вертикальная грань; итог 100 м²",
     project_measurement_rule_reference:
       `RICS_NRM2_WS11_CONFIRMED:ACCEPTANCE-FW-SLAB-${referenceKey}-001-REV-A`,
     estimator_approval_reference: `ACCEPTANCE-EST-FW-SLAB-${referenceKey}-001-REV-A`,
