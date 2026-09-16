@@ -1160,6 +1160,7 @@ async function main(): Promise<void> {
       for (const [parameterId, value] of Object.entries(FRAMI_SENSITIVITY_PATCH)) {
         if (parameterId === PRIMARY_MEASURE_PARAMETER_ID) continue;
         const chip = page.getByTestId(`editable-param-chip-${parameterId}`);
+        if (!await chip.isVisible().catch(() => false)) await expandFilledParameters(page);
         await chip.waitFor({ state: "visible", timeout: 60_000 });
         await chip.getByTestId("editable-param-popover-input").fill(String(value));
       }
