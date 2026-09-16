@@ -12,6 +12,7 @@ import {
   FORMWORK_FRAMI_XLIFE_SYSTEM_PROFILE_ID,
   compileFormworkFramiXlifeProjectKitR1,
   formworkFramiXlifeGeneralFoundationAcceptanceInputR1,
+  formworkFramiXlifeResourcesForCatalogR1,
 } from "../../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
 import {
   createCanonicalDefinitionClonePlan,
@@ -27,8 +28,8 @@ const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (8).md",
 );
 const MASTER_SHA256 = "50687aa500c59fc01750f5982c4b152150ad1747d7ac8c607ed1e0ef3ba657f4";
-const PREDECESSOR_RELEASE_ID = "9c2736ac-deec-532b-aab5-ddfc51bb31dd";
-const PREDECESSOR_SEARCH_RELEASE_ID = "89859cea-488f-50b0-9028-2c890059e83a";
+const PREDECESSOR_RELEASE_ID = "2f99b3f9-3dba-5ac1-9c77-9e0f79119763";
+const PREDECESSOR_SEARCH_RELEASE_ID = "d866c696-b020-5c31-8657-2b2280fe2e8f";
 const REPRESENTATIVE_CATALOG_ID =
   "canonical-work:base:concrete_foundation_interior_pile_cap_form_wet_zone";
 const TARGETS = FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS;
@@ -109,16 +110,38 @@ async function verifyThroughExistingCore(): Promise<Json> {
   const targets: Json[] = [];
   for (const target of TARGETS) {
     const fixture = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
+    const craneApplicable = fixture.crane_supply_mode === "RENTAL_SEPARATE";
+    const resourceDefinitions = formworkFramiXlifeResourcesForCatalogR1(target.catalogId);
+    const expectedRowIds = resourceDefinitions
+      .filter((resource) => resource.row_id !== "equipment:formwork:crane-handling" || craneApplicable)
+      .map((resource) => resource.row_id)
+      .sort();
+    const expectedProcurementRowIds = resourceDefinitions
+      .filter((resource) => resource.procurement_eligible)
+      .filter((resource) => resource.row_id !== "equipment:formwork:crane-handling" || craneApplicable)
+      .map((resource) => resource.row_id)
+      .sort();
     const compiled = await compileFormworkFramiXlifeProjectKitR1(
       { ...fixture },
       { catalogId: target.catalogId },
     );
-    invariant(compiled.rows.length === 24 && compiled.preliminaryNeeds.length === 0,
+    invariant(compiled.rows.length === expectedRowIds.length && compiled.preliminaryNeeds.length === 0,
       `STOP_FORMWORK_FAMILY_CORE_ROWS:${target.contextKey}`);
-    invariant(compiled.totals.includedRowCount === 17 && compiled.totals.unpricedRowCount === 17,
+    const expectedIncludedRows = craneApplicable ? 17 : 16;
+    invariant(compiled.totals.includedRowCount === expectedIncludedRows
+      && compiled.totals.unpricedRowCount === expectedIncludedRows,
       `STOP_FORMWORK_FAMILY_CORE_SCOPE:${target.contextKey}`);
-    invariant(compiled.rows.filter((row) => row.included_in_procurement).length === 14,
+    invariant(compiled.rows.filter((row) => row.included_in_procurement).length === expectedProcurementRowIds.length,
       `STOP_FORMWORK_FAMILY_CORE_PROCUREMENT:${target.contextKey}`);
+    const actualRowIds = compiled.rows.map((row) => row.row_id).sort();
+    const actualProcurementRowIds = compiled.rows
+      .filter((row) => row.included_in_procurement)
+      .map((row) => row.row_id)
+      .sort();
+    invariant(JSON.stringify(actualRowIds) === JSON.stringify(expectedRowIds),
+      `STOP_FORMWORK_FAMILY_CORE_ROW_SET:${target.contextKey}`);
+    invariant(JSON.stringify(actualProcurementRowIds) === JSON.stringify(expectedProcurementRowIds),
+      `STOP_FORMWORK_FAMILY_CORE_PROCUREMENT_SET:${target.contextKey}`);
     invariant(String(fixture.element_type).includes(target.contextRu),
       `STOP_FORMWORK_FAMILY_CONTEXT_FIXTURE:${target.contextKey}`);
     targets.push({
@@ -127,6 +150,10 @@ async function verifyThroughExistingCore(): Promise<Json> {
       titleRu: target.titleRu,
       rows: compiled.rows.length,
       procurementRows: compiled.rows.filter((row) => row.included_in_procurement).length,
+      craneApplicable,
+      projectScheduleSha256: sha256(fixture),
+      rowIds: actualRowIds,
+      procurementRowIds: actualProcurementRowIds,
       deterministicSha256: sha256(compiled),
     });
   }

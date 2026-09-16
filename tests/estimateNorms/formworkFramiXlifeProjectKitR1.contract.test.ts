@@ -323,19 +323,66 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
 
   test("reuses the same core and explicit schedule contract for all seven general foundation contexts", async () => {
     expect(FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS).toHaveLength(7);
+    const scheduleSignatures = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS) {
       const input = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
       const result = await compileFormworkFramiXlifeProjectKitR1(
         { ...input },
         { catalogId: target.catalogId },
       );
+      const craneApplicable = input.crane_supply_mode === "RENTAL_SEPARATE";
       expect(result.revisionProjection.catalogId).toBe(target.catalogId);
-      expect(result.rows).toHaveLength(24);
+      expect(result.rows).toHaveLength(craneApplicable ? 24 : 23);
       expect(result.preliminaryNeeds).toHaveLength(0);
-      expect(result.rows.filter((row) => row.included_in_procurement)).toHaveLength(14);
+      expect(result.rows.filter((row) => row.included_in_procurement))
+        .toHaveLength(craneApplicable ? 14 : 13);
+      expect(result.rows.some((row) => row.row_id === "equipment:formwork:crane-handling"))
+        .toBe(craneApplicable);
       expect(input.element_type).toContain(target.contextRu);
-      expect(input.element_dimensions_and_face_count).toContain("Фундаментная стенка");
+      expect(input.element_dimensions_and_face_count).toContain("GEN-");
+      scheduleSignatures.add(JSON.stringify({
+        measuredArea: input.measured_formwork_contact_area_m2,
+        panels: input.frami_xlife_panel_count,
+        corners: input.frami_xlife_corner_element_count,
+        connectors: input.frami_clamp_count,
+        ties: input.flat_tie_rod_10_80_count,
+        jointSealing: input.joint_sealing_tape_length_m,
+        assembly: input.assembly_alignment_worker_h,
+        craneMode: input.crane_supply_mode,
+        stages: input.project_stage_count,
+      }));
     }
+    expect(scheduleSignatures.size).toBe(7);
+    expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard"))
+      .toMatchObject({ measured_formwork_contact_area_m2: 120, frami_xlife_panel_count: 36 });
+    expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("large_area"))
+      .toMatchObject({ measured_formwork_contact_area_m2: 480, project_stage_count: 10 });
+    expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("wet_zone"))
+      .toMatchObject({ joint_sealing_tape_length_m: 130, crane_supply_mode: "RENTAL_SEPARATE" });
+    for (const contextKey of ["repair", "small_area", "technical_room"] as const) {
+      expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey))
+        .toMatchObject({ crane_hours: 0, crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING" });
+    }
+  });
+
+  test("fails closed when general-foundation crane applicability and project hours conflict", async () => {
+    const standard = formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard");
+    await expect(compileFormworkFramiXlifeProjectKitR1({
+      ...standard,
+      crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING",
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS[0].catalogId }))
+      .rejects.toMatchObject({
+        code: "FORMWORK_CRANE_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:crane_hours",
+      });
+
+    const technicalRoom = formworkFramiXlifeGeneralFoundationAcceptanceInputR1("technical_room");
+    await expect(compileFormworkFramiXlifeProjectKitR1({
+      ...technicalRoom,
+      crane_supply_mode: "RENTAL_SEPARATE",
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS[5].catalogId }))
+      .rejects.toMatchObject({
+        code: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
+      });
   });
 
   test.each([
