@@ -675,6 +675,13 @@ async function openRevision(page: Page, revisionId: string): Promise<void> {
   await page.getByTestId("request-estimate-items-total-count").waitFor({ state: "visible", timeout: 90_000 });
 }
 
+async function expandFilledParameters(page: Page): Promise<void> {
+  const toggle = page.getByTestId("request-estimate-filled-parameters-toggle");
+  if (!await toggle.isVisible().catch(() => false)) return;
+  const label = await toggle.innerText().catch(() => "");
+  if (label.includes("Показать ещё")) await toggle.click();
+}
+
 function preliminaryNeeds(revision: Json): Json[] {
   return Array.isArray(revision.preliminaryNeeds) ? revision.preliminaryNeeds : [];
 }
@@ -1145,8 +1152,7 @@ async function main(): Promise<void> {
     }
     await areaChip.waitFor({ state: "visible", timeout: 60_000 });
     if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
-      const filledToggle = page.getByTestId("request-estimate-filled-parameters-toggle");
-      if (await filledToggle.isVisible().catch(() => false)) await filledToggle.click();
+      await expandFilledParameters(page);
     }
     const areaInput = areaChip.getByTestId("editable-param-popover-input");
     await areaInput.fill(String(SENSITIVITY_PRIMARY_VALUE));
@@ -1205,8 +1211,7 @@ async function main(): Promise<void> {
         const toggle = page.getByTestId("request-estimate-parameters-toggle");
         if (await toggle.isVisible().catch(() => false)) await toggle.click();
       }
-      const filledToggle = page.getByTestId("request-estimate-filled-parameters-toggle");
-      if (await filledToggle.isVisible().catch(() => false)) await filledToggle.click();
+      await expandFilledParameters(page);
       await rentalChip.waitFor({ state: "visible", timeout: 60_000 });
       await rentalChip.getByTestId("editable-param-popover-input").fill("21");
       const durationPromise = page.waitForResponse((response) => response.url().endsWith("/jobs/recalculate")
