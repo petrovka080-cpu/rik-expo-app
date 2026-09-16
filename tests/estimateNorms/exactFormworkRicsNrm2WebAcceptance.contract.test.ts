@@ -22,8 +22,9 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain('argValue("--catalog-id")');
     expect(source).toContain('argValue("--search-query")');
     expect(source).toContain('argValue("--output-root")');
-    expect(source).toContain('"c7dc256f-52fb-55ba-9aad-e9f6b961303a"');
-    expect(source).toContain('"8521574b-e7e1-583c-a2c6-4117147c4c62"');
+    expect(source).toContain('"714aadc0-a593-5759-8a12-1973ce14481e"');
+    expect(source).toContain('"cfb134c3-97e8-50e9-8e72-92905303ee38"');
+    expect(source).toContain('"ec84af28-ca27-5c26-a5a6-2d63106a1b25"');
     expect(source).toContain('"d4f46211-551f-5d3b-a98d-9c359c9f2443"');
     expect(source).toContain('"1251ce4e-d68b-506e-9021-2ec392d3a3c6"');
     expect(source).toContain('"a15d0987-4289-5ba6-8780-d7c1b0e7d639"');
@@ -60,7 +61,12 @@ describe("exact physical norm Web acceptance harness", () => {
     expect(source).toContain("MASONRY_BRICK_PROCUREMENT_SPLIT_RED");
     expect(source).toContain("MASONRY_MORTAR_PROCUREMENT_SPLIT_RED");
     expect(source).toContain("GROSS_M2=110,OPENINGS_M2=10,NET_M2=100");
-    expect(source).toContain("GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
+    expect(source).toContain("GREEN_EXACT_BIA_TN10_MASONRY_FULL_APPLICABLE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
+    expect(source).toContain("rows.length === 18");
+    expect(source).toContain("Number(procurement.projection?.selectedRowCount) === 10");
+    expect(source).toContain('["wall_layout_length_m", "44"]');
+    expect(source).toContain('parameterCount: 60');
+    expect(source).toContain('resourceDefinitionCount: 23');
     expect(source).toContain("GREEN_EXACT_FORMWORK_RICS_NRM2_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
     expect(source).toContain("GREEN_EXACT_FORMWORK_RICS_NRM2_STRIP_FOUNDATION_WET_ZONE_MEASUREMENT_ONLY_PRELIMINARY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY");
     expect(source).toContain('element_type: "STRIP_FOUNDATION"');

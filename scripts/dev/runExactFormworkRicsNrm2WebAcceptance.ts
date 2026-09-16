@@ -8,6 +8,9 @@ import {
   FORMWORK_FRAMI_XLIFE_EXACT_INPUT,
   FORMWORK_FRAMI_XLIFE_SENSITIVITY_INPUT,
 } from "../../src/lib/estimate/v4/formworkFramiXlifeProjectKitR1";
+import {
+  MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
+} from "../../src/lib/estimate/v4/masonryBrickWallBiaTn10R1";
 
 type Json = Record<string, any>;
 
@@ -37,7 +40,7 @@ const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2
 const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "50739ecf-b47f-5294-96d8-503c00d92200"
   : IS_BIA_TN10_MASONRY
-  ? "c7dc256f-52fb-55ba-9aad-e9f6b961303a"
+  ? "714aadc0-a593-5759-8a12-1973ce14481e"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "dda56d3e-39dc-543c-a3ee-4395a4c018b9"
     : IS_RICS_NRM2_WET_ZONE
@@ -52,7 +55,7 @@ const RELEASE_ID = argValue("--release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
 const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "bab13b8a-90f4-5236-bf90-03a631793994"
   : IS_BIA_TN10_MASONRY
-  ? "8521574b-e7e1-583c-a2c6-4117147c4c62"
+  ? "cfb134c3-97e8-50e9-8e72-92905303ee38"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "15bf6a55-fb0b-5c7b-b522-dc1e6fd6896e"
     : IS_RICS_NRM2_WET_ZONE
@@ -67,7 +70,7 @@ const SEARCH_RELEASE_ID = argValue("--search-release-id") ?? (IS_FRAMI_XLIFE_PIL
 const DEFINITION_ID = argValue("--definition-id") ?? (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? "f9f9c447-502c-5a15-84b5-4a4d40351ae2"
   : IS_BIA_TN10_MASONRY
-  ? "31c1b89d-db88-5072-ad41-16ce6eefa421"
+  ? "ec84af28-ca27-5c26-a5a6-2d63106a1b25"
   : IS_NRMCA_STRIP_FOUNDATION
     ? "3afbb931-6432-5801-935a-1ba3d0290030"
     : IS_RICS_NRM2_WET_ZONE
@@ -145,7 +148,7 @@ const OUTPUT_ROOT = argValue("--output-root") ? resolve(argValue("--output-root"
   IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
     ? "web-formwork-frami-xlife-pile-cap-wet-zone-full"
     : IS_BIA_TN10_MASONRY
-    ? "web-bia-tn10-masonry"
+    ? "web-bia-tn10-masonry-full-family"
     : IS_NRMCA_STRIP_FOUNDATION
       ? "web-strip-foundation-nrmca-cip31"
       : IS_RICS_NRM2_WET_ZONE
@@ -332,7 +335,26 @@ const BIA_TN10_MASONRY_DETAILS = [
   "applicable bond correction factors: BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10;",
   "selected project breakage and waste allowances: BRICK_PERCENT=3,MORTAR_PERCENT=5;",
   "supplier package quantities: BRICK_PIECES=500,MORTAR_M3=0.25;",
-  "project approval reference: A-E-EST-BRICK-REV-C",
+  "project approval reference: A-E-EST-BRICK-REV-C;",
+  "project scope and applicability reference: BIA-WALL-SCOPE-001-REV-D;",
+  "wall layout length: 40 m; wall height: 2.5 m;",
+  "wall connectors applicable: true; wall connector quantity: 80;",
+  "wall connector designation: galvanized connector BIA-WALL-LC-001;",
+  "lintels applicable: true; lintel total length: 12 m; lintel designation: precast lintel BIA-WALL-LC-001;",
+  "dpc applicable: false; dpc area: 0 m2; dpc product designation: not applicable on prepared slab;",
+  "masonry reinforcement applicable: false; masonry reinforcement mass: 0 kg;",
+  "masonry reinforcement designation: not applicable by BIA-WALL-SCOPE-001;",
+  "brick cutting length: 20 m; masonry saw machine hours: 8;",
+  "masonry saw designation: wet masonry saw 350 mm; material handling machine hours: 6;",
+  "material handler designation: 2.5 t forklift; work platform applicable: false;",
+  "work platform rental days: 0; work platform designation: not applicable at 2.5 m wall height;",
+  "engineering inspection applicable: true; engineering inspection hours: 4;",
+  "brick unit mass: 2.2 kg; brick delivery distance: 25 km; brick delivery separately priced: true;",
+  "mortar density: 2000 kg/m3; mortar delivery distance: 20 km; mortar delivery separately priced: true;",
+  "waste haul applicable: true; masonry waste mass: 0.5 t; waste haul distance: 15 km;",
+  "lintel and connector schedule reference: BIA-WALL-LC-001-REV-B;",
+  "equipment schedule reference: BIA-WALL-EQ-001-REV-A; logistics plan reference: BIA-WALL-LOG-001-REV-A;",
+  "quality plan reference: BIA-WALL-QA-001-REV-C",
 ];
 const SELECTED_DETAILS = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? FRAMI_XLIFE_PILE_CAP_DETAILS
@@ -464,28 +486,7 @@ const NRMCA_STRIP_FOUNDATION_FIXTURE: Readonly<Json> = Object.freeze({
   soil_disposal_included: false,
 });
 const BIA_TN10_MASONRY_FIXTURE: Readonly<Json> = Object.freeze({
-  product_profile_id: "standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1",
-  measured_net_brick_wall_area_m2: 90,
-  gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=10,NET_M2=90",
-  fired_clay_brick_confirmed: true,
-  brick_manufacturer_and_designation: "Acme Brick Modular A-101",
-  specified_and_nominal_dimensions: "specified 194x92x57 mm, nominal 200x100x67 mm",
-  joint_width_mm: 10,
-  wall_thickness_and_wythe_configuration: "WYTHE:single 100 mm veneer",
-  bond_pattern: "RUNNING_BOND",
-  selected_bia_tn10_table_4_row: "BIA_TN10_TABLE4:modular-single-wythe-running-bond-10mm",
-  selected_brick_quantity_per_m2: 60,
-  selected_mortar_quantity_per_m2: 0.02,
-  applicable_bond_correction_factors: "BRICK_FACTOR=1.05,MORTAR_FACTOR=1.10",
-  selected_project_breakage_and_waste_allowances: "BRICK_PERCENT=3,MORTAR_PERCENT=5",
-  supplier_package_quantities: "BRICK_PIECES=500,MORTAR_M3=0.25",
-  project_architect_engineer_or_estimator_approval_reference: "A-E-EST-BRICK-REV-C",
-  brick_bond_correction_factor: 1.05,
-  mortar_bond_correction_factor: 1.1,
-  brick_breakage_percent: 3,
-  mortar_waste_percent: 5,
-  brick_supplier_package_pieces: 500,
-  mortar_supplier_package_m3: 0.25,
+  ...MASONRY_BRICK_WALL_BIA_TN10_EXACT_INPUT,
 });
 const FIXTURE = IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
   ? FORMWORK_FRAMI_XLIFE_EXACT_INPUT
@@ -725,7 +726,7 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
   invariant(rows.length === Number(revision.rowCount)
     && (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? rows.length === 24
-      : IS_BIA_TN10_MASONRY ? rows.length === 5 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
+      : IS_BIA_TN10_MASONRY ? rows.length === 18 : IS_NRMCA_STRIP_FOUNDATION ? rows.length > 1 : rows.length === 1),
   "REVISION_ROW_DENOMINATOR_RED");
   const row = rows.find((candidate) => candidate.rowId === ROW_ID);
   invariant(row != null, "TARGET_ROW_MISSING");
@@ -818,8 +819,35 @@ function assertExactRevision(revision: Json, rows: Json[], expectedQuantity: num
         && Array.isArray(work.normativeTrace) && work.normativeTrace.length === 0,
       `MASONRY_WORK_ROW_TRUTH_RED:${rowId}`);
     }
-    invariant(rows.every((candidate) => candidate.unitPrice == null && candidate.amount == null),
-      "MASONRY_UNKNOWN_PRICE_WAS_ZEROED");
+    const exactQuantities = {
+      "material:bia-tn10:wall-connectors": 80,
+      "material:bia-tn10:opening-lintels": 12,
+      "work:bia-tn10:wall-setting-out": wallAreaM2 === 90 ? 40 : 44,
+      "work:bia-tn10:gross-wall-geometry-check": wallAreaM2 === 90 ? 100 : 110,
+      "work:bia-tn10:brick-cutting-and-fitting": 20,
+      "equipment:bia-tn10:masonry-saw": 8,
+      "equipment:bia-tn10:material-handler": 6,
+      "service:bia-tn10:engineering-inspection": 4,
+      "delivery:bia-tn10:fired-clay-brick": wallAreaM2 === 90 ? 330 : 357.5,
+      "delivery:bia-tn10:masonry-mortar": wallAreaM2 === 90 ? 90 : 100,
+      "delivery:bia-tn10:masonry-waste-haul": 7.5,
+    } as const;
+    for (const [rowId, quantity] of Object.entries(exactQuantities)) {
+      const exact = rows.find((candidate) => candidate.rowId === rowId);
+      invariant(exact != null && Number(exact.quantity) === quantity && exact.includedInEstimate === true,
+        `MASONRY_FULL_SCOPE_QUANTITY_RED:${rowId}`);
+    }
+    invariant(rows.filter((candidate) => candidate.category === "material").length === 4
+      && rows.filter((candidate) => candidate.category === "construction_work").length === 8
+      && rows.filter((candidate) => candidate.category === "equipment").length === 2
+      && rows.filter((candidate) => candidate.category === "service").length === 1
+      && rows.filter((candidate) => candidate.category === "delivery").length === 3
+      && rows.filter((candidate) => candidate.includedInProcurement).length === 10
+      && !rows.some((candidate) => candidate.rowId === "material:bia-tn10:dpc-membrane")
+      && !rows.some((candidate) => candidate.rowId === "material:bia-tn10:masonry-reinforcement")
+      && !rows.some((candidate) => candidate.rowId === "equipment:bia-tn10:work-platform")
+      && rows.every((candidate) => candidate.unitPrice == null && candidate.amount == null),
+    "MASONRY_FULL_APPLICABLE_COMPOSITION_RED");
   }
   invariant(Number(revision.totals?.unpricedRowCount) > 0
     && Number(revision.totals?.pricedRowCount) === 0,
@@ -968,6 +996,16 @@ async function openColdRevision(context: BrowserContext, revision: Json, screens
         "COLD_REOPEN_MORTAR_QUANTITY_RED");
       invariant(body.includes("Контроль геометрии стены") && body.includes("Очистка кладки"),
         "COLD_REOPEN_COMPLETE_MASONRY_ESTIMATE_RED");
+      const positionsPanel = page.getByTestId("request-estimate-positions-panel");
+      const positionsToggle = page.getByTestId("request-estimate-positions-toggle");
+      if (!await positionsPanel.isVisible().catch(() => false)) await positionsToggle.click();
+      await positionsPanel.waitFor({ state: "visible", timeout: 60_000 });
+      const expandedBody = await page.locator("body").innerText();
+      invariant(expandedBody.includes("Машина для мокрой резки обожжённого глиняного кирпича")
+        && expandedBody.includes("Инженерная приёмка геометрии, швов и перевязки кирпичной кладки")
+        && expandedBody.includes("Доставка выбранного обожжённого глиняного кирпича на объект")
+        && expandedBody.includes("Вывоз отходов резки и боя кирпичной кладки"),
+      "COLD_REOPEN_FULL_MASONRY_EQUIPMENT_SERVICE_LOGISTICS_RED");
     } else if (IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE) {
       const positionsPanel = page.getByTestId("request-estimate-positions-panel");
       const positionsToggle = page.getByTestId("request-estimate-positions-toggle");
@@ -1173,10 +1211,15 @@ async function main(): Promise<void> {
         await chip.getByTestId("editable-param-popover-input").fill(String(value));
       }
     } else if (IS_BIA_TN10_MASONRY) {
-      const geometryChip = page.getByTestId("editable-param-chip-gross_wall_area_and_opening_deductions");
-      await geometryChip.waitFor({ state: "visible", timeout: 60_000 });
-      await geometryChip.getByTestId("editable-param-popover-input")
-        .fill("GROSS_M2=110,OPENINGS_M2=10,NET_M2=100");
+      for (const [parameterId, value] of [
+        ["wall_layout_length_m", "44"],
+        ["gross_wall_area_and_opening_deductions", "GROSS_M2=110,OPENINGS_M2=10,NET_M2=100"],
+      ] as const) {
+        const chip = page.getByTestId(`editable-param-chip-${parameterId}`);
+        if (!await chip.isVisible().catch(() => false)) await expandFilledParameters(page);
+        await chip.waitFor({ state: "visible", timeout: 60_000 });
+        await chip.getByTestId("editable-param-popover-input").fill(value);
+      }
     }
     await page.getByTestId("editable-param-batch-bar").waitFor({ state: "visible", timeout: 30_000 });
     const recalculatePromise = page.waitForResponse((response) => response.url().endsWith("/jobs/recalculate")
@@ -1199,6 +1242,7 @@ async function main(): Promise<void> {
         `FRAMI_SENSITIVITY_PARAMETER_DRIFT:${mismatches.join(",")}`);
     } else if (IS_BIA_TN10_MASONRY) {
       invariant(Number(sensitivityRevision.parameters?.measured_net_brick_wall_area_m2) === 100
+        && Number(sensitivityRevision.parameters?.wall_layout_length_m) === 44
         && sensitivityRevision.parameters?.gross_wall_area_and_opening_deductions
           === "GROSS_M2=110,OPENINGS_M2=10,NET_M2=100",
       "MASONRY_SENSITIVITY_PARAMETER_DRIFT");
@@ -1284,7 +1328,7 @@ async function main(): Promise<void> {
 
   const activeAuthorization = authorization || apiAuthorization;
   const acceptedRevision = durationRevision ?? sensitivityRevision!;
-  const negativeScenarios: Array<{ scenarioId: string; parameters: Json; expectedErrorCode: string | null }> =
+  const negativeScenarios: { scenarioId: string; parameters: Json; expectedErrorCode: string | null }[] =
     IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? [
         { scenarioId: "wrong-formwork-system", expectedErrorCode: "PARAMETER_VALIDATION_FAILED",
@@ -1301,9 +1345,17 @@ async function main(): Promise<void> {
       ? [
         { scenarioId: "non-fired-clay-material", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
           parameters: { ...acceptedRevision.parameters, fired_clay_brick_confirmed: false } },
-        { scenarioId: "wall-opening-geometry-conflict", expectedErrorCode: "PHYSICAL_NORM_APPLICABILITY_FAILED",
+        { scenarioId: "wall-opening-geometry-conflict",
+          expectedErrorCode: "MASONRY_FULL_SCOPE_GROSS_GEOMETRY_CONFLICT",
           parameters: { ...acceptedRevision.parameters,
             gross_wall_area_and_opening_deductions: "GROSS_M2=100,OPENINGS_M2=5,NET_M2=100" } },
+        { scenarioId: "connector-quantity-missing",
+          expectedErrorCode: "MASONRY_FULL_SCOPE_APPLICABLE_QUANTITY_REQUIRED:wall_connector_quantity_piece",
+          parameters: { ...acceptedRevision.parameters, wall_connectors_applicable: true,
+            wall_connector_quantity_piece: 0 } },
+        { scenarioId: "dpc-not-applicable-conflict",
+          expectedErrorCode: "MASONRY_FULL_SCOPE_NOT_APPLICABLE_QUANTITY_CONFLICT:dpc_area_m2",
+          parameters: { ...acceptedRevision.parameters, dpc_applicable: false, dpc_area_m2: 1 } },
       ]
       : IS_NRMCA_STRIP_FOUNDATION
         ? [
@@ -1385,8 +1437,8 @@ async function main(): Promise<void> {
       : [];
     invariant(procurement.projection?.revisionId === acceptedRevision.revisionId
       && procurement.projection?.releaseId === RELEASE_ID
-      && Number(procurement.projection?.selectedRowCount) === 2
-      && procurementRows.length === 2,
+      && Number(procurement.projection?.selectedRowCount) === 10
+      && procurementRows.length === 10,
     "MASONRY_PROCUREMENT_PROJECTION_IDENTITY_RED");
     const brick = procurementRows.find((candidate) => candidate.rowId === "material:bia-tn10:fired-clay-brick");
     const mortar = procurementRows.find((candidate) => candidate.rowId === "material:bia-tn10:masonry-mortar");
@@ -1398,9 +1450,19 @@ async function main(): Promise<void> {
       && Number(mortar.grossQuantity) === 2.31 && Number(mortar.procurementQuantity) === 2.5
       && Number(mortar.procurementPackageSize) === 0.25 && mortar.procurementUnit === "m3",
     "MASONRY_MORTAR_PROCUREMENT_SPLIT_RED");
-    invariant(procurementRows.every((candidate) => candidate.unitPrice == null && candidate.amount == null
-      && !String(candidate.rowId).startsWith("work:")),
-    "MASONRY_PROCUREMENT_WORK_OR_ZERO_PRICE_RED");
+    invariant(procurementRows.filter((candidate) => candidate.category === "material").length === 4
+      && procurementRows.filter((candidate) => candidate.category === "equipment").length === 2
+      && procurementRows.filter((candidate) => candidate.category === "service").length === 1
+      && procurementRows.filter((candidate) => candidate.category === "delivery").length === 3
+      && Number(procurementRows.find((candidate) =>
+        candidate.rowId === "delivery:bia-tn10:fired-clay-brick")?.quantity) === 357.5
+      && Number(procurementRows.find((candidate) =>
+        candidate.rowId === "delivery:bia-tn10:masonry-mortar")?.quantity) === 100
+      && Number(procurementRows.find((candidate) =>
+        candidate.rowId === "delivery:bia-tn10:masonry-waste-haul")?.quantity) === 7.5
+      && procurementRows.every((candidate) => candidate.unitPrice == null && candidate.amount == null
+        && !String(candidate.rowId).startsWith("work:")),
+    "MASONRY_PROCUREMENT_COMPOSITION_OR_ZERO_PRICE_RED");
   }
   progress("ARTIFACTS_GREEN", { pdfBytes: pdf.byteSize,
     procurementRows: procurement.metadata?.selectedProcurementRowCount });
@@ -1424,7 +1486,7 @@ async function main(): Promise<void> {
     schemaVersion: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? "rik-expo-app.r4-a13-6.formwork-frami-xlife-pile-cap-full.web-acceptance.v1"
       : IS_BIA_TN10_MASONRY
-      ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-complete-estimate.web-acceptance.v1"
+      ? "rik-expo-app.r4-a13-6.bia-tn10-masonry-full-applicable-estimate.web-acceptance.v2"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "rik-expo-app.r4-a13-6.strip-foundation-nrmca-cip31-rebar-schedule.web-acceptance.v2"
         : IS_RICS_NRM2_WET_ZONE
@@ -1440,7 +1502,7 @@ async function main(): Promise<void> {
     status: IS_FRAMI_XLIFE_PILE_CAP_WET_ZONE
       ? "GREEN_EXACT_FORMWORK_FRAMI_XLIFE_PILE_CAP_FULL_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_BIA_TN10_MASONRY
-      ? "GREEN_EXACT_BIA_TN10_MASONRY_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
+      ? "GREEN_EXACT_BIA_TN10_MASONRY_FULL_APPLICABLE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
       : IS_NRMCA_STRIP_FOUNDATION
         ? "GREEN_EXACT_STRIP_FOUNDATION_NRMCA_CIP31_REBAR_SCHEDULE_WEB_BACKEND_PDF_PROCUREMENT_HISTORY"
         : IS_RICS_NRM2_WET_ZONE
@@ -1474,6 +1536,19 @@ async function main(): Promise<void> {
         preliminaryScopeNeedCount: 0,
         areaDerivedKitQuantities: false,
       }
+      : IS_BIA_TN10_MASONRY
+        ? {
+          estimateLevel: "FULL_APPLICABLE_ESTIMATE",
+          scopeMode: "EXPLICIT_PROJECT_AND_SUPPLIER_INPUTS",
+          fullWorkScopeComplete: true,
+          parameterCount: 60,
+          formulaCount: 19,
+          resourceDefinitionCount: 23,
+          includedEstimateRowCount: 18,
+          procurementRowCount: 10,
+          conditionalRowsExcludedCount: 5,
+          preliminaryScopeNeedCount: 0,
+        }
       : IS_RICS_NRM2_FORMWORK ? {
         estimateLevel: "PRELIMINARY_QUANTITY_BOQ",
         scopeMode: "MEASUREMENT_ONLY",
