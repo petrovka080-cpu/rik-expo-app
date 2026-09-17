@@ -12,34 +12,66 @@ import {
   STRIP_FOUNDATION_REINFORCEMENT_TARGETS,
   stripFoundationReinforcementAcceptanceInputR1,
 } from "../../src/lib/estimate/v4/stripFoundationReinforcementR1";
+import {
+  anchorGroupInstallationPromptDetailsR1,
+} from "../../src/lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1";
+import {
+  ANCHOR_GROUP_INSTALLATION_TARGETS,
+  ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID,
+  ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID,
+  anchorGroupInstallationAcceptanceInputR1,
+} from "../../src/lib/estimate/v4/anchorGroupInstallationR1";
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-reinforcement.differential-web.v1";
+const IS_ANCHOR = process.env.R4A13_ACCEPTANCE_FAMILY === "anchor-group";
+const CONTRACT = IS_ANCHOR
+  ? "rik-expo-app.r4-a13-6.anchor-group-installation.differential-web.v1"
+  : "rik-expo-app.r4-a13-6.strip-foundation-reinforcement.differential-web.v1";
 const GLOBAL_STATUS = "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY";
 const ORIGIN = "http://127.0.0.1:8081";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-differential-web",
+  IS_ANCHOR
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-web"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-differential-web",
 );
 const OUTPUT = resolve(OUTPUT_ROOT, "acceptance.json");
-const RELEASE_ID = "831a5ba4-af0f-561c-8766-09a960cf2c74";
-const SEARCH_RELEASE_ID = "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
+const RELEASE_ID = IS_ANCHOR
+  ? "80c3ba4b-3d04-5947-b17d-5fb05bcf2bae"
+  : "831a5ba4-af0f-561c-8766-09a960cf2c74";
+const SEARCH_RELEASE_ID = IS_ANCHOR
+  ? "132eb3c0-0a52-5257-8420-cf2f8de425b9"
+  : "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
 const API_RECEIPT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
+  IS_ANCHOR
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-api/acceptance.json"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
 );
 const TARGET_CONTEXTS = ["standard", "high_load"] as const;
-const PRIMARY_PARAMETER_ID = "approved_reinforcement_schedule_weight_kg";
-const STEEL_ROW_ID = "material:reinforcement:steel-approved-schedule";
-const DELIVERY_ROW_ID = "delivery:reinforcement:steel";
-const SOURCE_ID =
-  "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
-const NORM_ID = "reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
+const TARGETS = IS_ANCHOR
+  ? ANCHOR_GROUP_INSTALLATION_TARGETS
+  : STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
+const PRIMARY_PARAMETER_ID = IS_ANCHOR
+  ? "anchor_bolt_quantity_piece"
+  : "approved_reinforcement_schedule_weight_kg";
+const PRIMARY_ROW_ID = IS_ANCHOR
+  ? "material:anchor-group:anchor-bolts"
+  : "material:reinforcement:steel-approved-schedule";
+const DELIVERY_ROW_ID = IS_ANCHOR
+  ? "delivery:anchor-group:supply"
+  : "delivery:reinforcement:steel";
+const SOURCE_ID = IS_ANCHOR
+  ? ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID
+  : "src_professional_norm_pack_reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
+const NORM_ID = IS_ANCHOR
+  ? ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID
+  : "reinforcement_project_bar_schedule_weight_same_unit_routing_v1";
 
 function invariant(value: unknown, code: string): asserts value {
-  if (!value) throw new Error(`STRIP_REINFORCEMENT_DIFFERENTIAL_WEB:${code}`);
+  if (!value) throw new Error(`${IS_ANCHOR ? "ANCHOR_GROUP_WEB" : "STRIP_REINFORCEMENT_DIFFERENTIAL_WEB"}:${code}`);
 }
 
 function sha256(value: string | Buffer): string {
@@ -64,7 +96,7 @@ function resources(): Json {
 
 function progress(stage: string, details: Json = {}): void {
   process.stdout.write(`${JSON.stringify({
-    progress: "STRIP_REINFORCEMENT_DIFFERENTIAL_WEB",
+    progress: IS_ANCHOR ? "ANCHOR_GROUP_WEB" : "STRIP_REINFORCEMENT_DIFFERENTIAL_WEB",
     stage,
     ...details,
   })}\n`);
@@ -251,8 +283,12 @@ function assertRevisionRows(
     .map(([parameterId]) => parameterId);
   invariant(parameterMismatches.length === 0,
     `PARAMETER_DRIFT:${contextKey}:${parameterMismatches.join(",")}`);
-  const expectedRowCount = contextKey === "high_load" ? 16 : 9;
-  const expectedProcurementCount = contextKey === "high_load" ? 10 : 6;
+  const expectedRowCount = IS_ANCHOR
+    ? (contextKey === "high_load" ? 21 : 16)
+    : (contextKey === "high_load" ? 16 : 9);
+  const expectedProcurementCount = IS_ANCHOR
+    ? (contextKey === "high_load" ? 16 : 11)
+    : (contextKey === "high_load" ? 10 : 6);
   invariant(rows.length === expectedRowCount && Number(revision.rowCount) === expectedRowCount,
     `ROW_COUNT:${contextKey}:${rows.length}`);
   invariant(rows.every((row) => row.includedInEstimate === true
@@ -261,16 +297,18 @@ function assertRevisionRows(
     && Number(revision.totals?.includedRowCount) === expectedRowCount
     && Number(revision.totals?.unpricedRowCount) === expectedRowCount,
   `ROW_SCOPE_OR_PRICE:${contextKey}`);
-  const steel = rows.find((row) => row.rowId === STEEL_ROW_ID);
+  const primary = rows.find((row) => row.rowId === PRIMARY_ROW_ID);
   const delivery = rows.find((row) => row.rowId === DELIVERY_ROW_ID);
-  invariant(steel && delivery, `REFERENCE_ROWS_MISSING:${contextKey}`);
-  const expectedWeight = Number(fixture[PRIMARY_PARAMETER_ID]);
-  const expectedDelivery = expectedWeight / 1_000
-    * Number(fixture.reinforcement_delivery_distance_km);
-  invariant(Number(steel.quantity) === expectedWeight
+  invariant(primary && delivery, `REFERENCE_ROWS_MISSING:${contextKey}`);
+  const expectedPrimary = Number(fixture[PRIMARY_PARAMETER_ID]);
+  const expectedDelivery = IS_ANCHOR
+    ? Number(fixture.anchor_group_delivered_mass_kg) / 1_000
+      * Number(fixture.delivery_distance_km)
+    : expectedPrimary / 1_000 * Number(fixture.reinforcement_delivery_distance_km);
+  invariant(Number(primary.quantity) === expectedPrimary
     && Math.abs(Number(delivery.quantity) - expectedDelivery) < 1e-8,
   `PROJECT_SCHEDULE_QUANTITY:${contextKey}`);
-  const traces = Array.isArray(steel.normativeTrace) ? steel.normativeTrace as Json[] : [];
+  const traces = Array.isArray(primary.normativeTrace) ? primary.normativeTrace as Json[] : [];
   invariant(traces.some((trace) => (trace.sourceId ?? trace.source_id) === SOURCE_ID
       && (trace.normId ?? trace.norm_id) === NORM_ID)
     && !traces.some((trace) => String(trace.sourceId ?? trace.source_id).includes("kg_m3")),
@@ -279,7 +317,7 @@ function assertRevisionRows(
     rowCount: rows.length,
     includedRowCount: rows.filter((row) => row.includedInEstimate === true).length,
     procurementRowCount: rows.filter((row) => row.includedInProcurement === true).length,
-    approvedScheduleWeightKg: Number(steel.quantity),
+    primaryQuantity: Number(primary.quantity),
     deliveryTKm: Number(delivery.quantity),
     unknownPriceRows: rows.filter((row) => row.unitPrice == null && row.amount == null).length,
   };
@@ -348,10 +386,11 @@ async function main(): Promise<void> {
   invariant(before.availableMemoryBytes >= 2 * 1024 ** 3, "AVAILABLE_MEMORY_BELOW_2_GIB");
   const apiReceiptBytes = readFileSync(API_RECEIPT);
   const apiReceipt = JSON.parse(apiReceiptBytes.toString("utf8")) as Json;
-  invariant(apiReceipt.status
-    === "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
-    && apiReceipt.denominator?.acceptedTargetCount === 7,
-  "API_7_OF_7_RECEIPT_RED");
+  invariant(apiReceipt.status === (IS_ANCHOR
+    ? "GREEN_ANCHOR_GROUP_INSTALLATION_6_OF_6_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+    : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE")
+    && apiReceipt.denominator?.acceptedTargetCount === (IS_ANCHOR ? 6 : 7),
+  "API_FAMILY_RECEIPT_RED");
   const definitionIds = new Map<string, string>((apiReceipt.targetResults as Json[])
     .map((result) => [String(result.contextKey), String(result.definitionVersionId)]));
   const authorization = await loginLocalDeveloperOwner();
@@ -371,15 +410,20 @@ async function main(): Promise<void> {
   const results: Json[] = [];
   try {
     for (const contextKey of TARGET_CONTEXTS) {
-      const target = STRIP_FOUNDATION_REINFORCEMENT_TARGETS.find(
+      const target = TARGETS.find(
         (candidate) => candidate.contextKey === contextKey,
       );
       invariant(target, `TARGET_MISSING:${contextKey}`);
       const definitionVersionId = definitionIds.get(contextKey);
       invariant(definitionVersionId, `DEFINITION_ID_MISSING:${contextKey}`);
-      const fixture = { ...stripFoundationReinforcementAcceptanceInputR1(contextKey) } as Json;
-      const promptDetails = stripFoundationReinforcementPromptDetailsR1(fixture);
-      invariant(promptDetails.length === 37, `PROMPT_PARAMETER_COUNT:${contextKey}`);
+      const fixture = (IS_ANCHOR
+        ? { ...anchorGroupInstallationAcceptanceInputR1(contextKey) }
+        : { ...stripFoundationReinforcementAcceptanceInputR1(contextKey) }) as Json;
+      const promptDetails = IS_ANCHOR
+        ? anchorGroupInstallationPromptDetailsR1(fixture)
+        : stripFoundationReinforcementPromptDetailsR1(fixture);
+      invariant(promptDetails.length === (IS_ANCHOR ? 39 : 37),
+        `PROMPT_PARAMETER_COUNT:${contextKey}`);
       const prompt = [target.titleRu, ...promptDetails].join("\n");
       const historyBefore = await api(authorization,
         `revisions?catalogId=${encodeURIComponent(target.catalogId)}&limit=100`);
@@ -442,20 +486,23 @@ async function main(): Promise<void> {
       const createScreenshot = resolve(OUTPUT_ROOT, `01_${contextKey}_created.png`);
       await page.screenshot({ path: createScreenshot, fullPage: true });
 
-      const originalWeight = Number(fixture[PRIMARY_PARAMETER_ID]);
-      const editedWeight = originalWeight + 100;
-      const editedRevision = await editPrimaryMeasure(page, authorization, editedWeight);
+      const originalPrimary = Number(fixture[PRIMARY_PARAMETER_ID]);
+      const editedPrimary = originalPrimary + (IS_ANCHOR ? 4 : 100);
+      const editedRevision = await editPrimaryMeasure(page, authorization, editedPrimary);
       invariant(editedRevision.parentRevisionId === createdRevision.revisionId
         && editedRevision.catalogId === target.catalogId,
       `EDIT_LINEAGE:${contextKey}`);
       const editedRows = await allRows(authorization, editedRevision.revisionId);
-      const editedFixture = { ...fixture, [PRIMARY_PARAMETER_ID]: editedWeight };
+      const editedFixture = { ...fixture, [PRIMARY_PARAMETER_ID]: editedPrimary };
       const editedTruth = assertRevisionRows(contextKey, editedRevision, editedRows, editedFixture);
       const createdById = new Map(createdRows.map((row) => [row.rowId, Number(row.quantity)]));
       const changedRowIds = editedRows
         .filter((row) => Number(row.quantity) !== createdById.get(row.rowId))
         .map((row) => row.rowId).sort();
-      invariant(JSON.stringify(changedRowIds) === JSON.stringify([DELIVERY_ROW_ID, STEEL_ROW_ID].sort()),
+      const expectedChangedRowIds = IS_ANCHOR
+        ? [PRIMARY_ROW_ID]
+        : [DELIVERY_ROW_ID, PRIMARY_ROW_ID].sort();
+      invariant(JSON.stringify(changedRowIds) === JSON.stringify(expectedChangedRowIds),
         `EDIT_SCOPE:${contextKey}:${changedRowIds.join(",")}`);
       await openRevision(page, editedRevision.revisionId);
       const editedVisible = await assertVisibleRows(page, editedRows, `EDIT:${contextKey}`);
@@ -516,8 +563,8 @@ async function main(): Promise<void> {
           parentRevisionId: createdRevision.revisionId,
           revisionId: editedRevision.revisionId,
           revisionNumber: editedRevision.revisionNumber,
-          originalApprovedScheduleWeightKg: originalWeight,
-          editedApprovedScheduleWeightKg: editedWeight,
+          originalPrimaryQuantity: originalPrimary,
+          editedPrimaryQuantity: editedPrimary,
           changedRowIds,
           singleBatchApply: true,
           ...editedTruth,
@@ -570,8 +617,10 @@ async function main(): Promise<void> {
   const unexpectedRequestFailures = requestFailures.filter((value) =>
     !value.includes("net::ERR_ABORTED"));
   invariant(results.length === 2
-    && results.some((result) => result.contextKey === "standard" && result.edit.rowCount === 9)
-    && results.some((result) => result.contextKey === "high_load" && result.edit.rowCount === 16),
+    && results.some((result) => result.contextKey === "standard"
+      && result.edit.rowCount === (IS_ANCHOR ? 16 : 9))
+    && results.some((result) => result.contextKey === "high_load"
+      && result.edit.rowCount === (IS_ANCHOR ? 21 : 16)),
   "RESULT_DENOMINATOR_RED");
   invariant(pageErrors.length === 0 && unexpectedConsoleErrors.length === 0
     && unexpectedRequestFailures.length === 0,
@@ -586,7 +635,9 @@ async function main(): Promise<void> {
   const evidence = {
     schemaVersion: `${CONTRACT}.receipt.v1`,
     capturedAt: new Date().toISOString(),
-    status: "GREEN_STRIP_FOUNDATION_REINFORCEMENT_DIFFERENTIAL_WEB_STANDARD_AND_HIGH_LOAD_CREATE_EDIT_PDF_PROCUREMENT_HISTORY_COLD_PREPARED_NOT_ACTIVE",
+    status: IS_ANCHOR
+      ? "GREEN_ANCHOR_GROUP_INSTALLATION_WEB_STANDARD_AND_HIGH_LOAD_CREATE_EDIT_PDF_PROCUREMENT_HISTORY_COLD_PREPARED_NOT_ACTIVE"
+      : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_DIFFERENTIAL_WEB_STANDARD_AND_HIGH_LOAD_CREATE_EDIT_PDF_PROCUREMENT_HISTORY_COLD_PREPARED_NOT_ACTIVE",
     globalStatus: GLOBAL_STATUS,
     apiFamilyReceipt: {
       path: API_RECEIPT,
@@ -605,12 +656,22 @@ async function main(): Promise<void> {
     },
     selectionRationale: {
       selectedDifferentialContexts: [
-        { contextKey: "standard", reason: "minimal ready-cage branch with 9 rows" },
-        { contextKey: "high_load", reason: "maximal onsite/couplers/lifting branch with 16 rows" },
+        {
+          contextKey: "standard",
+          reason: IS_ANCHOR
+            ? "minimal no-weld/no-lift anchor branch with 16 rows"
+            : "minimal ready-cage branch with 9 rows",
+        },
+        {
+          contextKey: "high_load",
+          reason: IS_ANCHOR
+            ? "maximal protected/welded/lifting/torque anchor branch with 21 rows"
+            : "maximal onsite/couplers/lifting branch with 16 rows",
+        },
       ],
-      backendAcceptedEquivalentOrIntermediateContexts: [
-        "large_area", "repair", "small_area", "technical_room", "wet_zone",
-      ],
+      backendAcceptedEquivalentOrIntermediateContexts: IS_ANCHOR
+        ? ["large_area", "small_area", "technical_room", "wet_zone"]
+        : ["large_area", "repair", "small_area", "technical_room", "wet_zone"],
     },
     results,
     diagnostics: {
