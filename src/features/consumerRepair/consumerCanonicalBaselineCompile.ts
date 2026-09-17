@@ -34,6 +34,7 @@ import { extractFormworkFramiXlifeCanonicalParametersR1 } from "../../lib/estima
 import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1";
 import { extractStripFoundationConcretePlacementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationConcretePlacementProductionBindingR1";
 import { extractStripFoundationReinforcementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
+import { extractAnchorGroupInstallationCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1";
 import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
 import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
 
@@ -70,6 +71,23 @@ function explicitStripFoundationReinforcementPromptInputs(input: {
   prompt: string;
 }): Record<string, CanonicalEstimateParameterInputValue> | null {
   const extracted = extractStripFoundationReinforcementCanonicalParametersR1({
+    catalogId: input.catalog.catalogId,
+    text: input.prompt,
+  });
+  if (!extracted) return null;
+  const schemaIds = new Set(input.catalog.parameterSchema.map((parameter) => parameter.parameterId));
+  const values: Record<string, CanonicalEstimateParameterInputValue> = {};
+  for (const [parameterId, value] of Object.entries(extracted)) {
+    if (schemaIds.has(parameterId)) values[parameterId] = value;
+  }
+  return values;
+}
+
+function explicitAnchorGroupInstallationPromptInputs(input: {
+  catalog: CanonicalEstimateCatalogItem;
+  prompt: string;
+}): Record<string, CanonicalEstimateParameterInputValue> | null {
+  const extracted = extractAnchorGroupInstallationCanonicalParametersR1({
     catalogId: input.catalog.catalogId,
     text: input.prompt,
   });
@@ -420,6 +438,7 @@ export function buildCanonicalBaselinePlan(input: {
     explicitStripFoundationConcretePlacementPromptInputs(input);
   const stripFoundationReinforcementInput =
     explicitStripFoundationReinforcementPromptInputs(input);
+  const anchorGroupInstallationInput = explicitAnchorGroupInstallationPromptInputs(input);
   const ricsNrm2FormworkInput = formworkFramiXlifeInput == null
     ? explicitRicsNrm2FormworkPromptInputs(input)
     : null;
@@ -429,6 +448,7 @@ export function buildCanonicalBaselinePlan(input: {
     && ricsNrm2FormworkInput == null && biaTn10MasonryInput == null
     && stripFoundationConcretePlacementInput == null
     && stripFoundationReinforcementInput == null
+    && anchorGroupInstallationInput == null
     ? extractUserQuantity(input.prompt)
     : null;
   let userQuantityParameterId: string | null = null;
@@ -448,6 +468,7 @@ export function buildCanonicalBaselinePlan(input: {
     pumpStationInput ?? stripFoundationInput ?? asphaltDrainageInput
       ?? formworkFramiXlifeInput ?? ricsNrm2FormworkInput ?? biaTn10MasonryInput
       ?? stripFoundationConcretePlacementInput ?? stripFoundationReinforcementInput
+      ?? anchorGroupInstallationInput
       ?? promptOwnedNamedParameters(input.catalog.parameterSchema, input.prompt),
   );
   const primaryMeasureParameterId = pumpStationInput != null
@@ -464,6 +485,8 @@ export function buildCanonicalBaselinePlan(input: {
               ? "plan_dimension_concrete_volume_m3"
               : stripFoundationReinforcementInput != null
                 ? "approved_reinforcement_schedule_weight_kg"
+                : anchorGroupInstallationInput != null
+                  ? "anchor_bolt_quantity_piece"
                 : userQuantityParameterId
     ?? input.catalog.parameterSchema
       .filter((parameter) => parameter.visibilityRole == null || parameter.visibilityRole === "USER_INPUT")
