@@ -56,6 +56,7 @@ describe("anchor-group installation family", () => {
       resources: ANCHOR_GROUP_INSTALLATION_RESOURCES,
     });
     expect(serialized).toContain(ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID);
+    expect(ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID).toMatch(/^project_/u);
     expect(serialized).not.toContain("src_professional_norm_pack_concrete_ready_mix_m3_m3_placed_v1");
     expect(serialized).not.toContain("src_professional_norm_pack_reinforcement_rebar_kg_m3_concrete_element_v1");
     expect(serialized).not.toContain("src_professional_norm_pack_formwork_contact_area_m2_m3_concrete_element_v1");

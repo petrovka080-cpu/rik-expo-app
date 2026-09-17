@@ -12,7 +12,7 @@ type InputValue = string | number | boolean;
 type Json = Record<string, unknown>;
 
 export const ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID =
-  "src_project_anchor_group_schedule_drawing_method_statement_v1";
+  "project_anchor_group_schedule_drawing_method_statement_v1";
 export const ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID =
   "norm:project:anchor_group:schedule_drawing_method_statement:v1";
 export const ANCHOR_GROUP_PROJECT_SCHEDULE_PRODUCT_PROFILE_ID =

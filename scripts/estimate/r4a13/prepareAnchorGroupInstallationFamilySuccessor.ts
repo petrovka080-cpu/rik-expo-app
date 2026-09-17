@@ -29,22 +29,22 @@ import {
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.anchor-group-installation-family.v1";
+const CONTRACT = "rik-expo-app.r4-a13-6.anchor-group-installation-family.v2";
 const EXPECTED_BRANCH = "codex/r4-a5-clean-08b18902";
 const MASTER_PATH = resolve(
   "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (10).md",
 );
 const MASTER_SHA256 = "d4b0af610619d877cc65d26534ce391d2c37e7d196a5feb03c20d4f81e298f01";
-const PARENT_RELEASE_ID = "831a5ba4-af0f-561c-8766-09a960cf2c74";
-const PARENT_SEARCH_RELEASE_ID = "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
+const PARENT_RELEASE_ID = "11b33e36-e42b-54e1-b177-91be7d2018cd";
+const PARENT_SEARCH_RELEASE_ID = "99fd54a5-30c1-544a-84b4-883fa6b854de";
 const CURRENT_RELEASE_PATH = resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json");
 const OUTPUT_ROOT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family",
+  ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-source-role-r2",
 );
 const RESIDUAL_SUMMARY_PATH = resolve(
-  ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-16T18-44-36-935Z/candidate-summary.json",
+  ".release-runtime/ai-estimate-real-professional-norm-packs/2026-09-17T05-52-01-470Z/candidate-summary.json",
 );
-const RESIDUAL_RECEIPT_SHA256 = "24a06dbaa052662da1fab5564c1cb17d5e120a67cddb95dd4ac4c77eb626ce7a";
+const RESIDUAL_RECEIPT_SHA256 = "b8581dafc1cf6f99e9b0ad8a064570c687dc2e39b223b8053bcef0499d1538d2";
 const DATABASE_URL = process.env.ESTIMATE_MIGRATION_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const APPLY = process.argv.includes("--apply");
@@ -345,6 +345,11 @@ async function cloneSearch(client: Client, input: {
     JSON.stringify({
       documentCount: snapshot.documents,
       visibleCount: snapshot.visible,
+      masterSha256: MASTER_SHA256,
+      sourceFingerprint: input.fingerprint,
+      parentSearchReleaseId: PARENT_SEARCH_RELEASE_ID,
+      projectInputSourceRole: "PROJECT_OR_ENGINEERING_INPUT",
+      targetCatalogIds: TARGETS.map((target) => target.catalogId),
       anchorGroupInstallationTargetCount: TARGETS.length,
       parameterCountPerTarget: ANCHOR_GROUP_INSTALLATION_PARAMETERS.length,
       formulaCountPerTarget: ANCHOR_GROUP_INSTALLATION_FORMULAS.length,
@@ -881,6 +886,11 @@ async function main(): Promise<void> {
             JSON.stringify({
               contract: CONTRACT,
               masterSha256: MASTER_SHA256,
+              sourceHashes,
+              sourceFingerprint: fingerprint,
+              parentReleaseId: PARENT_RELEASE_ID,
+              projectInputSourceRole: "PROJECT_OR_ENGINEERING_INPUT",
+              targetCatalogIds: TARGETS.map((target) => target.catalogId),
               residualReceiptSha256: RESIDUAL_RECEIPT_SHA256,
               lifecycle: "DRAFT_FORWARD_ONLY",
               replacedDefinitionCount: TARGETS.length,
