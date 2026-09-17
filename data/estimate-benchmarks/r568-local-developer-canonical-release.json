@@ -1,13 +1,13 @@
 {
   "schemaVersion": "r568-local-developer-canonical-release.v1",
   "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
-  "definitionReleaseId": "831a5ba4-af0f-561c-8766-09a960cf2c74",
-  "searchReleaseId": "2a89ec21-c69a-50f2-9c84-9810a9c276e1",
+  "definitionReleaseId": "80c3ba4b-3d04-5947-b17d-5fb05bcf2bae",
+  "searchReleaseId": "132eb3c0-0a52-5257-8420-cf2f8de425b9",
   "definitionReleaseStatus": "prepared",
   "searchReleaseStatus": "draft",
-  "definitionSnapshotSha256": "2640c6118cca05f85620b6004d34716e73e802e36a887f5d8550a7f8e5f6ba84",
-  "manifestHashChainSha256": "2640c6118cca05f85620b6004d34716e73e802e36a887f5d8550a7f8e5f6ba84",
-  "searchHashChainSha256": "8c83b6ed1cd33ffe354d12a02a60aa6e3591037075bee86b049f702d14f26773",
+  "definitionSnapshotSha256": "a3ade497f58fd7b424620293d1d1acdc696d3bd4ca8ebbc6f6e889d8957118bf",
+  "manifestHashChainSha256": "a3ade497f58fd7b424620293d1d1acdc696d3bd4ca8ebbc6f6e889d8957118bf",
+  "searchHashChainSha256": "3be72bd855c563ce26b70bd7c5ec3849c5d680e82e6d107c0e29fff1f59876b3",
   "identities": 11610,
   "visibleCanonicalDefinitions": 10322,
   "aliasesRedirects": 1288,
@@ -15,7 +15,7 @@
   "runtimeAdditionalAdmissions": 9,
   "currentInventoryRowsIncludingAliases": 11619,
   "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 9 separately identified inherited admissions.",
-  "owner": "EXACT_STRIP_FOUNDATION_REINFORCEMENT_FAMILY_SUCCESSOR",
+  "owner": "EXACT_ANCHOR_GROUP_INSTALLATION_FAMILY_SUCCESSOR",
   "productionAccessed": false,
   "fakeGreenClaimed": false
 }
