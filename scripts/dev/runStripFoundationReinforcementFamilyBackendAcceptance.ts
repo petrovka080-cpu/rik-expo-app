@@ -17,31 +17,71 @@ import {
   stripFoundationReinforcementAcceptanceInputR1,
   type StripFoundationReinforcementContextKey,
 } from "../../src/lib/estimate/v4/stripFoundationReinforcementR1";
+import {
+  ANCHOR_GROUP_INSTALLATION_TARGETS,
+  ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID,
+  ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID,
+  ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_METADATA,
+  anchorGroupInstallationAcceptanceInputR1,
+  compileAnchorGroupInstallationR1,
+} from "../../src/lib/estimate/v4/anchorGroupInstallationR1";
 
 type Json = Record<string, any>;
 
-const CONTRACT = "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.backend-acceptance.v1";
+const IS_ANCHOR = process.env.R4A13_ACCEPTANCE_FAMILY === "anchor-group";
+const CONTRACT = IS_ANCHOR
+  ? "rik-expo-app.r4-a13-6.anchor-group-installation.backend-acceptance.v1"
+  : "rik-expo-app.r4-a13-6.strip-foundation-reinforcement-family.backend-acceptance.v1";
 const BACKEND = "http://127.0.0.1:8765";
 const PROVIDER = "http://127.0.0.1:54321";
 const DATABASE_URL = "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
-const RELEASE_ID = "831a5ba4-af0f-561c-8766-09a960cf2c74";
-const SEARCH_RELEASE_ID = "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
+const RELEASE_ID = IS_ANCHOR
+  ? "80c3ba4b-3d04-5947-b17d-5fb05bcf2bae"
+  : "831a5ba4-af0f-561c-8766-09a960cf2c74";
+const SEARCH_RELEASE_ID = IS_ANCHOR
+  ? "132eb3c0-0a52-5257-8420-cf2f8de425b9"
+  : "2a89ec21-c69a-50f2-9c84-9810a9c276e1";
 const ORGANIZATION_ID = "55555555-5555-4555-8555-555555555551";
-const STEEL_ROW_ID = "material:reinforcement:steel-approved-schedule";
-const DELIVERY_ROW_ID = "delivery:reinforcement:steel";
+const PRIMARY_PARAMETER_ID = IS_ANCHOR
+  ? "anchor_bolt_quantity_piece"
+  : "approved_reinforcement_schedule_weight_kg";
+const PRIMARY_ROW_ID = IS_ANCHOR
+  ? "material:anchor-group:anchor-bolts"
+  : "material:reinforcement:steel-approved-schedule";
+const DELIVERY_ROW_ID = IS_ANCHOR
+  ? "delivery:anchor-group:supply"
+  : "delivery:reinforcement:steel";
+const TARGETS = IS_ANCHOR
+  ? ANCHOR_GROUP_INSTALLATION_TARGETS
+  : STRIP_FOUNDATION_REINFORCEMENT_TARGETS;
+const SOURCE_ID = IS_ANCHOR
+  ? ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_ID
+  : REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID;
+const NORM_ID = IS_ANCHOR
+  ? ANCHOR_GROUP_PROJECT_SCHEDULE_NORM_ID
+  : REINFORCEMENT_BAR_SCHEDULE_NORM_ID;
+const SOURCE_METADATA = IS_ANCHOR
+  ? ANCHOR_GROUP_PROJECT_SCHEDULE_SOURCE_METADATA
+  : REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA;
 const CREDENTIALS = resolve(".release-runtime/r551/runtime/local-developer/credentials.json");
 const FAMILY_RECEIPT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family/acceptance.json",
+  IS_ANCHOR
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-source-role-r2/acceptance.json"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family/acceptance.json",
 );
 const MASTER = resolve(
-  "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
+  IS_ANCHOR
+    ? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (10).md"
+    : "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (9).md",
 );
 const OUTPUT = resolve(
-  ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
+  IS_ANCHOR
+    ? ".release-runtime/r4a13-6/exact-physical-norm-successors/anchor-group-installation-family-api/acceptance.json"
+    : ".release-runtime/r4a13-6/exact-physical-norm-successors/strip-foundation-reinforcement-family-e5-api/acceptance.json",
 );
 
 function invariant(value: unknown, code: string): asserts value {
-  if (!value) throw new Error(`STRIP_REINFORCEMENT_API:${code}`);
+  if (!value) throw new Error(`${IS_ANCHOR ? "ANCHOR_GROUP_API" : "STRIP_REINFORCEMENT_API"}:${code}`);
 }
 
 function sha256(value: string | Buffer): string {
@@ -56,7 +96,11 @@ function atomicJson(path: string, value: unknown): void {
 }
 
 function progress(stage: string, details: Json = {}): void {
-  process.stdout.write(`${JSON.stringify({ progress: "STRIP_REINFORCEMENT_E5_API", stage, ...details })}\n`);
+  process.stdout.write(`${JSON.stringify({
+    progress: IS_ANCHOR ? "ANCHOR_GROUP_API" : "STRIP_REINFORCEMENT_E5_API",
+    stage,
+    ...details,
+  })}\n`);
 }
 
 function resourceSnapshot(): Json {
@@ -161,7 +205,9 @@ async function expectedRows(
   catalogId: string,
   parameters: Json,
 ): Promise<{ rows: Json[]; procurementRows: number }> {
-  const compiled = await compileStripFoundationReinforcementR1(parameters, { catalogId });
+  const compiled = IS_ANCHOR
+    ? await compileAnchorGroupInstallationR1(parameters, { catalogId })
+    : await compileStripFoundationReinforcementR1(parameters, { catalogId });
   invariant(compiled.preliminaryNeeds.length === 0, `LOCAL_CORE_PRELIMINARY:${catalogId}`);
   return {
     rows: compiled.rows as unknown as Json[],
@@ -179,19 +225,19 @@ function closeTo(actual: unknown, expected: unknown, code: string): void {
 }
 
 function assertRows(input: {
-  contextKey: StripFoundationReinforcementContextKey;
+  contextKey: StripFoundationReinforcementContextKey | string;
   catalogId: string;
   definitionVersionId: string;
   revision: Json;
   rows: Json[];
   expected: { rows: Json[]; procurementRows: number };
-  expectedWeightKg: number;
+  expectedPrimaryQuantity: number;
 }): Json {
   invariant(input.revision.releaseId === RELEASE_ID
     && input.revision.definitionVersionId === input.definitionVersionId
     && input.revision.catalogId === input.catalogId
-    && Number(input.revision.parameters?.approved_reinforcement_schedule_weight_kg)
-      === input.expectedWeightKg,
+    && Number(input.revision.parameters?.[PRIMARY_PARAMETER_ID])
+      === input.expectedPrimaryQuantity,
   `REVISION_IDENTITY:${input.contextKey}`);
   invariant(Array.isArray(input.revision.preliminaryNeeds)
     && input.revision.preliminaryNeeds.length === 0, `PRELIMINARY_RED:${input.contextKey}`);
@@ -211,18 +257,17 @@ function assertRows(input: {
       && row.amount == null,
     `ROW_STATE:${input.contextKey}:${row.rowId}`);
   }
-  const steel = input.rows.find((row) => row.rowId === STEEL_ROW_ID);
-  invariant(steel?.procurementEligible === true
-    && steel.includedInProcurement === true
-    && steel.unitId === "kg", `STEEL_FLAGS:${input.contextKey}`);
-  const exactTrace = (steel.normativeTrace as Json[] | undefined)?.find((trace) =>
-    trace.source_id === REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID
-      && trace.norm_id === REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
+  const primary = input.rows.find((row) => row.rowId === PRIMARY_ROW_ID);
+  invariant(primary?.procurementEligible === true
+    && primary.includedInProcurement === true
+    && primary.unitId === (IS_ANCHOR ? "piece" : "kg"), `PRIMARY_FLAGS:${input.contextKey}`);
+  const exactTrace = (primary.normativeTrace as Json[] | undefined)?.find((trace) =>
+    trace.source_id === SOURCE_ID && trace.norm_id === NORM_ID,
   );
-  const binding = steel.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
-  invariant(exactTrace?.source_definition_hash === REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.definition_hash
-    && exactTrace?.exact_locator === REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA.exact_locator
-    && binding?.product_profile_id != null,
+  const binding = primary.calculationTrace?.resourceGraph?.professionalPhysicalNormBindingV1;
+  invariant(exactTrace?.source_definition_hash === SOURCE_METADATA.definition_hash
+    && exactTrace?.exact_locator === SOURCE_METADATA.exact_locator
+    && (IS_ANCHOR || binding?.product_profile_id != null),
   `NORMATIVE_TRACE:${input.contextKey}`);
   invariant(Number(input.revision.totals?.includedRowCount) === input.rows.length
     && Number(input.revision.totals?.unpricedRowCount) === input.rows.length
@@ -233,10 +278,10 @@ function assertRows(input: {
     rowIds: input.rows.map((row) => row.rowId),
     rowCount: input.rows.length,
     procurementRowCount: input.rows.filter((row) => row.includedInProcurement === true).length,
-    approvedScheduleWeightKg: Number(steel.quantity),
+    primaryQuantity: Number(primary.quantity),
     deliveryTKm: Number(input.rows.find((row) => row.rowId === DELIVERY_ROW_ID)?.quantity ?? 0),
-    normativeSourceId: exactTrace.source_id,
-    normativeNormId: exactTrace.norm_id,
+    normativeSourceId: exactTrace?.source_id,
+    normativeNormId: exactTrace?.norm_id,
     inventedPriceCount: input.rows.filter((row) => row.unitPrice != null || row.amount != null).length,
   };
 }
@@ -256,7 +301,7 @@ async function databaseProof(
   const definitions = (await client.query(`select catalog_id,definition_version_id::text
     from public.estimate_cumulative_manifest_entry
     where release_id=$1 and catalog_id=any($2::text[]) order by catalog_id`, [
-    RELEASE_ID, STRIP_FOUNDATION_REINFORCEMENT_TARGETS.map((target) => target.catalogId),
+    RELEASE_ID, TARGETS.map((target) => target.catalogId),
   ])).rows as Json[];
   const revisions = (await client.query(`select id::text,parent_revision_id::text,release_id::text,
       definition_version_id::text,catalog_id,revision_number,row_count,checksum_sha256
@@ -265,7 +310,7 @@ async function databaseProof(
   ])).rows as Json[];
   const failedJobs = (await client.query(`select id::text,status,error_code,result_revision_id::text
     from public.estimate_compile_job where id=any($1::uuid[]) order by created_at`, [failedJobIds])).rows as Json[];
-  invariant(definitions.length === 7
+  invariant(definitions.length === TARGETS.length
     && definitions.every((row) => definitionIds.includes(String(row.definition_version_id))),
   "DATABASE_DEFINITION_DENOMINATOR_RED");
   invariant(revisions.length === revisionIds.length
@@ -283,20 +328,24 @@ async function main(): Promise<void> {
   invariant(before.availableMemoryBytes >= 2 * 1024 ** 3, "AVAILABLE_MEMORY_BELOW_2_GIB");
   invariant(before.availableDiskBytes >= 10 * 1024 ** 3, "AVAILABLE_DISK_BELOW_10_GIB");
   const sourceReceipt = JSON.parse(readFileSync(FAMILY_RECEIPT, "utf8")) as Json;
-  invariant(sourceReceipt.status === "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE"
+  invariant(sourceReceipt.status === (IS_ANCHOR
+    ? "GREEN_ANCHOR_GROUP_INSTALLATION_PREPARED_NOT_ACTIVE"
+    : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_PREPARED_NOT_ACTIVE")
     && sourceReceipt.successor?.releaseId === RELEASE_ID
     && sourceReceipt.successor?.searchReleaseId === SEARCH_RELEASE_ID,
   "FAMILY_RECEIPT_RED");
   const targetReceiptByContext = new Map<string, Json>(
     (sourceReceipt.successor.targets as Json[]).map((target) => [String(target.contextKey), target]),
   );
-  invariant(targetReceiptByContext.size === 7, "FAMILY_RECEIPT_DENOMINATOR_RED");
+  invariant(targetReceiptByContext.size === TARGETS.length, "FAMILY_RECEIPT_DENOMINATOR_RED");
 
   const authorization = await loginConsumer();
   const runId = randomUUID();
   const client = new Client({
     connectionString: DATABASE_URL,
-    application_name: "strip-reinforcement-family-e5-backend-acceptance",
+    application_name: IS_ANCHOR
+      ? "anchor-group-installation-backend-acceptance"
+      : "strip-reinforcement-family-e5-backend-acceptance",
   });
   await client.connect();
   try {
@@ -313,8 +362,12 @@ async function main(): Promise<void> {
     const revisionIds: string[] = [];
     const failedJobIds: string[] = [];
     const definitionIds: string[] = [];
-    for (const target of STRIP_FOUNDATION_REINFORCEMENT_TARGETS) {
-      const fixture = { ...stripFoundationReinforcementAcceptanceInputR1(target.contextKey) } as Json;
+    for (const target of TARGETS) {
+      const fixture = (IS_ANCHOR
+        ? { ...anchorGroupInstallationAcceptanceInputR1(target.contextKey) }
+        : { ...stripFoundationReinforcementAcceptanceInputR1(
+          target.contextKey as StripFoundationReinforcementContextKey,
+        ) }) as Json;
       const sourceTarget = targetReceiptByContext.get(target.contextKey);
       const definitionVersionId = String(sourceTarget?.definitionId ?? "");
       invariant(/^[0-9a-f-]{36}$/iu.test(definitionVersionId),
@@ -345,7 +398,7 @@ async function main(): Promise<void> {
         && item.contentAdmission?.definitionVersionId === definitionVersionId
         && item.contentAdmission?.allowed === true
         && Array.isArray(item.parameterSchema)
-        && item.parameterSchema.length === 37,
+        && item.parameterSchema.length === (IS_ANCHOR ? 39 : 37),
       `CATALOG_CLAIMS:${target.contextKey}`);
 
       const compilePayload = {
@@ -355,7 +408,7 @@ async function main(): Promise<void> {
         currencyCode: "KGS",
         priceSnapshotIds: [],
         sourceRequestText: target.titleRu,
-        primaryMeasureParameterId: "approved_reinforcement_schedule_weight_kg",
+        primaryMeasureParameterId: PRIMARY_PARAMETER_ID,
         organizationId: ORGANIZATION_ID,
       };
       const queued = await api(authorization, "jobs/compile", {
@@ -366,7 +419,7 @@ async function main(): Promise<void> {
         authorization, queued, `COMPILE:${target.contextKey}`,
       );
       const initialExpected = await expectedRows(target.catalogId, fixture);
-      const initialWeight = Number(fixture.approved_reinforcement_schedule_weight_kg);
+      const initialPrimaryQuantity = Number(fixture[PRIMARY_PARAMETER_ID]);
       const original = assertRows({
         contextKey: target.contextKey,
         catalogId: target.catalogId,
@@ -374,7 +427,7 @@ async function main(): Promise<void> {
         revision: initial.revision,
         rows: initial.rows,
         expected: initialExpected,
-        expectedWeightKg: initialWeight,
+        expectedPrimaryQuantity: initialPrimaryQuantity,
       });
 
       const replay = await api(authorization, "jobs/compile", {
@@ -384,10 +437,10 @@ async function main(): Promise<void> {
       invariant(replay.jobId === queued.jobId && replay.created === false,
         `IDEMPOTENCY:${target.contextKey}`);
 
-      const editedWeight = initialWeight + 100;
+      const editedPrimaryQuantity = initialPrimaryQuantity + (IS_ANCHOR ? 4 : 100);
       const editedFixture = {
         ...fixture,
-        approved_reinforcement_schedule_weight_kg: editedWeight,
+        [PRIMARY_PARAMETER_ID]: editedPrimaryQuantity,
       };
       const recalculatedQueued = await api(authorization, "jobs/recalculate", {
         method: "POST",
@@ -395,7 +448,7 @@ async function main(): Promise<void> {
           idempotencyKey: `${CONTRACT}:${runId}:${target.contextKey}:recalculate`,
           catalogId: target.catalogId,
           parentRevisionId: initial.revision.revisionId,
-          parameters: { approved_reinforcement_schedule_weight_kg: editedWeight },
+          parameters: { [PRIMARY_PARAMETER_ID]: editedPrimaryQuantity },
           currencyCode: "KGS",
           priceSnapshotIds: [],
           rowOverrides: {},
@@ -416,21 +469,27 @@ async function main(): Promise<void> {
         revision: editedRevision.revision,
         rows: editedRevision.rows,
         expected: editedExpected,
-        expectedWeightKg: editedWeight,
+        expectedPrimaryQuantity: editedPrimaryQuantity,
       });
       const originalById = new Map(initial.rows.map((row) => [row.rowId, Number(row.quantity)]));
       const changedRows = editedRevision.rows
         .filter((row) => Number(row.quantity) !== originalById.get(row.rowId))
         .map((row) => String(row.rowId)).sort();
-      invariant(JSON.stringify(changedRows) === JSON.stringify([DELIVERY_ROW_ID, STEEL_ROW_ID].sort()),
+      const originalExpectedById = new Map(
+        initialExpected.rows.map((row) => [String(row.row_id), Number(row.quantity)]),
+      );
+      const expectedChangedRows = editedExpected.rows
+        .filter((row) => Number(row.quantity) !== originalExpectedById.get(String(row.row_id)))
+        .map((row) => String(row.row_id)).sort();
+      invariant(JSON.stringify(changedRows) === JSON.stringify(expectedChangedRows),
         `EDIT_SCOPE:${target.contextKey}:${changedRows.join(",")}`);
 
       const invalidQueued = await api(authorization, "jobs/compile", {
         method: "POST",
         body: JSON.stringify({
           ...compilePayload,
-          idempotencyKey: `${CONTRACT}:${runId}:${target.contextKey}:invalid-zero-weight`,
-          parameters: { ...fixture, approved_reinforcement_schedule_weight_kg: 0 },
+          idempotencyKey: `${CONTRACT}:${runId}:${target.contextKey}:invalid-zero-primary`,
+          parameters: { ...fixture, [PRIMARY_PARAMETER_ID]: 0 },
         }),
       });
       const invalidJob = await waitForJob(authorization, String(invalidQueued.jobId));
@@ -458,7 +517,7 @@ async function main(): Promise<void> {
         catalogId: target.catalogId,
         definitionVersionId,
         search: { exactMatchCount: 1, matchTier: searchItem.matchTier },
-        catalog: { parameterCount: 37, priceState: "PARTIAL_NEEDS_PRICE" },
+        catalog: { parameterCount: IS_ANCHOR ? 39 : 37, priceState: "PARTIAL_NEEDS_PRICE" },
         compile: {
           jobId: queued.jobId,
           revisionId: initial.revision.revisionId,
@@ -475,7 +534,7 @@ async function main(): Promise<void> {
           ...edited,
         },
         failClosed: {
-          case: "approved_reinforcement_schedule_weight_kg_zero",
+          case: `${PRIMARY_PARAMETER_ID}_zero`,
           jobId: invalidJob.jobId,
           status: invalidJob.status,
           errorCode: invalidJob.errorCode,
@@ -487,13 +546,13 @@ async function main(): Promise<void> {
         contextKey: target.contextKey,
         rows: original.rowCount,
         procurementRows: original.procurementRowCount,
-        approvedScheduleWeightKg: original.approvedScheduleWeightKg,
+        primaryQuantity: original.primaryQuantity,
       });
     }
 
-    invariant(targetResults.length === 7
-      && new Set(targetResults.map((target) => target.catalogId)).size === 7
-      && new Set(definitionIds).size === 7, "TARGET_DENOMINATOR_RED");
+    invariant(targetResults.length === TARGETS.length
+      && new Set(targetResults.map((target) => target.catalogId)).size === TARGETS.length
+      && new Set(definitionIds).size === TARGETS.length, "TARGET_DENOMINATOR_RED");
     const database = await databaseProof(client, definitionIds, revisionIds, failedJobIds);
     const manifestAfter = await api(authorization, "runtime-manifest");
     invariant(manifestAfter.compatibilityTuple?.definitionReleaseId === RELEASE_ID
@@ -506,16 +565,22 @@ async function main(): Promise<void> {
     const evidence = {
       schemaVersion: `${CONTRACT}.receipt.v1`,
       capturedAt: new Date().toISOString(),
-      status: "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
+      status: IS_ANCHOR
+        ? "GREEN_ANCHOR_GROUP_INSTALLATION_6_OF_6_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE"
+        : "GREEN_STRIP_FOUNDATION_REINFORCEMENT_7_OF_7_BACKEND_CREATE_EDIT_HISTORY_FAIL_CLOSED_PREPARED_NOT_ACTIVE",
       globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
       runId,
       master: { path: MASTER, sha256: sha256(readFileSync(MASTER)) },
       source: {
         branch: execFileSync("git", ["branch", "--show-current"], { encoding: "utf8" }).trim(),
         head: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
-        productSha256: sha256(readFileSync(resolve("src/lib/estimate/v4/stripFoundationReinforcementR1.ts"))),
+        productSha256: sha256(readFileSync(resolve(IS_ANCHOR
+          ? "src/lib/estimate/v4/anchorGroupInstallationR1.ts"
+          : "src/lib/estimate/v4/stripFoundationReinforcementR1.ts"))),
         bindingSha256: sha256(readFileSync(resolve(
-          "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
+          IS_ANCHOR
+            ? "src/lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1.ts"
+            : "src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1.ts",
         ))),
         runtimeSourceHead: manifest.sourceHead,
         runtimeSourceTree: manifest.sourceTree,
@@ -532,18 +597,19 @@ async function main(): Promise<void> {
         backendOrigin: BACKEND,
       },
       denominator: {
-        originalTargetCount: 7,
+        originalTargetCount: TARGETS.length,
         acceptedTargetCount: targetResults.length,
         blockedTargetCount: 0,
-        compileRevisionCount: 7,
-        editRevisionCount: 7,
-        failClosedNegativeCount: 7,
+        compileRevisionCount: TARGETS.length,
+        editRevisionCount: TARGETS.length,
+        failClosedNegativeCount: TARGETS.length,
       },
       normativeSource: {
-        sourceId: REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
-        normId: REINFORCEMENT_BAR_SCHEDULE_NORM_ID,
-        sourceMetadata: REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
-        sameUnitRoutingOnly: true,
+        sourceId: SOURCE_ID,
+        normId: NORM_ID,
+        sourceMetadata: SOURCE_METADATA,
+        sourceRole: IS_ANCHOR ? "PROJECT_OR_ENGINEERING_INPUT" : "NORMATIVE_SOURCE",
+        sameUnitRoutingOnly: !IS_ANCHOR,
         automaticKgPerM3Allowance: false,
       },
       targetResults,
