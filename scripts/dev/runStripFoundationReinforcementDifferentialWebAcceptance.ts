@@ -302,7 +302,7 @@ function assertRevisionRows(
   invariant(primary && delivery, `REFERENCE_ROWS_MISSING:${contextKey}`);
   const expectedPrimary = Number(fixture[PRIMARY_PARAMETER_ID]);
   const expectedDelivery = IS_ANCHOR
-    ? Number(fixture.anchor_group_delivered_mass_kg) / 1_000
+    ? Number(fixture.delivered_anchor_group_mass_kg) / 1_000
       * Number(fixture.delivery_distance_km)
     : expectedPrimary / 1_000 * Number(fixture.reinforcement_delivery_distance_km);
   invariant(Number(primary.quantity) === expectedPrimary
